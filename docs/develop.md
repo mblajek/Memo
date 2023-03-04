@@ -9,6 +9,11 @@
 ### Uruchomienie
 - `cd docker` -> `docker-compose up`
 - otwarcie konsoli docker, np. `docker exec -it fddsz-php bash`
+  - konsola otwiera się z użytkownika root, a użytkownik uid 1000 jest dostępny jako me
+  - o ile użytkownik WSL2/linux ma uid 1000, to `su me` pozwala przełączyć na niego
+  - jeżeli użytkownik ma inne uid, można stworzyć w kontenerze użytkownika o takim uid
+  - analogicznie do `RUN useradd -mU -u 1000 -s /bin/bash me`
+  - dzięki wykorzystaniu tego użytkownika nie będzie konfliktów dostępu
 - instalacja zależności php: `composer install`
 - konfiguracja bazy danych (Mikołaj):
   - dostępne są wspólne bazy na moim serwerze fddsz_dev1, fddsz_dev2
