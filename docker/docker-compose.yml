@@ -5,3 +5,5 @@ services:
     build: { context: ., dockerfile: php.dockerfile }
     volumes: [ "..:/var/www", "./php.ini:/usr/local/etc/php/php.ini" ]
     ports: [ "9081:80" ]
+networks:
+    fdds-z-network: { }

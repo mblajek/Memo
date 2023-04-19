@@ -1,7 +1,9 @@
 <?php
 
+use App\Utils\Date\FzDate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/date', function () {
-    return (new DateTimeImmutable())->format(DateTimeInterface::ATOM);
+Route::prefix('/util')->group(function () {
+    Route::get('/uuid', fn() => Str::uuid()->toString());
+    Route::get('/date', fn() => (new FzDate())->formatZulu());
 });
