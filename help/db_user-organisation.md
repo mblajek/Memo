@@ -1,0 +1,41 @@
+- Klasa (tabela) - nazwa po polsku
+  - pola jak nie są opisane typu, to string
+  - pole: typ {wartości, enum}
+  - ?pola nullable (dodatkowy opis)
+  - ... będą jeszcze pola dotyczące czegoś
+  - // komentarz na później
+  - 
+- Timetable (timetables) - harmonogram
+  - // póki co puste
+  -
+- Organisation (organisations) - organizacja
+  - name
+  - ?timetable_id: Timetable.id
+  - url (/wawa1/, /poz1/)
+  -
+- User (users) - użytkownik
+  - name
+  - ?email
+  - ?email_verified at: date
+  - ?password
+  - ?remember_token (laravel)
+  - created_at: date
+  - updated_at: date
+  - created_by: User.id
+  - last_login_organisation_id: Organisation.id
+  - ?... dane osobowe, adres, telefon
+  -
+- StaffMember (staff_members) - pracownik
+  - ?timetable_id: Timetable.id
+  - 
+- Client (clients) - klient
+  - // póki co puste
+  - 
+- Member (members) - członek
+  - user_id: User.id
+  - organisation_id: Organisation.id
+  - ?staff_member_id: StaffMember.id
+  - ?client_id: Client.id
+  - role: enum {admin, administrator, user, client}
+  - 
+
