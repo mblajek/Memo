@@ -1,10 +1,12 @@
+## Wzór opisu tabel:
 - Klasa (tabela) - nazwa po polsku
   - pola jak nie są opisane typu, to string
   - pole: typ {wartości, enum}
   - ?pola nullable (dodatkowy opis)
   - ... będą jeszcze pola dotyczące czegoś
   - // komentarz na później
-  - 
+
+## Opis tabel:
 - Timetable (timetables) - harmonogram
   - // póki co puste
   -
