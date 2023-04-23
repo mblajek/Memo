@@ -7,6 +7,8 @@
 - WSL2 lub linux
 
 ### Uruchomienie
+- uwaga: w WSL2 folder projektu powinien być w folderze systemu linux (/home/...) a nie w mapowanym z windows (/mnt/...)
+- niektóre foldery typu `storage` czy `public` moga wymagać zmiany uprawnień na 777
 - `cd docker` -> `docker-compose up`
 - otwarcie konsoli docker, np. `docker exec -it fddsz-php bash`
   - konsola otwiera się z użytkownika root, a użytkownik uid 1000 jest dostępny jako me
@@ -15,7 +17,8 @@
   - analogicznie do `RUN useradd -mU -u 1000 -s /bin/bash me`
   - dzięki wykorzystaniu tego użytkownika nie będzie konfliktów dostępu
 - instalacja zależności php: `composer install`
-- konfiguracja bazy danych (Mikołaj):
+- `cp .env.example .env`
+- konfiguracja bazy danych w `.env` (Mikołaj):
   - dostępne są wspólne bazy na moim serwerze fddsz_dev1, fddsz_dev2
   - można stworzyć kolejne
   - konfiguracja, użytkownik i hasło dostępne u mnie
