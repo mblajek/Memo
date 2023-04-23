@@ -8,4 +8,9 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        port: 9082,
+        host: "0.0.0.0",
+        strictPort: true,
+    }
 });
