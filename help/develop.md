@@ -23,7 +23,9 @@
 - adres: http://localhost:9081/
 
 ### Kompilacja frontend
-- todo
+- będąc w konsoli dockera, zainstaluj zależności npa: `npm install`
+- budowanie projektu: `npm run build`
+- development mode (HMR): `npm run dev` (serwer dostępny pod adresem podanym wyżej)
 
 ## Programowanie
 - kod, komentarze, commity po angielsku
