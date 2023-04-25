@@ -5,7 +5,7 @@ namespace App\Utils\Date;
 use DateTimeZone;
 use RuntimeException;
 
-class FzTimezoneException extends RuntimeException
+class TimezoneException extends RuntimeException
 {
     public static function fromTimezone(DateTimeZone $timeZone): static
     {
