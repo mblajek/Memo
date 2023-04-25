@@ -4,4 +4,4 @@ services:
     deploy: { resources: { limits: { memory: "160M" } } }
     build: { context: ., dockerfile: php.dockerfile }
     volumes: [ "..:/var/www", "./php.ini:/usr/local/etc/php/php.ini" ]
-    ports: [ "9081:80" ]
+    ports: [ "9081:80", "9082:9082" ] #apache+vite
