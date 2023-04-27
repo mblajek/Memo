@@ -3,13 +3,12 @@ FROM php:8.2-apache
 RUN a2enmod rewrite
 
 RUN apt update
-RUN apt install -y unzip nano htop curl
+RUN apt install -y unzip nano htop curl libicu-dev
 
 # php
 
-
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN docker-php-ext-install pdo_mysql && docker-php-ext-enable pdo_mysql
+RUN docker-php-ext-install pdo_mysql intl
 
 #apache
 
