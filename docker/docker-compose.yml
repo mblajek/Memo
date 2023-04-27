@@ -1,3 +1,4 @@
+version: "3"
 services:
   fddsz-php:
     container_name: fddsz-php
@@ -5,3 +6,5 @@ services:
     build: { context: ., dockerfile: php.dockerfile }
     volumes: [ "..:/var/www", "./php.ini:/usr/local/etc/php/php.ini" ]
     ports: [ "9081:80", "9082:9082" ] #apache+vite
+networks:
+    fdds-z-network: { }
