@@ -1,0 +1,64 @@
+# fdds-z
+
+## Postawienie projektu
+
+### Wymagania
+- docker z docker-compose
+- WSL2 lub linux
+
+### Uruchomienie
+- uwaga: w WSL2 folder projektu powinien być w folderze systemu linux (/home/...) a nie w mapowanym z windows (/mnt/...)
+- niektóre foldery typu `storage` czy `public` moga wymagać zmiany uprawnień na 777
+- `cd docker` -> `docker-compose up`
+- otwarcie konsoli docker, np. `docker exec -it fddsz-php bash`
+  - konsola otwiera się z użytkownika root, a użytkownik uid 1000 jest dostępny jako me
+  - o ile użytkownik WSL2/linux ma uid 1000, to `su me` pozwala przełączyć na niego
+  - jeżeli użytkownik ma inne uid, można stworzyć w kontenerze użytkownika o takim uid
+  - analogicznie do `RUN useradd -mU -u 1000 -s /bin/bash me`
+  - dzięki wykorzystaniu tego użytkownika nie będzie konfliktów dostępu
+- instalacja zależności php: `composer install`
+- `cp .env.example .env`
+- konfiguracja bazy danych w `.env` (Mikołaj):
+  - dostępne są wspólne bazy na moim serwerze fddsz_dev1, fddsz_dev2
+  - można stworzyć kolejne
+  - konfiguracja, użytkownik i hasło dostępne u mnie
+- migracja bazy danych `php artisan migrate`
+- adres: http://localhost:9081/
+
+### Kompilacja frontend
+- będąc w konsoli dockera, zainstaluj zależności npa: `npm install`
+- budowanie projektu: `npm run build`
+- development mode (HMR): `npm run dev` (serwer dostępny pod adresem podanym wyżej)
+
+## Programowanie
+- kod, komentarze, commity po angielsku
+- commit message zaczyna się od numeru zadania jira (np. FZ-25)
+- system po polsku, docelowo poprzez mechanizm tłumaczeń
+  - nie uwzględnia innych języków, stref czasowych, formatów daty i liczb
+- flow git:
+  - branche wychodzą z develop, nazwa to numer zadania
+  - merge requesty (pull requesty) z przynajmniej jedną akceptacją
+  - od czasu do czasu (w razie możliwości co sprint) z gałęzi develop tworzymy gałąź rc-numer
+    - która trafia na środowisko test
+    - poprawki gałęzi rc muszą być mergowane najpierw do rc potem do develop
+  - po akceptacji, że działa stabilnie jest merge z rc do gałęzi master i wgranie na produkcję
+    - poprawki gałęzi master muszą trafić najpierw na master, potem rc, potem develop 
+  - oddzielna gałąź help do aktualizacji plików w tym folderze, synchronizowana z masterem
+    - tutaj commity po polsku :D
+- kod w razie możliwości bazujący na immutable: const, readonly, valueObjects, funkcje itp.
+
+### PHP
+- PSR-12
+- @throws dla metod rzucających wyjątki
+- Php Inspections (EA Extended) - jeżeli przywrócą kompatybilność z najnowszym PhpStorm'em
+
+### typescript
+- strict
+
+### Baza danych
+- zgodnie z konwencją laravel'a, nazwy tabel w liczbie mnogiej 
+- każda tabela ma primary key typu uuid (mysql nie posiada typu uuid)
+  - laravel kolumny uuid tworzy jako utf8, co jest bez sensu, więc: 
+  - `$table->char('id', 36)->collation('ascii_bin')->primary();`
+- klucze obce (również char(36) ascii_bin) bez `delete/update cascade`
+- brak wartości domyślnych oprócz null
