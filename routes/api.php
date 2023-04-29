@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SystemController;
 use App\Utils\Date\DateHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,14 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::prefix('/v1')->group(function () {
+    Route::prefix('/system')->group(function () {
+        Route::prefix('/translation')->group(function () {
+            Route::get('/{locale}/list', [SystemController::class, 'translationList']);
+        });
+    });
 });
 
 Route::prefix('/util')->group(function () {
