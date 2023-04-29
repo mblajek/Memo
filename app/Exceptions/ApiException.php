@@ -10,8 +10,8 @@ class ApiException extends Exception
 
     public function __construct(string $errorCode, ?array $errorData = null)
     {
-        parent::__construct($this->getJson());
         $this->errorCode = $errorCode;
         $this->errorData = $errorData;
+        parent::__construct($this->getJson());
     }
 }
