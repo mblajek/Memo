@@ -10,7 +10,7 @@
 - Timetable (timetables) - harmonogram
   - // póki co puste
   -
-- Organisation (organisations) - organizacja
+- Facility (facilities) - placówka
   - name
   - ?timetable_id: Timetable.id
   - url (/wawa1/, /poz1/)
@@ -24,7 +24,7 @@
   - created_at: date
   - updated_at: date
   - created_by: User.id
-  - last_login_organisation_id: Organisation.id
+  - last_login_facility_id: Facility.id
   - ?... dane osobowe, adres, telefon
   -
 - StaffMember (staff_members) - pracownik
@@ -35,7 +35,7 @@
   - 
 - Member (members) - członek
   - user_id: User.id
-  - organisation_id: Organisation.id
+  - facility_id: Facility.id
   - ?staff_member_id: StaffMember.id
   - ?client_id: Client.id
   - role: enum {admin, administrator, user, client}
