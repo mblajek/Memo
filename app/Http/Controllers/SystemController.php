@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\System\TranslationsService;
+use Illuminate\Http\JsonResponse;
+use JsonException;
+use OpenApi\Annotations\OpenApi as OA;
+
+/** System endpoints without authorisation */
+class SystemController extends ApiController
+{
+    /**
+     * @OA\Get(
+     *     path="/api/v1/system/translation/{lang}/list",
+     *     tags={"System"},
+     *     summary = "All translations",
+     *     @OA\Parameter(name="lang", in="path", required=true, example="pl-pl", @OA\Schema(type="string")),
+     *     @OA\Response(response="200", description="Translations JSON")
+     * )
+     */
+    public function translationList(string $locale, TranslationsService $service): JsonResponse
+    {
+        return new JsonResponse($service->translationList($locale));
+    }
+}
