@@ -49,7 +49,7 @@
 
 ### PHP
 - PSR-12
-- @throws dla metod rzucających wyjątki
+- @throws dla metod rzucających wyjątki (nie dotyczy RuntimeException/ApiFatalException)
 - Php Inspections (EA Extended) - jeżeli przywrócą kompatybilność z najnowszym PhpStorm'em
 
 ### typescript
