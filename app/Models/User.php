@@ -4,13 +4,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Utils\Date\DateTimeTrait;
+use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Str;
 
 /**
  * @property string id
@@ -25,7 +26,8 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasUuids, DateTimeTrait;
+    public const SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
+    use HasApiTokens, HasFactory, Notifiable, DateTimeTrait, UuidTrait;
 
     /**
      * The attributes that are mass assignable.
