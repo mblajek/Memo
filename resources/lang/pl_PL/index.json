@@ -3,5 +3,22 @@
     "log_out": "Wyloguj",
     "menu": "Menu",
     "email_address": "Adres e-mail",
-    "password": "Hasło"
+    "password": "Hasło",
+
+    "passwords": {
+        "reset": "Hasło zostało zresetowane!",
+        "sent": "Przypomnienie hasła zostało wysłane!",
+        "throttled": "Proszę zaczekać zanim spróbujesz ponownie.",
+        "token": "Token resetowania hasła jest nieprawidłowy.",
+        "user": "Nie znaleziono użytkownika z takim adresem e-mail."
+    },
+    "auth": {
+        "failed": "Błędny login lub hasło.",
+        "password": "Hasło jest nieprawidłowe.",
+        "throttle": "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
+    },
+    "pagination": {
+        "next": "Następna &raquo;",
+        "previous": "&laquo; Poprzednia"
+    }
 }
