@@ -5,6 +5,13 @@
     "email_address": "Adres e-mail",
     "password": "Hasło",
 
+    "exception": {
+        "configuration": {
+            "translation": "Błędna konfiguracja tłumaczeń"
+        },
+        "validation": "Przesłano niepoprawne dane"
+    },
+
     "passwords": {
         "reset": "Hasło zostało zresetowane!",
         "sent": "Przypomnienie hasła zostało wysłane!",

@@ -59,7 +59,7 @@
     "ipv4": "Pole {{attribute}} musi być prawidłowym adresem IPv4.",
     "ipv6": "Pole {{attribute}} musi być prawidłowym adresem IPv6.",
     "json": "Pole {{attribute}} musi być poprawnym ciągiem znaków JSON.",
-    "lowercase": "{{Attribute}} musi być pisany małymi literami.",
+    "lowercase": "{{attribute}} musi być pisany małymi literami.",
     "lt": {
         "array": "Pole {{attribute}} musi mieć mniej niż {{value}} elementów.",
         "file": "Pole {{attribute}} musi być mniejsze niż {{value}} kilobajtów.",
@@ -99,6 +99,7 @@
     "not_regex": "Format pola {{attribute}} jest nieprawidłowy.",
     "numeric": "Pole {{attribute}} musi być liczbą.",
     "password": {
+        "all_rules": "Pole {{attribute}} nie jest wystarczająco silnym hasłem.",
         "letters": "Pole {{attribute}} musi zawierać przynajmniej jedną literę.",
         "mixed": "Pole {{attribute}} musi zawierać przynajmniej jedną wielką i jedną małą literę.",
         "numbers": "Pole {{attribute}} musi zawierać przynajmniej jedną liczbę.",

@@ -6,6 +6,6 @@ class ConfigExceptionFactory
 {
     public static function translations(): ApiFatalException
     {
-        return new ApiFatalException('exception.configuration.translations');
+        return new ApiFatalException('exception.configuration.translation');
     }
 }

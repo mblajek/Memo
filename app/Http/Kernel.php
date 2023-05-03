@@ -21,6 +21,13 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        //from web
+        \App\Http\Middleware\EncryptCookies::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        //todo: check if it should be used
+        //\App\Http\Middleware\VerifyCsrfToken::class,
+        //todo: check what it does
+        //\Illuminate\Routing\Middleware\SubstituteBindings::class,
     ];
 
     /**
