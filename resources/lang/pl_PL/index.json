@@ -9,7 +9,9 @@
         "configuration": {
             "translation": "Błędna konfiguracja tłumaczeń"
         },
-        "validation": "Przesłano niepoprawne dane"
+        "validation": "Przesłano niepoprawne dane",
+        "unauthorised": "Brak autoryzacji",
+        "not_found": "Nie znaleziono strony"
     },
 
     "passwords": {
