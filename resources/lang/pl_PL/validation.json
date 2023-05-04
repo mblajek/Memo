@@ -99,7 +99,7 @@
     "not_regex": "Format pola {{attribute}} jest nieprawidłowy.",
     "numeric": "Pole {{attribute}} musi być liczbą.",
     "password": {
-        "all_rules": "Pole {{attribute}} nie jest wystarczająco silnym hasłem.",
+        "all_rules": "Pole {{attribute}} musi zawierać ... (todo).",
         "letters": "Pole {{attribute}} musi zawierać przynajmniej jedną literę.",
         "mixed": "Pole {{attribute}} musi zawierać przynajmniej jedną wielką i jedną małą literę.",
         "numbers": "Pole {{attribute}} musi zawierać przynajmniej jedną liczbę.",

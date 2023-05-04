@@ -8,4 +8,9 @@ class ConfigExceptionFactory
     {
         return new ApiFatalException('exception.configuration.translation');
     }
+
+    public static function reflectionRules(): ApiFatalException
+    {
+        return new ApiFatalException('exception.reflection.rules');
+    }
 }

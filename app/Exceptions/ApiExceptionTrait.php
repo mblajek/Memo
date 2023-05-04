@@ -12,7 +12,7 @@ trait ApiExceptionTrait
     public readonly int $httpCode;
     protected array $validationErrors = [];
 
-    private function getData(): array
+    public function getData(): array
     {
         return array_filter(
             ['code' => $this->errorCode, 'data' => $this->errorData, 'validation' => $this->validationErrors]
@@ -24,12 +24,23 @@ trait ApiExceptionTrait
         return json_encode($this->getData());
     }
 
+    /** @param array<ApiExceptionTrait> $addErrors */
+    public function renderMany(array $addErrors = []): JsonResponse
+    {
+        $errors = [];
+        foreach (array_merge([$this], $addErrors) as $error) {
+            $data = $error->getData();
+            if (App::hasDebugModeEnabled() && ($error instanceof ApiFatalException)) {
+                $data['trace'] = $error->getTrace();
+            }
+            $errors[] = $data;
+        }
+        return new JsonResponse(['errors' => $errors], $this->httpCode);
+    }
+
+    /** called by framework */
     public function render(): JsonResponse
     {
-        $result = $this->getData();
-        if (App::hasDebugModeEnabled() && ($this instanceof ApiFatalException)) {
-            $result['trace'] = $this->getTrace();
-        }
-        return new JsonResponse(['errors' => [$result]], $this->httpCode);
+        return $this->renderMany();
     }
 }

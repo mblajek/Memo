@@ -2,12 +2,13 @@
 
 namespace App\Exceptions;
 
+use App\Services\System\TranslationsService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
-use Throwable;
+use ReflectionClass;
+use ReflectionException;
 
 class ValidationExceptionRenderer
 {
@@ -30,42 +31,32 @@ class ValidationExceptionRenderer
         return 'string';
     }
 
-    private function defaultAppValidationTranslation(): array
+    private function renderOrThrow(ValidationException $originalException, ApiValidationException $exception): void
     {
-        $filePath = '../resources/lang/' . App::getLocale() . '/validation.json';
+        $validator = $originalException->validator;
+        $validatorReflection = new ReflectionClass($validator);
+        $defaultTranslation = TranslationsService::defaultAppValidationTranslation();
         try {
-            $translations = json_decode(file_get_contents($filePath), associative: true, flags: JSON_THROW_ON_ERROR);
-        } catch (Throwable) {
-            throw ConfigExceptionFactory::translations();
+            $rules = $validatorReflection->getProperty('rules')->getValue($validator);
+        } catch (ReflectionException) {
+            throw ConfigExceptionFactory::reflectionRules();
         }
-        return $translations;
-    }
-
-    public function render(ValidationException $e): JsonResponse
-    {
-        $validator = $e->validator;
-        $r = new \ReflectionClass($validator);
-        $defaultTranslation = $this->defaultAppValidationTranslation();
-
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $rules = $r->getProperty('rules')->getValue($validator);
-        $exception = ExceptionFactory::validation();
         foreach ($validator->failed() as $field => $fieldErrors) {
             foreach ($fieldErrors as $rule => $interpolationData) {
-                $type = null;
+                $ruleType = null;
                 if ($rule === Password::class) {
                     $rule = 'password.all_rules';
                 } else {
                     $rule = Str::snake($rule);
                     if (array_key_exists($rule, $this->multiTypeRules)) {
-                        $type = $this->matchType($rules[$field]);
+                        $ruleType = $this->matchType($rules[$field]);
                     }
                 }
-                $translation = ($type === null)
-                    ? ($defaultTranslation[$rule] ?? null) : ($defaultTranslation[$rule][$type] ?? null);
+                $ruleTranslation = ($ruleType === null)
+                    ? ($defaultTranslation[$rule] ?? null) : ($defaultTranslation[$rule][$ruleType] ?? null);
                 $interpolationFields = [];
-                if ($translation) {
-                    preg_match_all('/\{\{(\w+)}}/', $translation, $interpolationFields);
+                if ($ruleTranslation) {
+                    preg_match_all('/\{\{(\w+)}}/', $ruleTranslation, $interpolationFields);
                     $interpolationFields = array_values(
                         array_filter(
                             $interpolationFields[1] ?? [],
@@ -79,9 +70,19 @@ class ValidationExceptionRenderer
                         array_slice($interpolationFields, 0, count($interpolationData)),
                         array_slice($interpolationData, 0, count($interpolationFields)),
                     );
-                $exception->addValidation($field, $rule . ($type ? ".$type" : ""), $interpolationData);
+                $exception->addValidation($field, $rule . ($ruleType ? ".$ruleType" : ""), $interpolationData);
             }
         }
-        return $exception->render();
+    }
+
+    public function render(ValidationException $e): JsonResponse
+    {
+        $exception = ExceptionFactory::validation();
+        try {
+            $this->renderOrThrow($e, $exception);
+            return $exception->render();
+        } catch (ApiFatalException $additionalException) {
+            return $exception->renderMany(addErrors: [$additionalException]);
+        }
     }
 }
