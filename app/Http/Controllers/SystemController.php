@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\Facility;
+use App\Services\System\FacilityService;
 use App\Services\System\TranslationsService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use JsonException;
 use OpenApi\Annotations\OpenApi as OA;
 
@@ -22,5 +25,24 @@ class SystemController extends ApiController
     public function translationList(string $locale, TranslationsService $service): JsonResponse
     {
         return new JsonResponse($service->translationList($locale));
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/v1/system/facility/list",
+     *     tags={"System"},
+     *     summary = "All facilities",
+     *     @OA\Response(
+     *        response="200",
+     *        description="Facilities JSON",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/FacilityResource")),
+     *        ),
+     *     ),
+     * ),
+     */
+    public function facilityList(FacilityService $service): JsonResource
+    {
+        return Facility::collection($service->getList());
     }
 }

@@ -22,6 +22,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property string created_by
+ * @property-read Facility $lastLoginFacility
  */
 class User extends Authenticatable
 {
@@ -61,5 +62,10 @@ class User extends Authenticatable
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(self::class, 'created_by');
+    }
+
+    public function lastLoginFacility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
     }
 }

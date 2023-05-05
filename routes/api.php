@@ -27,11 +27,14 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/translation')->group(function () {
             Route::get('/{locale}/list', [SystemController::class, 'translationList']);
         });
+        Route::prefix('/facility')->group(function () {
+            Route::get('/list', [SystemController::class, 'facilityList']);
+        });
     });
 });
 
 Route::prefix('/util')->group(function () {
-    Route::get('/uuid', fn() => Str::uuid()->toString());
+    Route::get('/uuid', fn() => Str::uuid()->toString())->name('chrupek');
     Route::get('/date', fn() => DateHelper::toZuluString((new DateTimeImmutable(timezone: new DateTimeZone('UTC')))));
 });
 
