@@ -26,6 +26,10 @@ Artisan::command('fz:user', function () {
     } while (!$user->name);
     do {
         $user->email = $this->ask('E-mail');
+        if (User::query()->where('email', $user->email)->exists()) {
+            $this->error('User already exists');
+            $user->email = null;
+        }
     } while (!$user->email);
     $user->email_verified_at = $this->confirm('Mark e-mail as confirmed', true) ? (new DateTimeImmutable()) : null;
     $password = $this->secret('Password');
