@@ -63,6 +63,6 @@
 - klucze obce (również char(36) ascii_bin) bez `delete/update cascade`
   - na kolumnach typu `not null` domyślne działanie, czyli update i delete restrict
   - na kolumnach typu `null` update restrict, delete `set null`
-- laravelowe timestamps() tworzy kolumny typu timestam z zakresem do 2038
-  - trzeba ręcznie dodać kolumny typu datetime
+- laravelowe timestamps() tworzy kolumny typu `timestamp null` z zakresem do 2038
+  - trzeba ręcznie dodać kolumny typu `datetime not null`
 - brak wartości domyślnych oprócz null
