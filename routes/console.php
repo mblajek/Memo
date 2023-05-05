@@ -25,15 +25,16 @@ Artisan::command('fz:user', function () {
         $user->name = $this->ask('Name (with surname)');
     } while (!$user->name);
     do {
-        $user->email = $this->ask('E-mail');
-        if (User::query()->where('email', $user->email)->exists()) {
+        if ($user->email) {
             $this->error('User already exists');
-            $user->email = null;
         }
-    } while (!$user->email);
-    $user->email_verified_at = $this->confirm('Mark e-mail as confirmed', true) ? (new DateTimeImmutable()) : null;
-    $password = $this->secret('Password');
-    $user->password = $password ? Hash::make($password) : null;
+        $user->email = $this->ask('E-mail (optional)');
+    } while ($user->email && User::query()->where('email', $user->email)->exists());
+    if ($user->email) {
+        $user->email_verified_at = $this->confirm('Mark e-mail as confirmed', true) ? (new DateTimeImmutable()) : null;
+        $password = $this->secret('Password');
+        $user->password = $password ? Hash::make($password) : null;
+    }
     $user->created_by = User::SYSTEM;
     $user->saveOrFail();
     $this->line("Created user $user->id");
