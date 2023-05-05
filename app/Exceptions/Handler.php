@@ -64,7 +64,7 @@ class Handler extends ExceptionHandler
                 return ExceptionFactory::validation()->render();
             }
             if ($e instanceof ValidationException) {
-                return (new ValidationExceptionRenderer())->render($e);
+                return (new ValidationExceptionRenderer($e))->render();
             }
             return null;
         });
