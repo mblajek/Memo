@@ -61,4 +61,8 @@
   - laravel kolumny uuid tworzy jako utf8, co jest bez sensu, więc: 
   - `$table->char('id', 36)->collation('ascii_bin')->primary();`
 - klucze obce (również char(36) ascii_bin) bez `delete/update cascade`
+  - na kolumnach typu `not null` domyślne działanie, czyli update i delete restrict
+  - na kolumnach typu `null` update restrict, delete `set null`
+- laravelowe timestamps() tworzy kolumny typu timestam z zakresem do 2038
+  - trzeba ręcznie dodać kolumny typu datetime
 - brak wartości domyślnych oprócz null
