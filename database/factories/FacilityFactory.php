@@ -3,7 +3,9 @@
 namespace Database\Factories;
 
 use App\Models\Facility;
+use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -15,12 +17,13 @@ class FacilityFactory extends Factory
      * Define the model's default state.
      *
      * @return array<string, mixed>
+     * @throws Exception
      */
     public function definition(): array
     {
         return [
             'name' => fake()->name(),
-            'url' => fake()->url(),
+            'url' => '/' . Str::random(5) . '/',
             'timetable_id' => Uuid::uuid4(),
         ];
     }
