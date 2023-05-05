@@ -5,6 +5,18 @@
     "email_address": "Adres e-mail",
     "password": "Hasło",
 
+    "exception": {
+        "configuration": {
+            "translation": "Błędna konfiguracja tłumaczeń"
+        },
+        "reflection": {
+            "rules": "Błędna konfiguracja reguł walidacji"
+        },
+        "validation": "Przesłano niepoprawne dane",
+        "unauthorised": "Brak autoryzacji",
+        "not_found": "Nie znaleziono strony"
+    },
+
     "passwords": {
         "reset": "Hasło zostało zresetowane!",
         "sent": "Przypomnienie hasła zostało wysłane!",
