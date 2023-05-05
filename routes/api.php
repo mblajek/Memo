@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\SystemController;
+use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,10 +29,15 @@ Route::prefix('/v1')->group(function () {
             Route::get('/{locale}/list', [SystemController::class, 'translationList']);
         });
     });
+    Route::prefix('/user')->group(function () {
+        Route::post('/login', [UserController::class, 'login']);
+        Route::get('/status', [UserController::class, 'status'])->middleware('auth');
+        Route::any('/logout', [UserController::class, 'logout']);
+    });
 });
 
 Route::prefix('/util')->group(function () {
-    Route::get('/uuid', fn() => Str::uuid()->toString());
+    Route::get('/uuid', fn() => Str::uuid()->toString())->name('ciastko');
     Route::get('/date', fn() => DateHelper::toZuluString((new DateTimeImmutable(timezone: new DateTimeZone('UTC')))));
 });
 
