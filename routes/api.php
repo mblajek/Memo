@@ -40,7 +40,7 @@ Route::prefix('/v1')->group(function () {
 });
 
 Route::prefix('/util')->group(function () {
-    Route::get('/uuid', fn() => Str::uuid()->toString())->name('chrupek');
+    Route::get('/uuid', fn() => Str::uuid()->toString());
     Route::get('/date', fn() => DateHelper::toZuluString((new DateTimeImmutable(timezone: new DateTimeZone('UTC')))));
 });
 
