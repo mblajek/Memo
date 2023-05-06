@@ -13,6 +13,6 @@ use Illuminate\Database\Eloquent\Collection;
  * @method self with(array $relations)
  * @method BuilderModel newModelInstance(array $attributes = [])
  */
-class UserBuilder extends Builder
+abstract class UserBuilder extends Builder
 {
 }

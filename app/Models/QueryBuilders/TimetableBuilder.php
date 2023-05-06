@@ -13,6 +13,6 @@ use Illuminate\Database\Eloquent\Collection;
  * @method self with(array $relations)
  * @method BuilderModel newModelInstance(array $attributes = [])
  */
-class TimetableBuilder extends Builder
+abstract class TimetableBuilder extends Builder
 {
 }
