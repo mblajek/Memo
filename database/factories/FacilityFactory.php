@@ -6,7 +6,6 @@ use App\Models\Facility;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use Ramsey\Uuid\Uuid;
 
 /**
  * @extends Factory<Facility>
@@ -23,8 +22,8 @@ class FacilityFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'url' => '/' . Str::random(5) . '/',
-            'timetable_id' => Uuid::uuid4(),
+            'url' => Str::random(5),
+            'timetable_id' => Str::uuid(),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\QueryBuilders\FacilityBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,7 @@ use Illuminate\Notifications\Notifiable;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property-read Timetable $timetable
+ * @method static FacilityBuilder query()
  */
 class Facility extends Model
 {
@@ -27,6 +29,7 @@ class Facility extends Model
     protected $fillable = [
         'name',
         'url',
+        'timetable_id',
     ];
 
     protected $casts = [

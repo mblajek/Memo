@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\Facility;
-use App\Services\System\FacilityService;
+use App\Http\Resources\FacilityResource;
+use App\Models\Facility;
 use App\Services\System\TranslationsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use JsonException;
 use OpenApi\Annotations\OpenApi as OA;
 
 /** System endpoints without authorisation */
@@ -41,8 +40,8 @@ class SystemController extends ApiController
      *     ),
      * ),
      */
-    public function facilityList(FacilityService $service): JsonResource
+    public function facilityList(): JsonResource
     {
-        return Facility::collection($service->getList());
+        return FacilityResource::collection(Facility::query()->get());
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\QueryBuilders\TimetableBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,6 +16,7 @@ use Illuminate\Notifications\Notifiable;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property-read Collection|Facility[] $facilities
+ * @method static TimetableBuilder query()
  */
 class Timetable extends Model
 {
