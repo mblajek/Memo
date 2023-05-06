@@ -7,7 +7,7 @@ use Database\Factories\TimetableFactory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
-class GetFacultiesListTest extends TestCase
+class GetFacilityListTest extends TestCase
 {
     private const URL = '/api/v1/system/facility/list';
 
@@ -15,6 +15,8 @@ class GetFacultiesListTest extends TestCase
 
     public function testWithValidDataReturnSuccess(): void
     {
+        $startCount = count($this->get(static::URL)->json('data'));
+
         $timetable = TimetableFactory::new()->create();
         FacilityFactory::new()->count(5)->create(['timetable_id' => $timetable->id]);
 
@@ -22,7 +24,7 @@ class GetFacultiesListTest extends TestCase
 
         $result->assertOk();
         $result->assertJsonStructure($this->jsonStructure());
-        $this->assertCount(5, $result->json('data'));
+        $this->assertCount(5 + $startCount, $result->json('data'));
     }
 
     public function testWithEmptyDataReturnSuccess(): void

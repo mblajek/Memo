@@ -42,8 +42,8 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['created_by']);
             $table->dropColumn('created_by');
-            $table->timestamp('created_at')->nullable()->change();
-            $table->timestamp('updated_at')->nullable()->change();
+            $table->dateTime('created_at')->nullable()->change();
+            $table->dateTime('updated_at')->nullable()->change();
         });
         DB::statement("delete from users where id = '$this->systemUserId'");
     }

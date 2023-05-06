@@ -44,11 +44,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('timetables');
-        Schema::dropIfExists('facilities');
         Schema::table('users', function (Blueprint $table) {
             $table->dropForeign(['last_login_facility_id']);
             $table->dropColumn('last_login_facility_id');
         });
+        Schema::dropIfExists('facilities');
+        Schema::dropIfExists('timetables');
     }
 };
