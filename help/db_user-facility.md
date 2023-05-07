@@ -25,7 +25,7 @@
   - updated_at: date
   - created_by: User.id
   - last_login_facility_id: Facility.id
-  - is_admin: bool
+  - is_global_admin: bool
   - ?... dane osobowe, adres, telefon
   -
 - StaffMember (staff_members) - pracownik
