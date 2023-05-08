@@ -45,17 +45,23 @@ class UserController extends ApiController
 
     /**
      * @OA\Get(
+     *     @OA\Response(
+     *        response="200",
+     *        description="Facilities JSON",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/FacilityResource")),
+     *        ),
+     *     ),
+     * ),
+     */
+
+    /**
+     * @OA\Get(
      *     path="/api/v1/user/status",
      *     tags={"User"},
      *     summary="User status",
      *     @OA\Response(response="200", description="Translations JSON", @OA\JsonContent(
-     *         @OA\Property(property="data", @OA\Property(property="user",
-     *             @OA\Property(property="id", type="string", example="UUID"),
-     *             @OA\Property(property="name", type="string", example="Name Surname"),
-     *             @OA\Property(property="email", type="bool", example="test@test.pl", nullable=true),
-     *             @OA\Property(property="isEmaiVerified", type="bool", example="false"),
-     *             @OA\Property(property="lastLoginFacilityId", type="string", example="UUID", nullable=true)
-     *         ))
+     *         @OA\Property(property="data", type="object", ref="#/components/schemas/UserResource")
      *     )),
      *     @OA\Response(response="401", description="Unauthorised")
      * )

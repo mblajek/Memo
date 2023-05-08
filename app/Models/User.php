@@ -3,7 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Utils\Date\DateTimeTrait;
+use App\Models\QueryBuilders\UserBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,11 +22,14 @@ use Laravel\Sanctum\HasApiTokens;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property string created_by
+ * @property-read User $createdBy
+ * @property-read Facility $lastLoginFacility
+ * @method static UserBuilder query()
  */
 class User extends Authenticatable
 {
     public const SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
-    use HasApiTokens, HasFactory, Notifiable, DateTimeTrait, UuidTrait;
+    use HasApiTokens, HasFactory, Notifiable, UuidTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -63,5 +66,10 @@ class User extends Authenticatable
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(self::class, 'created_by');
+    }
+
+    public function lastLoginFacility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
     }
 }

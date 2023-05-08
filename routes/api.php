@@ -28,6 +28,9 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/translation')->group(function () {
             Route::get('/{locale}/list', [SystemController::class, 'translationList']);
         });
+        Route::prefix('/facility')->group(function () {
+            Route::get('/list', [SystemController::class, 'facilityList']);
+        });
     });
     Route::prefix('/user')->group(function () {
         Route::post('/login', [UserController::class, 'login']);

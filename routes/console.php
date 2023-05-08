@@ -20,7 +20,7 @@ Artisan::command('fz:hash', function () {
 })->purpose('Make password hash');
 
 Artisan::command('fz:user', function () {
-    $user = new User();
+    $user = User::query()->newModelInstance();
     do {
         $user->name = $this->ask('Name (with surname)');
     } while (!$user->name);
