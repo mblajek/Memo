@@ -12,6 +12,7 @@ class ApiFatalException extends RuntimeException
     {
         $this->errorCode = $errorCode;
         $this->errorData = $errorData;
+        $this->httpCode = 500;
         parent::__construct($this->getJson());
     }
 }
