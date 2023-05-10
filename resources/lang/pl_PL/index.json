@@ -1,7 +1,8 @@
 {
-    "log_in": "Zaloguj",
-    "log_out": "Wyloguj",
-    "menu": "Menu",
-    "email_address": "Adres e-mail",
-    "password": "Hasło"
+    "log_in": "zaloguj",
+    "log_out": "wyloguj",
+    "menu": "menu",
+    "email_address": "adres e-mail",
+    "password": "hasło",
+    "change_language": "zmień język"
 }

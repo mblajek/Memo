@@ -1,7 +1,7 @@
 {
-    "invalid": "Błędna wartość",
+    "invalid": "błędna wartość",
     "number": {
-        "to_high": "Wartość jest za wysoka",
-        "to_low": "Wartość jest za niska"
+        "to_high": "wartość jest za wysoka",
+        "to_low": "wartość jest za niska"
     }
 }
