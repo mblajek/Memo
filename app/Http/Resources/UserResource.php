@@ -15,7 +15,7 @@ use OpenApi\Annotations as OA;
  *         @OA\Property(property="id", type="string", format="uuid", example="UUID"),
  *         @OA\Property(property="name", type="string", example="Name Surname"),
  *         @OA\Property(property="email", type="bool", example="test@test.pl", nullable=true),
- *         @OA\Property(property="isEmaiVerified", type="bool", example="false"),
+ *         @OA\Property(property="isEmailVerified", type="bool", example="false"),
  *         @OA\Property(property="lastLoginFacilityId", type="string", example="UUID", nullable=true),
  * )
  */
