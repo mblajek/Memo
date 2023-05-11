@@ -111,8 +111,10 @@ class UserAuthenticationTest extends TestCase
                 [
                     'code',
                     'validation' => [
-                        'field',
-                        'code',
+                        [
+                            'field',
+                            'code',
+                        ]
                     ],
                 ],
             ],
