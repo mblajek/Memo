@@ -83,7 +83,7 @@ return [
     */
 
     'locale' => 'pl_PL',
-    'available_locales' => ['pl_PL'],
+    'available_locales' => ['pl_PL', 'en_US'],
 
     /*
     |--------------------------------------------------------------------------

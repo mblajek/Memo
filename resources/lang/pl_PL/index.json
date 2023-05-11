@@ -4,6 +4,7 @@
     "menu": "Menu",
     "email_address": "Adres e-mail",
     "password": "Hasło",
+    "change_language": "zmień język",
 
     "exception": {
         "configuration": {
