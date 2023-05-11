@@ -9,12 +9,10 @@ use Locale;
 
 class TranslationsService
 {
-    private static string $translationsBaseBath = '../resources/lang';
-
     private static function readJsonFile(string $locale, string $name): array
     {
         try {
-            $filePath = self::$translationsBaseBath . "/$locale/$name";
+            $filePath = App::resourcePath('lang') . "/$locale/$name";
             return json_decode(file_get_contents($filePath), associative: true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             throw ConfigExceptionFactory::translations();
@@ -33,7 +31,7 @@ class TranslationsService
         $index = 'index.json';
         $readFile = fn(string $name): array => self::readJsonFile($locale, $name);
         $result = array_merge(["" => $locale], $readFile($index));
-        foreach (scandir(self::$translationsBaseBath . "/$locale") as $file) {
+        foreach (scandir(App::resourcePath('lang') . "/$locale") as $file) {
             if ($file !== $index && !str_starts_with($file, '.')) {
                 $result[pathinfo($file, PATHINFO_FILENAME)] = $readFile($file);
             }
