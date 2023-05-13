@@ -1,5 +1,8 @@
 FROM php:8.2-apache
 
+#todo configure uid
+RUN useradd -mU -u 1000 -s /bin/bash me
+
 RUN a2enmod rewrite
 
 RUN apt update
@@ -12,10 +15,13 @@ RUN docker-php-ext-install pdo_mysql intl
 
 #apache
 
-RUN echo "ServerName fddsz-php:80">>/etc/apache2/apache2.conf
+RUN echo "ServerName memo-php:80">>/etc/apache2/apache2.conf
+
 RUN php -r "\$f='/etc/apache2/sites-enabled/000-default.conf';\$p='DocumentRoot /var/www/';\
   file_put_contents(\$f,str_replace(\$p.'html',\$p.'public',file_get_contents(\$f)));"
 
+RUN php -r "\$f='/etc/apache2/envvars';\
+  file_put_contents(\$f,str_replace(':=www-data}',':=me}',file_get_contents(\$f)));"
 
 # node
 
@@ -26,7 +32,4 @@ RUN npm install -g vite
 # finish
 
 RUN apt autoremove -y
-
-#todo configure uid
-RUN useradd -mU -u 1000 -s /bin/bash me
 WORKDIR /var/www
