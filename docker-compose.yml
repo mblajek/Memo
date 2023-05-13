@@ -1,0 +1,10 @@
+version: "3"
+services:
+  memo-php:
+    container_name: "memo-php"
+    deploy: { resources: { limits: { memory: "256M" } } }
+    build: { context: ., dockerfile: "docker/php.dockerfile" }
+    volumes: [ ".:/var/www", "./docker/php.ini:/usr/local/etc/php/php.ini" ]
+    ports: [ "9081:80", "9082:9082" ] #apache+vite
+networks:
+    memo-network: { }
