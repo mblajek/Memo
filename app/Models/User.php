@@ -22,6 +22,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property string created_by
+ * @property ?string $global_admin_grant_id
  * @property-read User $createdBy
  * @property-read Facility $lastLoginFacility
  * @method static UserBuilder query()
@@ -41,6 +42,7 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'created_by',
+        'global_admin_grant_id',
     ];
 
     /**

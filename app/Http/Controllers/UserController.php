@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ApiValidationException;
+use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionMiddleware;
@@ -38,7 +38,7 @@ class UserController extends ApiController
      *     @OA\Response(response="400", description="Bad Request"),
      *     @OA\Response(response="401", description="Unauthorised")
      * )
-     * @throws ApiValidationException
+     * @throws ApiException
      */
     public function login(Request $request): JsonResponse
     {
@@ -55,30 +55,28 @@ class UserController extends ApiController
 
     /**
      * @OA\Get(
-     *     @OA\Response(
-     *        response="200",
-     *        description="Facilities JSON",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/FacilityResource")),
-     *        ),
-     *     ),
-     * ),
-     */
-
-    /**
-     * @OA\Get(
      *     path="/api/v1/user/status",
      *     tags={"User"},
      *     summary="User status",
      *     @OA\Response(response="200", description="Translations JSON", @OA\JsonContent(
-     *         @OA\Property(property="data", type="object", ref="#/components/schemas/UserResource")
+     *         @OA\Property(property="data", type="object",
+     *             @OA\Property(property="user", type="object", ref="#/components/schemas/UserResource"),
+     *             @OA\Property(property="permissions", type="object", ref="#/components/schemas/PermissionsResource"),
+     *         )
      *     )),
      *     @OA\Response(response="401", description="Unauthorised")
      * )
      */
-    public function status(): JsonResponse
+    public function status(Request $request,): JsonResponse
     {
-        return new JsonResponse(['data' => ['user' => UserResource::make(Auth::user())]]);
+        return new JsonResponse([
+            'data' => [
+                'user' => UserResource::make($request->user()),
+                'permissions' => PermissionResource::make(
+                    $request->attributes->get(PermissionMiddleware::PERMISSIONS_KEY)
+                ),
+            ]
+        ]);
     }
 
     /**
@@ -92,6 +90,11 @@ class UserController extends ApiController
     public function logout(): JsonResponse
     {
         Auth::logout();
+        return new JsonResponse(new stdClass());
+    }
+
+    public function adminTest(): JsonResponse
+    {
         return new JsonResponse(new stdClass());
     }
 }
