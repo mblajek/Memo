@@ -27,7 +27,7 @@ trait ResourceTrait
         foreach (self::$classMappedFields[static::class] as $propertyName => $mapping) {
             $property = null;
             if ($mapping === true) {
-                $property = $this->{Str::snake($propertyName)};
+                $property = $this->{$propertyName} ?? $this->{Str::snake($propertyName)};
             } elseif ($mapping instanceof Closure) {
                 $property = $mapping($this);
             }

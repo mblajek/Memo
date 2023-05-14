@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Permissions\Permission;
 use App\Http\Resources\FacilityResource;
 use App\Models\Facility;
 use App\Services\System\TranslationsService;
@@ -12,6 +13,11 @@ use OpenApi\Annotations\OpenApi as OA;
 /** System endpoints without authorisation */
 class SystemController extends ApiController
 {
+    protected function initPermissions(): void
+    {
+        $this->permissionOneOf(Permission::any);
+    }
+
     /**
      * @OA\Get(
      *     path="/api/v1/system/translation/{lang}/list",

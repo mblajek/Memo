@@ -34,9 +34,10 @@ Route::prefix('/v1')->group(function () {
     });
     Route::prefix('/user')->group(function () {
         Route::post('/login', [UserController::class, 'login']);
-        Route::get('/status', [UserController::class, 'status'])->middleware('auth');
+        Route::get('/status', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);
     });
+    Route::get('/admin/test', [UserController::class, 'adminTest']);
 });
 
 Route::prefix('/util')->group(function () {

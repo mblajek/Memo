@@ -15,7 +15,6 @@ use OpenApi\Annotations as OA;
  *         @OA\Property(property="id", type="string", format="uuid", example="UUID"),
  *         @OA\Property(property="name", type="string", example="Name Surname"),
  *         @OA\Property(property="email", type="bool", example="test@test.pl", nullable=true),
- *         @OA\Property(property="isEmailVerified", type="bool", example="false"),
  *         @OA\Property(property="lastLoginFacilityId", type="string", example="UUID", nullable=true),
  * )
  */
@@ -29,7 +28,6 @@ class UserResource extends JsonResource
             'id' => true,
             'name' => true,
             'email' => true,
-            'isEmailVerified' => fn(self $user) => ($user->email_verified_at !== null),
             'lastLoginFacilityId' => true,
         ];
     }
