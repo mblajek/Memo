@@ -25,22 +25,16 @@ class PermissionMiddleware
     public function handle(Request $request, Closure $next, string  ...$permissions): Response
     {
         $permissionObject = $this->requestPermissions($request);
-        $passed = false;
         foreach ($permissions as $permissionCode) {
-            //
             $permission = Permission::fromName($permissionCode);
             if ($permissionObject->getByPermission($permission)) {
-                $passed = true;
-                break;
+                return $next($request);
             }
         }
-        if (!$passed) {
-            if ($permissionObject->getByPermission(Permission::unauthorised)) {
-                throw ExceptionFactory::unauthorised();
-            }
-            throw ExceptionFactory::forbidden();
+        if ($permissionObject->getByPermission(Permission::unauthorised)) {
+            throw ExceptionFactory::unauthorised();
         }
-        return $next($request);
+        throw ExceptionFactory::forbidden();
     }
 
     private function requestPermissions(Request $request): PermissionObject

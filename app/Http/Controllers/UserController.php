@@ -67,7 +67,7 @@ class UserController extends ApiController
      *     @OA\Response(response="401", description="Unauthorised")
      * )
      */
-    public function status(Request $request,): JsonResponse
+    public function status(Request $request): JsonResponse
     {
         return new JsonResponse([
             'data' => [
