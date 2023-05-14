@@ -1,4 +1,4 @@
-# fdds-z
+# Memo
 
 ## Postawienie projektu
 
@@ -10,7 +10,7 @@
 - uwaga: w WSL2 folder projektu powinien być w folderze systemu linux (/home/...) a nie w mapowanym z windows (/mnt/...)
 - niektóre foldery typu `storage` czy `public` moga wymagać zmiany uprawnień na 777
 - `cd docker` -> `docker-compose up`
-- otwarcie konsoli docker, np. `docker exec -it fddsz-php bash`
+- otwarcie konsoli docker, np. `docker exec -it memo-php bash`
   - konsola otwiera się z użytkownika root, a użytkownik uid 1000 jest dostępny jako me
   - o ile użytkownik WSL2/linux ma uid 1000, to `su me` pozwala przełączyć na niego
   - jeżeli użytkownik ma inne uid, można stworzyć w kontenerze użytkownika o takim uid
