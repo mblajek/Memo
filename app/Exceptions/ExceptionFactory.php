@@ -9,13 +9,18 @@ class ExceptionFactory
         return new ApiValidationException(400, 'exception.validation');
     }
 
-    public static function unauthorised(): ApiValidationException
+    public static function unauthorised(): ApiException
     {
-        return new ApiValidationException(401, 'exception.unauthorised');
+        return new ApiException(401, 'exception.unauthorised');
     }
 
-    public static function notFound(): ApiValidationException
+    public static function forbidden(): ApiException
     {
-        return new ApiValidationException(404, 'exception.not_found');
+        return new ApiException(403, 'exception.forbidden');
+    }
+
+    public static function notFound(): ApiException
+    {
+        return new ApiException(404, 'exception.not_found');
     }
 }

@@ -15,6 +15,7 @@
         },
         "validation": "Przesłano niepoprawne dane",
         "unauthorised": "Brak autoryzacji",
+        "forbidden": "Brak dostępu",
         "not_found": "Nie znaleziono strony"
     },
 

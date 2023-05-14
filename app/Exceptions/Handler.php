@@ -6,6 +6,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Psr\Log\LogLevel;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -59,6 +60,9 @@ class Handler extends ExceptionHandler
             }
             if ($e instanceof UnauthorizedHttpException) {
                 return ExceptionFactory::unauthorised()->render();
+            }
+            if ($e instanceof AccessDeniedHttpException) {
+                return ExceptionFactory::forbidden()->render();
             }
             if ($e instanceof BadRequestHttpException) {
                 return ExceptionFactory::validation()->render();

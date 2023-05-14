@@ -129,9 +129,13 @@ class UserAuthenticationTest extends TestCase
                     'id',
                     'name',
                     'email',
-                    'isEmailVerified',
                     'lastLoginFacilityId',
                 ],
+                'permissions' => [
+                    'unverified',
+                    'verified',
+                    'globalAdmin',
+                ]
             ],
         ];
     }
