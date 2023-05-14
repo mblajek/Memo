@@ -7,6 +7,11 @@
   - // komentarz na później
 
 ## Opis tabel:
+- Grant (grants) - ??
+  - created_at: date
+  - updated_at: date
+  - created_by: User.id
+  -
 - Timetable (timetables) - harmonogram
   - // póki co puste
   -
@@ -25,7 +30,7 @@
   - updated_at: date
   - created_by: User.id
   - last_login_facility_id: Facility.id
-  - is_global_admin: bool
+  - global_admin_grant_id: Grant.id
   - ?... dane osobowe, adres, telefon
   -
 - StaffMember (staff_members) - pracownik
@@ -39,5 +44,5 @@
   - facility_id: Facility.id
   - ?staff_member_id: StaffMember.id
   - ?client_id: Client.id
-  - is_facility_admin: bool
+  - facility_admin_grant_id: Grant.id
   - 
