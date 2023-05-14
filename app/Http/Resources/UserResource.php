@@ -29,7 +29,6 @@ class UserResource extends JsonResource
             'id' => true,
             'name' => true,
             'email' => true,
-            'isEmailVerified' => fn(self $user) => ($user->email_verified_at !== null),
             'lastLoginFacilityId' => true,
         ];
     }

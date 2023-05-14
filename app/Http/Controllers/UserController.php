@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiValidationException;
 use App\Exceptions\ExceptionFactory;
+use App\Http\Permissions\Permission;
+use App\Http\Permissions\PermissionMiddleware;
+use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +17,13 @@ use stdClass;
 /** System endpoints without authorisation */
 class UserController extends ApiController
 {
+    protected function initPermissions(): void
+    {
+        $this->permissionOneOf(Permission::any);
+        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('status');
+        $this->permissionOneOf(Permission::globalAdmin)->only('adminTest');
+    }
+
     /**
      * @OA\Post(
      *     path="/api/v1/user/login",
