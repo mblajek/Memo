@@ -3,14 +3,17 @@
         "browser": true,
         "es2021": true
     },
-    "parser": "@typescript-eslint/parser", // if not already added
-    "plugins": ["solid", "prettier"],
-    "extends": ["eslint:recommended", "plugin:solid/typescript", "plugin:prettier/recommended"],
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["solid"],
+    "extends": ["eslint:recommended", "plugin:solid/typescript"],
     "parserOptions": {
         "ecmaVersion": "latest",
         "sourceType": "module"
     },
     "rules": {
-        "prettier/prettier": "error"
+        "no-unused-vars": "warn",
+        "sort-imports": "off",
+        "sort-keys": "warn",
+        "no-unused-expressions": "warn"
     }
 }

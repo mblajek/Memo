@@ -1,17 +1,12 @@
-import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
+import { defineConfig } from "vite";
+import eslint from "vite-plugin-eslint";
 import solidPlugin from "vite-plugin-solid";
 import tsConfigPaths from "vite-tsconfig-paths";
-import eslint from "vite-plugin-eslint";
 
 export default defineConfig({
-    resolve: {
-        alias: [
-            {
-                find: /^~(.+)/,
-                replacement: "$1",
-            },
-        ],
+    build: {
+        target: "ESNext",
     },
     plugins: [
         laravel({
@@ -20,14 +15,19 @@ export default defineConfig({
         }),
         solidPlugin(),
         tsConfigPaths(),
-        // eslint(),
+        eslint(),
     ],
-    server: {
-        port: 9082,
-        host: "0.0.0.0",
-        strictPort: true,
+    resolve: {
+        alias: [
+            {
+                find: /^~(.+)/,
+                replacement: "$1",
+            },
+        ],
     },
-    build: {
-        target: "ESNext",
+    server: {
+        host: "0.0.0.0",
+        port: 9082,
+        strictPort: true,
     },
 });
