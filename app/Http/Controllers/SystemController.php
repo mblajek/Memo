@@ -28,7 +28,7 @@ class SystemController extends ApiController
             )
         ],
         responses: [
-            new OA\Response(response: 200, description: 'Translations JSON')
+            new OA\Response(response: 200, description: 'OK')
         ]
     )]
     public function translationList(string $locale, TranslationsService $service): JsonResponse
@@ -42,7 +42,7 @@ class SystemController extends ApiController
         tags: ['System'],
         responses: [
             new OA\Response(
-                response: 200, description: 'All facilities', content: new  OA\JsonContent(properties: [
+                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/FacilityResource'),
                 )

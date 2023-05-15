@@ -25,9 +25,9 @@ class PermissionResource extends JsonResource
     protected static function getMappedFields(): array
     {
         return [
-            'unverified',
-            'verified',
-            'globalAdmin',
+            'unverified' => false,
+            'verified' => false,
+            'globalAdmin' => false,
             //'facilityMember',
             //'facilityClient',
             //'facilityStaff',
