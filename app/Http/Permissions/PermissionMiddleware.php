@@ -44,22 +44,21 @@ class PermissionMiddleware
         if ($permissionObject instanceof PermissionObject) {
             return $permissionObject;
         }
-        $unauthorised = false;
-        $unverified = false;
         $verified = false;
+        $unverified = false;
         $globalAdmin = false;
-
         /** @var User|null $user */
         $user = $request->user();
-        if ($user) {
+        $authorised = ($user !== null);
+        if ($authorised) {
             $verified = ($user->email_verified_at !== null);
             $unverified = !$verified;
+        }
+        if ($verified) {
             $globalAdmin = ($user->global_admin_grant_id !== null);
-        } else {
-            $unauthorised = true;
         }
         $permissionObject = new PermissionObject(
-            unauthorised: $unauthorised,
+            unauthorised: !$authorised,
             unverified: $unverified,
             verified: $verified,
             globalAdmin: $globalAdmin,
