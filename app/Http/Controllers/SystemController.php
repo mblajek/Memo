@@ -44,9 +44,7 @@ class SystemController extends ApiController
             new OA\Response(
                 response: 200, description: 'All facilities', content: new  OA\JsonContent(properties: [
                 new OA\Property(
-                    property: 'data', ref: '#/components/schemas/FacilityResource', type: 'array', items: new OA\Items(
-                    ref: '#/components/schemas/FacilityResource'
-                )
+                    property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/FacilityResource'),
                 )
             ])
             )
