@@ -6,9 +6,9 @@ use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionMiddleware;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\ControllerMiddlewareOptions;
-use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OA;
 
-/** @OA\Info(title="Memo API", version="0.1.0") */
+#[OA\Info(version: '0.1.0', title: 'Memo API')]
 abstract class ApiController extends Controller
 {
     public function __construct()

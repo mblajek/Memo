@@ -4,18 +4,19 @@ namespace App\Http\Resources;
 
 use App\Http\Permissions\PermissionObject;
 use Illuminate\Http\Resources\Json\JsonResource;
-use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OA;
 
-/**
+
+#[OA\Schema(
+    schema: 'PermissionsResource',
+    properties: [
+        new OA\Property(property: 'unverified', type: 'bool', example: 'false'),
+        new OA\Property(property: 'verified', type: 'bool', example: 'true'),
+        new OA\Property(property: 'globalAdmin', type: 'bool', example: 'false'),
+    ]
+)] /**
  * @method __construct(PermissionObject $resource)
  * @mixin PermissionObject
- *
- * @OA\Schema(
- *     schema="PermissionsResource",
- *     @OA\Property(property="unverified", type="bool", example="false"),
- *     @OA\Property(property="verified", type="bool", example="true"),
- *     @OA\Property(property="globalAdmin", type="bool", example="false"),
- * )
  */
 class PermissionResource extends JsonResource
 {
