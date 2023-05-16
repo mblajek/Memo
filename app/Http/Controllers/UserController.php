@@ -10,9 +10,9 @@ use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use OpenApi\Annotations\OpenApi as OA;
 use Illuminate\Http\Request;
 use stdClass;
+use OpenApi\Attributes as OA;
 
 /** System endpoints without authorisation */
 class UserController extends ApiController
@@ -24,22 +24,24 @@ class UserController extends ApiController
         $this->permissionOneOf(Permission::globalAdmin)->only('adminTest');
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/login",
-     *     tags={"User"},
-     *     summary="User login",
-     *     @OA\RequestBody(@OA\JsonContent(
-     *         @OA\Property(property="email", type="string", example="test@test.pl"),
-     *         @OA\Property(property="password", type="string", example="123456"),
-     *         required={"email", "password"}
-     *     )),
-     *     @OA\Response(response="200", description="OK"),
-     *     @OA\Response(response="400", description="Bad Request"),
-     *     @OA\Response(response="401", description="Unauthorised")
-     * )
-     * @throws ApiException
-     */
+    #[OA\Post(
+        path: '/api/v1/user/login',
+        summary: 'User login',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['email', 'password'], properties: [
+                new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
+                new OA\Property(property: 'password', type: 'string', example: '123456'),
+            ]
+            )
+        ),
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )] /** @throws ApiException */
     public function login(Request $request): JsonResponse
     {
         $loginData = $request->validate([
@@ -53,20 +55,24 @@ class UserController extends ApiController
         throw ExceptionFactory::unauthorised();
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/v1/user/status",
-     *     tags={"User"},
-     *     summary="User status",
-     *     @OA\Response(response="200", description="Translations JSON", @OA\JsonContent(
-     *         @OA\Property(property="data", type="object",
-     *             @OA\Property(property="user", type="object", ref="#/components/schemas/UserResource"),
-     *             @OA\Property(property="permissions", type="object", ref="#/components/schemas/PermissionsResource"),
-     *         )
-     *     )),
-     *     @OA\Response(response="401", description="Unauthorised")
-     * )
-     */
+    #[OA\Get(
+        path: '/api/v1/user/status',
+        summary: 'User status',
+        tags: ['User'],
+        responses: [
+            new OA\Response(
+                response: 200, description: 'User Status', content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
+                    new OA\Property(
+                        property: 'permissions', ref: '#/components/schemas/PermissionsResource', type: 'object'
+                    ),
+                ]
+            )
+            ),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )]
     public function status(Request $request): JsonResponse
     {
         return new JsonResponse([
@@ -79,14 +85,14 @@ class UserController extends ApiController
         ]);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/logout",
-     *     tags={"User"},
-     *     summary="User logout",
-     *     @OA\Response(response="200", description="OK"),
-     * )
-     */
+    #[OA\Post(
+        path: '/api/v1/user/logout',
+        summary: 'User logout',
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+        ]
+    )]
     public function logout(): JsonResponse
     {
         Auth::logout();

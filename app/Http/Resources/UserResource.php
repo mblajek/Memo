@@ -4,19 +4,22 @@ namespace App\Http\Resources;
 
 use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
-use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OA;
 
-/**
+
+#[OA\Schema(
+    schema: 'UserResource',
+    properties: [
+        new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+        new OA\Property(property: 'name', type: 'string', example: 'Name Surname'),
+        new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
+        new OA\Property(
+            property: 'lastLoginFacilityId', type: 'string', format: 'uuid', example: 'UUID', nullable: true
+        ),
+    ]
+)] /**
  * @method __construct(User $resource)
  * @mixin User
- *
- * @OA\Schema(
- *     schema="UserResource",
- *         @OA\Property(property="id", type="string", format="uuid", example="UUID"),
- *         @OA\Property(property="name", type="string", example="Name Surname"),
- *         @OA\Property(property="email", type="bool", example="test@test.pl", nullable=true),
- *         @OA\Property(property="lastLoginFacilityId", type="string", example="UUID", nullable=true),
- * )
  */
 class UserResource extends JsonResource
 {
