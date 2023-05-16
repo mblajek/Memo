@@ -42,6 +42,7 @@ Artisan::command('fz:user', function () {
             $globalAdminGrant = Grant::query()->newModelInstance();
             $globalAdminGrant->created_by = User::SYSTEM;
         }
+        $user->password_expire_at = $this->confirm('Mark password as expired?', false) ? new DateTimeImmutable() : null;
     }
     DB::transaction(function () use ($user, $globalAdminGrant) {
         if ($globalAdminGrant) {
