@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'hasPassword', type: 'bool', example: 'true'),
         new OA\Property(property: 'createdAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
-        new OA\Property(property: 'updatedAt', type: 'bool', example: '2023-05-10T20:46:43Z'),
+        new OA\Property(property: 'updatedAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
         new OA\Property(property: 'hasEmailVerified', type: 'bool', example: 'false'),
         new OA\Property(property: 'createdBy', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'hasGlobalAdmin', type: 'bool', example: 'false'),
