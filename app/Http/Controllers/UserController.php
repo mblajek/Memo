@@ -21,7 +21,6 @@ class UserController extends ApiController
     {
         $this->permissionOneOf(Permission::any);
         $this->permissionOneOf(Permission::unverified, Permission::verified)->only('status');
-        $this->permissionOneOf(Permission::globalAdmin)->only('adminTest');
     }
 
     #[OA\Post(
@@ -61,7 +60,7 @@ class UserController extends ApiController
         tags: ['User'],
         responses: [
             new OA\Response(
-                response: 200, description: 'User Status', content: new OA\JsonContent(
+                response: 200, description: 'OK', content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
                     new OA\Property(
@@ -96,11 +95,6 @@ class UserController extends ApiController
     public function logout(): JsonResponse
     {
         Auth::logout();
-        return new JsonResponse(new stdClass());
-    }
-
-    public function adminTest(): JsonResponse
-    {
         return new JsonResponse(new stdClass());
     }
 }

@@ -12,7 +12,7 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'name', type: 'string', example: 'Name Surname'),
-        new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
+        new OA\Property(property: 'email', type: 'string', example: 'test@test.pl', nullable: true),
         new OA\Property(
             property: 'lastLoginFacilityId', type: 'string', format: 'uuid', example: 'UUID', nullable: true
         ),

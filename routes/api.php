@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
@@ -37,7 +38,11 @@ Route::prefix('/v1')->group(function () {
         Route::get('/status', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);
     });
-    Route::get('/admin/test', [UserController::class, 'adminTest']);
+    Route::prefix('/admin')->group(function () {
+        Route::prefix('/user')->group(function () {
+            Route::get('/list', [AdminUserController::class, 'list']);
+        });
+    });
 });
 
 Route::prefix('/util')->group(function () {
