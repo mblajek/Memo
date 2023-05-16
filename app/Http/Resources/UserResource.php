@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 
-
 #[OA\Schema(
     schema: 'UserResource',
     properties: [
@@ -16,6 +15,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'lastLoginFacilityId', type: 'string', format: 'uuid', example: 'UUID', nullable: true
         ),
+        new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
     ]
 )] /**
  * @method __construct(User $resource)
@@ -32,6 +32,7 @@ class UserResource extends JsonResource
             'name' => true,
             'email' => true,
             'lastLoginFacilityId' => true,
+            'passwordExpireAt' => true,
         ];
     }
 }
