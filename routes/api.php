@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
@@ -40,6 +41,7 @@ Route::prefix('/v1')->group(function () {
         Route::post('/password', [UserController::class, 'password']);
     });
     Route::prefix('/admin')->group(function () {
+        Route::get('/migrate/{hash?}', [AdminController::class, 'migrate']);
         Route::prefix('/user')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
         });
