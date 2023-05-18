@@ -37,6 +37,7 @@ Route::prefix('/v1')->group(function () {
         Route::post('/login', [UserController::class, 'login']);
         Route::get('/status', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);
+        Route::post('/password', [UserController::class, 'password']);
     });
     Route::prefix('/admin')->group(function () {
         Route::prefix('/user')->group(function () {
