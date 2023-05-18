@@ -146,6 +146,19 @@ class UserAuthenticationTest extends TestCase
         $result->assertBadRequest();
     }
 
+    public function testChangePasswordNotLoggedWillFail(): void
+    {
+        $data = [
+            'current' => 'password',
+            'password' => 'pBssword1',
+            'repeat' => 'pBssword1',
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertBadRequest();
+    }
+
     public function testChangePasswordWillPass(): void
     {
         /** @var User $user */
