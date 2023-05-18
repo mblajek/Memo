@@ -101,9 +101,6 @@ class UserController extends ApiController
         return new JsonResponse(new stdClass());
     }
 
-    /**
-     * @throws Throwable
-     */
     #[OA\Post(
         path: '/api/v1/user/password',
         summary: 'Change user password',
@@ -123,7 +120,7 @@ class UserController extends ApiController
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
-    )]
+    )] /** @throws Throwable */
     public function password(Request $request, ChangePasswordService $changePasswordService): JsonResponse
     {
         $data = $request->validate([
