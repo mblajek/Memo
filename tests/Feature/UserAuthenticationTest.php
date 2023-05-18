@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules\Password;
 use Tests\TestCase;
 
 class UserAuthenticationTest extends TestCase
@@ -12,6 +13,7 @@ class UserAuthenticationTest extends TestCase
     private const URL_STATUS = '/api/v1/user/status';
     private const URL_LOGIN = '/api/v1/user/login';
     private const URL_LOGOUT = '/api/v1/user/logout';
+    private const URL_PASSWORD = '/api/v1/user/password';
 
     use DatabaseTransactions;
 
@@ -90,6 +92,75 @@ class UserAuthenticationTest extends TestCase
         $result = $this->post(static::URL_LOGOUT);
 
         $this->assertEquals(null, Auth::user());
+        $result->assertOk();
+    }
+
+    public function testChangePasswordWIthInvalidRepeatWillFail(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password',
+            'password' => 'pBssword1',
+            'repeat' => 'pBssword2',
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertBadRequest();
+    }
+
+    public function testChangePasswordWithInvalidRegexWillFail(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password',
+            'password' => 'password',
+            'repeat' => 'password',
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertBadRequest();
+    }
+
+    public function testChangePasswordWithInvalidCurrentWillFail(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password1',
+            'password' => 'pBssword1',
+            'repeat' => 'pBssword1'
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertBadRequest();
+    }
+
+    public function testChangePasswordWillPass(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password',
+            'password' => 'pBssword1',
+            'repeat' => 'pBssword1',
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $this->assertEquals($user->id, Auth::user()->id);
         $result->assertOk();
     }
 

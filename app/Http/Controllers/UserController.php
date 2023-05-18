@@ -8,11 +8,14 @@ use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
+use App\Services\User\ChangePasswordService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
 use stdClass;
 use OpenApi\Attributes as OA;
+use Throwable;
 
 /** System endpoints without authorisation */
 class UserController extends ApiController
@@ -95,6 +98,47 @@ class UserController extends ApiController
     public function logout(): JsonResponse
     {
         Auth::logout();
+        return new JsonResponse(new stdClass());
+    }
+
+    /**
+     * @throws Throwable
+     */
+    #[OA\Post(
+        path: '/api/v1/user/password',
+        summary: 'Change user password',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['current', 'password', 'repeat'],
+                properties: [
+                    new OA\Property(property: 'current', type: 'string', example: '123456'),
+                    new OA\Property(property: 'password', type: 'string', example: '345678'),
+                    new OA\Property(property: 'repeat', type: 'string', example: '345678'),
+                ]
+            )
+        ),
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ],
+    )]
+    public function password(Request $request, ChangePasswordService $changePasswordService): JsonResponse
+    {
+        $data = $request->validate([
+            'current' => 'bail|required|string|current_password',
+            'password' => [
+                'bail',
+                'required',
+                'string',
+                Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
+            ],
+            'repeat' => 'bail|required|string|same:password',
+        ]);
+
+        $changePasswordService->handle($data);
+
         return new JsonResponse(new stdClass());
     }
 }
