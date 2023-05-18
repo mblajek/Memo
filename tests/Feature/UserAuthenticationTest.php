@@ -156,7 +156,7 @@ class UserAuthenticationTest extends TestCase
 
         $result = $this->post(static::URL_PASSWORD, $data);
 
-        $result->assertBadRequest();
+        $result->assertUnauthorized();
     }
 
     public function testChangePasswordWillPass(): void

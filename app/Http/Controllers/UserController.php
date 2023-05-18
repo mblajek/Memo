@@ -24,6 +24,7 @@ class UserController extends ApiController
     {
         $this->permissionOneOf(Permission::any);
         $this->permissionOneOf(Permission::unverified, Permission::verified)->only('status');
+        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('password');
     }
 
     #[OA\Post(
@@ -129,6 +130,7 @@ class UserController extends ApiController
                 'bail',
                 'required',
                 'string',
+                'different:current',
                 Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
             ],
             'repeat' => 'bail|required|string|same:password',
