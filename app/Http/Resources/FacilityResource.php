@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Facility;
-use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -17,10 +16,8 @@ use OpenApi\Attributes as OA;
  * @method __construct(Facility $resource)
  * @mixin Facility
  */
-class FacilityResource extends JsonResource
+class FacilityResource extends AbstractJsonResource
 {
-    use ResourceTrait;
-
     protected static function getMappedFields(): array
     {
         return ['id', 'name', 'url'];

@@ -2,9 +2,14 @@
 
 namespace App\Http\Permissions;
 
+use App\Models\Facility;
+use App\Models\User;
+
 readonly class PermissionObject
 {
     public function __construct(
+        public ?User $user,
+        public ?Facility $facility,
         public bool $unauthorised,
         public bool $unverified,
         public bool $verified,
