@@ -20,7 +20,9 @@ use Illuminate\Notifications\Notifiable;
  */
 class Timetable extends Model
 {
-    use HasFactory, Notifiable, UuidTrait;
+    use HasFactory;
+    use Notifiable;
+    use UuidTrait;
 
     protected $table = 'timetables';
 

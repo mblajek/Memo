@@ -49,7 +49,7 @@ class UserController extends ApiController
     {
         $loginData = $request->validate([
             'email' => 'bail|required|string|email',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
         if (Auth::attempt($loginData)) {
             $request->session()->regenerate();
@@ -84,7 +84,7 @@ class UserController extends ApiController
                 'permissions' => PermissionResource::make(
                     $request->attributes->get(PermissionMiddleware::PERMISSIONS_KEY)
                 ),
-            ]
+            ],
         ]);
     }
 

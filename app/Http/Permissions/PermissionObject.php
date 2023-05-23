@@ -2,19 +2,17 @@
 
 namespace App\Http\Permissions;
 
-use App\Http\Resources\ResourceTrait;
-
-class PermissionObject
+readonly class PermissionObject
 {
     public function __construct(
-        public readonly bool $unauthorised,
-        public readonly bool $unverified,
-        public readonly bool $verified,
-        public readonly bool $globalAdmin,
-        public readonly bool $facilityMember,
-        public readonly bool $facilityClient,
-        public readonly bool $facilityStaff,
-        public readonly bool $facilityAdmin,
+        public bool $unauthorised,
+        public bool $unverified,
+        public bool $verified,
+        public bool $globalAdmin,
+        public bool $facilityMember,
+        public bool $facilityClient,
+        public bool $facilityStaff,
+        public bool $facilityAdmin,
     ) {
     }
 

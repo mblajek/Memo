@@ -25,10 +25,10 @@ class SystemController extends ApiController
         parameters: [
             new OA\Parameter(
                 name: 'lang', in: 'path', required: true, schema: new OA\Schema(schema: 'string'), example: 'pl-pl'
-            )
+            ),
         ],
         responses: [
-            new OA\Response(response: 200, description: 'OK')
+            new OA\Response(response: 200, description: 'OK'),
         ]
     )]
     public function translationList(string $locale, TranslationsService $service): JsonResponse
@@ -45,9 +45,9 @@ class SystemController extends ApiController
                 response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/FacilityResource'),
-                )
+                ),
             ])
-            )
+            ),
         ]
     )]
     public function facilityList(): JsonResource

@@ -25,12 +25,12 @@ class AdminUserController extends ApiController
             new OA\Response(
                 response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
                 new OA\Property(
-                    property: 'data',  type: 'array', items: new OA\Items(
+                    property: 'data', type: 'array', items: new OA\Items(
                     ref: '#/components/schemas/AdminUserResource'
                 )
-                )
+                ),
             ])
-            )
+            ),
         ]
     )]
     public function list(): JsonResource

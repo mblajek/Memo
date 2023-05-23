@@ -21,7 +21,7 @@ class Handler extends ExceptionHandler
      * @var array<class-string<Throwable>, LogLevel::*>
      */
     protected $levels = [
-        ApiFatalException::class => LogLevel::CRITICAL
+        ApiFatalException::class => LogLevel::CRITICAL,
         //
     ];
 
@@ -31,7 +31,7 @@ class Handler extends ExceptionHandler
      * @var array<int, class-string<Throwable>>
      */
     protected $dontReport = [
-        ApiException::class
+        ApiException::class,
         //
     ];
 
@@ -70,6 +70,7 @@ class Handler extends ExceptionHandler
             if ($e instanceof ValidationException) {
                 return (new ValidationExceptionRenderer($e))->render();
             }
+
             return null;
         });
     }

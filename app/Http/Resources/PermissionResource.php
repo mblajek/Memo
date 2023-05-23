@@ -6,7 +6,6 @@ use App\Http\Permissions\PermissionObject;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 
-
 #[OA\Schema(
     schema: 'PermissionsResource',
     properties: [

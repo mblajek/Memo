@@ -22,7 +22,9 @@ use Illuminate\Notifications\Notifiable;
  */
 class Facility extends Model
 {
-    use HasFactory, Notifiable, UuidTrait;
+    use HasFactory;
+    use Notifiable;
+    use UuidTrait;
 
     protected $table = 'facilities';
 
