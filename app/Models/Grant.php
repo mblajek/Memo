@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\GrantBuilder;
-use App\Models\QueryBuilders\TimetableBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,7 +20,9 @@ use Illuminate\Notifications\Notifiable;
  */
 class Grant extends Model
 {
-    use HasFactory, Notifiable, UuidTrait;
+    use HasFactory;
+    use Notifiable;
+    use UuidTrait;
 
     protected $table = 'grants';
 

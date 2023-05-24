@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
-use App\Http\Resources\ResourceTrait;
+use App\Http\Resources\AbstractJsonResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use OpenApi\Attributes as OA;
@@ -23,13 +23,11 @@ use OpenApi\Attributes as OA;
  * @method __construct(User $resource)
  * @mixin User
  */
-class AdminUserResource extends UserResource
+class AdminUserResource extends AbstractJsonResource
 {
-    use ResourceTrait;
-
     protected static function getMappedFields(): array
     {
-        return array_merge(parent::getMappedFields(), [
+        return array_merge(UserResource::getMappedFields(), [
             'hasPassword' => fn(self $user) => ($user->password !== null),
             'createdAt' => true,
             'updatedAt' => true,

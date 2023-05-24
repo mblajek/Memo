@@ -9,9 +9,9 @@ use Tests\TestCase;
 
 class GetFacilityListTest extends TestCase
 {
-    private const URL = '/api/v1/system/facility/list';
-
     use DatabaseTransactions;
+
+    private const URL = '/api/v1/system/facility/list';
 
     public function testWithValidDataReturnSuccess(): void
     {

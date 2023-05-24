@@ -58,6 +58,9 @@ class PermissionMiddleware
             $globalAdmin = ($user->global_admin_grant_id !== null);
         }
         $permissionObject = new PermissionObject(
+            user: $user,
+            // todo
+            facility: null,
             unauthorised: !$authorised,
             unverified: $unverified,
             verified: $verified,

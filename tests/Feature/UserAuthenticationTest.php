@@ -5,17 +5,16 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\Password;
 use Tests\TestCase;
 
 class UserAuthenticationTest extends TestCase
 {
+    use DatabaseTransactions;
+
     private const URL_STATUS = '/api/v1/user/status';
     private const URL_LOGIN = '/api/v1/user/login';
     private const URL_LOGOUT = '/api/v1/user/logout';
     private const URL_PASSWORD = '/api/v1/user/password';
-
-    use DatabaseTransactions;
 
     public function testStatusWithUnauthorizedUserWillFail(): void
     {
@@ -79,6 +78,7 @@ class UserAuthenticationTest extends TestCase
 
         $result = $this->post(static::URL_LOGIN, $data);
 
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
         $this->assertEquals($user->id, Auth::user()->id);
         $result->assertOk();
     }
@@ -138,7 +138,7 @@ class UserAuthenticationTest extends TestCase
         $data = [
             'current' => 'password1',
             'password' => 'pBssword1',
-            'repeat' => 'pBssword1'
+            'repeat' => 'pBssword1',
         ];
 
         $result = $this->post(static::URL_PASSWORD, $data);
@@ -173,6 +173,7 @@ class UserAuthenticationTest extends TestCase
 
         $result = $this->post(static::URL_PASSWORD, $data);
 
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
         $this->assertEquals($user->id, Auth::user()->id);
         $result->assertOk();
     }
@@ -198,7 +199,7 @@ class UserAuthenticationTest extends TestCase
                         [
                             'field',
                             'code',
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -219,7 +220,7 @@ class UserAuthenticationTest extends TestCase
                     'unverified',
                     'verified',
                     'globalAdmin',
-                ]
+                ],
             ],
         ];
     }

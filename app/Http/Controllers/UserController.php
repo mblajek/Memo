@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
-use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use App\Services\User\ChangePasswordService;
@@ -49,7 +48,7 @@ class UserController extends ApiController
     {
         $loginData = $request->validate([
             'email' => 'bail|required|string|email',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
         if (Auth::attempt($loginData)) {
             $request->session()->regenerate();
@@ -76,15 +75,13 @@ class UserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )]
-    public function status(Request $request): JsonResponse
+    public function status(): JsonResponse
     {
         return new JsonResponse([
             'data' => [
-                'user' => UserResource::make($request->user()),
-                'permissions' => PermissionResource::make(
-                    $request->attributes->get(PermissionMiddleware::PERMISSIONS_KEY)
-                ),
-            ]
+                'user' => UserResource::make($this->getPermissionObject()->user),
+                'permissions' => PermissionResource::make($this->getPermissionObject()),
+            ],
         ]);
     }
 

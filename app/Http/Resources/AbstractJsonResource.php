@@ -6,13 +6,19 @@ use App\Utils\Date\DateHelper;
 use Closure;
 use DateTimeInterface;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Str;
 
-trait ResourceTrait
+abstract class AbstractJsonResource extends JsonResource
 {
     abstract protected static function getMappedFields(): array;
 
     private static array $classMappedFields = [];
+
+    public static function makeOrNull($resource): ?JsonResource
+    {
+        return $resource ? self::make($resource) : null;
+    }
 
     public function toArray(Request $request): array
     {

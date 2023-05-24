@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property string id
@@ -30,8 +29,11 @@ use Laravel\Sanctum\HasApiTokens;
  */
 class User extends Authenticatable
 {
+    use HasFactory;
+    use Notifiable;
+    use UuidTrait;
+
     public const SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
-    use HasApiTokens, HasFactory, Notifiable, UuidTrait;
 
     /**
      * The attributes that are mass assignable.
