@@ -87,7 +87,7 @@ class AdminFacilityController extends ApiController
     public function patch(string $id, Request $request, UpdateFacilityService $service): JsonResponse
     {
         $data = $request->validate([
-            'name' => 'nullable|string',
+            'name' => 'required|sometimes|string',
             'url' => [
                 'required',
                 'sometimes',
