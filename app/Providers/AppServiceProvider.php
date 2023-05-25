@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Ramsey\Uuid\Exception\InvalidUuidStringException;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use App\Exceptions\ExceptionFactory;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,9 +38,9 @@ class AppServiceProvider extends ServiceProvider
 
         Route::bind('id', function ($value) {
             try {
-                return Uuid::fromString($value);
+                return Uuid::fromString($value)->toString();
             } catch (InvalidUuidStringException $e) {
-                throw new BadRequestException('UUID is not valid');
+                throw ExceptionFactory::badRequestUrl();
             }
         });
     }

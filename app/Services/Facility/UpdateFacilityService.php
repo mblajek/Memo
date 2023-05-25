@@ -3,7 +3,6 @@
 namespace App\Services\Facility;
 
 use App\Models\Facility;
-use Ramsey\Uuid\UuidInterface;
 use Throwable;
 
 class UpdateFacilityService
@@ -11,11 +10,9 @@ class UpdateFacilityService
     /**
      * @throws Throwable
      */
-    public function handle(UuidInterface $id, array $data): string
+    public function handle(string $id, array $data): void
     {
-        $facility = Facility::query()->findOrFail($id->toString());
+        $facility = Facility::query()->findOrFail($id);
         $facility->updateOrFail($data);
-
-        return $facility->id;
     }
 }

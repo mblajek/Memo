@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 
-/** System endpoints without authorisation */
 class AdminUserController extends ApiController
 {
     protected function initPermissions(): void

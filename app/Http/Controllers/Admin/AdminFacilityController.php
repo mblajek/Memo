@@ -12,10 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\Schema;
-use Ramsey\Uuid\UuidInterface;
 use Throwable;
 
-/** System endpoints without authorisation */
 class AdminFacilityController extends ApiController
 {
     protected function initPermissions(): void
@@ -86,12 +84,13 @@ class AdminFacilityController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
     )] /** @throws Throwable|ApiException */
-    public function patch(UuidInterface $id, Request $request, UpdateFacilityService $service): JsonResponse
+    public function patch(string $id, Request $request, UpdateFacilityService $service): JsonResponse
     {
         $data = $request->validate([
             'name' => 'nullable|string',
             'url' => [
-                'nullable',
+                'required',
+                'sometimes',
                 'string',
                 'max:15',
                 'regex:/^(?!admin|user|api|system)[a-z][a-z0-9-]+.*[a-z0-9]$/',
@@ -99,8 +98,8 @@ class AdminFacilityController extends ApiController
             ],
         ]);
 
-        $result = $service->handle($id, $data);
+        $service->handle($id, $data);
 
-        return new JsonResponse(data: ['data' => ['id' => $result]], status: 200);
+        return new JsonResponse(status: 200);
     }
 }
