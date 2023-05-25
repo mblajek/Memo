@@ -49,7 +49,9 @@ class AdminFacilityController extends ApiController
                 'string',
                 'unique:facilities,url',
                 'max:15',
-                'regex:/^(?!admin|user|api|system)[a-z][a-z0-9-]+.*[a-z0-9]$/',
+                'lowercase',
+                'regex:/^[a-z][a-z0-9-]+.*[a-z0-9]$/',
+                'not_in:admin,user,api,system',
             ],
         ]);
 
@@ -93,7 +95,9 @@ class AdminFacilityController extends ApiController
                 'sometimes',
                 'string',
                 'max:15',
-                'regex:/^(?!admin|user|api|system)[a-z][a-z0-9-]+.*[a-z0-9]$/',
+                'lowercase',
+                'regex:/^[a-z][a-z0-9-]+.*[a-z0-9]$/',
+                'not_in:admin,user,api,system',
                 Rule::unique('facilities', 'url')->ignore($id),
             ],
         ]);
