@@ -100,6 +100,6 @@ class AdminFacilityController extends ApiController
 
         $service->handle($id, $data);
 
-        return new JsonResponse(status: 200);
+        return new JsonResponse();
     }
 }
