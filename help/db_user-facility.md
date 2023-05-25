@@ -44,5 +44,5 @@
   - facility_id: Facility.id
   - ?staff_member_id: StaffMember.id
   - ?client_id: Client.id
-  - facility_admin_grant_id: Grant.id
+  - ?facility_admin_grant_id: Grant.id
   - 
