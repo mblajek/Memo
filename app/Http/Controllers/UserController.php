@@ -52,7 +52,7 @@ class UserController extends ApiController
         ]);
         if (Auth::attempt($loginData)) {
             $request->session()->regenerate();
-            return new JsonResponse(new stdClass());
+            return new JsonResponse();
         }
         throw ExceptionFactory::unauthorised();
     }
@@ -96,7 +96,7 @@ class UserController extends ApiController
     public function logout(): JsonResponse
     {
         Auth::logout();
-        return new JsonResponse(new stdClass());
+        return new JsonResponse();
     }
 
     #[OA\Post(
@@ -135,6 +135,6 @@ class UserController extends ApiController
 
         $changePasswordService->handle($data);
 
-        return new JsonResponse(new stdClass());
+        return new JsonResponse();
     }
 }

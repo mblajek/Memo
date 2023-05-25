@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -25,6 +26,7 @@ class UserFactory extends Factory
             'remember_token' => Str::random(10),
             'created_by' => 'e144ff18-471f-456f-a1c2-971d88b3d213',
             'password_expire_at' => fake()->optional()->dateTime(),
+            'global_admin_grant_id' => null,
         ];
     }
 
