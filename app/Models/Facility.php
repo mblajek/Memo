@@ -4,11 +4,12 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\FacilityBuilder;
 use App\Utils\Uuid\UuidTrait;
+use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\Rule;
 
 /**
  * @property string id
@@ -23,8 +24,25 @@ use Illuminate\Notifications\Notifiable;
 class Facility extends Model
 {
     use HasFactory;
-    use Notifiable;
     use UuidTrait;
+    use HasValidator;
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'name' => 'required|string',
+            'url' => [
+                'bail',
+                'required',
+                'string',
+                'max:15',
+                'lowercase',
+                'regex:/^[a-z][a-z0-9-]+[a-z0-9]$/',
+                'not_in:admin,user,api,system',
+                Rule::unique('facilities', 'url'),
+            ],
+        };
+    }
 
     protected $table = 'facilities';
 

@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Admin;
 
 use App\Http\Resources\AbstractJsonResource;
+use App\Http\Resources\MemberResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use OpenApi\Attributes as OA;
@@ -16,7 +17,11 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'hasEmailVerified', type: 'bool', example: 'false'),
         new OA\Property(property: 'createdBy', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'hasGlobalAdmin', type: 'bool', example: 'false'),
-        new OA\Property(property: 'members', type: 'array', items: new OA\Items(properties: [])),
+        new OA\Property(
+            property: 'members', type: 'array', items: new OA\Items(
+            ref: '#/components/schemas/MemberResource'
+        )
+        ),
     ],
     allOf: [new OA\Schema(ref: '#/components/schemas/UserResource')]
 )] /**
@@ -34,7 +39,7 @@ class AdminUserResource extends AbstractJsonResource
             'hasEmailVerified' => fn(self $user) => ($user->email_verified_at !== null),
             'createdBy' => true,
             'hasGlobalAdmin' => fn(self $user) => ($user->global_admin_grant_id !== null),
-            'members' => fn() => [],
+            'members' => fn(self $user) => (MemberResource::collection($user->members)),
         ]);
     }
 }
