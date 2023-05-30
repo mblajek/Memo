@@ -17,7 +17,7 @@
         "unauthorised": "Brak autoryzacji",
         "forbidden": "Brak dostępu",
         "not_found": "Nie znaleziono strony",
-        "bad_request_uuid": "Przesłano niepoprawne dane, błąd komunikacji"
+        "unexpected": "Nieoczekiwany błąd serwera"
     },
 
     "passwords": {

@@ -75,8 +75,9 @@ class AdminFacilityController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
     )] /** @throws Throwable|ApiException */
-    public function patch(Facility $facility, Request $request, UpdateFacilityService $service): JsonResponse
+    public function patch(Request $request, UpdateFacilityService $service): JsonResponse
     {
+        $facility = $this->getFacilityOrFail();
         $data = $request->validate(Facility::getPatchValidator(['name', 'url'], $facility));
 
         $service->handle($facility, $data);

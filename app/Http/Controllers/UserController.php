@@ -8,7 +8,6 @@ use App\Http\Permissions\Permission;
 use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
-use App\Models\User;
 use App\Services\User\ChangePasswordService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -83,15 +82,11 @@ class UserController extends ApiController
     )]
     public function status(): JsonResponse
     {
-        $permissionObject = $this->getPermissionObject();
-        /** @var User $user */
-        $user = $permissionObject->user;
-
         return new JsonResponse([
             'data' => [
-                'user' => UserResource::make($user),
-                'permissions' => PermissionResource::make($permissionObject),
-                'members' => MemberResource::collection($user->members),
+                'user' => UserResource::make($this->getUserOrFail()),
+                'permissions' => PermissionResource::make($this->getPermissionObject()),
+                'members' => MemberResource::collection($this->getUserOrFail()->members),
             ],
         ]);
     }

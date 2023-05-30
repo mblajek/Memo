@@ -2,7 +2,7 @@
 
 namespace App\Services\System;
 
-use App\Exceptions\ConfigExceptionFactory;
+use App\Exceptions\FatalExceptionFactory;
 use Illuminate\Support\Facades\App;
 use JsonException;
 use Locale;
@@ -15,7 +15,7 @@ class TranslationsService
             $filePath = App::resourcePath('lang') . "/$locale/$name";
             return json_decode(file_get_contents($filePath), associative: true, flags: JSON_THROW_ON_ERROR);
         } catch (JsonException) {
-            throw ConfigExceptionFactory::translations();
+            throw FatalExceptionFactory::translations();
         }
     }
 
