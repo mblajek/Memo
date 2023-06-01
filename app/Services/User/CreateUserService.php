@@ -30,15 +30,6 @@ readonly class CreateUserService
      */
     private function create(array $data): string
     {
-        $user = new User();
-
-        $user->name = $data['name'];
-        $user->email = $data['email'];
-        $user->email_verified_at = $data['has_email_verified'] === true ? CarbonImmutable::now() : null;
-        $user->password = $data['password'] !== null ? Hash::make($data['password']) : null;
-        $user->password_expire_at = $data['password_expire_at'];
-        $user->created_by = Auth::user()->id;
-
         $grant = null;
 
         if ($data['has_global_admin']) {
@@ -47,6 +38,14 @@ readonly class CreateUserService
             $grant->saveOrFail();
         }
 
+        $user = new User();
+
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->email_verified_at = $data['has_email_verified'] === true ? CarbonImmutable::now() : null;
+        $user->password = $data['password'] !== null ? Hash::make($data['password']) : null;
+        $user->password_expire_at = $data['password_expire_at'];
+        $user->created_by = Auth::user()->id;
         $user->global_admin_grant_id = $grant?->id;
 
         $user->saveOrFail();
