@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\ApiException;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
+use App\Models\Facility;
 use App\Services\Facility\CreateFacilityService;
 use App\Services\Facility\UpdateFacilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 use OpenApi\Attributes\Schema;
 use Throwable;
@@ -42,18 +42,7 @@ class AdminFacilityController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function post(Request $request, CreateFacilityService $service): JsonResponse
     {
-        $data = $request->validate([
-            'name' => 'required|string',
-            'url' => [
-                'required',
-                'string',
-                'unique:facilities,url',
-                'max:15',
-                'lowercase',
-                'regex:/^[a-z][a-z0-9-]+.*[a-z0-9]$/',
-                'not_in:admin,user,api,system',
-            ],
-        ]);
+        $data = $request->validate(Facility::getInsertValidator(['name', 'url']));
 
         $result = $service->handle($data);
 
@@ -86,23 +75,12 @@ class AdminFacilityController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
     )] /** @throws Throwable|ApiException */
-    public function patch(string $id, Request $request, UpdateFacilityService $service): JsonResponse
+    public function patch(Request $request, UpdateFacilityService $service): JsonResponse
     {
-        $data = $request->validate([
-            'name' => 'required|sometimes|string',
-            'url' => [
-                'required',
-                'sometimes',
-                'string',
-                'max:15',
-                'lowercase',
-                'regex:/^[a-z][a-z0-9-]+.*[a-z0-9]$/',
-                'not_in:admin,user,api,system',
-                Rule::unique('facilities', 'url')->ignore($id),
-            ],
-        ]);
+        $facility = $this->getFacilityOrFail();
+        $data = $request->validate(Facility::getPatchValidator(['name', 'url'], $facility));
 
-        $service->handle($id, $data);
+        $service->handle($facility, $data);
 
         return new JsonResponse();
     }

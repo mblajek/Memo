@@ -39,7 +39,7 @@ class AdminUserController extends ApiController
     )]
     public function list(): JsonResource
     {
-        return AdminUserResource::collection(User::query()->get());
+        return AdminUserResource::collection(User::query()->with(['members'])->get());
     }
 
     #[OA\Post(

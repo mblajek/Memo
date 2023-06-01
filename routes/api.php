@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -21,10 +20,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
 
 Route::prefix('/v1')->group(function () {
     Route::prefix('/system')->group(function () {
@@ -48,7 +43,7 @@ Route::prefix('/v1')->group(function () {
         });
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);
-            Route::patch('/{id}', [AdminFacilityController::class, 'patch']);
+            Route::patch('/{facility}', [AdminFacilityController::class, 'patch']);
         });
     });
 });
