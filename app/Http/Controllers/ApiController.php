@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObject;
+use App\Models\Facility;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\ControllerMiddlewareOptions;
 use OpenApi\Attributes as OA;
 
-#[OA\Info(version: '0.1.0', title: 'Memo API')]
+#[OA\Info(version: '0.2.0', title: 'Memo API')]
 abstract class ApiController extends Controller
 {
     private readonly PermissionObject $permissionObject;
@@ -19,6 +22,24 @@ abstract class ApiController extends Controller
     {
         $this->permissionOneOf(Permission::any);
         $this->initPermissions();
+    }
+
+    public function getFacilityOrFail(): Facility
+    {
+        $permissionObject = $this->getPermissionObject();
+        if ($permissionObject->facility) {
+            return $permissionObject->facility;
+        }
+        throw FatalExceptionFactory::unexpected();
+    }
+
+    public function getUserOrFail(): User
+    {
+        $permissionObject = $this->getPermissionObject();
+        if ($permissionObject->user) {
+            return $permissionObject->user;
+        }
+        throw FatalExceptionFactory::unexpected();
     }
 
     protected function getPermissionObject(): PermissionObject

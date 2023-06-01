@@ -2,15 +2,15 @@
 
 namespace App\Exceptions;
 
-class ConfigExceptionFactory
+class FatalExceptionFactory
 {
     public static function translations(): ApiFatalException
     {
         return new ApiFatalException('exception.configuration.translation');
     }
 
-    public static function reflectionRules(): ApiFatalException
+    public static function unexpected(): ApiFatalException
     {
-        return new ApiFatalException('exception.reflection.rules');
+        return new ApiFatalException('exception.configuration.unexpected');
     }
 }

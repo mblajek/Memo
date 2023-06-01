@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Facility;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
-use Ramsey\Uuid\Exception\InvalidUuidStringException;
-use Ramsey\Uuid\Uuid;
-use App\Exceptions\ExceptionFactory;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,12 +36,12 @@ class AppServiceProvider extends ServiceProvider
             Vite::useHotFile($hot2FilePath);
         }
 
-        Route::bind('id', function ($value) {
-            try {
-                return Uuid::fromString($value)->toString();
-            } catch (InvalidUuidStringException $e) {
-                throw ExceptionFactory::badRequestUrl();
-            }
+        Route::bind('facility', function ($value) {
+            return Facility::query()->findOrFail($value);
         });
+
+        if (App::hasDebugModeEnabled()) {
+            DB::enableQueryLog();
+        }
     }
 }

@@ -2,34 +2,37 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\GrantBuilder;
+use App\Models\QueryBuilders\ClientBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string id
- * @property string created_by
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
- * @property-read Collection|Facility[] $facilities
- * @method static GrantBuilder query()
+ * @property-read Member $member
+ * @method static ClientBuilder query()
  */
-class Grant extends Model
+class Client extends Model
 {
     use HasFactory;
     use UuidTrait;
 
-    protected $table = 'grants';
+    protected $table = 'clients';
 
     protected $fillable = [
-        'created_by',
     ];
 
     protected $casts = [
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
+
+    public function member(): HasOne
+    {
+        return $this->hasOne(Member::class);
+    }
 }
