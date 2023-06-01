@@ -27,6 +27,19 @@ class Facility extends Model
     use UuidTrait;
     use HasValidator;
 
+    protected $table = 'facilities';
+
+    protected $fillable = [
+        'name',
+        'url',
+        'timetable_id',
+    ];
+
+    protected $casts = [
+        'created_at' => 'immutable_datetime',
+        'updated_at' => 'immutable_datetime',
+    ];
+
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
@@ -43,19 +56,6 @@ class Facility extends Model
             ],
         };
     }
-
-    protected $table = 'facilities';
-
-    protected $fillable = [
-        'name',
-        'url',
-        'timetable_id',
-    ];
-
-    protected $casts = [
-        'created_at' => 'immutable_datetime',
-        'updated_at' => 'immutable_datetime',
-    ];
 
     public function timetable(): BelongsTo
     {

@@ -48,7 +48,7 @@ return new class extends Migration {
             $table->foreign('facility_id')->references('id')->on('facilities');
             $table->foreign('staff_member_id')->references('id')->on('staff_members')->onDelete('set null');
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('set null');
-            $table->foreign('facility_admin_grant_id')->references('id')->on('timetables')->onDelete('set null');
+            $table->foreign('facility_admin_grant_id')->references('id')->on('grants')->onDelete('set null');
         });
     }
 
