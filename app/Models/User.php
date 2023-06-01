@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\QueryBuilders\UserBuilder;
 use App\Utils\Uuid\UuidTrait;
+use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * @property string id
@@ -35,6 +37,9 @@ class User extends Authenticatable
     use HasFactory;
     use Notifiable;
     use UuidTrait;
+    use HasValidator;
+
+    protected $table = 'users';
 
     public const SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
 
@@ -72,6 +77,26 @@ class User extends Authenticatable
         'updated_at' => 'immutable_datetime',
         'password_expire_at' => 'immutable_datetime',
     ];
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'name' => 'required|string',
+            'email' => 'nullable|string|email',
+            'has_email_verified' => 'required_with:email|bool',
+            'password' => [
+                'bail',
+                'nullable',
+                'string',
+                'different:current',
+                Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
+            ],
+            'password_expire_at' => 'required_with:password|nullable|date',
+            'has_global_admin' => 'required|bool',
+            'current' => 'bail|required|string|current_password',
+            'repeat' => 'bail|required|string|same:password',
+        };
+    }
 
     public function members(): HasMany
     {

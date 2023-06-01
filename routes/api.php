@@ -40,6 +40,8 @@ Route::prefix('/v1')->group(function () {
         Route::get('/migrate/{hash?}', [AdminController::class, 'migrate']);
         Route::prefix('/user')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
+            Route::post('/', [AdminUserController::class, 'post']);
+            Route::patch('/{user}', [AdminUserController::class, 'patch']);
         });
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);

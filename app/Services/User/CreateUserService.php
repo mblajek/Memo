@@ -5,38 +5,49 @@ namespace App\Services\User;
 use App\Models\Grant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Throwable;
 
-class CreateUserService
+readonly class CreateUserService
 {
+    public function __construct(
+        private DatabaseManager $db,
+    ) {
+    }
+
     /**
      * @throws Throwable
      */
     public function handle(array $data): string
     {
-        $user = new User();
+        return $this->db->transaction(fn() => $this->create($data));
+    }
 
-        if ($data['hasGlobalAdmin'] !== null) {
-            $grant = new Grant();
-            $grant->created_by = Auth::user()->id;
-        }
+    /**
+     * @throws Throwable
+     */
+    private function create(array $data): string
+    {
+        $user = new User();
 
         $user->name = $data['name'];
         $user->email = $data['email'];
-        $user->email_verified_at = $data['hasEmailVerified'] === true ? CarbonImmutable::now() : null;
+        $user->email_verified_at = $data['has_email_verified'] === true ? CarbonImmutable::now() : null;
         $user->password = $data['password'] !== null ? Hash::make($data['password']) : null;
-        $user->password_expire_at = $data['passwordExpireAt'];
+        $user->password_expire_at = $data['password_expire_at'];
+        $user->created_by = Auth::user()->id;
 
         $grant = null;
-        if ($data['hasGlobalAdmin'] !== null) {
+
+        if ($data['has_global_admin']) {
             $grant = new Grant();
             $grant->created_by = Auth::user()->id;
             $grant->saveOrFail();
         }
 
-        $user->global_admin_grant_id = $grant;
+        $user->global_admin_grant_id = $grant?->id;
 
         $user->saveOrFail();
 

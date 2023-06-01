@@ -8,11 +8,11 @@ use App\Http\Permissions\Permission;
 use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\User\ChangePasswordService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rules\Password;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -127,17 +127,7 @@ class UserController extends ApiController
     )] /** @throws Throwable */
     public function password(Request $request, ChangePasswordService $changePasswordService): JsonResponse
     {
-        $data = $request->validate([
-            'current' => 'bail|required|string|current_password',
-            'password' => [
-                'bail',
-                'required',
-                'string',
-                'different:current',
-                Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
-            ],
-            'repeat' => 'bail|required|string|same:password',
-        ]);
+        $data = $request->validate(User::getInsertValidator(['current', 'password', 'repeat']));
 
         $changePasswordService->handle($data);
 
