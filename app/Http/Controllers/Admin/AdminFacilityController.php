@@ -23,6 +23,7 @@ class AdminFacilityController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/admin/facility',
+        description: 'Permissions: ' . Permission::globalAdmin->name,
         summary: 'Create facility',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -62,6 +63,7 @@ class AdminFacilityController extends ApiController
 
     #[OA\Patch(
         path: '/api/v1/admin/facility/{id}',
+        description: 'Permissions: ' . Permission::globalAdmin->name,
         summary: 'Update facility',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(

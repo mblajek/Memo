@@ -20,6 +20,7 @@ class SystemController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/system/translation/{lang}/list',
+        description: 'Permissions: ' . Permission::any->name,
         summary: 'All translations',
         tags: ['System'],
         parameters: [
@@ -38,6 +39,7 @@ class SystemController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/system/facility/list',
+        description: 'Permissions: ' . Permission::any->name,
         summary: 'All facilities',
         tags: ['System'],
         responses: [

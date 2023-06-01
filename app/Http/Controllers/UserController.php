@@ -28,6 +28,10 @@ class UserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/login',
+        description: 'Permissions: '
+        . Permission::any->name
+        . '|' . Permission::unverified->name
+        . '|' . Permission::verified->name,
         summary: 'User login',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -59,6 +63,10 @@ class UserController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/user/status',
+        description: 'Permissions: '
+        . Permission::any->name
+        . '|' . Permission::unverified->name
+        . '|' . Permission::verified->name,
         summary: 'User status',
         tags: ['User'],
         responses: [
@@ -87,6 +95,10 @@ class UserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/logout',
+        description: 'Permissions: '
+        . Permission::any->name
+        . '|' . Permission::unverified->name
+        . '|' . Permission::verified->name,
         summary: 'User logout',
         tags: ['User'],
         responses: [
@@ -101,6 +113,10 @@ class UserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/password',
+        description: 'Permissions: '
+        . Permission::any->name
+        . '|' . Permission::unverified->name
+        . '|' . Permission::verified->name,
         summary: 'Change user password',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(

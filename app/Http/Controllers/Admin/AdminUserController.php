@@ -18,6 +18,7 @@ class AdminUserController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/admin/user/list',
+        description: 'Permissions: ' . Permission::globalAdmin->name,
         summary: 'All users',
         tags: ['Admin'],
         responses: [
