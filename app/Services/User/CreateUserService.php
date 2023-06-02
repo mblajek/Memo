@@ -48,7 +48,7 @@ readonly class CreateUserService
         $user->created_by = Auth::user()->id;
         $user->global_admin_grant_id = $grant?->id;
 
-        $user->saveOrFail();
+        $user->save();
 
         return $user->id;
     }

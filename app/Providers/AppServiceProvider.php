@@ -41,10 +41,6 @@ class AppServiceProvider extends ServiceProvider
             return Facility::query()->findOrFail($value);
         });
 
-        Route::bind('user', function ($value) {
-            return User::query()->findOrFail($value);
-        });
-
         if (App::hasDebugModeEnabled()) {
             DB::enableQueryLog();
         }
