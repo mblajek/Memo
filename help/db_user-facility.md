@@ -1,0 +1,43 @@
+## Wzór opisu tabel:
+- Klasa (tabela) - nazwa po polsku
+  - pola jak nie są opisane typu, to string
+  - pole: typ {wartości, enum}
+  - ?pola nullable (dodatkowy opis)
+  - ... będą jeszcze pola dotyczące czegoś
+  - // komentarz na później
+
+## Opis tabel:
+- Timetable (timetables) - harmonogram
+  - // póki co puste
+  -
+- Facility (facilities) - placówka
+  - name
+  - ?timetable_id: Timetable.id
+  - url (/wawa1/, /poz1/)
+  -
+- User (users) - użytkownik
+  - name
+  - ?email
+  - ?email_verified at: date
+  - ?password
+  - ?remember_token (laravel)
+  - created_at: date
+  - updated_at: date
+  - created_by: User.id
+  - last_login_facility_id: Facility.id
+  - ?... dane osobowe, adres, telefon
+  -
+- StaffMember (staff_members) - pracownik
+  - ?timetable_id: Timetable.id
+  - 
+- Client (clients) - klient
+  - // póki co puste
+  - 
+- Member (members) - członek
+  - user_id: User.id
+  - facility_id: Facility.id
+  - ?staff_member_id: StaffMember.id
+  - ?client_id: Client.id
+  - role: enum {admin, administrator, user, client}
+  - 
+

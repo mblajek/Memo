@@ -17,3 +17,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+/storage/api-docs/*.json
+
+/public/hot!

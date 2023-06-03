@@ -1,0 +1,7 @@
+{
+    "invalid": "invalid value",
+    "number": {
+        "too_high": "value is too high",
+        "too_low": "value is too low"
+    }
+}
