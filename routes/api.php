@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminFacilityController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,10 +21,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::prefix('/v1')->group(function () {
     Route::prefix('/system')->group(function () {
         Route::prefix('/translation')->group(function () {
@@ -36,8 +34,18 @@ Route::prefix('/v1')->group(function () {
         Route::post('/login', [UserController::class, 'login']);
         Route::get('/status', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);
+        Route::post('/password', [UserController::class, 'password']);
     });
-    Route::get('/admin/test', [UserController::class, 'adminTest']);
+    Route::prefix('/admin')->group(function () {
+        Route::get('/migrate/{hash?}', [AdminController::class, 'migrate']);
+        Route::prefix('/user')->group(function () {
+            Route::get('/list', [AdminUserController::class, 'list']);
+        });
+        Route::prefix('/facility')->group(function () {
+            Route::post('/', [AdminFacilityController::class, 'post']);
+            Route::patch('/{facility}', [AdminFacilityController::class, 'patch']);
+        });
+    });
 });
 
 Route::prefix('/util')->group(function () {

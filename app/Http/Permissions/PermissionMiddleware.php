@@ -4,6 +4,8 @@ namespace App\Http\Permissions;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
+use App\Models\Facility;
+use App\Models\Member;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -44,30 +46,43 @@ class PermissionMiddleware
         if ($permissionObject instanceof PermissionObject) {
             return $permissionObject;
         }
-        $unauthorised = false;
-        $unverified = false;
         $verified = false;
+        $unverified = false;
         $globalAdmin = false;
-
         /** @var User|null $user */
         $user = $request->user();
-        if ($user) {
+        $authorised = ($user !== null);
+        if ($authorised) {
             $verified = ($user->email_verified_at !== null);
             $unverified = !$verified;
-            $globalAdmin = ($user->global_admin_grant_id !== null);
-        } else {
-            $unauthorised = true;
         }
+
+        /** @var Member|null $member */
+        $member = null;
+        $facility = null;
+        if ($verified) {
+            $globalAdmin = ($user->global_admin_grant_id !== null);
+            /** @var Facility|null $facility */
+            $facility = $request->route('facility');
+            if (!($facility instanceof Facility)) {
+                $facility = null;
+            }
+            if ($facility) {
+                $member = $user->members->first(fn(Member $member) => $member->facility_id === $facility->id);
+            }
+        }
+
         $permissionObject = new PermissionObject(
-            unauthorised: $unauthorised,
+            user: $user,
+            facility: $facility,
+            unauthorised: !$authorised,
             unverified: $unverified,
             verified: $verified,
             globalAdmin: $globalAdmin,
-            // todo
-            facilityMember: false,
-            facilityClient: false,
-            facilityStaff: false,
-            facilityAdmin: false,
+            facilityMember: $member && $member->id,
+            facilityClient: $member && $member->client_id,
+            facilityStaff: $member && $member->staff_member_id,
+            facilityAdmin: $member && $member->facility_admin_grant_id,
         );
         $attributes->set(self::PERMISSIONS_KEY, $permissionObject);
         return $permissionObject;

@@ -5,14 +5,16 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
-use App\Http\Permissions\PermissionMiddleware;
+use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
+use App\Services\User\ChangePasswordService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-use OpenApi\Annotations\OpenApi as OA;
 use Illuminate\Http\Request;
-use stdClass;
+use Illuminate\Validation\Rules\Password;
+use OpenApi\Attributes as OA;
+use Throwable;
 
 /** System endpoints without authorisation */
 class UserController extends ApiController
@@ -21,80 +23,124 @@ class UserController extends ApiController
     {
         $this->permissionOneOf(Permission::any);
         $this->permissionOneOf(Permission::unverified, Permission::verified)->only('status');
-        $this->permissionOneOf(Permission::globalAdmin)->only('adminTest');
+        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('password');
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/login",
-     *     tags={"User"},
-     *     summary="User login",
-     *     @OA\RequestBody(@OA\JsonContent(
-     *         @OA\Property(property="email", type="string", example="test@test.pl"),
-     *         @OA\Property(property="password", type="string", example="123456"),
-     *         required={"email", "password"}
-     *     )),
-     *     @OA\Response(response="200", description="OK"),
-     *     @OA\Response(response="400", description="Bad Request"),
-     *     @OA\Response(response="401", description="Unauthorised")
-     * )
-     * @throws ApiException
-     */
+    #[OA\Post(
+        path: '/api/v1/user/login',
+        summary: 'User login',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['email', 'password'], properties: [
+                new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
+                new OA\Property(property: 'password', type: 'string', example: '123456'),
+            ]
+            )
+        ),
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )] /** @throws ApiException */
     public function login(Request $request): JsonResponse
     {
         $loginData = $request->validate([
             'email' => 'bail|required|string|email',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
         if (Auth::attempt($loginData)) {
             $request->session()->regenerate();
-            return new JsonResponse(new stdClass());
+            return new JsonResponse();
         }
         throw ExceptionFactory::unauthorised();
     }
 
-    /**
-     * @OA\Get(
-     *     path="/api/v1/user/status",
-     *     tags={"User"},
-     *     summary="User status",
-     *     @OA\Response(response="200", description="Translations JSON", @OA\JsonContent(
-     *         @OA\Property(property="data", type="object",
-     *             @OA\Property(property="user", type="object", ref="#/components/schemas/UserResource"),
-     *             @OA\Property(property="permissions", type="object", ref="#/components/schemas/PermissionsResource"),
-     *         )
-     *     )),
-     *     @OA\Response(response="401", description="Unauthorised")
-     * )
-     */
-    public function status(Request $request): JsonResponse
+    #[OA\Get(
+        path: '/api/v1/user/status',
+        summary: 'User status',
+        tags: ['User'],
+        responses: [
+            new OA\Response(
+                response: 200, description: 'OK', content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
+                    new OA\Property(
+                        property: 'permissions', ref: '#/components/schemas/PermissionsResource', type: 'object'
+                    ),
+                    new OA\Property(
+                        property: 'members', type: 'array', items: new OA\Items(
+                        ref: '#/components/schemas/MemberResource'
+                    )
+                    ),
+                ]
+            )
+            ),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )]
+    public function status(): JsonResponse
     {
         return new JsonResponse([
             'data' => [
-                'user' => UserResource::make($request->user()),
-                'permissions' => PermissionResource::make(
-                    $request->attributes->get(PermissionMiddleware::PERMISSIONS_KEY)
-                ),
-            ]
+                'user' => UserResource::make($this->getUserOrFail()),
+                'permissions' => PermissionResource::make($this->getPermissionObject()),
+                'members' => MemberResource::collection($this->getUserOrFail()->members),
+            ],
         ]);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/logout",
-     *     tags={"User"},
-     *     summary="User logout",
-     *     @OA\Response(response="200", description="OK"),
-     * )
-     */
+    #[OA\Post(
+        path: '/api/v1/user/logout',
+        summary: 'User logout',
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+        ]
+    )]
     public function logout(): JsonResponse
     {
         Auth::logout();
-        return new JsonResponse(new stdClass());
+        return new JsonResponse();
     }
 
-    public function adminTest(): JsonResponse
+    #[OA\Post(
+        path: '/api/v1/user/password',
+        summary: 'Change user password',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['current', 'password', 'repeat'],
+                properties: [
+                    new OA\Property(property: 'current', type: 'string', example: '123456'),
+                    new OA\Property(property: 'password', type: 'string', example: '345678'),
+                    new OA\Property(property: 'repeat', type: 'string', example: '345678'),
+                ]
+            )
+        ),
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ],
+    )] /** @throws Throwable */
+    public function password(Request $request, ChangePasswordService $changePasswordService): JsonResponse
     {
-        return new JsonResponse(new stdClass());
+        $data = $request->validate([
+            'current' => 'bail|required|string|current_password',
+            'password' => [
+                'bail',
+                'required',
+                'string',
+                'different:current',
+                Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
+            ],
+            'repeat' => 'bail|required|string|same:password',
+        ]);
+
+        $changePasswordService->handle($data);
+
+        return new JsonResponse();
     }
 }

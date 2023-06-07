@@ -16,7 +16,8 @@
         "validation": "Przesłano niepoprawne dane",
         "unauthorised": "Brak autoryzacji",
         "forbidden": "Brak dostępu",
-        "not_found": "Nie znaleziono strony"
+        "not_found": "Nie znaleziono strony",
+        "unexpected": "Nieoczekiwany błąd serwera"
     },
 
     "passwords": {
