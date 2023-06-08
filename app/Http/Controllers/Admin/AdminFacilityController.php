@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Exceptions\ApiException;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
+use App\Http\Permissions\PermissionDescribe;
 use App\Models\Facility;
 use App\Services\Facility\CreateFacilityService;
 use App\Services\Facility\UpdateFacilityService;
@@ -23,6 +24,7 @@ class AdminFacilityController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/admin/facility',
+        description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'Create facility',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -51,6 +53,7 @@ class AdminFacilityController extends ApiController
 
     #[OA\Patch(
         path: '/api/v1/admin/facility/{id}',
+        description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'Update facility',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
