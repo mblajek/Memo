@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
+use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -18,7 +19,7 @@ class AdminUserController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/admin/user/list',
-        description: 'Permissions: ' . Permission::globalAdmin->name,
+        description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'All users',
         tags: ['Admin'],
         responses: [

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
+use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use App\Services\User\ChangePasswordService;
@@ -28,10 +29,7 @@ class UserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/login',
-        description: 'Permissions: '
-        . Permission::any->name
-        . '|' . Permission::unverified->name
-        . '|' . Permission::verified->name,
+        description: new PermissionDescribe(Permission::any),
         summary: 'User login',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -63,10 +61,7 @@ class UserController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/user/status',
-        description: 'Permissions: '
-        . Permission::any->name
-        . '|' . Permission::unverified->name
-        . '|' . Permission::verified->name,
+        description: new PermissionDescribe(Permission::unverified, Permission::verified),
         summary: 'User status',
         tags: ['User'],
         responses: [
@@ -95,10 +90,7 @@ class UserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/logout',
-        description: 'Permissions: '
-        . Permission::any->name
-        . '|' . Permission::unverified->name
-        . '|' . Permission::verified->name,
+        description: new PermissionDescribe(Permission::any),
         summary: 'User logout',
         tags: ['User'],
         responses: [
@@ -113,10 +105,7 @@ class UserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/password',
-        description: 'Permissions: '
-        . Permission::any->name
-        . '|' . Permission::unverified->name
-        . '|' . Permission::verified->name,
+        description: new PermissionDescribe(Permission::unverified, Permission::verified),
         summary: 'Change user password',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(

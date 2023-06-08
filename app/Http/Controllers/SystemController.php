@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Permissions\Permission;
+use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\FacilityResource;
 use App\Models\Facility;
 use App\Services\System\TranslationsService;
@@ -20,7 +21,7 @@ class SystemController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/system/translation/{lang}/list',
-        description: 'Permissions: ' . Permission::any->name,
+        description: new PermissionDescribe(Permission::any),
         summary: 'All translations',
         tags: ['System'],
         parameters: [
@@ -39,7 +40,7 @@ class SystemController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/system/facility/list',
-        description: 'Permissions: ' . Permission::any->name,
+        description: new PermissionDescribe(Permission::any),
         summary: 'All facilities',
         tags: ['System'],
         responses: [
