@@ -5,6 +5,7 @@ namespace App\Http\Permissions;
 readonly class PermissionDescribe implements \Stringable
 {
     private string $description;
+
     public function __construct(...$params)
     {
         $result = [];
