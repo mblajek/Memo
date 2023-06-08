@@ -5,24 +5,19 @@ namespace App\Services\User;
 use App\Models\Grant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Throwable;
 
 readonly class CreateUserService
 {
-    public function __construct(
-        private DatabaseManager $db,
-    ) {
-    }
-
     /**
      * @throws Throwable
      */
     public function handle(array $data): string
     {
-        return $this->db->transaction(fn() => $this->create($data));
+        return DB::transaction(fn() => $this->create($data));
     }
 
     /**

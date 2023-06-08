@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\QueryBuilders\UserBuilder;
+use App\Rules\PresentWith;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
@@ -91,7 +92,7 @@ class User extends Authenticatable
                 'different:current',
                 Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
             ],
-            'password_expire_at' => 'required_with:password|nullable|date',
+            'password_expire_at' => ['nullable', new PresentWith('password'), 'date'],
             'has_global_admin' => 'required|bool',
             'current' => 'bail|required|string|current_password',
             'repeat' => 'bail|required|string|same:password',

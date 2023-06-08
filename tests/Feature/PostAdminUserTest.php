@@ -89,4 +89,37 @@ class PostAdminUserTest extends TestCase
         $result->assertCreated();
         $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
     }
+
+    public function testWithoutReferredFieldWillFail(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => false,
+            'password' => null,
+            'passwordExpireAt' => CarbonImmutable::now(),
+            'hasGlobalAdmin' => true,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+    }
+
+    public function testWithNullableReferredFieldReturnSuccess(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => false,
+            'password' => 'pBssword1',
+            'passwordExpireAt' => null,
+            'hasGlobalAdmin' => true,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertCreated();
+        $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
+    }
 }

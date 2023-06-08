@@ -5,23 +5,18 @@ namespace App\Services\User;
 use App\Models\Grant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 readonly class UpdateUserService
 {
-    public function __construct(
-        private DatabaseManager $db,
-    ) {
-    }
-
     /**
      * @throws Throwable
      */
     public function handle(User $user, array $data): void
     {
-        $this->db->transaction(fn() => $this->update($user, $data));
+        DB::transaction(fn() => $this->update($user, $data));
     }
 
     /**
@@ -34,12 +29,13 @@ readonly class UpdateUserService
         }
 
         if (array_key_exists('has_global_admin', $data)) {
-            $grant = null;
+            $grant = Grant::query()->find($user->global_admin_grant_id);
+            $grant?->delete();
 
             if ($data['has_global_admin']) {
                 $grant = new Grant();
                 $grant->created_by = Auth::user()->id;
-                $grant->saveOrFail();
+                $grant->save();
             }
 
             $data['global_admin_grant_id'] = $grant?->id;

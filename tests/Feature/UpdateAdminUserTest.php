@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Grant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -60,5 +61,25 @@ class UpdateAdminUserTest extends TestCase
 
         $result->assertOk();
         $this->assertEquals($data['name'], $user->name);
+    }
+
+    public function testWithRemovedGrantReturnSuccess(): void
+    {
+        /** @var Grant $grant */
+        $grant = Grant::factory()->create();
+        /** @var User $user */
+        $user = User::factory()->create(['global_admin_grant_id' => $grant->id]);
+
+        $data = [
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->patch(sprintf(static::URL, $user->id), $data);
+
+        $user->refresh();
+
+        $result->assertOk();
+        $this->assertNull($user->global_admin_grant_id);
+        $this->assertNull(Grant::query()->where('id', $grant->id)->first());
     }
 }
