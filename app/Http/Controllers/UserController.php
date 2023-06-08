@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use App\Services\User\ChangePasswordService;
@@ -13,7 +14,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
-use stdClass;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -72,6 +72,11 @@ class UserController extends ApiController
                     new OA\Property(
                         property: 'permissions', ref: '#/components/schemas/PermissionsResource', type: 'object'
                     ),
+                    new OA\Property(
+                        property: 'members', type: 'array', items: new OA\Items(
+                        ref: '#/components/schemas/MemberResource'
+                    )
+                    ),
                 ]
             )
             ),
@@ -82,8 +87,9 @@ class UserController extends ApiController
     {
         return new JsonResponse([
             'data' => [
-                'user' => UserResource::make($this->getPermissionObject()->user),
+                'user' => UserResource::make($this->getUserOrFail()),
                 'permissions' => PermissionResource::make($this->getPermissionObject()),
+                'members' => MemberResource::collection($this->getUserOrFail()->members),
             ],
         ]);
     }

@@ -10,9 +10,8 @@ class UpdateFacilityService
     /**
      * @throws Throwable
      */
-    public function handle(string $id, array $data): void
+    public function handle(Facility $facility, array $data): void
     {
-        $facility = Facility::query()->findOrFail($id);
         $facility->updateOrFail($data);
     }
 }

@@ -6,8 +6,10 @@ namespace App\Models;
 use App\Models\QueryBuilders\UserBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -23,6 +25,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string created_by
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $password_expire_at
+ * @property-read Collection<Member> $members
  * @property-read User $createdBy
  * @property-read Facility $lastLoginFacility
  * @method static UserBuilder query()
@@ -69,6 +72,11 @@ class User extends Authenticatable
         'updated_at' => 'immutable_datetime',
         'password_expire_at' => 'immutable_datetime',
     ];
+
+    public function members(): HasMany
+    {
+        return $this->hasMany(Member::class);
+    }
 
     public function createdBy(): BelongsTo
     {
