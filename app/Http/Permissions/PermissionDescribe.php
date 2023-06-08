@@ -24,7 +24,7 @@ readonly class PermissionDescribe implements \Stringable
             $result[] = '(' . implode(' OR ', array_map(fn($permission) => $permission->name, $group)) . ')';
         }
 
-        $this->description = ', Permissions: ' . implode(' AND ',  $result);
+        $this->description = 'Permissions: ' . implode(' AND ',  $result);
     }
 
     public function __toString(): string
