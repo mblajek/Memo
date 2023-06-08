@@ -25,17 +25,26 @@ readonly class UpdateUserService
     private function update(User $user, array $data): void
     {
         if (array_key_exists('has_email_verified', $data)) {
-            $data['email_verified_at'] = $data['has_email_verified'] === true ? CarbonImmutable::now() : null;
+            if ($data['has_email_verified']) {
+                if ($user->email_verified_at === null) {
+                    $data['email_verified_at'] = CarbonImmutable::now();
+                }
+            } else {
+                $data['email_verified_at'] = null;
+            }
         }
 
         if (array_key_exists('has_global_admin', $data)) {
             $grant = Grant::query()->find($user->global_admin_grant_id);
-            $grant?->delete();
 
             if ($data['has_global_admin']) {
-                $grant = new Grant();
-                $grant->created_by = Auth::user()->id;
-                $grant->save();
+                if ($grant === null) {
+                    $grant = new Grant();
+                    $grant->created_by = Auth::user()->id;
+                    $grant->save();
+                }
+            } else {
+                $grant?->delete();
             }
 
             $data['global_admin_grant_id'] = $grant?->id;
