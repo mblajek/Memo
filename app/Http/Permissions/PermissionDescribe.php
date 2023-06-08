@@ -6,7 +6,7 @@ readonly class PermissionDescribe implements \Stringable
 {
     private string $description;
 
-    public function __construct(...$params)
+    public function __construct(Permission|array ...$params)
     {
         $result = [];
 
