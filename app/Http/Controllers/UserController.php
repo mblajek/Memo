@@ -10,6 +10,7 @@ use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Rules\RequirePresent;
 use App\Services\User\ChangePasswordService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -132,7 +133,14 @@ class UserController extends ApiController
     )] /** @throws Throwable */
     public function password(Request $request, ChangePasswordService $changePasswordService): JsonResponse
     {
-        $data = $request->validate(User::getInsertValidator(['current', 'password', 'repeat']));
+        $data = $request->validate([
+            'current' => 'bail|required|string|current_password',
+            'repeat' => 'bail|required|string|same:password',
+            'password' => array_filter(
+                User::getInsertValidator(['password'])['password'],
+                fn($rule) => !($rule instanceof RequirePresent)
+            ),
+        ]);
 
         $changePasswordService->handle($data);
 

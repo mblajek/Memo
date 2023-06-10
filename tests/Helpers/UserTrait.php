@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 trait UserTrait
 {
+    protected const VALID_PASSWORD = 'VET81Ux3n3ff9U76XktpX3';
     public function prepareAdminUser(): void
     {
         /** @var Grant $grant */

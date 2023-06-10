@@ -28,7 +28,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
-            'password' => 'pBssword1',
+            'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => CarbonImmutable::now(),
             'hasGlobalAdmin' => true,
         ];
@@ -62,7 +62,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => null,
             'hasEmailVerified' => false,
-            'password' => 'pBssword1',
+            'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => CarbonImmutable::now(),
             'hasGlobalAdmin' => true,
         ];
@@ -79,7 +79,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
-            'password' => 'pBssword1',
+            'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => CarbonImmutable::now(),
             'hasGlobalAdmin' => false,
         ];
@@ -96,8 +96,8 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
-            'password' => null,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'password' => self::VALID_PASSWORD,
+            //'passwordExpireAt' => CarbonImmutable::now(),
             'hasGlobalAdmin' => true,
         ];
 
@@ -112,7 +112,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
-            'password' => 'pBssword1',
+            'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => null,
             'hasGlobalAdmin' => true,
         ];

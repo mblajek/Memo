@@ -4,7 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\QueryBuilders\UserBuilder;
-use App\Rules\PresentWith;
+use App\Rules\RequirePresent;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
@@ -83,19 +83,18 @@ class User extends Authenticatable
     {
         return match ($field) {
             'name' => 'required|string',
-            'email' => 'nullable|string|email',
-            'has_email_verified' => 'required_with:email|bool',
+            'email' => ['nullable', 'string', 'email', new RequirePresent('has_email_verified')],
+            'has_email_verified' => 'sometimes|bool',
             'password' => [
                 'bail',
                 'nullable',
                 'string',
                 'different:current',
                 Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
+                new RequirePresent('password_expire_at'),
             ],
-            'password_expire_at' => ['nullable', new PresentWith('password'), 'date'],
+            'password_expire_at' => 'sometimes|nullable|date',
             'has_global_admin' => 'required|bool',
-            'current' => 'bail|required|string|current_password',
-            'repeat' => 'bail|required|string|same:password',
         };
     }
 
