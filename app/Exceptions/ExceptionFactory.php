@@ -28,4 +28,9 @@ class ExceptionFactory
     {
         return new ApiValidationException(400, 'exception.bad_request_uuid');
     }
+
+    public static function snakeCaseRequest(): ApiValidationException
+    {
+        return new ApiValidationException(400, 'exception.snake_case_request');
+    }
 }

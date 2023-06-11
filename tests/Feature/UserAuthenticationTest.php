@@ -5,11 +5,13 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
+use Tests\Helpers\UserTrait;
 use Tests\TestCase;
 
 class UserAuthenticationTest extends TestCase
 {
     use DatabaseTransactions;
+    use UserTrait;
 
     private const URL_STATUS = '/api/v1/user/status';
     private const URL_LOGIN = '/api/v1/user/login';
@@ -103,8 +105,8 @@ class UserAuthenticationTest extends TestCase
 
         $data = [
             'current' => 'password',
-            'password' => 'pBssword1',
-            'repeat' => 'pBssword2',
+            'password' => self::VALID_PASSWORD . 'A',
+            'repeat' => self::VALID_PASSWORD . 'B',
         ];
 
         $result = $this->post(static::URL_PASSWORD, $data);
@@ -137,8 +139,8 @@ class UserAuthenticationTest extends TestCase
 
         $data = [
             'current' => 'password1',
-            'password' => 'pBssword1',
-            'repeat' => 'pBssword1',
+            'password' => self::VALID_PASSWORD,
+            'repeat' => self::VALID_PASSWORD,
         ];
 
         $result = $this->post(static::URL_PASSWORD, $data);
@@ -150,8 +152,8 @@ class UserAuthenticationTest extends TestCase
     {
         $data = [
             'current' => 'password',
-            'password' => 'pBssword1',
-            'repeat' => 'pBssword1',
+            'password' => self::VALID_PASSWORD,
+            'repeat' => self::VALID_PASSWORD,
         ];
 
         $result = $this->post(static::URL_PASSWORD, $data);
@@ -167,8 +169,8 @@ class UserAuthenticationTest extends TestCase
 
         $data = [
             'current' => 'password',
-            'password' => 'pBssword1',
-            'repeat' => 'pBssword1',
+            'password' => self::VALID_PASSWORD,
+            'repeat' => self::VALID_PASSWORD,
         ];
 
         $result = $this->post(static::URL_PASSWORD, $data);
