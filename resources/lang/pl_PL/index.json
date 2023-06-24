@@ -15,6 +15,7 @@
         "bad_credentials": "Błędne dane logowania",
         "forbidden": "Brak dostępu",
         "not_found": "Nie znaleziono strony",
+        "not_found_route": "Błędny adres",
         "unexpected": "Nieoczekiwany błąd serwera"
     },
 

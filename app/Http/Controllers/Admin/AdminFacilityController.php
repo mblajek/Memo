@@ -52,7 +52,7 @@ class AdminFacilityController extends ApiController
     }
 
     #[OA\Patch(
-        path: '/api/v1/admin/facility/{id}',
+        path: '/api/v1/admin/facility/{facility}',
         description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'Update facility',
         requestBody: new OA\RequestBody(
@@ -66,11 +66,11 @@ class AdminFacilityController extends ApiController
         tags: ['Admin'],
         parameters: [
             new OA\Parameter(
-                name: 'id',
-                description: 'Resource id',
+                name: 'facility',
+                description: 'Facility id',
                 in: 'path',
                 required: true,
-                schema: new Schema(type: 'string', format: 'uuid', example: 'UUID'),
+                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
             )],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),

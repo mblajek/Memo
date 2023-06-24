@@ -61,10 +61,18 @@ class UserController extends ApiController
     }
 
     #[OA\Get(
-        path: '/api/v1/user/status',
+        path: '/api/v1/user/status/{facility}',
         description: new PermissionDescribe(Permission::unverified, Permission::verified),
         summary: 'User status',
         tags: ['User'],
+        parameters: [
+            new OA\Parameter(
+                name: 'facility',
+                description: 'Facility id',
+                in: 'path',
+                allowEmptyValue: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid', example: ''),
+            )],
         responses: [
             new OA\Response(
                 response: 200, description: 'OK', content: new OA\JsonContent(
