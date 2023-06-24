@@ -14,6 +14,11 @@ class ExceptionFactory
         return new ApiException(401, 'exception.unauthorised');
     }
 
+    public static function badCredentials(): ApiException
+    {
+        return new ApiException(401, 'exception.bad_credentials');
+    }
+
     public static function forbidden(): ApiException
     {
         return new ApiException(403, 'exception.forbidden');

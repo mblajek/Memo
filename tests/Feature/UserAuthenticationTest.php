@@ -63,7 +63,7 @@ class UserAuthenticationTest extends TestCase
 
         $result = $this->post(static::URL_LOGIN, $data);
 
-        $this->assertEquals('exception.unauthorised', $result->json('errors')[0]['code']);
+        $this->assertEquals('exception.bad_credentials', $result->json('errors')[0]['code']);
         $result->assertUnauthorized();
         $result->assertJsonStructure($this->unauthorizedErrorJsonStructure());
     }
@@ -197,12 +197,6 @@ class UserAuthenticationTest extends TestCase
             'errors' => [
                 [
                     'code',
-                    'validation' => [
-                        [
-                            'field',
-                            'code',
-                        ],
-                    ],
                 ],
             ],
         ];

@@ -8,15 +8,13 @@ use Illuminate\Support\Facades\App;
 trait ApiExceptionTrait
 {
     public readonly string $errorCode;
-    public readonly ?array $errorData;
+    public readonly array $errorData;
     public readonly int $httpCode;
     protected array $validationErrors = [];
 
     public function getData(): array
     {
-        return array_filter(
-            ['code' => $this->errorCode, 'data' => $this->errorData, 'validation' => $this->validationErrors]
-        );
+        return ['code' => $this->errorCode, 'data' => $this->errorData];
     }
 
     public function getJson(): string
@@ -28,12 +26,12 @@ trait ApiExceptionTrait
     public function renderMany(array $addErrors = []): JsonResponse
     {
         $errors = [];
-        foreach (array_merge([$this], $addErrors) as $error) {
-            $data = $error->getData();
+        foreach (array_merge([$this], $addErrors, $this->validationErrors) as $error) {
+            $errorData = is_array($error) ? $error : $error->getData();
             if (App::hasDebugModeEnabled() && ($error instanceof ApiFatalException)) {
-                $data['trace'] = $error->getTrace();
+                $errorData['trace'] = $error->getTrace();
             }
-            $errors[] = $data;
+            $errors[] = array_filter($errorData, fn($field) => $field !== [] && $field !== '' && $field !== null);
         }
         return new JsonResponse(['errors' => $errors], $this->httpCode);
     }

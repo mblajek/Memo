@@ -8,7 +8,7 @@ class ApiException extends Exception
 {
     use ApiExceptionTrait;
 
-    public function __construct(int $httpCode, string $errorCode, ?array $errorData = null)
+    public function __construct(int $httpCode, string $errorCode, array $errorData = [])
     {
         $this->errorCode = $errorCode;
         $this->errorData = $errorData;
