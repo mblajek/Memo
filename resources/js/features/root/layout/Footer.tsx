@@ -1,8 +1,10 @@
+import cx from "classnames";
 import { Component } from "solid-js";
+import s from "./style.module.scss";
 
 export const Footer: Component = () => {
   return (
-    <footer class="py-4 px-6 bg-gray-300 flex flex-row justify-between items-center text-gray-500">
+    <footer class={cx(s.footer)}>
       <div id="copyright">
         Copyright ©2023 nie mam pojęcia jak działa copyright
       </div>
