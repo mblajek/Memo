@@ -55,4 +55,4 @@ Route::prefix('/util')->group(function () {
     Route::get('/date', fn() => DateHelper::toZuluString((new DateTimeImmutable(timezone: new DateTimeZone('UTC')))));
 });
 
-Route::any('{any}', fn() => ExceptionFactory::notFoundRoute()->render())->where('any', '.*');
+Route::any('{any}', fn() => ExceptionFactory::routeNotFound()->render())->where('any', '.*');

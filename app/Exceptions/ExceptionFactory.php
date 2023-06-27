@@ -29,9 +29,9 @@ class ExceptionFactory
         return new ApiException(404, 'exception.not_found');
     }
 
-    public static function notFoundRoute(): ApiException
+    public static function routeNotFound(): ApiException
     {
-        return new ApiException(404, 'exception.not_found_route');
+        return new ApiException(404, 'exception.route_not_found');
     }
 
     public static function badRequestUrl(): ApiValidationException
