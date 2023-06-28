@@ -14,7 +14,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
-use OpenApi\Attributes\Schema;
 use Throwable;
 
 class AdminUserController extends ApiController
@@ -87,7 +86,7 @@ class AdminUserController extends ApiController
     }
 
     #[OA\Patch(
-        path: '/api/v1/admin/user/{id}',
+        path: '/api/v1/admin/user/{user}',
         description: 'Permissions: ' . Permission::globalAdmin->name,
         summary: 'Update user',
         requestBody: new OA\RequestBody(
@@ -105,11 +104,11 @@ class AdminUserController extends ApiController
         tags: ['Admin'],
         parameters: [
             new OA\Parameter(
-                name: 'id',
-                description: 'Resource id',
+                name: 'user',
+                description: 'User id',
                 in: 'path',
                 required: true,
-                schema: new Schema(type: 'string', format: 'uuid', example: 'UUID'),
+                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
             )],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),

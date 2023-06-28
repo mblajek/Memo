@@ -8,7 +8,6 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
-use ReflectionClass;
 
 readonly class ValidationExceptionRenderer
 {
@@ -23,8 +22,7 @@ readonly class ValidationExceptionRenderer
         $this->multiTypeRules = array_fill_keys(['between', 'gt', 'gte', 'lt', 'lte', 'max', 'min', 'size'], true);
         $this->multiTypeTypes = array_fill_keys(['array', 'file', 'numeric', 'string'], true);
         $this->validator = $validationException->validator;
-        $validatorReflection = new ReflectionClass($this->validator);
-        $this->rules = $validatorReflection->getProperty('rules')->getValue($this->validator);
+        $this->rules = $this->validator->getRules();
     }
 
     private function matchType(array $fieldRules): string

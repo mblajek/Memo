@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
@@ -46,7 +45,7 @@ class UserController extends ApiController
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
-    )] /** @throws ApiException */
+    )]
     public function login(Request $request): JsonResponse
     {
         $loginData = $request->validate([
@@ -57,26 +56,38 @@ class UserController extends ApiController
             $request->session()->regenerate();
             return new JsonResponse();
         }
-        throw ExceptionFactory::unauthorised();
+        Auth::logout();
+        return ExceptionFactory::badCredentials()->render();
     }
 
     #[OA\Get(
-        path: '/api/v1/user/status',
+        path: '/api/v1/user/status/{facility}',
         description: new PermissionDescribe(Permission::unverified, Permission::verified),
         summary: 'User status',
         tags: ['User'],
+        parameters: [
+            new OA\Parameter(
+                name: 'facility',
+                description: 'Facility id',
+                in: 'path',
+                allowEmptyValue: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid', example: ''),
+            )],
         responses: [
             new OA\Response(
                 response: 200, description: 'OK', content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
                     new OA\Property(
-                        property: 'permissions', ref: '#/components/schemas/PermissionsResource', type: 'object'
-                    ),
-                    new OA\Property(
-                        property: 'members', type: 'array', items: new OA\Items(
-                        ref: '#/components/schemas/MemberResource'
-                    )
+                        property: 'data', type: 'array', items: new OA\Items(properties: [
+                        new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
+                        new OA\Property(
+                            property: 'permissions', ref: '#/components/schemas/PermissionsResource', type: 'object'
+                        ),
+                        new OA\Property(
+                            property: 'members', type: 'array',
+                            items: new OA\Items(ref: '#/components/schemas/MemberResource')
+                        ),
+                    ])
                     ),
                 ]
             )

@@ -14,6 +14,11 @@ class ExceptionFactory
         return new ApiException(401, 'exception.unauthorised');
     }
 
+    public static function badCredentials(): ApiException
+    {
+        return new ApiException(401, 'exception.bad_credentials');
+    }
+
     public static function forbidden(): ApiException
     {
         return new ApiException(403, 'exception.forbidden');
@@ -22,6 +27,11 @@ class ExceptionFactory
     public static function notFound(): ApiException
     {
         return new ApiException(404, 'exception.not_found');
+    }
+
+    public static function routeNotFound(): ApiException
+    {
+        return new ApiException(404, 'exception.route_not_found');
     }
 
     public static function badRequestUrl(): ApiValidationException
