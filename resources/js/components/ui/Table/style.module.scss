@@ -5,7 +5,7 @@
 }
 
 .tableContainer {
-  @apply flex flex-col w-full p-8 gap-1;
+  @apply flex flex-col gap-1 w-full;
 
   .beforeTable {
     position: sticky;

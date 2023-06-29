@@ -1,4 +1,4 @@
-import {Navigate, Route, Routes} from "@solidjs/router";
+import {A, Navigate, Route, Routes} from "@solidjs/router";
 import {QueryBarrier} from "components/utils";
 import {System} from "data-access/memo-api";
 import {lazy, type Component} from "solid-js";
@@ -20,10 +20,14 @@ const App: Component = () => {
           <Route path="/" element={<Navigate href="/help" />} />
           <Route path="admin">
             <Route path="/"
-              element={<>
-                <div class="p-4">panel admina globalnego</div>
-                <a href="/admin/users">Lista użytkowników</a>
-              </>}
+              element={<div class="p-4">
+                <h2>panel admina globalnego</h2>
+                <p>
+                  <A href="/admin/users" class="text-blue-500 underline">
+                    Lista użytkowników
+                  </A>
+                </p>
+              </div>}
             />
             <Route path="users" component={AdminUsersList} />
           </Route>
