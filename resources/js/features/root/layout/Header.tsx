@@ -1,8 +1,8 @@
-import { useLocation, useNavigate, useParams } from "@solidjs/router";
-import { createMutation, useQueryClient } from "@tanstack/solid-query";
+import {useLocation, useNavigate, useParams} from "@solidjs/router";
+import {createMutation, useQueryClient} from "@tanstack/solid-query";
 import cx from "classnames";
-import { QueryBarrier } from "components/utils";
-import { System, User } from "data-access/memo-api";
+import {QueryBarrier} from "components/utils";
+import {System, User} from "data-access/memo-api";
 import {
   HiOutlineCheckCircle,
   HiOutlinePower,
@@ -18,6 +18,7 @@ import {
   onMount,
 } from "solid-js";
 import s from "./style.module.scss";
+import {formatDateTime} from "../../../components/utils/formatting";
 
 export const Header: Component = () => {
   return (
@@ -32,7 +33,7 @@ export const Header: Component = () => {
 const FacilitySelect: Component = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams<{ facilityUrl: string }>();
+  const params = useParams<{facilityUrl: string}>();
 
   const facilitiesQuery = System.useFacilitiesList();
 
@@ -68,7 +69,7 @@ const FacilitySelect: Component = () => {
 
 const HeaderRight = () => {
   const currentTime = useCurrentDate();
-  const statusQuery = User.useStatus({ meta: { quietError: true } });
+  const statusQuery = User.useStatus({meta: {quietError: true}});
 
   const queryClient = useQueryClient();
   const logout = createMutation({
@@ -92,7 +93,7 @@ const HeaderRight = () => {
           </Switch>
         </div>
         <div class="flex flex-col justify-between items-stretch">
-          <span>{currentTime().toLocaleString()}</span>
+          <span>{formatDateTime(currentTime())}</span>
           <span>{statusQuery.data?.user.email}</span>
         </div>
       </div>

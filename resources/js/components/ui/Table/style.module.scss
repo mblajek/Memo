@@ -1,0 +1,54 @@
+.searchBar {
+  input {
+    @apply w-full h-8 rounded p-2 border;
+  }
+}
+
+.tableContainer {
+  @apply flex flex-col w-full p-8 gap-1;
+
+  .beforeTable {
+    position: sticky;
+    top: 0;
+    height: 32px;
+    @apply bg-white;
+  }
+
+  .tableSummary {
+    position: sticky;
+    bottom: 0;
+    @apply bg-white border-t border-gray-100;
+  }
+
+  .tableBg {
+    @apply bg-gray-300;
+
+    .table {
+      @apply grid;
+      padding: 1px;
+      gap: 1px;
+
+      .headerRow {
+        @apply contents;
+
+        .cell {
+          @apply outline outline-1 outline-gray-400 bg-gray-100 p-2 font-bold;
+          position: sticky;
+          top: 32px;
+        }
+      }
+
+      .dataRow {
+        @apply contents;
+
+        .cell {
+          @apply bg-white p-2;
+        }
+
+        &:hover .cell {
+          @apply bg-gray-50;
+        }
+      }
+    }
+  }
+}
