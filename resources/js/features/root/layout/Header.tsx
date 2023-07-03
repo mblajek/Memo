@@ -2,23 +2,11 @@ import {useLocation, useNavigate, useParams} from "@solidjs/router";
 import {createMutation, useQueryClient} from "@tanstack/solid-query";
 import cx from "classnames";
 import {QueryBarrier} from "components/utils";
+import {DATE_TIME_WITH_WEEKDAY_FORMAT} from "components/utils/formatting";
 import {System, User} from "data-access/memo-api";
-import {
-  HiOutlineCheckCircle,
-  HiOutlinePower,
-  HiOutlineXCircle,
-} from "solid-icons/hi";
-import {
-  Component,
-  For,
-  Match,
-  Switch,
-  createEffect,
-  createSignal,
-  onMount,
-} from "solid-js";
+import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
+import {Component, For, Match, Switch, createEffect, createSignal, onMount} from "solid-js";
 import s from "./style.module.scss";
-import {formatDateTime} from "../../../components/utils/formatting";
 
 export const Header: Component = () => {
   return (
@@ -93,7 +81,13 @@ const HeaderRight = () => {
           </Switch>
         </div>
         <div class="flex flex-col justify-between items-stretch">
-          <span>{formatDateTime(currentTime())}</span>
+          <span>
+            {/* Display each part in a separate span to allow selecting the date. */}
+            <For each={
+              DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime()).map(({value}) => value)}>
+              {value => <span>{value}</span>}
+            </For>
+          </span>
           <span>{statusQuery.data?.user.email}</span>
         </div>
       </div>

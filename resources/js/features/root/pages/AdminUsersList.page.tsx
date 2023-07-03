@@ -5,7 +5,7 @@ import {Admin} from "data-access/memo-api/groups/Admin";
 import {Component, For, Show, createSignal} from "solid-js";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {TableContextProvider, TableSearch, tableStyle as ts} from "components/ui/Table";
-import {formatDateTime} from "components/utils/formatting";
+import {DATE_TIME_FORMAT, NUMBER_FORMAT} from "components/utils/formatting";
 
 export default (() => {
   const usersQuery = createQuery({
@@ -28,7 +28,7 @@ export default (() => {
     h.accessor(row => new Date(row.createdAt), {
       id: "createdAt",
       header: "Czas utworzenia",
-      cell: info => formatDateTime(info.getValue()),
+      cell: info => DATE_TIME_FORMAT.format(info.getValue()),
       sortingFn: "datetime",
     }),
     h.accessor("hasGlobalAdmin", {
@@ -100,9 +100,11 @@ export default (() => {
                 </div>
               </div>
               <div class={ts.tableSummary}>
-                Liczba wierszy: {table.getRowModel().rows.length}
+                Liczba wierszy: {NUMBER_FORMAT.format(table.getRowModel().rows.length)}
                 <Show when={table.getState().globalFilter || table.getState().columnFilters.length}>
-                  <span> (liczba wszystkich: {table.getCoreRowModel().rows.length})</span>
+                  <span> (liczba wszystkich: {
+                    NUMBER_FORMAT.format(table.getCoreRowModel().rows.length)
+                  })</span>
                 </Show>
               </div>
             </div>
