@@ -57,6 +57,7 @@ render(() => {
         initImmediate: false,
         lng: "pl-PL",
         supportedLngs: ["pl-PL", "en-US"],
+        pluralSeparator: "__",
       }}
     >
       <MetaProvider>

@@ -2,18 +2,18 @@
   "tables": {
     "users": {
       "name": "Lista użytkowników",
-      "summary_zero": "brak użytkowników",
-      "summary_one": "{{count, number}} użytkownik",
-      "summary_few": "{{count, number}} użytkowników",
-      "summary_many": "{{count, number}} użytkowników",
-      "summaryUnfilteredSuffix": "({{count, number}} łącznie)"
+      "summary__zero": "brak użytkowników",
+      "summary__one": "{{count, number}} użytkownik",
+      "summary__few": "{{count, number}} użytkowników",
+      "summary__many": "{{count, number}} użytkowników",
+      "summary_unfiltered_suffix": "({{count, number}} łącznie)"
     }
   },
   "search": "Szukaj",
   "headers": {
     "name": "Imię i nazwisko",
     "email": "E-mail",
-    "creationTime": "Czas utworzenia",
-    "hasGlobalAdmin": "Globalny administrator"
+    "creation_time": "Czas utworzenia",
+    "has_global_admin": "Globalny administrator"
   }
 }

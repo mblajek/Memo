@@ -28,12 +28,12 @@ export default (() => {
     }),
     h.accessor(row => new Date(row.createdAt), {
       id: "createdAt",
-      header: lang("tables.headers.creationTime"),
+      header: lang("tables.headers.creation_time"),
       cell: info => DATE_TIME_FORMAT.format(info.getValue()),
       sortingFn: "datetime",
     }),
     h.accessor("hasGlobalAdmin", {
-      header: lang("tables.headers.hasGlobalAdmin"),
+      header: lang("tables.headers.has_global_admin"),
       cell: info => info.getValue() ? "💪" : "",
       invertSorting: true,
     }),
@@ -105,7 +105,7 @@ export default (() => {
                 }</span>
                 <Show when={table.getState().globalFilter || table.getState().columnFilters.length}>
                   <span> {
-                    lang("tables.tables.users.summaryUnfilteredSuffix",
+                    lang("tables.tables.users.summary_unfiltered_suffix",
                       {count: table.getCoreRowModel().rows.length})
                   }</span>
                 </Show>
