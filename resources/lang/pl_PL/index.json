@@ -10,13 +10,12 @@
         "configuration": {
             "translation": "Błędna konfiguracja tłumaczeń"
         },
-        "reflection": {
-            "rules": "Błędna konfiguracja reguł walidacji"
-        },
         "validation": "Przesłano niepoprawne dane",
         "unauthorised": "Brak autoryzacji",
+        "bad_credentials": "Błędne dane logowania",
         "forbidden": "Brak dostępu",
         "not_found": "Nie znaleziono strony",
+        "route_not_found": "Błędny adres",
         "unexpected": "Nieoczekiwany błąd serwera"
     },
 

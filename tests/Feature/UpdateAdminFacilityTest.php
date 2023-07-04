@@ -3,22 +3,26 @@
 namespace Tests\Feature;
 
 use App\Models\Facility;
-use App\Models\Grant;
-use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Support\Facades\Auth;
+use Tests\Helpers\UserTrait;
 use Tests\TestCase;
 
 class UpdateAdminFacilityTest extends TestCase
 {
     use DatabaseTransactions;
+    use UserTrait;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->prepareAdminUser();
+    }
 
     private const URL = '/api/v1/admin/facility/%s';
 
     public function testWithValidDataReturnSuccess(): void
     {
-        $this->prepareUser();
-
         /** @var Facility $facility */
         $facility = Facility::factory()->create([
             'name' => 'Test',
@@ -42,8 +46,6 @@ class UpdateAdminFacilityTest extends TestCase
 
     public function testWithSpecificFieldReturnSuccess(): void
     {
-        $this->prepareUser();
-
         /** @var Facility $facility */
         $facility = Facility::factory()->create([
             'name' => 'Test',
@@ -66,8 +68,6 @@ class UpdateAdminFacilityTest extends TestCase
 
     public function testWithoutDataReturnSuccess(): void
     {
-        $this->prepareUser();
-
         /** @var Facility $facility */
         $facility = Facility::factory()->create([
             'name' => 'Test',
@@ -82,14 +82,5 @@ class UpdateAdminFacilityTest extends TestCase
         $result->assertOk();
         $this->assertEquals('Test', $facility->name);
         $this->assertEquals('test-456', $facility->url);
-    }
-
-    private function prepareUser(): void
-    {
-        /** @var Grant $grant */
-        $grant = Grant::factory()->create();
-        /** @var User $user */
-        $user = User::factory()->create(['global_admin_grant_id' => $grant->id]);
-        Auth::setUser($user);
     }
 }

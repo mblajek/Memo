@@ -8,23 +8,21 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Validator;
-use ReflectionClass;
 
-class ValidationExceptionRenderer
+readonly class ValidationExceptionRenderer
 {
-    private readonly array $multiTypeRules;
-    private readonly array $multiTypeTypes;
-    private readonly array $defaultTranslation;
-    private readonly Validator $validator;
-    private readonly array $rules;
+    private array $multiTypeRules;
+    private array $multiTypeTypes;
+    private array $defaultTranslation;
+    private Validator $validator;
+    private array $rules;
 
     public function __construct(ValidationException $validationException)
     {
         $this->multiTypeRules = array_fill_keys(['between', 'gt', 'gte', 'lt', 'lte', 'max', 'min', 'size'], true);
         $this->multiTypeTypes = array_fill_keys(['array', 'file', 'numeric', 'string'], true);
         $this->validator = $validationException->validator;
-        $validatorReflection = new ReflectionClass($this->validator);
-        $this->rules = $validatorReflection->getProperty('rules')->getValue($this->validator);
+        $this->rules = $this->validator->getRules();
     }
 
     private function matchType(array $fieldRules): string
@@ -39,12 +37,10 @@ class ValidationExceptionRenderer
 
     private function matchRule(string $rule): string
     {
-        if ($rule === Password::class) {
-            $rule = 'password.all_rules';
-        } else {
-            $rule = Str::snake($rule);
-        }
-        return $rule;
+        return match ($rule) {
+            Password::class => 'password.all_rules',
+            default => Str::snake($rule),
+        };
     }
 
     private function prepareField(
