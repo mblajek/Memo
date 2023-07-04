@@ -1,13 +1,14 @@
 import {createQuery} from "@tanstack/solid-query";
 import {SortingState, createColumnHelper, createSolidTable, flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel} from "@tanstack/solid-table";
-import {AccessBarrier, QueryBarrier} from "components/utils";
-import {Admin} from "data-access/memo-api/groups/Admin";
-import {Component, For, Show, createSignal} from "solid-js";
-import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {TableContextProvider, TableSearch, tableStyle as ts} from "components/ui/Table";
-import {DATE_TIME_FORMAT, NUMBER_FORMAT} from "components/utils/formatting";
+import {AccessBarrier, QueryBarrier, getLangFunc} from "components/utils";
+import {DATE_TIME_FORMAT} from "components/utils/formatting";
+import {Admin} from "data-access/memo-api/groups/Admin";
+import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
+import {Component, For, Show, createSignal} from "solid-js";
 
 export default (() => {
+  const lang = getLangFunc();
   const usersQuery = createQuery({
     queryFn: Admin.getUsers,
     queryKey: () => ["admin", "user", "list"],
@@ -19,25 +20,24 @@ export default (() => {
   const h = createColumnHelper<AdminUserResource>();
   const columns = [
     h.accessor("name", {
-      header: "Imię i nazwisko",
+      header: lang("tables.headers.name"),
     }),
     h.accessor("email", {
-      header: "E-mail",
+      header: lang("tables.headers.email"),
       cell: info => <a href={`mailto:${info.getValue()}`} target="_blank">{info.getValue()}</a>,
     }),
     h.accessor(row => new Date(row.createdAt), {
       id: "createdAt",
-      header: "Czas utworzenia",
+      header: lang("tables.headers.creationTime"),
       cell: info => DATE_TIME_FORMAT.format(info.getValue()),
       sortingFn: "datetime",
     }),
     h.accessor("hasGlobalAdmin", {
-      header: "Globalny admin",
+      header: lang("tables.headers.hasGlobalAdmin"),
       cell: info => info.getValue() ? "💪" : "",
       invertSorting: true,
     }),
   ];
-  console.log(columns);
 
   const table = createSolidTable({
     get data() {return usersQuery.data ?? [];},
@@ -59,7 +59,7 @@ export default (() => {
       <QueryBarrier query={usersQuery}>
         <TableContextProvider table={table}>
           <div class="p-4">
-            <h1 class="text-xl font-bold">Lista użytkowników</h1>
+            <h1 class="text-xl font-bold">{lang("tables.tables.users.name")}</h1>
             <div class={ts.tableContainer}>
               <div class={ts.beforeTable}>
                 <TableSearch />
@@ -100,11 +100,14 @@ export default (() => {
                 </div>
               </div>
               <div class={ts.tableSummary}>
-                Liczba wierszy: {NUMBER_FORMAT.format(table.getRowModel().rows.length)}
+                <span>{
+                  lang("tables.tables.users.summary", {count: table.getRowModel().rows.length})
+                }</span>
                 <Show when={table.getState().globalFilter || table.getState().columnFilters.length}>
-                  <span> (liczba wszystkich: {
-                    NUMBER_FORMAT.format(table.getCoreRowModel().rows.length)
-                  })</span>
+                  <span> {
+                    lang("tables.tables.users.summaryUnfilteredSuffix",
+                      {count: table.getCoreRowModel().rows.length})
+                  }</span>
                 </Show>
               </div>
             </div>
