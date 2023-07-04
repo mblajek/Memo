@@ -85,7 +85,9 @@ export default (() => {
                       </For>
                     </div>}
                   </For>
-                  <For each={table.getRowModel().rows}>
+                  <For each={table.getRowModel().rows} fallback={<div class={ts.wideRow}>
+                    {lang("tables.tables.users.zero_state_row")}
+                  </div>}>
                     {row => <div class={ts.dataRow}>
                       <For each={row.getVisibleCells()}>
                         {cell => <span class={ts.cell}>

@@ -2,11 +2,12 @@
   "tables": {
     "users": {
       "name": "Lista użytkowników",
-      "summary__zero": "brak użytkowników",
+      "summary__zero": "Brak użytkowników",
       "summary__one": "{{count, number}} użytkownik",
       "summary__few": "{{count, number}} użytkowników",
       "summary__many": "{{count, number}} użytkowników",
-      "summary_unfiltered_suffix": "({{count, number}} łącznie)"
+      "summary_unfiltered_suffix": "({{count, number}} łącznie)",
+      "zero_state_row": "Brak użytkowników"
     }
   },
   "search": "Szukaj",

@@ -49,6 +49,11 @@
           @apply bg-gray-50;
         }
       }
+
+      .wideRow {
+        @apply bg-white p-2 text-gray-500 text-center;
+        grid-column: 1 / -1;
+      }
     }
   }
 }
