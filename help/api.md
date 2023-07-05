@@ -35,7 +35,6 @@ W obiekcie błędu mogą się znajdować pola:
 - `code` występuje zawsze, jest jednocześnie kodem błędu do tłumaczenia, np. `exception.not_found`
 - `data` może zawierać płaski obiekt `<string, string|string[]>` z dodatkowymi danymi związanymi z błędem.
   Te dane służą do interpolacji komunikatu dla danego `error.code`.
-- `validation` może zawierać listę błędów walidacji przesłanych danych opisane w sekcji "Błędy walidacji"
 - `trace` może występować tylko dla niektórych błędów dla `.env: APP_DEBUG=true`, stack trace PHP
 
 Jeżeli zwrotka będzie HTTP 2xx i będzie zawierać pole `errors`, lub będzie 4xx/5xx i nie będzie zawierać,
@@ -58,37 +57,35 @@ Przykład:
 {
   "errors": [
     {
-      "code": "exception.validation",
-      "validation": [
-        {
-          "field": "fieldA",
-          "code": "validation.current_password"
-        },
-        {
-          "field": "fieldB",
-          "code": "validation.required_with",
-          "data": {
-            "values": [
-              "fieldC",
-              "fieldD"
-            ]
-          }
-        },
-        {
-          "field": "fieldC",
-          "code": "validation.same",
-          "data": {
-            "other": "fieldD"
-          }
-        },
-        {
-          "field": "fieldD",
-          "code": "validation.multiple_of",
-          "data": {
-            "value": "2"
-          }
-        }
-      ]
+      "code": "exception.validation"
+    },
+    {
+      "field": "fieldA",
+      "code": "validation.current_password"
+    },
+    {
+      "field": "fieldB",
+      "code": "validation.required_with",
+      "data": {
+        "values": [
+          "fieldC",
+          "fieldD"
+        ]
+      }
+    },
+    {
+      "field": "fieldC",
+      "code": "validation.same",
+      "data": {
+        "other": "fieldD"
+      }
+    },
+    {
+      "field": "fieldD",
+      "code": "validation.multiple_of",
+      "data": {
+        "value": "2"
+      }
     }
   ]
 }
