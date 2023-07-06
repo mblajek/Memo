@@ -8,6 +8,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Throwable;
 
 /**
  * @property string id
@@ -32,4 +34,16 @@ class Grant extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
+
+    /**
+     * @throws Throwable
+     */
+    public static function createForUser(?string $userId = null): self
+    {
+        $grant = new self();
+        $grant->created_by = $userId ?? Auth::user()->id;
+        $grant->saveOrFail();
+
+        return $grant;
+    }
 }

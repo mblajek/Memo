@@ -3,6 +3,7 @@
 use App\Exceptions\ExceptionFactory;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminFacilityController;
+use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
@@ -46,6 +47,11 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);
             Route::patch('/{facility}', [AdminFacilityController::class, 'patch']);
+        });
+        Route::prefix('/member')->group(function () {
+            Route::post('/', [AdminMemberController::class, 'post']);
+            Route::patch('/{member}', [AdminMemberController::class, 'patch']);
+            Route::delete('/{member}', [AdminMemberController::class, 'delete']);
         });
     });
 });

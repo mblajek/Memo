@@ -9,6 +9,7 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     schema: 'MemberResource',
     properties: [
+        new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'facilityId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: 'false'),
@@ -24,6 +25,7 @@ class MemberResource extends AbstractJsonResource
     protected static function getMappedFields(): array
     {
         return [
+            'id' => true,
             'userId' => true,
             'facilityId' => true,
             'hasFacilityAdmin' => fn(self $member) => ($member->facility_admin_grant_id !== null),
