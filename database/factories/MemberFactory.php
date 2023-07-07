@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Member;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Member>
+ * @extends Factory<Member>
  */
 class MemberFactory extends Factory
 {
@@ -17,7 +19,11 @@ class MemberFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'user_id' => Str::uuid(),
+            'facility_id' => Str::uuid(),
+            'staff_member_id' => null,
+            'client_id' => null,
+            'facility_admin_grant_id' => null,
         ];
     }
 }

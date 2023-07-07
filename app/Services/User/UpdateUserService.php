@@ -5,7 +5,6 @@ namespace App\Services\User;
 use App\Models\Grant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -39,9 +38,7 @@ readonly class UpdateUserService
 
             if ($data['has_global_admin']) {
                 if ($grant === null) {
-                    $grant = new Grant();
-                    $grant->created_by = Auth::user()->id;
-                    $grant->save();
+                    $grant = Grant::createForUser();
                 }
             } else {
                 $grant?->delete();

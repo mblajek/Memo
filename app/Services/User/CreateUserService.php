@@ -25,14 +25,6 @@ readonly class CreateUserService
      */
     private function create(array $data): string
     {
-        $grant = null;
-
-        if ($data['has_global_admin']) {
-            $grant = new Grant();
-            $grant->created_by = Auth::user()->id;
-            $grant->saveOrFail();
-        }
-
         $user = new User();
 
         $user->name = $data['name'];
@@ -41,7 +33,7 @@ readonly class CreateUserService
         $user->password = $data['password'] !== null ? Hash::make($data['password']) : null;
         $user->password_expire_at = $data['password_expire_at'];
         $user->created_by = Auth::user()->id;
-        $user->global_admin_grant_id = $grant?->id;
+        $user->global_admin_grant_id = $data['has_global_admin'] ? Grant::createForUser()->id : null;
 
         $user->save();
 
