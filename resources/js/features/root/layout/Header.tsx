@@ -63,7 +63,7 @@ const FacilitySelect: Component = () => {
 
 const HeaderRight = () => {
   const [t] = useTransContext();
-  const currentTime = useCurrentDate();
+  const currentTime = useCurrentTime();
   const statusQuery = createQuery(() => User.statusQueryOptions);
 
   const queryClient = useQueryClient();
@@ -105,11 +105,11 @@ const HeaderRight = () => {
   );
 };
 
-const useCurrentDate = () => {
-  const [currentDate, setCurrentDate] = createSignal(new Date());
+const useCurrentTime = () => {
+  const [currentTime, setCurrentTime] = createSignal(new Date());
   onMount(() => {
-    const interval = setInterval(() => setCurrentDate(new Date()), 1000);
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(interval);
   });
-  return currentDate;
+  return currentTime;
 };
