@@ -31,7 +31,6 @@
         "@felte/validator-zod": "^1.0.16",
         "@kobalte/core": "^0.9.6",
         "@mbarzda/solid-i18next": "^1.2.2",
-        "@modular-forms/solid": "^0.15.0",
         "@solidjs/meta": "^0.28.5",
         "@solidjs/router": "^0.8.2",
         "@tanstack/solid-query": "^5.0.0-alpha.75",
