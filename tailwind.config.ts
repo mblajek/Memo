@@ -7,6 +7,11 @@ const config: Config = {
   ],
   plugins: [],
   theme: {
+    extend: {
+      aria: {
+        invalid: "invalid",
+      },
+    },
     fontFamily: {
       roboto: "Roboto",
     },

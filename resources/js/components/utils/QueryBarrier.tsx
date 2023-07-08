@@ -1,25 +1,50 @@
 import { CreateQueryResult } from "@tanstack/solid-query";
+import { ImSpinner2 } from "solid-icons/im";
 import { JSX, Match, ParentProps, Switch, mergeProps } from "solid-js";
 
-export interface QueryBarrierProps<TData = unknown, TError = unknown> {
+export interface QueryBarrierProps {
+  /**
+   * Element to show, when query is in error state
+   */
   errorElement?: JSX.Element;
-  loadingElement?: JSX.Element;
-  query: CreateQueryResult<TData, TError>;
+  /**
+   * Element to show, when query is in pending state
+   */
+  pendingElement?: JSX.Element;
+  /**
+   * List of queries to handle
+   */
+  queries: CreateQueryResult[];
 }
 
-export function QueryBarrier<TData = unknown, TError = unknown>(
-  props: ParentProps<QueryBarrierProps<TData, TError>>
-): JSX.Element {
+/**
+ * Default handler for tanstack/solid-query's `createQuery` result
+ *
+ * @todo better looking errorElement
+ */
+export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
   const merged = mergeProps(
-    { errorElement: <p>error</p>, loadingElement: <p>loading...</p> },
+    {
+      errorElement: <p>error</p>,
+      pendingElement: (
+        <div class="flex justify-center items-center">
+          <ImSpinner2 size={50} class="animate-spin" />,
+        </div>
+      ),
+    },
     props
   );
 
+  const isError = () => merged.queries.some(({ isError }) => isError);
+  const isPending = () =>
+    !isError() && merged.queries.some(({ isPending }) => isPending);
+  const isSuccess = () => merged.queries.every(({ isSuccess }) => isSuccess);
+
   return (
     <Switch>
-      <Match when={props.query.isLoading}>{merged.loadingElement}</Match>
-      <Match when={props.query.isError}>{merged.errorElement}</Match>
-      <Match when={props.query.isSuccess}>{props.children}</Match>
+      <Match when={isError()}>{merged.errorElement}</Match>
+      <Match when={isPending()}>{merged.pendingElement}</Match>
+      <Match when={isSuccess()}>{props.children}</Match>
     </Switch>
   );
 }

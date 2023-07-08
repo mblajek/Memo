@@ -13,7 +13,7 @@
     "rules": {
         "no-unused-vars": "warn",
         "sort-imports": "off",
-        "sort-keys": "warn",
+        "sort-keys": "off",
         "no-unused-expressions": "warn"
     }
 }

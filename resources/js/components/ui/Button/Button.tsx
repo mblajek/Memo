@@ -1,6 +1,9 @@
 import { Button as KButton } from "@kobalte/core";
 import { Component, mergeProps, splitProps } from "solid-js";
 
+/**
+ * @todo custom props and styles
+ */
 export interface ButtonProps extends KButton.ButtonRootProps {}
 
 export const Button: Component<ButtonProps> = (props) => {

@@ -1,4 +1,4 @@
-import { CreateQueryOptions, createQuery } from "@tanstack/solid-query";
+import { QueryObserverOptions } from "@tanstack/solid-query";
 import { V1 } from "../config";
 import { PermissionsResource, UserResource } from "../resources";
 import { MemberResource } from "../resources/member.resource";
@@ -41,10 +41,8 @@ export namespace User {
     status: () => [...keys.all(), "status"] as const,
   };
 
-  export const useStatus = (options?: CreateQueryOptions<GetStatusData>) =>
-    createQuery({
-      queryFn: getStatus,
-      queryKey: keys.status,
-      ...options,
-    });
+  export const statusQuery = {
+    queryFn: getStatus,
+    queryKey: keys.status(),
+  } satisfies QueryObserverOptions;
 }

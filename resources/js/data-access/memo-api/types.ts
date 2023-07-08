@@ -13,23 +13,27 @@ export namespace Api {
     };
   }
 
-  export type ErrorData = {
-    errors: Array<ErrorSimple | ErrorWithValidation>;
+  export type ErrorResponse = {
+    errors: Error[];
   };
 
-  export type ErrorSimple = {
+  export type BaseError = {
     code: string;
     data?: Record<string, string | string[]>;
-  };
-
-  export type ErrorWithValidation = {
-    code: "exception.validation";
-    validation?: Array<ValidationError>;
+    trace?: unknown;
   };
 
   export type ValidationError = {
-    field?: string;
+    field: string;
     code: string;
     data?: Record<string, string | string[]>;
   };
+
+  export type Error = BaseError | ValidationError;
+
+  export const isValidationError = (error: Error): error is ValidationError =>
+    "field" in error;
+
+  export const isBaseError = (error: Error): error is BaseError =>
+    !("field" in error);
 }

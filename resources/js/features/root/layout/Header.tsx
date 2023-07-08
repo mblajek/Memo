@@ -1,5 +1,10 @@
+import { useTransContext } from "@mbarzda/solid-i18next";
 import { useLocation, useNavigate, useParams } from "@solidjs/router";
-import { createMutation, useQueryClient } from "@tanstack/solid-query";
+import {
+  createMutation,
+  createQuery,
+  useQueryClient,
+} from "@tanstack/solid-query";
 import cx from "classnames";
 import { QueryBarrier } from "components/utils";
 import { System, User } from "data-access/memo-api";
@@ -8,15 +13,7 @@ import {
   HiOutlinePower,
   HiOutlineXCircle,
 } from "solid-icons/hi";
-import {
-  Component,
-  For,
-  Match,
-  Switch,
-  createEffect,
-  createSignal,
-  onMount,
-} from "solid-js";
+import { Component, For, Match, Switch, createSignal, onMount } from "solid-js";
 import s from "./style.module.scss";
 
 export const Header: Component = () => {
@@ -34,12 +31,10 @@ const FacilitySelect: Component = () => {
   const location = useLocation();
   const params = useParams<{ facilityUrl: string }>();
 
-  const facilitiesQuery = System.useFacilitiesList();
-
-  createEffect(() => console.log(params.facilityUrl));
+  const facilitiesQuery = createQuery(() => ({ ...System.facilitiesQuery }));
 
   return (
-    <QueryBarrier query={facilitiesQuery} loadingElement={null}>
+    <QueryBarrier queries={[facilitiesQuery]} pendingElement={null}>
       <select
         class="mr-4"
         value={params.facilityUrl}
@@ -67,16 +62,17 @@ const FacilitySelect: Component = () => {
 };
 
 const HeaderRight = () => {
+  const [t] = useTransContext();
   const currentTime = useCurrentDate();
-  const statusQuery = User.useStatus({ meta: { quietError: true } });
+  const statusQuery = createQuery(() => ({ ...User.statusQuery }));
 
   const queryClient = useQueryClient();
-  const logout = createMutation({
+  const logout = createMutation(() => ({
     mutationFn: User.logout,
     onSuccess() {
-      queryClient.invalidateQueries(User.keys.status());
+      queryClient.invalidateQueries({ queryKey: User.keys.status() });
     },
-  });
+  }));
 
   return (
     <div class="text-sm flex flex-row justify-between items-center gap-6">
@@ -100,7 +96,7 @@ const HeaderRight = () => {
         <button
           class="rounded-lg flex flex-row justify-center items-center hover:bg-white"
           onClick={() => logout.mutate()}
-          title="Wyloguj się"
+          title={t("log_out")!}
         >
           <HiOutlinePower color="red" size="30" />
         </button>

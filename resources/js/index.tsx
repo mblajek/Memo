@@ -2,16 +2,12 @@
 import { TransProvider } from "@mbarzda/solid-i18next";
 import { MetaProvider } from "@solidjs/meta";
 import { Router } from "@solidjs/router";
-import {
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/solid-query";
-import { isAxiosError } from "axios";
+import { InitializeTanstackQuery } from "components/utils";
 import i18next from "i18next";
 import I18NextHttpBackend from "i18next-http-backend";
+import { Show, createEffect, createSignal } from "solid-js";
 import { render } from "solid-js/web";
-import toast, { Toaster } from "solid-toast";
+import { Toaster } from "solid-toast";
 import App from "./App";
 import "./index.scss";
 
@@ -23,28 +19,11 @@ if (!(root instanceof HTMLElement)) {
   );
 }
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
-  },
-  queryCache: new QueryCache({
-    onError(error, query) {
-      if (isAxiosError<{ errors: { code: string }[] }>(error)) {
-        if (query.meta?.quietError) return;
-        error.response?.data.errors.forEach((error) =>
-          toast.error(i18next.t(error.code))
-        );
-      }
-    },
-  }),
-});
-
 render(() => {
+  const [transLoaded, setTransLoaded] = createSignal(false);
   i18next.use(I18NextHttpBackend);
+
+  createEffect(() => i18next.on("loaded", () => setTransLoaded(true)));
 
   return (
     <TransProvider
@@ -55,21 +34,24 @@ render(() => {
         debug: true,
         fallbackLng: false,
         initImmediate: false,
-        lng: "pl-PL",
-        supportedLngs: ["pl-PL", "en-US"],
+        lng: "pl",
+        load: "currentOnly",
+        supportedLngs: ["pl", "en-US"],
       }}
     >
-      <MetaProvider>
-        <QueryClientProvider client={queryClient}>
-          <Router>
-            <App />
-            <Toaster
-              position="bottom-right"
-              toastOptions={{ className: "mr-4" }}
-            />
-          </Router>
-        </QueryClientProvider>
-      </MetaProvider>
+      <Show when={transLoaded()}>
+        <MetaProvider>
+          <InitializeTanstackQuery>
+            <Router>
+              <App />
+              <Toaster
+                position="bottom-right"
+                toastOptions={{ className: "mr-4" }}
+              />
+            </Router>
+          </InitializeTanstackQuery>
+        </MetaProvider>
+      </Show>
     </TransProvider>
   );
 }, root!);
