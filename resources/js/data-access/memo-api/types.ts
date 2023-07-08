@@ -3,8 +3,8 @@ export namespace Api {
     export type Get<T extends object> = { data: T };
     export type GetList<T extends object> = { data: Array<T> };
     export type Post = { data: { id: string } };
-    export type Patch = {};
-    export type Delete = {};
+    export type Patch = unknown;
+    export type Delete = unknown;
   }
 
   export namespace Request {

@@ -67,7 +67,7 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
           if (Api.isValidationError(error)) {
             ctx.setErrors(
               error.field,
-              // @ts-expect-error
+              // @ts-expect-error dasdasd
               t(error.code, {
                 attribute: t(error.field),
                 ...error.data,

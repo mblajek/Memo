@@ -4,8 +4,7 @@ import { Component, JSX, mergeProps, splitProps } from "solid-js";
 /**
  * @todo custom props and styles
  */
-export interface ButtonProps
-  extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {}
+export type ButtonProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const Button: Component<ButtonProps> = (props) => {
   const mergedProps = mergeProps<ButtonProps[]>(props);

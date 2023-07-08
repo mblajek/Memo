@@ -66,7 +66,6 @@ export type HrefFnArgs = {
 
 export type NavbarItem = {
   Icon: IconTypes;
-  // eslint-disable-next-line no-unused-vars
   hrefFn: (args: HrefFnArgs) => AnchorProps["href"];
   title: string;
 };
