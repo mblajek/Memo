@@ -24,9 +24,8 @@ export const Navbar: Component = () => {
       <nav class="flex-1">
         <Show when={params.facilityUrl}>
           <For each={NAVBAR_ITEMS}>
-            {(item, index) => (
+            {(item) => (
               <A
-                data-index={index()}
                 href={item.hrefFn({ location, params })}
                 class="mb-2 p-4 rounded-lg flex flex-row items-center gap-3 hover:bg-white"
                 activeClass="bg-white"

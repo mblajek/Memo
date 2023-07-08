@@ -50,11 +50,7 @@ const FacilitySelect: Component = () => {
         }}
       >
         <For each={facilitiesQuery.data}>
-          {(facility, index) => (
-            <option data-index={index()} value={facility.url}>
-              {facility.name}
-            </option>
-          )}
+          {(facility) => <option value={facility.url}>{facility.name}</option>}
         </For>
       </select>
     </QueryBarrier>
