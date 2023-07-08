@@ -65,14 +65,12 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
       if (isAxiosError<Api.ErrorResponse>(error)) {
         error.response?.data.errors.forEach((error) => {
           if (Api.isValidationError(error)) {
-            ctx.setErrors(
-              error.field,
-              // @ts-expect-error setErrors doesn't work properly with generic type
-              t(error.code, {
-                attribute: t(error.field),
-                ...error.data,
-              })
-            );
+            const errorMessage = t(error.code, {
+              attribute: t(error.field),
+              ...error.data,
+            });
+            // @ts-expect-error setErrors does not like generic types
+            ctx.setErrors(error.field, errorMessage);
           } else {
             toast.error(t(error.code));
           }
