@@ -33,7 +33,4 @@ export namespace Api {
 
   export const isValidationError = (error: Error): error is ValidationError =>
     "field" in error;
-
-  export const isBaseError = (error: Error): error is BaseError =>
-    !("field" in error);
 }

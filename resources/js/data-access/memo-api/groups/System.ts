@@ -1,3 +1,4 @@
+import { SolidQueryOptions } from "@tanstack/solid-query";
 import { V1 } from "../config";
 import { FacilityResource } from "../resources";
 import { Api } from "../types";
@@ -16,8 +17,8 @@ export namespace System {
     facilityList: () => [...keys.facilityLists()] as const,
   };
 
-  export const facilitiesQuery = {
+  export const facilitiesQueryOptions = {
     queryFn: getFacilitiesList,
     queryKey: keys.facilityList(),
-  };
+  } satisfies SolidQueryOptions;
 }

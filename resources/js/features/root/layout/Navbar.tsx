@@ -23,7 +23,7 @@ export const Navbar: Component = () => {
       </div>
       <nav class="flex-1">
         <Show when={params.facilityUrl}>
-          <For each={navbarItems}>
+          <For each={NAVBAR_ITEMS}>
             {(item, index) => (
               <A
                 data-index={index()}
@@ -66,11 +66,12 @@ export type HrefFnArgs = {
 
 export type NavbarItem = {
   Icon: IconTypes;
+  // eslint-disable-next-line no-unused-vars
   hrefFn: (args: HrefFnArgs) => AnchorProps["href"];
   title: string;
 };
 
-const navbarItems: NavbarItem[] = [
+const NAVBAR_ITEMS: NavbarItem[] = [
   {
     Icon: HiSolidUserGroup,
     hrefFn: ({ params: { facilityUrl } }) => {

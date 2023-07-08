@@ -1,12 +1,12 @@
 import { Navigate, NavigateProps } from "@solidjs/router";
 import { createQuery } from "@tanstack/solid-query";
 import { PermissionsResource, User } from "data-access/memo-api";
-import { Match, ParentComponent, Switch, mergeProps } from "solid-js";
+import { ParentComponent, Show, mergeProps } from "solid-js";
 import { MemoLoader } from "../ui/";
 import { QueryBarrier } from "./QueryBarrier";
 
-export type PermissionKey = keyof Omit<
-  PermissionsResource,
+export type PermissionKey = Exclude<
+  keyof PermissionsResource,
   "userId" | "facilityId"
 >;
 
@@ -42,9 +42,7 @@ export interface AccessBarrierProps {
  */
 export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
   const merged = mergeProps({ redirectHref: "/help", roles: [] }, props);
-  const statusQuery = createQuery(() => ({
-    ...User.statusQuery,
-  }));
+  const statusQuery = createQuery(() => User.statusQueryOptions);
 
   const accessGranted = () => {
     if (statusQuery.isSuccess)
@@ -62,12 +60,12 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
         </div>
       }
     >
-      <Switch>
-        <Match when={accessGranted()}>{merged.children}</Match>
-        <Match when={!accessGranted()}>
-          <Navigate href={merged.redirectHref} />
-        </Match>
-      </Switch>
+      <Show
+        when={accessGranted()}
+        fallback={<Navigate href={merged.redirectHref} />}
+      >
+        {merged.children}
+      </Show>
     </QueryBarrier>
   );
 };

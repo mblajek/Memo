@@ -1,4 +1,4 @@
-import { QueryObserverOptions } from "@tanstack/solid-query";
+import { SolidQueryOptions } from "@tanstack/solid-query";
 import { V1 } from "../config";
 import { PermissionsResource, UserResource } from "../resources";
 import { MemberResource } from "../resources/member.resource";
@@ -41,8 +41,8 @@ export namespace User {
     status: () => [...keys.all(), "status"] as const,
   };
 
-  export const statusQuery = {
+  export const statusQueryOptions = {
     queryFn: getStatus,
     queryKey: keys.status(),
-  } satisfies QueryObserverOptions;
+  } satisfies SolidQueryOptions;
 }

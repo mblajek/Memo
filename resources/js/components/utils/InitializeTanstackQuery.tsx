@@ -14,7 +14,7 @@ import toast from "solid-toast";
 import { QueryBarrier } from "./QueryBarrier";
 
 /**
- * Tanstach/solid-query initialization component
+ * Tanstack/solid-query initialization component
  *
  * Handles custom queryClient and queryCache initialization
  */
@@ -25,6 +25,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       new QueryClient({
         defaultOptions: {
           queries: {
+            refetchOnReconnect: true,
             refetchOnMount: false,
             refetchOnWindowFocus: false,
             retry: false,
@@ -57,7 +58,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
  * Initialize some of required queries beforehand
  */
 const Content: ParentComponent = (props) => {
-  const facilitiesQuery = createQuery(() => ({ ...System.facilitiesQuery }));
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
 
   return (
     <QueryBarrier

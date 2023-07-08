@@ -36,9 +36,8 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
   );
 
   const isError = () => merged.queries.some(({ isError }) => isError);
-  const isPending = () =>
-    !isError() && merged.queries.some(({ isPending }) => isPending);
   const isSuccess = () => merged.queries.every(({ isSuccess }) => isSuccess);
+  const isPending = () => !isError() && !isSuccess();
 
   return (
     <Switch>

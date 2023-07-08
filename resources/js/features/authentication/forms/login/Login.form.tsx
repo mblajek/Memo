@@ -42,7 +42,7 @@ export namespace LoginForm {
       <FelteForm
         onSubmit={onSubmit}
         schema={LoginForm.schema}
-        initialValues={{ email: "", password: "" }}
+        initialValues={initialValues}
         id="login-form"
         class="flex flex-col gap-2"
       >

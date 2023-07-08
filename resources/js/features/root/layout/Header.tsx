@@ -31,7 +31,7 @@ const FacilitySelect: Component = () => {
   const location = useLocation();
   const params = useParams<{ facilityUrl: string }>();
 
-  const facilitiesQuery = createQuery(() => ({ ...System.facilitiesQuery }));
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
 
   return (
     <QueryBarrier queries={[facilitiesQuery]} pendingElement={null}>
@@ -64,7 +64,7 @@ const FacilitySelect: Component = () => {
 const HeaderRight = () => {
   const [t] = useTransContext();
   const currentTime = useCurrentDate();
-  const statusQuery = createQuery(() => ({ ...User.statusQuery }));
+  const statusQuery = createQuery(() => User.statusQueryOptions);
 
   const queryClient = useQueryClient();
   const logout = createMutation(() => ({

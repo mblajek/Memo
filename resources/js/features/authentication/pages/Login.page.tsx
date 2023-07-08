@@ -8,7 +8,7 @@ import { LoginForm } from "../forms/login";
 
 const LoginPage: Component = () => {
   const statusQuery = createQuery(() => ({
-    ...User.statusQuery,
+    ...User.statusQueryOptions,
     meta: { quietError: true },
   }));
 

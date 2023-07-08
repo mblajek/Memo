@@ -1,10 +1,13 @@
 import {
-  AssignableErrors,
+  Form,
   FormConfigWithoutTransformFn,
+  KnownHelpers,
   Obj,
+  Paths,
 } from "@felte/core";
 import { reporter } from "@felte/reporter-solid";
 import { createForm } from "@felte/solid";
+import { type KnownStores } from "@felte/solid/dist/esm/create-accessor";
 import { validator } from "@felte/validator-zod";
 import { useTransContext } from "@mbarzda/solid-i18next";
 import { isAxiosError } from "axios";
@@ -13,16 +16,16 @@ import { Context, JSX, createContext, splitProps, useContext } from "solid-js";
 import toast from "solid-toast";
 import { ZodSchema } from "zod";
 
-type FormContextValue<T extends Obj> = {
+type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
-  form: ReturnType<typeof createForm<T>>;
+  form: Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 };
 
 const FormContext = createContext(undefined, {
   name: "FormContext",
 });
 
-type FormProps<T extends Obj> = Omit<
+type FormProps<T extends Obj = Obj> = Omit<
   JSX.FormHTMLAttributes<HTMLFormElement>,
   "onSubmit" | "onError"
 > &
@@ -36,9 +39,9 @@ type FormProps<T extends Obj> = Omit<
  * Includes solidjs' Provider, that stores
  * createForm's data and component props
  */
-export const FelteForm = <T extends Obj>(props: FormProps<T>) => {
+export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
   const [t] = useTransContext();
-  const [local, createFormOptions, others] = splitProps(
+  const [local, createFormOptions, formProps] = splitProps(
     props,
     ["children", "schema"],
     [
@@ -60,22 +63,19 @@ export const FelteForm = <T extends Obj>(props: FormProps<T>) => {
     onError: (error, ctx) => {
       createFormOptions?.onError?.(error, ctx);
       if (isAxiosError<Api.ErrorResponse>(error)) {
-        const validationErrors = error.response?.data.errors.reduce(
-          (prev, curr) => {
-            if (Api.isValidationError(curr)) {
-              // @ts-ignore
-              prev[curr.field] = t(curr.code, {
-                attribute: t(curr.field),
-                ...curr.data,
-              });
-            }
-            return prev;
-          },
-          {} as AssignableErrors<T>
-        );
-        if (validationErrors) ctx.setErrors(validationErrors);
-        error.response?.data.errors.filter(Api.isBaseError).forEach((error) => {
-          toast.error(t(error.code));
+        error.response?.data.errors.forEach((error) => {
+          if (Api.isValidationError(error)) {
+            ctx.setErrors(
+              error.field,
+              // @ts-expect-error
+              t(error.code, {
+                attribute: t(error.field),
+                ...error.data,
+              })
+            );
+          } else {
+            toast.error(t(error.code));
+          }
         });
       }
     },
@@ -83,7 +83,7 @@ export const FelteForm = <T extends Obj>(props: FormProps<T>) => {
 
   return (
     <FormContext.Provider value={{ form, props }}>
-      <form ref={form.form} {...others}>
+      <form ref={form.form} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()}>
           {local.children}
         </fieldset>
@@ -92,7 +92,12 @@ export const FelteForm = <T extends Obj>(props: FormProps<T>) => {
   );
 };
 
-export const useFormContext = <T extends Obj>() => {
+/**
+ * Generic form context getter. When type is passed, context is properly typed.
+ *
+ * Usefull in forms with deeply nested components and dependant logic
+ */
+export const useFormContext = <T extends Obj = Obj>() => {
   const value = useContext(
     FormContext as unknown as Context<FormContextValue<T>>
   );

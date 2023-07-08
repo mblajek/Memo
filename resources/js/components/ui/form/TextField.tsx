@@ -1,5 +1,4 @@
 import { ValidationMessage } from "@felte/reporter-solid";
-import { Trans } from "@mbarzda/solid-i18next";
 import cx from "classnames";
 import { Component, Index, JSX } from "solid-js";
 
@@ -35,7 +34,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
       >
         {(messages) => (
           <Index each={messages || []}>
-            {(message) => <li>{<Trans key={message()} />}</li>}
+            {(message) => <li>{message()}</li>}
           </Index>
         )}
       </ValidationMessage>

@@ -5,7 +5,7 @@ import { Router } from "@solidjs/router";
 import { InitializeTanstackQuery } from "components/utils";
 import i18next from "i18next";
 import I18NextHttpBackend from "i18next-http-backend";
-import { Show, createEffect, createSignal } from "solid-js";
+import { Show, createSignal } from "solid-js";
 import { render } from "solid-js/web";
 import { Toaster } from "solid-toast";
 import App from "./App";
@@ -21,9 +21,8 @@ if (!(root instanceof HTMLElement)) {
 
 render(() => {
   const [transLoaded, setTransLoaded] = createSignal(false);
-  i18next.use(I18NextHttpBackend);
 
-  createEffect(() => i18next.on("loaded", () => setTransLoaded(true)));
+  i18next.use(I18NextHttpBackend).on("loaded", () => setTransLoaded(true));
 
   return (
     <TransProvider
