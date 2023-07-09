@@ -1,3 +1,6 @@
+/**
+ * @see `/app/Http/Resources/PermissionResource.php`
+ */
 export type PermissionsResource = {
   userId: string;
   facilityId: string;

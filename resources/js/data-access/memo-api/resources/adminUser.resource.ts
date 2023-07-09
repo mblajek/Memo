@@ -1,5 +1,8 @@
 import { MemberResource } from "./member.resource";
 
+/**
+ * @see `/app/Http/Resources/Admin/AdminUserResource.php`
+ */
 export type AdminUserResource = {
   /**
    * admin user identifier

@@ -1,3 +1,6 @@
+/**
+ * @see `/app/Http/Resources/UserResource.php`
+ */
 export type UserResource = {
   /**
    * identifier

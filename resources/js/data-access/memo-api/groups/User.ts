@@ -5,6 +5,10 @@ import { MemberResource } from "../resources/member.resource";
 import { Api } from "../types";
 import { parseGetResponse } from "../utils";
 
+/**
+ * @see {@link https://test-memo.fdds.pl/api/documentation#/User production docs}
+ * @see {@link http://localhost:9081/api/documentation#/User local docs}
+ */
 export namespace User {
   export const getStatus = () =>
     V1.get<Api.Response.Get<GetStatusData>>("/user/status").then(

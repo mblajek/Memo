@@ -3,6 +3,10 @@ import { AdminUserResource } from "../resources/adminUser.resource";
 import { Api } from "../types";
 import { parseGetListResponse } from "../utils";
 
+/**
+ * @see {@link https://test-memo.fdds.pl/api/documentation#/Admin production docs}
+ * @see {@link http://localhost:9081/api/documentation#/Admin local docs}
+ */
 export namespace Admin {
   export const createFacility = () => V1.post("/admin/facility");
 

@@ -25,6 +25,7 @@ export interface QueryBarrierProps {
 export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
   const merged = mergeProps(
     {
+      // TODO: dedicated Error element
       errorElement: <p>error</p>,
       pendingElement: (
         <div class="flex justify-center items-center">

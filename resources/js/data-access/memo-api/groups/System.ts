@@ -4,6 +4,10 @@ import { FacilityResource } from "../resources";
 import { Api } from "../types";
 import { parseGetListResponse } from "../utils";
 
+/**
+ * @see {@link https://test-memo.fdds.pl/api/documentation#/System production docs}
+ * @see {@link http://localhost:9081/api/documentation#/System local docs}
+ */
 export namespace System {
   export const getFacilitiesList = () =>
     V1.get<Api.Response.GetList<FacilityResource>>(

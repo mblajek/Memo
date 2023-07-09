@@ -1,3 +1,6 @@
+/**
+ * @see `/app/Http/Resources/MemebrResource.php`
+ */
 export type MemberResource = {
   userId: string;
   facilityId: string;

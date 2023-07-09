@@ -19,14 +19,14 @@ export namespace Api {
 
   export type BaseError = {
     code: string;
-    data?: Record<string, string | string[]>;
+    data?: Partial<Record<string, string | string[]>>;
     trace?: unknown;
   };
 
   export type ValidationError = {
     field: string;
     code: string;
-    data?: Record<string, string | string[]>;
+    data?: Partial<Record<string, string | string[]>>;
   };
 
   export type Error = BaseError | ValidationError;
