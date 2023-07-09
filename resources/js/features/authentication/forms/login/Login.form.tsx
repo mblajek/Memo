@@ -8,18 +8,19 @@ import { Component } from "solid-js";
 import { z } from "zod";
 
 export namespace LoginForm {
-  export const schema = z.object({
-    email: z.string(),
-    password: z.string(),
-  });
+  export const getSchema = () =>
+    z.object({
+      email: z.string(),
+      password: z.string(),
+    });
 
-  export const initialValues: Input = {
+  export const getInitialValues = (): Readonly<Input> => ({
     email: "",
     password: "",
-  };
+  });
 
-  export type Input = z.input<typeof schema>;
-  export type Output = z.output<typeof schema>;
+  export type Input = z.input<ReturnType<typeof getSchema>>;
+  export type Output = z.output<ReturnType<typeof getSchema>>;
 
   export const Component: Component = () => {
     const [t] = useTransContext();
@@ -33,16 +34,14 @@ export namespace LoginForm {
 
     const onSubmit: FormConfigWithoutTransformFn<LoginForm.Output>["onSubmit"] =
       async (values) => {
-        await mutation.mutateAsync({
-          ...values,
-        });
+        await mutation.mutateAsync(values);
       };
 
     return (
       <FelteForm
         onSubmit={onSubmit}
-        schema={LoginForm.schema}
-        initialValues={initialValues}
+        schema={LoginForm.getSchema()}
+        initialValues={getInitialValues()}
         id="login-form"
         class="flex flex-col gap-2"
       >
