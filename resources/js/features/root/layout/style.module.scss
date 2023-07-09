@@ -1,0 +1,51 @@
+$border: rgba(92, 92, 92, 0.283);
+
+.container {
+    display: grid;
+    grid-template-areas:
+        "sidebar header"
+        "sidebar main"
+        "sidebar footer";
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto 1fr auto;
+}
+
+.sidebar {
+    grid-area: sidebar;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    background-color: #f7f3e7;
+    padding: 1.5rem;
+    border-right: 1px solid $border;
+    width: auto;
+    max-width: 250px;
+    transition: width 5s linear;
+}
+
+.header {
+    grid-area: header;
+    border-bottom: 1px solid $border;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    justify-items: center;
+    padding: 1.5rem;
+}
+
+.main {
+    grid-area: main;
+    overflow: hidden auto;
+}
+
+.footer {
+    grid-area: footer;
+    border-top: 1px solid $border;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    justify-items: center;
+    padding: 1rem 1.5rem;
+    color: #949494;
+    // "py-4 px-6 bg-gray-300 flex flex-row justify-between items-center text-gray-500"
+}

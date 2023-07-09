@@ -1,33 +1,35 @@
-import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
-import solidPlugin from "vite-plugin-solid";
-import tsConfigPaths from "vite-tsconfig-paths";
+import { defineConfig } from "vite";
 import eslint from "vite-plugin-eslint";
+import solidPlugin from "vite-plugin-solid";
+import solidSvg from "vite-plugin-solid-svg";
+import tsConfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-    resolve: {
-        alias: [
-            {
-                find: /^~(.+)/,
-                replacement: "$1",
-            },
-        ],
-    },
-    plugins: [
-        laravel({
-            input: ["./resources/js/index.tsx"],
-            refresh: true,
-        }),
-        solidPlugin(),
-        tsConfigPaths(),
-        // eslint(),
+  build: {
+    target: "ESNext",
+  },
+  plugins: [
+    laravel({
+      input: ["./resources/js/index.tsx"],
+      refresh: true,
+    }),
+    solidPlugin(),
+    tsConfigPaths(),
+    eslint(),
+    solidSvg({ defaultAsComponent: true }),
+  ],
+  resolve: {
+    alias: [
+      {
+        find: /^~(.+)/,
+        replacement: "$1",
+      },
     ],
-    server: {
-        port: 9082,
-        host: "0.0.0.0",
-        strictPort: true,
-    },
-    build: {
-        target: "ESNext",
-    },
+  },
+  server: {
+    host: "0.0.0.0",
+    port: 9082,
+    strictPort: true,
+  },
 });
