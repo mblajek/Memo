@@ -1,19 +1,9 @@
-import { useTransContext } from "@mbarzda/solid-i18next";
-import { useLocation, useNavigate, useParams } from "@solidjs/router";
-import {
-  createMutation,
-  createQuery,
-  useQueryClient,
-} from "@tanstack/solid-query";
-import cx from "classnames";
-import { QueryBarrier } from "components/utils";
-import { System, User } from "data-access/memo-api";
-import {
-  HiOutlineCheckCircle,
-  HiOutlinePower,
-  HiOutlineXCircle,
-} from "solid-icons/hi";
-import { Component, For, Match, Switch, createSignal, onMount } from "solid-js";
+import {useLocation, useNavigate, useParams} from "@solidjs/router";
+import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
+import {QueryBarrier, cx, getLangFunc} from "components/utils";
+import {System, User} from "data-access/memo-api";
+import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
+import {Component, For, Match, Switch, createSignal, onMount} from "solid-js";
 import s from "./style.module.scss";
 
 export const Header: Component = () => {
@@ -29,7 +19,7 @@ export const Header: Component = () => {
 const FacilitySelect: Component = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams<{ facilityUrl: string }>();
+  const params = useParams<{facilityUrl: string}>();
 
   const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
 
@@ -58,7 +48,7 @@ const FacilitySelect: Component = () => {
 };
 
 const HeaderRight = () => {
-  const [t] = useTransContext();
+  const t = getLangFunc();
   const currentTime = useCurrentTime();
   const statusQuery = createQuery(() => User.statusQueryOptions);
 
@@ -66,7 +56,7 @@ const HeaderRight = () => {
   const logout = createMutation(() => ({
     mutationFn: User.logout,
     onSuccess() {
-      queryClient.invalidateQueries({ queryKey: User.keys.status() });
+      queryClient.invalidateQueries({queryKey: User.keys.status()});
     },
   }));
 
@@ -92,7 +82,7 @@ const HeaderRight = () => {
         <button
           class="rounded-lg flex flex-row justify-center items-center hover:bg-white"
           onClick={() => logout.mutate()}
-          title={t("log_out") || undefined}
+          title={t("log_out")}
         >
           <HiOutlinePower color="red" size="30" />
         </button>

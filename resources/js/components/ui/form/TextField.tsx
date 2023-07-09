@@ -1,6 +1,6 @@
-import { ValidationMessage } from "@felte/reporter-solid";
-import cx from "classnames";
-import { Component, Index, JSX } from "solid-js";
+import {ValidationMessage} from "@felte/reporter-solid";
+import {cx} from "components/utils";
+import {Component, Index, JSX} from "solid-js";
 
 export interface TextFieldProps
   extends JSX.InputHTMLAttributes<HTMLInputElement> {
