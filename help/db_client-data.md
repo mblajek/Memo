@@ -43,14 +43,14 @@ Position:
 
 Column (może np. istnieć jeszcze kolumna regexp):
 
-| id | facility_id | table  | name                | dictionary_id | type     | order | is_multi |
-|----|-------------|--------|---------------------|---------------|----------|-------|----------|
-| 41 | null        | user   | gender              | 21            | position | 1     | false    |
-| 42 | null        | client | perpetrator_genders | 21            | position | 3     | true     |
-| 43 | 11          | client | +powiat wlkp        | 22            | single   | 5     | false    |
-| 44 | 11          | client | +decyzja zespołu    |               | string   | 6     | false    |
-| 45 | 11          | client | +wiek sprawcy       |               | decimal0 | 4     | true     |
-| 46 | 11          | client | contact_persons     |               | user     | 2     | true     |
+| id | facility_id | table  | name             | dictionary_id | type     | order | is_multi |
+|----|-------------|--------|------------------|---------------|----------|-------|----------|
+| 41 | null        | user   | gender           | 21            | position | 1     | false    |
+| 42 | null        | client | offender_genders | 21            | position | 3     | true     |
+| 43 | 11          | client | +powiat wlkp     | 22            | single   | 5     | false    |
+| 44 | 11          | client | +decyzja zespołu |               | string   | 6     | false    |
+| 45 | 11          | client | +wiek sprawcy    |               | decimal0 | 4     | true     |
+| 46 | 11          | client | contact_persons  |               | user     | 2     | true     |
 
 Attribute (value może być rozbite na number_value, string_value, date_value):
 
