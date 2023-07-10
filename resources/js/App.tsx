@@ -9,7 +9,7 @@ const LoginPage = lazy(
 );
 
 const App: Component = () => {
-  const facilitiesQuery = createQuery(() => ({ ...System.facilitiesQuery }));
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
 
   return (
     <Routes>
