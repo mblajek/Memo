@@ -16,7 +16,9 @@ export default defineConfig({
     }),
     solidPlugin(),
     tsConfigPaths(),
-    eslint(),
+    eslint({
+      exclude: ["/virtual:/**", "node_modules/**"],
+    }),
     solidSvg({ defaultAsComponent: true }),
   ],
   resolve: {
