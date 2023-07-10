@@ -33,7 +33,6 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         },
         queryCache: new QueryCache({
           onError(error, query) {
-            console.log(query.meta?.quietError);
             if (isAxiosError<Api.ErrorResponse>(error)) {
               error.response?.data.errors.forEach((memoError) => {
                 if (
