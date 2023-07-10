@@ -1,5 +1,5 @@
-import cx from "classnames";
-import { ParentComponent } from "solid-js";
+import {cx} from "components/utils";
+import {ParentComponent} from "solid-js";
 import s from "./style.module.scss";
 
 export const Container: ParentComponent = (props) => {
