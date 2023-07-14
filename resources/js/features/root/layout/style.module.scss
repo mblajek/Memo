@@ -38,6 +38,10 @@ $border: rgba(92, 92, 92, 0.283);
     overflow: hidden auto;
 }
 
+.mainInner {
+    margin: 1rem;
+}
+
 .footer {
     grid-area: footer;
     border-top: 1px solid $border;

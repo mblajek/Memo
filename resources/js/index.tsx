@@ -1,13 +1,13 @@
 /* @refresh reload */
-import { TransProvider } from "@mbarzda/solid-i18next";
-import { MetaProvider } from "@solidjs/meta";
-import { Router } from "@solidjs/router";
-import { InitializeTanstackQuery } from "components/utils";
+import {TransProvider} from "@mbarzda/solid-i18next";
+import {MetaProvider} from "@solidjs/meta";
+import {Router} from "@solidjs/router";
+import {InitializeTanstackQuery} from "components/utils";
 import i18next from "i18next";
 import I18NextHttpBackend from "i18next-http-backend";
-import { Show, createSignal } from "solid-js";
-import { render } from "solid-js/web";
-import { Toaster } from "solid-toast";
+import {Show, createSignal} from "solid-js";
+import {render} from "solid-js/web";
+import {Toaster} from "solid-toast";
 import App from "./App";
 import "./index.scss";
 
@@ -36,6 +36,7 @@ render(() => {
         lng: "pl",
         load: "currentOnly",
         supportedLngs: ["pl", "en-US"],
+        pluralSeparator: "__",
       }}
     >
       <Show when={transLoaded()}>
@@ -45,7 +46,7 @@ render(() => {
               <App />
               <Toaster
                 position="bottom-right"
-                toastOptions={{ className: "mr-4" }}
+                toastOptions={{className: "mr-4"}}
               />
             </Router>
           </InitializeTanstackQuery>

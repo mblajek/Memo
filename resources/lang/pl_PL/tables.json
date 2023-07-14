@@ -1,0 +1,30 @@
+{
+  "tables": {
+    "generic": {
+      "empty_table_text": "Brak wyników",
+      "summary__zero": "Brak wyników",
+      "summary__one": "{{count, number}} wynik",
+      "summary__few": "{{count, number}} wyniki",
+      "summary__many": "{{count, number}} wyników"
+    },
+    "users": {
+      "empty_table_text": "Brak użytkowników",
+      "summary__zero": "Brak użytkowników",
+      "summary__one": "{{count, number}} użytkownik",
+      "summary__few": "{{count, number}} użytkowników",
+      "summary__many": "{{count, number}} użytkowników"
+    }
+  },
+  "search": "Szukaj",
+  "choose_columns": "Wybierz kolumny",
+  "headers": {
+    "name": "Imię i nazwisko",
+    "email": "E-mail",
+    "createdAt": "Czas utworzenia",
+    "hasGlobalAdmin": "Globalny administrator"
+  },
+  "bool": {
+    "yes": "Tak",
+    "no": "Nie"
+  }
+}

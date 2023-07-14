@@ -1,0 +1,119 @@
+.searchBar {
+  @apply h-full w-full;
+
+  input {
+    @apply h-full w-full rounded px-2 border;
+  }
+}
+
+.columnVisibility {
+  [data-part="trigger"] {
+    @apply h-full w-full rounded px-2 border;
+  }
+}
+
+.pagination {
+  [data-part="root"] {
+    @apply h-full w-full flex items-stretch gap-1;
+  }
+
+  [data-part="prev-page-trigger"],
+  [data-part="next-page-trigger"],
+  [data-part="page-trigger"],
+  [data-part="ellipsis"] {
+    @apply px-1 border rounded text-center;
+
+    &[data-disabled] svg {
+      @apply opacity-20;
+    }
+  }
+
+  [data-part="prev-page-trigger"],
+  [data-part="next-page-trigger"] {
+    min-width: 4em;
+  }
+
+  [data-part="page-trigger"],
+  [data-part="ellipsis"] {
+    min-width: 2em;
+
+    &[data-selected] {
+      @apply bg-gray-200;
+    }
+  }
+}
+
+.tableSummary {
+  @apply h-full w-auto flex items-center;
+}
+
+.tableContainer {
+  @apply flex flex-col gap-1 w-full;
+
+  .aboveTable {
+    @apply bg-white;
+    @apply h-8 flex items-stretch gap-1;
+    @apply sticky top-0;
+  }
+
+  .bottomBorder {
+    @apply h-0 border-b border-b-gray-300;
+    margin-top: -5px;
+    @apply sticky bottom-8;
+  }
+
+  .belowTable {
+    @apply bg-white;
+    @apply h-8 flex items-stretch gap-2;
+    @apply sticky bottom-0;
+  }
+
+  .tableBg {
+    @apply bg-gray-300;
+
+    .table {
+      @apply grid;
+      padding: 1px;
+      gap: 1px;
+
+      .headerRow {
+        @apply contents;
+
+        .cell {
+          @apply outline outline-1 outline-gray-400 bg-gray-100 font-bold;
+          @apply sticky;
+          top: 33px;
+        }
+      }
+
+      .dataRow {
+        @apply contents;
+
+        .cell {
+          @apply bg-white text-black;
+        }
+
+        &:hover .cell {
+          @apply bg-gray-50;
+        }
+      }
+
+      .cell {
+        @apply px-2 flex items-center;
+        min-height: 30px;
+      }
+
+      .wideRow {
+        @apply bg-white p-2 text-gray-500 text-center;
+        grid-column: 1 / -1;
+      }
+
+      &.dimmed {
+
+        .dataRow .cell {
+          @apply text-opacity-20;
+        }
+      }
+    }
+  }
+}
