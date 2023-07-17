@@ -63,7 +63,7 @@ class SystemController extends ApiController
     #[OA\Get(
         path: '/api/v1/system/dictionary/list',
         description: new PermissionDescribe(Permission::any),
-        summary: 'All facilities',
+        summary: 'All dictionaries',
         tags: ['System'],
         parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
