@@ -74,7 +74,6 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
     requestController,
     dataQuery,
     data,
-    invalidate,
   } = createTQuery(entityURL, {requestCreator});
   const {
     columnVisibility: [columnVisibility, setColumnVisibility],
@@ -115,6 +114,11 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
     maxMultiSortColCount: 2,
     enableSortingRemoval: false,
     manualPagination: true,
+    columnResizeMode: "onChange",
+    defaultColumn: {
+      minSize: 50,
+      size: 250,
+    },
     get pageCount() {return pageCount();},
     autoResetPageIndex: false,
     getCoreRowModel: getCoreRowModel(),
@@ -134,6 +138,8 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   createEffect(on(scrollToTop, () => {
     scrollToTopPoint?.scrollIntoView({behavior: "smooth"});
   }));
+  const gridTemplateColumns = () =>
+    table.getVisibleLeafColumns().map(c => `${c.getSize()}px`).join(" ");
 
   return (
     <TableContextProvider table={table}>
@@ -145,13 +151,15 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
         <div class={ts.tableBg}>
           <div class={ts.table} classList={{[ts.dimmed!]: dataQuery.isFetching}}
             style={{
-              "grid-template-columns": `repeat(${table.getVisibleLeafColumns().length}, auto)`,
+              "grid-template-columns": gridTemplateColumns(),
             }}>
             <div class={ts.headerRow}>
               <For each={table.getLeafHeaders()}>
                 {header => <Show when={header.column.getIsVisible()}>
                   <div class={ts.cell}>
-                    <span classList={{"cursor-pointer": header.column.getCanSort()}}
+                    <span
+                      class={ts.title}
+                      classList={{"cursor-pointer": header.column.getCanSort()}}
                       onClick={e => {
                         e.preventDefault();
                         if (header.column.getCanSort())
@@ -161,8 +169,16 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
                         header.column.columnDef.header,
                         header.getContext(),
                       )}
-                      <span class="ml-1"><SortMarker column={header.column} /></span>
+                      {" "}<SortMarker column={header.column} />
                     </span>
+                    <span>(tutaj filtr)</span>
+                    <Show when={header.column.getCanResize()}>
+                      <div class={ts.resizeHandler}
+                        classList={{[ts.resizing!]: header.column.getIsResizing()}}
+                        onMouseDown={header.getResizeHandler()}
+                        onTouchStart={header.getResizeHandler()}
+                      />
+                    </Show>
                   </div>
                 </Show>}
               </For>
@@ -183,9 +199,9 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
                 </Index>
               </div>}
             </Index>
+            <div class={ts.bottomBorder} />
           </div>
         </div>
-        <div class={ts.bottomBorder} />
         <div class={ts.belowTable}>
           <Pagination />
           <TableSummary summaryTranslation={tt.summary} rowsCount={rowsCount()} />
