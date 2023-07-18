@@ -16,11 +16,16 @@ const ICONS = new Map<false | SortDirection, IconTypes>()
 
 export const SortMarker: Component<Props> = props => {
   return <Show when={props.column.getCanSort()}>
-    <Dynamic
-      component={ICONS.get(props.column.getIsSorted())}
-      class={css.inlineIcon}
-      classList={{"opacity-20": !props.column.getIsSorted()}}
-      style={{scale: props.column.getSortIndex() > 0 ? 0.6 : 1}}
-    />
+    <span
+      class="text-black"
+      classList={{"text-opacity-30": !props.column.getIsSorted()}}
+    >
+      <Dynamic
+        component={ICONS.get(props.column.getIsSorted())}
+        class={css.inlineIcon}
+        fill="currentColor"
+        style={{scale: props.column.getSortIndex() > 0 ? 0.6 : 1}}
+      />
+    </span>
   </Show>;
 };

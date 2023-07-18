@@ -132,7 +132,7 @@
       &.dimmed {
 
         .dataRow .cell {
-          @apply text-opacity-20;
+          @apply bg-opacity-70 text-opacity-30;
         }
       }
     }

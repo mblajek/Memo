@@ -165,7 +165,9 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
                         e.preventDefault();
                         if (header.column.getCanSort())
                           header.column.toggleSorting(undefined, e.altKey);
-                      }}>
+                      }}
+                      title={header.column.getCanSort() ? t("tables.sort_tooltip") : undefined}
+                    >
                       {header.isPlaceholder ? undefined : flexRender(
                         header.column.columnDef.header,
                         header.getContext(),
