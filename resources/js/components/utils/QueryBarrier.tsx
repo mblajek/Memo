@@ -27,11 +27,7 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
     {
       // TODO: dedicated Error element
       errorElement: <p>error</p>,
-      pendingElement: (
-        <div class="flex justify-center items-center">
-          <Spinner size="large" />
-        </div>
-      ),
+      pendingElement: <Spinner />,
     },
     props
   );

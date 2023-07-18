@@ -3,6 +3,7 @@ import {DATE_FORMAT, DATE_TIME_FORMAT, TranslationEntriesInterface, TranslationE
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
 import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
 import {Pagination, SortMarker, TableColumnVisibilityController, TableContextProvider, TableSearch, TableSummary, tableStyle as ts} from ".";
+import {Spinner} from "..";
 
 /** Type of tquery-related information stored in `column.meta.tquery`. */
 export interface TQueryColumnMeta {
@@ -141,8 +142,8 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   const gridTemplateColumns = () =>
     table.getVisibleLeafColumns().map(c => `${c.getSize()}px`).join(" ");
 
-  return (
-    <TableContextProvider table={table}>
+  return <TableContextProvider table={table}>
+    <Show when={schema()} fallback={<Spinner />}>
       <div ref={scrollToTopPoint} class={ts.tableContainer}>
         <div class={ts.aboveTable}>
           <div class="flex-grow"><TableSearch /></div>
@@ -184,9 +185,9 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
               </For>
             </div>
             <Index each={table.getRowModel().rows} fallback={
-              <div class={ts.wideRow}>
-                {tt.empty_table_text()}
-              </div>
+              <div class={ts.wideRow}>{
+                dataQuery.isFetching ? <Spinner /> : tt.empty_table_text()
+              }</div>
             }>
               {row => <div class={ts.dataRow}>
                 <Index each={row().getVisibleCells()}>
@@ -207,6 +208,6 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
           <TableSummary summaryTranslation={tt.summary} rowsCount={rowsCount()} />
         </div>
       </div>
-    </TableContextProvider>
-  );
+    </Show>
+  </TableContextProvider>;
 };
