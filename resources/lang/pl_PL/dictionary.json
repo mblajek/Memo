@@ -1,0 +1,12 @@
+{
+  "pl_voivodeship": {
+    "_name": "województwo"
+  },
+  "gender": {
+    "_name": "płeć",
+    "female": "kobieta",
+    "male": "mężczyzna",
+    "other": "inna",
+    "unknown:": "nieznana"
+  }
+}
