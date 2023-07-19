@@ -2,7 +2,7 @@ version: "3"
 services:
   memo-php:
     container_name: "memo-php"
-    deploy: { resources: { limits: { memory: "256M" } } }
+    deploy: { resources: { limits: { memory: "1792M" } } }
     build: { context: ., dockerfile: "docker/php.dockerfile", args: {ME_USER_UID: $ME_USER_UID}}
     env_file: '.env'
     volumes: [ ".:/var/www", "./docker/php.ini:/usr/local/etc/php/php.ini" ]
