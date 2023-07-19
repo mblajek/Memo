@@ -23,9 +23,5 @@
     "createdAt": "Czas utworzenia",
     "hasGlobalAdmin": "Globalny administrator"
   },
-  "sort_tooltip": "Sortuj",
-  "bool": {
-    "yes": "Tak",
-    "no": "Nie"
-  }
+  "sort_tooltip": "Sortuj"
 }

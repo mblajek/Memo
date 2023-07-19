@@ -12,13 +12,10 @@ export const CopyToClipboard: Component<ParentProps<Props>> = props => {
   const t = useLangFunc();
   const [copied, setCopied] = createSignal(false);
   return <Show when={props.text}>
-    <span
-      title={t("copy_to_clipboard")}
-      class="text-black"
-      classList={{"text-opacity-30": !copied()}}
-    >
+    <span title={t("copy_to_clipboard")}>
       <BiRegularCopy
         class={css.inlineIcon}
+        classList={{"text-black": true, "text-opacity-30": !copied()}}
         fill="currentColor"
         onClick={() => {
           navigator.clipboard.writeText(props.text);
