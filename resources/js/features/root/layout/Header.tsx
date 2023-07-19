@@ -75,7 +75,7 @@ const HeaderRight = () => {
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <span>{currentTime().toLocaleString()}</span>
-          <span>{statusQuery.data?.user.email}</span>
+          <span>{statusQuery.data?.user.name}</span>
         </div>
       </div>
       <div class="flex justify-center items-center">
