@@ -27,11 +27,9 @@ interface ColumnSchemaBase {
 }
 
 export interface BasicColumnSchema extends ColumnSchemaBase {
-  type: "uuid" | "string" | "text" | "decimal0" | "decimal2" | "bool" |
+  type: "string" | "text" | "decimal0" | "decimal2" | "bool" |
   "date" | "datetime";
 }
-
-export type ColumnType = ColumnSchema["type"];
 
 export interface CustomFilter {
   /** Hint for the frontend on where to place the UI element. */
@@ -149,3 +147,20 @@ export interface SortColumn {
   column: ColumnName;
   dir: "asc" | "desc";
 }
+
+// Utilities:
+
+export type ColumnType = ColumnSchema["type"];
+
+export interface FilterTypeByColumnType {
+  string: StringColumnFilter;
+  text: StringColumnFilter
+  decimal0: DecimalColumnFilter;
+  decimal2: DecimalColumnFilter
+  bool: BoolColumnFilter
+  date: DateColumnFilter
+  datetime: DateTimeColumnFilter;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type checkColumnTypes = FilterTypeByColumnType[ColumnType];

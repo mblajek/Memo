@@ -1,13 +1,20 @@
-import {CellContext, ColumnDefTemplate, IdentifiedColumnDef, createColumnHelper, createSolidTable, flexRender, getCoreRowModel} from "@tanstack/solid-table";
+import {CellContext, ColumnDefTemplate, IdentifiedColumnDef, RowData, createColumnHelper, createSolidTable, flexRender, getCoreRowModel} from "@tanstack/solid-table";
 import {DATE_FORMAT, DATE_TIME_FORMAT, TranslationEntriesInterface, TranslationEntriesPrefix, useLangFunc} from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
 import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
 import {Pagination, SortMarker, TableColumnVisibilityController, TableContextProvider, TableSearch, TableSummary, tableStyle as ts} from ".";
-import {Spinner} from "..";
+import {ColumnFilterControl, Spinner} from "..";
 
-/** Type of tquery-related information stored in `column.meta.tquery`. */
+/** Type of tquery-related information in column meta. */
 export interface TQueryColumnMeta {
   type: ColumnType;
+}
+
+declare module '@tanstack/table-core' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    tquery: TQueryColumnMeta;
+  }
 }
 
 export interface ColumnOptions {
@@ -46,7 +53,7 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   const t = useLangFunc();
   // eslint-disable-next-line solid/reactivity
   const tt = TableTranslations.forPrefix(() => props.translations || "tables.tables.generic");
-  const boolText = [t("tables.bool.no"), t("tables.bool.yes")];
+  const boolText = [t("bool_values.no"), t("bool_values.yes")];
 
   const SORTABLE_COLUMN_TYPES = new Set<ColumnType>([
     "string", "decimal0", "decimal2", "bool", "date", "datetime",
@@ -78,16 +85,16 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   } = createTQuery(entityURL, {requestCreator});
   const {
     columnVisibility: [columnVisibility, setColumnVisibility],
-    sorting: [sorting, setSorting],
     globalFilter: [globalFilter, setGlobalFilter],
+    columnFilters: [columnFilters, setColumnFilters],
+    sorting: [sorting, setSorting],
     pagination: [pagination, setPagination],
   } = requestController;
   const {
     rowsCount,
     pageCount,
-    scrollToTop,
+    scrollToTopSignal,
   } = tableHelper({
-    schema,
     requestController,
     response: () => dataQuery.data,
   });
@@ -136,7 +143,7 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   });
 
   let scrollToTopPoint: HTMLDivElement | undefined;
-  createEffect(on(scrollToTop, () => {
+  createEffect(on(scrollToTopSignal, () => {
     scrollToTopPoint?.scrollIntoView({behavior: "smooth"});
   }));
   const gridTemplateColumns = () =>
@@ -174,7 +181,13 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
                       )}
                       {" "}<SortMarker column={header.column} />
                     </span>
-                    <span>(tutaj filtr)</span>
+                    <Show when={header.column.getCanFilter()}>
+                      <ColumnFilterControl
+                        name={header.column.id}
+                        filter={columnFilters[header.column.id]}
+                        setFilter={f => setColumnFilters(header.column.id, f)}
+                      />
+                    </Show>
                     <Show when={header.column.getCanResize()}>
                       <div class={ts.resizeHandler}
                         classList={{[ts.resizing!]: header.column.getIsResizing()}}
