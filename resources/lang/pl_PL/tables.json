@@ -21,7 +21,13 @@
     "name": "Imię i nazwisko",
     "email": "E-mail",
     "createdAt": "Czas utworzenia",
+    "facilitiesMember": "Placówki",
     "hasGlobalAdmin": "Globalny administrator"
   },
-  "sort_tooltip": "Sortuj"
+  "sort_tooltip": "Sortuj",
+  "filter": {
+    "filter_cleared": "Brak filtra",
+    "filter_set": "Filtr aktywny",
+    "click_to_clear": "Kliknij aby wyczyścić"
+  }
 }

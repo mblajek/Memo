@@ -37,5 +37,10 @@
   "bool_values": {
     "yes": "Tak",
     "no": "Nie"
+  },
+
+  "range": {
+    "from": "od:",
+    "to": "do:"
   }
 }

@@ -1,15 +1,16 @@
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
-import {debouncedAccessor} from "components/utils";
+import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
 import {SetStoreFunction, Store, createStore} from "solid-js/store";
-import {ColumnFilter, DataRequest, DataResponse, Filter, RequestCreator, Schema} from ".";
+import {Column, ColumnName, DataRequest, DataResponse, Filter, GlobalFilter, RequestCreator, Schema} from ".";
 
 /** A collection of column filters, keyed by column name. */
-type ColumnFilters = Partial<Record<string, ColumnFilter | undefined>>;
+export type ColumnFilters = Partial<Record<ColumnName, Filter | undefined>>;
 
 interface RequestController {
   columnVisibility: Signal<VisibilityState>;
   globalFilter: Signal<string>;
+  debouncedGlobalFilter: Accessor<string>;
   columnFilters: [Store<ColumnFilters>, SetStoreFunction<ColumnFilters>];
   sorting: Signal<SortingState>;
   pagination: Signal<PaginationState>;
@@ -48,6 +49,8 @@ export function createTableRequestCreator({
     const [sorting, setSorting] = createSignal<SortingState>([]);
     const [pagination, setPagination] =
       createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
+    // eslint-disable-next-line solid/reactivity
+    const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
     // Initialise the request parts based on the schema.
     createComputed(() => {
       const sch = schema();
@@ -70,15 +73,21 @@ export function createTableRequestCreator({
         setAllInited(true);
       }
     });
-    // Don't allow hiding all the columns.
     createComputed(on([schema, columnVisibility],
       ([schema, columnVisibility], prev) => {
-        if (schema && !Object.values(columnVisibility).some(v => v)) {
-          const prevColumnVisibility = prev?.[1];
-          // Revert to the previous visibility state if possible, otherwise show all columns.
-          setColumnVisibility(
-            prevColumnVisibility && Object.values(prevColumnVisibility).some(v => v) ?
-              prevColumnVisibility : allColumnsVisibility(schema));
+        if (schema) {
+          // Don't allow hiding all the columns.
+          if (!Object.values(columnVisibility).some(v => v)) {
+            const prevColumnVisibility = prev?.[1];
+            // Revert to the previous visibility state if possible, otherwise show all columns.
+            setColumnVisibility(
+              prevColumnVisibility && Object.values(prevColumnVisibility).some(v => v) ?
+                prevColumnVisibility : allColumnsVisibility(schema));
+          }
+          // Remove column filters for hidden columns.
+          for (const {name} of schema.columns)
+            if (columnVisibility[name] === false)
+              setColumnFilters(name, undefined);
         }
       }));
     /** The primary sort column, wrapped in memo to detect actual changes. */
@@ -87,15 +96,14 @@ export function createTableRequestCreator({
      * Array of column filters. This intermediate step is helpful because on() cannot track
      * the whole column filters store.
      */
-    const columnFiltersJoined = createMemo(() =>
-      Object.values(columnFilters).filter((e): e is ColumnFilter => !!e)
-        .map(filter => ({...filter})));
+    const columnFiltersJoined: Accessor<Filter[]> = createMemo(() =>
+      schema()?.columns.map(({name}) => columnFilters[name])
+        .filter(NON_NULLABLE)
+        .map(filter => ({...filter})) || []);
     // Go back to the first page on significant data changes.
-    createComputed(on([globalFilter, columnFiltersJoined, mainSort], () => {
+    createComputed(on([debouncedGlobalFilter, columnFiltersJoined, mainSort], () => {
       setPagination(prev => ({...prev, pageIndex: 0}));
     }));
-    // eslint-disable-next-line solid/reactivity
-    const debouncedGlobalFilter = debouncedAccessor(globalFilter);
     const request = createMemo<DataRequest | undefined>(
       on([intrinsicFilter, schema, allInited,
         columnVisibility, debouncedGlobalFilter, columnFiltersJoined, sorting, pagination],
@@ -103,33 +111,28 @@ export function createTableRequestCreator({
           columnVisibility, globalFilter, columnFiltersJoined, sorting, pagination]) => {
           if (!schema || !allInited)
             return undefined;
-          const columns = new Set(schema.columns.map(({name}) => name));
-          for (const [name, visible] of Object.entries(columnVisibility))
-            if (!visible)
-              columns.delete(name);
-          const sort = sorting.map(({id, desc}) => ({
-            type: "column",
-            column: id,
-            dir: desc ? "desc" : "asc",
-          } as const));
-          const andFilters: Filter[] = [];
-          if (intrinsicFilter)
-            andFilters.push(intrinsicFilter);
-          if (globalFilter)
-            andFilters.push({
-              type: "global",
-              op: "%v%",
-              val: globalFilter,
-            });
-          andFilters.push(...columnFiltersJoined);
           const request: DataRequest = {
-            columns: Array.from(columns, column => ({type: "column", column})),
+            columns: schema.columns.map<Column | undefined>(({name}) =>
+              columnVisibility[name] === false ? undefined : {type: "column", column: name}
+            ).filter(NON_NULLABLE),
             filter: {
               type: "op",
               op: "&",
-              val: andFilters,
+              val: [
+                intrinsicFilter,
+                globalFilter ? {
+                  type: "global",
+                  op: "%v%",
+                  val: globalFilter,
+                } satisfies GlobalFilter : undefined,
+                ...columnFiltersJoined,
+              ].filter(NON_NULLABLE),
             },
-            sort,
+            sort: sorting.map(({id, desc}) => ({
+              type: "column",
+              column: id,
+              dir: desc ? "desc" : "asc",
+            })),
             paging: pagination,
           };
           return request;
@@ -139,6 +142,7 @@ export function createTableRequestCreator({
       requestController: {
         columnVisibility: [columnVisibility, setColumnVisibility],
         globalFilter: [globalFilter, setGlobalFilter],
+        debouncedGlobalFilter,
         columnFilters: [columnFilters, setColumnFilters],
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],

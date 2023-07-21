@@ -1,4 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
+import {System} from "data-access/memo-api";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {ColumnSchema, ColumnType, ComparableFilterOp, DataRequest, DataResponse, Filter, Schema, StringFilterOp} from "data-access/memo-api/tquery";
 import {rest, setupWorker} from "msw";
@@ -12,12 +13,11 @@ const str = (v: unknown) => (v ?? undefined) as string | undefined;
 
 function getCompareTransform(type: ColumnType): CompareTransform {
   return (
-    type === "text" || type === "uuid" ? () => {throw new Error(`Type ${type} not comparable`)} :
-      type === "bool" ? Number :
-        type === "date" || type === "datetime" ? v => Date.parse(v) :
-          type === "decimal0" || type === "decimal2" ? v => v :
-            type === "string" ? v => str(v)?.toLocaleLowerCase() || "" :
-              type satisfies never);
+    type === "bool" ? Number :
+      type === "date" || type === "datetime" ? v => Date.parse(v) :
+        type === "decimal0" || type === "decimal2" ? v => v :
+          type === "text" || type === "string" ? v => str(v)?.toLocaleLowerCase() || "" :
+            type satisfies never);
 }
 
 function filterOp(rowVal: ComparableVal, filterVal: ComparableVal,
@@ -93,10 +93,12 @@ export function startUsersMock() {
     queryFn: Admin.getUsers,
     queryKey: ["admin", "user", "list"],
   }));
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
   const columns: ColumnSchema[] = [
     {name: "name", type: "string"},
     {name: "email", type: "string"},
     {name: "createdAt", type: "datetime"},
+    {name: "facilitiesMember", type: "text"},
     {name: "hasGlobalAdmin", type: "bool"},
   ];
   setupWorker(
@@ -106,7 +108,12 @@ export function startUsersMock() {
         ctx.status(200),
         ctx.json({
           columns,
-          suggestedColumns: ["name", "createdAt", "hasGlobalAdmin"],
+          suggestedColumns: [
+            "name",
+            "createdAt",
+            "facilitiesMember",
+            "hasGlobalAdmin",
+          ],
           suggestedSort: [
             {type: "column", column: "name", dir: "asc"},
           ],
@@ -115,7 +122,16 @@ export function startUsersMock() {
     }),
     rest.post("/api/v1/entityURL/tquery", async (req, res, ctx) => {
       const request: DataRequest = await req.json();
-      const rows: Row[] = usersQuery.data || [];
+      const rows: Row[] = (usersQuery.data || []).map(entry => ({
+        name: entry.name,
+        email: entry.email,
+        createdAt: entry.createdAt,
+        facilitiesMember: entry.members.map(m =>
+          (facilitiesQuery?.data?.find(f => f.id === m.facilityId)?.name || m.facilityId) +
+          (m.hasFacilityAdmin ? " *" : "")
+        ).sort().join("\n"),
+        hasGlobalAdmin: entry.hasGlobalAdmin,
+      }));
       const {filter} = request;
       const filteredRows = filter ? rows.filter(row => matches(columns, row, filter)) : rows;
       const sorters = request.sort.map(({column, dir}) => {

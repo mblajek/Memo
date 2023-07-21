@@ -1,3 +1,4 @@
+export * from "./FilterIcon";
 export * from "./Pagination";
 export * from "./SortMarker";
 export * from "./TableColumnVisibilityController";

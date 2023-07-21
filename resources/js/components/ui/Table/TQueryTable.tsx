@@ -3,7 +3,7 @@ import {DATE_FORMAT, DATE_TIME_FORMAT, TranslationEntriesInterface, TranslationE
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
 import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
 import {Pagination, SortMarker, TableColumnVisibilityController, TableContextProvider, TableSearch, TableSummary, tableStyle as ts} from ".";
-import {ColumnFilterControl, Spinner} from "..";
+import {ColumnFilterController, Spinner} from "..";
 
 /** Type of tquery-related information in column meta. */
 export interface TQueryColumnMeta {
@@ -153,7 +153,7 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
     <Show when={schema()} fallback={<Spinner />}>
       <div ref={scrollToTopPoint} class={ts.tableContainer}>
         <div class={ts.aboveTable}>
-          <div class="flex-grow"><TableSearch /></div>
+          <TableSearch />
           <TableColumnVisibilityController />
         </div>
         <div class={ts.tableBg}>
@@ -182,10 +182,10 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
                       {" "}<SortMarker column={header.column} />
                     </span>
                     <Show when={header.column.getCanFilter()}>
-                      <ColumnFilterControl
+                      <ColumnFilterController
                         name={header.column.id}
                         filter={columnFilters[header.column.id]}
-                        setFilter={f => setColumnFilters(header.column.id, f)}
+                        setFilter={filter => setColumnFilters(header.column.id, filter)}
                       />
                     </Show>
                     <Show when={header.column.getCanResize()}>

@@ -1,5 +1,5 @@
 .searchBar {
-  @apply h-full w-full;
+  @apply flex-grow;
 
   input {
     @apply h-full w-full rounded px-2 border;
@@ -8,13 +8,35 @@
 
 .columnVisibility {
   [data-part="trigger"] {
-    @apply h-full w-full rounded px-2 border;
+    @apply h-full rounded px-2 border;
+  }
+}
+
+.columnFilterController {
+  @apply flex items-stretch gap-0.5;
+
+  .filterMain {
+    @apply flex-grow;
+
+    .filterLine {
+      @apply flex flex-wrap items-stretch gap-0.5;
+      min-height: 26px;
+
+      .wideEdit {
+        @apply flex-grow;
+        flex-basis: 3em;
+      }
+    }
+  }
+
+  .filterIcon {
+    @apply mt-1;
   }
 }
 
 .pagination {
   [data-part="root"] {
-    @apply h-full w-full flex items-stretch gap-1;
+    @apply h-full flex items-stretch gap-1;
   }
 
   [data-part="prev-page-trigger"],
@@ -44,7 +66,7 @@
 }
 
 .tableSummary {
-  @apply h-full w-auto flex items-center;
+  @apply w-auto flex items-center;
 }
 
 .tableContainer {
@@ -78,7 +100,7 @@
           @apply outline outline-1 outline-gray-400 bg-gray-100;
           @apply sticky;
           top: 33px;
-          @apply flex flex-col items-start gap-0.5 justify-between;
+          @apply flex flex-col items-stretch gap-0.5 justify-between;
 
           .title {
             @apply font-bold;
@@ -104,7 +126,7 @@
         @apply contents;
 
         .cell {
-          @apply bg-white text-black;
+          @apply bg-white text-black whitespace-pre-wrap;
         }
 
         &:hover .cell {
