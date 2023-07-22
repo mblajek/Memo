@@ -62,7 +62,7 @@ class UserController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/user/status/{facility}',
-        description: new PermissionDescribe(Permission::unverified, Permission::verified),
+        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
         summary: 'User status',
         tags: ['User'],
         parameters: [
@@ -123,7 +123,7 @@ class UserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/password',
-        description: new PermissionDescribe(Permission::unverified, Permission::verified),
+        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
         summary: 'Change user password',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
