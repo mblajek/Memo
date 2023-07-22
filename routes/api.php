@@ -30,6 +30,9 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/facility')->group(function () {
             Route::get('/list', [SystemController::class, 'facilityList']);
         });
+        Route::prefix('/dictionary')->group(function () {
+            Route::get('/list', [SystemController::class, 'dictionaryList']);
+        });
     });
     Route::prefix('/user')->group(function () {
         Route::post('/login', [UserController::class, 'login']);
