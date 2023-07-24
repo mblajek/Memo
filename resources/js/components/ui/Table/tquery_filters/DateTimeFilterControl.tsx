@@ -59,6 +59,7 @@ export const DateTimeFilterControl: Component<Props> = props => {
     <div>{t("range.from")}</div>
     <div class={ts.wideEdit}>
       <input
+        name={`table_filter_from_${props.name}`}
         type={inputType()}
         class="h-full w-full border rounded"
         max={toDateTimeInput(upper())}
@@ -69,6 +70,7 @@ export const DateTimeFilterControl: Component<Props> = props => {
     <div>{t("range.to")}</div>
     <div class={ts.wideEdit}>
       <input
+        name={`table_filter_to_${props.name}`}
         type={inputType()}
         class="h-full w-full border rounded"
         min={toDateTimeInput(lower())}

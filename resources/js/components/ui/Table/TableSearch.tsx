@@ -14,6 +14,7 @@ export const TableSearch: Component<ParentProps<Props>> = props => {
   createComputed(() => table.setGlobalFilter(query()));
   return <div class={cx(tableStyle.searchBar)}>
     <input
+      name="table_global_search"
       type="search"
       placeholder={props.placeholder || t("tables.search")}
       value={query()}

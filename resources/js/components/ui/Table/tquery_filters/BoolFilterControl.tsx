@@ -14,6 +14,7 @@ export const BoolFilterControl: FilterControl<BoolColumnFilter> = props => {
   const t = useLangFunc();
   return <div class={ts.filterLine}>
     <select
+      name={`table_filter_val_${props.name}`}
       class="flex-grow border rounded"
       value={String(props.filter?.val ?? "-")[0]}
       onChange={({target: {value}}) => props.setFilter(

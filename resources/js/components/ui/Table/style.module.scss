@@ -15,6 +15,10 @@
 .columnFilterController {
   @apply flex items-stretch gap-0.5;
 
+  input {
+    @apply px-1;
+  }
+
   .filterMain {
     @apply flex-grow;
 

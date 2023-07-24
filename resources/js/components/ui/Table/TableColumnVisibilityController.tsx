@@ -30,6 +30,7 @@ export const TableColumnVisibilityController: Component = () => {
             <For each={table.getAllLeafColumns()}>
               {column => <label>
                 <input
+                  name={`column_visibility_${column.id}`}
                   checked={column.getIsVisible()}
                   onChange={column.getToggleVisibilityHandler()}
                   type="checkbox"

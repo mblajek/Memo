@@ -26,6 +26,7 @@ export const StringFilterControl: FilterControl<StringColumnFilter> = props => {
   })));
   return <div class={ts.filterLine}>
     <select
+      name={`table_filter_op_${props.name}`}
       class="border rounded"
       value={(props.filter || defFilter()).op}
       onChange={({target: {value}}) => setOrDisableFilter({
@@ -39,6 +40,7 @@ export const StringFilterControl: FilterControl<StringColumnFilter> = props => {
     </select>
     <div class={ts.wideEdit}>
       <input
+        name={`table_filter_val_${props.name}`}
         type="search"
         class="h-full w-full border rounded"
         value={val()}
