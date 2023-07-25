@@ -1,8 +1,9 @@
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
+import {buildFuzzyGlobalFilter} from "components/ui";
 import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
 import {SetStoreFunction, Store, createStore} from "solid-js/store";
-import {Column, ColumnName, DataRequest, DataResponse, Filter, GlobalFilter, RequestCreator, Schema} from ".";
+import {Column, ColumnName, DataRequest, DataResponse, Filter, RequestCreator, Schema} from ".";
 
 /** A collection of column filters, keyed by column name. */
 export type ColumnFilters = Partial<Record<ColumnName, Filter | undefined>>;
@@ -52,27 +53,26 @@ export function createTableRequestCreator({
     // eslint-disable-next-line solid/reactivity
     const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
     // Initialise the request parts based on the schema.
-    createComputed(() => {
-      const sch = schema();
-      if (sch) {
+    createComputed(on(schema, schema => {
+      if (schema) {
         let visibility: VisibilityState;
-        if (sch.suggestedColumns) {
-          visibility = allColumnsVisibility(sch, {visible: false});
-          for (const name of sch.suggestedColumns)
+        if (schema.suggestedColumns) {
+          visibility = allColumnsVisibility(schema, {visible: false});
+          for (const name of schema.suggestedColumns)
             visibility[name] = true;
         } else
-          visibility = allColumnsVisibility(sch);
+          visibility = allColumnsVisibility(schema);
         setColumnVisibility(visibility);
         setColumnFilters({});
-        for (const {name} of sch.columns)
+        for (const {name} of schema.columns)
           setColumnFilters(name, undefined);
-        setSorting((sch.suggestedSort || []).map(({column, dir}) => ({
+        setSorting((schema.suggestedSort || []).map(({column, dir}) => ({
           id: column,
           desc: dir === "desc",
         })));
         setAllInited(true);
       }
-    });
+    }));
     createComputed(on([schema, columnVisibility],
       ([schema, columnVisibility], prev) => {
         if (schema) {
@@ -120,11 +120,7 @@ export function createTableRequestCreator({
               op: "&",
               val: [
                 intrinsicFilter,
-                globalFilter ? {
-                  type: "global",
-                  op: "%v%",
-                  val: globalFilter,
-                } satisfies GlobalFilter : undefined,
+                buildFuzzyGlobalFilter(globalFilter),
                 ...columnFiltersJoined,
               ].filter(NON_NULLABLE),
             },

@@ -18,10 +18,7 @@ export const TableSearch: Component<ParentProps<Props>> = props => {
       type="search"
       placeholder={props.placeholder || t("tables.search")}
       value={query()}
-      onInput={e => {
-        e.preventDefault();
-        setQuery(e.target.value);
-      }}
+      onInput={({target: {value}}) => setQuery(value)}
     />
   </div>;
 };
