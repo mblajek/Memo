@@ -2,7 +2,7 @@ import {CellContext, ColumnDefTemplate, IdentifiedColumnDef, RowData, createColu
 import {DATE_FORMAT, DATE_TIME_FORMAT, TranslationEntriesInterface, TranslationEntriesPrefix, useLangFunc} from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
 import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
-import {Pagination, SortMarker, TableColumnVisibilityController, TableContextProvider, TableSearch, TableSummary, tableStyle as ts} from ".";
+import {Pagination, SortMarker, TableColumnVisibilityController, TableContextProvider, TableSearch, TableSummary, getHeaders, tableStyle as ts} from ".";
 import {ColumnFilterController, Spinner} from "..";
 
 /** Type of tquery-related information in column meta. */
@@ -162,37 +162,37 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
               "grid-template-columns": gridTemplateColumns(),
             }}>
             <div class={ts.headerRow}>
-              <For each={table.getLeafHeaders()}>
-                {header => <Show when={header.column.getIsVisible()}>
+              <For each={getHeaders(table)}>
+                {({header, column}) => <Show when={header()}>
                   <div class={ts.cell}>
                     <span
                       class={ts.title}
-                      classList={{"cursor-pointer": header.column.getCanSort()}}
+                      classList={{"cursor-pointer": column.getCanSort()}}
                       onClick={e => {
                         e.preventDefault();
-                        if (header.column.getCanSort())
-                          header.column.toggleSorting(undefined, e.altKey);
+                        if (column.getCanSort())
+                          column.toggleSorting(undefined, e.altKey);
                       }}
-                      title={header.column.getCanSort() ? t("tables.sort_tooltip") : undefined}
+                      title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
                     >
-                      {header.isPlaceholder ? undefined : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
+                      {header()?.isPlaceholder ? undefined : flexRender(
+                        column.columnDef.header,
+                        header()!.getContext(),
                       )}
-                      {" "}<SortMarker column={header.column} />
+                      {" "}<SortMarker column={column} />
                     </span>
-                    <Show when={header.column.getCanFilter()}>
+                    <Show when={column.getCanFilter()}>
                       <ColumnFilterController
-                        name={header.column.id}
-                        filter={columnFilters[header.column.id]}
-                        setFilter={filter => setColumnFilters(header.column.id, filter)}
+                        name={column.id}
+                        filter={columnFilters[column.id]}
+                        setFilter={filter => setColumnFilters(column.id, filter)}
                       />
                     </Show>
-                    <Show when={header.column.getCanResize()}>
+                    <Show when={column.getCanResize()}>
                       <div class={ts.resizeHandler}
-                        classList={{[ts.resizing!]: header.column.getIsResizing()}}
-                        onMouseDown={header.getResizeHandler()}
-                        onTouchStart={header.getResizeHandler()}
+                        classList={{[ts.resizing!]: column.getIsResizing()}}
+                        onMouseDown={header()?.getResizeHandler()}
+                        onTouchStart={header()?.getResizeHandler()}
                       />
                     </Show>
                   </div>
