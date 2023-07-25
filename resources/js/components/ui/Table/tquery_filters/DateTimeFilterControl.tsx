@@ -52,6 +52,7 @@ export const DateTimeFilterControl: Component<Props> = props => {
       } : undefined).filter(NON_NULLABLE),
     } : undefined);
   }
+  const canDblClickToCopy = () => props.columnType === "date";
   return <div
     class="grid gap-0.5 gap-x-1 items-baseline"
     style={{"grid-template-columns": "auto 1fr"}}
@@ -65,6 +66,15 @@ export const DateTimeFilterControl: Component<Props> = props => {
         max={toDateTimeInput(upper())}
         value={toDateTimeInput(lower())}
         onInput={({target: {value}}) => setOrDisableFilter(">=", value)}
+        onDblClick={({target}) => {
+          if (canDblClickToCopy()) {
+            const {value} = target as HTMLInputElement;
+            if (value)
+              setOrDisableFilter("<=", value)
+          }
+        }}
+        title={canDblClickToCopy() ?
+          t("tables.filter.dbl_click_to_copy_lower_to_upper") : undefined}
       />
     </div>
     <div>{t("range.to")}</div>

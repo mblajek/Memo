@@ -13,7 +13,7 @@
 }
 
 .columnFilterController {
-  @apply flex items-stretch gap-0.5;
+  @apply flex items-end gap-0.5;
 
   input {
     @apply px-1;
@@ -34,7 +34,7 @@
   }
 
   .filterIcon {
-    @apply mt-1;
+    @apply mb-1;
   }
 }
 

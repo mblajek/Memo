@@ -28,6 +28,7 @@
   "filter": {
     "filter_cleared": "Brak filtra",
     "filter_set": "Filtr aktywny",
-    "click_to_clear": "Kliknij aby wyczyścić"
+    "click_to_clear": "Kliknij aby wyczyścić",
+    "dbl_click_to_copy_lower_to_upper": "Kliknij podwójnie aby skopiować na dół"
   }
 }
