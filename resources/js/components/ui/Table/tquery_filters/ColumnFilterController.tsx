@@ -6,12 +6,16 @@ import {FilterIcon, tableStyle as ts, useTable} from "..";
 import {BoolFilterControl} from "./BoolFilterControl";
 import {DateFilterControl} from "./DateFilterControl";
 import {DateTimeFilterControl} from "./DateTimeFilterControl";
+import {Decimal0FilterControl} from "./Decimal0FilterControl";
+import {Decimal2FilterControl} from "./Decimal2FilterControl";
 import {StringFilterControl} from "./StringFilterControl";
 
 const CONTROLS_BY_TYPE = new Map<ColumnType, FilterControl<any>>()
-  .set("bool", BoolFilterControl)
   .set("string", StringFilterControl)
   .set("text", StringFilterControl)
+  .set("decimal0", Decimal0FilterControl)
+  .set("decimal2", Decimal2FilterControl)
+  .set("bool", BoolFilterControl)
   .set("date", DateFilterControl)
   .set("datetime", DateTimeFilterControl);
 

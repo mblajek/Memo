@@ -20,6 +20,7 @@ export const FilterIcon: Component<Props> = props => {
       ].filter(Boolean).join("\n") :
       t("tables.filter.filter_cleared")
   }
+    classList={{"cursor-pointer": props.isFiltering}}
     onMouseEnter={() => setHover(true)}
     onMouseLeave={() => setHover(false)}
     onClick={() => props.onClear?.()}

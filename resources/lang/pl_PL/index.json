@@ -41,6 +41,8 @@
 
   "range": {
     "from": "od:",
-    "to": "do:"
+    "to": "do:",
+    "min": "min:",
+    "max": "maks:"
   }
 }

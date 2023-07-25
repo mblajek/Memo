@@ -17,6 +17,18 @@
 
   input {
     @apply px-1;
+
+    &[type="number"] {
+      @apply pr-0;
+    }
+  }
+
+  .dateInputContainer {
+    min-width: 8em;
+  }
+
+  .dateTimeInputContainer {
+    min-width: 11em;
   }
 
   .filterMain {
@@ -29,6 +41,19 @@
       .wideEdit {
         @apply flex-grow;
         flex-basis: 3em;
+      }
+    }
+
+    .valuesSyncer {
+      width: 6px;
+      height: 55%;
+      @apply row-span-2 self-center -mr-0.5;
+      @apply border-2 border-r-0 border-current text-black text-opacity-30 cursor-pointer;
+      border-start-start-radius: 3px;
+      border-end-start-radius: 3px;
+
+      &.inactive {
+        @apply text-opacity-5 cursor-auto;
       }
     }
   }

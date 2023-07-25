@@ -99,6 +99,7 @@ export function startUsersMock() {
     {name: "email", type: "string"},
     {name: "createdAt", type: "datetime"},
     {name: "facilitiesMember", type: "text"},
+    {name: "numFacilities", type: "decimal0"},
     {name: "hasGlobalAdmin", type: "bool"},
   ];
   setupWorker(
@@ -130,6 +131,7 @@ export function startUsersMock() {
           (facilitiesQuery?.data?.find(f => f.id === m.facilityId)?.name || m.facilityId) +
           (m.hasFacilityAdmin ? " *" : "")
         ).sort().join("\n"),
+        numFacilities: entry.members.length,
         hasGlobalAdmin: entry.hasGlobalAdmin,
       }));
       const {filter} = request;

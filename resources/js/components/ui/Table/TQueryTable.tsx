@@ -53,23 +53,30 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   const t = useLangFunc();
   // eslint-disable-next-line solid/reactivity
   const tt = TableTranslations.forPrefix(() => props.translations || "tables.tables.generic");
-  const boolText = [t("bool_values.no"), t("bool_values.yes")];
 
   const SORTABLE_COLUMN_TYPES = new Set<ColumnType>([
     "string", "decimal0", "decimal2", "bool", "date", "datetime",
   ]);
 
+  type CellTemplate = ColumnDefTemplate<CellContext<object, unknown>>;
+
+  function cellFunc<V>(func: (v: V) => CellTemplate | undefined):
+    (c: CellContext<object, unknown>) => CellTemplate | undefined {
+    return c => {
+      const val = c.getValue();
+      if (val === undefined)
+        return undefined;
+      return func(val as V);
+    };
+  }
+
   const COLUMN_CELL_BY_TYPE =
-    new Map<ColumnType, ColumnDefTemplate<CellContext<object, unknown>>>()
-      .set("bool", c => boolText[Number(c.getValue())])
-      .set("date", c => {
-        const v = c.getValue();
-        return v && DATE_FORMAT.format(new Date(v as string));
-      })
-      .set("datetime", c => {
-        const v = c.getValue();
-        return v && DATE_TIME_FORMAT.format(new Date(v as string));
-      });
+    new Map<ColumnType, CellTemplate>()
+      .set("decimal0", cellFunc<number>(v => String(v)))
+      .set("decimal2", cellFunc<number>(v => v.toFixed(2)))
+      .set("bool", cellFunc<boolean>(v => v ? t("bool_values.yes") : t("bool_values.no")))
+      .set("date", cellFunc<string>(v => DATE_FORMAT.format(new Date(v))))
+      .set("datetime", cellFunc<string>(v => DATE_TIME_FORMAT.format(new Date(v))));
 
   const defaultCell: ColumnDefTemplate<CellContext<object, unknown>> = c => c.getValue();
 
