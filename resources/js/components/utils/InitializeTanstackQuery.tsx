@@ -24,6 +24,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             refetchOnMount: false,
             refetchOnWindowFocus: false,
             retry: false,
+            retryOnMount: false,
           },
         },
         queryCache: new QueryCache({
