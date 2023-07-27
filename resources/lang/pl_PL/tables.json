@@ -22,7 +22,8 @@
     "email": "E-mail",
     "createdAt": "Czas utworzenia",
     "facilitiesMember": "Placówki",
-    "hasGlobalAdmin": "Globalny administrator"
+    "hasGlobalAdmin": "Globalny administrator",
+    "actions": "Akcje"
   },
   "sort_tooltip": "Sortuj",
   "filter": {

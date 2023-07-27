@@ -13,7 +13,7 @@ export interface TQueryColumnMeta {
 declare module '@tanstack/table-core' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
-    tquery: TQueryColumnMeta;
+    tquery?: TQueryColumnMeta;
   }
 }
 
@@ -43,8 +43,11 @@ export interface TQueryTableProps {
    * prefix, you can customise the table to show e.g. "5 users".
    */
   translations?: TranslationEntriesPrefix<typeof TableTranslations>;
+  /** Additional column names. Their options are taken from `columnOptions`. */
+  additionalColumns?: string[];
   /** Overrides for the definition of specific columns. */
   columnOptions?: Partial<Record<string, ColumnOptions>>;
+  initialVisibleColumns?: string[];
   initialPageSize?: number;
 }
 
@@ -82,6 +85,8 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
 
   const requestCreator = createTableRequestCreator({
     intrinsicFilter: () => props.intrinsicFilter,
+    additionalColumns: props.additionalColumns,
+    initialVisibleColumns: props.initialVisibleColumns,
     initialPageSize: props.initialPageSize,
   });
   const {
@@ -107,19 +112,45 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   });
 
   const h = createColumnHelper<object>();
-  const columns = createMemo(() =>
-    (schema()?.columns || []).map(({type, name}) =>
-      h.accessor(name, {
-        header: t(`tables.headers.${name}`),
-        enableSorting: SORTABLE_COLUMN_TYPES.has(type),
-        cell: COLUMN_CELL_BY_TYPE.get(type) || defaultCell,
-        meta: {
-          tquery: {
-            type,
-          } satisfies TQueryColumnMeta,
-        },
-        ...props.columnOptions?.[name]?.columnDef,
-      })));
+  function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
+    return {
+      header: t(`tables.headers.${name}`),
+      ...props.columnOptions?.[name]?.columnDef,
+    };
+  }
+  const columns = createMemo(() => {
+    const sch = schema();
+    if (sch) {
+      const badColumns = new Set(Object.keys(props.columnOptions || {}));
+      for (const {name} of sch.columns)
+        badColumns.delete(name);
+      for (const name of props.additionalColumns || [])
+        badColumns.delete(name);
+      if (badColumns.size)
+        console.error(`Some columns are configured but not present in the columns list: ` +
+          [...badColumns].join(", "));
+      return [
+        ...sch.columns.map(({type, name}) =>
+          h.accessor(name, {
+            enableSorting: SORTABLE_COLUMN_TYPES.has(type),
+            cell: COLUMN_CELL_BY_TYPE.get(type) || defaultCell,
+            meta: {
+              tquery: {
+                type,
+              } satisfies TQueryColumnMeta,
+            },
+            ...commonColumnDef(name),
+          })),
+        ...(props.additionalColumns || []).map(name =>
+          h.display({
+            id: name,
+            ...commonColumnDef(name),
+          })
+        ),
+      ];
+    }
+    return [];
+  });
 
   const table = createSolidTable({
     get data() {return data();},

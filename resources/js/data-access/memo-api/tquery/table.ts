@@ -22,9 +22,11 @@ const DEFAULT_PAGE_SIZE = 50;
 /**
  * Returns visibility state with visibility of all the columns set explicitly to the given value.
  */
-function allColumnsVisibility(schema: Schema, {visible = true} = {}) {
+function allColumnsVisibility(schema: Schema, additionalColumns: string[], {visible = true} = {}) {
   const visibility: VisibilityState = {}
   for (const {name} of schema.columns)
+    visibility[name] = visible;
+  for (const name of additionalColumns)
     visibility[name] = visible;
   return visibility;
 }
@@ -37,9 +39,13 @@ function allColumnsVisibility(schema: Schema, {visible = true} = {}) {
  */
 export function createTableRequestCreator({
   intrinsicFilter = () => undefined,
+  additionalColumns = [],
+  initialVisibleColumns,
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
   intrinsicFilter?: Accessor<Filter | undefined>,
+  additionalColumns?: string[],
+  initialVisibleColumns?: string[],
   initialPageSize?: number,
 }): RequestCreator<RequestController> {
   return schema => {
@@ -56,12 +62,18 @@ export function createTableRequestCreator({
     createComputed(on(schema, schema => {
       if (schema) {
         let visibility: VisibilityState;
-        if (schema.suggestedColumns) {
-          visibility = allColumnsVisibility(schema, {visible: false});
+        if (initialVisibleColumns) {
+          visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
+          for (const name of initialVisibleColumns)
+            visibility[name] = true;
+        } else if (schema.suggestedColumns) {
+          visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
           for (const name of schema.suggestedColumns)
             visibility[name] = true;
+          for (const name of additionalColumns)
+            visibility[name] = true;
         } else
-          visibility = allColumnsVisibility(schema);
+          visibility = allColumnsVisibility(schema, additionalColumns);
         setColumnVisibility(visibility);
         setColumnFilters({});
         for (const {name} of schema.columns)
@@ -82,7 +94,7 @@ export function createTableRequestCreator({
             // Revert to the previous visibility state if possible, otherwise show all columns.
             setColumnVisibility(
               prevColumnVisibility && Object.values(prevColumnVisibility).some(v => v) ?
-                prevColumnVisibility : allColumnsVisibility(schema));
+                prevColumnVisibility : allColumnsVisibility(schema, additionalColumns));
           }
           // Remove column filters for hidden columns.
           for (const {name} of schema.columns)
