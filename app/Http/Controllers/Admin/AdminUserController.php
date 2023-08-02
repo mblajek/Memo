@@ -47,7 +47,7 @@ class AdminUserController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/admin/user',
-        description: 'Permissions: ' . Permission::globalAdmin->name,
+        description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'Create user',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -87,7 +87,7 @@ class AdminUserController extends ApiController
 
     #[OA\Patch(
         path: '/api/v1/admin/user/{user}',
-        description: 'Permissions: ' . Permission::globalAdmin->name,
+        description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'Update user',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(

@@ -26,6 +26,7 @@ use Illuminate\Validation\Rules\Password;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property string created_by
+ * @property ?string $last_login_facility_id
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $password_expire_at
  * @property-read Collection<Member> $members
@@ -54,6 +55,7 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'created_by',
+        'last_login_facility_id',
         'global_admin_grant_id',
         'password_expire_at',
     ];
@@ -94,6 +96,7 @@ class User extends Authenticatable
                 new RequirePresent('password_expire_at'),
             ],
             'password_expire_at' => 'sometimes|nullable|date',
+            'last_login_facility_id' => 'nullable|uuid|exists:facilities,id',
             'has_global_admin' => 'required|bool',
         };
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
@@ -11,6 +12,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Rules\RequirePresent;
 use App\Services\User\ChangePasswordService;
+use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -23,8 +25,7 @@ class UserController extends ApiController
     protected function initPermissions(): void
     {
         $this->permissionOneOf(Permission::any);
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('status');
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('password');
+        $this->permissionOneOf(Permission::unverified, Permission::verified)->only(['patch', 'status', 'password']);
     }
 
     #[OA\Post(
@@ -60,6 +61,37 @@ class UserController extends ApiController
         return ExceptionFactory::badCredentials()->render();
     }
 
+    #[OA\Patch(
+        path: '/api/v1/user',
+        description: new PermissionDescribe([Permission::verified, Permission::unverified]),
+        summary: 'Update logged user',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+            properties: [
+                new OA\Property(property: 'lastLoginFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
+            ]
+        )
+        ),
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'Updated'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )] /** @throws ApiException|Throwable */
+    public function patch(Request $request, UpdateUserService $service): JsonResponse
+    {
+        $user = $this->getUserOrFail();
+        $data = $request->validate(
+            User::getPatchValidator([
+                'last_login_facility_id',
+            ], $user)
+        );
+        $service->handle($user, $data);
+
+        return new JsonResponse();
+    }
+
     #[OA\Get(
         path: '/api/v1/user/status/{facility}',
         description: new PermissionDescribe([Permission::unverified, Permission::verified]),
@@ -93,6 +125,7 @@ class UserController extends ApiController
             )
             ),
             new OA\Response(response: 401, description: 'Unauthorised'),
+            new OA\Response(response: 404, description: 'Not found'),
         ]
     )]
     public function status(): JsonResponse
