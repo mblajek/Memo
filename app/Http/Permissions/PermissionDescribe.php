@@ -27,7 +27,7 @@ readonly class PermissionDescribe implements \Stringable
             $result[] = ($countParams !== 1 && count($group) !== 1) ? "($singleResult)" : $singleResult;
         }
 
-        $this->description = 'Permissions: ' . (implode(' AND ',  $result)?:Permission::any->name);
+        $this->description = 'Permissions: ' . (implode(' AND ', $result) ?: Permission::any->name);
     }
 
     public function __toString(): string
