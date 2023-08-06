@@ -12,7 +12,7 @@ import { parseGetResponse } from "../utils";
 export namespace User {
   export const getStatus = () =>
     V1.get<Api.Response.Get<GetStatusData>>("/user/status").then(
-      parseGetResponse
+      parseGetResponse,
     );
 
   export const login = (data: LoginRequest) =>

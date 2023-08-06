@@ -5,7 +5,7 @@ import { lazy, type Component } from "solid-js";
 
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(
-  () => import("features/authentication/pages/Login.page")
+  () => import("features/authentication/pages/Login.page"),
 );
 
 const App: Component = () => {

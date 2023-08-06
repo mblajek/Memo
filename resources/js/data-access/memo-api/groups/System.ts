@@ -11,7 +11,7 @@ import { parseGetListResponse } from "../utils";
 export namespace System {
   export const getFacilitiesList = () =>
     V1.get<Api.Response.GetList<FacilityResource>>(
-      "/system/facility/list"
+      "/system/facility/list",
     ).then(parseGetListResponse);
 
   export const keys = {

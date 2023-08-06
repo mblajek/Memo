@@ -1,9 +1,17 @@
-import {useLocation, useNavigate, useParams} from "@solidjs/router";
-import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
-import {QueryBarrier, cx, getLangFunc} from "components/utils";
-import {System, User} from "data-access/memo-api";
-import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
-import {Component, For, Match, Switch, createSignal, onMount} from "solid-js";
+import { useLocation, useNavigate, useParams } from "@solidjs/router";
+import {
+  createMutation,
+  createQuery,
+  useQueryClient,
+} from "@tanstack/solid-query";
+import { QueryBarrier, cx, getLangFunc } from "components/utils";
+import { System, User } from "data-access/memo-api";
+import {
+  HiOutlineCheckCircle,
+  HiOutlinePower,
+  HiOutlineXCircle,
+} from "solid-icons/hi";
+import { Component, For, Match, Switch, createSignal, onMount } from "solid-js";
 import s from "./style.module.scss";
 
 export const Header: Component = () => {
@@ -19,7 +27,7 @@ export const Header: Component = () => {
 const FacilitySelect: Component = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const params = useParams<{facilityUrl: string}>();
+  const params = useParams<{ facilityUrl: string }>();
 
   const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
 
@@ -56,7 +64,7 @@ const HeaderRight = () => {
   const logout = createMutation(() => ({
     mutationFn: User.logout,
     onSuccess() {
-      queryClient.invalidateQueries({queryKey: User.keys.status()});
+      queryClient.invalidateQueries({ queryKey: User.keys.status() });
     },
   }));
 

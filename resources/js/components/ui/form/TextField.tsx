@@ -1,6 +1,6 @@
-import {ValidationMessage} from "@felte/reporter-solid";
-import {cx} from "components/utils";
-import {Component, Index, JSX} from "solid-js";
+import { ValidationMessage } from "@felte/reporter-solid";
+import { cx } from "components/utils";
+import { Component, Index, JSX } from "solid-js";
 
 export interface TextFieldProps
   extends JSX.InputHTMLAttributes<HTMLInputElement> {
@@ -22,7 +22,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
         class={cx(
           "w-full border border-gray-400 rounded-sm p-2",
           "aria-invalid:border-red-400",
-          props.class
+          props.class,
         )}
       />
       <ValidationMessage

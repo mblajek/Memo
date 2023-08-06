@@ -1,5 +1,5 @@
-import {useTransContext} from "@mbarzda/solid-i18next";
-import {TOptions} from "i18next";
+import { useTransContext } from "@mbarzda/solid-i18next";
+import { TOptions } from "i18next";
 
 /**
  * A wrapper for useTransContext with the basic overload options, and with better

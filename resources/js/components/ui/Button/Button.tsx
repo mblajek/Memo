@@ -1,5 +1,5 @@
-import {Button as KButton} from "@kobalte/core";
-import {Component, JSX, mergeProps, splitProps} from "solid-js";
+import { Button as KButton } from "@kobalte/core";
+import { Component, JSX, mergeProps, splitProps } from "solid-js";
 
 /**
  * @todo custom props and styles

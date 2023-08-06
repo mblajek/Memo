@@ -33,7 +33,7 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
         </div>
       ),
     },
-    props
+    props,
   );
 
   const isError = () => merged.queries.some(({ isError }) => isError);

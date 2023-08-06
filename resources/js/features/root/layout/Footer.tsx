@@ -1,5 +1,5 @@
-import {cx} from "components/utils";
-import {Component} from "solid-js";
+import { cx } from "components/utils";
+import { Component } from "solid-js";
 import s from "./style.module.scss";
 
 export const Footer: Component = () => {

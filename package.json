@@ -2,7 +2,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "format": "prettier resources/js --write"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.61.0",
@@ -15,6 +16,7 @@
     "eslint-plugin-solid": "^0.12.1",
     "laravel-vite-plugin": "^0.7.2",
     "postcss": "^8.4.23",
+    "prettier": "^3.0.1",
     "sass": "^1.62.1",
     "tailwindcss": "^3.3.1",
     "typescript": "^5.0.4",

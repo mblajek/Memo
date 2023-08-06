@@ -1,5 +1,5 @@
-import {cx} from "components/utils";
-import {ParentComponent} from "solid-js";
+import { cx } from "components/utils";
+import { ParentComponent } from "solid-js";
 import s from "./style.module.scss";
 
 export const Container: ParentComponent = (props) => {
@@ -7,7 +7,7 @@ export const Container: ParentComponent = (props) => {
     <div
       class={cx(
         s.container,
-        "min-h-screen h-screen max-h-screen p-0 m-0 bg-white overflow-hidden"
+        "min-h-screen h-screen max-h-screen p-0 m-0 bg-white overflow-hidden",
       )}
     >
       {props.children}

@@ -1,13 +1,19 @@
-import {A, AnchorProps, Location, useLocation, useParams} from "@solidjs/router";
-import {cx} from "components/utils";
-import {IconTypes} from "solid-icons";
-import {HiSolidInformationCircle, HiSolidUserGroup} from "solid-icons/hi";
-import {Component, For, Show} from "solid-js";
+import {
+  A,
+  AnchorProps,
+  Location,
+  useLocation,
+  useParams,
+} from "@solidjs/router";
+import { cx } from "components/utils";
+import { IconTypes } from "solid-icons";
+import { HiSolidInformationCircle, HiSolidUserGroup } from "solid-icons/hi";
+import { Component, For, Show } from "solid-js";
 import s from "./style.module.scss";
 
 export const Navbar: Component = () => {
   const location = useLocation();
-  const params = useParams<{facilityUrl?: string}>();
+  const params = useParams<{ facilityUrl?: string }>();
 
   return (
     <aside class={cx(s.sidebar)}>
@@ -20,7 +26,7 @@ export const Navbar: Component = () => {
           <For each={NAVBAR_ITEMS}>
             {(item) => (
               <A
-                href={item.hrefFn({location, params})}
+                href={item.hrefFn({ location, params })}
                 class="mb-2 p-4 rounded-lg flex flex-row items-center gap-3 hover:bg-white"
                 activeClass="bg-white"
               >
@@ -53,7 +59,7 @@ export const Navbar: Component = () => {
 };
 
 export type HrefFnArgs = {
-  params: {facilityUrl?: string};
+  params: { facilityUrl?: string };
   location: Location;
 };
 
@@ -66,7 +72,7 @@ export type NavbarItem = {
 const NAVBAR_ITEMS: NavbarItem[] = [
   {
     Icon: HiSolidUserGroup,
-    hrefFn: ({params: {facilityUrl}}) => {
+    hrefFn: ({ params: { facilityUrl } }) => {
       if (facilityUrl) return `/${facilityUrl}/admin`;
       return "/help";
     },

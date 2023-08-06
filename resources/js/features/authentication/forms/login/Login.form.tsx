@@ -1,12 +1,12 @@
-import {FormConfigWithoutTransformFn} from "@felte/core";
-import {useTransContext} from "@mbarzda/solid-i18next";
-import {createMutation, useQueryClient} from "@tanstack/solid-query";
-import {FelteForm, FelteSubmit} from "components/felte-form";
-import {TextField} from "components/ui";
-import {User} from "data-access/memo-api";
-import {Component} from "solid-js";
-import {z} from "zod";
-import {getLangFunc} from "components/utils";
+import { FormConfigWithoutTransformFn } from "@felte/core";
+import { useTransContext } from "@mbarzda/solid-i18next";
+import { createMutation, useQueryClient } from "@tanstack/solid-query";
+import { FelteForm, FelteSubmit } from "components/felte-form";
+import { TextField } from "components/ui";
+import { User } from "data-access/memo-api";
+import { Component } from "solid-js";
+import { z } from "zod";
+import { getLangFunc } from "components/utils";
 
 export namespace LoginForm {
   export const getSchema = () =>
@@ -29,7 +29,7 @@ export namespace LoginForm {
     const mutation = createMutation(() => ({
       mutationFn: User.login,
       onSuccess() {
-        queryClient.invalidateQueries({queryKey: User.keys.status()});
+        queryClient.invalidateQueries({ queryKey: User.keys.status() });
       },
     }));
 

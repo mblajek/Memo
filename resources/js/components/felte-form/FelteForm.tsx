@@ -1,14 +1,20 @@
-import {Form, FormConfigWithoutTransformFn, KnownHelpers, Obj, Paths} from "@felte/core";
-import {reporter} from "@felte/reporter-solid";
-import {createForm} from "@felte/solid";
-import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
-import {validator} from "@felte/validator-zod";
-import {isAxiosError} from "axios";
-import {Api} from "data-access/memo-api/types";
-import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
+import {
+  Form,
+  FormConfigWithoutTransformFn,
+  KnownHelpers,
+  Obj,
+  Paths,
+} from "@felte/core";
+import { reporter } from "@felte/reporter-solid";
+import { createForm } from "@felte/solid";
+import { type KnownStores } from "@felte/solid/dist/esm/create-accessor";
+import { validator } from "@felte/validator-zod";
+import { isAxiosError } from "axios";
+import { Api } from "data-access/memo-api/types";
+import { Context, JSX, createContext, splitProps, useContext } from "solid-js";
 import toast from "solid-toast";
-import {ZodSchema} from "zod";
-import {getLangFunc} from "../utils";
+import { ZodSchema } from "zod";
+import { getLangFunc } from "../utils";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
@@ -48,12 +54,12 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
       "transform",
       "validate",
       "warn",
-    ]
+    ],
   );
 
   const form = createForm<T>({
     ...createFormOptions,
-    extend: [validator({schema: local.schema}), reporter],
+    extend: [validator({ schema: local.schema }), reporter],
     onError: (error, ctx) => {
       createFormOptions?.onError?.(error, ctx);
       if (isAxiosError<Api.ErrorResponse>(error)) {
@@ -74,7 +80,7 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
   });
 
   return (
-    <FormContext.Provider value={{form, props}}>
+    <FormContext.Provider value={{ form, props }}>
       <form ref={form.form} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()}>
           {local.children}
@@ -91,7 +97,7 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
  */
 export const useFormContext = <T extends Obj = Obj>() => {
   const value = useContext(
-    FormContext as unknown as Context<FormContextValue<T>>
+    FormContext as unknown as Context<FormContextValue<T>>,
   );
 
   if (value === undefined)

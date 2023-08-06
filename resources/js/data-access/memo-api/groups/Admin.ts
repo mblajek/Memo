@@ -15,6 +15,6 @@ export namespace Admin {
 
   export const getUsers = () =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list").then(
-      parseGetListResponse
+      parseGetListResponse,
     );
 }

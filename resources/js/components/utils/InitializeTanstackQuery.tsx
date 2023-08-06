@@ -1,12 +1,17 @@
-import {QueryCache, QueryClient, QueryClientProvider, createQuery} from "@tanstack/solid-query";
-import {isAxiosError} from "axios";
-import {MemoLoader} from "components/ui";
-import {System} from "data-access/memo-api";
-import {Api} from "data-access/memo-api/types";
-import {ParentComponent, createMemo} from "solid-js";
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+  createQuery,
+} from "@tanstack/solid-query";
+import { isAxiosError } from "axios";
+import { MemoLoader } from "components/ui";
+import { System } from "data-access/memo-api";
+import { Api } from "data-access/memo-api/types";
+import { ParentComponent, createMemo } from "solid-js";
 import toast from "solid-toast";
-import {QueryBarrier} from "./QueryBarrier";
-import {getLangFunc} from ".";
+import { QueryBarrier } from "./QueryBarrier";
+import { getLangFunc } from ".";
 
 /**
  * Tanstack/solid-query initialization component
@@ -40,7 +45,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             }
           },
         }),
-      })
+      }),
   );
   return (
     <QueryClientProvider client={queryClient()}>
