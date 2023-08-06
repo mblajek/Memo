@@ -4,9 +4,9 @@
     </IfModule>
 
     RewriteEngine On
-    
+
     RewriteCond %{HTTPS} off
-    RewriteCond %{HTTP_HOST} ^(.*)\.fdds\.pl [NC]
+    RewriteCond %{HTTP_HOST} ^[\w-]+\.fdds\.pl [NC]
     RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=301]
 
     # Handle Authorization Header
