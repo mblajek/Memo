@@ -31,16 +31,12 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
           onError(error, query) {
             if (isAxiosError<Api.ErrorResponse>(error)) {
               error.response?.data.errors.forEach((memoError) => {
-                if (
-                  (error?.status && error.status >= 500) ||
-                  !query.meta?.quietError
-                )
-                  toast.error(t(memoError.code));
+                if ((error?.status && error.status >= 500) || !query.meta?.quietError) toast.error(t(memoError.code));
               });
             }
           },
         }),
-      })
+      }),
   );
   return (
     <QueryClientProvider client={queryClient()}>

@@ -19,10 +19,7 @@ const FormContext = createContext(undefined, {
   name: "FormContext",
 });
 
-type FormProps<T extends Obj = Obj> = Omit<
-  JSX.FormHTMLAttributes<HTMLFormElement>,
-  "onSubmit" | "onError"
-> &
+type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onError"> &
   FormConfigWithoutTransformFn<T> & {
     schema: ZodSchema<T>;
   };
@@ -38,17 +35,7 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
   const [local, createFormOptions, formProps] = splitProps(
     props,
     ["children", "schema"],
-    [
-      "debounced",
-      "extend",
-      "initialValues",
-      "onError",
-      "onSubmit",
-      "onSuccess",
-      "transform",
-      "validate",
-      "warn",
-    ]
+    ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
 
   const form = createForm<T>({
@@ -90,12 +77,9 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
  * Usefull in forms with deeply nested components and dependant logic
  */
 export const useFormContext = <T extends Obj = Obj>() => {
-  const value = useContext(
-    FormContext as unknown as Context<FormContextValue<T>>
-  );
+  const value = useContext(FormContext as unknown as Context<FormContextValue<T>>);
 
-  if (value === undefined)
-    throw "useFormContext must be used inside FormContext.Provider";
+  if (value === undefined) throw "useFormContext must be used inside FormContext.Provider";
 
   return value;
 };

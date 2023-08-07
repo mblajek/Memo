@@ -30,18 +30,14 @@ const FacilitySelect: Component = () => {
         value={params.facilityUrl}
         onChange={(e) => {
           if (params.facilityUrl) {
-            const newPathname = location.pathname
-              .split(params.facilityUrl)
-              .join(e.target.value);
+            const newPathname = location.pathname.split(params.facilityUrl).join(e.target.value);
             navigate(newPathname);
           } else {
             navigate(`/${e.target.value}`);
           }
         }}
       >
-        <For each={facilitiesQuery.data}>
-          {(facility) => <option value={facility.url}>{facility.name}</option>}
-        </For>
+        <For each={facilitiesQuery.data}>{(facility) => <option value={facility.url}>{facility.name}</option>}</For>
       </select>
     </QueryBarrier>
   );

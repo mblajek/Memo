@@ -1,6 +1,6 @@
-import { CreateQueryResult } from "@tanstack/solid-query";
-import { ImSpinner2 } from "solid-icons/im";
-import { JSX, Match, ParentProps, Switch, mergeProps } from "solid-js";
+import {CreateQueryResult} from "@tanstack/solid-query";
+import {ImSpinner2} from "solid-icons/im";
+import {JSX, Match, ParentProps, Switch, mergeProps} from "solid-js";
 
 export interface QueryBarrierProps {
   /**
@@ -33,11 +33,11 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
         </div>
       ),
     },
-    props
+    props,
   );
 
-  const isError = () => merged.queries.some(({ isError }) => isError);
-  const isSuccess = () => merged.queries.every(({ isSuccess }) => isSuccess);
+  const isError = () => merged.queries.some(({isError}) => isError);
+  const isSuccess = () => merged.queries.every(({isSuccess}) => isSuccess);
   const isPending = () => !isError() && !isSuccess();
 
   return (

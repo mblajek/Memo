@@ -1,5 +1,5 @@
-import { Meta, Title } from "@solidjs/meta";
-import { ParentComponent, Show } from "solid-js";
+import {Meta, Title} from "@solidjs/meta";
+import {ParentComponent, Show} from "solid-js";
 
 export type PageProps = {
   /**

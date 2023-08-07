@@ -7,6 +7,5 @@ import {TOptions} from "i18next";
  */
 export function getLangFunc() {
   const [t] = useTransContext();
-  return (key: string | string[], options?: TOptions) =>
-    options ? t(key, options) : t(key);
+  return (key: string | string[], options?: TOptions) => (options ? t(key, options) : t(key));
 }
