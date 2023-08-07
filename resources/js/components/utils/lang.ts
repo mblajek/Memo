@@ -1,5 +1,5 @@
-import { useTransContext } from "@mbarzda/solid-i18next";
-import { TOptions } from "i18next";
+import {useTransContext} from "@mbarzda/solid-i18next";
+import {TOptions} from "i18next";
 
 /**
  * A wrapper for useTransContext with the basic overload options, and with better
@@ -7,6 +7,5 @@ import { TOptions } from "i18next";
  */
 export function getLangFunc() {
   const [t] = useTransContext();
-  return (key: string | string[], options?: TOptions) =>
-    options ? t(key, options) : t(key);
+  return (key: string | string[], options?: TOptions) => (options ? t(key, options) : t(key));
 }
