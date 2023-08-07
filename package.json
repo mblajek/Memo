@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "format": "prettier resources/js --write"
+    "format": "prettier resources/js --write",
+    "preinstall": "npx -y only-allow npm"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.61.0",
