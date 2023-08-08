@@ -30,13 +30,15 @@ class AdminUserTqueryController extends ApiController
                     ['name' => 'id', 'type' => 'uuid'],
                     ['name' => 'name', 'type' => 'string'],
                     ['name' => 'email', 'type' => 'string'],
-                    ['name' => 'lastLoginFacilityId', 'type' => 'string'], //todo: 'type' => 'facility'
+                    //todo: 'name' => 'lastLoginFacilityId', 'type' => 'facility' (?)
+                    ['name' => 'lastLoginFacility', 'type' => 'string'],
                     ['name' => 'passwordExpireAt', 'type' => 'datetime'],
                     ['name' => 'hasPassword', 'type' => 'bool'],
                     ['name' => 'createdAt', 'type' => 'datetime'],
                     ['name' => 'updatedAt', 'type' => 'datetime'],
                     ['name' => 'hasEmailVerified', 'type' => 'bool'],
-                    ['name' => 'createdBy', 'type' => 'user'], //todo: 'type' => 'user'
+                    //todo: 'type' => 'user'
+                    ['name' => 'createdBy', 'type' => 'user'],
                     ['name' => 'hasGlobalAdmin', 'type' => 'bool'],
                     ['name' => 'members', 'type' => 'text'],
                 ],
