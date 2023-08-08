@@ -32,10 +32,9 @@ export namespace LoginForm {
       },
     }));
 
-    const onSubmit: FormConfigWithoutTransformFn<LoginForm.Output>["onSubmit"] =
-      async (values) => {
-        await mutation.mutateAsync(values);
-      };
+    const onSubmit: FormConfigWithoutTransformFn<LoginForm.Output>["onSubmit"] = async (values) => {
+      await mutation.mutateAsync(values);
+    };
 
     return (
       <FelteForm

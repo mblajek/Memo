@@ -24,11 +24,12 @@
   - dostępne są wspólne bazy na moim serwerze fddsz_dev1, fddsz_dev2
   - w razie czego można stworzyć kolejne
   - konfiguracja, użytkownik i hasło dostępne u mnie
-  - migracja bazy danych `php artisan migrate` (głównie w celu sprawdzenia połączenia z bazą, zazwyczaj będzie "nothing to migrate")
+  - migracja bazy danych `php artisan migrate` (głównie w celu sprawdzenia połączenia z bazą, zazwyczaj będzie "nothing
+    to migrate")
 - w pliku `.env` warto dodać linię `L5_SWAGGER_GENERATE_ALWAYS=true`
   - w przeciwnym razie aktualizacja `/api/documentation` wymaga `php artisan l5:g`
 - adres: http://localhost:9081/
-- na stronie może się pojawić prośba o wygenerowanie klucza aplikacji, trzeba kliknąć że ok
+- na stronie może się pojawić prośba o wygenerowanie klucza aplikacji, trzeba kliknąć, że ok
 
 ### Kompilacja frontend
 - będąc w konsoli dockera, zainstaluj zależności npa: `npm install`
@@ -47,7 +48,7 @@
     - która trafia na środowisko test
     - poprawki gałęzi rc muszą być mergowane najpierw do rc potem do develop
   - po akceptacji, że działa stabilnie jest merge z rc do gałęzi master i wgranie na produkcję
-    - poprawki gałęzi master muszą trafić najpierw na master, potem rc, potem develop 
+    - poprawki gałęzi master muszą trafić najpierw na master, potem rc, potem develop
   - commity plików help mogą być po polsku
 - kod w razie możliwości bazujący na immutable: const, readonly, valueObjects, funkcje itp.
 
@@ -67,9 +68,9 @@
 - strict
 
 ### Baza danych
-- zgodnie z konwencją laravel'a, nazwy tabel w liczbie mnogiej 
+- zgodnie z konwencją laravel'a, nazwy tabel w liczbie mnogiej
 - każda tabela ma primary key typu uuid (mysql nie posiada typu uuid)
-  - laravel kolumny uuid tworzy jako utf8, co jest bez sensu, więc: 
+  - laravel kolumny uuid tworzy jako utf8, co jest bez sensu, więc:
   - `$table->char('id', 36)->collation('ascii_bin')->primary();`
 - klucze obce (również char(36) ascii_bin) bez `delete/update cascade`
   - na kolumnach typu `not null` domyślne działanie, czyli update i delete restrict

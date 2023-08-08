@@ -35,6 +35,7 @@ Route::prefix('/v1')->group(function () {
         });
     });
     Route::prefix('/user')->group(function () {
+        Route::patch('', [UserController::class, 'patch']);
         Route::post('/login', [UserController::class, 'login']);
         Route::get('/status/{facility?}', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);

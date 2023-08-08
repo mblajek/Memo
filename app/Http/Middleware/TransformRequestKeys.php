@@ -10,7 +10,7 @@ use App\Utils\Transformer\ArrayKeyTransformer;
 use Closure;
 use Illuminate\Http\Request;
 
-class TransformsRequestKeys
+class TransformRequestKeys
 {
     /**
      * @throws ApiValidationException
@@ -25,7 +25,7 @@ class TransformsRequestKeys
                 throw ExceptionFactory::snakeCaseRequest();
             }
 
-            $request->request->replace(ArrayKeyTransformer::toSnake($data));
+            $request->replace(ArrayKeyTransformer::toSnake($data));
         }
 
         return $next($request);

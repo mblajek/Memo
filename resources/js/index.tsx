@@ -15,7 +15,7 @@ const root = document.getElementById("root");
 
 if (!(root instanceof HTMLElement)) {
   throw new Error(
-    "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?"
+    "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?",
   );
 }
 
@@ -44,10 +44,7 @@ render(() => {
           <InitializeTanstackQuery>
             <Router>
               <App />
-              <Toaster
-                position="bottom-right"
-                toastOptions={{className: "mr-4"}}
-              />
+              <Toaster position="bottom-right" toastOptions={{className: "mr-4"}} />
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>

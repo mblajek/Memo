@@ -37,14 +37,8 @@ const App: Component = () => {
             facilityUrl: facilitiesQuery.data?.map(({url}) => url),
           }}
         >
-          <Route
-            path="/"
-            element={<div class="p-4">strona główna placówki</div>}
-          />
-          <Route
-            path="admin"
-            element={<div class="p-4">panel admina placówki</div>}
-          />
+          <Route path="/" element={<div class="p-4">strona główna placówki</div>} />
+          <Route path="admin" element={<div class="p-4">panel admina placówki</div>} />
         </Route>
       </Route>
     </Routes>

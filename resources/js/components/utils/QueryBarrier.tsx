@@ -29,7 +29,7 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
       errorElement: <p>error</p>,
       pendingElement: <Spinner />,
     },
-    props
+    props,
   );
 
   const isError = () => merged.queries.some(({isError}) => isError);
