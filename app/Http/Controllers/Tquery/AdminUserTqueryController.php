@@ -38,7 +38,7 @@ class AdminUserTqueryController extends ApiController
                     ['name' => 'updatedAt', 'type' => 'datetime'],
                     ['name' => 'hasEmailVerified', 'type' => 'bool'],
                     //todo: 'type' => 'user'
-                    ['name' => 'createdBy', 'type' => 'user'],
+                    ['name' => 'createdBy', 'type' => 'string'],
                     ['name' => 'hasGlobalAdmin', 'type' => 'bool'],
                     ['name' => 'members', 'type' => 'text'],
                 ],
