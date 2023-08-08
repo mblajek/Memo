@@ -11,6 +11,8 @@ import {
 import {
   DATE_FORMAT,
   DATE_TIME_FORMAT,
+  DECIMAL0_NUMBER_FORMAT,
+  DECIMAL2_NUMBER_FORMAT,
   TranslationEntriesInterface,
   TranslationEntriesPrefix,
   useLangFunc,
@@ -98,8 +100,8 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   }
 
   const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellTemplate>([
-    ["decimal0", cellFunc<number>((v) => String(v))],
-    ["decimal2", cellFunc<number>((v) => v.toFixed(2))],
+    ["decimal0", cellFunc<number>((v) => DECIMAL0_NUMBER_FORMAT.format(v))],
+    ["decimal2", cellFunc<number>((v) => DECIMAL2_NUMBER_FORMAT.format(v))],
     ["bool", cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no")))],
     ["date", cellFunc<string>((v) => DATE_FORMAT.format(new Date(v)))],
     ["datetime", cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v)))],
