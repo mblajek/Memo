@@ -13,7 +13,7 @@ export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
   const [copied, setCopied] = createSignal(false);
   return (
     <Show when={props.text}>
-      <span title={t("copy_to_clipboard")}>
+      <button title={t("copy_to_clipboard")}>
         <BiRegularCopy
           class={css.inlineIcon}
           classList={{"text-black": true, "text-opacity-30": !copied()}}
@@ -24,7 +24,7 @@ export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
             setTimeout(() => setCopied(false), 350);
           }}
         />
-      </span>
+      </button>
     </Show>
   );
 };

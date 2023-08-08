@@ -13,7 +13,7 @@ export const FilterIcon: Component<Props> = (props) => {
   const t = useLangFunc();
   const [hover, setHover] = createSignal(false);
   return (
-    <span
+    <button
       title={
         props.isFiltering
           ? [t("tables.filter.filter_set"), props.onClear && t("tables.filter.click_to_clear")]
@@ -31,6 +31,6 @@ export const FilterIcon: Component<Props> = (props) => {
         class={props.class}
         classList={{"text-black": true, "text-opacity-30": !props.isFiltering}}
       />
-    </span>
+    </button>
   );
 };

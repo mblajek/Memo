@@ -9,7 +9,6 @@ import {css} from "..";
 
 export const Pagination: Component = () => {
   const table = useTable();
-  console.log(table.getState().pagination.pageIndex);
   const [state, send] = useMachine(
     pagination.machine({
       id: createUniqueId(),
