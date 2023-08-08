@@ -19,22 +19,20 @@ const CONTROLS_BY_TYPE = new Map<ColumnType, FilterControl<any>>()
   .set("date", DateFilterControl)
   .set("datetime", DateTimeFilterControl);
 
-export const ColumnFilterController: Component<FilterControlProps> = props => {
+export const ColumnFilterController: Component<FilterControlProps> = (props) => {
   const table = useTable();
   const filterComponent = createMemo(() => {
     const meta = table.getColumn(props.name)?.columnDef.meta?.tquery;
     return meta && CONTROLS_BY_TYPE.get(meta.type);
   });
-  return <div class={ts.columnFilterController}>
-    <Show when={filterComponent()}>
-      <div class={ts.filterMain}>
-        <Dynamic component={filterComponent()!} {...props} />
-      </div>
-      <FilterIcon
-        class={ts.filterIcon}
-        isFiltering={!!props.filter}
-        onClear={() => props.setFilter(undefined)}
-      />
-    </Show>
-  </div>;
+  return (
+    <div class={ts.columnFilterController}>
+      <Show when={filterComponent()}>
+        <div class={ts.filterMain}>
+          <Dynamic component={filterComponent()!} {...props} />
+        </div>
+        <FilterIcon class={ts.filterIcon} isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
+      </Show>
+    </div>
+  );
 };

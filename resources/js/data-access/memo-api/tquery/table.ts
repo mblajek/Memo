@@ -23,11 +23,13 @@ const DEFAULT_PAGE_SIZE = 50;
  * Returns visibility state with visibility of all the columns set explicitly to the given value.
  */
 function allColumnsVisibility(schema: Schema, additionalColumns: string[], {visible = true} = {}) {
-  const visibility: VisibilityState = {}
-  for (const {name} of schema.columns)
+  const visibility: VisibilityState = {};
+  for (const {name} of schema.columns) {
     visibility[name] = visible;
-  for (const name of additionalColumns)
+  }
+  for (const name of additionalColumns) {
     visibility[name] = visible;
+  }
   return visibility;
 }
 
@@ -43,98 +45,132 @@ export function createTableRequestCreator({
   initialVisibleColumns,
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
-  intrinsicFilter?: Accessor<Filter | undefined>,
-  additionalColumns?: string[],
-  initialVisibleColumns?: string[],
-  initialPageSize?: number,
+  intrinsicFilter?: Accessor<Filter | undefined>;
+  additionalColumns?: string[];
+  initialVisibleColumns?: string[];
+  initialPageSize?: number;
 }): RequestCreator<RequestController> {
-  return schema => {
+  return (schema) => {
     const [allInited, setAllInited] = createSignal(false);
     const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>({});
     const [globalFilter, setGlobalFilter] = createSignal<string>("");
     const [columnFilters, setColumnFilters] = createStore<ColumnFilters>({});
     const [sorting, setSorting] = createSignal<SortingState>([]);
-    const [pagination, setPagination] =
-      createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
+    const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
     // eslint-disable-next-line solid/reactivity
     const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
     // Initialise the request parts based on the schema.
-    createComputed(on(schema, schema => {
-      if (schema) {
-        let visibility: VisibilityState;
-        if (initialVisibleColumns) {
-          visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
-          for (const name of initialVisibleColumns)
-            visibility[name] = true;
-        } else if (schema.suggestedColumns) {
-          visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
-          for (const name of schema.suggestedColumns)
-            visibility[name] = true;
-          for (const name of additionalColumns)
-            visibility[name] = true;
-        } else
-          visibility = allColumnsVisibility(schema, additionalColumns);
-        setColumnVisibility(visibility);
-        setColumnFilters({});
-        for (const {name} of schema.columns)
-          setColumnFilters(name, undefined);
-        setSorting((schema.suggestedSort || []).map(({column, dir}) => ({
-          id: column,
-          desc: dir === "desc",
-        })));
-        setAllInited(true);
-      }
-    }));
-    createComputed(on([schema, columnVisibility],
-      ([schema, columnVisibility], prev) => {
+    createComputed(
+      on(schema, (schema) => {
+        if (schema) {
+          let visibility: VisibilityState;
+          if (initialVisibleColumns) {
+            visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
+            for (const name of initialVisibleColumns) {
+              visibility[name] = true;
+            }
+          } else if (schema.suggestedColumns) {
+            visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
+            for (const name of schema.suggestedColumns) {
+              visibility[name] = true;
+            }
+            for (const name of additionalColumns) {
+              visibility[name] = true;
+            }
+          } else {
+            visibility = allColumnsVisibility(schema, additionalColumns);
+          }
+          setColumnVisibility(visibility);
+          setColumnFilters({});
+          for (const {name} of schema.columns) {
+            setColumnFilters(name, undefined);
+          }
+          setSorting(
+            (schema.suggestedSort || []).map(({column, dir}) => ({
+              id: column,
+              desc: dir === "desc",
+            })),
+          );
+          setAllInited(true);
+        }
+      }),
+    );
+    createComputed(
+      on([schema, columnVisibility], ([schema, columnVisibility], prev) => {
         if (schema) {
           // Don't allow hiding all the columns.
-          if (!Object.values(columnVisibility).some(v => v)) {
+          if (!Object.values(columnVisibility).some((v) => v)) {
             const prevColumnVisibility = prev?.[1];
             // Revert to the previous visibility state if possible, otherwise show all columns.
             setColumnVisibility(
-              prevColumnVisibility && Object.values(prevColumnVisibility).some(v => v) ?
-                prevColumnVisibility : allColumnsVisibility(schema, additionalColumns));
+              prevColumnVisibility && Object.values(prevColumnVisibility).some((v) => v)
+                ? prevColumnVisibility
+                : allColumnsVisibility(schema, additionalColumns),
+            );
           }
           // Remove column filters for hidden columns.
-          for (const {name} of schema.columns)
-            if (columnVisibility[name] === false)
+          for (const {name} of schema.columns) {
+            if (columnVisibility[name] === false) {
               setColumnFilters(name, undefined);
+            }
+          }
         }
-      }));
+      }),
+    );
     /** The primary sort column, wrapped in memo to detect actual changes. */
     const mainSort = createMemo(() => sorting()[0]);
     /**
      * Array of column filters. This intermediate step is helpful because on() cannot track
      * the whole column filters store.
      */
-    const columnFiltersJoined: Accessor<Filter[]> = createMemo(() =>
-      schema()?.columns.map(({name}) => columnFilters[name])
-        .filter(NON_NULLABLE)
-        .map(filter => ({...filter})) || []);
+    const columnFiltersJoined: Accessor<Filter[]> = createMemo(
+      () =>
+        schema()
+          ?.columns.map(({name}) => columnFilters[name])
+          .filter(NON_NULLABLE)
+          .map((filter) => ({...filter})) || [],
+    );
     // Go back to the first page on significant data changes.
-    createComputed(on([debouncedGlobalFilter, columnFiltersJoined, mainSort], () => {
-      setPagination(prev => ({...prev, pageIndex: 0}));
-    }));
+    createComputed(
+      on([debouncedGlobalFilter, columnFiltersJoined, mainSort], () => {
+        setPagination((prev) => ({...prev, pageIndex: 0}));
+      }),
+    );
     const request = createMemo<DataRequest | undefined>(
-      on([intrinsicFilter, schema, allInited,
-        columnVisibility, debouncedGlobalFilter, columnFiltersJoined, sorting, pagination],
-        ([intrinsicFilter, schema, allInited,
-          columnVisibility, globalFilter, columnFiltersJoined, sorting, pagination]) => {
-          if (!schema || !allInited)
+      on(
+        [
+          intrinsicFilter,
+          schema,
+          allInited,
+          columnVisibility,
+          debouncedGlobalFilter,
+          columnFiltersJoined,
+          sorting,
+          pagination,
+        ],
+        ([
+          intrinsicFilter,
+          schema,
+          allInited,
+          columnVisibility,
+          globalFilter,
+          columnFiltersJoined,
+          sorting,
+          pagination,
+        ]) => {
+          if (!schema || !allInited) {
             return undefined;
+          }
           const request: DataRequest = {
-            columns: schema.columns.map<Column | undefined>(({name}) =>
-              columnVisibility[name] === false ? undefined : {type: "column", column: name}
-            ).filter(NON_NULLABLE),
+            columns: schema.columns
+              .map<Column | undefined>(({name}) =>
+                columnVisibility[name] === false ? undefined : {type: "column", column: name},
+              )
+              .filter(NON_NULLABLE),
             filter: {
               type: "op",
               op: "&",
-              val: [
-                intrinsicFilter,
-                buildFuzzyGlobalFilter(globalFilter),
-                ...columnFiltersJoined,
-              ].filter(NON_NULLABLE),
+              val: [intrinsicFilter, buildFuzzyGlobalFilter(globalFilter), ...columnFiltersJoined].filter(NON_NULLABLE),
             },
             sort: sorting.map(({id, desc}) => ({
               type: "column",
@@ -144,7 +180,9 @@ export function createTableRequestCreator({
             paging: pagination,
           };
           return request;
-        }));
+        },
+      ),
+    );
     return {
       request,
       requestController: {
@@ -166,13 +204,17 @@ interface TableHelperInterface {
   scrollToTopSignal: Accessor<unknown>;
 }
 
-export function tableHelper({requestController, response}: {
-  requestController: RequestController,
-  response: Accessor<DataResponse | undefined>,
+export function tableHelper({
+  requestController,
+  response,
+}: {
+  requestController: RequestController;
+  response: Accessor<DataResponse | undefined>;
 }): TableHelperInterface {
   const rowsCount = () => response()?.meta.totalDataSize;
-  const pageCount = createMemo(() => Math.ceil(
-    Math.max(rowsCount() || 0, 1) / requestController.pagination[0]().pageSize));
+  const pageCount = createMemo(() =>
+    Math.ceil(Math.max(rowsCount() || 0, 1) / requestController.pagination[0]().pageSize),
+  );
   const scrollToTopSignal = () => requestController.pagination[0]().pageIndex;
   return {rowsCount, pageCount, scrollToTopSignal};
 }

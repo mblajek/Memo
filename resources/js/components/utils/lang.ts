@@ -8,7 +8,7 @@ import {Accessor} from "solid-js";
  */
 export function useLangFunc() {
   const [t] = useTransContext();
-  return (key: string, options?: TOptions) => options ? t(key, options) : t(key);
+  return (key: string, options?: TOptions) => (options ? t(key, options) : t(key));
 }
 
 /** A function for getting the translation value from a particular key. */
@@ -16,7 +16,7 @@ export type LangEntryFunc = (options?: TOptions) => string;
 
 export function getLangEntryFunc(key: string): LangEntryFunc {
   const langFunc = useLangFunc();
-  return options => langFunc(key, options);
+  return (options) => langFunc(key, options);
 }
 
 /**
@@ -33,7 +33,7 @@ export function getLangEntryFunc(key: string): LangEntryFunc {
  *     // Get the translation for key "my.prefix.a" (options are optional):
  *     myStrings.a(options)
  */
-export class TranslationEntriesInterface<S extends string>{
+export class TranslationEntriesInterface<S extends string> {
   private readonly suffixes;
 
   constructor(...suffixes: S[]) {
@@ -45,7 +45,7 @@ export class TranslationEntriesInterface<S extends string>{
     const langFunc = useLangFunc();
     const result: Partial<Record<S, LangEntryFunc>> = {};
     for (const suffix of this.suffixes)
-      result[suffix] = options => langFunc(`${prefixAccessor()}.${suffix}`, options);
+      result[suffix] = (options) => langFunc(`${prefixAccessor()}.${suffix}`, options);
     return result as Record<S, LangEntryFunc>;
   }
 }

@@ -71,13 +71,16 @@ const HeaderRight = () => {
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <span>
-            <For each={
-              // Display each part in a separate span to allow selecting the date.
-              DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime())
-                // This mapping must happen here, otherwise the identity of the elements
-                // change every second, which is what we want to avoid.
-                .map(({value}) => value)}>
-              {value => <span>{value}</span>}
+            <For
+              each={
+                // Display each part in a separate span to allow selecting the date.
+                DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime())
+                  // This mapping must happen here, otherwise the identity of the elements
+                  // change every second, which is what we want to avoid.
+                  .map(({value}) => value)
+              }
+            >
+              {(value) => <span>{value}</span>}
             </For>
           </span>
           <span>{statusQuery.data?.user.name}</span>

@@ -17,10 +17,12 @@ const DEFAULTS: Required<Props> = {
 };
 
 /** The loading spinner used across the app. */
-export const Spinner: Component<Props> = props => {
+export const Spinner: Component<Props> = (props) => {
   const mProps = mergeProps(DEFAULTS, props);
-  const size = () => typeof mProps.size === "number" ? mProps.size : SIZES[mProps.size];
-  return <div class={mProps.center ? "flex justify-center items-center" : ""}>
-    <ImSpinner2 size={size()} class="animate-spin" />
-  </div>;
+  const size = () => (typeof mProps.size === "number" ? mProps.size : SIZES[mProps.size]);
+  return (
+    <div class={mProps.center ? "flex justify-center items-center" : ""}>
+      <ImSpinner2 size={size()} class="animate-spin" />
+    </div>
+  );
 };

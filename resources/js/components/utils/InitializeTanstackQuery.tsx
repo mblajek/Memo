@@ -5,8 +5,8 @@ import {System} from "data-access/memo-api";
 import {Api} from "data-access/memo-api/types";
 import {ParentComponent, createMemo} from "solid-js";
 import toast from "solid-toast";
-import {QueryBarrier} from "./QueryBarrier";
 import {useLangFunc} from ".";
+import {QueryBarrier} from "./QueryBarrier";
 
 /**
  * Tanstack/solid-query initialization component

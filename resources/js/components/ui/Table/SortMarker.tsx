@@ -1,6 +1,6 @@
 import {Column, SortDirection} from "@tanstack/solid-table";
 import {IconTypes} from "solid-icons";
-import {FaSolidArrowDownLong, FaSolidArrowUpLong, FaSolidArrowsUpDown} from 'solid-icons/fa';
+import {FaSolidArrowDownLong, FaSolidArrowUpLong, FaSolidArrowsUpDown} from "solid-icons/fa";
 import {Component, Show} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {css} from "..";
@@ -14,8 +14,8 @@ const ICONS = new Map<false | SortDirection, IconTypes>()
   .set("asc", FaSolidArrowUpLong)
   .set("desc", FaSolidArrowDownLong);
 
-export const SortMarker: Component<Props> = props => {
-  return <Show when={props.column.getCanSort()}>
+export const SortMarker: Component<Props> = (props) => (
+  <Show when={props.column.getCanSort()}>
     <Dynamic
       component={ICONS.get(props.column.getIsSorted())}
       class={css.inlineIcon}
@@ -23,5 +23,5 @@ export const SortMarker: Component<Props> = props => {
       fill="currentColor"
       style={{scale: props.column.getSortIndex() > 0 ? 0.6 : 1}}
     />
-  </Show>;
-};
+  </Show>
+);

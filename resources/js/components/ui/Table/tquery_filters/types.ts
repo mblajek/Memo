@@ -7,5 +7,4 @@ export interface FilterControlProps<F extends Filter = Filter> {
   setFilter: (filter: F | undefined | ((prev: F | undefined) => F | undefined)) => void;
 }
 
-export type FilterControl<F extends Filter = Filter> =
-  Component<FilterControlProps<F>>;
+export type FilterControl<F extends Filter = Filter> = Component<FilterControlProps<F>>;

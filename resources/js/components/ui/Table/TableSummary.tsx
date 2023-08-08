@@ -9,12 +9,13 @@ interface Props {
   summaryTranslation: LangEntryFunc;
 }
 
-export const TableSummary: Component<Props> = props => {
+export const TableSummary: Component<Props> = (props) => {
   const table = useTable();
-  const rowsCount = createMemo(on(
-    [() => props.rowsCount, () => table.getRowModel().rows.length],
-    ([propsRowsCount, tableRowsCount]) => propsRowsCount ?? tableRowsCount));
-  return <div class={ts.tableSummary}>
-    {props.summaryTranslation({count: rowsCount()})}
-  </div>;
+  const rowsCount = createMemo(
+    on(
+      [() => props.rowsCount, () => table.getRowModel().rows.length],
+      ([propsRowsCount, tableRowsCount]) => propsRowsCount ?? tableRowsCount,
+    ),
+  );
+  return <div class={ts.tableSummary}>{props.summaryTranslation({count: rowsCount()})}</div>;
 };

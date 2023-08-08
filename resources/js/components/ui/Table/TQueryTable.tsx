@@ -1,8 +1,32 @@
-import {CellContext, ColumnDefTemplate, IdentifiedColumnDef, RowData, createColumnHelper, createSolidTable, flexRender, getCoreRowModel} from "@tanstack/solid-table";
-import {DATE_FORMAT, DATE_TIME_FORMAT, TranslationEntriesInterface, TranslationEntriesPrefix, useLangFunc} from "components/utils";
+import {
+  CellContext,
+  ColumnDefTemplate,
+  IdentifiedColumnDef,
+  RowData,
+  createColumnHelper,
+  createSolidTable,
+  flexRender,
+  getCoreRowModel,
+} from "@tanstack/solid-table";
+import {
+  DATE_FORMAT,
+  DATE_TIME_FORMAT,
+  TranslationEntriesInterface,
+  TranslationEntriesPrefix,
+  useLangFunc,
+} from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
 import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
-import {Pagination, SortMarker, TableColumnVisibilityController, TableContextProvider, TableSearch, TableSummary, getHeaders, tableStyle as ts} from ".";
+import {
+  Pagination,
+  SortMarker,
+  TableColumnVisibilityController,
+  TableContextProvider,
+  TableSearch,
+  TableSummary,
+  getHeaders,
+  tableStyle as ts,
+} from ".";
 import {ColumnFilterController, Spinner} from "..";
 
 /** Type of tquery-related information in column meta. */
@@ -10,7 +34,7 @@ export interface TQueryColumnMeta {
   type: ColumnType;
 }
 
-declare module '@tanstack/table-core' {
+declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     tquery?: TQueryColumnMeta;
@@ -51,37 +75,37 @@ export interface TQueryTableProps {
   initialPageSize?: number;
 }
 
-export const TQueryTable: Component<TQueryTableProps> = props => {
+export const TQueryTable: Component<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
   const t = useLangFunc();
   // eslint-disable-next-line solid/reactivity
   const tt = TableTranslations.forPrefix(() => props.translations || "tables.tables.generic");
 
-  const SORTABLE_COLUMN_TYPES = new Set<ColumnType>([
-    "string", "decimal0", "decimal2", "bool", "date", "datetime",
-  ]);
+  const SORTABLE_COLUMN_TYPES = new Set<ColumnType>(["string", "decimal0", "decimal2", "bool", "date", "datetime"]);
 
   type CellTemplate = ColumnDefTemplate<CellContext<object, unknown>>;
 
-  function cellFunc<V>(func: (v: V) => CellTemplate | undefined):
-    (c: CellContext<object, unknown>) => CellTemplate | undefined {
-    return c => {
+  function cellFunc<V>(
+    func: (v: V) => CellTemplate | undefined,
+  ): (c: CellContext<object, unknown>) => CellTemplate | undefined {
+    return (c) => {
       const val = c.getValue();
-      if (val === undefined)
+      if (val === undefined) {
         return undefined;
+      }
       return func(val as V);
     };
   }
 
-  const COLUMN_CELL_BY_TYPE =
-    new Map<ColumnType, CellTemplate>()
-      .set("decimal0", cellFunc<number>(v => String(v)))
-      .set("decimal2", cellFunc<number>(v => v.toFixed(2)))
-      .set("bool", cellFunc<boolean>(v => v ? t("bool_values.yes") : t("bool_values.no")))
-      .set("date", cellFunc<string>(v => DATE_FORMAT.format(new Date(v))))
-      .set("datetime", cellFunc<string>(v => DATE_TIME_FORMAT.format(new Date(v))));
+  const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellTemplate>([
+    ["decimal0", cellFunc<number>((v) => String(v))],
+    ["decimal2", cellFunc<number>((v) => v.toFixed(2))],
+    ["bool", cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no")))],
+    ["date", cellFunc<string>((v) => DATE_FORMAT.format(new Date(v)))],
+    ["datetime", cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v)))],
+  ]);
 
-  const defaultCell: ColumnDefTemplate<CellContext<object, unknown>> = c => c.getValue();
+  const defaultCell: ColumnDefTemplate<CellContext<object, unknown>> = (c) => c.getValue();
 
   const requestCreator = createTableRequestCreator({
     intrinsicFilter: () => props.intrinsicFilter,
@@ -89,12 +113,7 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
     initialVisibleColumns: props.initialVisibleColumns,
     initialPageSize: props.initialPageSize,
   });
-  const {
-    schema,
-    requestController,
-    dataQuery,
-    data,
-  } = createTQuery(entityURL, {requestCreator});
+  const {schema, requestController, dataQuery, data} = createTQuery(entityURL, {requestCreator});
   const {
     columnVisibility: [columnVisibility, setColumnVisibility],
     globalFilter: [globalFilter, setGlobalFilter],
@@ -102,11 +121,7 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
     sorting: [sorting, setSorting],
     pagination: [pagination, setPagination],
   } = requestController;
-  const {
-    rowsCount,
-    pageCount,
-    scrollToTopSignal,
-  } = tableHelper({
+  const {rowsCount, pageCount, scrollToTopSignal} = tableHelper({
     requestController,
     response: () => dataQuery.data,
   });
@@ -122,13 +137,14 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
     const sch = schema();
     if (sch) {
       const badColumns = new Set(Object.keys(props.columnOptions || {}));
-      for (const {name} of sch.columns)
+      for (const {name} of sch.columns) {
         badColumns.delete(name);
-      for (const name of props.additionalColumns || [])
+      }
+      for (const name of props.additionalColumns || []) {
         badColumns.delete(name);
+      }
       if (badColumns.size)
-        console.error(`Some columns are configured but not present in the columns list: ` +
-          [...badColumns].join(", "));
+        console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
       return [
         ...sch.columns.map(({type, name}) =>
           h.accessor(name, {
@@ -140,12 +156,13 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
               } satisfies TQueryColumnMeta,
             },
             ...commonColumnDef(name),
-          })),
-        ...(props.additionalColumns || []).map(name =>
+          }),
+        ),
+        ...(props.additionalColumns || []).map((name) =>
           h.display({
             id: name,
             ...commonColumnDef(name),
-          })
+          }),
         ),
       ];
     }
@@ -153,8 +170,12 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   });
 
   const table = createSolidTable({
-    get data() {return data();},
-    get columns() {return columns();},
+    get data() {
+      return data();
+    },
+    get columns() {
+      return columns();
+    },
     manualFiltering: true,
     manualSorting: true,
     maxMultiSortColCount: 2,
@@ -165,14 +186,24 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
       minSize: 50,
       size: 250,
     },
-    get pageCount() {return pageCount();},
+    get pageCount() {
+      return pageCount();
+    },
     autoResetPageIndex: false,
     getCoreRowModel: getCoreRowModel(),
     state: {
-      get columnVisibility() {return columnVisibility();},
-      get sorting() {return sorting();},
-      get globalFilter() {return globalFilter();},
-      get pagination() {return pagination();},
+      get columnVisibility() {
+        return columnVisibility();
+      },
+      get sorting() {
+        return sorting();
+      },
+      get globalFilter() {
+        return globalFilter();
+      },
+      get pagination() {
+        return pagination();
+      },
     },
     onColumnVisibilityChange: setColumnVisibility,
     onSortingChange: setSorting,
@@ -181,86 +212,93 @@ export const TQueryTable: Component<TQueryTableProps> = props => {
   });
 
   let scrollToTopPoint: HTMLDivElement | undefined;
-  createEffect(on(scrollToTopSignal, () => {
-    scrollToTopPoint?.scrollIntoView({behavior: "smooth"});
-  }));
+  createEffect(on(scrollToTopSignal, () => scrollToTopPoint?.scrollIntoView({behavior: "smooth"})));
   const gridTemplateColumns = () =>
-    table.getVisibleLeafColumns().map(c => `${c.getSize()}px`).join(" ");
+    table
+      .getVisibleLeafColumns()
+      .map((c) => `${c.getSize()}px`)
+      .join(" ");
 
-  return <TableContextProvider table={table}>
-    <Show when={schema()} fallback={<Spinner />}>
-      <div ref={scrollToTopPoint} class={ts.tableContainer}>
-        <div class={ts.aboveTable}>
-          <TableSearch />
-          <TableColumnVisibilityController />
-        </div>
-        <div class={ts.tableBg}>
-          <div class={ts.table} classList={{[ts.dimmed!]: dataQuery.isFetching}}
-            style={{
-              "grid-template-columns": gridTemplateColumns(),
-            }}>
-            <div class={ts.headerRow}>
-              <For each={getHeaders(table)}>
-                {({header, column}) => <Show when={header()}>
-                  <div class={ts.cell}>
-                    <span
-                      class={ts.title}
-                      classList={{"cursor-pointer": column.getCanSort()}}
-                      onClick={e => {
-                        e.preventDefault();
-                        if (column.getCanSort())
-                          column.toggleSorting(undefined, e.altKey);
-                      }}
-                      title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
-                    >
-                      {header()?.isPlaceholder ? undefined : flexRender(
-                        column.columnDef.header,
-                        header()!.getContext(),
+  return (
+    <TableContextProvider table={table}>
+      <Show when={schema()} fallback={<Spinner />}>
+        <div ref={scrollToTopPoint} class={ts.tableContainer}>
+          <div class={ts.aboveTable}>
+            <TableSearch />
+            <TableColumnVisibilityController />
+          </div>
+          <div class={ts.tableBg}>
+            <div
+              class={ts.table}
+              classList={{[ts.dimmed!]: dataQuery.isFetching}}
+              style={{
+                "grid-template-columns": gridTemplateColumns(),
+              }}
+            >
+              <div class={ts.headerRow}>
+                <For each={getHeaders(table)}>
+                  {({header, column}) => (
+                    <Show when={header()}>
+                      <div class={ts.cell}>
+                        <span
+                          class={ts.title}
+                          classList={{"cursor-pointer": column.getCanSort()}}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            if (column.getCanSort()) {
+                              column.toggleSorting(undefined, e.altKey);
+                            }
+                          }}
+                          title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
+                        >
+                          {header()?.isPlaceholder
+                            ? undefined
+                            : flexRender(column.columnDef.header, header()!.getContext())}{" "}
+                          <SortMarker column={column} />
+                        </span>
+                        <Show when={column.getCanFilter()}>
+                          <ColumnFilterController
+                            name={column.id}
+                            filter={columnFilters[column.id]}
+                            setFilter={(filter) => setColumnFilters(column.id, filter)}
+                          />
+                        </Show>
+                        <Show when={column.getCanResize()}>
+                          <div
+                            class={ts.resizeHandler}
+                            classList={{[ts.resizing!]: column.getIsResizing()}}
+                            onMouseDown={header()?.getResizeHandler()}
+                            onTouchStart={header()?.getResizeHandler()}
+                          />
+                        </Show>
+                      </div>
+                    </Show>
+                  )}
+                </For>
+              </div>
+              <Index
+                each={table.getRowModel().rows}
+                fallback={<div class={ts.wideRow}>{dataQuery.isFetching ? <Spinner /> : tt.empty_table_text()}</div>}
+              >
+                {(row) => (
+                  <div class={ts.dataRow}>
+                    <Index each={row().getVisibleCells()}>
+                      {(cell) => (
+                        <span class={ts.cell}>{flexRender(cell().column.columnDef.cell, cell().getContext())}</span>
                       )}
-                      {" "}<SortMarker column={column} />
-                    </span>
-                    <Show when={column.getCanFilter()}>
-                      <ColumnFilterController
-                        name={column.id}
-                        filter={columnFilters[column.id]}
-                        setFilter={filter => setColumnFilters(column.id, filter)}
-                      />
-                    </Show>
-                    <Show when={column.getCanResize()}>
-                      <div class={ts.resizeHandler}
-                        classList={{[ts.resizing!]: column.getIsResizing()}}
-                        onMouseDown={header()?.getResizeHandler()}
-                        onTouchStart={header()?.getResizeHandler()}
-                      />
-                    </Show>
+                    </Index>
                   </div>
-                </Show>}
-              </For>
+                )}
+              </Index>
+              <div class={ts.bottomBorder} />
             </div>
-            <Index each={table.getRowModel().rows} fallback={
-              <div class={ts.wideRow}>{
-                dataQuery.isFetching ? <Spinner /> : tt.empty_table_text()
-              }</div>
-            }>
-              {row => <div class={ts.dataRow}>
-                <Index each={row().getVisibleCells()}>
-                  {cell => <span class={ts.cell}>
-                    {flexRender(
-                      cell().column.columnDef.cell,
-                      cell().getContext(),
-                    )}
-                  </span>}
-                </Index>
-              </div>}
-            </Index>
-            <div class={ts.bottomBorder} />
+          </div>
+          <div class={ts.belowTable}>
+            <Pagination />
+            <TableSummary summaryTranslation={tt.summary} rowsCount={rowsCount()} />
           </div>
         </div>
-        <div class={ts.belowTable}>
-          <Pagination />
-          <TableSummary summaryTranslation={tt.summary} rowsCount={rowsCount()} />
-        </div>
-      </div>
-    </Show>
-  </TableContextProvider>;
+      </Show>
+    </TableContextProvider>
+  );
 };

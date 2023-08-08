@@ -2,10 +2,10 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation, useQueryClient} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
 import {TextField} from "components/ui";
+import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
 import {Component} from "solid-js";
 import {z} from "zod";
-import {useLangFunc} from "components/utils";
 
 export namespace LoginForm {
   export const getSchema = () =>

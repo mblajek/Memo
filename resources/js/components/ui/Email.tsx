@@ -6,6 +6,8 @@ interface Props {
 }
 
 /** A component for displaying a copyiable email address. No mailto. */
-export const Email: Component<Props> = props => {
-  return <span>{props.email} <CopyToClipboard text={props.email} /></span>;
-};
+export const Email: Component<Props> = (props) => (
+  <span>
+    {props.email} <CopyToClipboard text={props.email} />
+  </span>
+);

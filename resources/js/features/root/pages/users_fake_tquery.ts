@@ -1,7 +1,16 @@
 import {createQuery} from "@tanstack/solid-query";
 import {System} from "data-access/memo-api";
 import {Admin} from "data-access/memo-api/groups/Admin";
-import {ColumnSchema, ColumnType, ComparableFilterOp, DataRequest, DataResponse, Filter, Schema, StringFilterOp} from "data-access/memo-api/tquery";
+import {
+  ColumnSchema,
+  ColumnType,
+  ComparableFilterOp,
+  DataRequest,
+  DataResponse,
+  Filter,
+  Schema,
+  StringFilterOp,
+} from "data-access/memo-api/tquery";
 import {rest, setupWorker} from "msw";
 
 type Row = Partial<Record<string, unknown>>;
@@ -12,16 +21,18 @@ type CompareTransform = (v: any) => ComparableVal;
 const str = (v: unknown) => (v ?? undefined) as string | undefined;
 
 function getCompareTransform(type: ColumnType): CompareTransform {
-  return (
-    type === "bool" ? Number :
-      type === "date" || type === "datetime" ? v => Date.parse(v) :
-        type === "decimal0" || type === "decimal2" ? v => v :
-          type === "text" || type === "string" ? v => str(v)?.toLocaleLowerCase() || "" :
-            type satisfies never);
+  return type === "bool"
+    ? Number
+    : type === "date" || type === "datetime"
+    ? (v) => Date.parse(v)
+    : type === "decimal0" || type === "decimal2"
+    ? (v) => v
+    : type === "text" || type === "string"
+    ? (v) => str(v)?.toLocaleLowerCase() || ""
+    : (type satisfies never);
 }
 
-function filterOp(rowVal: ComparableVal, filterVal: ComparableVal,
-  op: StringFilterOp | ComparableFilterOp) {
+function filterOp(rowVal: ComparableVal, filterVal: ComparableVal, op: StringFilterOp | ComparableFilterOp) {
   switch (op) {
     case "=":
       return rowVal === filterVal;
@@ -50,8 +61,9 @@ function filterOp(rowVal: ComparableVal, filterVal: ComparableVal,
 
 function colType(columns: ColumnSchema[], colName: string) {
   const col = columns.find(({name}) => name === colName);
-  if (!col)
+  if (!col) {
     throw new Error(`No column ${colName}`);
+  }
   return col.type;
 }
 
@@ -59,7 +71,7 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
   function matchesNoInv(): boolean {
     switch (filter.type) {
       case "op": {
-        const vals = filter.val.map(f => matches(columns, row, f));
+        const vals = filter.val.map((f) => matches(columns, row, f));
         switch (filter.op) {
           case "&":
             return vals.reduce((a, b) => a && b, true);
@@ -76,11 +88,9 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
       case "custom":
         return false;
       case "global":
-        return columns.some(({name}) => filterOp(
-          String(row[name]).toLocaleLowerCase(),
-          filter.val.toLocaleLowerCase(),
-          filter.op,
-        ));
+        return columns.some(({name}) =>
+          filterOp(String(row[name]).toLocaleLowerCase(), filter.val.toLocaleLowerCase(), filter.op),
+        );
       default:
         return filter satisfies never;
     }
@@ -109,33 +119,30 @@ export function startUsersMock() {
         ctx.status(200),
         ctx.json({
           columns,
-          suggestedColumns: [
-            "name",
-            "createdAt",
-            "facilitiesMember",
-            "hasGlobalAdmin",
-          ],
-          suggestedSort: [
-            {type: "column", column: "name", dir: "asc"},
-          ],
+          suggestedColumns: ["name", "createdAt", "facilitiesMember", "hasGlobalAdmin"],
+          suggestedSort: [{type: "column", column: "name", dir: "asc"}],
         } satisfies Schema),
       );
     }),
     rest.post("/api/v1/entityURL/tquery", async (req, res, ctx) => {
       const request: DataRequest = await req.json();
-      const rows: Row[] = (usersQuery.data || []).map(entry => ({
+      const rows: Row[] = (usersQuery.data || []).map((entry) => ({
         name: entry.name,
         email: entry.email,
         createdAt: entry.createdAt,
-        facilitiesMember: entry.members.map(m =>
-          (facilitiesQuery?.data?.find(f => f.id === m.facilityId)?.name || m.facilityId) +
-          (m.hasFacilityAdmin ? " *" : "")
-        ).sort().join("\n"),
+        facilitiesMember: entry.members
+          .map(
+            (m) =>
+              (facilitiesQuery?.data?.find((f) => f.id === m.facilityId)?.name || m.facilityId) +
+              (m.hasFacilityAdmin ? " *" : ""),
+          )
+          .sort()
+          .join("\n"),
         numFacilities: entry.members.length,
         hasGlobalAdmin: entry.hasGlobalAdmin,
       }));
       const {filter} = request;
-      const filteredRows = filter ? rows.filter(row => matches(columns, row, filter)) : rows;
+      const filteredRows = filter ? rows.filter((row) => matches(columns, row, filter)) : rows;
       const sorters = request.sort.map(({column, dir}) => {
         const valTf = getCompareTransform(colType(columns, column));
         const dirC = dir === "asc" ? 1 : -1;
@@ -145,16 +152,16 @@ export function startUsersMock() {
           return dirC * (va < vb ? -1 : va > vb ? 1 : 0);
         };
       });
-      const sortedRows = [...filteredRows].sort((a, b) =>
-        sorters.reduce((acc, sorter) => acc || sorter(a, b), 0));
+      const sortedRows = [...filteredRows].sort((a, b) => sorters.reduce((acc, sorter) => acc || sorter(a, b), 0));
       const pagedRows = sortedRows.slice(
         request.paging.pageIndex * request.paging.pageSize,
         (request.paging.pageIndex + 1) * request.paging.pageSize,
       );
       const finalRows = pagedRows.map((r: Row) => {
         const res: Row = {};
-        for (const {column} of request.columns)
+        for (const {column} of request.columns) {
           res[column] = r[column];
+        }
         return res;
       });
       return res(

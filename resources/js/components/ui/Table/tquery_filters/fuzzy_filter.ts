@@ -1,14 +1,12 @@
 import {Filter} from "data-access/memo-api/tquery";
 
-type FilterBase = {type: "global"} | {type: "column", column: string};
+type FilterBase = {type: "global"} | {type: "column"; column: string};
 
 export const GLOBAL_CHAR = "*";
 export const QUOTE = "'";
 
 const GLOB = `\\${GLOBAL_CHAR}`;
-const WORD_REGEXP = new RegExp(
-  `(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB}?|\\S+)(?:$|\\s)`,
-  "g");
+const WORD_REGEXP = new RegExp(`(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB}?|\\S+)(?:$|\\s)`, "g");
 
 function buildFuzzyFilter(text: string, filterBase: FilterBase): Filter | undefined {
   const wordFilters: Filter[] = [];
@@ -25,7 +23,7 @@ function buildFuzzyFilter(text: string, filterBase: FilterBase): Filter | undefi
         startsWithGlob = word.startsWith(GLOBAL_CHAR);
         endsWithGlob = word.endsWith(GLOBAL_CHAR);
       }
-      const op = (startsWithGlob === endsWithGlob) ? "%v%" : startsWithGlob ? "%v" : "v%";
+      const op = startsWithGlob === endsWithGlob ? "%v%" : startsWithGlob ? "%v" : "v%";
       word = word.slice(startsWithGlob ? 1 : 0, endsWithGlob ? -1 : undefined);
       if (word.length > 2 && word.startsWith(QUOTE) && word.endsWith(QUOTE))
         // Unquote, unless it's just "'" or "''".
@@ -33,10 +31,12 @@ function buildFuzzyFilter(text: string, filterBase: FilterBase): Filter | undefi
       wordFilters.push({...filterBase, op, val: word});
     }
   }
-  if (!wordFilters.length)
+  if (!wordFilters.length) {
     return undefined;
-  if (wordFilters.length === 1)
+  }
+  if (wordFilters.length === 1) {
     return wordFilters[0];
+  }
   return {type: "op", op: "&", val: wordFilters};
 }
 

@@ -27,8 +27,7 @@ interface ColumnSchemaBase {
 }
 
 export interface BasicColumnSchema extends ColumnSchemaBase {
-  type: "string" | "text" | "decimal0" | "decimal2" | "bool" |
-  "date" | "datetime";
+  type: "string" | "text" | "decimal0" | "decimal2" | "bool" | "date" | "datetime";
 }
 
 export interface CustomFilter {
@@ -58,15 +57,18 @@ interface FilterBase {
 }
 
 export interface BoolOpFilter extends FilterBase {
-  type: "op",
+  type: "op";
   op: "&" | "|";
   val: Filter[];
 }
 
 // TODO: Filter by enum-related columns.
 export type ColumnFilter =
-  StringColumnFilter | DecimalColumnFilter | BoolColumnFilter |
-  DateColumnFilter | DateTimeColumnFilter;
+  | StringColumnFilter
+  | DecimalColumnFilter
+  | BoolColumnFilter
+  | DateColumnFilter
+  | DateTimeColumnFilter;
 
 interface ColumnFilterBase extends FilterBase {
   type: "column";
@@ -74,11 +76,14 @@ interface ColumnFilterBase extends FilterBase {
 }
 
 export type StringFilterOp =
-  "=" | "!=" |
+  | "="
+  | "!="
   // LIKE match:
-  "%v" | "v%" | "%v%" |
+  | "%v"
+  | "v%"
+  | "%v%"
   // Regexp:
-  "/v/";
+  | "/v/";
 
 export type ComparableFilterOp = "=" | "!=" | ">" | "<" | ">=" | "<=";
 
@@ -93,7 +98,7 @@ export interface DecimalColumnFilter extends ColumnFilterBase {
 }
 
 export interface BoolColumnFilter extends ColumnFilterBase {
-  op: "=",
+  op: "=";
   val: boolean;
 }
 
@@ -154,11 +159,11 @@ export type ColumnType = ColumnSchema["type"];
 
 export interface FilterTypeByColumnType {
   string: StringColumnFilter;
-  text: StringColumnFilter
+  text: StringColumnFilter;
   decimal0: DecimalColumnFilter;
-  decimal2: DecimalColumnFilter
-  bool: BoolColumnFilter
-  date: DateColumnFilter
+  decimal2: DecimalColumnFilter;
+  bool: BoolColumnFilter;
+  date: DateColumnFilter;
   datetime: DateTimeColumnFilter;
 }
 
