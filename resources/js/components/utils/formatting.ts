@@ -22,3 +22,13 @@ export const DECIMAL2_NUMBER_FORMAT = new Intl.NumberFormat(undefined, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });
+
+/** Returns the date and time in local time zone, formatted like "2000-01-01T00:00:00" */
+export function toLocalISOString(date: Date) {
+  return date.toLocaleString("sv").replaceAll(" ", "T");
+}
+
+/** Returns the date in local time zone, formatted like "2000-01-01". */
+export function toLocalDateISOString(date: Date) {
+  return date.toLocaleDateString("sv");
+}

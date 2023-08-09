@@ -1,4 +1,4 @@
-import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
+import {NON_NULLABLE, cx, toLocalDateISOString, toLocalISOString, useLangFunc} from "components/utils";
 import {BoolOpFilter, DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
 import {Component, Show, createMemo} from "solid-js";
 import {FilterControlProps} from ".";
@@ -27,12 +27,7 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
   const t = useLangFunc();
   const inputType = () => (props.columnType === "date" ? "date" : "datetime-local");
   function toInputValue(date: Date | undefined) {
-    return (
-      date
-        ?.toLocaleString("sv")
-        .slice(0, props.columnType === "date" ? 10 : 16)
-        .replace(" ", "T") || ""
-    );
+    return date ? (props.columnType === "date" ? toLocalDateISOString(date) : toLocalISOString(date).slice(0, -3)) : "";
   }
   const findVal = (op: RangeOp) => {
     const val = props.filter?.val.find((f) => f.op === op)?.val;
@@ -48,6 +43,9 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
     if (range[0] && range[1] && range[0] > range[1]) {
       range[1] = undefined;
     }
+    function toFilterVal(date: Date) {
+      return props.columnType === "date" ? toLocalDateISOString(date) : date.toISOString();
+    }
     props.setFilter(
       range[0] || range[1]
         ? {
@@ -59,7 +57,7 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
                     type: "column",
                     column: props.name,
                     op,
-                    val: range[i]!.toISOString(),
+                    val: toFilterVal(range[i]!),
                   }
                 : undefined,
             ).filter(NON_NULLABLE),
