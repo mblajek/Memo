@@ -8,7 +8,7 @@ import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
 import toast from "solid-toast";
 import {ZodSchema} from "zod";
-import {getLangFunc} from "../utils";
+import {useLangFunc} from "../utils";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
@@ -31,7 +31,7 @@ type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElemen
  * createForm's data and component props
  */
 export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
-  const t = getLangFunc();
+  const t = useLangFunc();
   const [local, createFormOptions, formProps] = splitProps(
     props,
     ["children", "schema"],

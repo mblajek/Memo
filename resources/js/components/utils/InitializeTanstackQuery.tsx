@@ -5,8 +5,8 @@ import {System} from "data-access/memo-api";
 import {Api} from "data-access/memo-api/types";
 import {ParentComponent, createMemo} from "solid-js";
 import toast from "solid-toast";
+import {useLangFunc} from ".";
 import {QueryBarrier} from "./QueryBarrier";
-import {getLangFunc} from ".";
 
 /**
  * Tanstack/solid-query initialization component
@@ -14,7 +14,7 @@ import {getLangFunc} from ".";
  * Handles custom queryClient and queryCache initialization
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
-  const t = getLangFunc();
+  const t = useLangFunc();
   const queryClient = createMemo(
     () =>
       new QueryClient({

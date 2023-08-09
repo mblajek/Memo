@@ -36,6 +36,7 @@ render(() => {
         lng: "pl",
         load: "currentOnly",
         supportedLngs: ["pl", "en-US"],
+        pluralSeparator: "__",
       }}
     >
       <Show when={transLoaded()}>

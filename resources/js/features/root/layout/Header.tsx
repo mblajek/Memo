@@ -1,6 +1,6 @@
 import {useLocation, useNavigate, useParams} from "@solidjs/router";
 import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
-import {QueryBarrier, cx, getLangFunc} from "components/utils";
+import {DATE_TIME_WITH_WEEKDAY_FORMAT, QueryBarrier, cx, useLangFunc} from "components/utils";
 import {System, User} from "data-access/memo-api";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {Component, For, Match, Switch, createSignal, onMount} from "solid-js";
@@ -44,7 +44,7 @@ const FacilitySelect: Component = () => {
 };
 
 const HeaderRight = () => {
-  const t = getLangFunc();
+  const t = useLangFunc();
   const currentTime = useCurrentTime();
   const statusQuery = createQuery(() => User.statusQueryOptions);
 
@@ -70,7 +70,19 @@ const HeaderRight = () => {
           </Switch>
         </div>
         <div class="flex flex-col justify-between items-stretch">
-          <span>{currentTime().toLocaleString()}</span>
+          <span>
+            <For
+              each={
+                // Display each part in a separate span to allow selecting the date.
+                DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime())
+                  // This mapping must happen here, otherwise the identity of the elements
+                  // change every second, which is what we want to avoid.
+                  .map(({value}) => value)
+              }
+            >
+              {(value) => <span>{value}</span>}
+            </For>
+          </span>
           <span>{statusQuery.data?.user.name}</span>
         </div>
       </div>

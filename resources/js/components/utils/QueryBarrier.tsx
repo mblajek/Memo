@@ -1,6 +1,6 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {ImSpinner2} from "solid-icons/im";
 import {JSX, Match, ParentProps, Switch, mergeProps} from "solid-js";
+import {Spinner} from "../ui";
 
 export interface QueryBarrierProps {
   /**
@@ -14,7 +14,7 @@ export interface QueryBarrierProps {
   /**
    * List of queries to handle
    */
-  queries: CreateQueryResult[];
+  queries: CreateQueryResult<any, any>[];
 }
 
 /**
@@ -27,11 +27,7 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
     {
       // TODO: dedicated Error element
       errorElement: <p>error</p>,
-      pendingElement: (
-        <div class="flex justify-center items-center">
-          <ImSpinner2 size={50} class="animate-spin" />,
-        </div>
-      ),
+      pendingElement: <Spinner />,
     },
     props,
   );

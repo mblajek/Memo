@@ -1,38 +1,48 @@
 {
-    "log_in": "Zaloguj",
-    "log_out": "Wyloguj",
-    "menu": "Menu",
-    "email": "Adres e-mail",
-    "password": "Hasło",
-    "change_language": "zmień język",
+  "log_in": "Zaloguj",
+  "log_out": "Wyloguj",
+  "menu": "Menu",
+  "email": "Adres e-mail",
+  "password": "Hasło",
+  "change_language": "zmień język",
 
-    "exception": {
-        "configuration": {
-            "translation": "Błędna konfiguracja tłumaczeń"
-        },
-        "validation": "Przesłano niepoprawne dane",
-        "unauthorised": "Brak autoryzacji",
-        "bad_credentials": "Błędne dane logowania",
-        "forbidden": "Brak dostępu",
-        "not_found": "Nie znaleziono strony",
-        "route_not_found": "Błędny adres",
-        "unexpected": "Nieoczekiwany błąd serwera"
+  "exception": {
+    "configuration": {
+      "translation": "Błędna konfiguracja tłumaczeń"
     },
+    "validation": "Przesłano niepoprawne dane",
+    "unauthorised": "Brak autoryzacji",
+    "bad_credentials": "Błędne dane logowania",
+    "forbidden": "Brak dostępu",
+    "not_found": "Nie znaleziono strony",
+    "route_not_found": "Błędny adres",
+    "unexpected": "Nieoczekiwany błąd serwera"
+  },
 
-    "passwords": {
-        "reset": "Hasło zostało zresetowane!",
-        "sent": "Przypomnienie hasła zostało wysłane!",
-        "throttled": "Proszę zaczekać zanim spróbujesz ponownie.",
-        "token": "Token resetowania hasła jest nieprawidłowy.",
-        "user": "Nie znaleziono użytkownika z takim adresem e-mail."
-    },
-    "auth": {
-        "failed": "Błędny login lub hasło.",
-        "password": "Hasło jest nieprawidłowe.",
-        "throttle": "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
-    },
-    "pagination": {
-        "next": "Następna &raquo;",
-        "previous": "&laquo; Poprzednia"
-    }
+  "passwords": {
+    "reset": "Hasło zostało zresetowane!",
+    "sent": "Przypomnienie hasła zostało wysłane!",
+    "throttled": "Proszę zaczekać zanim spróbujesz ponownie.",
+    "token": "Token resetowania hasła jest nieprawidłowy.",
+    "user": "Nie znaleziono użytkownika z takim adresem e-mail."
+  },
+  "auth": {
+    "failed": "Błędny login lub hasło.",
+    "password": "Hasło jest nieprawidłowe.",
+    "throttle": "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
+  },
+
+  "copy_to_clipboard": "Kopiuj do schowka",
+
+  "bool_values": {
+    "yes": "Tak",
+    "no": "Nie"
+  },
+
+  "range": {
+    "from": "od:",
+    "to": "do:",
+    "min": "min:",
+    "max": "maks:"
+  }
 }
