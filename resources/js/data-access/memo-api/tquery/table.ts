@@ -43,11 +43,13 @@ export function createTableRequestCreator({
   intrinsicFilter = () => undefined,
   additionalColumns = [],
   initialVisibleColumns,
+  initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
   intrinsicFilter?: Accessor<Filter | undefined>;
   additionalColumns?: string[];
   initialVisibleColumns?: string[];
+  initialSort?: SortingState;
   initialPageSize?: number;
 }): RequestCreator<RequestController> {
   return (schema) => {
@@ -55,7 +57,7 @@ export function createTableRequestCreator({
     const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>({});
     const [globalFilter, setGlobalFilter] = createSignal<string>("");
     const [columnFilters, setColumnFilters] = createStore<ColumnFilters>({});
-    const [sorting, setSorting] = createSignal<SortingState>([]);
+    const [sorting, setSorting] = createSignal<SortingState>(initialSort);
     const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
     // eslint-disable-next-line solid/reactivity
     const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
@@ -69,14 +71,6 @@ export function createTableRequestCreator({
             for (const name of initialVisibleColumns) {
               visibility[name] = true;
             }
-          } else if (schema.suggestedColumns) {
-            visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
-            for (const name of schema.suggestedColumns) {
-              visibility[name] = true;
-            }
-            for (const name of additionalColumns) {
-              visibility[name] = true;
-            }
           } else {
             visibility = allColumnsVisibility(schema, additionalColumns);
           }
@@ -85,12 +79,6 @@ export function createTableRequestCreator({
           for (const {name} of schema.columns) {
             setColumnFilters(name, undefined);
           }
-          setSorting(
-            (schema.suggestedSort || []).map(({column, dir}) => ({
-              id: column,
-              desc: dir === "desc",
-            })),
-          );
           setAllInited(true);
         }
       }),

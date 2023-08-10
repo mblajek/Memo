@@ -3,6 +3,7 @@ import {
   ColumnDefTemplate,
   IdentifiedColumnDef,
   RowData,
+  SortingState,
   createColumnHelper,
   createSolidTable,
   flexRender,
@@ -29,11 +30,16 @@ import {
   getHeaders,
   tableStyle as ts,
 } from ".";
-import {ColumnFilterController, Spinner} from "..";
+import {ColumnFilterController, FilteringParams, Spinner} from "..";
 
-/** Type of tquery-related information in column meta. */
-export interface TQueryColumnMeta {
-  type: ColumnType;
+export interface ColumnOptions {
+  columnDef?: Partial<IdentifiedColumnDef<object>>;
+  metaParams?: ColumnMetaParams;
+}
+
+interface ColumnMetaParams {
+  canControlVisibility?: boolean;
+  filtering?: FilteringParams;
 }
 
 declare module "@tanstack/table-core" {
@@ -43,8 +49,10 @@ declare module "@tanstack/table-core" {
   }
 }
 
-export interface ColumnOptions {
-  columnDef?: Partial<IdentifiedColumnDef<object>>;
+/** Type of tquery-related information in column meta. */
+export interface TQueryColumnMeta extends ColumnMetaParams {
+  /** Column type, if the column is based on data from backend. */
+  type?: ColumnType;
 }
 
 const TableTranslations = new TranslationEntriesInterface(
@@ -74,6 +82,7 @@ export interface TQueryTableProps {
   /** Overrides for the definition of specific columns. */
   columnOptions?: Partial<Record<string, ColumnOptions>>;
   initialVisibleColumns?: string[];
+  initialSort?: SortingState;
   initialPageSize?: number;
 }
 
@@ -113,6 +122,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     intrinsicFilter: () => props.intrinsicFilter,
     additionalColumns: props.additionalColumns,
     initialVisibleColumns: props.initialVisibleColumns,
+    initialSort: props.initialSort,
     initialPageSize: props.initialPageSize,
   });
   const {schema, requestController, dataQuery, data} = createTQuery(entityURL, {requestCreator});
@@ -129,10 +139,13 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   });
 
   const h = createColumnHelper<object>();
+  function columnOptions(name: string) {
+    return props.columnOptions?.[name] || {};
+  }
   function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
     return {
       header: t(`tables.headers.${name}`),
-      ...props.columnOptions?.[name]?.columnDef,
+      ...columnOptions(name).columnDef,
     };
   }
   const columns = createMemo(() => {
@@ -155,6 +168,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
             meta: {
               tquery: {
                 type,
+                ...columnOptions(name).metaParams,
               } satisfies TQueryColumnMeta,
             },
             ...commonColumnDef(name),
@@ -163,6 +177,11 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
         ...(props.additionalColumns || []).map((name) =>
           h.display({
             id: name,
+            meta: {
+              tquery: {
+                ...columnOptions(name).metaParams,
+              },
+            },
             ...commonColumnDef(name),
           }),
         ),

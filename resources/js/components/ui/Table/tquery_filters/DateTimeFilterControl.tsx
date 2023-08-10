@@ -18,21 +18,35 @@ export interface DateTimeRangeFilter extends BoolOpFilter {
   val: RangeSideFilter[];
 }
 
-interface Props extends FilterControlProps<DateTimeRangeFilter> {
-  /** The data type, datetime by default. */
-  columnType?: "date" | "datetime";
+interface DateTimeColumnProps extends FilterControlProps<DateTimeRangeFilter> {
+  columnType?: "datetime";
+  /** Whether the inputs should only set date (and no time). Default is false. */
+  useDateOnlyInputs?: boolean;
 }
+
+interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
+  columnType: "date";
+}
+
+type Props = DateColumnProps | DateTimeColumnProps;
 
 export const DateTimeFilterControl: Component<Props> = (props) => {
   const t = useLangFunc();
-  const inputType = () => (props.columnType === "date" ? "date" : "datetime-local");
+  const columnType = () => props.columnType || "datetime";
+  const inputsType = () => (props.columnType === "date" || props.useDateOnlyInputs ? "date" : "datetime-local");
   function toInputValue(date: Date | undefined) {
-    return date ? (props.columnType === "date" ? toLocalDateISOString(date) : toLocalISOString(date).slice(0, -3)) : "";
+    return date
+      ? inputsType() === "date"
+        ? toLocalDateISOString(date)
+        : toLocalISOString(date)
+            // Cut off seconds.
+            .slice(0, -3)
+      : "";
   }
-  const findVal = (op: RangeOp) => {
+  function findVal(op: RangeOp) {
     const val = props.filter?.val.find((f) => f.op === op)?.val;
     return val ? new Date(val) : undefined;
-  };
+  }
   // Disable equality check to avoid problems with the input value being stale when
   // max is set to below min.
   const lower = createMemo(() => findVal(">="), undefined, {equals: false});
@@ -43,8 +57,22 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
     if (range[0] && range[1] && range[0] > range[1]) {
       range[1] = undefined;
     }
-    function toFilterVal(date: Date) {
-      return props.columnType === "date" ? toLocalDateISOString(date) : date.toISOString();
+    function toFilterVal(op: RangeOp, date: Date) {
+      if (columnType() === "date") {
+        return toLocalDateISOString(date);
+      }
+      if (inputsType() === "date") {
+        // Input is date but backend expects datetime. Use T00:00:00.000 for the lower range
+        // and T23:59:59.999 for the upper range (the times in local time zone).
+        const d = new Date(date);
+        if (op === ">=") {
+          d.setHours(0, 0, 0, 0);
+        } else {
+          d.setHours(23, 59, 59, 999);
+        }
+        return d.toISOString();
+      }
+      return date.toISOString();
     }
     props.setFilter(
       range[0] || range[1]
@@ -57,7 +85,7 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
                     type: "column",
                     column: props.name,
                     op,
-                    val: toFilterVal(range[i]!),
+                    val: toFilterVal(op, range[i]!),
                   }
                 : undefined,
             ).filter(NON_NULLABLE),
@@ -67,7 +95,7 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
   }
   const setLowerInput = (inputValue: string) => setOrDisableFilter(">=", inputValue);
   const setUpperInput = (inputValue: string) => setOrDisableFilter("<=", inputValue);
-  const canSyncRange = () => props.columnType === "date";
+  const canSyncRange = () => inputsType() === "date";
   const syncActive = () => !!lower() || !!upper();
   return (
     <div
@@ -89,10 +117,10 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
           }}
         />
       </Show>
-      <div class={cx(ts.wideEdit, props.columnType === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
         <input
           name={`table_filter_from_${props.name}`}
-          type={inputType()}
+          type={inputsType()}
           class="h-full w-full border rounded"
           max={toInputValue(upper())}
           value={toInputValue(lower())}
@@ -100,10 +128,10 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
         />
       </div>
       <div>{t("range.to")}</div>
-      <div class={cx(ts.wideEdit, props.columnType === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
         <input
           name={`table_filter_to_${props.name}`}
-          type={inputType()}
+          type={inputsType()}
           class="h-full w-full border rounded"
           min={toInputValue(lower())}
           value={toInputValue(upper())}

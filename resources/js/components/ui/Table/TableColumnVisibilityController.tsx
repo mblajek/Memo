@@ -31,17 +31,19 @@ export const TableColumnVisibilityController: Component = () => {
           <div {...api().contentProps}>
             <div class="bg-white border border-gray-700 rounded px-2 flex flex-col">
               <For each={table.getAllLeafColumns()}>
-                {(column) => (
-                  <label>
-                    <input
-                      name={`column_visibility_${column.id}`}
-                      checked={column.getIsVisible()}
-                      onChange={column.getToggleVisibilityHandler()}
-                      type="checkbox"
-                    />{" "}
-                    {t(`tables.headers.${column.id}`)}
-                  </label>
-                )}
+                {(column) =>
+                  column.columnDef.meta?.tquery?.canControlVisibility !== false && (
+                    <label>
+                      <input
+                        name={`column_visibility_${column.id}`}
+                        checked={column.getIsVisible()}
+                        onChange={column.getToggleVisibilityHandler()}
+                        type="checkbox"
+                      />{" "}
+                      {t(`tables.headers.${column.id}`)}
+                    </label>
+                  )
+                }
               </For>
             </div>
           </div>
