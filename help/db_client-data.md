@@ -1,6 +1,7 @@
 ### Dane klienta z przykładu:
 
 - id: 1
+- imię i nazwisko: Abc Abc
 - płeć: kobieta
 - osoby kontaktowe: Xyz Xyz
 - płeć sprawców: mężczyzna, kobieta
@@ -12,10 +13,10 @@
 
 Client:
 
-| id | name    |
-|----|---------|
-| 1  | Abc Abc |
-| 2  | Xyz Xyz |
+| id | name    | gender |
+|----|---------|--------|
+| 1  | Abc Abc | 32     |
+| 2  | Xyz Xyz | 31     |
 
 Facility:
 
@@ -45,22 +46,21 @@ Column (może np. istnieć jeszcze kolumna regexp):
 
 | id | facility_id | table  | name             | dictionary_id | type     | order | is_multi |
 |----|-------------|--------|------------------|---------------|----------|-------|----------|
-| 41 | null        | user   | gender           | 21            | position | 1     | false    |
+| 41 | null        | client | gender           | 21            | position | 1     | null     |
 | 42 | null        | client | offender_genders | 21            | position | 3     | true     |
-| 43 | 11          | client | +powiat wlkp     | 22            | single   | 5     | false    |
+| 43 | 11          | client | +powiat wlkp     | 22            | position | 5     | false    |
 | 44 | 11          | client | +decyzja zespołu |               | string   | 6     | false    |
 | 45 | 11          | client | +wiek sprawcy    |               | decimal0 | 4     | true     |
-| 46 | 11          | client | contact_persons  |               | user     | 2     | true     |
+| 46 | 11          | client | contact_persons  |               | client   | 2     | true     |
 
-Attribute (value może być rozbite na number_value, string_value, date_value):
+Attribute (value może być rozbite na number_value, string_value, datetime_value):
 
-| id | column_id | object_id | position_id | user_id | value |
-|----|-----------|-----------|-------------|---------|-------|
-| 51 | 41        | 1         | 31          |         |       |
-| 52 | 42        | 1         | 31          |         |       |
-| 53 | 42        | 1         | 32          |         |       |
-| 54 | 43        | 1         | 36          |         |       |
-| 55 | 44        | 1         |             |         | "abc" |
-| 56 | 45        | 1         |             |         | "35"  |
-| 57 | 45        | 1         |             |         | "41"  |
-| 58 | 46        |           |             | 2       |       |
+| id | column_id | object_id | position_id | client_id | value |
+|----|-----------|-----------|-------------|-----------|-------|
+| 52 | 42        | 1         | 31          |           |       |
+| 53 | 42        | 1         | 32          |           |       |
+| 54 | 43        | 1         | 36          |           |       |
+| 55 | 44        | 1         |             |           | "abc" |
+| 56 | 45        | 1         |             |           | "35"  |
+| 57 | 45        | 1         |             |           | "41"  |
+| 58 | 46        | 1         |             | 2         |       |
