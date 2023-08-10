@@ -29,7 +29,7 @@ class MailController extends ApiController
     )]
     public function test(): JsonResponse
     {
-        Mail::to('kacperx95@gmail.com')->send(new Test());
+        Mail::to('some_email')->send(new Test());
 
         return new JsonResponse();
     }
