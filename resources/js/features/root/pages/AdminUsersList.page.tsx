@@ -13,6 +13,7 @@ export default (() => {
   return (
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
+        mode="standalone"
         staticEntityURL="entityURL"
         translations="tables.tables.users"
         additionalColumns={["actions"]}
@@ -56,7 +57,6 @@ export default (() => {
         }}
         initialVisibleColumns={["name", "createdAt", "actions"]}
         initialSort={[{id: "name", desc: false}]}
-        initialPageSize={10}
       />
       <Modal
         // Just a demo of the modal
