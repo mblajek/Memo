@@ -2,6 +2,7 @@ export * from "./Button";
 export * from "./CopyToClipboard";
 export * from "./Email";
 export * from "./MemoLoader";
+export * from "./Modal";
 export * from "./Spinner";
 export * from "./Table";
 export * from "./Table/tquery_filters";
