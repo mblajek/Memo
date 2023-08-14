@@ -16,6 +16,7 @@ import {
   DECIMAL2_NUMBER_FORMAT,
   TranslationEntriesInterface,
   TranslationEntriesPrefix,
+  cx,
   useLangFunc,
 } from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
@@ -63,6 +64,14 @@ const TableTranslations = new TranslationEntriesInterface(
 );
 
 export interface TQueryTableProps {
+  /**
+   * Mode in which the table is displayed:
+   * - standalone - the table is the main element on the page, typically displays many rows,
+   * header and footer are sticky.
+   * - embedded - the table is displayed along with other elements in a page, typically with not
+   * many rows, without sticky elements.
+   */
+  mode: "standalone" | "embedded";
   /** The entity URL, must not change. */
   staticEntityURL: string;
   /**
@@ -85,6 +94,9 @@ export interface TQueryTableProps {
   initialSort?: SortingState;
   initialPageSize?: number;
 }
+
+const DEFAULT_STANDALONE_PAGE_SIZE = 50;
+const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
 export const TQueryTable: Component<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
@@ -123,7 +135,9 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     additionalColumns: props.additionalColumns,
     initialVisibleColumns: props.initialVisibleColumns,
     initialSort: props.initialSort,
-    initialPageSize: props.initialPageSize,
+    initialPageSize:
+      props.initialPageSize ||
+      (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
   });
   const {schema, requestController, dataQuery, data} = createTQuery(entityURL, {requestCreator});
   const {
@@ -243,7 +257,10 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   return (
     <TableContextProvider table={table}>
       <Show when={schema()} fallback={<Spinner />}>
-        <div ref={scrollToTopPoint} class={ts.tableContainer}>
+        <div
+          ref={scrollToTopPoint}
+          class={cx(ts.tableContainer, props.mode === "standalone" ? ts.standalone : ts.embedded)}
+        >
           <div class={ts.aboveTable}>
             <TableSearch />
             <TableColumnVisibilityController />
