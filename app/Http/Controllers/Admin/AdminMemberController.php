@@ -45,7 +45,7 @@ class AdminMemberController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function post(Request $request, CreateMemberService $service): JsonResponse
     {
-        $data = $request->validate([
+        $data = $this->validate([
             'user_id' => [
                 'required',
                 'uuid',
@@ -94,7 +94,7 @@ class AdminMemberController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function patch(Member $member, Request $request, UpdateMemberService $service): JsonResponse
     {
-        $data = $request->validate([
+        $data = $this->validate([
             'user_id' => [
                 'sometimes',
                 'uuid',

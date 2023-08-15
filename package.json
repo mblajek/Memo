@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "npm i && vite",
+    "build": "npm i && vite build",
     "format": "prettier resources/js --write",
     "preinstall": "npx -y only-allow npm"
   },
