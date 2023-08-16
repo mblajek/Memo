@@ -1,6 +1,6 @@
 import * as dialog from "@zag-js/dialog";
 import {normalizeProps, useMachine} from "@zag-js/solid";
-import {ParentComponent, Show, createComputed, createMemo, createUniqueId} from "solid-js";
+import {ParentComponent, Show, createMemo, createRenderEffect, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import s from "./Modal.module.scss";
 
@@ -26,7 +26,7 @@ export const Modal: ParentComponent<Props> = (props) => {
     }),
   );
   const api = createMemo(() => dialog.connect(state, send, normalizeProps));
-  createComputed(() => {
+  createRenderEffect(() => {
     if (props.open) {
       api().open();
     } else {
