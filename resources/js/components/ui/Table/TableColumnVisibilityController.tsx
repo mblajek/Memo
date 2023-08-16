@@ -1,7 +1,7 @@
 import * as popover from "@zag-js/popover";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {useLangFunc} from "components/utils";
-import {Component, For, createMemo, createUniqueId} from "solid-js";
+import {Component, For, Show, createMemo, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {tableStyle as ts, useTable} from ".";
 import {Button} from "../Button";
@@ -31,8 +31,8 @@ export const TableColumnVisibilityController: Component = () => {
           <div {...api().contentProps}>
             <div class="bg-white border border-gray-700 rounded px-2 flex flex-col">
               <For each={table.getAllLeafColumns()}>
-                {(column) =>
-                  column.columnDef.meta?.tquery?.canControlVisibility !== false && (
+                {(column) => (
+                  <Show when={column.columnDef.meta?.tquery?.canControlVisibility !== false}>
                     <label>
                       <input
                         name={`column_visibility_${column.id}`}
@@ -42,8 +42,8 @@ export const TableColumnVisibilityController: Component = () => {
                       />{" "}
                       {t(`tables.headers.${column.id}`)}
                     </label>
-                  )
-                }
+                  </Show>
+                )}
               </For>
             </div>
           </div>
