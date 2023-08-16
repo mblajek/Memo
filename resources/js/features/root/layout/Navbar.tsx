@@ -4,6 +4,7 @@ import {IconTypes} from "solid-icons";
 import {HiSolidInformationCircle, HiSolidUserGroup} from "solid-icons/hi";
 import {Component, For, Show} from "solid-js";
 import s from "./style.module.scss";
+import {FullLogo} from "components/ui";
 
 export const Navbar: Component = () => {
   const location = useLocation();
@@ -11,10 +12,7 @@ export const Navbar: Component = () => {
 
   return (
     <aside class={cx(s.sidebar)}>
-      <div class={cx("flex flex-row justify-between")}>
-        <img src="/img/memo_logo.svg" class="h-14" />
-        <img src="/img/cpd_children_logo.svg" class="h-12" />
-      </div>
+      <FullLogo />
       <nav class="flex-1">
         <Show when={params.facilityUrl}>
           <For each={NAVBAR_ITEMS}>

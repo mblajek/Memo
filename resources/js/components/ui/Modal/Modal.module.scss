@@ -8,13 +8,13 @@
   }
 
   [data-part="content"] {
-    @apply bg-white rounded px-4 py-2;
+    @apply bg-white rounded p-4;
     min-width: 400px;
     @apply shadow-xl;
   }
 
   [data-part="title"] {
-    @apply font-bold my-1;
+    @apply font-bold mb-1;
     font-size: 1.3em;
   }
 }
