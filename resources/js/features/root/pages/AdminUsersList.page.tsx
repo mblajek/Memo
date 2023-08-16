@@ -46,6 +46,7 @@ export default (() => {
         initialPageSize={10}
       />
       <Modal
+        // Just a demo of the modal
         open={!!modalDetails()}
         title={`Użytkownik ${modalDetails()?.getValue("name")}`}
         onEscape={setModalDetails(undefined)}

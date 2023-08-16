@@ -8,13 +8,13 @@
   }
 
   [data-part="content"] {
-    @apply bg-white rounded p-4;
+    @apply bg-white rounded-lg shadow-xl p-4;
     min-width: 400px;
-    @apply shadow-xl;
+    @apply flex flex-col gap-1;
   }
 
   [data-part="title"] {
-    @apply font-bold mb-1;
+    @apply font-bold;
     font-size: 1.3em;
   }
 }

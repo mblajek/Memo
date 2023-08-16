@@ -43,7 +43,7 @@ export const Modal: ParentComponent<Props> = (props) => {
               <Show when={props.title}>
                 <h2 {...api().titleProps}>{props.title}</h2>
               </Show>
-              {props.children}
+              <div>{props.children}</div>
             </div>
           </div>
         </div>
