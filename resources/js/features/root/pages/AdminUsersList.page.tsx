@@ -17,6 +17,12 @@ export default (() => {
         translations="tables.tables.users"
         additionalColumns={["actions"]}
         columnOptions={{
+          id: {
+            metaParams: {canControlVisibility: false},
+          },
+          name: {
+            metaParams: {canControlVisibility: false},
+          },
           email: {
             columnDef: {
               cell: (c) => <Email email={c.getValue() as string} />,
@@ -25,6 +31,11 @@ export default (() => {
           createdAt: {
             columnDef: {
               sortDescFirst: true,
+            },
+            metaParams: {
+              filtering: {
+                useDateOnlyInputs: true,
+              },
             },
           },
           hasGlobalAdmin: {
@@ -40,9 +51,11 @@ export default (() => {
                 </button>
               ),
             },
+            metaParams: {canControlVisibility: false},
           },
         }}
         initialVisibleColumns={["name", "createdAt", "actions"]}
+        initialSort={[{id: "name", desc: false}]}
         initialPageSize={10}
       />
       <Modal

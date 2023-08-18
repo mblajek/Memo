@@ -105,6 +105,7 @@ export function startUsersMock() {
   }));
   const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
   const columns: ColumnSchema[] = [
+    {name: "id", type: "string"},
     {name: "name", type: "string"},
     {name: "email", type: "string"},
     {name: "createdAt", type: "datetime"},
@@ -119,14 +120,13 @@ export function startUsersMock() {
         ctx.status(200),
         ctx.json({
           columns,
-          suggestedColumns: ["name", "createdAt", "facilitiesMember", "hasGlobalAdmin"],
-          suggestedSort: [{type: "column", column: "name", dir: "asc"}],
         } satisfies Schema),
       );
     }),
     rest.post("/api/v1/entityURL/tquery", async (req, res, ctx) => {
       const request: DataRequest = await req.json();
       const rows: Row[] = (usersQuery.data || []).map((entry) => ({
+        id: entry.id,
         name: entry.name,
         email: entry.email,
         createdAt: entry.createdAt,

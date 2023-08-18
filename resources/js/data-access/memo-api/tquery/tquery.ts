@@ -31,20 +31,7 @@ export const DEFAULT_REQUEST_CREATOR: RequestCreator<SetStoreFunction<DataReques
     paging: {pageIndex: 0, pageSize: INITIAL_PAGE_SIZE},
   });
   const [requestReady, setRequestReady] = createSignal(false);
-  createComputed(() => {
-    const sch = schema();
-    if (sch) {
-      // Update the request with the suggested values once the schema is available.
-      setRequest({
-        columns: (sch.suggestedColumns ? [...sch.suggestedColumns] : sch.columns.map(({name}) => name)).map(
-          (column) => ({type: "column", column}),
-        ),
-        sort: (sch.suggestedSort || []).map((item) => ({...item})),
-      });
-      // Make sure the data query is not enabled before this.
-      setRequestReady(true);
-    }
-  });
+  createComputed(() => setRequestReady(!!schema()));
   return {
     request: () => (requestReady() ? request : undefined),
     requestController: setRequest,
