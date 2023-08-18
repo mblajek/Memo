@@ -1,0 +1,8 @@
+{
+  "__comment": "TODO: Add more models and fields. This is just a stub.",
+  "user": {
+    "name": "imię i nazwisko",
+    "email": "adres e-mail",
+    "password": "hasło"
+  }
+}

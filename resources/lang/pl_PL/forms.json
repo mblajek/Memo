@@ -1,0 +1,10 @@
+{
+  "login": {
+    "name": "Logowanie",
+    "submit": "Zaloguj",
+    "fields": {
+      "email": "$t(models.user.email)",
+      "password": "$t(models.user.password)"
+    }
+  }
+}
