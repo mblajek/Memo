@@ -14,6 +14,11 @@
       @apply bg-white rounded-lg shadow-xl p-4;
       min-width: 400px;
       @apply flex flex-col gap-1;
+      @apply relative;
+
+      .closeButton {
+        @apply absolute top-0 right-0 m-1;
+      }
     }
   }
 
