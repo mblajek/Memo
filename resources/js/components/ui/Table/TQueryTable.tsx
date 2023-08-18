@@ -236,6 +236,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
               style={{
                 "grid-template-columns": gridTemplateColumns(),
               }}
+              inert={dataQuery.isFetching || undefined}
             >
               <div class={ts.headerRow}>
                 <For each={getHeaders(table)}>

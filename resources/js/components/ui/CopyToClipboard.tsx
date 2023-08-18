@@ -17,7 +17,6 @@ export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
         <BiRegularCopy
           class={css.inlineIcon}
           classList={{"text-black": true, "text-opacity-30": !copied()}}
-          fill="currentColor"
           onClick={() => {
             navigator.clipboard.writeText(props.text);
             setCopied(true);
