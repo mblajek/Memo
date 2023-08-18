@@ -1,8 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation, useQueryClient} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {FullLogo, TextField, Modal as ModalComponent} from "components/ui";
-import {useLangFunc} from "components/utils";
+import {FullLogo, Modal as ModalComponent, TextField} from "components/ui";
 import {User} from "data-access/memo-api";
 import {Component, createSignal} from "solid-js";
 import {z} from "zod";
@@ -27,7 +26,6 @@ export namespace LoginForm {
   }
 
   export const Component: Component<Props> = (props) => {
-    const t = useLangFunc();
     const queryClient = useQueryClient();
     const mutation = createMutation(() => ({
       mutationFn: User.login,
@@ -37,21 +35,21 @@ export namespace LoginForm {
       },
     }));
 
-    const onSubmit: FormConfigWithoutTransformFn<LoginForm.Output>["onSubmit"] = async (values) => {
+    const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
       await mutation.mutateAsync(values);
     };
 
     return (
       <FelteForm
+        id="login"
         onSubmit={onSubmit}
-        schema={LoginForm.getSchema()}
+        schema={getSchema()}
         initialValues={getInitialValues()}
-        id="login-form"
         class="flex flex-col gap-2"
       >
-        <TextField name="email" label={t("email")} type="email" />
-        <TextField name="password" label={t("password")} type="password" />
-        <FelteSubmit form="login-form">{t("log_in")}</FelteSubmit>
+        <TextField name="email" type="email" autocomplete="username" />
+        <TextField name="password" type="password" autocomplete="current-password" />
+        <FelteSubmit />
       </FelteForm>
     );
   };
@@ -65,7 +63,7 @@ export namespace LoginForm {
    * when showModal is called.
    */
   export const Modal: Component = () => (
-    <ModalComponent open={modalShown()}>
+    <ModalComponent open={modalShown()} width="narrow">
       <div class="flex flex-col gap-4">
         <div class="self-center">
           <FullLogo />

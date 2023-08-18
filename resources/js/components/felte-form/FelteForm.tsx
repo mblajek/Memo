@@ -12,7 +12,17 @@ import {useLangFunc} from "../utils";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
-  form: Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+  form: FormType<T>;
+  translations: Translations;
+};
+
+type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+
+/** User strings for parts of the form. */
+type Translations = {
+  getFormName: () => string;
+  getFieldName: (field: string) => string;
+  getSubmitText: () => string;
 };
 
 const FormContext = createContext(undefined, {
@@ -21,6 +31,8 @@ const FormContext = createContext(undefined, {
 
 type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onError"> &
   FormConfigWithoutTransformFn<T> & {
+    /** The id of the form element. It is also used as a translation key prefix. */
+    id: string;
     schema: ZodSchema<T>;
   };
 
@@ -37,7 +49,11 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
     ["children", "schema"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-
+  const translations: Translations = {
+    getFormName: () => t(`forms.${props.id}.name`),
+    getFieldName: (field: string) => t(`forms.${props.id}.fields.${field}`),
+    getSubmitText: () => t(`forms.${props.id}.submit`),
+  };
   const form = createForm<T>({
     ...createFormOptions,
     extend: [validator({schema: local.schema}), reporter],
@@ -47,8 +63,11 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
         error.response?.data.errors.forEach((error) => {
           if (Api.isValidationError(error)) {
             const errorMessage = t(error.code, {
-              attribute: t(error.field),
+              attribute: translations.getFieldName(error.field),
               ...error.data,
+              ...(typeof error.data?.other === "string"
+                ? {other: translations.getFieldName(error.data.other)}
+                : undefined),
             });
             // @ts-expect-error setErrors does not like generic types
             ctx.setErrors(error.field, errorMessage);
@@ -60,14 +79,15 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
     },
   });
 
+  const ThisFormContext = FormContext as Context<FormContextValue<T>>;
   return (
-    <FormContext.Provider value={{form, props}}>
-      <form ref={form.form} {...formProps}>
+    <ThisFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
+      <form ref={form.form} inert={form.isSubmitting() || undefined} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()}>
           {local.children}
         </fieldset>
       </form>
-    </FormContext.Provider>
+    </ThisFormContext.Provider>
   );
 };
 
@@ -77,9 +97,7 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
  * Usefull in forms with deeply nested components and dependant logic
  */
 export const useFormContext = <T extends Obj = Obj>() => {
-  const value = useContext(FormContext as unknown as Context<FormContextValue<T>>);
-
+  const value = useContext(FormContext as Context<FormContextValue<T>>);
   if (value === undefined) throw "useFormContext must be used inside FormContext.Provider";
-
   return value;
 };
