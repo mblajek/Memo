@@ -1,6 +1,6 @@
+import {useFormContext} from "components/felte-form";
 import {cx} from "components/utils";
 import {Component, JSX} from "solid-js";
-import {useFormContext} from "../../felte-form";
 import {ValidationMessages} from "./ValidationMessages";
 
 export interface TextFieldProps extends JSX.InputHTMLAttributes<HTMLInputElement> {
