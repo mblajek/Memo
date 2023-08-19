@@ -84,8 +84,8 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
   const TypedFormContext = typedFormContext<T>();
   return (
     <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
-      <form ref={form.form} inert={form.isSubmitting() || undefined} {...formProps}>
-        <fieldset class="contents" disabled={form.isSubmitting()}>
+      <form ref={form.form} {...formProps}>
+        <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
           {local.children}
         </fieldset>
       </form>

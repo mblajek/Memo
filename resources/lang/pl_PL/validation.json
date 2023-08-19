@@ -99,7 +99,7 @@
   "not_regex": "Format pola „{{attribute}}” jest nieprawidłowy.",
   "numeric": "Pole „{{attribute}}” musi być liczbą.",
   "password": {
-    "all_rules": "Pole „{{attribute}}” musi zawierać przynajmniej 8 znaków, w tym wielkie i małe litery oraz cyfry (i nie może występować w wyciekach danych)",
+    "all_rules": "Pole „{{attribute}}” musi zawierać przynajmniej 8 znaków, w tym wielkie i małe litery oraz cyfry (i nie może występować w wyciekach danych).",
     "letters": "Pole „{{attribute}}” musi zawierać przynajmniej jedną literę.",
     "mixed": "Pole „{{attribute}}” musi zawierać przynajmniej jedną wielką i jedną małą literę.",
     "numbers": "Pole „{{attribute}}” musi zawierać przynajmniej jedną liczbę.",

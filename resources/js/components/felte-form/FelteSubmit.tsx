@@ -17,7 +17,7 @@ export const FelteSubmit: ParentComponent<ButtonProps> = (props) => {
     <Button
       type="submit"
       form={formProps.id}
-      class="bg-cyan-500 p-2 text-white disabled:bg-cyan-600 disabled:cursor-not-allowed"
+      class="bg-cyan-500 disabled:bg-opacity-50 p-2 text-white"
       disabled={form.isSubmitting() || props.disabled}
       {...props}
     >
