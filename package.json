@@ -42,6 +42,7 @@
     "@solidjs/router": "^0.8.2",
     "@tanstack/solid-query": "^5.0.0-alpha.75",
     "@tanstack/solid-table": "^8.9.3",
+    "@zag-js/checkbox": "^0.16.0",
     "@zag-js/dialog": "^0.16.0",
     "@zag-js/pagination": "^0.16.0",
     "@zag-js/popover": "^0.16.0",

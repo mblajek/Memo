@@ -1,0 +1,46 @@
+/* COMMON */
+[data-part="root"] {
+  @apply truncate p-0.5;
+}
+
+[data-part="control"] {
+  @apply inline-block;
+  @apply align-top;
+  @apply border border-gray-400 rounded-sm;
+  @apply h-6 w-6;
+  @apply text-transparent;
+}
+
+[data-part="label"] {
+  @apply ml-2;
+  @apply truncate align-middle;
+}
+
+/* CHECKED */
+[data-part="control"][data-state="checked"] {
+  @apply text-center;
+}
+
+[data-part="control"][data-state="checked"]::before {
+  @apply text-black;
+  content: "✓";
+}
+
+/* FOCUS */
+[data-part="control"][data-focus] {
+  @apply ring-2 ring-inherit;
+}
+
+/* HOVER */
+[data-part="root"]:hover [data-part="control"]:not([data-disabled]) {
+  @apply bg-gray-100;
+}
+
+/* DISABLED */
+[data-part="control"][data-disabled] {
+  @apply bg-gray-200;
+}
+
+[data-part="label"][data-disabled] {
+  @apply text-gray-500;
+}

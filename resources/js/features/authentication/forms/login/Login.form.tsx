@@ -2,6 +2,7 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
 import {FullLogo, MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField} from "components/ui";
+import {Checkbox} from "components/ui/form/Checkbox";
 import {User} from "data-access/memo-api";
 import {Component, createSignal} from "solid-js";
 import {z} from "zod";
@@ -11,11 +12,13 @@ export namespace LoginForm {
     z.object({
       email: z.string(),
       password: z.string(),
+      rememberMe: z.boolean(),
     });
 
   export const getInitialValues = (): Readonly<Input> => ({
     email: "",
     password: "",
+    rememberMe: false,
   });
 
   export type Input = z.input<ReturnType<typeof getSchema>>;
@@ -36,6 +39,7 @@ export namespace LoginForm {
     }));
 
     const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
+      console.log(values);
       await mutation.mutateAsync(values);
     };
 
@@ -49,6 +53,7 @@ export namespace LoginForm {
       >
         <TextField name="email" type="email" autocomplete="username" />
         <TextField name="password" type="password" autocomplete="current-password" />
+        <Checkbox name="rememberMe" label="Zapamiętaj mnie" onChange={({checked}) => console.log("checked", checked)} />
         <FelteSubmit />
       </FelteForm>
     );
