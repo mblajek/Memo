@@ -4,7 +4,9 @@ export type CustomFilterName = string;
 /** Parameters of a custom filter, defined for each custom filter separately. */
 export type CustomFilterParams = Record<string, unknown>;
 
+/** Date string in ISO format. */
 export type DateString = string;
+/** Date time string in ISO format in UTC. */
 export type DateTimeString = string;
 
 type Mapping<Key extends string, Value> = Partial<Record<Key, Value>>;
@@ -12,8 +14,6 @@ type Mapping<Key extends string, Value> = Partial<Record<Key, Value>>;
 export interface Schema {
   columns: ColumnSchema[];
   customFilters?: Mapping<CustomFilterName, CustomFilter>;
-  suggestedColumns?: ColumnName[];
-  suggestedSort?: Sort;
 }
 
 // TODO: There are more possible column types:

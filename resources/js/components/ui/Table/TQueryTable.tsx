@@ -3,6 +3,7 @@ import {
   ColumnDefTemplate,
   IdentifiedColumnDef,
   RowData,
+  SortingState,
   createColumnHelper,
   createSolidTable,
   flexRender,
@@ -15,6 +16,7 @@ import {
   DECIMAL2_NUMBER_FORMAT,
   TranslationEntriesInterface,
   TranslationEntriesPrefix,
+  cx,
   useLangFunc,
 } from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
@@ -29,11 +31,16 @@ import {
   getHeaders,
   tableStyle as ts,
 } from ".";
-import {ColumnFilterController, Spinner} from "..";
+import {ColumnFilterController, FilteringParams, Spinner} from "..";
 
-/** Type of tquery-related information in column meta. */
-export interface TQueryColumnMeta {
-  type: ColumnType;
+export interface ColumnOptions {
+  columnDef?: Partial<IdentifiedColumnDef<object>>;
+  metaParams?: ColumnMetaParams;
+}
+
+interface ColumnMetaParams {
+  canControlVisibility?: boolean;
+  filtering?: FilteringParams;
 }
 
 declare module "@tanstack/table-core" {
@@ -43,8 +50,10 @@ declare module "@tanstack/table-core" {
   }
 }
 
-export interface ColumnOptions {
-  columnDef?: Partial<IdentifiedColumnDef<object>>;
+/** Type of tquery-related information in column meta. */
+export interface TQueryColumnMeta extends ColumnMetaParams {
+  /** Column type, if the column is based on data from backend. */
+  type?: ColumnType;
 }
 
 const TableTranslations = new TranslationEntriesInterface(
@@ -55,6 +64,14 @@ const TableTranslations = new TranslationEntriesInterface(
 );
 
 export interface TQueryTableProps {
+  /**
+   * Mode in which the table is displayed:
+   * - standalone - the table is the main element on the page, typically displays many rows,
+   * header and footer are sticky.
+   * - embedded - the table is displayed along with other elements in a page, typically with not
+   * many rows, without sticky elements.
+   */
+  mode: "standalone" | "embedded";
   /** The entity URL, must not change. */
   staticEntityURL: string;
   /**
@@ -74,8 +91,12 @@ export interface TQueryTableProps {
   /** Overrides for the definition of specific columns. */
   columnOptions?: Partial<Record<string, ColumnOptions>>;
   initialVisibleColumns?: string[];
+  initialSort?: SortingState;
   initialPageSize?: number;
 }
+
+const DEFAULT_STANDALONE_PAGE_SIZE = 50;
+const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
 export const TQueryTable: Component<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
@@ -113,7 +134,10 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     intrinsicFilter: () => props.intrinsicFilter,
     additionalColumns: props.additionalColumns,
     initialVisibleColumns: props.initialVisibleColumns,
-    initialPageSize: props.initialPageSize,
+    initialSort: props.initialSort,
+    initialPageSize:
+      props.initialPageSize ||
+      (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
   });
   const {schema, requestController, dataQuery, data} = createTQuery(entityURL, {requestCreator});
   const {
@@ -129,10 +153,13 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   });
 
   const h = createColumnHelper<object>();
+  function columnOptions(name: string) {
+    return props.columnOptions?.[name] || {};
+  }
   function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
     return {
       header: t(`tables.headers.${name}`),
-      ...props.columnOptions?.[name]?.columnDef,
+      ...columnOptions(name).columnDef,
     };
   }
   const columns = createMemo(() => {
@@ -155,6 +182,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
             meta: {
               tquery: {
                 type,
+                ...columnOptions(name).metaParams,
               } satisfies TQueryColumnMeta,
             },
             ...commonColumnDef(name),
@@ -163,6 +191,11 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
         ...(props.additionalColumns || []).map((name) =>
           h.display({
             id: name,
+            meta: {
+              tquery: {
+                ...columnOptions(name).metaParams,
+              },
+            },
             ...commonColumnDef(name),
           }),
         ),
@@ -224,7 +257,10 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   return (
     <TableContextProvider table={table}>
       <Show when={schema()} fallback={<Spinner />}>
-        <div ref={scrollToTopPoint} class={ts.tableContainer}>
+        <div
+          ref={scrollToTopPoint}
+          class={cx(ts.tableContainer, props.mode === "standalone" ? ts.standalone : ts.embedded)}
+        >
           <div class={ts.aboveTable}>
             <TableSearch />
             <TableColumnVisibilityController />

@@ -1,29 +1,59 @@
-import {ColumnType} from "data-access/memo-api/tquery";
 import {Component, Show, createMemo} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {FilterControl, FilterControlProps} from ".";
+import {FilterControlProps} from ".";
 import {FilterIcon, tableStyle as ts, useTable} from "..";
+import {TQueryColumnMeta} from "../TQueryTable";
 import {BoolFilterControl} from "./BoolFilterControl";
 import {DateFilterControl} from "./DateFilterControl";
 import {DateTimeFilterControl} from "./DateTimeFilterControl";
 import {Decimal0FilterControl} from "./Decimal0FilterControl";
 import {Decimal2FilterControl} from "./Decimal2FilterControl";
 import {StringFilterControl} from "./StringFilterControl";
+import {DateFilterForDateTimeColumnControl} from "./DateFilterForDateTimeColumnControl";
 
-const CONTROLS_BY_TYPE = new Map<ColumnType, FilterControl<any>>()
-  .set("string", StringFilterControl)
-  .set("text", StringFilterControl)
-  .set("decimal0", Decimal0FilterControl)
-  .set("decimal2", Decimal2FilterControl)
-  .set("bool", BoolFilterControl)
-  .set("date", DateFilterControl)
-  .set("datetime", DateTimeFilterControl);
+interface CommonFilteringParams {
+  enabled?: boolean;
+}
+
+export interface DateTimeFilteringParams extends CommonFilteringParams {
+  useDateOnlyInputs?: boolean;
+}
+
+export type FilteringParams = DateTimeFilteringParams;
+
+function getFilterControl(meta: TQueryColumnMeta) {
+  if (meta.filtering?.enabled === false) {
+    return undefined;
+  }
+  switch (meta.type) {
+    case undefined:
+      return undefined;
+    case "string":
+      return StringFilterControl;
+    case "text":
+      return StringFilterControl;
+    case "decimal0":
+      return Decimal0FilterControl;
+    case "decimal2":
+      return Decimal2FilterControl;
+    case "bool":
+      return BoolFilterControl;
+    case "date":
+      return DateFilterControl;
+    case "datetime":
+      return (meta.filtering as DateTimeFilteringParams | undefined)?.useDateOnlyInputs
+        ? DateFilterForDateTimeColumnControl
+        : DateTimeFilterControl;
+    default:
+      return meta.type satisfies never;
+  }
+}
 
 export const ColumnFilterController: Component<FilterControlProps> = (props) => {
   const table = useTable();
   const filterComponent = createMemo(() => {
     const meta = table.getColumn(props.name)?.columnDef.meta?.tquery;
-    return meta && CONTROLS_BY_TYPE.get(meta.type);
+    return meta && getFilterControl(meta);
   });
   return (
     <div class={ts.columnFilterController}>

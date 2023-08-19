@@ -13,10 +13,17 @@ export default (() => {
   return (
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
+        mode="standalone"
         staticEntityURL="entityURL"
         translations="tables.tables.users"
         additionalColumns={["actions"]}
         columnOptions={{
+          id: {
+            metaParams: {canControlVisibility: false},
+          },
+          name: {
+            metaParams: {canControlVisibility: false},
+          },
           email: {
             columnDef: {
               cell: (c) => <Email email={c.getValue() as string} />,
@@ -25,6 +32,11 @@ export default (() => {
           createdAt: {
             columnDef: {
               sortDescFirst: true,
+            },
+            metaParams: {
+              filtering: {
+                useDateOnlyInputs: true,
+              },
             },
           },
           hasGlobalAdmin: {
@@ -40,10 +52,11 @@ export default (() => {
                 </button>
               ),
             },
+            metaParams: {canControlVisibility: false},
           },
         }}
         initialVisibleColumns={["name", "createdAt", "actions"]}
-        initialPageSize={10}
+        initialSort={[{id: "name", desc: false}]}
       />
       <Modal
         // Just a demo of the modal

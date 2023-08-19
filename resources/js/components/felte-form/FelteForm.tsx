@@ -25,9 +25,11 @@ type Translations = {
   getSubmitText: () => string;
 };
 
-const FormContext = createContext(undefined, {
+const FormContext = createContext<FormContextValue>(undefined, {
   name: "FormContext",
 });
+
+const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
 type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onError"> &
   FormConfigWithoutTransformFn<T> & {
@@ -79,15 +81,15 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
     },
   });
 
-  const ThisFormContext = FormContext as Context<FormContextValue<T>>;
+  const TypedFormContext = typedFormContext<T>();
   return (
-    <ThisFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
+    <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
       <form ref={form.form} inert={form.isSubmitting() || undefined} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()}>
           {local.children}
         </fieldset>
       </form>
-    </ThisFormContext.Provider>
+    </TypedFormContext.Provider>
   );
 };
 
@@ -97,7 +99,15 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
  * Usefull in forms with deeply nested components and dependant logic
  */
 export const useFormContext = <T extends Obj = Obj>() => {
-  const value = useContext(FormContext as Context<FormContextValue<T>>);
-  if (value === undefined) throw "useFormContext must be used inside FormContext.Provider";
-  return value;
+  const context = useFormContextIfInForm<T>();
+  if (!context) throw new Error("Not in FelteForm");
+  return context;
+};
+
+/**
+ * A version of useFormContext that returns undefined when not in form. Useful in field components
+ * that can be used both in form and separately.
+ */
+export const useFormContextIfInForm = <T extends Obj = Obj>() => {
+  return useContext(typedFormContext<T>());
 };
