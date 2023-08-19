@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Services\User\CreateUserService;
 use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 use Throwable;
@@ -72,9 +71,9 @@ class AdminUserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws ApiException|Throwable */
-    public function post(Request $request, CreateUserService $service): JsonResponse
+    public function post(CreateUserService $service): JsonResponse
     {
-        $data = $request->validate(User::getInsertValidator([
+        $data = $this->validate(User::getInsertValidator([
             'name',
             'email',
             'has_email_verified',
@@ -119,9 +118,9 @@ class AdminUserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws ApiException|Throwable */
-    public function patch(User $user, Request $request, UpdateUserService $service): JsonResponse
+    public function patch(User $user, UpdateUserService $service): JsonResponse
     {
-        $data = $request->validate(User::getPatchValidator([
+        $data = $this->validate(User::getPatchValidator([
             'name',
             'email',
             'has_email_verified',
