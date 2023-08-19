@@ -6,7 +6,9 @@ RUN useradd -mU -u $ME_USER_UID -s /bin/bash me
 RUN a2enmod rewrite
 
 RUN apt update
-RUN apt install -y unzip nano htop curl libicu-dev
+RUN apt install -y unzip nano git htop curl libicu-dev
+
+RUN git config --global --add safe.directory /var/www
 
 # php
 
