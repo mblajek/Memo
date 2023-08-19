@@ -20,7 +20,6 @@ export const SortMarker: Component<Props> = (props) => (
       component={ICONS.get(props.column.getIsSorted())}
       class={css.inlineIcon}
       classList={{"text-black": true, "text-opacity-30": !props.column.getIsSorted()}}
-      fill="currentColor"
       style={{scale: props.column.getSortIndex() > 0 ? 0.6 : 1}}
     />
   </Show>

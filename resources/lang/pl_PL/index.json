@@ -2,9 +2,8 @@
   "log_in": "Zaloguj",
   "log_out": "Wyloguj",
   "menu": "Menu",
-  "email": "Adres e-mail",
-  "password": "Hasło",
   "change_language": "zmień język",
+  "close": "Zamknij",
 
   "exception": {
     "configuration": {
@@ -44,5 +43,7 @@
     "to": "do:",
     "min": "min:",
     "max": "maks:"
-  }
+  },
+
+  "quoted": "„{{text}}”"
 }

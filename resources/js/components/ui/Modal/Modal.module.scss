@@ -8,13 +8,28 @@
   }
 
   [data-part="content"] {
-    @apply bg-white rounded-lg shadow-xl p-4;
-    min-width: 400px;
-    @apply flex flex-col gap-1;
+    @apply overflow-x-clip overflow-y-auto max-w-full max-h-full;
+
+    .innerContent {
+      @apply bg-white rounded-lg shadow-xl p-4;
+      min-width: 400px;
+      @apply flex flex-col gap-1;
+      @apply relative;
+
+      .closeButton {
+        @apply absolute top-0 right-0 m-1;
+      }
+    }
   }
 
   [data-part="title"] {
     @apply font-bold;
     font-size: 1.3em;
+  }
+
+  &.narrow {
+    [data-part="content"] {
+      width: 400px;
+    }
   }
 }

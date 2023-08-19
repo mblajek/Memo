@@ -3,4 +3,4 @@
  */
 
 /** An icon that should be displayed inline in text. */
-export const inlineIcon = "inline mb-1";
+export const inlineIcon = "inline mb-1 fill-current";
