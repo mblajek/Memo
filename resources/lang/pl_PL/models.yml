@@ -6,14 +6,14 @@ generic:
   createdBy: "utworzono przez"
 dictionary:
   _name: "słownik"
-  _names: "słowniki"
+  _name_plural: "słowniki"
   name: "$t(models.generic.name)"
   facility: "placówka, właściciel słownika"
   isFixed: "nieusuwalny / systemowy"
   positions: "pozycje"
 position:
   _name: "pozycja słownika"
-  _names: "pozycje słownika"
+  _name_plural: "pozycje słownika"
   name: "$t(models.generic.name)"
   dictionary: "słownik"
   facility: "placówka, właściciel pozycji"
@@ -21,13 +21,13 @@ position:
   defaultOrder: "domyślna kolejność"
 facility:
   _name: "placówka"
-  _names: "placówki"
+  _name_plural: "placówki"
   name: "$t(models.generic.name)"
   url: "adres url wewnątrz Memo"
   members: "osoby przypisane do placówki"
 member:
-  _name: "powiązanie osoby i placówki"
-  _names: "powiązania osób i placówek"
+  _name: "powiązanie użytkownika i placówki"
+  _name_plural: "powiązania użytkowników i placówek"
   user: "użytkownik"
   facility: "placówka"
   hasFacilityAdmin: "administrator placówki"
@@ -42,7 +42,7 @@ permissions:
   facilityAdmin: "administrator placówki"
 user:
   _name: "użytkownik"
-  _names: "użytkownicy"
+  _name_plural: "użytkownicy"
   email: "$t(models.generic.email)"
   createdAt: "$t(models.generic.createdAt)"
   modifiedAt: "$t(models.generic.modifiedAt)"
