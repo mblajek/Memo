@@ -28,6 +28,7 @@ class AdminUserController extends ApiController
         description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'All users',
         tags: ['Admin'],
+        parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
                 response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
@@ -42,7 +43,9 @@ class AdminUserController extends ApiController
     )]
     public function list(): JsonResource
     {
-        return AdminUserResource::collection(User::query()->with(['members'])->get());
+        $dictionariesQuery = User::query();
+        $this->applyRequestIn($dictionariesQuery);
+        return AdminUserResource::collection($dictionariesQuery->with(['members'])->get());
     }
 
     #[OA\Post(
