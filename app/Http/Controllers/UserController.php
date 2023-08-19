@@ -48,7 +48,7 @@ class UserController extends ApiController
     )]
     public function login(Request $request): JsonResponse
     {
-        $loginData = $request->validate([
+        $loginData = $this->validate([
             'email' => 'bail|required|string|email',
             'password' => 'required|string',
         ]);
@@ -78,10 +78,10 @@ class UserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws ApiException|Throwable */
-    public function patch(Request $request, UpdateUserService $service): JsonResponse
+    public function patch(UpdateUserService $service): JsonResponse
     {
         $user = $this->getUserOrFail();
-        $data = $request->validate(
+        $data = $this->validate(
             User::getPatchValidator([
                 'last_login_facility_id',
             ], $user)
@@ -175,9 +175,9 @@ class UserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
     )] /** @throws Throwable */
-    public function password(Request $request, ChangePasswordService $changePasswordService): JsonResponse
+    public function password(ChangePasswordService $changePasswordService): JsonResponse
     {
-        $data = $request->validate([
+        $data = $this->validate([
             'current' => 'bail|required|string|current_password',
             'repeat' => 'bail|required|string|same:password',
             'password' => array_merge(
