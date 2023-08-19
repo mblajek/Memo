@@ -10,7 +10,6 @@ use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Rules\RequirePresent;
 use App\Services\User\ChangePasswordService;
 use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
@@ -67,10 +66,10 @@ class UserController extends ApiController
         summary: 'Update logged user',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-            properties: [
-                new OA\Property(property: 'lastLoginFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
-            ]
-        )
+                properties: [
+                    new OA\Property(property: 'lastLoginFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
+                ]
+            )
         ),
         tags: ['User'],
         responses: [
@@ -104,7 +103,8 @@ class UserController extends ApiController
                 in: 'path',
                 allowEmptyValue: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: ''),
-            )],
+            ),
+        ],
         responses: [
             new OA\Response(
                 response: 200, description: 'OK', content: new OA\JsonContent(
@@ -180,9 +180,9 @@ class UserController extends ApiController
         $data = $request->validate([
             'current' => 'bail|required|string|current_password',
             'repeat' => 'bail|required|string|same:password',
-            'password' => array_filter(
-                User::getInsertValidator(['password'])['password'],
-                fn($rule) => !($rule instanceof RequirePresent)
+            'password' => array_merge(
+                ['bail', 'required', 'string', 'different:current'],
+                User::getInsertValidator(['_password'])['_password'],
             ),
         ]);
 
