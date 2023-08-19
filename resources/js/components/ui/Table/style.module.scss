@@ -104,18 +104,16 @@
   .aboveTable {
     @apply bg-white;
     @apply h-8 flex items-stretch gap-1;
-    @apply sticky top-0;
   }
 
   .belowTable {
     @apply bg-white;
     @apply h-8 flex items-stretch gap-2;
-    @apply sticky bottom-0;
   }
 
   .tableBg {
     @apply self-start;
-    @apply bg-gray-300;
+    @apply w-max bg-gray-300;
 
     .table {
       @apply grid;
@@ -127,9 +125,9 @@
 
         .cell {
           @apply outline outline-1 outline-gray-400 bg-gray-100;
-          @apply sticky;
-          top: 33px;
           @apply flex flex-col items-stretch gap-0.5 justify-between;
+          // Create a positioned ancestor for the resize handler.
+          @apply relative;
 
           .title {
             @apply font-bold;
@@ -177,13 +175,33 @@
         grid-column: 1 / -1;
         @apply border-b border-b-gray-300;
         margin-top: -5px;
-        @apply sticky bottom-8;
       }
 
       &.dimmed {
         .dataRow .cell {
           @apply bg-opacity-70 text-opacity-30;
         }
+      }
+    }
+  }
+
+  &.standalone {
+    .aboveTable {
+      @apply sticky top-0;
+    }
+
+    .belowTable {
+      @apply sticky bottom-0;
+    }
+
+    .table {
+      .headerRow .cell {
+        @apply sticky;
+        // Just below the sticky aboveTable bar.
+        top: 33px;
+      }
+      .bottomBorder {
+        @apply sticky bottom-8;
       }
     }
   }
