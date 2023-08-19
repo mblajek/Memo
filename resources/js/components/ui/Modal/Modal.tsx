@@ -1,6 +1,6 @@
 import * as dialog from "@zag-js/dialog";
 import {normalizeProps, useMachine} from "@zag-js/solid";
-import {cx} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
 import {ParentProps, Show, createMemo, createRenderEffect, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
@@ -37,7 +37,12 @@ interface PropsNoCloseReason extends BaseProps {
   onClose?: undefined;
 }
 
-/** Props of a modal that specifies some close reasons. */
+/**
+ * Props of a modal that specifies some close reasons.
+ *
+ * If close reasons are specified using closeOn prop, the onClose handler needs to be specified as well,
+ * to actually handle the closing.
+ */
 interface PropsWithCloseReason<C extends CloseReason = CloseReason> extends BaseProps {
   /**
    * The list of reasons that cause the modal to close.
@@ -53,7 +58,7 @@ interface PropsWithCloseReason<C extends CloseReason = CloseReason> extends Base
    * Handler called when any of the close reasons (specified in closeOn) occurs. The handler
    * should typically set the open prop to false to actually close the modal.
    */
-  onClose: (reason: CloseReason) => void;
+  onClose: (reason: C) => void;
 }
 
 type CloseReason = EscapeReason | "closeButton";
@@ -65,6 +70,7 @@ function isEscapeReason(reason: CloseReason): reason is EscapeReason {
 type Props<C extends CloseReason> = PropsNoCloseReason | PropsWithCloseReason<C>;
 
 export const Modal = <C extends CloseReason>(props: ParentProps<Props<C>>) => {
+  const t = useLangFunc();
   const closeOn = createMemo(
     () =>
       new Set<CloseReason>(
@@ -76,7 +82,7 @@ export const Modal = <C extends CloseReason>(props: ParentProps<Props<C>>) => {
       props.onEscape(reason);
     }
     if (closeOn().has(reason)) {
-      props.onClose?.(reason);
+      props.onClose?.(reason as C);
     }
   }
   const [state, send] = useMachine(
@@ -106,7 +112,11 @@ export const Modal = <C extends CloseReason>(props: ParentProps<Props<C>>) => {
             <div {...api().contentProps}>
               <div class={s.innerContent}>
                 <Show when={closeOn().has("closeButton")}>
-                  <button class={s.closeButton} aria-label="Close" onClick={() => props.onClose?.("closeButton")}>
+                  <button
+                    class={s.closeButton}
+                    aria-label={t("close")}
+                    onClick={() => props.onClose?.("closeButton" as C)}
+                  >
                     <VsClose class="w-6 h-6" />
                   </button>
                 </Show>
