@@ -315,20 +315,20 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
                   )}
                 </For>
               </div>
-              <Index
+              <For
                 each={table.getRowModel().rows}
                 fallback={<div class={ts.wideRow}>{dataQuery.isFetching ? <Spinner /> : tt.empty_table_text()}</div>}
               >
                 {(row) => (
                   <div class={ts.dataRow}>
-                    <Index each={row().getVisibleCells()}>
+                    <Index each={row.getVisibleCells()}>
                       {(cell) => (
                         <span class={ts.cell}>{flexRender(cell().column.columnDef.cell, cell().getContext())}</span>
                       )}
                     </Index>
                   </div>
                 )}
-              </Index>
+              </For>
               <div class={ts.bottomBorder} />
             </div>
           </div>
