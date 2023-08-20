@@ -7,7 +7,7 @@ export interface CellRendererProps<TProps extends object> {
   /** The props to pass to the cell component */
   props?: TProps;
 }
-//aaaaaaaa
+
 /**
  * Renders the TanStack Table's cell. A substitute for \@tanstack/solid-table's flexRender method.
  */
