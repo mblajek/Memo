@@ -6,6 +6,7 @@ use App\Models\Grant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Throwable;
 
 readonly class UpdateUserService
@@ -45,6 +46,10 @@ readonly class UpdateUserService
             }
 
             $data['global_admin_grant_id'] = $grant?->id;
+        }
+
+        if (array_key_exists('password', $data)) {
+            $data['password'] = Hash::make($data['password']);
         }
 
         $user->update($data);
