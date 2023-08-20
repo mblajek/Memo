@@ -9,9 +9,10 @@ import { parseGetListResponse } from "../utils";
  * @see {@link http://localhost:9081/api/documentation#/System local docs}
  */
 export namespace System {
-  export const getFacilitiesList = () =>
+  export const getFacilitiesList = (config?: Api.Request.Config) =>
     V1.get<Api.Response.GetList<FacilityResource>>(
-      "/system/facility/list"
+      "/system/facility/list",
+      config
     ).then(parseGetListResponse);
 
   export const keys = {
@@ -22,7 +23,7 @@ export namespace System {
   };
 
   export const facilitiesQueryOptions = {
-    queryFn: getFacilitiesList,
+    queryFn: ({ signal }) => getFacilitiesList({ signal }),
     queryKey: keys.facilityList(),
   } satisfies SolidQueryOptions;
 }

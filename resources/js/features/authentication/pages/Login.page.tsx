@@ -3,14 +3,26 @@ import { createQuery } from "@tanstack/solid-query";
 import { MemoLoader } from "components/ui";
 import { Page } from "components/utils";
 import { User } from "data-access/memo-api";
-import { Component, Match, Switch } from "solid-js";
+import { Component, Match, Switch, createEffect } from "solid-js";
+import { setFacilityId } from "state/facilityId.state";
 import { LoginForm } from "../forms/login";
 
 const LoginPage: Component = () => {
   const statusQuery = createQuery(() => ({
-    ...User.statusQueryOptions,
+    ...User.statusQueryOptions(),
     meta: { quietError: true },
   }));
+
+  const successHref = () => {
+    return "/home";
+  };
+
+  createEffect(() => {
+    if (statusQuery.isSuccess) {
+      if (statusQuery.data.user.lastLoginFacilityId)
+        setFacilityId(statusQuery.data.user.lastLoginFacilityId);
+    }
+  });
 
   return (
     <Switch>
@@ -20,7 +32,7 @@ const LoginPage: Component = () => {
         </div>
       </Match>
       <Match when={statusQuery.isSuccess}>
-        <Navigate href="/" state={{ fromLoginPage: true }} />
+        <Navigate href={successHref()} state={{ fromLoginPage: true }} />
       </Match>
       <Match when={statusQuery.isError}>
         <Page title="Logowanie">

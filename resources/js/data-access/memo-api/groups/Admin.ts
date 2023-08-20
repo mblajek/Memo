@@ -13,8 +13,9 @@ export namespace Admin {
   export const updateFacility = (facilityId: string) =>
     V1.patch(`/admin/facility/${facilityId}`);
 
-  export const getUsers = () =>
-    V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list").then(
-      parseGetListResponse
-    );
+  export const getUsers = (config?: Api.Request.Config) =>
+    V1.get<Api.Response.GetList<AdminUserResource>>(
+      "/admin/user/list",
+      config
+    ).then(parseGetListResponse);
 }

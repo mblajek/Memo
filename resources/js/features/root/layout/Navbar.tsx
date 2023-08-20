@@ -1,75 +1,122 @@
-import {A, AnchorProps, Location, useLocation, useParams} from "@solidjs/router";
-import {cx} from "components/utils";
-import {IconTypes} from "solid-icons";
-import {HiSolidInformationCircle, HiSolidUserGroup} from "solid-icons/hi";
-import {Component, For, Show} from "solid-js";
+import { createQuery } from "@tanstack/solid-query";
+import { cx } from "components/utils";
+import { System } from "data-access/memo-api";
+import {
+  HiOutlineBuildingOffice,
+  HiOutlineCalendarDays,
+  HiOutlineClipboardDocumentList,
+  HiOutlineClock,
+  HiOutlineTableCells,
+  HiOutlineUserGroup,
+  HiOutlineUsers,
+} from "solid-icons/hi";
+import { Component, Show, createMemo } from "solid-js";
+import { facilityId } from "state/facilityId.state";
+import {
+  NavigationSection,
+  NavigationSectionProps,
+} from "../components/navbar";
 import s from "./style.module.scss";
 
 export const Navbar: Component = () => {
-  const location = useLocation();
-  const params = useParams<{facilityUrl?: string}>();
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+
+  const facilityUrl = () =>
+    facilitiesQuery.data?.find((facility) => facility.id === facilityId())?.url;
+
+  const sectionItems = createMemo(() => getSectionItems(facilityUrl()));
 
   return (
     <aside class={cx(s.sidebar)}>
-      <div class={cx("flex flex-row justify-between")}>
+      <div class={cx("flex flex-row justify-between py-4 px-8 bg-inherit")}>
         <img src="/img/memo_logo.svg" class="h-14" />
         <img src="/img/cpd_children_logo.svg" class="h-12" />
       </div>
-      <nav class="flex-1">
-        <Show when={params.facilityUrl}>
-          <For each={NAVBAR_ITEMS}>
-            {(item) => (
-              <A
-                href={item.hrefFn({location, params})}
-                class="mb-2 p-4 rounded-lg flex flex-row items-center gap-3 hover:bg-white"
-                activeClass="bg-white"
-              >
-                <item.Icon size="25" />
-                <span>{item.title}</span>
-              </A>
-            )}
-          </For>
+      <nav class={cx("flex-1 px-8 py-4 overflow-y-auto", s.navScroll)}>
+        <NavigationSection
+          roles={["globalAdmin"]}
+          items={sectionItems().system}
+          title="System"
+        />
+        <Show when={facilityUrl()}>
+          <NavigationSection
+            facilityUrl={facilityUrl()}
+            roles={["facilityAdmin"]}
+            items={sectionItems().facility}
+            title="Placówka"
+          />
+          <NavigationSection
+            facilityUrl={facilityUrl()}
+            roles={["facilityStaff"]}
+            items={sectionItems().work}
+            title="Moja praca"
+          />
         </Show>
-        <hr class="my-4" />
-        <A
-          href="/admin"
-          class="mb-2 p-4 rounded-lg flex flex-row items-center gap-3 hover:bg-white"
-          activeClass="bg-white"
-        >
-          <HiSolidUserGroup size="25" />
-          <span>Administracja</span>
-        </A>
-        <A
-          href="/help"
-          class="mb-2 p-4 rounded-lg flex flex-row items-center gap-3 hover:bg-white"
-          activeClass="bg-white"
-        >
-          <HiSolidInformationCircle size="25" />
-          <span>Pomoc</span>
-        </A>
       </nav>
     </aside>
   );
 };
 
-export type HrefFnArgs = {
-  params: {facilityUrl?: string};
-  location: Location;
-};
-
-export type NavbarItem = {
-  Icon: IconTypes;
-  hrefFn: (args: HrefFnArgs) => AnchorProps["href"];
-  title: string;
-};
-
-const NAVBAR_ITEMS: NavbarItem[] = [
-  {
-    Icon: HiSolidUserGroup,
-    hrefFn: ({params: {facilityUrl}}) => {
-      if (facilityUrl) return `/${facilityUrl}/admin`;
-      return "/help";
+const getSectionItems = (
+  facilityUrl?: string
+): {
+  system: NavigationSectionProps["items"];
+  facility: NavigationSectionProps["items"];
+  work: NavigationSectionProps["items"];
+} => ({
+  system: [
+    {
+      icon: HiOutlineBuildingOffice,
+      href: "/admin/facilities",
+      children: "Placówki",
     },
-    title: "Administracja placówki",
-  },
-];
+    {
+      icon: HiOutlineUserGroup,
+      href: "/admin/users",
+      children: "Użytkownicy",
+    },
+  ],
+  facility: !facilityUrl
+    ? []
+    : [
+        {
+          icon: HiOutlineCalendarDays,
+          href: `/${facilityUrl}/admin/calendar`,
+          children: "Kalendarz",
+        },
+        {
+          icon: HiOutlineTableCells,
+          href: `/${facilityUrl}/admin/clients`,
+          children: "Klienci",
+        },
+        {
+          icon: HiOutlineUsers,
+          href: `/${facilityUrl}/admin/staff`,
+          children: "Pracownicy",
+        },
+        {
+          icon: HiOutlineClipboardDocumentList,
+          href: `/${facilityUrl}/admin/reports`,
+          children: "Raporty",
+        },
+      ],
+  work: !facilityUrl
+    ? []
+    : [
+        {
+          icon: HiOutlineCalendarDays,
+          href: `/${facilityUrl}/calendar`,
+          children: "Mój kalendarz",
+        },
+        {
+          icon: HiOutlineClock,
+          href: `/${facilityUrl}/timetable`,
+          children: "Mój harmonogram",
+        },
+        {
+          icon: HiOutlineTableCells,
+          href: `/${facilityUrl}/clients`,
+          children: "Moi klienci",
+        },
+      ],
+});

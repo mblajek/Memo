@@ -1,3 +1,5 @@
+import { AxiosRequestConfig } from "axios";
+
 export namespace Api {
   export namespace Response {
     export type Get<T extends object> = { data: T };
@@ -11,6 +13,8 @@ export namespace Api {
     export type GetListParams = {
       in?: string;
     };
+
+    export type Config<D = unknown> = AxiosRequestConfig<D>;
   }
 
   export type ErrorResponse = {
