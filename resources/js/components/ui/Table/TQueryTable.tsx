@@ -20,7 +20,7 @@ import {
   useLangFunc,
 } from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
-import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
+import {Component, For, Show, createEffect, createMemo, on} from "solid-js";
 import {
   Pagination,
   SortMarker,
@@ -321,11 +321,11 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
               >
                 {(row) => (
                   <div class={ts.dataRow}>
-                    <Index each={row.getVisibleCells()}>
+                    <For each={row.getVisibleCells()}>
                       {(cell) => (
-                        <span class={ts.cell}>{flexRender(cell().column.columnDef.cell, cell().getContext())}</span>
+                        <span class={ts.cell}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</span>
                       )}
-                    </Index>
+                    </For>
                   </div>
                 )}
               </For>
