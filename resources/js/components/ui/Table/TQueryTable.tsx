@@ -6,7 +6,6 @@ import {
   SortingState,
   createColumnHelper,
   createSolidTable,
-  flexRender,
   getCoreRowModel,
 } from "@tanstack/solid-table";
 import {
@@ -32,6 +31,7 @@ import {
   tableStyle as ts,
 } from ".";
 import {ColumnFilterController, FilteringParams, Spinner} from "..";
+import {CellRenderer} from "./CellRenderer";
 
 export interface ColumnOptions {
   columnDef?: Partial<IdentifiedColumnDef<object>>;
@@ -290,9 +290,9 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
                           }}
                           title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
                         >
-                          {header()?.isPlaceholder
-                            ? undefined
-                            : flexRender(column.columnDef.header, header()!.getContext())}{" "}
+                          <Show when={!header()?.isPlaceholder}>
+                            <CellRenderer component={column.columnDef.header} props={header()!.getContext()} />
+                          </Show>
                           <SortMarker column={column} />
                         </span>
                         <Show when={column.getCanFilter()}>
@@ -323,7 +323,9 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
                   <div class={ts.dataRow}>
                     <Index each={row().getVisibleCells()}>
                       {(cell) => (
-                        <span class={ts.cell}>{flexRender(cell().column.columnDef.cell, cell().getContext())}</span>
+                        <span class={ts.cell}>
+                          <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
+                        </span>
                       )}
                     </Index>
                   </div>
