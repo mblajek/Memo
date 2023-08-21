@@ -6,6 +6,7 @@ import {Dynamic} from "solid-js/web";
 import {css} from "..";
 
 interface Props {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   column: Column<any>;
 }
 
