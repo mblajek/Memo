@@ -16,6 +16,7 @@ import {rest, setupWorker} from "msw";
 type Row = Partial<Record<string, unknown>>;
 
 type ComparableVal = number | string;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CompareTransform = (v: any) => ComparableVal;
 
 const str = (v: unknown) => (v ?? undefined) as string | undefined;
