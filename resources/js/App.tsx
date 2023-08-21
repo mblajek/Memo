@@ -6,6 +6,7 @@ import {lazy, type Component} from "solid-js";
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
+const TestForm = lazy(() => import("features/root/pages/TestForm.page"));
 
 const App: Component = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -41,6 +42,7 @@ const App: Component = () => {
           <Route path="/" element={<div class="p-4">strona główna placówki</div>} />
           <Route path="admin" element={<div class="p-4">panel admina placówki</div>} />
         </Route>
+        <Route path="/test-form" component={TestForm} />
       </Route>
     </Routes>
   );
