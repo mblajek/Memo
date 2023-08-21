@@ -36,7 +36,6 @@ export namespace LoginForm {
     }));
 
     const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
-      console.log(values);
       await mutation.mutateAsync(values);
     };
 
