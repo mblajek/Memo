@@ -14,4 +14,9 @@ export namespace Admin {
 
   export const getUsers = () =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list").then(parseGetListResponse);
+
+  export const keys = {
+    all: () => ["admin"] as const,
+    users: () => [...keys.all(), "users"] as const,
+  };
 }

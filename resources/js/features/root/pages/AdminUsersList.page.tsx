@@ -1,10 +1,10 @@
+import {Row} from "@tanstack/solid-table";
 import {Email, Modal, css} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, DATE_TIME_WITH_WEEKDAY_FORMAT} from "components/utils";
+import {Admin} from "data-access/memo-api/groups/Admin";
 import {BiSolidUserDetail} from "solid-icons/bi";
 import {Component, Show, createSignal} from "solid-js";
-
-import {Row} from "@tanstack/solid-table";
 import {startUsersMock} from "./users_fake_tquery";
 
 export default (() => {
@@ -14,8 +14,10 @@ export default (() => {
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
         mode="standalone"
+        staticPrefixQueryKey={Admin.keys.users()}
         staticEntityURL="entityURL"
         translations="tables.tables.users"
+        intrinsicColumns={["id"]}
         additionalColumns={["actions"]}
         columnOptions={{
           id: {
@@ -55,7 +57,8 @@ export default (() => {
             metaParams: {canControlVisibility: false},
           },
         }}
-        initialVisibleColumns={["name", "createdAt", "actions"]}
+        initialColumnsOrder={["name", "email", "createdAt", "facilitiesMember", "numFacilities", "hasGlobalAdmin"]}
+        initialVisibleColumns={["name", "email", "createdAt", "facilitiesMember", "hasGlobalAdmin", "actions"]}
         initialSort={[{id: "name", desc: false}]}
       />
       <Modal
