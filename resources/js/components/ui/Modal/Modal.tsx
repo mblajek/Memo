@@ -83,6 +83,29 @@ function isEscapeReason(reason: CloseReason): reason is EscapeReason {
 
 type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseReason<T, C>;
 
+/**
+ * A modal, displaying on top of the page.
+ *
+ * The modal is opened whenever `props.open` is truthy. The modal never closes itself. The ways of
+ * closing the modal are described in the docs for props.
+ *
+ * The content of the modal can be specified either directly as children, or in the function form,
+ * in which case the content has access to the (non-nullable) value of `props.open`. This mechanism
+ * is similar to the function form of the `<Show>` component.
+ *
+ * Example:
+ *
+ *     declare const value: Accessor<string | undefined>;
+ *
+ *     <Modal open={value()}>
+ *       {(value: Accessor<string>) => (
+ *         <>
+ *           <div>string: {value()}</div>
+ *           <div>length: {value().length}</div>
+ *         </>
+ *       )}
+ *     </Modal>
+ */
 export const Modal = <T, C extends CloseReason>(props: Props<T, C>) => {
   const t = useLangFunc();
   const closeOn = createMemo(
