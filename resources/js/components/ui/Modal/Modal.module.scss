@@ -1,6 +1,6 @@
 .modal {
   [data-part="backdrop"] {
-    @apply fixed inset-0 bg-black bg-opacity-50;
+    @apply fixed inset-0 bg-black bg-opacity-30;
   }
 
   [data-part="container"] {
@@ -19,6 +19,10 @@
       .closeButton {
         @apply absolute top-0 right-0 m-1;
       }
+
+      .body {
+        @apply overflow-x-auto overflow-y-clip;
+      }
     }
   }
 
@@ -27,9 +31,10 @@
     font-size: 1.3em;
   }
 
-  &.narrow {
-    [data-part="content"] {
-      width: 400px;
+  &.withCloseButton {
+    [data-part="title"] {
+      // Make room for the close button.
+      @apply pr-4;
     }
   }
 }
