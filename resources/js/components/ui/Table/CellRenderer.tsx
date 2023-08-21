@@ -4,9 +4,9 @@ import {Dynamic} from "solid-js/web";
 
 export interface CellRendererProps<TProps extends object> {
   /** The cell content (e.g. component/string) render */
-  component: string | ColumnDefTemplate<TProps>;
+  component: ColumnDefTemplate<TProps> | undefined;
   /** The props to pass to the cell component */
-  props?: TProps;
+  props: TProps;
 }
 
 /**
