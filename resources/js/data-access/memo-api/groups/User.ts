@@ -1,4 +1,4 @@
-import {SolidQueryOptions} from "@tanstack/solid-query";
+import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {PermissionsResource, UserResource} from "../resources";
 import {MemberResource} from "../resources/member.resource";
@@ -44,4 +44,11 @@ export namespace User {
     queryFn: getStatus,
     queryKey: keys.status(),
   } satisfies SolidQueryOptions;
+
+  export function useInvalidator() {
+    const queryClient = useQueryClient();
+    return {
+      status: () => queryClient.invalidateQueries({queryKey: keys.status()}),
+    };
+  }
 }
