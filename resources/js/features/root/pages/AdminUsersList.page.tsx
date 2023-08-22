@@ -14,7 +14,7 @@ export default (() => {
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
         mode="standalone"
-        staticPrefixQueryKey={Admin.keys.users()}
+        staticPrefixQueryKey={Admin.keys.userLists()}
         staticEntityURL="entityURL"
         translations="tables.tables.users"
         intrinsicColumns={["id"]}

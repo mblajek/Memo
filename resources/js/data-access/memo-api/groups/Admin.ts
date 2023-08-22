@@ -17,6 +17,7 @@ export namespace Admin {
 
   export const keys = {
     all: () => ["admin"] as const,
-    users: () => [...keys.all(), "users"] as const,
+    userAll: () => [...keys.all(), "user"] as const,
+    userLists: () => [...keys.userAll(), "list"] as const,
   };
 }
