@@ -8,7 +8,7 @@ const LoginPage = lazy(() => import("features/authentication/pages/Login.page"))
 const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
 
 const App: Component = () => {
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
 
   return (
     <Routes>

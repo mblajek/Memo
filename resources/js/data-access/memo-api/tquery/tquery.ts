@@ -1,9 +1,9 @@
-import {CreateQueryOptions, createQuery, keepPreviousData} from "@tanstack/solid-query";
+import {createQuery, keepPreviousData} from "@tanstack/solid-query";
 import {Accessor, createComputed, createMemo, createSignal, on} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
 import {DataRequest, DataResponse, Schema} from ".";
 import {V1} from "../config";
-import {Api} from "../types";
+import {CreateQueryOpts, SolidQueryOpts} from "../query_utils";
 
 type EntityURL = string;
 
@@ -58,7 +58,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   prefixQueryKey: K;
   entityURL: EntityURL;
   requestCreator: RequestCreator<C>;
-  dataQueryOptions?: CreateQueryOptions<DataResponse, Api.Error, DataResponse, DataQueryKey<K>>;
+  dataQueryOptions?: CreateQueryOpts<DataResponse, DataQueryKey<K>>;
 }) {
   const schemaQuery = createQuery(() => ({
     queryKey: ["tquery-schema", entityURL] satisfies SchemaQueryKey,
@@ -67,14 +67,19 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
-  const dataQuery = createQuery<DataResponse, Api.Error, DataResponse, DataQueryKey<K>>(() => ({
-    enabled: !!request(),
-    queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
-    queryFn: (context) =>
-      V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then((res) => res.data),
-    placeholderData: keepPreviousData,
-    ...dataQueryOptions,
-  }));
+  const dataQuery = createQuery(
+    () =>
+      ({
+        enabled: !!request(),
+        queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
+        queryFn: (context) =>
+          V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then(
+            (res) => res.data,
+          ),
+        placeholderData: keepPreviousData,
+        ...dataQueryOptions,
+      }) satisfies SolidQueryOpts<DataResponse, DataQueryKey<K>>,
+  );
   // There seems to be a bug in TanStack Query v5 - the identity of data does not change
   // when data is loaded from the cache. The code below fixes that.
   const data = createMemo(

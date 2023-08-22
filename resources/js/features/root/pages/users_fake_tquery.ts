@@ -100,11 +100,8 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
 }
 
 export function startUsersMock() {
-  const usersQuery = createQuery(() => ({
-    queryFn: Admin.getUsers,
-    queryKey: ["admin", "user", "list"],
-  }));
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const usersQuery = createQuery(Admin.usersQueryOptions);
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const columns: ColumnSchema[] = [
     {name: "createdAt", type: "datetime"},
     {name: "email", type: "string"},
