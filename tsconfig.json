@@ -1,20 +1,22 @@
 {
-    "compilerOptions": {
-        "strict": true,
-        "target": "ESNext",
-        "module": "ESNext",
-        "moduleResolution": "node",
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
-        "types": ["vite/client"],
-        "noEmit": true,
-        "isolatedModules": true,
-        "baseUrl": ".",
-        "paths": {
-            "*": ["resources/js/*"]
-        }
-    },
-    "include": ["resources/js"]
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
+    "noUncheckedIndexedAccess": true,
+    "types": ["vite-plugin-solid-svg/types-component-solid", "vite/client"],
+    "noEmit": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "*": ["resources/js/*"]
+    }
+  },
+  "include": ["resources/js"]
 }

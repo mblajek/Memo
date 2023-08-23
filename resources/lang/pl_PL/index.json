@@ -2,7 +2,7 @@
     "log_in": "Zaloguj",
     "log_out": "Wyloguj",
     "menu": "Menu",
-    "email_address": "Adres e-mail",
+    "email": "Adres e-mail",
     "password": "Hasło",
     "change_language": "zmień język",
 
@@ -10,12 +10,13 @@
         "configuration": {
             "translation": "Błędna konfiguracja tłumaczeń"
         },
-        "reflection": {
-            "rules": "Błędna konfiguracja reguł walidacji"
-        },
         "validation": "Przesłano niepoprawne dane",
         "unauthorised": "Brak autoryzacji",
-        "not_found": "Nie znaleziono strony"
+        "bad_credentials": "Błędne dane logowania",
+        "forbidden": "Brak dostępu",
+        "not_found": "Nie znaleziono strony",
+        "route_not_found": "Błędny adres",
+        "unexpected": "Nieoczekiwany błąd serwera"
     },
 
     "passwords": {

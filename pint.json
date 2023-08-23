@@ -1,0 +1,14 @@
+{
+    "preset": "psr12",
+    "rules": {
+        "trailing_comma_in_multiline": true,
+        "statement_indentation": false,
+        "method_argument_space": false,
+        "function_declaration": {
+            "closure_fn_spacing": "none"
+        }
+    },
+    "exclude": [
+        "database/migrations"
+    ]
+}

@@ -99,7 +99,7 @@
     "not_regex": "Format pola {{attribute}} jest nieprawidłowy.",
     "numeric": "Pole {{attribute}} musi być liczbą.",
     "password": {
-        "all_rules": "Pole {{attribute}} musi zawierać ... (todo).",
+        "all_rules": "Pole {{attribute}} musi zawierać przynajmniej 8 znaków: wielkie i małe litery oraz cyfry, nie może występować w wyciekach danych",
         "letters": "Pole {{attribute}} musi zawierać przynajmniej jedną literę.",
         "mixed": "Pole {{attribute}} musi zawierać przynajmniej jedną wielką i jedną małą literę.",
         "numbers": "Pole {{attribute}} musi zawierać przynajmniej jedną liczbę.",
@@ -136,5 +136,6 @@
     "uppercase": "{{Attribute}} musi być pisany wielkimi literami.",
     "url": "Format pola {{attribute}} jest nieprawidłowy.",
     "ulid": "Pole {{attribute}} musi być prawidłowym identyfikatorem ULID.",
-    "uuid": "Pole {{attribute}} musi być poprawnym identyfikatorem UUID."
+    "uuid": "Pole {{attribute}} musi być poprawnym identyfikatorem UUID.",
+    "custom.require_present": "Pole {{attribute}} wymaga pola {{other}}."
 }

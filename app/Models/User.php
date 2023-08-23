@@ -4,13 +4,17 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\QueryBuilders\UserBuilder;
+use App\Rules\RequirePresent;
 use App\Utils\Uuid\UuidTrait;
+use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Validation\Rules\Password;
 
 /**
  * @property string id
@@ -22,14 +26,23 @@ use Laravel\Sanctum\HasApiTokens;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property string created_by
+ * @property ?string $global_admin_grant_id
+ * @property ?CarbonImmutable $password_expire_at
+ * @property-read Collection<Member> $members
  * @property-read User $createdBy
  * @property-read Facility $lastLoginFacility
  * @method static UserBuilder query()
  */
 class User extends Authenticatable
 {
+    use HasFactory;
+    use Notifiable;
+    use UuidTrait;
+    use HasValidator;
+
+    protected $table = 'users';
+
     public const SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
-    use HasApiTokens, HasFactory, Notifiable, UuidTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -41,6 +54,8 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'created_by',
+        'global_admin_grant_id',
+        'password_expire_at',
     ];
 
     /**
@@ -61,7 +76,32 @@ class User extends Authenticatable
         'email_verified_at' => 'immutable_datetime',
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
+        'password_expire_at' => 'immutable_datetime',
     ];
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'name' => 'required|string',
+            'email' => ['nullable', 'string', 'email', new RequirePresent('has_email_verified')],
+            'has_email_verified' => 'sometimes|bool',
+            'password' => [
+                'bail',
+                'nullable',
+                'string',
+                'different:current',
+                Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
+                new RequirePresent('password_expire_at'),
+            ],
+            'password_expire_at' => 'sometimes|nullable|date',
+            'has_global_admin' => 'required|bool',
+        };
+    }
+
+    public function members(): HasMany
+    {
+        return $this->hasMany(Member::class);
+    }
 
     public function createdBy(): BelongsTo
     {

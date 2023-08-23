@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Facility;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
@@ -30,6 +34,14 @@ class AppServiceProvider extends ServiceProvider
                 file_put_contents($hot2FilePath, str_replace('0.0.0.0', 'localhost', file_get_contents($hotFilePath)));
             }
             Vite::useHotFile($hot2FilePath);
+        }
+
+        Route::bind('facility', function ($value) {
+            return Facility::query()->findOrFail($value);
+        });
+
+        if (App::hasDebugModeEnabled()) {
+            DB::enableQueryLog();
         }
     }
 }

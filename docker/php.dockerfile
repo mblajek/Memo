@@ -1,7 +1,7 @@
 FROM php:8.2-apache
 
-#todo configure uid
-RUN useradd -mU -u 1000 -s /bin/bash me
+ARG ME_USER_UID=$ME_USER_UID
+RUN useradd -mU -u $ME_USER_UID -s /bin/bash me
 
 RUN a2enmod rewrite
 

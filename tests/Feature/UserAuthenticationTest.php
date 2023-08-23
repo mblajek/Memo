@@ -5,15 +5,18 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Auth;
+use Tests\Helpers\UserTrait;
 use Tests\TestCase;
 
 class UserAuthenticationTest extends TestCase
 {
+    use DatabaseTransactions;
+    use UserTrait;
+
     private const URL_STATUS = '/api/v1/user/status';
     private const URL_LOGIN = '/api/v1/user/login';
     private const URL_LOGOUT = '/api/v1/user/logout';
-
-    use DatabaseTransactions;
+    private const URL_PASSWORD = '/api/v1/user/password';
 
     public function testStatusWithUnauthorizedUserWillFail(): void
     {
@@ -60,7 +63,7 @@ class UserAuthenticationTest extends TestCase
 
         $result = $this->post(static::URL_LOGIN, $data);
 
-        $this->assertEquals('exception.unauthorised', $result->json('errors')[0]['code']);
+        $this->assertEquals('exception.bad_credentials', $result->json('errors')[0]['code']);
         $result->assertUnauthorized();
         $result->assertJsonStructure($this->unauthorizedErrorJsonStructure());
     }
@@ -77,6 +80,7 @@ class UserAuthenticationTest extends TestCase
 
         $result = $this->post(static::URL_LOGIN, $data);
 
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
         $this->assertEquals($user->id, Auth::user()->id);
         $result->assertOk();
     }
@@ -90,6 +94,89 @@ class UserAuthenticationTest extends TestCase
         $result = $this->post(static::URL_LOGOUT);
 
         $this->assertEquals(null, Auth::user());
+        $result->assertOk();
+    }
+
+    public function testChangePasswordWIthInvalidRepeatWillFail(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password',
+            'password' => self::VALID_PASSWORD . 'A',
+            'repeat' => self::VALID_PASSWORD . 'B',
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertBadRequest();
+    }
+
+    public function testChangePasswordWithInvalidRegexWillFail(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password',
+            'password' => 'password',
+            'repeat' => 'password',
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertBadRequest();
+    }
+
+    public function testChangePasswordWithInvalidCurrentWillFail(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password1',
+            'password' => self::VALID_PASSWORD,
+            'repeat' => self::VALID_PASSWORD,
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertBadRequest();
+    }
+
+    public function testChangePasswordNotLoggedWillFail(): void
+    {
+        $data = [
+            'current' => 'password',
+            'password' => self::VALID_PASSWORD,
+            'repeat' => self::VALID_PASSWORD,
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        $result->assertUnauthorized();
+    }
+
+    public function testChangePasswordWillPass(): void
+    {
+        /** @var User $user */
+        $user = User::factory()->create();
+        Auth::setUser($user);
+
+        $data = [
+            'current' => 'password',
+            'password' => self::VALID_PASSWORD,
+            'repeat' => self::VALID_PASSWORD,
+        ];
+
+        $result = $this->post(static::URL_PASSWORD, $data);
+
+        /** @noinspection PhpPossiblePolymorphicInvocationInspection */
+        $this->assertEquals($user->id, Auth::user()->id);
         $result->assertOk();
     }
 
@@ -110,12 +197,6 @@ class UserAuthenticationTest extends TestCase
             'errors' => [
                 [
                     'code',
-                    'validation' => [
-                        [
-                            'field',
-                            'code',
-                        ]
-                    ],
                 ],
             ],
         ];
@@ -129,8 +210,12 @@ class UserAuthenticationTest extends TestCase
                     'id',
                     'name',
                     'email',
-                    'isEmailVerified',
                     'lastLoginFacilityId',
+                ],
+                'permissions' => [
+                    'unverified',
+                    'verified',
+                    'globalAdmin',
                 ],
             ],
         ];

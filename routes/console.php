@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Grant;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 /*
@@ -21,6 +23,8 @@ Artisan::command('fz:hash', function () {
 
 Artisan::command('fz:user', function () {
     $user = User::query()->newModelInstance();
+    $user->created_by = User::SYSTEM;
+    $globalAdminGrant = null;
     do {
         $user->name = $this->ask('Name (with surname)');
     } while (!$user->name);
@@ -34,8 +38,18 @@ Artisan::command('fz:user', function () {
         $user->email_verified_at = $this->confirm('Mark e-mail as confirmed', true) ? (new DateTimeImmutable()) : null;
         $password = $this->secret('Password');
         $user->password = $password ? Hash::make($password) : null;
+        if ($this->confirm('Grant global admin permission', false)) {
+            $globalAdminGrant = Grant::query()->newModelInstance();
+            $globalAdminGrant->created_by = User::SYSTEM;
+        }
+        $user->password_expire_at = $this->confirm('Mark password as expired?', false) ? new DateTimeImmutable() : null;
     }
-    $user->created_by = User::SYSTEM;
-    $user->saveOrFail();
+    DB::transaction(function () use ($user, $globalAdminGrant) {
+        if ($globalAdminGrant) {
+            $globalAdminGrant->saveOrFail();
+            $user->global_admin_grant_id = $globalAdminGrant->id;
+        }
+        $user->saveOrFail();
+    });
     $this->line("Created user $user->id");
 })->purpose('Create new user');
