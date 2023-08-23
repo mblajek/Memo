@@ -1,5 +1,5 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {createMutation, useQueryClient} from "@tanstack/solid-query";
+import {createMutation} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
 import {FullLogo, Modal as ModalComponent, TextField} from "components/ui";
 import {User} from "data-access/memo-api";
@@ -26,11 +26,11 @@ export namespace LoginForm {
   }
 
   export const Component: Component<Props> = (props) => {
-    const queryClient = useQueryClient();
+    const invalidateUser = User.useInvalidator();
     const mutation = createMutation(() => ({
       mutationFn: User.login,
       onSuccess() {
-        queryClient.invalidateQueries({queryKey: User.keys.status()});
+        invalidateUser.status();
         props.onSuccess?.();
       },
     }));

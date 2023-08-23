@@ -58,10 +58,14 @@ export const ColumnFilterController: Component<FilterControlProps> = (props) => 
   return (
     <div class={ts.columnFilterController}>
       <Show when={filterComponent()}>
-        <div class={ts.filterMain}>
-          <Dynamic component={filterComponent()!} {...props} />
-        </div>
-        <FilterIcon class={ts.filterIcon} isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
+        {(filterComponent) => (
+          <>
+            <div class={ts.filterMain}>
+              <Dynamic component={filterComponent()} {...props} />
+            </div>
+            <FilterIcon class={ts.filterIcon} isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
+          </>
+        )}
       </Show>
     </div>
   );
