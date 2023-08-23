@@ -1,12 +1,12 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
+import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {Modal as ModalComponent, TextField} from "components/ui";
+import {MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField} from "components/ui";
+import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
 import {Component, createSignal} from "solid-js";
-import {z} from "zod";
-import {useLangFunc} from "components/utils";
 import toast from "solid-toast";
+import {z} from "zod";
 
 export namespace PasswordChangeForm {
   export const getSchema = () =>
@@ -30,13 +30,13 @@ export namespace PasswordChangeForm {
   }
 
   export const Component: Component<Props> = (props) => {
-    const queryClient = useQueryClient();
     const t = useLangFunc();
+    const invalidateUser = User.useInvalidator();
     const statusQuery = createQuery(() => User.statusQueryOptions);
     const mutation = createMutation(() => ({
       mutationFn: User.changePassword,
       onSuccess() {
-        queryClient.invalidateQueries({queryKey: User.keys.status()});
+        invalidateUser.status();
         // For better integration with password managers.
         // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
         history.replaceState({passwordChanged: true}, "");
@@ -88,7 +88,7 @@ export namespace PasswordChangeForm {
         open={modalShown()}
         closeOn={["escapeKey", "closeButton"]}
         onClose={() => setModalShown(false)}
-        width="narrow"
+        style={MODAL_STYLE_PRESETS.narrow}
       >
         <Component onSuccess={() => setModalShown(false)} />
       </ModalComponent>

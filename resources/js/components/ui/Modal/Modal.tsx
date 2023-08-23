@@ -2,20 +2,30 @@ import * as dialog from "@zag-js/dialog";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
-import {ParentProps, Show, createMemo, createRenderEffect, createUniqueId} from "solid-js";
+import {Accessor, JSX, Show, createMemo, createRenderEffect, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
+import {ChildrenOrFunc, getChildrenElement} from "../children_func";
 import s from "./Modal.module.scss";
 
-interface BaseProps {
+interface BaseProps<T> {
   title?: string;
-  /** Width of the modal. If not specified, it adjusts to contents, with a reasonable minimum. */
-  width?: "narrow";
   /**
-   * Whether the modal is opened.
-   *
-   * The only way to close the modal is to set this to false, the modal never closes itself.
+   * Style of the modal, mostly for specifying the size. When absent, a reasonable minimum width is used.
    */
-  open: boolean;
+  style?: JSX.CSSProperties;
+  /**
+   * A value determining whether the modal is open. If truthy, the value is also available for the modal
+   * children in its function form.
+   *
+   * The only way to close the modal is to set this to a falsy value (the modal never closes itself).
+   */
+  open: T | undefined | false;
+  /**
+   * Children can be either a standard JSX element, or a function that is called with an accessor
+   * to the non-nullable value passed to open. This is similar to the function form of the Show component.
+   * see Modal doc for example.
+   */
+  children: ChildrenOrFunc<[Accessor<NonNullable<T>>]>;
   /**
    * Handler called when the user tries to escape from the modal, either by pressing the Escape key,
    * or by clicking outside. If these actions should close the modal, this handler needs to set the
@@ -23,6 +33,10 @@ interface BaseProps {
    */
   onEscape?: (reason: EscapeReason) => void;
 }
+
+export const MODAL_STYLE_PRESETS = {
+  narrow: {width: "400px"},
+} satisfies Partial<Record<string, JSX.CSSProperties>>;
 
 const ESCAPE_REASONS = ["escapeKey", "clickOutside"] as const;
 
@@ -32,7 +46,7 @@ type EscapeReason = (typeof ESCAPE_REASONS)[number];
  * Props of a modal without close reasons specified. It can close itself by any of the escape reasons,
  * but doesn't have a close button.
  */
-interface PropsNoCloseReason extends BaseProps {
+interface PropsNoCloseReason<T> extends BaseProps<T> {
   closeOn?: undefined;
   onClose?: undefined;
 }
@@ -43,7 +57,7 @@ interface PropsNoCloseReason extends BaseProps {
  * If close reasons are specified using closeOn prop, the onClose handler needs to be specified as well,
  * to actually handle the closing.
  */
-interface PropsWithCloseReason<C extends CloseReason = CloseReason> extends BaseProps {
+interface PropsWithCloseReason<T, C extends CloseReason = CloseReason> extends BaseProps<T> {
   /**
    * The list of reasons that cause the modal to close.
    *
@@ -67,9 +81,32 @@ function isEscapeReason(reason: CloseReason): reason is EscapeReason {
   return (ESCAPE_REASONS as readonly CloseReason[]).includes(reason);
 }
 
-type Props<C extends CloseReason> = PropsNoCloseReason | PropsWithCloseReason<C>;
+type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseReason<T, C>;
 
-export const Modal = <C extends CloseReason>(props: ParentProps<Props<C>>) => {
+/**
+ * A modal, displaying on top of the page.
+ *
+ * The modal is opened whenever `props.open` is truthy. The modal never closes itself. The ways of
+ * closing the modal are described in the docs for props.
+ *
+ * The content of the modal can be specified either directly as children, or in the function form,
+ * in which case the content has access to the (non-nullable) value of `props.open`. This mechanism
+ * is similar to the function form of the `<Show>` component.
+ *
+ * Example:
+ *
+ *     declare const value: Accessor<string | undefined>;
+ *
+ *     <Modal open={value()}>
+ *       {(value: Accessor<string>) => (
+ *         <>
+ *           <div>string: {value()}</div>
+ *           <div>length: {value().length}</div>
+ *         </>
+ *       )}
+ *     </Modal>
+ */
+export const Modal = <T, C extends CloseReason>(props: Props<T, C>) => {
   const t = useLangFunc();
   const closeOn = createMemo(
     () =>
@@ -102,33 +139,36 @@ export const Modal = <C extends CloseReason>(props: ParentProps<Props<C>>) => {
       api().close();
     }
   });
-  const modalWidthClass = () => (props.width === "narrow" ? s.narrow : undefined);
   return (
-    <Show when={api().isOpen}>
-      <Portal>
-        <div class={cx(s.modal, modalWidthClass())}>
-          <div {...api().backdropProps} />
-          <div {...api().containerProps}>
-            <div {...api().contentProps}>
-              <div class={s.innerContent}>
-                <Show when={closeOn().has("closeButton")}>
-                  <button
-                    class={s.closeButton}
-                    aria-label={t("close")}
-                    onClick={() => props.onClose?.("closeButton" as C)}
-                  >
-                    <VsClose class="w-6 h-6" />
-                  </button>
-                </Show>
-                <Show when={props.title}>
-                  <h2 {...api().titleProps}>{props.title}</h2>
-                </Show>
-                <div>{props.children}</div>
+    <Show when={props.open}>
+      {(value) => (
+        <Show when={api().isOpen}>
+          <Portal>
+            <div class={cx(s.modal, closeOn().has("closeButton") && s.withCloseButton)}>
+              <div {...api().backdropProps} />
+              <div {...api().containerProps}>
+                <div {...api().contentProps} style={props.style}>
+                  <div class={s.innerContent}>
+                    <Show when={closeOn().has("closeButton")}>
+                      <button
+                        class={s.closeButton}
+                        aria-label={t("close")}
+                        onClick={() => props.onClose?.("closeButton" as C)}
+                      >
+                        <VsClose class="w-6 h-6" />
+                      </button>
+                    </Show>
+                    <Show when={props.title}>
+                      <h2 {...api().titleProps}>{props.title}</h2>
+                    </Show>
+                    <div class={s.body}>{getChildrenElement(props.children, value)}</div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </Portal>
+          </Portal>
+        </Show>
+      )}
     </Show>
   );
 };

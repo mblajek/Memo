@@ -14,7 +14,7 @@ export interface QueryBarrierProps {
   /**
    * List of queries to handle
    */
-  queries: CreateQueryResult<any, any>[];
+  queries: CreateQueryResult<unknown, unknown>[];
 }
 
 /**
