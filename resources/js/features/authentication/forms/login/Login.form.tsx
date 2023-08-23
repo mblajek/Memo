@@ -1,7 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {FullLogo, Modal as ModalComponent, TextField} from "components/ui";
+import {FullLogo, MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField} from "components/ui";
 import {User} from "data-access/memo-api";
 import {Component, createSignal} from "solid-js";
 import {z} from "zod";
@@ -63,7 +63,7 @@ export namespace LoginForm {
    * when showModal is called.
    */
   export const Modal: Component = () => (
-    <ModalComponent open={modalShown()} width="narrow">
+    <ModalComponent open={modalShown()} style={MODAL_STYLE_PRESETS.narrow}>
       <div class="flex flex-col gap-4">
         <div class="self-center">
           <FullLogo />

@@ -1,12 +1,12 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {Modal as ModalComponent, TextField} from "components/ui";
+import {MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField} from "components/ui";
+import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
 import {Component, createSignal} from "solid-js";
-import {z} from "zod";
-import {useLangFunc} from "components/utils";
 import toast from "solid-toast";
+import {z} from "zod";
 
 export namespace PasswordChangeForm {
   export const getSchema = () =>
@@ -88,7 +88,7 @@ export namespace PasswordChangeForm {
         open={modalShown()}
         closeOn={["escapeKey", "closeButton"]}
         onClose={() => setModalShown(false)}
-        width="narrow"
+        style={MODAL_STYLE_PRESETS.narrow}
       >
         <Component onSuccess={() => setModalShown(false)} />
       </ModalComponent>
