@@ -41,12 +41,14 @@ function allColumnsVisibility(schema: Schema, additionalColumns: string[], {visi
  */
 export function createTableRequestCreator({
   intrinsicFilter = () => undefined,
+  intrinsicColumns = () => undefined,
   additionalColumns = [],
   initialVisibleColumns,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
   intrinsicFilter?: Accessor<Filter | undefined>;
+  intrinsicColumns?: Accessor<string[] | undefined>;
   additionalColumns?: string[];
   initialVisibleColumns?: string[];
   initialSort?: SortingState;
@@ -124,37 +126,28 @@ export function createTableRequestCreator({
         setPagination((prev) => ({...prev, pageIndex: 0}));
       }),
     );
+    const columns = createMemo(
+      on([schema, intrinsicColumns, columnVisibility], ([schema, intrinsicColumns, columnVisibility]) => {
+        if (!schema) {
+          return [];
+        }
+        return [
+          ...new Set([
+            ...schema.columns.map(({name}) => name).filter((name) => columnVisibility[name] !== false),
+            ...(intrinsicColumns || []),
+          ]),
+        ].map<Column>((column) => ({type: "column", column}));
+      }),
+    );
     const request = createMemo<DataRequest | undefined>(
       on(
-        [
-          intrinsicFilter,
-          schema,
-          allInited,
-          columnVisibility,
-          debouncedGlobalFilter,
-          columnFiltersJoined,
-          sorting,
-          pagination,
-        ],
-        ([
-          intrinsicFilter,
-          schema,
-          allInited,
-          columnVisibility,
-          globalFilter,
-          columnFiltersJoined,
-          sorting,
-          pagination,
-        ]) => {
+        [intrinsicFilter, schema, allInited, columns, debouncedGlobalFilter, columnFiltersJoined, sorting, pagination],
+        ([intrinsicFilter, schema, allInited, columns, globalFilter, columnFiltersJoined, sorting, pagination]) => {
           if (!schema || !allInited) {
             return undefined;
           }
           const request: DataRequest = {
-            columns: schema.columns
-              .map<Column | undefined>(({name}) =>
-                columnVisibility[name] === false ? undefined : {type: "column", column: name},
-              )
-              .filter(NON_NULLABLE),
+            columns,
             filter: {
               type: "op",
               op: "&",

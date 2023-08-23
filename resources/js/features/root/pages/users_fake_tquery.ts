@@ -106,13 +106,13 @@ export function startUsersMock() {
   }));
   const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
   const columns: ColumnSchema[] = [
+    {name: "createdAt", type: "datetime"},
+    {name: "email", type: "string"},
+    {name: "facilitiesMember", type: "text"},
+    {name: "hasGlobalAdmin", type: "bool"},
     {name: "id", type: "string"},
     {name: "name", type: "string"},
-    {name: "email", type: "string"},
-    {name: "createdAt", type: "datetime"},
-    {name: "facilitiesMember", type: "text"},
     {name: "numFacilities", type: "decimal0"},
-    {name: "hasGlobalAdmin", type: "bool"},
   ];
   setupWorker(
     rest.get("/api/v1/entityURL/tquery", (req, res, ctx) => {

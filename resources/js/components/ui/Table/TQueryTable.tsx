@@ -1,5 +1,6 @@
 import {
   CellContext,
+  ColumnDef,
   ColumnDefTemplate,
   IdentifiedColumnDef,
   RowData,
@@ -72,6 +73,8 @@ export interface TQueryTableProps {
    * many rows, without sticky elements.
    */
   mode: "standalone" | "embedded";
+  /** The prefix used for the data query (this allows invalidating the tquery data). */
+  staticPrefixQueryKey: readonly unknown[];
   /** The entity URL, must not change. */
   staticEntityURL: string;
   /**
@@ -80,6 +83,11 @@ export interface TQueryTableProps {
    * entity B, so only entities A related direclty to that particular entity B should be shown.
    */
   intrinsicFilter?: Filter;
+  /**
+   * A list of columns that are always included in the request (and available on the row objects),
+   * even if they are not visible.
+   */
+  intrinsicColumns?: string[];
   /**
    * Prefix of the translation keys used in the table.
    * If not specified, a generic set of texts is used, e.g. "5 results". By specifying this
@@ -90,6 +98,16 @@ export interface TQueryTableProps {
   additionalColumns?: string[];
   /** Overrides for the definition of specific columns. */
   columnOptions?: Partial<Record<string, ColumnOptions>>;
+  /**
+   * The ordering of the columns. All the columns present on the backend and not present
+   * in this list are placed at the end.
+   *
+   * This list can be used to sort both data-based columns and additional columns
+   * (declared in additionalColumns).
+   *
+   * In the current implementation the order of columns cannot be changed.
+   */
+  initialColumnsOrder?: string[];
   initialVisibleColumns?: string[];
   initialSort?: SortingState;
   initialPageSize?: number;
@@ -108,9 +126,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
 
   type CellTemplate = ColumnDefTemplate<CellContext<object, unknown>>;
 
-  function cellFunc<V>(
-    func: (v: V) => CellTemplate | undefined,
-  ): (c: CellContext<object, unknown>) => CellTemplate | undefined {
+  function cellFunc<V>(func: (v: V) => unknown | undefined): CellTemplate {
     return (c) => {
       const val = c.getValue();
       if (val === undefined) {
@@ -121,8 +137,8 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   }
 
   const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellTemplate>([
-    ["decimal0", cellFunc<number>((v) => DECIMAL0_NUMBER_FORMAT.format(v))],
-    ["decimal2", cellFunc<number>((v) => DECIMAL2_NUMBER_FORMAT.format(v))],
+    ["decimal0", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>)],
+    ["decimal2", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>)],
     ["bool", cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no")))],
     ["date", cellFunc<string>((v) => DATE_FORMAT.format(new Date(v)))],
     ["datetime", cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v)))],
@@ -132,6 +148,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
 
   const requestCreator = createTableRequestCreator({
     intrinsicFilter: () => props.intrinsicFilter,
+    intrinsicColumns: () => props.intrinsicColumns,
     additionalColumns: props.additionalColumns,
     initialVisibleColumns: props.initialVisibleColumns,
     initialSort: props.initialSort,
@@ -139,7 +156,11 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
       props.initialPageSize ||
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
   });
-  const {schema, requestController, dataQuery, data} = createTQuery(entityURL, {requestCreator});
+  const {schema, requestController, dataQuery, data} = createTQuery({
+    entityURL,
+    prefixQueryKey: props.staticPrefixQueryKey,
+    requestCreator,
+  });
   const {
     columnVisibility: [columnVisibility, setColumnVisibility],
     globalFilter: [globalFilter, setGlobalFilter],
@@ -174,9 +195,10 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
       }
       if (badColumns.size)
         console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
-      return [
+      const columns = [
         ...sch.columns.map(({type, name}) =>
           h.accessor(name, {
+            id: name,
             enableSorting: SORTABLE_COLUMN_TYPES.has(type),
             cell: COLUMN_CELL_BY_TYPE.get(type) || defaultCell,
             meta: {
@@ -200,6 +222,12 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
           }),
         ),
       ];
+      if (props.initialColumnsOrder) {
+        // Index in the ordering array. Missing items sorted last.
+        const order = (col: ColumnDef<object, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
+        columns.sort((a, b) => order(a) - order(b));
+      }
+      return columns;
     }
     return [];
   });
@@ -278,39 +306,41 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
                 <For each={getHeaders(table)}>
                   {({header, column}) => (
                     <Show when={header()}>
-                      <div class={ts.cell}>
-                        <span
-                          class={ts.title}
-                          classList={{"cursor-pointer": column.getCanSort()}}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (column.getCanSort()) {
-                              column.toggleSorting(undefined, e.altKey);
-                            }
-                          }}
-                          title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
-                        >
-                          <Show when={!header()?.isPlaceholder}>
-                            <CellRenderer component={column.columnDef.header} props={header()!.getContext()} />
+                      {(header) => (
+                        <div class={ts.cell}>
+                          <span
+                            class={ts.title}
+                            classList={{"cursor-pointer": column.getCanSort()}}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (column.getCanSort()) {
+                                column.toggleSorting(undefined, e.altKey);
+                              }
+                            }}
+                            title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
+                          >
+                            <Show when={!header().isPlaceholder}>
+                              <CellRenderer component={column.columnDef.header} props={header().getContext()} />
+                            </Show>
+                            <SortMarker column={column} />
+                          </span>
+                          <Show when={column.getCanFilter()}>
+                            <ColumnFilterController
+                              name={column.id}
+                              filter={columnFilters[column.id]}
+                              setFilter={(filter) => setColumnFilters(column.id, filter)}
+                            />
                           </Show>
-                          <SortMarker column={column} />
-                        </span>
-                        <Show when={column.getCanFilter()}>
-                          <ColumnFilterController
-                            name={column.id}
-                            filter={columnFilters[column.id]}
-                            setFilter={(filter) => setColumnFilters(column.id, filter)}
-                          />
-                        </Show>
-                        <Show when={column.getCanResize()}>
-                          <div
-                            class={ts.resizeHandler}
-                            classList={{[ts.resizing!]: column.getIsResizing()}}
-                            onMouseDown={header()?.getResizeHandler()}
-                            onTouchStart={header()?.getResizeHandler()}
-                          />
-                        </Show>
-                      </div>
+                          <Show when={column.getCanResize()}>
+                            <div
+                              class={ts.resizeHandler}
+                              classList={{[ts.resizing!]: column.getIsResizing()}}
+                              onMouseDown={header().getResizeHandler()}
+                              onTouchStart={header().getResizeHandler()}
+                            />
+                          </Show>
+                        </div>
+                      )}
                     </Show>
                   )}
                 </For>
