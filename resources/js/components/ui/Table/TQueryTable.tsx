@@ -124,14 +124,14 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   const SORTABLE_COLUMN_TYPES = new Set<ColumnType>(["string", "decimal0", "decimal2", "bool", "date", "datetime"]);
 
   /**
-   * The type of the function used as cell in column definition.
+   * The component used as cell in column definition.
    *
    * Note: The function must not return a string directly, it needs to be wrapped in a JSX.Element,
-   * e.g. `<>{someString}</>`. It is not possible to express this
+   * e.g. `<>{someString}</>`. It is not possible to express this in the type declaration.
    */
-  type CellFunc = (context: CellContext<object, unknown>) => JSX.Element | undefined;
+  type CellComponent = Component<CellContext<object, unknown>>;
 
-  function cellFunc<V>(func: (v: V) => JSX.Element | undefined): CellFunc {
+  function cellFunc<V>(func: (v: V) => JSX.Element | undefined): CellComponent {
     return (c) => {
       const val = c.getValue();
       if (val === undefined) {
@@ -141,7 +141,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     };
   }
 
-  const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellFunc>([
+  const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellComponent>([
     ["decimal0", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>)],
     ["decimal2", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>)],
     ["bool", cellFunc<boolean>((v) => <>{v ? t("bool_values.yes") : t("bool_values.no")}</>)],
@@ -149,7 +149,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     ["datetime", cellFunc<string>((v) => <>{DATE_TIME_FORMAT.format(new Date(v))}</>)],
   ]);
 
-  const defaultCell: CellFunc = (c) => <>{c.getValue()}</>;
+  const defaultCell: CellComponent = (c) => <>{c.getValue()}</>;
 
   const requestCreator = createTableRequestCreator({
     intrinsicFilter: () => props.intrinsicFilter,
