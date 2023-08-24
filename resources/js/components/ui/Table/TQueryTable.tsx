@@ -61,6 +61,8 @@ const TableTranslations = new TranslationEntriesInterface(
   "empty_table_text",
   // Summary of the table, taking the number of rows as count.
   "summary",
+  // A subkey for the name of the table headers.
+  "headers",
 );
 
 export interface TQueryTableProps {
@@ -184,7 +186,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   }
   function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
     return {
-      header: t(`tables.headers.${name}`),
+      header: () => <span class="inline-block first-letter:capitalize">{tt.headers(name)}</span>,
       ...columnOptions(name).columnDef,
     };
   }

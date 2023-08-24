@@ -19,6 +19,14 @@ export function getLangEntryFunc(key: string): LangEntryFunc {
   return (options) => langFunc(key, options);
 }
 
+export type LangSubEntryFunc = (subKey: string, options?: TOptions) => string;
+
+function isLangSubEntryParams(
+  params: Parameters<LangEntryFunc> | Parameters<LangSubEntryFunc>,
+): params is Parameters<LangSubEntryFunc> {
+  return typeof params[0] === "string";
+}
+
 /**
  * An instance of this class represents a structure of translation keys under a prefix.
  *
@@ -32,6 +40,8 @@ export function getLangEntryFunc(key: string): LangEntryFunc {
  *
  *     // Get the translation for key "my.prefix.a" (options are optional):
  *     myStrings.a(options)
+ *     // Get the translation for key "my.prefix.a.b" (options are optional):
+ *     myStrings.a("b", options)
  */
 export class TranslationEntriesInterface<S extends string> {
   private readonly suffixes;
@@ -43,10 +53,13 @@ export class TranslationEntriesInterface<S extends string> {
   forPrefix(prefix: string | Accessor<string>) {
     const prefixAccessor = typeof prefix === "function" ? prefix : () => prefix;
     const langFunc = useLangFunc();
-    const result: Partial<Record<S, LangEntryFunc>> = {};
+    const result: Partial<Record<S, LangEntryFunc & LangSubEntryFunc>> = {};
     for (const suffix of this.suffixes)
-      result[suffix] = (options) => langFunc(`${prefixAccessor()}.${suffix}`, options);
-    return result as Record<S, LangEntryFunc>;
+      result[suffix] = (...params: Parameters<LangEntryFunc> | Parameters<LangSubEntryFunc>) => {
+        const [subKey, options] = isLangSubEntryParams(params) ? params : [undefined, params[0]];
+        return langFunc(`${prefixAccessor()}.${suffix}${subKey ? `.${subKey}` : ""}`, options);
+      };
+    return result as Record<S, LangEntryFunc & LangSubEntryFunc>;
   }
 }
 
