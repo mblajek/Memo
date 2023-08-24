@@ -30,7 +30,7 @@ import {
   getHeaders,
   tableStyle as ts,
 } from ".";
-import {ColumnFilterController, FilteringParams, Spinner} from "..";
+import {Capitalize, ColumnFilterController, FilteringParams, Spinner} from "..";
 import {CellRenderer} from "./CellRenderer";
 
 export interface ColumnOptions {
@@ -186,7 +186,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   }
   function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
     return {
-      header: () => <span class="inline-block first-letter:capitalize">{tt.headers(name)}</span>,
+      header: () => <Capitalize text={tt.headers(name)} />,
       ...columnOptions(name).columnDef,
     };
   }
