@@ -1,7 +1,6 @@
 import {
   CellContext,
   ColumnDef,
-  ColumnDefTemplate,
   IdentifiedColumnDef,
   RowData,
   SortingState,
@@ -20,7 +19,7 @@ import {
   useLangFunc,
 } from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
-import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
+import {Component, For, Index, JSX, Show, createEffect, createMemo, on} from "solid-js";
 import {
   Pagination,
   SortMarker,
@@ -124,9 +123,15 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
 
   const SORTABLE_COLUMN_TYPES = new Set<ColumnType>(["string", "decimal0", "decimal2", "bool", "date", "datetime"]);
 
-  type CellTemplate = ColumnDefTemplate<CellContext<object, unknown>>;
+  /**
+   * The component used as cell in column definition.
+   *
+   * Note: The function must not return a string directly, it needs to be wrapped in a JSX.Element,
+   * e.g. `<>{someString}</>`. It is not possible to express this in the type declaration.
+   */
+  type CellComponent = Component<CellContext<object, unknown>>;
 
-  function cellFunc<V>(func: (v: V) => unknown | undefined): CellTemplate {
+  function cellFunc<V>(func: (v: V) => JSX.Element | undefined): CellComponent {
     return (c) => {
       const val = c.getValue();
       if (val === undefined) {
@@ -136,15 +141,15 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     };
   }
 
-  const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellTemplate>([
+  const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellComponent>([
     ["decimal0", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>)],
     ["decimal2", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>)],
-    ["bool", cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no")))],
-    ["date", cellFunc<string>((v) => DATE_FORMAT.format(new Date(v)))],
-    ["datetime", cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v)))],
+    ["bool", cellFunc<boolean>((v) => <>{v ? t("bool_values.yes") : t("bool_values.no")}</>)],
+    ["date", cellFunc<string>((v) => <>{DATE_FORMAT.format(new Date(v))}</>)],
+    ["datetime", cellFunc<string>((v) => <>{DATE_TIME_FORMAT.format(new Date(v))}</>)],
   ]);
 
-  const defaultCell: ColumnDefTemplate<CellContext<object, unknown>> = (c) => c.getValue();
+  const defaultCell: CellComponent = (c) => <>{c.getValue()}</>;
 
   const requestCreator = createTableRequestCreator({
     intrinsicFilter: () => props.intrinsicFilter,
@@ -300,7 +305,6 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
               style={{
                 "grid-template-columns": gridTemplateColumns(),
               }}
-              inert={dataQuery.isFetching || undefined}
             >
               <div class={ts.headerRow}>
                 <For each={getHeaders(table)}>
@@ -350,7 +354,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
                 fallback={<div class={ts.wideRow}>{dataQuery.isFetching ? <Spinner /> : tt.empty_table_text()}</div>}
               >
                 {(row) => (
-                  <div class={ts.dataRow}>
+                  <div class={ts.dataRow} inert={dataQuery.isFetching || undefined}>
                     <Index each={row().getVisibleCells()}>
                       {(cell) => (
                         <span class={ts.cell}>

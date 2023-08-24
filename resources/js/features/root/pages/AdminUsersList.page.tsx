@@ -43,7 +43,7 @@ export default (() => {
           },
           hasGlobalAdmin: {
             columnDef: {
-              cell: (c) => (c.getValue() ? "💪🏽" : ""),
+              cell: (c) => <>{c.getValue() ? "💪🏽" : ""}</>,
             },
           },
           actions: {
