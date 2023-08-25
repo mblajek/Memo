@@ -180,8 +180,14 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     return props.columnOptions?.[name] || {};
   }
   function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
+    const header = () => (
+      <Show when={tt.headers(name, {defaultValue: ""})} fallback={tt.headers(name)}>
+        {(name) => <Capitalize text={name()} />}
+      </Show>
+    );
     return {
-      header: () => <Capitalize text={tt.headers(name)} />,
+      header,
+      meta: {columnName: header()},
       ...columnOptions(name).columnDef,
     };
   }
@@ -198,31 +204,35 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
       if (badColumns.size)
         console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
       const columns = [
-        ...sch.columns.map(({type, name}) =>
-          h.accessor(name, {
+        ...sch.columns.map(({type, name}) => {
+          const common = commonColumnDef(name);
+          return h.accessor(name, {
             id: name,
             enableSorting: SORTABLE_COLUMN_TYPES.has(type),
             cell: COLUMN_CELL_BY_TYPE.get(type) || defaultCell,
+            ...common,
             meta: {
+              ...common.meta,
               tquery: {
                 type,
                 ...columnOptions(name).metaParams,
               } satisfies TQueryColumnMeta,
             },
-            ...commonColumnDef(name),
-          }),
-        ),
-        ...(props.additionalColumns || []).map((name) =>
-          h.display({
+          });
+        }),
+        ...(props.additionalColumns || []).map((name) => {
+          const common = commonColumnDef(name);
+          return h.display({
             id: name,
+            ...common,
             meta: {
+              ...common.meta,
               tquery: {
                 ...columnOptions(name).metaParams,
               },
             },
-            ...commonColumnDef(name),
-          }),
-        ),
+          });
+        }),
       ];
       if (props.initialColumnsOrder) {
         // Index in the ordering array. Missing items sorted last.
