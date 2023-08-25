@@ -126,30 +126,25 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   /**
    * The component used as cell in column definition.
    *
-   * Note: The function must not return a string directly, it needs to be wrapped in a JSX.Element,
-   * e.g. `<>{someString}</>`. It is not possible to express this in the type declaration.
+   * Warning: It function must not return a string directly, it needs to be wrapped in a JSX.Element,
+   * e.g. `<>{someString}</>`. Otherwise the reactivity is lost and the cell will show stale data.
+   * It is not possible to express this requirement in the type.
    */
   type CellComponent = Component<CellContext<object, unknown>>;
 
   function cellFunc<V>(func: (v: V) => JSX.Element | undefined): CellComponent {
-    return (c) => {
-      const val = c.getValue();
-      if (val === undefined) {
-        return undefined;
-      }
-      return func(val as V);
-    };
+    return (c) => <Show when={c.getValue() !== undefined}>{func(c.getValue() as V)}</Show>;
   }
 
   const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellComponent>([
     ["decimal0", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>)],
     ["decimal2", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>)],
-    ["bool", cellFunc<boolean>((v) => <>{v ? t("bool_values.yes") : t("bool_values.no")}</>)],
-    ["date", cellFunc<string>((v) => <>{DATE_FORMAT.format(new Date(v))}</>)],
-    ["datetime", cellFunc<string>((v) => <>{DATE_TIME_FORMAT.format(new Date(v))}</>)],
+    ["bool", cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no")))],
+    ["date", cellFunc<string>((v) => DATE_FORMAT.format(new Date(v)))],
+    ["datetime", cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v)))],
   ]);
 
-  const defaultCell: CellComponent = (c) => <>{c.getValue()}</>;
+  const defaultCell = cellFunc(String);
 
   const requestCreator = createTableRequestCreator({
     intrinsicFilter: () => props.intrinsicFilter,
