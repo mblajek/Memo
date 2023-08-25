@@ -49,7 +49,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
  * Initialize some of required queries beforehand
  */
 const Content: ParentComponent = (props) => {
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
 
   return (
     <QueryBarrier
