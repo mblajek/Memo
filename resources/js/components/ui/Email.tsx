@@ -1,13 +1,14 @@
-import {Component} from "solid-js";
+import {Component, Show} from "solid-js";
 import {CopyToClipboard} from "./CopyToClipboard";
+import {EMPTY_VALUE_SYMBOL} from "./symbols";
 
 interface Props {
-  email: string;
+  email: string | undefined;
 }
 
 /** A component for displaying a copiable email address. No mailto. */
 export const Email: Component<Props> = (props) => (
-  <span>
+  <Show when={props.email} fallback={EMPTY_VALUE_SYMBOL}>
     {props.email} <CopyToClipboard text={props.email} />
-  </span>
+  </Show>
 );

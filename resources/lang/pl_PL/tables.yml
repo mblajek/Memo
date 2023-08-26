@@ -1,12 +1,10 @@
 tables:
   generic:
-    empty_table_text: "Brak wyników"
     summary__zero: "Brak wyników"
     summary__one: "{{count, number}} wynik"
     summary__few: "{{count, number}} wyniki"
     summary__many: "{{count, number}} wyników"
   users:
-    empty_table_text: "Brak użytkowników"
     summary__zero: "Brak użytkowników"
     summary__one: "{{count, number}} użytkownik"
     summary__few: "{{count, number}} użytkowników"
