@@ -23,7 +23,7 @@ const FacilitySelect: Component = () => {
   const location = useLocation();
   const params = useParams<{facilityUrl: string}>();
 
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
 
   return (
     <QueryBarrier queries={[facilitiesQuery]} pendingElement={null}>

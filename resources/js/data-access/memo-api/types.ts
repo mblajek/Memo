@@ -1,16 +1,24 @@
 export namespace Api {
-  export namespace Response {
-    export type Get<T extends object> = {data: T};
-    export type GetList<T extends object> = {data: Array<T>};
-    export type Post = {data: {id: string}};
-    export type Patch = unknown;
-    export type Delete = unknown;
+  /** UUID of an entity. */
+  export type Id = string;
+
+  export interface Entity {
+    id: Id;
   }
 
+  /** Comma-separated UUIDs. */
+  type Ids = string;
+
   export namespace Request {
-    export type GetListParams = {
-      in?: string;
-    };
+    export type Create<T extends Entity> = Omit<T, "id">;
+    export type GetListParams = {in?: Ids};
+    export type Patch<T extends Entity> = Partial<Omit<T, "id">>;
+  }
+
+  export namespace Response {
+    export type Get<T extends object> = {data: T};
+    export type GetList<T extends Entity> = {data: T[]};
+    export type Post = {data: Entity};
   }
 
   export type ErrorResponse = {
