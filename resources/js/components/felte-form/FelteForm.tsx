@@ -8,22 +8,22 @@ import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
 import toast from "solid-toast";
 import {ZodSchema} from "zod";
-import {useLangFunc} from "../utils";
+import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, useLangFunc} from "../utils";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
   form: FormType<T>;
-  translations: Translations;
+  translations: FormTranslations;
 };
 
 type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
-type Translations = {
-  getFormName: () => string;
-  getFieldName: (field: string) => string;
-  getSubmitText: () => string;
-};
+export interface FormTranslations {
+  formName: LangEntryFunc;
+  fieldNames: LangPrefixFunc;
+  submit: LangEntryFunc;
+}
 
 const FormContext = createContext<FormContextValue>(undefined, {
   name: "FormContext",
@@ -51,11 +51,8 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
     ["children", "schema"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-  const translations: Translations = {
-    getFormName: () => t(`forms.${props.id}.name`),
-    getFieldName: (field: string) => t(`forms.${props.id}.fields.${field}`),
-    getSubmitText: () => t(`forms.${props.id}.submit`),
-  };
+  // eslint-disable-next-line solid/reactivity
+  const translations = createTranslationsFromPrefix(`forms.${props.id}`, ["formName", "fieldNames", "submit"]);
   const form = createForm<T>({
     ...createFormOptions,
     extend: [validator({schema: local.schema}), reporter],
@@ -65,10 +62,10 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
         error.response?.data.errors.forEach((error) => {
           if (Api.isValidationError(error)) {
             const errorMessage = t(error.code, {
-              attribute: translations.getFieldName(error.field),
+              attribute: translations.fieldNames(error.field),
               ...error.data,
               ...(typeof error.data?.other === "string"
-                ? {other: translations.getFieldName(error.data.other)}
+                ? {other: translations.fieldNames(error.data.other)}
                 : undefined),
             });
             // @ts-expect-error setErrors does not like generic types

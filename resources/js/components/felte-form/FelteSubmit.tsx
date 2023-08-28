@@ -11,7 +11,7 @@ export const FelteSubmit: ParentComponent<ButtonProps> = (props) => {
   const {
     props: formProps,
     form,
-    translations: {getSubmitText},
+    translations: {submit},
   } = useFormContext();
   return (
     <Button
@@ -21,7 +21,7 @@ export const FelteSubmit: ParentComponent<ButtonProps> = (props) => {
       disabled={form.isSubmitting() || props.disabled}
       {...props}
     >
-      {props.children || getSubmitText()}
+      {props.children || submit()}
     </Button>
   );
 };

@@ -18,13 +18,13 @@ import {CellRenderer} from "./CellRenderer";
 
 export interface TableTranslations {
   /** Entries for the table column names. */
-  headers: LangPrefixFunc;
+  columnNames: LangPrefixFunc;
   /** Summary of the table, taking the number of rows as count. */
   summary: LangEntryFunc;
 }
 
 export function createTableTranslations(tableName: string): TableTranslations {
-  return createTranslationsFromPrefix(`tables.tables.${tableName}`, ["headers", "summary"]);
+  return createTranslationsFromPrefix(`tables.tables.${tableName}`, ["columnNames", "summary"]);
 }
 
 declare module "@tanstack/table-core" {

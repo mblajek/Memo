@@ -1,15 +1,10 @@
 import {useFormContextIfInForm} from "components/felte-form";
-import {Component, Show, createMemo} from "solid-js";
-import {Capitalize} from "..";
+import {Component} from "solid-js";
+import {TranslatedText} from "..";
 
 interface Props {
   fieldName: string;
   text?: string;
-}
-
-interface Data {
-  text: string;
-  capitalize: boolean;
 }
 
 /**
@@ -22,23 +17,13 @@ interface Data {
  * Otherwise, the label is not present.
  */
 export const FieldLabel: Component<Props> = (props) => {
-  const getFormFieldName = useFormContextIfInForm()?.translations.getFieldName;
-  const data = createMemo((): Data => {
-    if (props.text !== undefined) {
-      return {text: props.text, capitalize: false};
-    }
-    if (getFormFieldName) {
-      return {text: getFormFieldName(props.fieldName), capitalize: true};
-    }
-    return {text: "", capitalize: false};
-  });
+  const form = useFormContextIfInForm();
   return (
-    <Show when={data().text}>
-      <label for={props.fieldName}>
-        <Show when={data().capitalize} fallback={data().text}>
-          <Capitalize text={data().text} />
-        </Show>
-      </label>
-    </Show>
+    <TranslatedText
+      override={() => props.text}
+      langFunc={[form?.translations?.fieldNames, props.fieldName]}
+      capitalize={true}
+      wrapIn={(text) => <label for={props.fieldName}>{text}</label>}
+    />
   );
 };
