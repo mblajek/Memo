@@ -3,7 +3,7 @@ import {createQuery} from "@tanstack/solid-query";
 import {MemoLoader} from "components/ui";
 import {Page} from "components/utils";
 import {User} from "data-access/memo-api";
-import {Component, Match, Switch, createEffect} from "solid-js";
+import {Component, Match, Switch, createEffect, onMount} from "solid-js";
 import {setFacilityId} from "state/facilityId.state";
 import {LoginForm} from "../forms/login";
 
@@ -28,6 +28,10 @@ const LoginPage: Component = () => {
 
   createEffect(() => {
     LoginForm.showModal(statusQuery.isError);
+  });
+
+  onMount(() => {
+    setFacilityId(undefined);
   });
 
   return (
