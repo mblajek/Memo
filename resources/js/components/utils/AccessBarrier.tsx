@@ -1,25 +1,12 @@
-import { Navigate } from "@solidjs/router";
-import { createQuery, useQueryClient } from "@tanstack/solid-query";
-import {
-  FacilityResource,
-  PermissionsResource,
-  System,
-  User,
-} from "data-access/memo-api";
-import {
-  Component,
-  ParentComponent,
-  Show,
-  mergeProps,
-  splitProps,
-} from "solid-js";
-import { MemoLoader } from "../ui/";
-import { QueryBarrier, QueryBarrierProps } from "./QueryBarrier";
 
-export type PermissionKey = Exclude<
-  keyof PermissionsResource,
-  "userId" | "facilityId"
->;
+import {Navigate} from "@solidjs/router";
+import {createQuery, useQueryClient} from "@tanstack/solid-query";
+import {FacilityResource, PermissionsResource, System, User} from "data-access/memo-api";
+import {ParentComponent, Show, mergeProps, Component, splitProps} from "solid-js";
+import {MemoLoader} from "../ui/";
+import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
+
+export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;
 
 export interface AccessBarrierProps
   extends Omit<QueryBarrierProps, "queries" | "children"> {
@@ -72,7 +59,7 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
 
   const facilityId = () =>
     queryClient
-      .getQueryData<FacilityResource[]>(System.facilitiesQueryOptions.queryKey)
+      .getQueryData<FacilityResource[]>(System.facilitiesQueryOptions().queryKey)
       ?.find(({ url }) => url === localProps.facilityUrl)?.id;
 
   const statusQuery = createQuery(() => User.statusQueryOptions(facilityId()));

@@ -1,7 +1,7 @@
-import { cx } from "components/utils";
-import { Component } from "solid-js";
-import { FacilityControl, UserInfo } from "../components/header";
+import {FacilityControl, UserInfo} from "../components/header";
+import {Component} from "solid-js";
 import s from "./style.module.scss";
+import {cx} from "components/utils";
 
 export const Header: Component = () => {
   return (

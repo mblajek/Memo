@@ -40,6 +40,9 @@ W obiekcie błędu mogą się znajdować pola:
 Jeżeli zwrotka będzie HTTP 2xx i będzie zawierać pole `errors`, lub będzie 4xx/5xx i nie będzie zawierać,
 to oznacza błąd po stronie be.
 
+Każdy endpoint zmieniający dane (post/patch) przyjmuje pole dryRun, które wywołuje dodatkowy błąd
+walidacji `validation.declined`. Pozwala to sprawdzić, czy request przechodzi walidację, nie zapisując danych.
+
 ### Struktura błędu walidacji
 
 Lista błędów walidacji składa się z obiektów, które mogą zawierać następujące pola:

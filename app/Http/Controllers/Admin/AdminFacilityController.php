@@ -10,7 +10,6 @@ use App\Models\Facility;
 use App\Services\Facility\CreateFacilityService;
 use App\Services\Facility\UpdateFacilityService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -41,9 +40,9 @@ class AdminFacilityController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws Throwable|ApiException */
-    public function post(Request $request, CreateFacilityService $service): JsonResponse
+    public function post(CreateFacilityService $service): JsonResponse
     {
-        $data = $request->validate(Facility::getInsertValidator(['name', 'url']));
+        $data = $this->validate(Facility::getInsertValidator(['name', 'url']));
 
         $result = $service->handle($data);
 
@@ -77,10 +76,10 @@ class AdminFacilityController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
     )] /** @throws Throwable|ApiException */
-    public function patch(Request $request, UpdateFacilityService $service): JsonResponse
+    public function patch(UpdateFacilityService $service): JsonResponse
     {
         $facility = $this->getFacilityOrFail();
-        $data = $request->validate(Facility::getPatchValidator(['name', 'url'], $facility));
+        $data = $this->validate(Facility::getPatchValidator(['name', 'url'], $facility));
 
         $service->handle($facility, $data);
 

@@ -19,7 +19,7 @@ import {
 import s from "./style.module.scss";
 
 export const Navbar: Component = () => {
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
 
   const facilityUrl = () =>
     facilitiesQuery.data?.find((facility) => facility.id === facilityId())?.url;

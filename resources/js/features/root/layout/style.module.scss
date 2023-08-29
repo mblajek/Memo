@@ -41,6 +41,11 @@ $border: rgba(92, 92, 92, 0.283);
   overflow: hidden auto;
 }
 
+.mainInner {
+  margin: 1rem;
+  contain: content;
+}
+
 .footer {
   grid-area: footer;
   border-top: 1px solid $border;
@@ -50,5 +55,4 @@ $border: rgba(92, 92, 92, 0.283);
   justify-items: center;
   padding: 1rem 1.5rem;
   color: #949494;
-  // "py-4 px-6 bg-gray-300 flex flex-row justify-between items-center text-gray-500"
 }

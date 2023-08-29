@@ -3,17 +3,19 @@ import {
   createQuery,
   useQueryClient,
 } from "@tanstack/solid-query";
-import { getLangFunc } from "components/utils";
+import { DATE_TIME_WITH_WEEKDAY_FORMAT, useLangFunc } from "components/utils";
 import { User } from "data-access/memo-api";
+import { PasswordChangeForm } from "features/user-panel";
 import {
   HiOutlineCheckCircle,
   HiOutlinePower,
   HiOutlineXCircle,
 } from "solid-icons/hi";
-import { Match, Switch, createSignal, onMount } from "solid-js";
+import { TbPassword } from "solid-icons/tb";
+import { Match, Switch, createSignal, onMount, For } from "solid-js";
 
 export const UserInfo = () => {
-  const t = getLangFunc();
+  const t = useLangFunc();
   const currentTime = useCurrentTime();
   const statusQuery = createQuery(() => User.statusQueryOptions());
 
@@ -39,8 +41,26 @@ export const UserInfo = () => {
           </Switch>
         </div>
         <div class="flex flex-col justify-between items-stretch">
-          <span>{currentTime().toLocaleString()}</span>
-          <span>{statusQuery.data?.user.name}</span>
+          <span>
+            <For
+              each={
+                // Display each part in a separate span to allow selecting the date.
+                DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime())
+                  // This mapping must happen here, otherwise the identity of the elements
+                  // change every second, which is what we want to avoid.
+                  .map(({value}) => value)
+              }
+            >
+              {(value) => <span>{value}</span>}
+            </For>
+          </span>
+          <span>
+            {statusQuery.data?.user.name}
+            {/* This is a temporary location for the change password button. */}
+            <button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
+              <TbPassword />
+            </button>
+          </span>
         </div>
       </div>
       <div class="flex justify-center items-center">

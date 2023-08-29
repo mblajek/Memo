@@ -12,22 +12,22 @@ readonly class PermissionDescribe implements \Stringable
     public function __construct(Permission|array ...$params)
     {
         $result = [];
-
+        $transformedParams = [];
+        foreach ($params as $param) {
+            if ($param instanceof Permission) {
+                $transformedParams[] = [$param];
+            } elseif (count($param)) {
+                $transformedParams[] = $param;
+            }
+        }
+        $countParams = count($transformedParams);
         /** @var Permission|Permission[] $group */
-        foreach ($params as $group) {
-            if (is_array($group) && count($group) === 1) {
-                $group = current($group);
-            }
-
-            if ($group instanceof Permission) {
-                $result[] = $group->name;
-                continue;
-            }
-
-            $result[] = '(' . implode(' OR ', array_map(fn($permission) => $permission->name, $group)) . ')';
+        foreach ($transformedParams as $group) {
+            $singleResult = implode(' OR ', array_map(fn(Permission $permission) => $permission->name, $group));
+            $result[] = ($countParams !== 1 && count($group) !== 1) ? "($singleResult)" : $singleResult;
         }
 
-        $this->description = 'Permissions: ' . implode(' AND ',  $result);
+        $this->description = 'Permissions: ' . (implode(' AND ', $result) ?: Permission::any->name);
     }
 
     public function __toString(): string

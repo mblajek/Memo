@@ -1,0 +1,208 @@
+.searchBar {
+  @apply flex-grow;
+
+  input {
+    @apply h-full w-full rounded px-2 border;
+  }
+}
+
+.columnVisibility {
+  [data-part="trigger"] {
+    @apply h-full rounded px-2 border;
+  }
+}
+
+.columnFilterController {
+  @apply flex items-end gap-0.5;
+
+  input {
+    @apply px-1;
+
+    &[type="number"] {
+      @apply pr-0;
+    }
+  }
+
+  .dateInputContainer {
+    min-width: 8em;
+  }
+
+  .dateTimeInputContainer {
+    min-width: 11em;
+  }
+
+  .filterMain {
+    @apply flex-grow;
+
+    .filterLine {
+      @apply flex flex-wrap items-stretch gap-0.5;
+      min-height: 26px;
+
+      .wideEdit {
+        @apply flex-grow;
+        flex-basis: 3em;
+      }
+    }
+
+    .valuesSyncer {
+      width: 6px;
+      height: 55%;
+      @apply row-span-2 self-center -mr-0.5;
+      @apply border-2 border-r-0 border-current text-black text-opacity-30 cursor-pointer;
+      border-start-start-radius: 3px;
+      border-end-start-radius: 3px;
+
+      &.inactive {
+        @apply text-opacity-5 cursor-auto;
+      }
+    }
+  }
+
+  .filterIcon {
+    @apply mb-1;
+  }
+}
+
+.pagination {
+  [data-part="root"] {
+    @apply h-full flex items-stretch gap-1;
+  }
+
+  [data-part="prev-page-trigger"],
+  [data-part="next-page-trigger"],
+  [data-part="page-trigger"],
+  [data-part="ellipsis"] {
+    @apply px-1 border rounded text-center;
+
+    &[data-disabled] svg {
+      @apply opacity-20;
+    }
+  }
+
+  [data-part="prev-page-trigger"],
+  [data-part="next-page-trigger"] {
+    min-width: 4em;
+  }
+
+  [data-part="page-trigger"],
+  [data-part="ellipsis"] {
+    min-width: 2em;
+
+    &[data-selected] {
+      @apply bg-gray-200;
+    }
+  }
+}
+
+.tableSummary {
+  @apply w-auto flex items-center;
+}
+
+.tableContainer {
+  @apply flex flex-col gap-1;
+
+  .aboveTable {
+    @apply bg-white;
+    @apply h-8 flex items-stretch gap-1;
+  }
+
+  .belowTable {
+    @apply bg-white;
+    @apply h-8 flex items-stretch gap-2;
+  }
+
+  .tableBg {
+    @apply self-start;
+    @apply w-max bg-gray-300;
+
+    .table {
+      @apply grid;
+      padding: 1px;
+      gap: 1px;
+
+      .headerRow {
+        @apply contents;
+
+        .cell {
+          @apply outline outline-1 outline-gray-400 bg-gray-100;
+          @apply flex flex-col items-stretch gap-0.5 justify-between;
+          // Create a positioned ancestor for the resize handler.
+          @apply relative;
+
+          .title {
+            @apply font-bold;
+          }
+
+          .resizeHandler {
+            @apply absolute top-0 right-0 h-full cursor-col-resize;
+            width: 5px;
+            @apply select-none touch-none;
+
+            &:hover {
+              @apply bg-gray-400;
+            }
+
+            &.resizing {
+              @apply bg-blue-700;
+            }
+          }
+        }
+      }
+
+      .dataRow {
+        @apply contents;
+
+        .cell {
+          @apply bg-white text-black whitespace-pre-wrap;
+        }
+
+        &:hover .cell {
+          @apply bg-gray-50;
+        }
+      }
+
+      .cell {
+        @apply px-2 py-1 flex items-center overflow-x-hidden;
+        min-height: 30px;
+      }
+
+      .wideRow {
+        grid-column: 1 / -1;
+        @apply bg-white p-2 text-gray-500 text-center;
+      }
+
+      .bottomBorder {
+        grid-column: 1 / -1;
+        @apply border-b border-b-gray-300;
+        margin-top: -5px;
+      }
+
+      &.dimmed {
+        .dataRow .cell {
+          @apply bg-opacity-70 text-opacity-30;
+        }
+      }
+    }
+  }
+
+  &.standalone {
+    .aboveTable {
+      @apply sticky top-0;
+    }
+
+    .belowTable {
+      @apply sticky bottom-0;
+    }
+
+    .table {
+      .headerRow .cell {
+        @apply sticky;
+        // Just below the sticky aboveTable bar.
+        top: 33px;
+      }
+      .bottomBorder {
+        @apply sticky bottom-8;
+      }
+    }
+  }
+}

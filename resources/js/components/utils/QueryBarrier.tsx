@@ -1,7 +1,7 @@
-import { CreateQueryResult } from "@tanstack/solid-query";
-import { ImSpinner2 } from "solid-icons/im";
 import type { Component, ParentProps } from "solid-js";
-import { Match, Switch, mergeProps } from "solid-js";
+import {CreateQueryResult} from "@tanstack/solid-query";
+import {Match, Switch, mergeProps} from "solid-js";
+import {Spinner} from "../ui";
 
 export interface QueryBarrierProps {
   /**
@@ -15,7 +15,7 @@ export interface QueryBarrierProps {
   /**
    * List of queries to handle
    */
-  queries: CreateQueryResult[];
+  queries: CreateQueryResult<unknown, unknown>[];
 }
 
 /**
@@ -30,11 +30,11 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
       Error: LocalError,
       Pending: LocalSpinner,
     },
-    props
+    props,
   );
 
-  const isError = () => merged.queries.some(({ isError }) => isError);
-  const isSuccess = () => merged.queries.every(({ isSuccess }) => isSuccess);
+  const isError = () => merged.queries.some(({isError}) => isError);
+  const isSuccess = () => merged.queries.every(({isSuccess}) => isSuccess);
   const isPending = () => !isError() && !isSuccess();
 
   return (
@@ -47,9 +47,7 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
 }
 
 const LocalSpinner = () => (
-  <div class="flex justify-center items-center">
-    <ImSpinner2 size={50} class="animate-spin" />,
-  </div>
+  <Spinner />
 );
 
 const LocalError = () => <p>error</p>;

@@ -8,19 +8,23 @@
   "extends": [
     "eslint:recommended",
     "plugin:solid/typescript",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
   ],
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
   "rules": {
-    "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": "warn",
-    "sort-imports": "off",
-    "sort-keys": "off",
-    "no-unused-expressions": "warn",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-empty-interface": "off",
     "@typescript-eslint/no-namespace": "off",
-    "@typescript-eslint/no-non-null-assertion": "off"
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "no-empty": "off",
+    "no-unused-expressions": "warn",
+    "no-unused-vars": "off",
+    "sort-imports": "off",
+    "sort-keys": "off"
   }
 }

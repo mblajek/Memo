@@ -1,9 +1,9 @@
-import { SolidQueryOptions } from "@tanstack/solid-query";
-import { V1 } from "../config";
-import { PermissionsResource, UserResource } from "../resources";
-import { MemberResource } from "../resources/member.resource";
-import { Api } from "../types";
-import { parseGetResponse } from "../utils";
+import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
+import {V1} from "../config";
+import {PermissionsResource, UserResource} from "../resources";
+import {MemberResource} from "../resources/member.resource";
+import {Api} from "../types";
+import {parseGetResponse} from "../utils";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/User production docs}
@@ -56,4 +56,11 @@ export namespace User {
       queryFn: ({ signal }) => getStatus(facilityId, { signal }),
       queryKey: keys.status(facilityId),
     } satisfies SolidQueryOptions);
+
+  export function useInvalidator() {
+    const queryClient = useQueryClient();
+    return {
+      status: () => queryClient.invalidateQueries({queryKey: keys.status()}),
+    };
+  }
 }

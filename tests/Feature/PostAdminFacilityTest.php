@@ -21,6 +21,19 @@ class PostAdminFacilityTest extends TestCase
 
     private const URL = '/api/v1/admin/facility';
 
+    public function testWithValidDataWithDryRunWillFail(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'url' => 'test-1234',
+            'dryRun' => true,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+    }
+
     public function testWithValidDataReturnSuccess(): void
     {
         $data = [

@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Services\User\CreateUserService;
 use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 use Throwable;
@@ -28,6 +27,7 @@ class AdminUserController extends ApiController
         description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'All users',
         tags: ['Admin'],
+        parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
                 response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
@@ -42,12 +42,14 @@ class AdminUserController extends ApiController
     )]
     public function list(): JsonResource
     {
-        return AdminUserResource::collection(User::query()->with(['members'])->get());
+        $dictionariesQuery = User::query();
+        $this->applyRequestIn($dictionariesQuery);
+        return AdminUserResource::collection($dictionariesQuery->with(['members'])->get());
     }
 
     #[OA\Post(
         path: '/api/v1/admin/user',
-        description: 'Permissions: ' . Permission::globalAdmin->name,
+        description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'Create user',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -69,9 +71,9 @@ class AdminUserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws ApiException|Throwable */
-    public function post(Request $request, CreateUserService $service): JsonResponse
+    public function post(CreateUserService $service): JsonResponse
     {
-        $data = $request->validate(User::getInsertValidator([
+        $data = $this->validate(User::getInsertValidator([
             'name',
             'email',
             'has_email_verified',
@@ -87,7 +89,7 @@ class AdminUserController extends ApiController
 
     #[OA\Patch(
         path: '/api/v1/admin/user/{user}',
-        description: 'Permissions: ' . Permission::globalAdmin->name,
+        description: new PermissionDescribe(Permission::globalAdmin),
         summary: 'Update user',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -116,9 +118,9 @@ class AdminUserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws ApiException|Throwable */
-    public function patch(User $user, Request $request, UpdateUserService $service): JsonResponse
+    public function patch(User $user, UpdateUserService $service): JsonResponse
     {
-        $data = $request->validate(User::getPatchValidator([
+        $data = $this->validate(User::getPatchValidator([
             'name',
             'email',
             'has_email_verified',

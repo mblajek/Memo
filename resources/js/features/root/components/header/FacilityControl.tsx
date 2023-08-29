@@ -53,7 +53,7 @@ const useFacilityControl = () => {
   const params = useParams();
   const queryClient = useQueryClient();
 
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
   const statusQuery = createQuery(() => User.statusQueryOptions());
 
   const facilities = createMemo(() =>
@@ -67,7 +67,7 @@ const useFacilityControl = () => {
   createEffect(() => {
     if (params.facilityUrl) {
       const facilities = queryClient.getQueryData<FacilityResource[]>(
-        System.facilitiesQueryOptions.queryKey
+        System.facilitiesQueryOptions().queryKey
       );
       const facility = facilities?.find(
         (facility) => facility.url === params.facilityUrl

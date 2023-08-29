@@ -1,13 +1,12 @@
-import { Outlet, useParams, useRoutes } from "@solidjs/router";
-import { createQuery } from "@tanstack/solid-query";
-import { AccessBarrier, Page, QueryBarrier } from "components/utils";
-import { FacilityResource, System } from "data-access/memo-api";
-import { lazy, type Component } from "solid-js";
+import {A, Navigate, Outlet, Route, Routes, useParams, useRoutes} from "@solidjs/router";
+import {createQuery} from "@tanstack/solid-query";
+import {AccessBarrier, Page, QueryBarrier} from "components/utils";
+import {FacilityResource, System} from "data-access/memo-api";
+import {lazy, type Component} from "solid-js";
 
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
-const LoginPage = lazy(
-  () => import("features/authentication/pages/Login.page")
-);
+const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
+const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
 
 const createRoutes = (facilities?: FacilityResource[]) =>
   useRoutes([
@@ -51,7 +50,7 @@ const createRoutes = (facilities?: FacilityResource[]) =>
             },
             {
               path: "/users",
-              element: <div>Użytkownicy (globalny admin)</div>,
+              component: AdminUsersList,
             },
           ],
         },
@@ -135,7 +134,7 @@ const createRoutes = (facilities?: FacilityResource[]) =>
   ]);
 
 const App: Component = () => {
-  const facilities = createQuery(() => System.facilitiesQueryOptions);
+  const facilities = createQuery(() => System.facilitiesQueryOptions());
 
   const Routes = createRoutes(facilities.data);
 
@@ -143,7 +142,7 @@ const App: Component = () => {
     <QueryBarrier queries={[facilities]}>
       <Routes />
     </QueryBarrier>
-  );
+  )
 };
 
 export default App;
