@@ -1,4 +1,4 @@
-import {A, Navigate, Outlet, Route, Routes, useParams, useRoutes} from "@solidjs/router";
+import {Outlet, useParams, useRoutes} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier, Page, QueryBarrier} from "components/utils";
 import {FacilityResource, System} from "data-access/memo-api";
@@ -57,15 +57,12 @@ const createRoutes = (facilities?: FacilityResource[]) =>
         {
           path: "/:facilityUrl",
           matchFilters: {
-            facilityUrl: facilities?.map(({ url }) => url),
+            facilityUrl: facilities?.map(({url}) => url),
           },
           component: () => {
             const params = useParams();
             return (
-              <AccessBarrier
-                facilityUrl={params.facilityUrl}
-                roles={["facilityMember"]}
-              >
+              <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityMember"]}>
                 <Outlet />
               </AccessBarrier>
             );
@@ -76,30 +73,44 @@ const createRoutes = (facilities?: FacilityResource[]) =>
               element: <div>Nie znaleziono strony (placówka)</div>,
             },
             {
-              path: "/",
+              path: "/home",
               element: <div class="p-4">strona główna placówki</div>,
             },
             {
-              path: "/calendar",
-              element: <div class="p-4">Mój kalendarz (placówka)</div>,
+              path: "/meetings",
+              element: <div>Moje spotkania (placówka)</div>,
             },
             {
-              path: "/timetable",
-              element: <div class="p-4">Mój harmonogram (placówka)</div>,
-            },
-            {
-              path: "/clients",
-              element: <div class="p-4">Moi klienci (placówka)</div>,
+              path: "/",
+              component: () => {
+                const params = useParams();
+                return (
+                  <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityStaff"]}>
+                    <Outlet />
+                  </AccessBarrier>
+                );
+              },
+              children: [
+                {
+                  path: "/calendar",
+                  element: <div class="p-4">Mój kalendarz (placówka)</div>,
+                },
+                {
+                  path: "/timetable",
+                  element: <div class="p-4">Mój harmonogram (placówka)</div>,
+                },
+                {
+                  path: "/clients",
+                  element: <div class="p-4">Moi klienci (placówka)</div>,
+                },
+              ],
             },
             {
               path: "/admin",
               component: () => {
                 const params = useParams();
                 return (
-                  <AccessBarrier
-                    facilityUrl={params.facilityUrl}
-                    roles={["facilityAdmin"]}
-                  >
+                  <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityAdmin"]}>
                     <Outlet />
                   </AccessBarrier>
                 );
@@ -142,7 +153,7 @@ const App: Component = () => {
     <QueryBarrier queries={[facilities]}>
       <Routes />
     </QueryBarrier>
-  )
+  );
 };
 
 export default App;

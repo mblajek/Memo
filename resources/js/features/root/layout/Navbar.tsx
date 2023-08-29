@@ -1,6 +1,6 @@
-import { createQuery } from "@tanstack/solid-query";
-import { cx } from "components/utils";
-import { System } from "data-access/memo-api";
+import {createQuery} from "@tanstack/solid-query";
+import {cx} from "components/utils";
+import {System} from "data-access/memo-api";
 import {
   HiOutlineBuildingOffice,
   HiOutlineCalendarDays,
@@ -9,20 +9,18 @@ import {
   HiOutlineTableCells,
   HiOutlineUserGroup,
   HiOutlineUsers,
+  HiOutlineQuestionMarkCircle,
+  HiOutlineVideoCamera,
 } from "solid-icons/hi";
-import { Component, Show, createMemo } from "solid-js";
-import { facilityId } from "state/facilityId.state";
-import {
-  NavigationSection,
-  NavigationSectionProps,
-} from "../components/navbar";
+import {Component, Show, createMemo} from "solid-js";
+import {facilityId} from "state/facilityId.state";
+import {NavigationSection, NavigationSectionProps} from "../components/navbar";
 import s from "./style.module.scss";
 
 export const Navbar: Component = () => {
   const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
 
-  const facilityUrl = () =>
-    facilitiesQuery.data?.find((facility) => facility.id === facilityId())?.url;
+  const facilityUrl = () => facilitiesQuery.data?.find((facility) => facility.id === facilityId())?.url;
 
   const sectionItems = createMemo(() => getSectionItems(facilityUrl()));
 
@@ -33,11 +31,15 @@ export const Navbar: Component = () => {
         <img src="/img/cpd_children_logo.svg" class="h-12" />
       </div>
       <nav class={cx("flex-1 px-8 py-4 overflow-y-auto", s.navScroll)}>
-        <NavigationSection
-          roles={["globalAdmin"]}
-          items={sectionItems().system}
-          title="System"
-        />
+        <Show when={facilityUrl()}>
+          <NavigationSection
+            facilityUrl={facilityUrl()}
+            roles={["verified"]}
+            items={sectionItems().looseFacilityItems}
+          />
+        </Show>
+        <NavigationSection items={sectionItems().looseItems} />
+        <NavigationSection roles={["globalAdmin"]} items={sectionItems().system} title="System" />
         <Show when={facilityUrl()}>
           <NavigationSection
             facilityUrl={facilityUrl()}
@@ -58,11 +60,13 @@ export const Navbar: Component = () => {
 };
 
 const getSectionItems = (
-  facilityUrl?: string
+  facilityUrl?: string,
 ): {
   system: NavigationSectionProps["items"];
   facility: NavigationSectionProps["items"];
   work: NavigationSectionProps["items"];
+  looseFacilityItems: NavigationSectionProps["items"];
+  looseItems: NavigationSectionProps["items"];
 } => ({
   system: [
     {
@@ -119,4 +123,8 @@ const getSectionItems = (
           children: "Moi klienci",
         },
       ],
+  looseFacilityItems: !facilityId
+    ? []
+    : [{icon: HiOutlineVideoCamera, href: `/${facilityUrl}/meetings`, children: "Moje spotkania"}],
+  looseItems: [{icon: HiOutlineQuestionMarkCircle, href: "/help", children: "Pomoc"}],
 });

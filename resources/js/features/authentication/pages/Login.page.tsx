@@ -20,14 +20,9 @@ const LoginPage: Component = () => {
     meta: {quietError: true},
   }));
 
-  const successHref = () => {
-    return "/home";
-  };
-
   createEffect(() => {
     if (statusQuery.isSuccess) {
-      if (statusQuery.data.user.lastLoginFacilityId)
-        setFacilityId(statusQuery.data.user.lastLoginFacilityId);
+      if (statusQuery.data.user.lastLoginFacilityId) setFacilityId(statusQuery.data.user.lastLoginFacilityId);
     }
   });
 
