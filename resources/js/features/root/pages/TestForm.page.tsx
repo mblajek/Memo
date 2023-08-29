@@ -54,7 +54,7 @@ const TestFormPage: Component = () => {
         <Checkbox
           name="controlledCheckbox"
           label="Controlled checkbox"
-          checked={checked()}
+          checked={checked}
           onChange={({checked}) => {
             if (checked === "indeterminate") return; // TODO support indeterminate state
             setChecked(checked);

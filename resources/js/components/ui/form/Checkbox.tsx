@@ -1,4 +1,4 @@
-import {Component, JSX, createEffect, splitProps} from "solid-js";
+import {Accessor, Component, JSX, createEffect, splitProps} from "solid-js";
 import * as checkbox from "@zag-js/checkbox";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {createMemo, createUniqueId} from "solid-js";
@@ -6,12 +6,13 @@ import s from "./Checkbox.module.scss";
 import {ValidationMessages} from "./ValidationMessages";
 import {useFieldLabel} from "./FieldLabel";
 
-export interface CheckboxProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "onChange"> {
+export interface CheckboxProps extends Omit<JSX.InputHTMLAttributes<HTMLInputElement>, "onChange" | "checked"> {
   name: string;
   label?: string;
   disabled?: boolean;
   onChange?: checkbox.Context["onChange"];
   indeterminate?: boolean;
+  checked?: Accessor<boolean>;
 }
 
 /**
@@ -20,7 +21,7 @@ export interface CheckboxProps extends Omit<JSX.InputHTMLAttributes<HTMLInputEle
  * Intended for use with FelteForm (handles validation messages)
  */
 export const Checkbox: Component<CheckboxProps> = (props) => {
-  const [machineProps, inputProps] = splitProps(props, ["onChange"]);
+  const [machineProps, inputProps] = splitProps(props, ["onChange", "checked"]);
 
   const [state, send] = useMachine(
     checkbox.machine({
@@ -36,9 +37,11 @@ export const Checkbox: Component<CheckboxProps> = (props) => {
 
   const api = createMemo(() => checkbox.connect(state, send, normalizeProps));
 
-  createEffect(() => {
-    if (inputProps.checked === undefined) return;
-    api().setChecked(inputProps.checked);
+  createEffect((prevChecked) => {
+    if (prevChecked === machineProps?.checked?.()) return;
+    if (machineProps?.checked?.() === undefined) return;
+    api().setChecked(machineProps.checked());
+    return machineProps.checked();
   });
 
   const data = useFieldLabel({fieldName: props.name, text: props.label});
