@@ -1,18 +1,10 @@
-import {
-  createMutation,
-  createQuery,
-  useQueryClient,
-} from "@tanstack/solid-query";
-import { DATE_TIME_WITH_WEEKDAY_FORMAT, useLangFunc } from "components/utils";
-import { User } from "data-access/memo-api";
-import { PasswordChangeForm } from "features/user-panel";
-import {
-  HiOutlineCheckCircle,
-  HiOutlinePower,
-  HiOutlineXCircle,
-} from "solid-icons/hi";
-import { TbPassword } from "solid-icons/tb";
-import { Match, Switch, createSignal, onMount, For } from "solid-js";
+import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
+import {DATE_TIME_WITH_WEEKDAY_FORMAT, useLangFunc} from "components/utils";
+import {User} from "data-access/memo-api";
+import {PasswordChangeForm} from "features/user-panel";
+import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
+import {TbPassword} from "solid-icons/tb";
+import {Match, Switch, createSignal, onMount, For} from "solid-js";
 
 export const UserInfo = () => {
   const t = useLangFunc();
@@ -23,7 +15,7 @@ export const UserInfo = () => {
   const logout = createMutation(() => ({
     mutationFn: User.logout,
     onSuccess() {
-      queryClient.invalidateQueries({ queryKey: User.keys.status() });
+      queryClient.invalidateQueries({queryKey: User.keys.status()});
     },
   }));
 
@@ -60,6 +52,7 @@ export const UserInfo = () => {
             <button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
               <TbPassword />
             </button>
+            <PasswordChangeForm.Modal />
           </span>
         </div>
       </div>
