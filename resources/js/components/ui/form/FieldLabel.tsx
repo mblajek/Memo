@@ -11,6 +11,23 @@ interface Data {
   capitalize: boolean;
 }
 
+function computeFieldLabel(props: Props, getFormFieldName?: (fieldName: string) => string): Data {
+  if (props.text !== undefined) {
+    return {text: props.text, capitalize: false};
+  }
+  if (getFormFieldName) {
+    return {text: getFormFieldName(props.fieldName), capitalize: true};
+  }
+  return {text: "", capitalize: false};
+}
+
+export function useFieldLabel(props: Props) {
+  const getFormFieldName = useFormContextIfInForm()?.translations.getFieldName;
+  const data = createMemo(() => computeFieldLabel(props, getFormFieldName));
+
+  return data;
+}
+
 /**
  * Label element for a field. It can be used for fields inside a FelteForm, as well as for standalone
  * fields (but then the text prop should be specified).
@@ -21,16 +38,8 @@ interface Data {
  * Otherwise, the label is not present.
  */
 export const FieldLabel: Component<Props> = (props) => {
-  const getFormFieldName = useFormContextIfInForm()?.translations.getFieldName;
-  const data = createMemo((): Data => {
-    if (props.text !== undefined) {
-      return {text: props.text, capitalize: false};
-    }
-    if (getFormFieldName) {
-      return {text: getFormFieldName(props.fieldName), capitalize: true};
-    }
-    return {text: "", capitalize: false};
-  });
+  const data = useFieldLabel(props);
+
   return (
     <Show when={data().text}>
       <label for={props.fieldName} class="inline-block" classList={{"first-letter:capitalize": data().capitalize}}>
