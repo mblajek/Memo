@@ -27,6 +27,11 @@ abstract class ApiController extends Controller
         $this->initPermissions();
     }
 
+    protected function validate(array $rules)
+    {
+        return $this->request->validate($rules + array_fill_keys(['dryRun', 'dry_run'], 'sometimes|declined'));
+    }
+
     public function getFacilityOrFail(): Facility
     {
         $permissionObject = $this->getPermissionObject();

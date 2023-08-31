@@ -40,6 +40,7 @@ $border: rgba(92, 92, 92, 0.283);
 
 .mainInner {
   margin: 1rem;
+  contain: content;
 }
 
 .footer {

@@ -1,10 +1,9 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {createMutation, useQueryClient} from "@tanstack/solid-query";
+import {createMutation} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {TextField} from "components/ui";
-import {useLangFunc} from "components/utils";
+import {FullLogo, MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField} from "components/ui";
 import {User} from "data-access/memo-api";
-import {Component} from "solid-js";
+import {Component, createSignal} from "solid-js";
 import {z} from "zod";
 
 export namespace LoginForm {
@@ -22,32 +21,59 @@ export namespace LoginForm {
   export type Input = z.input<ReturnType<typeof getSchema>>;
   export type Output = z.output<ReturnType<typeof getSchema>>;
 
-  export const Component: Component = () => {
-    const t = useLangFunc();
-    const queryClient = useQueryClient();
+  interface Props {
+    onSuccess?: () => void;
+  }
+
+  export const Component: Component<Props> = (props) => {
+    const invalidateUser = User.useInvalidator();
     const mutation = createMutation(() => ({
       mutationFn: User.login,
       onSuccess() {
-        queryClient.invalidateQueries({queryKey: User.keys.status()});
+        invalidateUser.status();
+        props.onSuccess?.();
       },
     }));
 
-    const onSubmit: FormConfigWithoutTransformFn<LoginForm.Output>["onSubmit"] = async (values) => {
+    const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
       await mutation.mutateAsync(values);
     };
 
     return (
       <FelteForm
+        id="login"
         onSubmit={onSubmit}
-        schema={LoginForm.getSchema()}
+        schema={getSchema()}
         initialValues={getInitialValues()}
-        id="login-form"
         class="flex flex-col gap-2"
       >
-        <TextField name="email" label={t("email")} type="email" />
-        <TextField name="password" label={t("password")} type="password" />
-        <FelteSubmit form="login-form">{t("log_in")}</FelteSubmit>
+        <TextField name="email" type="email" autocomplete="username" />
+        <TextField name="password" type="password" autocomplete="current-password" />
+        <FelteSubmit />
       </FelteForm>
     );
   };
+
+  const [modalShown, setModalShown] = createSignal(false);
+
+  /**
+   * The modal with the login form, initially hidden. To actually display the modal, call showModal.
+   *
+   * This modal can be included in any page and it will show on top of whatever content was displayed
+   * when showModal is called.
+   */
+  export const Modal: Component = () => (
+    <ModalComponent open={modalShown()} style={MODAL_STYLE_PRESETS.narrow}>
+      <div class="flex flex-col gap-4">
+        <div class="self-center">
+          <FullLogo />
+        </div>
+        <Component onSuccess={() => setModalShown(false)} />
+      </div>
+    </ModalComponent>
+  );
+
+  export function showModal(show = true) {
+    setModalShown(show);
+  }
 }

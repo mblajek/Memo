@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\SystemController;
+use App\Http\Controllers\Tquery\AdminUserTqueryController;
 use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
             Route::post('/', [AdminUserController::class, 'post']);
             Route::patch('/{user}', [AdminUserController::class, 'patch']);
+            Route::get('/tquery', [AdminUserTqueryController::class, 'get']);
         });
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);

@@ -1,9 +1,11 @@
 {
   "private": true,
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "npm i && vite",
+    "build": "npm i && vite build",
     "format": "prettier resources/js --write",
+    "typecheck": "tsc --noEmit",
+    "typecheck-watch": "tsc --noEmit --watch",
     "preinstall": "npx -y only-allow npm"
   },
   "devDependencies": {
@@ -22,7 +24,7 @@
     "prettier": "^3.0.1",
     "sass": "^1.62.1",
     "tailwindcss": "^3.3.1",
-    "typescript": "^5.1.6",
+    "typescript": "^5.2.2",
     "vite": "^4.3.1",
     "vite-plugin-eslint": "^1.8.1",
     "vite-plugin-solid": "^2.7.0",
@@ -40,9 +42,10 @@
     "@solidjs/router": "^0.8.2",
     "@tanstack/solid-query": "^5.0.0-alpha.75",
     "@tanstack/solid-table": "^8.9.3",
-    "@zag-js/pagination": "^0.11.2",
-    "@zag-js/popover": "^0.11.2",
-    "@zag-js/solid": "^0.11.2",
+    "@zag-js/dialog": "^0.16.0",
+    "@zag-js/pagination": "^0.16.0",
+    "@zag-js/popover": "^0.16.0",
+    "@zag-js/solid": "^0.16.0",
     "axios": "^1.3.6",
     "classnames": "^2.3.2",
     "html-parse-string": "^0.0.9",

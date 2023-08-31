@@ -1,11 +1,11 @@
 import {
   CellContext,
-  ColumnDefTemplate,
+  ColumnDef,
   IdentifiedColumnDef,
   RowData,
+  SortingState,
   createColumnHelper,
   createSolidTable,
-  flexRender,
   getCoreRowModel,
 } from "@tanstack/solid-table";
 import {
@@ -15,10 +15,11 @@ import {
   DECIMAL2_NUMBER_FORMAT,
   TranslationEntriesInterface,
   TranslationEntriesPrefix,
+  cx,
   useLangFunc,
 } from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
-import {Component, For, Index, Show, createEffect, createMemo, on} from "solid-js";
+import {Component, For, Index, JSX, Show, createEffect, createMemo, on} from "solid-js";
 import {
   Pagination,
   SortMarker,
@@ -29,11 +30,17 @@ import {
   getHeaders,
   tableStyle as ts,
 } from ".";
-import {ColumnFilterController, Spinner} from "..";
+import {ColumnFilterController, FilteringParams, Spinner} from "..";
+import {CellRenderer} from "./CellRenderer";
 
-/** Type of tquery-related information in column meta. */
-export interface TQueryColumnMeta {
-  type: ColumnType;
+export interface ColumnOptions {
+  columnDef?: Partial<IdentifiedColumnDef<object>>;
+  metaParams?: ColumnMetaParams;
+}
+
+interface ColumnMetaParams {
+  canControlVisibility?: boolean;
+  filtering?: FilteringParams;
 }
 
 declare module "@tanstack/table-core" {
@@ -43,8 +50,10 @@ declare module "@tanstack/table-core" {
   }
 }
 
-export interface ColumnOptions {
-  columnDef?: Partial<IdentifiedColumnDef<object>>;
+/** Type of tquery-related information in column meta. */
+export interface TQueryColumnMeta extends ColumnMetaParams {
+  /** Column type, if the column is based on data from backend. */
+  type?: ColumnType;
 }
 
 const TableTranslations = new TranslationEntriesInterface(
@@ -55,6 +64,16 @@ const TableTranslations = new TranslationEntriesInterface(
 );
 
 export interface TQueryTableProps {
+  /**
+   * Mode in which the table is displayed:
+   * - standalone - the table is the main element on the page, typically displays many rows,
+   * header and footer are sticky.
+   * - embedded - the table is displayed along with other elements in a page, typically with not
+   * many rows, without sticky elements.
+   */
+  mode: "standalone" | "embedded";
+  /** The prefix used for the data query (this allows invalidating the tquery data). */
+  staticPrefixQueryKey: readonly unknown[];
   /** The entity URL, must not change. */
   staticEntityURL: string;
   /**
@@ -63,6 +82,11 @@ export interface TQueryTableProps {
    * entity B, so only entities A related direclty to that particular entity B should be shown.
    */
   intrinsicFilter?: Filter;
+  /**
+   * A list of columns that are always included in the request (and available on the row objects),
+   * even if they are not visible.
+   */
+  intrinsicColumns?: string[];
   /**
    * Prefix of the translation keys used in the table.
    * If not specified, a generic set of texts is used, e.g. "5 results". By specifying this
@@ -73,9 +97,23 @@ export interface TQueryTableProps {
   additionalColumns?: string[];
   /** Overrides for the definition of specific columns. */
   columnOptions?: Partial<Record<string, ColumnOptions>>;
+  /**
+   * The ordering of the columns. All the columns present on the backend and not present
+   * in this list are placed at the end.
+   *
+   * This list can be used to sort both data-based columns and additional columns
+   * (declared in additionalColumns).
+   *
+   * In the current implementation the order of columns cannot be changed.
+   */
+  initialColumnsOrder?: string[];
   initialVisibleColumns?: string[];
+  initialSort?: SortingState;
   initialPageSize?: number;
 }
+
+const DEFAULT_STANDALONE_PAGE_SIZE = 50;
+const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
 export const TQueryTable: Component<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
@@ -85,37 +123,44 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
 
   const SORTABLE_COLUMN_TYPES = new Set<ColumnType>(["string", "decimal0", "decimal2", "bool", "date", "datetime"]);
 
-  type CellTemplate = ColumnDefTemplate<CellContext<object, unknown>>;
+  /**
+   * The component used as cell in column definition.
+   *
+   * Warning: It function must not return a string directly, it needs to be wrapped in a JSX.Element,
+   * e.g. `<>{someString}</>`. Otherwise the reactivity is lost and the cell will show stale data.
+   * It is not possible to express this requirement in the type.
+   */
+  type CellComponent = Component<CellContext<object, unknown>>;
 
-  function cellFunc<V>(
-    func: (v: V) => CellTemplate | undefined,
-  ): (c: CellContext<object, unknown>) => CellTemplate | undefined {
-    return (c) => {
-      const val = c.getValue();
-      if (val === undefined) {
-        return undefined;
-      }
-      return func(val as V);
-    };
+  function cellFunc<V>(func: (v: V) => JSX.Element | undefined): CellComponent {
+    return (c) => <Show when={c.getValue() !== undefined}>{func(c.getValue() as V)}</Show>;
   }
 
-  const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellTemplate>([
-    ["decimal0", cellFunc<number>((v) => DECIMAL0_NUMBER_FORMAT.format(v))],
-    ["decimal2", cellFunc<number>((v) => DECIMAL2_NUMBER_FORMAT.format(v))],
+  const COLUMN_CELL_BY_TYPE = new Map<ColumnType, CellComponent>([
+    ["decimal0", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>)],
+    ["decimal2", cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>)],
     ["bool", cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no")))],
     ["date", cellFunc<string>((v) => DATE_FORMAT.format(new Date(v)))],
     ["datetime", cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v)))],
   ]);
 
-  const defaultCell: ColumnDefTemplate<CellContext<object, unknown>> = (c) => c.getValue();
+  const defaultCell = cellFunc(String);
 
   const requestCreator = createTableRequestCreator({
     intrinsicFilter: () => props.intrinsicFilter,
+    intrinsicColumns: () => props.intrinsicColumns,
     additionalColumns: props.additionalColumns,
     initialVisibleColumns: props.initialVisibleColumns,
-    initialPageSize: props.initialPageSize,
+    initialSort: props.initialSort,
+    initialPageSize:
+      props.initialPageSize ||
+      (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
   });
-  const {schema, requestController, dataQuery, data} = createTQuery(entityURL, {requestCreator});
+  const {schema, requestController, dataQuery, data} = createTQuery({
+    entityURL,
+    prefixQueryKey: props.staticPrefixQueryKey,
+    requestCreator,
+  });
   const {
     columnVisibility: [columnVisibility, setColumnVisibility],
     globalFilter: [globalFilter, setGlobalFilter],
@@ -129,10 +174,13 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   });
 
   const h = createColumnHelper<object>();
+  function columnOptions(name: string) {
+    return props.columnOptions?.[name] || {};
+  }
   function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
     return {
       header: t(`tables.headers.${name}`),
-      ...props.columnOptions?.[name]?.columnDef,
+      ...columnOptions(name).columnDef,
     };
   }
   const columns = createMemo(() => {
@@ -147,14 +195,16 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
       }
       if (badColumns.size)
         console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
-      return [
+      const columns = [
         ...sch.columns.map(({type, name}) =>
           h.accessor(name, {
+            id: name,
             enableSorting: SORTABLE_COLUMN_TYPES.has(type),
             cell: COLUMN_CELL_BY_TYPE.get(type) || defaultCell,
             meta: {
               tquery: {
                 type,
+                ...columnOptions(name).metaParams,
               } satisfies TQueryColumnMeta,
             },
             ...commonColumnDef(name),
@@ -163,10 +213,21 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
         ...(props.additionalColumns || []).map((name) =>
           h.display({
             id: name,
+            meta: {
+              tquery: {
+                ...columnOptions(name).metaParams,
+              },
+            },
             ...commonColumnDef(name),
           }),
         ),
       ];
+      if (props.initialColumnsOrder) {
+        // Index in the ordering array. Missing items sorted last.
+        const order = (col: ColumnDef<object, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
+        columns.sort((a, b) => order(a) - order(b));
+      }
+      return columns;
     }
     return [];
   });
@@ -224,7 +285,10 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   return (
     <TableContextProvider table={table}>
       <Show when={schema()} fallback={<Spinner />}>
-        <div ref={scrollToTopPoint} class={ts.tableContainer}>
+        <div
+          ref={scrollToTopPoint}
+          class={cx(ts.tableContainer, props.mode === "standalone" ? ts.standalone : ts.embedded)}
+        >
           <div class={ts.aboveTable}>
             <TableSearch />
             <TableColumnVisibilityController />
@@ -241,39 +305,41 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
                 <For each={getHeaders(table)}>
                   {({header, column}) => (
                     <Show when={header()}>
-                      <div class={ts.cell}>
-                        <span
-                          class={ts.title}
-                          classList={{"cursor-pointer": column.getCanSort()}}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            if (column.getCanSort()) {
-                              column.toggleSorting(undefined, e.altKey);
-                            }
-                          }}
-                          title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
-                        >
-                          {header()?.isPlaceholder
-                            ? undefined
-                            : flexRender(column.columnDef.header, header()!.getContext())}{" "}
-                          <SortMarker column={column} />
-                        </span>
-                        <Show when={column.getCanFilter()}>
-                          <ColumnFilterController
-                            name={column.id}
-                            filter={columnFilters[column.id]}
-                            setFilter={(filter) => setColumnFilters(column.id, filter)}
-                          />
-                        </Show>
-                        <Show when={column.getCanResize()}>
-                          <div
-                            class={ts.resizeHandler}
-                            classList={{[ts.resizing!]: column.getIsResizing()}}
-                            onMouseDown={header()?.getResizeHandler()}
-                            onTouchStart={header()?.getResizeHandler()}
-                          />
-                        </Show>
-                      </div>
+                      {(header) => (
+                        <div class={ts.cell}>
+                          <span
+                            class={ts.title}
+                            classList={{"cursor-pointer": column.getCanSort()}}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              if (column.getCanSort()) {
+                                column.toggleSorting(undefined, e.altKey);
+                              }
+                            }}
+                            title={column.getCanSort() ? t("tables.sort_tooltip") : undefined}
+                          >
+                            <Show when={!header().isPlaceholder}>
+                              <CellRenderer component={column.columnDef.header} props={header().getContext()} />
+                            </Show>
+                            <SortMarker column={column} />
+                          </span>
+                          <Show when={column.getCanFilter()}>
+                            <ColumnFilterController
+                              name={column.id}
+                              filter={columnFilters[column.id]}
+                              setFilter={(filter) => setColumnFilters(column.id, filter)}
+                            />
+                          </Show>
+                          <Show when={column.getCanResize()}>
+                            <div
+                              class={ts.resizeHandler}
+                              classList={{[ts.resizing!]: column.getIsResizing()}}
+                              onMouseDown={header().getResizeHandler()}
+                              onTouchStart={header().getResizeHandler()}
+                            />
+                          </Show>
+                        </div>
+                      )}
                     </Show>
                   )}
                 </For>
@@ -283,10 +349,12 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
                 fallback={<div class={ts.wideRow}>{dataQuery.isFetching ? <Spinner /> : tt.empty_table_text()}</div>}
               >
                 {(row) => (
-                  <div class={ts.dataRow}>
+                  <div class={ts.dataRow} inert={dataQuery.isFetching || undefined}>
                     <Index each={row().getVisibleCells()}>
                       {(cell) => (
-                        <span class={ts.cell}>{flexRender(cell().column.columnDef.cell, cell().getContext())}</span>
+                        <span class={ts.cell}>
+                          <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
+                        </span>
                       )}
                     </Index>
                   </div>

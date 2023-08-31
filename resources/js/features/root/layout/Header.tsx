@@ -1,8 +1,10 @@
 import {useLocation, useNavigate, useParams} from "@solidjs/router";
-import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
+import {createMutation, createQuery} from "@tanstack/solid-query";
 import {DATE_TIME_WITH_WEEKDAY_FORMAT, QueryBarrier, cx, useLangFunc} from "components/utils";
 import {System, User} from "data-access/memo-api";
+import {PasswordChangeForm} from "features/user-panel";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
+import {TbPassword} from "solid-icons/tb";
 import {Component, For, Match, Switch, createSignal, onMount} from "solid-js";
 import s from "./style.module.scss";
 
@@ -21,7 +23,7 @@ const FacilitySelect: Component = () => {
   const location = useLocation();
   const params = useParams<{facilityUrl: string}>();
 
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
 
   return (
     <QueryBarrier queries={[facilitiesQuery]} pendingElement={null}>
@@ -48,11 +50,11 @@ const HeaderRight = () => {
   const currentTime = useCurrentTime();
   const statusQuery = createQuery(() => User.statusQueryOptions);
 
-  const queryClient = useQueryClient();
+  const invalidateUser = User.useInvalidator();
   const logout = createMutation(() => ({
     mutationFn: User.logout,
     onSuccess() {
-      queryClient.invalidateQueries({queryKey: User.keys.status()});
+      invalidateUser.status();
     },
   }));
 
@@ -83,7 +85,13 @@ const HeaderRight = () => {
               {(value) => <span>{value}</span>}
             </For>
           </span>
-          <span>{statusQuery.data?.user.name}</span>
+          <span>
+            {statusQuery.data?.user.name}
+            {/* This is a temporary location for the change password button. */}
+            <button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
+              <TbPassword />
+            </button>
+          </span>
         </div>
       </div>
       <div class="flex justify-center items-center">
@@ -95,6 +103,7 @@ const HeaderRight = () => {
           <HiOutlinePower color="red" size="30" />
         </button>
       </div>
+      <PasswordChangeForm.Modal />
     </div>
   );
 };

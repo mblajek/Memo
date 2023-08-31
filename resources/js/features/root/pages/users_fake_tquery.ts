@@ -16,6 +16,7 @@ import {rest, setupWorker} from "msw";
 type Row = Partial<Record<string, unknown>>;
 
 type ComparableVal = number | string;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type CompareTransform = (v: any) => ComparableVal;
 
 const str = (v: unknown) => (v ?? undefined) as string | undefined;
@@ -99,18 +100,16 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
 }
 
 export function startUsersMock() {
-  const usersQuery = createQuery(() => ({
-    queryFn: Admin.getUsers,
-    queryKey: ["admin", "user", "list"],
-  }));
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions);
+  const usersQuery = createQuery(Admin.usersQueryOptions);
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const columns: ColumnSchema[] = [
-    {name: "name", type: "string"},
-    {name: "email", type: "string"},
     {name: "createdAt", type: "datetime"},
+    {name: "email", type: "string"},
     {name: "facilitiesMember", type: "text"},
-    {name: "numFacilities", type: "decimal0"},
     {name: "hasGlobalAdmin", type: "bool"},
+    {name: "id", type: "string"},
+    {name: "name", type: "string"},
+    {name: "numFacilities", type: "decimal0"},
   ];
   setupWorker(
     rest.get("/api/v1/entityURL/tquery", (req, res, ctx) => {
@@ -119,14 +118,13 @@ export function startUsersMock() {
         ctx.status(200),
         ctx.json({
           columns,
-          suggestedColumns: ["name", "createdAt", "facilitiesMember", "hasGlobalAdmin"],
-          suggestedSort: [{type: "column", column: "name", dir: "asc"}],
         } satisfies Schema),
       );
     }),
     rest.post("/api/v1/entityURL/tquery", async (req, res, ctx) => {
       const request: DataRequest = await req.json();
       const rows: Row[] = (usersQuery.data || []).map((entry) => ({
+        id: entry.id,
         name: entry.name,
         email: entry.email,
         createdAt: entry.createdAt,

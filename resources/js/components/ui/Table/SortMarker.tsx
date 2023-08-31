@@ -6,6 +6,7 @@ import {Dynamic} from "solid-js/web";
 import {css} from "..";
 
 interface Props {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   column: Column<any>;
 }
 
@@ -20,7 +21,6 @@ export const SortMarker: Component<Props> = (props) => (
       component={ICONS.get(props.column.getIsSorted())}
       class={css.inlineIcon}
       classList={{"text-black": true, "text-opacity-30": !props.column.getIsSorted()}}
-      fill="currentColor"
       style={{scale: props.column.getSortIndex() > 0 ? 0.6 : 1}}
     />
   </Show>
