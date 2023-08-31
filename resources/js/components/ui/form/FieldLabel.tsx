@@ -5,7 +5,7 @@ import {TranslatedText} from "..";
 interface Props extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
   fieldName: string;
   text?: string;
-  /** Optional functino that takes the label text and returns JSX. The result is then wrapped in label. */
+  /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
   wrapIn?: (text: JSX.Element) => JSX.Element;
 }
 
