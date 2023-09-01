@@ -1,5 +1,5 @@
 import {Row} from "@tanstack/solid-table";
-import {Email, Modal, css} from "components/ui";
+import {Email, Modal, createTableTranslations, css} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, DATE_TIME_WITH_WEEKDAY_FORMAT} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -16,7 +16,7 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.userLists()}
         staticEntityURL="entityURL"
-        translations="tables.tables.users"
+        staticTranslations={createTableTranslations("users")}
         intrinsicColumns={["id"]}
         additionalColumns={["actions"]}
         columnOptions={{
