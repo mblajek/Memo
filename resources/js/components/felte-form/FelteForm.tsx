@@ -8,6 +8,7 @@ import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
 import toast from "solid-toast";
 import {ZodSchema} from "zod";
+import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, useLangFunc} from "../utils";
 
 type FormContextValue<T extends Obj = Obj> = {
@@ -31,18 +32,24 @@ const FormContext = createContext<FormContextValue>(undefined, {
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
-type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onError"> &
+type FormProps<T extends Obj = Obj> = Omit<
+  JSX.FormHTMLAttributes<HTMLFormElement>,
+  "onSubmit" | "onError" | "children"
+> &
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
     id: string;
     schema: ZodSchema<T>;
+    children: ChildrenOrFunc<[FormType<T>]>;
   };
 
 /**
- * Wrapper for felte's `createForm`
+ * Wrapper for felte's `createForm`.
  *
- * Includes solidjs' Provider, that stores
- * createForm's data and component props
+ * Includes solidjs' Provider, that stores createForm's data and component props.
+ *
+ * The form is also accessible via children: children can be a function taking a Felte form object
+ * and returning JSX, similar to the function form of the `<Show>` component.
  */
 export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
   const t = useLangFunc();
@@ -76,14 +83,14 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
         });
       }
     },
-  });
+  }) as FormType<T>;
 
   const TypedFormContext = typedFormContext<T>();
   return (
     <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
       <form ref={form.form} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
-          {local.children}
+          {getChildrenElement(local.children, form)}
         </fieldset>
       </form>
     </TypedFormContext.Provider>
