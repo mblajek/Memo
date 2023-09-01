@@ -44,7 +44,7 @@ const LoginPage: Component = () => {
           </div>
         </Match>
         <Match when={statusQuery.isSuccess}>
-          <Navigate href="/" state={{fromLoginPage: true}} />
+          <Navigate href="/help" state={{fromLoginPage: true}} />
         </Match>
       </Switch>
     </Page>

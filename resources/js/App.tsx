@@ -1,7 +1,8 @@
 import {Outlet, useParams, useRoutes} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {AccessBarrier, Page, QueryBarrier} from "components/utils";
+import {AccessBarrier, QueryBarrier} from "components/utils";
 import {FacilityResource, System} from "data-access/memo-api";
+import {NotFound, NotYetImplemented} from "features/not-found/components";
 import {lazy, type Component} from "solid-js";
 
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
@@ -20,21 +21,17 @@ const createRoutes = (facilities?: FacilityResource[]) =>
       children: [
         {
           path: "/*",
-          element: <div>Nie znaleziono strony</div>,
+          component: NotYetImplemented,
         },
         {
           path: "/help",
-          component: () => (
-            <Page title="Pomoc">
-              <div class="p-4">pomoc</div>
-            </Page>
-          ),
+          component: NotYetImplemented,
         },
         {
           path: "/admin",
           component: () => {
             return (
-              <AccessBarrier>
+              <AccessBarrier roles={["globalAdmin"]}>
                 <Outlet />
               </AccessBarrier>
             );
@@ -42,11 +39,11 @@ const createRoutes = (facilities?: FacilityResource[]) =>
           children: [
             {
               path: "/*",
-              element: <div>Nie znaleziono strony (globalny admin)</div>,
+              component: NotFound,
             },
             {
               path: "/facilities",
-              element: <div>Placówki (globalny admin)</div>,
+              component: NotYetImplemented,
             },
             {
               path: "/users",
@@ -70,15 +67,15 @@ const createRoutes = (facilities?: FacilityResource[]) =>
           children: [
             {
               path: "/*",
-              element: <div>Nie znaleziono strony (placówka)</div>,
+              component: NotFound,
             },
             {
               path: "/home",
-              element: <div class="p-4">strona główna placówki</div>,
+              component: NotYetImplemented,
             },
             {
               path: "/meetings",
-              element: <div>Moje spotkania (placówka)</div>,
+              component: NotYetImplemented,
             },
             {
               path: "/",
@@ -93,15 +90,15 @@ const createRoutes = (facilities?: FacilityResource[]) =>
               children: [
                 {
                   path: "/calendar",
-                  element: <div class="p-4">Mój kalendarz (placówka)</div>,
+                  component: NotYetImplemented,
                 },
                 {
                   path: "/timetable",
-                  element: <div class="p-4">Mój harmonogram (placówka)</div>,
+                  component: NotYetImplemented,
                 },
                 {
                   path: "/clients",
-                  element: <div class="p-4">Moi klienci (placówka)</div>,
+                  component: NotYetImplemented,
                 },
               ],
             },
@@ -118,23 +115,23 @@ const createRoutes = (facilities?: FacilityResource[]) =>
               children: [
                 {
                   path: "/*",
-                  element: <div>Nie znaleziono strony (admin placówki)</div>,
+                  component: NotFound,
                 },
                 {
                   path: "/calendar",
-                  element: <div>Kalendarz (admin placówki)</div>,
+                  component: NotYetImplemented,
                 },
                 {
                   path: "/clients",
-                  element: <div>Klienci (admin placówki)</div>,
+                  component: NotYetImplemented,
                 },
                 {
                   path: "/staff",
-                  element: <div>Pracownicy (admin placówki)</div>,
+                  component: NotYetImplemented,
                 },
                 {
                   path: "/reports",
-                  element: <div>Raporty (admin placówki)</div>,
+                  component: NotYetImplemented,
                 },
               ],
             },
