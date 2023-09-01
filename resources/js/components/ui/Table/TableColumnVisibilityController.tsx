@@ -1,10 +1,22 @@
+import {RowData} from "@tanstack/solid-table";
 import * as popover from "@zag-js/popover";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {useLangFunc} from "components/utils";
-import {Component, For, Show, createMemo, createUniqueId} from "solid-js";
+import {Component, For, JSX, Show, createMemo, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {tableStyle as ts, useTable} from ".";
 import {Button} from "../Button";
+
+declare module "@tanstack/table-core" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /**
+     * The column name. Separating this value from the header property of column definition
+     * allows reusing the column visibility component across different types of tables.
+     */
+    columnName?: JSX.Element;
+  }
+}
 
 export const TableColumnVisibilityController: Component = () => {
   const t = useLangFunc();
@@ -40,7 +52,7 @@ export const TableColumnVisibilityController: Component = () => {
                         onChange={column.getToggleVisibilityHandler()}
                         type="checkbox"
                       />{" "}
-                      {t(`tables.headers.${column.id}`)}
+                      {column.columnDef.meta?.columnName || column.columnDef.id}
                     </label>
                   </Show>
                 )}

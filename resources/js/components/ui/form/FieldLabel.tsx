@@ -1,5 +1,6 @@
 import {useFormContextIfInForm} from "components/felte-form";
 import {Component, Show, createMemo} from "solid-js";
+import {Capitalize} from "..";
 
 interface Props {
   fieldName: string;
@@ -33,8 +34,10 @@ export const FieldLabel: Component<Props> = (props) => {
   });
   return (
     <Show when={data().text}>
-      <label for={props.fieldName} class="inline-block" classList={{"first-letter:capitalize": data().capitalize}}>
-        {data().text}
+      <label for={props.fieldName}>
+        <Show when={data().capitalize} fallback={data().text}>
+          <Capitalize text={data().text} />
+        </Show>
       </label>
     </Show>
   );
