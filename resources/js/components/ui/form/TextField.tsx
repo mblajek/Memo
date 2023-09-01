@@ -18,6 +18,7 @@ export const TextField: Component<TextFieldProps> = (props) => {
     <div>
       <FieldLabel fieldName={props.name} text={props.label} />
       <input
+        id={props.name}
         {...props}
         class={cx("w-full border border-gray-400 rounded-sm p-2", "aria-invalid:border-red-400", props.class)}
       />

@@ -4,6 +4,7 @@ export * from "./Confirmation";
 export * from "./CopyToClipboard";
 export * from "./Email";
 export * from "./FullLogo";
+export * from "./HideableSection";
 export * from "./MemoLoader";
 export * from "./Modal";
 export * from "./Spinner";

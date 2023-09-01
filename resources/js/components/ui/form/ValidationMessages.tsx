@@ -1,29 +1,31 @@
 import {ValidationMessage} from "@felte/reporter-solid";
+import {useFormContext} from "components/felte-form";
+import {cx} from "components/utils";
 import {Component, Index} from "solid-js";
+import {HideableSection} from "../HideableSection";
 
 interface Props {
   fieldName: string;
 }
 
-export const ValidationMessages: Component<Props> = (props) => (
-  <>
+export const ValidationMessages: Component<Props> = (props) => {
+  const MessagesForLevel: Component<{level: "error" | "warning"; cssClass: string}> = (pp) => (
     <ValidationMessage
-      level="error"
+      level={pp.level}
       for={props.fieldName}
       as="ul"
       aria-live="polite"
-      class="text-red-400 text-sm list-disc pl-6 mt-0.5"
+      class={cx("text-sm list-disc pl-6", pp.cssClass)}
     >
       {(messages) => <Index each={messages || []}>{(message) => <li>{message()}</li>}</Index>}
     </ValidationMessage>
-    <ValidationMessage
-      level="warning"
-      for={props.fieldName}
-      as="ul"
-      aria-live="polite"
-      class="text-yellow-300 text-sm list-disc pl-6 mt-0.5"
-    >
-      {(messages) => <Index each={messages || []}>{(message) => <li>{message()}</li>}</Index>}
-    </ValidationMessage>
-  </>
-);
+  );
+  const {form} = useFormContext();
+  const hasErrors = () => !!(form.errors()[props.fieldName] || form.warnings()[props.fieldName]);
+  return (
+    <HideableSection show={hasErrors()}>
+      <MessagesForLevel level="error" cssClass="text-red-400" />
+      <MessagesForLevel level="warning" cssClass="text-yellow-300" />
+    </HideableSection>
+  );
+};
