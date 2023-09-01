@@ -84,7 +84,7 @@ export namespace PasswordChangeForm {
     const t = useLangFunc();
     return (
       <ModalComponent
-        title={t("forms.password_change.name")}
+        title={t("forms.password_change.formName")}
         open={modalShown()}
         closeOn={["escapeKey", "closeButton"]}
         onClose={() => setModalShown(false)}

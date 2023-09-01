@@ -9,7 +9,7 @@ tables:
     summary__one: "{{count, number}} użytkownik"
     summary__few: "{{count, number}} użytkowników"
     summary__many: "{{count, number}} użytkowników"
-    headers:
+    columnNames:
       name: "$t(models.user.name)"
       email: "$t(models.user.email)"
       createdAt: "$t(models.user.createdAt)"

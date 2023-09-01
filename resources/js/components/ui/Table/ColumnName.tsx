@@ -1,6 +1,6 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {Component, Show} from "solid-js";
-import {Capitalize} from "../Capitalize";
+import {Component} from "solid-js";
+import {TranslatedText} from "../TranslatedText";
 import {useTable} from "./TableContext";
 
 interface Props {
@@ -15,18 +15,11 @@ interface Props {
 export const ColumnName: Component<Props> = (props) => {
   const table = useTable();
   return (
-    <Show
-      when={props.def.meta?.columnName}
-      fallback={
-        <Show
-          when={table.options.meta?.translations?.headers?.(props.def.id || "", {defaultValue: ""})}
-          fallback={props.def.id}
-        >
-          {(columnName) => <Capitalize text={columnName()} />}
-        </Show>
-      }
-    >
-      {(columnName) => <>{columnName()()}</>}
-    </Show>
+    <TranslatedText
+      override={props.def.meta?.columnName}
+      langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
+      capitalize={true}
+      fallbackCode={props.def.id}
+    />
   );
 };
