@@ -1,5 +1,6 @@
 export * from "./Button";
 export * from "./Capitalize";
+export * from "./Confirmation";
 export * from "./CopyToClipboard";
 export * from "./Email";
 export * from "./FullLogo";
