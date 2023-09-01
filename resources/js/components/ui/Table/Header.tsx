@@ -18,19 +18,13 @@ export const Header: Component<Props> = (props) => {
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
   return (
     <div class={ts.headerCell}>
-      <span
-        class={ts.title}
-        classList={{"cursor-pointer": props.ctx.column.getCanSort()}}
-        onClick={(e) => {
-          e.preventDefault();
-          if (props.ctx.column.getCanSort()) {
-            props.ctx.column.toggleSorting(undefined, e.altKey);
-          }
-        }}
-        title={props.ctx.column.getCanSort() ? t("tables.sort_tooltip") : undefined}
-      >
-        <ColumnName def={props.ctx.column.columnDef} />
-        <SortMarker column={props.ctx.column} />
+      <span class={ts.title}>
+        <Show when={props.ctx.column.getCanSort()} fallback={<ColumnName def={props.ctx.column.columnDef} />}>
+          <button onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)} title={t("tables.sort_tooltip")}>
+            <ColumnName def={props.ctx.column.columnDef} />
+            <SortMarker column={props.ctx.column} />
+          </button>
+        </Show>
       </span>
       <Show when={props.ctx.column.getCanFilter()}>{props.filter}</Show>
       <Show when={props.ctx.column.getCanResize()}>
