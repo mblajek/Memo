@@ -10,11 +10,11 @@
 
 Czyli w tabeli Column będą takie wpisy:
 
-| id | facility_id | table            | name             | dictionary_id | type     | order | is_multi |
-|----|-------------|------------------|------------------|---------------|----------|-------|----------|
-| #  | null        | meeting_type     | category         | ce1...a3b     | dict     | 1     | null     |
-| #  | null        | meeting          | status           | 386...fcd     | dict     | 1     | null     |
-| #  | null        | meeting_resource | resource         | fdb...2df     | dict     | 1     | null     |
+| id | facility_id | table             | model            | name     | api_name         | type | dictionary_id | default_order | is_attribute_multi | requirement_level |
+|----|-------------|-------------------|------------------|----------|------------------|------|---------------|---------------|--------------------|-------------------|
+| #  | null        | meeting_types     | meeting_type     | category | category_dict_id | dict | ce1...a3b     | 1             | null               | required          |
+| #  | null        | meetings          | meeting          | status   | status_dict_id   | dict | 386...fcd     | 1             | null               | required          |
+| #  | null        | meeting_resources | meeting_resource | resource | resource_dict_id | dict | fdb...2df     | 1             | null               | required          |
 
 ##### MeetingType
 
