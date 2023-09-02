@@ -1,0 +1,14 @@
+login:
+  formName: "Logowanie"
+  fieldNames:
+    email: "$t(models.user.email)"
+    password: "$t(models.user.password)"
+  submit: "Zaloguj"
+password_change:
+  formName: "Zmiana hasła"
+  success: "Hasło zostało zmienione"
+  fieldNames:
+    current: "aktualne hasło"
+    password: "nowe hasło"
+    repeat: "powtórz nowe hasło"
+  submit: "Zmień hasło"

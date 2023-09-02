@@ -8,22 +8,23 @@ import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
 import toast from "solid-toast";
 import {ZodSchema} from "zod";
-import {useLangFunc} from "../utils";
+import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
+import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, useLangFunc} from "../utils";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
   form: FormType<T>;
-  translations: Translations;
+  translations: FormTranslations;
 };
 
 type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
-type Translations = {
-  getFormName: () => string;
-  getFieldName: (field: string) => string;
-  getSubmitText: () => string;
-};
+export interface FormTranslations {
+  formName: LangEntryFunc;
+  fieldNames: LangPrefixFunc;
+  submit: LangEntryFunc;
+}
 
 const FormContext = createContext<FormContextValue>(undefined, {
   name: "FormContext",
@@ -31,18 +32,24 @@ const FormContext = createContext<FormContextValue>(undefined, {
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
-type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onError"> &
+type FormProps<T extends Obj = Obj> = Omit<
+  JSX.FormHTMLAttributes<HTMLFormElement>,
+  "onSubmit" | "onError" | "children"
+> &
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
     id: string;
     schema: ZodSchema<T>;
+    children: ChildrenOrFunc<[FormType<T>]>;
   };
 
 /**
- * Wrapper for felte's `createForm`
+ * Wrapper for felte's `createForm`.
  *
- * Includes solidjs' Provider, that stores
- * createForm's data and component props
+ * Includes solidjs' Provider, that stores createForm's data and component props.
+ *
+ * The form is also accessible via children: children can be a function taking a Felte form object
+ * and returning JSX, similar to the function form of the `<Show>` component.
  */
 export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
   const t = useLangFunc();
@@ -51,11 +58,8 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
     ["children", "schema"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-  const translations: Translations = {
-    getFormName: () => t(`forms.${props.id}.name`),
-    getFieldName: (field: string) => t(`forms.${props.id}.fields.${field}`),
-    getSubmitText: () => t(`forms.${props.id}.submit`),
-  };
+  // eslint-disable-next-line solid/reactivity
+  const translations = createTranslationsFromPrefix(`forms.${props.id}`, ["formName", "fieldNames", "submit"]);
   const form = createForm<T>({
     ...createFormOptions,
     extend: [validator({schema: local.schema}), reporter],
@@ -65,10 +69,10 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
         error.response?.data.errors.forEach((error) => {
           if (Api.isValidationError(error)) {
             const errorMessage = t(error.code, {
-              attribute: translations.getFieldName(error.field),
+              attribute: translations.fieldNames(error.field),
               ...error.data,
               ...(typeof error.data?.other === "string"
-                ? {other: translations.getFieldName(error.data.other)}
+                ? {other: translations.fieldNames(error.data.other)}
                 : undefined),
             });
             // @ts-expect-error setErrors does not like generic types
@@ -79,14 +83,14 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
         });
       }
     },
-  });
+  }) as FormType<T>;
 
   const TypedFormContext = typedFormContext<T>();
   return (
     <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
       <form ref={form.form} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
-          {local.children}
+          {getChildrenElement(local.children, form)}
         </fieldset>
       </form>
     </TypedFormContext.Provider>

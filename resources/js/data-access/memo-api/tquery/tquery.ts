@@ -1,26 +1,31 @@
-import {CreateQueryOptions, QueryFunction, createQuery, keepPreviousData, useQueryClient} from "@tanstack/solid-query";
+import {createQuery, keepPreviousData} from "@tanstack/solid-query";
 import {Accessor, createComputed, createMemo, createSignal, on} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
 import {DataRequest, DataResponse, Schema} from ".";
 import {V1} from "../config";
-import {Api} from "../types";
+import {CreateQueryOpts, SolidQueryOpts} from "../query_utils";
 
 type EntityURL = string;
 
-type SchemaQueryKey = ["tquery", EntityURL, "schema"];
-type DataQueryKeyBase = ["tquery", EntityURL, "data"];
-type DataQueryKey = [...DataQueryKeyBase, DataRequest];
+type PrefixQueryKey = readonly unknown[];
+
+type SchemaQueryKey = readonly ["tquery-schema", EntityURL];
+type DataQueryKey<K extends PrefixQueryKey> = readonly [...K, "tquery", EntityURL, DataRequest];
+
+function getRequestFromQueryKey<K extends PrefixQueryKey>(queryKey: DataQueryKey<K>): DataRequest {
+  return (queryKey satisfies readonly [...unknown[], DataRequest]).at(-1) as DataRequest;
+}
 
 const INITIAL_PAGE_SIZE = 50;
 
 const EMPTY_DATA: object[] = [];
 
 /** A utility that creates and helps with managing the request object. */
-export interface RequestCreator<T> {
+export interface RequestCreator<C> {
   (schema: Accessor<Schema | undefined>): {
     /** The request to send, or undefined to disable the query. */
     request: Accessor<DataRequest | undefined>;
-    requestController: T;
+    requestController: C;
   };
 }
 
@@ -38,34 +43,43 @@ export const DEFAULT_REQUEST_CREATOR: RequestCreator<SetStoreFunction<DataReques
   };
 };
 
-export function createTQuery<T>(
-  entityURL: EntityURL,
-  {
-    requestCreator,
-    dataQueryOptions,
-  }: {
-    requestCreator: RequestCreator<T>;
-    dataQueryOptions?: CreateQueryOptions<DataResponse, Api.Error, DataResponse, DataQueryKey>;
-  },
-) {
-  const schemaQueryKey: SchemaQueryKey = ["tquery", entityURL, "schema"];
-  const fetchSchema: QueryFunction<Schema, SchemaQueryKey> = (context) =>
-    V1.get<Schema>(`${context.queryKey[1]}/tquery`).then((res) => res.data);
-  const schemaQuery = createQuery<Schema, Api.Error, Schema, SchemaQueryKey>(() => ({
-    queryKey: schemaQueryKey,
-    queryFn: fetchSchema,
+/**
+ * Creates a tquery.
+ *
+ * @param prefixQueryKey The TanStack Query prefix of the data query (can be used to invalidate data).
+ * @param entityURL The URL of the tquery endpoint.
+ */
+export function createTQuery<C, K extends PrefixQueryKey>({
+  prefixQueryKey,
+  entityURL,
+  requestCreator,
+  dataQueryOptions,
+}: {
+  prefixQueryKey: K;
+  entityURL: EntityURL;
+  requestCreator: RequestCreator<C>;
+  dataQueryOptions?: CreateQueryOpts<DataResponse, DataQueryKey<K>>;
+}) {
+  const schemaQuery = createQuery(() => ({
+    queryKey: ["tquery-schema", entityURL] satisfies SchemaQueryKey,
+    queryFn: () => V1.get<Schema>(`${entityURL}/tquery`).then((res) => res.data),
     staleTime: Number.POSITIVE_INFINITY,
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
-  const dataQuery = createQuery<DataResponse, Api.Error, DataResponse, DataQueryKey>(() => ({
-    queryKey: ["tquery", entityURL, "data", request()!],
-    queryFn: (context) =>
-      V1.post<DataResponse>(`${context.queryKey[1]}/tquery`, context.queryKey[3]).then((res) => res.data),
-    enabled: !!request(),
-    placeholderData: keepPreviousData,
-    ...dataQueryOptions,
-  }));
+  const dataQuery = createQuery(
+    () =>
+      ({
+        enabled: !!request(),
+        queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
+        queryFn: (context) =>
+          V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then(
+            (res) => res.data,
+          ),
+        placeholderData: keepPreviousData,
+        ...dataQueryOptions,
+      }) satisfies SolidQueryOpts<DataResponse, DataQueryKey<K>>,
+  );
   // There seems to be a bug in TanStack Query v5 - the identity of data does not change
   // when data is loaded from the cache. The code below fixes that.
   const data = createMemo(
@@ -81,15 +95,5 @@ export function createTQuery<T>(
     requestController,
     dataQuery,
     data,
-    invalidate: createInvalidator(entityURL),
-  };
-}
-
-export function createInvalidator(entityURL: EntityURL) {
-  const queryClient = useQueryClient();
-  return () => {
-    queryClient.invalidateQueries({
-      queryKey: ["tquery", entityURL, "data"] satisfies DataQueryKeyBase,
-    });
   };
 }

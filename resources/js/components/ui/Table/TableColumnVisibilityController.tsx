@@ -3,7 +3,7 @@ import {normalizeProps, useMachine} from "@zag-js/solid";
 import {useLangFunc} from "components/utils";
 import {Component, For, Show, createMemo, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
-import {tableStyle as ts, useTable} from ".";
+import {ColumnName, tableStyle as ts, useTable} from ".";
 import {Button} from "../Button";
 
 export const TableColumnVisibilityController: Component = () => {
@@ -40,7 +40,7 @@ export const TableColumnVisibilityController: Component = () => {
                         onChange={column.getToggleVisibilityHandler()}
                         type="checkbox"
                       />{" "}
-                      {t(`tables.headers.${column.id}`)}
+                      <ColumnName def={column.columnDef} />
                     </label>
                   </Show>
                 )}

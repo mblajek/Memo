@@ -1,4 +1,4 @@
-import {SolidQueryOptions} from "@tanstack/solid-query";
+import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {FacilityResource} from "../resources";
 import {Api} from "../types";
@@ -19,8 +19,16 @@ export namespace System {
     facilityList: () => [...keys.facilityLists()] as const,
   };
 
-  export const facilitiesQueryOptions = {
-    queryFn: getFacilitiesList,
-    queryKey: keys.facilityList(),
-  } satisfies SolidQueryOptions;
+  export const facilitiesQueryOptions = () =>
+    ({
+      queryFn: getFacilitiesList,
+      queryKey: keys.facilityList(),
+    }) satisfies SolidQueryOptions;
+
+  export function useInvalidator() {
+    const queryClient = useQueryClient();
+    return {
+      facilities: () => queryClient.invalidateQueries({queryKey: keys.facilityLists()}),
+    };
+  }
 }

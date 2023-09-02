@@ -1,0 +1,27 @@
+tables:
+  generic:
+    summary__zero: "Brak wyników"
+    summary__one: "{{count, number}} wynik"
+    summary__few: "{{count, number}} wyniki"
+    summary__many: "{{count, number}} wyników"
+  users:
+    summary__zero: "Brak użytkowników"
+    summary__one: "{{count, number}} użytkownik"
+    summary__few: "{{count, number}} użytkowników"
+    summary__many: "{{count, number}} użytkowników"
+    columnNames:
+      name: "$t(models.user.name)"
+      email: "$t(models.user.email)"
+      createdAt: "$t(models.user.createdAt)"
+      facilitiesMember: "$t(models.user.members)"
+      hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
+      actions: "akcje"
+search: "Szukaj"
+choose_columns: "Wybierz kolumny"
+sort_tooltip: "Sortuj"
+filter:
+  filter_cleared: "Brak filtra"
+  filter_set: "Filtr aktywny"
+  click_to_clear: "Kliknij aby wyczyścić"
+  click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
+  click_to_sync_decimal_range: "Kliknij aby ustawić maks = min"
