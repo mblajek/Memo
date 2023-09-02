@@ -1,4 +1,5 @@
 {
   "printWidth": 120,
-  "bracketSpacing": false
+  "bracketSpacing": false,
+  "quoteProps": "consistent"
 }

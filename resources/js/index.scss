@@ -8,4 +8,8 @@
   html {
     @apply font-roboto;
   }
+
+  input[type="checkbox"]:disabled:not(:checked) {
+    filter: brightness(0.8);
+  }
 }

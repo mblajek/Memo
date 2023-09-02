@@ -5,7 +5,7 @@ import {System, User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Component, For, Match, Switch, createSignal, onMount} from "solid-js";
+import {Component, For, Match, Switch, createSignal, onCleanup, onMount} from "solid-js";
 import s from "./style.module.scss";
 
 export const Header: Component = () => {
@@ -110,9 +110,10 @@ const HeaderRight = () => {
 
 const useCurrentTime = () => {
   const [currentTime, setCurrentTime] = createSignal(new Date());
+  let interval: ReturnType<typeof setInterval>;
   onMount(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(interval);
+    interval = setInterval(() => setCurrentTime(new Date()), 1000);
   });
+  onCleanup(() => clearInterval(interval));
   return currentTime;
 };
