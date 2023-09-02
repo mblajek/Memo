@@ -31,6 +31,8 @@ Nazwa kolumny, zasady tłumaczeń podobne jak dla słowników:
 
 Nazwa kolumny w komunikacji api
 
+Dla kolumn opisujących kolumny tabel (`is_attribute_multi` === `null`), `api_name` jest nazwą kolumny w bazie danych
+
 - dla pola, o prostym typie, name jest tym samym co `name`
 - dla pola będącego id z innej tabeli jest `{name}_id`, np. `contact_person` -> `contact_person_id`
 - dla pola słownikowego jest `{name}_dict_id`, np. `gender_dict_id`
