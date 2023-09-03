@@ -137,5 +137,8 @@
   "url": "Format pola „{{attribute}}” jest nieprawidłowy.",
   "ulid": "Pole „{{attribute}}” musi być prawidłowym identyfikatorem ULID.",
   "uuid": "Pole „{{attribute}}” musi być poprawnym identyfikatorem UUID.",
-  "custom.require_present": "Pole „{{attribute}}” wymaga pola „{{other}}”."
+  "custom": {
+    "require_present": "Pole „{{attribute}}” wymaga pola „{{other}}”.",
+    "data_type": "Pole „{{attribute}}” musi być typu „{{type}}”."
+  }
 }

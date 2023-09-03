@@ -56,9 +56,9 @@ readonly class ValidationExceptionRenderer
 
         $interpolationFields = [];
         if ($ruleTranslation) {
-            preg_match_all('/\{\{(\w+)}}/', $ruleTranslation, $interpolationFields);
+            preg_match_all('/\{\{(?<field>\w+)[, ]*(?<type>\\w*)}}/', $ruleTranslation, $interpolationFields);
             $interpolationFields = array_values(
-                array_filter($interpolationFields[1] ?? [], fn(string $a) => $a !== 'attribute')
+                array_filter($interpolationFields['field'] ?? [], fn(string $a) => strtolower($a) !== 'attribute')
             );
         }
         $interpolationDataAssoc =
