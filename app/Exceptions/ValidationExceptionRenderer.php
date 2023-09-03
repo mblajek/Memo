@@ -43,6 +43,33 @@ readonly class ValidationExceptionRenderer
         };
     }
 
+    private function treeSearchTranslation(string $rule): ?string
+    {
+        $ruleArray = explode('.', $rule);
+        $options = 2 ** (count($ruleArray) - 1);
+        for ($option = 0; $option < $options; $option++) {
+            $keys = [$ruleArray[0]];
+            foreach (array_slice($ruleArray, 1) as $i => $part) {
+                if ($option & (1 << $i)) {
+                    $keys[count($keys) - 1] .= ".$part";
+                } else {
+                    $keys[] = $part;
+                }
+            }
+            $currentTree = $this->defaultTranslation;
+            foreach ($keys as $key) {
+                if (!is_array($currentTree) || !array_key_exists($key, $currentTree)) {
+                    continue 2;
+                }
+                $currentTree = $currentTree[$key];
+            }
+            if (is_string($currentTree)) {
+                return $currentTree;
+            }
+        }
+        return null;
+    }
+
     private function prepareField(
         string $rule,
         string $field,
@@ -51,7 +78,8 @@ readonly class ValidationExceptionRenderer
     ): void {
         $rule = $this->matchRule($rule);
         $ruleType = array_key_exists($rule, $this->multiTypeRules) ? $this->matchType($this->rules[$field]) : null;
-        $ruleTranslation = ($ruleType === null) ? ($this->defaultTranslation[$rule] ?? null)
+        /** @var ?string $ruleTranslation */
+        $ruleTranslation = ($ruleType === null) ? $this->treeSearchTranslation($rule)
             : ($this->defaultTranslation[$rule][$ruleType] ?? null);
 
         $interpolationFields = [];
@@ -61,12 +89,16 @@ readonly class ValidationExceptionRenderer
                 array_filter($interpolationFields['field'] ?? [], fn(string $a) => strtolower($a) !== 'attribute')
             );
         }
-        $interpolationDataAssoc =
-            ($interpolationFields === ['values']) ?
-                ['values' => $interpolationData] : array_combine(
-                array_slice($interpolationFields, 0, count($interpolationData)),
-                array_slice($interpolationData, 0, count($interpolationFields)),
-            );
+        if ($interpolationFields === ['values']) {
+            $interpolationDataAssoc = ['values' => $interpolationData];
+        } else {
+            $interpolationDataAssoc = [];
+            foreach ($interpolationFields as $fieldPosition => $fieldName) {
+                if (($fieldData = $interpolationData[$fieldName] ?? $interpolationData[$fieldPosition] ?? null)) {
+                    $interpolationDataAssoc[$fieldName] = $fieldData;
+                }
+            }
+        }
         $exception->addValidation(Str::camel($field), $rule . ($ruleType ? ".$ruleType" : ''), $interpolationDataAssoc);
     }
 
