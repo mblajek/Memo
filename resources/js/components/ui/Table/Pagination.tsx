@@ -5,7 +5,7 @@ import {FaSolidArrowLeftLong, FaSolidArrowRightLong} from "solid-icons/fa";
 import {IoEllipsisHorizontal} from "solid-icons/io";
 import {Component, For, Show, createEffect, createMemo, createUniqueId, on} from "solid-js";
 import {tableStyle as ts, useTable} from ".";
-import {css} from "..";
+import {Button, css} from "..";
 
 export const Pagination: Component = () => {
   const table = useTable();
@@ -37,9 +37,9 @@ export const Pagination: Component = () => {
     <Show when={api().totalPages > 1}>
       <div class={ts.pagination}>
         <div {...api().rootProps}>
-          <button {...api().prevPageTriggerProps}>
+          <Button {...api().prevPageTriggerProps}>
             <FaSolidArrowLeftLong class={css.inlineIcon} />
-          </button>
+          </Button>
           <For each={api().pages}>
             {(page, i) => (
               <Show
@@ -50,13 +50,13 @@ export const Pagination: Component = () => {
                   </span>
                 }
               >
-                {page.type === "page" && <button {...api().getPageTriggerProps(page)}>{page.value}</button>}
+                {page.type === "page" && <Button {...api().getPageTriggerProps(page)}>{page.value}</Button>}
               </Show>
             )}
           </For>
-          <button {...api().nextPageTriggerProps}>
+          <Button {...api().nextPageTriggerProps}>
             <FaSolidArrowRightLong class={css.inlineIcon} />
-          </button>
+          </Button>
         </div>
       </div>
     </Show>

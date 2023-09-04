@@ -1,6 +1,6 @@
 import {BiRegularCopy} from "solid-icons/bi";
 import {Component, ParentProps, Show, createSignal} from "solid-js";
-import {css} from ".";
+import {Button, css} from ".";
 import {useLangFunc} from "../utils";
 
 interface Props {
@@ -14,7 +14,7 @@ export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
   return (
     <Show when={props.text}>
       {(text) => (
-        <button title={t("copy_to_clipboard")}>
+        <Button title={t("copy_to_clipboard")}>
           <BiRegularCopy
             class={css.inlineIcon}
             classList={{"text-black": true, "text-opacity-30": !copied()}}
@@ -24,7 +24,7 @@ export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
               setTimeout(() => setCopied(false), 350);
             }}
           />
-        </button>
+        </Button>
       )}
     </Show>
   );
