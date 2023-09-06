@@ -2,6 +2,7 @@ import {HeaderContext} from "@tanstack/solid-table";
 import {useLangFunc} from "components/utils";
 import {Component, JSX, Show, createMemo} from "solid-js";
 import {ColumnName, SortMarker, tableStyle as ts} from ".";
+import {Button} from "../Button";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,14 +21,14 @@ export const Header: Component<Props> = (props) => {
     <div class={ts.headerCell}>
       <span class={ts.title}>
         <Show when={props.ctx.column.getCanSort()} fallback={<ColumnName def={props.ctx.column.columnDef} />}>
-          <button
+          <Button
             class="flex items-center text-start"
             onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}
             title={t("tables.sort_tooltip")}
           >
             <ColumnName def={props.ctx.column.columnDef} />
             <SortMarker column={props.ctx.column} />
-          </button>
+          </Button>
         </Show>
       </span>
       <Show when={props.ctx.column.getCanFilter()}>{props.filter}</Show>

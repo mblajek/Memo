@@ -1,5 +1,5 @@
 import {Row} from "@tanstack/solid-table";
-import {Email, Modal, createTableTranslations, css} from "components/ui";
+import {Button, Email, Modal, createTableTranslations, css} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, DATE_TIME_WITH_WEEKDAY_FORMAT} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -49,9 +49,9 @@ export default (() => {
           actions: {
             columnDef: {
               cell: (c) => (
-                <button onClick={() => setModalDetails(c.row)}>
+                <Button onClick={() => setModalDetails(c.row)}>
                   <BiSolidUserDetail class={css.inlineIcon} /> Detale
-                </button>
+                </Button>
               ),
             },
             metaParams: {canControlVisibility: false},
