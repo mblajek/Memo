@@ -19,10 +19,10 @@ export function createListRequest(inParam?: ListInParam): Api.Request.GetListPar
   return Array.isArray(inParam) ? (inParam.length ? {in: inParam.toSorted().join(",")} : {}) : {in: inParam};
 }
 
-export function byId<T extends Api.Entity>(list: T[]): Partial<Record<Api.Id, T>> {
-  const result: Partial<Record<Api.Id, T>> = {};
-  for (const entity of list) {
-    result[entity.id] = entity;
+export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id | undefined, T> {
+  const result = new Map();
+  for (const entity of list || []) {
+    result.set(entity.id, entity);
   }
   return result;
 }

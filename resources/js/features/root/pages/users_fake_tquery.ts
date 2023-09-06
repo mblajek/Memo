@@ -99,6 +99,10 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
   return matchesNoInv() !== !!filter.inv;
 }
 
+async function sleep(timeMs: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, timeMs));
+}
+
 export function startUsersMock() {
   const usersQuery = createQuery(Admin.usersQueryOptions);
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -107,6 +111,7 @@ export function startUsersMock() {
     {name: "email", type: "string"},
     {name: "facilitiesMember", type: "text"},
     {name: "hasGlobalAdmin", type: "bool"},
+    {name: "hasPassword", type: "bool"},
     {name: "id", type: "string"},
     {name: "name", type: "string"},
     {name: "numFacilities", type: "decimal0"},
@@ -123,10 +128,16 @@ export function startUsersMock() {
     }),
     rest.post("/api/v1/entityURL/tquery", async (req, res, ctx) => {
       const request: DataRequest = await req.json();
+      // Make sure fresh data is served after invalidation.
+      await sleep(10);
+      while (usersQuery.isFetching) {
+        await sleep(100);
+      }
       const rows: Row[] = (usersQuery.data || []).map((entry) => ({
         id: entry.id,
         name: entry.name,
         email: entry.email,
+        hasPassword: entry.hasPassword,
         createdAt: entry.createdAt,
         facilitiesMember: entry.members
           .map(

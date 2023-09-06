@@ -12,6 +12,7 @@ tables:
     columnNames:
       name: "$t(models.user.name)"
       email: "$t(models.user.email)"
+      hasPassword: "$t(models.user.hasPassword)"
       createdAt: "$t(models.user.createdAt)"
       facilitiesMember: "$t(models.user.members)"
       hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"

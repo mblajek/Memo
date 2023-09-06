@@ -18,6 +18,7 @@ export const Checkbox: Component<Props> = (props) => (
     <FieldLabel
       fieldName={props.name}
       text={props.label}
+      class="ml-1"
       wrapIn={(text) => (
         <>
           <input
