@@ -56,30 +56,31 @@ export namespace UserEditForm {
         props.onSuccess?.();
       },
     }));
+    async function onSubmit(values: Output) {
+      await mutation.mutateAsync({
+        id: user()!.id,
+        name: values.name,
+        ...(values.email
+          ? {
+              email: values.email,
+              hasEmailVerified: values.hasEmailVerified,
+              ...(values.hasPassword
+                ? user()?.hasPassword && !values.password
+                  ? // The user had password already and it is not changed.
+                    {}
+                  : // New password or a password change.
+                    {password: values.password, passwordExpireAt: null}
+                : {password: null}),
+            }
+          : {email: null}),
+      });
+    }
 
     return (
       <QueryBarrier queries={[userQuery]}>
         <FelteForm
           id="user_edit"
-          onSubmit={(values) =>
-            mutation.mutateAsync({
-              id: user()!.id,
-              name: values.name,
-              ...(values.email
-                ? {
-                    email: values.email,
-                    hasEmailVerified: values.hasEmailVerified,
-                    ...(values.hasPassword
-                      ? user()?.hasPassword && !values.password
-                        ? // The user had password already and it is not changed.
-                          {}
-                        : // New password or a password change.
-                          {password: values.password, passwordExpireAt: null}
-                      : {password: null}),
-                  }
-                : {email: null}),
-            })
-          }
+          onSubmit={onSubmit}
           schema={getSchema()}
           initialValues={getInitialValues(user()!)}
           class="flex flex-col gap-2"
