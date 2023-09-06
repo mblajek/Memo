@@ -1,4 +1,4 @@
-import {Email, createTableTranslations, css} from "components/ui";
+import {Button, Email, createTableTranslations, css} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -55,9 +55,9 @@ export default (() => {
           actions: {
             columnDef: {
               cell: (c) => (
-                <button onClick={() => UserEditForm.showModalFor({userId: c.row.getValue("id")})}>
+                <Button onClick={() => UserEditForm.showModalFor({userId: c.row.getValue("id")})}>
                   <FiEdit2 class={css.inlineStrokeIcon} /> {t("edit")}
-                </button>
+                </Button>
               ),
             },
           },

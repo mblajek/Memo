@@ -1,5 +1,6 @@
 import {Component, JSX, createSignal} from "solid-js";
 import {useLangFunc} from "../utils";
+import {Button} from "./Button";
 import {Modal} from "./Modal";
 
 interface ConfirmParams {
@@ -32,7 +33,7 @@ export const Confirmation: Component = () => {
         <div class="flex flex-col gap-1 items-stretch">
           {data().body}
           <div class="flex gap-1 justify-center">
-            <button
+            <Button
               class="flex-grow basis-0 border border-cyan-500 p-2 text-cyan-500"
               onClick={() => {
                 data().reject("reject");
@@ -40,8 +41,8 @@ export const Confirmation: Component = () => {
               }}
             >
               {data().cancelText || t("cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
               class="flex-grow basis-0 bg-cyan-500 p-2 text-white"
               onClick={() => {
                 data().confirm();
@@ -49,7 +50,7 @@ export const Confirmation: Component = () => {
               }}
             >
               {data().confirmText || t("confirm")}
-            </button>
+            </Button>
           </div>
         </div>
       )}

@@ -152,9 +152,9 @@ export function startUsersMock() {
       }));
       const {filter} = request;
       const filteredRows = filter ? rows.filter((row) => matches(columns, row, filter)) : rows;
-      const sorters = request.sort.map(({column, dir}) => {
+      const sorters = request.sort.map(({column, desc}) => {
         const valTf = getCompareTransform(colType(columns, column));
-        const dirC = dir === "asc" ? 1 : -1;
+        const dirC = desc ? -1 : 1;
         return (a: Row, b: Row) => {
           const va = valTf(a[column]);
           const vb = valTf(b[column]);

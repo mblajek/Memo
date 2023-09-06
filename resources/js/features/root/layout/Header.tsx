@@ -1,5 +1,6 @@
 import {useLocation, useNavigate, useParams} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
+import {Button} from "components/ui";
 import {DATE_TIME_WITH_WEEKDAY_FORMAT, QueryBarrier, cx, useLangFunc} from "components/utils";
 import {System, User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
@@ -88,20 +89,20 @@ const HeaderRight = () => {
           <span>
             {statusQuery.data?.user.name}
             {/* This is a temporary location for the change password button. */}
-            <button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
+            <Button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
               <TbPassword />
-            </button>
+            </Button>
           </span>
         </div>
       </div>
       <div class="flex justify-center items-center">
-        <button
+        <Button
           class="rounded-lg flex flex-row justify-center items-center hover:bg-white"
           onClick={() => logout.mutate()}
           title={t("log_out")}
         >
           <HiOutlinePower color="red" size="30" />
-        </button>
+        </Button>
       </div>
       <PasswordChangeForm.Modal />
     </div>

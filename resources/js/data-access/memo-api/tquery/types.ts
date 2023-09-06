@@ -150,7 +150,7 @@ export type SortItem = SortColumn;
 export interface SortColumn {
   type: "column";
   column: ColumnName;
-  dir: "asc" | "desc";
+  desc?: boolean;
 }
 
 // Utilities:
