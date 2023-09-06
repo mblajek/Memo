@@ -21,7 +21,11 @@ export const Header: Component<Props> = (props) => {
     <div class={ts.headerCell}>
       <span class={ts.title}>
         <Show when={props.ctx.column.getCanSort()} fallback={<ColumnName def={props.ctx.column.columnDef} />}>
-          <Button onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)} title={t("tables.sort_tooltip")}>
+          <Button
+            class="flex items-center text-start"
+            onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}
+            title={t("tables.sort_tooltip")}
+          >
             <ColumnName def={props.ctx.column.columnDef} />
             <SortMarker column={props.ctx.column} />
           </Button>
