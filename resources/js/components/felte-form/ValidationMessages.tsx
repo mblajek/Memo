@@ -1,8 +1,8 @@
 import {ValidationMessage} from "@felte/reporter-solid";
 import {useFormContext} from "components/felte-form";
 import {cx} from "components/utils";
-import {Component, Index} from "solid-js";
-import {HideableSection} from "../HideableSection";
+import {Component, Index, createMemo, on} from "solid-js";
+import {HideableSection} from "../ui/HideableSection";
 
 interface Props {
   fieldName: string;
@@ -21,7 +21,14 @@ export const ValidationMessages: Component<Props> = (props) => {
     </ValidationMessage>
   );
   const {form} = useFormContext();
-  const hasErrors = () => !!(form.errors()[props.fieldName] || form.warnings()[props.fieldName]);
+  const hasErrors = createMemo(
+    // For some reason, the "on" part is required for reaction to errors and warnings change.
+    // Depending directly on form.errors(props.fieldName) does not work reliably for some fields.
+    on(
+      [() => props.fieldName, form.errors, form.warnings],
+      ([fieldName]) => !!(fieldName && (form.errors(fieldName) || form.warnings(fieldName))),
+    ),
+  );
   return (
     <HideableSection show={hasErrors()}>
       <MessagesForLevel level="error" cssClass="text-red-400" />
