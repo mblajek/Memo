@@ -28,7 +28,7 @@ function getCompareTransform(type: ColumnType): CompareTransform {
     ? (v) => Date.parse(v)
     : type === "decimal0" || type === "decimal2"
     ? (v) => v
-    : type === "text" || type === "string"
+    : type === "text" || type === "string" || type === "uuid"
     ? (v) => str(v)?.toLocaleLowerCase() || ""
     : (type satisfies never);
 }
@@ -112,7 +112,7 @@ export function startUsersMock() {
     {name: "facilitiesMember", type: "text"},
     {name: "hasGlobalAdmin", type: "bool"},
     {name: "hasPassword", type: "bool"},
-    {name: "id", type: "string"},
+    {name: "id", type: "uuid"},
     {name: "name", type: "string"},
     {name: "numFacilities", type: "decimal0"},
   ];

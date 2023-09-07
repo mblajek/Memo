@@ -5,11 +5,12 @@ import {FilterIcon, tableStyle as ts, useTable} from "..";
 import {TQueryColumnMeta} from "../TQueryTable";
 import {BoolFilterControl} from "./BoolFilterControl";
 import {DateFilterControl} from "./DateFilterControl";
+import {DateFilterForDateTimeColumnControl} from "./DateFilterForDateTimeColumnControl";
 import {DateTimeFilterControl} from "./DateTimeFilterControl";
 import {Decimal0FilterControl} from "./Decimal0FilterControl";
 import {Decimal2FilterControl} from "./Decimal2FilterControl";
 import {StringFilterControl} from "./StringFilterControl";
-import {DateFilterForDateTimeColumnControl} from "./DateFilterForDateTimeColumnControl";
+import {UuidFilterControl} from "./UuidFilterControl";
 
 interface CommonFilteringParams {
   enabled?: boolean;
@@ -28,6 +29,8 @@ function getFilterControl(meta: TQueryColumnMeta) {
   switch (meta.type) {
     case undefined:
       return undefined;
+    case "uuid":
+      return UuidFilterControl;
     case "string":
       return StringFilterControl;
     case "text":

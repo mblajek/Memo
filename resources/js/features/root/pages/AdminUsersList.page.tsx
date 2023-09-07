@@ -1,5 +1,5 @@
 import {Row} from "@tanstack/solid-table";
-import {Button, Email, Modal, createTableTranslations, css} from "components/ui";
+import {Button, Email, Modal, cellFunc, createTableTranslations, css} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, DATE_TIME_WITH_WEEKDAY_FORMAT} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -20,15 +20,12 @@ export default (() => {
         intrinsicColumns={["id"]}
         additionalColumns={["actions"]}
         columnOptions={{
-          id: {
-            metaParams: {canControlVisibility: false},
-          },
           name: {
             metaParams: {canControlVisibility: false},
           },
           email: {
             columnDef: {
-              cell: (c) => <Email email={c.getValue() as string} />,
+              cell: cellFunc<string>((v) => <Email email={v} />),
             },
           },
           createdAt: {
@@ -44,6 +41,7 @@ export default (() => {
           hasGlobalAdmin: {
             columnDef: {
               cell: (c) => <>{c.getValue() ? "💪🏽" : ""}</>,
+              size: 150,
             },
           },
           actions: {
@@ -57,7 +55,15 @@ export default (() => {
             metaParams: {canControlVisibility: false},
           },
         }}
-        initialColumnsOrder={["name", "email", "createdAt", "facilitiesMember", "numFacilities", "hasGlobalAdmin"]}
+        initialColumnsOrder={[
+          "id",
+          "name",
+          "email",
+          "createdAt",
+          "facilitiesMember",
+          "numFacilities",
+          "hasGlobalAdmin",
+        ]}
         initialVisibleColumns={["name", "email", "createdAt", "facilitiesMember", "hasGlobalAdmin", "actions"]}
         initialSort={[{id: "name", desc: false}]}
       />

@@ -4,12 +4,15 @@ tables:
     summary__one: "{{count, number}} wynik"
     summary__few: "{{count, number}} wyniki"
     summary__many: "{{count, number}} wyników"
+    columnNames:
+      id: "id"
   users:
     summary__zero: "Brak użytkowników"
     summary__one: "{{count, number}} użytkownik"
     summary__few: "{{count, number}} użytkowników"
     summary__many: "{{count, number}} użytkowników"
     columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
       name: "$t(models.user.name)"
       email: "$t(models.user.email)"
       hasPassword: "$t(models.user.hasPassword)"
