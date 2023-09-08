@@ -34,7 +34,7 @@ export const Confirmation: Component = () => {
           {data().body}
           <div class="flex gap-1 justify-center items-stretch">
             <Button
-              class="flex-grow basis-0 border rounded border-cyan-500 p-2 text-cyan-500"
+              class="flex-grow basis-0 secondary"
               onClick={() => {
                 data().reject("reject");
                 setData(undefined);
@@ -43,7 +43,7 @@ export const Confirmation: Component = () => {
               {data().cancelText || t("cancel")}
             </Button>
             <Button
-              class="flex-grow basis-0 rounded bg-cyan-500 p-2 text-white"
+              class="flex-grow basis-0 primary"
               onClick={() => {
                 data().confirm();
                 setData(undefined);

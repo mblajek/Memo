@@ -2,7 +2,7 @@ import {createMutation, createQuery} from "@tanstack/solid-query";
 import {SortingState, createColumnHelper, createSolidTable} from "@tanstack/solid-table";
 import {AxiosResponse} from "axios";
 import {useFormContext} from "components/felte-form";
-import {Button, Capitalize, Checkbox, SimpleSelect, css, useTableCells} from "components/ui";
+import {Button, Capitalize, Checkbox, SimpleSelect, useTableCells} from "components/ui";
 import {Table, createTableTranslations, getBaseTableOptions} from "components/ui/Table";
 import {useLangFunc} from "components/utils";
 import {System} from "data-access/memo-api";
@@ -152,7 +152,7 @@ export namespace UserMembersEdit {
                     form.setFields(membersPath, form.data(membersPath).toSpliced(index, 1));
                   }}
                 >
-                  <TbUserMinus class={css.inlineStrokeIcon} /> {t("delete")}
+                  <TbUserMinus class="inlineIcon strokeIcon" /> {t("delete")}
                 </Button>
               </Show>
             </div>
