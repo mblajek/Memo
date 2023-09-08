@@ -2,10 +2,10 @@ import {useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
 import {FacilityResource} from "../resources";
-import {AdminUserResource} from "../resources/adminUser.resource";
+import {AdminUserResource, AdminUserResourceForCreate} from "../resources/adminUser.resource";
+import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
-import {MemberResource} from "../resources/member.resource";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/Admin production docs}
@@ -13,11 +13,11 @@ import {MemberResource} from "../resources/member.resource";
  */
 export namespace Admin {
   export const createFacility = (facility: Api.Request.Create<FacilityResource>) =>
-    V1.post("/admin/facility", facility);
+    V1.post<Api.Response.Post>("/admin/facility", facility);
   export const updateFacility = (facilityId: Api.Id, facility: Api.Request.Patch<FacilityResource>) =>
     V1.patch(`/admin/facility/${facilityId}`, facility);
 
-  export const createUser = (user: Api.Request.Create<AdminUserResource>) => V1.post("/admin/user", user);
+  export const createUser = (user: AdminUserResourceForCreate) => V1.post<Api.Response.Post>("/admin/user", user);
   export const updateUser = (user: Api.Request.Patch<AdminUserResource>) => V1.patch(`/admin/user/${user.id}`, user);
   export const deleteUser = (userId: Api.Id) => V1.delete(`/admin/user/${userId}`);
 

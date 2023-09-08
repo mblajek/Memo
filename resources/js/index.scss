@@ -20,6 +20,9 @@
     &.secondary {
       @apply p-2 rounded border border-cyan-500 text-cyan-500 disabled:bg-opacity-50;
     }
+    &.secondarySmall {
+      @apply px-1 rounded border border-cyan-500 text-cyan-500 disabled:bg-opacity-50;
+    }
   }
 
   // Icons

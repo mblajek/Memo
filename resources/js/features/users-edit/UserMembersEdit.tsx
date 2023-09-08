@@ -9,6 +9,7 @@ import {System} from "data-access/memo-api";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {MemberResource} from "data-access/memo-api/resources/member.resource";
+import {Api} from "data-access/memo-api/types";
 import {byId} from "data-access/memo-api/utils";
 import {TbUserMinus} from "solid-icons/tb";
 import {Show, createMemo, createSignal} from "solid-js";
@@ -26,8 +27,10 @@ export namespace UserMembersEdit {
       }),
     );
 
-  export const getInitialValues = (user: AdminUserResource): Input =>
+  export const getInitialValuesForEdit = (user: AdminUserResource): Input =>
     user.members.map(({facilityId, hasFacilityAdmin}) => ({facilityId, hasFacilityAdmin}));
+
+  export const getInitialValuesForCreate = (): Input => [];
 
   export type Input = z.input<ReturnType<typeof getSchema>>;
   export type Output = z.output<ReturnType<typeof getSchema>>;
@@ -176,6 +179,8 @@ export namespace UserMembersEdit {
      * to the new state (specified by the form values).
      */
     getUpdatePromises(oldUser: AdminUserResource, values: Output): Promise<AxiosResponse>[];
+    /** Returns promises responsible for creating the specified members. */
+    getCreatePromises(userId: Api.Id, values: Output): Promise<AxiosResponse>[];
   }
 
   export function useMembersUpdater(): MembersUpdater {
@@ -212,6 +217,15 @@ export namespace UserMembersEdit {
             promises.push(deleteMemberMutation.mutateAsync(oldMember.id));
         return promises;
       },
+      getCreatePromises: (userId, values) =>
+        values.map((member) =>
+          createMemberMutation.mutateAsync({
+            userId: userId,
+            ...member,
+            clientId: null,
+            staffMemberId: null,
+          }),
+        ),
     };
   }
 }
