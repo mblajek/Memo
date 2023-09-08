@@ -212,7 +212,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   });
 
   const table = createSolidTable({
-    ...getBaseTableOptions<object>({columnVisibility, sorting, globalFilter, pagination}),
+    ...getBaseTableOptions<object>({features: {columnVisibility, sorting, globalFilter, pagination}}),
     get data() {
       return data();
     },
@@ -236,6 +236,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
       table={table}
       mode={props.mode}
       autoColumnSize={false}
+      rowsIteration="Index"
       aboveTable={() => (
         <div class={cx(ABOVE_AND_BELOW_TABLE_DEFAULT_CSS, "gap-1")}>
           <TableSearch />

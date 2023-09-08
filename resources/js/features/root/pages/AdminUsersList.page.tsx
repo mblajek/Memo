@@ -31,11 +31,6 @@ export default (() => {
               cell: (c) => <Email email={c.getValue() as string} />,
             },
           },
-          hasPassword: {
-            columnDef: {
-              size: 100,
-            },
-          },
           createdAt: {
             columnDef: {
               sortDescFirst: true,

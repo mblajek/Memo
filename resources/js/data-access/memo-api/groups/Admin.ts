@@ -5,6 +5,7 @@ import {FacilityResource} from "../resources";
 import {AdminUserResource} from "../resources/adminUser.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
+import {MemberResource} from "../resources/member.resource";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/Admin production docs}
@@ -18,12 +19,18 @@ export namespace Admin {
 
   export const createUser = (user: Api.Request.Create<AdminUserResource>) => V1.post("/admin/user", user);
   export const updateUser = (user: Api.Request.Patch<AdminUserResource>) => V1.patch(`/admin/user/${user.id}`, user);
+  export const deleteUser = (userId: Api.Id) => V1.delete(`/admin/user/${userId}`);
 
   const getUsersListBase = (request?: Api.Request.GetListParams) =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {params: request});
   export const getUsersList = (request?: Api.Request.GetListParams) =>
     getUsersListBase(request).then(parseGetListResponse);
   export const getUser = createGetFromList(getUsersListBase);
+
+  export const createMember = (member: Api.Request.Create<MemberResource>) => V1.post("/admin/member", member);
+  export const updateMember = (member: Api.Request.Patch<MemberResource>) =>
+    V1.patch(`/admin/member/${member.id}`, member);
+  export const deleteMember = (memberId: Api.Id) => V1.delete(`/admin/member/${memberId}`);
 
   export const keys = {
     all: () => ["admin"] as const,
