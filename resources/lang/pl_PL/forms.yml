@@ -6,9 +6,21 @@ login:
   submit: "Zaloguj"
 password_change:
   formName: "Zmiana hasła"
-  success: "Hasło zostało zmienione"
   fieldNames:
     current: "aktualne hasło"
     password: "nowe hasło"
     repeat: "powtórz nowe hasło"
   submit: "Zmień hasło"
+  success: "Hasło zostało zmienione"
+user_edit:
+  formName: "Zmiana danych użytkownika"
+  fieldNames:
+    name: "$t(models.user.name)"
+    email: "$t(models.user.email)"
+    hasEmailVerified: "$t(models.user.hasEmailVerified)"
+    hasPassword: "$t(models.user.hasPassword)"
+    password: "$t(models.user.password)"
+    # Alternative to password, if the password is changed:
+    newPassword: "Nowe hasło"
+  password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
+  submit: "$t(save)"

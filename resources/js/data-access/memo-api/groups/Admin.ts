@@ -17,8 +17,7 @@ export namespace Admin {
     V1.patch(`/admin/facility/${facilityId}`, facility);
 
   export const createUser = (user: Api.Request.Create<AdminUserResource>) => V1.post("/admin/user", user);
-  export const updateUser = (userId: Api.Id, user: Api.Request.Patch<AdminUserResource>) =>
-    V1.patch(`/admin/user/${userId}`, user);
+  export const updateUser = (user: Api.Request.Patch<AdminUserResource>) => V1.patch(`/admin/user/${user.id}`, user);
 
   const getUsersListBase = (request?: Api.Request.GetListParams) =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {params: request});

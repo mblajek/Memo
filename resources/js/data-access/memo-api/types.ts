@@ -12,7 +12,7 @@ export namespace Api {
   export namespace Request {
     export type Create<T extends Entity> = Omit<T, "id">;
     export type GetListParams = {in?: Ids};
-    export type Patch<T extends Entity> = Partial<Omit<T, "id">>;
+    export type Patch<T extends Entity> = Entity & Partial<T>;
   }
 
   export namespace Response {
