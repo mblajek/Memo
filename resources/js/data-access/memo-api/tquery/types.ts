@@ -27,7 +27,7 @@ interface ColumnSchemaBase {
 }
 
 export interface BasicColumnSchema extends ColumnSchemaBase {
-  type: "string" | "text" | "decimal0" | "decimal2" | "bool" | "date" | "datetime";
+  type: "uuid" | "string" | "text" | "decimal0" | "decimal2" | "bool" | "date" | "datetime";
 }
 
 export interface CustomFilter {
@@ -64,6 +64,7 @@ export interface BoolOpFilter extends FilterBase {
 
 // TODO: Filter by enum-related columns.
 export type ColumnFilter =
+  | UuidColumnFilter
   | StringColumnFilter
   | DecimalColumnFilter
   | BoolColumnFilter
@@ -86,6 +87,11 @@ export type StringFilterOp =
   | "/v/";
 
 export type ComparableFilterOp = "=" | "!=" | ">" | "<" | ">=" | "<=";
+
+export interface UuidColumnFilter extends ColumnFilterBase {
+  op: "=";
+  val: string;
+}
 
 export interface StringColumnFilter extends ColumnFilterBase {
   op: StringFilterOp;
@@ -158,6 +164,7 @@ export interface SortColumn {
 export type ColumnType = ColumnSchema["type"];
 
 export interface FilterTypeByColumnType {
+  uuid: undefined;
   string: StringColumnFilter;
   text: StringColumnFilter;
   decimal0: DecimalColumnFilter;
