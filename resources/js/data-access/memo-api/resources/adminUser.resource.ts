@@ -27,7 +27,7 @@ export type AdminUserResource = {
    * @example '67da972b-34d7-4f89-b8ae-322d96b4954d'
    */
   lastLoginFacilityId: string;
-  passwordExpireAt: string;
+  passwordExpireAt: string | null;
   hasPassword: boolean;
   createdAt: string;
   updatedAt: string;
