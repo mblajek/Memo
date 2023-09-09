@@ -1,4 +1,3 @@
-
 import {Navigate} from "@solidjs/router";
 import {createQuery, useQueryClient} from "@tanstack/solid-query";
 import {FacilityResource, PermissionsResource, System, User} from "data-access/memo-api";
@@ -8,8 +7,10 @@ import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
 
 export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;
 
-export interface AccessBarrierProps
-  extends Omit<QueryBarrierProps, "queries" | "children"> {
+export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "Pending"> {
+  /**
+   * Component rendered when access is not granted
+   */
   Fallback?: Component;
   /**
    * Map of roles that user must be granted in order to access this section
@@ -30,11 +31,15 @@ export interface AccessBarrierProps
  * Utility component that checks authentication
  * state and user's permissions
  *
- * If not authenticated, redirects to login page
+ * If not authenticated, redirects to `/login`
  *
- * If not authorized, redirects to `props.redirectHref`
+ * If not authorized, renders Fallback (by default some simple reference)
  *
  * Authorization is calculated as `AND(...props.roles)`
+ *
+ * Default Error -> redirect to `/login` page
+ *
+ * Default Pending -> `<MemoLoader />`
  */
 export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
   const merged = mergeProps(
@@ -48,27 +53,21 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
         </div>
       ),
     },
-    props
+    props,
   );
-  const [queryBarrierProps, localProps] = splitProps(merged, [
-    "Error",
-    "Pending",
-  ]);
+  const [queryBarrierProps, localProps] = splitProps(merged, ["Error", "Pending"]);
 
   const queryClient = useQueryClient();
 
   const facilityId = () =>
     queryClient
       .getQueryData<FacilityResource[]>(System.facilitiesQueryOptions().queryKey)
-      ?.find(({ url }) => url === localProps.facilityUrl)?.id;
+      ?.find(({url}) => url === localProps.facilityUrl)?.id;
 
   const statusQuery = createQuery(() => User.statusQueryOptions(facilityId()));
 
   const accessGranted = () => {
-    if (statusQuery.isSuccess)
-      return localProps.roles?.every(
-        (role) => statusQuery.data?.permissions[role]
-      );
+    if (statusQuery.isSuccess) return localProps.roles?.every((role) => statusQuery.data?.permissions[role]);
     return false;
   };
 

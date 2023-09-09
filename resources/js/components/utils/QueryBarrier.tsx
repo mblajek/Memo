@@ -1,4 +1,4 @@
-import type { Component, ParentProps } from "solid-js";
+import type {Component, ParentProps} from "solid-js";
 import {CreateQueryResult} from "@tanstack/solid-query";
 import {Match, Switch, mergeProps} from "solid-js";
 import {Spinner} from "../ui";
@@ -39,15 +39,17 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
 
   return (
     <Switch>
-      <Match when={isError()}>{<merged.Error />}</Match>
-      <Match when={isPending()}>{<merged.Pending />}</Match>
+      <Match when={isError()}>
+        <merged.Error />
+      </Match>
+      <Match when={isPending()}>
+        <merged.Pending />
+      </Match>
       <Match when={isSuccess()}>{props.children}</Match>
     </Switch>
   );
 }
 
-const LocalSpinner = () => (
-  <Spinner />
-);
+const LocalSpinner = () => <Spinner />;
 
 const LocalError = () => <p>error</p>;

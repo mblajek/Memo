@@ -13,44 +13,40 @@ import {
   HiOutlineVideoCamera,
 } from "solid-icons/hi";
 import {Component, Show, createMemo} from "solid-js";
-import {facilityId} from "state/facilityId.state";
-import {NavigationSection, NavigationSectionProps} from "../components/navbar";
+import {activeFacilityId} from "state/activeFacilityId.state";
+import {NavigationItemProps, NavigationSection} from "../components/navbar";
 import s from "./style.module.scss";
+import {FullLogo} from "components/ui";
 
 export const Navbar: Component = () => {
   const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
 
-  const facilityUrl = () => facilitiesQuery.data?.find((facility) => facility.id === facilityId())?.url;
+  const facilityUrl = () => facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId())?.url;
 
   const sectionItems = createMemo(() => getSectionItems(facilityUrl()));
 
   return (
     <aside class={cx(s.sidebar)}>
-      <div class={cx("flex flex-row justify-between py-4 px-8 bg-inherit")}>
-        <img src="/img/memo_logo.svg" class="h-14" />
-        <img src="/img/cpd_children_logo.svg" class="h-12" />
+      <div class={cx("py-4 px-8 bg-inherit")}>
+        <FullLogo />
       </div>
       <nav class={cx("flex-1 px-8 py-4 overflow-y-auto", s.navScroll)}>
         <Show when={facilityUrl()}>
-          <NavigationSection
-            facilityUrl={facilityUrl()}
-            roles={["verified"]}
-            items={sectionItems().looseFacilityItems}
-          />
+          <NavigationSection facilityUrl={facilityUrl()} roles={["verified"]} items={sectionItems().verified} />
         </Show>
-        <NavigationSection items={sectionItems().looseItems} />
-        <NavigationSection roles={["globalAdmin"]} items={sectionItems().system} title="System" />
+        <NavigationSection items={sectionItems().unauthorized} />
+        <NavigationSection roles={["globalAdmin"]} items={sectionItems().globalAdmin} title="System" />
         <Show when={facilityUrl()}>
           <NavigationSection
             facilityUrl={facilityUrl()}
             roles={["facilityAdmin"]}
-            items={sectionItems().facility}
+            items={sectionItems().facilityAdmin}
             title="Placówka"
           />
           <NavigationSection
             facilityUrl={facilityUrl()}
             roles={["facilityStaff"]}
-            items={sectionItems().work}
+            items={sectionItems().facilityStaff}
             title="Moja praca"
           />
         </Show>
@@ -62,13 +58,13 @@ export const Navbar: Component = () => {
 const getSectionItems = (
   facilityUrl?: string,
 ): {
-  system: NavigationSectionProps["items"];
-  facility: NavigationSectionProps["items"];
-  work: NavigationSectionProps["items"];
-  looseFacilityItems: NavigationSectionProps["items"];
-  looseItems: NavigationSectionProps["items"];
+  globalAdmin: NavigationItemProps[];
+  facilityAdmin: NavigationItemProps[];
+  facilityStaff: NavigationItemProps[];
+  verified: NavigationItemProps[];
+  unauthorized: NavigationItemProps[];
 } => ({
-  system: [
+  globalAdmin: [
     {
       icon: HiOutlineBuildingOffice,
       href: "/admin/facilities",
@@ -80,7 +76,7 @@ const getSectionItems = (
       children: "Użytkownicy",
     },
   ],
-  facility: !facilityUrl
+  facilityAdmin: !facilityUrl
     ? []
     : [
         {
@@ -104,7 +100,7 @@ const getSectionItems = (
           children: "Raporty",
         },
       ],
-  work: !facilityUrl
+  facilityStaff: !facilityUrl
     ? []
     : [
         {
@@ -123,8 +119,8 @@ const getSectionItems = (
           children: "Moi klienci",
         },
       ],
-  looseFacilityItems: !facilityId
+  verified: !facilityUrl
     ? []
     : [{icon: HiOutlineVideoCamera, href: `/${facilityUrl}/meetings`, children: "Moje spotkania"}],
-  looseItems: [{icon: HiOutlineQuestionMarkCircle, href: "/help", children: "Pomoc"}],
+  unauthorized: [{icon: HiOutlineQuestionMarkCircle, href: "/help", children: "Pomoc"}],
 });

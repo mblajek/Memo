@@ -2,8 +2,7 @@ import {AccessBarrier, AccessBarrierProps} from "components/utils";
 import {Component, For, Show, splitProps} from "solid-js";
 import {NavigationItem, NavigationItemProps} from "./NavigationItem";
 
-export interface NavigationSectionProps
-  extends Omit<AccessBarrierProps, "children" | "queries" | "Fallback" | "Error" | "Pending"> {
+export interface NavigationSectionProps extends Pick<AccessBarrierProps, "facilityUrl" | "roles"> {
   title?: string;
   items: NavigationItemProps[];
 }

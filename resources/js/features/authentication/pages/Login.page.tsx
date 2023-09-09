@@ -4,7 +4,7 @@ import {MemoLoader} from "components/ui";
 import {Page} from "components/utils";
 import {User} from "data-access/memo-api";
 import {Component, Match, Switch, createEffect, onMount} from "solid-js";
-import {setFacilityId} from "state/facilityId.state";
+import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {LoginForm} from "../forms/login";
 
 /**
@@ -22,7 +22,7 @@ const LoginPage: Component = () => {
 
   createEffect(() => {
     if (statusQuery.isSuccess) {
-      if (statusQuery.data.user.lastLoginFacilityId) setFacilityId(statusQuery.data.user.lastLoginFacilityId);
+      if (statusQuery.data.user.lastLoginFacilityId) setActiveFacilityId(statusQuery.data.user.lastLoginFacilityId);
     }
   });
 
@@ -31,7 +31,7 @@ const LoginPage: Component = () => {
   });
 
   onMount(() => {
-    setFacilityId(undefined);
+    setActiveFacilityId(undefined);
   });
 
   return (
