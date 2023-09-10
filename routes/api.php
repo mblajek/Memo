@@ -9,16 +9,18 @@ use App\Http\Controllers\SystemController;
 use App\Http\Controllers\Tquery\AdminFacilityTqueryController;
 use App\Http\Controllers\Tquery\AdminUserTqueryController;
 use App\Http\Controllers\UserController;
-use App\Http\Middleware\TrimStrings;
 use App\Utils\Date\DateHelper;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 Route::prefix('/v1')->group(function () {
-    function trimAndNullMiddlewares(): array
-    {
-        return [TrimStrings::class, ConvertEmptyStringsToNull::class];
+    if (!function_exists('trimAndNullMiddlewares')) {
+        function trimAndNullMiddlewares(): array
+        {
+            return [TrimStrings::class, ConvertEmptyStringsToNull::class];
+        }
     }
 
     Route::prefix('/system')->group(function () {
