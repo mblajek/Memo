@@ -23,7 +23,7 @@ abstract readonly class TqService
     {
         return [
             'columns' => array_map(fn(TqColumnConfig $column) => [
-                'column' => $column->columnAlias,
+                'name' => $column->columnAlias,
                 'type' => $column->type->baseDataType()->name,
             ], array_values($this->config->columns)),
             'customFilters' => new stdClass(),
