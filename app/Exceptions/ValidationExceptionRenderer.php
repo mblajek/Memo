@@ -45,6 +45,7 @@ readonly class ValidationExceptionRenderer
 
     private function treeSearchTranslation(string $rule): ?string
     {
+        // todo: move to translations
         $ruleArray = explode('.', $rule);
         $options = 2 ** (count($ruleArray) - 1);
         for ($option = 0; $option < $options; $option++) {
