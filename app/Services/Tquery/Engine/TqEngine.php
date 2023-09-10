@@ -71,11 +71,12 @@ readonly class TqEngine
         foreach ($this->request->sort as $requestSort) {
             $this->columnConfigs[$requestSort->column]->applySort($this->builder, $requestSort, $this->config);
         }
+        $this->builder->orderBy('id');
     }
 
     private function applyPaging(): void
     {
-        $this->builder->forPage($this->request->pageIndex, $this->request->pageSize);
+        $this->builder->forPage($this->request->number, $this->request->size);
     }
 
     private function getData(): array

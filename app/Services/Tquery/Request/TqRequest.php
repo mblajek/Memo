@@ -8,29 +8,28 @@ use Illuminate\Http\Request;
 
 readonly class TqRequest
 {
-    public static function fromRequest(TqConfig $config, Request $request): self
+    public static function fromHttpRequest(TqConfig $config, Request $request): self
     {
         $columnsNames = implode(',', array_keys($config->columns));
         $data = $request->validate([
             'columns' => 'required|array|min:1',
-            'columns.*' => 'array|size:2',
             'columns.*.type' => 'required|string|in:column',
             'columns.*.column' => 'required|string|in:' . $columnsNames,
-            'filter' => 'present|array',
+            'filter' => 'sometimes|array',
             'sort' => 'present|array',
             'sort.*.type' => 'required|string|in:column',
             'sort.*.column' => 'required|string|in:' . $columnsNames,
             'sort.*.desc' => ['sometimes', 'bool', new DataTypeRule('?bool')],
             'paging' => 'required|array',
-            'paging.page_index' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
-            'paging.page_size' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
+            'paging.number' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
+            'paging.size' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
         ]);
 
         return new self(
             columns: self::parseColumns($data['columns']),
             sort: self::parseSort($data['sort']),
-            pageIndex: $data['paging']['page_index'],
-            pageSize: $data['paging']['page_size'],
+            number: $data['paging']['number'],
+            size: $data['paging']['size'],
         );
     }
 
@@ -65,8 +64,8 @@ readonly class TqRequest
     private function __construct(
         public array $columns,
         public array $sort,
-        public int $pageIndex,
-        public int $pageSize,
+        public int $number,
+        public int $size,
     ) {
     }
 }

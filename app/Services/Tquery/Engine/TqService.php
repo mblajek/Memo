@@ -32,7 +32,7 @@ abstract readonly class TqService
 
     public function query(Request $httpRequest): array
     {
-        $request = TqRequest::fromRequest($this->config, $httpRequest);
+        $request = TqRequest::fromHttpRequest($this->config, $httpRequest);
         $columnConfigs = $this->config->getColumnsConfigs($request);
         $engine = new TqEngine($this->config, $request, $columnConfigs);
         return $engine->run();
