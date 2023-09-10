@@ -6,22 +6,12 @@ use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\SystemController;
+use App\Http\Controllers\Tquery\AdminFacilityTqueryController;
 use App\Http\Controllers\Tquery\AdminUserTqueryController;
 use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
-
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
 
 Route::prefix('/v1')->group(function () {
     Route::prefix('/system')->group(function () {
@@ -49,10 +39,13 @@ Route::prefix('/v1')->group(function () {
             Route::post('/', [AdminUserController::class, 'post']);
             Route::patch('/{user}', [AdminUserController::class, 'patch']);
             Route::get('/tquery', [AdminUserTqueryController::class, 'get']);
+            Route::post('/tquery', [AdminUserTqueryController::class, 'post']);
         });
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);
             Route::patch('/{facility}', [AdminFacilityController::class, 'patch']);
+            Route::get('/tquery', [AdminFacilityTqueryController::class, 'get']);
+            Route::post('/tquery', [AdminFacilityTqueryController::class, 'post']);
         });
         Route::prefix('/member')->group(function () {
             Route::post('/', [AdminMemberController::class, 'post']);

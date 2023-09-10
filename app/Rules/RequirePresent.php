@@ -9,7 +9,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Validation\Validator;
 
-readonly class RequirePresent implements ValidationRule, DataAwareRule, ValidatorAwareRule
+final class RequirePresent implements ValidationRule, DataAwareRule, ValidatorAwareRule
 {
     private array $data;
     private Validator $validator;
@@ -19,9 +19,6 @@ readonly class RequirePresent implements ValidationRule, DataAwareRule, Validato
     ) {
     }
 
-    /**
-     * Run the validation rule.
-     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if ($value !== null && !array_key_exists($this->referredField, $this->data)) {

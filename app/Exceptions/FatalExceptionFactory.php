@@ -13,4 +13,9 @@ class FatalExceptionFactory
     {
         return new ApiFatalException('exception.configuration.unexpected');
     }
+
+    public static function tquery(): ApiFatalException
+    {
+        return new ApiFatalException('exception.configuration.tquery');
+    }
 }

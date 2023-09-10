@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Tquery;
+namespace App\Services\Tquery\OpenApi;
 
 use App\Http\Permissions\PermissionDescribe;
 use OpenApi\Attributes as OA;
@@ -29,7 +29,7 @@ class OpenApiGet extends OA\Get
                             new OA\Property(property: 'name', type: 'string', example: 'id'),
                             new OA\Property(
                                 property: 'type', type: 'string',
-                                enum: ['string', 'decimal0', 'decimal2', 'bool', 'date', 'datetime', 'facility'],
+                                enum: ['string', 'decimal0', 'bool', 'date', 'datetime'],
                                 example: 'uuid',
                             ),
                         ])

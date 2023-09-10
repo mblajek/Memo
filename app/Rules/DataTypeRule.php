@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Validation\Validator;
 
-readonly class DataTypeRule implements ValidationRule, ValidatorAwareRule
+final class DataTypeRule implements ValidationRule, ValidatorAwareRule
 {
     private Validator $validator;
 
@@ -17,14 +17,11 @@ readonly class DataTypeRule implements ValidationRule, ValidatorAwareRule
     ) {
     }
 
-    /**
-     * Run the validation rule.
-     */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         preg_match('/^(\\??)(\\w*)$/', $this->type, $matches);
         [1 => $nullable, 2 => $type] = $matches;
-        if (($nullable && $value === null) || gettype($attribute) === $type) {
+        if (($nullable && $value === null) || get_debug_type($value) === $type) {
             return;
         }
         $this->validator->addFailure($attribute, 'custom.data_type', ['type' => $this->type]);
