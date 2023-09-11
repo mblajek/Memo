@@ -55,6 +55,7 @@ export namespace UserEditForm {
         invalidate.users();
         props.onSuccess?.();
       },
+      meta: {isFormSubmit: true},
     }));
     async function onSubmit(values: Output) {
       await mutation.mutateAsync({

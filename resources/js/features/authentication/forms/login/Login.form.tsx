@@ -33,6 +33,7 @@ export namespace LoginForm {
         invalidateUser.status();
         props.onSuccess?.();
       },
+      meta: {isFormSubmit: true},
     }));
 
     const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {

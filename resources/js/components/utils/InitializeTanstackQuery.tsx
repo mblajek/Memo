@@ -1,12 +1,30 @@
-import {QueryCache, QueryClient, QueryClientProvider, createQuery} from "@tanstack/solid-query";
+import {
+  MutationCache,
+  type MutationMeta,
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+  type QueryMeta,
+  createQuery,
+} from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
 import {MemoLoader} from "components/ui";
 import {System} from "data-access/memo-api";
 import {Api} from "data-access/memo-api/types";
-import {ParentComponent, createMemo} from "solid-js";
+import {For, ParentComponent, createMemo} from "solid-js";
 import toast from "solid-toast";
 import {useLangFunc} from ".";
 import {QueryBarrier} from "./QueryBarrier";
+
+declare module "@tanstack/query-core" {
+  interface QueryMeta {
+    quietError?: boolean;
+  }
+  interface MutationMeta {
+    quietError?: boolean;
+    isFormSubmit?: boolean;
+  }
+}
 
 /**
  * Tanstack/solid-query initialization component
@@ -15,6 +33,31 @@ import {QueryBarrier} from "./QueryBarrier";
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
+  function toastErrors(error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
+    if (!isAxiosError<Api.ErrorResponse>(error)) return;
+    if ((error?.status && error.status >= 500) || !meta?.quietError) {
+      let errors = error.response?.data.errors;
+      if (meta?.isFormSubmit) {
+        // Validation errors will be handled by the form.
+        errors = errors?.filter((e) => !Api.isValidationError(e));
+      }
+      if (errors?.length)
+        toast.error(() => (
+          <ul class={errors!.length > 1 ? "list-disc pl-6" : undefined}>
+            <For each={errors}>
+              {(e) => (
+                <li>
+                  {t(e.code, {
+                    ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
+                    ...e.data,
+                  })}
+                </li>
+              )}
+            </For>
+          </ul>
+        ));
+    }
+  }
   const queryClient = createMemo(
     () =>
       new QueryClient({
@@ -29,18 +72,12 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         },
         queryCache: new QueryCache({
           onError(error, query) {
-            if (isAxiosError<Api.ErrorResponse>(error)) {
-              if ((error?.status && error.status >= 500) || !query.meta?.quietError) {
-                error.response?.data.errors.forEach((memoError) => {
-                  toast.error(
-                    t(memoError.code, {
-                      ...(Api.isValidationError(memoError) ? {attribute: memoError.field} : undefined),
-                      ...memoError.data,
-                    }),
-                  );
-                });
-              }
-            }
+            toastErrors(error, query.meta);
+          },
+        }),
+        mutationCache: new MutationCache({
+          onError(error, _variables, _context, mutation) {
+            toastErrors(error, mutation.meta);
           },
         }),
       }),
