@@ -16,13 +16,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
 Route::prefix('/v1')->group(function () {
-    if (!function_exists('trimAndNullMiddlewares')) {
-        function trimAndNullMiddlewares(): array
-        {
-            return [TrimStrings::class, ConvertEmptyStringsToNull::class];
-        }
-    }
-
     Route::prefix('/system')->group(function () {
         Route::prefix('/translation')->group(function () {
             Route::get('/{locale}/list', [SystemController::class, 'translationList']);
@@ -47,18 +40,16 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
             Route::post('/', [AdminUserController::class, 'post']);
             Route::patch('/{user}', [AdminUserController::class, 'patch']);
-            Route::prefix('/tquery')->group(function () {
-                Route::get('', [AdminUserTqueryController::class, 'get']);
-                Route::post('', [AdminUserTqueryController::class, 'post']);
-            })->withoutMiddleware(trimAndNullMiddlewares());
+            Route::get('/tquery', [AdminUserTqueryController::class, 'get']);
+            Route::post('/tquery', [AdminUserTqueryController::class, 'post'])
+                ->withoutMiddleware([TrimStrings::class, ConvertEmptyStringsToNull::class]);
         });
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);
             Route::patch('/{facility}', [AdminFacilityController::class, 'patch']);
-            Route::prefix('/tquery')->group(function () {
-                Route::get('', [AdminFacilityTqueryController::class, 'get']);
-                Route::post('', [AdminFacilityTqueryController::class, 'post']);
-            })->withoutMiddleware(trimAndNullMiddlewares());
+            Route::get('/tquery', [AdminFacilityTqueryController::class, 'get']);
+            Route::post('/tquery', [AdminFacilityTqueryController::class, 'post'])
+                ->withoutMiddleware([TrimStrings::class, ConvertEmptyStringsToNull::class]);
         });
         Route::prefix('/member')->group(function () {
             Route::post('/', [AdminMemberController::class, 'post']);
