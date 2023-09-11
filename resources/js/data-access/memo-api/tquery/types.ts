@@ -131,8 +131,9 @@ export interface GlobalFilter extends FilterBase {
 }
 
 export interface Paging {
-  pageIndex: number;
-  pageSize: number;
+  /** The one-based page number. */
+  number: number;
+  size: number;
 }
 
 export interface DataResponse {

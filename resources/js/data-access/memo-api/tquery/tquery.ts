@@ -33,7 +33,7 @@ export const DEFAULT_REQUEST_CREATOR: RequestCreator<SetStoreFunction<DataReques
   const [request, setRequest] = createStore<DataRequest>({
     columns: [],
     sort: [],
-    paging: {pageIndex: 0, pageSize: INITIAL_PAGE_SIZE},
+    paging: {number: 1, size: INITIAL_PAGE_SIZE},
   });
   const [requestReady, setRequestReady] = createSignal(false);
   createComputed(() => setRequestReady(!!schema()));

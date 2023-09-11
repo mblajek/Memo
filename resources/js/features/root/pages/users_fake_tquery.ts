@@ -163,8 +163,8 @@ export function startUsersMock() {
       });
       const sortedRows = [...filteredRows].sort((a, b) => sorters.reduce((acc, sorter) => acc || sorter(a, b), 0));
       const pagedRows = sortedRows.slice(
-        request.paging.pageIndex * request.paging.pageSize,
-        (request.paging.pageIndex + 1) * request.paging.pageSize,
+        (request.paging.number - 1) * request.paging.size,
+        request.paging.number * request.paging.size,
       );
       const finalRows = pagedRows.map((r: Row) => {
         const res: Row = {};
