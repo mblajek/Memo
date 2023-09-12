@@ -3,7 +3,7 @@ import {IconTypes} from "solid-icons";
 import {FaSolidArrowDownLong, FaSolidArrowUpLong, FaSolidArrowsUpDown} from "solid-icons/fa";
 import {Component, Show} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {css, useTable} from "..";
+import {useTable} from "..";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,8 +29,8 @@ export const SortMarker: Component<Props> = (props) => {
     <Show when={props.column.getCanSort()}>
       <Dynamic
         component={ICONS.get(props.column.getIsSorted())}
-        class={css.inlineIcon}
-        classList={{"text-black": true, "text-opacity-30": !props.column.getIsSorted()}}
+        class="inlineIcon"
+        classList={{dimmed: !props.column.getIsSorted()}}
         style={{scale: isSecondarySort() ? 0.6 : 1}}
       />
     </Show>

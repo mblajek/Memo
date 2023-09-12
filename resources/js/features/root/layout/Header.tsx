@@ -65,10 +65,10 @@ const HeaderRight = () => {
         <div>
           <Switch>
             <Match when={statusQuery.data?.permissions.verified}>
-              <HiOutlineCheckCircle color="green" size="30" />
+              <HiOutlineCheckCircle class="text-green-700" size="30" />
             </Match>
             <Match when={statusQuery.data?.permissions.unverified}>
-              <HiOutlineXCircle color="red" size="30" />
+              <HiOutlineXCircle class="text-red-500" size="30" />
             </Match>
           </Switch>
         </div>
@@ -101,7 +101,7 @@ const HeaderRight = () => {
           onClick={() => logout.mutate()}
           title={t("log_out")}
         >
-          <HiOutlinePower color="red" size="30" />
+          <HiOutlinePower class="text-red-500" size="30" />
         </Button>
       </div>
       <PasswordChangeForm.Modal />

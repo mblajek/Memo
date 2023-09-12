@@ -30,7 +30,7 @@ export const FilterIcon: Component<Props> = (props) => {
       <Dynamic
         component={props.isFiltering && !hover() ? TbFilter : TbFilterOff}
         class={props.class}
-        classList={{"text-black": true, "text-opacity-30": !props.isFiltering}}
+        classList={{dimmed: !props.isFiltering}}
       />
     </Button>
   );

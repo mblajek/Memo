@@ -31,7 +31,7 @@ export const FelteSubmit: ParentComponent<Props> = (props) => {
       <div class="flex gap-1 justify-center items-stretch">
         <Show when={props.cancel}>
           <Button
-            class="flex-grow basis-0 border border-cyan-500 disabled:bg-opacity-50 rounded p-2 text-cyan-500"
+            class="flex-grow basis-0 secondary"
             disabled={form.isSubmitting() || buttonProps.disabled}
             onClick={props.cancel}
           >
@@ -41,7 +41,7 @@ export const FelteSubmit: ParentComponent<Props> = (props) => {
         <Button
           type="submit"
           form={formProps.id}
-          class="flex-grow basis-0 bg-cyan-500 disabled:bg-opacity-50 rounded p-2 text-white"
+          class="flex-grow basis-0 primary"
           disabled={form.isSubmitting() || buttonProps.disabled}
           {...buttonProps}
         >
