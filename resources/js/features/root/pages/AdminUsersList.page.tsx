@@ -1,4 +1,4 @@
-import {Button, Email, createTableTranslations} from "components/ui";
+import {Button, Email, cellFunc, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -20,15 +20,12 @@ export default (() => {
         intrinsicColumns={["id"]}
         additionalColumns={["actions"]}
         columnOptions={{
-          id: {
-            metaParams: {canControlVisibility: false},
-          },
           name: {
             metaParams: {canControlVisibility: false},
           },
           email: {
             columnDef: {
-              cell: (c) => <Email email={c.getValue() as string} />,
+              cell: cellFunc<string>((v) => <Email email={v} />),
             },
           },
           createdAt: {
@@ -58,6 +55,7 @@ export default (() => {
           },
         }}
         initialColumnsOrder={[
+          "id",
           "name",
           "email",
           "hasPassword",

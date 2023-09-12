@@ -11,15 +11,16 @@ import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper
 import {Component, createMemo} from "solid-js";
 import {
   ABOVE_AND_BELOW_TABLE_DEFAULT_CSS,
-  CellComponent,
   DisplayMode,
   Header,
+  IdColumn,
   Pagination,
   Table,
   TableColumnVisibilityController,
   TableSearch,
   TableSummary,
   TableTranslations,
+  cellFunc,
   createTableTranslations,
   getBaseTableOptions,
   useTableCells,
@@ -99,15 +100,15 @@ const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 export const TQueryTable: Component<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
 
-  const SORTABLE_COLUMN_TYPES = new Set<ColumnType>(["string", "decimal0", "decimal2", "bool", "date", "datetime"]);
-
   const tableCells = useTableCells();
-  const columnCellByType = new Map<ColumnType, CellComponent>([
-    ["decimal0", tableCells.decimal0],
-    ["decimal2", tableCells.decimal2],
-    ["bool", tableCells.bool],
-    ["date", tableCells.date],
-    ["datetime", tableCells.datetime],
+  const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<object>>>([
+    ["uuid", {cell: cellFunc<string>((v) => <IdColumn id={v} />), enableSorting: false, size: 80}],
+    ["text", {enableSorting: false}],
+    ["decimal0", {cell: tableCells.decimal0}],
+    ["decimal2", {cell: tableCells.decimal2}],
+    ["bool", {cell: tableCells.bool, size: 100}],
+    ["date", {cell: tableCells.date}],
+    ["datetime", {cell: tableCells.datetime}],
   ]);
 
   const requestCreator = createTableRequestCreator({
@@ -141,8 +142,9 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
   function columnOptions(name: string) {
     return props.columnOptions?.[name] || {};
   }
-  function commonColumnDef(name: string): Partial<IdentifiedColumnDef<object>> {
+  function commonColumnDef(name: string, type?: ColumnType) {
     return {
+      id: name,
       header: (ctx) => (
         <Header
           ctx={ctx}
@@ -155,8 +157,9 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
           }
         />
       ),
+      ...(type && columnDefByType.get(type)),
       ...columnOptions(name).columnDef,
-    };
+    } satisfies Partial<IdentifiedColumnDef<object>>;
   }
   const columns = createMemo(() => {
     const sch = schema();
@@ -172,11 +175,8 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
         console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
       const columns = [
         ...sch.columns.map(({type, name}) => {
-          const common = commonColumnDef(name);
+          const common = commonColumnDef(name, type);
           return h.accessor(name, {
-            id: name,
-            enableSorting: SORTABLE_COLUMN_TYPES.has(type),
-            cell: columnCellByType.get(type) || tableCells.default,
             ...common,
             meta: {
               ...common.meta,
@@ -190,7 +190,6 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
         ...(props.additionalColumns || []).map((name) => {
           const common = commonColumnDef(name);
           return h.display({
-            id: name,
             ...common,
             meta: {
               ...common.meta,
