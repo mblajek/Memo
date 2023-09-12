@@ -45,3 +45,4 @@ range:
   max: "maks:"
 
 quoted: "„{{text}}”"
+with_colon: "{{text}}:"

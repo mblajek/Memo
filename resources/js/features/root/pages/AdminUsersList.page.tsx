@@ -28,11 +28,6 @@ export default (() => {
               cell: cellFunc<string>((v) => <Email email={v} />),
             },
           },
-          hasPassword: {
-            columnDef: {
-              size: 100,
-            },
-          },
           createdAt: {
             columnDef: {
               sortDescFirst: true,

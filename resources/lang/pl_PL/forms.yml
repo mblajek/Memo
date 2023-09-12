@@ -20,7 +20,13 @@ user_edit:
     hasEmailVerified: "$t(models.user.hasEmailVerified)"
     hasPassword: "$t(models.user.hasPassword) (może logować się do Memo)"
     password: "$t(models.user.password)"
+    hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
     # Alternative to password, if the password is changed:
     newPassword: "Nowe hasło"
   password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
+  global_admin_requires_password: "Globalny administrator musi mieć ustawione hasło"
+  has_password_requires_email: "Aby móc się logować do Memo, użytkownik musi mieć ustawiony $t(forms.user_edit.fieldNames.email)"
+  validation:
+    cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
   submit: "$t(save)"
+  success: "Pomyślnie zmieniono dane użytkownika"

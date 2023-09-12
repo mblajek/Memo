@@ -19,7 +19,7 @@ export function createListRequest(inParam?: ListInParam): Api.Request.GetListPar
   return Array.isArray(inParam) ? (inParam.length ? {in: inParam.toSorted().join(",")} : {}) : {in: inParam};
 }
 
-export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id | undefined, T> {
+export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id, T> {
   const result = new Map();
   for (const entity of list || []) {
     result.set(entity.id, entity);
