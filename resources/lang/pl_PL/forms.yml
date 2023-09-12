@@ -18,7 +18,7 @@ user_edit:
     name: "$t(models.user.name)"
     email: "$t(models.user.email)"
     hasEmailVerified: "$t(models.user.hasEmailVerified)"
-    hasPassword: "$t(models.user.hasPassword)"
+    hasPassword: "$t(models.user.hasPassword) (może logować się do Memo)"
     password: "$t(models.user.password)"
     # Alternative to password, if the password is changed:
     newPassword: "Nowe hasło"
