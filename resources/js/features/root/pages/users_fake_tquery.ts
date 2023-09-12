@@ -28,7 +28,7 @@ function getCompareTransform(type: ColumnType): CompareTransform {
     ? (v) => Date.parse(v)
     : type === "decimal0" || type === "decimal2"
     ? (v) => v
-    : type === "text" || type === "string"
+    : type === "text" || type === "string" || type === "uuid"
     ? (v) => str(v)?.toLocaleLowerCase() || ""
     : (type satisfies never);
 }
@@ -112,7 +112,7 @@ export function startUsersMock() {
     {name: "facilitiesMember", type: "text"},
     {name: "hasGlobalAdmin", type: "bool"},
     {name: "hasPassword", type: "bool"},
-    {name: "id", type: "string"},
+    {name: "id", type: "uuid"},
     {name: "name", type: "string"},
     {name: "numFacilities", type: "decimal0"},
   ];
@@ -163,8 +163,8 @@ export function startUsersMock() {
       });
       const sortedRows = [...filteredRows].sort((a, b) => sorters.reduce((acc, sorter) => acc || sorter(a, b), 0));
       const pagedRows = sortedRows.slice(
-        request.paging.pageIndex * request.paging.pageSize,
-        (request.paging.pageIndex + 1) * request.paging.pageSize,
+        (request.paging.number - 1) * request.paging.size,
+        request.paging.number * request.paging.size,
       );
       const finalRows = pagedRows.map((r: Row) => {
         const res: Row = {};

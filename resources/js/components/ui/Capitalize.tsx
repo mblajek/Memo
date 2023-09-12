@@ -12,7 +12,7 @@ export const Capitalize: Component<Props> = (props) => {
   return (
     <span
       {...spanProps}
-      class={cx(spanProps.class, "inline-block", (localProps.capitalize ?? true) && "first-letter:capitalize")}
+      class={cx(spanProps.class, "inline-block", {"first-letter:capitalize": localProps.capitalize ?? true})}
     >
       {localProps.text}
     </span>

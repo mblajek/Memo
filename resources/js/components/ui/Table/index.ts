@@ -1,6 +1,7 @@
 export * from "./ColumnName";
 export * from "./FilterIcon";
 export * from "./Header";
+export * from "./IdColumn";
 export * from "./Pagination";
 export * from "./SortMarker";
 export * from "./Table";
