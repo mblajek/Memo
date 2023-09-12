@@ -5,6 +5,7 @@ tables:
     summary__few: "{{count, number}} wyniki"
     summary__many: "{{count, number}} wyników"
     columnNames:
+      id: "id"
       actions: "akcje"
   users:
     tableName: "$t(models.user._name_plural)"
@@ -13,6 +14,7 @@ tables:
     summary__few: "{{count, number}} użytkowników"
     summary__many: "{{count, number}} użytkowników"
     columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
       name: "$t(models.user.name)"
       email: "$t(models.user.email)"
       hasPassword: "$t(models.user.hasPassword)"

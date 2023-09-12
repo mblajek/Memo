@@ -30,9 +30,16 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         queryCache: new QueryCache({
           onError(error, query) {
             if (isAxiosError<Api.ErrorResponse>(error)) {
-              error.response?.data.errors.forEach((memoError) => {
-                if ((error?.status && error.status >= 500) || !query.meta?.quietError) toast.error(t(memoError.code));
-              });
+              if ((error?.status && error.status >= 500) || !query.meta?.quietError) {
+                error.response?.data.errors.forEach((memoError) => {
+                  toast.error(
+                    t(memoError.code, {
+                      ...(Api.isValidationError(memoError) ? {attribute: memoError.field} : undefined),
+                      ...memoError.data,
+                    }),
+                  );
+                });
+              }
             }
           },
         }),

@@ -24,9 +24,6 @@ export type CellComponent = <T>(ctx: CellContext<T, unknown>) => JSX.Element;
 /** Returns a collection of cell functions for various data types. */
 export function useTableCells() {
   const t = useLangFunc();
-  function cellFunc<V>(func: (v: V) => JSX.Element | undefined): CellComponent {
-    return (c) => <Show when={c.getValue() !== undefined}>{func(c.getValue() as V)}</Show>;
-  }
   return {
     defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
     default: ((ctx) => (
@@ -38,4 +35,12 @@ export function useTableCells() {
     date: cellFunc<string>((v) => DATE_FORMAT.format(new Date(v))),
     datetime: cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v))),
   };
+}
+
+export function cellFunc<V>(func: (v: V) => JSX.Element | undefined, fallback?: () => JSX.Element): CellComponent {
+  return (c) => (
+    <Show when={c.getValue() !== undefined} fallback={fallback?.()}>
+      {func(c.getValue() as V)}
+    </Show>
+  );
 }

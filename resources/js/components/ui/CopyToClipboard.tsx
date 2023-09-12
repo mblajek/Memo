@@ -5,6 +5,8 @@ import {useLangFunc} from "../utils";
 
 interface Props {
   text: string | undefined;
+  /** Whether the text should be displayed on hover. */
+  textInTitle?: boolean;
 }
 
 /** A "Copy to clipboard" icon, copying the specified text on click. */
@@ -14,7 +16,7 @@ export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
   return (
     <Show when={props.text}>
       {(text) => (
-        <Button title={t("copy_to_clipboard")}>
+        <Button title={props.textInTitle ? `${t("copy_to_clipboard")}\n${props.text}` : t("copy_to_clipboard")}>
           <BiRegularCopy
             class="inlineIcon"
             classList={{dimmed: !copied()}}

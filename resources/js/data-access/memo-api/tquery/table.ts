@@ -158,7 +158,10 @@ export function createTableRequestCreator({
               column: id,
               desc,
             })),
-            paging: pagination,
+            paging: {
+              number: pagination.pageIndex + 1,
+              size: pagination.pageSize,
+            },
           };
           return request;
         },
