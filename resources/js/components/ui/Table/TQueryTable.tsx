@@ -8,7 +8,7 @@ import {
 } from "@tanstack/solid-table";
 import {cx} from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
-import {Component, createMemo} from "solid-js";
+import {Component, JSX, createMemo} from "solid-js";
 import {
   ABOVE_AND_BELOW_TABLE_DEFAULT_CSS,
   DisplayMode,
@@ -92,6 +92,8 @@ export interface TQueryTableProps {
   initialVisibleColumns?: string[];
   initialSort?: SortingState;
   initialPageSize?: number;
+  /** Element to put on the right side of the bar below table. */
+  customSectionBelowTable?: JSX.Element;
 }
 
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
@@ -246,6 +248,8 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
         <div class={cx(ABOVE_AND_BELOW_TABLE_DEFAULT_CSS, "gap-2")}>
           <Pagination />
           <TableSummary rowsCount={rowsCount()} />
+          <div class="flex-grow" />
+          {props.customSectionBelowTable}
         </div>
       )}
       isLoading={!schema()}
