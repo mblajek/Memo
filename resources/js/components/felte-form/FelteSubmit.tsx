@@ -35,7 +35,7 @@ export const FelteSubmit: ParentComponent<Props> = (props) => {
             disabled={form.isSubmitting() || buttonProps.disabled}
             onClick={props.cancel}
           >
-            {t("cancel")}
+            {t("actions.cancel")}
           </Button>
         </Show>
         <Button

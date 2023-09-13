@@ -16,7 +16,11 @@ export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
   return (
     <Show when={props.text}>
       {(text) => (
-        <Button title={props.textInTitle ? `${t("copy_to_clipboard")}\n${props.text}` : t("copy_to_clipboard")}>
+        <Button
+          title={
+            props.textInTitle ? `${t("actions.copy_to_clipboard")}\n${props.text}` : t("actions.copy_to_clipboard")
+          }
+        >
           <BiRegularCopy
             class="inlineIcon"
             classList={{dimmed: !copied()}}
