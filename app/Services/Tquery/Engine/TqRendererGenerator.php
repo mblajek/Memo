@@ -21,12 +21,10 @@ class TqRendererGenerator
 
     public static function getRenderer(TqColumnConfig $columnConfig): Closure
     {
-        return match ($columnConfig->type) {
+        return match ($columnConfig->type->notNullBaseType()) {
             TqDataTypeEnum::bool => self::nullable(fn(string $value) => (bool)(int)$value),
             TqDataTypeEnum::datetime => self::nullable(fn(string $value) => DateHelper::dbToZuluString($value)),
             TqDataTypeEnum::decimal0 => self::nullable(fn(string $value) => (int)$value),
-            TqDataTypeEnum::is_null => fn($value) => ($value === null),
-            TqDataTypeEnum::is_not_null => fn($value) => ($value !== null),
             default => self::forward(...),
         };
     }

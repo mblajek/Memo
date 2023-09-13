@@ -4,21 +4,65 @@ namespace App\Services\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Services\Tquery\Request\TqRequest;
+use Closure;
+use Illuminate\Support\Str;
 
-final readonly class TqConfig
+final class TqConfig
 {
     /** @var array<string, TqColumnConfig> */
-    public array $columns;
+    public array $columns = [];
 
     public function __construct(
-        public TqTableEnum $table,
-        array $columns,
+        public readonly TqTableEnum $table,
     ) {
-        $this->columns = array_combine(
-            array_map(fn(TqColumnConfig $column) => $column->columnAlias, $columns),
-            $columns,
+    }
+
+    public function addSimple(
+        TqDataTypeEnum $type,
+        string $columnName,
+        ?string $columnAlias = null,
+    ): void {
+        $this->addColumn(
+            type: $type,
+            columnOrQuery: $columnName,
+            table: null,
+            columnAlias: $columnAlias ?? $columnName,
         );
     }
+
+    public function addJoined(
+        TqDataTypeEnum $type,
+        TqTableAliasEnum $table,
+        string $columnName,
+        ?string $columnAlias = null,
+    ): void {
+        $this->addColumn(
+            type: $type,
+            columnOrQuery: $columnName,
+            table: $table,
+            columnAlias: $columnAlias ?? $columnName,
+        );
+    }
+
+    public function addQuery(
+        TqDataTypeEnum $type,
+        Closure $columnOrQuery,
+        string $columnAlias,
+        ?Closure $filter = null,
+        ?Closure $order = null,
+        ?Closure $renderer = null,
+    ): void {
+        $this->addColumn(
+            type: $type,
+            columnOrQuery: $columnOrQuery,
+            table: null,
+            columnAlias: $columnAlias,
+            filter: $filter,
+            sorter: $order,
+            renderer: $renderer,
+        );
+    }
+
 
     /** @return array<string, TqColumnConfig> */
     public function getColumnsConfigs(TqRequest $request): array
@@ -30,6 +74,28 @@ final readonly class TqConfig
                 fn(string $columnAlias) => $this->columns[$columnAlias] ?? (throw FatalExceptionFactory::tquery()),
                 $columnAliases
             ),
+        );
+    }
+
+    private function addColumn(
+        TqDataTypeEnum $type,
+        string|Closure $columnOrQuery,
+        ?TqTableAliasEnum $table,
+        string $columnAlias,
+        ?Closure $filter = null,
+        ?Closure $sorter = null,
+        ?Closure $renderer = null,
+    ): void {
+        $columnAliasCamel = Str::camel($columnAlias);
+        $this->columns[$columnAliasCamel] =  new TqColumnConfig(
+            config: $this,
+            type: $type,
+            columnOrQuery: $columnOrQuery,
+            table: $table,
+            columnAlias: $columnAliasCamel,
+            filter: $filter = null,
+            sorter: $sorter = null,
+            renderer: $renderer = null,
         );
     }
 }

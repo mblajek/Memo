@@ -6,58 +6,50 @@ use App\Services\Tquery\Config\TqColumnConfig;
 use App\Services\Tquery\Config\TqConfig;
 use App\Services\Tquery\Request\TqRequest;
 use App\Services\Tquery\Request\TqRequestColumn;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
+use Closure;
 use stdClass;
 
 readonly class TqEngine
 {
     // readonly, but mutable
-    private Builder $builder;
+    private TqBuilder $builder;
 
     /** @param TqColumnConfig[] $columnConfigs */
     public function __construct(
+        Closure $getBuilder,
         private TqConfig $config,
         private TqRequest $request,
         private array $columnConfigs,
     ) {
-        $this->builder = DB::query();
+        $this->builder = $getBuilder();
     }
 
     public function run(): array
     {
-        $this->applyFrom();
+        $this->applyJoin();
         $this->applySelect();
         $this->applyFilter();
         $this->applySort();
         $this->applyPaging();
         return [
+            // todo: only in debug
+            'sql' => $this->builder->getRawSql(),
             'meta' => $this->getMeta(),
             'data' => $this->getData(),
         ];
-
-        // echo $this->builder->toRawSql();
-        // print_r($this->request);
     }
 
-    private function applyFrom(): void
+    private function applyJoin(): void
     {
-        $this->builder->from($this->config->table->name);
-        $configTable = $this->config->table;
-        $joinedTables = [$configTable];
         foreach ($this->columnConfigs as $columnConfig) {
-            $columnTable = $columnConfig->table;
-            if ($columnTable && !in_array($columnTable, $joinedTables, true)) {
-                $columnTable->applyJoin(builder: $this->builder, joinBase: $configTable, left: true);
-                $joinedTables[] = $columnTable;
-            }
+            $columnConfig->applyJoin($this->builder);
         }
     }
 
     private function applySelect(): void
     {
         foreach ($this->request->columns as $requestColumn) {
-            $this->columnConfigs[$requestColumn->column]->applySelect($this->builder, $requestColumn, $this->config);
+            $this->columnConfigs[$requestColumn->column]->applySelect($this->builder, $requestColumn);
         }
     }
 
@@ -69,19 +61,19 @@ readonly class TqEngine
     private function applySort(): void
     {
         foreach ($this->request->sort as $requestSort) {
-            $this->columnConfigs[$requestSort->column]->applySort($this->builder, $requestSort, $this->config);
+            $this->columnConfigs[$requestSort->column]->applySort($this->builder, $requestSort);
         }
-        $this->builder->orderBy('id');
+        $this->builder->orderBy("`{$this->config->table->name}`.`id`", desc: false);
     }
 
     private function applyPaging(): void
     {
-        $this->builder->forPage($this->request->number, $this->request->size);
+        $this->builder->applyPaging($this->request->number, $this->request->size);
     }
 
     private function getData(): array
     {
-        return $this->builder->get()->map(function (stdClass $row) {
+        return $this->builder->getData()->map(function (stdClass $row) {
             $array = [];
             foreach ($this->request->columns as $requestColumn) {
                 $columnAlias = $requestColumn->column;
@@ -99,7 +91,7 @@ readonly class TqEngine
                 'type' => $requestColumn->type->name,
                 'column' => $requestColumn->column,
             ], $this->request->columns),
-            'totalDataSize' => $this->builder->getCountForPagination(),
+            'totalDataSize' => $this->builder->getCount(),
         ];
     }
 

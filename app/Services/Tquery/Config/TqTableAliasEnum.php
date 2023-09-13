@@ -2,7 +2,7 @@
 
 namespace App\Services\Tquery\Config;
 
-use Illuminate\Database\Query\Builder;
+use App\Services\Tquery\Engine\TqBuilder;
 
 enum TqTableAliasEnum
 {
@@ -17,18 +17,12 @@ enum TqTableAliasEnum
         };
     }
 
-    public function applyJoin(Builder $builder, TqTableEnum $joinBase, bool $left): void
+    public function applyJoin(TqBuilder $builder, TqTableEnum $joinBase, bool $left): void
     {
-        $tableBaseName = $this->baseTable()->name;
         $joinColumn = match ($this) {
             self::created_by => $this->name,
             self::last_login_facility => $this->name . '_id',
         };
-        $builder->{$left ? 'leftJoin' : 'join'}(
-            "$tableBaseName as {$this->name}",
-            "{$this->name}.id",
-            '=',
-            "{$joinBase->name}.$joinColumn"
-        );
+        $builder->join($joinBase, $this, $joinColumn, $left);
     }
 }

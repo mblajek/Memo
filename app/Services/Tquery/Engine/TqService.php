@@ -10,11 +10,16 @@ use stdClass;
 
 abstract readonly class TqService
 {
-    private TqConfig $config;
+    protected TqConfig $config;
 
     public function __construct()
     {
         $this->config = $this->getConfig();
+    }
+
+    protected function getBuilder(): TqBuilder
+    {
+        return TqBuilder::make($this->config->table);
     }
 
     abstract protected function getConfig(): TqConfig;
@@ -24,7 +29,8 @@ abstract readonly class TqService
         return [
             'columns' => array_map(fn(TqColumnConfig $column) => [
                 'name' => $column->columnAlias,
-                'type' => $column->type->baseDataType()->name,
+                'type' => $column->type->notNullBaseType()->name,
+                'nullable' => $column->type->isNullable(),
             ], array_values($this->config->columns)),
             'customFilters' => new stdClass(),
         ];
@@ -34,7 +40,7 @@ abstract readonly class TqService
     {
         $request = TqRequest::fromHttpRequest($this->config, $httpRequest);
         $columnConfigs = $this->config->getColumnsConfigs($request);
-        $engine = new TqEngine($this->config, $request, $columnConfigs);
+        $engine = new TqEngine($this->getBuilder(...), $this->config, $request, $columnConfigs);
         return $engine->run();
     }
 }

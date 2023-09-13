@@ -2,105 +2,79 @@
 
 namespace App\Services\Tquery\Config;
 
+use App\Services\Tquery\Engine\TqBuilder;
 use App\Services\Tquery\Engine\TqRendererGenerator;
+use App\Services\Tquery\Engine\TqSelectGenerator;
+use App\Services\Tquery\Engine\TqSorterGenerator;
 use App\Services\Tquery\Request\TqRequestColumn;
 use App\Services\Tquery\Request\TqRequestSort;
 use Closure;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Str;
+use stdClass;
 
 final readonly class TqColumnConfig
 {
+    private Closure $selector;
     private Closure $filter;
-    public ?Closure $order;
+    private Closure $sorter;
     private Closure $renderer;
-    public string $columnAlias;
 
-    public static function simple(
-        TqDataTypeEnum $type,
-        string $columnName,
-        ?string $columnAlias = null,
-    ): self {
-        return new self(
-            type: $type,
-            columnOrQuery: $columnName,
-            table: null,
-            columnAlias: $columnAlias ?? $columnName,
-        );
-    }
-
-    public static function joined(
-        TqDataTypeEnum $type,
-        TqTableAliasEnum $table,
-        string $columnName,
-        ?string $columnAlias = null,
-    ): self {
-        return new self(
-            type: $type,
-            columnOrQuery: $columnName,
-            table: $table,
-            columnAlias: $columnAlias ?? $columnName,
-        );
-    }
-
-    public static function query(
-        TqDataTypeEnum $type,
-        Closure $columnOrQuery,
-        string $columnAlias,
-        ?Closure $filter = null,
-        ?Closure $order = null,
-        ?Closure $renderer = null,
-    ): self {
-        return new self(
-            type: $type,
-            columnOrQuery: $columnOrQuery,
-            table: null,
-            columnAlias: $columnAlias,
-            filter: $filter,
-            order: $order,
-            renderer: $renderer,
-        );
-    }
-
-    private function __construct(
+    public function __construct(
+        private TqConfig $config,
         public TqDataTypeEnum $type,
         private string|Closure $columnOrQuery,
         public ?TqTableAliasEnum $table,
-        string $columnAlias,
+        public string $columnAlias,
+        ?Closure $selector = null,
         ?Closure $filter = null,
-        ?Closure $order = null,
+        ?Closure $sorter = null,
         ?Closure $renderer = null,
     ) {
-        $this->columnAlias = Str::camel($columnAlias);
-        // todo: filter, order
+        // todo: filter
+        $this->selector = $sorter ?? TqSelectGenerator::getSelect($this);
+        $this->sorter = $sorter ?? TqSorterGenerator::getSort($this);
         $this->renderer = $renderer ?? TqRendererGenerator::getRenderer($this);
     }
 
-    public function applySelect(Builder $builder, TqRequestColumn $requestColumn, TqConfig $config): void
+    public function applyJoin(TqBuilder $builder):void
     {
-        $builder->selectRaw($this->getQuery($config) . " as `{$this->columnAlias}`");
+        $this->table?->applyJoin(builder: $builder, joinBase: $this->config->table, left: $this->type->isNullable());
     }
 
-    public function applyFilter(Builder $builder /*TODO*/)
+    public function applySelect(TqBuilder $builder, TqRequestColumn $requestColumn): void
+    {
+        $builder->select($this->getSelectQuery(), $this->columnAlias);
+    }
+
+    public function applyFilter(TqBuilder $builder /*TODO*/)
     {
         return ($this->filter)(builder: $builder);
     }
 
-    public function applySort(Builder $builder, TqRequestSort $requestSort, TqConfig $config): void
+    public function applySort(TqBuilder $builder, TqRequestSort $requestSort): void
     {
-        // todo use $this->sort
-        $builder->orderByRaw($this->getQuery($config) . ' ' . ($requestSort->desc ? 'desc' : 'asc'));
+        $builder->orderBy($this->getSortQuery(), $requestSort->desc);
     }
 
-    public function render(?string $value): bool|int|string|array|null
+    public function render(?string $value): bool|int|string|array|null|stdClass
     {
         return ($this->renderer)(value: $value);
     }
 
-    private function getQuery(TqConfig $config): string
+    private function getQuery(): string
     {
+        $table = $this->table ?? $this->config->table;
         return is_string($this->columnOrQuery)
-            ? "`{$config->table->name}`.`{$this->columnOrQuery}`"
-            : '(' . ($this->columnOrQuery)(tableName: $config->table->name) . ')';
+            ? "`{$table->name}`.`{$this->columnOrQuery}`"
+            : '(' . ($this->columnOrQuery)(tableName: $table->name) . ')';
+    }
+
+    private function getSelectQuery(): string
+    {
+        return ($this->selector)(query: $this->getQuery());
+    }
+
+    private function getSortQuery(): string
+    {
+        return ($this->sorter)(query: $this->getQuery());
     }
 }
