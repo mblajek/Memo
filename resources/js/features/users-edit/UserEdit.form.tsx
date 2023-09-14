@@ -45,18 +45,24 @@ export namespace UserEditForm {
               hasEmailVerified: values.hasEmailVerified,
               ...(values.hasPassword
                 ? oldUser.hasPassword && !values.password
-                  ? // The user had password already and it is not changed.
+                  ? // The user has a password already and it is not changed.
                     {}
                   : // New password or a password change.
                     {password: values.password, passwordExpireAt: null}
-                : {password: null}),
+                : {password: null, passwordExpireAt: null}),
             }
-          : {email: null}),
+          : {
+              email: null,
+              hasEmailVerified: false,
+              password: null,
+              passwordExpireAt: null,
+            }),
         hasGlobalAdmin: values.hasGlobalAdmin,
       });
-      // If the user mutation succeeded, await all the members mutations.
+      // If the user mutation succeeded, await all the members mutations. Await all even if any of
+      // them fails, otherwise invalidation might happen before the final changes.
       try {
-        await Promise.all(membersUpdater.getUpdatePromises(oldUser, values.members));
+        await Promise.allSettled(membersUpdater.getUpdatePromises(oldUser, values.members));
       } finally {
         // Invalidate the user even after partial success (e.g. only user edit succeeded), or when there were
         // no member mutations.

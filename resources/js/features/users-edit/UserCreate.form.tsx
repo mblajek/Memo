@@ -39,9 +39,10 @@ export namespace UserCreateForm {
             }),
         hasGlobalAdmin: values.hasGlobalAdmin,
       });
-      // If the user mutation succeeded, await all the members mutations.
+      // If the user mutation succeeded, await all the members mutations. Await all even if any of
+      // them fails, otherwise invalidation might happen before the final changes.
       try {
-        await Promise.all(membersUpdater.getCreatePromises(data.data.id, values.members));
+        await Promise.allSettled(membersUpdater.getCreatePromises(data.data.id, values.members));
       } finally {
         // Invalidate the user even after partial success (e.g. only user creation succeeded),
         // or when there were no member mutations.

@@ -37,7 +37,7 @@ interface BaseProps<T> {
 
 export const MODAL_STYLE_PRESETS = {
   narrow: {width: "420px"},
-  medium: {width: "calc(min(620px, 80%))"},
+  medium: {width: "min(620px, 80%)"},
 } satisfies Partial<Record<string, JSX.CSSProperties>>;
 
 const ESCAPE_REASONS = ["escapeKey", "clickOutside"] as const;

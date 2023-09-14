@@ -1,6 +1,7 @@
 import {
   ColumnDef,
   PaginationState,
+  Row,
   RowData,
   SortingState,
   TableOptions,
@@ -14,6 +15,7 @@ import {
 } from "@tanstack/solid-table";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, cx} from "components/utils";
 import {Accessor, For, Index, JSX, Show, Signal, createEffect, createSignal, mergeProps, on} from "solid-js";
+import {Dynamic} from "solid-js/web";
 import {TableContextProvider, getHeaders, tableStyle as ts, useTableCells} from ".";
 import {BigSpinner, EMPTY_VALUE_SYMBOL} from "..";
 import {CellRenderer} from "./CellRenderer";
@@ -174,46 +176,22 @@ export const Table = <T,>(optProps: Props<T>) => {
                   )}
                 </For>
               </div>
-              <Show
-                when={props.rowsIteration === "For"}
+              <Dynamic
+                component={{For, Index}[props.rowsIteration]}
+                each={props.table.getRowModel().rows}
                 fallback={
-                  <Index
-                    each={props.table.getRowModel().rows}
-                    fallback={
-                      <div class={ts.wideRow}>
-                        <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
-                          <BigSpinner />
-                        </Show>
-                      </div>
-                    }
-                  >
-                    {(row) => (
-                      <div class={ts.dataRow} inert={props.isDimmed || undefined}>
-                        <Index each={row().getVisibleCells()}>
-                          {(cell) => (
-                            <span class={ts.cell}>
-                              <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
-                            </span>
-                          )}
-                        </Index>
-                      </div>
-                    )}
-                  </Index>
+                  <div class={ts.wideRow}>
+                    <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
+                      <BigSpinner />
+                    </Show>
+                  </div>
                 }
               >
-                <For
-                  each={props.table.getRowModel().rows}
-                  fallback={
-                    <div class={ts.wideRow}>
-                      <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
-                        <BigSpinner />
-                      </Show>
-                    </div>
-                  }
-                >
-                  {(row) => (
+                {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
+                  const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
+                  return (
                     <div class={ts.dataRow} inert={props.isDimmed || undefined}>
-                      <Index each={row.getVisibleCells()}>
+                      <Index each={row().getVisibleCells()}>
                         {(cell) => (
                           <span class={ts.cell}>
                             <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
@@ -221,9 +199,9 @@ export const Table = <T,>(optProps: Props<T>) => {
                         )}
                       </Index>
                     </div>
-                  )}
-                </For>
-              </Show>
+                  );
+                }}
+              </Dynamic>
               <div
                 class={ts.bottomBorder}
                 style={{"--belowTableHeight": `${props.belowTable ? props.belowTableHeight : 0}px`}}
