@@ -58,6 +58,13 @@ declare module "@tanstack/table-core" {
  */
 export type DisplayMode = "standalone" | "embedded";
 
+/** Column def params that make the column auto-size, i.e. wrap contents and not be user-resizable. */
+export const AUTO_SIZE_COLUMN_DEFS = {
+  enableResizing: false,
+  minSize: 0,
+  size: 0,
+} satisfies Partial<ColumnDef<object>>;
+
 interface Props<T = object> {
   table: TanStackTable<T>;
   /** Table mode. Default: embedded. */
@@ -129,7 +136,7 @@ export const Table = <T,>(optProps: Props<T>) => {
       ? `repeat(${props.table.getVisibleLeafColumns().length}, auto)`
       : props.table
           .getVisibleLeafColumns()
-          .map((c) => `${c.getSize()}px`)
+          .map((c) => (!c.getCanResize() && c.getSize() === AUTO_SIZE_COLUMN_DEFS.size ? "auto" : `${c.getSize()}px`))
           .join(" ");
   return (
     <TableContextProvider table={props.table}>

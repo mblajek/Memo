@@ -1,4 +1,4 @@
-import {Button, Email, cellFunc, createTableTranslations} from "components/ui";
+import {AUTO_SIZE_COLUMN_DEFS, Button, Email, cellFunc, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -52,6 +52,7 @@ export default (() => {
                   <FiEdit2 class="inlineIcon strokeIcon" /> {t("edit")}
                 </Button>
               ),
+              ...AUTO_SIZE_COLUMN_DEFS,
             },
           },
         }}
