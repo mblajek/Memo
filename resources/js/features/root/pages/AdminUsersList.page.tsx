@@ -49,7 +49,7 @@ export default (() => {
             columnDef: {
               cell: (c) => (
                 <Button onClick={() => UserEditForm.showModalFor({userId: c.row.getValue("id")})}>
-                  <FiEdit2 class="inlineIcon strokeIcon" /> {t("edit")}
+                  <FiEdit2 class="inlineIcon strokeIcon" /> {t("actions.edit")}
                 </Button>
               ),
               ...AUTO_SIZE_COLUMN_DEFS,
@@ -78,7 +78,7 @@ export default (() => {
         initialSort={[{id: "name", desc: false}]}
         customSectionBelowTable={
           <Button class="secondarySmall" onClick={() => UserCreateForm.showModal()}>
-            <TbUserPlus class="inlineIcon strokeIcon text-current" /> {t("add_user")}
+            <TbUserPlus class="inlineIcon strokeIcon text-current" /> {t("actions.add_user")}
           </Button>
         }
       />

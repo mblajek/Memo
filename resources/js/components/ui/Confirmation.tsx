@@ -40,7 +40,7 @@ export const Confirmation: Component = () => {
                 setData(undefined);
               }}
             >
-              {data().cancelText || t("cancel")}
+              {data().cancelText || t("actions.cancel")}
             </Button>
             <Button
               class="flex-grow basis-0 primary"
@@ -49,7 +49,7 @@ export const Confirmation: Component = () => {
                 setData(undefined);
               }}
             >
-              {data().confirmText || t("confirm")}
+              {data().confirmText || t("actions.confirm")}
             </Button>
           </div>
         </div>

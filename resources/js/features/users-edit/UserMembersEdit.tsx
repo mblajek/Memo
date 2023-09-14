@@ -155,7 +155,7 @@ export namespace UserMembersEdit {
                     form.setFields(membersPath, form.data(membersPath).toSpliced(index, 1));
                   }}
                 >
-                  <TbUserMinus class="inlineIcon strokeIcon" /> {t("delete")}
+                  <TbUserMinus class="inlineIcon strokeIcon" /> {t("actions.delete")}
                 </Button>
               </Show>
             </div>

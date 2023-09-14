@@ -99,7 +99,7 @@ const HeaderRight = () => {
         <Button
           class="rounded-lg flex flex-row justify-center items-center hover:bg-white"
           onClick={() => logout.mutate()}
-          title={t("log_out")}
+          title={t("actions.log_out")}
         >
           <HiOutlinePower class="text-red-500" size="30" />
         </Button>

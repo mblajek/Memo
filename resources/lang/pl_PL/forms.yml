@@ -30,7 +30,7 @@ user_edit:
   has_password_requires_email: "Aby móc się logować do Memo, użytkownik musi mieć ustawiony adres e-mail"
   validation:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
-  submit: "$t(save)"
+  submit: "$t(actions.save)"
   success: "Pomyślnie zmieniono dane użytkownika"
 
 user_create:
@@ -42,5 +42,5 @@ user_create:
     hasPassword: "$t(models.user.hasPassword) (może logować się do Memo)"
     password: "$t(models.user.password)"
     hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
-  submit: "$t(create)"
+  submit: "$t(actions.create)"
   success: "Pomyślnie utworzono użytkownika"

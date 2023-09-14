@@ -154,7 +154,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>) => {
                     <Show when={closeOn().has("closeButton")}>
                       <Button
                         class={s.closeButton}
-                        aria-label={t("close")}
+                        aria-label={t("actions.close")}
                         onClick={() => props.onClose?.("closeButton" as C)}
                       >
                         <VsClose class="w-6 h-6" />
