@@ -45,3 +45,9 @@ export type AdminUserResource = {
    */
   members: MemberResource[];
 };
+
+/** The user resource used for creation. */
+export type AdminUserResourceForCreate = Pick<
+  AdminUserResource,
+  "name" | "email" | "hasEmailVerified" | "passwordExpireAt" | "hasGlobalAdmin"
+> & {password: string | null};

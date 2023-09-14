@@ -9,6 +9,7 @@ import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, useLangFunc} from "../utils";
+import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
@@ -62,20 +63,38 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
   const form = createForm<T>({
     ...createFormOptions,
     extend: [validator({schema: local.schema}), reporter],
+    onSubmit: (values, ctx) =>
+      // Remove the unknown validation field from values so that it doesn't get submitted.
+      createFormOptions.onSubmit?.({...values, [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined}, ctx),
     onError: (error, ctx) => {
-      createFormOptions?.onError?.(error, ctx);
+      createFormOptions.onError?.(error, ctx);
       if (isAxiosError<Api.ErrorResponse>(error)) {
         error.response?.data.errors.forEach((error) => {
           if (Api.isValidationError(error)) {
-            const errorMessage = t(error.code, {
-              attribute: translations.fieldNames(error.field),
-              ...error.data,
-              ...(typeof error.data?.other === "string"
-                ? {other: translations.fieldNames(error.data.other)}
-                : undefined),
-            });
+            // For existing fields, the error is either an array, or null.
+            const formFieldExists = form.errors(error.field) !== undefined;
+            let errorMessage: string;
+            let field: string;
+            if (formFieldExists) {
+              errorMessage = t(error.code, {
+                attribute: translations.fieldNames(error.field),
+                ...error.data,
+                ...(typeof error.data?.other === "string"
+                  ? {other: translations.fieldNames(error.data.other, {defaultValue: error.data.other})}
+                  : undefined),
+              });
+              field = error.field;
+            } else {
+              // The error was received for a field that does not exist directly in the form. Don't do
+              // all the magic with the error message, and assign the error to the special unknown validation field.
+              errorMessage = t(error.code, {
+                attribute: translations.fieldNames(error.field, {defaultValue: error.field}),
+                ...error.data,
+              });
+              field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
+            }
             // @ts-expect-error setErrors does not like generic types
-            ctx.setErrors(error.field, errorMessage);
+            ctx.setErrors(field, (errors) => [...errors, errorMessage]);
           }
           // Other errors are already handled by the query client.
         });

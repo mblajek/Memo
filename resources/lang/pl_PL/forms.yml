@@ -4,6 +4,7 @@ login:
     email: "$t(models.user.email)"
     password: "$t(models.user.password)"
   submit: "Zaloguj"
+
 password_change:
   formName: "Zmiana hasła"
   fieldNames:
@@ -12,15 +13,34 @@ password_change:
     repeat: "powtórz nowe hasło"
   submit: "Zmień hasło"
   success: "Hasło zostało zmienione"
+
 user_edit:
   formName: "Zmiana danych użytkownika"
   fieldNames:
     name: "$t(models.user.name)"
     email: "$t(models.user.email)"
     hasEmailVerified: "$t(models.user.hasEmailVerified)"
-    hasPassword: "$t(models.user.hasPassword)"
+    hasPassword: "$t(models.user.hasPassword) (może logować się do Memo)"
     password: "$t(models.user.password)"
+    hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
     # Alternative to password, if the password is changed:
     newPassword: "Nowe hasło"
   password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
+  global_admin_requires_password: "Globalny administrator musi mieć ustawione hasło"
+  has_password_requires_email: "Aby móc się logować do Memo, użytkownik musi mieć ustawiony adres e-mail"
+  validation:
+    cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
   submit: "$t(save)"
+  success: "Pomyślnie zmieniono dane użytkownika"
+
+user_create:
+  formName: "Dodawanie użytkownika"
+  fieldNames:
+    name: "$t(models.user.name)"
+    email: "$t(models.user.email)"
+    hasEmailVerified: "$t(models.user.hasEmailVerified)"
+    hasPassword: "$t(models.user.hasPassword) (może logować się do Memo)"
+    password: "$t(models.user.password)"
+    hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
+  submit: "$t(create)"
+  success: "Pomyślnie utworzono użytkownika"

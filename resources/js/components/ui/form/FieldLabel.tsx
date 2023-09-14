@@ -1,4 +1,5 @@
 import {useFormContextIfInForm} from "components/felte-form";
+import {cx} from "components/utils";
 import {Component, JSX, splitProps} from "solid-js";
 import {TranslatedText} from "..";
 
@@ -27,7 +28,7 @@ export const FieldLabel: Component<Props> = (props) => {
       langFunc={[form?.translations?.fieldNames, localProps.fieldName]}
       capitalize={true}
       wrapIn={(text) => (
-        <label {...labelProps} for={localProps.fieldName}>
+        <label for={localProps.fieldName} {...labelProps} class={cx("font-medium", labelProps.class)}>
           {localProps.wrapIn?.(text) ?? text}
         </label>
       )}

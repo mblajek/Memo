@@ -9,6 +9,8 @@ close: "Zamknij"
 cancel: "Anuluj"
 confirm: "Potwierdź"
 save: "Zapisz"
+create: "Utwórz"
+add_user: "Dodaj użytkownika"
 
 exception:
   configuration:
@@ -45,3 +47,4 @@ range:
   max: "maks:"
 
 quoted: "„{{text}}”"
+with_colon: "{{text}}:"

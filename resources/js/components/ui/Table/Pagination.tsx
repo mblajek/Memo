@@ -1,11 +1,10 @@
 import * as pagination from "@zag-js/pagination";
 import {normalizeProps, useMachine} from "@zag-js/solid";
-import {cx} from "components/utils";
 import {FaSolidArrowLeftLong, FaSolidArrowRightLong} from "solid-icons/fa";
 import {IoEllipsisHorizontal} from "solid-icons/io";
 import {Component, For, Show, createEffect, createMemo, createUniqueId, on} from "solid-js";
 import {tableStyle as ts, useTable} from ".";
-import {Button, css} from "..";
+import {Button} from "..";
 
 export const Pagination: Component = () => {
   const table = useTable();
@@ -38,7 +37,7 @@ export const Pagination: Component = () => {
       <div class={ts.pagination}>
         <div {...api().rootProps}>
           <Button {...api().prevPageTriggerProps}>
-            <FaSolidArrowLeftLong class={css.inlineIcon} />
+            <FaSolidArrowLeftLong class="inlineIcon" />
           </Button>
           <For each={api().pages}>
             {(page, i) => (
@@ -46,7 +45,7 @@ export const Pagination: Component = () => {
                 when={page.type === "page"}
                 fallback={
                   <span {...api().getEllipsisProps({index: i()})}>
-                    <IoEllipsisHorizontal class={cx(css.inlineIcon, "mb-0")} />
+                    <IoEllipsisHorizontal class="inlineIcon mb-0" />
                   </span>
                 }
               >
@@ -55,7 +54,7 @@ export const Pagination: Component = () => {
             )}
           </For>
           <Button {...api().nextPageTriggerProps}>
-            <FaSolidArrowRightLong class={css.inlineIcon} />
+            <FaSolidArrowRightLong class="inlineIcon" />
           </Button>
         </div>
       </div>

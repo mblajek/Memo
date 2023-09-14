@@ -12,4 +12,35 @@
   input[type="checkbox"]:disabled:not(:checked) {
     filter: brightness(0.8);
   }
+
+  button {
+    &.primary {
+      @apply p-2 rounded bg-cyan-500 text-white disabled:bg-opacity-50;
+    }
+    &.secondary {
+      @apply p-2 rounded border border-cyan-500 text-cyan-500 disabled:bg-opacity-50;
+    }
+    &.secondarySmall {
+      @apply px-1 rounded border border-cyan-500 text-cyan-500 disabled:bg-opacity-50;
+    }
+  }
+
+  // Icons
+  svg {
+    // An icon displayed inline in text. It is black by default, and reacts to text-opacity-* classes.
+    // Use the dimmed class to dim.
+    &.inlineIcon {
+      @apply inline mb-1 fill-current;
+      &.strokeIcon {
+        @apply stroke-current fill-none;
+      }
+    }
+
+    // By default the fill color uses the current color, but with the strokeIcon class it's
+    // the stroke color instead of fill color.
+    @apply text-black;
+    &.dimmed {
+      @apply text-opacity-30;
+    }
+  }
 }

@@ -6,7 +6,9 @@ tables:
     summary__many: "{{count, number}} wyników"
     columnNames:
       id: "id"
+      actions: "akcje"
   users:
+    tableName: "$t(models.user._name_plural)"
     summary__zero: "Brak użytkowników"
     summary__one: "{{count, number}} użytkownik"
     summary__few: "{{count, number}} użytkowników"
@@ -19,7 +21,13 @@ tables:
       createdAt: "$t(models.user.createdAt)"
       facilitiesMember: "$t(models.user.members)"
       hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
-      actions: "akcje"
+      actions: "$t(tables.tables.generic.columnNames.actions)"
+  userFacilities:
+    tableName: "$t(models.user.members)"
+    columnNames:
+      facility: "$t(models.member.facility)"
+      hasFacilityAdmin: "$t(models.member.hasFacilityAdmin)"
+      actions: "$t(tables.tables.generic.columnNames.actions)"
 search: "Szukaj"
 choose_columns: "Wybierz kolumny"
 sort_tooltip: "Sortuj"

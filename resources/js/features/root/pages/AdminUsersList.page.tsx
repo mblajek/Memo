@@ -1,9 +1,10 @@
-import {Button, Email, cellFunc, createTableTranslations, css} from "components/ui";
+import {AUTO_SIZE_COLUMN_DEFS, Button, Email, cellFunc, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
-import {UserEditForm} from "features/users-edit";
+import {UserCreateForm, UserEditForm} from "features/users-edit";
 import {FiEdit2} from "solid-icons/fi";
+import {TbUserPlus} from "solid-icons/tb";
 import {Component} from "solid-js";
 import {startUsersMock} from "./users_fake_tquery";
 
@@ -28,11 +29,6 @@ export default (() => {
               cell: cellFunc<string>((v) => <Email email={v} />),
             },
           },
-          hasPassword: {
-            columnDef: {
-              size: 100,
-            },
-          },
           createdAt: {
             columnDef: {
               sortDescFirst: true,
@@ -53,9 +49,10 @@ export default (() => {
             columnDef: {
               cell: (c) => (
                 <Button onClick={() => UserEditForm.showModalFor({userId: c.row.getValue("id")})}>
-                  <FiEdit2 class={css.inlineStrokeIcon} /> {t("edit")}
+                  <FiEdit2 class="inlineIcon strokeIcon" /> {t("edit")}
                 </Button>
               ),
+              ...AUTO_SIZE_COLUMN_DEFS,
             },
           },
         }}
@@ -79,8 +76,14 @@ export default (() => {
           "actions",
         ]}
         initialSort={[{id: "name", desc: false}]}
+        customSectionBelowTable={
+          <Button class="secondarySmall" onClick={() => UserCreateForm.showModal()}>
+            <TbUserPlus class="inlineIcon strokeIcon text-current" /> {t("add_user")}
+          </Button>
+        }
       />
       <UserEditForm.Modal />
+      <UserCreateForm.Modal />
     </AccessBarrier>
   );
 }) satisfies Component;
