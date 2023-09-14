@@ -184,9 +184,9 @@ export namespace UserMembersEdit {
   }
 
   export function useMembersUpdater(): MembersUpdater {
-    const createMemberMutation = createMutation(() => ({mutationFn: Admin.createMember}));
-    const updateMemberMutation = createMutation(() => ({mutationFn: Admin.updateMember}));
-    const deleteMemberMutation = createMutation(() => ({mutationFn: Admin.deleteMember}));
+    const createMemberMutation = createMutation(() => ({mutationFn: Admin.createMember, meta: {isFormSubmit: true}}));
+    const updateMemberMutation = createMutation(() => ({mutationFn: Admin.updateMember, meta: {isFormSubmit: true}}));
+    const deleteMemberMutation = createMutation(() => ({mutationFn: Admin.deleteMember, meta: {isFormSubmit: true}}));
     return {
       getUpdatePromises: (oldUser, values) => {
         const promises = [];

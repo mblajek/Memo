@@ -16,7 +16,10 @@ export namespace UserCreateForm {
   export const Component: Component<Props> = (props) => {
     const t = useLangFunc();
     const invalidate = Admin.useInvalidator();
-    const userMutation = createMutation(() => ({mutationFn: Admin.createUser}));
+    const userMutation = createMutation(() => ({
+      mutationFn: Admin.createUser,
+      meta: {isFormSubmit: true},
+    }));
     const membersUpdater = UserMembersEdit.useMembersUpdater();
 
     async function updateUser(values: UserEdit.Output) {

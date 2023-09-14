@@ -26,7 +26,10 @@ export namespace UserEditForm {
     const userQuery = createQuery(() => Admin.userQueryOptions(props.userId));
     const user = () => userQuery.data;
     const invalidate = Admin.useInvalidator();
-    const userMutation = createMutation(() => ({mutationFn: Admin.updateUser}));
+    const userMutation = createMutation(() => ({
+      mutationFn: Admin.updateUser,
+      meta: {isFormSubmit: true},
+    }));
     const membersUpdater = UserMembersEdit.useMembersUpdater();
 
     async function updateUser(values: UserEdit.Output, ctx: SubmitContext<UserEdit.Output>) {

@@ -6,7 +6,6 @@ import {validator} from "@felte/validator-zod";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
-import toast from "solid-toast";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, useLangFunc} from "../utils";
@@ -96,9 +95,8 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
             }
             // @ts-expect-error setErrors does not like generic types
             ctx.setErrors(field, (errors) => [...errors, errorMessage]);
-          } else {
-            toast.error(t(error.code));
           }
+          // Other errors are already handled by the query client.
         });
       }
     },

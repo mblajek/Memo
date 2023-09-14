@@ -44,6 +44,7 @@ export namespace PasswordChangeForm {
         toast.success(t("forms.password_change.success"));
         props.onSuccess?.();
       },
+      meta: {isFormSubmit: true},
     }));
 
     const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
