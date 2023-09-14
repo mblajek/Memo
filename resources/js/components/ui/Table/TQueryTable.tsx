@@ -48,6 +48,7 @@ declare module "@tanstack/table-core" {
 export interface TQueryColumnMeta extends ColumnMetaParams {
   /** Column type, if the column is based on data from backend. */
   type?: ColumnType;
+  nullable?: boolean;
 }
 
 export interface TQueryTableProps {
@@ -176,7 +177,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
       if (badColumns.size)
         console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
       const columns = [
-        ...sch.columns.map(({type, name}) => {
+        ...sch.columns.map(({type, nullable, name}) => {
           const common = commonColumnDef(name, type);
           return h.accessor(name, {
             ...common,
@@ -184,6 +185,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
               ...common.meta,
               tquery: {
                 type,
+                nullable,
                 ...columnOptions(name).metaParams,
               } satisfies TQueryColumnMeta,
             },
