@@ -68,4 +68,11 @@ enum TqDataTypeEnum
         return $this->baseType()->notNullType();
     }
 
+    public function isSortable():bool
+    {
+        return match ($this->notNullBaseType()) {
+            self::uuid, self::text => false,
+            default => true,
+        };
+    }
 }
