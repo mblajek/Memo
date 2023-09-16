@@ -1,6 +1,4 @@
 .searchBar {
-  @apply flex-grow;
-
   input {
     @apply h-full w-full rounded px-2 border;
   }
@@ -72,11 +70,15 @@
   [data-part="next-page-trigger"],
   [data-part="page-trigger"],
   [data-part="ellipsis"] {
-    @apply px-1 border rounded text-center;
+    @apply px-1 border rounded flex justify-center items-center;
 
     &[data-disabled] svg {
       @apply opacity-20;
     }
+  }
+
+  [data-part="ellipsis"] svg {
+    @apply opacity-40;
   }
 
   [data-part="prev-page-trigger"],
@@ -124,83 +126,82 @@
 }
 
 .tableContainer {
-  @apply flex flex-col gap-1;
+  @apply flex flex-col items-stretch gap-1;
 
   .aboveTable,
   .belowTable {
-    @apply bg-white;
+    @apply basis-0;
   }
 
-  .tableBg {
-    @apply self-start;
-    @apply w-max bg-gray-300;
+  .scrollingWrapper {
+    @apply overflow-x-auto;
 
-    .table {
-      @apply grid;
-      padding: 1px;
-      gap: 1px;
+    .tableBg {
+      @apply w-max bg-gray-300 mr-6;
 
-      .headerRow {
-        @apply contents;
+      .table {
+        @apply grid;
+        padding: 1px;
+        gap: 1px;
 
-        .cell {
-          @apply outline outline-1 outline-gray-400 bg-gray-100;
-          min-height: 30px;
-        }
-      }
+        .headerRow {
+          @apply contents;
 
-      .dataRow {
-        @apply contents;
-
-        .cell {
-          @apply bg-white text-black whitespace-pre-wrap rounded-sm;
-          @apply px-2 py-1 flex items-center overflow-x-hidden;
-          min-height: 30px;
+          .cell {
+            @apply outline outline-1 outline-gray-400 bg-gray-100;
+            min-height: 30px;
+          }
         }
 
-        &:hover .cell {
-          @apply bg-gray-50;
+        .dataRow {
+          @apply contents;
+
+          .cell {
+            @apply bg-white text-black rounded-sm px-2 py-1 flex items-center overflow-hidden;
+            min-height: 30px;
+          }
+
+          &:hover .cell {
+            @apply bg-gray-50;
+          }
         }
-      }
 
-      .wideRow {
-        grid-column: 1 / -1;
-        @apply bg-white p-2 text-gray-500 text-center;
-      }
+        .wideRow {
+          grid-column: 1 / -1;
+          @apply bg-white p-2 text-gray-500 text-center;
+        }
 
-      .bottomBorder {
-        grid-column: 1 / -1;
-        @apply border-b border-b-gray-300;
-        margin-top: -5px;
-      }
+        .bottomBorder {
+          grid-column: 1 / -1;
+          @apply border-b border-b-gray-300;
+          margin-top: -5px;
+        }
 
-      &.dimmed {
-        .dataRow .cell {
-          @apply bg-opacity-70 text-opacity-30;
+        &.dimmed {
+          .dataRow .cell {
+            @apply bg-opacity-70 text-opacity-30;
+          }
         }
       }
     }
   }
 
   &.standalone {
-    .aboveTable {
-      @apply sticky top-0;
-    }
+    @apply w-full h-full p-2 pr-0;
 
+    .aboveTable,
     .belowTable {
-      @apply sticky bottom-0;
+      @apply pr-2;
     }
 
     .table {
       .headerRow .cell {
         @apply sticky;
-        // Just below the sticky aboveTable bar.
-        top: calc(var(--aboveTableHeight) + 1px);
+        top: 1px;
       }
       .bottomBorder {
         @apply sticky;
-        // Just below the sticky belowTable bar.
-        bottom: var(--belowTableHeight);
+        bottom: 0;
       }
     }
   }

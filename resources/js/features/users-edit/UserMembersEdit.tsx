@@ -3,7 +3,7 @@ import {SortingState, createColumnHelper, createSolidTable} from "@tanstack/soli
 import {AxiosResponse} from "axios";
 import {useFormContext} from "components/felte-form";
 import {Button, Capitalize, Checkbox, SimpleSelect, useTableCells} from "components/ui";
-import {Table, createTableTranslations, getBaseTableOptions} from "components/ui/Table";
+import {AUTO_SIZE_COLUMN_DEFS, Table, createTableTranslations, getBaseTableOptions} from "components/ui/Table";
 import {useLangFunc} from "components/utils";
 import {System} from "data-access/memo-api";
 import {Admin} from "data-access/memo-api/groups/Admin";
@@ -84,6 +84,7 @@ export namespace UserMembersEdit {
             return [{id: "isNewRow", desc: false}, ...sorting()];
           },
         },
+        defaultColumn: AUTO_SIZE_COLUMN_DEFS,
       }),
       get data(): MemberRow[] {
         return data();

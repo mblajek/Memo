@@ -17,7 +17,7 @@ export const Pagination: Component = () => {
       // calculate the page count itself based on the items count.
       pageSize: 1,
       siblingCount: 2,
-      onChange: ({page}) => table.setPageIndex(page - 1),
+      onPageChange: ({page}) => table.setPageIndex(page - 1),
     }),
   );
   const api = createMemo(() => pagination.connect(state, send, normalizeProps));
@@ -37,24 +37,24 @@ export const Pagination: Component = () => {
       <div class={ts.pagination}>
         <div {...api().rootProps}>
           <Button {...api().prevPageTriggerProps}>
-            <FaSolidArrowLeftLong class="inlineIcon" />
+            <FaSolidArrowLeftLong />
           </Button>
           <For each={api().pages}>
             {(page, i) => (
               <Show
-                when={page.type === "page"}
+                when={page.type === "page" && page}
                 fallback={
                   <span {...api().getEllipsisProps({index: i()})}>
-                    <IoEllipsisHorizontal class="inlineIcon mb-0" />
+                    <IoEllipsisHorizontal />
                   </span>
                 }
               >
-                {page.type === "page" && <Button {...api().getPageTriggerProps(page)}>{page.value}</Button>}
+                {(page) => <Button {...api().getPageTriggerProps(page())}>{page().value}</Button>}
               </Show>
             )}
           </For>
           <Button {...api().nextPageTriggerProps}>
-            <FaSolidArrowRightLong class="inlineIcon" />
+            <FaSolidArrowRightLong />
           </Button>
         </div>
       </div>

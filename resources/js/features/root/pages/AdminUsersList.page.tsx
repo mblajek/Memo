@@ -77,9 +77,11 @@ export default (() => {
         ]}
         initialSort={[{id: "name", desc: false}]}
         customSectionBelowTable={
-          <Button class="secondarySmall" onClick={() => UserCreateForm.showModal()}>
-            <TbUserPlus class="inlineIcon strokeIcon text-current" /> {t("actions.add_user")}
-          </Button>
+          <div class="ml-2 flex gap-1">
+            <Button class="secondarySmall" onClick={() => UserCreateForm.showModal()}>
+              <TbUserPlus class="inlineIcon strokeIcon text-current" /> {t("actions.add_user")}
+            </Button>
+          </div>
         }
       />
       <UserEditForm.Modal />
