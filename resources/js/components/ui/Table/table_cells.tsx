@@ -40,7 +40,7 @@ export function useTableCells() {
 
 export function cellFunc<V>(func: (v: V) => JSX.Element | undefined, fallback?: () => JSX.Element): CellComponent {
   return (c) => (
-    <Show when={c.getValue() !== undefined} fallback={fallback?.()}>
+    <Show when={c.getValue() != null} fallback={fallback?.()}>
       {func(c.getValue() as V)}
     </Show>
   );
