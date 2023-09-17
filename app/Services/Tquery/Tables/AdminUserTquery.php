@@ -2,12 +2,10 @@
 
 namespace App\Services\Tquery\Tables;
 
-use App\Services\Tquery\Config\TqColumnConfig;
 use App\Services\Tquery\Config\TqDataTypeEnum;
 use App\Services\Tquery\Config\TqConfig;
 use App\Services\Tquery\Config\TqTableAliasEnum;
 use App\Services\Tquery\Config\TqTableEnum;
-use App\Services\Tquery\Engine\TqBuilder;
 use App\Services\Tquery\Engine\TqService;
 
 readonly class AdminUserTquery extends TqService

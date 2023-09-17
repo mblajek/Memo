@@ -12,19 +12,30 @@ final class DataTypeRule implements ValidationRule, ValidatorAwareRule
 {
     private Validator $validator;
 
-    public function __construct(
+    public static function bool(bool $nullable = false): self
+    {
+        return new self('bool', $nullable);
+    }
+
+    public static function int(bool $nullable = false): self
+    {
+        return new self('int', $nullable);
+    }
+
+    private function __construct(
         private readonly string $type,
+        private readonly bool $nullable,
     ) {
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        preg_match('/^(\\??)(\\w*)$/', $this->type, $matches);
-        [1 => $nullable, 2 => $type] = $matches;
-        if (($nullable && $value === null) || get_debug_type($value) === $type) {
+        if (($this->nullable && $value === null) || get_debug_type($value) === $this->type) {
             return;
         }
-        $this->validator->addFailure($attribute, 'custom.data_type', ['type' => $this->type]);
+        $this->validator->addFailure($attribute, 'custom.data_type', [
+            'type' => ($this->nullable ? '?' : '') . $this->type,
+        ]);
     }
 
     public function setValidator(Validator $validator): void

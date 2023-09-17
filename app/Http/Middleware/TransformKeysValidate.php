@@ -9,7 +9,6 @@ use App\Exceptions\ExceptionFactory;
 use App\Utils\Transformer\ArrayKeyTransformer;
 use Closure;
 use Illuminate\Http\Request;
-use JsonException;
 
 class TransformKeysValidate
 {

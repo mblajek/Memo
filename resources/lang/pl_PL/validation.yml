@@ -7,7 +7,7 @@
   "alpha": "Pole „{{attribute}}” może zawierać jedynie litery.",
   "alpha_dash": "Pole „{{attribute}}” może zawierać jedynie litery, cyfry i myślniki.",
   "alpha_num": "Pole „{{attribute}}” może zawierać jedynie litery i cyfry.",
-  "array": "Pole „{{attribute}}” musi być tablicą.",
+  "array": "Pole „{{attribute}}” musi być tablicą z polami {{values}}.",
   "ascii": "Pole „{{attribute}}” może zawierać tylko jednobajtowe znaki alfanumeryczne i symbole.",
   "before": "Pole „{{attribute}}” musi być datą wcześniejszą niż {{date}}.",
   "before_or_equal": "Pole „{{attribute}}” musi być datą nie późniejszą niż {{date}}.",
@@ -52,7 +52,7 @@
     "string": "Pole „{{attribute}}” musi być dłuższe lub równe {{value, number}} znaków."
   },
   "image": "Pole „{{attribute}}” musi być obrazkiem.",
-  "in": "Zaznaczony element „{{attribute}}” jest nieprawidłowy.",
+  "in": "Zaznaczony element „{{attribute}}” musi mieć jedną z wartości: {{values}}.",
   "in_array": "Pole „{{attribute}}” nie znajduje się w „{{other}}”.",
   "integer": "Pole „{{attribute}}” musi być liczbą całkowitą.",
   "ip": "Pole „{{attribute}}” musi być prawidłowym adresem IP.",

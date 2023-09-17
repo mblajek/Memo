@@ -35,7 +35,7 @@ final readonly class TqColumnConfig
         $this->renderer = $renderer ?? TqRendererGenerator::getRenderer($this);
     }
 
-    public function applyJoin(TqBuilder $builder):void
+    public function applyJoin(TqBuilder $builder): void
     {
         $this->table?->applyJoin(builder: $builder, joinBase: $this->config->table, left: $this->type->isNullable());
     }

@@ -3,6 +3,7 @@
 namespace App\Services\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
+use App\Rules\DataTypeRule;
 use App\Services\Tquery\Filter\TqFilterOperator;
 
 enum TqDataTypeEnum
@@ -82,24 +83,39 @@ enum TqDataTypeEnum
     /** @return TqFilterOperator[] */
     public function operators(): array
     {
-        return array_merge(match ($this->notNullBaseType()) {
-            self::bool => [TqFilterOperator::eq],
-            self::date, self::decimal0 => [
-                TqFilterOperator::eq,
-                TqFilterOperator::in,
-                ...TqFilterOperator::CMP,
-            ],
-            self::datetime => TqFilterOperator::CMP,
-            self::string => [
-                TqFilterOperator::eq,
-                TqFilterOperator::in,
-                ...TqFilterOperator::CMP,
-                ...TqFilterOperator::LIKE,
-            ],
-            self::uuid => [TqFilterOperator::eq, TqFilterOperator::in],
-            self::text => TqFilterOperator::LIKE,
-            default => FatalExceptionFactory::tquery(),
-        }, $this->isNullable() ? [TqFilterOperator::null] : []);
+        return array_merge(
+            $this->isNullable() ? [TqFilterOperator::null] : [],
+            match ($this->notNullBaseType()) {
+                self::bool => [TqFilterOperator::eq],
+                self::date, self::decimal0 => [
+                    TqFilterOperator::eq,
+                    TqFilterOperator::in,
+                    ...TqFilterOperator::CMP,
+                ],
+                self::datetime => TqFilterOperator::CMP,
+                self::string => [
+                    TqFilterOperator::eq,
+                    TqFilterOperator::in,
+                    ...TqFilterOperator::CMP,
+                    ...TqFilterOperator::LIKE,
+                ],
+                self::uuid => [TqFilterOperator::eq, TqFilterOperator::in],
+                self::text => TqFilterOperator::LIKE,
+                default => FatalExceptionFactory::tquery(),
+            }
+        );
     }
 
+    public function valueValidator(): array
+    {
+        return match ($this->notNullBaseType()) {
+            self::bool => ['bool', DataTypeRule::bool()],
+            self::date => throw new \Exception('To be implemented'),
+            self::datetime => throw new \Exception('To be implemented'),
+            self::decimal0 => ['numeric', 'integer', DataTypeRule::int()],
+            self::string, self::text => ['string'],
+            self::uuid => ['string', 'uuid'],
+            default => FatalExceptionFactory::tquery(),
+        };
+    }
 }

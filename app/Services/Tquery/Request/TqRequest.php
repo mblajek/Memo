@@ -25,16 +25,16 @@ readonly class TqRequest
             'sort.*' => ['required', 'array:type,column,desc'],
             'sort.*.type' => 'required|string|in:column',
             'sort.*.column' => ['required', 'string', Rule::in(array_keys($sortableColumns))],
-            'sort.*.desc' => ['sometimes', 'bool', new DataTypeRule('?bool')],
+            'sort.*.desc' => ['sometimes', 'bool', DataTypeRule::bool(true)],
             'paging' => 'required|array:number,size',
-            'paging.number' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
-            'paging.size' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
+            'paging.number' => ['required', 'numeric', 'integer', 'min:1', DataTypeRule::int()],
+            'paging.size' => ['required', 'numeric', 'integer', 'min:1', DataTypeRule::int()],
         ]);
 
         return new self(
             columns: self::parseColumns($data['columns']),
-            filter: self::parseFilter($data['filter'] ?? null),
-            sort: self::parseSort($data['sort']),
+            filter: self::parseFilter($config, $data),
+            sort: self::parseSort($data['sort'] ?? []),
             number: $data['paging']['number'],
             size: $data['paging']['size'],
         );
@@ -47,7 +47,7 @@ readonly class TqRequest
             array_merge(
                 array_map(fn(TqRequestColumn $column) => $column->column, $this->columns),
                 array_map(fn(TqRequestSort $sort) => $sort->column, $this->sort),
-            // todo filter
+                array_map(fn(TqColumnConfig $column) => $column->columnAlias, $this->filter?->getColumns() ?? [])
             )
         );
     }
@@ -58,9 +58,10 @@ readonly class TqRequest
         return array_map(fn(array $column) => TqRequestColumn::fromArray($column), $array);
     }
 
-    private static function parseFilter(?array $array): TqRequestFilter
+    private static function parseFilter(TqConfig $config, array $array): ?TqRequestAbstractFilter
     {
-        return TqRequestFilter::fromArray($array);
+        return array_key_exists('filter', $array)
+            ? TqRequestAbstractFilter::fromArray($config, $array, ['filter']) : null;
     }
 
     /** @return TqRequestSort[] */
@@ -75,7 +76,7 @@ readonly class TqRequest
      */
     private function __construct(
         public array $columns,
-        public TqRequestFilter $filter,
+        public ?TqRequestAbstractFilter $filter,
         public array $sort,
         public int $number,
         public int $size,
