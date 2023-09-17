@@ -18,7 +18,7 @@ class TqSelectGenerator
     {
         return match ($columnConfig->type) {
             TqDataTypeEnum::is_null => fn($query) => "case when ($query) is null then 1 else 0 end",
-            TqDataTypeEnum::is_not_null => fn($query) => "case when ($query) is not null then 1 else 0 end",
+            TqDataTypeEnum::is_not_null => fn($query) => "case when ($query) is null then 0 else 1 end",
             default => self::forward(...),
         };
     }

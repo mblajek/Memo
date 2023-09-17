@@ -4,7 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\QueryBuilders\UserBuilder;
-use App\Rules\RequirePresent;
+use App\Rules\RequirePresentRule;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
@@ -85,12 +85,12 @@ class User extends Authenticatable
     {
         return match ($field) {
             'name' => 'required|string',
-            'email' => ['nullable', 'string', 'email', new RequirePresent('has_email_verified')],
+            'email' => ['nullable', 'string', 'email', new RequirePresentRule('has_email_verified')],
             'has_email_verified' => 'sometimes|bool',
             'password' => array_merge(
                 ['bail', 'nullable', 'string'],
                 self::fieldValidator('_password'),
-                [new RequirePresent('password_expire_at')],
+                [new RequirePresentRule('password_expire_at')],
             ),
             '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
             'password_expire_at' => 'sometimes|nullable|date',

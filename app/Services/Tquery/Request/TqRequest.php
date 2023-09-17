@@ -2,27 +2,31 @@
 
 namespace App\Services\Tquery\Request;
 
+use App\Rules\ArrayIsListRule;
 use App\Rules\DataTypeRule;
 use App\Services\Tquery\Config\TqColumnConfig;
 use App\Services\Tquery\Config\TqConfig;
+use App\Services\Tquery\Filter\TqRequestAbstractFilter;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 readonly class TqRequest
 {
     public static function fromHttpRequest(TqConfig $config, Request $request): self
     {
-        $keys = fn(array $array) => implode(',', array_keys($array));
         $sortableColumns = array_filter($config->columns, fn(TqColumnConfig $column) => $column->type->isSortable());
         $data = $request->validate([
-            'columns' => 'required|array|min:1',
+            'columns' => ['required', 'array', 'min:1', new ArrayIsListRule()],
+            'columns.*' => ['required', 'array:type,column'],
             'columns.*.type' => 'required|string|in:column',
-            'columns.*.column' => 'required|string|in:' . $keys($config->columns),
+            'columns.*.column' => ['required', 'string', Rule::in(array_keys($config->columns))],
             'filter' => 'sometimes|array',
-            'sort' => 'present|array',
+            'sort' => ['sometimes', 'array', new ArrayIsListRule()],
+            'sort.*' => ['required', 'array:type,column,desc'],
             'sort.*.type' => 'required|string|in:column',
-            'sort.*.column' => 'required|string|in:' . $keys($sortableColumns),
+            'sort.*.column' => ['required', 'string', Rule::in(array_keys($sortableColumns))],
             'sort.*.desc' => ['sometimes', 'bool', new DataTypeRule('?bool')],
-            'paging' => 'required|array',
+            'paging' => 'required|array:number,size',
             'paging.number' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
             'paging.size' => ['required', 'numeric', 'integer', 'min:1', new DataTypeRule('int')],
         ]);

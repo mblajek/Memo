@@ -2,6 +2,9 @@
 
 namespace App\Services\Tquery\Config;
 
+use App\Exceptions\FatalExceptionFactory;
+use App\Services\Tquery\Filter\TqFilterOperator;
+
 enum TqDataTypeEnum
 {
     // todo split?
@@ -68,11 +71,35 @@ enum TqDataTypeEnum
         return $this->baseType()->notNullType();
     }
 
-    public function isSortable():bool
+    public function isSortable(): bool
     {
         return match ($this->notNullBaseType()) {
             self::uuid, self::text => false,
             default => true,
         };
     }
+
+    /** @return TqFilterOperator[] */
+    public function operators(): array
+    {
+        return array_merge(match ($this->notNullBaseType()) {
+            self::bool => [TqFilterOperator::eq],
+            self::date, self::decimal0 => [
+                TqFilterOperator::eq,
+                TqFilterOperator::in,
+                ...TqFilterOperator::CMP,
+            ],
+            self::datetime => TqFilterOperator::CMP,
+            self::string => [
+                TqFilterOperator::eq,
+                TqFilterOperator::in,
+                ...TqFilterOperator::CMP,
+                ...TqFilterOperator::LIKE,
+            ],
+            self::uuid => [TqFilterOperator::eq, TqFilterOperator::in],
+            self::text => TqFilterOperator::LIKE,
+            default => FatalExceptionFactory::tquery(),
+        }, $this->isNullable() ? [TqFilterOperator::null] : []);
+    }
+
 }

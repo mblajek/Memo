@@ -9,13 +9,13 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Validation\Validator;
 
-final class RequirePresent implements ValidationRule, DataAwareRule, ValidatorAwareRule
+final class RequirePresentRule implements ValidationRule, DataAwareRule, ValidatorAwareRule
 {
     private array $data;
     private Validator $validator;
 
     public function __construct(
-        public string $referredField,
+        private readonly string $referredField,
     ) {
     }
 
