@@ -6,6 +6,7 @@ import {
   DECIMAL2_NUMBER_FORMAT,
   useLangFunc,
 } from "components/utils";
+import {DateTime} from "luxon";
 import {JSX, Show} from "solid-js";
 import {Header} from "./Header";
 
@@ -32,8 +33,8 @@ export function useTableCells() {
     decimal0: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>),
     decimal2: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>),
     bool: cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no"))),
-    date: cellFunc<string>((v) => DATE_FORMAT.format(new Date(v))),
-    datetime: cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v))),
+    date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
+    datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
   };
 }
 
