@@ -6,11 +6,9 @@ import {
   createColumnHelper,
   createSolidTable,
 } from "@tanstack/solid-table";
-import {cx} from "components/utils";
 import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
 import {Component, JSX, createMemo} from "solid-js";
 import {
-  ABOVE_AND_BELOW_TABLE_DEFAULT_CSS,
   DisplayMode,
   Header,
   IdColumn,
@@ -93,7 +91,7 @@ export interface TQueryTableProps {
   initialVisibleColumns?: string[];
   initialSort?: SortingState;
   initialPageSize?: number;
-  /** Element to put on the right side of the bar below table. */
+  /** Element to put below table, after the summary. */
   customSectionBelowTable?: JSX.Element;
 }
 
@@ -238,19 +236,17 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     <Table
       table={table}
       mode={props.mode}
-      autoColumnSize={false}
       rowsIteration="Index"
       aboveTable={() => (
-        <div class={cx(ABOVE_AND_BELOW_TABLE_DEFAULT_CSS, "gap-1")}>
-          <TableSearch />
+        <div class="h-8 flex items-stretch gap-1">
+          <TableSearch class="flex-grow" />
           <TableColumnVisibilityController />
         </div>
       )}
       belowTable={() => (
-        <div class={cx(ABOVE_AND_BELOW_TABLE_DEFAULT_CSS, "gap-2")}>
+        <div class="h-8 flex items-stretch gap-2">
           <Pagination />
           <TableSummary rowsCount={rowsCount()} />
-          <div class="flex-grow" />
           {props.customSectionBelowTable}
         </div>
       )}

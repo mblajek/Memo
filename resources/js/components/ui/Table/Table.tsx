@@ -58,7 +58,10 @@ declare module "@tanstack/table-core" {
  */
 export type DisplayMode = "standalone" | "embedded";
 
-/** Column def params that make the column auto-size, i.e. wrap contents and not be user-resizable. */
+/**
+ * Column def params that make the column auto-size, i.e. wrap contents and not be user-resizable.
+ * Can be specified as defaultColumn to make all column auto-sized.
+ */
 export const AUTO_SIZE_COLUMN_DEFS = {
   enableResizing: false,
   minSize: 0,
@@ -69,8 +72,6 @@ interface Props<T = object> {
   table: TanStackTable<T>;
   /** Table mode. Default: embedded. */
   mode?: DisplayMode;
-  /** Whether the column sizes are taken from the content size. Default: true. */
-  autoColumnSize?: boolean;
   /**
    * The iteration component used for iterating over rows. Default: For.
    *
@@ -79,20 +80,10 @@ interface Props<T = object> {
    * to the backend, Index might be a better choice.
    */
   rowsIteration?: "For" | "Index";
-  /** The content to put above the table, e.g. the global search bar. */
+  /** The content to put above the table, e.g. the global search bar. It has access to the table context */
   aboveTable?: () => JSX.Element;
-  /**
-   * The height of the aboveTable element. It is important to calculate the sticky header position
-   * in the standalone mode. Default: 32.
-   */
-  aboveTableHeight?: number;
-  /** The content to put below the table, e.g. the pagination controller. */
+  /** The content to put below the table, e.g. the pagination controller. It has access to the table context */
   belowTable?: () => JSX.Element;
-  /**
-   * The height of the belowTable element. It is important to calculate the sticky lower bar position
-   * in the standalone mode. Default: 32.
-   */
-  belowTableHeight?: number;
   /** Whether the whole table content is loading. This hides the whole table and displays a spinner. */
   isLoading?: boolean;
   /** Whether the content of the table is reloading. This dims the table and makes it inert. */
@@ -103,16 +94,10 @@ interface Props<T = object> {
 
 const DEFAULT_PROPS = {
   mode: "embedded",
-  autoColumnSize: true,
   rowsIteration: "For",
-  aboveTableHeight: 32,
-  belowTableHeight: 32,
   isLoading: false,
   isDimmed: false,
 } satisfies Partial<Props>;
-
-/** A typical list of classes for the aboveTable and belowTable elements. */
-export const ABOVE_AND_BELOW_TABLE_DEFAULT_CSS = "h-full flex items-stretch";
 
 /**
  * A table. Most aspects of the table are controlled by props.table, some additional options
@@ -132,87 +117,67 @@ export const Table = <T,>(optProps: Props<T>) => {
     ),
   );
   const gridTemplateColumns = () =>
-    props.autoColumnSize
-      ? `repeat(${props.table.getVisibleLeafColumns().length}, auto)`
-      : props.table
-          .getVisibleLeafColumns()
-          .map((c) => (!c.getCanResize() && c.getSize() === AUTO_SIZE_COLUMN_DEFS.size ? "auto" : `${c.getSize()}px`))
-          .join(" ");
+    props.table
+      .getVisibleLeafColumns()
+      .map((c) => (!c.getCanResize() && c.getSize() === AUTO_SIZE_COLUMN_DEFS.size ? "auto" : `${c.getSize()}px`))
+      .join(" ");
   return (
     <TableContextProvider table={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
-        <div
-          ref={scrollToTopPoint}
-          class={cx(ts.tableContainer, props.mode === "standalone" ? ts.standalone : ts.embedded)}
-        >
-          <Show when={props.aboveTable}>
-            <div class={ts.aboveTable} style={{height: `${props.aboveTableHeight}px`}}>
-              {props.aboveTable?.()}
-            </div>
-          </Show>
-          <div class={ts.tableBg}>
-            <div
-              class={ts.table}
-              classList={{[ts.dimmed!]: props.isDimmed}}
-              style={{
-                "grid-template-columns": gridTemplateColumns(),
-              }}
-            >
+        <div class={cx(ts.tableContainer, ts[props.mode])}>
+          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={ts.aboveTable}>{aboveTable()}</div>}</Show>
+          <div class={ts.scrollingWrapper}>
+            <div ref={scrollToTopPoint} class={ts.tableBg}>
               <div
-                class={ts.headerRow}
-                style={{"--aboveTableHeight": `${props.aboveTable ? props.aboveTableHeight : 0}px`}}
+                class={cx(ts.table, {[ts.dimmed!]: props.isDimmed})}
+                style={{"grid-template-columns": gridTemplateColumns()}}
               >
-                <For each={getHeaders(props.table)}>
-                  {({header, column}) => (
-                    <Show when={header()}>
-                      {(header) => (
-                        <div class={ts.cell}>
-                          <Show when={!header().isPlaceholder}>
-                            <CellRenderer component={column.columnDef.header} props={header().getContext()} />
-                          </Show>
-                        </div>
-                      )}
-                    </Show>
-                  )}
-                </For>
-              </div>
-              <Dynamic
-                component={{For, Index}[props.rowsIteration]}
-                each={props.table.getRowModel().rows}
-                fallback={
-                  <div class={ts.wideRow}>
-                    <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
-                      <BigSpinner />
-                    </Show>
-                  </div>
-                }
-              >
-                {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
-                  const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
-                  return (
-                    <div class={ts.dataRow} inert={props.isDimmed || undefined}>
-                      <Index each={row().getVisibleCells()}>
-                        {(cell) => (
-                          <span class={ts.cell}>
-                            <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
-                          </span>
+                <div class={ts.headerRow}>
+                  <For each={getHeaders(props.table)}>
+                    {({header, column}) => (
+                      <Show when={header()}>
+                        {(header) => (
+                          <div class={ts.cell}>
+                            <Show when={!header().isPlaceholder}>
+                              <CellRenderer component={column.columnDef.header} props={header().getContext()} />
+                            </Show>
+                          </div>
                         )}
-                      </Index>
+                      </Show>
+                    )}
+                  </For>
+                </div>
+                <Dynamic
+                  component={{For, Index}[props.rowsIteration]}
+                  each={props.table.getRowModel().rows}
+                  fallback={
+                    <div class={ts.wideRow}>
+                      <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
+                        <BigSpinner />
+                      </Show>
                     </div>
-                  );
-                }}
-              </Dynamic>
-              <div
-                class={ts.bottomBorder}
-                style={{"--belowTableHeight": `${props.belowTable ? props.belowTableHeight : 0}px`}}
-              />
+                  }
+                >
+                  {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
+                    const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
+                    return (
+                      <div class={ts.dataRow} inert={props.isDimmed || undefined}>
+                        <Index each={row().getVisibleCells()}>
+                          {(cell) => (
+                            <span class={ts.cell}>
+                              <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
+                            </span>
+                          )}
+                        </Index>
+                      </div>
+                    );
+                  }}
+                </Dynamic>
+                <div class={ts.bottomBorder} />
+              </div>
             </div>
           </div>
-          <Show when={props.belowTable}>
-            <div class={ts.belowTable} style={{height: `${props.belowTableHeight}px`}}>
-              {props.belowTable?.()}
-            </div>
-          </Show>
+          <Show when={props.belowTable?.()}>{(belowTable) => <div class={ts.belowTable}>{belowTable()}</div>}</Show>
         </div>
       </Show>
     </TableContextProvider>

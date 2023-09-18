@@ -27,9 +27,7 @@ export function useTableCells() {
   const t = useLangFunc();
   return {
     defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
-    default: ((ctx) => (
-      <Show when={ctx.getValue() != undefined}>{String(ctx.getValue())}</Show>
-    )) satisfies CellComponent,
+    default: cellFunc((v) => <div class="whitespace-pre-wrap">{String(v)}</div>),
     decimal0: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>),
     decimal2: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>),
     bool: cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no"))),
