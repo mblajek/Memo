@@ -28,6 +28,7 @@ interface ColumnSchemaBase {
 
 export interface BasicColumnSchema extends ColumnSchemaBase {
   type: "uuid" | "string" | "text" | "decimal0" | "decimal2" | "bool" | "date" | "datetime";
+  nullable?: boolean;
 }
 
 export interface CustomFilter {
