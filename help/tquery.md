@@ -40,6 +40,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
   - `regexp`(?) - operator MySql `binary(?) columnn regexp val` (jeżeli będzie `binary`, to będzie case sensitive)
 - `sort` - wartości `null` są na początku dla `asc` i na końcu dla `desc`
 
+
 - `(1)` - pojedyncza wartość słownikowa, zwracana jako uuid
 - `(2)` - obiekt o dowolnej strukturze
 - `(3)` - wiele wartości słownikowych, zwracanych jako lista uuid

@@ -55,6 +55,9 @@ readonly class TqEngine
 
     private function applyFilter(): void
     {
+        if(is_bool($this->request->filter)){
+            $this->request->filter || $this->builder->where('false');
+        }
         // todo
     }
 

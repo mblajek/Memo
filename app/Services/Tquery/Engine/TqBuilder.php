@@ -55,6 +55,11 @@ class TqBuilder
         $this->builder->orderByRaw("$query " . ($desc ? 'desc' : 'asc'));
     }
 
+    public function where(string $query): void
+    {
+        $this->builder->whereRaw($query);
+    }
+
     public function applyPaging(int $number, int $size): void
     {
         $this->builder->forPage(page: $number, perPage: $size);
