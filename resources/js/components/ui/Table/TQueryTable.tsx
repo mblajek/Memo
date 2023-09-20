@@ -7,7 +7,7 @@ import {
   createSolidTable,
 } from "@tanstack/solid-table";
 import {cx} from "components/utils";
-import {ColumnType, Filter, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
+import {ColumnType, FilterH, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
 import {Component, JSX, createMemo} from "solid-js";
 import {
   ABOVE_AND_BELOW_TABLE_DEFAULT_CSS,
@@ -70,7 +70,7 @@ export interface TQueryTableProps {
    * This is used to create e.g. a table of entities A on the details page of a particular
    * entity B, so only entities A related direclty to that particular entity B should be shown.
    */
-  intrinsicFilter?: Filter;
+  intrinsicFilter?: FilterH;
   /**
    * A list of columns that are always included in the request (and available on the row objects),
    * even if they are not visible.
@@ -105,13 +105,13 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
 
   const tableCells = useTableCells();
   const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<object>>>([
-    ["uuid", {cell: cellFunc<string>((v) => <IdColumn id={v} />), enableSorting: false, size: 80}],
-    ["text", {enableSorting: false}],
-    ["decimal0", {cell: tableCells.decimal0}],
-    ["decimal2", {cell: tableCells.decimal2}],
     ["bool", {cell: tableCells.bool, size: 100}],
     ["date", {cell: tableCells.date}],
     ["datetime", {cell: tableCells.datetime}],
+    ["int", {cell: tableCells.int}],
+    ["string", {}],
+    ["text", {enableSorting: false}],
+    ["uuid", {cell: cellFunc<string>((v) => <IdColumn id={v} />), enableSorting: false, size: 80}],
   ]);
 
   const requestCreator = createTableRequestCreator({
@@ -129,13 +129,7 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     prefixQueryKey: props.staticPrefixQueryKey,
     requestCreator,
   });
-  const {
-    columnVisibility,
-    globalFilter,
-    columnFilters: [columnFilters, setColumnFilters],
-    sorting,
-    pagination,
-  } = requestController;
+  const {columnVisibility, globalFilter, columnFilter, sorting, pagination} = requestController;
   const {rowsCount, pageCount, scrollToTopSignal} = tableHelper({
     requestController,
     response: () => dataQuery.data,
@@ -154,8 +148,8 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
           filter={
             <ColumnFilterController
               name={ctx.column.id}
-              filter={columnFilters[ctx.column.id]}
-              setFilter={(filter) => setColumnFilters(ctx.column.id, filter)}
+              filter={columnFilter(ctx.column.id)[0]()}
+              setFilter={(filter) => columnFilter(ctx.column.id)[1](filter)}
             />
           }
         />

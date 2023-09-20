@@ -9,8 +9,4 @@ export const DATE_TIME_WITH_WEEKDAY_FORMAT = {
   ...TIME_FORMAT,
 } satisfies Intl.DateTimeFormatOptions;
 
-export const DECIMAL0_NUMBER_FORMAT = new Intl.NumberFormat();
-export const DECIMAL2_NUMBER_FORMAT = new Intl.NumberFormat(undefined, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
+export const NUMBER_FORMAT = new Intl.NumberFormat();

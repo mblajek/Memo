@@ -3,8 +3,8 @@ import {FilterControlProps} from ".";
 import {FilterIcon, tableStyle as ts, useTable} from "..";
 import {BoolFilterControl} from "./BoolFilterControl";
 import {DateTimeFilterControl} from "./DateTimeFilterControl";
-import {DecimalFilterControl} from "./DecimalFilterControl";
-import {StringFilterControl} from "./StringFilterControl";
+import {IntFilterControl} from "./IntFilterControl";
+import {TextualFilterControl} from "./TextualFilterControl";
 import {UuidFilterControl} from "./UuidFilterControl";
 
 interface CommonFilteringParams {
@@ -17,6 +17,11 @@ export interface DateTimeFilteringParams extends CommonFilteringParams {
 
 export type FilteringParams = DateTimeFilteringParams;
 
+/**
+ * The filter controler element for the named column.
+ *
+ * TODO: Add support for nullable columns.
+ */
 export const ColumnFilterController: Component<FilterControlProps> = (props) => {
   const table = useTable();
   const filterControl = (): (() => JSX.Element) | undefined => {
@@ -29,14 +34,6 @@ export const ColumnFilterController: Component<FilterControlProps> = (props) => 
     switch (meta.type) {
       case undefined:
         return undefined;
-      case "uuid":
-        return () => <UuidFilterControl {...anyFilterProps} />;
-      case "string":
-      case "text":
-        return () => <StringFilterControl {...anyFilterProps} />;
-      case "decimal0":
-      case "decimal2":
-        return () => <DecimalFilterControl {...anyFilterProps} columnType={meta.type} />;
       case "bool":
         return () => <BoolFilterControl {...anyFilterProps} />;
       case "date":
@@ -48,6 +45,13 @@ export const ColumnFilterController: Component<FilterControlProps> = (props) => 
             useDateOnlyInputs={meta.filtering?.useDateOnlyInputs}
           />
         );
+      case "int":
+        return () => <IntFilterControl {...anyFilterProps} />;
+      case "string":
+      case "text":
+        return () => <TextualFilterControl {...anyFilterProps} columnType={meta.type} />;
+      case "uuid":
+        return () => <UuidFilterControl {...anyFilterProps} />;
       default:
         return meta.type satisfies never;
     }

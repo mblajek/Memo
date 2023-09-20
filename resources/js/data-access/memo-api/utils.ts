@@ -52,7 +52,12 @@ export function createGetFromList<T extends Api.Entity>(
     });
 }
 
-/** Returns the ISO representation of date in UTC time zone, suitable for sending to backend. */
+/** Returns the ISO representation of datetime in UTC time zone, suitable for sending to backend. */
 export function dateTimeToISO(dateTime: DateTime) {
-  return dateTime.toUTC().set({millisecond: 0}).toISO({suppressMilliseconds: true})!;
+  return dateTime.toUTC().set({millisecond: 0}).toISO({suppressMilliseconds: true});
+}
+
+/** Returns the ISO representation of date, suitable for sending to backend. Local time zone is used. */
+export function dateToISO(dateTime: DateTime) {
+  return dateTime.toISODate();
 }
