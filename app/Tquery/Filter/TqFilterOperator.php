@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Services\Tquery\Filter;
+namespace App\Tquery\Filter;
 
 enum TqFilterOperator: string
 {
     case eq = '=';
+    case eqs = '==';
     case null = 'null';
     // group
     case and = '&';
@@ -15,7 +16,7 @@ enum TqFilterOperator: string
     case gt = '>';
     case ge = '>=';
     // like
-    case v = 'v';
+    case lv = 'lv';
     case pv = '%v';
     case vp = 'v%';
     case pvp = '%v%';
@@ -29,7 +30,7 @@ enum TqFilterOperator: string
     /** @var TqFilterOperator[] */
     public const CMP = [self::lt, self::le, self::gt, self::ge];
     /** @var TqFilterOperator[] */
-    public const LIKE = [self::v, self::pv, self::vp, self::pvp];
+    public const LIKE = [self::lv, self::pv, self::vp, self::pvp];
     /** @var TqFilterOperator[] */
     public const ARR = [self::in, self::all, self::any];
 }

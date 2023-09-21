@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Tquery\OpenApi;
+namespace App\Tquery\OpenApi;
 
 use App\Http\Permissions\PermissionDescribe;
-use OpenApi\Attributes as OA;
 use Attribute;
+use OpenApi\Attributes as OA;
 
 #[Attribute(Attribute::TARGET_METHOD)]
 class OpenApiGet extends OA\Get

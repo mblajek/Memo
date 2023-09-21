@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Tquery\Tables;
+namespace App\Tquery\Tables;
 
-use App\Services\Tquery\Config\TqDataTypeEnum;
-use App\Services\Tquery\Config\TqConfig;
-use App\Services\Tquery\Config\TqTableAliasEnum;
-use App\Services\Tquery\Config\TqTableEnum;
-use App\Services\Tquery\Engine\TqService;
+use App\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqDataTypeEnum;
+use App\Tquery\Config\TqTableAliasEnum;
+use App\Tquery\Config\TqTableEnum;
+use App\Tquery\Engine\TqService;
 
 readonly class AdminUserTquery extends TqService
 {

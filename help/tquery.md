@@ -22,7 +22,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 - dla wszystkich porównań `val` powinno być (zależnie od typu porównania, wartością lub listą)
   - tego samego typu co kolumna dla `bool`, `int`, `string`, `text`-`string`
   - stringiem poprawnie reprezentującą wartość (`date` - `Y-m-d`, `datetime` - `Y-m-d\TH:i:s\Z`, `uuid` - uuid v4)
-  - dla wszystkich operatorów dla `string` oprócz `%v`, `v%` i `%v%`, wartość musi być strimmowana
+  - dla operatorów `=`, `==` i `in` dla `string` wartość musi być strimmowana
   - wartość nie może być pustym stringiem
 - `null` - operator poprawny tylko dla typów nullable oraz list
   - `null` w bazie dla tego operatora daje `true`, dla wszystkich pozostałych daje `false`

@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Services\Tquery\Filter;
+namespace App\Tquery\Filter;
 
 use App\Rules\ArrayIsListRule;
 use App\Rules\DataTypeRule;
-use App\Services\Tquery\Config\TqColumnConfig;
-use App\Services\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqColumnConfig;
+use App\Tquery\Config\TqConfig;
+use App\Tquery\Engine\TqBuilder;
 use Illuminate\Validation\Rule;
 
 readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
@@ -48,6 +49,10 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
             column: $column,
             value: $value,
         );
+    }
+
+    public function applyFilter(TqBuilder $builder, bool $or): void
+    {
     }
 
     protected function __construct(

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Tquery\OpenApi;
+namespace App\Tquery\OpenApi;
 
 use App\Http\Permissions\PermissionDescribe;
 use Attribute;

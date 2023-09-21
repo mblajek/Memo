@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Tquery\Engine;
+namespace App\Tquery\Engine;
 
-use App\Services\Tquery\Config\TqColumnConfig;
-use App\Services\Tquery\Config\TqDataTypeEnum;
+use App\Tquery\Config\TqColumnConfig;
+use App\Tquery\Config\TqDataTypeEnum;
 use Closure;
 
 class TqSorterGenerator

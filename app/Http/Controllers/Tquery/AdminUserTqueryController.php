@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Tquery;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
-use App\Services\Tquery\OpenApi\OpenApiGet;
-use App\Services\Tquery\OpenApi\OpenApiPost;
-use App\Services\Tquery\Tables\AdminUserTquery;
+use App\Tquery\OpenApi\OpenApiGet;
+use App\Tquery\OpenApi\OpenApiPost;
+use App\Tquery\Tables\AdminUserTquery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

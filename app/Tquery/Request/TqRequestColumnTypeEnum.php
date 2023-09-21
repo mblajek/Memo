@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Tquery\Request;
+namespace App\Tquery\Request;
 
 enum TqRequestColumnTypeEnum
 {

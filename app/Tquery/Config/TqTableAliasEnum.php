@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services\Tquery\Config;
+namespace App\Tquery\Config;
 
-use App\Services\Tquery\Engine\TqBuilder;
+use App\Tquery\Engine\TqBuilder;
 
 enum TqTableAliasEnum
 {

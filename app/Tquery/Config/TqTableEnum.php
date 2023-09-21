@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Tquery\Config;
+namespace App\Tquery\Config;
 
 enum TqTableEnum
 {

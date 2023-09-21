@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Tquery\Config;
+namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Rules\DataTypeRule;
-use App\Services\Tquery\Filter\TqFilterOperator;
+use App\Tquery\Filter\TqFilterOperator;
 
 enum TqDataTypeEnum
 {
@@ -95,6 +95,7 @@ enum TqDataTypeEnum
                 self::datetime => TqFilterOperator::CMP,
                 self::string => [
                     TqFilterOperator::eq,
+                    TqFilterOperator::eqs,
                     TqFilterOperator::in,
                     ...TqFilterOperator::CMP,
                     ...TqFilterOperator::LIKE,

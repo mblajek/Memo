@@ -1,15 +1,18 @@
 <?php
 
-namespace App\Services\Tquery\Filter;
+namespace App\Tquery\Filter;
 
-use App\Services\Tquery\Config\TqColumnConfig;
-use App\Services\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqColumnConfig;
+use App\Tquery\Config\TqConfig;
+use App\Tquery\Engine\TqBuilder;
 use Illuminate\Support\Facades\Validator;
 
 abstract readonly class TqRequestAbstractFilter
 {
     /** @return TqColumnConfig[] */
     abstract public function getColumns(): array;
+
+    abstract public function applyFilter(TqBuilder $builder, bool $or): void;
 
     protected static function validate(array $data, array $validator, array $path): mixed
     {

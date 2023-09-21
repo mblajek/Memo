@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Services\Tquery\Config;
+namespace App\Tquery\Config;
 
-use App\Services\Tquery\Engine\TqBuilder;
-use App\Services\Tquery\Engine\TqRendererGenerator;
-use App\Services\Tquery\Engine\TqSelectGenerator;
-use App\Services\Tquery\Engine\TqSorterGenerator;
-use App\Services\Tquery\Request\TqRequestColumn;
-use App\Services\Tquery\Request\TqRequestSort;
+use App\Tquery\Engine\TqBuilder;
+use App\Tquery\Engine\TqFilterGenerator;
+use App\Tquery\Engine\TqRendererGenerator;
+use App\Tquery\Engine\TqSelectGenerator;
+use App\Tquery\Engine\TqSorterGenerator;
 use Closure;
 use stdClass;
 
@@ -29,8 +28,8 @@ final readonly class TqColumnConfig
         ?Closure $sorter = null,
         ?Closure $renderer = null,
     ) {
-        // todo: filter
-        $this->selector = $sorter ?? TqSelectGenerator::getSelect($this);
+        $this->selector = $selector ?? TqSelectGenerator::getSelect($this);
+        $this->filter = $filter ?? TqFilterGenerator::getFilter($this);
         $this->sorter = $sorter ?? TqSorterGenerator::getSort($this);
         $this->renderer = $renderer ?? TqRendererGenerator::getRenderer($this);
     }
@@ -38,21 +37,6 @@ final readonly class TqColumnConfig
     public function applyJoin(TqBuilder $builder): void
     {
         $this->table?->applyJoin(builder: $builder, joinBase: $this->config->table, left: $this->type->isNullable());
-    }
-
-    public function applySelect(TqBuilder $builder, TqRequestColumn $requestColumn): void
-    {
-        $builder->select($this->getSelectQuery(), $this->columnAlias);
-    }
-
-    public function applyFilter(TqBuilder $builder /*TODO*/)
-    {
-        return ($this->filter)(builder: $builder);
-    }
-
-    public function applySort(TqBuilder $builder, TqRequestSort $requestSort): void
-    {
-        $builder->orderBy($this->getSortQuery(), $requestSort->desc);
     }
 
     public function render(?string $value): bool|int|string|array|null|stdClass
@@ -68,13 +52,18 @@ final readonly class TqColumnConfig
             : '(' . ($this->columnOrQuery)(tableName: $table->name) . ')';
     }
 
-    private function getSelectQuery(): string
+    public function getSelectQuery(): string
     {
         return ($this->selector)(query: $this->getQuery());
     }
 
-    private function getSortQuery(): string
+    public function getSortQuery(): string
     {
         return ($this->sorter)(query: $this->getQuery());
+    }
+
+    private function getFilterQuery(): string
+    {
+        return ($this->filter)(query: $this->getQuery());
     }
 }

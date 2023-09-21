@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Services\Tquery\Engine;
+namespace App\Tquery\Engine;
 
-use App\Services\Tquery\Config\TqColumnConfig;
-use App\Services\Tquery\Config\TqConfig;
-use App\Services\Tquery\Request\TqRequest;
-use App\Services\Tquery\Request\TqRequestColumn;
+use App\Tquery\Request\TqRequest;
+use App\Tquery\Request\TqRequestColumn;
 use Closure;
 use stdClass;
 
@@ -13,14 +11,13 @@ readonly class TqEngine
 {
     // readonly, but mutable
     private TqBuilder $builder;
+    private array $columnConfigs;
 
-    /** @param TqColumnConfig[] $columnConfigs */
     public function __construct(
         Closure $getBuilder,
-        private TqConfig $config,
         private TqRequest $request,
-        private array $columnConfigs,
     ) {
+        $this->columnConfigs = $this->request->allColumns();
         $this->builder = $getBuilder();
     }
 
@@ -33,7 +30,7 @@ readonly class TqEngine
         $this->applyPaging();
         return [
             // todo: only in debug
-            'sql' => $this->builder->getRawSql(),
+            'sql' => $this->builder->getSql(true),
             'meta' => $this->getMeta(),
             'data' => $this->getData(),
         ];
@@ -49,24 +46,24 @@ readonly class TqEngine
     private function applySelect(): void
     {
         foreach ($this->request->columns as $requestColumn) {
-            $this->columnConfigs[$requestColumn->column]->applySelect($this->builder, $requestColumn);
+            $requestColumn->applySelect($this->builder);
         }
     }
 
     private function applyFilter(): void
     {
-        if(is_bool($this->request->filter)){
-            $this->request->filter || $this->builder->where('false');
-        }
-        // todo
+        match ($this->request->filter) {
+            true => null,
+            false => $this->builder->where(fn(null $bind) => 'false', false),
+            default => $this->request->filter->applyFilter($this->builder, false)
+        };
     }
 
     private function applySort(): void
     {
         foreach ($this->request->sort as $requestSort) {
-            $this->columnConfigs[$requestSort->column]->applySort($this->builder, $requestSort);
+            $requestSort->applySort($this->builder);
         }
-        $this->builder->orderBy("`{$this->config->table->name}`.`id`", desc: false);
     }
 
     private function applyPaging(): void
@@ -79,8 +76,8 @@ readonly class TqEngine
         return $this->builder->getData()->map(function (stdClass $row) {
             $array = [];
             foreach ($this->request->columns as $requestColumn) {
-                $columnAlias = $requestColumn->column;
-                $array[$columnAlias] = $this->columnConfigs[$columnAlias]->render($row->{$columnAlias});
+                $columnAlias = $requestColumn->column->columnAlias;
+                $array[$columnAlias] = $requestColumn->column->render($row->{$columnAlias});
             }
             return $array;
         })->toArray();
@@ -92,7 +89,7 @@ readonly class TqEngine
         return [
             'columns' => array_map(fn(TqRequestColumn $requestColumn) => [
                 'type' => $requestColumn->type->name,
-                'column' => $requestColumn->column,
+                'column' => $requestColumn->column->columnAlias,
             ], $this->request->columns),
             'totalDataSize' => $this->builder->getCount(),
         ];

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services\Tquery\Engine;
+namespace App\Tquery\Engine;
 
-use App\Services\Tquery\Config\TqColumnConfig;
-use App\Services\Tquery\Config\TqConfig;
-use App\Services\Tquery\Request\TqRequest;
+use App\Tquery\Config\TqColumnConfig;
+use App\Tquery\Config\TqConfig;
+use App\Tquery\Request\TqRequest;
 use Illuminate\Http\Request;
 use stdClass;
 
@@ -39,8 +39,7 @@ abstract readonly class TqService
     public function query(Request $httpRequest): array
     {
         $request = TqRequest::fromHttpRequest($this->config, $httpRequest);
-        $columnConfigs = $this->config->getColumnsConfigs($request);
-        $engine = new TqEngine($this->getBuilder(...), $this->config, $request, $columnConfigs);
+        $engine = new TqEngine($this->getBuilder(...), $request);
         return $engine->run();
     }
 }

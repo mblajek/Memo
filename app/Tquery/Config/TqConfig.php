@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Services\Tquery\Config;
+namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Services\Tquery\Request\TqRequest;
+use App\Tquery\Request\TqRequest;
 use Closure;
 use Illuminate\Support\Str;
 

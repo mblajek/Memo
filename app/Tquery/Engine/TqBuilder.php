@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Services\Tquery\Engine;
+namespace App\Tquery\Engine;
 
-use App\Services\Tquery\Config\TqTableAliasEnum;
-use App\Services\Tquery\Config\TqTableEnum;
+use App\Tquery\Config\TqTableAliasEnum;
+use App\Tquery\Config\TqTableEnum;
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -55,9 +56,22 @@ class TqBuilder
         $this->builder->orderByRaw("$query " . ($desc ? 'desc' : 'asc'));
     }
 
-    public function where(string $query): void
+    public function where(Closure $query, bool $or, bool|int|string|array|null $value = null): void
     {
-        $this->builder->whereRaw($query);
+        if (is_array($value)) {
+            $bindings = count($value) ? array_values($value) : [null];
+            $bind = '(' . trim(str_repeat('?,', count($bindings)), ',') . ')';
+        } else {
+            $bindings = ($value !== null) ? [$value] : [];
+            $bind = count($bindings) ? '?' : null;
+        }
+        $queryString = $query(bind: $bind);
+        $or ? $this->builder->orWhereRaw($queryString, $bindings) : $this->builder->whereRaw($queryString, $bindings);
+    }
+
+    public function whereGroup(Closure $group, bool $or): void
+    {
+        $or ? $this->builder->orWhere($group) : $this->builder->where($group);
     }
 
     public function applyPaging(int $number, int $size): void
@@ -65,9 +79,9 @@ class TqBuilder
         $this->builder->forPage(page: $number, perPage: $size);
     }
 
-    public function getRawSql(): string
+    public function getSql(bool $raw): string
     {
-        return $this->builder->toRawSql();
+        return $raw ? $this->builder->toRawSql() : $this->builder->toSql();
     }
 
     public function getCount(): int
