@@ -1,14 +1,3 @@
-log_in: "Zaloguj"
-log_out: "Wyloguj"
-menu: "Menu"
-change_language: "zmień język"
-edit: "Edytuj"
-delete: "Usuń"
-add: "Dodaj"
-close: "Zamknij"
-cancel: "Anuluj"
-confirm: "Potwierdź"
-
 exception:
   configuration:
     translation: "Błędna konfiguracja tłumaczeń"
@@ -33,8 +22,6 @@ auth:
   password: "Hasło jest nieprawidłowe."
   throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
 
-copy_to_clipboard: "Kopiuj do schowka"
-
 bool_values:
   yes: "Tak"
   no: "Nie"
@@ -46,3 +33,4 @@ range:
   max: "maks:"
 
 quoted: "„{{text}}”"
+with_colon: "{{text}}:"

@@ -1,5 +1,7 @@
-import {NON_NULLABLE, cx, toLocalDateISOString, toLocalISOString, useLangFunc} from "components/utils";
+import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {BoolOpFilter, DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
+import {dateTimeToISO} from "data-access/memo-api/utils";
+import {DateTime} from "luxon";
 import {Component, Show, createMemo} from "solid-js";
 import {FilterControlProps} from ".";
 import {tableStyle as ts} from "..";
@@ -34,18 +36,16 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
   const t = useLangFunc();
   const columnType = () => props.columnType || "datetime";
   const inputsType = () => (props.columnType === "date" || props.useDateOnlyInputs ? "date" : "datetime-local");
-  function toInputValue(date: Date | undefined) {
-    return date
+  function toInputValue(dateTime: DateTime | undefined) {
+    return dateTime
       ? inputsType() === "date"
-        ? toLocalDateISOString(date)
-        : toLocalISOString(date)
-            // Cut off seconds.
-            .slice(0, -3)
+        ? dateTime.toISODate()!
+        : dateTime.toISO({suppressSeconds: true, suppressMilliseconds: true, includeOffset: false})!
       : "";
   }
   function findVal(op: RangeOp) {
     const val = props.filter?.val.find((f) => f.op === op)?.val;
-    return val ? new Date(val) : undefined;
+    return val ? DateTime.fromISO(val) : undefined;
   }
   // Disable equality check to avoid problems with the input value being stale when
   // max is set to below min.
@@ -53,26 +53,20 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
   const upper = createMemo(() => findVal("<="), undefined, {equals: false});
   function setOrDisableFilter(op: RangeOp, inputValue: string) {
     const range = [lower(), upper()];
-    range[OPS.indexOf(op)] = inputValue ? new Date(inputValue) : undefined;
+    range[OPS.indexOf(op)] = inputValue ? DateTime.fromISO(inputValue) : undefined;
     if (range[0] && range[1] && range[0] > range[1]) {
       range[1] = undefined;
     }
-    function toFilterVal(op: RangeOp, date: Date) {
-      if (columnType() === "date") {
-        return toLocalDateISOString(date);
-      }
-      if (inputsType() === "date") {
-        // Input is date but backend expects datetime. Use T00:00:00.000 for the lower range
-        // and T23:59:59.999 for the upper range (the times in local time zone).
-        const d = new Date(date);
-        if (op === ">=") {
-          d.setHours(0, 0, 0, 0);
-        } else {
-          d.setHours(23, 59, 59, 999);
-        }
-        return d.toISOString();
-      }
-      return date.toISOString();
+    function toFilterVal(op: RangeOp, dateTime: DateTime) {
+      return dateTimeToISO(
+        columnType() === "datetime" && inputsType() === "date"
+          ? // Input is date but backend expects datetime. Use start of day for the lower range
+            // and end of day for the upper range (the times in local time zone).
+            op === ">="
+            ? dateTime.startOf("day")
+            : dateTime.endOf("day")
+          : dateTime,
+      );
     }
     props.setFilter(
       range[0] || range[1]

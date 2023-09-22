@@ -28,7 +28,7 @@ function getCompareTransform(type: ColumnType): CompareTransform {
     ? (v) => Date.parse(v)
     : type === "decimal0" || type === "decimal2"
     ? (v) => v
-    : type === "text" || type === "string"
+    : type === "text" || type === "string" || type === "uuid"
     ? (v) => str(v)?.toLocaleLowerCase() || ""
     : (type satisfies never);
 }
@@ -99,6 +99,10 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
   return matchesNoInv() !== !!filter.inv;
 }
 
+async function sleep(timeMs: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, timeMs));
+}
+
 export function startUsersMock() {
   const usersQuery = createQuery(Admin.usersQueryOptions);
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -107,7 +111,8 @@ export function startUsersMock() {
     {name: "email", type: "string"},
     {name: "facilitiesMember", type: "text"},
     {name: "hasGlobalAdmin", type: "bool"},
-    {name: "id", type: "string"},
+    {name: "hasPassword", type: "bool"},
+    {name: "id", type: "uuid"},
     {name: "name", type: "string"},
     {name: "numFacilities", type: "decimal0"},
   ];
@@ -123,10 +128,16 @@ export function startUsersMock() {
     }),
     rest.post("/api/v1/entityURL/tquery", async (req, res, ctx) => {
       const request: DataRequest = await req.json();
+      // Make sure fresh data is served after invalidation.
+      await sleep(10);
+      while (usersQuery.isFetching) {
+        await sleep(100);
+      }
       const rows: Row[] = (usersQuery.data || []).map((entry) => ({
         id: entry.id,
         name: entry.name,
         email: entry.email,
+        hasPassword: entry.hasPassword,
         createdAt: entry.createdAt,
         facilitiesMember: entry.members
           .map(
@@ -141,9 +152,9 @@ export function startUsersMock() {
       }));
       const {filter} = request;
       const filteredRows = filter ? rows.filter((row) => matches(columns, row, filter)) : rows;
-      const sorters = request.sort.map(({column, dir}) => {
+      const sorters = request.sort.map(({column, desc}) => {
         const valTf = getCompareTransform(colType(columns, column));
-        const dirC = dir === "asc" ? 1 : -1;
+        const dirC = desc ? -1 : 1;
         return (a: Row, b: Row) => {
           const va = valTf(a[column]);
           const vb = valTf(b[column]);
@@ -152,8 +163,8 @@ export function startUsersMock() {
       });
       const sortedRows = [...filteredRows].sort((a, b) => sorters.reduce((acc, sorter) => acc || sorter(a, b), 0));
       const pagedRows = sortedRows.slice(
-        request.paging.pageIndex * request.paging.pageSize,
-        (request.paging.pageIndex + 1) * request.paging.pageSize,
+        (request.paging.number - 1) * request.paging.size,
+        request.paging.number * request.paging.size,
       );
       const finalRows = pagedRows.map((r: Row) => {
         const res: Row = {};

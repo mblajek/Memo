@@ -1,7 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {FullLogo, MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField} from "components/ui";
+import {FullLogo, MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField, getTrimInputHandler} from "components/ui";
 import {User} from "data-access/memo-api";
 import {Component, createSignal} from "solid-js";
 import {z} from "zod";
@@ -33,6 +33,7 @@ export namespace LoginForm {
         invalidateUser.status();
         props.onSuccess?.();
       },
+      meta: {isFormSubmit: true},
     }));
 
     const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
@@ -47,7 +48,7 @@ export namespace LoginForm {
         initialValues={getInitialValues()}
         class="flex flex-col gap-2"
       >
-        <TextField name="email" type="email" autocomplete="username" />
+        <TextField name="email" type="email" autocomplete="username" onBlur={getTrimInputHandler()} />
         <TextField name="password" type="password" autocomplete="current-password" />
         <FelteSubmit />
       </FelteForm>

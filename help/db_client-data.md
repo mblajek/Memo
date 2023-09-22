@@ -1,4 +1,4 @@
-### Dane klienta z przykładu:
+### Dane klienta z przykładu
 
 - id: 1
 - imię i nazwisko: Abc Abc
@@ -11,27 +11,27 @@
 
 ### Zawartość tabel
 
-Client:
+##### Client
 
 | id | name    | gender |
 |----|---------|--------|
 | 1  | Abc Abc | 32     |
 | 2  | Xyz Xyz | 31     |
 
-Facility:
+##### Facility
 
 | id | name   |
 |----|--------|
 | 11 | Poznań |
 
-Dictionary:
+##### Dictionary
 
 | id | name         | facility_id |
 |----|--------------|-------------|
 | 21 | gender       |             |
 | 22 | +powiat wlkp | 1           |
 
-Position:
+##### Position
 
 | id | dictionary_id | name       |
 |----|---------------|------------|
@@ -42,18 +42,22 @@ Position:
 | 35 | 22            | +poznański |
 | 36 | 22            | +średzki   |
 
-Column (może np. istnieć jeszcze kolumna regexp):
+##### Column
 
-| id | facility_id | table  | name             | dictionary_id | type     | order | is_multi |
-|----|-------------|--------|------------------|---------------|----------|-------|----------|
-| 41 | null        | client | gender           | 21            | position | 1     | null     |
-| 42 | null        | client | offender_genders | 21            | position | 3     | true     |
-| 43 | 11          | client | +powiat wlkp     | 22            | position | 5     | false    |
-| 44 | 11          | client | +decyzja zespołu |               | string   | 6     | false    |
-| 45 | 11          | client | +wiek sprawcy    |               | decimal0 | 4     | true     |
-| 46 | 11          | client | contact_persons  |               | client   | 2     | true     |
+może np. istnieć jeszcze kolumna regexp
 
-Attribute (value może być rozbite na number_value, string_value, datetime_value):
+| id | facility_id | table   | model  | name             | api_name                  | type     | dictionary_id | default_order | is_attribute_multi | requirement_level |
+|----|-------------|---------|--------|------------------|---------------------------|----------|---------------|---------------|--------------------|-------------------|
+| 41 | null        | clients | client | gender           | gender_dict_id            | dict     | 21            | 1             | null               | recommended       |
+| 42 | null        | clients | client | offender_genders | offender_genders_dict_ids | dict     | 21            | 3             | true               | empty             |
+| 43 | 11          | clients | client | +powiat wlkp     | powiat_wlkp_c25b_dict_id  | dict     | 22            | 5             | false              | recommended       |
+| 44 | 11          | clients | client | +decyzja zespołu | decyzja_zespolu_d2b4      | string   |               | 6             | false              | empty             |
+| 45 | 11          | clients | client | +wiek sprawcy    | wiek_sprawcy_d5c1         | decimal0 |               | 4             | true               | empty             |
+| 46 | 11          | clients | client | contact_persons  | contact_persons_ids       | clients  |               | 2             | true               | optional          |
+
+##### Attribute
+
+value może być rozbite na number_value, string_value, datetime_value
 
 | id | column_id | object_id | position_id | client_id | value |
 |----|-----------|-----------|-------------|-----------|-------|

@@ -1,8 +1,11 @@
 import {
+  ColumnDef,
   PaginationState,
+  Row,
   RowData,
   SortingState,
   TableOptions,
+  TableState,
   Table as TanStackTable,
   VisibilityState,
   getCoreRowModel,
@@ -12,11 +15,13 @@ import {
 } from "@tanstack/solid-table";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, cx} from "components/utils";
 import {Accessor, For, Index, JSX, Show, Signal, createEffect, createSignal, mergeProps, on} from "solid-js";
+import {Dynamic} from "solid-js/web";
 import {TableContextProvider, getHeaders, tableStyle as ts, useTableCells} from ".";
-import {EMPTY_VALUE_SYMBOL, Spinner} from "..";
+import {BigSpinner, EMPTY_VALUE_SYMBOL} from "..";
 import {CellRenderer} from "./CellRenderer";
 
 export interface TableTranslations {
+  tableName: LangEntryFunc;
   /** Entries for the table column names. */
   columnNames: LangPrefixFunc;
   /** Summary of the table, taking the number of rows as count. */
@@ -24,7 +29,7 @@ export interface TableTranslations {
 }
 
 export function createTableTranslations(tableName: string): TableTranslations {
-  return createTranslationsFromPrefix(`tables.tables.${tableName}`, ["columnNames", "summary"]);
+  return createTranslationsFromPrefix(`tables.tables.${tableName}`, ["tableName", "columnNames", "summary"]);
 }
 
 declare module "@tanstack/table-core" {
@@ -53,12 +58,27 @@ declare module "@tanstack/table-core" {
  */
 export type DisplayMode = "standalone" | "embedded";
 
+/** Column def params that make the column auto-size, i.e. wrap contents and not be user-resizable. */
+export const AUTO_SIZE_COLUMN_DEFS = {
+  enableResizing: false,
+  minSize: 0,
+  size: 0,
+} satisfies Partial<ColumnDef<object>>;
+
 interface Props<T = object> {
   table: TanStackTable<T>;
   /** Table mode. Default: embedded. */
   mode?: DisplayMode;
   /** Whether the column sizes are taken from the content size. Default: true. */
   autoColumnSize?: boolean;
+  /**
+   * The iteration component used for iterating over rows. Default: For.
+   *
+   * The For iteration might be more useful for a frontend table, where the rows is a constant
+   * collection of elements. For backend tables, when the rows change identity after each query
+   * to the backend, Index might be a better choice.
+   */
+  rowsIteration?: "For" | "Index";
   /** The content to put above the table, e.g. the global search bar. */
   aboveTable?: () => JSX.Element;
   /**
@@ -84,6 +104,7 @@ interface Props<T = object> {
 const DEFAULT_PROPS = {
   mode: "embedded",
   autoColumnSize: true,
+  rowsIteration: "For",
   aboveTableHeight: 32,
   belowTableHeight: 32,
   isLoading: false,
@@ -115,11 +136,11 @@ export const Table = <T,>(optProps: Props<T>) => {
       ? `repeat(${props.table.getVisibleLeafColumns().length}, auto)`
       : props.table
           .getVisibleLeafColumns()
-          .map((c) => `${c.getSize()}px`)
+          .map((c) => (!c.getCanResize() && c.getSize() === AUTO_SIZE_COLUMN_DEFS.size ? "auto" : `${c.getSize()}px`))
           .join(" ");
   return (
     <TableContextProvider table={props.table}>
-      <Show when={!props.isLoading} fallback={<Spinner />}>
+      <Show when={!props.isLoading} fallback={<BigSpinner />}>
         <div
           ref={scrollToTopPoint}
           class={cx(ts.tableContainer, props.mode === "standalone" ? ts.standalone : ts.embedded)}
@@ -155,28 +176,32 @@ export const Table = <T,>(optProps: Props<T>) => {
                   )}
                 </For>
               </div>
-              <Index
+              <Dynamic
+                component={{For, Index}[props.rowsIteration]}
                 each={props.table.getRowModel().rows}
                 fallback={
                   <div class={ts.wideRow}>
                     <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
-                      <Spinner />
+                      <BigSpinner />
                     </Show>
                   </div>
                 }
               >
-                {(row) => (
-                  <div class={ts.dataRow} inert={props.isDimmed || undefined}>
-                    <Index each={row().getVisibleCells()}>
-                      {(cell) => (
-                        <span class={ts.cell}>
-                          <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
-                        </span>
-                      )}
-                    </Index>
-                  </div>
-                )}
-              </Index>
+                {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
+                  const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
+                  return (
+                    <div class={ts.dataRow} inert={props.isDimmed || undefined}>
+                      <Index each={row().getVisibleCells()}>
+                        {(cell) => (
+                          <span class={ts.cell}>
+                            <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
+                          </span>
+                        )}
+                      </Index>
+                    </div>
+                  );
+                }}
+              </Dynamic>
               <div
                 class={ts.bottomBorder}
                 style={{"--belowTableHeight": `${props.belowTable ? props.belowTableHeight : 0}px`}}
@@ -209,18 +234,42 @@ export interface TableFeaturesConfig {
 
 const DEFAULT_PAGE_SIZE = 50;
 
-/** Returns base options for createSolidTable. */
+/**
+ * Returns base options for createSolidTable.
+ *
+ * The state parameter describes extra properties of the state, apart from those defined by the
+ * selected features. The state parameter can have getters defined on it - they are safely moved to the
+ * resulting state.
+ */
 export function getBaseTableOptions<T>({
-  columnVisibility,
-  sorting,
-  globalFilter,
-  pagination,
-}: TableFeaturesConfig = {}) {
+  features: {columnVisibility, sorting, globalFilter, pagination} = {},
+  state = {},
+  defaultColumn = {},
+}: {
+  features?: TableFeaturesConfig;
+  state?: Partial<TableState>;
+  defaultColumn?: Partial<ColumnDef<T, unknown>>;
+} = {}) {
   const tableCells = useTableCells();
   const columnVisibilitySignal = getFeatureSignal(columnVisibility, {});
   const sortingSignal = getFeatureSignal(sorting, []);
   const globalFilterSignal = getFeatureSignal(globalFilter, "");
   const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE});
+  const baseState: Partial<TableState> = {
+    get columnVisibility() {
+      return columnVisibilitySignal?.[0]();
+    },
+    get sorting() {
+      return sortingSignal?.[0]();
+    },
+    get globalFilter() {
+      return globalFilterSignal?.[0]();
+    },
+    get pagination() {
+      return paginationSignal?.[0]();
+    },
+  };
+  Object.defineProperties(baseState, Object.getOwnPropertyDescriptors(state));
   return {
     maxMultiSortColCount: 2,
     enableSortingRemoval: false,
@@ -230,25 +279,13 @@ export function getBaseTableOptions<T>({
       cell: tableCells.default,
       minSize: 50,
       size: 250,
+      ...defaultColumn,
     },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    state: {
-      get columnVisibility() {
-        return columnVisibilitySignal?.[0]();
-      },
-      get sorting() {
-        return sortingSignal?.[0]();
-      },
-      get globalFilter() {
-        return globalFilterSignal?.[0]();
-      },
-      get pagination() {
-        return paginationSignal?.[0]();
-      },
-    },
+    state: baseState,
     onColumnVisibilityChange: columnVisibilitySignal?.[1],
     onSortingChange: sortingSignal?.[1],
     onGlobalFilterChange: globalFilterSignal?.[1],

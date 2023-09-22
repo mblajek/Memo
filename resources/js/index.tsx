@@ -13,11 +13,9 @@ import "./index.scss";
 
 const root = document.getElementById("root");
 
-if (!(root instanceof HTMLElement)) {
-  throw new Error(
-    "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?",
-  );
-}
+if (!(root instanceof HTMLElement)) throw new Error("Root element not found.");
+
+const TOAST_DURATION_SECS = 8;
 
 render(() => {
   const [transLoaded, setTransLoaded] = createSignal(false);
@@ -44,12 +42,17 @@ render(() => {
           <InitializeTanstackQuery>
             <Router>
               <App />
-              <Toaster position="bottom-right" toastOptions={{className: "mr-4"}} />
+              <Toaster
+                position="bottom-right"
+                toastOptions={{
+                  className: "mr-4",
+                  duration: TOAST_DURATION_SECS * 1000,
+                }}
+              />
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>
       </Show>
     </TransProvider>
   );
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-}, root!);
+}, root);

@@ -17,8 +17,12 @@ Przede wszystkim będą to dane klienta.
 Nazwa słownika, która może być wyświetlana w systemie
 
 - zaczyna się od +, np. "+Rodzaj placówki", to wyświetlane jest jako "Rodzaj placówki"
-- w przeciwnym razie nazwa jest brana z tłumaczeń (doctionary.{name}._name)
+- w przeciwnym razie nazwa jest brana z tłumaczeń (dictionary.{name}._name)
 
 ### is_fixed
 
 Słownik może zostać usunięty tylko migracją bazodanową, może być wykorzystany w kodzie lub w innych tabelach.
+
+### is_extendable
+
+Administrator placówki lub administrator globalny może dopisywać pozycje do słownika.

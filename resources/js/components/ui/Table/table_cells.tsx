@@ -6,6 +6,7 @@ import {
   DECIMAL2_NUMBER_FORMAT,
   useLangFunc,
 } from "components/utils";
+import {DateTime} from "luxon";
 import {JSX, Show} from "solid-js";
 import {Header} from "./Header";
 
@@ -24,9 +25,6 @@ export type CellComponent = <T>(ctx: CellContext<T, unknown>) => JSX.Element;
 /** Returns a collection of cell functions for various data types. */
 export function useTableCells() {
   const t = useLangFunc();
-  function cellFunc<V>(func: (v: V) => JSX.Element | undefined): CellComponent {
-    return (c) => <Show when={c.getValue() !== undefined}>{func(c.getValue() as V)}</Show>;
-  }
   return {
     defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
     default: ((ctx) => (
@@ -35,7 +33,15 @@ export function useTableCells() {
     decimal0: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>),
     decimal2: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>),
     bool: cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no"))),
-    date: cellFunc<string>((v) => DATE_FORMAT.format(new Date(v))),
-    datetime: cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v))),
+    date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
+    datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
   };
+}
+
+export function cellFunc<V>(func: (v: V) => JSX.Element | undefined, fallback?: () => JSX.Element): CellComponent {
+  return (c) => (
+    <Show when={c.getValue() != null} fallback={fallback?.()}>
+      {func(c.getValue() as V)}
+    </Show>
+  );
 }

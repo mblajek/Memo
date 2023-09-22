@@ -1,13 +1,13 @@
 import {Button as KButton} from "@kobalte/core";
-import {Component, JSX, mergeProps, splitProps} from "solid-js";
+import {Component, JSX} from "solid-js";
 
-/**
- * @todo custom props and styles
- */
 export type ButtonProps = JSX.ButtonHTMLAttributes<HTMLButtonElement>;
 
+/**
+ * Wrapper for a button.
+ *
+ * The main functionality for now is type="button" by default, other props can be added as needed.
+ */
 export const Button: Component<ButtonProps> = (props) => {
-  const mergedProps = mergeProps<ButtonProps[]>(props);
-  const [, otherProps] = splitProps(mergedProps, []);
-  return <KButton.Root {...otherProps} />;
+  return <KButton.Root {...props} />;
 };
