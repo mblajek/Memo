@@ -12,6 +12,9 @@ use Illuminate\Validation\Rule;
 
 readonly class TqRequest
 {
+    /** @return array<string, TqColumnConfig> */
+    public array $allColumns;
+
     public static function fromHttpRequest(TqConfig $config, Request $request): self
     {
         $sortableColumns = array_filter($config->columns, fn(TqColumnConfig $column) => $column->type->isSortable());
@@ -33,26 +36,30 @@ readonly class TqRequest
 
         return new self(
             config: $config,
-            columns: self::parseColumns($config, $data['columns']),
+            selectColumns: self::parseColumns($config, $data['columns']),
             filter: self::parseFilter($config, $data['filter'] ?? 'always'),
-            sort: self::parseSort($config, $data['sort'] ?? []),
+            sortColumns: self::parseSort($config, $data['sort'] ?? []),
             number: $data['paging']['number'],
             size: $data['paging']['size'],
         );
     }
 
     /** @return array<string, TqColumnConfig> */
-    public function allColumns(): array
+    private function allColumns(): array
     {
-        $columns = array_unique(
-            array_merge(
-                array_map(fn(TqRequestColumn $column) => $column->column, $this->columns),
-                array_map(fn(TqRequestSort $sort) => $sort->column, $this->sort),
-                is_bool($this->filter) ? [] : $this->filter->getColumns(),
+        return array_intersect_key(
+            $this->config->columns,
+            array_flip(
+                array_map(
+                    fn(TqColumnConfig $column) => $column->columnAlias,
+                    array_merge(
+                        array_map(fn(TqRequestColumn $column) => $column->column, $this->selectColumns),
+                        array_map(fn(TqRequestSort $sort) => $sort->column, $this->sortColumns),
+                        is_bool($this->filter) ? [] : $this->filter->getColumns(),
+                    ),
+                ),
             ),
-            SORT_REGULAR,
         );
-        return array_combine(array_map(fn(TqColumnConfig $column) => $column->columnAlias, $columns), $columns);
     }
 
     /** @return TqRequestColumn[] */
@@ -76,16 +83,17 @@ readonly class TqRequest
     }
 
     /**
-     * @param TqRequestColumn[] $columns
-     * @param TqRequestSort[] $sort
+     * @param TqRequestColumn[] $selectColumns
+     * @param TqRequestSort[] $sortColumns
      */
     private function __construct(
         public TqConfig $config,
-        public array $columns,
+        public array $selectColumns,
         public TqRequestAbstractFilter|bool $filter,
-        public array $sort,
+        public array $sortColumns,
         public int $number,
         public int $size,
     ) {
+        $this->allColumns = $this->allColumns();
     }
 }

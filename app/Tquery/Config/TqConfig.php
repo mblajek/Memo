@@ -63,20 +63,6 @@ final class TqConfig
         );
     }
 
-
-    /** @return array<string, TqColumnConfig> */
-    public function getColumnsConfigs(TqRequest $request): array
-    {
-        $columnAliases = $request->allColumns();
-        return array_combine(
-            $columnAliases,
-            array_map(
-                fn(string $columnAlias) => $this->columns[$columnAlias] ?? (throw FatalExceptionFactory::tquery()),
-                $columnAliases
-            ),
-        );
-    }
-
     private function addColumn(
         TqDataTypeEnum $type,
         string|Closure $columnOrQuery,

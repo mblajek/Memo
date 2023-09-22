@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 
 readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
 {
+    /** @return TqColumnConfig[] */
     public function getColumns(): array
     {
        return [$this->column];

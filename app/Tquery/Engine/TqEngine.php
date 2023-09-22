@@ -11,13 +11,11 @@ readonly class TqEngine
 {
     // readonly, but mutable
     private TqBuilder $builder;
-    private array $columnConfigs;
 
     public function __construct(
         Closure $getBuilder,
         private TqRequest $request,
     ) {
-        $this->columnConfigs = $this->request->allColumns();
         $this->builder = $getBuilder();
     }
 
@@ -38,14 +36,14 @@ readonly class TqEngine
 
     private function applyJoin(): void
     {
-        foreach ($this->columnConfigs as $columnConfig) {
+        foreach ($this->request->allColumns as $columnConfig) {
             $columnConfig->applyJoin($this->builder);
         }
     }
 
     private function applySelect(): void
     {
-        foreach ($this->request->columns as $requestColumn) {
+        foreach ($this->request->selectColumns as $requestColumn) {
             $requestColumn->applySelect($this->builder);
         }
     }
@@ -61,7 +59,7 @@ readonly class TqEngine
 
     private function applySort(): void
     {
-        foreach ($this->request->sort as $requestSort) {
+        foreach ($this->request->sortColumns as $requestSort) {
             $requestSort->applySort($this->builder);
         }
     }
@@ -75,7 +73,7 @@ readonly class TqEngine
     {
         return $this->builder->getData()->map(function (stdClass $row) {
             $array = [];
-            foreach ($this->request->columns as $requestColumn) {
+            foreach ($this->request->selectColumns as $requestColumn) {
                 $columnAlias = $requestColumn->column->columnAlias;
                 $array[$columnAlias] = $requestColumn->column->render($row->{$columnAlias});
             }
@@ -90,7 +88,7 @@ readonly class TqEngine
             'columns' => array_map(fn(TqRequestColumn $requestColumn) => [
                 'type' => $requestColumn->type->name,
                 'column' => $requestColumn->column->columnAlias,
-            ], $this->request->columns),
+            ], $this->request->selectColumns),
             'totalDataSize' => $this->builder->getCount(),
         ];
     }

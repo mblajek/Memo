@@ -2,6 +2,7 @@
 
 namespace App\Tquery\Filter;
 
+use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Engine\TqBuilder;
 
@@ -17,6 +18,7 @@ readonly class TqRequestFilterGroup extends TqRequestAbstractFilter
         throw new \Exception('TODO');
     }
 
+    /** @return TqColumnConfig[] */
     public function getColumns(): array
     {
         throw new \Exception('TODO');
