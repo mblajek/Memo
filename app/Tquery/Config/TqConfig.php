@@ -2,8 +2,6 @@
 
 namespace App\Tquery\Config;
 
-use App\Exceptions\FatalExceptionFactory;
-use App\Tquery\Request\TqRequest;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -73,7 +71,7 @@ final class TqConfig
         ?Closure $renderer = null,
     ): void {
         $columnAliasCamel = Str::camel($columnAlias);
-        $this->columns[$columnAliasCamel] =  new TqColumnConfig(
+        $this->columns[$columnAliasCamel] = new TqColumnConfig(
             config: $this,
             type: $type,
             columnOrQuery: $columnOrQuery,

@@ -62,7 +62,7 @@ final readonly class TqColumnConfig
         return ($this->sorter)(query: $this->getQuery());
     }
 
-    private function getFilterQuery(): string
+    public function getFilterQuery(): string
     {
         return ($this->filter)(query: $this->getQuery());
     }

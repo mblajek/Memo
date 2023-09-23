@@ -56,8 +56,12 @@ class TqBuilder
         $this->builder->orderByRaw("$query " . ($desc ? 'desc' : 'asc'));
     }
 
-    public function where(Closure $query, bool $or, bool|int|string|array|null $value = null): void
-    {
+    public function where(
+        Closure $query,
+        bool $or,
+        bool|int|string|array|null $value,
+        bool $inverse,
+    ): void {
         if (is_array($value)) {
             $bindings = count($value) ? array_values($value) : [null];
             $bind = '(' . trim(str_repeat('?,', count($bindings)), ',') . ')';
@@ -65,13 +69,17 @@ class TqBuilder
             $bindings = ($value !== null) ? [$value] : [];
             $bind = count($bindings) ? '?' : null;
         }
-        $queryString = $query(bind: $bind);
-        $or ? $this->builder->orWhereRaw($queryString, $bindings) : $this->builder->whereRaw($queryString, $bindings);
+        $queryString = 'coalesce((' . $query(bind: $bind) . '), false)';
+        $this->builder->whereRaw(
+            sql: $inverse ? "(not $queryString)" : $queryString,
+            bindings: $bindings,
+            boolean: $or ? 'or' : 'and',
+        );
     }
 
     public function whereGroup(Closure $group, bool $or): void
     {
-        $or ? $this->builder->orWhere($group) : $this->builder->where($group);
+        $this->builder->where($group, boolean: $or ? 'or' : 'and');
     }
 
     public function applyPaging(int $number, int $size): void

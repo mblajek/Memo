@@ -52,8 +52,8 @@ readonly class TqEngine
     {
         match ($this->request->filter) {
             true => null,
-            false => $this->builder->where(fn(null $bind) => 'false', false),
-            default => $this->request->filter->applyFilter($this->builder, false)
+            false => $this->builder->where(fn(null $bind) => 'false', false, null, false),
+            default => $this->request->filter->applyFilter($this->builder, false, false)
         };
     }
 
@@ -93,7 +93,7 @@ readonly class TqEngine
         ];
     }
 
-    /*
+    /* TODO
        $colHasPassword = $selectedColumns['has_password']->selectName;
          $colHasGlobalAdmin = $selectedColumns['has_global_admin']->selectName;
          $colName = $selectedColumns['name']->selectName;

@@ -2,6 +2,7 @@
 
 namespace App\Tquery\Filter;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Rules\ArrayIsListRule;
 use App\Rules\DataTypeRule;
 use App\Tquery\Config\TqColumnConfig;
@@ -14,7 +15,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
     /** @return TqColumnConfig[] */
     public function getColumns(): array
     {
-       return [$this->column];
+        return [$this->column];
     }
 
     public static function fromArray(TqConfig $config, array $data, array $path): self
@@ -40,7 +41,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
                 ], $path)['val'];
             } else {
                 $value = self::validate($data, [
-                    'val' => $column->type->valueValidator(),
+                    'val' => ['present', ...$column->type->valueValidator()],
                 ], $path);
             }
         }
@@ -52,11 +53,22 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         );
     }
 
-    public function applyFilter(TqBuilder $builder, bool $or): void
+    public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void
     {
+        $value = $this->operator->prepareValue($this->value);
+        $filterQuery = $this->column->getFilterQuery();
+        $inverse = $this->inverse ^ $invert;
+
+        $sqlOperator = $this->operator->getSqlOperator();
+
+        if ($sqlOperator) {
+            $builder->where(fn(string|null $bind) => "$filterQuery $sqlOperator $bind", $or, $value, $inverse);
+        } else {
+            throw FatalExceptionFactory::tquery();
+        }
     }
 
-    protected function __construct(
+    private function __construct(
         TqFilterOperator $operator,
         bool $inverse,
         public TqColumnConfig $column,

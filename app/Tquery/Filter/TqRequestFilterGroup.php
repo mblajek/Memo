@@ -13,7 +13,7 @@ readonly class TqRequestFilterGroup extends TqRequestAbstractFilter
         throw new \Exception('TODO');
     }
 
-    public function applyFilter(TqBuilder $builder, bool $or): void
+    public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void
     {
         throw new \Exception('TODO');
     }

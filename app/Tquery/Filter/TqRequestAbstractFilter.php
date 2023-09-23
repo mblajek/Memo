@@ -12,7 +12,7 @@ abstract readonly class TqRequestAbstractFilter
     /** @return TqColumnConfig[] */
     abstract public function getColumns(): array;
 
-    abstract public function applyFilter(TqBuilder $builder, bool $or): void;
+    abstract public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void;
 
     protected static function validate(array $data, array $validator, array $path): mixed
     {

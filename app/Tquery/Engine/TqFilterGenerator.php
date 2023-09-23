@@ -8,16 +8,16 @@ use Closure;
 
 class TqFilterGenerator
 {
-    private static function forward(?string $value): ?string
+    private static function forward(string $query): ?string
     {
-        return $value;
+        return $query;
     }
 
     public static function getFilter(TqColumnConfig $columnConfig): Closure
     {
         return match ($columnConfig->type) {
-            TqDataTypeEnum::is_null => fn(string $query) => "case when ($query) is null then 1 else 0 end",
-            TqDataTypeEnum::is_not_null => fn(string $query) => "case when ($query) is null then 0 else 1 end",
+            TqDataTypeEnum::is_null => fn(string $query) => "($query) is null",
+            TqDataTypeEnum::is_not_null => fn(string $query) => "($query) is not null",
             default => self::forward(...),
         };
     }
