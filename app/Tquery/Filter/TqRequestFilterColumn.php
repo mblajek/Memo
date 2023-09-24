@@ -57,7 +57,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
     {
         $value = $this->operator->prepareValue($this->value);
         $filterQuery = $this->column->getFilterQuery();
-        $inverse = $this->inverse ^ $invert;
+        $inverse = ($this->inverse xor $invert);
 
         $sqlOperator = $this->operator->getSqlOperator();
 
