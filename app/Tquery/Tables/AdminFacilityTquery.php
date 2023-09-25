@@ -19,7 +19,7 @@ readonly class AdminFacilityTquery extends TqService
         $config->addSimple(TqDataTypeEnum::datetime, 'created_at');
         $config->addSimple(TqDataTypeEnum::datetime, 'updated_at');
         $config->addQuery(
-            TqDataTypeEnum::decimal0,
+            TqDataTypeEnum::int,
             fn(string $tableName) => //
             "select count(1) from `members` where `members`.`facility_id` = `facilities`.`id`",
             'user_count',

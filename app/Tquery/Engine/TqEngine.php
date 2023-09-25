@@ -52,7 +52,7 @@ readonly class TqEngine
     {
         match ($this->request->filter) {
             true => null,
-            false => $this->builder->where(fn(null $bind) => 'false', false, null, false),
+            false => $this->builder->where(fn(null $bind) => 'false', false, null, false, false),
             default => $this->request->filter->applyFilter($this->builder, false, false)
         };
     }
@@ -92,15 +92,4 @@ readonly class TqEngine
             'totalDataSize' => $this->builder->getCount(),
         ];
     }
-
-    /* TODO
-       $colHasPassword = $selectedColumns['has_password']->selectName;
-         $colHasGlobalAdmin = $selectedColumns['has_global_admin']->selectName;
-         $colName = $selectedColumns['name']->selectName;
-           $builder->where(function (Builder $b2) use ($colHasGlobalAdmin,  $colName) {
-             $b2->orWhere($colName, 'like', '%sau%');
-             $b2->orWhere($colName, 'like', '%poz%');
-         });
-         $builder->where($colHasGlobalAdmin, 1);
-    */
 }

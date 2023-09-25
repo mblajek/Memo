@@ -12,19 +12,12 @@ use Illuminate\Validation\Rule;
 
 readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
 {
-    /** @return TqColumnConfig[] */
-    public function getColumns(): array
-    {
-        return [$this->column];
-    }
-
     public static function fromArray(TqConfig $config, array $data, array $path): self
     {
         $column = $config->columns[self::validate($data, [
             'column' => ['required', 'string', Rule::in(array_keys($config->columns))],
         ], $path)];
-        $operators = $column->type->operators();
-        $operatorsNames = array_map(fn(TqFilterOperator $operator) => $operator->value, $operators);
+        $operatorsNames = array_map(fn(TqFilterOperator $operator) => $operator->value, $column->type->operators());
         $params = self::validate($data, [
             'op' => ['required', 'string', Rule::in($operatorsNames)],
             'inv' => ['sometimes', 'bool', DataTypeRule::bool(true)],
@@ -32,16 +25,17 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         $operator = TqFilterOperator::from($params['op']);
         $nullOperator = ($operator === TqFilterOperator::null);
         self::validate($data, ['' => 'array:type,column,op,inv' . ($nullOperator ? '' : ',val')], $path);
+        $valueValidator = $operator->valueValidator() ?? $column->type->valueValidator();
         $value = null;
         if (!$nullOperator) {
             if (in_array($operator, TqFilterOperator::ARR)) {
                 $value = self::validate($data, [
                     'val' => ['required', 'array', new ArrayIsListRule()],
-                    'val.*' => $column->type->valueValidator(),
+                    'val.*' => $valueValidator,
                 ], $path)['val'];
             } else {
                 $value = self::validate($data, [
-                    'val' => ['present', ...$column->type->valueValidator()],
+                    'val' => ['present', ...$valueValidator],
                 ], $path);
             }
         }
@@ -53,21 +47,6 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         );
     }
 
-    public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void
-    {
-        $value = $this->operator->prepareValue($this->value);
-        $filterQuery = $this->column->getFilterQuery();
-        $inverse = ($this->inverse xor $invert);
-
-        $sqlOperator = $this->operator->getSqlOperator();
-
-        if ($sqlOperator) {
-            $builder->where(fn(string|null $bind) => "$filterQuery $sqlOperator $bind", $or, $value, $inverse);
-        } else {
-            throw FatalExceptionFactory::tquery();
-        }
-    }
-
     private function __construct(
         TqFilterOperator $operator,
         bool $inverse,
@@ -75,5 +54,32 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         public bool|int|string|array|null $value,
     ) {
         parent::__construct($operator, $inverse);
+    }
+
+    public function getColumnAliases(): array
+    {
+        return [$this->column->columnAlias];
+    }
+
+    public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void
+    {
+        $value = $this->operator->prepareValue($this->value);
+        $filterQuery = $this->column->getFilterQuery();
+        $inverse = ($this->inverse xor $invert);
+
+        $sqlPrefix = $this->operator->sqlPrefix();
+        $sqlOperator = $this->operator->sqlOperator();
+
+        if ($sqlOperator) {
+            $builder->where(
+                query: fn(string|null $bind) => "$sqlPrefix $filterQuery $sqlOperator $bind",
+                or: $or,
+                value: $value,
+                inverse: $inverse,
+                nullable: false,
+            );
+        } else {
+            throw FatalExceptionFactory::tquery();
+        }
     }
 }

@@ -11,18 +11,21 @@ use Illuminate\Support\Facades\DB;
 
 class TqBuilder
 {
-    private readonly Builder $builder;
-    private array $joins;
-
-    public static function make(TqTableEnum $table): self
+    public static function fromTable(TqTableEnum $table): self
     {
-        return new self($table);
+        $joins = [$table];
+        return new self($joins, DB::table($table->name));
     }
 
-    public function __construct(TqTableEnum $table)
+    public function fromBuilders(Builder $builder): self
     {
-        $this->joins = [$table];
-        $this->builder = DB::table($table->name);
+        return new self($this->joins, $builder);
+    }
+
+    private function __construct(
+        private array &$joins,
+        private readonly Builder $builder,
+    ) {
     }
 
     public function join(
@@ -34,7 +37,7 @@ class TqBuilder
         if (in_array($table, $this->joins, strict: true)) {
             return false;
         }
-        $this->joins [] = $table;
+        $this->joins[] = $table;
         $tableBase = $table->baseTable();
         $this->builder->join(
             "{$tableBase->name} as {$table->name}",
@@ -61,6 +64,7 @@ class TqBuilder
         bool $or,
         bool|int|string|array|null $value,
         bool $inverse,
+        bool $nullable,
     ): void {
         if (is_array($value)) {
             $bindings = count($value) ? array_values($value) : [null];
@@ -69,12 +73,14 @@ class TqBuilder
             $bindings = ($value !== null) ? [$value] : [];
             $bind = count($bindings) ? '?' : null;
         }
-        $queryString = 'coalesce((' . $query(bind: $bind) . '), false)';
-        $this->builder->whereRaw(
-            sql: $inverse ? "(not $queryString)" : $queryString,
-            bindings: $bindings,
-            boolean: $or ? 'or' : 'and',
-        );
+        $queryString = '(' . $query(bind: $bind) . ')';
+        if ($nullable) {
+            $queryString = "coalesce(($queryString), false)";
+        }
+        if ($inverse) {
+            $queryString = "(not $queryString)";
+        }
+        $this->builder->whereRaw(sql: $queryString, bindings: $bindings, boolean: $or ? 'or' : 'and');
     }
 
     public function whereGroup(Closure $group, bool $or): void

@@ -50,13 +50,10 @@ readonly class TqRequest
         return array_intersect_key(
             $this->config->columns,
             array_flip(
-                array_map(
-                    fn(TqColumnConfig $column) => $column->columnAlias,
-                    array_merge(
-                        array_map(fn(TqRequestColumn $column) => $column->column, $this->selectColumns),
-                        array_map(fn(TqRequestSort $sort) => $sort->column, $this->sortColumns),
-                        is_bool($this->filter) ? [] : $this->filter->getColumns(),
-                    ),
+                array_merge(
+                    array_map(fn(TqRequestColumn $column) => $column->column->columnAlias, $this->selectColumns),
+                    array_map(fn(TqRequestSort $sort) => $sort->column->columnAlias, $this->sortColumns),
+                    is_bool($this->filter) ? [] : $this->filter->getColumnAliases(),
                 ),
             ),
         );

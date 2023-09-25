@@ -45,30 +45,14 @@ readonly class ValidationExceptionRenderer
 
     private function treeSearchTranslation(string $rule): ?string
     {
-        // todo: move to translations
-        $ruleArray = explode('.', $rule);
-        $options = 2 ** (count($ruleArray) - 1);
-        for ($option = 0; $option < $options; $option++) {
-            $keys = [$ruleArray[0]];
-            foreach (array_slice($ruleArray, 1) as $i => $part) {
-                if ($option & (1 << $i)) {
-                    $keys[count($keys) - 1] .= ".$part";
-                } else {
-                    $keys[] = $part;
-                }
+        $currentTree = $this->defaultTranslation;
+        foreach (explode('.', $rule) as $key) {
+            if (!is_array($currentTree) || !array_key_exists($key, $currentTree)) {
+                return null;
             }
-            $currentTree = $this->defaultTranslation;
-            foreach ($keys as $key) {
-                if (!is_array($currentTree) || !array_key_exists($key, $currentTree)) {
-                    continue 2;
-                }
-                $currentTree = $currentTree[$key];
-            }
-            if (is_string($currentTree)) {
-                return $currentTree;
-            }
+            $currentTree = $currentTree[$key];
         }
-        return null;
+        return is_string($currentTree) ? $currentTree : null;
     }
 
     private function prepareField(

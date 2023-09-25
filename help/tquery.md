@@ -6,13 +6,13 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 
 | typ          | null | = | in   | cmp | like | select | sort |
 |--------------|------|---|------|-----|------|--------|------|
-| bool         | *    | * | .    | .   | .    | *      | +    |
-| date         | *    | * | *    | *   | .    | *      | +    |
-| datetime     | *    | . | .    | *   | .    | *      | +    |
-| int          | *    | * | *    | *   | *    | *      | +    |
-| string       | *    | * | *    | *   | *    | *      | +    |
-| text         | *    | . | .    | .   | *    | *(8)   | .    |
-| uuid         | *    | * | *    | .   | .    | *      | .    |
+| bool         | +    | + | .    | .   | .    | +      | +    |
+| date         | *    | + | *    | *   | .    | +      | +    |
+| datetime     | *    | . | .    | *   | .    | +      | +    |
+| int          | +    | + | +    | +   | +    | +      | +    |
+| string       | +    | + | +    | +   | +    | +      | +    |
+| text         | +    | . | .    | .   | +    | +?(8)  | .    |
+| uuid         | +    | + | +    | .   | .    | +      | .    |
 | --------(9)  |      |   |      |     |      |        |      |
 | dict(1)      | *    | * | *    | .   | .    | *      | *    |
 | object(2)    | *    | . | .    | .   | .    | *      | .    |
@@ -51,6 +51,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 
 
 - `+` - jest
+- `+?` - chyba jest
 - `!` - jest, a nie powinno być
 - `!!` - jest, ale działa niepoprawnie
 - `*` - powinno być

@@ -8,11 +8,10 @@ use App\Tquery\Filter\TqFilterOperator;
 
 enum TqDataTypeEnum
 {
-    // todo split?
     case bool;
     case date;
     case datetime;
-    case decimal0;
+    case int;
     case string;
     case uuid;
     case text;
@@ -43,7 +42,7 @@ enum TqDataTypeEnum
             self::bool_nullable => self::bool,
             self::date_nullable => self::date,
             self::datetime_nullable => self::datetime,
-            self::decimal0_nullable => self::decimal0,
+            self::decimal0_nullable => self::int,
             self::string_nullable => self::string,
             self::uuid_nullable => self::uuid,
             self::text_nullable => self::text,
@@ -87,15 +86,14 @@ enum TqDataTypeEnum
             $this->isNullable() ? [TqFilterOperator::null] : [],
             match ($this->notNullBaseType()) {
                 self::bool => [TqFilterOperator::eq],
-                self::date, self::decimal0 => [
+                self::date => [
                     TqFilterOperator::eq,
                     TqFilterOperator::in,
                     ...TqFilterOperator::CMP,
                 ],
                 self::datetime => TqFilterOperator::CMP,
-                self::string => [
+                self::int, self::string => [
                     TqFilterOperator::eq,
-                    TqFilterOperator::eqs,
                     TqFilterOperator::in,
                     ...TqFilterOperator::CMP,
                     ...TqFilterOperator::LIKE,
@@ -113,7 +111,7 @@ enum TqDataTypeEnum
             self::bool => ['bool', DataTypeRule::bool()],
             self::date => throw new \Exception('To be implemented'),
             self::datetime => throw new \Exception('To be implemented'),
-            self::decimal0 => ['numeric', 'integer', DataTypeRule::int()],
+            self::int => ['numeric', 'integer', DataTypeRule::int()],
             self::string, self::text => ['string'],
             self::uuid => ['string', 'uuid'],
             default => FatalExceptionFactory::tquery(),

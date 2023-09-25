@@ -37,7 +37,7 @@ readonly class AdminUserTquery extends TqService
         );
         $config->addSimple(TqDataTypeEnum::is_not_null, 'global_admin_grant_id', 'has_global_admin');
         $config->addQuery(
-            TqDataTypeEnum::decimal0,
+            TqDataTypeEnum::int,
             fn(string $tableName) => //
             "select count(1) from `members` where `members`.`user_id` = `users`.`id`",
             'facility_count',

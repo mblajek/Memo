@@ -19,7 +19,7 @@ abstract readonly class TqService
 
     protected function getBuilder(): TqBuilder
     {
-        return TqBuilder::make($this->config->table);
+        return TqBuilder::fromTable($this->config->table);
     }
 
     abstract protected function getConfig(): TqConfig;
