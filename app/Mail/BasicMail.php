@@ -2,22 +2,28 @@
 
 namespace App\Mail;
 
+use App\Services\System\TranslationsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
 
-class Test extends Mailable
+class BasicMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use Queueable;
+    use SerializesModels;
+
+    public const TYPE_TEST = 'test';
 
     /**
      * Create a new message instance.
      */
-    public function __construct()
-    {
-        //
+    public function __construct(
+        private readonly string $type,
+    ) {
     }
 
     /**
@@ -26,7 +32,7 @@ class Test extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Test',
+            subject: TranslationsService::mailTranslation($this->type . '.title'),
         );
     }
 
@@ -36,14 +42,14 @@ class Test extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'email.mailTest',
+            view: 'email.' . App::getLocale() . '.' . $this->type,
         );
     }
 
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {
