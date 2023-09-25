@@ -1,3 +1,4 @@
+import {NON_NULLABLE} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery";
 
 export const GLOBAL_CHAR = "*";
@@ -38,10 +39,10 @@ export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {col
   return {
     type: "op",
     op: "&",
-    val: Array.from(filterText.matchAll(WORD_REGEXP), (match): FilterH => {
+    val: Array.from(filterText.matchAll(WORD_REGEXP), (match): FilterH | undefined => {
       let word = match[1]?.trimEnd();
       if (!word) {
-        return "always";
+        return undefined;
       }
       let startsWithGlob: boolean;
       let endsWithGlob: boolean;
@@ -59,7 +60,7 @@ export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {col
         // Unquote, unless it's just "'" or "''".
         word = word.slice(1, -1);
       return {...filterBase, op, val: word};
-    }),
+    }).filter(NON_NULLABLE),
   };
 }
 

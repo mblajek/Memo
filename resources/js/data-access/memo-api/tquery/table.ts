@@ -146,15 +146,6 @@ export function createTableRequestCreator({
           if (!schema || !allInited) {
             return undefined;
           }
-
-          const f: FilterH = {
-            type: "op",
-            op: "&",
-            val: [intrinsicFilter, buildFuzzyGlobalFilter(globalFilter), columnFiltersJoined].filter(NON_NULLABLE),
-          };
-          console.log(JSON.parse(JSON.stringify(f)));
-          console.log(JSON.stringify(filterReductor()?.reduce(f)));
-
           const request: DataRequest = {
             columns,
             filter: filterReductor()?.reduce({

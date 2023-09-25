@@ -49,115 +49,112 @@ export class FilterReductor {
    * and returns the [absorbing element](https://en.wikipedia.org/wiki/Absorbing_element) if present.
    */
   private reduceBoolOp(filter: BoolOpFilterH): ReducedFilterH {
-    const {op, val} = filter;
-    function applyInvert(res: ReducedFilterH) {
-      return invert(res, filter.inv);
-    }
-    let identity: ConstFilter;
-    let absorbing: ConstFilter;
-    if (op === "&") {
-      identity = "always";
-      absorbing = "never";
-    } else if (op === "|") {
-      identity = "never";
-      absorbing = "always";
-    } else {
-      return op satisfies never;
-    }
-    const reducedSubFilters: Filter[] = [];
-    const subFiltersToProcess = [...val.toReversed()];
-    while (subFiltersToProcess.length) {
-      const subFilter = this.reduce(subFiltersToProcess.pop()!);
-      if (typeof subFilter === "string") {
-        if (subFilter === absorbing) {
-          /** The whole boolean operation was absorbed, e.g. a "never" was encountered in an "&" operation. */
-          return applyInvert(absorbing);
-        } else {
-          // Identity element.
-          continue;
-        }
+    const reducedIgnoredInv = ((): ReducedFilterH => {
+      const {op, val} = filter;
+      let identity: ConstFilter;
+      let absorbing: ConstFilter;
+      if (op === "&") {
+        identity = "always";
+        absorbing = "never";
+      } else if (op === "|") {
+        identity = "never";
+        absorbing = "always";
       } else {
-        if (subFilter.type === "op" && subFilter.op === op && !subFilter.inv) {
-          // Unnest a bool operation of the same type.
-          subFiltersToProcess.push(...subFilter.val.toReversed());
+        return op satisfies never;
+      }
+      const reducedSubFilters: Filter[] = [];
+      const subFiltersToProcess = [...val.toReversed()];
+      while (subFiltersToProcess.length) {
+        const subFilter = this.reduce(subFiltersToProcess.pop()!);
+        if (typeof subFilter === "string") {
+          if (subFilter === absorbing) {
+            /** The whole boolean operation was absorbed, e.g. a "never" was encountered in an "&" operation. */
+            return absorbing;
+          } else {
+            // Identity element.
+            continue;
+          }
         } else {
-          reducedSubFilters.push(subFilter);
+          if (subFilter.type === "op" && subFilter.op === op && !subFilter.inv) {
+            // Unnest a bool operation of the same type.
+            subFiltersToProcess.push(...subFilter.val.toReversed());
+          } else {
+            reducedSubFilters.push(subFilter);
+          }
         }
       }
-    }
-    if (!reducedSubFilters.length) {
-      return applyInvert(identity);
-    }
-    if (reducedSubFilters.length === 1) {
-      return applyInvert(reducedSubFilters[0]!);
-    }
-    return applyInvert({type: "op", op, val: reducedSubFilters});
+      if (!reducedSubFilters.length) {
+        return identity;
+      }
+      if (reducedSubFilters.length === 1) {
+        return reducedSubFilters[0]!;
+      }
+      return {type: "op", op, val: reducedSubFilters};
+    })();
+    return invert(reducedIgnoredInv, filter.inv);
   }
 
   /** Reduces the column filter if necessary (also applies inv). */
   private reduceColumnOp(filter: ColumnFilter): ReducedFilterH {
-    const {column, op} = filter;
-    function applyInvert(res: ReducedFilterH) {
-      return invert(res, filter.inv);
-    }
-    const {nullable} = this.columnsData.get(column)!;
-    if (op === "null") {
-      if (!nullable) {
-        // For non-nullable columns selecting null matches nothing.
-        return applyInvert("never");
-      }
-    } else {
-      const {val} = filter;
-      if (val === "") {
-        const nullFilter = (): ReducedFilterH => (nullable ? {type: "column", column, op: "null"} : "never");
-        // Frontend treats the null values in string columns as empty strings (because this is what
-        // is reasonable for the user).
-        if (op === "=" || op === "==" || op === "lv" || op === "<" || op === "<=") {
-          // Matches only null strings.
-          return applyInvert(nullFilter());
-        } else if (op === ">") {
-          // Matches non-null strings.
-          return applyInvert(invert(nullFilter()));
-        } else if (op === ">=" || op === "v%" || op === "%v" || op === "%v%" || op === "/v/") {
-          // Matches everything.
-          return applyInvert("always");
-        } else if (op === "in") {
-          // Not really possible, included for the exhaustive check to work.
-        } else {
-          op satisfies never;
+    const reducedIgnoredInv = ((): ReducedFilterH | undefined => {
+      const {column, op} = filter;
+      const {nullable} = this.columnsData.get(column)!;
+      if (op === "null") {
+        if (!nullable) {
+          // For non-nullable columns selecting null matches nothing.
+          return "never";
         }
-      }
-      if (typeof val === "string" && val !== val.trim()) {
-        if (op === "=" || op === "==") {
-          // Will not match anything.
-          return applyInvert("never");
+      } else {
+        const {val} = filter;
+        if (val === "") {
+          const nullFilter = (): ReducedFilterH => (nullable ? {type: "column", column, op: "null"} : "never");
+          // Frontend treats the null values in string columns as empty strings (because this is what
+          // is reasonable for the user).
+          if (op === "=" || op === "==" || op === "lv" || op === "<" || op === "<=") {
+            // Matches only null strings.
+            return nullFilter();
+          } else if (op === ">") {
+            // Matches non-null strings.
+            return invert(nullFilter());
+          } else if (op === ">=" || op === "v%" || op === "%v" || op === "%v%" || op === "/v/") {
+            // Matches everything.
+            return "always";
+          } else if (op === "in") {
+            // Not really possible, included for the exhaustive check to work.
+          } else {
+            op satisfies never;
+          }
         }
-        // TODO: Consider the case when val is not empty, but becomes empty after trimming.
-      }
-      if (op === "in") {
-        const vals = new Set<string | number>(
-          filter.val
-            // Reject untrimmed values, they cannot be equal.
-            .filter((v) => !(typeof v === "string" && v !== v.trim())),
-        );
-        /** Whether null satisfies this filter. */
-        const orNull = vals.delete("") && nullable;
-        let valsFilter: ReducedFilterH;
-        if (!vals.size) {
-          valsFilter = "never";
-        } else if (vals.size === 1) {
-          valsFilter = {type: "column", column, op: "=", val: [...vals][0]!};
-        } else {
-          valsFilter = {type: "column", column, op: "in", val: [...vals] as string[] | number[]};
+        if (typeof val === "string" && val !== val.trim()) {
+          if (op === "=" || op === "==") {
+            // Will not match anything.
+            return "never";
+          }
+          // TODO: Consider the case when val is not empty, but becomes empty after trimming.
         }
-        return applyInvert(
-          orNull
+        if (op === "in") {
+          const vals = new Set<string | number>(
+            filter.val
+              // Reject untrimmed values, they cannot be equal.
+              .filter((v) => !(typeof v === "string" && v !== v.trim())),
+          );
+          /** Whether null satisfies this filter. */
+          const orNull = vals.delete("") && nullable;
+          let valsFilter: ReducedFilterH;
+          if (!vals.size) {
+            valsFilter = "never";
+          } else if (vals.size === 1) {
+            valsFilter = {type: "column", column, op: "=", val: [...vals][0]!};
+          } else {
+            valsFilter = {type: "column", column, op: "in", val: [...vals] as string[] | number[]};
+          }
+          return orNull
             ? this.reduce({type: "op", op: "|", val: [{type: "column", column, op: "null"}, valsFilter]})
-            : valsFilter,
-        );
+            : valsFilter;
+        }
       }
-    }
-    return filter;
+    })();
+    return reducedIgnoredInv ? invert(reducedIgnoredInv, filter.inv) : filter;
   }
 
   /** Returns a reduced filter. The returned filter is correct and optimised. */
