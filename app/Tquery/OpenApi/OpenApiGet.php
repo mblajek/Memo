@@ -29,7 +29,7 @@ class OpenApiGet extends OA\Get
                             new OA\Property(property: 'name', type: 'string', example: 'id'),
                             new OA\Property(
                                 property: 'type', type: 'string',
-                                enum: ['string', 'decimal0', 'bool', 'date', 'datetime'],
+                                enum: ['bool', 'date', 'datetime', 'int', 'string'],
                                 example: 'uuid',
                             ),
                         ])

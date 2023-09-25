@@ -4,6 +4,7 @@ namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Rules\DataTypeRule;
+use App\Rules\StringIsTrimmedRule;
 use App\Tquery\Filter\TqFilterOperator;
 
 enum TqDataTypeEnum
@@ -47,14 +48,6 @@ enum TqDataTypeEnum
             self::uuid_nullable => self::uuid,
             self::text_nullable => self::text,
             default => $this,
-        };
-    }
-
-    public function isNotBaseType(): bool
-    {
-        return match ($this) {
-            self::is_null, self::is_not_null => true,
-            default => false,
         };
     }
 
@@ -105,14 +98,18 @@ enum TqDataTypeEnum
         );
     }
 
-    public function valueValidator(): array
+    public function valueValidator(TqFilterOperator $operator): array
     {
+        if (in_array($operator, TqFilterOperator::LIKE)) {
+            return ['string'];
+        }
         return match ($this->notNullBaseType()) {
             self::bool => ['bool', DataTypeRule::bool()],
             self::date => throw new \Exception('To be implemented'),
             self::datetime => throw new \Exception('To be implemented'),
             self::int => ['numeric', 'integer', DataTypeRule::int()],
-            self::string, self::text => ['string'],
+            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED)
+                ? ['string', new StringIsTrimmedRule()] : ['string'],
             self::uuid => ['string', 'uuid'],
             default => FatalExceptionFactory::tquery(),
         };

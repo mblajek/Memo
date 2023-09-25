@@ -2,10 +2,13 @@
 
 namespace App\Tquery\Engine;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Request\TqRequest;
 use App\Tquery\Request\TqRequestColumn;
 use Closure;
+use Illuminate\Support\Facades\App;
 use stdClass;
+use Throwable;
 
 readonly class TqEngine
 {
@@ -26,12 +29,14 @@ readonly class TqEngine
         $this->applyFilter();
         $this->applySort();
         $this->applyPaging();
-        return [
-            // todo: only in debug
-            'sql' => $this->builder->getSql(true),
-            'meta' => $this->getMeta(),
-            'data' => $this->getData(),
-        ];
+        $sql = $this->builder->getSql(true);
+        $debug = (App::hasDebugModeEnabled() ? ['sql' => $sql] : []);
+
+        try {
+            return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
+        } catch (Throwable) {
+            throw FatalExceptionFactory::tquery($debug);
+        }
     }
 
     private function applyJoin(): void

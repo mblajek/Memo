@@ -24,7 +24,6 @@ readonly class TqRequestColumn
 
     private function __construct(
         public TqRequestColumnTypeEnum $type,
-        // todo string -> TqColumnConfig
         public TqColumnConfig $column,
     ) {
     }

@@ -35,15 +35,12 @@ enum TqFilterOperator: string
     public const LIKE = [self::lv, self::pv, self::vp, self::pvp, self::regexp];
     /** @var TqFilterOperator[] */
     public const ARR = [self::in, self::all, self::any];
-
-    public function valueValidator(): ?array
-    {
-        return in_array($this, self::LIKE) ? ['string'] : null;
-    }
+    /** @var TqFilterOperator[] */
+    public const TRIMMED = [self::eq, self::in, self::all, self::any];
 
     public function prepareValue(bool|int|string|array|null $value): bool|int|string|array|null
     {
-        if ($this !== self::lv && $this !== self::regexp && in_array($this, self::LIKE)) {
+        if ($this === self::pv || $this === self::vp || $this === self::pvp) {
             return (($this === self::pv || $this === self::pvp) ? '%' : '')
                 . (is_string($value) ? str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
                     : (throw FatalExceptionFactory::tquery()))

@@ -139,6 +139,7 @@
   "uuid": "Pole „{{attribute}}” musi być poprawnym identyfikatorem UUID.",
   "custom": {
     "require_present": "Pole „{{attribute}}” wymaga pola „{{other}}”.",
-    "data_type": "Pole „{{attribute}}” musi być typu „{{type}}”."
+    "data_type": "Pole „{{attribute}}” musi być typu „{{type}}”.",
+    "trimmed": "Pole „{{attribute}}” nie może się zaczynać ani kończyć białymi znakami."
   }
 }

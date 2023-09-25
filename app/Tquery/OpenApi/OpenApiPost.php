@@ -53,8 +53,8 @@ class OpenApiPost extends OA\Post
                         ),
                         new OA\Property(
                             property: 'paging', properties: [
-                            new OA\Property(property: 'pageIndex', type: 'int', example: '1'),
-                            new OA\Property(property: 'pageSize', type: 'int', example: '20'),
+                            new OA\Property(property: 'number', type: 'int', example: '1'),
+                            new OA\Property(property: 'size', type: 'int', example: '20'),
                         ]
                         ),
                     ]
