@@ -13,9 +13,7 @@ export namespace User {
   export const getStatus = () => V1.get<Api.Response.Get<GetStatusData>>("/user/status").then(parseGetResponse);
 
   export const login = (data: LoginRequest) => V1.post<Api.Response.Post>("/user/login", data);
-
   export const logout = () => V1.post<Api.Response.Post>("/user/logout");
-
   export const changePassword = (data: ChangePasswordRequest) => V1.post<Api.Response.Post>("/user/password", data);
 
   export type GetStatusData = {

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rule;
 
 /**
  * @property string id
@@ -85,7 +86,7 @@ class User extends Authenticatable
     {
         return match ($field) {
             'name' => 'required|string',
-            'email' => ['nullable', 'string', 'email', new RequirePresent('has_email_verified')],
+            'email' => ['nullable', 'string', 'email', Rule::unique('users', 'email'), new RequirePresent('has_email_verified')],
             'has_email_verified' => 'sometimes|bool',
             'password' => array_merge(
                 ['bail', 'nullable', 'string'],

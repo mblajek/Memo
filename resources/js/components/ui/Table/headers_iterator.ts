@@ -19,7 +19,7 @@ import {createMemo} from "solid-js";
  *       </Show>}
  *     </For>
  */
-export function getHeaders(table: Table<object>) {
+export function getHeaders<T>(table: Table<T>) {
   return table.getAllLeafColumns().map((column) => {
     const header = createMemo(() => table.getLeafHeaders().find((h) => h.id === column.id));
     return {header, column};

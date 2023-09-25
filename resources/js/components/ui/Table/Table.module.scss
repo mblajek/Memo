@@ -98,17 +98,37 @@
   @apply w-auto flex items-center;
 }
 
+.headerCell {
+  @apply h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip;
+  // Create a positioned ancestor for the resize handler.
+  @apply relative;
+  @apply px-2 py-1;
+
+  .title {
+    @apply font-bold;
+  }
+
+  .resizeHandler {
+    @apply absolute top-0 right-0 h-full cursor-col-resize;
+    width: 5px;
+    @apply select-none touch-none;
+
+    &:hover {
+      @apply bg-gray-400;
+    }
+
+    &.resizing {
+      @apply bg-blue-700;
+    }
+  }
+}
+
 .tableContainer {
   @apply flex flex-col gap-1;
 
-  .aboveTable {
-    @apply bg-white;
-    @apply h-8 flex items-stretch gap-1;
-  }
-
+  .aboveTable,
   .belowTable {
     @apply bg-white;
-    @apply h-8 flex items-stretch gap-2;
   }
 
   .tableBg {
@@ -125,27 +145,7 @@
 
         .cell {
           @apply outline outline-1 outline-gray-400 bg-gray-100;
-          @apply flex flex-col items-stretch gap-0.5 justify-between;
-          // Create a positioned ancestor for the resize handler.
-          @apply relative;
-
-          .title {
-            @apply font-bold;
-          }
-
-          .resizeHandler {
-            @apply absolute top-0 right-0 h-full cursor-col-resize;
-            width: 5px;
-            @apply select-none touch-none;
-
-            &:hover {
-              @apply bg-gray-400;
-            }
-
-            &.resizing {
-              @apply bg-blue-700;
-            }
-          }
+          min-height: 30px;
         }
       }
 
@@ -153,17 +153,14 @@
         @apply contents;
 
         .cell {
-          @apply bg-white text-black whitespace-pre-wrap;
+          @apply bg-white text-black whitespace-pre-wrap rounded-sm;
+          @apply px-2 py-1 flex items-center overflow-x-hidden;
+          min-height: 30px;
         }
 
         &:hover .cell {
           @apply bg-gray-50;
         }
-      }
-
-      .cell {
-        @apply px-2 py-1 flex items-center overflow-x-hidden;
-        min-height: 30px;
       }
 
       .wideRow {
@@ -198,10 +195,12 @@
       .headerRow .cell {
         @apply sticky;
         // Just below the sticky aboveTable bar.
-        top: 33px;
+        top: calc(var(--aboveTableHeight) + 1px);
       }
       .bottomBorder {
-        @apply sticky bottom-8;
+        @apply sticky;
+        // Just below the sticky belowTable bar.
+        bottom: var(--belowTableHeight);
       }
     }
   }

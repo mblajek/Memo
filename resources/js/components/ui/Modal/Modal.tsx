@@ -4,6 +4,7 @@ import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
 import {Accessor, JSX, Show, createMemo, createRenderEffect, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
+import {Button} from "../Button";
 import {ChildrenOrFunc, getChildrenElement} from "../children_func";
 import s from "./Modal.module.scss";
 
@@ -35,7 +36,8 @@ interface BaseProps<T> {
 }
 
 export const MODAL_STYLE_PRESETS = {
-  narrow: {width: "400px"},
+  narrow: {width: "420px"},
+  medium: {width: "min(620px, 80%)"},
 } satisfies Partial<Record<string, JSX.CSSProperties>>;
 
 const ESCAPE_REASONS = ["escapeKey", "clickOutside"] as const;
@@ -150,13 +152,13 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>) => {
                 <div {...api().contentProps} style={props.style}>
                   <div class={s.innerContent}>
                     <Show when={closeOn().has("closeButton")}>
-                      <button
+                      <Button
                         class={s.closeButton}
-                        aria-label={t("close")}
+                        aria-label={t("actions.close")}
                         onClick={() => props.onClose?.("closeButton" as C)}
                       >
                         <VsClose class="w-6 h-6" />
-                      </button>
+                      </Button>
                     </Show>
                     <Show when={props.title}>
                       <h2 {...api().titleProps}>{props.title}</h2>

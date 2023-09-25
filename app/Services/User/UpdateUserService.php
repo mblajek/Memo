@@ -48,7 +48,7 @@ readonly class UpdateUserService
             $data['global_admin_grant_id'] = $grant?->id;
         }
 
-        if (array_key_exists('password', $data)) {
+        if (array_key_exists('password', $data) && $data['password'] !== null) {
             $data['password'] = Hash::make($data['password']);
         }
 

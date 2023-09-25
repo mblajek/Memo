@@ -156,9 +156,12 @@ export function createTableRequestCreator({
             sort: sorting.map(({id, desc}) => ({
               type: "column",
               column: id,
-              dir: desc ? "desc" : "asc",
+              desc,
             })),
-            paging: pagination,
+            paging: {
+              number: pagination.pageIndex + 1,
+              size: pagination.pageSize,
+            },
           };
           return request;
         },

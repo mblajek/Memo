@@ -1,3 +1,8 @@
 {
-  "MD033": false
+  // Allow long lines.
+  "MD013": false,
+  // Allow HTML in md.
+  "MD033": false,
+  // Don't require starting a page with h1 header.
+  "MD041": false
 }

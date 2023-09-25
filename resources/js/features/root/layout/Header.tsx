@@ -1,11 +1,13 @@
 import {useLocation, useNavigate, useParams} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
+import {Button} from "components/ui";
 import {DATE_TIME_WITH_WEEKDAY_FORMAT, QueryBarrier, cx, useLangFunc} from "components/utils";
 import {System, User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
+import {DateTime} from "luxon";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Component, For, Match, Switch, createSignal, onMount} from "solid-js";
+import {Component, For, Index, Match, Switch, createSignal, onCleanup, onMount} from "solid-js";
 import s from "./style.module.scss";
 
 export const Header: Component = () => {
@@ -64,44 +66,39 @@ const HeaderRight = () => {
         <div>
           <Switch>
             <Match when={statusQuery.data?.permissions.verified}>
-              <HiOutlineCheckCircle color="green" size="30" />
+              <HiOutlineCheckCircle class="text-green-700" size="30" />
             </Match>
             <Match when={statusQuery.data?.permissions.unverified}>
-              <HiOutlineXCircle color="red" size="30" />
+              <HiOutlineXCircle class="text-red-500" size="30" />
             </Match>
           </Switch>
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <span>
-            <For
-              each={
-                // Display each part in a separate span to allow selecting the date.
-                DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime())
-                  // This mapping must happen here, otherwise the identity of the elements
-                  // change every second, which is what we want to avoid.
-                  .map(({value}) => value)
-              }
+            <Index
+              // Display each part in a separate span to allow selecting the date.
+              each={currentTime().toLocaleParts(DATE_TIME_WITH_WEEKDAY_FORMAT)}
             >
-              {(value) => <span>{value}</span>}
-            </For>
+              {(item) => <span>{item().value}</span>}
+            </Index>
           </span>
           <span>
             {statusQuery.data?.user.name}
             {/* This is a temporary location for the change password button. */}
-            <button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
+            <Button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
               <TbPassword />
-            </button>
+            </Button>
           </span>
         </div>
       </div>
       <div class="flex justify-center items-center">
-        <button
+        <Button
           class="rounded-lg flex flex-row justify-center items-center hover:bg-white"
           onClick={() => logout.mutate()}
-          title={t("log_out")}
+          title={t("actions.log_out")}
         >
-          <HiOutlinePower color="red" size="30" />
-        </button>
+          <HiOutlinePower class="text-red-500" size="30" />
+        </Button>
       </div>
       <PasswordChangeForm.Modal />
     </div>
@@ -109,10 +106,11 @@ const HeaderRight = () => {
 };
 
 const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = createSignal(new Date());
+  const [currentTime, setCurrentTime] = createSignal(DateTime.now());
+  let interval: ReturnType<typeof setInterval>;
   onMount(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(interval);
+    interval = setInterval(() => setCurrentTime(DateTime.now()), 1000);
   });
+  onCleanup(() => clearInterval(interval));
   return currentTime;
 };

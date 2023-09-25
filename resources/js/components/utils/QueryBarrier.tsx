@@ -1,6 +1,6 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
 import {JSX, Match, ParentProps, Switch, mergeProps} from "solid-js";
-import {Spinner} from "../ui";
+import {BigSpinner} from "../ui";
 
 export interface QueryBarrierProps {
   /**
@@ -27,7 +27,7 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
     {
       // TODO: dedicated Error element
       errorElement: <p>error</p>,
-      pendingElement: <Spinner />,
+      pendingElement: <BigSpinner />,
     },
     props,
   );

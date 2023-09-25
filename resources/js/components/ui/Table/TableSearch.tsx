@@ -1,7 +1,6 @@
-import cx from "classnames";
 import {useLangFunc} from "components/utils";
 import {Component, ParentProps, createComputed, createSignal} from "solid-js";
-import {tableStyle, useTable} from ".";
+import {tableStyle as ts, useTable} from ".";
 
 interface Props {
   placeholder?: string;
@@ -13,7 +12,7 @@ export const TableSearch: Component<ParentProps<Props>> = (props) => {
   const [query, setQuery] = createSignal(table.getState().globalFilter);
   createComputed(() => table.setGlobalFilter(query()));
   return (
-    <div class={cx(tableStyle.searchBar)}>
+    <div class={ts.searchBar}>
       <input
         name="table_global_search"
         type="search"
