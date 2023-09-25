@@ -27,7 +27,7 @@ readonly class AdminFacilityTquery extends TqService
         $config->addQuery(
             TqDataTypeEnum::text,
             fn(string $tableName) => //
-                "select json_arrayagg(json_object('id',`users`.`id`,'name', `users`.`name`)) from `members` inner join"
+                "select group_concat(`name` order by `name` separator ', ') from `members` inner join"
                 . " `users` on `members`.`user_id` = `users`.`id` where `members`.`facility_id` = `facilities`.`id`",
             'facility_admins',
         );

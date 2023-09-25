@@ -21,7 +21,7 @@ enum TqFilterOperator: string
     case pv = '%v';
     case vp = 'v%';
     case pvp = '%v%';
-    case regexp = 'regexp';
+    case regexp = '/v/';
     // array
     case in = 'in';
     case all = 'all';

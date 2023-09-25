@@ -37,7 +37,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 - `like` - case insensitive
   - `%v`, `v%`, `%v%` - w wartości `%` i `_` są escape'owane
   - `lv` - wartość nie jest escape'owana
-  - `regexp`(?) - operator MySql `binary(?) columnn regexp val` (jeżeli będzie `binary`, to będzie case sensitive)
+  - `/v/` - operator MySql `binary columnn regexp val`
 - `sort` - wartości `null` są na początku dla `asc` i na końcu dla `desc`
 
 
