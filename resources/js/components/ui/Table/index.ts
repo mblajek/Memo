@@ -8,6 +8,7 @@ export * from "./Table";
 export {default as tableStyle} from "./Table.module.scss";
 export * from "./TableColumnVisibilityController";
 export * from "./TableContext";
+export * from "./TableName";
 export * from "./TableSearch";
 export * from "./TableSummary";
 export * from "./headers_iterator";
