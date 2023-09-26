@@ -1,24 +1,21 @@
-import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
-import {BoolOpFilter, DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
-import {dateTimeToISO} from "data-access/memo-api/utils";
+import {cx, useLangFunc} from "components/utils";
+import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
+import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
-import {Component, Show, createMemo} from "solid-js";
+import {Component, Show, createComputed, createSignal} from "solid-js";
 import {FilterControlProps} from ".";
 import {tableStyle as ts} from "..";
 
-const OPS = [">=", "<="] as const;
-
-type RangeOp = (typeof OPS)[number];
-
-interface RangeSideFilter extends DateColumnFilter, DateTimeColumnFilter {
-  type: "column";
-  op: RangeOp;
-}
-
-export interface DateTimeRangeFilter extends BoolOpFilter {
-  op: "&";
-  val: RangeSideFilter[];
-}
+type DateTimeRangeFilter =
+  | {
+      type: "op";
+      op: "&";
+      val: [
+        (DateColumnFilter & DateTimeColumnFilter & {op: ">="}) | "always",
+        (DateColumnFilter & DateTimeColumnFilter & {op: "<="}) | "always",
+      ];
+    }
+  | (DateColumnFilter & {op: "="});
 
 interface DateTimeColumnProps extends FilterControlProps<DateTimeRangeFilter> {
   columnType?: "datetime";
@@ -36,59 +33,66 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
   const t = useLangFunc();
   const columnType = () => props.columnType || "datetime";
   const inputsType = () => (props.columnType === "date" || props.useDateOnlyInputs ? "date" : "datetime-local");
-  function toInputValue(dateTime: DateTime | undefined) {
-    return dateTime
-      ? inputsType() === "date"
-        ? dateTime.toISODate()!
-        : dateTime.toISO({suppressSeconds: true, suppressMilliseconds: true, includeOffset: false})!
-      : "";
-  }
-  function findVal(op: RangeOp) {
-    const val = props.filter?.val.find((f) => f.op === op)?.val;
-    return val ? DateTime.fromISO(val) : undefined;
-  }
-  // Disable equality check to avoid problems with the input value being stale when
-  // max is set to below min.
-  const lower = createMemo(() => findVal(">="), undefined, {equals: false});
-  const upper = createMemo(() => findVal("<="), undefined, {equals: false});
-  function setOrDisableFilter(op: RangeOp, inputValue: string) {
-    const range = [lower(), upper()];
-    range[OPS.indexOf(op)] = inputValue ? DateTime.fromISO(inputValue) : undefined;
-    if (range[0] && range[1] && range[0] > range[1]) {
-      range[1] = undefined;
+  const [lower, setLower] = createSignal("");
+  const [upper, setUpper] = createSignal("");
+  createComputed(() => {
+    if (!props.filter) {
+      setLower("");
+      setUpper("");
     }
-    function toFilterVal(op: RangeOp, dateTime: DateTime) {
-      return dateTimeToISO(
-        columnType() === "datetime" && inputsType() === "date"
-          ? // Input is date but backend expects datetime. Use start of day for the lower range
-            // and end of day for the upper range (the times in local time zone).
-            op === ">="
-            ? dateTime.startOf("day")
-            : dateTime.endOf("day")
-          : dateTime,
-      );
+    // Ignore other external filter changes.
+  });
+  createComputed(() => {
+    let l = lower() ? DateTime.fromISO(lower()) : undefined;
+    let u = upper() ? DateTime.fromISO(upper()) : undefined;
+    if (l && u && l > u) {
+      // Clear the upper range and let the computation run again.
+      setUpper("");
+      return;
     }
-    props.setFilter(
-      range[0] || range[1]
-        ? {
-            type: "op",
-            op: "&",
-            val: OPS.map<RangeSideFilter | undefined>((op, i) =>
-              range[i]
-                ? {
-                    type: "column",
-                    column: props.name,
-                    op,
-                    val: toFilterVal(op, range[i]!),
-                  }
-                : undefined,
-            ).filter(NON_NULLABLE),
-          }
-        : undefined,
-    );
-  }
-  const setLowerInput = (inputValue: string) => setOrDisableFilter(">=", inputValue);
-  const setUpperInput = (inputValue: string) => setOrDisableFilter("<=", inputValue);
+    if (!l && !u) {
+      return props.setFilter(undefined);
+    }
+    if (columnType() === "datetime" && inputsType() === "date") {
+      // Prepare for sending datetime spanning the edge day.
+      l = l?.startOf("day");
+      u = u?.endOf("day");
+    }
+    let lISO: string | undefined;
+    let uISO: string | undefined;
+    if (columnType() === "date") {
+      lISO = l && dateToISO(l);
+      uISO = u && dateToISO(u);
+    } else {
+      lISO = l && dateTimeToISO(l);
+      uISO = u && dateTimeToISO(u);
+    }
+    if (columnType() === "date" && lISO && lISO === uISO) {
+      return props.setFilter({type: "column", column: props.name, op: "=", val: lISO});
+    }
+    return props.setFilter({
+      type: "op",
+      op: "&",
+      val: [
+        lISO
+          ? {
+              type: "column",
+              column: props.name,
+              op: ">=",
+              val: lISO,
+            }
+          : "always",
+        uISO
+          ? {
+              type: "column",
+              column: props.name,
+              op: "<=",
+              val: uISO,
+            }
+          : "always",
+      ],
+    });
+  });
   const canSyncRange = () => inputsType() === "date";
   const syncActive = () => !!lower() || !!upper();
   return (
@@ -104,9 +108,9 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
           title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
           onClick={() => {
             if (lower()) {
-              setUpperInput(toInputValue(lower()));
+              setUpper(lower());
             } else if (upper()) {
-              setLowerInput(toInputValue(upper()));
+              setLower(upper());
             }
           }}
         />
@@ -116,9 +120,9 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
           name={`table_filter_from_${props.name}`}
           type={inputsType()}
           class="h-full w-full border rounded"
-          max={toInputValue(upper())}
-          value={toInputValue(lower())}
-          onInput={({target: {value}}) => setLowerInput(value)}
+          max={upper()}
+          value={lower()}
+          onInput={({target: {value}}) => setLower(value)}
         />
       </div>
       <div>{t("range.to")}</div>
@@ -127,9 +131,9 @@ export const DateTimeFilterControl: Component<Props> = (props) => {
           name={`table_filter_to_${props.name}`}
           type={inputsType()}
           class="h-full w-full border rounded"
-          min={toInputValue(lower())}
-          value={toInputValue(upper())}
-          onInput={({target: {value}}) => setUpperInput(value)}
+          min={lower()}
+          value={upper()}
+          onInput={({target: {value}}) => setUpper(value)}
         />
       </div>
     </div>

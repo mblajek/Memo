@@ -5,7 +5,7 @@ import {FilterControl} from ".";
 import {tableStyle as ts} from "..";
 
 export const BoolFilterControl: FilterControl<BoolColumnFilter> = (props) => {
-  const defFilter = createMemo<BoolColumnFilter>(() => ({
+  const defaultFilter = createMemo<BoolColumnFilter>(() => ({
     type: "column",
     column: props.name,
     op: "=",
@@ -19,7 +19,7 @@ export const BoolFilterControl: FilterControl<BoolColumnFilter> = (props) => {
         class="flex-grow border rounded"
         value={String(props.filter?.val ?? "-")[0]}
         onChange={({target: {value}}) =>
-          props.setFilter(value === "-" ? undefined : {...defFilter(), val: value === "t"})
+          props.setFilter(value === "-" ? undefined : {...defaultFilter(), val: value === "t"})
         }
       >
         <option value="-" />
