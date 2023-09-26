@@ -17,7 +17,7 @@ export const TableSearch: Component<ParentProps<Props>> = (props) => {
       <input
         name="table_global_search"
         type="search"
-        placeholder={lProps.placeholder || t("tables.search")}
+        placeholder={"chwilowo zepsute" || lProps.placeholder || t("tables.search")}
         value={query()}
         onInput={({target: {value}}) => setQuery(value)}
       />

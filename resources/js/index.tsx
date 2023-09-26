@@ -5,6 +5,7 @@ import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
 import i18next from "i18next";
 import I18NextHttpBackend from "i18next-http-backend";
+import {Settings} from "luxon";
 import {Show, createSignal} from "solid-js";
 import {render} from "solid-js/web";
 import {Toaster} from "solid-toast";
@@ -16,6 +17,13 @@ const root = document.getElementById("root");
 if (!(root instanceof HTMLElement)) throw new Error("Root element not found.");
 
 const TOAST_DURATION_SECS = 8;
+
+Settings.throwOnInvalid = true;
+declare module "luxon" {
+  interface TSSettings {
+    throwOnInvalid: true;
+  }
+}
 
 render(() => {
   const [transLoaded, setTransLoaded] = createSignal(false);
