@@ -1,4 +1,5 @@
-import {Filter} from "data-access/memo-api/tquery";
+import {NON_NULLABLE} from "components/utils";
+import {FilterH} from "data-access/memo-api/tquery";
 
 export const GLOBAL_CHAR = "*";
 export const QUOTE = "'";
@@ -6,54 +7,11 @@ export const QUOTE = "'";
 const GLOB = `\\${GLOBAL_CHAR}`;
 const WORD_REGEXP = new RegExp(`(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB}?|\\S+)(?:$|\\s)`, "g");
 
-type FilterBase = {type: "global"} | {type: "column"; column: string};
-
-function buildFuzzyFilter(filterText: string, filterBase: FilterBase): Filter | undefined {
-  filterText = filterText.trim();
-  switch (filterText) {
-    case GLOBAL_CHAR:
-      return {...filterBase, op: "!=", val: ""};
-    case QUOTE + QUOTE:
-      return {...filterBase, op: "=", val: ""};
-    default: {
-      const wordFilters: Filter[] = [];
-      for (const match of filterText.matchAll(WORD_REGEXP)) {
-        let word = match[1]?.trimEnd();
-        if (word) {
-          let startsWithGlob: boolean;
-          let endsWithGlob: boolean;
-          if (word === GLOBAL_CHAR || word === GLOBAL_CHAR + GLOBAL_CHAR) {
-            // Special case, treat as regular text and not global character.
-            startsWithGlob = false;
-            endsWithGlob = false;
-          } else {
-            startsWithGlob = word.startsWith(GLOBAL_CHAR);
-            endsWithGlob = word.endsWith(GLOBAL_CHAR);
-          }
-          const op = startsWithGlob === endsWithGlob ? "%v%" : startsWithGlob ? "%v" : "v%";
-          word = word.slice(startsWithGlob ? 1 : 0, endsWithGlob ? -1 : undefined);
-          if (word.length > 2 && word.startsWith(QUOTE) && word.endsWith(QUOTE))
-            // Unquote, unless it's just "'" or "''".
-            word = word.slice(1, -1);
-          wordFilters.push({...filterBase, op, val: word});
-        }
-      }
-      if (!wordFilters.length) {
-        return undefined;
-      }
-      if (wordFilters.length === 1) {
-        return wordFilters[0];
-      }
-      return {type: "op", op: "&", val: wordFilters};
-    }
-  }
-}
-
 /**
- * Creates a global filter for matching strings, from the filter text.
+ * Creates a column filter for a string or text column, from the filter text.
  *
- * Special values of the filter:
- * | Filter:                 | Matches strings:
+ * Special values of the filter text:
+ * | Filter text:            | Matches strings:
  * | :-                      | :-
  * | `*`                     | non-empty
  * | `''`                    | empty
@@ -69,15 +27,44 @@ function buildFuzzyFilter(filterText: string, filterBase: FilterBase): Filter | 
  * | `'abc`                  | containing "'abc" (if there is no right quote further in the text)
  * | `a*b`                   | containing "a*b" (no global character in the middle)
  */
-export function buildFuzzyGlobalFilter(filterText: string) {
-  return buildFuzzyFilter(filterText, {type: "global"});
+export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {column: string}): FilterH {
+  const filterBase = {type: "column", column} as const;
+  filterText = filterText.trim();
+  if (filterText === GLOBAL_CHAR) {
+    return {...filterBase, op: "null", inv: true};
+  }
+  if (filterText === QUOTE + QUOTE) {
+    return {...filterBase, op: "null"};
+  }
+  return {
+    type: "op",
+    op: "&",
+    val: Array.from(filterText.matchAll(WORD_REGEXP), (match): FilterH | undefined => {
+      let word = match[1]?.trimEnd();
+      if (!word) {
+        return undefined;
+      }
+      let startsWithGlob: boolean;
+      let endsWithGlob: boolean;
+      if (word === GLOBAL_CHAR || word === GLOBAL_CHAR + GLOBAL_CHAR) {
+        // Special case, treat as regular text and not global character.
+        startsWithGlob = false;
+        endsWithGlob = false;
+      } else {
+        startsWithGlob = word.startsWith(GLOBAL_CHAR);
+        endsWithGlob = word.endsWith(GLOBAL_CHAR);
+      }
+      const op = startsWithGlob === endsWithGlob ? "%v%" : startsWithGlob ? "%v" : "v%";
+      word = word.slice(startsWithGlob ? 1 : 0, endsWithGlob ? -1 : undefined);
+      if (word.length > 2 && word.startsWith(QUOTE) && word.endsWith(QUOTE))
+        // Unquote, unless it's just "'" or "''".
+        word = word.slice(1, -1);
+      return {...filterBase, op, val: word};
+    }).filter(NON_NULLABLE),
+  };
 }
 
-/**
- * Creates a filter for a string column, from the filter text.
- *
- * See the doc of buildFuzzyGlobalFilter for syntax.
- */
-export function buildFuzzyStringColumnFilter(filterText: string, column: string) {
-  return buildFuzzyFilter(filterText, {type: "column", column});
+export function buildFuzzyGlobalFilter(filterText: string): FilterH {
+  // TODO: Implement global fuzzy filtering.
+  return "always";
 }

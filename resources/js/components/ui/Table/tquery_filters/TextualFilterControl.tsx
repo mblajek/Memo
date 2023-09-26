@@ -1,12 +1,15 @@
 import {debouncedFilterTextAccessor} from "components/utils";
-import {Filter} from "data-access/memo-api/tquery";
-import {createComputed, createSignal, on} from "solid-js";
-import {FilterControl, buildFuzzyStringColumnFilter} from ".";
+import {Component, Show, createComputed, createSignal} from "solid-js";
+import {FilterControlProps, buildFuzzyTextualColumnFilter} from ".";
 import {tableStyle as ts} from "..";
+
+interface StringColumnProps extends FilterControlProps {
+  columnType: "string" | "text";
+}
 
 type Mode = "~" | "=" | ".*";
 
-export const StringFilterControl: FilterControl<Filter> = (props) => {
+export const TextualFilterControl: Component<StringColumnProps> = (props) => {
   const [mode, setMode] = createSignal<Mode>("~");
   const [text, setText] = createSignal("");
   createComputed(() => {
@@ -18,19 +21,19 @@ export const StringFilterControl: FilterControl<Filter> = (props) => {
   });
   // eslint-disable-next-line solid/reactivity
   const debouncedText = debouncedFilterTextAccessor(text);
-  createComputed(
-    on([mode, debouncedText], ([mode, text]) => {
-      if (mode === "~") {
-        props.setFilter(buildFuzzyStringColumnFilter(text, props.name));
-      } else if (mode === "=") {
-        props.setFilter({type: "column", column: props.name, op: "=", val: text});
-      } else if (mode === ".*") {
-        props.setFilter({type: "column", column: props.name, op: "/v/", val: text});
-      } else {
-        return mode satisfies never;
-      }
-    }),
-  );
+  createComputed(() => {
+    const m = mode();
+    const t = debouncedText();
+    if (m === "~") {
+      props.setFilter(t ? buildFuzzyTextualColumnFilter(t, {column: props.name}) : undefined);
+    } else if (m === "=") {
+      props.setFilter({type: "column", column: props.name, op: "=", val: t});
+    } else if (m === ".*") {
+      props.setFilter({type: "column", column: props.name, op: "/v/", val: t});
+    } else {
+      return m satisfies never;
+    }
+  });
   return (
     <div class={ts.filterLine}>
       <select
@@ -40,7 +43,9 @@ export const StringFilterControl: FilterControl<Filter> = (props) => {
         onChange={({target: {value}}) => setMode(value as Mode)}
       >
         <option value="~">~</option>
-        <option value="=">=</option>
+        <Show when={props.columnType === "string"}>
+          <option value="=">=</option>
+        </Show>
         <option value=".*">.*</option>
       </select>
       <div class={ts.wideEdit}>
