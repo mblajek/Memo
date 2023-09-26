@@ -9,11 +9,11 @@ export type DateString = string;
 /** Date time string in ISO format in UTC. */
 export type DateTimeString = string;
 
-type Mapping<Key extends string, Value> = Partial<Record<Key, Value>>;
+type Mapping<Key extends string, Value> = Readonly<Partial<Record<Key, Value>>>;
 
 export interface Schema {
-  columns: ColumnSchema[];
-  customFilters?: Mapping<CustomFilterName, CustomFilter>;
+  readonly columns: ColumnSchema[];
+  readonly customFilters?: Mapping<CustomFilterName, CustomFilter>;
 }
 
 // TODO: There are more possible column types:
@@ -23,128 +23,156 @@ export interface Schema {
 export type ColumnSchema = BasicColumnSchema;
 
 interface ColumnSchemaBase {
-  name: ColumnName;
+  readonly name: ColumnName;
 }
 
 export interface BasicColumnSchema extends ColumnSchemaBase {
-  type: "uuid" | "string" | "text" | "decimal0" | "decimal2" | "bool" | "date" | "datetime";
+  readonly type: "bool" | "date" | "datetime" | "int" | "string" | "text" | "uuid";
+  readonly nullable?: boolean;
 }
 
 export interface CustomFilter {
   /** Hint for the frontend on where to place the UI element. */
-  associatedColumn: ColumnName;
+  readonly associatedColumn: ColumnName;
 }
 
 export interface DataRequest {
-  columns: Column[];
-  filter?: Filter;
-  sort: Sort;
-  paging: Paging;
+  readonly columns: Column[];
+  readonly filter?: ConstFilter | Filter;
+  readonly sort: Sort;
+  readonly paging: Paging;
 }
 
 // TODO: Consider custom columns.
 export type Column = DataColumn;
 
 export interface DataColumn {
-  type: "column";
-  column: ColumnName;
+  readonly type: "column";
+  readonly column: ColumnName;
 }
 
-export type Filter = BoolOpFilter | ColumnFilter | CustomFilter | GlobalFilter;
+/** A filter that matches everything / doesn't match anything. Only valid at the top level. */
+export type ConstFilter = "always" | "never";
+
+export type Filter = BoolOpFilter | ColumnFilter | CustomFilter;
 
 interface FilterBase {
-  inv?: boolean;
+  /** Whether to reverse the result of the filter. This is applicable to all filters. */
+  readonly inv?: boolean;
 }
 
+/**
+ * A filter that performs a boolean _and_ or _or_ operation on the specified filters.
+ * - If op is `"&"`, this matches if all of the filters in val match.
+ * - If op is `"|"`, this matches if any of the filters in val match.
+ */
 export interface BoolOpFilter extends FilterBase {
-  type: "op";
-  op: "&" | "|";
-  val: Filter[];
+  readonly type: "op";
+  readonly op: "&" | "|";
+  /** List of sub-filters. Cannot be empty. */
+  readonly val: Filter[];
 }
 
-// TODO: Filter by enum-related columns.
-export type ColumnFilter =
-  | UuidColumnFilter
-  | StringColumnFilter
-  | DecimalColumnFilter
+export type ColumnFilter = NullColumnFilter | ColumnValueFilter;
+export type ColumnValueFilter =
   | BoolColumnFilter
   | DateColumnFilter
-  | DateTimeColumnFilter;
+  | DateTimeColumnFilter
+  | IntColumnFilter
+  | StringColumnFilter
+  | TextColumnFilter
+  | UuidColumnFilter;
 
 interface ColumnFilterBase extends FilterBase {
-  type: "column";
-  column: ColumnName;
+  readonly type: "column";
+  readonly column: ColumnName;
 }
 
-export type StringFilterOp =
-  | "="
-  | "!="
-  // LIKE match:
-  | "%v"
-  | "v%"
-  | "%v%"
-  // Regexp:
-  | "/v/";
-
-export type ComparableFilterOp = "=" | "!=" | ">" | "<" | ">=" | "<=";
-
-export interface UuidColumnFilter extends ColumnFilterBase {
-  op: "=";
-  val: string;
+/** A filter matching only null values. It is invalid for non-nullable columns. */
+export interface NullColumnFilter extends ColumnFilterBase {
+  readonly op: "null";
 }
 
-export interface StringColumnFilter extends ColumnFilterBase {
-  op: StringFilterOp;
-  val: string;
+interface EqColumnFilter<T> extends ColumnFilterBase {
+  readonly op: "=";
+  /** The value to compare to. Cannot be empty string. */
+  readonly val: T;
+}
+interface BinEqColumnFilter<T> extends ColumnFilterBase {
+  readonly op: "==";
+  /** The value to compare to. Cannot be empty string. */
+  readonly val: T;
+}
+interface InColumnFilter<T> extends ColumnFilterBase {
+  readonly op: "in";
+  /** The values to compare to. Cannot contain an empty string. */
+  readonly val: T[];
+}
+interface CmpColumnFilter<T> extends ColumnFilterBase {
+  readonly op: ">" | "<" | ">=" | "<=";
+  /** The value to compare to. Cannot be empty string. */
+  readonly val: T;
+}
+/** A filter that matches a part of a textual column. */
+interface ContainsColumnFilter extends ColumnFilterBase {
+  /** Whether the val should appear at the end of the matched string, at the beginning, or anywhere. */
+  readonly op: "%v" | "v%" | "%v%";
+  /** The value that needs to appear in the searched string. Cannot be empty. */
+  readonly val: string;
+}
+/** A filter that matches a textual column with a LIKE expression. */
+interface LikeColumnFilter extends ColumnFilterBase {
+  readonly op: "lv";
+  /** The LIKE pattern with % denoting any number of characters and _ denoting any single character. */
+  readonly val: string;
+}
+interface RegexpColumnFilter extends ColumnFilterBase {
+  readonly op: "/v/";
+  /** The regexp pattern to match. Cannot be empty. */
+  readonly val: string;
 }
 
-export interface DecimalColumnFilter extends ColumnFilterBase {
-  op: ComparableFilterOp;
-  val: number;
-}
-
-export interface BoolColumnFilter extends ColumnFilterBase {
-  op: "=";
-  val: boolean;
-}
-
-export interface DateColumnFilter extends ColumnFilterBase {
-  op: ComparableFilterOp;
-  val: DateString;
-}
-
-export interface DateTimeColumnFilter extends ColumnFilterBase {
-  op: ComparableFilterOp;
-  val: DateTimeString;
-}
+export type BoolColumnFilter = EqColumnFilter<boolean>;
+export type DateColumnFilter = EqColumnFilter<DateString> | InColumnFilter<DateString> | CmpColumnFilter<DateString>;
+export type DateTimeColumnFilter = CmpColumnFilter<DateString>;
+export type IntColumnFilter =
+  | EqColumnFilter<number>
+  | InColumnFilter<number>
+  | CmpColumnFilter<number>
+  | ContainsColumnFilter
+  | LikeColumnFilter;
+export type StringColumnFilter =
+  | EqColumnFilter<string>
+  | BinEqColumnFilter<string>
+  | InColumnFilter<string>
+  | CmpColumnFilter<string>
+  | ContainsColumnFilter
+  | LikeColumnFilter
+  | RegexpColumnFilter;
+export type TextColumnFilter = ContainsColumnFilter | LikeColumnFilter | RegexpColumnFilter;
+export type UuidColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
 
 export interface CustomFilter extends FilterBase {
-  type: "custom";
-  customFilter: CustomFilterName;
-  params: CustomFilterParams;
-}
-
-export interface GlobalFilter extends FilterBase {
-  type: "global";
-  op: StringFilterOp;
-  val: string;
+  readonly type: "custom";
+  readonly customFilter: CustomFilterName;
+  readonly params: CustomFilterParams;
 }
 
 export interface Paging {
   /** The one-based page number. */
-  number: number;
-  size: number;
+  readonly number: number;
+  readonly size: number;
 }
 
 export interface DataResponse {
-  meta: DataResponseMeta;
-  data: DataItem[];
+  readonly meta: DataResponseMeta;
+  readonly data: DataItem[];
 }
 
 export interface DataResponseMeta {
-  columns: Column[];
+  readonly columns: Column[];
   /** Number of records across all pages of results. */
-  totalDataSize: number;
+  readonly totalDataSize: number;
 }
 
 export type DataItem = Mapping<ColumnName, unknown>;
@@ -155,25 +183,9 @@ export type Sort = SortItem[];
 export type SortItem = SortColumn;
 
 export interface SortColumn {
-  type: "column";
-  column: ColumnName;
-  desc?: boolean;
+  readonly type: "column";
+  readonly column: ColumnName;
+  readonly desc?: boolean;
 }
-
-// Utilities:
 
 export type ColumnType = ColumnSchema["type"];
-
-export interface FilterTypeByColumnType {
-  uuid: undefined;
-  string: StringColumnFilter;
-  text: StringColumnFilter;
-  decimal0: DecimalColumnFilter;
-  decimal2: DecimalColumnFilter;
-  bool: BoolColumnFilter;
-  date: DateColumnFilter;
-  datetime: DateTimeColumnFilter;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type checkColumnTypes = FilterTypeByColumnType[ColumnType];

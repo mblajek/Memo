@@ -1,15 +1,10 @@
-import {Component, Show, createMemo} from "solid-js";
-import {Dynamic} from "solid-js/web";
+import {Component, JSX, Show} from "solid-js";
 import {FilterControlProps} from ".";
 import {FilterIcon, tableStyle as ts, useTable} from "..";
-import {TQueryColumnMeta} from "../TQueryTable";
 import {BoolFilterControl} from "./BoolFilterControl";
-import {DateFilterControl} from "./DateFilterControl";
-import {DateFilterForDateTimeColumnControl} from "./DateFilterForDateTimeColumnControl";
 import {DateTimeFilterControl} from "./DateTimeFilterControl";
-import {Decimal0FilterControl} from "./Decimal0FilterControl";
-import {Decimal2FilterControl} from "./Decimal2FilterControl";
-import {StringFilterControl} from "./StringFilterControl";
+import {IntFilterControl} from "./IntFilterControl";
+import {TextualFilterControl} from "./TextualFilterControl";
 import {UuidFilterControl} from "./UuidFilterControl";
 
 interface CommonFilteringParams {
@@ -22,50 +17,51 @@ export interface DateTimeFilteringParams extends CommonFilteringParams {
 
 export type FilteringParams = DateTimeFilteringParams;
 
-function getFilterControl(meta: TQueryColumnMeta) {
-  if (meta.filtering?.enabled === false) {
-    return undefined;
-  }
-  switch (meta.type) {
-    case undefined:
-      return undefined;
-    case "uuid":
-      return UuidFilterControl;
-    case "string":
-      return StringFilterControl;
-    case "text":
-      return StringFilterControl;
-    case "decimal0":
-      return Decimal0FilterControl;
-    case "decimal2":
-      return Decimal2FilterControl;
-    case "bool":
-      return BoolFilterControl;
-    case "date":
-      return DateFilterControl;
-    case "datetime":
-      return (meta.filtering as DateTimeFilteringParams | undefined)?.useDateOnlyInputs
-        ? DateFilterForDateTimeColumnControl
-        : DateTimeFilterControl;
-    default:
-      return meta.type satisfies never;
-  }
-}
-
+/**
+ * The filter controler element for the named column.
+ *
+ * TODO: Add support for nullable columns.
+ */
 export const ColumnFilterController: Component<FilterControlProps> = (props) => {
   const table = useTable();
-  const filterComponent = createMemo(() => {
+  const filterControl = (): (() => JSX.Element) | undefined => {
     const meta = table.getColumn(props.name)?.columnDef.meta?.tquery;
-    return meta && getFilterControl(meta);
-  });
+    if (!meta || meta.filtering?.enabled === false) {
+      return undefined;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any, solid/reactivity
+    const anyFilterProps: any = props;
+    switch (meta.type) {
+      case undefined:
+        return undefined;
+      case "bool":
+        return () => <BoolFilterControl {...anyFilterProps} />;
+      case "date":
+      case "datetime":
+        return () => (
+          <DateTimeFilterControl
+            {...anyFilterProps}
+            columnType={meta.type}
+            useDateOnlyInputs={meta.filtering?.useDateOnlyInputs}
+          />
+        );
+      case "int":
+        return () => <IntFilterControl {...anyFilterProps} />;
+      case "string":
+      case "text":
+        return () => <TextualFilterControl {...anyFilterProps} columnType={meta.type} />;
+      case "uuid":
+        return () => <UuidFilterControl {...anyFilterProps} />;
+      default:
+        return meta.type satisfies never;
+    }
+  };
   return (
     <div class={ts.columnFilterController}>
-      <Show when={filterComponent()}>
-        {(filterComponent) => (
+      <Show when={filterControl()}>
+        {(filterControl) => (
           <>
-            <div class={ts.filterMain}>
-              <Dynamic component={filterComponent()} {...props} />
-            </div>
+            <div class={ts.filterMain}>{filterControl()()}</div>
             <FilterIcon class={ts.filterIcon} isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
           </>
         )}

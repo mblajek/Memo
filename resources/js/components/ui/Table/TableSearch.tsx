@@ -1,8 +1,6 @@
-import cx from "classnames";
-import {useLangFunc} from "components/utils";
-import {Component, ParentProps, createComputed, createSignal, splitProps} from "solid-js";
+import {cx, useLangFunc} from "components/utils";
+import {Component, JSX, ParentProps, createComputed, createSignal, splitProps} from "solid-js";
 import {tableStyle, useTable} from ".";
-import {JSX} from "solid-js";
 
 interface Props extends JSX.HTMLAttributes<HTMLDivElement> {
   placeholder?: string;
@@ -19,7 +17,7 @@ export const TableSearch: Component<ParentProps<Props>> = (props) => {
       <input
         name="table_global_search"
         type="search"
-        placeholder={lProps.placeholder || t("tables.search")}
+        placeholder={"chwilowo zepsute" || lProps.placeholder || t("tables.search")}
         value={query()}
         onInput={({target: {value}}) => setQuery(value)}
       />

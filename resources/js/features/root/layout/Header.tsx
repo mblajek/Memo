@@ -4,9 +4,10 @@ import {Button} from "components/ui";
 import {DATE_TIME_WITH_WEEKDAY_FORMAT, QueryBarrier, cx, useLangFunc} from "components/utils";
 import {System, User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
+import {DateTime} from "luxon";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Component, For, Match, Switch, createSignal, onCleanup, onMount} from "solid-js";
+import {Component, For, Index, Match, Switch, createSignal, onCleanup, onMount} from "solid-js";
 import s from "./style.module.scss";
 
 export const Header: Component = () => {
@@ -74,17 +75,12 @@ const HeaderRight = () => {
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <span>
-            <For
-              each={
-                // Display each part in a separate span to allow selecting the date.
-                DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime())
-                  // This mapping must happen here, otherwise the identity of the elements
-                  // change every second, which is what we want to avoid.
-                  .map(({value}) => value)
-              }
+            <Index
+              // Display each part in a separate span to allow selecting the date.
+              each={currentTime().toLocaleParts(DATE_TIME_WITH_WEEKDAY_FORMAT)}
             >
-              {(value) => <span>{value}</span>}
-            </For>
+              {(item) => <span>{item().value}</span>}
+            </Index>
           </span>
           <span>
             {statusQuery.data?.user.name}
@@ -110,10 +106,10 @@ const HeaderRight = () => {
 };
 
 const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = createSignal(new Date());
+  const [currentTime, setCurrentTime] = createSignal(DateTime.now());
   let interval: ReturnType<typeof setInterval>;
   onMount(() => {
-    interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    interval = setInterval(() => setCurrentTime(DateTime.now()), 1000);
   });
   onCleanup(() => clearInterval(interval));
   return currentTime;

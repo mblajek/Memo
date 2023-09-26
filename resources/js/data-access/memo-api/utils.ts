@@ -1,4 +1,5 @@
 import {AxiosError, type AxiosResponse} from "axios";
+import {DateTime} from "luxon";
 import {Api} from "./types";
 
 export const parseGetResponse = <T extends object>(res: AxiosResponse<Api.Response.Get<T>>) => res.data.data;
@@ -49,4 +50,14 @@ export function createGetFromList<T extends Api.Entity>(
       }
       return result;
     });
+}
+
+/** Returns the ISO representation of datetime in UTC time zone, suitable for sending to backend. */
+export function dateTimeToISO(dateTime: DateTime) {
+  return dateTime.toUTC().set({millisecond: 0}).toISO({suppressMilliseconds: true});
+}
+
+/** Returns the ISO representation of date, suitable for sending to backend. Local time zone is used. */
+export function dateToISO(dateTime: DateTime) {
+  return dateTime.toISODate();
 }

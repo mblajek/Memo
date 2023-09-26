@@ -2,7 +2,7 @@ import * as pagination from "@zag-js/pagination";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {FaSolidArrowLeftLong, FaSolidArrowRightLong} from "solid-icons/fa";
 import {IoEllipsisHorizontal} from "solid-icons/io";
-import {Component, For, Show, createEffect, createMemo, createUniqueId, on} from "solid-js";
+import {Component, For, Show, createComputed, createMemo, createUniqueId, on} from "solid-js";
 import {tableStyle as ts, useTable} from ".";
 import {Button} from "..";
 
@@ -21,15 +21,13 @@ export const Pagination: Component = () => {
     }),
   );
   const api = createMemo(() => pagination.connect(state, send, normalizeProps));
-  createEffect(() => api().setCount(table.getPageCount()));
+  createComputed(() => api().setCount(table.getPageCount()));
   // Update the machine when the table changes the page index for unrelated reason.
   // Use `on` to prevent updates when the value does not actually change.
-  createEffect(
+  createComputed(
     on(
       () => table.getState().pagination.pageIndex,
-      (pageIndex) => {
-        api().setPage(pageIndex + 1);
-      },
+      (pageIndex) => api().setPage(pageIndex + 1),
     ),
   );
   return (

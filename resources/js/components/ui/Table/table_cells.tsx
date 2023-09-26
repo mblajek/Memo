@@ -1,11 +1,6 @@
 import {CellContext, HeaderContext} from "@tanstack/solid-table";
-import {
-  DATE_FORMAT,
-  DATE_TIME_FORMAT,
-  DECIMAL0_NUMBER_FORMAT,
-  DECIMAL2_NUMBER_FORMAT,
-  useLangFunc,
-} from "components/utils";
+import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT, useLangFunc} from "components/utils";
+import {DateTime} from "luxon";
 import {JSX, Show} from "solid-js";
 import {Header} from "./Header";
 
@@ -27,17 +22,16 @@ export function useTableCells() {
   return {
     defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
     default: cellFunc((v) => <div class="whitespace-pre-wrap">{String(v)}</div>),
-    decimal0: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL0_NUMBER_FORMAT.format(v)}</span>),
-    decimal2: cellFunc<number>((v) => <span class="w-full text-right">{DECIMAL2_NUMBER_FORMAT.format(v)}</span>),
     bool: cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no"))),
-    date: cellFunc<string>((v) => DATE_FORMAT.format(new Date(v))),
-    datetime: cellFunc<string>((v) => DATE_TIME_FORMAT.format(new Date(v))),
+    date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
+    datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
+    int: cellFunc<number>((v) => <span class="w-full text-right">{NUMBER_FORMAT.format(v)}</span>),
   };
 }
 
 export function cellFunc<V>(func: (v: V) => JSX.Element | undefined, fallback?: () => JSX.Element): CellComponent {
   return (c) => (
-    <Show when={c.getValue() !== undefined} fallback={fallback?.()}>
+    <Show when={c.getValue() != null} fallback={fallback?.()}>
       {func(c.getValue() as V)}
     </Show>
   );
