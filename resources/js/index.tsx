@@ -5,6 +5,7 @@ import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
 import i18next from "i18next";
 import I18NextHttpBackend from "i18next-http-backend";
+import {Settings} from "luxon";
 import {Show, createSignal} from "solid-js";
 import {render} from "solid-js/web";
 import {Toaster} from "solid-toast";
@@ -13,10 +14,15 @@ import "./index.scss";
 
 const root = document.getElementById("root");
 
-if (!(root instanceof HTMLElement)) {
-  throw new Error(
-    "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?",
-  );
+if (!(root instanceof HTMLElement)) throw new Error("Root element not found.");
+
+const TOAST_DURATION_SECS = 8;
+
+Settings.throwOnInvalid = true;
+declare module "luxon" {
+  interface TSSettings {
+    throwOnInvalid: true;
+  }
 }
 
 render(() => {
@@ -44,12 +50,17 @@ render(() => {
           <InitializeTanstackQuery>
             <Router>
               <App />
-              <Toaster position="bottom-right" toastOptions={{className: "mr-4"}} />
+              <Toaster
+                position="bottom-right"
+                toastOptions={{
+                  className: "mr-4",
+                  duration: TOAST_DURATION_SECS * 1000,
+                }}
+              />
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>
       </Show>
     </TransProvider>
   );
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-}, root!);
+}, root);

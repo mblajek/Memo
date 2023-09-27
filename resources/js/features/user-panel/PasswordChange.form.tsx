@@ -27,6 +27,7 @@ export namespace PasswordChangeForm {
 
   interface Props {
     onSuccess?: () => void;
+    onCancel?: () => void;
   }
 
   export const Component: Component<Props> = (props) => {
@@ -43,6 +44,7 @@ export namespace PasswordChangeForm {
         toast.success(t("forms.password_change.success"));
         props.onSuccess?.();
       },
+      meta: {isFormSubmit: true},
     }));
 
     const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
@@ -67,7 +69,7 @@ export namespace PasswordChangeForm {
         <TextField name="current" type="password" autocomplete="current-password" />
         <TextField name="password" type="password" autocomplete="new-password" />
         <TextField name="repeat" type="password" autocomplete="new-password" />
-        <FelteSubmit />
+        <FelteSubmit cancel={props.onCancel} />
       </FelteForm>
     );
   };
@@ -84,13 +86,13 @@ export namespace PasswordChangeForm {
     const t = useLangFunc();
     return (
       <ModalComponent
-        title={t("forms.password_change.name")}
+        title={t("forms.password_change.formName")}
         open={modalShown()}
         closeOn={["escapeKey", "closeButton"]}
         onClose={() => setModalShown(false)}
         style={MODAL_STYLE_PRESETS.narrow}
       >
-        <Component onSuccess={() => setModalShown(false)} />
+        <Component onSuccess={() => setModalShown(false)} onCancel={() => setModalShown(false)} />
       </ModalComponent>
     );
   };

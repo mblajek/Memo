@@ -27,7 +27,7 @@ export type AdminUserResource = {
    * @example '67da972b-34d7-4f89-b8ae-322d96b4954d'
    */
   lastLoginFacilityId: string;
-  passwordExpireAt: string;
+  passwordExpireAt: string | null;
   hasPassword: boolean;
   createdAt: string;
   updatedAt: string;
@@ -45,3 +45,9 @@ export type AdminUserResource = {
    */
   members: MemberResource[];
 };
+
+/** The user resource used for creation. */
+export type AdminUserResourceForCreate = Pick<
+  AdminUserResource,
+  "name" | "email" | "hasEmailVerified" | "passwordExpireAt" | "hasGlobalAdmin"
+> & {password: string | null};

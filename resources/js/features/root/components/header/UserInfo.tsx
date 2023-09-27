@@ -2,9 +2,10 @@ import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query
 import {DATE_TIME_WITH_WEEKDAY_FORMAT, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
+import {DateTime} from "luxon";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Match, Switch, createSignal, onMount, For} from "solid-js";
+import {Match, Switch, createSignal, onMount, Index, onCleanup} from "solid-js";
 
 export const UserInfo = () => {
   const t = useLangFunc();
@@ -34,17 +35,12 @@ export const UserInfo = () => {
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <span>
-            <For
-              each={
-                // Display each part in a separate span to allow selecting the date.
-                DATE_TIME_WITH_WEEKDAY_FORMAT.formatToParts(currentTime())
-                  // This mapping must happen here, otherwise the identity of the elements
-                  // change every second, which is what we want to avoid.
-                  .map(({value}) => value)
-              }
+            <Index
+              // Display each part in a separate span to allow selecting the date.
+              each={currentTime().toLocaleParts(DATE_TIME_WITH_WEEKDAY_FORMAT)}
             >
-              {(value) => <span>{value}</span>}
-            </For>
+              {(item) => <span>{item().value}</span>}
+            </Index>
           </span>
           <span>
             {statusQuery.data?.user.name}
@@ -60,7 +56,7 @@ export const UserInfo = () => {
         <button
           class="rounded-lg flex flex-row justify-center items-center hover:bg-white"
           onClick={() => logout.mutate()}
-          title={t("log_out")}
+          title={t("actions.log_out")}
         >
           <HiOutlinePower color="red" size="30" />
         </button>
@@ -70,10 +66,11 @@ export const UserInfo = () => {
 };
 
 const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = createSignal(new Date());
+  const [currentTime, setCurrentTime] = createSignal(DateTime.now());
+  let interval: ReturnType<typeof setInterval>;
   onMount(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(interval);
+    interval = setInterval(() => setCurrentTime(DateTime.now()), 1000);
   });
+  onCleanup(() => clearInterval(interval));
   return currentTime;
 };

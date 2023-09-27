@@ -4,12 +4,11 @@ import {Admin} from "data-access/memo-api/groups/Admin";
 import {
   ColumnSchema,
   ColumnType,
-  ComparableFilterOp,
+  ColumnValueFilter,
   DataRequest,
   DataResponse,
   Filter,
   Schema,
-  StringFilterOp,
 } from "data-access/memo-api/tquery";
 import {rest, setupWorker} from "msw";
 
@@ -26,25 +25,26 @@ function getCompareTransform(type: ColumnType): CompareTransform {
     ? Number
     : type === "date" || type === "datetime"
     ? (v) => Date.parse(v)
-    : type === "decimal0" || type === "decimal2"
+    : type === "int"
     ? (v) => v
-    : type === "text" || type === "string"
+    : type === "text" || type === "string" || type === "uuid"
     ? (v) => str(v)?.toLocaleLowerCase() || ""
     : (type satisfies never);
 }
 
-function filterOp(rowVal: ComparableVal, filterVal: ComparableVal, op: StringFilterOp | ComparableFilterOp) {
+function filterOp(rowVal: ComparableVal, filterVal: ComparableVal, op: ColumnValueFilter["op"]) {
   switch (op) {
     case "=":
+    case "==":
       return rowVal === filterVal;
-    case "!=":
-      return rowVal !== filterVal;
+    case "in":
+      return false;
     case ">":
       return rowVal > filterVal;
-    case ">=":
-      return rowVal >= filterVal;
     case "<":
       return rowVal < filterVal;
+    case ">=":
+      return rowVal >= filterVal;
     case "<=":
       return rowVal <= filterVal;
     case "v%":
@@ -53,6 +53,10 @@ function filterOp(rowVal: ComparableVal, filterVal: ComparableVal, op: StringFil
       return str(rowVal)?.endsWith(filterVal as string) || false;
     case "%v%":
       return str(rowVal)?.includes(filterVal as string) || false;
+    case "lv":
+      return typeof rowVal === "string"
+        ? new RegExp((filterVal as string).replaceAll("%", ".*").replaceAll("_", ".")).test(rowVal)
+        : false;
     case "/v/":
       return typeof rowVal === "string" ? new RegExp(filterVal as string).test(rowVal) : false;
     default:
@@ -83,15 +87,14 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
         }
       }
       case "column": {
+        if (filter.op === "null") {
+          return row[filter.column] == null;
+        }
         const valTf = getCompareTransform(colType(columns, filter.column));
         return filterOp(valTf(row[filter.column]), valTf(filter.val), filter.op);
       }
       case "custom":
         return false;
-      case "global":
-        return columns.some(({name}) =>
-          filterOp(String(row[name]).toLocaleLowerCase(), filter.val.toLocaleLowerCase(), filter.op),
-        );
       default:
         return filter satisfies never;
     }
@@ -99,17 +102,22 @@ function matches(columns: ColumnSchema[], row: Row, filter: Filter): boolean {
   return matchesNoInv() !== !!filter.inv;
 }
 
+async function sleep(timeMs: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, timeMs));
+}
+
 export function startUsersMock() {
   const usersQuery = createQuery(Admin.usersQueryOptions);
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const columns: ColumnSchema[] = [
     {name: "createdAt", type: "datetime"},
-    {name: "email", type: "string"},
-    {name: "facilitiesMember", type: "text"},
+    {name: "email", type: "string", nullable: true},
+    {name: "facilitiesMember", type: "text", nullable: true},
     {name: "hasGlobalAdmin", type: "bool"},
-    {name: "id", type: "string"},
+    {name: "hasPassword", type: "bool"},
+    {name: "id", type: "uuid"},
     {name: "name", type: "string"},
-    {name: "numFacilities", type: "decimal0"},
+    {name: "numFacilities", type: "int"},
   ];
   setupWorker(
     rest.get("/api/v1/entityURL/tquery", (req, res, ctx) => {
@@ -123,10 +131,16 @@ export function startUsersMock() {
     }),
     rest.post("/api/v1/entityURL/tquery", async (req, res, ctx) => {
       const request: DataRequest = await req.json();
+      // Make sure fresh data is served after invalidation.
+      await sleep(10);
+      while (usersQuery.isFetching) {
+        await sleep(100);
+      }
       const rows: Row[] = (usersQuery.data || []).map((entry) => ({
         id: entry.id,
         name: entry.name,
-        email: entry.email,
+        email: entry.email || null,
+        hasPassword: entry.hasPassword,
         createdAt: entry.createdAt,
         facilitiesMember: entry.members
           .map(
@@ -139,11 +153,12 @@ export function startUsersMock() {
         numFacilities: entry.members.length,
         hasGlobalAdmin: entry.hasGlobalAdmin,
       }));
-      const {filter} = request;
-      const filteredRows = filter ? rows.filter((row) => matches(columns, row, filter)) : rows;
-      const sorters = request.sort.map(({column, dir}) => {
+      const {filter = "always"} = request;
+      const filteredRows =
+        filter === "never" ? [] : filter === "always" ? rows : rows.filter((row) => matches(columns, row, filter));
+      const sorters = request.sort.map(({column, desc}) => {
         const valTf = getCompareTransform(colType(columns, column));
-        const dirC = dir === "asc" ? 1 : -1;
+        const dirC = desc ? -1 : 1;
         return (a: Row, b: Row) => {
           const va = valTf(a[column]);
           const vb = valTf(b[column]);
@@ -152,8 +167,8 @@ export function startUsersMock() {
       });
       const sortedRows = [...filteredRows].sort((a, b) => sorters.reduce((acc, sorter) => acc || sorter(a, b), 0));
       const pagedRows = sortedRows.slice(
-        request.paging.pageIndex * request.paging.pageSize,
-        (request.paging.pageIndex + 1) * request.paging.pageSize,
+        (request.paging.number - 1) * request.paging.size,
+        request.paging.number * request.paging.size,
       );
       const finalRows = pagedRows.map((r: Row) => {
         const res: Row = {};

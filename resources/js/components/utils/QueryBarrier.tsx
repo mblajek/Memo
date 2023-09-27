@@ -1,7 +1,6 @@
-import type {Component, ParentProps} from "solid-js";
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {Match, Switch, mergeProps} from "solid-js";
-import {Spinner} from "../ui";
+import {Component, Match, ParentProps, Switch, mergeProps} from "solid-js";
+import {BigSpinner} from "../ui";
 
 export interface QueryBarrierProps {
   /**
@@ -50,6 +49,6 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
   );
 }
 
-const LocalSpinner = () => <Spinner />;
+const LocalSpinner = () => <BigSpinner />;
 
 const LocalError = () => <p>error</p>;

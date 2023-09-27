@@ -1,4 +1,5 @@
 import {AxiosError, type AxiosResponse} from "axios";
+import {DateTime} from "luxon";
 import {Api} from "./types";
 
 export const parseGetResponse = <T extends object>(res: AxiosResponse<Api.Response.Get<T>>) => res.data.data;
@@ -19,10 +20,10 @@ export function createListRequest(inParam?: ListInParam): Api.Request.GetListPar
   return Array.isArray(inParam) ? (inParam.length ? {in: inParam.toSorted().join(",")} : {}) : {in: inParam};
 }
 
-export function byId<T extends Api.Entity>(list: T[]): Partial<Record<Api.Id, T>> {
-  const result: Partial<Record<Api.Id, T>> = {};
-  for (const entity of list) {
-    result[entity.id] = entity;
+export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id, T> {
+  const result = new Map();
+  for (const entity of list || []) {
+    result.set(entity.id, entity);
   }
   return result;
 }
@@ -49,4 +50,14 @@ export function createGetFromList<T extends Api.Entity>(
       }
       return result;
     });
+}
+
+/** Returns the ISO representation of datetime in UTC time zone, suitable for sending to backend. */
+export function dateTimeToISO(dateTime: DateTime) {
+  return dateTime.toUTC().set({millisecond: 0}).toISO({suppressMilliseconds: true});
+}
+
+/** Returns the ISO representation of date, suitable for sending to backend. Local time zone is used. */
+export function dateToISO(dateTime: DateTime) {
+  return dateTime.toISODate();
 }
