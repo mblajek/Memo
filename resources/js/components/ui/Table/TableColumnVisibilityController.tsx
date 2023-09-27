@@ -1,12 +1,12 @@
 import * as popover from "@zag-js/popover";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {useLangFunc} from "components/utils";
-import {Component, For, Show, createMemo, createUniqueId} from "solid-js";
+import {For, Show, VoidComponent, createMemo, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {ColumnName, tableStyle as ts, useTable} from ".";
 import {Button} from "../Button";
 
-export const TableColumnVisibilityController: Component = () => {
+export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
   const [state, send] = useMachine(

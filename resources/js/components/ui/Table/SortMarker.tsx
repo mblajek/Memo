@@ -1,7 +1,7 @@
 import {Column, SortDirection} from "@tanstack/solid-table";
 import {IconTypes} from "solid-icons";
 import {FaSolidArrowDownLong, FaSolidArrowUpLong, FaSolidArrowsUpDown} from "solid-icons/fa";
-import {Component, Show} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {useTable} from "..";
 
@@ -15,7 +15,7 @@ const ICONS = new Map<false | SortDirection, IconTypes>()
   .set("asc", FaSolidArrowUpLong)
   .set("desc", FaSolidArrowDownLong);
 
-export const SortMarker: Component<Props> = (props) => {
+export const SortMarker: VoidComponent<Props> = (props) => {
   const table = useTable();
   const isSecondarySort = () =>
     props.column.getIsSorted() &&

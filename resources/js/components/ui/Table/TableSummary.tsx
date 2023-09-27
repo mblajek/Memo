@@ -1,5 +1,5 @@
 import {LangEntryFunc, useLangFunc} from "components/utils";
-import {Component, Show} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {tableStyle as ts, useTable} from ".";
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
   summaryTranslation?: LangEntryFunc;
 }
 
-export const TableSummary: Component<Props> = (props) => {
+export const TableSummary: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const table = useTable();
   const count = () => props.rowsCount ?? table.getRowModel().rows.length;

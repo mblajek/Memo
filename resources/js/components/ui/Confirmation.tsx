@@ -1,4 +1,4 @@
-import {Component, JSX, createSignal} from "solid-js";
+import {JSX, VoidComponent, createSignal} from "solid-js";
 import {useLangFunc} from "../utils";
 import {Button} from "./Button";
 import {Modal} from "./Modal";
@@ -17,7 +17,7 @@ interface ConfirmData extends ConfirmParams {
 
 const [data, setData] = createSignal<ConfirmData>();
 
-export const Confirmation: Component = () => {
+export const Confirmation: VoidComponent = () => {
   const t = useLangFunc();
   return (
     <Modal

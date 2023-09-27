@@ -1,4 +1,7 @@
 .modal {
+  @apply absolute;
+  z-index: 1e6;
+
   [data-part="backdrop"] {
     @apply fixed inset-0 bg-black bg-opacity-30;
   }
