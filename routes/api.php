@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\Tquery\AdminUserTqueryController;
 use App\Http\Controllers\UserController;
@@ -59,6 +60,9 @@ Route::prefix('/v1')->group(function () {
             Route::patch('/{member}', [AdminMemberController::class, 'patch']);
             Route::delete('/{member}', [AdminMemberController::class, 'delete']);
         });
+    });
+    Route::prefix('/mail')->group(function () {
+        Route::post('/test', [MailController::class, 'test']);
     });
 });
 

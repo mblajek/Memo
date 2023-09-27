@@ -10,6 +10,11 @@ use Symfony\Component\Yaml\Yaml;
 
 class TranslationsService
 {
+    public static function defaultLocale(): string
+    {
+        return App::getLocale();
+    }
+
     private static function readJsonFile(string $locale, string $name): array
     {
         try {
@@ -22,13 +27,25 @@ class TranslationsService
 
     public static function defaultAppValidationTranslation(): array
     {
-        return self::readJsonFile(App::getLocale(), 'validation.yml');
+        return self::readJsonFile(self::defaultLocale(), 'validation.yml');
+    }
+
+    public static function mailTranslation(string $key): string
+    {
+        $currentTree = self::readJsonFile(self::defaultLocale(), 'mails.yml');
+        foreach (explode('.', $key) as $part) {
+            if (!is_array($currentTree) || !array_key_exists($key, $currentTree)) {
+                return $key;
+            }
+            $currentTree = $currentTree[$part];
+        }
+        return is_string($currentTree) ? $currentTree : $key;
     }
 
     public function translationList(string $locale): array
     {
         $locale = Locale::canonicalize($locale);
-        $locale = in_array($locale, config('app.available_locales'), strict: true) ? $locale : App::getLocale();
+        $locale = in_array($locale, config('app.available_locales'), strict: true) ? $locale : self::defaultLocale();
         $index = 'index.yml';
         $readFile = fn(string $name): array => self::readJsonFile($locale, $name);
         $result = array_merge(["" => $locale], $readFile($index));
