@@ -20,7 +20,7 @@ enum TqDataTypeEnum
     case bool_nullable;
     case date_nullable;
     case datetime_nullable;
-    case decimal0_nullable;
+    case int_nullable;
     case string_nullable;
     case uuid_nullable;
     case text_nullable;
@@ -31,7 +31,7 @@ enum TqDataTypeEnum
     public function isNullable(): bool
     {
         return match ($this) {
-            self::bool_nullable, self::date_nullable, self::datetime_nullable, self::decimal0_nullable,
+            self::bool_nullable, self::date_nullable, self::datetime_nullable, self::int_nullable,
             self::string_nullable, self::uuid_nullable, self::text_nullable => true,
             default => false,
         };
@@ -43,7 +43,7 @@ enum TqDataTypeEnum
             self::bool_nullable => self::bool,
             self::date_nullable => self::date,
             self::datetime_nullable => self::datetime,
-            self::decimal0_nullable => self::int,
+            self::int_nullable => self::int,
             self::string_nullable => self::string,
             self::uuid_nullable => self::uuid,
             self::text_nullable => self::text,

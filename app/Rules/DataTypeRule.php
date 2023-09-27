@@ -8,10 +8,8 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Validation\Validator;
 
-final class DataTypeRule implements ValidationRule, ValidatorAwareRule
+final class DataTypeRule extends AbstractRule
 {
-    private Validator $validator;
-
     public static function bool(bool $nullable = false): self
     {
         return new self('bool', $nullable);
@@ -36,10 +34,5 @@ final class DataTypeRule implements ValidationRule, ValidatorAwareRule
         $this->validator->addFailure($attribute, 'custom.data_type', [
             'type' => ($this->nullable ? '?' : '') . $this->type,
         ]);
-    }
-
-    public function setValidator(Validator $validator): void
-    {
-        $this->validator = $validator;
     }
 }
