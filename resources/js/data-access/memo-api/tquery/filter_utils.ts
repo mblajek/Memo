@@ -63,7 +63,7 @@ export class FilterReductor {
         return op satisfies never;
       }
       const reducedSubFilters: Filter[] = [];
-      const subFiltersToProcess = [...val.toReversed()];
+      const subFiltersToProcess = val.toReversed();
       while (subFiltersToProcess.length) {
         const subFilter = this.reduce(subFiltersToProcess.pop()!);
         if (typeof subFilter === "string") {
