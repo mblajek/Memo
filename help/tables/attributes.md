@@ -1,4 +1,4 @@
-# Columns
+# Attributes
 
 Lista konfiguracji kolumn w systemie. W tym informacja o tym, czy dane pole jest wymagane i z jakiego słownika korzysta.
 
@@ -31,12 +31,12 @@ Nazwa kolumny, zasady tłumaczeń podobne jak dla słowników:
 
 Nazwa kolumny w komunikacji api
 
-Dla kolumn opisujących kolumny tabel (`is_attribute_multi` === `null`), `api_name` jest nazwą kolumny w bazie danych
+Dla kolumn opisujących kolumny tabel (`is_multi_value` === `null`), `api_name` jest nazwą kolumny w bazie danych
 
 - dla pola, o prostym typie, name jest tym samym co `name`
 - dla pola będącego id z innej tabeli jest `{name}_id`, np. `contact_person` -> `contact_person_id`
 - dla pola słownikowego jest `{name}_dict_id`, np. `gender_dict_id`
-- dla `is_attribute_multi` === true, zamiast `_id` jest `_ids`
+- dla `is_multi_value` === true, zamiast `_id` jest `_ids`
 
 Dla nietłumaczonych pól (typu "+Rodzaj placówki"), jakiś unikalny, ale nielosowy, ciąg znaków ascii,
 np. `rodzaj_placowki_5ab5` i analogicznie `rodzaj_placowki_5ab5_id` i `rodzaj_placowki_5ab5_dict_id`
@@ -57,16 +57,16 @@ Jeżeli kolumna `type` === `dict`, to ta kolumna zawiera id słownika.
 
 Domyślna kolejność na formularzu (rosnąco).
 
-### is_attribute_multi
+### is_multi_value
 
-Możliwa ilość wystąpień w tabeli `attributes`
+Możliwa ilość wystąpień w tabeli `values`
 
 - false
-  - w attributes może być jeden wpis
+  - w values może być jeden wpis
 - true
-  - w attributes może być wiele wpisów
+  - w values może być wiele wpisów
 - null
-  - opisywana kolumna jest przechowywana w kolumnie opisywanej tabeli, a nie w attributes
+  - opisywana kolumna jest przechowywana w kolumnie opisywanej tabeli, a nie w values
 
 ### requirement_level
 
