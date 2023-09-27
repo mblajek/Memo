@@ -1,4 +1,4 @@
-import {Component, JSX, Show} from "solid-js";
+import {JSX, Show, VoidComponent} from "solid-js";
 import {FilterControlProps} from ".";
 import {FilterIcon, tableStyle as ts, useTable} from "..";
 import {BoolFilterControl} from "./BoolFilterControl";
@@ -22,7 +22,7 @@ export type FilteringParams = DateTimeFilteringParams;
  *
  * TODO: Add support for nullable columns.
  */
-export const ColumnFilterController: Component<FilterControlProps> = (props) => {
+export const ColumnFilterController: VoidComponent<FilterControlProps> = (props) => {
   const table = useTable();
   const filterControl = (): (() => JSX.Element) | undefined => {
     const meta = table.getColumn(props.name)?.columnDef.meta?.tquery;

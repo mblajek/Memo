@@ -8,7 +8,7 @@
 | Meeting.status           | 3865a3c3-0038-4668-9d55-5d05b79d7fcd |
 | MeetingResource.resource | fdb0f818-aa1e-4ed9-97cc-2a3cb1b702df |
 
-Czyli w tabeli Column będą takie wpisy:
+Czyli w tabeli Attribute będą takie wpisy:
 
 | id | facility_id | table             | model            | name     | api_name         | type | dictionary_id | default_order | is_attribute_multi | requirement_level |
 |----|-------------|-------------------|------------------|----------|------------------|------|---------------|---------------|--------------------|-------------------|

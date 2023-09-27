@@ -1,4 +1,4 @@
-import {Component, Show} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {CopyToClipboard} from "../CopyToClipboard";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
 
@@ -7,7 +7,7 @@ interface Props {
 }
 
 /** A component for displaying a copiable id, truncated to take less space. */
-export const IdColumn: Component<Props> = (props) => (
+export const IdColumn: VoidComponent<Props> = (props) => (
   <Show when={props.id} fallback={EMPTY_VALUE_SYMBOL}>
     <div class="w-full flex items-center">
       <span

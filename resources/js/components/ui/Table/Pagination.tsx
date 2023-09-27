@@ -2,11 +2,11 @@ import * as pagination from "@zag-js/pagination";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {FaSolidArrowLeftLong, FaSolidArrowRightLong} from "solid-icons/fa";
 import {IoEllipsisHorizontal} from "solid-icons/io";
-import {Component, For, Show, createComputed, createMemo, createUniqueId, on} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createUniqueId, on} from "solid-js";
 import {tableStyle as ts, useTable} from ".";
 import {Button} from "..";
 
-export const Pagination: Component = () => {
+export const Pagination: VoidComponent = () => {
   const table = useTable();
   const [state, send] = useMachine(
     pagination.machine({

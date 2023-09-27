@@ -1,5 +1,5 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {Component} from "solid-js";
+import {VoidComponent} from "solid-js";
 import {TranslatedText} from "../TranslatedText";
 import {useTable} from "./TableContext";
 
@@ -12,7 +12,7 @@ interface Props {
  * Component displaying the column name, taken from column meta.columnName if present,
  * otherwise from table meta.translations, or finally from the column id.
  */
-export const ColumnName: Component<Props> = (props) => {
+export const ColumnName: VoidComponent<Props> = (props) => {
   const table = useTable();
   return (
     <TranslatedText

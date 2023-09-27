@@ -2,7 +2,7 @@ import {cx, useLangFunc} from "components/utils";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
-import {Component, Show, createComputed, createSignal} from "solid-js";
+import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {FilterControlProps} from ".";
 import {tableStyle as ts} from "..";
 
@@ -29,7 +29,7 @@ interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
 
 type Props = DateColumnProps | DateTimeColumnProps;
 
-export const DateTimeFilterControl: Component<Props> = (props) => {
+export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const columnType = () => props.columnType || "datetime";
   const inputsType = () => (props.columnType === "date" || props.useDateOnlyInputs ? "date" : "datetime-local");

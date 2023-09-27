@@ -1,6 +1,6 @@
 import {useLangFunc} from "components/utils";
 import {IntColumnFilter} from "data-access/memo-api/tquery";
-import {Component, Show, createComputed, createSignal} from "solid-js";
+import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {FilterControlProps} from ".";
 import {tableStyle as ts} from "..";
 
@@ -14,7 +14,7 @@ type IntRangeFilter =
 
 interface Props extends FilterControlProps<IntRangeFilter> {}
 
-export const IntFilterControl: Component<Props> = (props) => {
+export const IntFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const [lower, setLower] = createSignal("");
   const [upper, setUpper] = createSignal("");

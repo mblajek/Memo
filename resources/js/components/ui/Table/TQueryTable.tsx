@@ -7,7 +7,7 @@ import {
   createSolidTable,
 } from "@tanstack/solid-table";
 import {ColumnType, FilterH, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
-import {Component, JSX, createMemo} from "solid-js";
+import {JSX, VoidComponent, createMemo} from "solid-js";
 import {
   DisplayMode,
   Header,
@@ -98,7 +98,7 @@ export interface TQueryTableProps {
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
 const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
-export const TQueryTable: Component<TQueryTableProps> = (props) => {
+export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
 
   const tableCells = useTableCells();

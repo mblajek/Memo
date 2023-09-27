@@ -1,10 +1,10 @@
-import {Button, ButtonProps} from "components/ui";
+import {Button} from "components/ui";
 import {ParentComponent, Show, splitProps} from "solid-js";
+import {htmlAttributes, useLangFunc} from "../utils";
 import {useFormContext} from "./FelteForm";
 import {UnknownValidationMessages} from "./UnknownValidationMessages";
-import {useLangFunc} from "../utils";
 
-interface Props extends ButtonProps {
+interface Props extends htmlAttributes.button {
   /**
    * The cancel handler. If present, there will be a cancel button to the right of the submit button.
    * The value is the handler called on cancel click. Default: no cancel.

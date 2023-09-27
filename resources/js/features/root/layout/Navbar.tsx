@@ -1,17 +1,16 @@
 import {A, AnchorProps, Location, useLocation, useParams} from "@solidjs/router";
-import {cx} from "components/utils";
+import {FullLogo} from "components/ui";
 import {IconTypes} from "solid-icons";
 import {HiSolidInformationCircle, HiSolidUserGroup} from "solid-icons/hi";
-import {Component, For, Show} from "solid-js";
+import {For, Show, VoidComponent} from "solid-js";
 import s from "./style.module.scss";
-import {FullLogo} from "components/ui";
 
-export const Navbar: Component = () => {
+export const Navbar: VoidComponent = () => {
   const location = useLocation();
   const params = useParams<{facilityUrl?: string}>();
 
   return (
-    <aside class={cx(s.sidebar)}>
+    <aside class={s.sidebar}>
       <FullLogo />
       <nav class="flex-1">
         <Show when={params.facilityUrl}>
