@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 
 readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
 {
-    public static function fromArray(TqConfig $config, array $data, array $path): self
+    public static function fromArray(TqConfig $config, array $data, string $path): self
     {
         $column = $config->columns[self::validate($data, [
             'column' => ['required', 'string', Rule::in(array_keys($config->columns))],

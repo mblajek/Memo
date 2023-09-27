@@ -11,7 +11,7 @@ use Illuminate\Validation\Rule;
 
 readonly class TqRequestFilterGroup extends TqRequestAbstractFilter
 {
-    public static function fromArray(TqConfig $config, array $data, array $path): self
+    public static function fromArray(TqConfig $config, array $data, string $path): self
     {
         $operatorsNames = array_map(fn(TqFilterOperator $operator) => $operator->value, TqFilterOperator::GROUP);
         $params = self::validate($data, [
@@ -25,7 +25,7 @@ readonly class TqRequestFilterGroup extends TqRequestAbstractFilter
             fn($num) => TqRequestAbstractFilter::fromArray(
                 config: $config,
                 data: $data,
-                path: array_merge($path, ['val', (string)$num]),
+                path: "$path.val.$num",
             ),
             array_keys($params['val']),
         );

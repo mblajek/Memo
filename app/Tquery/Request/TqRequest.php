@@ -69,7 +69,7 @@ readonly class TqRequest
     {
         return match ($array) {
             'always', 'never' => ($array === 'always'),
-            default => TqRequestAbstractFilter::fromArray($config, ['filter' => $array], ['filter']),
+            default => TqRequestAbstractFilter::fromArray($config, ['filter' => $array], 'filter'),
         };
     }
 
