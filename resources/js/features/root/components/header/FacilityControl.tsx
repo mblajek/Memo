@@ -1,12 +1,40 @@
 import {useNavigate, useParams} from "@solidjs/router";
-import {createQuery, useQueryClient} from "@tanstack/solid-query";
-import {FacilityResource, System, User} from "data-access/memo-api";
+import {createQuery} from "@tanstack/solid-query";
+import {System, User} from "data-access/memo-api";
 import {Component, For, Match, Show, Switch, createEffect, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 
 export const FacilityControl: Component = () => {
   const navigate = useNavigate();
-  const facilities = useFacilityControl();
+  const params = useParams();
+
+  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
+  const statusQuery = createQuery(() => User.statusQueryOptions());
+
+  const facilities = createMemo(
+    () =>
+      facilitiesQuery.data?.filter(
+        (facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id),
+      ),
+  );
+
+  // TODO: it just works, may be wrong. Maybe there is a better way of handling 'global mutable state' :D
+  createEffect(() => {
+    if (params.facilityUrl) {
+      const facility = facilities()?.find((facility) => facility.url === params.facilityUrl);
+
+      if (!facility) return;
+
+      if (statusQuery.data?.members.find((member) => member.facilityId === facility.id))
+        setActiveFacilityId(facility.id);
+    }
+  });
+
+  // TODO: it just works, may be wrong. Maybe there is a better way of handling 'global mutable state' :D
+  createEffect(() => {
+    const facilitiesSub = facilities();
+    if (facilitiesSub?.length === 1) setActiveFacilityId(facilitiesSub[0]?.id);
+  });
 
   return (
     <Show when={facilities()}>
@@ -33,40 +61,4 @@ export const FacilityControl: Component = () => {
       )}
     </Show>
   );
-};
-
-// TODO: it just works, may be wrong. Maybe there is a better way of handling 'global mutable state' :D
-const useFacilityControl = () => {
-  const params = useParams();
-  const queryClient = useQueryClient();
-
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
-  const statusQuery = createQuery(() => User.statusQueryOptions());
-
-  const facilities = createMemo(
-    () =>
-      facilitiesQuery.data?.filter(
-        (facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id),
-      ),
-  );
-
-  createEffect(() => {
-    if (params.facilityUrl) {
-      const facilities = queryClient.getQueryData<FacilityResource[]>(System.facilitiesQueryOptions().queryKey);
-      const facility = facilities?.find((facility) => facility.url === params.facilityUrl);
-
-      if (!facility) return;
-
-      const status = queryClient.getQueryData<User.GetStatusData>(User.keys.status());
-
-      if (status?.members.find((member) => member.facilityId === facility.id)) setActiveFacilityId(facility.id);
-    }
-  });
-
-  createEffect(() => {
-    const facilitiesSub = facilities();
-    if (facilitiesSub?.length === 1) setActiveFacilityId(facilitiesSub.at(0)?.id);
-  });
-
-  return facilities;
 };
