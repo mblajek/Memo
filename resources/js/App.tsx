@@ -6,6 +6,7 @@ import {lazy, type VoidComponent} from "solid-js";
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
+const Calendar = lazy(() => import("features/root/pages/Calendar.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -26,10 +27,16 @@ const App: VoidComponent = () => {
                     Lista użytkowników
                   </A>
                 </p>
+                <p>
+                  <A href="/admin/calendar" class="text-blue-500 underline">
+                    Kalendarz
+                  </A>
+                </p>
               </div>
             }
           />
           <Route path="users" component={AdminUsersList} />
+          <Route path="calendar" component={Calendar} />
         </Route>
         <Route path="help" element={<div class="p-4">pomoc</div>} />
         <Route

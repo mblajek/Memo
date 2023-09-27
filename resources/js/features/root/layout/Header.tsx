@@ -1,13 +1,12 @@
 import {useLocation, useNavigate, useParams} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui";
-import {DATE_TIME_WITH_WEEKDAY_FORMAT, QueryBarrier, useLangFunc} from "components/utils";
+import {DATE_TIME_WITH_WEEKDAY_FORMAT, QueryBarrier, useCurrentTime, useLangFunc} from "components/utils";
 import {System, User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
-import {DateTime} from "luxon";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {For, Index, Match, Switch, VoidComponent, createSignal, onCleanup, onMount} from "solid-js";
+import {For, Index, Match, Switch, VoidComponent} from "solid-js";
 import s from "./style.module.scss";
 
 export const Header: VoidComponent = () => {
@@ -107,14 +106,4 @@ const HeaderRight = () => {
       <PasswordChangeForm.Modal />
     </div>
   );
-};
-
-const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = createSignal(DateTime.now());
-  let interval: ReturnType<typeof setInterval>;
-  onMount(() => {
-    interval = setInterval(() => setCurrentTime(DateTime.now()), 1000);
-  });
-  onCleanup(() => clearInterval(interval));
-  return currentTime;
 };
