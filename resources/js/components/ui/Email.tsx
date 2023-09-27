@@ -9,6 +9,9 @@ interface Props {
 /** A component for displaying a copiable email address. No mailto. */
 export const Email: Component<Props> = (props) => (
   <Show when={props.email} fallback={EMPTY_VALUE_SYMBOL}>
-    {props.email} <CopyToClipboard text={props.email} />
+    <div class="flex gap-1">
+      {props.email}
+      <CopyToClipboard text={props.email} />
+    </div>
   </Show>
 );
