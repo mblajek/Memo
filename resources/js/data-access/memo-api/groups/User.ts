@@ -18,7 +18,7 @@ export namespace User {
   export const login = (data: LoginRequest, config?: Api.Config<LoginRequest>) =>
     V1.post<Api.Response.Post>("/user/login", data, config);
 
-  export const logout = () => V1.post<Api.Response.Post>("/user/logout");
+  export const logout = () => V1.post<Api.Response.Post>("/user/logout", {});
 
   export const changePassword = (data: ChangePasswordRequest, config?: Api.Config) =>
     V1.post<Api.Response.Post>("/user/password", data, config);
