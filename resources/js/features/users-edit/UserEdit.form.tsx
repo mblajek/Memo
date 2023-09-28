@@ -3,7 +3,7 @@ import {createMutation, createQuery} from "@tanstack/solid-query";
 import {MODAL_STYLE_PRESETS, Modal as ModalComponent} from "components/ui";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
-import {Admin} from "data-access/memo-api/groups/Admin";
+import {Admin} from "data-access/memo-api/groups";
 import {Api} from "data-access/memo-api/types";
 import {Component, createSignal} from "solid-js";
 import toast from "solid-toast";
@@ -22,7 +22,7 @@ export namespace UserEditForm {
 
   export const Component: Component<Props> = (props) => {
     const t = useLangFunc();
-    const statusQuery = createQuery(() => User.statusQueryOptions);
+    const statusQuery = createQuery(User.statusQueryOptions);
     const userQuery = createQuery(() => Admin.userQueryOptions(props.userId));
     const user = () => userQuery.data;
     const invalidate = Admin.useInvalidator();

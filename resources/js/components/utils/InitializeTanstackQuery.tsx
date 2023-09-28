@@ -1,11 +1,11 @@
 import {
   MutationCache,
-  type MutationMeta,
   QueryCache,
   QueryClient,
   QueryClientProvider,
-  type QueryMeta,
   createQuery,
+  type MutationMeta,
+  type QueryMeta,
 } from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
 import {MemoLoader} from "components/ui";
@@ -90,20 +90,12 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
 };
 
 /**
- * Initialize some of required queries beforehand
+ * Initialize some of required queries beforehand.
  */
 const Content: ParentComponent = (props) => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-
   return (
-    <QueryBarrier
-      queries={[facilitiesQuery]}
-      Pending={() => (
-        <div class="h-screen flex justify-center items-center">
-          <MemoLoader size={300} />
-        </div>
-      )}
-    >
+    <QueryBarrier queries={[facilitiesQuery]} Pending={MemoLoader}>
       {props.children}
     </QueryBarrier>
   );

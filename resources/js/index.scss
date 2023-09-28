@@ -7,18 +7,19 @@
 @layer base {
   html {
     @apply font-roboto;
+
+    --sb-thumb-color: theme("colors.memo-active");
+    --sb-track-color: color-mix(in srgb, var(--sb-thumb-color) 15%, white);
+    --sb-size: 12px;
   }
 
   * {
-    --sb-track-color: white;
-    --sb-thumb-color: #fbd45f;
-    --sb-size: 14px;
-
     scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
   }
 
   *::-webkit-scrollbar {
     width: var(--sb-size);
+    height: var(--sb-size);
   }
 
   *::-webkit-scrollbar-track {
@@ -38,13 +39,13 @@
 
   button {
     &.primary {
-      @apply p-2 rounded bg-cyan-500 text-white disabled:bg-opacity-50;
+      @apply p-2 rounded bg-memo-active text-white disabled:bg-opacity-50;
     }
     &.secondary {
-      @apply p-2 rounded border border-cyan-500 text-cyan-500 disabled:bg-opacity-50;
+      @apply p-2 rounded border border-memo-active text-memo-active disabled:bg-opacity-50;
     }
     &.secondarySmall {
-      @apply px-1 rounded border border-cyan-500 text-cyan-500 disabled:bg-opacity-50;
+      @apply px-1 rounded border border-memo-active text-memo-active disabled:bg-opacity-50;
     }
   }
 

@@ -8,7 +8,7 @@ export const FacilityControl: Component = () => {
   const navigate = useNavigate();
   const params = useParams();
 
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(() => User.statusQueryOptions());
 
   const facilities = createMemo(
@@ -39,7 +39,7 @@ export const FacilityControl: Component = () => {
   return (
     <Show when={facilities()}>
       {(facilities) => (
-        <Switch fallback={null}>
+        <Switch>
           <Match when={facilities().length === 1}>
             <p>{facilities().at(0)?.name}</p>
           </Match>

@@ -1,7 +1,7 @@
 import {createMutation} from "@tanstack/solid-query";
 import {MODAL_STYLE_PRESETS, Modal as ModalComponent} from "components/ui";
 import {useLangFunc} from "components/utils";
-import {Admin} from "data-access/memo-api/groups/Admin";
+import {Admin} from "data-access/memo-api/groups";
 import {Component, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {UserEdit} from "./UserEdit";
