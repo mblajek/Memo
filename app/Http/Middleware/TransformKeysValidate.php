@@ -10,16 +10,19 @@ use App\Utils\Transformer\ArrayKeyTransformer;
 use Closure;
 use Illuminate\Http\Request;
 
-class TransformRequestKeys
+class TransformKeysValidate
 {
     /**
+     * @param Request $request
      * @throws ApiValidationException
      */
     public function handle($request, Closure $next)
     {
-        /** @var Request $request */
-        if (!$request->isMethod('GET')) {
+        if ($request->isMethod('POST') || $request->isMethod('PUT') || $request->isMethod('PATCH')) {
             $data = $request->request->all();
+            if (!$request->isJson() || (count($data) === 0 && !json_validate($request->getContent()))) {
+                throw ExceptionFactory::invalidJson();
+            }
 
             if (ArrayKeyTransformer::hasSnake($data)) {
                 throw ExceptionFactory::snakeCaseRequest();

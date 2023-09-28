@@ -7,11 +7,11 @@ use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Tquery\OpenApi\OpenApiGet;
 use App\Tquery\OpenApi\OpenApiPost;
-use App\Tquery\Tables\AdminUserTquery;
+use App\Tquery\Tables\AdminFacilityTquery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class AdminUserTqueryController extends ApiController
+class AdminFacilityTqueryController extends ApiController
 {
     protected function initPermissions(): void
     {
@@ -19,25 +19,25 @@ class AdminUserTqueryController extends ApiController
     }
 
     #[OpenApiGet(
-        path: '/api/v1/admin/user/tquery',
+        path: '/api/v1/admin/facility/tquery',
         permissions: new PermissionDescribe(Permission::globalAdmin),
-        summary: 'All users tquery',
+        summary: 'All facilities tquery',
         tag: 'Admin',
     )]
     public function get(
-        AdminUserTquery $tquery,
+        AdminFacilityTquery $tquery,
     ): JsonResponse {
         return new JsonResponse($tquery->getConfigArray());
     }
 
     #[OpenApiPost(
-        path: '/api/v1/admin/user/tquery',
+        path: '/api/v1/admin/facility/tquery',
         permissions: new PermissionDescribe(Permission::globalAdmin),
-        summary: 'All users tquery',
+        summary: 'All facilities tquery',
         tag: 'Admin',
     )]
     public function post(
-        AdminUserTquery $tquery,
+        AdminFacilityTquery $tquery,
         Request $request,
     ): JsonResponse {
         return new JsonResponse($tquery->query($request));
