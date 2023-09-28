@@ -26,10 +26,10 @@ export const UserInfo = () => {
         <div>
           <Switch>
             <Match when={statusQuery.data?.permissions.verified}>
-              <HiOutlineCheckCircle color="green" size="30" />
+              <HiOutlineCheckCircle class="text-green-700" size="30" />
             </Match>
             <Match when={statusQuery.data?.permissions.unverified}>
-              <HiOutlineXCircle color="red" size="30" />
+              <HiOutlineXCircle class="text-red-500" size="30" />
             </Match>
           </Switch>
         </div>
@@ -58,7 +58,7 @@ export const UserInfo = () => {
           onClick={() => logout.mutate()}
           title={t("actions.log_out")}
         >
-          <HiOutlinePower color="red" size="30" />
+          <HiOutlinePower class="text-red-500" size="30" />
         </button>
       </div>
     </div>
