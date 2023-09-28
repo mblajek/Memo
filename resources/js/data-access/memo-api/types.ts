@@ -1,3 +1,5 @@
+import {AxiosRequestConfig} from "axios";
+
 export namespace Api {
   /** UUID of an entity. */
   export type Id = string;
@@ -8,6 +10,8 @@ export namespace Api {
 
   /** Comma-separated UUIDs. */
   type Ids = string;
+
+  export type Config<D = unknown> = AxiosRequestConfig<D>;
 
   export namespace Request {
     export type Create<T extends Entity> = Omit<T, "id">;
