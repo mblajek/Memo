@@ -1,21 +1,17 @@
-import {Navigate, NavigateProps} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
-import {PermissionsResource, User} from "data-access/memo-api";
-import {ParentComponent, Show, mergeProps} from "solid-js";
+import {Navigate} from "@solidjs/router";
+import {createQuery, useQueryClient} from "@tanstack/solid-query";
+import {FacilityResource, PermissionsResource, System, User} from "data-access/memo-api";
+import {ParentComponent, Show, mergeProps, Component, splitProps} from "solid-js";
 import {MemoLoader} from "../ui/";
-import {QueryBarrier} from "./QueryBarrier";
+import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
 
 export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;
 
-export interface AccessBarrierProps {
+export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "Pending"> {
   /**
-   * \@solidjs-router's Navigate href
-   *
-   * Applied, when user is not authorized to access this section
-   *
-   * @default '/help'
+   * Component rendered when access is not granted
    */
-  redirectHref?: NavigateProps["href"];
+  Fallback?: Component;
   /**
    * Map of roles that user must be granted in order to access this section
    * (logical AND)
@@ -25,38 +21,59 @@ export interface AccessBarrierProps {
    * @default []
    */
   roles?: PermissionKey[];
+  /**
+   * FacilityUrl available in params object (useParams)
+   */
+  facilityUrl?: string;
 }
 
 /**
  * Utility component that checks authentication
  * state and user's permissions
  *
- * If not authenticated, redirects to login page
+ * If not authenticated, redirects to `/login`
  *
- * If not authorized, redirects to `props.redirectHref`
+ * If not authorized, renders Fallback (by default some simple reference)
  *
  * Authorization is calculated as `AND(...props.roles)`
+ *
+ * Default Error -> redirect to `/login` page
+ *
+ * Default Pending -> `<MemoLoader />`
  */
 export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
-  const merged = mergeProps({redirectHref: "/help", roles: []}, props);
-  const statusQuery = createQuery(() => User.statusQueryOptions);
+  const merged = mergeProps(
+    {
+      Fallback: () => <p>Nie masz uprawnień do tego zasobu</p>,
+      roles: [],
+      Error: () => <Navigate href="/login" />,
+      Pending: () => (
+        <div class="h-screen flex justify-center items-center">
+          <MemoLoader size={300} />
+        </div>
+      ),
+    },
+    props,
+  );
+  const [queryBarrierProps, localProps] = splitProps(merged, ["Error", "Pending"]);
+
+  const queryClient = useQueryClient();
+
+  const facilityId = () =>
+    queryClient
+      .getQueryData<FacilityResource[]>(System.facilitiesQueryOptions().queryKey)
+      ?.find(({url}) => url === localProps.facilityUrl)?.id;
+
+  const statusQuery = createQuery(() => User.statusQueryOptions(facilityId()));
 
   const accessGranted = () => {
-    if (statusQuery.isSuccess) return merged.roles.every((role) => statusQuery.data?.permissions[role]);
+    if (statusQuery.isSuccess) return localProps.roles?.every((role) => statusQuery.data?.permissions[role]);
     return false;
   };
 
   return (
-    <QueryBarrier
-      queries={[statusQuery]}
-      errorElement={<Navigate href="/login" />}
-      pendingElement={
-        <div class="h-screen flex justify-center items-center">
-          <MemoLoader size={300} />
-        </div>
-      }
-    >
-      <Show when={accessGranted()} fallback={<Navigate href={merged.redirectHref} />}>
+    <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
+      <Show when={accessGranted()} fallback={<localProps.Fallback />}>
         {merged.children}
       </Show>
     </QueryBarrier>

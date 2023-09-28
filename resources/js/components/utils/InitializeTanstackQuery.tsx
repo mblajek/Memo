@@ -98,11 +98,11 @@ const Content: ParentComponent = (props) => {
   return (
     <QueryBarrier
       queries={[facilitiesQuery]}
-      pendingElement={
+      Pending={() => (
         <div class="h-screen flex justify-center items-center">
           <MemoLoader size={300} />
         </div>
-      }
+      )}
     >
       {props.children}
     </QueryBarrier>

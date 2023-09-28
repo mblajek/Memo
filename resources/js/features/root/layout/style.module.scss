@@ -14,13 +14,16 @@ $border: rgba(92, 92, 92, 0.283);
   grid-area: sidebar;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
   background-color: #f7f3e7;
-  padding: 1.5rem;
   border-right: 1px solid $border;
-  width: auto;
-  max-width: 250px;
-  transition: width 5s linear;
+  min-width: 270px;
+  width: 270px;
+  max-width: 270px;
+  overflow-y: auto;
+}
+
+.navScroll {
+  --sb-track-color: #f7f3e7;
 }
 
 .header {
@@ -47,5 +50,4 @@ $border: rgba(92, 92, 92, 0.283);
   justify-items: center;
   padding: 1rem 1.5rem;
   color: #949494;
-  // "py-4 px-6 bg-gray-300 flex flex-row justify-between items-center text-gray-500"
 }
