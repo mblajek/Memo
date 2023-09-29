@@ -5,7 +5,7 @@ import {PasswordChangeForm} from "features/user-panel";
 import {DateTime} from "luxon";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Match, Switch, createSignal, onMount, Index, onCleanup} from "solid-js";
+import {Index, Match, Switch, createSignal, onCleanup, onMount} from "solid-js";
 
 export const UserInfo = () => {
   const t = useLangFunc();
@@ -14,7 +14,7 @@ export const UserInfo = () => {
 
   const queryClient = useQueryClient();
   const logout = createMutation(() => ({
-    mutationFn: User.logout,
+    mutationFn: () => User.logout(),
     onSuccess() {
       queryClient.invalidateQueries({queryKey: User.keys.status()});
     },

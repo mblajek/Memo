@@ -12,25 +12,31 @@ import {ListInParam, createGetFromList, createListRequest, parseGetListResponse}
  * @see {@link http://localhost:9081/api/documentation#/Admin local docs}
  */
 export namespace Admin {
-  export const createFacility = (facility: Api.Request.Create<FacilityResource>) =>
-    V1.post<Api.Response.Post>("/admin/facility", facility);
-  export const updateFacility = (facilityId: Api.Id, facility: Api.Request.Patch<FacilityResource>) =>
-    V1.patch(`/admin/facility/${facilityId}`, facility);
+  export const createFacility = (facility: Api.Request.Create<FacilityResource>, config?: Api.Config) =>
+    V1.post<Api.Response.Post>("/admin/facility", facility, config);
+  export const updateFacility = (
+    facilityId: Api.Id,
+    facility: Api.Request.Patch<FacilityResource>,
+    config?: Api.Config,
+  ) => V1.patch(`/admin/facility/${facilityId}`, facility, config);
 
-  export const createUser = (user: AdminUserResourceForCreate) => V1.post<Api.Response.Post>("/admin/user", user);
-  export const updateUser = (user: Api.Request.Patch<AdminUserResource>) => V1.patch(`/admin/user/${user.id}`, user);
-  export const deleteUser = (userId: Api.Id) => V1.delete(`/admin/user/${userId}`);
+  export const createUser = (user: AdminUserResourceForCreate, config?: Api.Config) =>
+    V1.post<Api.Response.Post>("/admin/user", user, config);
+  export const updateUser = (user: Api.Request.Patch<AdminUserResource>, config?: Api.Config) =>
+    V1.patch(`/admin/user/${user.id}`, user, config);
+  export const deleteUser = (userId: Api.Id, config?: Api.Config) => V1.delete(`/admin/user/${userId}`, config);
 
-  const getUsersListBase = (request?: Api.Request.GetListParams) =>
-    V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {params: request});
-  export const getUsersList = (request?: Api.Request.GetListParams) =>
-    getUsersListBase(request).then(parseGetListResponse);
+  const getUsersListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
+    V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {...config, params: request});
+  export const getUsersList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
+    getUsersListBase(request, config).then(parseGetListResponse);
   export const getUser = createGetFromList(getUsersListBase);
 
-  export const createMember = (member: Api.Request.Create<MemberResource>) => V1.post("/admin/member", member);
-  export const updateMember = (member: Api.Request.Patch<MemberResource>) =>
-    V1.patch(`/admin/member/${member.id}`, member);
-  export const deleteMember = (memberId: Api.Id) => V1.delete(`/admin/member/${memberId}`);
+  export const createMember = (member: Api.Request.Create<MemberResource>, config?: Api.Config) =>
+    V1.post("/admin/member", member, config);
+  export const updateMember = (member: Api.Request.Patch<MemberResource>, config?: Api.Config) =>
+    V1.patch(`/admin/member/${member.id}`, member, config);
+  export const deleteMember = (memberId: Api.Id, config?: Api.Config) => V1.delete(`/admin/member/${memberId}`, config);
 
   export const keys = {
     all: () => ["admin"] as const,
@@ -43,14 +49,14 @@ export namespace Admin {
   export const usersQueryOptions = (ids?: ListInParam) => {
     const request = createListRequest(ids);
     return {
-      queryFn: () => getUsersList(request),
+      queryFn: ({signal}) => getUsersList(request, {signal}),
       queryKey: keys.userList(request),
     } satisfies SolidQueryOpts<AdminUserResource[]>;
   };
 
   export const userQueryOptions = (id: Api.Id) =>
     ({
-      queryFn: () => getUser(id),
+      queryFn: ({signal}) => getUser(id, {signal}),
       queryKey: keys.userGet(id),
     }) satisfies SolidQueryOpts<AdminUserResource>;
 
