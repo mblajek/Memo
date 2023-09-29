@@ -1,156 +1,87 @@
-import {Outlet, useParams, useRoutes} from "@solidjs/router";
+import {Outlet, Route, Routes, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {AccessBarrier, QueryBarrier} from "components/utils";
-import {FacilityResource, System} from "data-access/memo-api";
+import {AccessBarrier} from "components/utils";
+import {System} from "data-access/memo-api";
 import {NotFound, NotYetImplemented} from "features/not-found/components";
-import {lazy, type Component} from "solid-js";
+import {createEffect, lazy, type VoidComponent} from "solid-js";
 
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
 
-const createRoutes = (facilities?: FacilityResource[]) =>
-  useRoutes([
-    {
-      path: "/login",
-      component: LoginPage,
-    },
-    {
-      path: "/",
-      component: RootPage,
-      children: [
-        {
-          path: "/*",
-          component: NotYetImplemented,
-        },
-        {
-          path: "/help",
-          component: NotYetImplemented,
-        },
-        {
-          path: "/admin",
-          component: () => {
-            return (
-              <AccessBarrier roles={["globalAdmin"]}>
-                <Outlet />
-              </AccessBarrier>
-            );
-          },
-          children: [
-            {
-              path: "/*",
-              component: NotFound,
-            },
-            {
-              path: "/facilities",
-              component: NotYetImplemented,
-            },
-            {
-              path: "/users",
-              component: AdminUsersList,
-            },
-          ],
-        },
-        {
-          path: "/:facilityUrl",
-          matchFilters: {
-            facilityUrl: facilities?.map(({url}) => url),
-          },
-          component: () => {
-            const params = useParams();
-            return (
-              <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityMember"]}>
-                <Outlet />
-              </AccessBarrier>
-            );
-          },
-          children: [
-            {
-              path: "/*",
-              component: NotFound,
-            },
-            {
-              path: "/home",
-              component: NotYetImplemented,
-            },
-            {
-              path: "/meetings",
-              component: NotYetImplemented,
-            },
-            {
-              path: "/",
-              component: () => {
-                const params = useParams();
-                return (
-                  <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityStaff"]}>
-                    <Outlet />
-                  </AccessBarrier>
-                );
-              },
-              children: [
-                {
-                  path: "/calendar",
-                  component: NotYetImplemented,
-                },
-                {
-                  path: "/timetable",
-                  component: NotYetImplemented,
-                },
-                {
-                  path: "/clients",
-                  component: NotYetImplemented,
-                },
-              ],
-            },
-            {
-              path: "/admin",
-              component: () => {
-                const params = useParams();
-                return (
-                  <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityAdmin"]}>
-                    <Outlet />
-                  </AccessBarrier>
-                );
-              },
-              children: [
-                {
-                  path: "/*",
-                  component: NotFound,
-                },
-                {
-                  path: "/calendar",
-                  component: NotYetImplemented,
-                },
-                {
-                  path: "/clients",
-                  component: NotYetImplemented,
-                },
-                {
-                  path: "/staff",
-                  component: NotYetImplemented,
-                },
-                {
-                  path: "/reports",
-                  component: NotYetImplemented,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-  ]);
-
-const App: Component = () => {
-  const facilities = createQuery(() => System.facilitiesQueryOptions());
-
-  const Routes = createRoutes(facilities.data);
-
+export default (() => {
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   return (
-    <QueryBarrier queries={[facilities]}>
-      <Routes />
-    </QueryBarrier>
+    <Routes>
+      <Route path="/login" component={LoginPage} />
+      <Route path="/" component={RootPage}>
+        <UnknownNotFound />
+        <Route path="/help" component={NotYetImplemented} />
+        <Route path="/admin" component={AdminPages}>
+          <UnknownNotFound />
+          <Route path="/facilities" component={NotYetImplemented} />
+          <Route path="/users" component={AdminUsersList} />
+        </Route>
+      </Route>
+      <Route
+        path="/:facilityUrl"
+        matchFilters={{facilityUrl: facilitiesQuery.data?.map(({url}) => url) || []}}
+        component={RootPageWithFacility}
+      >
+        <UnknownNotFound />
+        <Route path="/home" component={NotYetImplemented} />
+        <Route path="/meetings" component={NotYetImplemented} />
+        <Route path="/" component={FacilityStaffPages}>
+          <Route path="/calendar" component={NotYetImplemented} />
+          <Route path="/timetable" component={NotYetImplemented} />
+          <Route path="/clients" component={NotYetImplemented} />
+        </Route>
+        <Route path="/admin" component={FacilityAdminPages}>
+          <UnknownNotFound />
+          <Route path="/calendar" component={NotYetImplemented} />
+          <Route path="/clients" component={NotYetImplemented} />
+          <Route path="/staff" component={NotYetImplemented} />
+          <Route path="/reports" component={NotYetImplemented} />
+        </Route>
+      </Route>
+    </Routes>
+  );
+}) satisfies VoidComponent;
+
+const UnknownNotFound: VoidComponent = () => <Route path="/*" component={NotFound} />;
+
+const AdminPages: VoidComponent = () => (
+  <AccessBarrier roles={["globalAdmin"]}>
+    <Outlet />
+  </AccessBarrier>
+);
+
+const RootPageWithFacility: VoidComponent = () => {
+  const params = useParams();
+  createEffect(() => console.log("facility:", params.facilityUrl));
+  return (
+    <RootPage facilityUrl={params.facilityUrl}>
+      <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityMember"]}>
+        <Outlet />
+      </AccessBarrier>
+    </RootPage>
   );
 };
 
-export default App;
+const FacilityStaffPages: VoidComponent = () => {
+  const params = useParams();
+  return (
+    <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityStaff"]}>
+      <Outlet />
+    </AccessBarrier>
+  );
+};
+
+const FacilityAdminPages: VoidComponent = () => {
+  const params = useParams();
+  return (
+    <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityAdmin"]}>
+      <Outlet />
+    </AccessBarrier>
+  );
+};
