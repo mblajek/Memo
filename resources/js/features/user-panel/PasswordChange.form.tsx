@@ -33,7 +33,7 @@ export namespace PasswordChangeForm {
   export const Component: Component<Props> = (props) => {
     const t = useLangFunc();
     const invalidateUser = User.useInvalidator();
-    const statusQuery = createQuery(() => User.statusQueryOptions);
+    const statusQuery = createQuery(User.statusQueryOptions);
     const mutation = createMutation(() => ({
       mutationFn: User.changePassword,
       onSuccess() {

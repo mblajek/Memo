@@ -22,7 +22,7 @@ export namespace UserEditForm {
 
   export const Component: Component<Props> = (props) => {
     const t = useLangFunc();
-    const statusQuery = createQuery(() => User.statusQueryOptions);
+    const statusQuery = createQuery(User.statusQueryOptions);
     const userQuery = createQuery(() => Admin.userQueryOptions(props.userId));
     const user = () => userQuery.data;
     const invalidate = Admin.useInvalidator();
