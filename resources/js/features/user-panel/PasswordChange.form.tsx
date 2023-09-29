@@ -62,9 +62,12 @@ export namespace PasswordChangeForm {
         <input
           // For better integration with password managers.
           // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
+          // TODO: Integration with Chrome password manager is still not good, investigate and fix.
+          id="username"
           autocomplete="username"
-          class="hidden"
+          type="email"
           value={statusQuery.data?.user.email}
+          class="hidden"
         />
         <TextField name="current" type="password" autocomplete="current-password" />
         <TextField name="password" type="password" autocomplete="new-password" />

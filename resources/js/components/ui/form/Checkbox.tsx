@@ -1,7 +1,7 @@
 import {ValidationMessages} from "components/felte-form/ValidationMessages";
 import {cx} from "components/utils";
 import {Component, JSX} from "solid-js";
-import {FieldLabel} from "./FieldLabel";
+import {FieldLabel, labelIdForField} from "./FieldLabel";
 
 interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
   name: string;
@@ -27,6 +27,7 @@ export const Checkbox: Component<Props> = (props) => (
             id={props.name}
             {...props}
             class={cx("border border-gray-400 p-2", "aria-invalid:border-red-400", props.class)}
+            aria-labelledby={labelIdForField(props.name)}
           />{" "}
           {text}
         </>

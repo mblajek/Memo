@@ -1,7 +1,7 @@
 import {ValidationMessages} from "components/felte-form/ValidationMessages";
 import {cx} from "components/utils";
 import {Component, For, JSX, splitProps} from "solid-js";
-import {FieldLabel} from "./FieldLabel";
+import {FieldLabel, labelIdForField} from "./FieldLabel";
 
 export interface SimpleSelectProps extends JSX.SelectHTMLAttributes<HTMLSelectElement> {
   name: string;
@@ -28,6 +28,7 @@ export const SimpleSelect: Component<SimpleSelectProps> = (props) => {
         id={selectProps.name}
         {...selectProps}
         class={cx("w-full border border-gray-400 rounded p-2 aria-invalid:border-red-400", props.class)}
+        aria-labelledby={labelIdForField(props.name)}
       >
         <For each={lProps.options}>{(option) => <option value={option.value}>{option.text}</option>}</For>
       </select>
