@@ -3,7 +3,7 @@ import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api";
 import {NotFound, NotYetImplemented} from "features/not-found/components";
-import {createEffect, lazy, type VoidComponent} from "solid-js";
+import {lazy, type VoidComponent} from "solid-js";
 
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
@@ -58,7 +58,6 @@ const AdminPages: VoidComponent = () => (
 
 const RootPageWithFacility: VoidComponent = () => {
   const params = useParams();
-  createEffect(() => console.log("facility:", params.facilityUrl));
   return (
     <RootPage facilityUrl={params.facilityUrl}>
       <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityMember"]}>
