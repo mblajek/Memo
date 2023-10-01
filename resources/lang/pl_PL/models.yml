@@ -23,9 +23,10 @@ facility:
   _name: "placówka"
   _name_plural: "placówki"
   name: "$t(models.generic.name)"
-  url: "adres url wewnątrz Memo"
+  url: "Adres Memo"
+  createdAt: "$t(models.generic.createdAt)"
+  updatedAt: "$t(models.generic.updatedAt)"
   members: "osoby przypisane do placówki"
-  page: "strona placówki"
   userCount: "liczba użytkowników"
   admins: "administratorzy"
 member:

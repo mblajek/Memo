@@ -1,4 +1,4 @@
-import { A } from "@solidjs/router";
+import {A} from "@solidjs/router";
 import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
@@ -14,11 +14,21 @@ export default (() => {
         staticPrefixQueryKey={Admin.keys.facilityLists()}
         staticEntityURL="admin/facility"
         staticTranslations={createTableTranslations("facilities")}
-        intrinsicColumns={["id", "url"]}
-        additionalColumns={["actions"]}
+        intrinsicColumns={["id"]}
+        initialColumnsOrder={["id", "name", "url", "createdAt", "updatedAt"]}
+        initialVisibleColumns={["name", "url", "createdAt"]}
+        initialSort={[{id: "name", desc: false}]}
         columnOptions={{
           name: {
             metaParams: {canControlVisibility: false},
+          },
+          url: {
+            columnDef: {
+              cell: (c) => {
+                const href = () => `/${c.getValue()}`;
+                return <A href={href()}>{href()}</A>;
+              },
+            },
           },
           createdAt: {
             columnDef: {
@@ -40,26 +50,7 @@ export default (() => {
               },
             },
           },
-          actions: {
-            columnDef: {
-              cell: (c) => {
-                return <A href={`/${c.row.getValue("url")}`}>{t("models.facility.page")}</A>
-              },
-              ...AUTO_SIZE_COLUMN_DEFS,
-            },
-          },
         }}
-        initialColumnsOrder={[
-          "id",
-          "name",
-          "createdAt",
-        ]}
-        initialVisibleColumns={[
-          "name",
-          "createdAt",
-          "actions",
-        ]}
-        initialSort={[{id: "name", desc: false}]}
       />
     </AccessBarrier>
   );
