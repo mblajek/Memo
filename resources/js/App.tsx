@@ -8,6 +8,7 @@ import {lazy, type Component} from "solid-js";
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
+const AdminFacilitiesList = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 
 const createRoutes = (facilities?: FacilityResource[]) =>
   useRoutes([
@@ -43,7 +44,7 @@ const createRoutes = (facilities?: FacilityResource[]) =>
             },
             {
               path: "/facilities",
-              component: NotYetImplemented,
+              component: AdminFacilitiesList,
             },
             {
               path: "/users",

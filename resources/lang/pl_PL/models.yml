@@ -1,6 +1,6 @@
 generic:
   createdAt: "utworzono"
-  modifiedAt: "zmodyfikowano"
+  updatedAt: "zmodyfikowano"
   name: "nazwa"
   email: "adres e-mail"
   createdBy: "utworzono przez"
@@ -25,6 +25,9 @@ facility:
   name: "$t(models.generic.name)"
   url: "adres url wewnątrz Memo"
   members: "osoby przypisane do placówki"
+  page: "strona placówki"
+  userCount: "liczba użytkowników"
+  admins: "administratorzy"
 member:
   _name: "powiązanie użytkownika i placówki"
   _name_plural: "powiązania użytkowników i placówek"
@@ -45,7 +48,7 @@ user:
   _name_plural: "użytkownicy"
   email: "$t(models.generic.email)"
   createdAt: "$t(models.generic.createdAt)"
-  modifiedAt: "$t(models.generic.modifiedAt)"
+  updatedAt: "$t(models.generic.updatedAt)"
   createdBy: "$t(models.generic.createdBy)"
   name: "imię i nazwisko"
   hasGlobalAdmin: "globalny administrator"
