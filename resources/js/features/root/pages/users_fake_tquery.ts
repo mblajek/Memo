@@ -1,6 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
-import {System} from "data-access/memo-api";
-import {Admin} from "data-access/memo-api/groups/Admin";
+import {Admin, System} from "data-access/memo-api/groups";
 import {
   ColumnSchema,
   ColumnType,

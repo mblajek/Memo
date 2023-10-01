@@ -1,7 +1,7 @@
 import {Navigate} from "@solidjs/router";
-import {createQuery, useQueryClient} from "@tanstack/solid-query";
-import {FacilityResource, PermissionsResource, System, User} from "data-access/memo-api";
-import {ParentComponent, Show, mergeProps, Component, splitProps} from "solid-js";
+import {createQuery} from "@tanstack/solid-query";
+import {PermissionsResource, System, User} from "data-access/memo-api";
+import {ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
 import {MemoLoader} from "../ui/";
 import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
 
@@ -11,7 +11,7 @@ export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "P
   /**
    * Component rendered when access is not granted
    */
-  Fallback?: Component;
+  Fallback?: VoidComponent;
   /**
    * Map of roles that user must be granted in order to access this section
    * (logical AND)
@@ -47,29 +47,17 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
       Fallback: () => <p>Nie masz uprawnień do tego zasobu</p>,
       roles: [],
       Error: () => <Navigate href="/login" />,
-      Pending: () => (
-        <div class="h-screen flex justify-center items-center">
-          <MemoLoader size={300} />
-        </div>
-      ),
+      Pending: MemoLoader,
     },
     props,
   );
   const [queryBarrierProps, localProps] = splitProps(merged, ["Error", "Pending"]);
-
-  const queryClient = useQueryClient();
-
-  const facilityId = () =>
-    queryClient
-      .getQueryData<FacilityResource[]>(System.facilitiesQueryOptions().queryKey)
-      ?.find(({url}) => url === localProps.facilityUrl)?.id;
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+  const facilityId = () => facilitiesQuery.data?.find(({url}) => url === localProps.facilityUrl)?.id;
 
   const statusQuery = createQuery(() => User.statusQueryOptions(facilityId()));
-
-  const accessGranted = () => {
-    if (statusQuery.isSuccess) return localProps.roles?.every((role) => statusQuery.data?.permissions[role]);
-    return false;
-  };
+  const accessGranted = () =>
+    statusQuery.isSuccess && localProps.roles?.every((role) => statusQuery.data?.permissions[role]);
 
   return (
     <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
