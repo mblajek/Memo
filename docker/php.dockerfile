@@ -14,6 +14,8 @@ RUN git config --global --add safe.directory /var/www
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 RUN docker-php-ext-install pdo_mysql intl
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
 
 #apache
 
