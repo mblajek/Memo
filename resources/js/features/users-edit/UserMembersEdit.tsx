@@ -103,7 +103,9 @@ export namespace UserMembersEdit {
               {/* For the new row, display a select with the available facilities. */}
               <div class="w-full flex flex-col items-stretch">
                 <SimpleSelect
-                  name=""
+                  name="added_facility"
+                  label=""
+                  aria-label={t("models.member.facility")}
                   class="w-full"
                   // Override the default class placed on the select.
                   style={{padding: "0"}}
