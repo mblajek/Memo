@@ -3,6 +3,7 @@
 namespace App\Services\System;
 
 use App\Exceptions\FatalExceptionFactory;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
 use Locale;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -32,14 +33,8 @@ class TranslationsService
 
     public static function mailTranslation(string $key): string
     {
-        $currentTree = self::readJsonFile(self::defaultLocale(), 'mails.yml');
-        foreach (explode('.', $key) as $part) {
-            if (!is_array($currentTree) || !array_key_exists($key, $currentTree)) {
-                return $key;
-            }
-            $currentTree = $currentTree[$part];
-        }
-        return is_string($currentTree) ? $currentTree : $key;
+        $value = Arr::get(self::readJsonFile(self::defaultLocale(), 'mails.yml'), $key, $key);
+        return is_string($value) ? $value : $key;
     }
 
     public function translationList(string $locale): array

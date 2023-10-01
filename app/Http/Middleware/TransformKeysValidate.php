@@ -12,15 +12,12 @@ use Illuminate\Http\Request;
 
 class TransformKeysValidate
 {
-    /**
-     * @param Request $request
-     * @throws ApiValidationException
-     */
-    public function handle($request, Closure $next)
+    /** @throws ApiValidationException */
+    public function handle(Request $request, Closure $next)
     {
-        if ($request->isMethod('POST') || $request->isMethod('PUT') || $request->isMethod('PATCH')) {
+        if (($content = $request->getContent())) {
             $data = $request->request->all();
-            if (!$request->isJson() || (count($data) === 0 && !json_validate($request->getContent()))) {
+            if (!$request->isJson() || (count($data) === 0 && !json_validate($content))) {
                 throw ExceptionFactory::invalidJson();
             }
 
