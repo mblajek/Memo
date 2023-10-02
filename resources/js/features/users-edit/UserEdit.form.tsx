@@ -46,6 +46,7 @@ export namespace UserEditForm {
           ? {
               email: values.email,
               hasEmailVerified: values.hasEmailVerified,
+              hasPassword: values.hasPassword,
               ...(values.hasPassword
                 ? oldUser.hasPassword && !values.password
                   ? // The user has a password already and it is not changed.
@@ -57,6 +58,7 @@ export namespace UserEditForm {
           : {
               email: null,
               hasEmailVerified: false,
+              hasPassword: false,
               password: null,
               passwordExpireAt: null,
             }),
