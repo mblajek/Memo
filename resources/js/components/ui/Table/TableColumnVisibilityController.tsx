@@ -23,11 +23,11 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const api = createMemo(() => popover.connect(state, send, normalizeProps));
   return (
     <div class={ts.columnVisibility}>
-      <Button {...api().triggerProps} disabled={!table.getAllLeafColumns().length}>
+      <Button class="pressedWithShadow" {...api().triggerProps} disabled={!table.getAllLeafColumns().length}>
         {t("tables.choose_columns")}
       </Button>
       <Portal>
-        <div {...api().positionerProps}>
+        <div class={ts.columnVisibilityPortal} {...api().positionerProps}>
           <div {...api().contentProps}>
             <div class="bg-white border border-gray-700 rounded px-2 flex flex-col">
               <For each={table.getAllLeafColumns()}>
