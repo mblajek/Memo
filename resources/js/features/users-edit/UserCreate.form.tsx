@@ -1,8 +1,8 @@
 import {createMutation} from "@tanstack/solid-query";
 import {MODAL_STYLE_PRESETS, Modal as ModalComponent} from "components/ui";
 import {useLangFunc} from "components/utils";
-import {Admin} from "data-access/memo-api/groups";
-import {Component, createSignal} from "solid-js";
+import {Admin} from "data-access/memo-api/groups/Admin";
+import {VoidComponent, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {UserEdit} from "./UserEdit";
 import {UserMembersEdit} from "./UserMembersEdit";
@@ -13,7 +13,7 @@ export namespace UserCreateForm {
     onCancel?: () => void;
   }
 
-  export const Component: Component<Props> = (props) => {
+  export const Component: VoidComponent<Props> = (props) => {
     const t = useLangFunc();
     const invalidate = Admin.useInvalidator();
     const userMutation = createMutation(() => ({
@@ -74,7 +74,7 @@ export namespace UserCreateForm {
    * This modal can be included in any page and it will show on top of whatever content was displayed
    * when showModal is called.
    */
-  export const Modal: Component = () => {
+  export const Modal: VoidComponent = () => {
     const t = useLangFunc();
     return (
       <ModalComponent

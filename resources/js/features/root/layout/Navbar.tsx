@@ -13,12 +13,12 @@ import {
   HiOutlineUsers,
   HiOutlineVideoCamera,
 } from "solid-icons/hi";
-import {Component, Show, createMemo} from "solid-js";
+import {Show, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {NavigationItemProps, NavigationSection} from "../components/navbar";
 import s from "./style.module.scss";
 
-export const Navbar: Component = () => {
+export const Navbar: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
 
   const facilityUrl = () => facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId())?.url;

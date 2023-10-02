@@ -1,5 +1,5 @@
 import {FilterH} from "data-access/memo-api/tquery";
-import {Component} from "solid-js";
+import {VoidComponent} from "solid-js";
 
 export interface FilterControlProps<F extends FilterH = FilterH> {
   name: string;
@@ -7,4 +7,4 @@ export interface FilterControlProps<F extends FilterH = FilterH> {
   setFilter: (filter: F | undefined) => void;
 }
 
-export type FilterControl<F extends FilterH = FilterH> = Component<FilterControlProps<F>>;
+export type FilterControl<F extends FilterH = FilterH> = VoidComponent<FilterControlProps<F>>;

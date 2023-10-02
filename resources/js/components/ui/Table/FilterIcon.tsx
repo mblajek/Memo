@@ -1,6 +1,6 @@
 import {useLangFunc} from "components/utils";
 import {TbFilter, TbFilterOff} from "solid-icons/tb";
-import {Component, createSignal} from "solid-js";
+import {VoidComponent, createSignal} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 
@@ -10,7 +10,7 @@ interface Props {
   onClear?: () => void;
 }
 
-export const FilterIcon: Component<Props> = (props) => {
+export const FilterIcon: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const [hover, setHover] = createSignal(false);
   return (

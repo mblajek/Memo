@@ -1,7 +1,7 @@
 import {useLocation} from "@solidjs/router";
-import {Component} from "solid-js";
+import {VoidComponent} from "solid-js";
 
-export const NotYetImplemented: Component = () => {
+export const NotYetImplemented: VoidComponent = () => {
   const location = useLocation();
   return (
     <div class="w-fit bg-blue-50 p-4 mx-auto rounded-md">

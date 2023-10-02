@@ -5,7 +5,7 @@ import {Admin} from "data-access/memo-api/groups";
 import {UserCreateForm, UserEditForm} from "features/users-edit";
 import {FiEdit2} from "solid-icons/fi";
 import {TbUserPlus} from "solid-icons/tb";
-import {Component} from "solid-js";
+import {VoidComponent} from "solid-js";
 import {startUsersMock} from "./users_fake_tquery";
 
 export default (() => {
@@ -88,4 +88,4 @@ export default (() => {
       <UserCreateForm.Modal />
     </AccessBarrier>
   );
-}) satisfies Component;
+}) satisfies VoidComponent;

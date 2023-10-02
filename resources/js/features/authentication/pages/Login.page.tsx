@@ -3,7 +3,7 @@ import {createQuery} from "@tanstack/solid-query";
 import {MemoLoader} from "components/ui";
 import {Page, QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api";
-import {Component, createEffect, onMount} from "solid-js";
+import {VoidComponent, createEffect, onMount} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {LoginForm} from "../forms/login";
 
@@ -14,7 +14,7 @@ import {LoginForm} from "../forms/login";
  * currently displayed as a separate page that triggers the modal on query error and redirects
  * otherwise.
  */
-const LoginPage: Component = () => {
+const LoginPage: VoidComponent = () => {
   const statusQuery = createQuery(() => ({
     ...User.statusQueryOptions(),
     meta: {quietError: true},

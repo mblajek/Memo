@@ -1,4 +1,4 @@
-import {Component} from "solid-js";
+import {VoidComponent} from "solid-js";
 import {ValidationMessages} from "./ValidationMessages";
 
 /**
@@ -14,7 +14,7 @@ export const UNKNOWN_VALIDATION_MESSAGES_FIELD = "__other";
  * assigned to the field named by {@link UNKNOWN_VALIDATION_MESSAGES_FIELD}, and displayed
  * in this component.
  */
-export const UnknownValidationMessages: Component = () => (
+export const UnknownValidationMessages: VoidComponent = () => (
   <>
     <input class="hidden" name={UNKNOWN_VALIDATION_MESSAGES_FIELD} />
     <ValidationMessages fieldName={UNKNOWN_VALIDATION_MESSAGES_FIELD} />

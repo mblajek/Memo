@@ -108,7 +108,7 @@ type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseRea
  *       )}
  *     </Modal>
  */
-export const Modal = <T, C extends CloseReason>(props: Props<T, C>) => {
+export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element => {
   const t = useLangFunc();
   const closeOn = createMemo(
     () =>

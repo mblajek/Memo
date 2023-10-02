@@ -1,18 +1,19 @@
-import {Component, JSX, splitProps} from "solid-js";
-import {cx} from "../utils";
+import {VoidComponent, splitProps} from "solid-js";
+import {htmlAttributes, cx} from "../utils";
 
-interface Props extends JSX.HTMLAttributes<HTMLSpanElement> {
+interface Props extends htmlAttributes.span {
   text?: string;
   capitalize?: boolean;
 }
 
 /** Displays a span with the specified text with its first letter capitalised using CSS. */
-export const Capitalize: Component<Props> = (props) => {
+export const Capitalize: VoidComponent<Props> = (props) => {
   const [localProps, spanProps] = splitProps(props, ["text", "capitalize"]);
   return (
     <span
-      {...spanProps}
-      class={cx(spanProps.class, "inline-block", {"first-letter:capitalize": localProps.capitalize ?? true})}
+      {...htmlAttributes.merge(spanProps, {
+        class: cx("inline-block", {"first-letter:capitalize": localProps.capitalize ?? true}),
+      })}
     >
       {localProps.text}
     </span>

@@ -3,7 +3,7 @@ import {FelteForm, FelteSubmit} from "components/felte-form";
 import {Checkbox, HideableSection, TextField, getTrimInputHandler} from "components/ui";
 import {useLangFunc} from "components/utils";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
-import {Component, createComputed, splitProps} from "solid-js";
+import {VoidComponent, createComputed, splitProps} from "solid-js";
 import {z} from "zod";
 import {UserMembersEdit} from "./UserMembersEdit";
 
@@ -47,7 +47,7 @@ export namespace UserEdit {
     id: string;
   }
 
-  export const EditForm: Component<Props> = (props) => {
+  export const EditForm: VoidComponent<Props> = (props) => {
     const [localProps, formProps] = splitProps(props, ["id", "onCancel"]);
     const t = useLangFunc();
     // Cast because otherwise type info is lost for some reason.

@@ -3,7 +3,7 @@ import {createMutation} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
 import {FullLogo, MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField, getTrimInputHandler} from "components/ui";
 import {User} from "data-access/memo-api";
-import {Component, createSignal} from "solid-js";
+import {VoidComponent, createSignal} from "solid-js";
 import {z} from "zod";
 
 export namespace LoginForm {
@@ -25,7 +25,7 @@ export namespace LoginForm {
     onSuccess?: () => void;
   }
 
-  export const Component: Component<Props> = (props) => {
+  export const Component: VoidComponent<Props> = (props) => {
     const invalidateUser = User.useInvalidator();
     const mutation = createMutation(() => ({
       mutationFn: User.login,
@@ -63,7 +63,7 @@ export namespace LoginForm {
    * This modal can be included in any page and it will show on top of whatever content was displayed
    * when showModal is called.
    */
-  export const Modal: Component = () => (
+  export const Modal: VoidComponent = () => (
     <ModalComponent open={modalShown()} style={MODAL_STYLE_PRESETS.narrow}>
       <div class="flex flex-col gap-4">
         <div class="self-center">
