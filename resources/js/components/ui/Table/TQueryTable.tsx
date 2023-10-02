@@ -6,7 +6,14 @@ import {
   createColumnHelper,
   createSolidTable,
 } from "@tanstack/solid-table";
-import {ColumnType, FilterH, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
+import {
+  ColumnType,
+  DataItem,
+  FilterH,
+  createTQuery,
+  createTableRequestCreator,
+  tableHelper,
+} from "data-access/memo-api/tquery";
 import {JSX, VoidComponent, createMemo} from "solid-js";
 import {
   DisplayMode,
@@ -26,7 +33,7 @@ import {
 import {ColumnFilterController, FilteringParams} from "..";
 
 export interface ColumnOptions {
-  columnDef?: Partial<IdentifiedColumnDef<object>>;
+  columnDef?: Partial<IdentifiedColumnDef<DataItem>>;
   metaParams?: ColumnMetaParams;
 }
 
@@ -102,7 +109,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
 
   const tableCells = useTableCells();
-  const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<object>>>([
+  const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<DataItem>>>([
     ["bool", {cell: tableCells.bool, size: 100}],
     ["date", {cell: tableCells.date}],
     ["datetime", {cell: tableCells.datetime}],
@@ -133,13 +140,16 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     response: () => dataQuery.data,
   });
 
-  const h = createColumnHelper<object>();
+  const h = createColumnHelper<DataItem>();
   function columnOptions(name: string) {
     return props.columnOptions?.[name] || {};
   }
   function commonColumnDef(name: string, type?: ColumnType) {
     return {
       id: name,
+      // Default accessor in tanstack supports nested properties (e.g. "a.b" looking for {a: {b: ...}}), but this 
+      // breaks us, because we have flat fields with dots in the names, e.g. { 'created_by.name': ... }.
+      accessorFn: (originalRow: DataItem) => originalRow[name],
       header: (ctx) => (
         <Header
           ctx={ctx}
@@ -154,7 +164,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       ),
       ...(type && columnDefByType.get(type)),
       ...columnOptions(name).columnDef,
-    } satisfies Partial<IdentifiedColumnDef<object>>;
+    } satisfies Partial<ColumnDef<DataItem>>;
   }
   const columns = createMemo(() => {
     const sch = schema();
@@ -198,7 +208,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       ];
       if (props.initialColumnsOrder) {
         // Index in the ordering array. Missing items sorted last.
-        const order = (col: ColumnDef<object, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
+        const order = (col: ColumnDef<DataItem, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
         columns.sort((a, b) => order(a) - order(b));
       }
       return columns;
@@ -206,8 +216,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     return [];
   });
 
-  const table = createSolidTable({
-    ...getBaseTableOptions<object>({features: {columnVisibility, sorting, globalFilter, pagination}}),
+  const table = createSolidTable<DataItem>({
+    ...getBaseTableOptions<DataItem>({features: {columnVisibility, sorting, globalFilter, pagination}}),
     get data() {
       return data();
     },
