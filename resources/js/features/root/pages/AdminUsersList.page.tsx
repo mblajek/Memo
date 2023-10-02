@@ -69,13 +69,7 @@ export default (() => {
           "facilityCount",
           "actions",
         ]}
-        initialVisibleColumns={[
-          "name",
-          "email",
-          "createdAt",
-          "hasGlobalAdmin",
-          "actions",
-        ]}
+        initialVisibleColumns={["name", "email", "createdAt", "hasGlobalAdmin", "actions"]}
         initialSort={[{id: "name", desc: false}]}
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">

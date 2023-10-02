@@ -149,7 +149,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   function commonColumnDef(name: string, type?: ColumnType) {
     return {
       id: name,
-      // Default accessor in tanstack supports nested properties (e.g. "a.b" looking for {a: {b: ...}}), but we have 
+      // Default accessor in tanstack supports nested properties (e.g. "a.b" looking for {a: {b: ...}}), but we have
       // flat fields with dots in the names, e.g. { 'createdBy.name': ... }.
       accessorFn: (originalRow: DataItem) => originalRow[name],
       header: (ctx) => (
@@ -172,7 +172,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     const sch = schema();
     if (!sch) return [];
 
-    const badColumns = new Set([...Object.keys(props.columnOptions || {}), ...(props.initialColumnsOrder || []), ...(props.initialVisibleColumns || []), ...(props.ignoreColumns || [])]);
+    const badColumns = new Set([
+      ...Object.keys(props.columnOptions || {}),
+      ...(props.initialColumnsOrder || []),
+      ...(props.initialVisibleColumns || []),
+      ...(props.ignoreColumns || []),
+    ]);
     for (const {name} of sch.columns) {
       badColumns.delete(name);
     }
@@ -183,7 +188,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
 
     const ignoreColumnsSet = new Set(props.ignoreColumns || []);
-    const schemaColumns = sch.columns.filter(({name}) => !ignoreColumnsSet.has(name));  
+    const schemaColumns = sch.columns.filter(({name}) => !ignoreColumnsSet.has(name));
     const columns = [
       ...schemaColumns.map(({type, nullable, name}) => {
         const common = commonColumnDef(name, type);
