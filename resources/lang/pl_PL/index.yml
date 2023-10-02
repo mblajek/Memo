@@ -1,6 +1,7 @@
 exception:
   configuration:
     translation: "Błędna konfiguracja tłumaczeń"
+    tquery: "Błędna konfiguracja tabel"
   validation: "Przesłano niepoprawne dane"
   unauthorised: "Brak autoryzacji"
   bad_credentials: "Błędne dane logowania"
@@ -8,6 +9,7 @@ exception:
   not_found: "Nie znaleziono strony"
   route_not_found: "Błędny adres"
   unexpected: "Nieoczekiwany błąd serwera"
+  invalid_json: "Zapytanie nie ma formatu JSON"
 
 passwords:
   reset: "Hasło zostało zresetowane!"

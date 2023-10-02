@@ -1,7 +1,7 @@
 import {ValidationMessages} from "components/felte-form/ValidationMessages";
 import {htmlAttributes} from "components/utils";
 import {VoidComponent} from "solid-js";
-import {FieldLabel} from "./FieldLabel";
+import {FieldLabel, labelIdForField} from "./FieldLabel";
 
 interface Props extends htmlAttributes.input {
   name: string;
@@ -28,6 +28,7 @@ export const Checkbox: VoidComponent<Props> = (props) => (
             {...htmlAttributes.merge(props, {
               class: "border border-gray-400 p-2 aria-invalid:border-red-400",
             })}
+            aria-labelledby={labelIdForField(props.name)}
           />{" "}
           {text}
         </>

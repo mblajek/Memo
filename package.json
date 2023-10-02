@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "npm install --include=dev && vite",
     "build": "npm clean-install && vite build",
+    "clean": "rm -rf public/build",
     "format": "prettier resources/js --write",
     "typecheck": "tsc --noEmit",
     "typecheck-watch": "tsc --noEmit --watch",

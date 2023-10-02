@@ -5,8 +5,7 @@ import {useFormContext} from "components/felte-form";
 import {Button, Capitalize, Checkbox, SimpleSelect, useTableCells} from "components/ui";
 import {AUTO_SIZE_COLUMN_DEFS, Table, createTableTranslations, getBaseTableOptions} from "components/ui/Table";
 import {useLangFunc} from "components/utils";
-import {System} from "data-access/memo-api";
-import {Admin} from "data-access/memo-api/groups/Admin";
+import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {MemberResource} from "data-access/memo-api/resources/member.resource";
 import {Api} from "data-access/memo-api/types";
@@ -104,7 +103,9 @@ export namespace UserMembersEdit {
               {/* For the new row, display a select with the available facilities. */}
               <div class="w-full flex flex-col items-stretch">
                 <SimpleSelect
-                  name=""
+                  name="added_facility"
+                  label=""
+                  aria-label={t("models.member.facility")}
                   class="w-full"
                   // Override the default class placed on the select.
                   style={{padding: "0"}}

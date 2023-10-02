@@ -1,7 +1,7 @@
 import {ValidationMessages} from "components/felte-form/ValidationMessages";
 import {htmlAttributes} from "components/utils";
 import {VoidComponent} from "solid-js";
-import {FieldLabel} from "./FieldLabel";
+import {FieldLabel, labelIdForField} from "./FieldLabel";
 
 export interface TextFieldProps extends htmlAttributes.input {
   name: string;
@@ -22,6 +22,7 @@ export const TextField: VoidComponent<TextFieldProps> = (props) => {
         {...htmlAttributes.merge(props, {
           class: "w-full border border-gray-400 rounded p-2 aria-invalid:border-red-400",
         })}
+        aria-labelledby={labelIdForField(props.name)}
       />
       <ValidationMessages fieldName={props.name} />
     </div>

@@ -35,10 +35,13 @@ export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id, T
  * fake AxiosError if the entity is not found.
  */
 export function createGetFromList<T extends Api.Entity>(
-  getEntityListBase: (request: Api.Request.GetListParams) => Promise<AxiosResponse<Api.Response.GetList<T>>>,
+  getEntityListBase: (
+    request: Api.Request.GetListParams,
+    config?: Api.Config,
+  ) => Promise<AxiosResponse<Api.Response.GetList<T>>>,
 ) {
-  return (id: Api.Id) =>
-    getEntityListBase(createListRequest(id)).then((response) => {
+  return (id: Api.Id, config?: Api.Config) =>
+    getEntityListBase(createListRequest(id), config).then((response) => {
       const [result] = response.data.data;
       if (!result) {
         throw new AxiosError("Entity not found", AxiosError.ERR_BAD_REQUEST, response.config, response.request, {

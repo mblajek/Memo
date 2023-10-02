@@ -28,10 +28,19 @@ export const FieldLabel: VoidComponent<Props> = (props) => {
       langFunc={[form?.translations?.fieldNames, localProps.fieldName]}
       capitalize={true}
       wrapIn={(text) => (
-        <label for={localProps.fieldName} {...labelProps} class={cx("font-medium", labelProps.class)}>
+        <label
+          id={labelIdForField(localProps.fieldName)}
+          for={localProps.fieldName}
+          {...labelProps}
+          class={cx("font-medium", labelProps.class)}
+        >
           {localProps.wrapIn?.(text) ?? text}
         </label>
       )}
     />
   );
 };
+
+export function labelIdForField(fieldName: string) {
+  return fieldName ? `label_for_${fieldName}` : undefined;
+}
