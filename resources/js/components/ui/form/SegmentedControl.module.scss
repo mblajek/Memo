@@ -1,0 +1,29 @@
+.segmentedControl {
+  @apply w-full border border-gray-400 rounded p-1.5;
+  @apply flex gap-1 relative;
+
+  [data-part="indicator"] {
+    @apply border border-memo-active bg-white rounded;
+  }
+
+  [data-part="item"] {
+    @apply relative select-none;
+    @apply px-2 py-0.5 flex items-center;
+    @apply text-black;
+
+    &[data-state="unchecked"] {
+      @apply text-opacity-70;
+    }
+
+    &[data-disabled] {
+      @apply text-opacity-50;
+    }
+  }
+
+  &.small {
+    @apply p-0.5;
+    [data-part="item"] {
+      @apply px-1 py-0;
+    }
+  }
+}

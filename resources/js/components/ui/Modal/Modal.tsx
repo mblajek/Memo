@@ -126,10 +126,11 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
   }
   const [state, send] = useMachine(
     dialog.machine({
-      closeOnOutsideClick: false,
-      closeOnEsc: false,
-      onEsc: () => tryClose("escapeKey"),
-      onOutsideClick: () => tryClose("clickOutside"),
+      closeOnInteractOutside: false,
+      closeOnEscapeKeyDown: false,
+      onEscapeKeyDown: () => tryClose("escapeKey"),
+      onInteractOutside: () => tryClose("clickOutside"),
+      onPointerDownOutside: () => tryClose("clickOutside"),
       id: createUniqueId(),
     }),
   );
