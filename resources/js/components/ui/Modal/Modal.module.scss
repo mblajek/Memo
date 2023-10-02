@@ -21,10 +21,6 @@
       .closeButton {
         @apply absolute top-0 right-0 m-1;
       }
-
-      .body {
-        @apply overflow-x-auto overflow-y-clip;
-      }
     }
   }
 

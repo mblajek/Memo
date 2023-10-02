@@ -12,7 +12,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (props) => {
   return (
     <A
       {...rest}
-      class="mb-2 py-2 px-4 rounded-lg flex flex-row items-center gap-3 hover:bg-white"
+      class="mb-2 py-2 px-4 rounded-lg flex flex-row items-center gap-3 no-underline text-black hover:bg-white"
       activeClass="bg-white"
     >
       <Dynamic component={local.icon} size="25" />
