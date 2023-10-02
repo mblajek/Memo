@@ -3,7 +3,9 @@ generic:
   updatedAt: "zmodyfikowano"
   name: "nazwa"
   email: "adres e-mail"
-  createdBy: "utworzono przez"
+  createdBy: 
+    id: "utworzono przez (id)"
+    name: "utworzono przez"
 dictionary:
   _name: "słownik"
   _name_plural: "słowniki"
@@ -50,12 +52,17 @@ user:
   email: "$t(models.generic.email)"
   createdAt: "$t(models.generic.createdAt)"
   updatedAt: "$t(models.generic.updatedAt)"
-  createdBy: "$t(models.generic.createdBy)"
+  createdBy: 
+    id: "$t(models.generic.createdBy.id)"
+    name: "$t(models.generic.createdBy.name)"
   name: "imię i nazwisko"
   hasGlobalAdmin: "globalny administrator"
-  lastLoginFacility: "ostania używana placówka"
+  lastLoginFacility:
+    id: "ostanio używana placówka (id)"
+    name: "ostatnio używana placówka"
   passwordExpireAt: "data wygaśnięcia hasła"
   hasPassword: "posiada hasło"
   password: "hasło"
   hasEmailVerified: "e-mail zweryfikowany"
   members: "placówki użytkownika"
+  facilityCount: "liczba placówek"

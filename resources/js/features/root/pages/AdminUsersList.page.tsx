@@ -6,17 +6,15 @@ import {UserCreateForm, UserEditForm} from "features/users-edit";
 import {FiEdit2} from "solid-icons/fi";
 import {TbUserPlus} from "solid-icons/tb";
 import {VoidComponent} from "solid-js";
-import {startUsersMock} from "./users_fake_tquery";
 
 export default (() => {
-  startUsersMock();
   const t = useLangFunc();
   return (
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.userLists()}
-        staticEntityURL="entityURL"
+        staticEntityURL="admin/user"
         staticTranslations={createTableTranslations("users")}
         intrinsicColumns={["id"]}
         additionalColumns={["actions"]}

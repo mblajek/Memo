@@ -1,12 +1,11 @@
 import {A} from "@solidjs/router";
-import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui";
+import {createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {AccessBarrier, useLangFunc} from "components/utils";
+import {AccessBarrier} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {Component} from "solid-js";
 
 export default (() => {
-  const t = useLangFunc();
   return (
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
