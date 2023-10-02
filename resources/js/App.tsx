@@ -8,6 +8,7 @@ import {lazy, type VoidComponent} from "solid-js";
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
+const AdminFacilitiesList = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 
 export default (() => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -19,7 +20,7 @@ export default (() => {
         <Route path="/help" component={NotYetImplemented} />
         <Route path="/admin" component={AdminPages}>
           <UnknownNotFound />
-          <Route path="/facilities" component={NotYetImplemented} />
+          <Route path="/facilities" component={AdminFacilitiesList} />
           <Route path="/users" component={AdminUsersList} />
         </Route>
       </Route>
