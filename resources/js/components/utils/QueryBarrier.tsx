@@ -1,16 +1,16 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {Component, Match, ParentProps, Switch, mergeProps} from "solid-js";
+import {Match, ParentProps, Switch, VoidComponent, mergeProps} from "solid-js";
 import {BigSpinner} from "../ui";
 
 export interface QueryBarrierProps {
   /**
    * Component to show, when query is in error state
    */
-  Error?: Component;
+  Error?: VoidComponent;
   /**
    * Component to show, when query is in pending state
    */
-  Pending?: Component;
+  Pending?: VoidComponent;
   /**
    * List of queries to handle
    */

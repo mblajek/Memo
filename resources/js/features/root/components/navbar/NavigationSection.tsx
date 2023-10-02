@@ -1,5 +1,5 @@
 import {AccessBarrier, AccessBarrierProps} from "components/utils";
-import {Component, For, Show, splitProps} from "solid-js";
+import {For, Show, VoidComponent, splitProps} from "solid-js";
 import {NavigationItem, NavigationItemProps} from "./NavigationItem";
 
 export interface NavigationSectionProps extends Pick<AccessBarrierProps, "facilityUrl" | "roles"> {
@@ -9,7 +9,7 @@ export interface NavigationSectionProps extends Pick<AccessBarrierProps, "facili
 
 const noop = () => null;
 
-export const NavigationSection: Component<NavigationSectionProps> = (props) => {
+export const NavigationSection: VoidComponent<NavigationSectionProps> = (props) => {
   const [localProps, accessBarrierProps] = splitProps(props, ["items", "title"]);
   return (
     <AccessBarrier {...accessBarrierProps} Fallback={noop} Error={noop} Pending={noop}>

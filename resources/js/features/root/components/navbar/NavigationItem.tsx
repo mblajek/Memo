@@ -1,13 +1,13 @@
 import {A, AnchorProps} from "@solidjs/router";
 import {IconTypes} from "solid-icons";
-import {Component, splitProps} from "solid-js";
+import {ParentComponent, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 
 export interface NavigationItemProps extends AnchorProps {
   icon: IconTypes;
 }
 
-export const NavigationItem: Component<NavigationItemProps> = (props) => {
+export const NavigationItem: ParentComponent<NavigationItemProps> = (props) => {
   const [local, rest] = splitProps(props, ["children", "icon"]);
   return (
     <A
