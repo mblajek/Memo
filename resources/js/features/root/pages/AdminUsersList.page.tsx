@@ -1,7 +1,7 @@
 import {AUTO_SIZE_COLUMN_DEFS, Button, Email, cellFunc, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
-import {Admin} from "data-access/memo-api/groups/Admin";
+import {Admin} from "data-access/memo-api/groups";
 import {UserCreateForm, UserEditForm} from "features/users-edit";
 import {FiEdit2} from "solid-icons/fi";
 import {TbUserPlus} from "solid-icons/tb";

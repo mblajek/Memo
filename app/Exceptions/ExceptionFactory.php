@@ -43,4 +43,9 @@ class ExceptionFactory
     {
         return new ApiValidationException(400, 'exception.snake_case_request');
     }
+
+    public static function invalidJson(): ApiValidationException
+    {
+        return new ApiValidationException(400, 'exception.invalid_json');
+    }
 }

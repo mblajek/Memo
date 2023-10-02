@@ -1,7 +1,7 @@
 import {ValidationMessages} from "components/felte-form/ValidationMessages";
 import {htmlAttributes} from "components/utils";
 import {For, VoidComponent, splitProps} from "solid-js";
-import {FieldLabel} from "./FieldLabel";
+import {FieldLabel, labelIdForField} from "./FieldLabel";
 
 export interface SimpleSelectProps extends htmlAttributes.select {
   name: string;
@@ -29,6 +29,7 @@ export const SimpleSelect: VoidComponent<SimpleSelectProps> = (props) => {
         {...htmlAttributes.merge(selectProps, {
           class: "w-full border border-gray-400 rounded p-2 aria-invalid:border-red-400",
         })}
+        aria-labelledby={labelIdForField(props.name)}
       >
         <For each={lProps.options}>{(option) => <option value={option.value}>{option.text}</option>}</For>
       </select>

@@ -36,35 +36,24 @@ export namespace htmlAttributes {
   export type input = JSX.HTMLElementTags["input"];
   export type select = JSX.HTMLElementTags["select"];
 
-  export function merge(attributes: object | undefined, overrides: Pick<htmlAttributes.div, "class" | "style">) {
+  export function merge(attributes: object | undefined, overrides: Pick<div, "class" | "style">) {
     const attribs = (attributes || {}) as Partial<Record<string, unknown>>;
-    const overriddenClass = () =>
-      overrides.class ? {class: cx(attribs.class as string | undefined, overrides.class)} : undefined;
-    const overriddenStyle = () => {
-      if (!overrides.style) {
-        return undefined;
-      }
-      if (attribs.style) {
-        if (typeof attribs.style !== typeof overrides.style)
-          throw new Error(
-            `Cannot merge style from attributes (${JSON.stringify(
-              attribs.style,
-            )}) and style from overrides (${JSON.stringify(overrides.style)})`,
-          );
-        return {
-          style:
-            typeof overrides.style === "string"
-              ? `${attribs.style} ; ${overrides.style}`
-              : {...attribs.style, ...overrides.style},
-        };
-      } else {
-        return {style: overrides.style};
-      }
-    };
-    return {
-      ...attribs,
-      ...overriddenClass(),
-      ...overriddenStyle(),
-    };
+    const result = {...attribs, ...overrides};
+    if (attribs.class && overrides.class) {
+      result.class = cx(attribs.class as string, overrides.class);
+    }
+    if (attribs.style && overrides.style) {
+      if (typeof attribs.style !== typeof overrides.style)
+        throw new Error(
+          `Cannot merge style from attributes (${JSON.stringify(
+            attribs.style,
+          )}) and style from overrides (${JSON.stringify(overrides.style)})`,
+        );
+      result.style =
+        typeof attribs.style === "string"
+          ? `${attribs.style} ; ${overrides.style}`
+          : {...attribs.style, ...(overrides.style as JSX.CSSProperties)};
+    }
+    return result;
   }
 }

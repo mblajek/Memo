@@ -1,9 +1,10 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {MemoLoader} from "components/ui";
-import {Page} from "components/utils";
+import {Page, QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api";
-import {Match, Switch, VoidComponent, createEffect} from "solid-js";
+import {VoidComponent, createEffect, onMount} from "solid-js";
+import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {LoginForm} from "../forms/login";
 
 /**
@@ -15,27 +16,37 @@ import {LoginForm} from "../forms/login";
  */
 const LoginPage: VoidComponent = () => {
   const statusQuery = createQuery(() => ({
-    ...User.statusQueryOptions,
+    ...User.statusQueryOptions(),
     meta: {quietError: true},
   }));
+
+  createEffect(() => {
+    if (statusQuery.isSuccess) {
+      if (statusQuery.data.user.lastLoginFacilityId) setActiveFacilityId(statusQuery.data.user.lastLoginFacilityId);
+    }
+  });
 
   createEffect(() => {
     LoginForm.showModal(statusQuery.isError);
   });
 
+  onMount(() => {
+    setActiveFacilityId(undefined);
+  });
+
   return (
     <Page title="Logowanie">
       <LoginForm.Modal />
-      <Switch>
-        <Match when={statusQuery.isPending}>
-          <div class="w-full h-screen flex justify-center items-center">
-            <MemoLoader size={300} />
-          </div>
-        </Match>
-        <Match when={statusQuery.isSuccess}>
-          <Navigate href="/" state={{fromLoginPage: true}} />
-        </Match>
-      </Switch>
+      <QueryBarrier
+        queries={[statusQuery]}
+        Error={
+          // Do not show any errors, instead just show this login form.
+          () => undefined
+        }
+        Pending={MemoLoader}
+      >
+        <Navigate href="/help" state={{fromLoginPage: true}} />
+      </QueryBarrier>
     </Page>
   );
 };

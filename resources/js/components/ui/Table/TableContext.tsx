@@ -7,7 +7,7 @@ type ProviderProps = {
   table: Table<any>;
 };
 
-const TableContext = createContext<Table<unknown>>(undefined);
+const TableContext = createContext<Table<unknown>>();
 
 export const TableContextProvider: ParentComponent<ProviderProps> = (props) => (
   // Table does not change.
