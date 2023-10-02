@@ -58,8 +58,5 @@
     "solid-js": "^1.7.11",
     "solid-toast": "^0.5.0",
     "zod": "^3.22.2"
-  },
-  "msw": {
-    "workerDirectory": "public"
   }
 }

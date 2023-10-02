@@ -98,6 +98,8 @@ export interface TQueryTableProps {
   initialVisibleColumns?: string[];
   initialSort?: SortingState;
   initialPageSize?: number;
+  /** These columns are ignored and never shown. */
+  ignoreColumns?: string[];
   /** Element to put below table, after the summary. */
   customSectionBelowTable?: JSX.Element;
 }
@@ -147,8 +149,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   function commonColumnDef(name: string, type?: ColumnType) {
     return {
       id: name,
-      // Default accessor in tanstack supports nested properties (e.g. "a.b" looking for {a: {b: ...}}), but this 
-      // breaks us, because we have flat fields with dots in the names, e.g. { 'created_by.name': ... }.
+      // Default accessor in tanstack supports nested properties (e.g. "a.b" looking for {a: {b: ...}}), but we have 
+      // flat fields with dots in the names, e.g. { 'createdBy.name': ... }.
       accessorFn: (originalRow: DataItem) => originalRow[name],
       header: (ctx) => (
         <Header
@@ -168,52 +170,54 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   }
   const columns = createMemo(() => {
     const sch = schema();
-    if (sch) {
-      const badColumns = new Set(Object.keys(props.columnOptions || {}));
-      for (const {name} of sch.columns) {
-        badColumns.delete(name);
-      }
-      for (const name of props.additionalColumns || []) {
-        badColumns.delete(name);
-      }
-      if (badColumns.size)
-        console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
-      const columns = [
-        ...sch.columns.map(({type, nullable, name}) => {
-          const common = commonColumnDef(name, type);
-          return h.accessor(name, {
-            ...common,
-            meta: {
-              ...common.meta,
-              tquery: {
-                type,
-                nullable,
-                ...columnOptions(name).metaParams,
-              } satisfies TQueryColumnMeta,
-            },
-          });
-        }),
-        ...(props.additionalColumns || []).map((name) => {
-          const common = commonColumnDef(name);
-          return h.display({
-            ...common,
-            meta: {
-              ...common.meta,
-              tquery: {
-                ...columnOptions(name).metaParams,
-              },
-            },
-          });
-        }),
-      ];
-      if (props.initialColumnsOrder) {
-        // Index in the ordering array. Missing items sorted last.
-        const order = (col: ColumnDef<DataItem, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
-        columns.sort((a, b) => order(a) - order(b));
-      }
-      return columns;
+    if (!sch) return [];
+
+    const badColumns = new Set([...Object.keys(props.columnOptions || {}), ...(props.initialColumnsOrder || []), ...(props.initialVisibleColumns || []), ...(props.ignoreColumns || [])]);
+    for (const {name} of sch.columns) {
+      badColumns.delete(name);
     }
-    return [];
+    for (const name of props.additionalColumns || []) {
+      badColumns.delete(name);
+    }
+    if (badColumns.size)
+      console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
+
+    const ignoreColumnsSet = new Set(props.ignoreColumns || []);
+    const schemaColumns = sch.columns.filter(({name}) => !ignoreColumnsSet.has(name));  
+    const columns = [
+      ...schemaColumns.map(({type, nullable, name}) => {
+        const common = commonColumnDef(name, type);
+        return h.accessor(name, {
+          ...common,
+          meta: {
+            ...common.meta,
+            tquery: {
+              type,
+              nullable,
+              ...columnOptions(name).metaParams,
+            } satisfies TQueryColumnMeta,
+          },
+        });
+      }),
+      ...(props.additionalColumns || []).map((name) => {
+        const common = commonColumnDef(name);
+        return h.display({
+          ...common,
+          meta: {
+            ...common.meta,
+            tquery: {
+              ...columnOptions(name).metaParams,
+            },
+          },
+        });
+      }),
+    ];
+    if (props.initialColumnsOrder) {
+      // Index in the ordering array. Missing items sorted last.
+      const order = (col: ColumnDef<DataItem, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
+      columns.sort((a, b) => order(a) - order(b));
+    }
+    return columns;
   });
 
   const table = createSolidTable<DataItem>({

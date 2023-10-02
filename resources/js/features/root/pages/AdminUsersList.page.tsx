@@ -18,6 +18,7 @@ export default (() => {
         staticTranslations={createTableTranslations("users")}
         intrinsicColumns={["id"]}
         additionalColumns={["actions"]}
+        ignoreColumns={["lastLoginFacility.id", "lastLoginFacility.name", "createdBy.id"]}
         columnOptions={{
           name: {
             metaParams: {canControlVisibility: false},
@@ -58,18 +59,20 @@ export default (() => {
           "id",
           "name",
           "email",
-          "hasPassword",
-          "createdAt",
-          "facilitiesMember",
-          "numFacilities",
           "hasGlobalAdmin",
+          "createdAt",
+          "createdBy.name",
+          "updatedAt",
+          "hasEmailVerified",
+          "hasPassword",
+          "passwordExpireAt",
+          "facilityCount",
+          "actions",
         ]}
         initialVisibleColumns={[
           "name",
           "email",
-          "hasPassword",
           "createdAt",
-          "facilitiesMember",
           "hasGlobalAdmin",
           "actions",
         ]}
