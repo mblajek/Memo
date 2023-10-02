@@ -1,26 +1,24 @@
 import {DateTime} from "luxon";
-import {createSignal, onCleanup, onMount} from "solid-js";
+import {createSignal} from "solid-js";
 
-export function useCurrentTime() {
-  const [currentTime, setCurrentTime] = createSignal(DateTime.now());
-  let interval: ReturnType<typeof setInterval>;
-  onMount(() => {
-    interval = setInterval(() => setCurrentTime(DateTime.now()), 1000);
-  });
-  onCleanup(() => clearInterval(interval));
-  return currentTime;
+// Current time, with seconds accuracy.
+const [getCurrentTime, setCurrentTime] = createSignal(DateTime.now());
+// Current date, with days accuracy.
+const [getCurrentDate, setCurrentDate] = createSignal(DateTime.now().startOf("day"));
+
+function update() {
+  const now = DateTime.now();
+  if (now.day !== getCurrentTime().day) {
+    setCurrentDate(now.startOf("day"));
+  }
+  setCurrentTime(now);
+  // Update again at the start of the next second.
+  setTimeout(update, 1000 - now.millisecond);
 }
 
-const CURRENT_DATE_UPDATE_INTERVAL_MILLIS = 10 * 1000;
+// Start updating the time indefinitely.
+// eslint-disable-next-line solid/reactivity
+update();
 
-export function useCurrentDate() {
-  const [currentDate, setCurrentDate] = createSignal(DateTime.now().startOf("day"), {
-    equals: (prev, next) => prev.toMillis() === next.toMillis(),
-  });
-  let interval: ReturnType<typeof setInterval>;
-  onMount(() => {
-    interval = setInterval(() => setCurrentDate(DateTime.now().startOf("day")), CURRENT_DATE_UPDATE_INTERVAL_MILLIS);
-  });
-  onCleanup(() => clearInterval(interval));
-  return currentDate;
-}
+export const currentTime = getCurrentTime;
+export const currentDate = getCurrentDate;

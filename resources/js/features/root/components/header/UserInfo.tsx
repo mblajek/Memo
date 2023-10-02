@@ -1,5 +1,5 @@
 import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
-import {DATE_TIME_WITH_WEEKDAY_FORMAT, useCurrentTime, useLangFunc} from "components/utils";
+import {DATE_TIME_WITH_WEEKDAY_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
@@ -8,7 +8,6 @@ import {Index, Match, Switch} from "solid-js";
 
 export const UserInfo = () => {
   const t = useLangFunc();
-  const currentTime = useCurrentTime();
   const statusQuery = createQuery(() => User.statusQueryOptions());
 
   const queryClient = useQueryClient();

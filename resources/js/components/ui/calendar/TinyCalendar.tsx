@@ -1,4 +1,4 @@
-import {cx, getWeekInfo, htmlAttributes, useCurrentDate, useLangFunc} from "components/utils";
+import {currentDate, cx, getWeekInfo, htmlAttributes, useLangFunc} from "components/utils";
 import {DateTime} from "luxon";
 import {CgCalendarToday} from "solid-icons/cg";
 import {FaSolidArrowLeft, FaSolidArrowRight} from "solid-icons/fa";
@@ -55,7 +55,6 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   ]);
 
   const t = useLangFunc();
-  const today = useCurrentDate();
   const {firstDay, weekend} = getWeekInfo();
   const monthStart = createMemo(() => lProps.month.startOf("month"), undefined, {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
@@ -69,7 +68,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   const selectionCenter = () =>
     lProps.selection && DateTime.fromMillis((lProps.selection[0].toMillis() + lProps.selection[1].toMillis()) / 2);
   const retButtonAction = createMemo(() => {
-    if (lProps.month.hasSame(today(), "month")) {
+    if (lProps.month.hasSame(currentDate(), "month")) {
       const selCenter = selectionCenter();
       if (!selCenter) {
         return undefined;
@@ -86,7 +85,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
     let day = toStartOfWeek(monthStart().minus({days: lProps.minDaysOfPrevMonth}));
     const res: DayInfo[] = [];
     function add(day: DateTime) {
-      const isToday = day.hasSame(today(), "day");
+      const isToday = day.hasSame(currentDate(), "day");
       res.push({
         day,
         isToday,
@@ -139,7 +138,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
         </div>
         <button
           disabled={!retButtonAction()}
-          onClick={() => lProps.setMonth((retButtonAction() === "toSelection" && selectionCenter()) || today())}
+          onClick={() => lProps.setMonth((retButtonAction() === "toSelection" && selectionCenter()) || currentDate())}
           title={
             retButtonAction() === "toSelection" ? t("calendar.go_to_selection") : t("calendar.go_to_current_month")
           }
