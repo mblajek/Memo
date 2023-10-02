@@ -38,6 +38,8 @@ export namespace Admin {
     userLists: () => [...keys.userAll(), "list"] as const,
     userList: (request?: Api.Request.GetListParams) => [...keys.userLists(), request] as const,
     userGet: (id: Api.Id) => keys.userList(createListRequest(id)),
+    facilityAll: () => [...keys.all(), "facility"] as const,
+    facilityLists: () => [...keys.facilityAll(), "list"] as const,
   };
 
   export const usersQueryOptions = (ids?: ListInParam) => {
