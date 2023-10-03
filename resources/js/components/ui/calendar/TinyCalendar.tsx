@@ -13,12 +13,6 @@ interface Props extends htmlAttributes.div {
   selection?: DaysRange;
   /** The currently displayed month. */
   month: DateTime;
-  /** The (minimal) number of days of the previos month that are always shown above the current month. */
-  minDaysOfPrevMonth?: number;
-  /** The (minimal) number of days of the next month that are always shown below the current month. */
-  minDaysOfNextMonth?: number;
-  /** The minimum number of weeks to show, to avoid (often) calendar height changes. */
-  minWeeks?: number;
   showWeekdayNames?: boolean;
   holidays?: DateTime[];
 
@@ -33,9 +27,6 @@ interface Props extends htmlAttributes.div {
 }
 
 const DEFAULT_PROPS = {
-  minDaysOfPrevMonth: 2,
-  minDaysOfNextMonth: 3,
-  minWeeks: 6,
   showWeekdayNames: false,
 };
 
@@ -50,9 +41,6 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   const [lProps, divProps] = splitProps(mProps, [
     "selection",
     "month",
-    "minDaysOfPrevMonth",
-    "minDaysOfNextMonth",
-    "minWeeks",
     "showWeekdayNames",
     "holidays",
     "getHoverRange",
@@ -85,14 +73,16 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   });
 
   /** List of days to show in the calendar. */
-  const days = createMemo(() => {
+  const days = createMemo<DayInfo[]>(() => {
     const holidaysSet = new Set(lProps.holidays?.map((d) => d.startOf("day").toMillis()));
-    let day = weekDaysCalculator().startOfWeek(monthStart().minus({days: lProps.minDaysOfPrevMonth}));
-    const res: DayInfo[] = [];
-    const last = monthStart().endOf("month").plus({days: lProps.minDaysOfNextMonth});
-    while (day <= last || res.length < 7 * lProps.minWeeks || day.weekday !== weekInfo().firstDay) {
+    // Always show (at least) two days of the previous month.
+    const start = weekDaysCalculator().startOfWeek(monthStart().minus({days: 2}));
+    // Show 6 weeks.
+    // eslint-disable-next-line solid/reactivity
+    return Array.from({length: 6 * 7}, (_, i) => {
+      const day = start.plus({days: i});
       const isToday = day.hasSame(currentDate(), "day");
-      res.push({
+      return {
         day,
         isToday,
         classes: cx({
@@ -101,10 +91,8 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
           [s.holiday!]: holidaysSet.has(day.toMillis()),
           [s.otherMonth!]: day.month !== monthStart().month,
         }),
-      });
-      day = day.plus({days: 1});
-    }
-    return res;
+      };
+    });
   });
 
   /**
