@@ -26,8 +26,10 @@ interface Props extends htmlAttributes.div {
   getHoverRange?: (hoveredDay: DateTime) => DaysRange | undefined;
   /** The function called when month is changed in the view. Controller should change the month prop. */
   setMonth: (month: DateTime) => void;
-  /** The function called when a day is clicked. It should typically set selection. */
-  onDayClick?: (day: DateTime) => void;
+  /**
+   * The function called when a day is clicked. The second parameter is the hovered range, i.e. the result of
+   * getHoverRange. This function typically does something similar to `setSelection(hoverRange)`. */
+  onDayClick?: (day: DateTime, hoverRange: DaysRange | undefined) => void;
 }
 
 const DEFAULT_PROPS = {
@@ -65,10 +67,8 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
   });
   const [hover, setHover] = createSignal<DateTime>();
-  const hoverRange = createMemo<DaysRange | undefined>(() => {
-    const h = hover();
-    return h && (lProps.getHoverRange ? lProps.getHoverRange(h) : [h, h]);
-  });
+  const getHoverRange = () => lProps.getHoverRange || ((d: DateTime) => [d, d]);
+  const hoverRange = createMemo<DaysRange | undefined>(() => hover() && getHoverRange()(hover()!));
 
   const selectionCenter = () =>
     lProps.selection && DateTime.fromMillis((lProps.selection[0].toMillis() + lProps.selection[1].toMillis()) / 2);
@@ -161,7 +161,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
           {(di) => (
             <button
               class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}
-              onClick={() => lProps.onDayClick?.(di.day)}
+              onClick={() => lProps.onDayClick?.(di.day, getHoverRange()(di.day))}
               onMouseEnter={() => setHover(di.day)}
               onMouseLeave={() => setHover(undefined)}
             >

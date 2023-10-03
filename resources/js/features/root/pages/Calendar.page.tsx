@@ -24,9 +24,9 @@ export default (() => {
       month={month()}
       getHoverRange={(day) => weekDayCalculator.dayToWorkdays(day)}
       setMonth={setMonth}
-      onDayClick={(day) => {
-        setSelection(weekDayCalculator.dayToWorkdays(day));
+      onDayClick={(day, range) => {
         setMonth(day);
+        setSelection(range);
       }}
     />
   );
