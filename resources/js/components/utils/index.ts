@@ -8,3 +8,4 @@ export * from "./debounce";
 export * from "./formatting";
 export * from "./html_attributes";
 export * from "./lang";
+export * from "./time";

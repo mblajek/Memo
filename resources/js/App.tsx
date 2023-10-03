@@ -7,8 +7,9 @@ import {lazy, type VoidComponent} from "solid-js";
 
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
-const AdminUsersList = lazy(() => import("features/root/pages/AdminUsersList.page"));
-const AdminFacilitiesList = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
+const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
+const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
+const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
 
 export default (() => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -20,8 +21,8 @@ export default (() => {
         <Route path="/help" component={NotYetImplemented} />
         <Route path="/admin" component={AdminPages}>
           <UnknownNotFound />
-          <Route path="/facilities" component={AdminFacilitiesList} />
-          <Route path="/users" component={AdminUsersList} />
+          <Route path="/facilities" component={AdminFacilitiesListPage} />
+          <Route path="/users" component={AdminUsersListPage} />
         </Route>
       </Route>
       <Route
@@ -39,7 +40,8 @@ export default (() => {
         </Route>
         <Route path="/admin" component={FacilityAdminPages}>
           <UnknownNotFound />
-          <Route path="/calendar" component={NotYetImplemented} />
+          {/* This is a temporary location for the calendar. */}
+          <Route path="/calendar" component={CalendarPage} />
           <Route path="/clients" component={NotYetImplemented} />
           <Route path="/staff" component={NotYetImplemented} />
           <Route path="/reports" component={NotYetImplemented} />
