@@ -37,15 +37,38 @@
     filter: brightness(0.8);
   }
 
+  select {
+    // Some versions of Chrome show this as grey.
+    @apply bg-white;
+  }
+
+  a {
+    @apply underline text-blue-500;
+  }
+
   button {
+    @mixin pressedWithShadow {
+      transition: box-shadow 0.15s ease-out;
+      &:active {
+        @apply shadow-md;
+      }
+    }
+
+    &.pressedWithShadow {
+      @include pressedWithShadow;
+    }
+
     &.primary {
       @apply p-2 rounded bg-memo-active text-white disabled:bg-opacity-50;
+      @include pressedWithShadow;
     }
     &.secondary {
       @apply p-2 rounded border border-memo-active text-memo-active disabled:bg-opacity-50;
+      @include pressedWithShadow;
     }
     &.secondarySmall {
       @apply px-1 rounded border border-memo-active text-memo-active disabled:bg-opacity-50;
+      @include pressedWithShadow;
     }
   }
 

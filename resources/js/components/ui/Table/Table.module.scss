@@ -9,6 +9,11 @@
     @apply h-full rounded px-2 border;
   }
 }
+.columnVisibilityPortal {
+  [data-part="content"] {
+    @apply shadow-xl;
+  }
+}
 
 .columnFilterController {
   @apply flex items-end gap-0.5;

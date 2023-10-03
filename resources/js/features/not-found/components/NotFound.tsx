@@ -8,10 +8,7 @@ export const NotFound: VoidComponent = () => {
       <h1 class="text-xl text-center mb-2">Nie znaleziono zasobu</h1>
       <p>
         Strona znajdująca się pod adresem {location.pathname} nie istnieje. Skontaktuj się z Administratorem lub przejdź
-        na{" "}
-        <A href="/help" class="underline text-blue-600">
-          stronę z pomocą
-        </A>
+        na <A href="/help">stronę z pomocą</A>.
       </p>
     </div>
   );
