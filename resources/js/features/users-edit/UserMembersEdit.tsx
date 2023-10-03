@@ -71,6 +71,7 @@ export namespace UserMembersEdit {
       }
       return rows;
     });
+    const addedFacilityFieldName = () => `${props.membersPath}.addedFacility`;
     const tableCells = useTableCells();
     const h = createColumnHelper<MemberRow>();
     const [sorting, setSorting] = createSignal<SortingState>([{id: "facility", desc: false}]);
@@ -103,7 +104,7 @@ export namespace UserMembersEdit {
               {/* For the new row, display a select with the available facilities. */}
               <div class="w-full flex flex-col items-stretch">
                 <SimpleSelect
-                  name="added_facility"
+                  name={addedFacilityFieldName()}
                   label=""
                   aria-label={t("models.member.facility")}
                   class="w-full"
@@ -125,6 +126,9 @@ export namespace UserMembersEdit {
                       // the second parameter.
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       form.addField(membersPath, newRow as any);
+                      // Clear the select. It is not declared in type, so use any.
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      form.setFields(addedFacilityFieldName(), undefined as any);
                     }
                   }}
                 />
