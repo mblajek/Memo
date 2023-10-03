@@ -51,6 +51,7 @@ export default (() => {
                   <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
                 </Button>
               ),
+              enableSorting: false,
               ...AUTO_SIZE_COLUMN_DEFS,
             },
           },
