@@ -8,6 +8,7 @@ import s from "./TinyCalendar.module.scss";
 export type DaysRange = [DateTime, DateTime];
 
 interface Props extends htmlAttributes.div {
+  locale: Intl.Locale;
   /** The current selection visible in the tiny calendar. */
   selection?: DaysRange;
   /** The currently displayed month. */
@@ -55,7 +56,8 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   ]);
 
   const t = useLangFunc();
-  const {firstDay, weekend} = getWeekInfo();
+  const weekDaysCalculator = createMemo(() => new WeekDaysCalculator(props.locale));
+  const weekInfo = () => weekDaysCalculator().weekInfo;
   const monthStart = createMemo(() => lProps.month.startOf("month"), undefined, {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
   });
@@ -82,7 +84,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   /** List of days to show in the calendar. */
   const days = createMemo(() => {
     const holidaysSet = new Set(lProps.holidays?.map((d) => d.startOf("day").toMillis()));
-    let day = toStartOfWeek(monthStart().minus({days: lProps.minDaysOfPrevMonth}));
+    let day = weekDaysCalculator().startOfWeek(monthStart().minus({days: lProps.minDaysOfPrevMonth}));
     const res: DayInfo[] = [];
     function add(day: DateTime) {
       const isToday = day.hasSame(currentDate(), "day");
@@ -91,7 +93,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
         isToday,
         classes: cx({
           [s.today!]: isToday,
-          [s.weekend!]: weekend.includes(day.weekday),
+          [s.weekend!]: weekInfo().weekend.includes(day.weekday),
           [s.holiday!]: holidaysSet.has(day.toMillis()),
           [s.otherMonth!]: day.month !== monthStart().month,
         }),
@@ -102,7 +104,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
       add(day);
       day = day.plus({days: 1});
     }
-    while (res.length < 7 * lProps.minWeeks || day.weekday !== firstDay) {
+    while (res.length < 7 * lProps.minWeeks || day.weekday !== weekInfo().firstDay) {
       add(day);
       day = day.plus({days: 1});
     }
@@ -150,9 +152,9 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
         <Show when={lProps.showWeekdayNames}>
           <Index each={Array.from({length: 7})}>
             {(_v, i) => {
-              const date = DateTime.fromObject({weekday: firstDay}).plus({days: i});
+              const date = DateTime.fromObject({weekday: weekInfo().firstDay}).plus({days: i});
               return (
-                <div class={cx(s.weekday, {[s.weekend!]: weekend.includes(date.weekday)})}>
+                <div class={cx(s.weekday, {[s.weekend!]: weekInfo().weekend.includes(date.weekday)})}>
                   {date.toLocaleString({weekday: "narrow"})}
                 </div>
               );
@@ -179,31 +181,36 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   );
 };
 
-export function dayToWeek(day: DateTime): DaysRange {
-  const start = toStartOfWeek(day);
-  return [start, start.plus({days: 6})];
-}
+export class WeekDaysCalculator {
+  readonly weekInfo;
 
-export function dayToWorkdays(day: DateTime): DaysRange {
-  const {weekend} = getWeekInfo();
-  if (weekend.includes(day.weekday)) {
-    return dayToWeek(day);
+  constructor(readonly locale: Intl.Locale) {
+    this.weekInfo = getWeekInfo(locale);
   }
-  const start = toStartOfWeek(day);
-  let d = start;
-  let end = d;
-  while (!weekend.includes(d.weekday)) {
-    end = d;
-    d = d.plus({day: 1});
-  }
-  return [start, end];
-}
 
-export function toStartOfWeek(dt: DateTime) {
-  const {firstDay} = getWeekInfo();
-  dt = dt.startOf("day");
-  while (dt.weekday !== firstDay) {
-    dt = dt.minus({days: 1});
+  dayToWeek(day: DateTime): DaysRange {
+    const start = this.startOfWeek(day);
+    return [start, start.plus({days: 6})];
   }
-  return dt;
+
+  dayToWorkdays(day: DateTime): DaysRange {
+    if (this.weekInfo.weekend.includes(day.weekday)) {
+      return this.dayToWeek(day);
+    }
+    let start = this.startOfWeek(day);
+    while (this.weekInfo.weekend.includes(start.weekday)) {
+      start = start.plus({days: 1});
+    }
+    let d = start;
+    let end = d;
+    while (!this.weekInfo.weekend.includes(d.weekday)) {
+      end = d;
+      d = d.plus({day: 1});
+    }
+    return [start, end];
+  }
+
+  startOfWeek(dt: DateTime) {
+    return dt.startOf("day").minus({days: (dt.weekday - this.weekInfo.firstDay + 7) % 7});
+  }
 }

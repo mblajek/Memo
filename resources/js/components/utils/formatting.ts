@@ -16,11 +16,12 @@ export const NUMBER_FORMAT = new Intl.NumberFormat();
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/getWeekInfo
  */
 export interface WeekInfo {
-  firstDay: number;
-  weekend: number[];
-  minimalDays: number;
+  readonly firstDay: number;
+  readonly weekend: number[];
+  readonly minimalDays: number;
 }
 
+/** Polyfill. */
 interface Locale extends Intl.Locale {
   getWeekInfo?: () => WeekInfo;
   weekInfo?: WeekInfo;
@@ -32,12 +33,10 @@ const DEFAULT_WEEK_INFO = {
   minimalDays: 4,
 } satisfies WeekInfo;
 
-let weekInfoCache: WeekInfo | undefined;
+export function getWeekInfo(locale: Locale) {
+  return locale.getWeekInfo?.() || locale.weekInfo || DEFAULT_WEEK_INFO;
+}
 
-export function getWeekInfo() {
-  if (!weekInfoCache) {
-    const locale = new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale) as Locale;
-    weekInfoCache = locale.getWeekInfo?.() || locale.weekInfo || DEFAULT_WEEK_INFO;
-  }
-  return weekInfoCache;
+export function getCurrentLocale() {
+  return new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale);
 }
