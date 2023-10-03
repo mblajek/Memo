@@ -13,8 +13,11 @@ interface Props extends htmlAttributes.div {
   selection?: DaysRange;
   /** The currently displayed month. */
   month: DateTime;
+  /** The (minimal) number of days of the previos month that are always shown above the current month. */
   minDaysOfPrevMonth?: number;
+  /** The (minimal) number of days of the next month that are always shown below the current month. */
   minDaysOfNextMonth?: number;
+  /** The minimum number of weeks to show, to avoid (often) calendar height changes. */
   minWeeks?: number;
   showWeekdayNames?: boolean;
   holidays?: DateTime[];
@@ -86,7 +89,8 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
     const holidaysSet = new Set(lProps.holidays?.map((d) => d.startOf("day").toMillis()));
     let day = weekDaysCalculator().startOfWeek(monthStart().minus({days: lProps.minDaysOfPrevMonth}));
     const res: DayInfo[] = [];
-    function add(day: DateTime) {
+    const last = monthStart().endOf("month").plus({days: lProps.minDaysOfNextMonth});
+    while (day <= last || res.length < 7 * lProps.minWeeks || day.weekday !== weekInfo().firstDay) {
       const isToday = day.hasSame(currentDate(), "day");
       res.push({
         day,
@@ -98,14 +102,6 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
           [s.otherMonth!]: day.month !== monthStart().month,
         }),
       });
-    }
-    const last = monthStart().endOf("month").plus({days: lProps.minDaysOfNextMonth});
-    while (day <= last) {
-      add(day);
-      day = day.plus({days: 1});
-    }
-    while (res.length < 7 * lProps.minWeeks || day.weekday !== weekInfo().firstDay) {
-      add(day);
       day = day.plus({days: 1});
     }
     return res;
@@ -118,9 +114,9 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   function rangeClasses(day: DateTime, range: DaysRange | undefined, rangeClass: string | undefined) {
     return range && rangeClass
       ? {
-          [rangeClass]: day >= range![0] && day <= range![1],
-          [s.start!]: day.hasSame(range![0], "day"),
-          [s.end!]: day.hasSame(range![1], "day"),
+          [rangeClass]: day >= range[0] && day <= range[1],
+          [s.start!]: day.hasSame(range[0], "day"),
+          [s.end!]: day.hasSame(range[1], "day"),
         }
       : undefined;
   }
