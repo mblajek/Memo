@@ -19,8 +19,12 @@ tables:
       email: "$t(models.user.email)"
       hasPassword: "$t(models.user.hasPassword)"
       createdAt: "$t(models.user.createdAt)"
-      facilitiesMember: "$t(models.user.members)"
       hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
+      passwordExpireAt: "$t(models.user.passwordExpireAt)"
+      updatedAt: "$t(models.user.updatedAt)"
+      hasEmailVerified: "$t(models.user.hasEmailVerified)"
+      createdBy.name: "$t(models.user.createdBy)"
+      facilityCount: "$t(models.user.facilityCount)"
       actions: "$t(tables.tables.generic.columnNames.actions)"
   userFacilities:
     tableName: "$t(models.user.members)"

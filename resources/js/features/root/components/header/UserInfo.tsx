@@ -45,7 +45,11 @@ export const UserInfo = () => {
           <span>
             {statusQuery.data?.user.name}
             {/* This is a temporary location for the change password button. */}
-            <button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
+            <button
+              class="m-1"
+              onClick={() => PasswordChangeForm.showModal()}
+              title={t("forms.password_change.formName")}
+            >
               <TbPassword />
             </button>
             <PasswordChangeForm.Modal />
