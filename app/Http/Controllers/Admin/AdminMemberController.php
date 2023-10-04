@@ -45,16 +45,17 @@ class AdminMemberController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function post(Request $request, CreateMemberService $service): JsonResponse
     {
-        $data = $request->validate([
+        $data = $this->validate([
             'user_id' => [
                 'required',
                 'uuid',
+                'exists:users,id',
                 Rule::unique('members')->where(function ($query) use ($request) {
                     return $query->where('user_id', $request['user_id'])
                         ->where('facility_id', $request['facility_id']);
                 }),
             ],
-            'facility_id' => 'required|uuid',
+            'facility_id' => 'required|uuid|exists:facilities,id',
             'has_facility_admin' => 'required|bool',
         ]);
 
@@ -93,17 +94,18 @@ class AdminMemberController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function patch(Member $member, Request $request, UpdateMemberService $service): JsonResponse
     {
-        $data = $request->validate([
+        $data = $this->validate([
             'user_id' => [
                 'sometimes',
                 'uuid',
+                'exists:users,id',
                 Rule::unique('members')->where(function ($query) use ($request) {
                     return $query->where('user_id', $request['user_id'])
                         ->where('facility_id', $request['facility_id']);
                 })->ignore($member->id),
             ],
-            'facility_id' => 'sometimes|uuid',
-            'has_facility_admin' => 'sometimes|bool',
+            'facility_id' => 'sometimes|required|uuid|exists:facilities,id',
+            'has_facility_admin' => 'sometimes|required|bool',
         ]);
 
         $service->handle($member, $data);

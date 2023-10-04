@@ -5,8 +5,8 @@ import {System} from "data-access/memo-api";
 import {Api} from "data-access/memo-api/types";
 import {ParentComponent, createMemo} from "solid-js";
 import toast from "solid-toast";
+import {useLangFunc} from ".";
 import {QueryBarrier} from "./QueryBarrier";
-import {getLangFunc} from ".";
 
 /**
  * Tanstack/solid-query initialization component
@@ -14,7 +14,7 @@ import {getLangFunc} from ".";
  * Handles custom queryClient and queryCache initialization
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
-  const t = getLangFunc();
+  const t = useLangFunc();
   const queryClient = createMemo(
     () =>
       new QueryClient({
@@ -24,22 +24,19 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             refetchOnMount: false,
             refetchOnWindowFocus: false,
             retry: false,
+            retryOnMount: false,
           },
         },
         queryCache: new QueryCache({
           onError(error, query) {
             if (isAxiosError<Api.ErrorResponse>(error)) {
               error.response?.data.errors.forEach((memoError) => {
-                if (
-                  (error?.status && error.status >= 500) ||
-                  !query.meta?.quietError
-                )
-                  toast.error(t(memoError.code));
+                if ((error?.status && error.status >= 500) || !query.meta?.quietError) toast.error(t(memoError.code));
               });
             }
           },
         }),
-      })
+      }),
   );
   return (
     <QueryClientProvider client={queryClient()}>

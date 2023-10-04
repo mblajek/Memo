@@ -1,8 +1,8 @@
-import { SolidQueryOptions } from "@tanstack/solid-query";
-import { V1 } from "../config";
-import { FacilityResource } from "../resources";
-import { Api } from "../types";
-import { parseGetListResponse } from "../utils";
+import {SolidQueryOptions} from "@tanstack/solid-query";
+import {V1} from "../config";
+import {FacilityResource} from "../resources";
+import {Api} from "../types";
+import {parseGetListResponse} from "../utils";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/System production docs}
@@ -10,9 +10,7 @@ import { parseGetListResponse } from "../utils";
  */
 export namespace System {
   export const getFacilitiesList = () =>
-    V1.get<Api.Response.GetList<FacilityResource>>(
-      "/system/facility/list"
-    ).then(parseGetListResponse);
+    V1.get<Api.Response.GetList<FacilityResource>>("/system/facility/list").then(parseGetListResponse);
 
   export const keys = {
     all: () => ["system"] as const,

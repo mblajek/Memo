@@ -26,6 +26,7 @@ use Illuminate\Validation\Rules\Password;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property string created_by
+ * @property ?string $last_login_facility_id
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $password_expire_at
  * @property-read Collection<Member> $members
@@ -54,6 +55,7 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'created_by',
+        'last_login_facility_id',
         'global_admin_grant_id',
         'password_expire_at',
     ];
@@ -85,15 +87,14 @@ class User extends Authenticatable
             'name' => 'required|string',
             'email' => ['nullable', 'string', 'email', new RequirePresent('has_email_verified')],
             'has_email_verified' => 'sometimes|bool',
-            'password' => [
-                'bail',
-                'nullable',
-                'string',
-                'different:current',
-                Password::min(8)->letters()->mixedCase()->numbers()->uncompromised(),
-                new RequirePresent('password_expire_at'),
-            ],
+            'password' => array_merge(
+                ['bail', 'nullable', 'string'],
+                self::fieldValidator('_password'),
+                [new RequirePresent('password_expire_at')],
+            ),
+            '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
             'password_expire_at' => 'sometimes|nullable|date',
+            'last_login_facility_id' => 'nullable|uuid|exists:facilities,id',
             'has_global_admin' => 'required|bool',
         };
     }

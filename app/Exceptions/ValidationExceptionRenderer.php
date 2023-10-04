@@ -67,7 +67,7 @@ readonly class ValidationExceptionRenderer
                 array_slice($interpolationFields, 0, count($interpolationData)),
                 array_slice($interpolationData, 0, count($interpolationFields)),
             );
-        $exception->addValidation($field, $rule . ($ruleType ? ".$ruleType" : ''), $interpolationDataAssoc);
+        $exception->addValidation(Str::camel($field), $rule . ($ruleType ? ".$ruleType" : ''), $interpolationDataAssoc);
     }
 
     private function renderOrThrow(ApiValidationException $exception): void

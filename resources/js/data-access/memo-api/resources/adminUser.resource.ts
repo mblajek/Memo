@@ -1,4 +1,4 @@
-import { MemberResource } from "./member.resource";
+import {MemberResource} from "./member.resource";
 
 /**
  * @see `/app/Http/Resources/Admin/AdminUserResource.php`

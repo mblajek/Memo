@@ -1,13 +1,13 @@
 /* @refresh reload */
-import { TransProvider } from "@mbarzda/solid-i18next";
-import { MetaProvider } from "@solidjs/meta";
-import { Router } from "@solidjs/router";
-import { InitializeTanstackQuery } from "components/utils";
+import {TransProvider} from "@mbarzda/solid-i18next";
+import {MetaProvider} from "@solidjs/meta";
+import {Router} from "@solidjs/router";
+import {InitializeTanstackQuery} from "components/utils";
 import i18next from "i18next";
 import I18NextHttpBackend from "i18next-http-backend";
-import { Show, createSignal } from "solid-js";
-import { render } from "solid-js/web";
-import { Toaster } from "solid-toast";
+import {Show, createSignal} from "solid-js";
+import {render} from "solid-js/web";
+import {Toaster} from "solid-toast";
 import App from "./App";
 import "./index.scss";
 
@@ -15,7 +15,7 @@ const root = document.getElementById("root");
 
 if (!(root instanceof HTMLElement)) {
   throw new Error(
-    "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?"
+    "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?",
   );
 }
 
@@ -36,6 +36,7 @@ render(() => {
         lng: "pl",
         load: "currentOnly",
         supportedLngs: ["pl", "en-US"],
+        pluralSeparator: "__",
       }}
     >
       <Show when={transLoaded()}>
@@ -43,10 +44,7 @@ render(() => {
           <InitializeTanstackQuery>
             <Router>
               <App />
-              <Toaster
-                position="bottom-right"
-                toastOptions={{ className: "mr-4" }}
-              />
+              <Toaster position="bottom-right" toastOptions={{className: "mr-4"}} />
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>

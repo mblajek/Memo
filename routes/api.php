@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\SystemController;
+use App\Http\Controllers\Tquery\AdminUserTqueryController;
 use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
 use Illuminate\Support\Facades\Route;
@@ -30,8 +31,12 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/facility')->group(function () {
             Route::get('/list', [SystemController::class, 'facilityList']);
         });
+        Route::prefix('/dictionary')->group(function () {
+            Route::get('/list', [SystemController::class, 'dictionaryList']);
+        });
     });
     Route::prefix('/user')->group(function () {
+        Route::patch('', [UserController::class, 'patch']);
         Route::post('/login', [UserController::class, 'login']);
         Route::get('/status/{facility?}', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);
@@ -43,6 +48,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
             Route::post('/', [AdminUserController::class, 'post']);
             Route::patch('/{user}', [AdminUserController::class, 'patch']);
+            Route::get('/tquery', [AdminUserTqueryController::class, 'get']);
         });
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);

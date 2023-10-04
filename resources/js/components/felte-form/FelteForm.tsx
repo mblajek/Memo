@@ -8,22 +8,33 @@ import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
 import toast from "solid-toast";
 import {ZodSchema} from "zod";
-import {getLangFunc} from "../utils";
+import {useLangFunc} from "../utils";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
-  form: Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+  form: FormType<T>;
+  translations: Translations;
 };
 
-const FormContext = createContext(undefined, {
+type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+
+/** User strings for parts of the form. */
+type Translations = {
+  getFormName: () => string;
+  getFieldName: (field: string) => string;
+  getSubmitText: () => string;
+};
+
+const FormContext = createContext<FormContextValue>(undefined, {
   name: "FormContext",
 });
 
-type FormProps<T extends Obj = Obj> = Omit<
-  JSX.FormHTMLAttributes<HTMLFormElement>,
-  "onSubmit" | "onError"
-> &
+const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
+
+type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onError"> &
   FormConfigWithoutTransformFn<T> & {
+    /** The id of the form element. It is also used as a translation key prefix. */
+    id: string;
     schema: ZodSchema<T>;
   };
 
@@ -34,23 +45,17 @@ type FormProps<T extends Obj = Obj> = Omit<
  * createForm's data and component props
  */
 export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
-  const t = getLangFunc();
+  const t = useLangFunc();
   const [local, createFormOptions, formProps] = splitProps(
     props,
     ["children", "schema"],
-    [
-      "debounced",
-      "extend",
-      "initialValues",
-      "onError",
-      "onSubmit",
-      "onSuccess",
-      "transform",
-      "validate",
-      "warn",
-    ]
+    ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-
+  const translations: Translations = {
+    getFormName: () => t(`forms.${props.id}.name`),
+    getFieldName: (field: string) => t(`forms.${props.id}.fields.${field}`),
+    getSubmitText: () => t(`forms.${props.id}.submit`),
+  };
   const form = createForm<T>({
     ...createFormOptions,
     extend: [validator({schema: local.schema}), reporter],
@@ -60,8 +65,11 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
         error.response?.data.errors.forEach((error) => {
           if (Api.isValidationError(error)) {
             const errorMessage = t(error.code, {
-              attribute: t(error.field),
+              attribute: translations.getFieldName(error.field),
               ...error.data,
+              ...(typeof error.data?.other === "string"
+                ? {other: translations.getFieldName(error.data.other)}
+                : undefined),
             });
             // @ts-expect-error setErrors does not like generic types
             ctx.setErrors(error.field, errorMessage);
@@ -73,14 +81,15 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
     },
   });
 
+  const TypedFormContext = typedFormContext<T>();
   return (
-    <FormContext.Provider value={{form, props}}>
+    <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
       <form ref={form.form} {...formProps}>
-        <fieldset class="contents" disabled={form.isSubmitting()}>
+        <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
           {local.children}
         </fieldset>
       </form>
-    </FormContext.Provider>
+    </TypedFormContext.Provider>
   );
 };
 
@@ -90,12 +99,15 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
  * Usefull in forms with deeply nested components and dependant logic
  */
 export const useFormContext = <T extends Obj = Obj>() => {
-  const value = useContext(
-    FormContext as unknown as Context<FormContextValue<T>>
-  );
+  const context = useFormContextIfInForm<T>();
+  if (!context) throw new Error("Not in FelteForm");
+  return context;
+};
 
-  if (value === undefined)
-    throw "useFormContext must be used inside FormContext.Provider";
-
-  return value;
+/**
+ * A version of useFormContext that returns undefined when not in form. Useful in field components
+ * that can be used both in form and separately.
+ */
+export const useFormContextIfInForm = <T extends Obj = Obj>() => {
+  return useContext(typedFormContext<T>());
 };

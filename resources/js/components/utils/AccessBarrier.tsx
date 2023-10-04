@@ -1,14 +1,11 @@
-import { Navigate, NavigateProps } from "@solidjs/router";
-import { createQuery } from "@tanstack/solid-query";
-import { PermissionsResource, User } from "data-access/memo-api";
-import { ParentComponent, Show, mergeProps } from "solid-js";
-import { MemoLoader } from "../ui/";
-import { QueryBarrier } from "./QueryBarrier";
+import {Navigate, NavigateProps} from "@solidjs/router";
+import {createQuery} from "@tanstack/solid-query";
+import {PermissionsResource, User} from "data-access/memo-api";
+import {ParentComponent, Show, mergeProps} from "solid-js";
+import {MemoLoader} from "../ui/";
+import {QueryBarrier} from "./QueryBarrier";
 
-export type PermissionKey = Exclude<
-  keyof PermissionsResource,
-  "userId" | "facilityId"
->;
+export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;
 
 export interface AccessBarrierProps {
   /**
@@ -41,12 +38,11 @@ export interface AccessBarrierProps {
  * Authorization is calculated as `AND(...props.roles)`
  */
 export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
-  const merged = mergeProps({ redirectHref: "/help", roles: [] }, props);
+  const merged = mergeProps({redirectHref: "/help", roles: []}, props);
   const statusQuery = createQuery(() => User.statusQueryOptions);
 
   const accessGranted = () => {
-    if (statusQuery.isSuccess)
-      return merged.roles.every((role) => statusQuery.data?.permissions[role]);
+    if (statusQuery.isSuccess) return merged.roles.every((role) => statusQuery.data?.permissions[role]);
     return false;
   };
 
@@ -60,10 +56,7 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
         </div>
       }
     >
-      <Show
-        when={accessGranted()}
-        fallback={<Navigate href={merged.redirectHref} />}
-      >
+      <Show when={accessGranted()} fallback={<Navigate href={merged.redirectHref} />}>
         {merged.children}
       </Show>
     </QueryBarrier>

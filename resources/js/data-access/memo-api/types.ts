@@ -1,8 +1,8 @@
 export namespace Api {
   export namespace Response {
-    export type Get<T extends object> = { data: T };
-    export type GetList<T extends object> = { data: Array<T> };
-    export type Post = { data: { id: string } };
+    export type Get<T extends object> = {data: T};
+    export type GetList<T extends object> = {data: Array<T>};
+    export type Post = {data: {id: string}};
     export type Patch = unknown;
     export type Delete = unknown;
   }
@@ -31,6 +31,5 @@ export namespace Api {
 
   export type Error = BaseError | ValidationError;
 
-  export const isValidationError = (error: Error): error is ValidationError =>
-    "field" in error;
+  export const isValidationError = (error: Error): error is ValidationError => "field" in error;
 }
