@@ -34,7 +34,7 @@ user_edit:
   success: "Pomyślnie zmieniono dane użytkownika"
 
 user_create:
-  formName: "Dodawanie użytkownika"
+  formName: "Nowy użytkownik"
   fieldNames:
     name: "$t(models.user.name)"
     email: "$t(models.user.email)"
@@ -44,3 +44,11 @@ user_create:
     hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
   submit: "$t(actions.create)"
   success: "Pomyślnie utworzono użytkownika"
+
+facility_create:
+  formName: "Nowa placówka"
+  fieldNames:
+    name: "$t(models.facility.name)"
+    url: "$t(models.facility.url)"
+  submit: "$t(actions.create)"
+  success: "Pomyślnie utworzono placówkę"
