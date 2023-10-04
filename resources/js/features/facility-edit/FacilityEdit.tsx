@@ -4,6 +4,27 @@ import {TextField, getTrimInputHandler} from "components/ui";
 import {VoidComponent, createComputed, splitProps} from "solid-js";
 import {z} from "zod";
 
+// Produces best effort suggestion for the url, e.g. "My Facility Name" --> "my-facility-name"
+function getUrlSuggestion(name: string) {
+  let url = name.toLowerCase().replace(/ /g, "-");
+  // Replace polish letters (other languages are not supported)
+  const replaceMap = {
+    ą: "a",
+    ć: "c",
+    ę: "e",
+    ł: "l",
+    ń: "n",
+    ó: "o",
+    ś: "s",
+    ź: "z",
+    ż: "z",
+  };
+  for (const [key, value] of Object.entries(replaceMap)) {
+    url = url.replaceAll(key, value);
+  }
+  return url;
+}
+
 export namespace FacilityEdit {
   export const getSchema = () =>
     z.object({
@@ -28,8 +49,7 @@ export namespace FacilityEdit {
         {(form) => {
           createComputed(() => {
             if (form.data("name") && !form.touched("url")) {
-              // Suggest an url, e.g. "My Facility Name" --> "my-facility-name"
-              form.setFields("url", form.data("name").toLowerCase().replace(/ /g, "-"));
+              form.setFields("url", getUrlSuggestion(form.data("name")));
             }
           });
           return (
