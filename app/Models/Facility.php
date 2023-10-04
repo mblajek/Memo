@@ -46,7 +46,7 @@ class Facility extends Model
         return match ($field) {
             'name' => Valid::trimmed(),
             'url' => Valid::trimmed([
-                'max:15',
+                'max:30',
                 'lowercase',
                 'regex:/^[a-z][a-z0-9-]+[a-z0-9]$/',
                 'not_in:admin,user,api,system',
