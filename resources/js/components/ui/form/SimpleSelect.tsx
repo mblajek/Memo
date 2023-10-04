@@ -1,9 +1,9 @@
 import {ValidationMessages} from "components/felte-form/ValidationMessages";
-import {cx} from "components/utils";
-import {Component, For, JSX, splitProps} from "solid-js";
+import {htmlAttributes} from "components/utils";
+import {For, VoidComponent, splitProps} from "solid-js";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
 
-export interface SimpleSelectProps extends JSX.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SimpleSelectProps extends htmlAttributes.select {
   name: string;
   label?: string;
   options: Option[];
@@ -19,15 +19,16 @@ interface Option {
  *
  * Intended for use with FelteForm (handles validation messages).
  */
-export const SimpleSelect: Component<SimpleSelectProps> = (props) => {
+export const SimpleSelect: VoidComponent<SimpleSelectProps> = (props) => {
   const [lProps, selectProps] = splitProps(props, ["label", "options"]);
   return (
     <div>
       <FieldLabel fieldName={selectProps.name} text={lProps.label} />
       <select
         id={selectProps.name}
-        {...selectProps}
-        class={cx("w-full border border-gray-400 rounded p-2 aria-invalid:border-red-400", props.class)}
+        {...htmlAttributes.merge(selectProps, {
+          class: "w-full border border-gray-400 rounded p-2 aria-invalid:border-red-400",
+        })}
         aria-labelledby={labelIdForField(props.name)}
       >
         <For each={lProps.options}>{(option) => <option value={option.value}>{option.text}</option>}</For>

@@ -3,9 +3,9 @@ import {createMutation, createQuery} from "@tanstack/solid-query";
 import {MODAL_STYLE_PRESETS, Modal as ModalComponent} from "components/ui";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
-import {Admin} from "data-access/memo-api/groups/Admin";
+import {Admin} from "data-access/memo-api/groups";
 import {Api} from "data-access/memo-api/types";
-import {Component, createSignal} from "solid-js";
+import {VoidComponent, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {UserEdit} from "./UserEdit";
 import {UserMembersEdit} from "./UserMembersEdit";
@@ -20,7 +20,7 @@ export namespace UserEditForm {
     onCancel?: () => void;
   }
 
-  export const Component: Component<Props> = (props) => {
+  export const Component: VoidComponent<Props> = (props) => {
     const t = useLangFunc();
     const statusQuery = createQuery(User.statusQueryOptions);
     const userQuery = createQuery(() => Admin.userQueryOptions(props.userId));
@@ -46,6 +46,7 @@ export namespace UserEditForm {
           ? {
               email: values.email,
               hasEmailVerified: values.hasEmailVerified,
+              hasPassword: values.hasPassword,
               ...(values.hasPassword
                 ? oldUser.hasPassword && !values.password
                   ? // The user has a password already and it is not changed.
@@ -57,6 +58,7 @@ export namespace UserEditForm {
           : {
               email: null,
               hasEmailVerified: false,
+              hasPassword: false,
               password: null,
               passwordExpireAt: null,
             }),
@@ -96,7 +98,7 @@ export namespace UserEditForm {
    * This modal can be included in any page and it will show on top of whatever content was displayed
    * when showModal is called.
    */
-  export const Modal: Component = () => {
+  export const Modal: VoidComponent = () => {
     const t = useLangFunc();
     return (
       <ModalComponent

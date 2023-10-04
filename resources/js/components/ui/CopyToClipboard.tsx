@@ -1,5 +1,5 @@
 import {BiRegularCopy} from "solid-icons/bi";
-import {Component, ParentProps, Show, createSignal} from "solid-js";
+import {Show, VoidComponent, createSignal} from "solid-js";
 import {Button} from ".";
 import {useLangFunc} from "../utils";
 
@@ -10,7 +10,7 @@ interface Props {
 }
 
 /** A "Copy to clipboard" icon, copying the specified text on click. */
-export const CopyToClipboard: Component<ParentProps<Props>> = (props) => {
+export const CopyToClipboard: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const [copied, setCopied] = createSignal(false);
   return (

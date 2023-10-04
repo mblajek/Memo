@@ -10,6 +10,7 @@ import {Show, createSignal} from "solid-js";
 import {render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
+import {LoaderInPortal, MemoLoader} from "./components/ui";
 import "./index.scss";
 
 const root = document.getElementById("root");
@@ -27,7 +28,6 @@ declare module "luxon" {
 
 render(() => {
   const [transLoaded, setTransLoaded] = createSignal(false);
-
   i18next.use(I18NextHttpBackend).on("loaded", () => setTransLoaded(true));
 
   return (
@@ -45,22 +45,26 @@ render(() => {
         pluralSeparator: "__",
       }}
     >
-      <Show when={transLoaded()}>
-        <MetaProvider>
-          <InitializeTanstackQuery>
-            <Router>
-              <App />
-              <Toaster
-                position="bottom-right"
-                toastOptions={{
-                  className: "mr-4",
-                  duration: TOAST_DURATION_SECS * 1000,
-                }}
-              />
-            </Router>
-          </InitializeTanstackQuery>
-        </MetaProvider>
+      <Show when={!transLoaded()}>
+        {/* Show the loader until the translations are loaded. The page is displayed underneath, and
+        the strings will get updated reactively when the translations are ready. */}
+        <MemoLoader />
       </Show>
+      <MetaProvider>
+        <InitializeTanstackQuery>
+          <Router>
+            <App />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className: "mr-4",
+                duration: TOAST_DURATION_SECS * 1000,
+              }}
+            />
+          </Router>
+        </InitializeTanstackQuery>
+      </MetaProvider>
+      <LoaderInPortal />
     </TransProvider>
   );
 }, root);

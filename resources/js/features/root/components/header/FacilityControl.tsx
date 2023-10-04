@@ -1,14 +1,14 @@
 import {useNavigate, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {System, User} from "data-access/memo-api";
-import {Component, For, Match, Show, Switch, createEffect, createMemo} from "solid-js";
+import {For, Match, Show, Switch, VoidComponent, createEffect, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 
-export const FacilityControl: Component = () => {
+export const FacilityControl: VoidComponent = () => {
   const navigate = useNavigate();
   const params = useParams();
 
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(() => User.statusQueryOptions());
 
   const facilities = createMemo(
@@ -39,13 +39,13 @@ export const FacilityControl: Component = () => {
   return (
     <Show when={facilities()}>
       {(facilities) => (
-        <Switch fallback={null}>
+        <Switch>
           <Match when={facilities().length === 1}>
             <p>{facilities().at(0)?.name}</p>
           </Match>
-          <Match when={facilities().length > 0}>
+          <Match when={facilities().length > 1}>
             <select
-              class="mr-4"
+              class="border border-gray-200 rounded"
               value={activeFacilityId()}
               onChange={(e) => {
                 const url = facilities().find((facility) => facility.id === e.target.value)?.url;

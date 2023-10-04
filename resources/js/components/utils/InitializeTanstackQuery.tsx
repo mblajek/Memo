@@ -1,20 +1,19 @@
 import {
   MutationCache,
-  type MutationMeta,
   QueryCache,
   QueryClient,
   QueryClientProvider,
-  type QueryMeta,
   createQuery,
+  type MutationMeta,
+  type QueryMeta,
 } from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
-import {MemoLoader} from "components/ui";
-import {System} from "data-access/memo-api";
+import {System, User} from "data-access/memo-api";
 import {Api} from "data-access/memo-api/types";
-import {For, ParentComponent, createMemo} from "solid-js";
+import {For, ParentComponent, Show, VoidComponent, createMemo} from "solid-js";
 import toast from "solid-toast";
-import {useLangFunc} from ".";
-import {QueryBarrier} from "./QueryBarrier";
+import {cx, useLangFunc} from ".";
+import {MemoLoader} from "../ui";
 
 declare module "@tanstack/query-core" {
   interface QueryMeta {
@@ -41,21 +40,22 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         // Validation errors will be handled by the form.
         errors = errors?.filter((e) => !Api.isValidationError(e));
       }
-      if (errors?.length)
+      if (errors?.length) {
+        const errorMessages = errors.map((e) =>
+          t(e.code, {
+            ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
+            ...e.data,
+          }),
+        );
+        for (const msg of errorMessages) {
+          console.warn(`Error toast shown: ${msg}`);
+        }
         toast.error(() => (
-          <ul class={errors!.length > 1 ? "list-disc pl-6" : undefined}>
-            <For each={errors}>
-              {(e) => (
-                <li>
-                  {t(e.code, {
-                    ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
-                    ...e.data,
-                  })}
-                </li>
-              )}
-            </For>
+          <ul class={cx({"list-disc pl-6": errorMessages.length > 1})} style={{"overflow-wrap": "anywhere"}}>
+            <For each={errorMessages}>{(msg) => <li>{msg}</li>}</For>
           </ul>
         ));
+      }
     }
   }
   const queryClient = createMemo(
@@ -84,27 +84,18 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
   );
   return (
     <QueryClientProvider client={queryClient()}>
-      <Content>{props.children}</Content>
+      <InitQueries />
+      {props.children}
     </QueryClientProvider>
   );
 };
 
-/**
- * Initialize some of required queries beforehand
- */
-const Content: ParentComponent = (props) => {
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-
+/** Initialize some of the required queries beforehand, but don't block on them. */
+const InitQueries: VoidComponent = () => {
+  const queries = [createQuery(System.facilitiesQueryOptions), createQuery(User.statusQueryOptions)];
   return (
-    <QueryBarrier
-      queries={[facilitiesQuery]}
-      Pending={() => (
-        <div class="h-screen flex justify-center items-center">
-          <MemoLoader size={300} />
-        </div>
-      )}
-    >
-      {props.children}
-    </QueryBarrier>
+    <Show when={queries.some((q) => q.isLoading)}>
+      <MemoLoader />
+    </Show>
   );
 };

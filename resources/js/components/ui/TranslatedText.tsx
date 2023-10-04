@@ -1,4 +1,4 @@
-import {Component, JSX, Show, createMemo, mergeProps} from "solid-js";
+import {JSX, Show, VoidComponent, createMemo, mergeProps} from "solid-js";
 import {LangEntryFunc, LangPrefixFunc, getLangEntryFunc} from "../utils";
 import {Capitalize} from "./Capitalize";
 
@@ -39,7 +39,7 @@ interface Props {
  * a translation system by default, with a possible override for a particular field, and with a fallback
  * code displayed if nothing else gives a value.
  */
-export const TranslatedText: Component<Props> = (props) => {
+export const TranslatedText: VoidComponent<Props> = (props) => {
   const mProps = mergeProps({capitalize: false, wrapIn: (text?: JSX.Element) => text} satisfies Props, props);
   const override = createMemo(() => {
     const value = mProps.override?.();

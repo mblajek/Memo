@@ -14,7 +14,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, cx} from "components/utils";
-import {Accessor, For, Index, JSX, Show, Signal, createEffect, createSignal, mergeProps, on} from "solid-js";
+import {Accessor, For, Index, JSX, Show, Signal, VoidProps, createEffect, createSignal, mergeProps, on} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {TableContextProvider, getHeaders, tableStyle as ts, useTableCells} from ".";
 import {BigSpinner, EMPTY_VALUE_SYMBOL} from "..";
@@ -107,7 +107,7 @@ const DEFAULT_PROPS = {
  * - no column groups
  * - no foldable rows
  */
-export const Table = <T,>(optProps: Props<T>) => {
+export const Table = <T,>(optProps: VoidProps<Props<T>>): JSX.Element => {
   const props = mergeProps(DEFAULT_PROPS, optProps);
   let scrollToTopPoint: HTMLDivElement | undefined;
   createEffect(

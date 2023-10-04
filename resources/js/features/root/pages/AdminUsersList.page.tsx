@@ -1,25 +1,24 @@
 import {AUTO_SIZE_COLUMN_DEFS, Button, Email, cellFunc, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
-import {Admin} from "data-access/memo-api/groups/Admin";
+import {Admin} from "data-access/memo-api/groups";
 import {UserCreateForm, UserEditForm} from "features/users-edit";
 import {FiEdit2} from "solid-icons/fi";
 import {TbUserPlus} from "solid-icons/tb";
-import {Component} from "solid-js";
-import {startUsersMock} from "./users_fake_tquery";
+import {VoidComponent} from "solid-js";
 
 export default (() => {
-  startUsersMock();
   const t = useLangFunc();
   return (
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.userLists()}
-        staticEntityURL="entityURL"
+        staticEntityURL="admin/user"
         staticTranslations={createTableTranslations("users")}
         intrinsicColumns={["id"]}
         additionalColumns={["actions"]}
+        ignoreColumns={["lastLoginFacility.id", "lastLoginFacility.name", "createdBy.id"]}
         columnOptions={{
           name: {
             metaParams: {canControlVisibility: false},
@@ -52,6 +51,7 @@ export default (() => {
                   <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
                 </Button>
               ),
+              enableSorting: false,
               ...AUTO_SIZE_COLUMN_DEFS,
             },
           },
@@ -60,21 +60,17 @@ export default (() => {
           "id",
           "name",
           "email",
+          "hasEmailVerified",
           "hasPassword",
-          "createdAt",
-          "facilitiesMember",
-          "numFacilities",
+          "passwordExpireAt",
+          "facilityCount",
           "hasGlobalAdmin",
-        ]}
-        initialVisibleColumns={[
-          "name",
-          "email",
-          "hasPassword",
           "createdAt",
-          "facilitiesMember",
-          "hasGlobalAdmin",
+          "createdBy.name",
+          "updatedAt",
           "actions",
         ]}
+        initialVisibleColumns={["name", "email", "hasPassword", "createdAt", "hasGlobalAdmin", "actions"]}
         initialSort={[{id: "name", desc: false}]}
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">
@@ -88,4 +84,4 @@ export default (() => {
       <UserCreateForm.Modal />
     </AccessBarrier>
   );
-}) satisfies Component;
+}) satisfies VoidComponent;

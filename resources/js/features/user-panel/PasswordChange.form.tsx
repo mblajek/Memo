@@ -4,7 +4,7 @@ import {FelteForm, FelteSubmit} from "components/felte-form";
 import {MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField} from "components/ui";
 import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
-import {Component, createSignal} from "solid-js";
+import {VoidComponent, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {z} from "zod";
 
@@ -30,7 +30,7 @@ export namespace PasswordChangeForm {
     onCancel?: () => void;
   }
 
-  export const Component: Component<Props> = (props) => {
+  export const Component: VoidComponent<Props> = (props) => {
     const t = useLangFunc();
     const invalidateUser = User.useInvalidator();
     const statusQuery = createQuery(User.statusQueryOptions);
@@ -85,7 +85,7 @@ export namespace PasswordChangeForm {
    * This modal can be included in any page and it will show on top of whatever content was displayed
    * when showModal is called.
    */
-  export const Modal: Component = () => {
+  export const Modal: VoidComponent = () => {
     const t = useLangFunc();
     return (
       <ModalComponent

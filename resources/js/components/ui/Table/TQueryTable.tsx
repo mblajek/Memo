@@ -6,8 +6,15 @@ import {
   createColumnHelper,
   createSolidTable,
 } from "@tanstack/solid-table";
-import {ColumnType, FilterH, createTQuery, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery";
-import {Component, JSX, createMemo} from "solid-js";
+import {
+  ColumnType,
+  DataItem,
+  FilterH,
+  createTQuery,
+  createTableRequestCreator,
+  tableHelper,
+} from "data-access/memo-api/tquery";
+import {JSX, VoidComponent, createMemo} from "solid-js";
 import {
   DisplayMode,
   Header,
@@ -26,7 +33,7 @@ import {
 import {ColumnFilterController, FilteringParams} from "..";
 
 export interface ColumnOptions {
-  columnDef?: Partial<IdentifiedColumnDef<object>>;
+  columnDef?: Partial<IdentifiedColumnDef<DataItem>>;
   metaParams?: ColumnMetaParams;
 }
 
@@ -91,6 +98,8 @@ export interface TQueryTableProps {
   initialVisibleColumns?: string[];
   initialSort?: SortingState;
   initialPageSize?: number;
+  /** These columns are ignored and never shown. */
+  ignoreColumns?: string[];
   /** Element to put below table, after the summary. */
   customSectionBelowTable?: JSX.Element;
 }
@@ -98,11 +107,11 @@ export interface TQueryTableProps {
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
 const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
-export const TQueryTable: Component<TQueryTableProps> = (props) => {
+export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
 
   const tableCells = useTableCells();
-  const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<object>>>([
+  const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<DataItem>>>([
     ["bool", {cell: tableCells.bool, size: 100}],
     ["date", {cell: tableCells.date}],
     ["datetime", {cell: tableCells.datetime}],
@@ -133,13 +142,16 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
     response: () => dataQuery.data,
   });
 
-  const h = createColumnHelper<object>();
+  const h = createColumnHelper<DataItem>();
   function columnOptions(name: string) {
     return props.columnOptions?.[name] || {};
   }
   function commonColumnDef(name: string, type?: ColumnType) {
     return {
       id: name,
+      // Default accessor in tanstack supports nested properties (e.g. "a.b" looking for {a: {b: ...}}), but we have
+      // flat fields with dots in the names, e.g. { 'createdBy.name': ... }.
+      accessorFn: (originalRow: DataItem) => originalRow[name],
       header: (ctx) => (
         <Header
           ctx={ctx}
@@ -154,60 +166,67 @@ export const TQueryTable: Component<TQueryTableProps> = (props) => {
       ),
       ...(type && columnDefByType.get(type)),
       ...columnOptions(name).columnDef,
-    } satisfies Partial<IdentifiedColumnDef<object>>;
+    } satisfies Partial<ColumnDef<DataItem>>;
   }
   const columns = createMemo(() => {
     const sch = schema();
-    if (sch) {
-      const badColumns = new Set(Object.keys(props.columnOptions || {}));
-      for (const {name} of sch.columns) {
-        badColumns.delete(name);
-      }
-      for (const name of props.additionalColumns || []) {
-        badColumns.delete(name);
-      }
-      if (badColumns.size)
-        console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
-      const columns = [
-        ...sch.columns.map(({type, nullable, name}) => {
-          const common = commonColumnDef(name, type);
-          return h.accessor(name, {
-            ...common,
-            meta: {
-              ...common.meta,
-              tquery: {
-                type,
-                nullable,
-                ...columnOptions(name).metaParams,
-              } satisfies TQueryColumnMeta,
-            },
-          });
-        }),
-        ...(props.additionalColumns || []).map((name) => {
-          const common = commonColumnDef(name);
-          return h.display({
-            ...common,
-            meta: {
-              ...common.meta,
-              tquery: {
-                ...columnOptions(name).metaParams,
-              },
-            },
-          });
-        }),
-      ];
-      if (props.initialColumnsOrder) {
-        // Index in the ordering array. Missing items sorted last.
-        const order = (col: ColumnDef<object, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
-        columns.sort((a, b) => order(a) - order(b));
-      }
-      return columns;
+    if (!sch) return [];
+
+    const badColumns = new Set([
+      ...Object.keys(props.columnOptions || {}),
+      ...(props.initialColumnsOrder || []),
+      ...(props.initialVisibleColumns || []),
+      ...(props.ignoreColumns || []),
+    ]);
+    for (const {name} of sch.columns) {
+      badColumns.delete(name);
     }
-    return [];
+    for (const name of props.additionalColumns || []) {
+      badColumns.delete(name);
+    }
+    if (badColumns.size)
+      console.error(`Some columns are configured but not present in the columns list: ` + [...badColumns].join(", "));
+
+    const ignoreColumnsSet = new Set(props.ignoreColumns || []);
+    const schemaColumns = sch.columns.filter(({name}) => !ignoreColumnsSet.has(name));
+    const columns = [
+      ...schemaColumns.map(({type, nullable, name}) => {
+        const common = commonColumnDef(name, type);
+        return h.accessor(name, {
+          ...common,
+          meta: {
+            ...common.meta,
+            tquery: {
+              type,
+              nullable,
+              ...columnOptions(name).metaParams,
+            } satisfies TQueryColumnMeta,
+          },
+        });
+      }),
+      ...(props.additionalColumns || []).map((name) => {
+        const common = commonColumnDef(name);
+        return h.display({
+          ...common,
+          meta: {
+            ...common.meta,
+            tquery: {
+              ...columnOptions(name).metaParams,
+            },
+          },
+        });
+      }),
+    ];
+    if (props.initialColumnsOrder) {
+      // Index in the ordering array. Missing items sorted last.
+      const order = (col: ColumnDef<DataItem, unknown>) => (props.initialColumnsOrder!.indexOf(col.id!) + 1e6) % 1e6;
+      columns.sort((a, b) => order(a) - order(b));
+    }
+    return columns;
   });
 
-  const table = createSolidTable({
-    ...getBaseTableOptions<object>({features: {columnVisibility, sorting, globalFilter, pagination}}),
+  const table = createSolidTable<DataItem>({
+    ...getBaseTableOptions<DataItem>({features: {columnVisibility, sorting, globalFilter, pagination}}),
     get data() {
       return data();
     },

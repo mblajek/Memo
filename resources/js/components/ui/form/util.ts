@@ -3,10 +3,18 @@
  *
  * Doing this on the frontend is more reasonable than doing this for all fields, regardless
  * of their origin, on the backend.
+ *
+ * This function also removes double spaces from the text.
  */
 export function trimInput(inputValue: string) {
-  return inputValue.trim();
+  return inputValue.trim().replaceAll(EXTRA_SPACES_REGEXP, "$1");
 }
+
+/**
+ * Matches whitespace at line start and end, and spaces after whitespace.
+ * Replace with `"$1"` to remove the extra spaces.
+ */
+const EXTRA_SPACES_REGEXP = /\s+$|(^|\s) +/gm;
 
 /**
  * Returns a handler that trims the input value. Intended use:

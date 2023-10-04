@@ -8,7 +8,7 @@ import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
-import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, useLangFunc} from "../utils";
+import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, htmlAttributes, useLangFunc} from "../utils";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 
 type FormContextValue<T extends Obj = Obj> = {
@@ -32,10 +32,7 @@ const FormContext = createContext<FormContextValue>(undefined, {
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
-type FormProps<T extends Obj = Obj> = Omit<
-  JSX.FormHTMLAttributes<HTMLFormElement>,
-  "onSubmit" | "onError" | "children"
-> &
+type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "onError" | "children"> &
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
     id: string;
@@ -51,7 +48,7 @@ type FormProps<T extends Obj = Obj> = Omit<
  * The form is also accessible via children: children can be a function taking a Felte form object
  * and returning JSX, similar to the function form of the `<Show>` component.
  */
-export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
+export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>): JSX.Element => {
   const t = useLangFunc();
   const [local, createFormOptions, formProps] = splitProps(
     props,

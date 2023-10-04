@@ -1,4 +1,6 @@
 .modal {
+  @apply absolute z-modal;
+
   [data-part="backdrop"] {
     @apply fixed inset-0 bg-black bg-opacity-30;
   }
@@ -18,10 +20,6 @@
 
       .closeButton {
         @apply absolute top-0 right-0 m-1;
-      }
-
-      .body {
-        @apply overflow-x-auto overflow-y-clip;
       }
     }
   }

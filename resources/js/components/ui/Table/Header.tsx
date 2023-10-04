@@ -1,6 +1,6 @@
 import {HeaderContext} from "@tanstack/solid-table";
 import {useLangFunc} from "components/utils";
-import {Component, JSX, Show, createMemo} from "solid-js";
+import {JSX, Show, VoidComponent, createMemo} from "solid-js";
 import {ColumnName, SortMarker, tableStyle as ts} from ".";
 import {Button} from "../Button";
 
@@ -14,7 +14,7 @@ interface Props {
  * Component displaying the header of a table column. Supports sorting and resizing,
  * as well as filtering if filter element is provided.
  */
-export const Header: Component<Props> = (props) => {
+export const Header: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
   return (

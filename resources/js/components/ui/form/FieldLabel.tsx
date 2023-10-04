@@ -1,9 +1,9 @@
 import {useFormContextIfInForm} from "components/felte-form";
-import {cx} from "components/utils";
-import {Component, JSX, splitProps} from "solid-js";
+import {cx, htmlAttributes} from "components/utils";
+import {JSX, splitProps, VoidComponent} from "solid-js";
 import {TranslatedText} from "..";
 
-interface Props extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
+interface Props extends htmlAttributes.label {
   fieldName: string;
   text?: string;
   /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
@@ -19,7 +19,7 @@ interface Props extends JSX.LabelHTMLAttributes<HTMLLabelElement> {
  * provided by the form (and capitalised).
  * Otherwise, the label is not present.
  */
-export const FieldLabel: Component<Props> = (props) => {
+export const FieldLabel: VoidComponent<Props> = (props) => {
   const [localProps, labelProps] = splitProps(props, ["fieldName", "text", "wrapIn"]);
   const form = useFormContextIfInForm();
   return (

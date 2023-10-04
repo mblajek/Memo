@@ -1,15 +1,15 @@
 import {ValidationMessage} from "@felte/reporter-solid";
 import {useFormContext} from "components/felte-form";
 import {cx} from "components/utils";
-import {Component, Index, createMemo, on} from "solid-js";
+import {Index, VoidComponent, createMemo, on} from "solid-js";
 import {HideableSection} from "../ui/HideableSection";
 
 interface Props {
   fieldName: string;
 }
 
-export const ValidationMessages: Component<Props> = (props) => {
-  const MessagesForLevel: Component<{level: "error" | "warning"; cssClass: string}> = (pp) => (
+export const ValidationMessages: VoidComponent<Props> = (props) => {
+  const MessagesForLevel: VoidComponent<{level: "error" | "warning"; cssClass: string}> = (pp) => (
     <ValidationMessage
       level={pp.level}
       for={props.fieldName}

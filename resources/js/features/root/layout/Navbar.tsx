@@ -1,4 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
+import {FullLogo} from "components/ui";
 import {cx} from "components/utils";
 import {System} from "data-access/memo-api";
 import {
@@ -6,20 +7,19 @@ import {
   HiOutlineCalendarDays,
   HiOutlineClipboardDocumentList,
   HiOutlineClock,
+  HiOutlineQuestionMarkCircle,
   HiOutlineTableCells,
   HiOutlineUserGroup,
   HiOutlineUsers,
-  HiOutlineQuestionMarkCircle,
   HiOutlineVideoCamera,
 } from "solid-icons/hi";
-import {Component, Show, createMemo} from "solid-js";
+import {Show, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {NavigationItemProps, NavigationSection} from "../components/navbar";
 import s from "./style.module.scss";
-import {FullLogo} from "components/ui";
 
-export const Navbar: Component = () => {
-  const facilitiesQuery = createQuery(() => System.facilitiesQueryOptions());
+export const Navbar: VoidComponent = () => {
+  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
 
   const facilityUrl = () => facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId())?.url;
 

@@ -1,5 +1,5 @@
 import {debouncedFilterTextAccessor} from "components/utils";
-import {Component, Show, createComputed, createSignal} from "solid-js";
+import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {FilterControlProps, buildFuzzyTextualColumnFilter} from ".";
 import {tableStyle as ts} from "..";
 
@@ -9,7 +9,7 @@ interface StringColumnProps extends FilterControlProps {
 
 type Mode = "~" | "=" | ".*";
 
-export const TextualFilterControl: Component<StringColumnProps> = (props) => {
+export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) => {
   const [mode, setMode] = createSignal<Mode>("~");
   const [text, setText] = createSignal("");
   createComputed(() => {
