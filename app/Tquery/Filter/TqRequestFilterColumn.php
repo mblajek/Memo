@@ -26,8 +26,8 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         self::validate($data, [
             '' => Valid::array(keys: array_merge(['type', 'column', 'op', 'inv'], $nullOperator ? [] : ['val'])),
         ], $path);
-        $valueValidator = $column->type->valueValidator($operator);
         $value = null;
+        $valueValidator = $column->type->filterValueValidator($operator);
         if (!$nullOperator) {
             if (in_array($operator, TqFilterOperator::ARR)) {
                 $value = self::validate($data, [
@@ -64,7 +64,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
 
     public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void
     {
-        $value = $this->operator->prepareValue($this->value);
+        $value = $this->column->type->filterValuePrepare($this->operator, $this->value);
         $filterQuery = $this->column->getFilterQuery();
         $inverse = ($this->inverse xor $invert);
 
@@ -73,11 +73,11 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
 
         if ($sqlOperator) {
             $builder->where(
-                query: fn(string|null $bind) => "$sqlPrefix $filterQuery $sqlOperator $bind",
+                query: fn(string|null $bind) => trim("$sqlPrefix $filterQuery $sqlOperator $bind"),
                 or: $or,
                 value: $value,
                 inverse: $inverse,
-                nullable: false,
+                nullable: $this->column->type->isNullable(),
             );
         } else {
             throw FatalExceptionFactory::tquery();

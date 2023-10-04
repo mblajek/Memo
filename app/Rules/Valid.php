@@ -73,6 +73,21 @@ class Valid extends AbstractDataRule
         return self::base($sometimes, $nullable, ['array', "min:$min", new ArrayIsListRule()], $rules);
     }
 
+    public static function date(
+        array $rules = [],
+        bool $sometimes = false,
+        bool $nullable = false,
+    ): array {
+        return self::base($sometimes, $nullable, ['string', 'date_format:Y-m-d'], $rules);
+    }
+
+    public static function datetime(
+        array $rules = [],
+        bool $sometimes = false,
+        bool $nullable = false,
+    ): array {
+        return self::base($sometimes, $nullable, ['string', 'date_format:Y-m-d\\TH:i:s\\Z'], $rules);
+    }
 
     private function __construct(
         private readonly bool $nullable,

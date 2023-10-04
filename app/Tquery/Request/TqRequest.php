@@ -22,7 +22,7 @@ readonly class TqRequest
             'columns.*' => Valid::array(keys: ['type', 'column']),
             'columns.*.type' => Valid::trimmed([Rule::in(['column'])]),
             'columns.*.column' => Valid::trimmed([Rule::in(array_keys($config->columns))]),
-            'filter' => Valid::array(sometimes: true),
+            'filter' => 'sometimes|required', // array or string
             'sort' => Valid::list(sometimes: true, min: 0),
             'sort.*' => Valid::array(keys: ['type', 'column', 'desc']),
             'sort.*.type' => Valid::trimmed([Rule::in(['column'])]),

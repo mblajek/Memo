@@ -7,8 +7,8 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 | typ          | null | = | in   | cmp | like | select | sort |
 |--------------|------|---|------|-----|------|--------|------|
 | bool         | +    | + | .    | .   | .    | +      | +    |
-| date         | *    | + | *    | *   | .    | +      | +    |
-| datetime     | *    | . | .    | *   | .    | +      | +    |
+| date         | *    | + | +    | +   | .    | +      | +    |
+| datetime     | *    | . | .    | +   | .    | +      | +    |
 | int          | +    | + | +    | +   | +    | +      | +    |
 | string       | +    | + | +    | +   | +    | +      | +    |
 | text         | +    | . | .    | .   | +    | +?(8)  | .    |
