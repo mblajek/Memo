@@ -2,8 +2,7 @@
 
 namespace App\Tquery\Request;
 
-use App\Rules\ArrayIsListRule;
-use App\Rules\DataTypeRule;
+use App\Rules\Valid;
 use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Filter\TqRequestAbstractFilter;
@@ -19,19 +18,19 @@ readonly class TqRequest
     {
         $sortableColumns = array_filter($config->columns, fn(TqColumnConfig $column) => $column->type->isSortable());
         $data = $request->validate([
-            'columns' => ['required', 'array', 'min:1', new ArrayIsListRule()],
-            'columns.*' => ['required', 'array:type,column'],
-            'columns.*.type' => 'required|string|in:column',
-            'columns.*.column' => ['required', 'string', Rule::in(array_keys($config->columns))],
-            'filter' => 'sometimes|required',
-            'sort' => ['sometimes', 'array', new ArrayIsListRule()],
-            'sort.*' => ['required', 'array:type,column,desc'],
-            'sort.*.type' => 'required|string|in:column',
-            'sort.*.column' => ['required', 'string', Rule::in(array_keys($sortableColumns))],
-            'sort.*.desc' => ['sometimes', 'bool', DataTypeRule::bool(true)],
-            'paging' => 'required|array:number,size',
-            'paging.number' => ['required', 'numeric', 'integer', 'min:1', DataTypeRule::int()],
-            'paging.size' => ['required', 'numeric', 'integer', 'min:1', DataTypeRule::int()],
+            'columns' => Valid::list(),
+            'columns.*' => Valid::array(keys: ['type', 'column']),
+            'columns.*.type' => Valid::trimmed([Rule::in(['column'])]),
+            'columns.*.column' => Valid::trimmed([Rule::in(array_keys($config->columns))]),
+            'filter' => Valid::array(sometimes: true),
+            'sort' => Valid::list(sometimes: true, min: 0),
+            'sort.*' => Valid::array(keys: ['type', 'column', 'desc']),
+            'sort.*.type' => Valid::trimmed([Rule::in(['column'])]),
+            'sort.*.column' => Valid::trimmed([Rule::in(array_keys($sortableColumns))]),
+            'sort.*.desc' => Valid::bool(sometimes: true),
+            'paging' => Valid::array(keys: ['number', 'size']),
+            'paging.number' => Valid::int(['min:1']),
+            'paging.size' => Valid::int(['min:1']),
         ]);
 
         return new self(

@@ -4,11 +4,7 @@ namespace App\Rules;
 
 use Closure;
 
-use Illuminate\Contracts\Validation\DataAwareRule;
-use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Contracts\Validation\ValidatorAwareRule;
 use Illuminate\Support\Arr;
-use Illuminate\Validation\Validator;
 
 final class RequirePresentRule extends AbstractDataRule
 {

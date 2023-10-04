@@ -3,8 +3,7 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Rules\DataTypeRule;
-use App\Rules\StringIsTrimmedRule;
+use App\Rules\Valid;
 use App\Tquery\Filter\TqFilterOperator;
 
 enum TqDataTypeEnum
@@ -104,13 +103,13 @@ enum TqDataTypeEnum
             return ['string'];
         }
         return match ($this->notNullBaseType()) {
-            self::bool => ['bool', DataTypeRule::bool()],
+            self::bool => Valid::bool(),
             self::date => throw new \Exception('To be implemented'),
             self::datetime => throw new \Exception('To be implemented'),
-            self::int => ['numeric', 'integer', DataTypeRule::int()],
+            self::int => Valid::int(),
             self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED)
-                ? ['string', new StringIsTrimmedRule()] : ['string'],
-            self::uuid => ['string', 'uuid'],
+                ? Valid::trimmed() : Valid::string(),
+            self::uuid => Valid::uuid(),
             default => FatalExceptionFactory::tquery(),
         };
     }

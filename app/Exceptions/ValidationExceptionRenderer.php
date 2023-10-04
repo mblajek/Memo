@@ -28,7 +28,7 @@ readonly class ValidationExceptionRenderer
     private function matchType(array $fieldRules): string
     {
         foreach ($fieldRules as $fieldRule) {
-            if (array_key_exists($fieldRule, $this->multiTypeTypes)) {
+            if (is_string($fieldRule) && array_key_exists($fieldRule, $this->multiTypeTypes)) {
                 return $fieldRule;
             }
         }

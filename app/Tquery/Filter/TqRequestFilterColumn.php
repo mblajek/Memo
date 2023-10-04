@@ -3,8 +3,7 @@
 namespace App\Tquery\Filter;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Rules\ArrayIsListRule;
-use App\Rules\DataTypeRule;
+use App\Rules\Valid;
 use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Engine\TqBuilder;
@@ -15,27 +14,29 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
     public static function fromArray(TqConfig $config, array $data, string $path): self
     {
         $column = $config->columns[self::validate($data, [
-            'column' => ['required', 'string', Rule::in(array_keys($config->columns))],
+            'column' => Valid::trimmed([Rule::in(array_keys($config->columns))]),
         ], $path)];
         $operatorsNames = array_map(fn(TqFilterOperator $operator) => $operator->value, $column->type->operators());
         $params = self::validate($data, [
-            'op' => ['required', 'string', Rule::in($operatorsNames)],
-            'inv' => ['sometimes', 'bool', DataTypeRule::bool(true)],
+            'op' => Valid::trimmed([Rule::in($operatorsNames)]),
+            'inv' => Valid::bool(sometimes: true),
         ], $path);
         $operator = TqFilterOperator::from($params['op']);
         $nullOperator = ($operator === TqFilterOperator::null);
-        self::validate($data, ['' => 'array:type,column,op,inv' . ($nullOperator ? '' : ',val')], $path);
+        self::validate($data, [
+            '' => Valid::array(keys: array_merge(['type', 'column', 'op', 'inv'], $nullOperator ? [] : ['val'])),
+        ], $path);
         $valueValidator = $column->type->valueValidator($operator);
         $value = null;
         if (!$nullOperator) {
             if (in_array($operator, TqFilterOperator::ARR)) {
                 $value = self::validate($data, [
-                    'val' => ['required', 'array', new ArrayIsListRule()],
+                    'val' => Valid::list(),
                     'val.*' => $valueValidator,
                 ], $path)['val'];
             } else {
                 $value = self::validate($data, [
-                    'val' => ['present', ...$valueValidator],
+                    'val' => $valueValidator,
                 ], $path);
             }
         }
