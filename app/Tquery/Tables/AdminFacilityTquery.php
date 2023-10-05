@@ -28,7 +28,8 @@ readonly class AdminFacilityTquery extends TqService
             TqDataTypeEnum::text,
             fn(string $tableName) => //
                 "select group_concat(`name` order by `name` separator ', ') from `members` inner join"
-                . " `users` on `members`.`user_id` = `users`.`id` where `members`.`facility_id` = `facilities`.`id`",
+                . " `users` on `members`.`user_id` = `users`.`id` where `members`.`facility_admin_grant_id` is not null"
+                . " and `members`.`facility_id` = `facilities`.`id`",
             'facility_admins',
         );
         return $config;
