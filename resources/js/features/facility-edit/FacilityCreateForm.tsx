@@ -1,9 +1,9 @@
 import {createMutation} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils";
-import {Admin} from "data-access/memo-api";
+import {Admin, System} from "data-access/memo-api";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {FacilityEdit} from "./FacilityEdit";
+import {FacilityForm, FacilityFormOutput} from "./FacilityForm";
 
 interface Props {
   onSuccess?: () => void;
@@ -12,24 +12,24 @@ interface Props {
 
 export const FacilityCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const invalidate = Admin.useInvalidator();
   const facilityMutation = createMutation(() => ({
     mutationFn: Admin.createFacility,
     meta: {isFormSubmit: true},
   }));
 
-  async function createFacility(values: FacilityEdit.Output) {
-    // First create the user fields (without the members).
+  async function createFacility(values: FacilityFormOutput) {
     await facilityMutation.mutateAsync({
       name: values.name,
       url: values.url,
     });
-    invalidate.facilities();
+    Admin.useInvalidator().facilities();
+    System.useInvalidator().facilities();
     toast.success(t("forms.facility_create.success"));
     props.onSuccess?.();
   }
 
-  return <FacilityEdit.EditForm id="facility_create" onSubmit={createFacility} onCancel={props.onCancel} />;
+  return <FacilityForm id="facility_create" onSubmit={createFacility} onCancel={props.onCancel} />;
 };
 
+// For lazy loading
 export default FacilityCreateForm;
