@@ -12,6 +12,8 @@ interface Props {
 
 export const FacilityCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const adminInvalidator = Admin.useInvalidator();
+  const systemInvalidator = System.useInvalidator();
   const facilityMutation = createMutation(() => ({
     mutationFn: Admin.createFacility,
     meta: {isFormSubmit: true},
@@ -22,8 +24,8 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
       name: values.name,
       url: values.url,
     });
-    Admin.useInvalidator().facilities();
-    System.useInvalidator().facilities();
+    adminInvalidator.facilities();
+    systemInvalidator.facilities();
     toast.success(t("forms.facility_create.success"));
     props.onSuccess?.();
   }
