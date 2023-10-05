@@ -11,7 +11,7 @@ const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
 
-export default (() => {
+const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   return (
     <Routes>
@@ -49,7 +49,8 @@ export default (() => {
       </Route>
     </Routes>
   );
-}) satisfies VoidComponent;
+};
+export default App;
 
 const UnknownNotFound: VoidComponent = () => <Route path="/*" component={NotFound} />;
 
