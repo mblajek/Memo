@@ -39,7 +39,7 @@ class Kernel extends HttpKernel
         'api' => [
             \App\Http\Middleware\TransformKeysValidate::class,
             \App\Http\Middleware\QueryInfo::class,
-            \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
+            //\Illuminate\Foundation\Http\Middleware\TrimStrings::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',

@@ -11,8 +11,6 @@ use App\Http\Controllers\Tquery\AdminFacilityTqueryController;
 use App\Http\Controllers\Tquery\AdminUserTqueryController;
 use App\Http\Controllers\UserController;
 use App\Utils\Date\DateHelper;
-use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
-use Illuminate\Foundation\Http\Middleware\TrimStrings;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
@@ -42,15 +40,13 @@ Route::prefix('/v1')->group(function () {
             Route::post('/', [AdminUserController::class, 'post']);
             Route::patch('/{user}', [AdminUserController::class, 'patch']);
             Route::get('/tquery', [AdminUserTqueryController::class, 'get']);
-            Route::post('/tquery', [AdminUserTqueryController::class, 'post'])
-                ->withoutMiddleware([TrimStrings::class, ConvertEmptyStringsToNull::class]);
+            Route::post('/tquery', [AdminUserTqueryController::class, 'post']);
         });
         Route::prefix('/facility')->group(function () {
             Route::post('/', [AdminFacilityController::class, 'post']);
             Route::patch('/{facility}', [AdminFacilityController::class, 'patch']);
             Route::get('/tquery', [AdminFacilityTqueryController::class, 'get']);
-            Route::post('/tquery', [AdminFacilityTqueryController::class, 'post'])
-                ->withoutMiddleware([TrimStrings::class, ConvertEmptyStringsToNull::class]);
+            Route::post('/tquery', [AdminFacilityTqueryController::class, 'post']);
         });
         Route::prefix('/member')->group(function () {
             Route::post('/', [AdminMemberController::class, 'post']);

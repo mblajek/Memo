@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\FacilityBuilder;
+use App\Rules\Valid;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
@@ -43,17 +44,14 @@ class Facility extends Model
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
-            'name' => 'required|string',
-            'url' => [
-                'bail',
-                'required',
-                'string',
-                'max:15',
+            'name' => Valid::trimmed(),
+            'url' => Valid::trimmed([
+                'max:30',
                 'lowercase',
                 'regex:/^[a-z][a-z0-9-]+[a-z0-9]$/',
                 'not_in:admin,user,api,system',
                 Rule::unique('facilities', 'url'),
-            ],
+            ]),
         };
     }
 
