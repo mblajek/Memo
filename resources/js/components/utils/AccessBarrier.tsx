@@ -27,6 +27,9 @@ export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "P
   facilityUrl?: string;
 }
 
+/** The roles for which querying facility permissions is necessary. */
+const FACILITY_ROLES = new Set<PermissionKey>(["facilityMember", "facilityClient", "facilityStaff", "facilityAdmin"]);
+
 /**
  * Utility component that checks authentication
  * state and user's permissions
@@ -53,12 +56,25 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
   );
   const [queryBarrierProps, localProps] = splitProps(merged, ["Error", "Pending"]);
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-  const facilityId = () => facilitiesQuery.data?.find(({url}) => url === localProps.facilityUrl)?.id;
-
-  const statusQuery = createQuery(() => User.statusQueryOptions(facilityId()));
-  const accessGranted = () =>
-    statusQuery.isSuccess && localProps.roles?.every((role) => statusQuery.data?.permissions[role]);
-
+  const statusQuery = createQuery(() => {
+    // Only load the facility permissions if they are actually checked.
+    if (localProps.roles.some((role) => FACILITY_ROLES.has(role))) {
+      const facilityId = facilitiesQuery.data?.find(({url}) => url === localProps.facilityUrl)?.id;
+      if (facilityId) {
+        return User.statusWithFacilityPermissionsQueryOptions(facilityId);
+      }
+      // If the facility is not available, return statusQueryOptions below, which will fail
+      // the permissions check anyway because the facility permissions fields are false in it.
+    }
+    return User.statusQueryOptions();
+  });
+  const accessGranted = () => {
+    if (!statusQuery.isSuccess) {
+      return false;
+    }
+    const permissions = statusQuery.data!.permissions as Partial<Record<PermissionKey, boolean>>;
+    return localProps.roles?.every((role) => permissions[role]);
+  };
   return (
     <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
       <Show when={accessGranted()} fallback={<localProps.Fallback />}>

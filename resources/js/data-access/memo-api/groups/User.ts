@@ -10,7 +10,7 @@ import {parseGetResponse} from "../utils";
  * @see {@link http://localhost:9081/api/documentation#/User local docs}
  */
 export namespace User {
-  export const getStatus = (facilityId?: string, config?: Api.Config) =>
+  const getStatus = (facilityId?: string, config?: Api.Config) =>
     V1.get<Api.Response.Get<GetStatusData>>(facilityId ? `/user/status/${facilityId}` : "/user/status", config).then(
       parseGetResponse,
     );
@@ -42,19 +42,49 @@ export namespace User {
 
   export const keys = {
     all: () => ["user"] as const,
-    status: (facilityId?: string) => [...keys.all(), "status", facilityId] as const,
+    statusAll: () => [...keys.all(), "status"] as const,
+    status: (facilityId?: string) => [...keys.statusAll(), facilityId] as const,
   };
 
-  export const statusQueryOptions = (facilityId?: string) =>
+  type PermissionsFacilityKeys = "facilityId" | "facilityMember" | "facilityClient" | "facilityStaff" | "facilityAdmin";
+  // Ensure these are really keys.
+  type _FacilityPermissions = Pick<PermissionsResource, PermissionsFacilityKeys>;
+
+  export type GetStatusWithoutFacilityData = {
+    user: UserResource;
+    permissions: Omit<PermissionsResource, PermissionsFacilityKeys>;
+    members: MemberResource[];
+  };
+
+  const STATUS_QUERY_OPTIONS = {
+    // Prevent refetching on every page.
+    refetchOnMount: false,
+    /** Prevent displaying toast when user is not logged in - the login page will be displayed. */
+    meta: {quietHTTPStatuses: [401]},
+  };
+
+  /** Query options for user status, without facility permissions. */
+  export const statusQueryOptions = () =>
+    ({
+      // As a possible optimisation, this query could try to reuse any query with facility permissions,
+      // that happens to be active.
+      queryFn: ({signal}): Promise<GetStatusWithoutFacilityData> => getStatus(undefined, {signal}),
+      queryKey: keys.status(),
+      ...STATUS_QUERY_OPTIONS,
+    }) satisfies SolidQueryOptions<GetStatusWithoutFacilityData>;
+
+  /** Query options for user status with facility permissions. */
+  export const statusWithFacilityPermissionsQueryOptions = (facilityId: string) =>
     ({
       queryFn: ({signal}) => getStatus(facilityId, {signal}),
       queryKey: keys.status(facilityId),
-    }) satisfies SolidQueryOptions;
+      ...STATUS_QUERY_OPTIONS,
+    }) satisfies SolidQueryOptions<GetStatusData>;
 
   export function useInvalidator() {
     const queryClient = useQueryClient();
     return {
-      status: () => queryClient.invalidateQueries({queryKey: keys.status()}),
+      statusAndFacilityPermissions: () => queryClient.invalidateQueries({queryKey: keys.statusAll()}),
     };
   }
 }

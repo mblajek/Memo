@@ -15,12 +15,15 @@ import toast from "solid-toast";
 import {cx, useLangFunc} from ".";
 import {MemoLoader} from "../ui";
 
+/** A list of HTTP response status codes for which a toast should not be displayed. */
+type QuietHTTPStatuses = number[];
+
 declare module "@tanstack/query-core" {
   interface QueryMeta {
-    quietError?: boolean;
+    quietHTTPStatuses?: QuietHTTPStatuses;
   }
   interface MutationMeta {
-    quietError?: boolean;
+    quietHTTPStatuses?: QuietHTTPStatuses;
     isFormSubmit?: boolean;
   }
 }
@@ -34,25 +37,37 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
   function toastErrors(error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
     if (!isAxiosError<Api.ErrorResponse>(error)) return;
-    if ((error?.status && error.status >= 500) || !meta?.quietError) {
+    const status = error.response?.status;
+    if (!status || !meta?.quietHTTPStatuses?.includes(status)) {
       let errors = error.response?.data.errors;
       if (meta?.isFormSubmit) {
         // Validation errors will be handled by the form.
         errors = errors?.filter((e) => !Api.isValidationError(e));
       }
       if (errors?.length) {
-        const errorMessages = errors.map((e) =>
-          t(e.code, {
+        const errorMessages = errors.map((e) => {
+          const params = {
             ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
             ...e.data,
-          }),
-        );
-        for (const msg of errorMessages) {
-          console.warn(`Error toast shown: ${msg}`);
-        }
+          };
+          const translated = () => t(e.code, params);
+          function logWhenAvailable(first = false) {
+            const text = translated();
+            if (text) {
+              console.warn(`Error toast shown: ${text}`);
+            } else {
+              if (first)
+                console.warn(`Error toast shown (translations not ready): ${e.code} ${JSON.stringify(params)}`);
+              // We're not in reactive scope, so use timeout to wait until the translations are available.
+              setTimeout(logWhenAvailable, 500);
+            }
+          }
+          logWhenAvailable(true);
+          return translated;
+        });
         toast.error(() => (
           <ul class={cx({"list-disc pl-6": errorMessages.length > 1})} style={{"overflow-wrap": "anywhere"}}>
-            <For each={errorMessages}>{(msg) => <li>{msg}</li>}</For>
+            <For each={errorMessages}>{(msg) => <li>{msg()}</li>}</For>
           </ul>
         ));
       }
@@ -64,10 +79,12 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         defaultOptions: {
           queries: {
             refetchOnReconnect: true,
-            refetchOnMount: false,
-            refetchOnWindowFocus: false,
+            // When opening a page, reload data if it's older than a couple of seconds.
+            staleTime: 5 * 1000,
             retry: false,
-            retryOnMount: false,
+            // This is very important. The default reconcile algorithm somehow breaks the data and
+            // reactivity in complicated ways. This line is basically `broken: false`.
+            reconcile: false,
           },
         },
         queryCache: new QueryCache({

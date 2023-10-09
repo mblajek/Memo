@@ -1,4 +1,4 @@
-import {Outlet, Route, Routes, useParams} from "@solidjs/router";
+import {Navigate, Outlet, Route, Routes, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api";
@@ -31,6 +31,7 @@ const App: VoidComponent = () => {
         component={RootPageWithFacility}
       >
         <UnknownNotFound />
+        <Route path="/" element={<Navigate href="home" />} />
         <Route path="/home" component={NotYetImplemented} />
         <Route path="/meetings" component={NotYetImplemented} />
         <Route path="/" component={FacilityStaffPages}>

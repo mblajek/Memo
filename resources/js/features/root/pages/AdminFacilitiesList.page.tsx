@@ -28,6 +28,7 @@ export default (() => {
             columnDef: {
               cell: (c) => {
                 const href = () => `/${c.getValue()}`;
+                // TODO: The link can be inaccessible for the current user, handle this better.
                 return <A href={href()}>{href()}</A>;
               },
             },

@@ -1,20 +1,22 @@
-import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
+import {createMutation, createQuery} from "@tanstack/solid-query";
 import {DATE_TIME_WITH_WEEKDAY_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Index, Match, Switch} from "solid-js";
+import {Index, Match, Switch, VoidComponent} from "solid-js";
+import {setActiveFacilityId} from "state/activeFacilityId.state";
 
-export const UserInfo = () => {
+export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
-  const statusQuery = createQuery(() => User.statusQueryOptions());
+  const statusQuery = createQuery(User.statusQueryOptions);
 
-  const queryClient = useQueryClient();
+  const invalidate = User.useInvalidator();
   const logout = createMutation(() => ({
     mutationFn: () => User.logout(),
     onSuccess() {
-      queryClient.invalidateQueries({queryKey: User.keys.status()});
+      invalidate.statusAndFacilityPermissions();
+      setActiveFacilityId(undefined);
     },
   }));
 
@@ -27,7 +29,9 @@ export const UserInfo = () => {
               <HiOutlineCheckCircle class="text-green-700" size="30" />
             </Match>
             <Match when={statusQuery.data?.permissions.unverified}>
-              <HiOutlineXCircle class="text-red-500" size="30" />
+              <div title={t("unverified_user")}>
+                <HiOutlineXCircle class="text-red-500" size="30" />
+              </div>
             </Match>
           </Switch>
         </div>

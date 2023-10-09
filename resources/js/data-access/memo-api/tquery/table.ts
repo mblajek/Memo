@@ -21,7 +21,7 @@ const DEFAULT_PAGE_SIZE = 50;
 /**
  * Returns visibility state with visibility of all the columns set explicitly to the given value.
  */
-function allColumnsVisibility(schema: Schema, additionalColumns: string[], {visible = true} = {}) {
+function allColumnsVisibility(schema: Schema, additionalColumns: readonly string[], {visible = true} = {}) {
   const visibility: VisibilityState = {};
   for (const {name} of schema.columns) {
     visibility[name] = visible;
@@ -47,9 +47,9 @@ export function createTableRequestCreator({
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
   intrinsicFilter?: Accessor<FilterH | undefined>;
-  intrinsicColumns?: Accessor<string[] | undefined>;
-  additionalColumns?: string[];
-  initialVisibleColumns?: string[];
+  intrinsicColumns?: Accessor<readonly string[] | undefined>;
+  additionalColumns?: readonly string[];
+  initialVisibleColumns?: readonly string[];
   initialSort?: SortingState;
   initialPageSize?: number;
 }): RequestCreator<RequestController> {
@@ -126,47 +126,42 @@ export function createTableRequestCreator({
         setPagination((prev) => ({...prev, pageIndex: 0}));
       }),
     );
-    const columns = createMemo(
-      on([schema, intrinsicColumns, columnVisibility], ([schema, intrinsicColumns, columnVisibility]) => {
-        if (!schema) {
-          return [];
-        }
-        return [
-          ...new Set([
-            ...schema.columns.map(({name}) => name).filter((name) => columnVisibility[name] !== false),
-            ...(intrinsicColumns || []),
-          ]),
-        ].map<Column>((column) => ({type: "column", column}));
-      }),
-    );
-    const request = createMemo<DataRequest | undefined>(
-      on(
-        [intrinsicFilter, schema, allInited, columns, debouncedGlobalFilter, columnFiltersJoined, sorting, pagination],
-        ([intrinsicFilter, schema, allInited, columns, globalFilter, columnFiltersJoined, sorting, pagination]) => {
-          if (!schema || !allInited) {
-            return undefined;
-          }
-          const request: DataRequest = {
-            columns,
-            filter: filterReductor()?.reduce({
-              type: "op",
-              op: "&",
-              val: [intrinsicFilter, buildFuzzyGlobalFilter(globalFilter), columnFiltersJoined].filter(NON_NULLABLE),
-            }),
-            sort: sorting.map(({id, desc}) => ({
-              type: "column",
-              column: id,
-              desc,
-            })),
-            paging: {
-              number: pagination.pageIndex + 1,
-              size: pagination.pageSize,
-            },
-          };
-          return request;
+    const columns = createMemo(() => {
+      const sch = schema();
+      if (!sch) {
+        return [];
+      }
+      return [
+        ...new Set([
+          ...sch.columns.map(({name}) => name).filter((name) => columnVisibility()[name] !== false),
+          ...(intrinsicColumns() || []),
+        ]),
+      ].map<Column>((column) => ({type: "column", column}));
+    });
+    const request = createMemo((): DataRequest | undefined => {
+      if (!schema() || !allInited()) {
+        return undefined;
+      }
+      return {
+        columns: columns(),
+        filter: filterReductor()?.reduce({
+          type: "op",
+          op: "&",
+          val: [intrinsicFilter(), buildFuzzyGlobalFilter(debouncedGlobalFilter()), columnFiltersJoined()].filter(
+            NON_NULLABLE,
+          ),
+        }),
+        sort: sorting().map(({id, desc}) => ({
+          type: "column",
+          column: id,
+          desc,
+        })),
+        paging: {
+          number: pagination().pageIndex + 1,
+          size: pagination().pageSize,
         },
-      ),
-    );
+      };
+    });
     return {
       request,
       requestController: {
@@ -176,7 +171,7 @@ export function createTableRequestCreator({
         columnFilter: (column) => columnFilters()[column]!,
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],
-      } satisfies RequestController,
+      },
     };
   };
 }
