@@ -66,6 +66,7 @@ export namespace Admin {
     const queryClient = useQueryClient();
     return {
       users: () => queryClient.invalidateQueries({queryKey: keys.userLists()}),
+      facilities: () => queryClient.invalidateQueries({queryKey: keys.facilityLists()}),
     };
   }
 }

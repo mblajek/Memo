@@ -12,7 +12,7 @@ import {System, User} from "data-access/memo-api";
 import {Api} from "data-access/memo-api/types";
 import {For, ParentComponent, Show, VoidComponent, createMemo} from "solid-js";
 import toast from "solid-toast";
-import {useLangFunc} from ".";
+import {cx, useLangFunc} from ".";
 import {MemoLoader} from "../ui";
 
 declare module "@tanstack/query-core" {
@@ -40,21 +40,22 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         // Validation errors will be handled by the form.
         errors = errors?.filter((e) => !Api.isValidationError(e));
       }
-      if (errors?.length)
+      if (errors?.length) {
+        const errorMessages = errors.map((e) =>
+          t(e.code, {
+            ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
+            ...e.data,
+          }),
+        );
+        for (const msg of errorMessages) {
+          console.warn(`Error toast shown: ${msg}`);
+        }
         toast.error(() => (
-          <ul class={errors!.length > 1 ? "list-disc pl-6" : undefined}>
-            <For each={errors}>
-              {(e) => (
-                <li>
-                  {t(e.code, {
-                    ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
-                    ...e.data,
-                  })}
-                </li>
-              )}
-            </For>
+          <ul class={cx({"list-disc pl-6": errorMessages.length > 1})} style={{"overflow-wrap": "anywhere"}}>
+            <For each={errorMessages}>{(msg) => <li>{msg}</li>}</For>
           </ul>
         ));
+      }
     }
   }
   const queryClient = createMemo(

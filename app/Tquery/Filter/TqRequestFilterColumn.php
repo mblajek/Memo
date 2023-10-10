@@ -3,8 +3,7 @@
 namespace App\Tquery\Filter;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Rules\ArrayIsListRule;
-use App\Rules\DataTypeRule;
+use App\Rules\Valid;
 use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Engine\TqBuilder;
@@ -15,27 +14,29 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
     public static function fromArray(TqConfig $config, array $data, string $path): self
     {
         $column = $config->columns[self::validate($data, [
-            'column' => ['required', 'string', Rule::in(array_keys($config->columns))],
+            'column' => Valid::trimmed([Rule::in(array_keys($config->columns))]),
         ], $path)];
         $operatorsNames = array_map(fn(TqFilterOperator $operator) => $operator->value, $column->type->operators());
         $params = self::validate($data, [
-            'op' => ['required', 'string', Rule::in($operatorsNames)],
-            'inv' => ['sometimes', 'bool', DataTypeRule::bool(true)],
+            'op' => Valid::trimmed([Rule::in($operatorsNames)]),
+            'inv' => Valid::bool(sometimes: true),
         ], $path);
         $operator = TqFilterOperator::from($params['op']);
         $nullOperator = ($operator === TqFilterOperator::null);
-        self::validate($data, ['' => 'array:type,column,op,inv' . ($nullOperator ? '' : ',val')], $path);
-        $valueValidator = $column->type->valueValidator($operator);
+        self::validate($data, [
+            '' => Valid::array(keys: array_merge(['type', 'column', 'op', 'inv'], $nullOperator ? [] : ['val'])),
+        ], $path);
         $value = null;
+        $valueValidator = $column->type->filterValueValidator($operator);
         if (!$nullOperator) {
             if (in_array($operator, TqFilterOperator::ARR)) {
                 $value = self::validate($data, [
-                    'val' => ['required', 'array', new ArrayIsListRule()],
+                    'val' => Valid::list(),
                     'val.*' => $valueValidator,
                 ], $path)['val'];
             } else {
                 $value = self::validate($data, [
-                    'val' => ['present', ...$valueValidator],
+                    'val' => $valueValidator,
                 ], $path);
             }
         }
@@ -63,7 +64,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
 
     public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void
     {
-        $value = $this->operator->prepareValue($this->value);
+        $value = $this->column->type->filterValuePrepare($this->operator, $this->value);
         $filterQuery = $this->column->getFilterQuery();
         $inverse = ($this->inverse xor $invert);
 
@@ -72,11 +73,11 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
 
         if ($sqlOperator) {
             $builder->where(
-                query: fn(string|null $bind) => "$sqlPrefix $filterQuery $sqlOperator $bind",
+                query: fn(string|null $bind) => trim("$sqlPrefix $filterQuery $sqlOperator $bind"),
                 or: $or,
                 value: $value,
                 inverse: $inverse,
-                nullable: false,
+                nullable: $this->column->type->isNullable(),
             );
         } else {
             throw FatalExceptionFactory::tquery();

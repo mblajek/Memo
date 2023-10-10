@@ -24,7 +24,7 @@
       "warn",
       { "varsIgnorePattern": "^_" }
     ],
-    "no-console": ["warn", { "allow": ["error"] }],
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-empty": "off",
     "no-inner-declarations": "off",
     "no-unused-expressions": "warn",

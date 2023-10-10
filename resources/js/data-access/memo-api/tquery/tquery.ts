@@ -1,7 +1,7 @@
 import {createQuery, keepPreviousData} from "@tanstack/solid-query";
 import {Accessor, createComputed, createMemo, createSignal, on} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
-import {DataRequest, DataResponse, Schema} from ".";
+import {DataItem, DataRequest, DataResponse, Schema} from ".";
 import {V1} from "../config";
 import {CreateQueryOpts, SolidQueryOpts} from "../query_utils";
 
@@ -18,7 +18,7 @@ function getRequestFromQueryKey<K extends PrefixQueryKey>(queryKey: DataQueryKey
 
 const INITIAL_PAGE_SIZE = 50;
 
-const EMPTY_DATA: object[] = [];
+const EMPTY_DATA: DataItem[] = [];
 
 /** A utility that creates and helps with managing the request object. */
 export interface RequestCreator<C> {

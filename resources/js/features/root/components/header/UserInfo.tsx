@@ -1,15 +1,13 @@
 import {createMutation, createQuery, useQueryClient} from "@tanstack/solid-query";
-import {DATE_TIME_WITH_WEEKDAY_FORMAT, useLangFunc} from "components/utils";
+import {DATE_TIME_WITH_WEEKDAY_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api";
 import {PasswordChangeForm} from "features/user-panel";
-import {DateTime} from "luxon";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Index, Match, Switch, createSignal, onCleanup, onMount} from "solid-js";
+import {Index, Match, Switch} from "solid-js";
 
 export const UserInfo = () => {
   const t = useLangFunc();
-  const currentTime = useCurrentTime();
   const statusQuery = createQuery(() => User.statusQueryOptions());
 
   const queryClient = useQueryClient();
@@ -45,7 +43,11 @@ export const UserInfo = () => {
           <span>
             {statusQuery.data?.user.name}
             {/* This is a temporary location for the change password button. */}
-            <button class="m-1" onClick={() => PasswordChangeForm.showModal()} title={t("forms.password_change.name")}>
+            <button
+              class="m-1"
+              onClick={() => PasswordChangeForm.showModal()}
+              title={t("forms.password_change.formName")}
+            >
               <TbPassword />
             </button>
             <PasswordChangeForm.Modal />
@@ -63,14 +65,4 @@ export const UserInfo = () => {
       </div>
     </div>
   );
-};
-
-const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = createSignal(DateTime.now());
-  let interval: ReturnType<typeof setInterval>;
-  onMount(() => {
-    interval = setInterval(() => setCurrentTime(DateTime.now()), 1000);
-  });
-  onCleanup(() => clearInterval(interval));
-  return currentTime;
 };

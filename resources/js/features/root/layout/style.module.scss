@@ -28,12 +28,11 @@ $border: rgba(92, 92, 92, 0.283);
 
 .header {
   grid-area: header;
+  padding: 1.5rem;
   border-bottom: 1px solid $border;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  justify-items: center;
-  padding: 1.5rem;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .main {

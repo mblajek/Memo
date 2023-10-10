@@ -43,9 +43,9 @@ export const FacilityControl: VoidComponent = () => {
           <Match when={facilities().length === 1}>
             <p>{facilities().at(0)?.name}</p>
           </Match>
-          <Match when={facilities().length > 0}>
+          <Match when={facilities().length > 1}>
             <select
-              class="mr-4"
+              class="border border-gray-200 rounded"
               value={activeFacilityId()}
               onChange={(e) => {
                 const url = facilities().find((facility) => facility.id === e.target.value)?.url;

@@ -28,7 +28,7 @@ readonly class ValidationExceptionRenderer
     private function matchType(array $fieldRules): string
     {
         foreach ($fieldRules as $fieldRule) {
-            if (array_key_exists($fieldRule, $this->multiTypeTypes)) {
+            if (is_string($fieldRule) && array_key_exists($fieldRule, $this->multiTypeTypes)) {
                 return $fieldRule;
             }
         }
@@ -69,7 +69,8 @@ readonly class ValidationExceptionRenderer
 
         $interpolationFields = [];
         if ($ruleTranslation) {
-            preg_match_all('/\{\{(?<field>\w+)[, ]*(?<type>\\w*)}}/', $ruleTranslation, $interpolationFields);
+            // Match the interpolation, as described here: https://www.i18next.com/translation-function/formatting
+            preg_match_all('/\{\{\s*(?<field>\w+).*?}}/', $ruleTranslation, $interpolationFields);
             $interpolationFields = array_values(
                 array_filter($interpolationFields['field'] ?? [], fn(string $a) => strtolower($a) !== 'attribute')
             );

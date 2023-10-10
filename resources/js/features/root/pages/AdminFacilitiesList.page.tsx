@@ -1,8 +1,10 @@
 import {A} from "@solidjs/router";
-import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui";
+import {Button, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {AccessBarrier, useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
+import {FacilityCreateModal, showFacilityCreateModal} from "features/facility-edit/FacilityCreateModal";
+import {BsHouseAdd} from "solid-icons/bs";
 import {Component} from "solid-js";
 
 export default (() => {
@@ -51,7 +53,15 @@ export default (() => {
             },
           },
         }}
+        customSectionBelowTable={
+          <div class="ml-2 flex gap-1">
+            <Button class="secondarySmall" onClick={() => showFacilityCreateModal()}>
+              <BsHouseAdd class="inlineIcon text-current" /> {t("actions.add_facility")}
+            </Button>
+          </div>
+        }
       />
+      <FacilityCreateModal />
     </AccessBarrier>
   );
 }) satisfies Component;

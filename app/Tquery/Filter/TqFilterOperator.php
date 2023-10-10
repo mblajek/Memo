@@ -38,17 +38,6 @@ enum TqFilterOperator: string
     /** @var TqFilterOperator[] */
     public const TRIMMED = [self::eq, self::in, self::all, self::any];
 
-    public function prepareValue(bool|int|string|array|null $value): bool|int|string|array|null
-    {
-        if ($this === self::pv || $this === self::vp || $this === self::pvp) {
-            return (($this === self::pv || $this === self::pvp) ? '%' : '')
-                . (is_string($value) ? str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                    : (throw FatalExceptionFactory::tquery()))
-                . (($this === self::vp || $this === self::pvp) ? '%' : '');
-        }
-        return $value;
-    }
-
     public function sqlPrefix(): ?string
     {
         return match ($this) {
@@ -69,8 +58,7 @@ enum TqFilterOperator: string
             self::lv, self::pv, self::vp, self::pvp => 'like',
             self::regexp => 'regexp',
             self::in => 'in',
-            self::all => throw new \Exception('To be implemented'),
-            self::any => throw new \Exception('To be implemented'),
+            self::all, self::any => throw FatalExceptionFactory::tquery(),
             default => FatalExceptionFactory::tquery(),
         };
     }
