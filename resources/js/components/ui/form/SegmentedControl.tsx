@@ -50,7 +50,7 @@ export const SegmentedControl: VoidComponent<Props> = (props) => {
   );
   const api = createMemo(() => radio.connect(state, send, normalizeProps));
   createComputed(() => {
-    if (props.value) {
+    if (props.value !== undefined) {
       // Use the value from props only if really specified. Otherwise we are probably in the form mode.
       api().setValue(props.value);
     }

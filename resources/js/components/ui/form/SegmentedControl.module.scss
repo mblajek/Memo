@@ -13,6 +13,9 @@
 
     &[data-state="unchecked"] {
       @apply text-opacity-70;
+      &:hover {
+        @apply text-opacity-100;
+      }
     }
 
     &[data-disabled] {

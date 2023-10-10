@@ -1,4 +1,4 @@
-import {DaysRange, TinyCalendar, WeekDaysCalculator} from "components/ui";
+import {DaysRange, SegmentedControl, TinyCalendar, WeekDaysCalculator} from "components/ui";
 import {DateTime} from "luxon";
 import {VoidComponent, createSignal} from "solid-js";
 
@@ -7,27 +7,51 @@ export default (() => {
   const weekDayCalculator = new WeekDaysCalculator(locale);
   const [selection, setSelection] = createSignal<DaysRange>();
   const [month, setMonth] = createSignal<DateTime>(DateTime.now());
+  const [mode, setMode] = createSignal("week");
   return (
-    // A tiny calendar with some example behaviour of selecting work days (or whole week when clicking on weekend).
-    <TinyCalendar
-      class="inline-block"
-      locale={locale}
-      showWeekdayNames={true}
-      holidays={[
-        [8, 15],
-        [11, 11],
-        [11, 1],
-        [12, 25],
-        [12, 26],
-      ].map(([month, day]) => DateTime.fromObject({month, day}))}
-      selection={selection()}
-      month={month()}
-      getHoverRange={(day) => weekDayCalculator.dayToWorkdays(day)}
-      setMonth={setMonth}
-      onDayClick={(day, range) => {
-        setMonth(day);
-        setSelection(range);
-      }}
-    />
+    <div class="flex gap-1">
+      {/* A tiny calendar with some example behaviour of selecting work days (or whole week when clicking on weekend). */}
+      <TinyCalendar
+        class="inline-block"
+        locale={locale}
+        showWeekdayNames={true}
+        holidays={[
+          [8, 15],
+          [11, 11],
+          [11, 1],
+          [12, 25],
+          [12, 26],
+        ].map(([month, day]) => DateTime.fromObject({month, day}))}
+        selection={selection()}
+        month={month()}
+        getHoverRange={(day) => weekDayCalculator.dayToWorkdays(day)}
+        setMonth={setMonth}
+        onDayClick={(day, range) => {
+          setMonth(day);
+          setSelection(range);
+        }}
+      />
+      <SegmentedControl
+        name="calModeControl"
+        items={[
+          {text: "Miesiąc", value: "month"},
+          {text: "Tydzień", value: "week"},
+          {text: "Dzień", value: "day"},
+        ]}
+        value={mode()}
+        setValue={setMode}
+      />
+      <SegmentedControl
+        name="calModeControl"
+        items={[
+          {text: "Miesiąc", value: "month"},
+          {text: "Tydzień", value: "week"},
+          {text: "Dzień", value: "day"},
+        ]}
+        value={mode()}
+        setValue={setMode}
+        small={true}
+      />
+    </div>
   );
 }) satisfies VoidComponent;
