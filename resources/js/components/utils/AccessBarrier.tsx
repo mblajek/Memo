@@ -63,8 +63,9 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
       if (facilityId) {
         return User.statusWithFacilityPermissionsQueryOptions(facilityId);
       }
-      // If the facility is not available, return statusQueryOptions below, which will fail
-      // the permissions check anyway because the facility permissions fields are false in it.
+      // The access is not granted because facility permissions are needed, but no facility is available.
+      // Return a disabled query, which will be shown as pending.
+      return {...User.statusQueryOptions(), enabled: false};
     }
     return User.statusQueryOptions();
   });

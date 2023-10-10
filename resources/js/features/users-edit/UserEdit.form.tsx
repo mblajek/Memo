@@ -7,6 +7,7 @@ import {Admin} from "data-access/memo-api/groups";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent, createSignal} from "solid-js";
 import toast from "solid-toast";
+import {noCacheQueryParams} from "../../data-access/memo-api/utils";
 import {UserEdit} from "./UserEdit";
 import {UserMembersEdit} from "./UserMembersEdit";
 
@@ -23,11 +24,8 @@ export namespace UserEditForm {
   export const Component: VoidComponent<Props> = (props) => {
     const t = useLangFunc();
     const statusQuery = createQuery(User.statusQueryOptions);
-    const userQuery = createQuery(() => ({
-      ...Admin.userQueryOptions(props.userId),
-      // Data used to initialise a form should always be fresh - it is not reactive.
-      gcTime: 0,
-    }));
+    // eslint-disable-next-line solid/reactivity
+    const userQuery = createQuery(noCacheQueryParams(() => Admin.userQueryOptions(props.userId)));
     const user = () => userQuery.data;
     const adminInvalidate = Admin.useInvalidator();
     const userInvalidate = User.useInvalidator();

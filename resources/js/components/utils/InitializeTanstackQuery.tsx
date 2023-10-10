@@ -84,6 +84,8 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             retry: false,
             // This is very important. The default reconcile algorithm somehow breaks the data and
             // reactivity in complicated ways. This line is basically `broken: false`.
+            // See https://github.com/TanStack/query/pull/6125
+            // About `reconcile`: https://github.com/TanStack/query/pull/5287
             reconcile: false,
           },
         },
