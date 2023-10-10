@@ -102,7 +102,7 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>): JSX.Element
   const TypedFormContext = typedFormContext<T>();
   return (
     <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
-      <form ref={form.form} {...formProps}>
+      <form autocomplete="off" ref={form.form} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
           {getChildrenElement(local.children, form)}
         </fieldset>

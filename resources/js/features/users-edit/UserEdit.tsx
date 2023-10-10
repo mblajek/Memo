@@ -66,11 +66,10 @@ export namespace UserEdit {
           return (
             <>
               <div class="flex flex-col gap-1">
-                <TextField name="name" type="text" autocomplete="off" onBlur={getTrimInputHandler()} />
+                <TextField name="name" type="text" onBlur={getTrimInputHandler()} />
                 <TextField
                   name="email"
                   type="email"
-                  autocomplete="off"
                   onInput={() => form.setFields("hasEmailVerified", false)}
                   onBlur={getTrimInputHandler()}
                 />
