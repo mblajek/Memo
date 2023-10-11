@@ -24,7 +24,7 @@ export namespace System {
       queryFn: ({signal}) => getFacilitiesList({signal}),
       queryKey: keys.facilityList(),
       // Prevent refetching on every page.
-      refetchOnMount: false,
+      staleTime: 10 * 60 * 1000,
     }) satisfies SolidQueryOptions;
 
   export function useInvalidator() {

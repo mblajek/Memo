@@ -14,6 +14,7 @@ import {For, ParentComponent, Show, VoidComponent, createMemo} from "solid-js";
 import toast from "solid-toast";
 import {cx, useLangFunc} from ".";
 import {MemoLoader} from "../ui";
+import {translationsLoaded, translationsLoadedPromise} from "../../i18n_loader";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
@@ -39,37 +40,33 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
     if (!isAxiosError<Api.ErrorResponse>(error)) return;
     const status = error.response?.status;
     if (!status || !meta?.quietHTTPStatuses?.includes(status)) {
-      let errors = error.response?.data.errors;
-      if (meta?.isFormSubmit) {
-        // Validation errors will be handled by the form.
-        errors = errors?.filter((e) => !Api.isValidationError(e));
-      }
+      const respErrors = error.response?.data.errors;
+      const errors = meta?.isFormSubmit
+        ? // Validation errors will be handled by the form.
+          respErrors?.filter((e) => !Api.isValidationError(e))
+        : respErrors;
       if (errors?.length) {
-        const errorMessages = errors.map((e) => {
-          const params = {
-            ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
-            ...e.data,
-          };
-          const translated = () => t(e.code, params);
-          function logWhenAvailable(first = false) {
-            const text = translated();
-            if (text) {
-              console.warn(`Error toast shown: ${text}`);
-            } else {
-              if (first)
-                console.warn(`Error toast shown (translations not ready): ${e.code} ${JSON.stringify(params)}`);
-              // We're not in reactive scope, so use timeout to wait until the translations are available.
-              setTimeout(logWhenAvailable, 500);
-            }
+        if (!translationsLoaded()) {
+          for (const e of errors) {
+            console.warn("Error toast shown (translations not ready):", e);
           }
-          logWhenAvailable(true);
-          return translated;
+        }
+        translationsLoadedPromise.then(() => {
+          const messages = errors.map((e) => {
+            return t(e.code, {
+              ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
+              ...e.data,
+            });
+          });
+          for (const msg of messages) {
+            console.warn(`Error toast shown: ${msg}`);
+          }
+          toast.error(() => (
+            <ul class={cx({"list-disc pl-6": messages.length > 1})} style={{"overflow-wrap": "anywhere"}}>
+              <For each={messages}>{(msg) => <li>{msg}</li>}</For>
+            </ul>
+          ));
         });
-        toast.error(() => (
-          <ul class={cx({"list-disc pl-6": errorMessages.length > 1})} style={{"overflow-wrap": "anywhere"}}>
-            <For each={errorMessages}>{(msg) => <li>{msg()}</li>}</For>
-          </ul>
-        ));
       }
     }
   }

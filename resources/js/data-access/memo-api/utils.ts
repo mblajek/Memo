@@ -1,8 +1,5 @@
-import {useQueryClient} from "@tanstack/solid-query";
 import {AxiosError, type AxiosResponse} from "axios";
 import {DateTime} from "luxon";
-import {Accessor, createComputed} from "solid-js";
-import {SolidQueryOpts} from "./query_utils";
 import {Api} from "./types";
 
 export const parseGetResponse = <T extends object>(res: AxiosResponse<Api.Response.Get<T>>) => res.data.data;
@@ -56,24 +53,6 @@ export function createGetFromList<T extends Api.Entity>(
       }
       return result;
     });
-}
-
-/**
- * Ensures that a query created from the query params never receives data from the cache.
- * This is achieved by resetting the queries with the same query key.
- *
- * The accessor parameter is reactive.
- *
- * Usage:
- *
- *     const myQuery = createQuery(noCacheQueryParams(() => getMyQueryParams(props.something));
- */
-export function noCacheQueryParams<DataType, Q extends SolidQueryOpts<DataType>>(
-  queryOptions: Accessor<Q>,
-): Accessor<Q> {
-  const queryClient = useQueryClient();
-  createComputed(() => queryClient.resetQueries({queryKey: queryOptions().queryKey}));
-  return queryOptions;
 }
 
 /** Returns the ISO representation of datetime in UTC time zone, suitable for sending to backend. */
