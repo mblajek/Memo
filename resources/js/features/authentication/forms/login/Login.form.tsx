@@ -66,9 +66,7 @@ export namespace LoginForm {
   export const Modal: VoidComponent = () => (
     <ModalComponent open={modalShown()} style={MODAL_STYLE_PRESETS.narrow}>
       <div class="flex flex-col gap-4">
-        <div class="self-center">
-          <FullLogo />
-        </div>
+        <FullLogo class="w-full h-16" />
         <Component onSuccess={() => setModalShown(false)} />
       </div>
     </ModalComponent>

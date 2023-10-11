@@ -1,6 +1,6 @@
 import {cx} from "components/utils";
 import {ParentComponent} from "solid-js";
-import s from "./style.module.scss";
+import s from "./layout.module.scss";
 
 export const Container: ParentComponent = (props) => {
   return (
