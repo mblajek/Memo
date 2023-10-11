@@ -46,6 +46,7 @@ tables:
       userCount: "$t(models.facility.userCount)"
       facilityAdmins: "$t(models.facility.admins)"
       url: "$t(models.facility.url)"
+      actions: "$t(tables.tables.generic.columnNames.actions)"
 search: "Szukaj"
 choose_columns: "Wybierz kolumny"
 sort_tooltip: "Sortuj"

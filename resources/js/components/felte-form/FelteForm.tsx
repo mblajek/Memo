@@ -17,7 +17,7 @@ type FormContextValue<T extends Obj = Obj> = {
   translations: FormTranslations;
 };
 
-type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
 export interface FormTranslations {
