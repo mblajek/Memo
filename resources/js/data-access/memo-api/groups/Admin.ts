@@ -28,9 +28,9 @@ export namespace Admin {
 
   const getUsersListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {...config, params: request});
-  export const getUsersList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
+  const getUsersList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     getUsersListBase(request, config).then(parseGetListResponse);
-  export const getUser = createGetFromList(getUsersListBase);
+  const getUser = createGetFromList(getUsersListBase);
 
   export const createMember = (member: Api.Request.Create<MemberResource>, config?: Api.Config) =>
     V1.post("/admin/member", member, config);

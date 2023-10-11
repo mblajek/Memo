@@ -80,11 +80,11 @@ export interface TQueryTableProps {
    * A list of columns that are always included in the request (and available on the row objects),
    * even if they are not visible.
    */
-  intrinsicColumns?: string[];
+  intrinsicColumns?: readonly string[];
   /** Additional column names. Their options are taken from `columnOptions`. */
-  additionalColumns?: string[];
+  additionalColumns?: readonly string[];
   /** Overrides for the definition of specific columns. */
-  columnOptions?: Partial<Record<string, ColumnOptions>>;
+  columnOptions?: Readonly<Partial<Record<string, ColumnOptions>>>;
   /**
    * The ordering of the columns. All the columns present on the backend and not present
    * in this list are placed at the end.
@@ -94,12 +94,12 @@ export interface TQueryTableProps {
    *
    * In the current implementation the order of columns cannot be changed.
    */
-  initialColumnsOrder?: string[];
-  initialVisibleColumns?: string[];
+  initialColumnsOrder?: readonly string[];
+  initialVisibleColumns?: readonly string[];
   initialSort?: SortingState;
   initialPageSize?: number;
   /** These columns are ignored and never shown. */
-  ignoreColumns?: string[];
+  ignoreColumns?: readonly string[];
   /** Element to put below table, after the summary. */
   customSectionBelowTable?: JSX.Element;
 }

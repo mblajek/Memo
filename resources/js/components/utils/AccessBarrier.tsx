@@ -27,6 +27,9 @@ export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "P
   facilityUrl?: string;
 }
 
+/** The roles for which querying facility permissions is necessary. */
+const FACILITY_ROLES = new Set<PermissionKey>(["facilityMember", "facilityClient", "facilityStaff", "facilityAdmin"]);
+
 /**
  * Utility component that checks authentication
  * state and user's permissions
@@ -52,18 +55,44 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
     props,
   );
   const [queryBarrierProps, localProps] = splitProps(merged, ["Error", "Pending"]);
+  const needFacilityPermissions = () => localProps.roles.some((role) => FACILITY_ROLES.has(role));
+  // Create the query even if it's not needed, it is fetched on all pages anyway.
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-  const facilityId = () => facilitiesQuery.data?.find(({url}) => url === localProps.facilityUrl)?.id;
-
-  const statusQuery = createQuery(() => User.statusQueryOptions(facilityId()));
-  const accessGranted = () =>
-    statusQuery.isSuccess && localProps.roles?.every((role) => statusQuery.data?.permissions[role]);
-
+  const statusQuery = createQuery(() => {
+    // Only load the facility permissions if they are actually checked.
+    if (!needFacilityPermissions()) {
+      return User.statusQueryOptions();
+    }
+    if (!facilitiesQuery.isSuccess) {
+      // Return a pending query, waiting for the facilities to resolve or appear.
+      // If the status is error, the outer QueryBarrier will show the error.
+      return {enabled: false, queryKey: ["pending"]};
+    }
+    const facilityId = facilitiesQuery.data?.find(({url}) => url === localProps.facilityUrl)?.id;
+    if (facilityId) {
+      return User.statusWithFacilityPermissionsQueryOptions(facilityId);
+    }
+    return {
+      queryKey: ["error"],
+      queryFn: () => {
+        throw new Error(`Facility with URL ${localProps.facilityUrl} not found`);
+      },
+    };
+  });
+  const accessGranted = () => {
+    if (!statusQuery.isSuccess) {
+      return false;
+    }
+    const permissions = statusQuery.data!.permissions as Partial<Record<PermissionKey, boolean>>;
+    return localProps.roles?.every((role) => permissions[role]);
+  };
   return (
-    <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
-      <Show when={accessGranted()} fallback={<localProps.Fallback />}>
-        {merged.children}
-      </Show>
+    <QueryBarrier queries={needFacilityPermissions() ? [facilitiesQuery] : []} {...queryBarrierProps}>
+      <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
+        <Show when={accessGranted()} fallback={<localProps.Fallback />}>
+          {merged.children}
+        </Show>
+      </QueryBarrier>
     </QueryBarrier>
   );
 };

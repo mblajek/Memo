@@ -22,6 +22,8 @@ auth:
   password: "Hasło jest nieprawidłowe."
   throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
 
+unverified_user: "Użytkownik niezweryfikowany"
+
 bool_values:
   yes: "Tak"
   no: "Nie"

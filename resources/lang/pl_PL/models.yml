@@ -23,7 +23,7 @@ facility:
   _name: "placówka"
   _name_plural: "placówki"
   name: "$t(models.generic.name)"
-  url: "Adres Memo"
+  url: "adres Memo"
   createdAt: "$t(models.generic.createdAt)"
   updatedAt: "$t(models.generic.updatedAt)"
   members: "osoby przypisane do placówki"
