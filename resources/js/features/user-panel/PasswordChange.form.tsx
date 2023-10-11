@@ -37,7 +37,7 @@ export namespace PasswordChangeForm {
     const mutation = createMutation(() => ({
       mutationFn: User.changePassword,
       onSuccess() {
-        invalidateUser.status();
+        invalidateUser.statusAndFacilityPermissions();
         // For better integration with password managers.
         // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
         history.replaceState({passwordChanged: true}, "");

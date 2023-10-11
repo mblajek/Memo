@@ -16,11 +16,14 @@ passwords:
   sent: "Przypomnienie hasła zostało wysłane!"
   throttled: "Proszę zaczekać zanim spróbujesz ponownie."
   token: "Token resetowania hasła jest nieprawidłowy."
-  user: "Nie znaleziono użytkownika z takim adresem e-mail."
+  user: "Nie znaleziono osoby z takim adresem e-mail."
+
 auth:
   failed: "Błędny login lub hasło."
   password: "Hasło jest nieprawidłowe."
   throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
+
+unverified_user: "Użytkownik niezweryfikowany"
 
 bool_values:
   yes: "Tak"

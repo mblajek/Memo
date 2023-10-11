@@ -9,10 +9,10 @@ tables:
       actions: "akcje"
   users:
     tableName: "$t(models.user._name_plural)"
-    summary__zero: "Brak użytkowników"
-    summary__one: "{{count, number}} użytkownik"
-    summary__few: "{{count, number}} użytkowników"
-    summary__many: "{{count, number}} użytkowników"
+    summary__zero: "Brak osób"
+    summary__one: "{{count, number}} osoba"
+    summary__few: "{{count, number}} osoby"
+    summary__many: "{{count, number}} osób"
     columnNames:
       id: "$t(tables.tables.generic.columnNames.id)"
       name: "$t(models.user.name)"

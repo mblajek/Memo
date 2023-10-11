@@ -1,6 +1,6 @@
 import {AUTO_SIZE_COLUMN_DEFS, Button, Email, cellFunc, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {AccessBarrier, useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
 import {UserCreateForm, UserEditForm} from "features/users-edit";
 import {FiEdit2} from "solid-icons/fi";
@@ -10,7 +10,7 @@ import {VoidComponent} from "solid-js";
 export default (() => {
   const t = useLangFunc();
   return (
-    <AccessBarrier roles={["globalAdmin"]}>
+    <>
       <TQueryTable
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.userLists()}
@@ -25,7 +25,7 @@ export default (() => {
           },
           email: {
             columnDef: {
-              cell: cellFunc<string>((v) => <Email email={v} />),
+              cell: cellFunc<string>((v) => <Email class="w-full" email={v} />),
             },
           },
           createdAt: {
@@ -82,6 +82,6 @@ export default (() => {
       />
       <UserEditForm.Modal />
       <UserCreateForm.Modal />
-    </AccessBarrier>
+    </>
   );
 }) satisfies VoidComponent;

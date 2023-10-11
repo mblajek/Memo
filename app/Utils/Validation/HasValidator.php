@@ -2,6 +2,7 @@
 
 namespace App\Utils\Validation;
 
+use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 
@@ -24,7 +25,7 @@ trait HasValidator
         foreach ($ruleSet as $field => $rules) {
             if (is_array($rules)) {
                 foreach ($rules as $rule) {
-                    if ($rule instanceof Unique) {
+                    if ($rule instanceof Unique || $rule instanceof Valid) {
                         $rule->ignore($ignore);
                     }
                 }

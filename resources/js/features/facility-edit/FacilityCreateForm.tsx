@@ -24,10 +24,13 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
       name: values.name,
       url: values.url,
     });
-    adminInvalidator.facilities();
-    systemInvalidator.facilities();
     toast.success(t("forms.facility_create.success"));
     props.onSuccess?.();
+    // Important: Invalidation should happen after calling onSuccess which typically closes the form.
+    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+    // but also causes problems apparently.
+    adminInvalidator.facilities();
+    systemInvalidator.facilities();
   }
 
   return <FacilityForm id="facility_create" onSubmit={createFacility} onCancel={props.onCancel} />;

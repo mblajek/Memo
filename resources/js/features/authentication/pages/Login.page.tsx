@@ -15,10 +15,7 @@ import {LoginForm} from "../forms/login";
  * otherwise.
  */
 const LoginPage: VoidComponent = () => {
-  const statusQuery = createQuery(() => ({
-    ...User.statusQueryOptions(),
-    meta: {quietError: true},
-  }));
+  const statusQuery = createQuery(User.statusQueryOptions);
 
   createEffect(() => {
     if (statusQuery.isSuccess) {

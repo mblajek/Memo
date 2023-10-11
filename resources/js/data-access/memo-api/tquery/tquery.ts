@@ -1,5 +1,5 @@
 import {createQuery, keepPreviousData} from "@tanstack/solid-query";
-import {Accessor, createComputed, createMemo, createSignal, on} from "solid-js";
+import {Accessor, createComputed, createSignal} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
 import {DataItem, DataRequest, DataResponse, Schema} from ".";
 import {V1} from "../config";
@@ -80,16 +80,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
         ...dataQueryOptions,
       }) satisfies SolidQueryOpts<DataResponse, DataQueryKey<K>>,
   );
-  // There seems to be a bug in TanStack Query v5 - the identity of data does not change
-  // when data is loaded from the cache. The code below fixes that.
-  const data = createMemo(
-    on(
-      () => dataQuery.dataUpdatedAt,
-      () => [...(dataQuery.data?.data || EMPTY_DATA)],
-    ),
-  );
-  // This should work but doesn't:
-  // const data = () => dataQuery.data?.data || EMPTY_DATA;
+  const data = () => dataQuery.data?.data || EMPTY_DATA;
   return {
     schema,
     requestController,
