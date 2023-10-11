@@ -14,13 +14,22 @@ interface Props {
 
 /** Produces best effort suggestion for the url, e.g. "My Facility Name" --> "my-facility-name" */
 function getUrlSuggestion(name: string) {
-  const url = trimInput(name).toLowerCase().replaceAll(" ", "-");
-  // Remove diacritics, especially for polish characters.
-  // https://stackoverflow.com/a/37511463/1832228
-  return url
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .replace("ł", "l");
+  return (
+    trimInput(
+      name
+        .toLowerCase()
+        .normalize("NFD")
+        // Remove diacritics, especially for polish characters: https://stackoverflow.com/a/37511463/1832228
+        .replace(/\p{Diacritic}/gu, "")
+        .replace("ł", "l")
+        // Treat dash as space before trimInput, so we trim repeated and trailing dashes together with spaces.
+        .replaceAll("-", " ")
+        // Remove everything that wasn't converted to ascii
+        .replaceAll(/[^a-z0-9 ]/g, ""),
+    )
+      // Restore dash as delimiter
+      .replaceAll(" ", "-")
+  );
 }
 
 export const FacilityCreateForm: VoidComponent<Props> = (props) => {
