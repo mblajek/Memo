@@ -20,8 +20,8 @@ function getUrlSuggestion(name: string) {
         .toLowerCase()
         .normalize("NFD")
         // Remove diacritics, especially for polish characters: https://stackoverflow.com/a/37511463/1832228
-        .replace(/\p{Diacritic}/gu, "")
-        .replace("ł", "l")
+        .replaceAll(/\p{Diacritic}/gu, "")
+        .replaceAll("ł", "l")
         // Treat dash as space before trimInput, so we trim repeated and trailing dashes together with spaces.
         .replaceAll("-", " ")
         // Remove everything that wasn't converted to ascii
