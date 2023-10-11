@@ -36,7 +36,10 @@ export namespace htmlAttributes {
   export type input = JSX.HTMLElementTags["input"];
   export type select = JSX.HTMLElementTags["select"];
 
-  export function merge(attributes: object | undefined, overrides: Pick<div, "class" | "style">) {
+  export function merge<A extends object, O extends Pick<div, "class" | "style">>(
+    attributes: A | undefined,
+    overrides: O,
+  ) {
     const attribs = (attributes || {}) as Partial<Record<string, unknown>>;
     const result = {...attribs, ...overrides};
     if (attribs.class && overrides.class) {
@@ -54,6 +57,6 @@ export namespace htmlAttributes {
           ? `${attribs.style} ; ${overrides.style}`
           : {...attribs.style, ...(overrides.style as JSX.CSSProperties)};
     }
-    return result;
+    return result as A & O;
   }
 }
