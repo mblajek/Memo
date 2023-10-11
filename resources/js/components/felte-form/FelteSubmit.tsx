@@ -19,13 +19,13 @@ interface Props extends htmlAttributes.button {
  *
  * Must be used inside of FelteForm
  */
-export const FelteSubmit: ParentComponent<Props> = (props) => {
+export const FelteSubmit: ParentComponent<Props> = (allProps) => {
   const {props: formProps, form, translations} = useFormContext();
-  const [localProps, buttonProps] = splitProps(props, ["includeUnknownValidationMessages", "children"]);
+  const [props, buttonProps] = splitProps(allProps, ["cancel", "includeUnknownValidationMessages", "children"]);
   const t = useLangFunc();
   return (
     <div class="flex flex-col items-stretch">
-      <Show when={localProps.includeUnknownValidationMessages ?? true}>
+      <Show when={props.includeUnknownValidationMessages ?? true}>
         <UnknownValidationMessages />
       </Show>
       <div class="flex gap-1 justify-center items-stretch">
@@ -45,7 +45,7 @@ export const FelteSubmit: ParentComponent<Props> = (props) => {
           disabled={form.isSubmitting() || buttonProps.disabled}
           {...buttonProps}
         >
-          {localProps.children || translations.submit()}
+          {props.children || translations.submit()}
         </Button>
       </div>
     </div>

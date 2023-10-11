@@ -1,7 +1,6 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {Match, ParentProps, Switch, VoidComponent, mergeProps, on} from "solid-js";
+import {Match, ParentProps, Switch, VoidComponent, createEffect, mergeProps, on} from "solid-js";
 import {BigSpinner} from "../ui";
-import {createEffect} from "solid-js";
 
 export interface QueryBarrierProps {
   /** List of queries to handle. */
@@ -22,14 +21,14 @@ export interface QueryBarrierProps {
  *
  * @todo better looking Error
  */
-export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
-  const merged = mergeProps(
+export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
+  const props = mergeProps(
     {
       // TODO: dedicated Error element
       Error: LocalError,
       Pending: LocalSpinner,
     },
-    props,
+    allProps,
   );
   createEffect(
     // Don't rerun when fields on queries change, just the top level props.
@@ -45,18 +44,18 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
       }
     }),
   );
-  const isError = () => merged.queries.some(({isError}) => isError);
+  const isError = () => props.queries.some(({isError}) => isError);
   const isSuccess = () =>
-    merged.queries.every((query) => query.isSuccess && (!props.ignoreCachedData || query.isFetchedAfterMount));
+    props.queries.every((query) => query.isSuccess && (!props.ignoreCachedData || query.isFetchedAfterMount));
   const isPending = () => !isError() && !isSuccess();
 
   return (
     <Switch>
       <Match when={isError()}>
-        <merged.Error />
+        <props.Error />
       </Match>
       <Match when={isPending()}>
-        <merged.Pending />
+        <props.Pending />
       </Match>
       <Match when={isSuccess()}>{props.children}</Match>
     </Switch>

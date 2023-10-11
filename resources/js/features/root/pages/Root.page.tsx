@@ -8,14 +8,14 @@ interface Props {
   facilityUrl?: string;
 }
 
-export default ((props) => {
-  const mProps = mergeProps({children: <Outlet />}, props);
+export default ((allProps) => {
+  const props = mergeProps({children: <Outlet />}, allProps);
   return (
-    <AccessBarrier facilityUrl={mProps.facilityUrl}>
+    <AccessBarrier facilityUrl={props.facilityUrl}>
       <Container>
         <Navbar />
         <Header />
-        <Main>{mProps.children}</Main>
+        <Main>{props.children}</Main>
         <Footer />
         <Confirmation />
       </Container>

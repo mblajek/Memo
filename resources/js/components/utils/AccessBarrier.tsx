@@ -44,18 +44,18 @@ const FACILITY_ROLES = new Set<PermissionKey>(["facilityMember", "facilityClient
  *
  * Default Pending -> `<MemoLoader />`
  */
-export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
-  const merged = mergeProps(
+export const AccessBarrier: ParentComponent<AccessBarrierProps> = (allProps) => {
+  const defProps = mergeProps(
     {
       Fallback: () => <p>Nie masz uprawnień do tego zasobu</p>,
       roles: [],
       Error: () => <Navigate href="/login" />,
       Pending: MemoLoader,
     },
-    props,
+    allProps,
   );
-  const [queryBarrierProps, localProps] = splitProps(merged, ["Error", "Pending"]);
-  const needFacilityPermissions = () => localProps.roles.some((role) => FACILITY_ROLES.has(role));
+  const [queryBarrierProps, props] = splitProps(defProps, ["Error", "Pending"]);
+  const needFacilityPermissions = () => props.roles.some((role) => FACILITY_ROLES.has(role));
   // Create the query even if it's not needed, it is fetched on all pages anyway.
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(() => {
@@ -68,14 +68,14 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
       // If the status is error, the outer QueryBarrier will show the error.
       return {enabled: false, queryKey: ["pending"]};
     }
-    const facilityId = facilitiesQuery.data?.find(({url}) => url === localProps.facilityUrl)?.id;
+    const facilityId = facilitiesQuery.data?.find(({url}) => url === props.facilityUrl)?.id;
     if (facilityId) {
       return User.statusWithFacilityPermissionsQueryOptions(facilityId);
     }
     return {
       queryKey: ["error"],
       queryFn: () => {
-        throw new Error(`Facility with URL ${localProps.facilityUrl} not found`);
+        throw new Error(`Facility with URL ${props.facilityUrl} not found`);
       },
     };
   });
@@ -84,13 +84,13 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (props) => {
       return false;
     }
     const permissions = statusQuery.data!.permissions as Partial<Record<PermissionKey, boolean>>;
-    return localProps.roles?.every((role) => permissions[role]);
+    return props.roles?.every((role) => permissions[role]);
   };
   return (
     <QueryBarrier queries={needFacilityPermissions() ? [facilitiesQuery] : []} {...queryBarrierProps}>
       <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
-        <Show when={accessGranted()} fallback={<localProps.Fallback />}>
-          {merged.children}
+        <Show when={accessGranted()} fallback={<props.Fallback />}>
+          {props.children}
         </Show>
       </QueryBarrier>
     </QueryBarrier>

@@ -31,10 +31,10 @@ type MyProps = {
 };
 type Props = FormProps & MyProps;
 
-export const FacilityForm: VoidComponent<Props> = (props) => {
-  const [localProps, formProps]: [MyProps, FormProps] = splitProps(props, ["id", "onCancel"]);
+export const FacilityForm: VoidComponent<Props> = (allProps) => {
+  const [props, formProps]: [MyProps, FormProps] = splitProps(allProps, ["id", "onCancel"]);
   return (
-    <FelteForm id={localProps.id} schema={getSchema()} {...formProps} class="flex flex-col gap-4">
+    <FelteForm id={props.id} schema={getSchema()} {...formProps} class="flex flex-col gap-4">
       {(form) => {
         createComputed((lastSuggestion: string | undefined) => {
           const suggestion = getUrlSuggestion(form.data("name") || "");
@@ -49,7 +49,7 @@ export const FacilityForm: VoidComponent<Props> = (props) => {
               <TextField name="name" type="text" onBlur={getTrimInputHandler()} />
               <TextField name="url" type="text" onBlur={getTrimInputHandler()} />
             </div>
-            <FelteSubmit cancel={localProps.onCancel} />
+            <FelteSubmit cancel={props.onCancel} />
           </>
         );
       }}

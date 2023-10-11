@@ -12,8 +12,8 @@ export interface NavigationItemProps extends AnchorProps {
 /** Marker class to detect navigation item activity. */
 const ACTIVE_ITEM_CLASS = "__activeNavItem";
 
-export const NavigationItem: ParentComponent<NavigationItemProps> = (props) => {
-  const [local, aProps] = splitProps(props, ["children", "icon"]);
+export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) => {
+  const [props, aProps] = splitProps(allProps, ["children", "icon"]);
   const queryClient = useQueryClient();
   return (
     <A
@@ -27,8 +27,8 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (props) => {
         }
       }}
     >
-      <Dynamic component={local.icon} size="25" />
-      <span>{local.children}</span>
+      <Dynamic component={props.icon} size="25" />
+      <span>{props.children}</span>
     </A>
   );
 };

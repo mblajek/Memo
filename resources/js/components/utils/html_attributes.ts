@@ -11,8 +11,8 @@ import {cx} from "./classnames";
  *       someProp: string;
  *     }
  *
- *     const MyComponent: VoidComponent<MyComponentProps> = (props) => {
- *       const [localProps, spanProps] = splitProps(props, ["someProp"]);
+ *     const MyComponent: VoidComponent<MyComponentProps> = (allProps) => {
+ *       const [props, spanProps] = splitProps(allProps, ["someProp"]);
  *       return (
  *         <span
  *           {...htmlAttributes.merge(spanProps, {
@@ -20,7 +20,7 @@ import {cx} from "./classnames";
  *             style: {{"color": myComponentColor}},
  *           })}
  *         >
- *           some prop: {localProps.someProp}
+ *           some prop: {props.someProp}
  *         </span>
  *       );
  *     };
