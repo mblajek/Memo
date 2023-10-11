@@ -25,7 +25,7 @@ export default (() => {
           },
           email: {
             columnDef: {
-              cell: cellFunc<string>((v) => <Email email={v} />),
+              cell: cellFunc<string>((v) => <Email class="w-full" email={v} />),
             },
           },
           createdAt: {
