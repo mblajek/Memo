@@ -30,7 +30,6 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
   }));
 
   async function updateFacility(values: FacilityFormOutput) {
-    // First mutate the user fields (without the members).
     await facilityMutation.mutateAsync({
       id: props.id,
       name: values.name,
@@ -38,6 +37,9 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
     });
     props.onSuccess?.();
     toast.success(t("forms.user_edit.success"));
+    // Important: Invalidation should happen after calling onSuccess which typically closes the form.
+    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+    // but also causes problems apparently.
     adminInvalidator.facilities();
     systemInvalidator.facilities();
   }
