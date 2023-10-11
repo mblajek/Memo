@@ -4,7 +4,9 @@ namespace App\Rules;
 
 use Closure;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 
@@ -95,6 +97,16 @@ class Valid extends AbstractDataRule
     ) {
     }
 
+    /** forward ignore to inner Unique rules */
+    public function ignore(Model|string $id): void
+    {
+        foreach ($this->rules as $rule) {
+            if ($rule instanceof Unique) {
+                $rule->ignore($id);
+            }
+        }
+    }
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if ($value === null) {
@@ -105,7 +117,7 @@ class Valid extends AbstractDataRule
         }
 
         try {
-            ValidatorFacade::validate(['value' => $value], ['value' => $this->rules]);
+            ValidatorFacade::validate($this->data, [$attribute => $this->rules]);
         } /** @noinspection PhpRedundantCatchClauseInspection */
         catch (ValidationException $validationException) {
             foreach ($validationException->validator->failed() as $fieldErrors) {
