@@ -15,8 +15,9 @@ export const UserInfo: VoidComponent = () => {
   const logout = createMutation(() => ({
     mutationFn: () => User.logout(),
     onSuccess() {
-      invalidate.statusAndFacilityPermissions();
       setActiveFacilityId(undefined);
+      // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
+      invalidate.statusAndFacilityPermissions();
     },
   }));
 

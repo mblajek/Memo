@@ -3,18 +3,19 @@ import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
-  createQuery,
+  useQueryClient,
   type MutationMeta,
   type QueryMeta,
 } from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
 import {System, User} from "data-access/memo-api";
+import {SolidQueryOpts} from "data-access/memo-api/query_utils";
 import {Api} from "data-access/memo-api/types";
-import {For, ParentComponent, Show, VoidComponent, createMemo} from "solid-js";
+import {For, ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {cx, useLangFunc} from ".";
-import {MemoLoader} from "../ui";
 import {translationsLoaded, translationsLoadedPromise} from "../../i18n_loader";
+import {MemoLoader} from "../ui";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
@@ -106,11 +107,16 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
   );
 };
 
-/** Initialize some of the required queries beforehand, but don't block on them. */
+/** Prefetch some of the required queries beforehand. */
 const InitQueries: VoidComponent = () => {
-  const queries = [createQuery(System.facilitiesQueryOptions), createQuery(User.statusQueryOptions)];
+  const queryClient = useQueryClient();
+  const fetchPromises = [System.facilitiesQueryOptions(), User.statusQueryOptions()].map((opts) =>
+    queryClient.fetchQuery(opts as SolidQueryOpts<unknown>),
+  );
+  const [isPrefetching, setIsPrefetching] = createSignal(true);
+  Promise.allSettled(fetchPromises).then(() => setIsPrefetching(false));
   return (
-    <Show when={queries.some((q) => q.isLoading)}>
+    <Show when={isPrefetching()}>
       <MemoLoader />
     </Show>
   );
