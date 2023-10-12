@@ -18,6 +18,7 @@ pnpm-lock.yaml
 /.fleet
 /.idea
 /.vscode
+!.vscode/extensions.json
 
 /storage/api-docs/*.json
 
