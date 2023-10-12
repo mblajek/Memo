@@ -17,8 +17,8 @@ yarn-error.log
 pnpm-lock.yaml
 /.fleet
 /.idea
-/.vscode
-!.vscode/extensions.json
+/.vscode/*
+!/.vscode/extensions.json
 
 /storage/api-docs/*.json
 
