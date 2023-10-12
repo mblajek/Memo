@@ -9,7 +9,7 @@ export const FacilityControl: VoidComponent = () => {
   const params = useParams();
 
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-  const statusQuery = createQuery(() => User.statusQueryOptions());
+  const statusQuery = createQuery(User.statusQueryOptions);
 
   const facilities = createMemo(
     () =>
@@ -51,7 +51,7 @@ export const FacilityControl: VoidComponent = () => {
                 const url = facilities().find((facility) => facility.id === e.target.value)?.url;
 
                 setActiveFacilityId(e.target.value);
-                if (url) navigate(`/${url}/home`);
+                if (url) navigate(`/${url}`);
               }}
             >
               <For each={facilities()}>{(facility) => <option value={facility.id}>{facility.name}</option>}</For>

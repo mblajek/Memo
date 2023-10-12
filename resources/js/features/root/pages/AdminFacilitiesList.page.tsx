@@ -1,7 +1,7 @@
 import {A} from "@solidjs/router";
 import {AUTO_SIZE_COLUMN_DEFS, Button, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {AccessBarrier, useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityCreateModal, showFacilityCreateModal} from "features/facility-edit/FacilityCreateModal";
 import {FacilityEditModal, showFacilityEditModal} from "features/facility-edit/FacilityEditModal";
@@ -12,7 +12,7 @@ import {Component} from "solid-js";
 export default (() => {
   const t = useLangFunc();
   return (
-    <AccessBarrier roles={["globalAdmin"]}>
+    <>
       <TQueryTable
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.facility()}
@@ -31,6 +31,7 @@ export default (() => {
             columnDef: {
               cell: (c) => {
                 const href = () => `/${c.getValue()}`;
+                // TODO: The link can be inaccessible for the current user, handle this better.
                 return <A href={href()}>{href()}</A>;
               },
             },
@@ -77,6 +78,6 @@ export default (() => {
       />
       <FacilityCreateModal />
       <FacilityEditModal />
-    </AccessBarrier>
+    </>
   );
 }) satisfies Component;
