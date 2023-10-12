@@ -13,7 +13,7 @@ export default (() => {
     <>
       <TQueryTable
         mode="standalone"
-        staticPrefixQueryKey={Admin.keys.userLists()}
+        staticPrefixQueryKey={Admin.keys.user()}
         staticEntityURL="admin/user"
         staticTranslations={createTableTranslations("users")}
         intrinsicColumns={["id"]}

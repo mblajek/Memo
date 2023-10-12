@@ -17,7 +17,7 @@ type FormContextValue<T extends Obj = Obj> = {
   translations: FormTranslations;
 };
 
-type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
 export interface FormTranslations {
@@ -38,6 +38,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     id: string;
     schema: ZodSchema<T>;
     children: ChildrenOrFunc<[FormType<T>]>;
+    onFormCreated?: (form: FormType<T>) => void;
   };
 
 /**
@@ -52,7 +53,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const t = useLangFunc();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
-    ["children", "schema"],
+    ["children", "schema", "onFormCreated"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
   // eslint-disable-next-line solid/reactivity
@@ -98,6 +99,9 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       }
     },
   }) as FormType<T>;
+
+  // eslint-disable-next-line solid/reactivity
+  props.onFormCreated?.(form);
 
   const TypedFormContext = typedFormContext<T>();
   return (
