@@ -19,22 +19,22 @@ interface Props extends htmlAttributes.label {
  * provided by the form (and capitalised).
  * Otherwise, the label is not present.
  */
-export const FieldLabel: VoidComponent<Props> = (props) => {
-  const [localProps, labelProps] = splitProps(props, ["fieldName", "text", "wrapIn"]);
+export const FieldLabel: VoidComponent<Props> = (allProps) => {
+  const [props, labelProps] = splitProps(allProps, ["fieldName", "text", "wrapIn"]);
   const form = useFormContextIfInForm();
   return (
     <TranslatedText
-      override={() => localProps.text}
-      langFunc={[form?.translations?.fieldNames, localProps.fieldName]}
+      override={() => props.text}
+      langFunc={[form?.translations?.fieldNames, props.fieldName]}
       capitalize={true}
       wrapIn={(text) => (
         <label
-          id={labelIdForField(localProps.fieldName)}
-          for={localProps.fieldName}
+          id={labelIdForField(props.fieldName)}
+          for={props.fieldName}
           {...labelProps}
           class={cx("font-medium", labelProps.class)}
         >
-          {localProps.wrapIn?.(text) ?? text}
+          {props.wrapIn?.(text) ?? text}
         </label>
       )}
     />

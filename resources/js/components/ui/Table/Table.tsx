@@ -107,8 +107,8 @@ const DEFAULT_PROPS = {
  * - no column groups
  * - no foldable rows
  */
-export const Table = <T,>(optProps: VoidProps<Props<T>>): JSX.Element => {
-  const props = mergeProps(DEFAULT_PROPS, optProps);
+export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
+  const props = mergeProps(DEFAULT_PROPS, allProps);
   let scrollToTopPoint: HTMLDivElement | undefined;
   createEffect(
     on(

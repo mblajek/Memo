@@ -6,8 +6,8 @@ interface Props extends htmlAttributes.div {
   placeholder?: string;
 }
 
-export const TableSearch: VoidComponent<ParentProps<Props>> = (props) => {
-  const [lProps, divProps] = splitProps(props, ["placeholder"]);
+export const TableSearch: VoidComponent<ParentProps<Props>> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["placeholder"]);
   const t = useLangFunc();
   const table = useTable();
   const [query, setQuery] = createSignal(table.getState().globalFilter);
@@ -17,7 +17,7 @@ export const TableSearch: VoidComponent<ParentProps<Props>> = (props) => {
       <input
         name="table_global_search"
         type="search"
-        placeholder={"chwilowo zepsute" || lProps.placeholder || t("tables.search")}
+        placeholder={"chwilowo zepsute" || props.placeholder || t("tables.search")}
         value={query()}
         onInput={({target: {value}}) => setQuery(value)}
       />
