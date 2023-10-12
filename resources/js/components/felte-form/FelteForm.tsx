@@ -5,7 +5,7 @@ import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
-import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
+import {Context, JSX, createComputed, createContext, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, htmlAttributes, useLangFunc} from "../utils";
@@ -17,7 +17,7 @@ type FormContextValue<T extends Obj = Obj> = {
   translations: FormTranslations;
 };
 
-type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
 export interface FormTranslations {
@@ -38,6 +38,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     id: string;
     schema: ZodSchema<T>;
     children: ChildrenOrFunc<[FormType<T>]>;
+    onFormCreated?: (form: FormType<T>) => void;
   };
 
 /**
@@ -52,7 +53,7 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>): JSX.Element
   const t = useLangFunc();
   const [local, createFormOptions, formProps] = splitProps(
     props,
-    ["children", "schema"],
+    ["children", "schema", "onFormCreated"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
   // eslint-disable-next-line solid/reactivity
@@ -98,6 +99,9 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>): JSX.Element
       }
     },
   }) as FormType<T>;
+
+  // eslint-disable-next-line solid/reactivity
+  local.onFormCreated?.(form);
 
   const TypedFormContext = typedFormContext<T>();
   return (
