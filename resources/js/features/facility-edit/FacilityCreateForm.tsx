@@ -13,7 +13,7 @@ interface Props {
 }
 
 /** Produces best effort suggestion for the url, e.g. "My Facility Name" --> "my-facility-name" */
-function getUrlSuggestion(name: string) {
+export function getUrlSuggestion(name: string) {
   return (
     trimInput(
       name
