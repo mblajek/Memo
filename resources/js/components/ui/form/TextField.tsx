@@ -14,8 +14,8 @@ export interface TextFieldProps extends htmlAttributes.input {
  *
  * Intended for use with FelteForm (handles validation messages)
  */
-export const TextField: VoidComponent<TextFieldProps> = (props) => {
-  const [_lProps, inputProps] = splitProps(props, ["name", "label"]);
+export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
+  const [props, inputProps] = splitProps(allProps, ["name", "label"]);
   return (
     <div>
       <FieldLabel fieldName={props.name} text={props.label} />
