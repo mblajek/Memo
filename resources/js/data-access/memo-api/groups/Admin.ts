@@ -14,11 +14,8 @@ import {ListInParam, createGetFromList, createListRequest, parseGetListResponse}
 export namespace Admin {
   export const createFacility = (facility: Api.Request.Create<FacilityResource>, config?: Api.Config) =>
     V1.post<Api.Response.Post>("/admin/facility", facility, config);
-  export const updateFacility = (
-    facilityId: Api.Id,
-    facility: Api.Request.Patch<FacilityResource>,
-    config?: Api.Config,
-  ) => V1.patch(`/admin/facility/${facilityId}`, facility, config);
+  export const updateFacility = (facility: Api.Request.Patch<FacilityResource>, config?: Api.Config) =>
+    V1.patch(`/admin/facility/${facility.id}`, facility, config);
 
   export const createUser = (user: AdminUserResourceForCreate, config?: Api.Config) =>
     V1.post<Api.Response.Post>("/admin/user", user, config);
@@ -28,9 +25,9 @@ export namespace Admin {
 
   const getUsersListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {...config, params: request});
-  export const getUsersList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
+  const getUsersList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     getUsersListBase(request, config).then(parseGetListResponse);
-  export const getUser = createGetFromList(getUsersListBase);
+  const getUser = createGetFromList(getUsersListBase);
 
   export const createMember = (member: Api.Request.Create<MemberResource>, config?: Api.Config) =>
     V1.post("/admin/member", member, config);
@@ -40,12 +37,10 @@ export namespace Admin {
 
   export const keys = {
     all: () => ["admin"] as const,
-    userAll: () => [...keys.all(), "user"] as const,
-    userLists: () => [...keys.userAll(), "list"] as const,
-    userList: (request?: Api.Request.GetListParams) => [...keys.userLists(), request] as const,
+    user: () => [...keys.all(), "user"] as const,
+    userList: (request?: Api.Request.GetListParams) => [...keys.user(), "list", request] as const,
     userGet: (id: Api.Id) => keys.userList(createListRequest(id)),
-    facilityAll: () => [...keys.all(), "facility"] as const,
-    facilityLists: () => [...keys.facilityAll(), "list"] as const,
+    facility: () => [...keys.all(), "facility"] as const,
   };
 
   export const usersQueryOptions = (ids?: ListInParam) => {
@@ -65,8 +60,8 @@ export namespace Admin {
   export function useInvalidator() {
     const queryClient = useQueryClient();
     return {
-      users: () => queryClient.invalidateQueries({queryKey: keys.userLists()}),
-      facilities: () => queryClient.invalidateQueries({queryKey: keys.facilityLists()}),
+      users: () => queryClient.invalidateQueries({queryKey: keys.user()}),
+      facilities: () => queryClient.invalidateQueries({queryKey: keys.facility()}),
     };
   }
 }

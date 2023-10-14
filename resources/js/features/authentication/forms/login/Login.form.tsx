@@ -30,7 +30,7 @@ export namespace LoginForm {
     const mutation = createMutation(() => ({
       mutationFn: User.login,
       onSuccess() {
-        invalidateUser.status();
+        invalidateUser.statusAndFacilityPermissions();
         props.onSuccess?.();
       },
       meta: {isFormSubmit: true},

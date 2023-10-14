@@ -3,14 +3,13 @@ import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
 import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
-import i18next from "i18next";
-import I18NextHttpBackend from "i18next-http-backend";
 import {Settings} from "luxon";
-import {Show, createSignal} from "solid-js";
+import {Show} from "solid-js";
 import {render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
 import {LoaderInPortal, MemoLoader} from "./components/ui";
+import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
 
 const root = document.getElementById("root");
@@ -27,9 +26,6 @@ declare module "luxon" {
 }
 
 render(() => {
-  const [transLoaded, setTransLoaded] = createSignal(false);
-  i18next.use(I18NextHttpBackend).on("loaded", () => setTransLoaded(true));
-
   return (
     <TransProvider
       options={{
@@ -45,7 +41,7 @@ render(() => {
         pluralSeparator: "__",
       }}
     >
-      <Show when={!transLoaded()}>
+      <Show when={!translationsLoaded()}>
         {/* Show the loader until the translations are loaded. The page is displayed underneath, and
         the strings will get updated reactively when the translations are ready. */}
         <MemoLoader />

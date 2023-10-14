@@ -23,9 +23,11 @@ export namespace UserEditForm {
   export const Component: VoidComponent<Props> = (props) => {
     const t = useLangFunc();
     const statusQuery = createQuery(User.statusQueryOptions);
+    // eslint-disable-next-line solid/reactivity
     const userQuery = createQuery(() => Admin.userQueryOptions(props.userId));
     const user = () => userQuery.data;
-    const invalidate = Admin.useInvalidator();
+    const adminInvalidate = Admin.useInvalidator();
+    const userInvalidate = User.useInvalidator();
     const userMutation = createMutation(() => ({
       mutationFn: Admin.updateUser,
       meta: {isFormSubmit: true},
@@ -34,9 +36,19 @@ export namespace UserEditForm {
 
     async function updateUser(values: UserEdit.Output, ctx: SubmitContext<UserEdit.Output>) {
       const oldUser = user()!;
-      if (oldUser.id === statusQuery.data?.user.id && oldUser.hasGlobalAdmin && !values.hasGlobalAdmin) {
-        ctx.setErrors("hasGlobalAdmin", t("forms.user_edit.validation.cannot_remove_own_global_admin"));
-        return;
+      if (oldUser.id === statusQuery.data?.user.id) {
+        let err = false;
+        if (oldUser.hasGlobalAdmin && !values.hasGlobalAdmin) {
+          ctx.setErrors("hasGlobalAdmin", t("forms.user_edit.validation.cannot_remove_own_global_admin"));
+          err = true;
+        }
+        if (oldUser.hasEmailVerified && !values.hasEmailVerified) {
+          ctx.setErrors("hasEmailVerified", t("forms.user_edit.validation.cannot_remove_own_email_verified"));
+          err = true;
+        }
+        if (err) {
+          return;
+        }
       }
       // First mutate the user fields (without the members).
       await userMutation.mutateAsync({
@@ -68,17 +80,23 @@ export namespace UserEditForm {
       // them fails, otherwise invalidation might happen before the final changes.
       try {
         await Promise.allSettled(membersUpdater.getUpdatePromises(oldUser, values.members));
+        toast.success(t("forms.user_edit.success"));
+        props.onSuccess?.();
       } finally {
         // Invalidate the user even after partial success (e.g. only user edit succeeded), or when there were
         // no member mutations.
-        invalidate.users();
+        // Important: Invalidation should happen after calling onSuccess which typically closes the form.
+        // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+        // but also causes problems apparently.
+        adminInvalidate.users();
+        if (oldUser.id === statusQuery.data?.user.id) {
+          userInvalidate.statusAndFacilityPermissions();
+        }
       }
-      toast.success(t("forms.user_edit.success"));
-      props.onSuccess?.();
     }
 
     return (
-      <QueryBarrier queries={[userQuery]}>
+      <QueryBarrier queries={[userQuery]} ignoreCachedData={true}>
         <UserEdit.EditForm
           id="user_edit"
           onSubmit={updateUser}

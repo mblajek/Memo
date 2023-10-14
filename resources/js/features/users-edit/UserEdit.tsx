@@ -47,13 +47,13 @@ export namespace UserEdit {
     id: string;
   }
 
-  export const EditForm: VoidComponent<Props> = (props) => {
-    const [localProps, formProps] = splitProps(props, ["id", "onCancel"]);
+  export const EditForm: VoidComponent<Props> = (allProps) => {
+    const [props, formProps] = splitProps(allProps, ["id", "onCancel"]);
     const t = useLangFunc();
     // Cast because otherwise type info is lost for some reason.
     const initialValues = () => (formProps as Props).initialValues;
     return (
-      <FelteForm id={localProps.id} schema={getSchema()} {...formProps} class="flex flex-col gap-4">
+      <FelteForm id={props.id} schema={getSchema()} {...formProps} class="flex flex-col gap-4">
         {(form) => {
           createComputed(() => {
             if (!form.data("email")) {
@@ -66,11 +66,10 @@ export namespace UserEdit {
           return (
             <>
               <div class="flex flex-col gap-1">
-                <TextField name="name" type="text" autocomplete="off" onBlur={getTrimInputHandler()} />
+                <TextField name="name" type="text" onBlur={getTrimInputHandler()} />
                 <TextField
                   name="email"
                   type="email"
-                  autocomplete="off"
                   onInput={() => form.setFields("hasEmailVerified", false)}
                   onBlur={getTrimInputHandler()}
                 />
@@ -107,7 +106,7 @@ export namespace UserEdit {
                 disabled={!form.data("hasPassword")}
                 title={!form.data("hasPassword") ? t("forms.user_edit.global_admin_requires_password") : undefined}
               />
-              <FelteSubmit cancel={localProps.onCancel} />
+              <FelteSubmit cancel={props.onCancel} />
             </>
           );
         }}
