@@ -1,5 +1,5 @@
 .segmentedControl {
-  @apply w-full border border-gray-400 rounded p-1.5;
+  @apply border border-gray-400 rounded p-1.5;
   @apply flex gap-1 relative;
 
   [data-part="indicator"] {
@@ -9,13 +9,10 @@
   [data-part="item"] {
     @apply relative select-none;
     @apply px-2 py-0.5 flex items-center;
-    @apply text-black;
+    @apply text-black cursor-pointer;
 
     &[data-state="unchecked"] {
-      @apply text-opacity-70;
-      &:hover {
-        @apply text-opacity-100;
-      }
+      @apply text-opacity-70 hover:text-opacity-100;
     }
 
     &[data-disabled] {

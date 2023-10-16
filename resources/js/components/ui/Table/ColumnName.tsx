@@ -15,11 +15,13 @@ interface Props {
 export const ColumnName: VoidComponent<Props> = (props) => {
   const table = useTable();
   return (
-    <TranslatedText
-      override={props.def.meta?.columnName}
-      langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
-      capitalize={true}
-      fallbackCode={props.def.id}
-    />
+    <span class="wrapText">
+      <TranslatedText
+        override={props.def.meta?.columnName}
+        langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
+        capitalize={true}
+        fallbackCode={props.def.id}
+      />
+    </span>
   );
 };

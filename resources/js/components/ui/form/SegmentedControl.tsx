@@ -30,8 +30,8 @@ interface Item {
  *
  * To use in standalone mode, specify the controlling signal via value and setValue.
  */
-export const SegmentedControl: VoidComponent<Props> = (props) => {
-  const [_lProps, divProps] = splitProps(props, ["name", "label", "items", "value", "setValue", "disabled", "small"]);
+export const SegmentedControl: VoidComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["name", "label", "items", "value", "setValue", "disabled", "small"]);
   const [state, send] = useMachine(
     radio.machine({
       // eslint-disable-next-line solid/reactivity

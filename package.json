@@ -34,8 +34,8 @@
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
     "vite-plugin-eslint": "^1.8.1",
+    "vite-plugin-solid-svg": "^0.7.0",
     "vite-plugin-solid": "^2.7.0",
-    "vite-plugin-solid-svg": "^0.6.4",
     "vite-tsconfig-paths": "^4.2.0",
     "vitest": "^0.34.6"
   },
