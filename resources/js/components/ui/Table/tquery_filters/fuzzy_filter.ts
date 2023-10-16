@@ -12,6 +12,7 @@ const WORD_REGEXP = new RegExp(`(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB
 /**
  * Returns the filter for a single word.
  *
+ * In the default (non-exact) mode:
  * | Word:                   | Matches strings:
  * | :-                      | :-
  * | `abc` or `*abc*`        | containing _abc_
@@ -23,6 +24,9 @@ const WORD_REGEXP = new RegExp(`(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB
  * | `*`                     | containing _*_ (not a special character as a word)
  * | `**`                    | containing _**_ (not a special character as a word)
  * | `''`                    | containing _''_ (no special meaning as a word)
+ *
+ * In the exact mode, the * character doesn't have any special meaning. The quotes, on the other hand,
+ * can still be used just like in the default mode.
  */
 function fuzzyWordFilter(word: string, {exact = false} = {}) {
   let startsWithGlob: boolean;
@@ -82,7 +86,7 @@ function fuzzyTextualColumnFilter(
 
 /**
  * Creates a column filter for a string or text column, from the filter text.
- * See fuzzyTextualColumnFilter.
+ * See fuzzyTextualColumnFilter (the non-exact mode).
  */
 export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {column: string}): FilterH {
   return fuzzyTextualColumnFilter(filterText, {column});
