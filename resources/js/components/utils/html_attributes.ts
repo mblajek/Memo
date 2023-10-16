@@ -11,8 +11,8 @@ import {cx} from "./classnames";
  *       someProp: string;
  *     }
  *
- *     const MyComponent: VoidComponent<MyComponentProps> = (props) => {
- *       const [localProps, spanProps] = splitProps(props, ["someProp"]);
+ *     const MyComponent: VoidComponent<MyComponentProps> = (allProps) => {
+ *       const [props, spanProps] = splitProps(allProps, ["someProp"]);
  *       return (
  *         <span
  *           {...htmlAttributes.merge(spanProps, {
@@ -20,7 +20,7 @@ import {cx} from "./classnames";
  *             style: {{"color": myComponentColor}},
  *           })}
  *         >
- *           some prop: {localProps.someProp}
+ *           some prop: {props.someProp}
  *         </span>
  *       );
  *     };
@@ -36,7 +36,10 @@ export namespace htmlAttributes {
   export type input = JSX.HTMLElementTags["input"];
   export type select = JSX.HTMLElementTags["select"];
 
-  export function merge(attributes: object | undefined, overrides: Pick<div, "class" | "style">) {
+  export function merge<A extends object, O extends Pick<div, "class" | "style">>(
+    attributes: A | undefined,
+    overrides: O,
+  ) {
     const attribs = (attributes || {}) as Partial<Record<string, unknown>>;
     const result = {...attribs, ...overrides};
     if (attribs.class && overrides.class) {
@@ -54,6 +57,6 @@ export namespace htmlAttributes {
           ? `${attribs.style} ; ${overrides.style}`
           : {...attribs.style, ...(overrides.style as JSX.CSSProperties)};
     }
-    return result;
+    return result as A & O;
   }
 }

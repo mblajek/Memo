@@ -19,7 +19,7 @@ const App: VoidComponent = () => {
       <Route path="/" component={RootPage}>
         <UnknownNotFound />
         <Route path="/help" component={NotYetImplemented} />
-        <Route path="/admin" component={AdminPages}>
+        <Route path="/admin" component={GlobalAdminPages}>
           <UnknownNotFound />
           <Route path="/facilities" component={AdminFacilitiesListPage} />
           <Route path="/users" component={AdminUsersListPage} />
@@ -55,7 +55,7 @@ export default App;
 
 const UnknownNotFound: VoidComponent = () => <Route path="/*" component={NotFound} />;
 
-const AdminPages: VoidComponent = () => (
+const GlobalAdminPages: VoidComponent = () => (
   <AccessBarrier roles={["globalAdmin"]}>
     <Outlet />
   </AccessBarrier>

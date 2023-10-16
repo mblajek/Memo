@@ -36,9 +36,10 @@ interface DayInfo {
   classes: string;
 }
 
-export const TinyCalendar: VoidComponent<Props> = (props) => {
-  const mProps = mergeProps(DEFAULT_PROPS, props);
-  const [lProps, divProps] = splitProps(mProps, [
+export const TinyCalendar: VoidComponent<Props> = (allProps) => {
+  const defProps = mergeProps(DEFAULT_PROPS, allProps);
+  const [props, divProps] = splitProps(defProps, [
+    "locale",
     "selection",
     "month",
     "showWeekdayNames",
@@ -51,22 +52,22 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const weekDaysCalculator = createMemo(() => new WeekDaysCalculator(props.locale));
   const weekInfo = () => weekDaysCalculator().weekInfo;
-  const monthStart = createMemo(() => lProps.month.startOf("month"), undefined, {
+  const monthStart = createMemo(() => props.month.startOf("month"), undefined, {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
   });
   const [hover, setHover] = createSignal<DateTime>();
-  const getHoverRange = () => lProps.getHoverRange || ((d: DateTime) => [d, d]);
+  const getHoverRange = () => props.getHoverRange || ((d: DateTime) => [d, d]);
   const hoverRange = createMemo<DaysRange | undefined>(() => hover() && getHoverRange()(hover()!));
 
   const selectionCenter = () =>
-    lProps.selection && DateTime.fromMillis((lProps.selection[0].toMillis() + lProps.selection[1].toMillis()) / 2);
+    props.selection && DateTime.fromMillis((props.selection[0].toMillis() + props.selection[1].toMillis()) / 2);
   const retButtonAction = createMemo(() => {
-    if (lProps.month.hasSame(currentDate(), "month")) {
+    if (props.month.hasSame(currentDate(), "month")) {
       const selCenter = selectionCenter();
       if (!selCenter) {
         return undefined;
       }
-      return lProps.month.hasSame(selCenter, "month") ? undefined : "toSelection";
+      return props.month.hasSame(selCenter, "month") ? undefined : "toSelection";
     } else {
       return "toCurrent";
     }
@@ -74,7 +75,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
 
   /** List of days to show in the calendar. */
   const days = createMemo<DayInfo[]>(() => {
-    const holidaysSet = new Set(lProps.holidays?.map((d) => d.startOf("day").toMillis()));
+    const holidaysSet = new Set(props.holidays?.map((d) => d.startOf("day").toMillis()));
     // Always show (at least) two days of the previous month.
     const start = weekDaysCalculator().startOfWeek(monthStart().minus({days: 2}));
     // Show 6 weeks.
@@ -112,19 +113,19 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
   return (
     <div {...htmlAttributes.merge(divProps, {class: s.tinyCalendar})}>
       <div class={s.header}>
-        <button onClick={() => lProps.setMonth(lProps.month.minus({months: 1}))}>
+        <button onClick={() => props.setMonth(props.month.minus({months: 1}))}>
           <FaSolidArrowLeft />
         </button>
-        <button onClick={() => lProps.setMonth(lProps.month.plus({months: 1}))}>
+        <button onClick={() => props.setMonth(props.month.plus({months: 1}))}>
           <FaSolidArrowRight />
         </button>
         <div class={s.date}>
-          <div>{lProps.month.monthLong}</div>
-          <div>{lProps.month.year}</div>
+          <div>{props.month.monthLong}</div>
+          <div>{props.month.year}</div>
         </div>
         <button
           disabled={!retButtonAction()}
-          onClick={() => lProps.setMonth((retButtonAction() === "toSelection" && selectionCenter()) || currentDate())}
+          onClick={() => props.setMonth((retButtonAction() === "toSelection" && selectionCenter()) || currentDate())}
           title={
             retButtonAction() === "toSelection" ? t("calendar.go_to_selection") : t("calendar.go_to_current_month")
           }
@@ -133,7 +134,7 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
         </button>
       </div>
       <div class={s.days}>
-        <Show when={lProps.showWeekdayNames}>
+        <Show when={props.showWeekdayNames}>
           <Index each={Array.from({length: 7})}>
             {(_v, i) => {
               const date = DateTime.fromObject({weekday: weekInfo().firstDay}).plus({days: i});
@@ -149,14 +150,14 @@ export const TinyCalendar: VoidComponent<Props> = (props) => {
           {(di) => (
             <button
               class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}
-              onClick={() => lProps.onDayClick?.(di.day, getHoverRange()(di.day))}
+              onClick={() => props.onDayClick?.(di.day, getHoverRange()(di.day))}
               onMouseEnter={() => setHover(di.day)}
               onMouseLeave={() => setHover(undefined)}
             >
               <Show when={di.isToday}>
                 <div class={s.todayMark} />
               </Show>
-              <div class={cx(s.inner, rangeClasses(di.day, lProps.selection, s.selected))}>{di.day.day}</div>
+              <div class={cx(s.inner, rangeClasses(di.day, props.selection, s.selected))}>{di.day.day}</div>
             </button>
           )}
         </For>

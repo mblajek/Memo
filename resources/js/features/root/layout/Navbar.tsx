@@ -66,7 +66,7 @@ const getSectionItems = (
     {
       icon: HiOutlineUserGroup,
       href: "/admin/users",
-      children: "Użytkownicy",
+      children: "Osoby",
     },
   ],
   facilityAdmin: !facilityUrl

@@ -3,9 +3,9 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Rules\DataTypeRule;
-use App\Rules\StringIsTrimmedRule;
+use App\Rules\Valid;
 use App\Tquery\Filter\TqFilterOperator;
+use App\Utils\Date\DateHelper;
 
 enum TqDataTypeEnum
 {
@@ -98,20 +98,39 @@ enum TqDataTypeEnum
         );
     }
 
-    public function valueValidator(TqFilterOperator $operator): array
+    public function filterValueValidator(TqFilterOperator $operator): array
     {
         if (in_array($operator, TqFilterOperator::LIKE)) {
-            return ['string'];
+            return Valid::string();
         }
         return match ($this->notNullBaseType()) {
-            self::bool => ['bool', DataTypeRule::bool()],
-            self::date => throw new \Exception('To be implemented'),
-            self::datetime => throw new \Exception('To be implemented'),
-            self::int => ['numeric', 'integer', DataTypeRule::int()],
+            self::bool => Valid::bool(),
+            self::date => Valid::date(),
+            self::datetime => Valid::datetime(),
+            self::int => Valid::int(),
             self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED)
-                ? ['string', new StringIsTrimmedRule()] : ['string'],
-            self::uuid => ['string', 'uuid'],
+                ? Valid::trimmed() : Valid::string(),
+            self::uuid => Valid::uuid(),
             default => FatalExceptionFactory::tquery(),
         };
+    }
+
+    public function filterValuePrepare(
+        TqFilterOperator $operator,
+        bool|int|string|array|null $value,
+    ): bool|int|string|array|null {
+        if ($this->notNullBaseType() === self::datetime) {
+            return DateHelper::zuluToDbString($value);
+        }
+        if ($operator === TqFilterOperator::pv
+            || $operator === TqFilterOperator::vp
+            || $operator === TqFilterOperator::pvp
+        ) {
+            return (($operator === TqFilterOperator::pv || $operator === TqFilterOperator::pvp) ? '%' : '')
+                . (is_string($value) ? str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
+                    : (throw FatalExceptionFactory::tquery()))
+                . (($operator === TqFilterOperator::vp || $operator === TqFilterOperator::pvp) ? '%' : '');
+        }
+        return $value;
     }
 }
