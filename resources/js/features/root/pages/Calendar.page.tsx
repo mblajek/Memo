@@ -1,57 +1,60 @@
-import {DaysRange, SegmentedControl, TinyCalendar, WeekDaysCalculator} from "components/ui";
+import {FullCalendar, ResourceGroup} from "components/ui";
 import {DateTime} from "luxon";
-import {VoidComponent, createSignal} from "solid-js";
+import {VoidComponent} from "solid-js";
 
 export default (() => {
-  const locale = new Intl.Locale("pl");
-  const weekDayCalculator = new WeekDaysCalculator(locale);
-  const [selection, setSelection] = createSignal<DaysRange>();
-  const [month, setMonth] = createSignal<DateTime>(DateTime.now());
-  const [mode, setMode] = createSignal("week");
+  const resourceGroups: ResourceGroup[] = [
+    {
+      label: () => <span class="font-bold">Terapeuci</span>,
+      resources: [
+        {id: "aaaaaa", label: () => <span>Pierwszy Terapeuta Pierwszy</span>},
+        {id: "aaaaaab", label: () => <span>Drugi Terapeuta Drugi</span>},
+        {id: "aaaaaac", label: () => <span>Trzeci Terapeuta Trzeci</span>},
+        {id: "aaaaaad", label: () => <span>Czwarty Terapeuta Czwarty</span>},
+        {id: "aaaaaae", label: () => <span>Piąty Terapeuta Piąty</span>},
+        {id: "aaaaaa2", label: () => <span>Pierwszy Terapeuta Pierwszy</span>},
+        {id: "aaaaaa2b", label: () => <span>Drugi Terapeuta Drugi</span>},
+        {id: "aaaaaa2c", label: () => <span>Trzeci Terapeuta Trzeci</span>},
+        {id: "aaaaaa2d", label: () => <span>Czwarty Terapeuta Czwarty</span>},
+        {id: "aaaaaa2e", label: () => <span>Piąty Terapeuta</span>},
+        {id: "aaaaaa3", label: () => <span>Pierwszy Terapeuta</span>},
+        {id: "aaaaaa3b", label: () => <span>Drugi Terapeuta</span>},
+        {id: "aaaaaa3c", label: () => <span>Trzeci Terapeuta</span>},
+        {id: "aaaaaa3d", label: () => <span>Czwarty Terapeuta</span>},
+        {id: "aaaaaa3e", label: () => <span>Piąty Terapeuta</span>},
+        {id: "aaaaaa4", label: () => <span>Pierwszy Terapeuta</span>},
+        {id: "aaaaaa4b", label: () => <span>Drugi Terapeuta</span>},
+        {id: "aaaaaa4c", label: () => <span>Trzeci Terapeuta</span>},
+        {id: "aaaaaa4d", label: () => <span>Czwarty Terapeuta</span>},
+        {id: "aaaaaa4e", label: () => <span>Piąty Terapeuta</span>},
+        {id: "aaaaaa5", label: () => <span>Pierwszy Terapeuta</span>},
+        {id: "aaaaaa5b", label: () => <span>Drugi Terapeuta</span>},
+        {id: "aaaaaa5c", label: () => <span>Trzeci Terapeuta</span>},
+        {id: "aaaaaa5d", label: () => <span>Czwarty Terapeuta</span>},
+        {id: "aaaaaa5e", label: () => <span>Piąty Terapeuta</span>},
+      ],
+    },
+    {
+      label: () => <span class="font-bold">Zasoby</span>,
+      resources: [
+        {id: "xaaaaaa", label: () => <span>Pierwszy zasób</span>},
+        {id: "xaaaaaab", label: () => <span>Drugi zasób</span>},
+        {id: "xaaaaaac", label: () => <span>Trzeci zasób</span>},
+      ],
+    },
+  ];
   return (
-    <div class="flex gap-1">
-      {/* A tiny calendar with some example behaviour of selecting work days (or whole week when clicking on weekend). */}
-      <TinyCalendar
-        class="inline-block"
-        locale={locale}
-        showWeekdayNames={true}
-        holidays={[
-          [8, 15],
-          [11, 11],
-          [11, 1],
-          [12, 25],
-          [12, 26],
-        ].map(([month, day]) => DateTime.fromObject({month, day}))}
-        selection={selection()}
-        month={month()}
-        getHoverRange={(day) => weekDayCalculator.dayToWorkdays(day)}
-        setMonth={setMonth}
-        onDayClick={(day, range) => {
-          setMonth(day);
-          setSelection(range);
-        }}
-      />
-      <SegmentedControl
-        name="calModeControl"
-        items={[
-          {text: "Miesiąc", value: "month"},
-          {text: "Tydzień", value: "week"},
-          {text: "Dzień", value: "day"},
-        ]}
-        value={mode()}
-        setValue={setMode}
-      />
-      <SegmentedControl
-        name="calModeControl"
-        items={[
-          {text: "Miesiąc", value: "month"},
-          {text: "Tydzień", value: "week"},
-          {text: "Dzień", value: "day"},
-        ]}
-        value={mode()}
-        setValue={setMode}
-        small={true}
-      />
-    </div>
+    <FullCalendar
+      class="w-full h-full"
+      locale={new Intl.Locale("pl")}
+      resourceGroups={resourceGroups}
+      holidays={[
+        [8, 15],
+        [11, 11],
+        [11, 1],
+        [12, 25],
+        [12, 26],
+      ].map(([month, day]) => DateTime.fromObject({month, day}))}
+    />
   );
 }) satisfies VoidComponent;
