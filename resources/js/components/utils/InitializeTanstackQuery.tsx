@@ -79,6 +79,8 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             refetchOnReconnect: true,
             // When opening a page, reload data if it's older than a couple of seconds.
             staleTime: 5 * 1000,
+            // By default don't refetch on browser tab change.
+            refetchOnWindowFocus: false,
             retry: false,
             // This is very important. The default reconcile algorithm somehow breaks the data and
             // reactivity in complicated ways. This line is basically `broken: false`.
