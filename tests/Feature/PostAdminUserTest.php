@@ -22,7 +22,7 @@ class PostAdminUserTest extends TestCase
 
     private const URL = '/api/v1/admin/user';
 
-    public function testWithValidDataReturnSuccess(): void
+    public function testWithValidDataSucceeds(): void
     {
         $data = [
             'name' => 'Test',
@@ -39,7 +39,7 @@ class PostAdminUserTest extends TestCase
         $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
     }
 
-    public function testWithoutPasswordReturnSuccess(): void
+    public function testWithoutPasswordSucceeds(): void
     {
         $data = [
             'name' => 'Test',
@@ -47,7 +47,7 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => false,
             'password' => null,
             'passwordExpireAt' => null,
-            'hasGlobalAdmin' => true,
+            'hasGlobalAdmin' => false,
         ];
 
         $result = $this->post(static::URL, $data);
@@ -56,15 +56,14 @@ class PostAdminUserTest extends TestCase
         $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
     }
 
-    public function testWithoutEmailReturnSuccess(): void
+    public function testWithoutEmailSucceeds(): void
     {
         $data = [
             'name' => 'Test',
             'email' => null,
-            'hasEmailVerified' => false,
-            'password' => self::VALID_PASSWORD,
-            'passwordExpireAt' => CarbonImmutable::now(),
-            'hasGlobalAdmin' => true,
+            'password' => null,
+            'passwordExpireAt' => null,
+            'hasGlobalAdmin' => false,
         ];
 
         $result = $this->post(static::URL, $data);
@@ -73,7 +72,7 @@ class PostAdminUserTest extends TestCase
         $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
     }
 
-    public function testWithoutGlobalAdminReturnSuccess(): void
+    public function testWithoutGlobalAdminSucceeds(): void
     {
         $data = [
             'name' => 'Test',
@@ -90,7 +89,54 @@ class PostAdminUserTest extends TestCase
         $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
     }
 
-    public function testWithoutReferredFieldWillFail(): void
+    public function testWithGlobalAdminTrueWithEmailSucceeds(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => true,
+            'password' => self::VALID_PASSWORD,
+            'passwordExpireAt' => CarbonImmutable::now(),
+            'hasGlobalAdmin' => true,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertCreated();
+    }
+
+    public function testWithGlobalAdminTrueWithoutEmailFails(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => null,
+            'hasEmailVerified' => null,
+            'password' => null,
+            'passwordExpireAt' => null,
+            'hasGlobalAdmin' => true,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+        $result->assertJson(
+            [
+                "errors" => [
+                    [
+                        "code" => "exception.validation"
+                    ],
+                    [
+                        "field" => "email",
+                        "code" => "validation.required_if_accepted",
+                        "data" => [
+                            "other" => "has_global_admin"
+                        ]
+                    ]
+                ]
+            ]);
+    }
+
+    public function testWithoutReferredFieldFails(): void
     {
         $data = [
             'name' => 'Test',
@@ -98,7 +144,7 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
             //'passwordExpireAt' => CarbonImmutable::now(),
-            'hasGlobalAdmin' => true,
+            'hasGlobalAdmin' => false,
         ];
 
         $result = $this->post(static::URL, $data);
@@ -106,7 +152,115 @@ class PostAdminUserTest extends TestCase
         $result->assertBadRequest();
     }
 
-    public function testWithNullableReferredFieldReturnSuccess(): void
+    public function testWithNullableReferredFieldSucceeds(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => false,
+            'password' => null,
+            'passwordExpireAt' => null,
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertCreated();
+        $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
+    }
+
+    public function testWithEmailButWithoutEmailVerifiedFieldFails(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => null,
+            'password' => self::VALID_PASSWORD,
+            'passwordExpireAt' => CarbonImmutable::now(),
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+        $result->assertJson([
+            "errors" => [
+                [
+                    "code" => "exception.validation"
+                ],
+                [
+                    "field" => "email",
+                    "code" => "validation.custom.require_present",
+                    "data" => [
+                        "other" => "has_email_verified"
+                    ]
+                ]
+            ]
+        ]);
+    }
+
+    public function testWithoutEmailButWithEmailVerifiedFieldFails(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => null,
+            'hasEmailVerified' => false,
+            'password' => self::VALID_PASSWORD,
+            'passwordExpireAt' => CarbonImmutable::now(),
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+        $result->assertJson(
+            [
+                "errors" => [
+                    [
+                        "code" => "exception.validation"
+                    ],
+                    [
+                        "field" => "hasEmailVerified",
+                        "code" => "validation.custom.require_present",
+                        "data" => [
+                            "other" => "email"
+                        ]
+                    ]
+                ]
+            ]);
+    }
+
+    public function testWithoutEmailButWithPasswordFieldFails(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => null,
+            'password' => self::VALID_PASSWORD,
+            'passwordExpireAt' => CarbonImmutable::now(),
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+        $result->assertJson(
+            [
+                "errors" => [
+                    [
+                        "code" => "exception.validation"
+                    ],
+                    [
+                        "field" => "password",
+                        "code" => "validation.custom.require_present",
+                        "data" => [
+                            "other" => "email"
+                        ]
+                    ]
+                ]
+            ]);
+    }
+
+    public function testWithPasswordButWithoutPasswordExpireAtFieldFails(): void
     {
         $data = [
             'name' => 'Test',
@@ -114,12 +268,57 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => null,
-            'hasGlobalAdmin' => true,
+            'hasGlobalAdmin' => false,
         ];
 
         $result = $this->post(static::URL, $data);
 
-        $result->assertCreated();
-        $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
+        $result->assertBadRequest();
+        $result->assertJson(
+            [
+                "errors" => [
+                    [
+                        "code" => "exception.validation"
+                    ],
+                    [
+                        "field" => "password",
+                        "code" => "validation.custom.require_present",
+                        "data" => [
+                            "other" => "password_expire_at"
+                        ]
+                    ]
+                ]
+            ]);
+    }
+
+    public function testWithoutPasswordButWithPasswordExpireAtFieldFails(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => false,
+            'password' => null,
+            'passwordExpireAt' => CarbonImmutable::now(),
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+        $result->assertJson(
+            [
+                "errors" => [
+                    [
+                        "code" => "exception.validation"
+                    ],
+                    [
+                        "field" => "passwordExpireAt",
+                        "code" => "validation.custom.require_present",
+                        "data" => [
+                            "other" => "password"
+                        ]
+                    ]
+                ]
+            ]);
     }
 }

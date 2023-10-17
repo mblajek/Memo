@@ -86,15 +86,24 @@ class User extends Authenticatable
     {
         return match ($field) {
             'name' => 'required|string',
-            'email' => ['nullable', 'string', 'email', Rule::unique('users', 'email'), new RequirePresentRule('has_email_verified')],
-            'has_email_verified' => 'sometimes|bool',
+            'email' => ['nullable', 'string', 'email',
+                Rule::unique('users', 'email'),
+                new RequirePresentRule('has_email_verified'),
+                'required_if_accepted:has_global_admin'
+            ],
+            'has_email_verified' => ['sometimes', 'bool',
+                new RequirePresentRule('email'),
+            ],
             'password' => array_merge(
                 ['bail', 'nullable', 'string'],
                 self::fieldValidator('_password'),
-                [new RequirePresentRule('password_expire_at')],
+                [new RequirePresentRule('password_expire_at'),
+                    new RequirePresentRule('email')],
             ),
             '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
-            'password_expire_at' => 'sometimes|nullable|date',
+            'password_expire_at' => ['sometimes', 'nullable', 'date',
+                new RequirePresentRule('password'),
+            ],
             'last_login_facility_id' => 'nullable|uuid|exists:facilities,id',
             'has_global_admin' => 'required|bool',
         };

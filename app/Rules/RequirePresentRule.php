@@ -15,7 +15,8 @@ final class RequirePresentRule extends AbstractDataRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value === null || Arr::has($this->data, $this->referredField)) {
+        if ($value === null ||
+            (Arr::has($this->data, $this->referredField) && $this->data[$this->referredField] !== null)) {
             return;
         }
         $this->validator->addFailure($attribute, 'custom.require_present', ['other' => $this->referredField]);
