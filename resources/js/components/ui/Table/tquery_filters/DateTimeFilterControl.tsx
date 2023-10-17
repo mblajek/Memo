@@ -19,8 +19,8 @@ type DateTimeRangeFilter =
 
 interface DateTimeColumnProps extends FilterControlProps<DateTimeRangeFilter> {
   columnType?: "datetime";
-  /** Whether the inputs should only set date (and no time). Default is false. */
-  useDateOnlyInputs?: boolean;
+  /** Whether the inputs should set date and time. Default is only date. */
+  useDateTimeInputs?: boolean;
 }
 
 interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
@@ -32,7 +32,7 @@ type Props = DateColumnProps | DateTimeColumnProps;
 export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const columnType = () => props.columnType || "datetime";
-  const inputsType = () => (props.columnType === "date" || props.useDateOnlyInputs ? "date" : "datetime-local");
+  const inputsType = () => (props.columnType === "datetime" && props.useDateTimeInputs ? "datetime-local" : "date");
   const [lower, setLower] = createSignal("");
   const [upper, setUpper] = createSignal("");
   createComputed(() => {

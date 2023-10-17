@@ -12,7 +12,7 @@ interface CommonFilteringParams {
 }
 
 export interface DateTimeFilteringParams extends CommonFilteringParams {
-  useDateOnlyInputs?: boolean;
+  useDateTimeInputs?: boolean;
 }
 
 export type FilteringParams = DateTimeFilteringParams;
@@ -42,7 +42,7 @@ export const ColumnFilterController: VoidComponent<FilterControlProps> = (props)
           <DateTimeFilterControl
             {...anyFilterProps}
             columnType={meta.type}
-            useDateOnlyInputs={meta.filtering?.useDateOnlyInputs}
+            useDateTimeInputs={meta.filtering?.useDateTimeInputs}
           />
         );
       case "int":
