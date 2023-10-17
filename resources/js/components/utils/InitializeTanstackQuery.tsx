@@ -63,7 +63,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             console.warn(`Error toast shown: ${msg}`);
           }
           toast.error(() => (
-            <ul class={cx({"list-disc pl-6": messages.length > 1})} style={{"overflow-wrap": "anywhere"}}>
+            <ul class={cx({"list-disc pl-6": messages.length > 1}, "wrapText")}>
               <For each={messages}>{(msg) => <li>{msg}</li>}</For>
             </ul>
           ));

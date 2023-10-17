@@ -9,7 +9,7 @@ export default (() => {
   const [month, setMonth] = createSignal<DateTime>(DateTime.now());
   const [mode, setMode] = createSignal("week");
   return (
-    <div class="flex gap-1">
+    <div class="flex gap-1 items-start">
       {/* A tiny calendar with some example behaviour of selecting work days (or whole week when clicking on weekend). */}
       <TinyCalendar
         class="inline-block"
@@ -34,9 +34,9 @@ export default (() => {
       <SegmentedControl
         name="calModeControl"
         items={[
-          {text: "Miesiąc", value: "month"},
-          {text: "Tydzień", value: "week"},
-          {text: "Dzień", value: "day"},
+          {value: "month", label: () => <>Miesiąc</>},
+          {value: "week", label: () => <>Tydzień</>},
+          {value: "day", label: () => <>Dzień</>},
         ]}
         value={mode()}
         setValue={setMode}
@@ -44,9 +44,9 @@ export default (() => {
       <SegmentedControl
         name="calModeControl"
         items={[
-          {text: "Miesiąc", value: "month"},
-          {text: "Tydzień", value: "week"},
-          {text: "Dzień", value: "day"},
+          {value: "month", label: () => <>Miesiąc</>},
+          {value: "week", label: () => <>Tydzień</>},
+          {value: "day", label: () => <span title="podpowiedź">Dzień</span>},
         ]}
         value={mode()}
         setValue={setMode}

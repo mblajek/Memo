@@ -2,7 +2,7 @@ import {VoidComponent, splitProps} from "solid-js";
 import {cx, htmlAttributes} from "../utils";
 
 interface Props extends htmlAttributes.span {
-  text?: string;
+  text: string | undefined;
   capitalize?: boolean;
 }
 
