@@ -11,13 +11,16 @@ use Illuminate\Support\Facades\DB;
 
 class TqBuilder
 {
+    private bool $distinct = false;
+    private array $selectAliases = [];
+
     public static function fromTable(TqTableEnum $table): self
     {
         $joins = [$table];
         return new self($joins, DB::table($table->name));
     }
 
-    public function fromBuilders(Builder $builder): self
+    public function fromBuilder(Builder $builder): self
     {
         return new self($this->joins, $builder);
     }
@@ -49,8 +52,14 @@ class TqBuilder
         return true;
     }
 
+    public function distinct(): void
+    {
+        $this->distinct = true;
+    }
+
     public function select(string $query, string $alias): void
     {
+        $this->selectAliases[] = $alias;
         $this->builder->selectRaw("$query as `$alias`");
     }
 
@@ -91,6 +100,17 @@ class TqBuilder
     public function applyPaging(int $number, int $size): void
     {
         $this->builder->forPage(page: $number, perPage: $size);
+    }
+
+    public function prepare(): void
+    {
+        if ($this->distinct) {
+            foreach ($this->selectAliases as $alias) {
+                if ($alias !== 'count') {
+                    $this->builder->groupByRaw("`$alias`");
+                }
+            }
+        }
     }
 
     public function getSql(bool $raw): string

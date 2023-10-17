@@ -24,18 +24,25 @@ readonly class TqEngine
 
     public function run(): array
     {
+        $this->applyMutators();
         $this->applyJoin();
         $this->applySelect();
         $this->applyFilter();
         $this->applySort();
         $this->applyPaging();
-        $sql = $this->builder->getSql(true);
-        $debug = (App::hasDebugModeEnabled() ? ['sql' => $sql] : []);
-
+        $this->builder->prepare();
+        $debug = (App::hasDebugModeEnabled() ? ['sql' => $this->builder->getSql(true)] : []);
         try {
             return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
         } catch (Throwable) {
             throw FatalExceptionFactory::tquery($debug);
+        }
+    }
+
+    private function applyMutators(): void
+    {
+        if ($this->request->isDistinct) {
+            $this->builder->distinct();
         }
     }
 
@@ -71,7 +78,7 @@ readonly class TqEngine
 
     private function applyPaging(): void
     {
-        $this->builder->applyPaging($this->request->number, $this->request->size);
+        $this->builder->applyPaging($this->request->pageNumber, $this->request->pageSize);
     }
 
     private function getData(): array

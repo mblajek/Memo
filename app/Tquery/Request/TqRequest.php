@@ -16,6 +16,9 @@ readonly class TqRequest
 
     public static function fromHttpRequest(TqConfig $config, Request $request): self
     {
+        if (($distinct = $request->validate(['distinct' => Valid::bool(sometimes: true)])['distinct'] ?? false)) {
+            $config->addCount(); // mutates original config
+        }
         $sortableColumns = array_filter($config->columns, fn(TqColumnConfig $column) => $column->type->isSortable());
         $data = $request->validate([
             'columns' => Valid::list(),
@@ -38,8 +41,9 @@ readonly class TqRequest
             selectColumns: self::parseColumns($config, $data['columns']),
             filter: self::parseFilter($config, $data['filter'] ?? 'always'),
             sortColumns: self::parseSort($config, $data['sort'] ?? []),
-            number: $data['paging']['number'],
-            size: $data['paging']['size'],
+            pageNumber: $data['paging']['number'],
+            pageSize: $data['paging']['size'],
+            isDistinct: $distinct,
         );
     }
 
@@ -87,8 +91,9 @@ readonly class TqRequest
         public array $selectColumns,
         public TqRequestAbstractFilter|bool $filter,
         public array $sortColumns,
-        public int $number,
-        public int $size,
+        public int $pageNumber,
+        public int $pageSize,
+        public bool $isDistinct,
     ) {
         $this->allColumns = $this->allColumns();
     }

@@ -61,6 +61,17 @@ final class TqConfig
         );
     }
 
+    /** Added in TqRequest for "distinct" queries */
+    public function addCount(): void
+    {
+        $this->addColumn(
+            type: TqDataTypeEnum::int,
+            columnOrQuery: fn(string $tableName) => 'count(1)',
+            table: null,
+            columnAlias: 'count',
+        );
+    }
+
     private function addColumn(
         TqDataTypeEnum $type,
         string|Closure $columnOrQuery,
