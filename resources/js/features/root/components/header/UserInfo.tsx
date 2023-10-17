@@ -6,6 +6,7 @@ import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icon
 import {TbPassword} from "solid-icons/tb";
 import {Index, Match, Switch, VoidComponent} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
+import {HeaderSeparator} from "../../layout";
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
@@ -22,8 +23,8 @@ export const UserInfo: VoidComponent = () => {
   }));
 
   return (
-    <div class="text-sm flex flex-row justify-between items-center gap-6">
-      <div class="px-6 border-x-2 border-x-gray-200 flex flex-row justify-between items-center gap-2">
+    <div class="pr-2 text-sm flex flex-row justify-between items-center gap-4">
+      <div class="flex flex-row justify-between items-center gap-2">
         <div>
           <Switch>
             <Match when={statusQuery.data?.permissions.verified}>
@@ -59,6 +60,7 @@ export const UserInfo: VoidComponent = () => {
           </span>
         </div>
       </div>
+      <HeaderSeparator />
       <div class="flex justify-center items-center">
         <button
           class="rounded-lg flex flex-row justify-center items-center hover:bg-white"

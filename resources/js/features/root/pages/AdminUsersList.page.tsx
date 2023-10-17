@@ -32,10 +32,10 @@ export default (() => {
             columnDef: {
               sortDescFirst: true,
             },
-            metaParams: {
-              filtering: {
-                useDateOnlyInputs: true,
-              },
+          },
+          updatedAt: {
+            columnDef: {
+              sortDescFirst: true,
             },
           },
           hasGlobalAdmin: {

@@ -252,9 +252,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             value={mode()}
             setValue={setMode}
             items={[
-              {value: "month", text: t("calendar.month")},
-              {value: "week", text: t("calendar.week")},
-              {value: "day", text: t("calendar.day")},
+              {value: "month", label: () => t("calendar.month")},
+              {value: "week", label: () => t("calendar.week")},
+              {value: "day", label: () => t("calendar.day")},
             ]}
             small={true}
           />

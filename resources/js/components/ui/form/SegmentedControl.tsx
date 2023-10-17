@@ -1,7 +1,7 @@
 import * as radio from "@zag-js/radio-group";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, htmlAttributes} from "components/utils";
-import {For, VoidComponent, createComputed, createMemo, createUniqueId, splitProps} from "solid-js";
+import {For, VoidComponent, createComputed, JSX, createMemo, createUniqueId, splitProps} from "solid-js";
 import {FieldLabel} from ".";
 import s from "./SegmentedControl.module.scss";
 
@@ -19,7 +19,7 @@ interface Props extends htmlAttributes.div {
 
 interface Item {
   readonly value: string;
-  readonly text: string;
+  readonly label: () => JSX.Element;
 }
 
 /**
@@ -56,7 +56,7 @@ export const SegmentedControl: VoidComponent<Props> = (allProps) => {
     }
   });
   return (
-    <div>
+    <>
       <FieldLabel fieldName={props.name} text={props.label} />
       <div
         {...htmlAttributes.merge(divProps, {
@@ -68,12 +68,12 @@ export const SegmentedControl: VoidComponent<Props> = (allProps) => {
         <For each={props.items}>
           {(item) => (
             <label {...api().getItemProps({value: item.value})}>
-              <span {...api().getItemTextProps({value: item.value})}>{item.text}</span>
+              <span {...api().getItemTextProps({value: item.value})}>{item.label()}</span>
               <input {...api().getItemHiddenInputProps({value: item.value})} />
             </label>
           )}
         </For>
       </div>
-    </div>
+    </>
   );
 };
