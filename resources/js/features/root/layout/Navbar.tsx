@@ -1,7 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
-import {FullLogo} from "components/ui";
 import {cx} from "components/utils";
-import {System} from "data-access/memo-api";
 import {
   HiOutlineBuildingOffice,
   HiOutlineCalendarDays,
@@ -14,23 +11,19 @@ import {
   HiOutlineVideoCamera,
 } from "solid-icons/hi";
 import {Show, VoidComponent, createMemo} from "solid-js";
-import {activeFacilityId} from "state/activeFacilityId.state";
+import {useActiveFacility} from "state/activeFacilityId.state";
+import {FullLogo} from "../../../components/ui";
 import {NavigationItemProps, NavigationSection} from "../components/navbar";
-import s from "./style.module.scss";
+import s from "./layout.module.scss";
 
 export const Navbar: VoidComponent = () => {
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-
-  const facilityUrl = () => facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId())?.url;
-
+  const activeFacility = useActiveFacility();
+  const facilityUrl = () => activeFacility()?.url;
   const sectionItems = createMemo(() => getSectionItems(facilityUrl()));
-
   return (
-    <aside class={cx(s.sidebar)}>
-      <div class={cx("py-4 px-8 bg-inherit")}>
-        <FullLogo />
-      </div>
-      <nav class={cx("flex-1 px-8 py-4 overflow-y-auto", s.navScroll)}>
+    <aside class={s.sidebar}>
+      <FullLogo class="h-16 p-2 mt-2" />
+      <nav class={cx("flex-1 p-3 overflow-y-auto", s.navScroll)}>
         <Show when={facilityUrl()}>
           <NavigationSection facilityUrl={facilityUrl()} roles={["verified"]} items={sectionItems().verified} />
         </Show>
