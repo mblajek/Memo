@@ -1,6 +1,6 @@
 .segmentedControl {
   @apply border border-gray-400 rounded p-1.5;
-  @apply flex gap-1 relative;
+  @apply flex flex-wrap justify-between gap-1 relative;
 
   [data-part="indicator"] {
     @apply border border-memo-active bg-white rounded;

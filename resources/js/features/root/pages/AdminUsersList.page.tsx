@@ -28,7 +28,24 @@ export default (() => {
               cell: cellFunc<string>((v) => <Email class="w-full" email={v} />),
             },
           },
+          passwordExpireAt: {
+            metaParams: {
+              filtering: {
+                useDateOnlyInputs: true,
+              },
+            },
+          },
           createdAt: {
+            columnDef: {
+              sortDescFirst: true,
+            },
+            metaParams: {
+              filtering: {
+                useDateOnlyInputs: true,
+              },
+            },
+          },
+          updatedAt: {
             columnDef: {
               sortDescFirst: true,
             },
