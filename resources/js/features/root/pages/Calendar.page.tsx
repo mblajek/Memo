@@ -42,6 +42,10 @@ export default (() => {
         {id: "xaaaaaac", label: () => <span>Trzeci zasób</span>},
       ],
     },
+    {
+      label: () => <span class="font-bold">Pusty</span>,
+      resources: [],
+    },
   ];
   return (
     <FullCalendar

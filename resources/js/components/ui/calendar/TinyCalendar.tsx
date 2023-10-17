@@ -2,21 +2,11 @@ import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {DateTime} from "luxon";
 import {CgCalendar, CgCalendarToday} from "solid-icons/cg";
 import {FaSolidArrowLeft, FaSolidArrowRight} from "solid-icons/fa";
-import {
-  For,
-  Index,
-  Show,
-  VoidComponent,
-  createComputed,
-  createMemo,
-  createSignal,
-  mergeProps,
-  splitProps,
-} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal, mergeProps, splitProps} from "solid-js";
+import {Dynamic} from "solid-js/web";
 import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {WeekDaysCalculator} from "./week_days_calculator";
-import {Dynamic} from "solid-js/web";
 
 export interface TinyCalendarProps extends htmlAttributes.div {
   locale: Intl.Locale;
@@ -41,8 +31,8 @@ export interface TinyCalendarProps extends htmlAttributes.div {
   /** The function called when the month name is clicked. It is only clickable if this prop is provided. */
   onMonthNameClick?: () => void;
 
-  /** The setter for the actual visible range. */
-  setVisibleRange?: (range: DaysRange) => void;
+  /** Function called with the full range of visible days. */
+  onVisibleRangeChange?: (range: DaysRange) => void;
 }
 
 const DEFAULT_PROPS = {
@@ -68,12 +58,11 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
     "onDayClick",
     "onDayDoubleClick",
     "onMonthNameClick",
-    "setVisibleRange",
+    "onVisibleRangeChange",
   ]);
 
   const t = useLangFunc();
   const weekDaysCalculator = createMemo(() => new WeekDaysCalculator(props.locale));
-  const weekInfo = () => weekDaysCalculator().weekInfo;
   const monthStart = createMemo(() => props.month.startOf("month"), undefined, {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
   });
@@ -93,35 +82,36 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
     }
   });
 
-  /** List of days to show in the calendar. */
-  const days = createMemo(() => {
-    const holidaysSet = new Set(props.holidays?.map((d) => d.startOf("day").toMillis()));
+  /** The range of days to show in the calendar. */
+  const range = createMemo(() => {
     // Always show (at least) two days of the previous month.
     const start = weekDaysCalculator().startOfWeek(monthStart().minus({days: 2}));
     // Show 6 weeks.
     const numDays = 6 * 7;
-    const range = new DaysRange(start, start.plus({days: numDays - 1}));
-    return {
-      range,
-      // eslint-disable-next-line solid/reactivity
-      list: Array.from(range, (day): DayInfo => {
-        const isToday = day.hasSame(currentDate(), "day");
-        return {
-          day,
-          isToday,
-          classes: cx({
-            [s.today!]: isToday,
-            [s.weekend!]: weekDaysCalculator().isWeekend(day),
-            [s.startOfWeek!]: weekDaysCalculator().isStartOfWeek(day),
-            [s.endOfWeek!]: weekDaysCalculator().isEndOfWeek(day),
-            [s.holiday!]: holidaysSet.has(day.toMillis()),
-            [s.otherMonth!]: day.month !== monthStart().month,
-          }),
-        };
-      }),
-    };
+    return new DaysRange(start, start.plus({days: numDays - 1}));
   });
-  createComputed(() => props.setVisibleRange?.(days().range));
+
+  /** List of days to show in the calendar. */
+  const days = createMemo(() => {
+    const holidaysSet = new Set(props.holidays?.map((d) => d.startOf("day").toMillis()));
+    // eslint-disable-next-line solid/reactivity
+    return Array.from(range(), (day): DayInfo => {
+      const isToday = day.hasSame(currentDate(), "day");
+      return {
+        day,
+        isToday,
+        classes: cx({
+          [s.today!]: isToday,
+          [s.weekend!]: weekDaysCalculator().isWeekend(day),
+          [s.startOfWeek!]: weekDaysCalculator().isStartOfWeek(day),
+          [s.endOfWeek!]: weekDaysCalculator().isEndOfWeek(day),
+          [s.holiday!]: holidaysSet.has(day.toMillis()),
+          [s.otherMonth!]: day.month !== monthStart().month,
+        }),
+      };
+    });
+  });
+  createComputed(() => props.onVisibleRangeChange?.(range()));
 
   /**
    * Returns a classlist based on the current day and selection. Sets the specified class for days
@@ -169,18 +159,15 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
       </div>
       <div class={s.days}>
         <Show when={props.showWeekdayNames}>
-          <Index each={Array.from({length: 7})}>
-            {(_v, i) => {
-              const date = DateTime.fromObject({weekday: weekInfo().firstDay}).plus({days: i});
-              return (
-                <div class={cx(s.weekday, {[s.weekend!]: weekInfo().weekend.includes(date.weekday)})}>
-                  {date.toLocaleString({weekday: "narrow"})}
-                </div>
-              );
-            }}
-          </Index>
+          <For each={[...weekDaysCalculator().dayToWeek(DateTime.fromMillis(0))]}>
+            {(day) => (
+              <div class={cx(s.weekday, {[s.weekend!]: weekDaysCalculator().isWeekend(day)})}>
+                {day.toLocaleString({weekday: "narrow"})}
+              </div>
+            )}
+          </For>
         </Show>
-        <For each={days().list}>
+        <For each={days()}>
           {(di) => (
             <button
               class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}

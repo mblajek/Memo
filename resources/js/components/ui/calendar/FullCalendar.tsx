@@ -1,7 +1,7 @@
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {VoidComponent, createComputed, createMemo, createSignal, mergeProps, on, splitProps} from "solid-js";
-import {currentDate, htmlAttributes, useLangFunc} from "../../utils";
+import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "../../utils";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {SegmentedControl} from "../form";
@@ -67,23 +67,46 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [daysSelection, daysSelectionSetter] = createSignal(DaysRange.oneDay(props.initialDay));
   // Initialise to whatever range, it will be immediately updated by the calendar.
   const [tinyCalVisibleRange, setTinyCalVisibleRange] = createSignal(DaysRange.oneDay(props.initialDay));
-  // Initialise to empty, it will be overwritten below.
-  const [selectedResources, selectedResourcesSetter] = createSignal<string[]>([]);
 
   /** The resources selection view, allowing multiple selection only in the day mode. */
   const resourcesSelectionMode = () => (mode() === "day" ? "checkbox" : "radio");
-  /** The last resources selection for each resources selection mode. */
-  const resourcesSelectionByMode = {
-    checkbox: props.initialResourcesSelection.slice(),
-    radio: props.initialResourcesSelection.slice(0, 1),
-  };
+
+  const [selectedResourcesCheckbox, setSelectedResourcesCheckbox] = createSignal<ReadonlySet<string>>(
+    new Set(props.initialResourcesSelection),
+  );
+  /** Returns the first resource from the specified set, in the order specified in props. */
+  function getFirstResource(ids: ReadonlySet<string>) {
+    if (!ids.size) {
+      return undefined;
+    }
+    for (const resourceGroup of props.resourceGroups) {
+      for (const resource of resourceGroup.resources) {
+        if (ids.has(resource.id)) {
+          return resource.id;
+        }
+      }
+    }
+    return undefined;
+  }
   // eslint-disable-next-line solid/reactivity
-  selectedResourcesSetter(resourcesSelectionByMode[resourcesSelectionMode()]);
-  function setSelectedResources(ids: string[]) {
-    selectedResourcesSetter(ids);
-    resourcesSelectionByMode[resourcesSelectionMode()] = ids;
+  const [selectedResourceRadio, setSelectedResourceRadio] = createSignal(getFirstResource(selectedResourcesCheckbox()));
+  const selectedResources = createMemo(() =>
+    resourcesSelectionMode() === "checkbox"
+      ? selectedResourcesCheckbox()
+      : new Set([selectedResourceRadio()].filter(NON_NULLABLE)),
+  );
+  function setSelectedResources(ids: ReadonlySet<string>) {
+    if (resourcesSelectionMode() === "checkbox") {
+      setSelectedResourcesCheckbox(ids);
+    } else if (resourcesSelectionMode() === "radio") {
+      if (ids.size > 1) {
+        throw new Error(`Unexpected multiple selected resources in radio mode: ${[...ids].join(", ")}`);
+      }
+      setSelectedResourceRadio([...ids][0]);
+    }
   }
 
+  // TODO: Consider keeping three separate signals with rays selection for each mode.
   /** The last days selection in each of the modes. */
   const daysSelectionByMode = new Map<Mode, DaysRange>();
   /** Sets the selection and stores the value in daysSelectionByMode. */
@@ -151,22 +174,23 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       }
     }),
   );
-  // Set the resources selection when the resources selection mode is changed.
+  // Correct the resources selection if necessary when mode is changed.
   createComputed(
     on(resourcesSelectionMode, (mode, prevMode) => {
       if (prevMode && mode !== prevMode) {
-        // Restore the previous selection for this mode if it overlaps with the current selection.
-        const savedResourcesSelection = resourcesSelectionByMode[mode];
-        if (savedResourcesSelection?.some((id) => selectedResources().includes(id))) {
-          setSelectedResources(savedResourcesSelection);
-        } else {
-          if (mode === "radio") {
-            setSelectedResources(selectedResources().slice(0, 1));
-          } else if (mode === "checkbox") {
-            // Use the stored selections because `selectedProps()` might be already changed to the new type.
-            setSelectedResources([
-              ...new Set([...resourcesSelectionByMode.radio, ...resourcesSelectionByMode.checkbox]),
-            ]);
+        const selRadio = selectedResourceRadio();
+        const noIntersection = !selRadio || !selectedResourcesCheckbox().has(selRadio);
+        if (noIntersection) {
+          if (mode === "checkbox") {
+            // Add the radio selection to the checkbox selection.
+            if (selRadio && !selectedResourcesCheckbox().has(selRadio)) {
+              setSelectedResourcesCheckbox(new Set(selectedResourcesCheckbox()).add(selRadio));
+            }
+          } else if (mode === "radio") {
+            // Select the first checkbox selection.
+            setSelectedResourceRadio(getFirstResource(selectedResourcesCheckbox()));
+          } else {
+            return mode satisfies never;
           }
         }
       }
@@ -217,7 +241,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             setMode("month");
             setDaysSelection(getRange(tinyCalMonth()));
           }}
-          setVisibleRange={setTinyCalVisibleRange}
+          onVisibleRangeChange={setTinyCalVisibleRange}
         />
         <ResourcesSelector
           class="overflow-y-auto"

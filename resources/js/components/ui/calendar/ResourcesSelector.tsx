@@ -1,13 +1,14 @@
 import {cx, htmlAttributes} from "components/utils";
 import {For, JSX, Show, VoidComponent, createMemo, createRenderEffect, createSignal, splitProps} from "solid-js";
+import {EMPTY_VALUE_SYMBOL} from "../symbols";
 
 export type ResourcesSelectionMode = "radio" | "checkbox";
 
 interface Props extends htmlAttributes.div {
   resourceGroups?: readonly ResourceGroup[];
   mode: ResourcesSelectionMode;
-  selection: readonly string[];
-  setSelection: (ids: string[]) => void;
+  selection: ReadonlySet<string>;
+  setSelection: (ids: ReadonlySet<string>) => void;
 }
 
 export interface ResourceGroup {
@@ -25,68 +26,64 @@ export interface Resource {
  */
 export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["resourceGroups", "mode", "selection", "setSelection"]);
-  const selected = createMemo(() => new Set(props.selection));
   let div: HTMLDivElement | undefined;
   return (
     <div ref={div} {...htmlAttributes.merge(divProps, {class: "flex flex-col gap-2"})}>
       <For each={props.resourceGroups}>
         {({label, resources}, i) => {
-          const inputId = () => (props.mode === "checkbox" ? `resourceGroup_${i()}` : undefined);
-          const [input, setInput] = createSignal<HTMLInputElement>();
+          const checkboxId = () => (props.mode === "checkbox" ? `resourceGroup_${i()}` : undefined);
+          const [checkbox, setCheckbox] = createSignal<HTMLInputElement>();
           const state = createMemo(() => {
-            if (!inputId()) {
+            if (!checkboxId()) {
               return undefined;
             }
-            const sel = new Set(props.selection);
-            let all = true;
-            let none = true;
-            for (const resource of resources)
-              if (sel.has(resource.id)) {
-                none = false;
-              } else {
-                all = false;
-              }
-            return {all, none};
+            const sel = props.selection;
+            return {
+              all: resources.every((r) => sel.has(r.id)),
+              none: resources.every((r) => !sel.has(r.id)),
+            };
           });
+          const checked = () => state()?.all && !state()?.none;
+          const indeterminate = () => !state()?.all && !state()?.none;
           // Make the group checkbox indeterminate if some resources are selected and some are not.
           createRenderEffect(() => {
-            const inp = input();
-            if (inp) {
-              const s = state();
-              inp.indeterminate = !!s && s.all === s.none;
+            const checkboxInput = checkbox();
+            if (checkboxInput) {
+              checkboxInput.indeterminate = indeterminate();
             }
           });
           return (
             <div class="flex flex-col">
-              <Show when={inputId()} fallback={<div class="px-1">{label()}</div>}>
-                <label for={inputId()} class="px-1 flex gap-1 items-center hover:bg-hover">
+              <Show when={checkboxId()} fallback={<div class="px-1">{label()}</div>}>
+                <label for={checkboxId()} class="px-1 flex gap-1 items-center hover:bg-hover">
                   <input
-                    ref={setInput}
-                    id={inputId()}
+                    ref={setCheckbox}
+                    id={checkboxId()}
                     type="checkbox"
-                    checked={state()?.all}
-                    onClick={({target}) => {
+                    checked={checked()}
+                    disabled={!resources.length}
+                    onClick={() => {
                       const sel = new Set(props.selection);
-                      if ((target as HTMLInputElement).checked) {
-                        for (const res of resources) {
-                          sel.add(res.id);
-                        }
-                      } else {
+                      if (checked()) {
                         for (const res of resources) {
                           sel.delete(res.id);
                         }
+                      } else {
+                        for (const res of resources) {
+                          sel.add(res.id);
+                        }
                       }
-                      props.setSelection([...sel]);
+                      props.setSelection(sel);
                     }}
                   />
                   {label()}
                 </label>
               </Show>
               <div class="flex flex-col">
-                <For each={resources}>
+                <For each={resources} fallback={<span class="px-1">{EMPTY_VALUE_SYMBOL}</span>}>
                   {({id, label}) => {
                     const inputId = `resourceSelected_${id}`;
-                    const checked = () => selected().has(id);
+                    const checked = () => props.selection.has(id);
                     return (
                       <label
                         for={inputId}
@@ -94,25 +91,38 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                           "bg-select hover:bg-select": checked(),
                         })}
                       >
-                        <input
-                          id={inputId}
-                          data-id={id}
-                          name="selectedResources"
-                          type={props.mode}
-                          checked={checked()}
-                          onClick={() =>
-                            props.setSelection(
-                              [...div!.querySelectorAll<HTMLInputElement>("input:checked")]
-                                .filter((input) => input.checked)
-                                .map((input) => input.dataset.id!),
-                            )
+                        <Show
+                          when={props.mode === "checkbox"}
+                          // Replace the input when the mode changes to avoid strange interactions
+                          // with the checked state.
+                          fallback={
+                            <input
+                              type="radio"
+                              id={inputId}
+                              name="selectedResources"
+                              checked={checked()}
+                              onClick={() => props.setSelection(new Set([id]))}
+                            />
                           }
-                          onDblClick={() => {
-                            if (props.mode === "checkbox") {
-                              props.setSelection([id]);
-                            }
-                          }}
-                        />
+                        >
+                          <input
+                            type="checkbox"
+                            id={inputId}
+                            name={inputId}
+                            checked={checked()}
+                            onClick={() => {
+                              const sel = new Set(props.selection);
+                              if (checked()) {
+                                sel.delete(id);
+                              } else {
+                                sel.add(id);
+                              }
+                              props.setSelection(sel);
+                            }}
+                            // TODO: Consider a different way to select a solo resource.
+                            onDblClick={() => props.setSelection(new Set([id]))}
+                          />
+                        </Show>
                         {label()}
                       </label>
                     );
