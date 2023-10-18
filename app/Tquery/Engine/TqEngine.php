@@ -4,7 +4,6 @@ namespace App\Tquery\Engine;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Request\TqRequest;
-use App\Tquery\Request\TqRequestColumn;
 use Closure;
 use Illuminate\Support\Facades\App;
 use stdClass;
@@ -95,12 +94,6 @@ readonly class TqEngine
 
     private function getMeta(): array
     {
-        return [
-            'columns' => array_map(fn(TqRequestColumn $requestColumn) => [
-                'type' => $requestColumn->type->name,
-                'column' => $requestColumn->column->columnAlias,
-            ], $this->request->selectColumns),
-            'totalDataSize' => $this->builder->getCount(),
-        ];
+        return ['totalDataSize' => $this->builder->getCount(),];
     }
 }
