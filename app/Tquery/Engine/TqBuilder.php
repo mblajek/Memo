@@ -2,6 +2,7 @@
 
 namespace App\Tquery\Engine;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
 use Closure;
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 class TqBuilder
 {
     private bool $distinct = false;
-    private array $selectAliases = [];
 
     public static function fromTable(TqTableEnum $table): self
     {
@@ -54,13 +54,18 @@ class TqBuilder
 
     public function distinct(): void
     {
+        if (count($this->builder->columns ?? [])) {
+            throw FatalExceptionFactory::tquery();
+        }
         $this->distinct = true;
     }
 
-    public function select(string $query, string $alias): void
+    public function select(string $query, string $alias, bool $isAggregate): void
     {
-        $this->selectAliases[] = $alias;
         $this->builder->selectRaw("$query as `$alias`");
+        if ($this->distinct && !$isAggregate) {
+            $this->builder->groupByRaw("`$alias`");
+        }
     }
 
     public function orderBy(string $query, bool $desc): void
@@ -100,17 +105,6 @@ class TqBuilder
     public function applyPaging(int $number, int $size): void
     {
         $this->builder->forPage(page: $number, perPage: $size);
-    }
-
-    public function prepare(): void
-    {
-        if ($this->distinct) {
-            foreach ($this->selectAliases as $alias) {
-                if ($alias !== 'count') {
-                    $this->builder->groupByRaw("`$alias`");
-                }
-            }
-        }
     }
 
     public function getSql(bool $raw): string

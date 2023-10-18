@@ -14,7 +14,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
     public static function fromArray(TqConfig $config, array $data, string $path): self
     {
         $column = $config->columns[self::validate($data, [
-            'column' => Valid::trimmed([Rule::in(array_keys($config->columns))]),
+            'column' => Valid::trimmed([Rule::in(array_keys($config->getFilterableColumns()))]),
         ], $path)];
         $operatorsNames = array_map(fn(TqFilterOperator $operator) => $operator->value, $column->type->operators());
         $params = self::validate($data, [

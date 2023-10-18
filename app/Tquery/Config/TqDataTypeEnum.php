@@ -25,6 +25,7 @@ enum TqDataTypeEnum
     case uuid_nullable;
     case text_nullable;
     // additional
+    case count;
     case is_null;
     case is_not_null;
 
@@ -69,6 +70,14 @@ enum TqDataTypeEnum
         return match ($this->notNullBaseType()) {
             self::uuid, self::text => false,
             default => true,
+        };
+    }
+
+    public function isAggregate(): bool
+    {
+        return match ($this) {
+            self::count => true,
+            default => false,
         };
     }
 

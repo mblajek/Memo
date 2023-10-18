@@ -42,6 +42,7 @@ readonly class AdminUserTquery extends TqService
             "select count(1) from `members` where `members`.`user_id` = `users`.`id`",
             'facility_count',
         );
+        $config->addCount();
         return $config;
     }
 }

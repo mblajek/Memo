@@ -2,6 +2,7 @@
 
 namespace App\Tquery\Config;
 
+use App\Exceptions\FatalExceptionFactory;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -9,10 +10,41 @@ final class TqConfig
 {
     /** @var array<string, TqColumnConfig> */
     public array $columns = [];
+    private const COUNT_COLUMN = '_count';
+
+    private ?array $filterableColumns = null;
 
     public function __construct(
         public readonly TqTableEnum $table,
     ) {
+    }
+
+    public function getSelectableColumns(bool $distinct): array
+    {
+        return array_filter(
+            $this->columns,
+            fn(TqColumnConfig $column) => $distinct || !$column->type->isAggregate()
+        );
+    }
+
+    public function getFilterableColumns(): array
+    {
+        // cached because used in each filter
+        if ($this->filterableColumns === null) {
+            $this->filterableColumns = array_filter(
+                $this->columns,
+                fn(TqColumnConfig $column) => !$column->type->isAggregate()
+            );
+        }
+        return $this->filterableColumns;
+    }
+
+    public function getSortableColumns(bool $distinct): array
+    {
+        return array_filter(
+            $this->getSelectableColumns($distinct),
+            fn(TqColumnConfig $column) => $column->type->isSortable()
+        );
     }
 
     public function addSimple(
@@ -24,7 +56,7 @@ final class TqConfig
             type: $type,
             columnOrQuery: $columnName,
             table: null,
-            columnAlias: $columnAlias ?? $columnName,
+            columnAlias: Str::camel($columnAlias ?? $columnName),
         );
     }
 
@@ -38,7 +70,7 @@ final class TqConfig
             type: $type,
             columnOrQuery: $columnName,
             table: $table,
-            columnAlias: $columnAlias ?? $columnName,
+            columnAlias: Str::camel($columnAlias ?? $columnName),
         );
     }
 
@@ -54,21 +86,20 @@ final class TqConfig
             type: $type,
             columnOrQuery: $columnOrQuery,
             table: null,
-            columnAlias: $columnAlias,
+            columnAlias: Str::camel($columnAlias),
             filter: $filter,
             sorter: $order,
             renderer: $renderer,
         );
     }
 
-    /** Added in TqRequest for "distinct" queries */
     public function addCount(): void
     {
         $this->addColumn(
-            type: TqDataTypeEnum::int,
+            type: TqDataTypeEnum::count,
             columnOrQuery: fn(string $tableName) => 'count(1)',
             table: null,
-            columnAlias: 'count',
+            columnAlias: self::COUNT_COLUMN,
         );
     }
 
@@ -81,16 +112,19 @@ final class TqConfig
         ?Closure $sorter = null,
         ?Closure $renderer = null,
     ): void {
-        $columnAliasCamel = Str::camel($columnAlias);
-        $this->columns[$columnAliasCamel] = new TqColumnConfig(
+        if (array_key_exists($columnAlias, $this->columns)) {
+            throw FatalExceptionFactory::tquery();
+        }
+        $this->filterableColumns = null;
+        $this->columns[$columnAlias] = new TqColumnConfig(
             config: $this,
             type: $type,
             columnOrQuery: $columnOrQuery,
             table: $table,
-            columnAlias: $columnAliasCamel,
-            filter: $filter = null,
-            sorter: $sorter = null,
-            renderer: $renderer = null,
+            columnAlias: $columnAlias,
+            filter: $filter,
+            sorter: $sorter,
+            renderer: $renderer,
         );
     }
 }

@@ -32,6 +32,7 @@ readonly class AdminFacilityTquery extends TqService
                 . " and `members`.`facility_id` = `facilities`.`id`",
             'facility_admins',
         );
+        $config->addCount();
         return $config;
     }
 }

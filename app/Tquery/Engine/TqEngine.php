@@ -30,7 +30,6 @@ readonly class TqEngine
         $this->applyFilter();
         $this->applySort();
         $this->applyPaging();
-        $this->builder->prepare();
         $debug = (App::hasDebugModeEnabled() ? ['sql' => $this->builder->getSql(true)] : []);
         try {
             return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
