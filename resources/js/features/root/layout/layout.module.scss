@@ -16,9 +16,8 @@ $border: rgba(92, 92, 92, 0.283);
   flex-direction: column;
   background-color: #f7f3e7;
   border-right: 1px solid $border;
-  min-width: 270px;
-  width: 270px;
-  max-width: 270px;
+  min-width: 200px;
+  max-width: 300px;
   overflow-y: auto;
 }
 
@@ -28,11 +27,11 @@ $border: rgba(92, 92, 92, 0.283);
 
 .header {
   grid-area: header;
-  padding: 1.5rem;
+  padding: 0.5rem;
   border-bottom: 1px solid $border;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .main {
@@ -47,6 +46,6 @@ $border: rgba(92, 92, 92, 0.283);
   flex-direction: row;
   justify-content: space-between;
   justify-items: center;
-  padding: 1rem 1.5rem;
+  padding: 0.5rem;
   color: #949494;
 }

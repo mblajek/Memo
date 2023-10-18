@@ -9,15 +9,15 @@ export interface NavigationSectionProps extends Pick<AccessBarrierProps, "facili
 
 const noop = () => null;
 
-export const NavigationSection: VoidComponent<NavigationSectionProps> = (props) => {
-  const [localProps, accessBarrierProps] = splitProps(props, ["items", "title"]);
+export const NavigationSection: VoidComponent<NavigationSectionProps> = (allProps) => {
+  const [props, accessBarrierProps] = splitProps(allProps, ["items", "title"]);
   return (
     <AccessBarrier {...accessBarrierProps} Fallback={noop} Error={noop} Pending={noop}>
       <section>
-        <Show when={localProps.title}>
-          <h3 class="mb-2 py-2">{localProps.title}</h3>
+        <Show when={props.title}>
+          <h3 class="mb-2 py-2">{props.title}</h3>
         </Show>
-        <For each={localProps.items}>{(item) => <NavigationItem {...item} />}</For>
+        <For each={props.items}>{(item) => <NavigationItem {...item} />}</For>
       </section>
     </AccessBarrier>
   );

@@ -1,10 +1,12 @@
 import {A} from "@solidjs/router";
-import {Button, createTableTranslations} from "components/ui";
+import {AUTO_SIZE_COLUMN_DEFS, Button, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityCreateModal, showFacilityCreateModal} from "features/facility-edit/FacilityCreateModal";
+import {FacilityEditModal, showFacilityEditModal} from "features/facility-edit/FacilityEditModal";
 import {BsHouseAdd} from "solid-icons/bs";
+import {FiEdit2} from "solid-icons/fi";
 import {Component} from "solid-js";
 
 export default (() => {
@@ -13,13 +15,14 @@ export default (() => {
     <>
       <TQueryTable
         mode="standalone"
-        staticPrefixQueryKey={Admin.keys.facilityLists()}
+        staticPrefixQueryKey={Admin.keys.facility()}
         staticEntityURL="admin/facility"
         staticTranslations={createTableTranslations("facilities")}
         intrinsicColumns={["id"]}
         initialColumnsOrder={["id", "name", "url", "createdAt", "updatedAt"]}
-        initialVisibleColumns={["name", "url", "createdAt"]}
+        initialVisibleColumns={["name", "url", "createdAt", "actions"]}
         initialSort={[{id: "name", desc: false}]}
+        additionalColumns={["actions"]}
         columnOptions={{
           name: {
             metaParams: {canControlVisibility: false},
@@ -37,20 +40,21 @@ export default (() => {
             columnDef: {
               sortDescFirst: true,
             },
-            metaParams: {
-              filtering: {
-                useDateOnlyInputs: true,
-              },
-            },
           },
           updatedAt: {
             columnDef: {
               sortDescFirst: true,
             },
-            metaParams: {
-              filtering: {
-                useDateOnlyInputs: true,
-              },
+          },
+          actions: {
+            columnDef: {
+              cell: (c) => (
+                <Button onClick={() => showFacilityEditModal({facilityId: c.row.getValue("id")})}>
+                  <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
+                </Button>
+              ),
+              enableSorting: false,
+              ...AUTO_SIZE_COLUMN_DEFS,
             },
           },
         }}
@@ -63,6 +67,7 @@ export default (() => {
         }
       />
       <FacilityCreateModal />
+      <FacilityEditModal />
     </>
   );
 }) satisfies Component;

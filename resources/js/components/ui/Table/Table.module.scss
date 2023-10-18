@@ -116,13 +116,9 @@
   }
 
   .resizeHandler {
-    @apply absolute top-0 right-0 h-full cursor-col-resize;
+    @apply absolute top-0 right-0 h-full cursor-col-resize hover:bg-gray-400;
     width: 5px;
     @apply select-none touch-none;
-
-    &:hover {
-      @apply bg-gray-400;
-    }
 
     &.resizing {
       @apply bg-blue-700;
@@ -167,7 +163,7 @@
           }
 
           &:hover .cell {
-            @apply bg-gray-50;
+            @apply bg-hover;
           }
         }
 

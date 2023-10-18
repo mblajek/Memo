@@ -13,7 +13,7 @@ export default (() => {
     <>
       <TQueryTable
         mode="standalone"
-        staticPrefixQueryKey={Admin.keys.userLists()}
+        staticPrefixQueryKey={Admin.keys.user()}
         staticEntityURL="admin/user"
         staticTranslations={createTableTranslations("users")}
         intrinsicColumns={["id"]}
@@ -32,10 +32,10 @@ export default (() => {
             columnDef: {
               sortDescFirst: true,
             },
-            metaParams: {
-              filtering: {
-                useDateOnlyInputs: true,
-              },
+          },
+          updatedAt: {
+            columnDef: {
+              sortDescFirst: true,
             },
           },
           hasGlobalAdmin: {

@@ -17,7 +17,7 @@ type FormContextValue<T extends Obj = Obj> = {
   translations: FormTranslations;
 };
 
-type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
 export interface FormTranslations {
@@ -38,6 +38,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     id: string;
     schema: ZodSchema<T>;
     children: ChildrenOrFunc<[FormType<T>]>;
+    onFormCreated?: (form: FormType<T>) => void;
   };
 
 /**
@@ -48,18 +49,18 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
  * The form is also accessible via children: children can be a function taking a Felte form object
  * and returning JSX, similar to the function form of the `<Show>` component.
  */
-export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>): JSX.Element => {
+export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Element => {
   const t = useLangFunc();
-  const [local, createFormOptions, formProps] = splitProps(
-    props,
-    ["children", "schema"],
+  const [props, createFormOptions, formProps] = splitProps(
+    allProps,
+    ["children", "schema", "onFormCreated"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
   // eslint-disable-next-line solid/reactivity
-  const translations = createTranslationsFromPrefix(`forms.${props.id}`, ["formName", "fieldNames", "submit"]);
+  const translations = createTranslationsFromPrefix(`forms.${formProps.id}`, ["formName", "fieldNames", "submit"]);
   const form = createForm<T>({
     ...createFormOptions,
-    extend: [validator({schema: local.schema}), reporter],
+    extend: [validator({schema: props.schema}), reporter],
     onSubmit: (values, ctx) =>
       // Remove the unknown validation field from values so that it doesn't get submitted.
       createFormOptions.onSubmit?.({...values, [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined}, ctx),
@@ -99,12 +100,21 @@ export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>): JSX.Element
     },
   }) as FormType<T>;
 
+  // eslint-disable-next-line solid/reactivity
+  props.onFormCreated?.(form);
+
   const TypedFormContext = typedFormContext<T>();
   return (
-    <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
+    <TypedFormContext.Provider
+      value={{
+        props: allProps,
+        form: form as FormType<T>,
+        translations,
+      }}
+    >
       <form autocomplete="off" ref={form.form} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
-          {getChildrenElement(local.children, form)}
+          {getChildrenElement(props.children, form)}
         </fieldset>
       </form>
     </TypedFormContext.Provider>

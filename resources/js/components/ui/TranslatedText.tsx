@@ -39,16 +39,16 @@ interface Props {
  * a translation system by default, with a possible override for a particular field, and with a fallback
  * code displayed if nothing else gives a value.
  */
-export const TranslatedText: VoidComponent<Props> = (props) => {
-  const mProps = mergeProps({capitalize: false, wrapIn: (text?: JSX.Element) => text} satisfies Props, props);
+export const TranslatedText: VoidComponent<Props> = (allProps) => {
+  const props = mergeProps({capitalize: false, wrapIn: (text?: JSX.Element) => text} satisfies Props, allProps);
   const override = createMemo(() => {
-    const value = mProps.override?.();
+    const value = props.override?.();
     return value == undefined ? undefined : {value, empty: value === "" || (Array.isArray(value) && !value.length)};
   });
   const langFunc = () => {
-    if (!mProps.langFunc) return undefined;
-    if (typeof mProps.langFunc === "function") return mProps.langFunc;
-    const [langPrefixFunc, subKey] = mProps.langFunc;
+    if (!props.langFunc) return undefined;
+    if (typeof props.langFunc === "function") return props.langFunc;
+    const [langPrefixFunc, subKey] = props.langFunc;
     return langPrefixFunc && subKey ? getLangEntryFunc(langPrefixFunc, subKey) : undefined;
   };
   return (
@@ -58,22 +58,22 @@ export const TranslatedText: VoidComponent<Props> = (props) => {
         <Show
           when={langFunc()}
           fallback={
-            <Show when={mProps.fallbackCode} fallback={mProps.wrapIn()}>
-              {mProps.wrapIn(<>{mProps.fallbackCode}</>)}
+            <Show when={props.fallbackCode} fallback={props.wrapIn()}>
+              {props.wrapIn(<>{props.fallbackCode}</>)}
             </Show>
           }
         >
           {(langFunc) => (
-            <Show when={langFunc()({defaultValue: ""})} fallback={mProps.wrapIn(<>{langFunc()()}</>)}>
-              {(text) => mProps.wrapIn(<Capitalize text={text()} capitalize={mProps.capitalize} />)}
+            <Show when={langFunc()({defaultValue: ""})} fallback={props.wrapIn(<>{langFunc()()}</>)}>
+              {(text) => props.wrapIn(<Capitalize text={text()} capitalize={props.capitalize} />)}
             </Show>
           )}
         </Show>
       }
     >
       {(override) => (
-        <Show when={!override().empty} fallback={mProps.wrapIn()}>
-          {mProps.wrapIn(<>{override().value}</>)}
+        <Show when={!override().empty} fallback={props.wrapIn()}>
+          {props.wrapIn(<>{override().value}</>)}
         </Show>
       )}
     </Show>

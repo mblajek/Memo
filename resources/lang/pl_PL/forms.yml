@@ -53,3 +53,11 @@ facility_create:
     url: "$t(models.facility.url)"
   submit: "$t(actions.create)"
   success: "Pomyślnie utworzono placówkę"
+
+facility_edit:
+  formName: "Edycja placówki"
+  fieldNames:
+    name: "$t(models.facility.name)"
+    url: "$t(models.facility.url)"
+  submit: "$t(actions.save)"
+  success: "Pomyślnie zmieniono placówkę"

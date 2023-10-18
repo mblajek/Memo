@@ -1,5 +1,5 @@
 import laravel from "laravel-vite-plugin";
-import { defineConfig } from "vite";
+import {defineConfig} from "vitest/config";
 import eslint from "vite-plugin-eslint";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
@@ -17,7 +17,7 @@ export default defineConfig({
     solidPlugin(),
     tsConfigPaths(),
     eslint(),
-    solidSvg({ defaultAsComponent: true }),
+    solidSvg({defaultAsComponent: true}),
   ],
   resolve: {
     alias: [
@@ -31,5 +31,8 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 9082,
     strictPort: true,
+  },
+  test: {
+    environment: "jsdom",
   },
 });

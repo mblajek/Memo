@@ -21,11 +21,7 @@ export function useTableCells() {
   const t = useLangFunc();
   return {
     defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
-    default: cellFunc((v) => (
-      <div class="whitespace-pre-wrap" style={{"overflow-wrap": "anywhere"}}>
-        {String(v)}
-      </div>
-    )),
+    default: cellFunc((v) => <div class="wrapText">{String(v)}</div>),
     bool: cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no"))),
     date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
     datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
