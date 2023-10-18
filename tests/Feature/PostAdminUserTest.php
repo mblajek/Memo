@@ -133,7 +133,8 @@ class PostAdminUserTest extends TestCase
                         ]
                     ]
                 ]
-            ]);
+            ]
+        );
     }
 
     public function testWithoutReferredFieldFails(): void
@@ -192,7 +193,7 @@ class PostAdminUserTest extends TestCase
                     "field" => "email",
                     "code" => "validation.custom.require_present",
                     "data" => [
-                        "other" => "has_email_verified"
+                        "other" => "hasEmailVerified"
                     ]
                 ]
             ]
@@ -227,7 +228,8 @@ class PostAdminUserTest extends TestCase
                         ]
                     ]
                 ]
-            ]);
+            ]
+        );
     }
 
     public function testWithoutEmailButWithPasswordFieldFails(): void
@@ -257,7 +259,8 @@ class PostAdminUserTest extends TestCase
                         ]
                     ]
                 ]
-            ]);
+            ]
+        );
     }
 
     public function testWithPasswordButWithoutPasswordExpireAtFieldFails(): void
@@ -284,11 +287,12 @@ class PostAdminUserTest extends TestCase
                         "field" => "password",
                         "code" => "validation.custom.require_present",
                         "data" => [
-                            "other" => "password_expire_at"
+                            "other" => "passwordExpireAt"
                         ]
                     ]
                 ]
-            ]);
+            ]
+        );
     }
 
     public function testWithoutPasswordButWithPasswordExpireAtFieldFails(): void
@@ -319,6 +323,7 @@ class PostAdminUserTest extends TestCase
                         ]
                     ]
                 ]
-            ]);
+            ]
+        );
     }
 }

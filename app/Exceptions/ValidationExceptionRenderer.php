@@ -16,6 +16,7 @@ readonly class ValidationExceptionRenderer
     private array $defaultTranslation;
     private Validator $validator;
     private array $rules;
+    private array $interpolationDataTransform;
 
     public function __construct(ValidationException $validationException)
     {
@@ -23,6 +24,12 @@ readonly class ValidationExceptionRenderer
         $this->multiTypeTypes = array_fill_keys(['array', 'file', 'numeric', 'string'], true);
         $this->validator = $validationException->validator;
         $this->rules = $this->validator->getRules();
+        $this->interpolationDataTransform = array_fill_keys([
+            'accepted_if', 'declined_if', 'different', 'in_array', 'missing_if', 'missing_unless', 'prohibited_if',
+            'prohibited_unless', 'prohibits', 'required_if', 'required_if_accepted', 'required_unless', 'same',
+            'custom.require_present'
+        ],
+            fn($interpolationData) => array_map(Str::camel(...), $interpolationData));
     }
 
     private function matchType(array $fieldRules): string
@@ -62,6 +69,10 @@ readonly class ValidationExceptionRenderer
         ApiValidationException $exception,
     ): void {
         $rule = $this->matchRule($rule);
+        if (array_key_exists($rule, $this->interpolationDataTransform)) {
+            $transform = $this->interpolationDataTransform[$rule];
+            $interpolationData = $transform($interpolationData);
+        }
         $ruleType = array_key_exists($rule, $this->multiTypeRules) ? $this->matchType($this->rules[$field]) : null;
         /** @var ?string $ruleTranslation */
         $ruleTranslation = ($ruleType === null) ? $this->treeSearchTranslation($rule)
