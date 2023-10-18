@@ -3,6 +3,7 @@ import {DateTime} from "luxon";
 import {CgCalendarToday} from "solid-icons/cg";
 import {FaSolidArrowLeft, FaSolidArrowRight} from "solid-icons/fa";
 import {For, Index, Show, VoidComponent, createMemo, createSignal, mergeProps, splitProps} from "solid-js";
+import {Button} from "../Button";
 import s from "./TinyCalendar.module.scss";
 
 export type DaysRange = [DateTime, DateTime];
@@ -113,17 +114,17 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   return (
     <div {...htmlAttributes.merge(divProps, {class: s.tinyCalendar})}>
       <div class={s.header}>
-        <button onClick={() => props.setMonth(props.month.minus({months: 1}))}>
+        <Button onClick={() => props.setMonth(props.month.minus({months: 1}))}>
           <FaSolidArrowLeft />
-        </button>
-        <button onClick={() => props.setMonth(props.month.plus({months: 1}))}>
+        </Button>
+        <Button onClick={() => props.setMonth(props.month.plus({months: 1}))}>
           <FaSolidArrowRight />
-        </button>
+        </Button>
         <div class={s.date}>
           <div>{props.month.monthLong}</div>
           <div>{props.month.year}</div>
         </div>
-        <button
+        <Button
           disabled={!retButtonAction()}
           onClick={() => props.setMonth((retButtonAction() === "toSelection" && selectionCenter()) || currentDate())}
           title={
@@ -131,7 +132,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           }
         >
           <CgCalendarToday classList={{dimmed: !retButtonAction()}} />
-        </button>
+        </Button>
       </div>
       <div class={s.days}>
         <Show when={props.showWeekdayNames}>
@@ -148,7 +149,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
         </Show>
         <For each={days()}>
           {(di) => (
-            <button
+            <Button
               class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}
               onClick={() => props.onDayClick?.(di.day, getHoverRange()(di.day))}
               onMouseEnter={() => setHover(di.day)}
@@ -158,7 +159,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
                 <div class={s.todayMark} />
               </Show>
               <div class={cx(s.inner, rangeClasses(di.day, props.selection, s.selected))}>{di.day.day}</div>
-            </button>
+            </Button>
           )}
         </For>
       </div>

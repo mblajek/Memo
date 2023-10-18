@@ -1,8 +1,9 @@
-import {Button as KButton} from "@kobalte/core";
+import {ParentComponent} from "solid-js";
+import {htmlAttributes} from "../../utils";
 
 /**
- * Wrapper for a button.
- *
- * The main functionality for now is type="button" by default, other props can be added as needed.
+ * Wrapper for the native `<button>` element.
+ * This component adds `type="button"` which prevents the button from submitting a form it is in.
  */
-export const Button = KButton.Root;
+// eslint-disable-next-line no-restricted-syntax
+export const Button: ParentComponent<htmlAttributes.button> = (props) => <button type="button" {...props} />;

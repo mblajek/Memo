@@ -28,6 +28,13 @@
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-empty": "off",
     "no-inner-declarations": "off",
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "JSXOpeningElement > JSXIdentifier[name='button']",
+        "message": "Use <Button> instead."
+      }
+    ],
     "no-unused-expressions": "warn",
     "no-unused-vars": "off",
     "sort-imports": "off",
