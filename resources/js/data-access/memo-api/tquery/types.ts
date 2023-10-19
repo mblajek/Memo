@@ -20,15 +20,22 @@ export interface Schema {
 //  - enum-related types (enum and multi-enum)
 //  - dict-related types
 //  - possible JSON types with structured data
-export type ColumnSchema = BasicColumnSchema;
+export type ColumnSchema = BasicColumnSchema | CountColumnSchema;
 
 interface ColumnSchemaBase {
   readonly name: ColumnName;
 }
 
+export type ColumnType = "bool" | "date" | "datetime" | "int" | "string" | "text" | "uuid";
+
 export interface BasicColumnSchema extends ColumnSchemaBase {
-  readonly type: "bool" | "date" | "datetime" | "int" | "string" | "text" | "uuid";
+  readonly type: ColumnType;
   readonly nullable?: boolean;
+}
+
+export interface CountColumnSchema extends ColumnSchemaBase {
+  readonly type: "count";
+  readonly nullable?: false;
 }
 
 export interface CustomFilter {
@@ -41,6 +48,7 @@ export interface DataRequest {
   readonly filter?: ConstFilter | Filter;
   readonly sort: Sort;
   readonly paging: Paging;
+  readonly distinct?: boolean;
 }
 
 // TODO: Consider custom columns.
@@ -170,7 +178,6 @@ export interface DataResponse {
 }
 
 export interface DataResponseMeta {
-  readonly columns: Column[];
   /** Number of records across all pages of results. */
   readonly totalDataSize: number;
 }
@@ -188,4 +195,19 @@ export interface SortColumn {
   readonly desc?: boolean;
 }
 
-export type ColumnType = ColumnSchema["type"];
+export function isDataType(column: ColumnSchema["type"]): column is ColumnType {
+  switch (column) {
+    case "bool":
+    case "date":
+    case "datetime":
+    case "int":
+    case "string":
+    case "text":
+    case "uuid":
+      return true;
+    case "count":
+      return false;
+    default:
+      return column satisfies never;
+  }
+}
