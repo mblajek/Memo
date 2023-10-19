@@ -59,8 +59,11 @@ export namespace User {
   const STATUS_QUERY_OPTIONS = {
     // Prevent refetching on every page.
     staleTime: 10 * 60 * 1000,
-    /** Prevent displaying toast when user is not logged in - the login page will be displayed. */
+    // Prevent displaying toast when user is not logged in - the login page will be displayed.
     meta: {quietHTTPStatuses: [401]},
+    // Refetch this on window focus. The refetch is not visible to the user, and ensures the status
+    // is up to date.
+    refetchOnWindowFocus: true,
   };
 
   /** Query options for user status, without facility permissions. */
