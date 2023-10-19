@@ -4,6 +4,7 @@ import {CgCalendar, CgCalendarToday} from "solid-icons/cg";
 import {FaSolidArrowLeft, FaSolidArrowRight} from "solid-icons/fa";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, mergeProps, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {Button} from "../Button";
 import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {WeekDaysCalculator} from "./week_days_calculator";
@@ -130,19 +131,19 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
   return (
     <div {...htmlAttributes.merge(divProps, {class: s.tinyCalendar})}>
       <div class={s.header}>
-        <button onClick={() => props.setMonth(props.month.minus({months: 1}))}>
+        <Button onClick={() => props.setMonth(props.month.minus({months: 1}))}>
           <FaSolidArrowLeft />
-        </button>
-        <button onClick={() => props.setMonth(props.month.plus({months: 1}))}>
+        </Button>
+        <Button onClick={() => props.setMonth(props.month.plus({months: 1}))}>
           <FaSolidArrowRight />
-        </button>
+        </Button>
         <div class={s.monthYear}>
           <Show when={props.onMonthNameClick} fallback={<div>{props.month.monthLong}</div>}>
-            <button onClick={() => props.onMonthNameClick?.()}>{props.month.monthLong}</button>
+            <Button onClick={() => props.onMonthNameClick?.()}>{props.month.monthLong}</Button>
           </Show>
           <div>{props.month.year}</div>
         </div>
-        <button
+        <Button
           disabled={!retButtonAction()}
           onClick={() =>
             props.setMonth((retButtonAction() === "toSelection" && props.selection?.center()) || currentDate())
@@ -155,7 +156,7 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
             component={retButtonAction() === "toSelection" ? CgCalendar : CgCalendarToday}
             classList={{dimmed: !retButtonAction()}}
           />
-        </button>
+        </Button>
       </div>
       <div class={s.days}>
         <Show when={props.showWeekdayNames}>
@@ -169,7 +170,7 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
         </Show>
         <For each={days()}>
           {(di) => (
-            <button
+            <Button
               class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}
               onClick={() => props.onDayClick?.(di.day, getHoverRange()(di.day))}
               onDblClick={() => props.onDayDoubleClick?.(di.day, getHoverRange()(di.day))}
@@ -180,7 +181,7 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
                 <div class={s.todayMark} />
               </Show>
               <div class={cx(s.inner, rangeClasses(di.day, props.selection, s.selected))}>{di.day.day}</div>
-            </button>
+            </Button>
           )}
         </For>
       </div>

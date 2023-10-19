@@ -33,7 +33,7 @@ range:
   from: "od:"
   to: "do:"
   min: "min:"
-  max: "maks:"
+  max: "max:"
 
 quoted: "„{{text}}”"
 with_colon: "{{text}}:"

@@ -44,7 +44,6 @@
     "@felte/reporter-solid": "^1.2.9",
     "@felte/solid": "^1.2.11",
     "@felte/validator-zod": "^1.0.17",
-    "@kobalte/core": "^0.11.0",
     "@mbarzda/solid-i18next": "^1.2.2",
     "@solidjs/meta": "^0.28.6",
     "@solidjs/router": "^0.8.3",

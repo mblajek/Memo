@@ -12,6 +12,7 @@ import {
   FilterH,
   createTQuery,
   createTableRequestCreator,
+  isDataType,
   tableHelper,
 } from "data-access/memo-api/tquery";
 import {JSX, VoidComponent, createMemo} from "solid-js";
@@ -31,6 +32,7 @@ import {
   useTableCells,
 } from ".";
 import {ColumnFilterController, FilteringParams} from "..";
+import {NON_NULLABLE} from "../../utils";
 
 export interface ColumnOptions {
   columnDef?: Partial<IdentifiedColumnDef<DataItem>>;
@@ -190,20 +192,25 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     const ignoreColumnsSet = new Set(props.ignoreColumns || []);
     const schemaColumns = sch.columns.filter(({name}) => !ignoreColumnsSet.has(name));
     const columns = [
-      ...schemaColumns.map(({type, nullable, name}) => {
-        const common = commonColumnDef(name, type);
-        return h.accessor(name, {
-          ...common,
-          meta: {
-            ...common.meta,
-            tquery: {
-              type,
-              nullable,
-              ...columnOptions(name).metaParams,
-            } satisfies TQueryColumnMeta,
-          },
-        });
-      }),
+      ...schemaColumns
+        .map(({type, nullable, name}) => {
+          if (!isDataType(type)) {
+            return undefined;
+          }
+          const common = commonColumnDef(name, type);
+          return h.accessor(name, {
+            ...common,
+            meta: {
+              ...common.meta,
+              tquery: {
+                type,
+                nullable,
+                ...columnOptions(name).metaParams,
+              } satisfies TQueryColumnMeta,
+            },
+          });
+        })
+        .filter(NON_NULLABLE),
       ...(props.additionalColumns || []).map((name) => {
         const common = commonColumnDef(name);
         return h.display({
