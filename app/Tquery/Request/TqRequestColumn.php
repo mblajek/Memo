@@ -19,7 +19,11 @@ readonly class TqRequestColumn
 
     public function applySelect(TqBuilder $builder): void
     {
-        $builder->select($this->column->getSelectQuery(), $this->column->columnAlias);
+        $builder->select(
+            $this->column->getSelectQuery(),
+            $this->column->columnAlias,
+            $this->column->type->isAggregate(),
+        );
     }
 
     private function __construct(

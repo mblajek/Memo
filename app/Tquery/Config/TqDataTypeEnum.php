@@ -25,6 +25,7 @@ enum TqDataTypeEnum
     case uuid_nullable;
     case text_nullable;
     // additional
+    case count;
     case is_null;
     case is_not_null;
 
@@ -69,6 +70,14 @@ enum TqDataTypeEnum
         return match ($this->notNullBaseType()) {
             self::uuid, self::text => false,
             default => true,
+        };
+    }
+
+    public function isAggregate(): bool
+    {
+        return match ($this) {
+            self::count => true,
+            default => false,
         };
     }
 
@@ -117,18 +126,17 @@ enum TqDataTypeEnum
 
     public function filterValuePrepare(
         TqFilterOperator $operator,
-        bool|int|string|array|null $value,
-    ): bool|int|string|array|null {
+        bool|int|string|array $value,
+    ): bool|int|string|array {
         if ($this->notNullBaseType() === self::datetime) {
             return DateHelper::zuluToDbString($value);
         }
-        if ($operator === TqFilterOperator::pv
-            || $operator === TqFilterOperator::vp
-            || $operator === TqFilterOperator::pvp
-        ) {
+        if (in_array($operator, [TqFilterOperator::pv, TqFilterOperator::vp, TqFilterOperator::pvp])) {
+            if (!is_string($value)) {
+                throw FatalExceptionFactory::tquery();
+            }
             return (($operator === TqFilterOperator::pv || $operator === TqFilterOperator::pvp) ? '%' : '')
-                . (is_string($value) ? str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                    : (throw FatalExceptionFactory::tquery()))
+                . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
                 . (($operator === TqFilterOperator::vp || $operator === TqFilterOperator::pvp) ? '%' : '');
         }
         return $value;

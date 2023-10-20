@@ -59,7 +59,7 @@ readonly class TqRequestFilterGroup extends TqRequestAbstractFilter
     {
         $inverse = ($this->inverse xor $invert);
         $builder->whereGroup(function (Builder $groupBuilder) use ($builder, $inverse) {
-            $innerBuilder = $builder->fromBuilders($groupBuilder);
+            $innerBuilder = $builder->fromBuilder($groupBuilder);
             foreach ($this->value as $child) {
                 $child->applyFilter(
                     $innerBuilder,

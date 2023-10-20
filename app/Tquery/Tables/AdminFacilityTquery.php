@@ -25,13 +25,14 @@ readonly class AdminFacilityTquery extends TqService
             'user_count',
         );
         $config->addQuery(
-            TqDataTypeEnum::text,
+            TqDataTypeEnum::text_nullable,
             fn(string $tableName) => //
                 "select group_concat(`name` order by `name` separator ', ') from `members` inner join"
                 . " `users` on `members`.`user_id` = `users`.`id` where `members`.`facility_admin_grant_id` is not null"
                 . " and `members`.`facility_id` = `facilities`.`id`",
             'facility_admins',
         );
+        $config->addCount();
         return $config;
     }
 }
