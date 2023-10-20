@@ -1,6 +1,6 @@
+import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {VoidComponent, createSignal, lazy} from "solid-js";
-import {Modal as ModalComponent, MODAL_STYLE_PRESETS} from "components/ui";
 
 const FacilityCreateForm = lazy(() => import("features/facility-edit/FacilityCreateForm"));
 
@@ -9,7 +9,7 @@ const [modalOpen, setModalOpen] = createSignal(false);
 export const FacilityCreateModal: VoidComponent = () => {
   const t = useLangFunc();
   return (
-    <ModalComponent
+    <Modal
       title={t("forms.facility_create.formName")}
       open={modalOpen()}
       closeOn={["escapeKey", "closeButton"]}
@@ -17,7 +17,7 @@ export const FacilityCreateModal: VoidComponent = () => {
       style={MODAL_STYLE_PRESETS.medium}
     >
       <FacilityCreateForm onSuccess={() => setModalOpen(false)} onCancel={() => setModalOpen(false)} />
-    </ModalComponent>
+    </Modal>
   );
 };
 

@@ -1,6 +1,6 @@
 import {useLangFunc} from "components/utils";
 import {Show, VoidComponent} from "solid-js";
-import {tableStyle as ts, useTable} from ".";
+import {useTable} from ".";
 
 interface Props {
   /**
@@ -15,7 +15,7 @@ export const TableSummary: VoidComponent<Props> = (props) => {
   const table = useTable();
   const count = () => props.rowsCount ?? table.getRowModel().rows.length;
   return (
-    <div class={ts.tableSummary}>
+    <div class="w-auto flex items-center">
       <Show
         when={table.options.meta?.translations?.summary?.({count: count(), defaultValue: ""})}
         fallback={t("tables.tables.generic.summary", {count: count()})}

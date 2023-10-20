@@ -1,6 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {TextField, getTrimInputHandler} from "components/ui";
+import {TextField} from "components/ui/form/TextField";
+import {getTrimInputHandler} from "components/ui/form/util";
 import {VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
 

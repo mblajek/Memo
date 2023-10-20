@@ -149,7 +149,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
           <Portal>
             <div class={cx(s.modal, closeOn().has("closeButton") && s.withCloseButton)}>
               <div {...api().backdropProps} />
-              <div {...api().containerProps}>
+              <div {...api().positionerProps}>
                 <div {...api().contentProps} style={props.style}>
                   <div class={s.innerContent}>
                     <Show when={closeOn().has("closeButton")}>

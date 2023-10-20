@@ -1,8 +1,11 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {FullLogo, MODAL_STYLE_PRESETS, Modal as ModalComponent, TextField, getTrimInputHandler} from "components/ui";
-import {User} from "data-access/memo-api";
+import {FullLogo} from "components/ui/FullLogo";
+import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
+import {TextField} from "components/ui/form/TextField";
+import {getTrimInputHandler} from "components/ui/form/util";
+import {User} from "data-access/memo-api/groups";
 import {VoidComponent, createSignal} from "solid-js";
 import {z} from "zod";
 
@@ -63,13 +66,13 @@ export namespace LoginForm {
    * This modal can be included in any page and it will show on top of whatever content was displayed
    * when showModal is called.
    */
-  export const Modal: VoidComponent = () => (
-    <ModalComponent open={modalShown()} style={MODAL_STYLE_PRESETS.narrow}>
+  export const LoginModal: VoidComponent = () => (
+    <Modal open={modalShown()} style={MODAL_STYLE_PRESETS.narrow}>
       <div class="flex flex-col gap-4">
         <FullLogo class="w-full h-16" />
         <Component onSuccess={() => setModalShown(false)} />
       </div>
-    </ModalComponent>
+    </Modal>
   );
 
   export function showModal(show = true) {

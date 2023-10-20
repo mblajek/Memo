@@ -1,7 +1,8 @@
 import {debouncedFilterTextAccessor} from "components/utils";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import {FilterControlProps, buildFuzzyTextualColumnFilter} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
+import {FilterControlProps} from "./types";
 
 interface StringColumnProps extends FilterControlProps {
   columnType: "string" | "text";
@@ -35,7 +36,7 @@ export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) =>
     }
   });
   return (
-    <div class={ts.filterLine}>
+    <div class={s.filterLine}>
       <select
         name={`table_filter_op_${props.name}`}
         class="border rounded"
@@ -48,7 +49,7 @@ export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) =>
         </Show>
         <option value=".*">.*</option>
       </select>
-      <div class={ts.wideEdit}>
+      <div class={s.wideEdit}>
         <input
           name={`table_filter_val_${props.name}`}
           type="search"

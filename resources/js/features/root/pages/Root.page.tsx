@@ -1,5 +1,5 @@
 import {Outlet} from "@solidjs/router";
-import {Confirmation} from "components/ui";
+import {Confirmation} from "components/ui/Confirmation";
 import {AccessBarrier} from "components/utils";
 import {ParentComponent, mergeProps} from "solid-js";
 import {Container, Footer, Header, Main, Navbar} from "../layout";

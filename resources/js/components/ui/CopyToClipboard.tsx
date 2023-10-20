@@ -1,7 +1,7 @@
 import {BiRegularCopy} from "solid-icons/bi";
 import {Show, VoidComponent, createSignal} from "solid-js";
-import {Button} from ".";
 import {useLangFunc} from "../utils";
+import {Button} from "./Button";
 
 interface Props {
   text: string | undefined;

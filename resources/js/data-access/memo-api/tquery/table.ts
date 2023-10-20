@@ -1,5 +1,5 @@
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
-import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui";
+import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
 import {Column, ColumnName, DataRequest, DataResponse, FilterH, FilterReductor, RequestCreator, Schema} from ".";

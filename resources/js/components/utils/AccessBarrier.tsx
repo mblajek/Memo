@@ -1,8 +1,9 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {PermissionsResource, System, User} from "data-access/memo-api";
+import {System, User} from "data-access/memo-api/groups";
+import {PermissionsResource} from "data-access/memo-api/resources";
 import {ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
-import {MemoLoader} from "../ui/";
+import {MemoLoader} from "../ui/MemoLoader";
 import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
 
 export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;

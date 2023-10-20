@@ -1,8 +1,8 @@
 import {useLangFunc} from "components/utils";
 import {IntColumnFilter} from "data-access/memo-api/tquery";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import {FilterControlProps} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {FilterControlProps} from "./types";
 
 type IntRangeFilter =
   | {
@@ -72,8 +72,8 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.min")}</div>
       <Show when={canSyncRange()}>
         <div
-          class={ts.valuesSyncer}
-          classList={{[ts.inactive!]: !syncActive()}}
+          class={s.valuesSyncer}
+          classList={{[s.inactive!]: !syncActive()}}
           title={syncActive() ? t("tables.filter.click_to_sync_decimal_range") : undefined}
           onClick={() => {
             if (lower()) {
@@ -84,7 +84,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
           }}
         />
       </Show>
-      <div class={ts.wideEdit}>
+      <div class={s.wideEdit}>
         <input
           name={`table_filter_from_${props.name}`}
           type="number"
@@ -95,7 +95,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
         />
       </div>
       <div>{t("range.max")}</div>
-      <div class={ts.wideEdit}>
+      <div class={s.wideEdit}>
         <input
           name={`table_filter_to_${props.name}`}
           type="number"

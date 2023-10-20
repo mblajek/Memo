@@ -17,7 +17,6 @@ export const HideableSection: ParentComponent<Props> = (props) => {
   /** Whether the section is fully opened. */
   // eslint-disable-next-line solid/reactivity
   const hasFullHeight = debouncedAccessor(() => props.show, {
-    // eslint-disable-next-line solid/reactivity
     timeMs: TRANSITION_TIME_MS,
     outputImmediately: (show) => !show,
   });

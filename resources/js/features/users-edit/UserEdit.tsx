@@ -1,6 +1,9 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm, FelteSubmit} from "components/felte-form";
-import {Checkbox, HideableSection, TextField, getTrimInputHandler} from "components/ui";
+import {HideableSection} from "components/ui/HideableSection";
+import {Checkbox} from "components/ui/form/Checkbox";
+import {TextField} from "components/ui/form/TextField";
+import {getTrimInputHandler} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {VoidComponent, createComputed, splitProps} from "solid-js";

@@ -1,3 +1,4 @@
+import {FullLogo} from "components/ui/FullLogo";
 import {cx} from "components/utils";
 import {
   HiOutlineBuildingOffice,
@@ -12,7 +13,6 @@ import {
 } from "solid-icons/hi";
 import {Show, VoidComponent, createMemo} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
-import {FullLogo} from "../../../components/ui";
 import {NavigationItemProps, NavigationSection} from "../components/navbar";
 import s from "./layout.module.scss";
 

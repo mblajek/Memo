@@ -1,11 +1,11 @@
 import {createMutation} from "@tanstack/solid-query";
+import {FormType} from "components/felte-form";
+import {trimInput} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
-import {Admin, System} from "data-access/memo-api";
+import {Admin, System} from "data-access/memo-api/groups";
 import {VoidComponent, createComputed} from "solid-js";
 import toast from "solid-toast";
 import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
-import {trimInput} from "components/ui";
-import {FormType} from "components/felte-form";
 
 interface Props {
   onSuccess?: () => void;

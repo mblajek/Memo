@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils";
 import {ParentComponent} from "solid-js";
-import {htmlAttributes} from "../../utils";
 
 /**
  * Wrapper for the native `<button>` element.

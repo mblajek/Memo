@@ -1,7 +1,7 @@
+import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
-import {VoidComponent, createSignal, lazy} from "solid-js";
-import {Modal as ModalComponent, MODAL_STYLE_PRESETS} from "components/ui";
 import {Api} from "data-access/memo-api/types";
+import {VoidComponent, createSignal, lazy} from "solid-js";
 
 const FacilityEditForm = lazy(() => import("features/facility-edit/FacilityEditForm"));
 
@@ -14,7 +14,7 @@ const [modalParams, setModalParams] = createSignal<FormParams>();
 export const FacilityEditModal: VoidComponent = () => {
   const t = useLangFunc();
   return (
-    <ModalComponent
+    <Modal
       title={t("forms.facility_edit.formName")}
       open={modalParams()}
       closeOn={["escapeKey", "closeButton"]}
@@ -28,7 +28,7 @@ export const FacilityEditModal: VoidComponent = () => {
           onCancel={() => setModalParams(undefined)}
         />
       )}
-    </ModalComponent>
+    </Modal>
   );
 };
 

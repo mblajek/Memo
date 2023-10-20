@@ -23,7 +23,7 @@ export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
         id={props.name}
         name={props.name}
         {...htmlAttributes.merge(inputProps, {
-          class: "w-full border border-gray-400 rounded p-2 aria-invalid:border-red-400",
+          class: "w-full h-12 border border-gray-400 rounded px-2 aria-invalid:border-red-400",
         })}
         aria-labelledby={labelIdForField(props.name)}
       />
