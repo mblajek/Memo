@@ -8,14 +8,14 @@ import {
   type QueryMeta,
 } from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
-import {System, User} from "data-access/memo-api";
+import {System, User} from "data-access/memo-api/groups";
 import {SolidQueryOpts} from "data-access/memo-api/query_utils";
 import {Api} from "data-access/memo-api/types";
+import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
 import {For, ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {cx, useLangFunc} from ".";
-import {translationsLoaded, translationsLoadedPromise} from "../../i18n_loader";
-import {MemoLoader} from "../ui";
+import {MemoLoader} from "../ui/MemoLoader";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];

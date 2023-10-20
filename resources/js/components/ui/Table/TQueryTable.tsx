@@ -6,6 +6,7 @@ import {
   createColumnHelper,
   createSolidTable,
 } from "@tanstack/solid-table";
+import {NON_NULLABLE} from "components/utils";
 import {
   ColumnType,
   DataItem,
@@ -31,8 +32,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
-import {ColumnFilterController, FilteringParams} from "..";
-import {NON_NULLABLE} from "../../utils";
+import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
 
 export interface ColumnOptions {
   columnDef?: Partial<IdentifiedColumnDef<DataItem>>;

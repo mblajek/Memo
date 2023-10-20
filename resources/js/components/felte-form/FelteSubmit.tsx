@@ -1,5 +1,5 @@
-import {Button} from "components/ui";
 import {ParentComponent, Show, splitProps} from "solid-js";
+import {Button} from "../ui/Button";
 import {htmlAttributes, useLangFunc} from "../utils";
 import {useFormContext} from "./FelteForm";
 import {UnknownValidationMessages} from "./UnknownValidationMessages";

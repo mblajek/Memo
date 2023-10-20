@@ -3,8 +3,8 @@ import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquer
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import {FilterControlProps} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {FilterControlProps} from "./types";
 
 type DateTimeRangeFilter =
   | {
@@ -103,8 +103,8 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.from")}</div>
       <Show when={canSyncRange()}>
         <div
-          class={ts.valuesSyncer}
-          classList={{[ts.inactive!]: !syncActive()}}
+          class={s.valuesSyncer}
+          classList={{[s.inactive!]: !syncActive()}}
           title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
           onClick={() => {
             if (lower()) {
@@ -115,7 +115,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
           }}
         />
       </Show>
-      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
           name={`table_filter_from_${props.name}`}
           type={inputsType()}
@@ -126,7 +126,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         />
       </div>
       <div>{t("range.to")}</div>
-      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
           name={`table_filter_to_${props.name}`}
           type={inputsType()}

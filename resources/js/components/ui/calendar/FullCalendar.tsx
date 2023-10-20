@@ -1,16 +1,17 @@
+import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {VoidComponent, createComputed, createMemo, createSignal, mergeProps, on, splitProps} from "solid-js";
-import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "../../utils";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
-import {SegmentedControl} from "../form";
+import {SegmentedControl} from "../form/SegmentedControl";
 import {ResourceGroup, ResourcesSelector} from "./ResourcesSelector";
 import {TinyCalendar} from "./TinyCalendar";
 import {DaysRange} from "./days_range";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
-export type Mode = "month" | "week" | "day";
+export const MODES = ["month", "week", "day"] as const;
+export type Mode = (typeof MODES)[number];
 
 interface Props extends htmlAttributes.div {
   locale: Intl.Locale;
@@ -49,8 +50,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const t = useLangFunc();
   const [mode, setMode] = createSignal(props.initialMode);
   const weekDayCalculator = createMemo(() => new WeekDaysCalculator(props.locale));
-  function getRange(day: DateTime) {
-    const m = mode();
+  function getRange(day: DateTime, m = mode()) {
     switch (m) {
       case "month":
         return new DaysRange(day.startOf("month"), day.endOf("month"));
@@ -109,6 +109,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   // TODO: Consider keeping three separate signals with rays selection for each mode.
   /** The last days selection in each of the modes. */
   const daysSelectionByMode = new Map<Mode, DaysRange>();
+  for (const mode of MODES) {
+    // eslint-disable-next-line solid/reactivity
+    daysSelectionByMode.set(mode, getRange(props.initialDay, mode));
+  }
+
   /** Sets the selection and stores the value in daysSelectionByMode. */
   function setDaysSelection(range: DaysRange) {
     daysSelectionByMode.set(mode(), range);

@@ -1,8 +1,8 @@
 import {cx} from "components/utils";
 import {UuidColumnFilter} from "data-access/memo-api/tquery";
 import {createMemo} from "solid-js";
-import {FilterControl} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {FilterControl} from "./types";
 
 export const UuidFilterControl: FilterControl<UuidColumnFilter> = (props) => {
   const defaultFilter = createMemo(
@@ -15,8 +15,8 @@ export const UuidFilterControl: FilterControl<UuidColumnFilter> = (props) => {
       }) as const,
   );
   return (
-    <div class={ts.filterLine}>
-      <div class={cx(ts.wideEdit, "flex items-baseline")}>
+    <div class={s.filterLine}>
+      <div class={cx(s.wideEdit, "flex items-baseline")}>
         <span class="w-1.5 text-center">=</span>
         <input
           name={`table_filter_val_${props.name}`}

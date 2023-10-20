@@ -1,8 +1,8 @@
 import {useLangFunc} from "components/utils";
 import {BoolColumnFilter} from "data-access/memo-api/tquery";
 import {createMemo} from "solid-js";
-import {FilterControl} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {FilterControl} from "./types";
 
 export const BoolFilterControl: FilterControl<BoolColumnFilter> = (props) => {
   const defaultFilter = createMemo<BoolColumnFilter>(() => ({
@@ -13,7 +13,7 @@ export const BoolFilterControl: FilterControl<BoolColumnFilter> = (props) => {
   }));
   const t = useLangFunc();
   return (
-    <div class={ts.filterLine}>
+    <div class={s.filterLine}>
       <select
         name={`table_filter_val_${props.name}`}
         class="flex-grow border rounded"

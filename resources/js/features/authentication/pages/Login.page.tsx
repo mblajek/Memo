@@ -1,11 +1,11 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {MemoLoader} from "components/ui";
+import {MemoLoader} from "components/ui/MemoLoader";
 import {Page, QueryBarrier} from "components/utils";
-import {User} from "data-access/memo-api";
+import {User} from "data-access/memo-api/groups";
 import {VoidComponent, createEffect, onMount} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
-import {LoginForm} from "../forms/login";
+import {LoginForm} from "../forms/login/Login.form";
 
 /**
  * The login page.
@@ -33,7 +33,7 @@ const LoginPage: VoidComponent = () => {
 
   return (
     <Page title="Logowanie">
-      <LoginForm.Modal />
+      <LoginForm.LoginModal />
       <QueryBarrier
         queries={[statusQuery]}
         Error={

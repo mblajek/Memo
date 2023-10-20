@@ -3,7 +3,7 @@ import {IconTypes} from "solid-icons";
 import {FaSolidArrowDownLong, FaSolidArrowUpLong, FaSolidArrowsUpDown} from "solid-icons/fa";
 import {Show, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {useTable} from "..";
+import {useTable} from "./TableContext";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

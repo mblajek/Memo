@@ -16,9 +16,11 @@ import {
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, cx} from "components/utils";
 import {Accessor, For, Index, JSX, Show, Signal, VoidProps, createEffect, createSignal, mergeProps, on} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContextProvider, getHeaders, tableStyle as ts, useTableCells} from ".";
-import {BigSpinner, EMPTY_VALUE_SYMBOL} from "..";
+import {TableContextProvider, getHeaders, useTableCells} from ".";
+import {BigSpinner} from "../Spinner";
+import {EMPTY_VALUE_SYMBOL} from "../symbols";
 import {CellRenderer} from "./CellRenderer";
+import s from "./Table.module.scss";
 
 export interface TableTranslations {
   tableName: LangEntryFunc;
@@ -124,20 +126,20 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
   return (
     <TableContextProvider table={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
-        <div class={cx(ts.tableContainer, ts[props.mode])}>
-          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={ts.aboveTable}>{aboveTable()}</div>}</Show>
-          <div class={ts.scrollingWrapper}>
-            <div ref={scrollToTopPoint} class={ts.tableBg}>
+        <div class={cx(s.tableContainer, s[props.mode])}>
+          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
+          <div class={s.scrollingWrapper}>
+            <div ref={scrollToTopPoint} class={s.tableBg}>
               <div
-                class={cx(ts.table, {[ts.dimmed!]: props.isDimmed})}
+                class={cx(s.table, {[s.dimmed!]: props.isDimmed})}
                 style={{"grid-template-columns": gridTemplateColumns()}}
               >
-                <div class={ts.headerRow}>
+                <div class={s.headerRow}>
                   <For each={getHeaders(props.table)}>
                     {({header, column}) => (
                       <Show when={header()}>
                         {(header) => (
-                          <div class={ts.cell}>
+                          <div class={s.cell}>
                             <Show when={!header().isPlaceholder}>
                               <CellRenderer component={column.columnDef.header} props={header().getContext()} />
                             </Show>
@@ -151,7 +153,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                   component={{For, Index}[props.rowsIteration]}
                   each={props.table.getRowModel().rows}
                   fallback={
-                    <div class={ts.wideRow}>
+                    <div class={s.wideRow}>
                       <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
                         <BigSpinner />
                       </Show>
@@ -161,10 +163,10 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                   {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
                     const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
                     return (
-                      <div class={ts.dataRow} inert={props.isDimmed || undefined}>
+                      <div class={s.dataRow} inert={props.isDimmed || undefined}>
                         <Index each={row().getVisibleCells()}>
                           {(cell) => (
-                            <span class={ts.cell}>
+                            <span class={s.cell}>
                               <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
                             </span>
                           )}
@@ -173,11 +175,11 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                     );
                   }}
                 </Dynamic>
-                <div class={ts.bottomBorder} />
+                <div class={s.bottomBorder} />
               </div>
             </div>
           </div>
-          <Show when={props.belowTable?.()}>{(belowTable) => <div class={ts.belowTable}>{belowTable()}</div>}</Show>
+          <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
         </div>
       </Show>
     </TableContextProvider>

@@ -8,7 +8,7 @@ import {Show} from "solid-js";
 import {render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
-import {LoaderInPortal, MemoLoader} from "./components/ui";
+import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
 

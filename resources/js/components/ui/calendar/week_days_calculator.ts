@@ -1,5 +1,5 @@
+import {getWeekInfo} from "components/utils";
 import {DateTime} from "luxon";
-import {getWeekInfo} from "../../utils";
 import {DaysRange} from "./days_range";
 
 export class WeekDaysCalculator {

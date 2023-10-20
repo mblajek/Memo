@@ -44,5 +44,6 @@
     "no-unused-vars": "off",
     "sort-imports": "off",
     "sort-keys": "off"
-  }
+  },
+  "reportUnusedDisableDirectives": true
 }

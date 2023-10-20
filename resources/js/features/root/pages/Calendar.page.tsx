@@ -1,4 +1,5 @@
-import {FullCalendar, ResourceGroup} from "components/ui";
+import {FullCalendar} from "components/ui/calendar/FullCalendar";
+import {ResourceGroup} from "components/ui/calendar/ResourcesSelector";
 import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
 

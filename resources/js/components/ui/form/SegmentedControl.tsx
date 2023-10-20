@@ -1,8 +1,8 @@
 import * as radio from "@zag-js/radio-group";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, htmlAttributes} from "components/utils";
-import {For, VoidComponent, createComputed, JSX, createMemo, createUniqueId, splitProps} from "solid-js";
-import {FieldLabel} from ".";
+import {For, JSX, VoidComponent, createComputed, createMemo, createUniqueId, splitProps} from "solid-js";
+import {FieldLabel} from "./FieldLabel";
 import s from "./SegmentedControl.module.scss";
 
 interface Props extends htmlAttributes.div {

@@ -1,5 +1,6 @@
 import {A} from "@solidjs/router";
-import {AUTO_SIZE_COLUMN_DEFS, Button, createTableTranslations} from "components/ui";
+import {Button} from "components/ui/Button";
+import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";

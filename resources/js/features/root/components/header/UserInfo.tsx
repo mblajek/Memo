@@ -1,9 +1,9 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {Button} from "components/ui";
+import {Button} from "components/ui/Button";
 import {DATE_TIME_WITH_WEEKDAY_FORMAT, currentTime, useLangFunc} from "components/utils";
-import {User} from "data-access/memo-api";
+import {User} from "data-access/memo-api/groups";
 import {HeaderSeparator} from "features/root/layout";
-import {PasswordChangeForm} from "features/user-panel";
+import {PasswordChangeForm} from "features/user-panel/PasswordChange.form";
 import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
 import {Index, Match, Switch, VoidComponent} from "solid-js";
@@ -57,7 +57,7 @@ export const UserInfo: VoidComponent = () => {
             >
               <TbPassword />
             </Button>
-            <PasswordChangeForm.Modal />
+            <PasswordChangeForm.PasswordChangeModal />
           </span>
         </div>
       </div>
