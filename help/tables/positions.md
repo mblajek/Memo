@@ -25,7 +25,11 @@ Nazwa słownika, która może być wyświetlana w systemie
 
 ### is_fixed
 
-Pozycja może zostać usunięta tylko migracją bazodanową, może być wykorzystany w kodzie lub w innych tabelach.
+Pozycja może zostać usunięta tylko migracją bazodanową, może być wykorzystana w kodzie lub w innych tabelach.
+
+### is_disabled
+
+Niekatywne pozycje są nadal zwracane, ale frontend nie pozwala na wprowadzenie takiej pozycji.
 
 ### default_order
 
