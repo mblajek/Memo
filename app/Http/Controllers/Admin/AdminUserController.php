@@ -8,9 +8,11 @@ use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Admin\AdminUserResource;
 use App\Models\User;
+use App\Services\System\MergePatchService;
 use App\Services\User\CreateUserService;
 use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 use Throwable;
@@ -118,16 +120,18 @@ class AdminUserController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws ApiException|Throwable */
-    public function patch(User $user, UpdateUserService $service): JsonResponse
+    public function patch(User $user,MergePatchService $mergePatchService, UpdateUserService $service): JsonResponse
     {
-        $data = $this->validate(User::getPatchValidator([
+        $data = $this->validate(User::getPatchValidator());
+        $mergePatchService->mergeInto($user, $data);
+        $data = $this->validate(User::getInsertValidator([
             'name',
             'email',
             'has_email_verified',
             'password',
             'password_expire_at',
             'has_global_admin',
-        ], $user));
+        ]));
 
         $service->handle($user, $data);
 

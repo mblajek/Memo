@@ -82,6 +82,32 @@ class User extends Authenticatable
         'password_expire_at' => 'immutable_datetime',
     ];
 
+    public static function getPatchValidator(): array
+    {
+        return [
+            'name' => 'sometimes|required|string',
+            'email' => ['sometimes','nullable','string', 'email',
+                 Rule::unique('users', 'email'),
+                new RequirePresentRule('has_email_verified')
+            ],
+            'has_email_verified' => ['sometimes', 'nullable', 'bool',
+                new RequirePresentRule('email'),
+                // TODO: Jak email == null, to has_email_verified też ma być null
+            ],
+            'password' => array_merge(
+                ['bail', 'nullable', 'string'],
+                self::fieldValidator('_password'),
+                [new RequirePresentRule('password_expire_at')],
+            ),
+            '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
+            'password_expire_at' => ['sometimes', 'nullable', 'date',
+                new RequirePresentRule('password'),
+                // TODO: Jak password jest null, to password_expire_at też ma być null
+            ],
+            'has_global_admin' => 'sometimes|bool',
+        ];
+    }
+
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
