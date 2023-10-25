@@ -7,6 +7,8 @@ confirm: "Potwierdź"
 save: "Zapisz"
 create: "Utwórz"
 copy_to_clipboard: "Kopiuj do schowka"
+expand: "Rozwiń"
+clear: "Wyczyść"
 
 add_user: "Dodaj osobę"
 add_facility: "Dodaj placówkę"

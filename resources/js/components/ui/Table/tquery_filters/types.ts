@@ -1,4 +1,4 @@
-import {FilterH} from "data-access/memo-api/tquery";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {VoidComponent} from "solid-js";
 
 export interface FilterControlProps<F extends FilterH = FilterH> {

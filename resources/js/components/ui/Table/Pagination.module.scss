@@ -28,7 +28,7 @@
     min-width: 2em;
 
     &[data-selected] {
-      @apply bg-gray-200;
+      @apply bg-hover;
     }
   }
 }

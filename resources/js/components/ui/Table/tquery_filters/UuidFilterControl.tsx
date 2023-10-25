@@ -1,5 +1,5 @@
 import {cx} from "components/utils";
-import {UuidColumnFilter} from "data-access/memo-api/tquery";
+import {UuidColumnFilter} from "data-access/memo-api/tquery/types";
 import {createMemo} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
 import {FilterControl} from "./types";

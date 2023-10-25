@@ -1,5 +1,5 @@
 import {useLangFunc} from "components/utils";
-import {IntColumnFilter} from "data-access/memo-api/tquery";
+import {IntColumnFilter} from "data-access/memo-api/tquery/types";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
 import {FilterControlProps} from "./types";

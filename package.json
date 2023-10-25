@@ -50,6 +50,7 @@
     "@solidjs/router": "^0.8.3",
     "@tanstack/solid-query": "^5.0.0",
     "@tanstack/solid-table": "^8.9.7",
+    "@zag-js/combobox": "0.26.0",
     "@zag-js/dialog": "0.26.0",
     "@zag-js/pagination": "0.26.0",
     "@zag-js/popover": "0.26.0",

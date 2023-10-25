@@ -1,4 +1,5 @@
-import {FilterReductor, Schema} from "data-access/memo-api/tquery";
+import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
+import {Schema} from "data-access/memo-api/tquery/types";
 import {describe, expect, it} from "vitest";
 import {buildFuzzyGlobalFilter, buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
 

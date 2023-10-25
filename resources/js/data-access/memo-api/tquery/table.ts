@@ -2,7 +2,9 @@ import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-ta
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
-import {Column, ColumnName, DataRequest, DataResponse, FilterH, FilterReductor, RequestCreator, Schema} from ".";
+import {FilterH, FilterReductor} from "./filter_utils";
+import {RequestCreator} from "./tquery";
+import {Column, ColumnName, DataRequest, DataResponse, Schema} from "./types";
 
 /** A collection of column filters, keyed by column name. The undefined value denotes a disabled filter. */
 export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;

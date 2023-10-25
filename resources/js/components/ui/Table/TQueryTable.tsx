@@ -7,15 +7,10 @@ import {
   createSolidTable,
 } from "@tanstack/solid-table";
 import {NON_NULLABLE} from "components/utils";
-import {
-  ColumnType,
-  DataItem,
-  FilterH,
-  createTQuery,
-  createTableRequestCreator,
-  isDataType,
-  tableHelper,
-} from "data-access/memo-api/tquery";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery/table";
+import {createTQuery} from "data-access/memo-api/tquery/tquery";
+import {ColumnType, DataItem, isDataType} from "data-access/memo-api/tquery/types";
 import {JSX, VoidComponent, createMemo} from "solid-js";
 import {
   DisplayMode,

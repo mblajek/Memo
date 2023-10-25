@@ -227,7 +227,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
         <TinyCalendar
           locale={props.locale}
-          showWeekdayNames={true}
+          showWeekdayNames
           holidays={props.holidays}
           selection={daysSelection()}
           month={tinyCalMonth()}
@@ -285,7 +285,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               {value: "week", label: () => t("calendar.week")},
               {value: "day", label: () => t("calendar.day")},
             ]}
-            small={true}
+            small
           />
         </div>
         <div>Календар буде тут.</div>

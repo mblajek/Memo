@@ -21,7 +21,7 @@ passwords:
 auth:
   failed: "Błędny login lub hasło."
   password: "Hasło jest nieprawidłowe."
-  throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
+  throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds, number}} sekund."
 
 unverified_user: "Użytkownik niezweryfikowany"
 

@@ -1,5 +1,5 @@
 import {useLangFunc} from "components/utils";
-import {BoolColumnFilter} from "data-access/memo-api/tquery";
+import {BoolColumnFilter} from "data-access/memo-api/tquery/types";
 import {createMemo} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
 import {FilterControl} from "./types";

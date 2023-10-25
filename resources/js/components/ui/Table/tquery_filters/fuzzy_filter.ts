@@ -1,5 +1,6 @@
 import {NON_NULLABLE} from "components/utils";
-import {ColumnName, FilterH, StringColumnFilter} from "data-access/memo-api/tquery";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {ColumnName, StringColumnFilter} from "data-access/memo-api/tquery/types";
 
 export const GLOBAL_CHAR = "*";
 export const QUOTE = "'";

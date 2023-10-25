@@ -94,7 +94,7 @@ export namespace UserEditForm {
     }
 
     return (
-      <QueryBarrier queries={[userQuery]} ignoreCachedData={true}>
+      <QueryBarrier queries={[userQuery]} ignoreCachedData>
         <UserEdit.EditForm
           id="user_edit"
           onSubmit={updateUser}

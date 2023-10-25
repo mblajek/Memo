@@ -1,5 +1,5 @@
 import {cx, useLangFunc} from "components/utils";
-import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
+import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";

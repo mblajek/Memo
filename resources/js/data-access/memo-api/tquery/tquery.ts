@@ -1,9 +1,9 @@
 import {createQuery, keepPreviousData} from "@tanstack/solid-query";
 import {Accessor, createComputed, createSignal} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
-import {DataItem, DataRequest, DataResponse, Schema} from ".";
 import {V1} from "../config";
 import {CreateQueryOpts, SolidQueryOpts} from "../query_utils";
+import {DataItem, DataRequest, DataResponse, Schema} from "./types";
 
 type EntityURL = string;
 
