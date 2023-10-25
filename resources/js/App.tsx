@@ -3,13 +3,14 @@ import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api/groups";
 import {NotFound, NotYetImplemented} from "features/not-found/components";
-import {lazy, type VoidComponent} from "solid-js";
+import {DEV, Show, lazy, type VoidComponent} from "solid-js";
 
-const RootPage = lazy(() => import("features/root/pages/Root.page"));
-const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
-const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
+const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
+const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
+const RootPage = lazy(() => import("features/root/pages/Root.page"));
+const TestPage = lazy(() => import("TestPage"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -18,6 +19,9 @@ const App: VoidComponent = () => {
       <Route path="/login" component={LoginPage} />
       <Route path="/" component={RootPage}>
         <UnknownNotFound />
+        <Show when={DEV}>
+          <Route path="/test-page" component={TestPage} />
+        </Show>
         <Route path="/help" component={NotYetImplemented} />
         <Route path="/admin" component={GlobalAdminPages}>
           <UnknownNotFound />
