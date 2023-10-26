@@ -1,6 +1,7 @@
 import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {FacilityResource} from "../resources";
+import {DictionaryResource} from "../resources/dictionary.resource";
 import {Api} from "../types";
 import {parseGetListResponse} from "../utils";
 
@@ -19,16 +20,28 @@ export namespace System {
       staleTime: 10 * 60 * 1000,
     }) satisfies SolidQueryOptions;
 
+  const getDictionariesList = (config?: Api.Config) =>
+    V1.get<Api.Response.GetList<DictionaryResource>>("/system/dictionary/list", config).then(parseGetListResponse);
+  export const dictionariesQueryOptions = () =>
+    ({
+      queryFn: ({signal}) => getDictionariesList({signal}),
+      queryKey: keys.dictionary(),
+      // The dictionaries normally don't change.
+      staleTime: 3600 * 1000,
+    }) satisfies SolidQueryOptions;
+
   export const keys = {
     all: () => ["system"] as const,
     facility: () => [...keys.all(), "facility"] as const,
     facilityList: () => [...keys.facility(), "list"] as const,
+    dictionary: () => [...keys.all(), "dictionary"] as const,
   };
 
   export function useInvalidator() {
     const queryClient = useQueryClient();
     return {
       facilities: () => queryClient.invalidateQueries({queryKey: keys.facilityList()}),
+      dictionaries: () => queryClient.invalidateQueries({queryKey: keys.dictionary()}),
     };
   }
 }
