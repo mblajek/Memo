@@ -6,7 +6,7 @@ import {System} from "./groups";
 import {DictionaryResource, PositionResource} from "./resources/dictionary.resource";
 
 export class Dictionaries {
-  private constructor(
+  constructor(
     /** A map of all the dictionaries by id. */
     readonly byId: ReadonlyMap<string, Dictionary>,
     /**
@@ -34,29 +34,31 @@ export class Dictionaries {
     return this.byId.get(idOrName) || this.byName.get(idOrName);
   }
 
-  /**
-   * Returns a subset of the dictionaries (and positions) accessible for the specified facility.
-   * If facility is not specified, dictinaries (and positions) accessible outside of facility context are returned.
-   */
-  subsetForFacility(facilityId?: string) {
-    const byId = new Map<string, Dictionary>();
-    const byName = new Map<string, Dictionary>();
-    for (const dictionary of this.byId.values()) {
-      const dictionarySubset = dictionary.subsetForFacility(facilityId);
-      if (dictionarySubset) {
-        byId.set(dictionarySubset.id, dictionarySubset);
-        if (dictionarySubset.resource.isFixed && dictionarySubset.isNameTranslatable) {
-          byName.set(dictionarySubset.resource.name, dictionarySubset);
-        }
-      }
-    }
-    return new Dictionaries(byId, byName);
+  /** Returns a subset of the dictionaries (and positions) accessible for the specified facility. */
+  subsetForFacility(facilityId: string) {
+    return dictionariesSubsetFor(this, facilityId);
   }
 
   /** Returns a subset of the dictionaries (and positions) accessible outside of facility context. */
   subsetForGlobal() {
-    return this.subsetForFacility(undefined);
+    return dictionariesSubsetFor(this, undefined);
   }
+}
+
+/** Returns a dictionaries subset for the facility, or for global uses if facility not specified. */
+function dictionariesSubsetFor(dictionaries: Dictionaries, facilityId: string | undefined) {
+  const byId = new Map<string, Dictionary>();
+  const byName = new Map<string, Dictionary>();
+  for (const dictionary of dictionaries.byId.values()) {
+    const dictionarySubset = dictionarySubsetFor(dictionary, facilityId);
+    if (dictionarySubset) {
+      byId.set(dictionarySubset.id, dictionarySubset);
+      if (dictionarySubset.resource.isFixed && dictionarySubset.isNameTranslatable) {
+        byName.set(dictionarySubset.resource.name, dictionarySubset);
+      }
+    }
+  }
+  return new Dictionaries(byId, byName);
 }
 
 export class Dictionary {
@@ -88,26 +90,39 @@ export class Dictionary {
 
   /**
    * Returns a dictionary with a subset of positions accessible for the specified facility.
-   * If facility is not specified, positions accessible outside of facility context are returned.
    * If the whole dictionary is not accessible, returns undefined.
    */
-  subsetForFacility(facilityId?: string) {
-    if (facilityIdMatches(this.resource.facilityId, facilityId)) {
-      const positionsSubset = this.allPositions.filter((position) =>
-        facilityIdMatches(position.resource.facilityId, facilityId),
-      );
-      if (positionsSubset.length === this.allPositions.length) {
-        return this;
-      }
-      return new Dictionary(this.resource, this.id, this.isNameTranslatable, this.label, positionsSubset);
-    }
-    return undefined;
+  subsetForFacility(facilityId: string) {
+    return dictionarySubsetFor(this, facilityId);
   }
 
-  /** Returns a dictionary with a subset of positions accessible outside of facility context. */
+  /**
+   * Returns a dictionary with a subset of positions accessible outside of facility context.
+   * If the whole dictionary is not accessible, returns undefined.
+   */
   subsetForGlobal() {
-    return this.subsetForFacility(undefined);
+    return dictionarySubsetFor(this, undefined);
   }
+}
+
+/** Returns a dictionary subset for the facility, or for global uses if facility not specified. */
+function dictionarySubsetFor(dictionary: Dictionary, facilityId: string | undefined) {
+  if (facilityIdMatches(dictionary.resource.facilityId, facilityId)) {
+    const positionsSubset = dictionary.allPositions.filter((position) =>
+      facilityIdMatches(position.resource.facilityId, facilityId),
+    );
+    if (positionsSubset.length === dictionary.allPositions.length) {
+      return dictionary;
+    }
+    return new Dictionary(
+      dictionary.resource,
+      dictionary.id,
+      dictionary.isNameTranslatable,
+      dictionary.label,
+      positionsSubset,
+    );
+  }
+  return undefined;
 }
 
 function facilityIdMatches(dictFacilityId: string | null, matchFacilityId: string | undefined) {
