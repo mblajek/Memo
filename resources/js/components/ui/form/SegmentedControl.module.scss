@@ -1,5 +1,5 @@
 .segmentedControl {
-  @apply border border-gray-400 rounded p-1.5;
+  @apply border border-input-border rounded p-1.5;
   @apply flex flex-wrap justify-between gap-1 relative;
 
   [data-part="indicator"] {
@@ -9,14 +9,30 @@
   [data-part="item"] {
     @apply relative select-none;
     @apply px-2 py-0.5 flex items-center;
-    @apply text-black cursor-pointer;
+    @apply text-black;
 
     &[data-state="unchecked"] {
-      @apply text-opacity-70 hover:text-opacity-100;
+      @apply text-opacity-70;
     }
 
     &[data-disabled] {
-      @apply text-opacity-50;
+      // @apply text-opacity-50;
+    }
+  }
+
+  &[data-disabled] {
+    @apply bg-disabled;
+    [data-part="indicator"] {
+      @apply bg-disabled;
+    }
+  }
+
+  &:not([data-disabled]) {
+    [data-part="item"] {
+      @apply cursor-pointer;
+      &[data-state="unchecked"] {
+        @apply hover:text-opacity-100;
+      }
     }
   }
 

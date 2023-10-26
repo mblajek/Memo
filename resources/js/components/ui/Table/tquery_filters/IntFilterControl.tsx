@@ -74,7 +74,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
         <div
           class={s.valuesSyncer}
           classList={{[s.inactive!]: !syncActive()}}
-          title={syncActive() ? t("tables.filter.click_to_sync_decimal_range") : undefined}
+          title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());

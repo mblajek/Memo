@@ -5,7 +5,7 @@ import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
 import {Settings} from "luxon";
 import {Show} from "solid-js";
-import {render} from "solid-js/web";
+import {DelegatedEvents, render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
@@ -24,6 +24,9 @@ declare module "luxon" {
     throwOnInvalid: true;
   }
 }
+
+// Allow stopping propagation of events (see https://github.com/solidjs/solid/issues/1786#issuecomment-1694589801).
+DelegatedEvents.clear();
 
 render(() => {
   return (

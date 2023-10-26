@@ -27,7 +27,7 @@ export const SimpleSelect: VoidComponent<SimpleSelectProps> = (allProps) => {
       <select
         id={selectProps.name}
         {...htmlAttributes.merge(selectProps, {
-          class: "w-full border border-gray-400 rounded p-2 aria-invalid:border-red-400",
+          class: "w-full border border-input-border rounded p-2 aria-invalid:border-red-400",
         })}
         aria-labelledby={labelIdForField(selectProps.name)}
       >

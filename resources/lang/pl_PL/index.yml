@@ -37,3 +37,9 @@ range:
 
 quoted: "„{{text}}”"
 with_colon: "{{text}}:"
+
+more_info: "Więcej informacji"
+
+select:
+  no_items: "Brak opcji"
+  no_matching_items: "Brak pasujących opcji"

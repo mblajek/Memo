@@ -24,7 +24,11 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const api = createMemo(() => popover.connect(state, send, normalizeProps));
   return (
     <div class={s.columnVisibility}>
-      <Button class="pressedWithShadow" {...api().triggerProps} disabled={!table.getAllLeafColumns().length}>
+      <Button
+        class="pressedWithShadow border-input-border"
+        {...api().triggerProps}
+        disabled={!table.getAllLeafColumns().length}
+      >
         {t("tables.choose_columns")}
       </Button>
       <Portal>

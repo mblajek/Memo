@@ -1,7 +1,7 @@
 import * as radio from "@zag-js/radio-group";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, htmlAttributes} from "components/utils";
-import {For, JSX, VoidComponent, createComputed, createMemo, createUniqueId, splitProps} from "solid-js";
+import {For, JSX, Show, VoidComponent, createComputed, createMemo, createUniqueId, splitProps} from "solid-js";
 import {FieldLabel} from "./FieldLabel";
 import s from "./SegmentedControl.module.scss";
 
@@ -19,7 +19,7 @@ interface Props extends htmlAttributes.div {
 
 interface Item {
   readonly value: string;
-  readonly label: () => JSX.Element;
+  readonly label?: () => JSX.Element;
 }
 
 /**
@@ -44,7 +44,7 @@ export const SegmentedControl: VoidComponent<Props> = (allProps) => {
     }),
     {
       context: () => ({
-        ...(props.disabled !== undefined ? {disabled: props.disabled} : undefined),
+        disabled: props.disabled,
       }),
     },
   );
@@ -68,7 +68,11 @@ export const SegmentedControl: VoidComponent<Props> = (allProps) => {
         <For each={props.items}>
           {(item) => (
             <label {...api().getItemProps({value: item.value})}>
-              <span {...api().getItemTextProps({value: item.value})}>{item.label()}</span>
+              <span {...api().getItemTextProps({value: item.value})}>
+                <Show when={item.label} fallback={<>{item.value}</>}>
+                  {(label) => label()()}
+                </Show>
+              </span>
               <input {...api().getItemHiddenInputProps({value: item.value})} />
             </label>
           )}

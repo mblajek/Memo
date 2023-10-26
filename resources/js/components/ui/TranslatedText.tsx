@@ -1,4 +1,4 @@
-import {JSX, Show, VoidComponent, createMemo, mergeProps} from "solid-js";
+import {JSX, Match, Show, Switch, VoidComponent, createMemo, mergeProps} from "solid-js";
 import {LangEntryFunc, LangPrefixFunc, getLangEntryFunc} from "../utils";
 import {Capitalize} from "./Capitalize";
 
@@ -52,30 +52,22 @@ export const TranslatedText: VoidComponent<Props> = (allProps) => {
     return langPrefixFunc && subKey ? getLangEntryFunc(langPrefixFunc, subKey) : undefined;
   };
   return (
-    <Show
-      when={override()}
-      fallback={
-        <Show
-          when={langFunc()}
-          fallback={
-            <Show when={props.fallbackCode} fallback={props.wrapIn()}>
-              {props.wrapIn(<>{props.fallbackCode}</>)}
-            </Show>
-          }
-        >
-          {(langFunc) => (
-            <Show when={langFunc()({defaultValue: ""})} fallback={props.wrapIn(<>{langFunc()()}</>)}>
-              {(text) => props.wrapIn(<Capitalize text={text()} capitalize={props.capitalize} />)}
-            </Show>
-          )}
-        </Show>
-      }
-    >
-      {(override) => (
-        <Show when={!override().empty} fallback={props.wrapIn()}>
-          {props.wrapIn(<>{override().value}</>)}
-        </Show>
-      )}
-    </Show>
+    <Switch fallback={props.wrapIn()}>
+      <Match when={override()}>
+        {(override) => (
+          <Show when={!override().empty} fallback={props.wrapIn()}>
+            {props.wrapIn(<>{override().value}</>)}
+          </Show>
+        )}
+      </Match>
+      <Match when={langFunc()}>
+        {(langFunc) => (
+          <Show when={langFunc()({defaultValue: ""})} fallback={props.wrapIn(<>{langFunc()()}</>)}>
+            {(text) => props.wrapIn(<Capitalize text={text()} capitalize={props.capitalize} />)}
+          </Show>
+        )}
+      </Match>
+      <Match when={props.fallbackCode}>{props.wrapIn(<>{props.fallbackCode}</>)}</Match>
+    </Switch>
   );
 };
