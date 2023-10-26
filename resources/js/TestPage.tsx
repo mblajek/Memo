@@ -136,7 +136,7 @@ export default (() => {
             nullable={true}
             items={selectItems()}
             onFilterChange="internal"
-            placeholder="duży"
+            placeholder="standalone"
           />
           {selectValue()}
           <Select
@@ -176,7 +176,7 @@ export default (() => {
               multiple
               value={selectMultiValue()}
               onValueChange={setSelectMultiValue}
-              placeholder="duży"
+              placeholder="multi duży"
               showClearButton={false}
               disabled={false}
             />
@@ -199,11 +199,11 @@ export default (() => {
               multiple
               value={selectMultiValue()}
               onValueChange={setSelectMultiValue}
-              placeholder="mały"
+              placeholder="multi mały"
               small
             />
           </fieldset>
-          <DictionarySelect class="w-40" name="p1" dictionary="gender" filterable={false} nullable />
+          <DictionarySelect class="w-40" name="p1" dictionary="gender" filterable={false} nullable placeholder="dict" />
           <DictionarySelect
             class="w-40"
             name="p1"
@@ -213,6 +213,7 @@ export default (() => {
               ...defItem(),
               // Allow filtering by both translated and untranslated text.
               text: `${pos.label} (${pos.resource.name})`,
+              label: () => <>{pos.label}</>,
               labelOnList: () => (
                 <>
                   {pos.label} <span class="text-black text-opacity-60">({pos.resource.name})</span>
@@ -220,6 +221,8 @@ export default (() => {
               ),
             })}
             filterable
+            small
+            placeholder="dict mały"
           />
         </div>
       </fieldset>

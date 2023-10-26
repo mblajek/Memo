@@ -13,10 +13,10 @@
     --padding-x: 0.5rem;
     // Place for the down arrow button.
     --buttons-width: 16px;
-    --padding: 1px calc(var(--buttons-width) + var(--padding-x)) 1px var(--padding-x);
     &:has(.clearButton) {
       --buttons-width: 34px;
     }
+    --padding: 1px calc(var(--buttons-width) + var(--padding-x)) 1px var(--padding-x);
 
     .buttons {
       @apply absolute top-0.5 bottom-0.5 right-0.5 flex items-center gap-0.5;
@@ -34,6 +34,9 @@
   }
 
   &.single [data-part="control"] {
+    // In the single mode, place .value and input in the same area using grid, and apply the computed
+    // --padding to both of them. This way the input's outer size is the same as that of the whole
+    // component, and it looks better when the input is active.
     @apply w-full h-full grid;
 
     .value {
@@ -44,14 +47,14 @@
 
     [data-part="input"] {
       @apply col-start-1 row-start-1 min-w-0 rounded;
-      // Apply the padding here (and not e.g. on the parent) so that the input's size is the same
-      // as the whole component's size. This looks better when the input is active.
       padding: var(--padding);
       @apply bg-transparent;
     }
   }
 
   &.multiple [data-part="control"] {
+    // In the multiple mode, apply the computed --padding to the whole control, and use flex to place
+    // the values and the input.
     --padding-x: 0.25rem;
 
     @apply w-full h-full overflow-hidden;
@@ -60,6 +63,7 @@
 
     .value {
       @apply px-1 border border-gray-400 rounded flex gap-0.5;
+
       .label {
         @apply wrapTextAnywhere;
       }
@@ -70,29 +74,22 @@
 
     [data-part="input"] {
       @apply grow shrink basis-0;
-      @apply rounded;
+      @apply rounded px-1;
       min-width: 2rem;
-      // min-height: 1rem;
       @apply outline-none;
     }
   }
 
   &.small {
     [data-part="control"] {
-      min-height: 1.5rem;
+      min-height: 2rem;
       --padding-x: 0.25rem;
     }
 
     &.multiple [data-part="control"] {
-      min-height: 2rem;
-    }
-
-    .multipleValueControl {
-      @apply py-px gap-px;
-    }
-
-    [data-part="input"] {
-      @apply py-0;
+      [data-part="input"] {
+        @apply px-0;
+      }
     }
   }
 }

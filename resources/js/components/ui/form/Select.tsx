@@ -366,15 +366,15 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
               </Show>
             </Match>
           </Switch>
-          <Show when={props.onFilterChange}>
-            <input
-              ref={input}
-              {...api().inputProps}
-              // This is just for user entry, and not the actual form value.
-              name=""
-              placeholder={api().value.length ? undefined : props.placeholder}
-            />
-          </Show>
+          <input
+            ref={input}
+            {...api().inputProps}
+            // This is just for user entry, and not the actual form value.
+            name=""
+            placeholder={api().value.length ? undefined : props.placeholder}
+            // Without filtering, the input is used just for the placeholder.
+            inert={props.onFilterChange ? undefined : true}
+          />
           <div class={s.buttons}>
             {/* Display only one clear button at a time. */}
             <Switch>
