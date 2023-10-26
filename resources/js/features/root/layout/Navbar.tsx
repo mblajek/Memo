@@ -11,7 +11,8 @@ import {
   HiOutlineUsers,
   HiOutlineVideoCamera,
 } from "solid-icons/hi";
-import {Show, VoidComponent, createMemo} from "solid-js";
+import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
+import {DEV, Show, VoidComponent, createMemo} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {NavigationItemProps, NavigationSection} from "../components/navbar";
 import s from "./layout.module.scss";
@@ -41,6 +42,12 @@ export const Navbar: VoidComponent = () => {
             roles={["facilityStaff"]}
             items={sectionItems().facilityStaff}
             title="Moja praca"
+          />
+        </Show>
+        <Show when={DEV}>
+          <NavigationSection
+            title="Dev"
+            items={[{icon: RiDevelopmentCodeBoxLine, href: "/test-page", children: "/test-page"}]}
           />
         </Show>
       </nav>
