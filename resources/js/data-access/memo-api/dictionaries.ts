@@ -29,9 +29,13 @@ export class Dictionaries {
     return new Dictionaries(byId, byName);
   }
 
-  /** Returns a dictionary by id, or a fixed dictionary by name. */
+  /** Returns a dictionary by id, or a fixed dictionary by name. Throws an error if not found. */
   get(idOrName: string) {
-    return this.byId.get(idOrName) || this.byName.get(idOrName);
+    const dictionary = this.byId.get(idOrName) || this.byName.get(idOrName);
+    if (!dictionary) {
+      throw new Error(`Dictionary ${idOrName} not found.`);
+    }
+    return dictionary;
   }
 
   /** Returns a subset of the dictionaries (and positions) accessible for the specified facility. */

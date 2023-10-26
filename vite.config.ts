@@ -14,7 +14,14 @@ export default defineConfig({
       input: ["./resources/js/index.tsx"],
       refresh: true,
     }),
-    solidPlugin(),
+    solidPlugin({
+      solid: {
+        // Repeating the default, needed because this field is not optional for some reason.
+        omitNestedClosingTags: false,
+        // Allow stopping propagation of events (see https://github.com/solidjs/solid/issues/1786#issuecomment-1694589801).
+        delegateEvents: false,
+      },
+    }),
     tsConfigPaths(),
     eslint(),
     solidSvg({defaultAsComponent: true}),

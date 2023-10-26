@@ -1,5 +1,7 @@
-import {debouncedFilterTextAccessor} from "components/utils";
-import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
+import {InfoIcon} from "components/ui/InfoIcon";
+import {Select, SelectItem} from "components/ui/form/Select";
+import {debouncedFilterTextAccessor, useLangFunc} from "components/utils";
+import {JSX, VoidComponent, createComputed, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
 import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
 import {FilterControlProps} from "./types";
@@ -13,6 +15,7 @@ type Mode = "~" | "=" | ".*";
 export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) => {
   const [mode, setMode] = createSignal<Mode>("~");
   const [text, setText] = createSignal("");
+  const t = useLangFunc();
   createComputed(() => {
     if (!props.filter) {
       setMode("~");
@@ -35,20 +38,40 @@ export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) =>
       return m satisfies never;
     }
   });
+  const items = () => {
+    const items: SelectItem[] = [];
+    function addItem(mode: Mode, desc: JSX.Element, infoHref?: string) {
+      items.push({
+        value: mode,
+        text: `${mode} ${desc}`,
+        label: () => <span class="font-semibold">{mode}</span>,
+        labelOnList: () => (
+          <div class="flex items-baseline gap-1">
+            <span class="font-semibold w-4">{mode}</span>
+            <span class="grow text-sm text-gray-500">{desc}</span>
+            {infoHref && <InfoIcon href={infoHref} target="_blank" />}
+          </div>
+        ),
+      });
+    }
+    addItem("~", t("tables.filter.textual.fuzzy"), "/pomoc/dopasowanie");
+    if (props.columnType === "string") {
+      addItem("=", t("tables.filter.textual.eq"));
+    }
+    addItem(".*", t("tables.filter.textual.regexp"), "https://support.google.com/a/answer/1371415?hl=pl");
+    return items;
+  };
   return (
     <div class={s.filterLine}>
-      <select
+      <Select
+        class="w-10"
         name={`table_filter_op_${props.name}`}
-        class="border rounded"
+        items={items()}
         value={mode()}
-        onChange={({target: {value}}) => setMode(value as Mode)}
-      >
-        <option value="~">~</option>
-        <Show when={props.columnType === "string"}>
-          <option value="=">=</option>
-        </Show>
-        <option value=".*">.*</option>
-      </select>
+        onValueChange={(value) => setMode(value as Mode)}
+        nullable={false}
+        small
+      />
       <div class={s.wideEdit}>
         <input
           name={`table_filter_val_${props.name}`}

@@ -7,10 +7,13 @@
   [data-part="next-trigger"],
   [data-part="item"],
   [data-part="ellipsis"] {
-    @apply px-1 border rounded flex justify-center items-center;
+    @apply px-1 border border-input-border rounded flex justify-center items-center;
 
-    &[data-disabled] svg {
-      @apply opacity-20;
+    &[data-disabled] {
+      @apply border-opacity-50;
+      svg {
+        @apply opacity-20;
+      }
     }
   }
 
