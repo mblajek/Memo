@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string id
  * @property string name
  * @property bool is_fixed
+ * @property bool is_extendable
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property-read Collection $positions
@@ -37,6 +38,7 @@ class Dictionary extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
         'is_fixed' => 'boolean',
+        'is_extendable' => 'boolean',
     ];
 
     public function positions(): HasMany

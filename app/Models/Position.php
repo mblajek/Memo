@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string facility_id
  * @property string name
  * @property bool is_fixed
+ * @property bool is_disabled
  * @property int default_order
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
@@ -41,6 +42,7 @@ class Position extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
         'is_fixed' => 'boolean',
+        'is_disabled' => 'boolean',
     ];
 
     public function member(): HasOne

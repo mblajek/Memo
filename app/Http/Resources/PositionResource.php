@@ -13,6 +13,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'facilityId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'name', type: 'string', example: 'Test'),
         new OA\Property(property: 'isFixed', type: 'bool', example: true),
+        new OA\Property(property: 'isDisabled', type: 'bool', example: false),
         new OA\Property(property: 'defaultOrder', type: 'int', example: 1),
     ]
 )] /**
@@ -23,6 +24,6 @@ class PositionResource extends AbstractJsonResource
 {
     protected static function getMappedFields(): array
     {
-        return ['id', 'dictionaryId', 'facilityId', 'name', 'isFixed', 'defaultOrder'];
+        return ['id', 'dictionaryId', 'facilityId', 'name', 'isFixed', 'isDisabled', 'defaultOrder'];
     }
 }
