@@ -129,7 +129,7 @@ class PostAdminUserTest extends TestCase
                         "field" => "email",
                         "code" => "validation.required_if_accepted",
                         "data" => [
-                            "other" => "has_global_admin"
+                            "other" => "hasGlobalAdmin"
                         ]
                     ]
                 ]
