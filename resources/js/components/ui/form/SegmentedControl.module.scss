@@ -16,7 +16,7 @@
     }
 
     &[data-disabled] {
-      // @apply text-opacity-50;
+      @apply text-opacity-50;
     }
   }
 
