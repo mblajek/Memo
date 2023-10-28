@@ -12,7 +12,7 @@ class MergePatchService
     }
 
     private function mergeImpl($original, $patch) {
-        if (!is_object($original)) {
+        if (!is_object($original) || array_is_list($patch)) {
             return $patch;
         }
 

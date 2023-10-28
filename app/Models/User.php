@@ -92,7 +92,7 @@ class User extends Authenticatable
             ],
             'has_email_verified' => ['sometimes', 'nullable', 'bool',
                 new RequirePresentRule('email'),
-                // TODO: Jak email == null, to has_email_verified też ma być null
+                // TODO: When email == null, has_email_verified must be null as well
             ],
             'password' => array_merge(
                 ['bail', 'nullable', 'string'],
@@ -102,7 +102,7 @@ class User extends Authenticatable
             '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
             'password_expire_at' => ['sometimes', 'nullable', 'date',
                 new RequirePresentRule('password'),
-                // TODO: Jak password jest null, to password_expire_at też ma być null
+                // TODO: When password is null, password_expire_at must be null as well
             ],
             'has_global_admin' => 'sometimes|bool',
         ];

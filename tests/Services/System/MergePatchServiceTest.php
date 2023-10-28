@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class MergePatchServiceTest extends TestCase
 {
-    private $service;
+    private MergePatchService $service;
 
     protected function setUp(): void
     {
