@@ -1,5 +1,5 @@
 import {ColumnDefTemplate} from "@tanstack/solid-table";
-import {JSX, Show} from "solid-js";
+import {JSX, Show, VoidProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 
 export interface CellRendererProps<TProps extends object> {
@@ -16,16 +16,14 @@ export interface CellRendererProps<TProps extends object> {
  * This means that every time the table is re-rendered, the component is re-created.
  * That's why we need to use Dynamic, which uses Solid's createMemo under the hood.
  */
-export function CellRenderer<TProps extends object>(props: CellRendererProps<TProps>): JSX.Element {
-  return (
-    <Show when={props.component}>
-      <Show
-        when={typeof props.component === "function"}
-        // The TS inference does not work in <Show>, so we need to manually cast it to a string.
-        fallback={props.component as string}
-      >
-        <Dynamic component={props.component} {...props.props} />
-      </Show>
+export const CellRenderer = <TProps extends object>(props: VoidProps<CellRendererProps<TProps>>): JSX.Element => (
+  <Show when={props.component}>
+    <Show
+      when={typeof props.component === "function"}
+      // The TS inference does not work in <Show>, so we need to manually cast it to a string.
+      fallback={props.component as string}
+    >
+      <Dynamic component={props.component} {...props.props} />
     </Show>
-  );
-}
+  </Show>
+);

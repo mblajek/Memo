@@ -1,14 +1,13 @@
 import {useFormContextIfInForm} from "components/felte-form";
-import {Component, Show, createMemo} from "solid-js";
+import {cx, htmlAttributes} from "components/utils";
+import {JSX, splitProps, VoidComponent} from "solid-js";
+import {TranslatedText} from "..";
 
-interface Props {
+interface Props extends htmlAttributes.label {
   fieldName: string;
   text?: string;
-}
-
-interface Data {
-  text: string;
-  capitalize: boolean;
+  /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
+  wrapIn?: (text: JSX.Element) => JSX.Element;
 }
 
 /**
@@ -20,22 +19,28 @@ interface Data {
  * provided by the form (and capitalised).
  * Otherwise, the label is not present.
  */
-export const FieldLabel: Component<Props> = (props) => {
-  const getFormFieldName = useFormContextIfInForm()?.translations.getFieldName;
-  const data = createMemo((): Data => {
-    if (props.text !== undefined) {
-      return {text: props.text, capitalize: false};
-    }
-    if (getFormFieldName) {
-      return {text: getFormFieldName(props.fieldName), capitalize: true};
-    }
-    return {text: "", capitalize: false};
-  });
+export const FieldLabel: VoidComponent<Props> = (props) => {
+  const [localProps, labelProps] = splitProps(props, ["fieldName", "text", "wrapIn"]);
+  const form = useFormContextIfInForm();
   return (
-    <Show when={data().text}>
-      <label for={props.fieldName} class="inline-block" classList={{"first-letter:capitalize": data().capitalize}}>
-        {data().text}
-      </label>
-    </Show>
+    <TranslatedText
+      override={() => localProps.text}
+      langFunc={[form?.translations?.fieldNames, localProps.fieldName]}
+      capitalize={true}
+      wrapIn={(text) => (
+        <label
+          id={labelIdForField(localProps.fieldName)}
+          for={localProps.fieldName}
+          {...labelProps}
+          class={cx("font-medium", labelProps.class)}
+        >
+          {localProps.wrapIn?.(text) ?? text}
+        </label>
+      )}
+    />
   );
 };
+
+export function labelIdForField(fieldName: string) {
+  return fieldName ? `label_for_${fieldName}` : undefined;
+}

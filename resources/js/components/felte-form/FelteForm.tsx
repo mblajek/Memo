@@ -6,24 +6,25 @@ import {validator} from "@felte/validator-zod";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
 import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
-import toast from "solid-toast";
 import {ZodSchema} from "zod";
-import {useLangFunc} from "../utils";
+import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
+import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, htmlAttributes, useLangFunc} from "../utils";
+import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 
 type FormContextValue<T extends Obj = Obj> = {
   props: FormProps<T>;
   form: FormType<T>;
-  translations: Translations;
+  translations: FormTranslations;
 };
 
 type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
-type Translations = {
-  getFormName: () => string;
-  getFieldName: (field: string) => string;
-  getSubmitText: () => string;
-};
+export interface FormTranslations {
+  formName: LangEntryFunc;
+  fieldNames: LangPrefixFunc;
+  submit: LangEntryFunc;
+}
 
 const FormContext = createContext<FormContextValue>(undefined, {
   name: "FormContext",
@@ -31,62 +32,79 @@ const FormContext = createContext<FormContextValue>(undefined, {
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
-type FormProps<T extends Obj = Obj> = Omit<JSX.FormHTMLAttributes<HTMLFormElement>, "onSubmit" | "onError"> &
+type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "onError" | "children"> &
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
     id: string;
     schema: ZodSchema<T>;
+    children: ChildrenOrFunc<[FormType<T>]>;
   };
 
 /**
- * Wrapper for felte's `createForm`
+ * Wrapper for felte's `createForm`.
  *
- * Includes solidjs' Provider, that stores
- * createForm's data and component props
+ * Includes solidjs' Provider, that stores createForm's data and component props.
+ *
+ * The form is also accessible via children: children can be a function taking a Felte form object
+ * and returning JSX, similar to the function form of the `<Show>` component.
  */
-export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>) => {
+export const FelteForm = <T extends Obj = Obj>(props: FormProps<T>): JSX.Element => {
   const t = useLangFunc();
   const [local, createFormOptions, formProps] = splitProps(
     props,
     ["children", "schema"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-  const translations: Translations = {
-    getFormName: () => t(`forms.${props.id}.name`),
-    getFieldName: (field: string) => t(`forms.${props.id}.fields.${field}`),
-    getSubmitText: () => t(`forms.${props.id}.submit`),
-  };
+  // eslint-disable-next-line solid/reactivity
+  const translations = createTranslationsFromPrefix(`forms.${props.id}`, ["formName", "fieldNames", "submit"]);
   const form = createForm<T>({
     ...createFormOptions,
     extend: [validator({schema: local.schema}), reporter],
+    onSubmit: (values, ctx) =>
+      // Remove the unknown validation field from values so that it doesn't get submitted.
+      createFormOptions.onSubmit?.({...values, [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined}, ctx),
     onError: (error, ctx) => {
-      createFormOptions?.onError?.(error, ctx);
+      createFormOptions.onError?.(error, ctx);
       if (isAxiosError<Api.ErrorResponse>(error)) {
         error.response?.data.errors.forEach((error) => {
           if (Api.isValidationError(error)) {
-            const errorMessage = t(error.code, {
-              attribute: translations.getFieldName(error.field),
-              ...error.data,
-              ...(typeof error.data?.other === "string"
-                ? {other: translations.getFieldName(error.data.other)}
-                : undefined),
-            });
+            // For existing fields, the error is either an array, or null.
+            const formFieldExists = form.errors(error.field) !== undefined;
+            let errorMessage: string;
+            let field: string;
+            if (formFieldExists) {
+              errorMessage = t(error.code, {
+                attribute: translations.fieldNames(error.field),
+                ...error.data,
+                ...(typeof error.data?.other === "string"
+                  ? {other: translations.fieldNames(error.data.other, {defaultValue: error.data.other})}
+                  : undefined),
+              });
+              field = error.field;
+            } else {
+              // The error was received for a field that does not exist directly in the form. Don't do
+              // all the magic with the error message, and assign the error to the special unknown validation field.
+              errorMessage = t(error.code, {
+                attribute: translations.fieldNames(error.field, {defaultValue: error.field}),
+                ...error.data,
+              });
+              field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
+            }
             // @ts-expect-error setErrors does not like generic types
-            ctx.setErrors(error.field, errorMessage);
-          } else {
-            toast.error(t(error.code));
+            ctx.setErrors(field, (errors) => [...errors, errorMessage]);
           }
+          // Other errors are already handled by the query client.
         });
       }
     },
-  });
+  }) as FormType<T>;
 
   const TypedFormContext = typedFormContext<T>();
   return (
     <TypedFormContext.Provider value={{props, form: form as FormType<T>, translations}}>
       <form ref={form.form} {...formProps}>
         <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
-          {local.children}
+          {getChildrenElement(local.children, form)}
         </fieldset>
       </form>
     </TypedFormContext.Provider>

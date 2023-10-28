@@ -1,4 +1,4 @@
-import {SolidQueryOptions} from "@tanstack/solid-query";
+import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {FacilityResource} from "../resources";
 import {Api} from "../types";
@@ -9,8 +9,8 @@ import {parseGetListResponse} from "../utils";
  * @see {@link http://localhost:9081/api/documentation#/System local docs}
  */
 export namespace System {
-  export const getFacilitiesList = () =>
-    V1.get<Api.Response.GetList<FacilityResource>>("/system/facility/list").then(parseGetListResponse);
+  export const getFacilitiesList = (config?: Api.Config) =>
+    V1.get<Api.Response.GetList<FacilityResource>>("/system/facility/list", config).then(parseGetListResponse);
 
   export const keys = {
     all: () => ["system"] as const,
@@ -19,8 +19,16 @@ export namespace System {
     facilityList: () => [...keys.facilityLists()] as const,
   };
 
-  export const facilitiesQueryOptions = {
-    queryFn: getFacilitiesList,
-    queryKey: keys.facilityList(),
-  } satisfies SolidQueryOptions;
+  export const facilitiesQueryOptions = () =>
+    ({
+      queryFn: ({signal}) => getFacilitiesList({signal}),
+      queryKey: keys.facilityList(),
+    }) satisfies SolidQueryOptions;
+
+  export function useInvalidator() {
+    const queryClient = useQueryClient();
+    return {
+      facilities: () => queryClient.invalidateQueries({queryKey: keys.facilityLists()}),
+    };
+  }
 }

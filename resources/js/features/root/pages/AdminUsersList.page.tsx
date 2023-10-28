@@ -1,32 +1,31 @@
-import {Email, Modal, css} from "components/ui";
+import {AUTO_SIZE_COLUMN_DEFS, Button, Email, cellFunc, createTableTranslations} from "components/ui";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {AccessBarrier, DATE_TIME_WITH_WEEKDAY_FORMAT} from "components/utils";
-import {BiSolidUserDetail} from "solid-icons/bi";
-import {Component, Show, createSignal} from "solid-js";
-
-import {Row} from "@tanstack/solid-table";
-import {startUsersMock} from "./users_fake_tquery";
+import {AccessBarrier, useLangFunc} from "components/utils";
+import {Admin} from "data-access/memo-api/groups";
+import {UserCreateForm, UserEditForm} from "features/users-edit";
+import {FiEdit2} from "solid-icons/fi";
+import {TbUserPlus} from "solid-icons/tb";
+import {VoidComponent} from "solid-js";
 
 export default (() => {
-  startUsersMock();
-  const [modalDetails, setModalDetails] = createSignal<Row<object>>();
+  const t = useLangFunc();
   return (
     <AccessBarrier roles={["globalAdmin"]}>
       <TQueryTable
         mode="standalone"
-        staticEntityURL="entityURL"
-        translations="tables.tables.users"
+        staticPrefixQueryKey={Admin.keys.userLists()}
+        staticEntityURL="admin/user"
+        staticTranslations={createTableTranslations("users")}
+        intrinsicColumns={["id"]}
         additionalColumns={["actions"]}
+        ignoreColumns={["lastLoginFacility.id", "lastLoginFacility.name", "createdBy.id"]}
         columnOptions={{
-          id: {
-            metaParams: {canControlVisibility: false},
-          },
           name: {
             metaParams: {canControlVisibility: false},
           },
           email: {
             columnDef: {
-              cell: (c) => <Email email={c.getValue() as string} />,
+              cell: cellFunc<string>((v) => <Email email={v} />),
             },
           },
           createdAt: {
@@ -41,48 +40,48 @@ export default (() => {
           },
           hasGlobalAdmin: {
             columnDef: {
-              cell: (c) => <>{c.getValue() ? "💪🏽" : ""}</>,
+              cell: (c) => <span class="w-full text-center">{c.getValue() ? "💪🏽" : ""}</span>,
+              size: 130,
             },
           },
           actions: {
             columnDef: {
               cell: (c) => (
-                <button onClick={() => setModalDetails(c.row)}>
-                  <BiSolidUserDetail class={css.inlineIcon} /> Detale
-                </button>
+                <Button onClick={() => UserEditForm.showModalFor({userId: c.row.getValue("id")})}>
+                  <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
+                </Button>
               ),
+              enableSorting: false,
+              ...AUTO_SIZE_COLUMN_DEFS,
             },
-            metaParams: {canControlVisibility: false},
           },
         }}
-        initialVisibleColumns={["name", "createdAt", "actions"]}
+        initialColumnsOrder={[
+          "id",
+          "name",
+          "email",
+          "hasEmailVerified",
+          "hasPassword",
+          "passwordExpireAt",
+          "facilityCount",
+          "hasGlobalAdmin",
+          "createdAt",
+          "createdBy.name",
+          "updatedAt",
+          "actions",
+        ]}
+        initialVisibleColumns={["name", "email", "hasPassword", "createdAt", "hasGlobalAdmin", "actions"]}
         initialSort={[{id: "name", desc: false}]}
+        customSectionBelowTable={
+          <div class="ml-2 flex gap-1">
+            <Button class="secondarySmall" onClick={() => UserCreateForm.showModal()}>
+              <TbUserPlus class="inlineIcon strokeIcon text-current" /> {t("actions.add_user")}
+            </Button>
+          </div>
+        }
       />
-      <Modal
-        // Just a demo of the modal
-        open={!!modalDetails()}
-        title={`Użytkownik ${modalDetails()?.getValue("name")}`}
-        onEscape={setModalDetails(undefined)}
-      >
-        <div>
-          Utworzony:{" "}
-          {modalDetails() &&
-            DATE_TIME_WITH_WEEKDAY_FORMAT.format(new Date(modalDetails()?.getValue("createdAt") as string))}
-        </div>
-        <Show when={modalDetails()?.getValue("email")}>
-          <div>
-            <a target="_blank" href={`mailto:${modalDetails()?.getValue("email")}`}>
-              {modalDetails()?.getValue("email")}
-            </a>
-          </div>
-        </Show>
-        <Show when={modalDetails()?.getValue("facilitiesMember")}>
-          <div>
-            Placówki:
-            <pre>{modalDetails()?.getValue("facilitiesMember")}</pre>
-          </div>
-        </Show>
-      </Modal>
+      <UserEditForm.Modal />
+      <UserCreateForm.Modal />
     </AccessBarrier>
   );
-}) satisfies Component;
+}) satisfies VoidComponent;

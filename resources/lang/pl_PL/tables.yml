@@ -1,36 +1,57 @@
-{
-  "tables": {
-    "generic": {
-      "empty_table_text": "Brak wyników",
-      "summary__zero": "Brak wyników",
-      "summary__one": "{{count, number}} wynik",
-      "summary__few": "{{count, number}} wyniki",
-      "summary__many": "{{count, number}} wyników"
-    },
-    "users": {
-      "empty_table_text": "Brak użytkowników",
-      "summary__zero": "Brak użytkowników",
-      "summary__one": "{{count, number}} użytkownik",
-      "summary__few": "{{count, number}} użytkowników",
-      "summary__many": "{{count, number}} użytkowników"
-    }
-  },
-  "search": "Szukaj",
-  "choose_columns": "Wybierz kolumny",
-  "headers": {
-    "name": "Imię i nazwisko",
-    "email": "E-mail",
-    "createdAt": "Czas utworzenia",
-    "facilitiesMember": "Placówki",
-    "hasGlobalAdmin": "Globalny administrator",
-    "actions": "Akcje"
-  },
-  "sort_tooltip": "Sortuj",
-  "filter": {
-    "filter_cleared": "Brak filtra",
-    "filter_set": "Filtr aktywny",
-    "click_to_clear": "Kliknij aby wyczyścić",
-    "click_to_sync_date_range": "Kliknij aby ustawić jednodniowy zakres",
-    "click_to_sync_decimal_range": "Kliknij aby ustawić maks = min"
-  }
-}
+tables:
+  generic:
+    summary__zero: "Brak wyników"
+    summary__one: "{{count, number}} wynik"
+    summary__few: "{{count, number}} wyniki"
+    summary__many: "{{count, number}} wyników"
+    columnNames:
+      id: "id"
+      actions: "akcje"
+  users:
+    tableName: "$t(models.user._name_plural)"
+    summary__zero: "Brak użytkowników"
+    summary__one: "{{count, number}} użytkownik"
+    summary__few: "{{count, number}} użytkowników"
+    summary__many: "{{count, number}} użytkowników"
+    columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
+      name: "$t(models.user.name)"
+      email: "$t(models.user.email)"
+      hasPassword: "$t(models.user.hasPassword)"
+      createdAt: "$t(models.user.createdAt)"
+      hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
+      passwordExpireAt: "$t(models.user.passwordExpireAt)"
+      updatedAt: "$t(models.user.updatedAt)"
+      hasEmailVerified: "$t(models.user.hasEmailVerified)"
+      createdBy.name: "$t(models.user.createdBy)"
+      facilityCount: "$t(models.user.facilityCount)"
+      actions: "$t(tables.tables.generic.columnNames.actions)"
+  userFacilities:
+    tableName: "$t(models.user.members)"
+    columnNames:
+      facility: "$t(models.member.facility)"
+      hasFacilityAdmin: "$t(models.member.hasFacilityAdmin)"
+      actions: "$t(tables.tables.generic.columnNames.actions)"
+  facilities:
+    tableName: "$t(models.facility._name_plural)"
+    summary__zero: "Brak placówek"
+    summary__one: "{{count, number}} placówka"
+    summary__few: "{{count, number}} placówki"
+    summary__many: "{{count, number}} placówek"
+    columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
+      name: "$t(models.facility.name)"
+      createdAt: "$t(models.facility.createdAt)"
+      updatedAt: "$t(models.facility.updatedAt)"
+      userCount: "$t(models.facility.userCount)"
+      facilityAdmins: "$t(models.facility.admins)"
+      url: "$t(models.facility.url)"
+search: "Szukaj"
+choose_columns: "Wybierz kolumny"
+sort_tooltip: "Sortuj"
+filter:
+  filter_cleared: "Brak filtra"
+  filter_set: "Filtr aktywny"
+  click_to_clear: "Kliknij aby wyczyścić"
+  click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
+  click_to_sync_decimal_range: "Kliknij aby ustawić maks = min"

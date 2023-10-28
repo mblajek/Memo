@@ -1,9 +1,15 @@
+export * from "./ColumnName";
 export * from "./FilterIcon";
+export * from "./Header";
+export * from "./IdColumn";
 export * from "./Pagination";
 export * from "./SortMarker";
+export * from "./Table";
+export {default as tableStyle} from "./Table.module.scss";
 export * from "./TableColumnVisibilityController";
 export * from "./TableContext";
+export * from "./TableName";
 export * from "./TableSearch";
 export * from "./TableSummary";
 export * from "./headers_iterator";
-export {default as tableStyle} from "./style.module.scss";
+export * from "./table_cells";

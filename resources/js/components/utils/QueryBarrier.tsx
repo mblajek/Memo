@@ -1,33 +1,33 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {JSX, Match, ParentProps, Switch, mergeProps} from "solid-js";
-import {Spinner} from "../ui";
+import {Match, ParentProps, Switch, VoidComponent, mergeProps} from "solid-js";
+import {BigSpinner} from "../ui";
 
 export interface QueryBarrierProps {
   /**
-   * Element to show, when query is in error state
+   * Component to show, when query is in error state
    */
-  errorElement?: JSX.Element;
+  Error?: VoidComponent;
   /**
-   * Element to show, when query is in pending state
+   * Component to show, when query is in pending state
    */
-  pendingElement?: JSX.Element;
+  Pending?: VoidComponent;
   /**
    * List of queries to handle
    */
-  queries: CreateQueryResult<any, any>[];
+  queries: CreateQueryResult<unknown, unknown>[];
 }
 
 /**
  * Default handler for tanstack/solid-query's `createQuery` result
  *
- * @todo better looking errorElement
+ * @todo better looking Error
  */
 export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
   const merged = mergeProps(
     {
       // TODO: dedicated Error element
-      errorElement: <p>error</p>,
-      pendingElement: <Spinner />,
+      Error: LocalError,
+      Pending: LocalSpinner,
     },
     props,
   );
@@ -38,9 +38,17 @@ export function QueryBarrier(props: ParentProps<QueryBarrierProps>) {
 
   return (
     <Switch>
-      <Match when={isError()}>{merged.errorElement}</Match>
-      <Match when={isPending()}>{merged.pendingElement}</Match>
+      <Match when={isError()}>
+        <merged.Error />
+      </Match>
+      <Match when={isPending()}>
+        <merged.Pending />
+      </Match>
       <Match when={isSuccess()}>{props.children}</Match>
     </Switch>
   );
 }
+
+const LocalSpinner = () => <BigSpinner />;
+
+const LocalError = () => <p>error</p>;

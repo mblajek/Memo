@@ -1,6 +1,5 @@
-import {Filter} from "data-access/memo-api/tquery";
-
-type FilterBase = {type: "global"} | {type: "column"; column: string};
+import {NON_NULLABLE} from "components/utils";
+import {FilterH} from "data-access/memo-api/tquery";
 
 export const GLOBAL_CHAR = "*";
 export const QUOTE = "'";
@@ -8,11 +7,43 @@ export const QUOTE = "'";
 const GLOB = `\\${GLOBAL_CHAR}`;
 const WORD_REGEXP = new RegExp(`(?:^|(?<=\\s))(${GLOB}?${QUOTE}.+?${QUOTE}${GLOB}?|\\S+)(?:$|\\s)`, "g");
 
-function buildFuzzyFilter(text: string, filterBase: FilterBase): Filter | undefined {
-  const wordFilters: Filter[] = [];
-  for (const match of text.matchAll(WORD_REGEXP)) {
-    let word = match[1]?.trimEnd();
-    if (word) {
+/**
+ * Creates a column filter for a string or text column, from the filter text.
+ *
+ * Special values of the filter text:
+ * | Filter text:            | Matches strings:
+ * | :-                      | :-
+ * | `*`                     | non-empty
+ * | `''`                    | empty
+ *
+ * If the filter is not any of these values, it is split into words, and each word must match the
+ * string independently.
+ * | Word:                   | Matches strings:
+ * | :-                      | :-
+ * | `abc` or `*abc*`        | containing "abc"
+ * | `abc*`                  | starting with "abc"
+ * | `*abc`                  | ending with "abc"
+ * | `'a b'` or `*'a b'*`    | containing "a b" (without the quotes this would be two words)
+ * | `'abc`                  | containing "'abc" (if there is no right quote further in the text)
+ * | `a*b`                   | containing "a*b" (no global character in the middle)
+ */
+export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {column: string}): FilterH {
+  const filterBase = {type: "column", column} as const;
+  filterText = filterText.trim();
+  if (filterText === GLOBAL_CHAR) {
+    return {...filterBase, op: "null", inv: true};
+  }
+  if (filterText === QUOTE + QUOTE) {
+    return {...filterBase, op: "null"};
+  }
+  return {
+    type: "op",
+    op: "&",
+    val: Array.from(filterText.matchAll(WORD_REGEXP), (match): FilterH | undefined => {
+      let word = match[1]?.trimEnd();
+      if (!word) {
+        return undefined;
+      }
       let startsWithGlob: boolean;
       let endsWithGlob: boolean;
       if (word === GLOBAL_CHAR || word === GLOBAL_CHAR + GLOBAL_CHAR) {
@@ -28,38 +59,12 @@ function buildFuzzyFilter(text: string, filterBase: FilterBase): Filter | undefi
       if (word.length > 2 && word.startsWith(QUOTE) && word.endsWith(QUOTE))
         // Unquote, unless it's just "'" or "''".
         word = word.slice(1, -1);
-      wordFilters.push({...filterBase, op, val: word});
-    }
-  }
-  if (!wordFilters.length) {
-    return undefined;
-  }
-  if (wordFilters.length === 1) {
-    return wordFilters[0];
-  }
-  return {type: "op", op: "&", val: wordFilters};
+      return {...filterBase, op, val: word};
+    }).filter(NON_NULLABLE),
+  };
 }
 
-/**
- * Creates a global filter from the filter text.
- *
- * The text is split into words, and each word must match the data independently.
- *
- * | Word:                   | Matches strings:
- * | :-                      | :-
- * | `abc` or `*abc*`        | containing "abc"
- * | `abc*`                  | starting with "abc"
- * | `*abc`                  | ending with "abc"
- * | `'a b'` or `*'a b'*`    | containing "a b" (without the quotes this would be two words)
- * | `'a b'*`                | starting with "a b"
- * | `*'a b'`                | ending with "a b"
- * | `'abc`                  | containing "'abc" (if there is no right quote further in the text)
- * | `a*b`                   | containing "a*b" (no global character in the middle)
- */
-export function buildFuzzyGlobalFilter(text: string) {
-  return buildFuzzyFilter(text, {type: "global"});
-}
-
-export function buildFuzzyStringColumnFilter(text: string, column: string) {
-  return buildFuzzyFilter(text, {type: "column", column});
+export function buildFuzzyGlobalFilter(filterText: string): FilterH {
+  // TODO: Implement global fuzzy filtering.
+  return "always";
 }

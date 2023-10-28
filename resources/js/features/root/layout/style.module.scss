@@ -14,33 +14,30 @@ $border: rgba(92, 92, 92, 0.283);
   grid-area: sidebar;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
   background-color: #f7f3e7;
-  padding: 1.5rem;
   border-right: 1px solid $border;
-  width: auto;
-  max-width: 250px;
-  transition: width 5s linear;
+  min-width: 270px;
+  width: 270px;
+  max-width: 270px;
+  overflow-y: auto;
+}
+
+.navScroll {
+  --sb-track-color: #f7f3e7;
 }
 
 .header {
   grid-area: header;
+  padding: 1.5rem;
   border-bottom: 1px solid $border;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  justify-items: center;
-  padding: 1.5rem;
+  align-items: center;
+  gap: 1.5rem;
 }
 
 .main {
   grid-area: main;
   overflow: hidden auto;
-}
-
-.mainInner {
-  margin: 1rem;
-  contain: content;
 }
 
 .footer {
@@ -52,5 +49,4 @@ $border: rgba(92, 92, 92, 0.283);
   justify-items: center;
   padding: 1rem 1.5rem;
   color: #949494;
-  // "py-4 px-6 bg-gray-300 flex flex-row justify-between items-center text-gray-500"
 }

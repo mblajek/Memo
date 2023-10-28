@@ -1,6 +1,8 @@
 .modal {
+  @apply absolute z-modal;
+
   [data-part="backdrop"] {
-    @apply fixed inset-0 bg-black bg-opacity-50;
+    @apply fixed inset-0 bg-black bg-opacity-30;
   }
 
   [data-part="container"] {
@@ -8,7 +10,7 @@
   }
 
   [data-part="content"] {
-    @apply overflow-x-clip overflow-y-auto max-w-full max-h-full;
+    @apply overflow-x-clip overflow-y-auto max-w-full max-h-full mx-10;
 
     .innerContent {
       @apply bg-white rounded-lg shadow-xl p-4;
@@ -27,9 +29,10 @@
     font-size: 1.3em;
   }
 
-  &.narrow {
-    [data-part="content"] {
-      width: 400px;
+  &.withCloseButton {
+    [data-part="title"] {
+      // Make room for the close button.
+      @apply pr-4;
     }
   }
 }

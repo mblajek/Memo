@@ -1,34 +1,42 @@
-const DATE_FORMAT_PARAMS = {year: "numeric", month: "2-digit", day: "2-digit"} satisfies Intl.DateTimeFormatOptions;
-const WEEKDAY_FORMAT_PARAMS = {weekday: "short"} satisfies Intl.DateTimeFormatOptions;
-const TIME_FORMAT_PARAMS = {hour: "2-digit", minute: "2-digit", second: "2-digit"} satisfies Intl.DateTimeFormatOptions;
+export const DATE_FORMAT = {year: "numeric", month: "2-digit", day: "2-digit"} satisfies Intl.DateTimeFormatOptions;
+export const DATE_WITH_WEEKDAY_FORMAT = {...DATE_FORMAT, weekday: "short"} satisfies Intl.DateTimeFormatOptions;
 
-export const DATE_FORMAT = new Intl.DateTimeFormat(undefined, DATE_FORMAT_PARAMS);
-export const DATE_WITH_WEEKDAY_FORMAT = new Intl.DateTimeFormat(undefined, {
-  ...DATE_FORMAT_PARAMS,
-  ...WEEKDAY_FORMAT_PARAMS,
-});
+export const TIME_FORMAT = {hour: "2-digit", minute: "2-digit", second: "2-digit"} satisfies Intl.DateTimeFormatOptions;
 
-export const TIME_FORMAT = new Intl.DateTimeFormat(undefined, TIME_FORMAT_PARAMS);
+export const DATE_TIME_FORMAT = {...DATE_FORMAT, ...TIME_FORMAT} satisfies Intl.DateTimeFormatOptions;
+export const DATE_TIME_WITH_WEEKDAY_FORMAT = {
+  ...DATE_WITH_WEEKDAY_FORMAT,
+  ...TIME_FORMAT,
+} satisfies Intl.DateTimeFormatOptions;
 
-export const DATE_TIME_FORMAT = new Intl.DateTimeFormat(undefined, {...DATE_FORMAT_PARAMS, ...TIME_FORMAT_PARAMS});
-export const DATE_TIME_WITH_WEEKDAY_FORMAT = new Intl.DateTimeFormat(undefined, {
-  ...DATE_FORMAT_PARAMS,
-  ...WEEKDAY_FORMAT_PARAMS,
-  ...TIME_FORMAT_PARAMS,
-});
+export const NUMBER_FORMAT = new Intl.NumberFormat();
 
-export const DECIMAL0_NUMBER_FORMAT = new Intl.NumberFormat();
-export const DECIMAL2_NUMBER_FORMAT = new Intl.NumberFormat(undefined, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-/** Returns the date and time in local time zone, formatted like "2000-01-01T00:00:00" */
-export function toLocalISOString(date: Date) {
-  return date.toLocaleString("sv").replaceAll(" ", "T");
+/**
+ * Polyfill for the interface that is not yet found in TS.
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/getWeekInfo
+ */
+export interface WeekInfo {
+  readonly firstDay: number;
+  readonly weekend: number[];
+  readonly minimalDays: number;
 }
 
-/** Returns the date in local time zone, formatted like "2000-01-01". */
-export function toLocalDateISOString(date: Date) {
-  return date.toLocaleDateString("sv");
+/** Polyfill. */
+interface Locale extends Intl.Locale {
+  getWeekInfo?: () => WeekInfo;
+  weekInfo?: WeekInfo;
+}
+
+const DEFAULT_WEEK_INFO = {
+  firstDay: 1,
+  weekend: [6, 7],
+  minimalDays: 4,
+} satisfies WeekInfo;
+
+export function getWeekInfo(locale: Locale) {
+  return locale.getWeekInfo?.() || locale.weekInfo || DEFAULT_WEEK_INFO;
+}
+
+export function getCurrentLocale() {
+  return new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale);
 }
