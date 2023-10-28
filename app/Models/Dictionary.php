@@ -31,6 +31,7 @@ class Dictionary extends Model
         'facility_id',
         'name',
         'is_fixed',
+        'is_extendable',
         'created_by',
     ];
 

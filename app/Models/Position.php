@@ -34,6 +34,7 @@ class Position extends Model
         'facility_id',
         'name',
         'is_fixed',
+        'is_disabled',
         'default_order',
         'created_by',
     ];
