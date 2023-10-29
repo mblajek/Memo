@@ -6,6 +6,7 @@ use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\DictionaryResource;
 use App\Http\Resources\FacilityResource;
+use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Facility;
 use App\Services\System\TranslationsService;
@@ -83,5 +84,30 @@ class SystemController extends ApiController
         $dictionariesQuery = Dictionary::query();
         $this->applyRequestIn($dictionariesQuery);
         return DictionaryResource::collection($dictionariesQuery->with(['positions'])->get());
+    }
+
+    #[OA\Get(
+        path: '/api/v1/system/attribute/list',
+        description: new PermissionDescribe(Permission::any),
+        summary: 'All attributes',
+        tags: ['System'],
+        parameters: [new OA\Parameter(name: 'in', in: 'query')],
+        responses: [
+            new OA\Response(
+                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                new OA\Property(
+                    property: 'data', type: 'array', items: new OA\Items(
+                    ref: '#/components/schemas/AttributeResource'
+                ),
+                ),
+            ])
+            ),
+        ]
+    )]
+    public function attributeList(): JsonResource
+    {
+        $attributesQuery = Attribute::query();
+        $this->applyRequestIn($attributesQuery);
+        return DictionaryResource::collection($attributesQuery->get());
     }
 }

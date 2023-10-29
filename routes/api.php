@@ -25,6 +25,9 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/dictionary')->group(function () {
             Route::get('/list', [SystemController::class, 'dictionaryList']);
         });
+        Route::prefix('/attribute')->group(function () {
+            Route::get('/list', [SystemController::class, 'attributeList']);
+        });
     });
     Route::prefix('/user')->group(function () {
         Route::patch('', [UserController::class, 'patch']);
