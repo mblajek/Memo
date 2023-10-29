@@ -15,7 +15,7 @@ export const TableSearch: VoidComponent<ParentProps<Props>> = (allProps) => {
   return (
     <div {...divProps}>
       <input
-        class="w-full h-full px-2 rounded border"
+        class="w-full h-full px-2 border border-input-border rounded"
         name="table_global_search"
         type="search"
         placeholder={props.placeholder || t("tables.search")}
