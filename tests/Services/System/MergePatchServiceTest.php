@@ -19,7 +19,7 @@ class MergePatchServiceTest extends TestCase
     public static function dataProvider(): array
     {
         return
-            array_map(fn($testCase) => [(object)$testCase[0], $testCase[1], (object)$testCase[2]],
+            array_map(fn($testCase) => [$testCase[0], $testCase[1], $testCase[2]],
                 [
 // Not all of these test cases make sense for us, but they're possible, so I left them.
 //@formatter:off
@@ -44,10 +44,14 @@ class MergePatchServiceTest extends TestCase
  8 => [["a" => ["b", "c"]],           ["a" => ["c", "d"]],                    ["a" => ["c", "d"]]                  ],
  // Update object to array
  9 => [["a" => ["b" => "c"]],         ["a"=>["d"]],                           ["a"=>["d"]],                        ],
+// Update object to string
+10 => [["a" => ["b" => "c"]],         ["a"=>"d"],                             ["a"=>"d"],                          ],
+// Update object to number
+11 => [["a" => ["b" => "c"]],         ["a"=>1],                               ["a"=>1],                            ],
 // Add field with preexisting empty field
-10 => [["e" => null],                 ["a" => 1],                             ["e" => null, "a" => 1]              ],
+12 => [["e" => null],                 ["a" => 1],                             ["e" => null, "a" => 1]              ],
 // Add object field
-11 => [(object)[],                    ["a" => ["bb" => ["ccc" => null]]],     ["a" => ["bb" => ["ccc" => null]]]   ],
+13 => [(object)[],                    ["a" => ["bb" => ["ccc" => null]]],     ["a" => ["bb" => ["ccc" => null]]]   ],
 //@formatter:on
                 ]);
     }
@@ -55,9 +59,9 @@ class MergePatchServiceTest extends TestCase
     /**
      * @dataProvider dataProvider
      */
-    public function testMergeInto($original, $patch, $result)
+    public function testMerge($original, $patch, $expected)
     {
-        $this->service->mergeInto($original, $patch);
-        $this->assertEquals($result, $original);
+        $actual = $this->service->merge($original, $patch);
+        $this->assertEquals($expected, $actual);
     }
 }

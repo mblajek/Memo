@@ -22,22 +22,22 @@ readonly class UpdateUserService
     /**
      * @throws Throwable
      */
-    private function update(User $user, array $data): void
+    private function update(User $user, array $userAttributes): void
     {
-        if (array_key_exists('has_email_verified', $data)) {
-            if ($data['has_email_verified']) {
+        if (array_key_exists('has_email_verified', $userAttributes)) {
+            if ($userAttributes['has_email_verified']) {
                 if ($user->email_verified_at === null) {
-                    $data['email_verified_at'] = CarbonImmutable::now();
+                    $userAttributes['email_verified_at'] = CarbonImmutable::now();
                 }
             } else {
-                $data['email_verified_at'] = null;
+                $userAttributes['email_verified_at'] = null;
             }
         }
 
-        if (array_key_exists('has_global_admin', $data)) {
+        if (array_key_exists('has_global_admin', $userAttributes)) {
             $grant = Grant::query()->find($user->global_admin_grant_id);
 
-            if ($data['has_global_admin']) {
+            if ($userAttributes['has_global_admin']) {
                 if ($grant === null) {
                     $grant = Grant::createForUser();
                 }
@@ -45,13 +45,13 @@ readonly class UpdateUserService
                 $grant?->delete();
             }
 
-            $data['global_admin_grant_id'] = $grant?->id;
+            $userAttributes['global_admin_grant_id'] = $grant?->id;
         }
 
-        if (array_key_exists('password', $data) && $data['password'] !== null) {
-            $data['password'] = Hash::make($data['password']);
+        if (array_key_exists('password', $userAttributes) && $userAttributes['password'] !== null) {
+            $userAttributes['password'] = Hash::make($userAttributes['password']);
         }
 
-        $user->update($data);
+        $user->update($userAttributes);
     }
 }

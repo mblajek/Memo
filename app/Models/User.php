@@ -113,7 +113,7 @@ class User extends Authenticatable
         return match ($field) {
             'name' => 'required|string',
             'email' => ['nullable', 'string', 'email',
-                Rule::unique('users', 'email'),
+//                Rule::unique('users', 'email'),
                 new RequirePresentRule('has_email_verified'),
                 'required_if_accepted:has_global_admin'
             ],

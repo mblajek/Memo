@@ -6,21 +6,18 @@ use Illuminate\Http\Request;
 
 class MergePatchService
 {
-    public function mergeInto(object $object, array $patchData): void
+    public function merge($original, $patch)
     {
-        $this->mergeImpl($object, $patchData);
-    }
-
-    private function mergeImpl($original, $patch) {
-        if (!is_object($original) || array_is_list($patch)) {
+        if (!is_array($original) || array_is_list($original) ||
+            !is_array($patch) || array_is_list($patch)) {
             return $patch;
         }
 
-        foreach ($patch as $field => $value) {
-            if (isset($original->$field)) {
-                $original->$field = $this->mergeImpl($original->$field, $value);
+        foreach ($patch as $key => $value) {
+            if (isset($original[$key])) {
+                $original[$key] = $this->merge($original[$key], $value);
             } else {
-                $original->$field = $value;
+                $original[$key] = $value;
             }
         }
 

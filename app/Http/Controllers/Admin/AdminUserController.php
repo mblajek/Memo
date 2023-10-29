@@ -14,6 +14,7 @@ use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -75,14 +76,16 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function post(CreateUserService $service): JsonResponse
     {
-        $data = $this->validate(User::getInsertValidator([
-            'name',
-            'email',
-            'has_email_verified',
-            'password',
-            'password_expire_at',
-            'has_global_admin',
-        ]));
+        $data = $this->validate(
+            User::getInsertValidator([
+                'name',
+                'email',
+                'has_email_verified',
+                'password',
+                'password_expire_at',
+                'has_global_admin',
+            ])
+        );
 
         $result = $service->handle($data);
 
@@ -113,28 +116,32 @@ class AdminUserController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )],
+            )
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws ApiException|Throwable */
-    public function patch(User $user,MergePatchService $mergePatchService, UpdateUserService $service): JsonResponse
+    public function patch(User $user, MergePatchService $mergePatchService, UpdateUserService $service): JsonResponse
     {
-        $data = $this->validate(User::getPatchValidator());
-        $mergePatchService->mergeInto($user, $data);
-        $data = $this->validate(User::getInsertValidator([
-            'name',
-            'email',
-            'has_email_verified',
-            'password',
-            'password_expire_at',
-            'has_global_admin',
-        ]));
+        $requestData = $this->validate(User::getPatchValidator());
+        $userAttributes = $mergePatchService->merge($user->getAttributes(), $requestData);
 
-        $service->handle($user, $data);
+        Validator::validate(
+            $userAttributes,
+            User::getInsertValidator([
+                'name',
+                'email',
+                'has_email_verified',
+                'password',
+                'password_expire_at',
+                'has_global_admin',
+            ])
+        );
 
+        $service->handle($user, $userAttributes);
         return new JsonResponse();
     }
 }
