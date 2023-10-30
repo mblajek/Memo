@@ -1,10 +1,14 @@
+import {CreateQueryResult} from "@tanstack/solid-query";
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
+import {AxiosError} from "axios";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
-import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
+import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
+import {translateError} from "../error_util";
+import {Api} from "../types";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
-import {Column, ColumnName, DataRequest, DataResponse, Schema} from "./types";
+import {Column, ColumnName, DataRequest, DataResponse, Filter, Schema} from "./types";
 
 /** A collection of column filters, keyed by column name. The undefined value denotes a disabled filter. */
 export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;
@@ -195,19 +199,85 @@ interface TableHelperInterface {
   pageCount: Accessor<number>;
   /** A signal that changes whenever the table needs to be scrolled back to top. */
   scrollToTopSignal: Accessor<unknown>;
+  /**
+   * A map of column filter errors resulting from bad input values, that the table
+   * should display somewhere. The key is the column name, or `"?"` for error(s) that
+   * could not be attributed to a specific column.
+   */
+  filterErrors: Accessor<Map<ColumnName | typeof UNRECOGNIZED_FIELD_KEY, string> | undefined>;
+}
+
+export const UNRECOGNIZED_FIELD_KEY = "?";
+
+const FILTER_VAL_ERROR_REGEX = /^filter\.(|.+?\.)val$/;
+
+/**
+ * Checks whether the error is a validation error on a filter value. This kind of error is
+ * typically caused by user entering e.g. bad regex or bad UUID, not by a bug.
+ *
+ * The filter val errors are not automatically displayed as toasts, but are instead handled
+ * by the TQueryTable component (see tableHelper).
+ */
+export function isFilterValError(error: Api.Error): error is Api.ValidationError {
+  return Api.isValidationError(error) && FILTER_VAL_ERROR_REGEX.test(error.field);
 }
 
 export function tableHelper({
   requestController,
-  response,
+  dataQuery,
 }: {
   requestController: RequestController;
-  response: Accessor<DataResponse | undefined>;
+  dataQuery: CreateQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>;
 }): TableHelperInterface {
-  const rowsCount = () => response()?.meta.totalDataSize;
+  const t = useLangFunc();
+  const rowsCount = () => dataQuery.data?.meta.totalDataSize;
   const pageCount = createMemo(() =>
     Math.ceil(Math.max(rowsCount() || 0, 1) / requestController.pagination[0]().pageSize),
   );
   const scrollToTopSignal = () => requestController.pagination[0]().pageIndex;
-  return {rowsCount, pageCount, scrollToTopSignal};
+  const filterErrors = createMemo(() => {
+    if (!dataQuery.error) {
+      return undefined;
+    }
+    const dataRequest: DataRequest = JSON.parse(dataQuery.error.config?.data || null);
+    const filterErrors = new Map<ColumnName, string>();
+    for (const e of dataQuery.error.response?.data.errors || []) {
+      if (isFilterValError(e)) {
+        // Other kinds of errors are already handled at a higher level.
+        // Find the problematic filter. The value of e.field will be something like `filter.val.0.val`,
+        // so traverse that path in the request object, minus the last `val` part.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let val: any = dataRequest;
+        for (const part of e.field.split(".").slice(0, -1)) {
+          if (val && typeof val === "object") {
+            val = val[part];
+          } else {
+            break;
+          }
+        }
+        if (val && typeof val === "object") {
+          const leafFilter: Filter = val;
+          if (leafFilter.type === "column") {
+            filterErrors.set(
+              leafFilter.column,
+              translateError({...e, field: t("tables.filter.filter_for", {data: leafFilter.column})}),
+            );
+            continue;
+          }
+        }
+        // The correct leaf column filter could not be determined. Just put the error in the `"?"` key.
+        filterErrors.set(
+          UNRECOGNIZED_FIELD_KEY,
+          [filterErrors.get(UNRECOGNIZED_FIELD_KEY), translateError(e)].filter(NON_NULLABLE).join("\n"),
+        );
+      }
+    }
+    return filterErrors.size ? filterErrors : undefined;
+  });
+  return {
+    rowsCount,
+    pageCount,
+    scrollToTopSignal,
+    filterErrors,
+  };
 }

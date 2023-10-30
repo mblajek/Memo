@@ -1,4 +1,4 @@
-import {cx} from "components/utils";
+import {cx, debouncedAccessor} from "components/utils";
 import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/types";
 import {createComputed, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
@@ -24,6 +24,11 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
         return {type: "column", column: props.name, op: "=", val: value};
     }
   }
+  // eslint-disable-next-line solid/reactivity
+  const debouncedValue = debouncedAccessor(value, {
+    outputImmediately: (v) => !v || v === "*" || v === "''" || v.length === 36,
+  });
+  createComputed(() => props.setFilter(buildFilter(debouncedValue())));
   return (
     <div class={s.filterLine}>
       <div class={cx(s.wideEdit, "min-h-small-input flex items-baseline")}>
@@ -35,10 +40,7 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
           class="h-full w-full border border-input-border rounded"
           style={{"font-family": "monospace"}}
           value={value()}
-          onInput={({target: {value}}) => {
-            setValue(value);
-            props.setFilter(buildFilter(value));
-          }}
+          onInput={({target: {value}}) => setValue(value)}
         />
       </div>
     </div>
