@@ -46,7 +46,7 @@ export const Navbar: VoidComponent = () => {
         </Show>
         <Show when={DEV}>
           <NavigationSection
-            title="Dev"
+            title="DEV"
             items={[{icon: RiDevelopmentCodeBoxLine, href: "/test-page", children: "/test-page"}]}
           />
         </Show>
