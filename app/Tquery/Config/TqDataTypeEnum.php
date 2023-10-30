@@ -4,6 +4,7 @@ namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Rules\Valid;
+use App\Rules\RegexpIsValidRule;
 use App\Tquery\Filter\TqFilterOperator;
 use App\Utils\Date\DateHelper;
 
@@ -109,15 +110,15 @@ enum TqDataTypeEnum
 
     public function filterValueValidator(TqFilterOperator $operator): array
     {
-        if (in_array($operator, TqFilterOperator::LIKE)) {
-            return Valid::string();
+        if (in_array($operator, TqFilterOperator::LIKE, true)) {
+            return Valid::string($operator === TqFilterOperator::regexp ? [new RegexpIsValidRule()] : []);
         }
         return match ($this->notNullBaseType()) {
             self::bool => Valid::bool(),
             self::date => Valid::date(),
             self::datetime => Valid::datetime(),
             self::int => Valid::int(),
-            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED)
+            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED, true)
                 ? Valid::trimmed() : Valid::string(),
             self::uuid => Valid::uuid(),
             default => FatalExceptionFactory::tquery(),
