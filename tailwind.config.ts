@@ -31,7 +31,7 @@ export default {
       zIndex: Z_INDEX,
       minHeight: {
         "big-input": "2.5rem",
-        "small-input": "1.5rem",
+        "small-input": "1.8rem",
       },
     },
     fontFamily: {

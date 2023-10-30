@@ -1,30 +1,44 @@
 import {cx} from "components/utils";
-import {UuidColumnFilter} from "data-access/memo-api/tquery/types";
-import {createMemo} from "solid-js";
+import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/types";
+import {createComputed, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
 import {FilterControl} from "./types";
 
-export const UuidFilterControl: FilterControl<UuidColumnFilter> = (props) => {
-  const defaultFilter = createMemo(
-    () =>
-      ({
-        type: "column",
-        column: props.name,
-        op: "=",
-        val: "",
-      }) as const,
-  );
+export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilter> = (props) => {
+  const [value, setValue] = createSignal("");
+  createComputed(() => {
+    if (!props.filter) {
+      setValue("");
+    }
+    // Ignore other external filter changes.
+  });
+  function buildFilter(value: string): NullColumnFilter | UuidColumnFilter | undefined {
+    switch (value) {
+      case "":
+        return undefined;
+      case "*":
+        return {type: "column", column: props.name, op: "null", inv: true};
+      case "''":
+        return {type: "column", column: props.name, op: "null"};
+      default:
+        return {type: "column", column: props.name, op: "=", val: value};
+    }
+  }
   return (
     <div class={s.filterLine}>
-      <div class={cx(s.wideEdit, "flex items-baseline")}>
-        <span class="w-1.5 text-center">=</span>
+      <div class={cx(s.wideEdit, "min-h-small-input flex items-baseline")}>
+        <span class="w-1.5 text-center font-semibold">=</span>
         <input
           name={`table_filter_val_${props.name}`}
           type="text"
-          class="h-full w-full border rounded"
+          autocomplete="off"
+          class="h-full w-full border border-input-border rounded"
           style={{"font-family": "monospace"}}
-          value={props.filter?.val || ""}
-          onInput={({target: {value}}) => props.setFilter(value ? {...defaultFilter(), val: value} : undefined)}
+          value={value()}
+          onInput={({target: {value}}) => {
+            setValue(value);
+            props.setFilter(buildFilter(value));
+          }}
         />
       </div>
     </div>
