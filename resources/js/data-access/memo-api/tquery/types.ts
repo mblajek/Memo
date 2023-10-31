@@ -48,6 +48,7 @@ export interface DataRequest {
   readonly filter?: ConstFilter | Filter;
   readonly sort: Sort;
   readonly paging: Paging;
+  /** Whether to only return distinct values. This also enables a count column. */
   readonly distinct?: boolean;
 }
 
