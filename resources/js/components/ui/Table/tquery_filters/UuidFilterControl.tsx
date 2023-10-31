@@ -4,6 +4,8 @@ import {createComputed, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
 import {FilterControl} from "./types";
 
+const UUID_LENGTH = 36;
+
 export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilter> = (props) => {
   const [value, setValue] = createSignal("");
   createComputed(() => {
@@ -26,7 +28,7 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
   }
   // eslint-disable-next-line solid/reactivity
   const debouncedValue = debouncedAccessor(value, {
-    outputImmediately: (v) => !v || v === "*" || v === "''" || v.length === 36,
+    outputImmediately: (v) => !v || v === "*" || v === "''" || v.length === UUID_LENGTH,
   });
   createComputed(() => props.setFilter(buildFilter(debouncedValue())));
   return (
