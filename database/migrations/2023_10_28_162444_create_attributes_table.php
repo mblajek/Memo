@@ -13,31 +13,29 @@ return new class extends Migration {
         Schema::create('attributes', function (Blueprint $table) {
             $table->char('id', 36)->collation('ascii_bin')->primary();
             $table->char('facility_id', 36)->collation('ascii_bin')->nullable();
-            $table->char('table');
-            $table->char('model');
-            $table->char('name');
-            $table->char('api_name');
-            $table->char('type');
+            $table->string('table', 36)->collation('ascii_bin');
+            $table->string('model', 36)->collation('ascii_bin');
+            $table->string('name');
+            $table->string('api_name')->collation('ascii_bin');
+            $table->string('type', 36)->collation('ascii_bin');
             $table->char('dictionary_id', 36)->collation('ascii_bin')->nullable();
             $table->integer('default_order');
             $table->boolean('is_multi_value')->nullable();
-            $table->char('requirement_level');
-
-
-
-            $table->timestamps();
+            $table->string('requirement_level', 36)->collation('ascii_bin');
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at');
 
             $table->foreign('facility_id')
                 ->references('id')
                 ->on('facilities')
-                // Null has special meaning in this table ('any facility'), maybe it should restrict or cascade
-                //(otherwise facility-specific attributes become available to everyone).
-                ->onDelete('set null');
+                // Setting null would men that a facility-specific attribute becomes available for everyone.
+                ->restrictOnDelete();
 
             $table->foreign('dictionary_id')
                 ->references('id')
                 ->on('dictionaries')
-                ->onDelete('set null');
+                // Setting null would make that attribute loose connection to dictionary, while still having type 'dict', making it invalid.
+                ->restrictOnDelete();
         });
     }
 

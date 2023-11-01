@@ -5,14 +5,14 @@ namespace App\Models\Enums;
 enum AttributeType: string
 {
     // Standard data types.
-    case STRING = 'string';
-    case DECIMAL0 = 'decimal0';
-    case DECIMAL2 = 'decimal2';
-    case BOOL = 'bool';
-    case DATE = 'date';
-    case DATETIME = 'datetime';
+    case Bool = 'bool';
+    case Date = 'date';
+    case Datetime = 'datetime';
+    case Int = 'int';
+    case String = 'string';
     // Supported table names.
-    case USERS = 'users';
+    case Users = 'users';
+    case Clients = 'clients';
     // Dictionary.
-    case DICT = 'dict';
+    case Dict = 'dict';
 }

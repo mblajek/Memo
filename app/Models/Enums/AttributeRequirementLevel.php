@@ -4,8 +4,8 @@ namespace App\Models\Enums;
 
 enum AttributeRequirementLevel: string
 {
-    case REQUIRED = 'required';
-    case RECOMMENDED = 'recommended';
-    case OPTIONAL = 'optional';
-    case EMPTY = 'empty';
+    case Required = 'required';
+    case Recommended = 'recommended';
+    case Optional = 'optional';
+    case Empty = 'empty';
 }

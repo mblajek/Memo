@@ -4,6 +4,6 @@ namespace App\Models\Enums;
 
 enum AttributeTable: string
 {
-    case USERS = 'users';
-    case CLIENTS = 'clients';
+    case Users = 'users';
+    case Clients = 'clients';
 }
