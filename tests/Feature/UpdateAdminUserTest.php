@@ -91,7 +91,7 @@ class UpdateAdminUserTest extends TestCase
     }
 
     // Request validation tests
-     public function testWithEmptyDataSucceeds(): void
+    public function testWithEmptyDataSucceeds(): void
     {
         $user = User::factory()->create();
 
@@ -103,7 +103,7 @@ class UpdateAdminUserTest extends TestCase
         $result->assertOk();
     }
 
-     public function testWithNameSucceeds(): void
+    public function testWithNameSucceeds(): void
     {
         $user = User::factory()->create();
 
@@ -162,7 +162,7 @@ class UpdateAdminUserTest extends TestCase
         $this->assertNotNull($user->email_verified_at);
     }
 
-     public function testWithEmailWithoutEmailVerifiedFails(): void
+    public function testWithEmailWithoutEmailVerifiedFails(): void
     {
         $user = User::factory()->create();
 
@@ -189,7 +189,7 @@ class UpdateAdminUserTest extends TestCase
         );
     }
 
-     public function testWithoutEmailWithEmailVerifiedFails(): void
+    public function testWithoutEmailWithEmailVerifiedFails(): void
     {
         $user = User::factory()->create();
 
@@ -216,7 +216,7 @@ class UpdateAdminUserTest extends TestCase
         );
     }
 
-     public function testWithPasswordWithPasswordExpireAtSucceeds(): void
+    public function testWithPasswordWithPasswordExpireAtSucceeds(): void
     {
         $user = User::factory()->create();
 
@@ -233,7 +233,7 @@ class UpdateAdminUserTest extends TestCase
         $this->assertEquals($data['passwordExpireAt'], $user->password_expire_at);
     }
 
-     public function testWithPasswordWithoutPasswordExpireAtFails(): void
+    public function testWithPasswordWithoutPasswordExpireAtFails(): void
     {
         $user = User::factory()->create();
 
@@ -246,7 +246,7 @@ class UpdateAdminUserTest extends TestCase
         $result->assertBadRequest();
     }
 
-     public function testWithoutPasswordWithPasswordExpireAtSucceeds(): void
+    public function testWithoutPasswordWithPasswordExpireAtSucceeds(): void
     {
         $user = User::factory()->create();
 
@@ -260,7 +260,7 @@ class UpdateAdminUserTest extends TestCase
     }
 
     // Logic tests
-     public function testRemovingNameFails(): void
+    public function testRemovingNameFails(): void
     {
         $user = User::factory()->create();
 
@@ -300,7 +300,7 @@ class UpdateAdminUserTest extends TestCase
         $result->assertBadRequest();
     }
 
-     public function testWithGlobalAdminRemovingEmailFails(): void
+    public function testWithGlobalAdminRemovingEmailFails(): void
     {
         $user = User::factory()->globalAdmin()->create();
 
@@ -313,7 +313,7 @@ class UpdateAdminUserTest extends TestCase
         $result->assertBadRequest();
     }
 
-     public function testWithGlobalAdminRemovingPasswordFails(): void
+    public function testWithGlobalAdminRemovingPasswordFails(): void
     {
         $user = User::factory()->globalAdmin()->create();
 
@@ -326,7 +326,7 @@ class UpdateAdminUserTest extends TestCase
         $result->assertBadRequest();
     }
 
-     public function testUpdatedAtGetsUpdated(): void
+    public function testUpdatedAtGetsUpdated(): void
     {
         $this->travelTo(CarbonImmutable::create(2023, 10, 30));
 

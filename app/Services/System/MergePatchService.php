@@ -23,7 +23,7 @@ class MergePatchService
      */
     public function merge($original, $patch)
     {
-        $isValue = fn ($any) => !is_array($any) || (array_is_list($any) && !empty($any));
+        $isValue = fn($any) => !is_array($any) || (array_is_list($any) && !empty($any));
         if ($isValue($original) || $original === [] || $isValue($patch)) {
             return $patch;
         }

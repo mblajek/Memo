@@ -115,11 +115,18 @@ class User extends Authenticatable
     {
         return [
             'name' => 'sometimes|required|string',
-            'email' => ['sometimes','nullable','string', 'email',
-                 Rule::unique('users', 'email'),
+            'email' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'email',
+                Rule::unique('users', 'email'),
                 new RequirePresentRule('has_email_verified')
             ],
-            'has_email_verified' => ['sometimes', 'nullable', 'bool',
+            'has_email_verified' => [
+                'sometimes',
+                'nullable',
+                'bool',
                 new RequirePresentRule('email'),
                 // TODO: When email == null, has_email_verified must be null as well
             ],
@@ -129,7 +136,10 @@ class User extends Authenticatable
                 [new RequirePresentRule('password_expire_at')],
             ),
             '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
-            'password_expire_at' => ['sometimes', 'nullable', 'date',
+            'password_expire_at' => [
+                'sometimes',
+                'nullable',
+                'date',
                 new RequirePresentRule('password'),
                 // TODO: When password is null, password_expire_at must be null as well
             ],
@@ -141,14 +151,22 @@ class User extends Authenticatable
     {
         return [
             'name' => 'required|string',
-            'email' => ['nullable', 'string', 'email',
+            'email' => [
+                'nullable',
+                'string',
+                'email',
                 new RequirePresentRule('has_email_verified'),
                 'required_if_accepted:has_global_admin'
             ],
-            'has_email_verified' => ['sometimes', 'bool',
+            'has_email_verified' => [
+                'sometimes',
+                'bool',
                 new RequirePresentRule('email'),
             ],
-            'password_expire_at' => ['sometimes', 'nullable', 'date',
+            'password_expire_at' => [
+                'sometimes',
+                'nullable',
+                'date',
                 'required_if_accepted:has_password'
             ],
             'has_password' => 'bool|accepted_if:has_global_admin,true',
@@ -160,22 +178,32 @@ class User extends Authenticatable
     {
         return match ($field) {
             'name' => 'required|string',
-            'email' => ['nullable', 'string', 'email',
+            'email' => [
+                'nullable',
+                'string',
+                'email',
                 Rule::unique('users', 'email'),
                 new RequirePresentRule('has_email_verified'),
                 'required_if_accepted:has_global_admin'
             ],
-            'has_email_verified' => ['sometimes', 'bool',
+            'has_email_verified' => [
+                'sometimes',
+                'bool',
                 new RequirePresentRule('email'),
             ],
             'password' => array_merge(
                 ['bail', 'nullable', 'string'],
                 self::fieldValidator('_password'),
-                [new RequirePresentRule('password_expire_at'),
-                    new RequirePresentRule('email')],
+                [
+                    new RequirePresentRule('password_expire_at'),
+                    new RequirePresentRule('email')
+                ],
             ),
             '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
-            'password_expire_at' => ['sometimes', 'nullable', 'date',
+            'password_expire_at' => [
+                'sometimes',
+                'nullable',
+                'date',
                 new RequirePresentRule('password'),
             ],
             'last_login_facility_id' => 'nullable|uuid|exists:facilities,id',
