@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Http\Resources\AttributeResource;
 use App\Http\Resources\DictionaryResource;
 use App\Http\Resources\FacilityResource;
 use App\Models\Attribute;
@@ -108,6 +109,6 @@ class SystemController extends ApiController
     {
         $attributesQuery = Attribute::query();
         $this->applyRequestIn($attributesQuery);
-        return DictionaryResource::collection($attributesQuery->get());
+        return AttributeResource::collection($attributesQuery->get());
     }
 }
