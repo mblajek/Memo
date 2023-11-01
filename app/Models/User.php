@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\QueryBuilders\UserBuilder;
 use App\Rules\RequirePresentRule;
 use App\Utils\Uuid\UuidTrait;
@@ -82,7 +81,37 @@ class User extends Authenticatable
         'password_expire_at' => 'immutable_datetime',
     ];
 
-    public static function getPatchValidator(): array
+    protected $appends = [
+        'has_password',
+        'has_email_verified',
+        'has_global_admin',
+    ];
+
+    /**
+     * @return bool
+     */
+    public function getHasPasswordAttribute(): bool
+    {
+        return $this->password !== null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getHasEmailVerifiedAttribute(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getHasGlobalAdminAttribute(): bool
+    {
+        return $this->global_admin_grant_id !== null;
+    }
+
+    public static function getPatchRequestValidator(): array
     {
         return [
             'name' => 'sometimes|required|string',
@@ -108,12 +137,31 @@ class User extends Authenticatable
         ];
     }
 
+    public static function getPatchedObjectValidator(): array
+    {
+        return [
+            'name' => 'required|string',
+            'email' => ['nullable', 'string', 'email',
+                new RequirePresentRule('has_email_verified'),
+                'required_if_accepted:has_global_admin'
+            ],
+            'has_email_verified' => ['sometimes', 'bool',
+                new RequirePresentRule('email'),
+            ],
+            'password_expire_at' => ['sometimes', 'nullable', 'date',
+                'required_if_accepted:has_password'
+            ],
+            'has_password' => 'bool|accepted_if:has_global_admin,true',
+            'has_global_admin' => 'required|bool',
+        ];
+    }
+
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
             'name' => 'required|string',
             'email' => ['nullable', 'string', 'email',
-//                Rule::unique('users', 'email'),
+                Rule::unique('users', 'email'),
                 new RequirePresentRule('has_email_verified'),
                 'required_if_accepted:has_global_admin'
             ],

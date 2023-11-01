@@ -1,9 +1,8 @@
 <?php
 
-namespace Services\System;
+namespace Tests\Services\System;
 
 use App\Services\System\MergePatchService;
-use stdClass;
 use Tests\TestCase;
 
 class MergePatchServiceTest extends TestCase
@@ -52,6 +51,8 @@ class MergePatchServiceTest extends TestCase
 12 => [["e" => null],                 ["a" => 1],                             ["e" => null, "a" => 1]              ],
 // Add object field
 13 => [(object)[],                    ["a" => ["bb" => ["ccc" => null]]],     ["a" => ["bb" => ["ccc" => null]]]   ],
+// Empty patch doesn't change anything
+14 => [["a" => "b", "c"=>[1,2,3]],    [],                                     ["a" => "b", "c"=>[1,2,3]]           ],
 //@formatter:on
                 ]);
     }

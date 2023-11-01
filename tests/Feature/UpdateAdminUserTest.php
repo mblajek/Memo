@@ -6,9 +6,10 @@ use App\Models\Grant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Testing\TestResponse;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
-use Illuminate\Testing\TestResponse;
 
 class UpdateAdminUserTest extends TestCase
 {
@@ -72,7 +73,10 @@ class UpdateAdminUserTest extends TestCase
         /** @var Grant $grant */
         $grant = Grant::factory()->create();
         /** @var User $user */
-        $user = User::factory()->create(['global_admin_grant_id' => $grant->id]);
+        $user = User::factory()->create([
+            'password_expire_at' => CarbonImmutable::now(),
+            'global_admin_grant_id' => $grant->id
+        ]);
 
         $data = [
             'hasGlobalAdmin' => false,
@@ -203,7 +207,7 @@ class UpdateAdminUserTest extends TestCase
                         'code' => 'exception.validation'
                     ],
                     [
-                        'field' => 'email',
+                        'field' => 'hasEmailVerified',
                         'code' => 'validation.custom.require_present',
                         'data' => ['other' => 'email']
                     ]
@@ -218,15 +222,15 @@ class UpdateAdminUserTest extends TestCase
 
         $data = [
             'password' => 'pBssword1',
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => CarbonImmutable::now()->roundSeconds(),
         ];
 
         $result = $this->execute($user->id, $data);
         $user->refresh();
 
         $result->assertOk();
-        $this->assertEquals($data['password'], $user->password);
-        $this->assertEquals($data['passwordExpireAt'], $user->passwordExpireAt);
+        $this->assertTrue(Hash::check('pBssword1', $user->password));
+        $this->assertEquals($data['passwordExpireAt'], $user->password_expire_at);
     }
 
      public function testWithPasswordWithoutPasswordExpireAtFails(): void
@@ -271,7 +275,7 @@ class UpdateAdminUserTest extends TestCase
 
     public function testWithoutPreexistingEmailWithPasswordFails(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->noEmail()->create();
 
         $data = [
             'password' => 'pBssword1',
@@ -283,24 +287,68 @@ class UpdateAdminUserTest extends TestCase
         $result->assertBadRequest();
     }
 
-
     public function testWithPasswordRemovingEmailFails(): void
     {
+        $user = User::factory()->create();
 
+        $data = [
+            'email' => null
+        ];
+
+        $result = $this->execute($user->id, $data);
+
+        $result->assertBadRequest();
     }
 
      public function testWithGlobalAdminRemovingEmailFails(): void
     {
+        $user = User::factory()->globalAdmin()->create();
 
+        $data = [
+            'email' => null
+        ];
+
+        $result = $this->execute($user->id, $data);
+
+        $result->assertBadRequest();
     }
 
      public function testWithGlobalAdminRemovingPasswordFails(): void
     {
+        $user = User::factory()->globalAdmin()->create();
 
+        $data = [
+            'password' => null
+        ];
+
+        $result = $this->execute($user->id, $data);
+
+        $result->assertBadRequest();
     }
 
      public function testUpdatedAtGetsUpdated(): void
     {
+        $this->travelTo(CarbonImmutable::create(2023, 10, 30));
 
+        /** @var User $user */
+        $user = User::factory()->create();
+
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => false,
+            'password' => 'pBssword1',
+            'passwordExpireAt' => CarbonImmutable::now(),
+            'hasGlobalAdmin' => true,
+        ];
+
+        $this->travel(1)->day();
+        $result = $this->execute($user->id, $data);
+        $user->refresh();
+
+        $result->assertOk();
+        $this->assertEquals(CarbonImmutable::create(2023, 10, 31), $user->updated_at);
+
+        $this->travelBack();
     }
 }
