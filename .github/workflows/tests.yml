@@ -5,16 +5,18 @@ name: Tests
 
 on:
   push:
-    branches: ["develop"]
+    branches:
+      - master
+      - develop
+      - RC-**
   pull_request:
-    branches: ["develop"]
 
 jobs:
   frontend_test:
     name: Frontend test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "latest"
@@ -22,3 +24,10 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: LARAVEL_BYPASS_ENV_CHECK=1 npm test
+
+  # TODO: Define backend tests job here.
+  # backend_test:
+  #   name: Backend test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
