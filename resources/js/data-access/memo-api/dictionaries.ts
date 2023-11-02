@@ -126,7 +126,7 @@ function dictionarySubsetFor(dictionary: Dictionary, facilityId: string | undefi
       positionsSubset,
     );
   }
-  const qweqwe = 0;
+  console.log("asd");
   return undefined;
 }
 
