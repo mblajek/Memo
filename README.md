@@ -13,3 +13,5 @@ System do zarządzania:
 Total lines:\
 ![Lines of code](https://tokei.rs/b1/github/mblajek/Memo?style=flat&type=php&label=PHP)
 ![Lines of code](https://tokei.rs/b1/github/mblajek/Memo?style=flat&type=TypeScript,TSX&label=TypeScript)
+
+![Tests status](https://github.com/mblajek/Memo/actions/workflows/tests.yml/badge.svg?event=push)
