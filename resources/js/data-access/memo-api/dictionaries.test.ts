@@ -150,10 +150,10 @@ describe("Dictionaries", () => {
   test("get", () => {
     expect(dictionaries.get("d1")?.id).toEqual("d1");
     expect(dictionaries.get("d3")?.id).toEqual("d3");
-    expect(dictionaries.get("d5")).toBeUndefined();
+    expect(() => dictionaries.get("d5")).toThrow("not found");
     expect(dictionaries.get("dict1-global")?.id).toEqual("d1");
-    expect(dictionaries.get("dict2-fac1")).toBeUndefined();
-    expect(dictionaries.get("+dict2-fac1")).toBeUndefined();
+    expect(() => dictionaries.get("dict2-fac1")).toThrow("not found");
+    expect(() => dictionaries.get("+dict2-fac1")).toThrow("not found");
   });
 
   test("positions", () => {
