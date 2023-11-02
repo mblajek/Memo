@@ -6,8 +6,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     private string $genderAttributeId = '0e56d086-5bf7-46c0-8359-38e9edf8c627';
     private string $gender_column_name = 'gender_dict_id';
 
@@ -23,7 +22,7 @@ return new class extends Migration
         $genderDictionaryId = 'c21c1557-4617-42ae-ad20-12f8f89fb12b';
         $timestamp = CarbonImmutable::now();
         // Add row to attributes table
-        DB::table('attributes')->insertOrIgnore([
+        DB::table('attributes')->upsert([
             'id' => $this->genderAttributeId,
             'facility_id' => null,
             'table' => 'clients',
@@ -37,8 +36,7 @@ return new class extends Migration
             'requirement_level' => 'recommended',
             'created_at' => $timestamp,
             'updated_at' => $timestamp,
-        ]);
-
+        ], 'id');
     }
 
     /**

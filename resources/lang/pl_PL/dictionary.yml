@@ -7,3 +7,11 @@ gender:
   male: "mężczyzna"
   other: "inna"
   unknown: "nieznana"
+
+meetingCategory:
+  _name: "kategoria spotkania"
+  other: "inne"
+
+meetingType:
+  _name: "typ spotkania"
+  other: "inne"
