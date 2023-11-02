@@ -1,6 +1,7 @@
 import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {FacilityResource} from "../resources";
+import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
 import {Api} from "../types";
 import {parseGetListResponse} from "../utils";
@@ -30,11 +31,22 @@ export namespace System {
       staleTime: 3600 * 1000,
     }) satisfies SolidQueryOptions;
 
+  const getAttributesList = (config?: Api.Config) =>
+    V1.get<Api.Response.GetList<AttributeResource>>("/system/attribute/list", config).then(parseGetListResponse);
+  export const attributesQueryOptions = () =>
+    ({
+      queryFn: ({signal}) => getAttributesList({signal}),
+      queryKey: keys.attribute(),
+      // The attributes normally don't change.
+      staleTime: 3600 * 1000,
+    }) satisfies SolidQueryOptions;
+
   export const keys = {
     all: () => ["system"] as const,
     facility: () => [...keys.all(), "facility"] as const,
     facilityList: () => [...keys.facility(), "list"] as const,
     dictionary: () => [...keys.all(), "dictionary"] as const,
+    attribute: () => [...keys.all(), "attribute"] as const,
   };
 
   export function useInvalidator() {
@@ -42,6 +54,7 @@ export namespace System {
     return {
       facilities: () => queryClient.invalidateQueries({queryKey: keys.facilityList()}),
       dictionaries: () => queryClient.invalidateQueries({queryKey: keys.dictionary()}),
+      attributes: () => queryClient.invalidateQueries({queryKey: keys.attribute()}),
     };
   }
 }

@@ -6,8 +6,10 @@ export default (() => {
   // Do not submit the changes to this file.
 
   return (
-    <div class="w-fit bg-purple-100 p-4 mx-auto rounded-md">
-      Test your components here during development by creating a test page in TestPage.tsx.
+    <div class="flex flex-col gap-1">
+      <div class="w-fit bg-purple-100 p-4 mx-auto rounded-md">
+        Test your components here during development by creating a test page in TestPage.tsx.
+      </div>
     </div>
   );
 }) satisfies VoidComponent;

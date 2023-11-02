@@ -1,12 +1,15 @@
 import {createQuery} from "@tanstack/solid-query";
-import {LangPrefixFunc, useLangFunc} from "components/utils";
+import {LangPrefixFunc, NON_NULLABLE, useLangFunc} from "components/utils";
 import {translationsLoaded} from "i18n_loader";
 import {createMemo} from "solid-js";
+import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
 import {System} from "./groups";
 import {DictionaryResource, PositionResource} from "./resources/dictionary.resource";
+import {getNameTranslation, isNameTranslatable} from "./resources/name_string";
+import {facilityIdMatches} from "./utils";
 
 export class Dictionaries {
-  constructor(
+  private constructor(
     /** A map of all the dictionaries by id. */
     readonly byId: ReadonlyMap<string, Dictionary>,
     /**
@@ -17,12 +20,15 @@ export class Dictionaries {
   ) {}
 
   static fromResources(t: LangPrefixFunc, resources: DictionaryResource[]) {
+    return Dictionaries.fromDictionaries(resources.map((resource) => Dictionary.fromResource(t, resource)));
+  }
+
+  private static fromDictionaries(dictinoaries: Dictionary[]) {
     const byId = new Map<string, Dictionary>();
     const byName = new Map<string, Dictionary>();
-    for (const resource of resources) {
-      const dictionary = Dictionary.fromResource(t, resource);
+    for (const dictionary of dictinoaries) {
       byId.set(dictionary.id, dictionary);
-      if (dictionary.resource.isFixed && dictionary.isNameTranslatable) {
+      if (dictionary.resource.isFixed && dictionary.isTranslatable) {
         byName.set(dictionary.resource.name, dictionary);
       }
     }
@@ -38,41 +44,25 @@ export class Dictionaries {
     return dictionary;
   }
 
-  /** Returns a subset of the dictionaries (and positions) accessible for the specified facility. */
-  subsetForFacility(facilityId: string) {
-    return dictionariesSubsetFor(this, facilityId);
+  /**
+   * Returns a subset of the dictionaries (and positions) accessible for the specified facility,
+   * or for the global scope.
+   */
+  subsetFor(facilityIdOrGlobal: FacilityIdOrGlobal) {
+    return Dictionaries.fromDictionaries(
+      Array.from(this.byId.values(), (dictionary) => dictionary.subsetFor(facilityIdOrGlobal)).filter(NON_NULLABLE),
+    );
   }
-
-  /** Returns a subset of the dictionaries (and positions) accessible outside of facility context. */
-  subsetForGlobal() {
-    return dictionariesSubsetFor(this, undefined);
-  }
-}
-
-/** Returns a dictionaries subset for the facility, or for global uses if facility not specified. */
-function dictionariesSubsetFor(dictionaries: Dictionaries, facilityId: string | undefined) {
-  const byId = new Map<string, Dictionary>();
-  const byName = new Map<string, Dictionary>();
-  for (const dictionary of dictionaries.byId.values()) {
-    const dictionarySubset = dictionarySubsetFor(dictionary, facilityId);
-    if (dictionarySubset) {
-      byId.set(dictionarySubset.id, dictionarySubset);
-      if (dictionarySubset.resource.isFixed && dictionarySubset.isNameTranslatable) {
-        byName.set(dictionarySubset.resource.name, dictionarySubset);
-      }
-    }
-  }
-  return new Dictionaries(byId, byName);
 }
 
 export class Dictionary {
   /** A list of non-disabled positions in the dictionary. */
   readonly activePositions;
 
-  constructor(
+  private constructor(
     readonly resource: DictionaryResource,
     readonly id: string,
-    readonly isNameTranslatable: boolean,
+    readonly isTranslatable: boolean,
     /** The translated name of the dictionary. */
     readonly label: string,
     /** The list of all positions of the dictionary, including the disabled ones. */
@@ -82,55 +72,32 @@ export class Dictionary {
   }
 
   static fromResource(t: LangPrefixFunc, resource: DictionaryResource) {
-    const isNameTranslatable = !resource.name.startsWith("+");
+    const isTranslatable = isNameTranslatable(resource.name);
     return new Dictionary(
       resource,
       resource.id,
-      isNameTranslatable,
-      isNameTranslatable ? t(`dictionary.${resource.name}._name`) : resource.name.substring(1),
-      resource.positions.map((position) => new Position(t, position, isNameTranslatable ? resource.name : undefined)),
+      isTranslatable,
+      getNameTranslation(resource.name, (n) => t(`dictionary.${n}._name`)),
+      resource.positions.map((position) => new Position(t, position, isTranslatable ? resource.name : undefined)),
     );
   }
 
   /**
-   * Returns a dictionary with a subset of positions accessible for the specified facility.
-   * If the whole dictionary is not accessible, returns undefined.
+   * Returns a dictionary with a subset of positions accessible for the specified facility,
+   * or for the global scope. If the whole dictionary is not accessible, returns undefined.
    */
-  subsetForFacility(facilityId: string) {
-    return dictionarySubsetFor(this, facilityId);
-  }
-
-  /**
-   * Returns a dictionary with a subset of positions accessible outside of facility context.
-   * If the whole dictionary is not accessible, returns undefined.
-   */
-  subsetForGlobal() {
-    return dictionarySubsetFor(this, undefined);
-  }
-}
-
-/** Returns a dictionary subset for the facility, or for global uses if facility not specified. */
-function dictionarySubsetFor(dictionary: Dictionary, facilityId: string | undefined) {
-  if (facilityIdMatches(dictionary.resource.facilityId, facilityId)) {
-    const positionsSubset = dictionary.allPositions.filter((position) =>
-      facilityIdMatches(position.resource.facilityId, facilityId),
-    );
-    if (positionsSubset.length === dictionary.allPositions.length) {
-      return dictionary;
+  subsetFor(facilityIdOrGlobal: FacilityIdOrGlobal) {
+    if (facilityIdMatches(this.resource.facilityId, facilityIdOrGlobal)) {
+      const positionsSubset = this.allPositions.filter((position) =>
+        facilityIdMatches(position.resource.facilityId, facilityIdOrGlobal),
+      );
+      if (positionsSubset.length === this.allPositions.length) {
+        return this;
+      }
+      return new Dictionary(this.resource, this.id, this.isTranslatable, this.label, positionsSubset);
     }
-    return new Dictionary(
-      dictionary.resource,
-      dictionary.id,
-      dictionary.isNameTranslatable,
-      dictionary.label,
-      positionsSubset,
-    );
+    return undefined;
   }
-  return undefined;
-}
-
-function facilityIdMatches(dictFacilityId: string | null, matchFacilityId: string | undefined) {
-  return dictFacilityId === null || dictFacilityId === matchFacilityId;
 }
 
 export class Position {
@@ -145,21 +112,19 @@ export class Position {
     readonly dictionaryTranslatableName: string | undefined,
   ) {
     this.id = resource.id;
-    if (resource.name.startsWith("+")) {
-      this.label = resource.name.substring(1);
-    } else if (!dictionaryTranslatableName) {
-      throw new Error(
-        `Translatable position (${resource.id}: ${resource.name}) inside a dictionary with an untranslatable name.`,
-      );
-    } else {
-      this.label = t(`dictionary.${dictionaryTranslatableName}.${resource.name}`);
-    }
+    this.label = getNameTranslation(resource.name, (n) => {
+      if (!dictionaryTranslatableName)
+        throw new Error(
+          `Translatable position (${resource.id}: ${n}) inside a dictionary with an untranslatable name.`,
+        );
+      return t(`dictionary.${dictionaryTranslatableName}.${n}`);
+    });
     this.disabled = resource.isDisabled;
   }
 }
 
 /**
- * A cache of the Dictionaries elements created from the backend's response. It is here to prevent
+ * A cache of the Dictionaries objects created from the backend's response. It is here to prevent
  * creating the Dictionaries object separately for every subscriber of the query.
  *
  * A simple createMemo approach will not work because a file-level memo is not allowed, and a
@@ -167,11 +132,11 @@ export class Position {
  */
 const dictionariesMap = new WeakMap<DictionaryResource[], Dictionaries>();
 
-/** Returns a query that returns a Dictionaries object. */
-export function useDictionaries() {
+/** Returns a Dictionaries object containing all the dictionaries in the system. */
+export function useAllDictionaries() {
   const t = useLangFunc();
   const query = createQuery(System.dictionariesQueryOptions);
-  const dictionaries = createMemo(() => {
+  const allDictionaries = createMemo(() => {
     if (!query.isSuccess) {
       return undefined;
     }
@@ -189,5 +154,15 @@ export function useDictionaries() {
     dictionariesMap.set(resources, dictionaries);
     return dictionaries;
   });
+  return allDictionaries;
+}
+
+/**
+ * Returns a Dictionaries object with the dictionaries available in the current facility, or global
+ * if there is no current facility.
+ */
+export function useDictionaries() {
+  const allDictionaries = useAllDictionaries();
+  const dictionaries = createMemo(() => allDictionaries()?.subsetFor(activeFacilityId()));
   return dictionaries;
 }
