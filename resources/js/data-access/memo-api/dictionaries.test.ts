@@ -1,3 +1,4 @@
+import {NO_FACILITY} from "state/activeFacilityId.state";
 import {describe, expect, test} from "vitest";
 import {Dictionaries} from "./dictionaries";
 
@@ -168,24 +169,24 @@ describe("Dictionaries", () => {
     ]);
   });
 
-  test("subsetForGlobal", () => {
-    expect(dictsToIds(dictionaries.subsetForGlobal())).toEqual([
+  test("subsetFor global", () => {
+    expect(dictsToIds(dictionaries.subsetFor(NO_FACILITY))).toEqual([
       {label: "d1", allPositions: ["d1p1", "d1p2", "d1p3"]},
       {label: "d3", allPositions: ["d3p1"]},
     ]);
   });
 
-  test("subsetForFacility", () => {
-    expect(dictsToIds(dictionaries.subsetForFacility("fac1"))).toEqual([
+  test("subsetFor", () => {
+    expect(dictsToIds(dictionaries.subsetFor("fac1"))).toEqual([
       {label: "d1", allPositions: ["d1p1", "d1p2", "d1p3"]},
       {label: "d2", allPositions: ["d2p1", "d2p2", "d2p3"]},
       {label: "d3", allPositions: ["d3p1", "d3p2"]},
     ]);
-    expect(dictsToIds(dictionaries.subsetForFacility("fac2"))).toEqual([
+    expect(dictsToIds(dictionaries.subsetFor("fac2"))).toEqual([
       {label: "d1", allPositions: ["d1p1", "d1p2", "d1p3"]},
       {label: "d3", allPositions: ["d3p1", "d3p3"]},
     ]);
-    expect(dictsToIds(dictionaries.subsetForFacility("fac8"))).toEqual([
+    expect(dictsToIds(dictionaries.subsetFor("fac8"))).toEqual([
       {label: "d1", allPositions: ["d1p1", "d1p2", "d1p3"]},
       {label: "d3", allPositions: ["d3p1"]},
     ]);

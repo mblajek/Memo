@@ -1,5 +1,6 @@
 import {AxiosError, type AxiosResponse} from "axios";
 import {DateTime} from "luxon";
+import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {Api} from "./types";
 
 export const parseGetResponse = <T extends object>(res: AxiosResponse<Api.Response.Get<T>>) => res.data.data;
@@ -63,4 +64,13 @@ export function dateTimeToISO(dateTime: DateTime) {
 /** Returns the ISO representation of date, suitable for sending to backend. Local time zone is used. */
 export function dateToISO(dateTime: DateTime) {
   return dateTime.toISODate();
+}
+
+/**
+ * Determines if the resource specifying a facility id matches the specified facility id matcher.
+ * A resource with null facility id matches everything. A resource with a specific facility id
+ * matches only that facility id.
+ */
+export function facilityIdMatches(resourceFacilityId: string | null, matchFacilityIdOrGlobal: FacilityIdOrGlobal) {
+  return resourceFacilityId === null || resourceFacilityId === matchFacilityIdOrGlobal;
 }
