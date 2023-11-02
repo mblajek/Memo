@@ -45,7 +45,7 @@ return new class extends Migration {
         $date = '2023-07-13 00:00:00';
         $systemUserId = 'e144ff18-471f-456f-a1c2-971d88b3d213';
 
-        DB::table('dictionaries')->insertOrIgnore([
+        DB::table('dictionaries')->upsert([
             [
                 'id' => 'c21c1557-4617-42ae-ad20-12f8f89fb12b',
                 'name' => 'gender',
@@ -62,9 +62,9 @@ return new class extends Migration {
                 'created_at' => $date,
                 'updated_at' => $date,
             ],
-        ]);
+        ], 'id');
 
-        DB::table('positions')->insert([
+        DB::table('positions')->upsert([
             [
                 'id' => '1f3e095c-938b-4367-b3cc-7ef25ab1de70',
                 'dictionary_id' => 'c21c1557-4617-42ae-ad20-12f8f89fb12b',
@@ -265,7 +265,7 @@ return new class extends Migration {
                 'created_at' => $date,
                 'updated_at' => $date,
             ],
-        ]);
+        ], 'id');
     }
 
     /**

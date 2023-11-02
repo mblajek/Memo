@@ -11,8 +11,6 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        $this->down();
-
         $date = '2023-11-02 00:00:00';
         $systemUserId = 'e144ff18-471f-456f-a1c2-971d88b3d213';
         DB::table('dictionaries')->upsert([
