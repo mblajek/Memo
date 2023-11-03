@@ -20,7 +20,7 @@ return new class extends Migration {
         });
 
         $genderDictionaryId = 'c21c1557-4617-42ae-ad20-12f8f89fb12b';
-        $timestamp = CarbonImmutable::now();
+        $timestamp = '2023-11-01 00:00:00';
         // Add row to attributes table
         DB::table('attributes')->upsert([
             'id' => $this->genderAttributeId,
