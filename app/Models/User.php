@@ -29,6 +29,9 @@ use Illuminate\Validation\Rule;
  * @property ?string $last_login_facility_id
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $password_expire_at
+ * @property-read bool $has_password
+ * @property-read bool $has_email_verified
+ * @property-read bool $has_global_admin
  * @property-read Collection<Member> $members
  * @property-read User $createdBy
  * @property-read Facility $lastLoginFacility
@@ -87,25 +90,19 @@ class User extends Authenticatable
         'has_global_admin',
     ];
 
-    /**
-     * @return bool
-     */
+    /** @noinspection PhpUnused -> has_password */
     public function getHasPasswordAttribute(): bool
     {
         return $this->password !== null;
     }
 
-    /**
-     * @return bool
-     */
+    /** @noinspection PhpUnused -> has_email_verified */
     public function getHasEmailVerifiedAttribute(): bool
     {
         return $this->email_verified_at !== null;
     }
 
-    /**
-     * @return bool
-     */
+    /** @noinspection PhpUnused -> has_global_admin */
     public function getHasGlobalAdminAttribute(): bool
     {
         return $this->global_admin_grant_id !== null;
