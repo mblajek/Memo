@@ -3,6 +3,7 @@ import {VoidComponent} from "solid-js";
 
 export interface FilterControlProps<F extends FilterH = FilterH> {
   name: string;
+  nullable?: boolean;
   filter: F | undefined;
   setFilter: (filter: F | undefined) => void;
 }

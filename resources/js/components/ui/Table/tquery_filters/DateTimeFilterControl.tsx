@@ -29,6 +29,10 @@ interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
 
 type Props = DateColumnProps | DateTimeColumnProps;
 
+/**
+ * Filter for a date and datetime columns.
+ * TODO: Add support for nullable columns.
+ */
 export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const columnType = () => props.columnType || "datetime";
@@ -119,7 +123,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <input
           name={`table_filter_from_${props.name}`}
           type={inputsType()}
-          class="h-full w-full border rounded"
+          class="h-full w-full border border-input-border rounded"
           max={upper()}
           value={lower()}
           onInput={({target: {value}}) => setLower(value)}
@@ -130,7 +134,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <input
           name={`table_filter_to_${props.name}`}
           type={inputsType()}
-          class="h-full w-full border rounded"
+          class="h-full w-full border border-input-border rounded"
           min={lower()}
           value={upper()}
           onInput={({target: {value}}) => setUpper(value)}
