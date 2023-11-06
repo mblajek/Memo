@@ -3,12 +3,12 @@
 namespace App\Http\Resources;
 
 use App\Models\Attribute;
-use App\Models\Dictionary;
 use App\Models\Enums\AttributeModel;
 use App\Models\Enums\AttributeRequirementLevel;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use OpenApi\Attributes as OA;
+use Illuminate\Support\Str;
 
 #[OA\Schema(
     schema: 'AttributeResource',
@@ -40,7 +40,7 @@ class AttributeResource extends AbstractJsonResource
             'table' => true,
             'model' => true,
             'name' => true,
-            'apiName' => true,
+            'apiName' => fn(self $attribute) => Str::camel($attribute->api_name),
             'type' => true,
             'dictionaryId' => true,
             'defaultOrder' => true,
