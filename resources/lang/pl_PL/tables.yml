@@ -61,8 +61,8 @@ filter:
   click_to_clear: "Kliknij aby wyczyścić"
   click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
   click_to_sync_number_range: "Kliknij aby ustawić maks = min"
-  non_null_value: "dowolne"
-  null_value: "brak"
+  non_null_value: "niepuste"
+  null_value: "puste"
   textual:
     fuzzy: "dopasowane"
     eq: "równe"
