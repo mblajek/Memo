@@ -52,7 +52,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
   };
 
   return (
-    <QueryBarrier queries={[facilitiesQuery]} ignoreCachedData={true}>
+    <QueryBarrier queries={[facilitiesQuery]} ignoreCachedData>
       <FacilityForm
         id="facility_edit"
         initialValues={initialValues()}

@@ -55,7 +55,7 @@ może np. istnieć jeszcze kolumna regexp
 | 45 | 11          | clients | client | +wiek sprawcy    | wiek_sprawcy_d5c1         | decimal0 |               | 4             | true           | empty             |
 | 46 | 11          | clients | client | contact_persons  | contact_persons_ids       | clients  |               | 2             | true           | optional          |
 
-##### Attribute
+##### Value
 
 value może być rozbite na number_value, string_value, datetime_value
 

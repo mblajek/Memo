@@ -19,7 +19,7 @@ export const ColumnName: VoidComponent<Props> = (props) => {
       <TranslatedText
         override={props.def.meta?.columnName}
         langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
-        capitalize={true}
+        capitalize
         fallbackCode={props.def.id}
       />
     </span>

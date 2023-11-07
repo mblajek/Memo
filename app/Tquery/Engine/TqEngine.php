@@ -4,7 +4,6 @@ namespace App\Tquery\Engine;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Request\TqRequest;
-use App\Tquery\Request\TqRequestColumn;
 use Closure;
 use Illuminate\Support\Facades\App;
 use stdClass;
@@ -24,18 +23,24 @@ readonly class TqEngine
 
     public function run(): array
     {
+        $this->applyMutators();
         $this->applyJoin();
         $this->applySelect();
         $this->applyFilter();
         $this->applySort();
         $this->applyPaging();
-        $sql = $this->builder->getSql(true);
-        $debug = (App::hasDebugModeEnabled() ? ['sql' => $sql] : []);
-
+        $debug = (App::hasDebugModeEnabled() ? ['sql' => $this->builder->getSql(true)] : []);
         try {
             return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
         } catch (Throwable) {
             throw FatalExceptionFactory::tquery($debug);
+        }
+    }
+
+    private function applyMutators(): void
+    {
+        if ($this->request->isDistinct) {
+            $this->builder->distinct();
         }
     }
 
@@ -71,7 +76,7 @@ readonly class TqEngine
 
     private function applyPaging(): void
     {
-        $this->builder->applyPaging($this->request->number, $this->request->size);
+        $this->builder->applyPaging($this->request->pageNumber, $this->request->pageSize);
     }
 
     private function getData(): array
@@ -89,12 +94,6 @@ readonly class TqEngine
 
     private function getMeta(): array
     {
-        return [
-            'columns' => array_map(fn(TqRequestColumn $requestColumn) => [
-                'type' => $requestColumn->type->name,
-                'column' => $requestColumn->column->columnAlias,
-            ], $this->request->selectColumns),
-            'totalDataSize' => $this->builder->getCount(),
-        ];
+        return ['totalDataSize' => $this->builder->getCount(),];
     }
 }

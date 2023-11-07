@@ -1,10 +1,10 @@
 import {cx, useLangFunc} from "components/utils";
-import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
+import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import {FilterControlProps} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {FilterControlProps} from "./types";
 
 type DateTimeRangeFilter =
   | {
@@ -29,6 +29,10 @@ interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
 
 type Props = DateColumnProps | DateTimeColumnProps;
 
+/**
+ * Filter for a date and datetime columns.
+ * TODO: Add support for nullable columns.
+ */
 export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const columnType = () => props.columnType || "datetime";
@@ -103,8 +107,8 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.from")}</div>
       <Show when={canSyncRange()}>
         <div
-          class={ts.valuesSyncer}
-          classList={{[ts.inactive!]: !syncActive()}}
+          class={s.valuesSyncer}
+          classList={{[s.inactive!]: !syncActive()}}
           title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
           onClick={() => {
             if (lower()) {
@@ -115,22 +119,22 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
           }}
         />
       </Show>
-      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
           name={`table_filter_from_${props.name}`}
           type={inputsType()}
-          class="h-full w-full border rounded"
+          class="h-full w-full border border-input-border rounded"
           max={upper()}
           value={lower()}
           onInput={({target: {value}}) => setLower(value)}
         />
       </div>
       <div>{t("range.to")}</div>
-      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
           name={`table_filter_to_${props.name}`}
           type={inputsType()}
-          class="h-full w-full border rounded"
+          class="h-full w-full border border-input-border rounded"
           min={lower()}
           value={upper()}
           onInput={({target: {value}}) => setUpper(value)}

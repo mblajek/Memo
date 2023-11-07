@@ -6,7 +6,11 @@ import {TOptions} from "i18next";
  * types for usage as TSX attributes (no null returned).
  */
 export function useLangFunc(): LangPrefixFunc {
-  const [t] = useTransContext();
+  const transContext = useTransContext();
+  if (!transContext) {
+    throw new Error(`Called useLangFunc outside of the provider.`);
+  }
+  const [t] = transContext;
   return (key: string, options?: TOptions) => (options ? t(key, options) : t(key));
 }
 

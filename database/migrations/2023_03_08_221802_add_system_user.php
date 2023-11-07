@@ -10,7 +10,7 @@ return new class extends Migration {
      * Run the migrations.
      */
     private string $systemUserId = 'e144ff18-471f-456f-a1c2-971d88b3d213';
-    private string $startDate = '2022-03-08 00:00:00';
+    private string $startDate = '2023-03-08 00:00:00';
 
     public function up(): void
     {

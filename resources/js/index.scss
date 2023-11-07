@@ -94,7 +94,6 @@
   // Text that wraps text at natural wrapping points.
   .wrapText {
     @apply whitespace-pre-wrap;
-    -webkit-hyphens: auto;
     hyphens: auto;
   }
   // Text that wraps to always be fully visible.

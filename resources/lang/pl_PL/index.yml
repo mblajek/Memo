@@ -21,7 +21,7 @@ passwords:
 auth:
   failed: "Błędny login lub hasło."
   password: "Hasło jest nieprawidłowe."
-  throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds}} sekund."
+  throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds, number}} sekund."
 
 unverified_user: "Użytkownik niezweryfikowany"
 
@@ -33,7 +33,13 @@ range:
   from: "od:"
   to: "do:"
   min: "min:"
-  max: "maks:"
+  max: "max:"
 
 quoted: "„{{text}}”"
 with_colon: "{{text}}:"
+
+more_info: "Więcej informacji"
+
+select:
+  no_items: "Brak opcji"
+  no_matching_items: "Brak pasujących opcji"

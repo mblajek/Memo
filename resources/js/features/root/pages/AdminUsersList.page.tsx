@@ -1,4 +1,6 @@
-import {AUTO_SIZE_COLUMN_DEFS, Button, Email, cellFunc, createTableTranslations} from "components/ui";
+import {Button} from "components/ui/Button";
+import {Email} from "components/ui/Email";
+import {AUTO_SIZE_COLUMN_DEFS, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
@@ -80,8 +82,8 @@ export default (() => {
           </div>
         }
       />
-      <UserEditForm.Modal />
-      <UserCreateForm.Modal />
+      <UserEditForm.UserEditModal />
+      <UserCreateForm.UserCreateModal />
     </>
   );
 }) satisfies VoidComponent;

@@ -16,17 +16,17 @@ readonly class TqRequest
 
     public static function fromHttpRequest(TqConfig $config, Request $request): self
     {
-        $sortableColumns = array_filter($config->columns, fn(TqColumnConfig $column) => $column->type->isSortable());
+        $distinct = $request->validate(['distinct' => Valid::bool(sometimes: true)])['distinct'] ?? false;
         $data = $request->validate([
             'columns' => Valid::list(),
             'columns.*' => Valid::array(keys: ['type', 'column']),
             'columns.*.type' => Valid::trimmed([Rule::in(['column'])]),
-            'columns.*.column' => Valid::trimmed([Rule::in(array_keys($config->columns))]),
+            'columns.*.column' => Valid::trimmed([Rule::in(array_keys($config->getSelectableColumns($distinct)))]),
             'filter' => 'sometimes|required', // array or string
             'sort' => Valid::list(sometimes: true, min: 0),
             'sort.*' => Valid::array(keys: ['type', 'column', 'desc']),
             'sort.*.type' => Valid::trimmed([Rule::in(['column'])]),
-            'sort.*.column' => Valid::trimmed([Rule::in(array_keys($sortableColumns))]),
+            'sort.*.column' => Valid::trimmed([Rule::in(array_keys($config->getSortableColumns($distinct)))]),
             'sort.*.desc' => Valid::bool(sometimes: true),
             'paging' => Valid::array(keys: ['number', 'size']),
             'paging.number' => Valid::int(['min:1']),
@@ -38,8 +38,9 @@ readonly class TqRequest
             selectColumns: self::parseColumns($config, $data['columns']),
             filter: self::parseFilter($config, $data['filter'] ?? 'always'),
             sortColumns: self::parseSort($config, $data['sort'] ?? []),
-            number: $data['paging']['number'],
-            size: $data['paging']['size'],
+            pageNumber: $data['paging']['number'],
+            pageSize: $data['paging']['size'],
+            isDistinct: $distinct,
         );
     }
 
@@ -87,8 +88,9 @@ readonly class TqRequest
         public array $selectColumns,
         public TqRequestAbstractFilter|bool $filter,
         public array $sortColumns,
-        public int $number,
-        public int $size,
+        public int $pageNumber,
+        public int $pageSize,
+        public bool $isDistinct,
     ) {
         $this->allColumns = $this->allColumns();
     }

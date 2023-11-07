@@ -1,6 +1,6 @@
 import {useNavigate, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {System, User} from "data-access/memo-api";
+import {System, User} from "data-access/memo-api/groups";
 import {For, Match, Show, Switch, VoidComponent, createEffect, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 

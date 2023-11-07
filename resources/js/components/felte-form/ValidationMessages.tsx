@@ -1,5 +1,5 @@
 import {ValidationMessage} from "@felte/reporter-solid";
-import {useFormContext} from "components/felte-form";
+import {useFormContextIfInForm} from "components/felte-form";
 import {cx} from "components/utils";
 import {Index, VoidComponent, createMemo, on} from "solid-js";
 import {HideableSection} from "../ui/HideableSection";
@@ -20,7 +20,13 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
       {(messages) => <Index each={messages || []}>{(message) => <li>{message()}</li>}</Index>}
     </ValidationMessage>
   );
-  const {form} = useFormContext();
+  const formContext = useFormContextIfInForm();
+  if (!formContext) {
+    // Being inside a form or not is not something that can change dynamically, so it's fine to return early.
+    // eslint-disable-next-line solid/components-return-once
+    return undefined;
+  }
+  const {form} = formContext;
   const hasErrors = createMemo(
     // For some reason, the "on" part is required for reaction to errors and warnings change.
     // Depending directly on form.errors(props.fieldName) does not work reliably for some fields.

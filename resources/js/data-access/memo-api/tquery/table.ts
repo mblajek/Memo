@@ -1,8 +1,10 @@
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
-import {buildFuzzyGlobalFilter} from "components/ui";
+import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
-import {Column, ColumnName, DataRequest, DataResponse, FilterH, FilterReductor, RequestCreator, Schema} from ".";
+import {FilterH, FilterReductor} from "./filter_utils";
+import {RequestCreator} from "./tquery";
+import {Column, ColumnName, DataRequest, DataResponse, Schema} from "./types";
 
 /** A collection of column filters, keyed by column name. The undefined value denotes a disabled filter. */
 export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;
@@ -138,6 +140,16 @@ export function createTableRequestCreator({
         ]),
       ].map<Column>((column) => ({type: "column", column}));
     });
+    const fuzzyGlobalFilterConfig = createMemo(() => {
+      const sch = schema();
+      if (!sch) {
+        return undefined;
+      }
+      return {
+        columns: sch.columns.filter(({type}) => type === "string" || type === "text").map(({name}) => name),
+        // TODO: Add columnsByPrefix for some columns, e.g. tel:, id= (for Versum ids).
+      } satisfies FuzzyGlobalFilterConfig;
+    });
     const request = createMemo((): DataRequest | undefined => {
       if (!schema() || !allInited()) {
         return undefined;
@@ -147,9 +159,11 @@ export function createTableRequestCreator({
         filter: filterReductor()?.reduce({
           type: "op",
           op: "&",
-          val: [intrinsicFilter(), buildFuzzyGlobalFilter(debouncedGlobalFilter()), columnFiltersJoined()].filter(
-            NON_NULLABLE,
-          ),
+          val: [
+            intrinsicFilter(),
+            buildFuzzyGlobalFilter(debouncedGlobalFilter(), fuzzyGlobalFilterConfig()!),
+            columnFiltersJoined(),
+          ].filter(NON_NULLABLE),
         }),
         sort: sorting().map(({id, desc}) => ({
           type: "column",

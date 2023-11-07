@@ -1,9 +1,8 @@
 import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {MODAL_STYLE_PRESETS, Modal as ModalComponent} from "components/ui";
+import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {QueryBarrier, useLangFunc} from "components/utils";
-import {User} from "data-access/memo-api";
-import {Admin} from "data-access/memo-api/groups";
+import {Admin, User} from "data-access/memo-api/groups";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent, createSignal} from "solid-js";
 import toast from "solid-toast";
@@ -23,7 +22,6 @@ export namespace UserEditForm {
   export const Component: VoidComponent<Props> = (props) => {
     const t = useLangFunc();
     const statusQuery = createQuery(User.statusQueryOptions);
-    // eslint-disable-next-line solid/reactivity
     const userQuery = createQuery(() => Admin.userQueryOptions(props.userId));
     const user = () => userQuery.data;
     const adminInvalidate = Admin.useInvalidator();
@@ -96,7 +94,7 @@ export namespace UserEditForm {
     }
 
     return (
-      <QueryBarrier queries={[userQuery]} ignoreCachedData={true}>
+      <QueryBarrier queries={[userQuery]} ignoreCachedData>
         <UserEdit.EditForm
           id="user_edit"
           onSubmit={updateUser}
@@ -116,10 +114,10 @@ export namespace UserEditForm {
    * This modal can be included in any page and it will show on top of whatever content was displayed
    * when showModal is called.
    */
-  export const Modal: VoidComponent = () => {
+  export const UserEditModal: VoidComponent = () => {
     const t = useLangFunc();
     return (
-      <ModalComponent
+      <Modal
         title={t("forms.user_edit.formName")}
         open={modalShownFor()}
         closeOn={["escapeKey", "closeButton"]}
@@ -133,7 +131,7 @@ export namespace UserEditForm {
             onCancel={() => setModalShownFor(undefined)}
           />
         )}
-      </ModalComponent>
+      </Modal>
     );
   };
 

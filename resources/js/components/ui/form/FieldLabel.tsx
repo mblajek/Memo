@@ -1,7 +1,7 @@
 import {useFormContextIfInForm} from "components/felte-form";
 import {cx, htmlAttributes} from "components/utils";
-import {JSX, splitProps, VoidComponent} from "solid-js";
-import {TranslatedText} from "..";
+import {JSX, VoidComponent, splitProps} from "solid-js";
+import {TranslatedText} from "../TranslatedText";
 
 interface Props extends htmlAttributes.label {
   fieldName: string;
@@ -26,7 +26,7 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
     <TranslatedText
       override={() => props.text}
       langFunc={[form?.translations?.fieldNames, props.fieldName]}
-      capitalize={true}
+      capitalize
       wrapIn={(text) => (
         <label
           id={labelIdForField(props.fieldName)}

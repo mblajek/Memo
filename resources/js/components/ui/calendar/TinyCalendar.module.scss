@@ -13,8 +13,8 @@
       }
     }
 
-    .date {
-      @apply grow px-1 flex items-center align-middle gap-1 justify-between;
+    .monthYear {
+      @apply grow px-1 flex items-center align-middle gap-1 justify-between uppercase;
     }
   }
 
@@ -36,6 +36,19 @@
       @apply w-full text-center;
       @apply text-gray-900;
       @apply relative;
+
+      &.startOfWeek {
+        @apply rounded-s;
+        .inner {
+          @apply rounded-s;
+        }
+      }
+      &.endOfWeek {
+        @apply rounded-e;
+        .inner {
+          @apply rounded-e;
+        }
+      }
 
       &.hover {
         @apply bg-hover;

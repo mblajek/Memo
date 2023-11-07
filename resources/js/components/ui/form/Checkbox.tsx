@@ -26,7 +26,7 @@ export const Checkbox: VoidComponent<Props> = (props) => (
             type="checkbox"
             id={props.name}
             {...htmlAttributes.merge(props, {
-              class: "border border-gray-400 p-2 aria-invalid:border-red-400",
+              class: "border border-input-border p-2 aria-invalid:border-red-400",
             })}
             aria-labelledby={labelIdForField(props.name)}
           />{" "}

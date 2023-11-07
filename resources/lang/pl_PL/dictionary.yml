@@ -1,12 +1,17 @@
-{
-  "pl_voivodeship": {
-    "_name": "województwo"
-  },
-  "gender": {
-    "_name": "płeć",
-    "female": "kobieta",
-    "male": "mężczyzna",
-    "other": "inna",
-    "unknown:": "nieznana"
-  }
-}
+pl_voivodeship:
+  _name: "województwo"
+
+gender:
+  _name: "płeć"
+  female: "kobieta"
+  male: "mężczyzna"
+  other: "inna"
+  unknown: "nieznana"
+
+meetingCategory:
+  _name: "kategoria spotkania"
+  other: "inne"
+
+meetingType:
+  _name: "typ spotkania"
+  other: "inne"

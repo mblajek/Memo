@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\ClientBuilder;
+use App\Models\QueryBuilders\StaffMemberBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonImmutable updated_at
  * @property-read Timetable $timetable
  * @property-read Member $member
- * @method static ClientBuilder query()
+ * @method static StaffMemberBuilder query()
  */
 class StaffMember extends Model
 {

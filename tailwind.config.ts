@@ -8,6 +8,10 @@ const APP_COLORS = {
   "hover": "#e6f0f7",
   // A light blue color for currently selected areas of active elements.
   "select": "#b7e8f6",
+  // A light grey color for the background of disabled elements.
+  "disabled": "#f0e8e8",
+  // A grey color for the border of input elements.
+  "input-border": "#b0b0b0",
 };
 
 const Z_INDEX = {
@@ -25,6 +29,10 @@ export default {
       },
       colors: APP_COLORS,
       zIndex: Z_INDEX,
+      minHeight: {
+        "big-input": "2.5rem",
+        "small-input": "1.8rem",
+      },
     },
     fontFamily: {
       roboto: "Roboto",

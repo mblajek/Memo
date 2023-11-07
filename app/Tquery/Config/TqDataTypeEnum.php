@@ -4,6 +4,7 @@ namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Rules\Valid;
+use App\Rules\RegexpIsValidRule;
 use App\Tquery\Filter\TqFilterOperator;
 use App\Utils\Date\DateHelper;
 
@@ -25,6 +26,7 @@ enum TqDataTypeEnum
     case uuid_nullable;
     case text_nullable;
     // additional
+    case count;
     case is_null;
     case is_not_null;
 
@@ -72,6 +74,14 @@ enum TqDataTypeEnum
         };
     }
 
+    public function isAggregate(): bool
+    {
+        return match ($this) {
+            self::count => true,
+            default => false,
+        };
+    }
+
     /** @return TqFilterOperator[] */
     public function operators(): array
     {
@@ -100,15 +110,15 @@ enum TqDataTypeEnum
 
     public function filterValueValidator(TqFilterOperator $operator): array
     {
-        if (in_array($operator, TqFilterOperator::LIKE)) {
-            return Valid::string();
+        if (in_array($operator, TqFilterOperator::LIKE, true)) {
+            return Valid::string($operator === TqFilterOperator::regexp ? [new RegexpIsValidRule()] : []);
         }
         return match ($this->notNullBaseType()) {
             self::bool => Valid::bool(),
             self::date => Valid::date(),
             self::datetime => Valid::datetime(),
             self::int => Valid::int(),
-            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED)
+            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED, true)
                 ? Valid::trimmed() : Valid::string(),
             self::uuid => Valid::uuid(),
             default => FatalExceptionFactory::tquery(),
@@ -117,18 +127,17 @@ enum TqDataTypeEnum
 
     public function filterValuePrepare(
         TqFilterOperator $operator,
-        bool|int|string|array|null $value,
-    ): bool|int|string|array|null {
+        bool|int|string|array $value,
+    ): bool|int|string|array {
         if ($this->notNullBaseType() === self::datetime) {
             return DateHelper::zuluToDbString($value);
         }
-        if ($operator === TqFilterOperator::pv
-            || $operator === TqFilterOperator::vp
-            || $operator === TqFilterOperator::pvp
-        ) {
+        if (in_array($operator, [TqFilterOperator::pv, TqFilterOperator::vp, TqFilterOperator::pvp])) {
+            if (!is_string($value)) {
+                throw FatalExceptionFactory::tquery();
+            }
             return (($operator === TqFilterOperator::pv || $operator === TqFilterOperator::pvp) ? '%' : '')
-                . (is_string($value) ? str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                    : (throw FatalExceptionFactory::tquery()))
+                . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
                 . (($operator === TqFilterOperator::vp || $operator === TqFilterOperator::pvp) ? '%' : '');
         }
         return $value;

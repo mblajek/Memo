@@ -7,12 +7,14 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 | typ          | null | = | in   | cmp | like | select | sort |
 |--------------|------|---|------|-----|------|--------|------|
 | bool         | +    | + | .    | .   | .    | +      | +    |
-| date         | *    | + | +    | +   | .    | +      | +    |
-| datetime     | *    | . | .    | +   | .    | +      | +    |
+| date         | +    | + | +    | +   | .    | +      | +    |
+| datetime     | +    | . | .    | +   | .    | +      | +    |
 | int          | +    | + | +    | +   | +    | +      | +    |
 | string       | +    | + | +    | +   | +    | +      | +    |
 | text         | +    | . | .    | .   | +    | +?(8)  | .    |
 | uuid         | +    | + | +    | .   | .    | +      | .    |
+| --------     |      |   |      |     |      |        |      |
+| count(5)     | .    | . | .    | .   | .    | +      | +    |
 | --------(9)  |      |   |      |     |      |        |      |
 | dict(1)      | *    | * | *    | .   | .    | *      | *    |
 | object(2)    | *    | . | .    | .   | .    | *      | .    |
@@ -45,6 +47,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 - `(2)` - obiekt o dowolnej strukturze
 - `(3)` - wiele wartości słownikowych, zwracanych jako lista uuid
 - `(4)` - lista obiektów/wartości o dowolnej strukturze
+- `(5)` - liczba zgrupowanych rekordów, jeżeli tquery było wywołane z opcją `distnct=true`
 - `(7)` - all in, any in
 - `(8)` - mógłby to być opcją typu substring(256), żeby nie zwracać 100 wierszy po 4kb tekstu, a może nie musi
 - `(9)` - typy złożone, na później

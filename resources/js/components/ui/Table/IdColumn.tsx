@@ -16,7 +16,7 @@ export const IdColumn: VoidComponent<Props> = (props) => (
       >
         {props.id}
       </span>
-      <CopyToClipboard text={props.id} textInTitle={true} />
+      <CopyToClipboard text={props.id} textInTitle />
     </div>
   </Show>
 );

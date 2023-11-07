@@ -6,14 +6,11 @@ import {
   createColumnHelper,
   createSolidTable,
 } from "@tanstack/solid-table";
-import {
-  ColumnType,
-  DataItem,
-  FilterH,
-  createTQuery,
-  createTableRequestCreator,
-  tableHelper,
-} from "data-access/memo-api/tquery";
+import {NON_NULLABLE} from "components/utils";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery/table";
+import {createTQuery} from "data-access/memo-api/tquery/tquery";
+import {ColumnType, DataItem, isDataType} from "data-access/memo-api/tquery/types";
 import {JSX, VoidComponent, createMemo} from "solid-js";
 import {
   DisplayMode,
@@ -30,7 +27,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
-import {ColumnFilterController, FilteringParams} from "..";
+import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
 
 export interface ColumnOptions {
   columnDef?: Partial<IdentifiedColumnDef<DataItem>>;
@@ -190,20 +187,25 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     const ignoreColumnsSet = new Set(props.ignoreColumns || []);
     const schemaColumns = sch.columns.filter(({name}) => !ignoreColumnsSet.has(name));
     const columns = [
-      ...schemaColumns.map(({type, nullable, name}) => {
-        const common = commonColumnDef(name, type);
-        return h.accessor(name, {
-          ...common,
-          meta: {
-            ...common.meta,
-            tquery: {
-              type,
-              nullable,
-              ...columnOptions(name).metaParams,
-            } satisfies TQueryColumnMeta,
-          },
-        });
-      }),
+      ...schemaColumns
+        .map(({type, nullable, name}) => {
+          if (!isDataType(type)) {
+            return undefined;
+          }
+          const common = commonColumnDef(name, type);
+          return h.accessor(name, {
+            ...common,
+            meta: {
+              ...common.meta,
+              tquery: {
+                type,
+                nullable,
+                ...columnOptions(name).metaParams,
+              } satisfies TQueryColumnMeta,
+            },
+          });
+        })
+        .filter(NON_NULLABLE),
       ...(props.additionalColumns || []).map((name) => {
         const common = commonColumnDef(name);
         return h.display({

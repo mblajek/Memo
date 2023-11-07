@@ -13,12 +13,34 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, cx} from "components/utils";
-import {Accessor, For, Index, JSX, Show, Signal, VoidProps, createEffect, createSignal, mergeProps, on} from "solid-js";
+import {
+  LangEntryFunc,
+  LangPrefixFunc,
+  createTranslationsFromPrefix,
+  currentTime,
+  cx,
+  debouncedAccessor,
+} from "components/utils";
+import {
+  Accessor,
+  For,
+  Index,
+  JSX,
+  Show,
+  Signal,
+  VoidProps,
+  createEffect,
+  createMemo,
+  createSignal,
+  mergeProps,
+  on,
+} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContextProvider, getHeaders, tableStyle as ts, useTableCells} from ".";
-import {BigSpinner, EMPTY_VALUE_SYMBOL} from "..";
+import {TableContextProvider, getHeaders, useTableCells} from ".";
+import {BigSpinner} from "../Spinner";
+import {EMPTY_VALUE_SYMBOL} from "../symbols";
 import {CellRenderer} from "./CellRenderer";
+import s from "./Table.module.scss";
 
 export interface TableTranslations {
   tableName: LangEntryFunc;
@@ -121,23 +143,76 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
       .getVisibleLeafColumns()
       .map((c) => (!c.getCanResize() && c.getSize() === AUTO_SIZE_COLUMN_DEFS.size ? "auto" : `${c.getSize()}px`))
       .join(" ");
+  // Implement horizontal scrolling on mouse wheel on the table header.
+  // The simplest implementation of calling scrollBy in the onWheel handler does not work well if
+  // smooth scrolling is used. That's why this code tracks the desired position in a signal and scrolls
+  // to it when no scrolling is taking place at the moment.
+  const [scrollingWrapper, setScrollingWrapper] = createSignal<HTMLDivElement>();
+  const [lastScrollTimestamp, setLastScrollTimestamp] = createSignal(0);
+  // Whether the table is currently scrolling. This is true after setting lastScrollTimestamp to 0
+  // in onScrollEnd, but also after enough time is elapsed since the last onScroll event, because in some
+  // situations the onScrollEnd event is not reliable, and we don't want to get stuck thinking the table
+  // is still scrolling when it's not.
+  const isScrolling = createMemo(() => currentTime().toMillis() - lastScrollTimestamp() < 100);
+  const [desiredScrollX, setDesiredScrollX] = createSignal<number>();
+  createEffect(
+    on(
+      [
+        scrollingWrapper,
+        isScrolling,
+        // Allow multiple steps to accummulate before this is triggered. This improves smoothness.
+        // eslint-disable-next-line solid/reactivity
+        debouncedAccessor(desiredScrollX, {
+          timeMs: 100,
+          outputImmediately: (x) => x === undefined,
+        }),
+      ],
+      ([scrWrapper, isScrolling]) => {
+        if (scrWrapper && !isScrolling) {
+          // Use the most up-to-date value of desiredScrollX, not the debounced one.
+          const desiredX = desiredScrollX();
+          if (desiredX !== undefined && desiredX !== scrWrapper.scrollLeft) {
+            scrWrapper.scrollTo({left: desiredX, behavior: "smooth"});
+          } else {
+            setDesiredScrollX(undefined);
+          }
+        }
+      },
+    ),
+  );
   return (
     <TableContextProvider table={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
-        <div class={cx(ts.tableContainer, ts[props.mode])}>
-          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={ts.aboveTable}>{aboveTable()}</div>}</Show>
-          <div class={ts.scrollingWrapper}>
-            <div ref={scrollToTopPoint} class={ts.tableBg}>
+        <div class={cx(s.tableContainer, s[props.mode])}>
+          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
+          <div
+            ref={setScrollingWrapper}
+            class={s.scrollingWrapper}
+            onScroll={() => setLastScrollTimestamp(Date.now())}
+            onScrollEnd={() => setLastScrollTimestamp(0)}
+          >
+            <div ref={scrollToTopPoint} class={s.tableBg}>
               <div
-                class={cx(ts.table, {[ts.dimmed!]: props.isDimmed})}
+                class={cx(s.table, {[s.dimmed!]: props.isDimmed})}
                 style={{"grid-template-columns": gridTemplateColumns()}}
               >
-                <div class={ts.headerRow}>
+                <div class={s.headerRow}>
                   <For each={getHeaders(props.table)}>
                     {({header, column}) => (
                       <Show when={header()}>
                         {(header) => (
-                          <div class={ts.cell}>
+                          <div
+                            class={s.cell}
+                            onWheel={(e) => {
+                              const scrWrapper = scrollingWrapper();
+                              if (scrWrapper && e.deltaY) {
+                                setDesiredScrollX((l = scrWrapper.scrollLeft) =>
+                                  Math.min(Math.max(l + e.deltaY, 0), scrWrapper.scrollWidth - scrWrapper.clientWidth),
+                                );
+                                e.preventDefault();
+                              }
+                            }}
+                          >
                             <Show when={!header().isPlaceholder}>
                               <CellRenderer component={column.columnDef.header} props={header().getContext()} />
                             </Show>
@@ -151,7 +226,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                   component={{For, Index}[props.rowsIteration]}
                   each={props.table.getRowModel().rows}
                   fallback={
-                    <div class={ts.wideRow}>
+                    <div class={s.wideRow}>
                       <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
                         <BigSpinner />
                       </Show>
@@ -161,10 +236,10 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                   {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
                     const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
                     return (
-                      <div class={ts.dataRow} inert={props.isDimmed || undefined}>
+                      <div class={s.dataRow} inert={props.isDimmed || undefined}>
                         <Index each={row().getVisibleCells()}>
                           {(cell) => (
-                            <span class={ts.cell}>
+                            <span class={s.cell}>
                               <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
                             </span>
                           )}
@@ -173,11 +248,11 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                     );
                   }}
                 </Dynamic>
-                <div class={ts.bottomBorder} />
+                <div class={s.bottomBorder} />
               </div>
             </div>
           </div>
-          <Show when={props.belowTable?.()}>{(belowTable) => <div class={ts.belowTable}>{belowTable()}</div>}</Show>
+          <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
         </div>
       </Show>
     </TableContextProvider>

@@ -1,6 +1,6 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
 import {Match, ParentProps, Switch, VoidComponent, createEffect, mergeProps, on} from "solid-js";
-import {BigSpinner} from "../ui";
+import {BigSpinner} from "../ui/Spinner";
 
 export interface QueryBarrierProps {
   /** List of queries to handle. */

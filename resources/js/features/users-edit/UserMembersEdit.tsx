@@ -2,8 +2,17 @@ import {createMutation, createQuery} from "@tanstack/solid-query";
 import {SortingState, createColumnHelper, createSolidTable} from "@tanstack/solid-table";
 import {AxiosResponse} from "axios";
 import {useFormContext} from "components/felte-form";
-import {Button, Capitalize, Checkbox, SimpleSelect, useTableCells} from "components/ui";
-import {AUTO_SIZE_COLUMN_DEFS, Table, createTableTranslations, getBaseTableOptions} from "components/ui/Table";
+import {Button} from "components/ui/Button";
+import {Capitalize} from "components/ui/Capitalize";
+import {
+  AUTO_SIZE_COLUMN_DEFS,
+  Table,
+  createTableTranslations,
+  getBaseTableOptions,
+  useTableCells,
+} from "components/ui/Table";
+import {Checkbox} from "components/ui/form/Checkbox";
+import {SimpleSelect} from "components/ui/form/SimpleSelect";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
