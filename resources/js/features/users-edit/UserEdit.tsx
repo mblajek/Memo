@@ -3,7 +3,7 @@ import {FelteForm, FelteSubmit} from "components/felte-form";
 import {HideableSection} from "components/ui/HideableSection";
 import {Checkbox} from "components/ui/form/Checkbox";
 import {TextField} from "components/ui/form/TextField";
-import {getTrimInputHandler} from "components/ui/form/util";
+import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {VoidComponent, createComputed, on, splitProps} from "solid-js";
@@ -86,8 +86,8 @@ export namespace UserEdit {
         {(form) => (
           <>
             <div class="flex flex-col gap-1">
-              <TextField name="name" type="text" onBlur={getTrimInputHandler()} />
-              <TextField name="email" type="email" onBlur={getTrimInputHandler()} />
+              <TextField name="name" type="text" {...TRIM_ON_BLUR} autofocus />
+              <TextField name="email" type="email" {...TRIM_ON_BLUR} />
               <Checkbox name="hasEmailVerified" disabled={!form.data("email")} />
             </div>
             <div class="flex flex-col">

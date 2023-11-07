@@ -1,7 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm, FelteSubmit} from "components/felte-form";
 import {TextField} from "components/ui/form/TextField";
-import {getTrimInputHandler} from "components/ui/form/util";
+import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
 
@@ -26,8 +26,8 @@ export const FacilityForm: VoidComponent<Props> = (allProps) => {
   return (
     <FelteForm id={props.id} schema={getSchema()} {...formProps} class="flex flex-col gap-4">
       <div class="flex flex-col gap-1">
-        <TextField name="name" type="text" onBlur={getTrimInputHandler()} />
-        <TextField name="url" type="text" onBlur={getTrimInputHandler()} />
+        <TextField name="name" type="text" {...TRIM_ON_BLUR} autofocus />
+        <TextField name="url" type="text" {...TRIM_ON_BLUR} />
       </div>
       <FelteSubmit cancel={props.onCancel} />
     </FelteForm>

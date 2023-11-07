@@ -17,16 +17,16 @@ export function trimInput(inputValue: string) {
 const EXTRA_SPACES_REGEXP = /\s+$|(^|\s) +/gm;
 
 /**
- * Returns a handler that trims the input value. Intended use:
+ * A helper for inputs that trims them on blur. Intended use:
  *
- *     <input type="text" ... onBlur={getTrimInputHandler()} />
+ *     <input type="text" ... {...TRIM_ON_BLUR} />
  */
-export function getTrimInputHandler() {
-  return (event: Event) => {
+export const TRIM_ON_BLUR = {
+  onBlur: (event: Event) => {
     const target = event.currentTarget;
     if (target instanceof HTMLInputElement) {
       target.value = trimInput(target.value);
       target.dispatchEvent(new Event("input", {bubbles: true}));
     }
-  };
-}
+  },
+};
