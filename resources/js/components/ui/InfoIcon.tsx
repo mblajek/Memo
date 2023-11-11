@@ -1,6 +1,6 @@
 import {A, AnchorProps} from "@solidjs/router";
 import {ImInfo} from "solid-icons/im";
-import {Match, Switch, VoidComponent} from "solid-js";
+import {Match, Switch, VoidComponent, VoidProps} from "solid-js";
 import {htmlAttributes, useLangFunc} from "../utils";
 import {Button} from "./Button";
 
@@ -12,13 +12,13 @@ interface LinkProps extends AnchorProps {
   href: string;
 }
 
-type Props = ButtonProps | LinkProps;
+export type InfoIconProps = VoidProps<ButtonProps | LinkProps>;
 
 /**
  * A tiny blue (i) icon providing more information to a control it is next to.
- * It can be a button, or an internal or external link.
+ * It can be a button, or an internal or external link. The link opens in a new tab by default.
  */
-export const InfoIcon: VoidComponent<Props> = (props) => {
+export const InfoIcon: VoidComponent<InfoIconProps> = (props) => {
   const t = useLangFunc();
   const icon = <ImInfo class="inlineIcon !mb-0.5 text-blue-500" size="16" />;
   return (
@@ -27,6 +27,7 @@ export const InfoIcon: VoidComponent<Props> = (props) => {
         {(linkProps) => (
           <A
             title={t("more_info")}
+            target="_blank"
             {...(linkProps() as AnchorProps)}
             onClick={(e) => {
               // If the info icon is on an active element, we generally don't want to pass the click.

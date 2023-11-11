@@ -1,18 +1,13 @@
-/**
- * A string representing some name. There are two variants:
- * - If the string starts with `+`, then it is not translatable and should be displayed as is.
- * - Otherwise, it is a translatable string and should be translated before displaying.
- */
-type DictionaryString = string;
+import {NameString} from "./name_string";
 
-/** A dictionary name. If not starting with `+`, the translation key is `dictionary.${dictionaryName}._name`. */
-export type DictionaryName = DictionaryString;
+/** A dictionary name. In the translatable variant, the translation key is `dictionary.$._name`. */
+export type DictionaryName = NameString;
 
 /**
- * A dictionary position name. If not starting with `+`, the translation key is
- * `dictionary.${dictionaryName}.${positionName}`.
+ * A dictionary position name. In the translatable variant, the translation key
+ * is `dictionary.${dictionaryName}.$`.
  */
-export type DictionaryPositionName = DictionaryString;
+export type DictionaryPositionName = NameString;
 
 export interface DictionaryResource {
   readonly id: string;
