@@ -16,7 +16,6 @@ export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;
 interface RequestController {
   columnVisibility: Signal<VisibilityState>;
   globalFilter: Signal<string>;
-  debouncedGlobalFilter: Accessor<string>;
   columnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
   sorting: Signal<SortingState>;
   pagination: Signal<PaginationState>;
@@ -27,7 +26,7 @@ const DEFAULT_PAGE_SIZE = 50;
 /**
  * Returns visibility state with visibility of all the columns set explicitly to the given value.
  */
-function allColumnsVisibility(schema: Schema, additionalColumns: readonly string[], {visible = true} = {}) {
+function allColumnsVisibility(schema: Schema, additionalColumns: readonly ColumnName[], {visible = true} = {}) {
   const visibility: VisibilityState = {};
   for (const {name} of schema.columns) {
     visibility[name] = visible;
@@ -53,9 +52,9 @@ export function createTableRequestCreator({
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
   intrinsicFilter?: Accessor<FilterH | undefined>;
-  intrinsicColumns?: Accessor<readonly string[] | undefined>;
-  additionalColumns?: readonly string[];
-  initialVisibleColumns?: readonly string[];
+  intrinsicColumns?: Accessor<readonly ColumnName[] | undefined>;
+  additionalColumns?: readonly ColumnName[];
+  initialVisibleColumns?: readonly ColumnName[];
   initialSort?: SortingState;
   initialPageSize?: number;
 }): RequestCreator<RequestController> {
@@ -185,7 +184,6 @@ export function createTableRequestCreator({
       requestController: {
         columnVisibility: [columnVisibility, setColumnVisibility],
         globalFilter: [globalFilter, setGlobalFilter],
-        debouncedGlobalFilter,
         columnFilter: (column) => columnFilters()[column]!,
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],

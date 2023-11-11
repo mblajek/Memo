@@ -70,7 +70,7 @@ export namespace PasswordChangeForm {
           value={statusQuery.data?.user.email}
           class="hidden"
         />
-        <TextField name="current" type="password" autocomplete="current-password" />
+        <TextField name="current" type="password" autocomplete="current-password" autofocus />
         <TextField name="password" type="password" autocomplete="new-password" />
         <TextField name="repeat" type="password" autocomplete="new-password" />
         <FelteSubmit cancel={props.onCancel} />

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\ClientBuilder;
+use App\Models\QueryBuilders\DictionaryBuilder;
 use App\Utils\Uuid\UuidTrait;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property-read Collection $positions
- * @method static ClientBuilder query()
+ * @method static DictionaryBuilder query()
  */
 class Dictionary extends Model
 {

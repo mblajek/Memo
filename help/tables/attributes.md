@@ -45,7 +45,7 @@ np. `rodzaj_placowki_5ab5` i analogicznie `rodzaj_placowki_5ab5_id` i `rodzaj_pl
 
 Enum, zawierający
 
-- standardowe typy danych: `string`, `decimal0`, `decimal2`, `bool`, `date`, `datetime`
+- standardowe typy danych: `string`, `int`, `bool`, `date`, `datetime`
 - nazwy tabel: `users` (póki co tyle)
 - słownik: `dict`
 
