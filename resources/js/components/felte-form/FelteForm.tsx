@@ -5,7 +5,7 @@ import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
-import {Context, JSX, createContext, splitProps, useContext} from "solid-js";
+import {Context, JSX, createContext, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, htmlAttributes, useLangFunc} from "../utils";
@@ -112,7 +112,21 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         translations,
       }}
     >
-      <form autocomplete="off" ref={form.form} {...formProps}>
+      <form
+        autocomplete="off"
+        ref={(formElem) => {
+          // Forward the form element to felte.
+          form.form(formElem);
+          // Focus the autofocus element (as it doesn't happen automatically).
+          onMount(() => {
+            const focusedElem = formElem.querySelector("[autofocus]");
+            if (focusedElem instanceof HTMLElement) {
+              focusedElem.focus();
+            }
+          });
+        }}
+        {...formProps}
+      >
         <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
           {getChildrenElement(props.children, form)}
         </fieldset>
