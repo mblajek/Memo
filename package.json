@@ -39,7 +39,7 @@
     "vite-plugin-solid": "^2.7.2",
     "vite-plugin-solid-svg": "^0.7.0",
     "vite-tsconfig-paths": "^4.2.1",
-    "vitest": "^0.34.6"
+    "vitest": "beta"
   },
   "dependencies": {
     "@felte/core": "^1.4.1",
