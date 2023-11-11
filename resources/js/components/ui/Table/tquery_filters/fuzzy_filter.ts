@@ -95,7 +95,7 @@ export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {col
 
 export interface FuzzyGlobalFilterConfig {
   columns: ColumnName[];
-  columnsByPrefix?: Map<string, string>;
+  columnsByPrefix?: Map<string, ColumnName>;
 }
 
 const COLUMN_PREFIX_PAT = `(?:\\p{L}|[._\\d])+`;

@@ -20,23 +20,23 @@ import {
   createMemo,
   createUniqueId,
   mergeProps,
+  on,
   splitProps,
 } from "solid-js";
 import {Portal} from "solid-js/web";
 import {Button} from "../Button";
 import {FieldLabel} from "./FieldLabel";
 import s from "./Select.module.scss";
-import {on} from "solid-js";
 
 export interface SelectBaseProps extends VoidProps<htmlAttributes.div> {
-  name: string;
-  label?: string;
+  readonly name: string;
+  readonly label?: string;
   /**
    * The items to show in this select. In the external filtering mode, the list should change
    * when the filter changes. In the internal filtering mode, the list should not change, and will
    * be filtered internally.
    */
-  items: SelectItem[];
+  readonly items: readonly SelectItem[];
   /**
    * Filtering:
    * - If missing, filtering is disabled (the default).
@@ -44,33 +44,33 @@ export interface SelectBaseProps extends VoidProps<htmlAttributes.div> {
    * - If a function, the function is called when the filter text changes, which typically results in the parent
    *   supplying a new list of items.
    */
-  onFilterChange?: "internal" | ((filterText: string | undefined) => void);
+  readonly onFilterChange?: "internal" | ((filterText: string | undefined) => void);
   /** Whether the items are still loading. */
-  isLoading?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
+  readonly isLoading?: boolean;
+  readonly disabled?: boolean;
+  readonly placeholder?: string;
   /** Whether the control should be shown in the small version. */
-  small?: boolean;
+  readonly small?: boolean;
 }
 
 export interface SingleSelectPropsPart {
-  multiple?: false;
-  value?: string | undefined;
-  onValueChange?: (value: string | undefined) => void;
+  readonly multiple?: false;
+  readonly value?: string | undefined;
+  readonly onValueChange?: (value: string | undefined) => void;
   /**
    * Whether the value can be cleared from within the select control.
    * Even with nullable set to false, it is possible to have no value, but it is not possible
    * to set this value from within the select control.
    */
-  nullable: boolean;
+  readonly nullable: boolean;
 }
 
 export interface MultipleSelectPropsPart {
-  multiple: true;
-  value?: string[];
-  onValueChange?: (value: string[]) => void;
+  readonly multiple: true;
+  readonly value?: readonly string[];
+  readonly onValueChange?: (value: readonly string[]) => void;
   /** Whether to show the button to clear all of the selected values. Defaults to true. */
-  showClearButton?: boolean;
+  readonly showClearButton?: boolean;
 }
 
 export type SingleSelectProps = SelectBaseProps & SingleSelectPropsPart;
@@ -234,7 +234,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
     return props.items;
   });
-  const itemsToShow = createMemo((): SelectItem[] => {
+  const itemsToShow = createMemo<readonly SelectItem[]>(() => {
     const filtered = filteredItems();
     if (filtered.length) {
       return filtered;
@@ -242,7 +242,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     if (props.isLoading) {
       return [
         {
-          value: " _loading",
+          value: `_loading_${createUniqueId()}`,
           label: () => (
             <div class="w-full flex justify-center">
               <ImSpinner2 class="m-1 w-4 h-4 animate-spin" />
@@ -254,7 +254,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
     return [
       {
-        value: " _noItems",
+        value: `_noItems_${createUniqueId()}`,
         label: () => <>{t(api().isInputValueEmpty ? "select.no_items" : "select.no_matching_items")}</>,
         disabled: true,
       },
