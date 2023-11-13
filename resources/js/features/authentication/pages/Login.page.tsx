@@ -1,7 +1,7 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {MemoLoader} from "components/ui/MemoLoader";
-import {Page, QueryBarrier} from "components/utils";
+import {QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {VoidComponent, createEffect, onMount} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
@@ -32,7 +32,7 @@ const LoginPage: VoidComponent = () => {
   });
 
   return (
-    <Page title="Logowanie">
+    <>
       <LoginForm.LoginModal />
       <QueryBarrier
         queries={[statusQuery]}
@@ -44,7 +44,7 @@ const LoginPage: VoidComponent = () => {
       >
         <Navigate href="/help" state={{fromLoginPage: true}} />
       </QueryBarrier>
-    </Page>
+    </>
   );
 };
 
