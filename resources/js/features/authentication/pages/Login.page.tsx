@@ -16,21 +16,8 @@ import {LoginForm} from "../forms/login/Login.form";
  */
 const LoginPage: VoidComponent = () => {
   const statusQuery = createQuery(User.statusQueryOptions);
-
-  createEffect(() => {
-    if (statusQuery.isSuccess) {
-      if (statusQuery.data.user.lastLoginFacilityId) setActiveFacilityId(statusQuery.data.user.lastLoginFacilityId);
-    }
-  });
-
-  createEffect(() => {
-    LoginForm.showModal(statusQuery.isError);
-  });
-
-  onMount(() => {
-    setActiveFacilityId(undefined);
-  });
-
+  onMount(() => setActiveFacilityId(undefined));
+  createEffect(() => LoginForm.showModal(statusQuery.isError));
   return (
     <Page title="Logowanie">
       <LoginForm.LoginModal />
