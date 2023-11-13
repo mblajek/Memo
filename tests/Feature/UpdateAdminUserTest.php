@@ -40,7 +40,7 @@ class UpdateAdminUserTest extends TestCase
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
             'password' => 'pBssword1',
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => true,
         ];
 
@@ -74,7 +74,7 @@ class UpdateAdminUserTest extends TestCase
         $grant = Grant::factory()->create();
         /** @var User $user */
         $user = User::factory()->create([
-            'password_expire_at' => CarbonImmutable::now(),
+            'password_expire_at' => self::now(),
             'global_admin_grant_id' => $grant->id
         ]);
 
@@ -224,7 +224,7 @@ class UpdateAdminUserTest extends TestCase
             'email' => 'test@test.com',
             'hasEmailVerified' => false,
             'password' => 'pBssword1',
-            'passwordExpireAt' => CarbonImmutable::now()->roundSeconds(),
+            'passwordExpireAt' => self::now()->roundSeconds(),
         ];
 
         $result = $this->execute($user->id, $data);
@@ -240,7 +240,7 @@ class UpdateAdminUserTest extends TestCase
         $user = User::factory()->create();
 
         $data = [
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
         ];
 
         $result = $this->execute($user->id, $data);
@@ -253,7 +253,7 @@ class UpdateAdminUserTest extends TestCase
         $user = User::factory()->create();
 
         $data = [
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
         ];
 
         $result = $this->execute($user->id, $data);
@@ -281,7 +281,7 @@ class UpdateAdminUserTest extends TestCase
 
         $data = [
             'password' => 'pBssword1',
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
         ];
 
         $result = $this->execute($user->id, $data);
@@ -340,7 +340,7 @@ class UpdateAdminUserTest extends TestCase
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
             'password' => 'pBssword1',
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => true,
         ];
 

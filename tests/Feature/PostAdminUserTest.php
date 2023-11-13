@@ -29,7 +29,7 @@ class PostAdminUserTest extends TestCase
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => true,
         ];
 
@@ -79,7 +79,7 @@ class PostAdminUserTest extends TestCase
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
         ];
 
@@ -96,7 +96,7 @@ class PostAdminUserTest extends TestCase
             'email' => 'test@test.pl',
             'hasEmailVerified' => true,
             'password' => self::VALID_PASSWORD,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => true,
         ];
 
@@ -170,14 +170,14 @@ class PostAdminUserTest extends TestCase
         $this->assertNotNull(User::query()->where('id', $result->json('data.id'))->first()->id);
     }
 
-    public function testWithEmailButWithoutEmailVerifiedFieldFails(): void
+    public function testWithEmailButWithEmailVerifiedNullFieldFails(): void
     {
         $data = [
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => null,
             'password' => self::VALID_PASSWORD,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
         ];
 
@@ -191,7 +191,36 @@ class PostAdminUserTest extends TestCase
                 ],
                 [
                     "field" => "email",
-                    "code" => "validation.custom.require_present",
+                    "code" => "validation.custom.require_not_null",
+                    "data" => [
+                        "other" => "hasEmailVerified"
+                    ]
+                ]
+            ]
+        ]);
+    }
+
+    public function testWithEmailButWithoutEmailVerifiedFieldFails(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'password' => self::VALID_PASSWORD,
+            'passwordExpireAt' => self::now(),
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertBadRequest();
+        $result->assertJson([
+            "errors" => [
+                [
+                    "code" => "exception.validation"
+                ],
+                [
+                    "field" => "email",
+                    "code" => "validation.custom.require_not_null",
                     "data" => [
                         "other" => "hasEmailVerified"
                     ]
@@ -207,7 +236,7 @@ class PostAdminUserTest extends TestCase
             'email' => null,
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
         ];
 
@@ -222,7 +251,7 @@ class PostAdminUserTest extends TestCase
                     ],
                     [
                         "field" => "hasEmailVerified",
-                        "code" => "validation.custom.require_present",
+                        "code" => "validation.custom.require_not_null",
                         "data" => [
                             "other" => "email"
                         ]
@@ -238,7 +267,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => null,
             'password' => self::VALID_PASSWORD,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
         ];
 
@@ -253,7 +282,7 @@ class PostAdminUserTest extends TestCase
                     ],
                     [
                         "field" => "password",
-                        "code" => "validation.custom.require_present",
+                        "code" => "validation.custom.require_not_null",
                         "data" => [
                             "other" => "email"
                         ]
@@ -263,7 +292,7 @@ class PostAdminUserTest extends TestCase
         );
     }
 
-    public function testWithPasswordButWithoutPasswordExpireAtFieldFails(): void
+    public function testWithPasswordButWithPasswordExpireAtNullFieldSucceeds(): void
     {
         $data = [
             'name' => 'Test',
@@ -271,6 +300,21 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => null,
+            'hasGlobalAdmin' => false,
+        ];
+
+        $result = $this->post(static::URL, $data);
+
+        $result->assertCreated();
+    }
+
+    public function testWithPasswordButWithoutPasswordExpireAtFieldFails(): void
+    {
+        $data = [
+            'name' => 'Test',
+            'email' => 'test@test.pl',
+            'hasEmailVerified' => false,
+            'password' => self::VALID_PASSWORD,
             'hasGlobalAdmin' => false,
         ];
 
@@ -302,7 +346,7 @@ class PostAdminUserTest extends TestCase
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
             'password' => null,
-            'passwordExpireAt' => CarbonImmutable::now(),
+            'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
         ];
 
@@ -317,7 +361,7 @@ class PostAdminUserTest extends TestCase
                     ],
                     [
                         "field" => "passwordExpireAt",
-                        "code" => "validation.custom.require_present",
+                        "code" => "validation.custom.require_not_null",
                         "data" => [
                             "other" => "password"
                         ]

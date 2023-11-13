@@ -1,8 +1,7 @@
 <?php
 
-namespace Utils\Validation;
+namespace Tests\Unit\Utils\Validation;
 
-use App\Rules\AbstractDataRule;
 use App\Utils\Validation\RuleContext;
 use PHPUnit\Framework\TestCase;
 

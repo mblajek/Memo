@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Testing\TestResponse;
 
@@ -18,4 +19,14 @@ abstract class TestCase extends BaseTestCase
     {
         return $this->json('patch', $uri, $data, $headers);
     }
+
+    /**
+     * Now-time in ISO 8601 with timezone 'Z'.
+     * @return string
+     */
+    protected static function now(): string
+    {
+        return CarbonImmutable::now()->toIso8601ZuluString();
+    }
+
 }

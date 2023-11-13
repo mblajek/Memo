@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
 use App\Rules\RequirePresentRule;
+use App\Rules\RequireNotNullRule;
+use App\Rules\Valid;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
 use App\Utils\Validation\RuleContext;
@@ -123,50 +125,50 @@ class User extends Authenticatable
     public static function validationRules(): array
     {
         return [
-            'name' => [patch('sometimes'), 'required', 'string'],
+            'name' => [patch('sometimes'), Valid::trimmed(['required'])],
             'email' => [
                 patch('sometimes'),
+                Valid::trimmed(['email']),
                 'nullable',
-                'string',
-                'email',
                 insertAndPatch(
                     Rule::unique('users', 'email'),
                 ),
-                new RequirePresentRule('has_email_verified'),
+                new RequireNotNullRule('has_email_verified'),
                 'required_if_accepted:has_global_admin'
-
             ],
             'has_email_verified' => [
                 patch('sometimes'),
+                Valid::bool(),
                 'nullable',
-                'bool',
-                new RequirePresentRule('email'),
+                new RequireNotNullRule('email'),
             ],
             'password' => [
                 patch('sometimes'),
-                'bail',
+                Valid::string(),
                 'nullable',
-                'string',
-                insertAndPatch(self::getPasswordRules(), new RequirePresentRule('password_expire_at')),
-                insertAndResource(new RequirePresentRule('email')),
+                insertAndPatch(
+                    self::getPasswordRules(),
+                    new RequirePresentRule('password_expire_at')
+                ),
+                insertAndResource(new RequireNotNullRule('email')),
             ],
             'password_expire_at' => [
                 patch('sometimes'),
+                Valid::datetime(),
                 'nullable',
-                'date',
-                new RequirePresentRule('password'),
+                new RequireNotNullRule('password'),
                 // TODO: When password is null, password_expire_at must be null as well
             ],
             'has_password' => [
                 resource(
-                    'bool',
+                    Valid::bool(),
                     'accepted_if:has_global_admin,true'
                 )
             ],
             'has_global_admin' => [
                 insertAndPatch('sometimes'),
                 resource('required'),
-                'bool'
+                Valid::bool()
             ]
         ];
     }

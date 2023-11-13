@@ -28,7 +28,7 @@ readonly class ValidationExceptionRenderer
             //@formatter:off
             'accepted_if', 'declined_if', 'different', 'in_array', 'missing_if', 'missing_unless', 'prohibited_if',
             'prohibited_unless', 'prohibits', 'required_if', 'required_if_accepted', 'required_unless', 'same',
-            'custom.require_present'
+            'custom.require_present', 'custom.require_not_null'
             //@formatter:on
         ],
             fn($interpolationData) => array_map(Str::camel(...), $interpolationData));

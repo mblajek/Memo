@@ -2,6 +2,8 @@
 
 namespace App\Utils\Validation;
 
+use function App\Utils\array_flatten;
+
 /** Used as an indicator to mark which rules apply to a context. */
 enum RuleContext: int
 {
@@ -24,15 +26,13 @@ enum RuleContext: int
             foreach ($rules as $rule) {
                 if ($rule instanceof RulesInContext) {
                     if ($rule->matches($this)) {
-                        $fieldRules = array_merge($fieldRules, $rule->rules);
+                        $fieldRules [] = $rule->rules;
                     }
-                } elseif (is_array($rule)) {
-                    $fieldRules = array_merge($fieldRules, $rule);
                 } else {
                     $fieldRules [] = $rule;
                 }
             }
-            $result[$field] = $fieldRules;
+            $result[$field] = array_flatten($fieldRules);
         }
         return $result;
     }

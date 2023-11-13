@@ -133,7 +133,7 @@ class Valid extends AbstractDataRule
     {
         return array_merge(
             $sometimes ? ['sometimes'] : [],
-            ['present', new self($nullable, array_merge(['bail'], $rules, $additionalRules))],
+            [new self($nullable, array_merge(['bail'], $rules, $additionalRules))],
         );
     }
 }

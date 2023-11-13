@@ -130,6 +130,7 @@ ulid: "Pole „{{attribute}}” musi być prawidłowym identyfikatorem ULID."
 uuid: "Pole „{{attribute}}” musi być poprawnym identyfikatorem UUID."
 custom:
   require_present: "Pole „{{attribute}}” wymaga pola „{{other}}”."
+  require_not_null: "Pole „{{attribute}}” wymaga niepustego pola „{{other}}”."
   data_type: "Pole „{{attribute}}” musi być typu „{{type}}”."
   trimmed: "Pole „{{attribute}}” nie może się zaczynać ani kończyć białymi znakami."
   regexp_is_valid: "Pole „{{attribute}}” musi być poprawnym wyrażeniem regularnym."
