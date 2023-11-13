@@ -1,7 +1,7 @@
+import {Select, SelectItem} from "components/ui/form/Select";
 import {useLangFunc} from "components/utils";
 import {BoolColumnFilter, NullColumnFilter} from "data-access/memo-api/tquery/types";
 import {createComputed, createMemo, createSignal} from "solid-js";
-import {Select, SelectItem} from "../../form/Select";
 import s from "./ColumnFilterController.module.scss";
 import {makeSelectItem} from "./select_items";
 import {FilterControl} from "./types";

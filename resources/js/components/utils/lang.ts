@@ -5,7 +5,7 @@ import {TOptions} from "i18next";
  * A wrapper for useTransContext with the basic overload options, and with better
  * types for usage as TSX attributes (no null returned).
  */
-export function useLangFunc(): LangPrefixFunc {
+export function useLangFunc(): LangFunc {
   const transContext = useTransContext();
   if (!transContext) {
     throw new Error(`Called useLangFunc outside of the provider.`);
@@ -23,6 +23,9 @@ export function getLangEntryFunc(func: LangPrefixFunc, key: string): LangEntryFu
 
 /** A function for getting the translation values from under a particular key prefix. */
 export type LangPrefixFunc = (subKey: string, options?: TOptions) => string;
+
+/** A function for getting the translation values at the top level. */
+export type LangFunc = LangPrefixFunc;
 
 function isLangPrefixParams(
   params: Parameters<LangEntryFunc> | Parameters<LangPrefixFunc>,

@@ -2,7 +2,11 @@ import {Outlet} from "@solidjs/router";
 import {Confirmation} from "components/ui/Confirmation";
 import {AccessBarrier} from "components/utils";
 import {ParentComponent, mergeProps} from "solid-js";
-import {Container, Footer, Header, Main, Navbar} from "../layout";
+import {Container} from "../layout/Container";
+import {Footer} from "../layout/Footer";
+import {Header} from "../layout/Header";
+import {Main} from "../layout/Main";
+import {Navbar} from "../layout/Navbar";
 
 interface Props {
   facilityUrl?: string;
