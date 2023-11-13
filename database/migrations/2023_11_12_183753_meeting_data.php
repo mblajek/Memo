@@ -30,9 +30,12 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->text('notes')->nullable();
             $table->date('date');
-            $table->integer('start_minutes');
-            $table->integer('minutes');
+            $table->integer('start_day_minute');
+            $table->integer('duration_minutes');
             $table->char('status_dict_id', 36)->collation('ascii_bin');
+            $table->char('created_by', 36)->collation('ascii_bin');
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at');
 
             $table->foreign('facility_id')
                 ->references('id')
@@ -53,6 +56,11 @@ return new class extends Migration
                 ->references('id')
                 ->on('positions')
                 ->restrictOnDelete();
+
+            $table->foreign('created_by')
+                ->references('id')
+                ->on('users')
+                ->restrictOnDelete();
         });
 
         Schema::create('meeting_attendants', function (Blueprint $table) {
@@ -60,7 +68,9 @@ return new class extends Migration
             $table->char('meeting_id', 36)->collation('ascii_bin');
             $table->char('user_id', 36)->collation('ascii_bin');
             $table->string('attendance_type', 36)->collation('ascii_bin');
-            $table->boolean('has_arrived')->nullable();
+            $table->boolean('was_present')->nullable();
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at');
 
             $table->foreign('meeting_id')
                 ->references('id')
@@ -77,6 +87,8 @@ return new class extends Migration
             $table->char('id', 36)->collation('ascii_bin')->primary();
             $table->char('meeting_id', 36)->collation('ascii_bin');
             $table->char('resource_dict_id', 36)->collation('ascii_bin');
+            $table->dateTime('created_at');
+            $table->dateTime('updated_at');
 
             $table->foreign('meeting_id')
                 ->references('id')
