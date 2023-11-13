@@ -74,16 +74,7 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function post(CreateUserService $service): JsonResponse
     {
-        $data = $this->validate(
-            User::getInsertValidator([
-                'name',
-                'email',
-                'has_email_verified',
-                'password',
-                'password_expire_at',
-                'has_global_admin',
-            ])
-        );
+        $data = $this->validate(User::getInsertValidator());
 
         $result = $service->handle($data);
 
@@ -124,13 +115,10 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function patch(User $user, UpdateUserService $service): JsonResponse
     {
-        $requestData = $this->validate(User::getPatchRequestValidator());
+        $requestData = $this->validate(User::getPatchValidator());
         $userAttributes = $service->getAttributesAfterPatch($user, $requestData);
 
-        Validator::validate(
-            $userAttributes,
-            User::getPatchedObjectValidator()
-        );
+        Validator::validate($userAttributes, User::getResourceValidator());
 
         $service->handle($user, $userAttributes);
         return new JsonResponse();

@@ -221,6 +221,8 @@ class UpdateAdminUserTest extends TestCase
         $user = User::factory()->create();
 
         $data = [
+            'email' => 'test@test.com',
+            'hasEmailVerified' => false,
             'password' => 'pBssword1',
             'passwordExpireAt' => CarbonImmutable::now()->roundSeconds(),
         ];

@@ -6,6 +6,7 @@ use App\Models\QueryBuilders\UserBuilder;
 use App\Rules\RequirePresentRule;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
+use App\Utils\Validation\RuleContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,8 +14,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
+
+use function App\Utils\Validation\insertAndPatch;
+use function App\Utils\Validation\insertAndResource;
+use function App\Utils\Validation\patch;
+use function App\Utils\Validation\resource;
+
 
 /**
  * @property string id
@@ -90,6 +97,11 @@ class User extends Authenticatable
         'has_global_admin',
     ];
 
+    public static function getPasswordRules(): Password
+    {
+        return Password::min(8)->letters()->mixedCase()->numbers()->uncompromised();
+    }
+
     /** @noinspection PhpUnused -> has_password */
     public function getHasPasswordAttribute(): bool
     {
@@ -108,104 +120,65 @@ class User extends Authenticatable
         return $this->global_admin_grant_id !== null;
     }
 
-    public static function getPatchRequestValidator(): array
+    public static function validationRules(): array
     {
         return [
-            'name' => 'sometimes|required|string',
+            'name' => [patch('sometimes'), 'required', 'string'],
             'email' => [
-                'sometimes',
+                patch('sometimes'),
                 'nullable',
                 'string',
                 'email',
-                Rule::unique('users', 'email'),
-                new RequirePresentRule('has_email_verified')
+                insertAndPatch(
+                    Rule::unique('users', 'email'),
+                ),
+                new RequirePresentRule('has_email_verified'),
+                'required_if_accepted:has_global_admin'
+
             ],
             'has_email_verified' => [
-                'sometimes',
+                patch('sometimes'),
                 'nullable',
                 'bool',
                 new RequirePresentRule('email'),
-                // TODO: When email == null, has_email_verified must be null as well
             ],
-            'password' => array_merge(
-                ['bail', 'nullable', 'string'],
-                self::fieldValidator('_password'),
-                [new RequirePresentRule('password_expire_at')],
-            ),
-            '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
+            'password' => [
+                patch('sometimes'),
+                'bail',
+                'nullable',
+                'string',
+                insertAndPatch(self::getPasswordRules(), new RequirePresentRule('password_expire_at')),
+                insertAndResource(new RequirePresentRule('email')),
+            ],
             'password_expire_at' => [
-                'sometimes',
+                patch('sometimes'),
                 'nullable',
                 'date',
                 new RequirePresentRule('password'),
                 // TODO: When password is null, password_expire_at must be null as well
             ],
-            'has_global_admin' => 'sometimes|bool',
+            'has_password' => [
+                resource(
+                    'bool',
+                    'accepted_if:has_global_admin,true'
+                )
+            ],
+            'has_global_admin' => [
+                insertAndPatch('sometimes'),
+                resource('required'),
+                'bool'
+            ]
         ];
     }
 
-    public static function getPatchedObjectValidator(): array
+    public static function getInsertValidator(): array
     {
-        return [
-            'name' => 'required|string',
-            'email' => [
-                'nullable',
-                'string',
-                'email',
-                new RequirePresentRule('has_email_verified'),
-                'required_if_accepted:has_global_admin'
-            ],
-            'has_email_verified' => [
-                'sometimes',
-                'bool',
-                new RequirePresentRule('email'),
-            ],
-            'password_expire_at' => [
-                'sometimes',
-                'nullable',
-                'date',
-                'required_if_accepted:has_password'
-            ],
-            'has_password' => 'bool|accepted_if:has_global_admin,true',
-            'has_global_admin' => 'required|bool',
-        ];
+        return RuleContext::insert->selectRules(static::validationRules());
     }
 
-    protected static function fieldValidator(string $field): string|array
+    public static function getPatchValidator(): array
     {
-        return match ($field) {
-            'name' => 'required|string',
-            'email' => [
-                'nullable',
-                'string',
-                'email',
-                Rule::unique('users', 'email'),
-                new RequirePresentRule('has_email_verified'),
-                'required_if_accepted:has_global_admin'
-            ],
-            'has_email_verified' => [
-                'sometimes',
-                'bool',
-                new RequirePresentRule('email'),
-            ],
-            'password' => array_merge(
-                ['bail', 'nullable', 'string'],
-                self::fieldValidator('_password'),
-                [
-                    new RequirePresentRule('password_expire_at'),
-                    new RequirePresentRule('email')
-                ],
-            ),
-            '_password' => [Password::min(8)->letters()->mixedCase()->numbers()->uncompromised()],
-            'password_expire_at' => [
-                'sometimes',
-                'nullable',
-                'date',
-                new RequirePresentRule('password'),
-            ],
-            'last_login_facility_id' => 'nullable|uuid|exists:facilities,id',
-            'has_global_admin' => 'required|bool',
-        };
+        return RuleContext::patch->selectRules(static::validationRules());
     }
 
     public function members(): HasMany
@@ -221,5 +194,12 @@ class User extends Authenticatable
     public function lastLoginFacility(): BelongsTo
     {
         return $this->belongsTo(Facility::class);
+    }
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        // I would like to remove this method when I implement `validationRules`
+        // in all entities.
+        return [];
     }
 }

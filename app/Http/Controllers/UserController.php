@@ -180,10 +180,7 @@ class UserController extends ApiController
         $data = $this->validate([
             'current' => 'bail|required|string|current_password',
             'repeat' => 'bail|required|string|same:password',
-            'password' => array_merge(
-                ['bail', 'required', 'string', 'different:current'],
-                User::getInsertValidator(['_password'])['_password'],
-            ),
+            'password' => ['bail', 'required', 'string', 'different:current', User::getPasswordRules()]
         ]);
 
         $changePasswordService->handle($data);
