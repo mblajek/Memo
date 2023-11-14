@@ -10,7 +10,7 @@ import {parseGetResponse} from "../utils";
  * @see {@link http://localhost:9081/api/documentation#/User local docs}
  */
 export namespace User {
-  const getStatus = (facilityId?: string, config?: Api.Config) =>
+  const getStatus = (facilityId?: Api.Id, config?: Api.Config) =>
     V1.get<Api.Response.Get<GetStatusData>>(facilityId ? `/user/status/${facilityId}` : "/user/status", config).then(
       parseGetResponse,
     );
@@ -22,6 +22,9 @@ export namespace User {
 
   export const changePassword = (data: ChangePasswordRequest, config?: Api.Config) =>
     V1.post<Api.Response.Post>("/user/password", data, config);
+
+  export const setLastLoginFacilityId = (lastLoginFacilityId: Api.Id, config?: Api.Config) =>
+    V1.patch("/user", {lastLoginFacilityId}, config);
 
   export type GetStatusData = {
     user: UserResource;
@@ -43,7 +46,7 @@ export namespace User {
   export const keys = {
     all: () => ["user"] as const,
     statusAll: () => [...keys.all(), "status"] as const,
-    status: (facilityId?: string) => [...keys.statusAll(), facilityId] as const,
+    status: (facilityId?: Api.Id) => [...keys.statusAll(), facilityId] as const,
   };
 
   type PermissionsFacilityKeys = "facilityId" | "facilityMember" | "facilityClient" | "facilityStaff" | "facilityAdmin";
@@ -77,7 +80,7 @@ export namespace User {
     }) satisfies SolidQueryOptions<GetStatusWithoutFacilityData>;
 
   /** Query options for user status with facility permissions. */
-  export const statusWithFacilityPermissionsQueryOptions = (facilityId: string) =>
+  export const statusWithFacilityPermissionsQueryOptions = (facilityId: Api.Id) =>
     ({
       queryFn: ({signal}) => getStatus(facilityId, {signal}),
       queryKey: keys.status(facilityId),

@@ -1,5 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
-import {LangPrefixFunc, NON_NULLABLE, useLangFunc} from "components/utils";
+import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
 import {translationsLoaded} from "i18n_loader";
 import {createMemo} from "solid-js";
 import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
@@ -17,7 +17,7 @@ export class Attributes {
     readonly byModel: ReadonlyMap<string, Attribute[]>,
   ) {}
 
-  static fromResources(t: LangPrefixFunc, resources: AttributeResource[], dictionaries: Dictionaries) {
+  static fromResources(t: LangFunc, resources: AttributeResource[], dictionaries: Dictionaries) {
     return Attributes.fromAttributes(resources.map((resource) => Attribute.fromResource(t, resource, dictionaries)));
   }
 
@@ -71,7 +71,7 @@ export class Attribute {
     readonly multiple: boolean | undefined,
   ) {}
 
-  static fromResource(t: LangPrefixFunc, resource: AttributeResource, dictionaries: Dictionaries) {
+  static fromResource(t: LangFunc, resource: AttributeResource, dictionaries: Dictionaries) {
     return new Attribute(
       resource,
       resource.id,

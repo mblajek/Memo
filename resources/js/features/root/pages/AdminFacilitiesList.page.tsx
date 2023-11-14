@@ -1,4 +1,3 @@
-import {A} from "@solidjs/router";
 import {Button} from "components/ui/Button";
 import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
@@ -30,11 +29,7 @@ export default (() => {
           },
           url: {
             columnDef: {
-              cell: (c) => {
-                const href = () => `/${c.getValue()}`;
-                // TODO: The link can be inaccessible for the current user, handle this better.
-                return <A href={href()}>{href()}</A>;
-              },
+              cell: (c) => `/${c.getValue()}`,
             },
           },
           createdAt: {

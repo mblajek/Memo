@@ -1,5 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
-import {LangPrefixFunc, NON_NULLABLE, useLangFunc} from "components/utils";
+import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
 import {translationsLoaded} from "i18n_loader";
 import {createMemo} from "solid-js";
 import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
@@ -19,7 +19,7 @@ export class Dictionaries {
     readonly byName: ReadonlyMap<string, Dictionary>,
   ) {}
 
-  static fromResources(t: LangPrefixFunc, resources: DictionaryResource[]) {
+  static fromResources(t: LangFunc, resources: DictionaryResource[]) {
     return Dictionaries.fromDictionaries(resources.map((resource) => Dictionary.fromResource(t, resource)));
   }
 
@@ -71,7 +71,7 @@ export class Dictionary {
     this.activePositions = this.allPositions.filter((position) => !position.resource.isDisabled);
   }
 
-  static fromResource(t: LangPrefixFunc, resource: DictionaryResource) {
+  static fromResource(t: LangFunc, resource: DictionaryResource) {
     const isTranslatable = isNameTranslatable(resource.name);
     return new Dictionary(
       resource,
@@ -106,7 +106,7 @@ export class Position {
   readonly disabled;
 
   constructor(
-    t: LangPrefixFunc,
+    t: LangFunc,
     readonly resource: PositionResource,
     /** The name of the dictionary, if it's a translatable name. */
     readonly dictionaryTranslatableName: string | undefined,
