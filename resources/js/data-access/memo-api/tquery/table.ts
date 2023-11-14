@@ -1,6 +1,7 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
 import {AxiosError} from "axios";
+import {TableTranslations} from "components/ui/Table";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
@@ -223,9 +224,11 @@ export function isFilterValError(error: Api.Error): error is Api.ValidationError
 export function tableHelper({
   requestController,
   dataQuery,
+  translations,
 }: {
   requestController: RequestController;
   dataQuery: CreateQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>;
+  translations?: TableTranslations;
 }): TableHelperInterface {
   const t = useLangFunc();
   const rowsCount = () => dataQuery.data?.meta.totalDataSize;
@@ -256,9 +259,13 @@ export function tableHelper({
         if (val && typeof val === "object") {
           const leafFilter: Filter = val;
           if (leafFilter.type === "column") {
+            const translatedColumnName = translations?.columnNames(leafFilter.column) || leafFilter.column;
             filterErrors.set(
               leafFilter.column,
-              translateError({...e, field: t("tables.filter.filter_for", {data: leafFilter.column})}),
+              translateError({
+                ...e,
+                field: t("tables.filter.filter_for", {data: translatedColumnName}),
+              }),
             );
             continue;
           }

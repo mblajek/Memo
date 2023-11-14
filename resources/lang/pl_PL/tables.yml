@@ -56,7 +56,7 @@ choose_columns: "Wybierz kolumny"
 sort_tooltip: "Sortuj"
 
 filter:
-  filter_for: "filtr {{data}}"
+  filter_for: "filtr kolumny {{data}}"
   filter_cleared: "Brak filtra"
   filter_set: "Filtr aktywny"
   click_to_clear: "Kliknij aby wyczyścić"

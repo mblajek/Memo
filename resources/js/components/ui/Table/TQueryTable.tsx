@@ -140,6 +140,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
+    translations: props.staticTranslations,
   });
   createEffect(() => {
     const errors = filterErrors()?.values();
