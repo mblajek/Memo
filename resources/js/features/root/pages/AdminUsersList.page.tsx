@@ -4,10 +4,11 @@ import {AUTO_SIZE_COLUMN_DEFS, cellFunc, createTableTranslations} from "componen
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
-import {UserCreateForm, UserEditForm} from "features/users-edit";
 import {FiEdit2} from "solid-icons/fi";
 import {TbUserPlus} from "solid-icons/tb";
 import {VoidComponent} from "solid-js";
+import {UserCreateForm} from "features/users-edit/UserCreate.form";
+import {UserEditForm} from "features/users-edit/UserEdit.form";
 
 export default (() => {
   const t = useLangFunc();

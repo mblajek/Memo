@@ -2,8 +2,9 @@ import {Navigate, Outlet, Route, Routes, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api/groups";
-import {NotFound, NotYetImplemented} from "features/not-found/components";
 import {DEV, Show, lazy, type VoidComponent} from "solid-js";
+import {NotFound} from "./features/not-found/components/NotFound";
+import {NotYetImplemented} from "./features/not-found/components/NotYetImplemented";
 
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));

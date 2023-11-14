@@ -1,7 +1,8 @@
 import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
-import {PermissionsResource, UserResource} from "../resources";
 import {MemberResource} from "../resources/member.resource";
+import {PermissionsResource} from "../resources/permissions.resource";
+import {UserResource} from "../resources/user.resource";
 import {Api} from "../types";
 import {parseGetResponse} from "../utils";
 

@@ -1,7 +1,7 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {System, User} from "data-access/memo-api/groups";
-import {PermissionsResource} from "data-access/memo-api/resources";
+import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
 import {ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
 import {MemoLoader} from "../ui/MemoLoader";
 import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";

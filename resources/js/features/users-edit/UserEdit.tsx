@@ -1,5 +1,6 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {FelteForm, FelteSubmit} from "components/felte-form";
+import {FelteForm} from "components/felte-form/FelteForm";
+import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
 import {Checkbox} from "components/ui/form/Checkbox";
 import {TextField} from "components/ui/form/TextField";
