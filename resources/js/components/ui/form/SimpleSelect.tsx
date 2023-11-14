@@ -4,14 +4,14 @@ import {For, VoidComponent, splitProps} from "solid-js";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
 
 export interface SimpleSelectProps extends htmlAttributes.select {
-  name: string;
-  label?: string;
-  options: Option[];
+  readonly name: string;
+  readonly label?: string;
+  readonly options: readonly Option[];
 }
 
 interface Option {
-  value: string;
-  text: string;
+  readonly value: string;
+  readonly text: string;
 }
 
 /**

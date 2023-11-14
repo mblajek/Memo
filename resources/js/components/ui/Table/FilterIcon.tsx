@@ -23,8 +23,8 @@ export const FilterIcon: VoidComponent<Props> = (props) => {
           : t("tables.filter.filter_cleared")
       }
       classList={{"cursor-pointer": props.isFiltering}}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={[setHover, true]}
+      onMouseLeave={[setHover, false]}
       onClick={() => props.onClear?.()}
     >
       <Dynamic

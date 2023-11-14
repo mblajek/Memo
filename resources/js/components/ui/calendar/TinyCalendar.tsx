@@ -9,36 +9,36 @@ import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
-export interface TinyCalendarProps extends htmlAttributes.div {
-  locale: Intl.Locale;
+interface Props extends htmlAttributes.div {
+  readonly locale: Intl.Locale;
   /** The current selection visible in the tiny calendar. */
-  selection?: DaysRange;
+  readonly selection?: DaysRange;
   /** The currently displayed month. */
-  month: DateTime;
-  showWeekdayNames?: boolean;
-  holidays?: readonly DateTime[];
+  readonly month: DateTime;
+  readonly showWeekdayNames?: boolean;
+  readonly holidays?: readonly DateTime[];
 
   /** Returns the range that should be marked as hovered when hovering a day. */
-  getHoverRange?: (hoveredDay: DateTime) => DaysRange | undefined;
+  readonly getHoverRange?: (hoveredDay: DateTime) => DaysRange | undefined;
   /** The function called when month is changed in the view. Controller should change the month prop. */
-  setMonth: (month: DateTime) => void;
+  readonly setMonth: (month: DateTime) => void;
   /**
    * The function called when a day is clicked. The second parameter is the hovered range, i.e. the result of
    * getHoverRange. This function typically does something similar to `setSelection(hoverRange)`.
    */
-  onDayClick?: (day: DateTime, hoverRange: DaysRange | undefined) => void;
+  readonly onDayClick?: (day: DateTime, hoverRange: DaysRange | undefined) => void;
   /** The function called when a day is double clicked. Same parameters as for onDayClick. */
-  onDayDoubleClick?: (day: DateTime, hoverRange: DaysRange | undefined) => void;
+  readonly onDayDoubleClick?: (day: DateTime, hoverRange: DaysRange | undefined) => void;
   /** The function called when the month name is clicked. It is only clickable if this prop is provided. */
-  onMonthNameClick?: () => void;
+  readonly onMonthNameClick?: () => void;
 
   /** Function called with the full range of visible days. */
-  onVisibleRangeChange?: (range: DaysRange) => void;
+  readonly onVisibleRangeChange?: (range: DaysRange) => void;
 }
 
 const DEFAULT_PROPS = {
   showWeekdayNames: false,
-};
+} satisfies Partial<Props>;
 
 interface DayInfo {
   day: DateTime;
@@ -46,7 +46,7 @@ interface DayInfo {
   classes: string;
 }
 
-export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
+export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   const defProps = mergeProps(DEFAULT_PROPS, allProps);
   const [props, divProps] = splitProps(defProps, [
     "locale",
@@ -174,8 +174,8 @@ export const TinyCalendar: VoidComponent<TinyCalendarProps> = (allProps) => {
               class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}
               onClick={() => props.onDayClick?.(di.day, getHoverRange()(di.day))}
               onDblClick={() => props.onDayDoubleClick?.(di.day, getHoverRange()(di.day))}
-              onMouseEnter={() => setHover(di.day)}
-              onMouseLeave={() => setHover(undefined)}
+              onMouseEnter={[setHover, di.day]}
+              onMouseLeave={[setHover, undefined]}
             >
               <Show when={di.isToday}>
                 <div class={s.todayMark} />
