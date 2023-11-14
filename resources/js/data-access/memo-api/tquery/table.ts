@@ -4,34 +4,29 @@ import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
 import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
-import {Column, ColumnName, DataRequest, DataResponse, Schema} from "./types";
+import {Column, ColumnName, DataRequest, DataResponse} from "./types";
+
+export interface ColumnConfig {
+  readonly name: string;
+  /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
+  readonly isDataColumn: boolean;
+  /** A list of tquery columns needed to construct this column. */
+  readonly dataColumns: readonly ColumnName[];
+  readonly initialVisible: boolean;
+}
 
 /** A collection of column filters, keyed by column name. The undefined value denotes a disabled filter. */
 export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;
 
 interface RequestController {
-  columnVisibility: Signal<VisibilityState>;
-  globalFilter: Signal<string>;
-  columnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
-  sorting: Signal<SortingState>;
-  pagination: Signal<PaginationState>;
+  readonly columnVisibility: Signal<VisibilityState>;
+  readonly globalFilter: Signal<string>;
+  readonly columnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
+  readonly sorting: Signal<SortingState>;
+  readonly pagination: Signal<PaginationState>;
 }
 
 const DEFAULT_PAGE_SIZE = 50;
-
-/**
- * Returns visibility state with visibility of all the columns set explicitly to the given value.
- */
-function allColumnsVisibility(schema: Schema, additionalColumns: readonly ColumnName[], {visible = true} = {}) {
-  const visibility: VisibilityState = {};
-  for (const {name} of schema.columns) {
-    visibility[name] = visible;
-  }
-  for (const name of additionalColumns) {
-    visibility[name] = visible;
-  }
-  return visibility;
-}
 
 /**
  * Creates a requets creator with a collection of helpers to use together with a TanStack Table.
@@ -40,17 +35,13 @@ function allColumnsVisibility(schema: Schema, additionalColumns: readonly Column
  * These signals can be plugged directly into the table state.
  */
 export function createTableRequestCreator({
+  columnsConfig,
   intrinsicFilter = () => undefined,
-  intrinsicColumns = () => undefined,
-  additionalColumns = [],
-  initialVisibleColumns,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
+  columnsConfig: Accessor<readonly ColumnConfig[]>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
-  intrinsicColumns?: Accessor<readonly ColumnName[] | undefined>;
-  additionalColumns?: readonly ColumnName[];
-  initialVisibleColumns?: readonly ColumnName[];
   initialSort?: SortingState;
   initialPageSize?: number;
 }): RequestCreator<RequestController> {
@@ -63,53 +54,41 @@ export function createTableRequestCreator({
     const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
     // eslint-disable-next-line solid/reactivity
     const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
-    // Initialise the request parts based on the schema.
-    createComputed(
-      on(schema, (schema) => {
-        if (schema) {
-          let visibility: VisibilityState;
-          if (initialVisibleColumns) {
-            visibility = allColumnsVisibility(schema, additionalColumns, {visible: false});
-            for (const name of initialVisibleColumns) {
-              visibility[name] = true;
-            }
-          } else {
-            visibility = allColumnsVisibility(schema, additionalColumns);
-          }
-          setColumnVisibility(visibility);
-          const colFilters: ColumnFilters = {};
-          for (const {name} of schema.columns) {
-            colFilters[name] = createSignal<FilterH>();
-          }
-          setColumnFilters(colFilters);
-          // Don't try sorting by non-existent columns.
-          setSorting((sorting) => sorting.filter((sort) => schema.columns.some((col) => col.name === sort.id)));
-          setAllInited(true);
-        }
-      }),
-    );
-    createComputed(
-      on([schema, columnVisibility], ([schema, columnVisibility], prev) => {
-        if (schema) {
-          // Don't allow hiding all the columns.
-          if (!Object.values(columnVisibility).some((v) => v)) {
-            const prevColumnVisibility = prev?.[1];
-            // Revert to the previous visibility state if possible, otherwise show all columns.
-            setColumnVisibility(
-              prevColumnVisibility && Object.values(prevColumnVisibility).some((v) => v)
-                ? prevColumnVisibility
-                : allColumnsVisibility(schema, additionalColumns),
-            );
-          }
-          // Remove column filters for hidden columns.
-          for (const {name} of schema.columns) {
-            if (columnVisibility[name] === false) {
-              columnFilters()[name]?.[1](undefined);
-            }
+    // Initialise the request parts based on the config.
+    createComputed(() => {
+      const visibility: VisibilityState = {};
+      const colFilters: ColumnFilters = {};
+      for (const {name, initialVisible = true} of columnsConfig()) {
+        colFilters[name] = createSignal<FilterH>();
+        visibility[name] = initialVisible;
+      }
+      setColumnVisibility(visibility);
+      setColumnFilters(colFilters);
+      // Don't try sorting by non-existent columns.
+      setSorting((sorting) => sorting.filter((sort) => columnsConfig().some(({name}) => name === sort.id)));
+      setAllInited(true);
+    });
+    createComputed<VisibilityState>((prevColumnVisibility) => {
+      // Don't allow hiding all the columns.
+      if (!Object.values(columnVisibility()).some((v) => v)) {
+        let restoredColumnVisibility = prevColumnVisibility;
+        // Revert to the previous visibility state if possible, otherwise show all columns.
+        if (!restoredColumnVisibility || !Object.values(restoredColumnVisibility).some((v) => v)) {
+          restoredColumnVisibility = {};
+          for (const {name} of columnsConfig()) {
+            restoredColumnVisibility[name] = true;
           }
         }
-      }),
-    );
+        setColumnVisibility(restoredColumnVisibility);
+      }
+      // Remove column filters for hidden columns.
+      for (const {name} of columnsConfig()) {
+        if (columnVisibility()[name] === false) {
+          columnFilters()[name]?.[1](undefined);
+        }
+      }
+      return columnVisibility();
+    });
     const filterReductor = createMemo(on(schema, (schema) => schema && new FilterReductor(schema)));
     /** The primary sort column, wrapped in memo to detect actual changes. */
     const mainSort = createMemo(() => sorting()[0]);
@@ -127,18 +106,17 @@ export function createTableRequestCreator({
         setPagination((prev) => ({...prev, pageIndex: 0}));
       }),
     );
-    const columns = createMemo(() => {
-      const sch = schema();
-      if (!sch) {
-        return [];
-      }
-      return [
-        ...new Set([
-          ...sch.columns.map(({name}) => name).filter((name) => columnVisibility()[name] !== false),
-          ...(intrinsicColumns() || []),
-        ]),
-      ].map<Column>((column) => ({type: "column", column}));
-    });
+    const dataColumns = createMemo(() =>
+      [
+        ...new Set(
+          columnsConfig()
+            .filter(({name}) => columnVisibility()[name] !== false)
+            .flatMap(({dataColumns}) => dataColumns),
+        ),
+      ]
+        .sort()
+        .map<Column>((column) => ({type: "column", column})),
+    );
     const fuzzyGlobalFilterConfig = createMemo(() => {
       const sch = schema();
       if (!sch) {
@@ -150,11 +128,11 @@ export function createTableRequestCreator({
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
-      if (!schema() || !allInited()) {
+      if (!allInited()) {
         return undefined;
       }
       return {
-        columns: columns(),
+        columns: dataColumns(),
         filter: filterReductor()?.reduce({
           type: "op",
           op: "&",

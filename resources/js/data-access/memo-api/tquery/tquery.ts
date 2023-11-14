@@ -18,7 +18,7 @@ function getRequestFromQueryKey<K extends PrefixQueryKey>(queryKey: DataQueryKey
 
 const INITIAL_PAGE_SIZE = 50;
 
-const EMPTY_DATA: DataItem[] = [];
+const EMPTY_DATA: readonly DataItem[] = [];
 
 /** A utility that creates and helps with managing the request object. */
 export interface RequestCreator<C> {
