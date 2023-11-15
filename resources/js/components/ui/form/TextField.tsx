@@ -1,12 +1,11 @@
 import {ValidationMessages} from "components/felte-form/ValidationMessages";
 import {htmlAttributes} from "components/utils";
-import {VoidComponent} from "solid-js";
+import {VoidComponent, splitProps} from "solid-js";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
-import {splitProps} from "solid-js";
 
 export interface TextFieldProps extends htmlAttributes.input {
-  name: string;
-  label?: string;
+  readonly name: string;
+  readonly label?: string;
 }
 
 /**

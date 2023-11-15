@@ -4,9 +4,9 @@ import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
 import {Accessor, JSX, Show, createMemo, createRenderEffect, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
-import {Button} from "../Button";
-import {ChildrenOrFunc, getChildrenElement} from "../children_func";
+import {Button} from "./Button";
 import s from "./Modal.module.scss";
+import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
 interface BaseProps<T> {
   title?: string;

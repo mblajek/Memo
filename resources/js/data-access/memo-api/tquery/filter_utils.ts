@@ -8,7 +8,7 @@ import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filte
  */
 export type FilterH = ConstFilter | Filter | BoolOpFilterH;
 /** A bool operation filter that accepts FilterH as sub-filters. */
-export type BoolOpFilterH = Omit<BoolOpFilter, "val"> & {readonly val: FilterH[]};
+export type BoolOpFilterH = Omit<BoolOpFilter, "val"> & {readonly val: readonly FilterH[]};
 
 /** A reduced filter. It is a regular, fully correct and at least somewhat optimised filter. */
 export type ReducedFilterH = ConstFilter | Filter;

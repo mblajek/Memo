@@ -12,7 +12,7 @@ export type DateTimeString = string;
 type Mapping<Key extends string, Value> = Readonly<Partial<Record<Key, Value>>>;
 
 export interface Schema {
-  readonly columns: ColumnSchema[];
+  readonly columns: readonly ColumnSchema[];
   readonly customFilters?: Mapping<CustomFilterName, CustomFilter>;
 }
 
@@ -44,7 +44,7 @@ export interface CustomFilter {
 }
 
 export interface DataRequest {
-  readonly columns: Column[];
+  readonly columns: readonly Column[];
   readonly filter?: ConstFilter | Filter;
   readonly sort: Sort;
   readonly paging: Paging;
@@ -79,7 +79,7 @@ export interface BoolOpFilter extends FilterBase {
   readonly type: "op";
   readonly op: "&" | "|";
   /** List of sub-filters. Cannot be empty. */
-  readonly val: Filter[];
+  readonly val: readonly Filter[];
 }
 
 export type ColumnFilter = NullColumnFilter | ColumnValueFilter;
@@ -115,7 +115,7 @@ interface BinEqColumnFilter<T> extends ColumnFilterBase {
 interface InColumnFilter<T> extends ColumnFilterBase {
   readonly op: "in";
   /** The values to compare to. Cannot contain an empty string. */
-  readonly val: T[];
+  readonly val: readonly T[];
 }
 interface CmpColumnFilter<T> extends ColumnFilterBase {
   readonly op: ">" | "<" | ">=" | "<=";
@@ -175,7 +175,7 @@ export interface Paging {
 
 export interface DataResponse {
   readonly meta: DataResponseMeta;
-  readonly data: DataItem[];
+  readonly data: readonly DataItem[];
 }
 
 export interface DataResponseMeta {
@@ -186,7 +186,7 @@ export interface DataResponseMeta {
 export type DataItem = Mapping<ColumnName, unknown>;
 
 /** Specification of the data sorting. The first element has the highest priority. */
-export type Sort = SortItem[];
+export type Sort = readonly SortItem[];
 
 export type SortItem = SortColumn;
 

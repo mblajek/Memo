@@ -188,8 +188,8 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
           <div
             ref={setScrollingWrapper}
             class={s.scrollingWrapper}
-            onScroll={() => setLastScrollTimestamp(Date.now())}
-            onScrollEnd={() => setLastScrollTimestamp(0)}
+            onScroll={[setLastScrollTimestamp, Date.now()]}
+            onScrollEnd={[setLastScrollTimestamp, 0]}
           >
             <div ref={scrollToTopPoint} class={s.tableBg}>
               <div

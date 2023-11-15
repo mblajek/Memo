@@ -1,6 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {System} from "data-access/memo-api/groups";
-import {FacilityResource} from "data-access/memo-api/resources";
+import {FacilityResource} from "data-access/memo-api/resources/facility.resource";
 import {Accessor, createMemo, createSignal} from "solid-js";
 
 /** The facility id value for outside of any facility context. */

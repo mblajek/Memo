@@ -1,4 +1,4 @@
-import {useFormContextIfInForm} from "components/felte-form";
+import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {cx, htmlAttributes} from "components/utils";
 import {JSX, VoidComponent, splitProps} from "solid-js";
 import {TranslatedText} from "../TranslatedText";

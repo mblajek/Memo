@@ -9,6 +9,9 @@ export type DictionaryName = NameString;
  */
 export type DictionaryPositionName = NameString;
 
+/**
+ * @see `/app/Http/Resources/DictionaryResource.php`
+ */
 export interface DictionaryResource {
   readonly id: string;
   /** The facility that owns this dictionary, or null for global dictionary. */
@@ -25,6 +28,9 @@ export interface DictionaryResource {
   readonly isExtendable: boolean;
 }
 
+/**
+ * @see `/app/Http/Resources/PositionResource.php`
+ */
 export interface PositionResource {
   readonly id: string;
   readonly dictionaryId: string;

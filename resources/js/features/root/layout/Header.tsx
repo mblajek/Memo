@@ -1,14 +1,13 @@
 import {VoidComponent} from "solid-js";
-import {FacilityControl, UserInfo} from "../components/header";
-import {HeaderSeparator} from "./HeaderSeparator";
+import {FacilityControl} from "../components/header/FacilityControl";
+import {UserInfo} from "../components/header/UserInfo";
 import s from "./layout.module.scss";
 
 export const Header: VoidComponent = () => {
   return (
     <header class={s.header}>
-      <div class="flex-grow" />
       <FacilityControl />
-      <HeaderSeparator />
+      <div class="flex-grow" />
       <UserInfo />
     </header>
   );

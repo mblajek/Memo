@@ -1,6 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
-import {FelteForm, FelteSubmit} from "components/felte-form";
+import {FelteForm} from "components/felte-form/FelteForm";
+import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {FullLogo} from "components/ui/FullLogo";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {TextField} from "components/ui/form/TextField";
