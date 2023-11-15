@@ -8,8 +8,6 @@ import {Column, ColumnName, DataRequest, DataResponse} from "./types";
 
 export interface ColumnConfig {
   readonly name: string;
-  /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
-  readonly isDataColumn: boolean;
   /** A list of tquery columns needed to construct this column. */
   readonly dataColumns: readonly ColumnName[];
   readonly initialVisible: boolean;

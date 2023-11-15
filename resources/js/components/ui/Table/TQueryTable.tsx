@@ -74,9 +74,9 @@ export interface PartialColumnConfig {
   /** Additional columns from the tquery row that are used to construct the displayed value. */
   readonly extraDataColumns?: readonly ColumnName[];
   /**
-   * The TanStack column definition. If dataColumn is true, the tquery column is displayed by
+   * The TanStack column definition. If isDataColumn, the tquery column is displayed by
    * default. Otherwise, columnDef needs to be specified to display anything.
-   * Only dataColumn and extraDataColumns can be used in the columnDef.
+   * All additional data columns used in columnDef.cell needs to be specified in extraDataColumns.
    */
   readonly columnDef?: IdentifiedColumnDef<DataItem>;
   /** Some meta params for the column. They are merged into columnDef.meta.tquery (this is a shorthand). */
@@ -86,6 +86,8 @@ export interface PartialColumnConfig {
 }
 
 interface FullColumnConfig extends ColumnConfig {
+  /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
+  readonly isDataColumn: boolean;
   readonly columnDef: IdentifiedColumnDef<DataItem>;
   readonly metaParams?: ColumnMetaParams;
 }
