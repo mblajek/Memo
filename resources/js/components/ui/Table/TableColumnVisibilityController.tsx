@@ -37,7 +37,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             <div class="bg-white border border-gray-700 rounded flex flex-col overflow-clip">
               <For each={table.getAllLeafColumns()}>
                 {(column) => (
-                  <Show when={column.columnDef.meta?.tquery?.canControlVisibility !== false}>
+                  <Show when={column.getCanHide()}>
                     <label
                       class={cx("px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline", {
                         "!bg-select": column.getIsVisible(),

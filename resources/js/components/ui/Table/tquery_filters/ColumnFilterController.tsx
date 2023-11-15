@@ -9,11 +9,11 @@ import {UuidFilterControl} from "./UuidFilterControl";
 import {FilterControlProps} from "./types";
 
 interface CommonFilteringParams {
-  enabled?: boolean;
+  readonly enabled?: boolean;
 }
 
 export interface DateTimeFilteringParams extends CommonFilteringParams {
-  useDateTimeInputs?: boolean;
+  readonly useDateTimeInputs?: boolean;
 }
 
 export type FilteringParams = DateTimeFilteringParams;
