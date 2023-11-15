@@ -1,3 +1,5 @@
+app_name: "Memo"
+
 exception:
   configuration:
     translation: "Błędna konfiguracja tłumaczeń"

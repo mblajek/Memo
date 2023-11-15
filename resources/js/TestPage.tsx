@@ -1,3 +1,4 @@
+import {Title} from "@solidjs/meta";
 import {VoidComponent} from "solid-js";
 
 export default (() => {
@@ -6,10 +7,13 @@ export default (() => {
   // Do not submit the changes to this file.
 
   return (
-    <div class="flex flex-col gap-1">
-      <div class="w-fit bg-purple-100 p-4 mx-auto rounded-md">
-        Test your components here during development by creating a test page in TestPage.tsx.
+    <>
+      <Title>/test-page</Title>
+      <div class="flex flex-col gap-1">
+        <div class="w-fit bg-purple-100 p-4 mx-auto rounded-md">
+          Test your components here during development by creating a test page in TestPage.tsx.
+        </div>
       </div>
-    </div>
+    </>
   );
 }) satisfies VoidComponent;

@@ -59,7 +59,7 @@ user:
   hasEmailVerified: "e-mail zweryfikowany"
   members: "przypisane placówki"
   facilityCount: "liczba placówek"
-clients:
+client:
   _name: "klient"
   _name_plural: "klienci"
   genderDictId: "$t(dictionary.gender._name)"

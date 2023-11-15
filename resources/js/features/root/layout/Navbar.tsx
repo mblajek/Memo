@@ -1,4 +1,3 @@
-import {Capitalize} from "components/ui/Capitalize";
 import {FullLogo} from "components/ui/FullLogo";
 import {LangFunc, cx, useLangFunc} from "components/utils";
 import {
@@ -35,27 +34,24 @@ export const Navbar: VoidComponent = () => {
         <NavigationSection
           roles={["globalAdmin"]}
           items={sectionItems().globalAdmin}
-          title={t("navigation.sections.system")}
+          title={t("routes.menu_sections.system")}
         />
         <Show when={facilityUrl()}>
           <NavigationSection
             facilityUrl={facilityUrl()}
             roles={["facilityAdmin"]}
             items={sectionItems().facilityAdmin}
-            title={t("navigation.sections.facility")}
+            title={t("routes.menu_sections.facility")}
           />
           <NavigationSection
             facilityUrl={facilityUrl()}
             roles={["facilityStaff"]}
             items={sectionItems().facilityStaff}
-            title={t("navigation.sections.my_work")}
+            title={t("routes.menu_sections.my_work")}
           />
         </Show>
         <Show when={DEV}>
-          <NavigationSection
-            title="DEV"
-            items={[{icon: RiDevelopmentCodeBoxLine, href: "/test-page", children: "/test-page"}]}
-          />
+          <NavigationSection title="DEV" items={getDevSectionItems()} />
         </Show>
       </nav>
     </aside>
@@ -77,12 +73,12 @@ function getSectionItems(
       {
         icon: HiOutlineBuildingOffice,
         href: "/admin/facilities",
-        children: <Capitalize text={t("models.facility._name_plural")} />,
+        routeKey: "admin.facilities",
       },
       {
         icon: HiOutlineUserGroup,
         href: "/admin/users",
-        children: <Capitalize text={t("models.user._name_plural")} />,
+        routeKey: "admin.users",
       },
     ],
     facilityAdmin: !facilityUrl
@@ -91,22 +87,22 @@ function getSectionItems(
           {
             icon: HiOutlineCalendarDays,
             href: `/${facilityUrl}/admin/calendar`,
-            children: t("navigation.facility_admin_section.calendar"),
+            routeKey: "facility.admin.calendar",
           },
           {
             icon: HiOutlineTableCells,
             href: `/${facilityUrl}/admin/clients`,
-            children: t("navigation.facility_admin_section.clients"),
+            routeKey: "facility.admin.clients",
           },
           {
             icon: HiOutlineUsers,
             href: `/${facilityUrl}/admin/staff`,
-            children: t("navigation.facility_admin_section.staff"),
+            routeKey: "facility.admin.staff",
           },
           {
             icon: HiOutlineClipboardDocumentList,
             href: `/${facilityUrl}/admin/reports`,
-            children: t("navigation.facility_admin_section.reports"),
+            routeKey: "facility.admin.reports",
           },
         ],
     facilityStaff: !facilityUrl
@@ -115,17 +111,17 @@ function getSectionItems(
           {
             icon: HiOutlineCalendarDays,
             href: `/${facilityUrl}/calendar`,
-            children: t("navigation.facility_staff_section.calendar"),
+            routeKey: "facility.calendar",
           },
           {
             icon: HiOutlineClock,
             href: `/${facilityUrl}/timetable`,
-            children: t("navigation.facility_staff_section.timetable"),
+            routeKey: "facility.timetable",
           },
           {
             icon: HiOutlineTableCells,
             href: `/${facilityUrl}/clients`,
-            children: t("navigation.facility_staff_section.clients"),
+            routeKey: "facility.clients",
           },
         ],
     verified: !facilityUrl
@@ -134,15 +130,25 @@ function getSectionItems(
           {
             icon: HiOutlineVideoCamera,
             href: `/${facilityUrl}/meetings`,
-            children: t("navigation.verified_section.meetings"),
+            routeKey: "facility.meetings",
           },
         ],
     unauthorized: [
       {
         icon: HiOutlineQuestionMarkCircle,
         href: "/help",
-        children: t("navigation.help"),
+        routeKey: "help",
       },
     ],
   };
+}
+
+function getDevSectionItems(): NavigationItemProps[] {
+  return [
+    {
+      icon: RiDevelopmentCodeBoxLine,
+      href: "/test-page",
+      routeKey: "/test-page",
+    },
+  ];
 }
