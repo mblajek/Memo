@@ -8,14 +8,17 @@ import {
   type QueryMeta,
 } from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
+import {translateError} from "data-access/memo-api/error_util";
 import {System, User} from "data-access/memo-api/groups";
 import {SolidQueryOpts} from "data-access/memo-api/query_utils";
+import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
 import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
-import {For, ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import toast from "solid-toast";
-import {cx, useLangFunc} from ".";
+import {useLangFunc} from ".";
 import {MemoLoader} from "../ui/MemoLoader";
+import {toastMessages} from "./toast";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
@@ -23,11 +26,16 @@ type QuietHTTPStatuses = number[];
 declare module "@tanstack/query-core" {
   interface QueryMeta {
     quietHTTPStatuses?: QuietHTTPStatuses;
+    tquery?: TQueryMeta;
   }
   interface MutationMeta {
     quietHTTPStatuses?: QuietHTTPStatuses;
     isFormSubmit?: boolean;
   }
+}
+
+export interface TQueryMeta {
+  isTable?: boolean;
 }
 
 /**
@@ -42,31 +50,43 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
     const status = error.response?.status;
     if (!status || !meta?.quietHTTPStatuses?.includes(status)) {
       const respErrors = error.response?.data.errors;
-      const errors = meta?.isFormSubmit
-        ? // Validation errors will be handled by the form.
-          respErrors?.filter((e) => !Api.isValidationError(e))
-        : respErrors;
-      if (errors?.length) {
+      function getErrorsToShow() {
+        if (!respErrors) {
+          return [];
+        }
+        if (meta?.isFormSubmit) {
+          // Validation errors will be handled by the form.
+          return respErrors.filter((e) => !Api.isValidationError(e));
+        } else if (meta?.tquery?.isTable) {
+          // Table filter value errors will be handled by the table.
+          /**
+           * A list of serious errors, not caused by bad filter val. Excludes also the exception.validation error
+           * which might be caused by just the filter val errors.
+           */
+          const seriousErrors = respErrors.filter((e) => e.code !== "exception.validation" && !isFilterValError(e));
+          if (seriousErrors.length) {
+            // Include the exception.validation error again.
+            return respErrors.filter((e) => !isFilterValError(e));
+          } else {
+            return [];
+          }
+        } else {
+          return respErrors;
+        }
+      }
+      const errors = getErrorsToShow();
+      if (errors.length) {
         if (!translationsLoaded()) {
           for (const e of errors) {
             console.warn("Error toast shown (translations not ready):", e);
           }
         }
         translationsLoadedPromise.then(() => {
-          const messages = errors.map((e) => {
-            return t(e.code, {
-              ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
-              ...e.data,
-            });
-          });
+          const messages = errors.map((e) => translateError(e, t));
           for (const msg of messages) {
             console.warn(`Error toast shown: ${msg}`);
           }
-          toast.error(() => (
-            <ul class={cx({"list-disc pl-6": messages.length > 1}, "wrapText")}>
-              <For each={messages}>{(msg) => <li>{msg}</li>}</For>
-            </ul>
-          ));
+          toastMessages(messages, toast.error);
         });
       }
     }

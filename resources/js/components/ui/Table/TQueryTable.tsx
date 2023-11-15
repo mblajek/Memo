@@ -3,7 +3,8 @@ import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ColumnConfig, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery/table";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {BasicColumnSchema, ColumnName, ColumnType, DataItem} from "data-access/memo-api/tquery/types";
-import {JSX, VoidComponent, createMemo} from "solid-js";
+import {JSX, VoidComponent, createEffect, createMemo} from "solid-js";
+import toast from "solid-toast";
 import {
   DisplayMode,
   Header,
@@ -19,6 +20,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
+import {toastMessages} from "../../utils/toast";
 import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
 
 declare module "@tanstack/table-core" {
@@ -136,15 +138,24 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       props.initialPageSize ||
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
   });
-  const {schema, requestController, dataQuery, data} = createTQuery({
+  const {schema, requestController, dataQuery} = createTQuery({
     entityURL,
     prefixQueryKey: props.staticPrefixQueryKey,
     requestCreator,
+    dataQueryOptions: {meta: {tquery: {isTable: true}}},
   });
   const {columnVisibility, globalFilter, columnFilter, sorting, pagination} = requestController;
-  const {rowsCount, pageCount, scrollToTopSignal} = tableHelper({
+  const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
-    response: () => dataQuery.data,
+    dataQuery,
+    translations: props.staticTranslations,
+  });
+  createEffect(() => {
+    const errors = filterErrors()?.values();
+    if (errors) {
+      // TODO: Consider showing the errors in the table header.
+      toastMessages([...errors], toast.error);
+    }
   });
 
   const columns = createMemo(() => {
@@ -195,8 +206,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const table = createSolidTable<DataItem>({
     ...getBaseTableOptions<DataItem>({features: {columnVisibility, sorting, globalFilter, pagination}}),
     get data() {
-      // Remove readonly from the type.
-      return data() as DataItem[];
+      return (dataQuery.data?.data as DataItem[]) || [];
     },
     get columns() {
       return columns();
