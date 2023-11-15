@@ -13,7 +13,11 @@ export type AttributeType = SimpleAttributeType | TableAttributeType | DictAttri
 
 export type RequirementLevel = "required" | "recommended" | "optional" | "empty";
 
-/** The attribute resource. See /help/tables/attributes.md. */
+/**
+ * The attribute resource.
+ * @see `/help/tables/attributes.md`
+ * @see `/app/Http/Resources/AttributeResource.php`
+ */
 export interface AttributeResource {
   readonly id: string;
   /** The facility that owns this attribute, or null for global attribute. */

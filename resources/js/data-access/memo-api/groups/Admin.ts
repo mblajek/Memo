@@ -1,8 +1,8 @@
 import {useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
-import {FacilityResource} from "../resources";
 import {AdminUserResource, AdminUserResourceForCreate} from "../resources/adminUser.resource";
+import {FacilityResource} from "../resources/facility.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";

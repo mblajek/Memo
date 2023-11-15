@@ -1,7 +1,7 @@
 import {cx, debouncedAccessor} from "components/utils";
 import {Show, VoidComponent, createSignal, onCleanup, onMount} from "solid-js";
 import {Portal} from "solid-js/web";
-import MemoIcon from "./memo_icon.svg";
+import MemoIcon from "./MemoLoader.svg";
 
 const [loaderCount, setLoaderCount] = createSignal(0);
 

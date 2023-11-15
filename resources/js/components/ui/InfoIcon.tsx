@@ -5,11 +5,11 @@ import {htmlAttributes, useLangFunc} from "../utils";
 import {Button} from "./Button";
 
 interface ButtonProps extends htmlAttributes.button {
-  href?: undefined;
+  readonly href?: undefined;
 }
 
 interface LinkProps extends AnchorProps {
-  href: string;
+  readonly href: string;
 }
 
 export type InfoIconProps = VoidProps<ButtonProps | LinkProps>;

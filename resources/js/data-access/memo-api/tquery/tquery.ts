@@ -1,9 +1,11 @@
-import {createQuery, keepPreviousData} from "@tanstack/solid-query";
+import {QueryMeta, createQuery, keepPreviousData} from "@tanstack/solid-query";
+import {AxiosError} from "axios";
 import {Accessor, createComputed, createSignal} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
 import {V1} from "../config";
-import {CreateQueryOpts, SolidQueryOpts} from "../query_utils";
-import {DataItem, DataRequest, DataResponse, Schema} from "./types";
+import {CreateQueryOpts} from "../query_utils";
+import {Api} from "../types";
+import {DataRequest, DataResponse, Schema} from "./types";
 
 type EntityURL = string;
 
@@ -17,8 +19,6 @@ function getRequestFromQueryKey<K extends PrefixQueryKey>(queryKey: DataQueryKey
 }
 
 const INITIAL_PAGE_SIZE = 50;
-
-const EMPTY_DATA: DataItem[] = [];
 
 /** A utility that creates and helps with managing the request object. */
 export interface RequestCreator<C> {
@@ -58,33 +58,26 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   prefixQueryKey: K;
   entityURL: EntityURL;
   requestCreator: RequestCreator<C>;
-  dataQueryOptions?: CreateQueryOpts<DataResponse, DataQueryKey<K>>;
+  dataQueryOptions?: Partial<CreateQueryOpts<DataResponse, DataQueryKey<K>> & {meta: QueryMeta}>;
 }) {
   const schemaQuery = createQuery(() => ({
     queryKey: ["tquery-schema", entityURL] satisfies SchemaQueryKey,
     queryFn: () => V1.get<Schema>(`${entityURL}/tquery`).then((res) => res.data),
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: 3600 * 1000,
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
-  const dataQuery = createQuery(
-    () =>
-      ({
-        enabled: !!request(),
-        queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
-        queryFn: (context) =>
-          V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then(
-            (res) => res.data,
-          ),
-        placeholderData: keepPreviousData,
-        ...dataQueryOptions,
-      }) satisfies SolidQueryOpts<DataResponse, DataQueryKey<K>>,
-  );
-  const data = () => dataQuery.data?.data || EMPTY_DATA;
+  const dataQuery = createQuery<DataResponse, AxiosError<Api.ErrorResponse>, DataResponse, DataQueryKey<K>>(() => ({
+    enabled: !!request(),
+    queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
+    queryFn: (context) =>
+      V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then((res) => res.data),
+    placeholderData: keepPreviousData,
+    ...dataQueryOptions,
+  }));
   return {
     schema,
     requestController,
     dataQuery,
-    data,
   };
 }

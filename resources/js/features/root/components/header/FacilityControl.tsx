@@ -1,61 +1,62 @@
 import {useNavigate, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
+import {Select} from "components/ui/form/Select";
+import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {System, User} from "data-access/memo-api/groups";
-import {For, Match, Show, Switch, VoidComponent, createEffect, createMemo} from "solid-js";
+import {Match, Show, Switch, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 
 export const FacilityControl: VoidComponent = () => {
   const navigate = useNavigate();
   const params = useParams();
-
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(User.statusQueryOptions);
-
-  const facilities = createMemo(
+  const invalidate = User.useInvalidator();
+  const userFacilities = createMemo(
     () =>
-      facilitiesQuery.data?.filter(
-        (facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id),
-      ),
+      facilitiesQuery.data
+        ?.filter((facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id))
+        .sort((a, b) => a.name.localeCompare(b.name)),
   );
-
-  // TODO: it just works, may be wrong. Maybe there is a better way of handling 'global mutable state' :D
-  createEffect(() => {
-    if (params.facilityUrl) {
-      const facility = facilities()?.find((facility) => facility.url === params.facilityUrl);
-
-      if (!facility) return;
-
-      if (statusQuery.data?.members.find((member) => member.facilityId === facility.id))
-        setActiveFacilityId(facility.id);
-    }
+  createOneTimeEffect({
+    input: () => {
+      const facilities = userFacilities();
+      if (!facilities || !statusQuery.isSuccess) {
+        return undefined;
+      }
+      // Use the facility from the URL, if not present (e.g. not on a facility-specific page) use the
+      // last login facility, and finally use any (the first) facility, so that some facility is always
+      // selected.
+      return (
+        facilities.find(({url}) => url === params.facilityUrl) ||
+        facilities.find(({id}) => id === statusQuery.data!.user.lastLoginFacilityId) ||
+        facilities[0]
+      )?.id;
+    },
+    effect: setActiveFacilityId,
   });
-
-  // TODO: it just works, may be wrong. Maybe there is a better way of handling 'global mutable state' :D
-  createEffect(() => {
-    const facilitiesSub = facilities();
-    if (facilitiesSub?.length === 1) setActiveFacilityId(facilitiesSub[0]?.id);
-  });
-
   return (
-    <Show when={facilities()}>
-      {(facilities) => (
+    <Show when={userFacilities()}>
+      {(userFacilities) => (
         <Switch>
-          <Match when={facilities().length === 1}>
-            <p>{facilities().at(0)?.name}</p>
+          <Match when={userFacilities().length === 1}>
+            <p>{userFacilities()[0]!.name}</p>
           </Match>
-          <Match when={facilities().length > 1}>
-            <select
-              class="border border-gray-200 rounded"
+          <Match when={userFacilities().length > 1}>
+            <Select
+              name="activeFacilityId"
+              items={userFacilities().map(({id, name}) => ({value: id, label: () => name}))}
+              nullable={false}
               value={activeFacilityId()}
-              onChange={(e) => {
-                const url = facilities().find((facility) => facility.id === e.target.value)?.url;
-
-                setActiveFacilityId(e.target.value);
-                if (url) navigate(`/${url}`);
+              onValueChange={(facilityId) => {
+                if (facilityId !== activeFacilityId()) {
+                  setActiveFacilityId(facilityId);
+                  const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
+                  if (url) navigate(`/${url}`);
+                }
+                User.setLastLoginFacilityId(facilityId!).then(() => invalidate.statusAndFacilityPermissions());
               }}
-            >
-              <For each={facilities()}>{(facility) => <option value={facility.id}>{facility.name}</option>}</For>
-            </select>
+            />
           </Match>
         </Switch>
       )}

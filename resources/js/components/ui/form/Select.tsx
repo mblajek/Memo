@@ -79,17 +79,17 @@ export type SelectProps = SingleSelectProps | MultipleSelectProps;
 
 export interface SelectItem {
   /** The internal value of the item. Must be unique among the items. Must not be empty. */
-  value: string;
+  readonly value: string;
   /**
    * The optional text, used only for internal filtering of the items (when onFilterChange is not specified).
    * If missing in the internal filtering mode, the items are filtered by the value string.
    */
-  text?: string;
+  readonly text?: string;
   /** The item, as displayed in the component when selected. If not specified, the text (or the value) is used. */
-  label?: () => JSX.Element;
+  readonly label?: () => JSX.Element;
   /** The item, as displayed on the expanded list. If not specified, label is used. */
-  labelOnList?: () => JSX.Element;
-  disabled?: boolean;
+  readonly labelOnList?: () => JSX.Element;
+  readonly disabled?: boolean;
 }
 
 function itemToString(item: SelectItem) {
@@ -107,7 +107,7 @@ const DEFAULT_PROPS = {
   small: false,
   nullable: false,
   showClearButton: true,
-};
+} satisfies Partial<SelectProps>;
 
 /**
  * A select-like component for selecting a single item from a list of items.
@@ -234,7 +234,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
     return props.items;
   });
-  const itemsToShow = createMemo<readonly SelectItem[]>(() => {
+  const itemsToShow = createMemo((): readonly SelectItem[] => {
     const filtered = filteredItems();
     if (filtered.length) {
       return filtered;
@@ -395,7 +395,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                 <Button
                   class={cx(s.clearButton)}
                   onClick={(e) => {
-                    // Avoid opening the
+                    // Avoid opening the select on button click.
                     e.stopPropagation();
                     api().clearValue();
                   }}
@@ -408,7 +408,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                 <Button
                   class={cx(s.clearButton)}
                   onClick={(e) => {
-                    // Avoid opening the
+                    // Avoid opening the select on button click.
                     e.stopPropagation();
                     api().clearValue();
                   }}

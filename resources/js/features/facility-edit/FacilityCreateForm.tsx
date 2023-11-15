@@ -1,5 +1,5 @@
 import {createMutation} from "@tanstack/solid-query";
-import {FormType} from "components/felte-form";
+import {FormType} from "components/felte-form/FelteForm";
 import {trimInput} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
