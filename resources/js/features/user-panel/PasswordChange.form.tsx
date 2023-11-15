@@ -28,8 +28,8 @@ export namespace PasswordChangeForm {
   export type Output = z.output<ReturnType<typeof getSchema>>;
 
   interface Props {
-    onSuccess?: () => void;
-    onCancel?: () => void;
+    readonly onSuccess?: () => void;
+    readonly onCancel?: () => void;
   }
 
   export const Component: VoidComponent<Props> = (props) => {

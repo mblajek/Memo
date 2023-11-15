@@ -3,7 +3,7 @@ import {ParentProps, VoidComponent, createComputed, createSignal, splitProps} fr
 import {useTable} from ".";
 
 interface Props extends htmlAttributes.div {
-  placeholder?: string;
+  readonly placeholder?: string;
 }
 
 export const TableSearch: VoidComponent<ParentProps<Props>> = (allProps) => {

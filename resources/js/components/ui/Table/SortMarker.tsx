@@ -7,7 +7,7 @@ import {useTable} from "./TableContext";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  column: Column<any>;
+  readonly column: Column<any>;
 }
 
 const ICONS = new Map<false | SortDirection, IconTypes>()

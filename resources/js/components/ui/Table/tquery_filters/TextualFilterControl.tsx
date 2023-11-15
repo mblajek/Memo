@@ -8,7 +8,7 @@ import {makeSelectItem} from "./select_items";
 import {FilterControlProps} from "./types";
 
 interface StringColumnProps extends FilterControlProps {
-  columnType: "string" | "text";
+  readonly columnType: "string" | "text";
 }
 
 export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) => {

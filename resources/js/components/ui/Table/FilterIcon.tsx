@@ -5,9 +5,9 @@ import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 
 interface Props {
-  isFiltering?: boolean;
-  class?: string;
-  onClear?: () => void;
+  readonly isFiltering?: boolean;
+  readonly class?: string;
+  readonly onClear?: () => void;
 }
 
 export const FilterIcon: VoidComponent<Props> = (props) => {

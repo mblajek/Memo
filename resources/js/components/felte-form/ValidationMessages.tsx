@@ -5,7 +5,7 @@ import {Index, VoidComponent, createMemo, on} from "solid-js";
 import {HideableSection} from "../ui/HideableSection";
 
 interface Props {
-  fieldName: string;
+  readonly fieldName: string;
 }
 
 export const ValidationMessages: VoidComponent<Props> = (props) => {

@@ -14,13 +14,13 @@ export const MODES = ["month", "week", "day"] as const;
 export type Mode = (typeof MODES)[number];
 
 interface Props extends htmlAttributes.div {
-  locale: Intl.Locale;
-  resourceGroups: readonly ResourceGroup[];
-  holidays?: readonly DateTime[];
-  modes?: Mode[];
-  initialMode?: Mode;
-  initialResourcesSelection?: readonly string[];
-  initialDay?: DateTime;
+  readonly locale: Intl.Locale;
+  readonly resourceGroups: readonly ResourceGroup[];
+  readonly holidays?: readonly DateTime[];
+  readonly modes?: readonly Mode[];
+  readonly initialMode?: Mode;
+  readonly initialResourcesSelection?: readonly string[];
+  readonly initialDay?: DateTime;
 }
 
 const defaultProps = () =>

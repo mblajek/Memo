@@ -6,7 +6,7 @@ import {DEV, VoidComponent} from "solid-js";
 
 interface Props {
   /** A translations sub-key in routes defining the page title. */
-  routeKey: string;
+  readonly routeKey: string;
 }
 
 export const MemoTitle: VoidComponent<Props> = (props) => {

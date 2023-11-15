@@ -47,8 +47,8 @@ export namespace UserEdit {
   export type Output = z.output<ReturnType<typeof getSchema>>;
 
   interface Props extends FormConfigWithoutTransformFn<Input> {
-    onCancel?: () => void;
-    id: string;
+    readonly onCancel?: () => void;
+    readonly id: string;
   }
 
   export const EditForm: VoidComponent<Props> = (allProps) => {

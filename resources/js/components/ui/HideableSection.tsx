@@ -2,7 +2,7 @@ import {ParentComponent} from "solid-js";
 import {debouncedAccessor} from "../utils";
 
 interface Props {
-  show: boolean;
+  readonly show: boolean;
 }
 
 const TRANSITION_TIME_MS = 200;

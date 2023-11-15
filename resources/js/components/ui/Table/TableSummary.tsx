@@ -7,7 +7,7 @@ interface Props {
    * Number of rows. Must be specified for backend tables where it cannot be taken from the
    * table object.
    */
-  rowsCount?: number;
+  readonly rowsCount?: number;
 }
 
 export const TableSummary: VoidComponent<Props> = (props) => {

@@ -9,30 +9,30 @@ import s from "./Modal.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
 interface BaseProps<T> {
-  title?: string;
+  readonly title?: string;
   /**
    * Style of the modal, mostly for specifying the size. When absent, a reasonable minimum width is used.
    */
-  style?: JSX.CSSProperties;
+  readonly style?: JSX.CSSProperties;
   /**
    * A value determining whether the modal is open. If truthy, the value is also available for the modal
    * children in its function form.
    *
    * The only way to close the modal is to set this to a falsy value (the modal never closes itself).
    */
-  open: T | undefined | false;
+  readonly open: T | undefined | false;
   /**
    * Children can be either a standard JSX element, or a function that is called with an accessor
    * to the non-nullable value passed to open. This is similar to the function form of the Show component.
    * see Modal doc for example.
    */
-  children: ChildrenOrFunc<[Accessor<NonNullable<T>>]>;
+  readonly children: ChildrenOrFunc<[Accessor<NonNullable<T>>]>;
   /**
    * Handler called when the user tries to escape from the modal, either by pressing the Escape key,
    * or by clicking outside. If these actions should close the modal, this handler needs to set the
    * open prop to false.
    */
-  onEscape?: (reason: EscapeReason) => void;
+  readonly onEscape?: (reason: EscapeReason) => void;
 }
 
 export const MODAL_STYLE_PRESETS = {

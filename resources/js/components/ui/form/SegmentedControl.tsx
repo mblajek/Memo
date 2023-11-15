@@ -6,15 +6,15 @@ import {FieldLabel} from "./FieldLabel";
 import s from "./SegmentedControl.module.scss";
 
 interface Props extends htmlAttributes.div {
-  name: string;
-  items: Item[];
-  label?: string;
+  readonly name: string;
+  readonly items: readonly Item[];
+  readonly label?: string;
   /** Optionally value, if should be used in standalone mode (not in form). */
-  value?: string;
-  setValue?: (value: string) => void;
-  disabled?: boolean;
+  readonly value?: string;
+  readonly setValue?: (value: string) => void;
+  readonly disabled?: boolean;
   /** Whether to make the control smaller. */
-  small?: boolean;
+  readonly small?: boolean;
 }
 
 interface Item {

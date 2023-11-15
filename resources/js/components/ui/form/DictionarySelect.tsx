@@ -8,13 +8,13 @@ interface BaseProps
   extends htmlAttributes.div,
     Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
   /** The id or name of the dictionary. */
-  dictionary: string;
-  filterable?: boolean;
+  readonly dictionary: string;
+  readonly filterable?: boolean;
   /** What to do with disabled dictionary positions. Default: hide. */
-  disabledItemsMode?: "show" | "showAsActive" | "hide";
-  positionsSorter?: (a: Position, b: Position) => number;
+  readonly disabledItemsMode?: "show" | "showAsActive" | "hide";
+  readonly positionsSorter?: (a: Position, b: Position) => number;
   /** A function creating the items. It can make use of the default item properties provided. */
-  itemFunc?: (pos: Position, defItem: () => DefaultDictionarySelectItem) => SelectItem | undefined;
+  readonly itemFunc?: (pos: Position, defItem: () => DefaultDictionarySelectItem) => SelectItem | undefined;
 }
 
 type DefaultDictionarySelectItem = Required<Pick<SelectItem, "value" | "text" | "disabled">>;

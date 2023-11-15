@@ -4,10 +4,10 @@ import {JSX, VoidComponent, splitProps} from "solid-js";
 import {TranslatedText} from "../TranslatedText";
 
 interface Props extends htmlAttributes.label {
-  fieldName: string;
-  text?: string;
+  readonly fieldName: string;
+  readonly text?: string;
   /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
-  wrapIn?: (text: JSX.Element) => JSX.Element;
+  readonly wrapIn?: (text: JSX.Element) => JSX.Element;
 }
 
 /**

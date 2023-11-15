@@ -9,8 +9,8 @@ import {UserMembersEdit} from "./UserMembersEdit";
 
 export namespace UserCreateForm {
   interface Props {
-    onSuccess?: () => void;
-    onCancel?: () => void;
+    readonly onSuccess?: () => void;
+    readonly onCancel?: () => void;
   }
 
   export const Component: VoidComponent<Props> = (props) => {

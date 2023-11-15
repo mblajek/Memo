@@ -11,8 +11,8 @@ interface FormParams {
 }
 
 interface Props extends FormParams {
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  readonly onSuccess?: () => void;
+  readonly onCancel?: () => void;
 }
 
 export const FacilityEditForm: VoidComponent<Props> = (props) => {

@@ -4,8 +4,8 @@ import {cx} from "components/utils";
 import {Match, Show, Switch, VoidComponent} from "solid-js";
 
 interface SelectItemSymbolProps {
-  symbol: string;
-  class?: string;
+  readonly symbol: string;
+  readonly class?: string;
 }
 
 export const SelectItemSymbol: VoidComponent<SelectItemSymbolProps> = (props) => (
@@ -13,8 +13,8 @@ export const SelectItemSymbol: VoidComponent<SelectItemSymbolProps> = (props) =>
 );
 
 interface SelectItemDescriptionProps {
-  description: string;
-  class?: string;
+  readonly description: string;
+  readonly class?: string;
 }
 
 export const SelectItemDescription: VoidComponent<SelectItemDescriptionProps> = (props) => (
@@ -22,10 +22,10 @@ export const SelectItemDescription: VoidComponent<SelectItemDescriptionProps> = 
 );
 
 interface SelectItemLabelProps {
-  symbol?: string;
-  symbolClass?: string;
-  description?: string;
-  infoIcon?: InfoIconProps;
+  readonly symbol?: string;
+  readonly symbolClass?: string;
+  readonly description?: string;
+  readonly infoIcon?: InfoIconProps;
 }
 
 export const SelectItemLabelOnList: VoidComponent<SelectItemLabelProps> = (props) => (

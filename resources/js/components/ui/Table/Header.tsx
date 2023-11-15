@@ -7,8 +7,8 @@ import s from "./Header.module.scss";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ctx: HeaderContext<any, unknown>;
-  filter?: JSX.Element;
+  readonly ctx: HeaderContext<any, unknown>;
+  readonly filter?: JSX.Element;
 }
 
 /**

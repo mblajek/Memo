@@ -4,16 +4,16 @@ import {BigSpinner} from "../ui/Spinner";
 
 export interface QueryBarrierProps {
   /** List of queries to handle. */
-  queries: CreateQueryResult<unknown, unknown>[];
+  readonly queries: readonly CreateQueryResult<unknown, unknown>[];
   /**
    * If set, the barrier waits until the first fetch is done, even if data was available in the cache.
    * See `Query.isFetchedAfterMount`.
    */
-  ignoreCachedData?: boolean;
+  readonly ignoreCachedData?: boolean;
   /** Component to show when query is in error state. */
-  Error?: VoidComponent;
+  readonly Error?: VoidComponent;
   /** Component to show when query is in pending state. */
-  Pending?: VoidComponent;
+  readonly Pending?: VoidComponent;
 }
 
 /**

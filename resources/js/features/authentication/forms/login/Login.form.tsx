@@ -26,7 +26,7 @@ export namespace LoginForm {
   export type Output = z.output<ReturnType<typeof getSchema>>;
 
   interface Props {
-    onSuccess?: () => void;
+    readonly onSuccess?: () => void;
   }
 
   export const Component: VoidComponent<Props> = (props) => {

@@ -5,7 +5,7 @@ import {useTable} from "./TableContext";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  def: ColumnDef<any>;
+  readonly def: ColumnDef<any>;
 }
 
 /**

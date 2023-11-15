@@ -7,12 +7,12 @@ import {Show, VoidComponent, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 
 export interface NavigationItemProps extends Omit<AnchorProps, "children"> {
-  icon: IconTypes;
+  readonly icon: IconTypes;
   /**
    * A translations sub-key in routes defining the page title.
    * Used directly as the page title if key is missing - only to be used for dev pages.
    */
-  routeKey: string;
+  readonly routeKey: string;
 }
 
 /** Marker class to detect navigation item activity. */

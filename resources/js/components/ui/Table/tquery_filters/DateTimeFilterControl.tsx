@@ -18,13 +18,13 @@ type DateTimeRangeFilter =
   | (DateColumnFilter & {op: "="});
 
 interface DateTimeColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  columnType?: "datetime";
+  readonly columnType?: "datetime";
   /** Whether the inputs should set date and time. Default is only date. */
-  useDateTimeInputs?: boolean;
+  readonly useDateTimeInputs?: boolean;
 }
 
 interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  columnType: "date";
+  readonly columnType: "date";
 }
 
 type Props = DateColumnProps | DateTimeColumnProps;

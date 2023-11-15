@@ -8,8 +8,8 @@ import toast from "solid-toast";
 import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
 
 interface Props {
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  readonly onSuccess?: () => void;
+  readonly onCancel?: () => void;
 }
 
 /** Produces best effort suggestion for the url, e.g. "My Facility Name" --> "my-facility-name" */

@@ -9,7 +9,7 @@ import {Main} from "../layout/Main";
 import {Navbar} from "../layout/Navbar";
 
 interface Props {
-  facilityUrl?: string;
+  readonly facilityUrl?: string;
 }
 
 export default ((allProps) => {

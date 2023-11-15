@@ -50,7 +50,7 @@ export namespace UserMembersEdit {
 
   interface Props {
     /** The path in the form under which the members are stored. */
-    membersPath: string;
+    readonly membersPath: string;
   }
 
   export const MembersTable = (props: Props) => {
