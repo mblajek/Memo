@@ -33,6 +33,9 @@ export default {
         "big-input": "2.5rem",
         "small-input": "1.8rem",
       },
+      fontWeight: {
+        "weight-medium": "500",
+      },
     },
     fontFamily: {
       roboto: "Roboto",

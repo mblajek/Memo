@@ -1,5 +1,5 @@
 import {Title} from "@solidjs/meta";
-import {NBSP} from "components/ui/symbols";
+import {EM_DASH, NBSP} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {translationsLoaded} from "i18n_loader";
 import {DEV, VoidComponent} from "solid-js";
@@ -25,7 +25,7 @@ export const MemoTitle: VoidComponent<Props> = (props) => {
     if (!translationsLoaded()) {
       return "Memo";
     }
-    return `${pageName()}${NBSP}${NBSP}—${NBSP}${NBSP}${t("app_name")}${DEV ? " (DEV mode)" : undefined}`;
+    return `${pageName()}${NBSP}${EM_DASH}${NBSP}${t("app_name")}${DEV ? " (DEV mode)" : undefined}`;
   };
   return <Title>{title()}</Title>;
 };
