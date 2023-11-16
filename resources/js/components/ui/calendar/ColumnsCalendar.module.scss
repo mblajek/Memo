@@ -1,0 +1,74 @@
+.columnsCalendar {
+  @apply grid gap-y-1.5 gap-x-px;
+  grid-template-rows:
+    [header-start] auto [header-end
+    all-day-area-start] auto [all-day-area-end
+    hours-area-start] 1fr [hours-area-end];
+  grid-template-columns:
+    [time-track-start] 2.5rem [time-track-end
+    columns-start] repeat(max(1, var(--num-columns)), minmax(0, 1fr)) [columns-end
+    scroll-start] var(--sb-size) [scroll-end];
+
+  // Make the default text smaller and lines denser.
+  @apply text-sm;
+  line-height: 1.1;
+
+  .columnsHeader {
+    grid-area: header / columns;
+    @apply grid;
+    grid-template-columns: subgrid;
+  }
+
+  .columnsAllDayArea {
+    grid-area: all-day-area / columns;
+    @apply grid;
+    grid-template-columns: subgrid;
+
+    .cell {
+      @apply outline outline-1 outline-gray-300;
+    }
+  }
+
+  .hoursArea {
+    grid-area: hours-area;
+    grid-column: 1 / -1;
+    @apply grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: calc((24 * var(--pixels-per-hour) + 1) * 1px);
+    @apply overflow-y-scroll;
+    @apply border-t border-gray-300;
+    @apply relative;
+
+    .timeTrack {
+      grid-column: time-track;
+      @apply relative;
+      .label {
+        @apply absolute w-full px-1 text-right text-xs text-gray-500;
+      }
+    }
+
+    .columnsHoursArea {
+      grid-column: columns;
+      display: grid;
+      grid-template-columns: subgrid;
+
+      .cell {
+        @apply outline outline-1 outline-gray-300 relative;
+      }
+    }
+
+    .gridRowLines {
+      @apply contents z-10;
+      .gridRowLine {
+        @apply absolute w-full h-0 border-b border-dashed border-gray-300;
+        &.fullHour {
+          @apply border-solid;
+        }
+      }
+    }
+  }
+
+  .nowLine {
+    @apply absolute w-full h-0 border-b-2 border-red-500 z-50;
+  }
+}

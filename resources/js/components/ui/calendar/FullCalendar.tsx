@@ -1,13 +1,34 @@
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
-import {DateTime} from "luxon";
+import {DateTime, Interval} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
-import {VoidComponent, createComputed, createMemo, createSignal, mergeProps, on, splitProps} from "solid-js";
+import {TbInfoTriangle} from "solid-icons/tb";
+import {
+  Match,
+  Switch,
+  VoidComponent,
+  batch,
+  createComputed,
+  createMemo,
+  createSignal,
+  mergeProps,
+  on,
+  splitProps,
+} from "solid-js";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {SegmentedControl} from "../form/SegmentedControl";
-import {ResourceGroup, ResourcesSelector} from "./ResourcesSelector";
+import {EM_DASH} from "../symbols";
+import {CalendarColumn, ColumnsCalendar} from "./ColumnsCalendar";
+import {Resource, ResourceGroup, ResourcesSelector} from "./ResourcesSelector";
 import {TinyCalendar} from "./TinyCalendar";
+import {AllDayArea} from "./calendar-columns/AllDayArea";
+import {DayHeader} from "./calendar-columns/DayHeader";
+import {HoursArea} from "./calendar-columns/HoursArea";
+import {ResourceHeader} from "./calendar-columns/ResourceHeader";
+import {AllDayAreaBlock, HoursAreaBlock} from "./calendar-columns/blocks";
+import {AllDayEvent, PartDayEvent, Tag} from "./calendar-columns/events";
 import {DaysRange} from "./days_range";
+import {Block, Event} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
 export const MODES = ["month", "week", "day"] as const;
@@ -25,11 +46,13 @@ interface Props extends htmlAttributes.div {
 
 const defaultProps = () =>
   ({
-    modes: ["month", "week", "day"],
+    modes: MODES,
     initialMode: "week",
-    initialResourcesSelection: [] as readonly string[],
+    initialResourcesSelection: [],
     initialDay: currentDate(),
-  }) as const;
+  }) satisfies Partial<Props>;
+
+const PIXELS_PER_HOUR_RANGE = [40, 400] as const;
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -139,6 +162,28 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     // Use end of range to preserve week type.
     setDaysSelectionAndMonthFromDay(daysSelection().end.plus({[mode()]: dir}));
   }
+  function goToToday() {
+    let range;
+    if (mode() === "week" && daysSelection().length() === 7) {
+      // Keep the 7-day week.
+      range = weekDayCalculator().dayToWeek(currentDate());
+    } else {
+      range = getRange(currentDate());
+    }
+    setDaysSelectionAndMonth(range);
+  }
+
+  const [pixelsPerHour, setPixelsPerHour] = createSignal(120);
+
+  const resources = createMemo(() => {
+    const result = new Map<string, Resource>();
+    for (const group of props.resourceGroups) {
+      for (const resource of group.resources) {
+        result.set(resource.id, resource);
+      }
+    }
+    return result;
+  });
 
   // Set the days selection when the mode is changed.
   createComputed(
@@ -210,10 +255,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return daysSelection().start.toLocaleString({month: "long", year: "numeric"});
       case "week": {
         const fitsInMonth = daysSelection().start.hasSame(daysSelection().end, "month");
+        const fitsInYear = fitsInMonth || daysSelection().start.hasSame(daysSelection().end, "year");
         return `${daysSelection().start.toLocaleString({
           day: "numeric",
           month: fitsInMonth ? undefined : "long",
-        })} — ${daysSelection().end.toLocaleString({day: "numeric", month: "long", year: "numeric"})}`;
+          year: fitsInYear ? undefined : "numeric",
+        })} ${EM_DASH} ${daysSelection().end.toLocaleString({day: "numeric", month: "long", year: "numeric"})}`;
       }
       case "day":
         return daysSelection().start.toLocaleString({weekday: "long", day: "numeric", month: "long", year: "numeric"});
@@ -221,6 +268,242 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return m satisfies never;
     }
   }
+
+  function getFakeColumnData(resource: Resource, day: DateTime) {
+    // Produce some fake data for the specified day.
+    const blocks: Block[] = [];
+    const events: Event[] = [];
+    if (day.weekday === 3) {
+      blocks.push(
+        {
+          allDay: true,
+          range: new DaysRange(day.minus({days: 1}), day.plus({days: 1})),
+          contentInAllDayArea: () => <AllDayAreaBlock class="bg-gray-200" label="Trzydniowe aktualne" />,
+        },
+        {
+          allDay: true,
+          range: new DaysRange(day.minus({days: 3}), day.minus({days: 1})),
+          contentInAllDayArea: () => <AllDayAreaBlock class="bg-gray-200" label="Trzydniowe nieaktualne" />,
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").minus({hours: 2}), {hours: 4}),
+          content: () => <HoursAreaBlock class="bg-indigo-200" label="Noc jest" />,
+        },
+      );
+      events.push(
+        {
+          allDay: true,
+          range: new DaysRange(day.minus({days: 1}), day.plus({days: 1})),
+          content: () => <AllDayEvent baseColor="blue">Trzydniowe aktualne</AllDayEvent>,
+        },
+        {
+          allDay: true,
+          range: new DaysRange(day.minus({days: 3}), day.minus({days: 1})),
+          content: () => <AllDayEvent baseColor="red">Trzydniowe nieaktualne</AllDayEvent>,
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").minus({hours: 2}), {hours: 3}),
+          content: () => (
+            <PartDayEvent range={Interval.after(day.startOf("day").minus({hours: 1}), {hours: 2})} baseColor="green" />
+          ),
+        },
+        {
+          // Not on this day.
+          allDay: false,
+          range: Interval.after(day.startOf("day").minus({hours: 2}), {hours: 1}),
+          content: () => (
+            <PartDayEvent range={Interval.after(day.startOf("day").minus({hours: 2}), {hours: 1})} baseColor="green" />
+          ),
+        },
+      );
+    } else if (day.weekday <= 5) {
+      blocks.push(
+        {
+          allDay: true,
+          range: DaysRange.oneDay(day),
+          contentInAllDayArea: () => <AllDayAreaBlock class="bg-gray-200" label="Dzień jakiś" />,
+          contentInHoursArea: () => <HoursAreaBlock class="bg-gray-200" />,
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").set({hour: 8}), {hours: 8}),
+          content: () => <HoursAreaBlock class="bg-white" label="Do roboty!" />,
+        },
+      );
+      events.push(
+        {
+          allDay: true,
+          range: DaysRange.oneDay(day),
+          content: () => <AllDayEvent baseColor="blue">Tego...</AllDayEvent>,
+        },
+        {
+          allDay: true,
+          range: DaysRange.oneDay(day),
+          content: () => (
+            <AllDayEvent baseColor="red">asd serg s rtgh asrg adr tga srg adth adth adt dargadrg</AllDayEvent>
+          ),
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").set({hour: 7}), {hours: 1}),
+          content: () => (
+            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 7}), {hours: 1})} baseColor="green">
+              Spotkanie: <span class="font-bold">{resource.label()}</span>
+            </PartDayEvent>
+          ),
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").set({hour: 8, minute: 15}), {hours: 1}),
+          content: () => (
+            <PartDayEvent
+              range={Interval.after(day.startOf("day").set({hour: 8, minute: 15}), {hours: 1})}
+              baseColor="purple"
+            >
+              <div>Anna Kowalska</div>
+              <div class="flex flex-wrap gap-px">
+                <Tag color="red">odbyta</Tag>
+                <Tag color="black">tag</Tag>
+                <Tag color="orange">jakiś tag</Tag>
+              </div>
+              <div>Konsultacja</div>
+            </PartDayEvent>
+          ),
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").set({hour: 10}), {hours: 1}),
+          content: () => (
+            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 10}), {hours: 1})} baseColor="purple">
+              <div>Anna Kowalska</div>
+              <div class="flex flex-wrap gap-px">
+                <Tag color="red">odbyta</Tag>
+                <Tag color="black">tag</Tag>
+                <Tag color="orange">jakiś tag</Tag>
+              </div>
+              <div>Konsultacja</div>
+            </PartDayEvent>
+          ),
+        },
+        {
+          allDay: false,
+          range: Interval.fromDateTimes(
+            day.startOf("day").set({hour: 10, minute: 30}),
+            day.startOf("day").set({hour: 12}),
+          ),
+          content: () => (
+            <PartDayEvent
+              range={Interval.fromDateTimes(
+                day.startOf("day").set({hour: 10, minute: 30}),
+                day.startOf("day").set({hour: 12}),
+              )}
+              baseColor="purple"
+            >
+              asd serg s rtgh asrg adr tga srg adth adth adt dargadrg
+            </PartDayEvent>
+          ),
+        },
+      );
+    } else {
+      blocks.push({
+        allDay: false,
+        range: Interval.after(day.startOf("day"), {hours: 11, minutes: 30}),
+        content: () => <HoursAreaBlock class="bg-fuchsia-100" label="Spanko" />,
+      });
+      events.push(
+        {
+          allDay: true,
+          range: DaysRange.oneDay(day),
+          content: () => <AllDayEvent baseColor="pink">Leniuchowanie</AllDayEvent>,
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").set({hour: 12}), {minutes: 30}),
+          content: () => (
+            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 12}), {minutes: 30})} baseColor="green">
+              Śniadanko
+            </PartDayEvent>
+          ),
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").set({hour: 12, minute: 30}), {hours: 1, minutes: 30}),
+          content: () => (
+            <PartDayEvent
+              range={Interval.after(day.startOf("day").set({hour: 12, minute: 30}), {hours: 1, minutes: 30})}
+              baseColor="green"
+            >
+              Memiki
+            </PartDayEvent>
+          ),
+        },
+        {
+          allDay: false,
+          range: Interval.after(day.startOf("day").set({hour: 14}), {hours: 1}),
+          content: () => (
+            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 14}), {hours: 1})} baseColor="green">
+              Pizza
+            </PartDayEvent>
+          ),
+        },
+      );
+    }
+    return {
+      day,
+      allDayArea: () => (
+        <AllDayArea
+          day={day}
+          blocks={blocks}
+          events={events}
+          onClick={() => console.log(`New all-day event on ${day.toISO()}`)}
+        />
+      ),
+      hoursArea: () => (
+        <HoursArea
+          day={day}
+          blocks={blocks}
+          events={events}
+          onTimeClick={(t) => console.log(`New part-day event at ${t.toISO()}`)}
+        />
+      ),
+    } satisfies Partial<CalendarColumn>;
+  }
+
+  const calendarColumns = (): CalendarColumn[] => {
+    const m = mode();
+    switch (m) {
+      case "month":
+        // The columns calendar is not displayed in this mode anyway.
+        return [];
+      case "week":
+        // eslint-disable-next-line solid/reactivity
+        return Array.from(daysSelection(), (day) => ({
+          ...getFakeColumnData(resources().get(selectedResourceRadio()!)!, day),
+          header: () => <DayHeader day={day} />,
+        }));
+      case "day": {
+        const day = daysSelection().start;
+        // eslint-disable-next-line solid/reactivity
+        return Array.from(resources(), ([resourceId, resource]) =>
+          selectedResources().has(resourceId)
+            ? {
+                ...getFakeColumnData(resource, day),
+                header: () => (
+                  <ResourceHeader
+                    // TODO: Consider a better way to get the resource label.
+                    label={() => resource.label()}
+                  />
+                ),
+              }
+            : undefined,
+        ).filter(NON_NULLABLE);
+      }
+      default:
+        return m satisfies never;
+    }
+  };
 
   return (
     <div {...htmlAttributes.merge(divProps, {class: "flex items-stretch gap-1"})}>
@@ -239,12 +522,16 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           }}
           onDayDoubleClick={(day) => {
             // Switch between day and week modes.
-            setMode(mode() === "day" ? "week" : "day");
-            setDaysSelectionAndMonthFromDay(day);
+            batch(() => {
+              setMode(mode() === "day" ? "week" : "day");
+              setDaysSelectionAndMonthFromDay(day);
+            });
           }}
           onMonthNameClick={() => {
-            setMode("month");
-            setDaysSelection(getRange(tinyCalMonth()));
+            batch(() => {
+              setMode("month");
+              setDaysSelection(getRange(tinyCalMonth()));
+            });
           }}
           onVisibleRangeChange={setTinyCalVisibleRange}
         />
@@ -256,21 +543,21 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setSelection={setSelectedResources}
         />
       </div>
-      <div class="grow flex flex-col items-stretch gap-1">
+      <div class="min-w-0 grow flex flex-col items-stretch gap-3">
         <div class="pt-1 pr-1 flex items-stretch gap-1">
           <div>
-            <Button class="h-full secondarySmall !rounded-r-none" onClick={() => moveDaysSelection(-1)}>
+            <Button class="h-full secondarySmall !rounded-r-none" onClick={[moveDaysSelection, -1]}>
               <IoArrowBackOutline class="text-current" />
             </Button>
             <Button
               class="h-full secondarySmall !rounded-l-none"
               style={{"margin-left": "-1px"}}
-              onClick={() => moveDaysSelection(1)}
+              onClick={[moveDaysSelection, 1]}
             >
               <IoArrowForwardOutline class="text-current" />
             </Button>
           </div>
-          <Button class="secondarySmall" onClick={() => setDaysSelectionAndMonthFromDay(currentDate())}>
+          <Button class="secondarySmall" onClick={goToToday}>
             <Capitalize text={t("calendar.today")} />
           </Button>
           <div class="grow self-center text-center text-lg text-ellipsis">
@@ -280,15 +567,34 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             name="calendarMode"
             value={mode()}
             setValue={setMode}
-            items={[
-              {value: "month", label: () => t("calendar.month")},
-              {value: "week", label: () => t("calendar.week")},
-              {value: "day", label: () => t("calendar.day")},
-            ]}
+            items={props.modes.map((m) => ({value: m, label: () => t(`calendar.${m}`)}))}
             small
           />
         </div>
-        <div>Календар буде тут.</div>
+        <Switch>
+          <Match when={mode() === "month"}>
+            <div>Календар буде тут.</div>
+          </Match>
+          <Match when={!selectedResources().size}>
+            <div class="my-4 mx-1 self-start flex gap-1">
+              <TbInfoTriangle size={20} class="text-memo-active" />
+              {t("calendar.select_resource_to_show_calendar")}
+            </div>
+          </Match>
+          <Match when={true}>
+            <ColumnsCalendar
+              class="h-full min-h-0"
+              columns={calendarColumns()}
+              pixelsPerHour={pixelsPerHour()}
+              scrollToDayMinute={6 * 60 + 50}
+              onWheelWithAlt={(e) =>
+                setPixelsPerHour((v) =>
+                  Math.min(Math.max(v - 0.05 * e.deltaY, PIXELS_PER_HOUR_RANGE[0]), PIXELS_PER_HOUR_RANGE[1]),
+                )
+              }
+            />
+          </Match>
+        </Switch>
       </div>
     </div>
   );
