@@ -1,11 +1,17 @@
 const OP_START = 1;
 const OP_END = 0;
 
-/** Information of the overlap status of a single object. */
+/**
+ * Information of the overlap status of a single object.
+ *
+ * Overlapping objects are placed next to each other, in sub-columns. For example two overlapping
+ * objects will be placed in two sub-columns (`count: 2`), one in the first sub-column and the other
+ * in the second sub-column (`index: 0` and `index: 1` respectively).
+ */
 export interface OverlapData {
-  /** The total number of objects active during the object. */
+  /** The number of sub-columns existing in the area where this object is placed. */
   count: number;
-  /** The index of this object among the overlapping objects. */
+  /** The sub-column index where this obejct should be placed. */
   index: number;
 }
 
