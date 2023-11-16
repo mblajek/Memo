@@ -62,4 +62,4 @@ user:
 client:
   _name: "klient"
   _name_plural: "klienci"
-  genderDictId: "$t(dictionary.gender._name)"
+  gender: "$t(dictionary.gender._name)"

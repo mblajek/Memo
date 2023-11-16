@@ -1,5 +1,6 @@
 import {FullLogo} from "components/ui/FullLogo";
 import {LangFunc, cx, useLangFunc} from "components/utils";
+import {FaSolidList} from "solid-icons/fa";
 import {
   HiOutlineBuildingOffice,
   HiOutlineCalendarDays,
@@ -146,6 +147,11 @@ function getSectionItems(
 
 function getDevSectionItems(): NavigationItemProps[] {
   return [
+    {
+      icon: FaSolidList,
+      href: "/dev/attributes",
+      routeKey: "Attributes",
+    },
     {
       icon: TiSortAlphabetically,
       href: "/dev/dictionaries",

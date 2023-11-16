@@ -2,7 +2,7 @@ import {Title} from "@solidjs/meta";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
-import {AUTO_SIZE_COLUMN_DEFS, Table, getBaseTableOptions, useTableCells} from "components/ui/Table";
+import {AUTO_SIZE_COLUMN_DEFS, Table, cellFunc, getBaseTableOptions, useTableCells} from "components/ui/Table";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {QueryBarrier} from "components/utils";
 import {Dictionary, Position, useAllDictionaries} from "data-access/memo-api/dictionaries";
@@ -37,6 +37,7 @@ export default (() => {
       }),
       helper.accessor("label", {
         id: "Label",
+        cell: cellFunc<string>((l) => <div class="italic">{l}</div>),
         ...textSort,
       }),
       helper.accessor("resource.facilityId", {
@@ -79,7 +80,6 @@ export default (() => {
               ...getCommonColumns(h),
               h.accessor("disabled", {
                 id: "Disabled",
-                cell: tableCells.bool,
               }),
             ],
           });

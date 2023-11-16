@@ -31,10 +31,13 @@ export function useTableCells() {
   };
 }
 
-export function cellFunc<V>(func: (v: V) => JSX.Element | undefined, fallback?: () => JSX.Element): CellComponent {
-  return (c) => (
-    <Show when={c.getValue() != null} fallback={fallback?.()}>
-      {func(c.getValue() as V)}
+export function cellFunc<V>(
+  func: <T>(v: V, ctx: CellContext<T, unknown>) => JSX.Element | undefined,
+  fallback?: () => JSX.Element,
+): CellComponent {
+  return (ctx) => (
+    <Show when={ctx.getValue() != null} fallback={fallback?.()}>
+      {func(ctx.getValue() as V, ctx)}
     </Show>
   );
 }

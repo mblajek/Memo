@@ -5,7 +5,7 @@ import {createMemo} from "solid-js";
 import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
 import {Dictionaries, Dictionary, useAllDictionaries} from "./dictionaries";
 import {System} from "./groups";
-import {AttributeResource, AttributeType} from "./resources/attribute.resource";
+import {AttributeResource, AttributeType, RequirementLevel} from "./resources/attribute.resource";
 import {getNameTranslation} from "./resources/name_string";
 import {facilityIdMatches} from "./utils";
 
@@ -69,6 +69,7 @@ export class Attribute {
     readonly type: AttributeType,
     readonly dictionary: Dictionary | undefined,
     readonly multiple: boolean | undefined,
+    readonly requirementLevel: RequirementLevel,
   ) {}
 
   static fromResource(t: LangFunc, resource: AttributeResource, dictionaries: Dictionaries) {
@@ -81,6 +82,7 @@ export class Attribute {
       resource.type,
       resource.dictionaryId ? dictionaries.get(resource.dictionaryId) : undefined,
       resource.isMultiValue ?? undefined,
+      resource.requirementLevel,
     );
   }
 
@@ -98,6 +100,7 @@ export class Attribute {
       this.type,
       this.dictionary?.subsetFor(facilityIdOrGlobal),
       this.multiple,
+      this.requirementLevel,
     );
   }
 }
