@@ -12,6 +12,7 @@ import {
   HiOutlineVideoCamera,
 } from "solid-icons/hi";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
+import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, Show, VoidComponent, createMemo} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {NavigationItemProps} from "../components/navbar/NavigationItem";
@@ -146,9 +147,14 @@ function getSectionItems(
 function getDevSectionItems(): NavigationItemProps[] {
   return [
     {
+      icon: TiSortAlphabetically,
+      href: "/dev/dictionaries",
+      routeKey: "Dictionaries",
+    },
+    {
       icon: RiDevelopmentCodeBoxLine,
-      href: "/test-page",
-      routeKey: "/test-page",
+      href: "/dev/test-page",
+      routeKey: "/dev/test-page",
     },
   ];
 }

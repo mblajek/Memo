@@ -9,14 +9,12 @@ import toast from "solid-toast";
 import {
   DisplayMode,
   Header,
-  IdColumn,
   Pagination,
   Table,
   TableColumnVisibilityController,
   TableSearch,
   TableSummary,
   TableTranslations,
-  cellFunc,
   createTableTranslations,
   getBaseTableOptions,
   useTableCells,
@@ -127,7 +125,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     ["int", {cell: tableCells.int}],
     ["string", {}],
     ["text", {enableSorting: false}],
-    ["uuid", {cell: cellFunc<string>((v) => <IdColumn id={v} />), enableSorting: false, size: 80}],
+    ["uuid", {cell: tableCells.uuid, enableSorting: false, size: 80}],
   ]);
 
   const requestCreator = createTableRequestCreator({

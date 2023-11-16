@@ -3,6 +3,7 @@ import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api/groups";
 import {DEV, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
+import {DevRoutes} from "./dev-pages/DevRoutes";
 import {NotFound} from "./features/not-found/components/NotFound";
 import {NotYetImplemented} from "./features/not-found/components/NotYetImplemented";
 import {MemoTitle} from "./features/root/MemoTitle";
@@ -12,7 +13,6 @@ const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList
 const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
-const TestPage = lazy(() => import("TestPage"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -22,7 +22,7 @@ const App: VoidComponent = () => {
       <Route path="/" component={RootPage}>
         <UnknownNotFound />
         <Show when={DEV}>
-          <Route path="/test-page" component={TestPage} />
+          <DevRoutes />
         </Show>
         <LeafRoute routeKey="help" path="/help" component={NotYetImplemented} />
         <Route path="/admin" component={GlobalAdminPages}>

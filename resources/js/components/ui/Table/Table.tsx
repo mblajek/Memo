@@ -135,7 +135,11 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
   createEffect(
     on(
       () => props.scrollToTopSignal?.(),
-      () => scrollToTopPoint?.scrollIntoView({behavior: "smooth"}),
+      (_input, prevInput) => {
+        if (prevInput !== undefined) {
+          scrollToTopPoint?.scrollIntoView({behavior: "smooth"});
+        }
+      },
     ),
   );
   const gridTemplateColumns = () =>

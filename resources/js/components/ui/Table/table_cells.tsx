@@ -3,6 +3,7 @@ import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT, useLangFunc} from "compone
 import {DateTime} from "luxon";
 import {JSX, Show} from "solid-js";
 import {Header} from "./Header";
+import {IdColumn} from "./IdColumn";
 
 /** The component used as header in column definition. */
 export type HeaderComponent = <T>(ctx: HeaderContext<T, unknown>) => JSX.Element;
@@ -26,6 +27,7 @@ export function useTableCells() {
     date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
     datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
     int: cellFunc<number>((v) => <span class="w-full text-right">{NUMBER_FORMAT.format(v)}</span>),
+    uuid: cellFunc<string>((v) => <IdColumn id={v} />),
   };
 }
 

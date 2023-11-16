@@ -31,7 +31,7 @@ export const SortMarker: VoidComponent<Props> = (props) => {
         component={ICONS.get(props.column.getIsSorted())}
         class="inlineIcon"
         classList={{dimmed: !props.column.getIsSorted()}}
-        style={{scale: isSecondarySort() ? 0.6 : 1}}
+        style={{scale: isSecondarySort() ? 0.6 : undefined}}
       />
     </Show>
   );
