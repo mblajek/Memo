@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
-use App\Rules\RequirePresentRule;
 use App\Rules\RequireNotNullRule;
+use App\Rules\RequirePresentRule;
 use App\Rules\Valid;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
@@ -18,11 +18,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-
-use function App\Utils\Validation\insertAndPatch;
-use function App\Utils\Validation\insertAndResource;
-use function App\Utils\Validation\patch;
-use function App\Utils\Validation\resource;
 
 
 /**
@@ -122,54 +117,42 @@ class User extends Authenticatable
         return $this->global_admin_grant_id !== null;
     }
 
-    public static function validationRules(): array
+    public static function validationRules(bool $isResource, bool $isInsert, $isPatch): array
     {
         return [
-            'name' => [patch('sometimes'), Valid::trimmed(['required'])],
-            'email' => [
-                patch('sometimes'),
-                Valid::trimmed(['email']),
-                'nullable',
-                insertAndPatch(
-                    Rule::unique('users', 'email'),
-                ),
-                new RequireNotNullRule('has_email_verified'),
-                'required_if_accepted:has_global_admin'
-            ],
-            'has_email_verified' => [
-                patch('sometimes'),
-                Valid::bool(),
-                'nullable',
-                new RequireNotNullRule('email'),
-            ],
-            'password' => [
-                patch('sometimes'),
-                Valid::string(),
-                'nullable',
-                insertAndPatch(
-                    self::getPasswordRules(),
-                    new RequirePresentRule('password_expire_at')
-                ),
-                insertAndResource(new RequireNotNullRule('email')),
-            ],
-            'password_expire_at' => [
-                patch('sometimes'),
-                Valid::datetime(),
-                'nullable',
-                new RequireNotNullRule('password'),
-                // TODO: When password is null, password_expire_at must be null as well
-            ],
-            'has_password' => [
-                resource(
-                    Valid::bool(),
-                    'accepted_if:has_global_admin,true'
-                )
-            ],
-            'has_global_admin' => [
-                insertAndPatch('sometimes'),
-                resource('required'),
-                Valid::bool()
-            ]
+            'name' => Valid::trimmed(['required'], sometimes: $isPatch),
+            'email' =>
+                Valid::trimmed([
+                    'email',
+                    [$isInsert || $isPatch, Rule::unique('users', 'email')],
+                    new RequireNotNullRule('has_email_verified'),
+                    'required_if_accepted:has_global_admin'
+                ],
+                    sometimes: $isPatch,
+                    nullable: true),
+            'has_email_verified' =>
+                Valid::bool([new RequireNotNullRule('email')],
+                    sometimes: $isPatch,
+                    nullable: true),
+            'password' =>
+                Valid::string([
+                    [
+                        $isInsert || $isPatch,
+                        self::getPasswordRules(),
+                        new RequirePresentRule('password_expire_at')
+                    ],
+                    [$isInsert || $isResource, new RequireNotNullRule('email')],
+                ],
+                    sometimes: $isPatch,
+                    nullable: true),
+            'password_expire_at' =>
+                Valid::datetime([new RequireNotNullRule('password')], sometimes: $isPatch, nullable: true),
+            // TODO: When password is null, password_expire_at must be null as well
+            'has_password' => Valid::bool([
+                [!$isResource, 'missing'],
+                [$isResource, 'accepted_if:has_global_admin,true']
+            ]),
+            'has_global_admin' => Valid::bool([[$isResource, 'required']], sometimes: $isInsert || $isPatch)
         ];
     }
 
