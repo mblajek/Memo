@@ -1,6 +1,6 @@
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
-import {cx, htmlAttributes} from "components/utils";
-import {JSX, VoidComponent, splitProps} from "solid-js";
+import {htmlAttributes} from "components/utils";
+import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {TranslatedText} from "../TranslatedText";
 
 interface Props extends htmlAttributes.label {
@@ -28,14 +28,15 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
       langFunc={[form?.translations?.fieldNames, props.fieldName]}
       capitalize
       wrapIn={(text) => (
-        <label
-          id={labelIdForField(props.fieldName)}
-          for={props.fieldName}
-          {...labelProps}
-          class={cx("font-medium", labelProps.class)}
-        >
-          {props.wrapIn?.(text) ?? text}
-        </label>
+        <Show when={text !== undefined}>
+          <label
+            id={labelIdForField(props.fieldName)}
+            for={props.fieldName}
+            {...htmlAttributes.merge(labelProps, {class: "font-medium"})}
+          >
+            {props.wrapIn?.(text) ?? text}
+          </label>
+        </Show>
       )}
     />
   );

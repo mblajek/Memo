@@ -11,7 +11,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from "components/ui/Table";
-import {Checkbox} from "components/ui/form/Checkbox";
+import {CheckboxField} from "components/ui/form/CheckboxField";
 import {SimpleSelect} from "components/ui/form/SimpleSelect";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
@@ -150,7 +150,7 @@ export namespace UserMembersEdit {
           cell: (ctx) => (
             <Show when={!ctx.row.getValue("isNewRow")}>
               <div class="w-full flex flex-col items-center">
-                <Checkbox
+                <CheckboxField
                   name={`${membersPath}.${ctx.row.index}.hasFacilityAdmin`}
                   label=""
                   data-felte-keep-on-remove

@@ -38,6 +38,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     id: string;
     schema: ZodSchema<T>;
     children: ChildrenOrFunc<[FormType<T>]>;
+    disabled?: boolean;
     onFormCreated?: (form: FormType<T>) => void;
   };
 
@@ -53,7 +54,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const t = useLangFunc();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
-    ["children", "schema", "onFormCreated"],
+    ["children", "schema", "disabled", "onFormCreated"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
   // eslint-disable-next-line solid/reactivity
@@ -125,9 +126,13 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
             }
           });
         }}
-        {...formProps}
+        {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1"})}
       >
-        <fieldset class="contents" disabled={form.isSubmitting()} inert={form.isSubmitting() || undefined}>
+        <fieldset
+          class="contents"
+          disabled={props.disabled || form.isSubmitting()}
+          inert={form.isSubmitting() || undefined}
+        >
           {getChildrenElement(props.children, form)}
         </fieldset>
       </form>

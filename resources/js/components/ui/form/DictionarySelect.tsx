@@ -1,12 +1,10 @@
-import {NON_NULLABLE, htmlAttributes} from "components/utils";
+import {NON_NULLABLE} from "components/utils";
 import {Position, useDictionaries} from "data-access/memo-api/dictionaries";
 import {VoidComponent, createMemo, mergeProps, splitProps} from "solid-js";
 import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSelectPropsPart} from "./Select";
 import {mergeSelectProps} from "./select_helper";
 
-interface BaseProps
-  extends htmlAttributes.div,
-    Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
+interface BaseProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
   /** The id or name of the dictionary. */
   readonly dictionary: string;
   readonly filterable?: boolean;
