@@ -1,9 +1,14 @@
 import {htmlAttributes} from "components/utils";
+import {
+  DayMinuteRange,
+  FULL_DAY_MINUTE_RANGE,
+  dayMinuteToHM,
+  getDayMinuteRange,
+} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {For, JSX, Show, VoidComponent, createMemo, splitProps} from "solid-js";
 import {useColumnsCalendar} from "../ColumnsCalendar";
 import {Block, Event, PartDayEvent} from "../types";
-import {DayMinuteRange, FULL_DAY_MINUTE_RANGE, dayMinuteToHM, getDayMinuteRange} from "../util";
 import s from "./HoursArea.module.scss";
 import {calculateOverlaps} from "./overlaps_calculator";
 

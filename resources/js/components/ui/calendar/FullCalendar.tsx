@@ -567,7 +567,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             name="calendarMode"
             value={mode()}
             setValue={setMode}
-            items={props.modes.map((m) => ({value: m, label: () => t(`calendar.${m}`)}))}
+            items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
             small
           />
         </div>

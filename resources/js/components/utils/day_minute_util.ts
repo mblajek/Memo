@@ -10,6 +10,9 @@ export function getDayMinute(time: DateTime) {
 }
 
 export function dayMinuteToHM(dayMinute: number) {
+  if (dayMinute < 0 || dayMinute >= MAX_DAY_MINUTE) {
+    throw new Error(`Invalid day minute: ${dayMinute}`);
+  }
   return {
     hour: Math.floor(dayMinute / 60),
     minute: dayMinute % 60,
@@ -46,4 +49,26 @@ export function getDayMinuteRange(day: DateTime, {start, end}: Interval): DayMin
     getDayMinute(rangeStart),
     rangeEnd.toMillis() === dayEnd.toMillis() ? MAX_DAY_MINUTE : getDayMinute(rangeEnd),
   ];
+}
+
+export function timeInputToDayMinute(timeInputValue: string, params?: {assert?: false}): number | undefined;
+export function timeInputToDayMinute(timeInputValue: string, params: {assert: true}): number;
+export function timeInputToDayMinute(timeInputValue: string, {assert = false} = {}) {
+  if (!timeInputValue) {
+    if (assert) {
+      throw new Error(`Empty time input value`);
+    }
+    return undefined;
+  }
+  const [hour, minute] = timeInputValue.split(":").map(Number);
+  return hour! * 60 + minute!;
+}
+
+export function dayMinuteToTimeInput(dayMinute: number) {
+  const {hour, minute} = dayMinuteToHM(dayMinute);
+  return `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+}
+
+export function dateTimeToTimeInput(dateTime: DateTime) {
+  return dateTime.toISOTime().slice(0, 5);
 }
