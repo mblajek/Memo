@@ -4,11 +4,10 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
 use App\Rules\RequireNotNullRule;
-use App\Rules\RequirePresentRule;
 use App\Rules\Valid;
+use App\Utils\Date\SerializeDate;
 use App\Utils\Uuid\UuidTrait;
 use App\Utils\Validation\HasValidator;
-use App\Utils\Validation\RuleContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,6 +17,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rules\Unique;
 
 
 /**
@@ -47,6 +47,7 @@ class User extends Authenticatable
     use Notifiable;
     use UuidTrait;
     use HasValidator;
+    use SerializeDate;
 
     protected $table = 'users';
 
@@ -117,20 +118,28 @@ class User extends Authenticatable
         return $this->global_admin_grant_id !== null;
     }
 
-    public static function validationRules(bool $isResource, bool $isInsert, $isPatch): array
+    public static function validationRules(bool $isResource, bool $isInsert, $isPatch, User $original = null): array
     {
         return [
             'name' => Valid::trimmed(['required'], sometimes: $isPatch),
             'email' =>
-                Valid::trimmed([
-                    'email',
-                    [$isInsert || $isPatch, Rule::unique('users', 'email')],
-                    new RequireNotNullRule('has_email_verified'),
-                    'required_if_accepted:has_global_admin'
+                [
+                    // Email is required when hasGlobalAdmin is true. It must be checked before nullable, this is why I
+                    // put this before the Valid::trimmed.
+                    'required_if_accepted:has_global_admin',
+                    ...Valid::trimmed([
+                        // It is a valid email address
+                        'email',
+                        // Uniqueness is only checked for insert and patch
+                        [$isInsert || $isPatch, self::getRuleUnique($original)],
+                        // If there's an email in the request, there must also be hasEmailVerified != null.
+                        new RequireNotNullRule('has_email_verified'),
+                    ],
+                        sometimes: $isPatch,
+                        nullable: true)
                 ],
-                    sometimes: $isPatch,
-                    nullable: true),
             'has_email_verified' =>
+            // If we specify hasEmailVerified in the request, we must also specify email.
                 Valid::bool([new RequireNotNullRule('email')],
                     sometimes: $isPatch,
                     nullable: true),
@@ -138,32 +147,40 @@ class User extends Authenticatable
                 Valid::string([
                     [
                         $isInsert || $isPatch,
+                        // This is only applied to insert and patch because later on the password field gets replaced
+                        // with the hashed password.
                         self::getPasswordRules(),
-                        new RequirePresentRule('password_expire_at')
+                        // When we update the password, we must also specify expiration time, but it can be null, it
+                        // just has to be said explicitly (in the request).
+                        // new RequirePresentRule('password_expire_at')
+                        // TODO: Learn if we should use it. At the moment, the UI doesn't send this.
                     ],
+                    // If there's a password, there must also be an email.
                     [$isInsert || $isResource, new RequireNotNullRule('email')],
                 ],
                     sometimes: $isPatch,
                     nullable: true),
             'password_expire_at' =>
+            // Password expiration is a valid datetime and if the date defined, the password must not be null.
                 Valid::datetime([new RequireNotNullRule('password')], sometimes: $isPatch, nullable: true),
             // TODO: When password is null, password_expire_at must be null as well
             'has_password' => Valid::bool([
-                [!$isResource, 'missing'],
-                [$isResource, 'accepted_if:has_global_admin,true']
+                // It must be true if the user is a global admin.
+                [$isResource || $isInsert, 'accepted_if:has_global_admin,true']
             ]),
-            'has_global_admin' => Valid::bool([[$isResource, 'required']], sometimes: $isInsert || $isPatch)
+            // A valid boolean
+            'has_global_admin' => Valid::bool(sometimes: $isInsert || $isPatch, nullable: true)
         ];
     }
 
     public static function getInsertValidator(): array
     {
-        return RuleContext::insert->selectRules(static::validationRules());
+        return static::validationRules(false, true, false);
     }
 
-    public static function getPatchValidator(): array
+    public static function getPatchValidator(User $user): array
     {
-        return RuleContext::patch->selectRules(static::validationRules());
+        return static::validationRules(false, false, true, $user);
     }
 
     public function members(): HasMany
@@ -186,5 +203,14 @@ class User extends Authenticatable
         // I would like to remove this method when I implement `validationRules`
         // in all entities.
         return [];
+    }
+
+    private static function getRuleUnique(?User $original): Unique
+    {
+        $unique = Rule::unique('users', 'email');
+        if ($original) {
+            $unique->ignore($original->id);
+        }
+        return $unique;
     }
 }

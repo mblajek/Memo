@@ -47,7 +47,7 @@ readonly class ValidationExceptionRenderer
     private function matchRule(string $rule): string
     {
         return match ($rule) {
-            Password::class => 'password.all_rules',
+            Str::snake(Password::class) => 'password.all_rules',
             default => Str::snake($rule),
         };
     }

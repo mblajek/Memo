@@ -62,7 +62,11 @@ readonly class UpdateUserService
 
     public function getAttributesAfterPatch(User $user, array $requestData)
     {
-        $patchedAttributes = $this->mergePatchService->merge($user->getAttributes(), $requestData);
+        $hidden = $user->getHidden();
+        $user->makeVisible($hidden);
+        $patchedAttributes = $this->mergePatchService->merge($user->attributesToArray(), $requestData);
+        $user->makeHidden($hidden);
+
         // TODO: The logic behind these values is copied from computed attributes of the User class.
         // We should probably create separate classes for API objects and DB objects what would
         // contain this logic and the logic of the `update` method above.

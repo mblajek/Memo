@@ -115,7 +115,7 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function patch(User $user, UpdateUserService $service): JsonResponse
     {
-        $requestData = $this->validate(User::getPatchValidator());
+        $requestData = $this->validate(User::getPatchValidator($user));
         $userAttributes = $service->getAttributesAfterPatch($user, $requestData);
 
         Validator::validate($userAttributes, User::getResourceValidator());

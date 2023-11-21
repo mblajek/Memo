@@ -12,14 +12,10 @@ trait HasValidator
 
     // Empty not to make it abstract yet, will be changed to abstract when implemented
     // in all entities.
-    protected static function validationRules(): array
+    // $original is only given during PATCH
+    protected static function validationRules(bool $isResource, bool $isInsert, $isPatch, Model $original = null): array
     {
         return [];
-    }
-
-    public static function validator(RuleContext $context): array
-    {
-        return $context->selectRules(static::validationRules());
     }
 
     public static function getInsertValidator(array $fields): array
@@ -52,6 +48,6 @@ trait HasValidator
 
     public static function getResourceValidator(): array
     {
-        return RuleContext::resource->selectRules(static::validationRules());
+        return static::validationRules(true, false, false);
     }
 }

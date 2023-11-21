@@ -9,6 +9,9 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use PHPUnit\Event\InvalidArgumentException;
+
+use function App\Utils\array_flatten;
 
 /**
  * Rule generator
@@ -88,13 +91,34 @@ class Valid extends AbstractDataRule
         bool $sometimes = false,
         bool $nullable = false,
     ): array {
-        return self::base($sometimes, $nullable, ['string', 'date_format:Y-m-d\\TH:i:s\\Z'], $rules);
+        return self::base($sometimes, $nullable, ['string', 'date_format:Y-m-d\\TH:i:sp'], $rules);
     }
+
+    private readonly array $rules;
 
     private function __construct(
         private readonly bool $nullable,
-        private readonly array $rules,
+        array $rules,
     ) {
+        $this->rules = array_flatten(
+            array_map(function ($rule) {
+                if (is_array($rule)) {
+                    if (count($rule)) {
+                        if (is_bool($rule[0])) {
+                            if ($rule[0]) {
+                                return array_slice($rule, 1);
+                            } else {
+                                return [];
+                            }
+                        }
+                        return $rule;
+                    } else {
+                        throw new InvalidArgumentException('An empty array is not a legal validation rule.');
+                    }
+                }
+                return $rule;
+            }, $rules)
+        );
     }
 
     /** forward ignore to inner Unique rules */
@@ -123,6 +147,8 @@ class Valid extends AbstractDataRule
             foreach ($validationException->validator->failed() as $fieldErrors) {
                 foreach ($fieldErrors as $rule => $interpolationData) {
                     $this->validator->addRules([$attribute => $this->rules]);
+                    // TODO: Tech debt: remove Str::snake because it creates confusing identifiers, especially with
+                    // classes, ex. "illuminate\_validation\_rules\_password"
                     $this->validator->addFailure($attribute, Str::snake($rule), $interpolationData);
                 }
             }
