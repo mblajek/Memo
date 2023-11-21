@@ -16,6 +16,10 @@ const APP_COLORS = {
 
 const Z_INDEX = {
   modal: "1000",
+  // Higher than modal, because a dropdown on the main page will normally close when opening a modal,
+  // and dropdowns on modals need to be on top of it.
+  // TODO: Consider doing this better.
+  dropdown: "1100",
   fullScreenLoader: "2000",
 };
 
