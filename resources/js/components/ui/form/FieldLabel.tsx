@@ -27,17 +27,20 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
       override={() => props.text}
       langFunc={[form?.translations?.fieldNames, props.fieldName]}
       capitalize
-      wrapIn={(text) => (
-        <Show when={text !== undefined}>
-          <label
-            id={labelIdForField(props.fieldName)}
-            for={props.fieldName}
-            {...htmlAttributes.merge(labelProps, {class: "font-medium"})}
-          >
-            {props.wrapIn?.(text) ?? text}
-          </label>
-        </Show>
-      )}
+      wrapIn={(text) => {
+        const content = () => props.wrapIn?.(text) ?? text;
+        return (
+          <Show when={text !== undefined} fallback={content()}>
+            <label
+              id={labelIdForField(props.fieldName)}
+              for={props.fieldName}
+              {...htmlAttributes.merge(labelProps, {class: "font-medium"})}
+            >
+              {content()}
+            </label>
+          </Show>
+        );
+      }}
     />
   );
 };

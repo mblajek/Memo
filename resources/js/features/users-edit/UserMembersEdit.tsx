@@ -11,7 +11,6 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from "components/ui/Table";
-import {CheckboxField} from "components/ui/form/CheckboxField";
 import {SimpleSelect} from "components/ui/form/SimpleSelect";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
@@ -80,7 +79,7 @@ export namespace UserMembersEdit {
       }
       return rows;
     });
-    const addedFacilityFieldName = () => `${props.membersPath}.addedFacility`;
+    const addedFacilityFieldName = `${membersPath}.addedFacility`;
     const tableCells = useTableCells();
     const h = createColumnHelper<MemberRow>();
     const [sorting, setSorting] = createSignal<SortingState>([{id: "facility", desc: false}]);
@@ -113,7 +112,7 @@ export namespace UserMembersEdit {
               {/* For the new row, display a select with the available facilities. */}
               <div class="w-full flex flex-col items-stretch">
                 <SimpleSelect
-                  name={addedFacilityFieldName()}
+                  name={addedFacilityFieldName}
                   label=""
                   aria-label={t("models.member.facility")}
                   class="w-full"
@@ -137,7 +136,7 @@ export namespace UserMembersEdit {
                       form.addField(membersPath, newRow as any);
                       // Clear the select. It is not declared in type, so use any.
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      form.setFields(addedFacilityFieldName(), undefined as any);
+                      form.setFields(addedFacilityFieldName, undefined as any);
                     }
                   }}
                 />
@@ -150,9 +149,9 @@ export namespace UserMembersEdit {
           cell: (ctx) => (
             <Show when={!ctx.row.getValue("isNewRow")}>
               <div class="w-full flex flex-col items-center">
-                <CheckboxField
+                <input
+                  type="checkbox"
                   name={`${membersPath}.${ctx.row.index}.hasFacilityAdmin`}
-                  label=""
                   data-felte-keep-on-remove
                 />
               </div>
