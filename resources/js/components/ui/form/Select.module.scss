@@ -31,11 +31,8 @@
     &[data-disabled] > button > svg {
       @apply text-opacity-60;
     }
-  }
 
-  > .hiddenInput {
-    @apply hidden;
-    &[aria-invalid] ~ [data-part="control"] {
+    &[data-invalid] {
       @apply border-red-400;
     }
   }

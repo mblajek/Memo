@@ -1,6 +1,6 @@
 import {ValidationMessage} from "@felte/reporter-solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
-import {cx} from "components/utils";
+import {NON_NULLABLE, cx} from "components/utils";
 import {Index, VoidComponent, createMemo, on} from "solid-js";
 import {HideableSection} from "../ui/HideableSection";
 
@@ -17,7 +17,21 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
       aria-live="polite"
       class={cx("text-sm list-disc pl-6", pp.cssClass)}
     >
-      {(messages) => <Index each={messages || []}>{(message) => <li>{message()}</li>}</Index>}
+      {(messages: unknown) => (
+        <Index
+          each={
+            // The messages are typed as string[], but if the name points to a nested object,
+            // the messages are actually objects. This might be a bug in Felte.
+            Array.isArray(messages)
+              ? messages
+              : messages && typeof messages === "object"
+                ? Object.values(messages).filter(NON_NULLABLE)
+                : []
+          }
+        >
+          {(message) => <li>{message()}</li>}
+        </Index>
+      )}
     </ValidationMessage>
   );
   const formContext = useFormContextIfInForm();
@@ -38,7 +52,7 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
   return (
     <HideableSection show={hasErrors()}>
       <MessagesForLevel level="error" cssClass="text-red-400" />
-      <MessagesForLevel level="warning" cssClass="text-yellow-300" />
+      <MessagesForLevel level="warning" cssClass="text-yellow-600" />
     </HideableSection>
   );
 };
