@@ -1,18 +1,16 @@
 import {FullLogo} from "components/ui/FullLogo";
+import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
 import {LangFunc, cx, useLangFunc} from "components/utils";
+import {BsCalendar3, BsCalendar3Week} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
 import {
-  HiOutlineBuildingOffice,
   HiOutlineCalendarDays,
   HiOutlineClipboardDocumentList,
   HiOutlineClock,
-  HiOutlineQuestionMarkCircle,
   HiOutlineTableCells,
-  HiOutlineUserGroup,
-  HiOutlineUsers,
-  HiOutlineVideoCamera,
 } from "solid-icons/hi";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
+import {TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, Show, VoidComponent, createMemo} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -73,12 +71,12 @@ function getSectionItems(
   return {
     globalAdmin: [
       {
-        icon: HiOutlineBuildingOffice,
+        icon: FACILITY_ICONS.menu,
         href: "/admin/facilities",
         routeKey: "admin.facilities",
       },
       {
-        icon: HiOutlineUserGroup,
+        icon: USER_ICONS.menu,
         href: "/admin/users",
         routeKey: "admin.users",
       },
@@ -87,17 +85,17 @@ function getSectionItems(
       ? []
       : [
           {
-            icon: HiOutlineCalendarDays,
+            icon: BsCalendar3,
             href: `/${facilityUrl}/admin/calendar`,
             routeKey: "facility.admin.calendar",
           },
           {
-            icon: HiOutlineTableCells,
+            icon: CLIENT_ICONS.menu,
             href: `/${facilityUrl}/admin/clients`,
             routeKey: "facility.admin.clients",
           },
           {
-            icon: HiOutlineUsers,
+            icon: STAFF_ICONS.staffMembers,
             href: `/${facilityUrl}/admin/staff`,
             routeKey: "facility.admin.staff",
           },
@@ -130,14 +128,14 @@ function getSectionItems(
       ? []
       : [
           {
-            icon: HiOutlineVideoCamera,
+            icon: BsCalendar3Week,
             href: `/${facilityUrl}/meetings`,
             routeKey: "facility.meetings",
           },
         ],
     unauthorized: [
       {
-        icon: HiOutlineQuestionMarkCircle,
+        icon: TbHelp,
         href: "/help",
         routeKey: "help",
       },

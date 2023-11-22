@@ -1,11 +1,11 @@
 import {Button} from "components/ui/Button";
 import {AUTO_SIZE_COLUMN_DEFS, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {FACILITY_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityCreateModal, showFacilityCreateModal} from "features/facility-edit/FacilityCreateModal";
 import {FacilityEditModal, showFacilityEditModal} from "features/facility-edit/FacilityEditModal";
-import {BsHouseAdd} from "solid-icons/bs";
 import {FiEdit2} from "solid-icons/fi";
 import {Component} from "solid-js";
 
@@ -43,7 +43,7 @@ export default (() => {
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">
             <Button class="secondarySmall" onClick={() => showFacilityCreateModal()}>
-              <BsHouseAdd class="inlineIcon text-current" /> {t("actions.add_facility")}
+              <FACILITY_ICONS.add class="inlineIcon text-current" /> {t("actions.add_facility")}
             </Button>
           </div>
         }
