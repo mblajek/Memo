@@ -109,7 +109,7 @@ class SystemController extends ApiController
     )]
     public function attributeList(): JsonResource
     {
-        $attributesQuery = Attribute::query();
+        $attributesQuery = Attribute::query()->orderBy('default_order');
         $this->applyRequestIn($attributesQuery);
         return AttributeResource::collection($attributesQuery->get());
     }
