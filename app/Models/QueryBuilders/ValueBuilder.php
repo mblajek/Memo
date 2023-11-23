@@ -2,7 +2,7 @@
 
 namespace App\Models\QueryBuilders;
 
-use App\Models\Attribute as BuilderModel;
+use App\Models\Value as BuilderModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -13,6 +13,6 @@ use Illuminate\Database\Eloquent\Collection;
  * @method self with(array $relations)
  * @method BuilderModel newModelInstance(array $attributes = [])
  */
-abstract class AttributeBuilder extends Builder
+abstract class ValueBuilder extends Builder
 {
 }

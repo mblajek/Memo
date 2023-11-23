@@ -22,6 +22,11 @@ use OpenApi\Attributes as OA;
  */
 class PositionResource extends AbstractJsonResource
 {
+    protected function withAttrValues(): bool
+    {
+        return true;
+    }
+
     protected static function getMappedFields(): array
     {
         return ['id', 'dictionaryId', 'facilityId', 'name', 'isFixed', 'isDisabled', 'defaultOrder'];

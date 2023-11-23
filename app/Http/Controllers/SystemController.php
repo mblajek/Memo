@@ -84,7 +84,9 @@ class SystemController extends ApiController
     {
         $dictionariesQuery = Dictionary::query();
         $this->applyRequestIn($dictionariesQuery);
-        return DictionaryResource::collection($dictionariesQuery->with(['positions'])->get());
+        return DictionaryResource::collection(
+            $dictionariesQuery->with(['positions', 'values', 'positions.values'])->get()
+        );
     }
 
     #[OA\Get(
