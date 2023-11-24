@@ -33,11 +33,13 @@ class BaseModel extends Model
     {
         if ($this->attrValues === null || $this->isDirty() === false) {
             $attrValues = [];
+            $attrValuesOrder = [];
             foreach ($this->values as $value) {
                 $attribute = $value->attribute;
                 $apiName = Str::camel($attribute->api_name);
                 $isMultiValue = $attribute->is_multi_value;
                 $singleValue = $value->getScalarValue();
+                $attrValuesOrder[$apiName] = $attribute->default_order;
                 if (!array_key_exists($apiName, $attrValues)) {
                     $attrValues[$apiName] = $isMultiValue ? [$singleValue] : $singleValue;
                 } elseif ($isMultiValue) {
@@ -45,6 +47,7 @@ class BaseModel extends Model
                 } else {
                     FatalExceptionFactory::unexpected()->throw();
                 }
+                uksort($attrValues, fn(string $a, string $b) => $attrValuesOrder[$a] <=> $attrValuesOrder[$b]);
             }
             $this->attrValues = $attrValues;
         }
