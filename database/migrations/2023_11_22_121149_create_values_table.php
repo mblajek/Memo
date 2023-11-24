@@ -147,14 +147,13 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        DB::table('values')->delete('2a58e858-721b-4e8c-8d18-f419c408fc42');
-        DB::table('values')->delete('2b623b96-9299-48af-9605-9998f03d2e21');
-        DB::table('values')->delete('69acb967-8f0d-4404-bcfd-83d22e6b2e3b');
-        DB::table('values')->delete('b97bf226-359c-42a7-b3a9-4fa2accdf18d');
-
-        DB::table('attributes')->delete('540e2b26-1330-42ae-8209-55cf22bb3638');
-        DB::table('attributes')->delete('c9ab3795-0012-4cfe-8100-a7bb1dd9755b');
-        DB::table('attributes')->delete('c97a3c3b-7faa-4f51-9113-2390ebaba700');
+        $attributeIds = [
+            '540e2b26-1330-42ae-8209-55cf22bb3638',
+            'c9ab3795-0012-4cfe-8100-a7bb1dd9755b',
+            'c97a3c3b-7faa-4f51-9113-2390ebaba700',
+        ];
+        DB::table('values')->whereIn('attribute_id', $attributeIds)->delete();
+        DB::table('attributes')->whereIn('id', $attributeIds)->delete();
 
         Schema::dropIfExists('values');
         Schema::table('attributes', function (Blueprint $table) {
