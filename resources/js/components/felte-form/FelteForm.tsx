@@ -93,7 +93,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
             }
             // @ts-expect-error setErrors does not like generic types
-            ctx.setErrors(field, (errors) => [...errors, errorMessage]);
+            ctx.setErrors(field, (errors) => [...(errors || []), errorMessage]);
           }
           // Other errors are already handled by the query client.
         });

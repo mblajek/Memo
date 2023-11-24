@@ -1,6 +1,7 @@
 import {Collection} from "@zag-js/collection";
 import * as combobox from "@zag-js/combobox";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
+import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {cx, useLangFunc} from "components/utils";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
@@ -111,9 +112,6 @@ const DEFAULT_PROPS = {
  * A select-like component for selecting a single item from a list of items.
  * Supports searching using keyboard (the parent should provide the filtered list of items).
  *
- * TODO: Add support for placing the component in a form. Right now there is a hidden input with
- * the selected value, but the component does not receive the value from the form controller.
- *
  * WARNING: The implementation has many workarounds and specific solutions, and the zag component
  * it's based on is still in development and has bugs. It might also change in an incompatible way
  * even between minor versions while it's still on the major version 0. Be very careful when updating
@@ -122,6 +120,8 @@ const DEFAULT_PROPS = {
 export const Select: VoidComponent<SelectProps> = (allProps) => {
   const props = mergeProps(DEFAULT_PROPS, allProps);
   const t = useLangFunc();
+
+  const formContext = useFormContextIfInForm();
 
   // Temporarily assign an empty collection, and overwrite with the actual collection depending on
   // the filtered items later. It's done like this because filtering needs api() which is not created yet.
@@ -154,6 +154,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           } else {
             (props as SingleSelectPropsPart).onValueChange!(value[0]);
           }
+        } else if (formContext) {
+          formContext.form.setData(props.name, props.multiple ? value : value[0]);
         } else {
           api().setValue(value);
         }
@@ -190,17 +192,27 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         collection: collection(),
         multiple: props.multiple,
         disabled: props.disabled,
+        invalid: formContext?.form.errors(props.name) != null,
       }),
     },
   );
   const api = createMemo(() => combobox.connect<PropTypes, SelectItem>(state, send, normalizeProps));
-  createComputed(
-    on(
-      () => props.value,
-      (propsValue) =>
-        api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
-    ),
-  );
+  if (formContext)
+    createComputed(
+      on(
+        () => formContext.form.data(props.name),
+        (formValue) =>
+          api().setValue(Array.isArray(formValue) ? (formValue as string[]) : formValue ? [formValue as string] : []),
+      ),
+    );
+  else
+    createComputed(
+      on(
+        () => props.value,
+        (propsValue) =>
+          api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
+      ),
+    );
 
   const isInternalFilteringMode = () => props.onFilterChange === "internal";
   // Wrap the input value in a memo to avoid an infinite loop of updates, where updating the filter changes the items,
@@ -309,9 +321,6 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           })}
           inert={isDisabled() || undefined}
         >
-          {/* An input that can be consumed by the form controller.
-        It cannot be set by the form controller though (yet). */}
-          <input class={s.hiddenInput} name={props.name} value={api().value.join(",")} />
           <div {...api().controlProps} onClick={() => api().open()}>
             <Switch>
               <Match when={props.multiple}>
@@ -405,7 +414,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
               </Button>
             </div>
           </div>
-        </div>{" "}
+        </div>
       </FieldBox>
       <Portal>
         <div
