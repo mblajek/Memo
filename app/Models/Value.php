@@ -6,14 +6,13 @@ use App\Exceptions\FatalExceptionFactory;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\ValueBuilder;
 use App\Utils\Uuid\UuidTrait;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string attribute_id
  * @property string object_id
- * @property ?string position_id
+ * @property ?string ref_dict_id
  * @property ?string ref_object_id
  * @property ?string string_value
  * @property ?int int_value
@@ -32,7 +31,7 @@ class Value extends BaseModel
     protected $fillable = [
         'attribute_id',
         'object_id',
-        'position_id',
+        'ref_dict_id',
         'ref_object_id',
         'string_value',
         'int_value',
@@ -59,7 +58,7 @@ class Value extends BaseModel
         $attributeType = $this->attribute->type;
         $value = $attributeType->tryGetTable() ? $this->ref_object_id : match ($attributeType) {
             AttributeType::Bool, AttributeType::Int => $this->int_value,
-            AttributeType::Dict => $this->position_id,
+            AttributeType::Dict => $this->ref_dict_id,
             // todo: date, datetime
             default => FatalExceptionFactory::unexpected()->throw(),
         };

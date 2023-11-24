@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->char('attribute_id', 36)->collation('ascii_bin');
             $table->char('object_id', 36)->collation('ascii_bin');
 
-            $table->char('position_id', 36)->collation('ascii_bin')->nullable();
+            $table->char('ref_dict_id', 36)->collation('ascii_bin')->nullable();
             $table->char('ref_object_id', 36)->collation('ascii_bin')->nullable();
             $table->string('string_value')->nullable();
             $table->integer('int_value')->nullable();
@@ -33,7 +33,7 @@ return new class extends Migration {
 
             $table->foreign('attribute_id')->references('id')->on('attributes');
             $table->index('object_id');
-            $table->foreign('position_id')->references('id')->on('positions');
+            $table->foreign('ref_dict_id')->references('id')->on('positions');
             $table->index('ref_object_id');
             $table->foreign('created_by')->references('id')->on('users');
         });
@@ -90,7 +90,7 @@ return new class extends Migration {
                 'id' => '2a58e858-721b-4e8c-8d18-f419c408fc42',
                 'attribute_id' => 'c97a3c3b-7faa-4f51-9113-2390ebaba700',
                 'object_id' => '4cc5d6b5-5913-4e07-9fcb-09b6f3d3d2a0',
-                'position_id' => null,
+                'ref_dict_id' => null,
                 'ref_object_id' => '540e2b26-1330-42ae-8209-55cf22bb3638',
                 'string_value' => null,
                 'int_value' => null,
@@ -103,7 +103,7 @@ return new class extends Migration {
                 'id' => '2b623b96-9299-48af-9605-9998f03d2e21',
                 'attribute_id' => '540e2b26-1330-42ae-8209-55cf22bb3638',
                 'object_id' => '6e87acd5-70a0-4051-963b-42d439f44e42',
-                'position_id' => null,
+                'ref_dict_id' => null,
                 'ref_object_id' => null,
                 'string_value' => null,
                 'int_value' => 45,
@@ -116,7 +116,7 @@ return new class extends Migration {
                 'id' => '69acb967-8f0d-4404-bcfd-83d22e6b2e3b',
                 'attribute_id' => 'c9ab3795-0012-4cfe-8100-a7bb1dd9755b',
                 'object_id' => '6e87acd5-70a0-4051-963b-42d439f44e42',
-                'position_id' => '137205e2-e9a1-4f8f-ada2-555319506b28',
+                'ref_dict_id' => '137205e2-e9a1-4f8f-ada2-555319506b28',
                 'ref_object_id' => null,
                 'string_value' => null,
                 'int_value' => null,
@@ -129,7 +129,7 @@ return new class extends Migration {
                 'id' => 'b97bf226-359c-42a7-b3a9-4fa2accdf18d',
                 'attribute_id' => 'c97a3c3b-7faa-4f51-9113-2390ebaba700',
                 'object_id' => '4cc5d6b5-5913-4e07-9fcb-09b6f3d3d2a0',
-                'position_id' => null,
+                'ref_dict_id' => null,
                 'ref_object_id' => 'c9ab3795-0012-4cfe-8100-a7bb1dd9755b',
                 'string_value' => null,
                 'int_value' => null,
