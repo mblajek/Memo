@@ -10,11 +10,11 @@
   }
 
   .dateInputContainer {
-    min-width: 8em;
+    min-width: 8rem;
   }
 
   .dateTimeInputContainer {
-    min-width: 11em;
+    min-width: 11rem;
   }
 
   .filterMain {
@@ -24,8 +24,7 @@
       @apply flex flex-wrap items-stretch gap-0.5 min-h-small-input;
 
       .wideEdit {
-        @apply flex-grow;
-        flex-basis: 3em;
+        @apply flex-grow basis-12;
       }
     }
 

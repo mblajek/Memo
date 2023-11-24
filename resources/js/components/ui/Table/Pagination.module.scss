@@ -23,12 +23,12 @@
 
   [data-part="prev-trigger"],
   [data-part="next-trigger"] {
-    min-width: 4em;
+    min-width: 4rem;
   }
 
   [data-part="item"],
   [data-part="ellipsis"] {
-    min-width: 2em;
+    min-width: 2rem;
 
     &[data-selected] {
       @apply bg-hover;
