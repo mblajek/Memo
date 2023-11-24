@@ -2,7 +2,7 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
-import {Checkbox} from "components/ui/form/Checkbox";
+import {CheckboxField} from "components/ui/form/CheckboxField";
 import {TextField} from "components/ui/form/TextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
@@ -89,10 +89,10 @@ export namespace UserEdit {
             <div class="flex flex-col gap-1">
               <TextField name="name" type="text" {...TRIM_ON_BLUR} autofocus />
               <TextField name="email" type="email" {...TRIM_ON_BLUR} />
-              <Checkbox name="hasEmailVerified" disabled={!form.data("email")} />
+              <CheckboxField name="hasEmailVerified" disabled={!form.data("email")} />
             </div>
             <div class="flex flex-col">
-              <Checkbox
+              <CheckboxField
                 name="hasPassword"
                 disabled={!form.data("email")}
                 title={!form.data("email") ? t("forms.user_edit.has_password_requires_email") : undefined}
@@ -117,7 +117,7 @@ export namespace UserEdit {
               </HideableSection>
             </div>
             <UserMembersEdit.MembersTable membersPath="members" />
-            <Checkbox
+            <CheckboxField
               name="hasGlobalAdmin"
               disabled={!form.data("hasPassword")}
               title={!form.data("hasPassword") ? t("forms.user_edit.global_admin_requires_password") : undefined}

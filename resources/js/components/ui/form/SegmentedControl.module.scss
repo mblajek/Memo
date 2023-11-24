@@ -1,4 +1,6 @@
 .segmentedControl {
+  // Make this fill the whole box, in case the field's height is forced.
+  @apply flex-grow;
   @apply border border-input-border rounded p-1 min-h-big-input;
   @apply flex flex-wrap justify-between gap-1 relative;
 
