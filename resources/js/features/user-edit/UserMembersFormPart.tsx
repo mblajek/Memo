@@ -11,16 +11,16 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from "components/ui/Table";
+import {Select} from "components/ui/form/Select";
+import {USER_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {MemberResource} from "data-access/memo-api/resources/member.resource";
 import {Api} from "data-access/memo-api/types";
 import {byId} from "data-access/memo-api/utils";
-import {TbUserMinus} from "solid-icons/tb";
 import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {z} from "zod";
-import {Select} from "components/ui/form/Select";
 
 export const getSchema = () =>
   z.array(
@@ -150,7 +150,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                   form.setFields(membersPath, form.data(membersPath).toSpliced(index, 1));
                 }}
               >
-                <TbUserMinus class="inlineIcon strokeIcon" /> {t("actions.delete")}
+                <USER_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
               </Button>
             </Show>
           </div>

@@ -1,4 +1,5 @@
 import {currentDate, currentTime, cx, htmlAttributes} from "components/utils";
+import {MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {
   For,
@@ -15,7 +16,6 @@ import {
   useContext,
 } from "solid-js";
 import s from "./ColumnsCalendar.module.scss";
-import {MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "./util";
 
 interface GlobalParameters {
   readonly pixelsPerHour?: number;

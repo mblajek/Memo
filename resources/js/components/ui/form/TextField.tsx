@@ -24,6 +24,7 @@ export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
       <input
         id={props.name}
         name={props.name}
+        autocomplete="off"
         {...htmlAttributes.merge(inputProps, {
           class:
             "min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
