@@ -34,3 +34,7 @@ Zmiana czasu, która mogła wystąpić tego dnia, jest pomijana, 10:00 to zawsze
 ### status_dict_id
 
 Status spotkania (na przykład odwołane przez pracownika, klienta, odbyte)
+
+### is_remote
+
+Spotkanie odbywa się zdalnie

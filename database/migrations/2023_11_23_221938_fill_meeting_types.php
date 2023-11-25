@@ -29,7 +29,7 @@ return new class extends Migration {
         ];
         $typesArray = [
             [
-                'd1a84858-dc57-42a5-afe9-f2fc84adbcf1','Badanie sądowo-psychologiczne', // position.id / position.name
+                'd1a84858-dc57-42a5-afe9-f2fc84adbcf1','+Badanie sądowo-psychologiczne', // position.id / position.name
                 'fadcf7cb-f430-48bf-a7c5-2048860aa7e3',120, // duration value.id / value.it_value
                 '02e5220d-a6a3-4888-b66a-ef929f5a9d3a','ac0ff36f-22fe-4937-a780-c1c42e46ed04', // category value.id / value.ref_dict_id
             ],
