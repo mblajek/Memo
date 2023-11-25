@@ -1,5 +1,4 @@
 # Attributes
-
 Lista konfiguracji kolumn w systemie. W tym informacja o tym, czy dane pole jest wymagane i z jakiego słownika korzysta.
 
 ### facility_id
@@ -16,9 +15,11 @@ Lista konfiguracji kolumn w systemie. W tym informacja o tym, czy dane pole jest
 Tabela, z którą jest związana kolumna. Enum z listą tabel, opcje: `users`, `clients`, `meeting_types`, `meetings`.
 Z czasem rozwijany o kolejne pozycje.
 
-### model
+Nie jest zwracana w api
 
-To samo, co w `table`, tylko w liczbie pojedynczej: `user`, `client`, `meeting_type`, etc.
+### model (tylko w api)
+
+To samo, co w `table`, tylko w liczbie pojedynczej i camelCase: `user`, `client`, `meetingType`, etc.
 
 ### name
 
@@ -41,6 +42,8 @@ Dla kolumn opisujących kolumny tabel (`is_multi_value` === `null`), `api_name` 
 Dla nietłumaczonych pól (typu "+Rodzaj placówki"), jakiś unikalny, ale nielosowy, ciąg znaków ascii,
 np. `rodzaj_placowki_5ab5` i analogicznie `rodzaj_placowki_5ab5_id` i `rodzaj_placowki_5ab5_dict_id`
 
+Zwracana w api jako camelCase
+
 ### type
 
 Enum, zawierający
@@ -48,6 +51,12 @@ Enum, zawierający
 - standardowe typy danych: `string`, `int`, `bool`, `date`, `datetime`
 - nazwy tabel: `users` (póki co tyle)
 - słownik: `dict`
+
+### type / type_model (tylko w api)
+
+Jeżeli kolumna `type` odnosi się do tabeli, to w api jako `type` będzie zwrócona wartość przekształcona analogicznie do pola `model`
+
+Pole type_model - jeżeli kolumna odnosi się do tabeli, wtedy to samo co `type`, w przeciwnym razie null
 
 ### dictionary_id
 

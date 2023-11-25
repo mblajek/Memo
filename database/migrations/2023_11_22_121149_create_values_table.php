@@ -40,9 +40,16 @@ return new class extends Migration {
 
         $date = '2023-11-22 00:00:00';
         $systemUserId = 'e144ff18-471f-456f-a1c2-971d88b3d213';
+        $durationMinutesAttributeId = '540e2b26-1330-42ae-8209-55cf22bb3638';
+        $categoryAttributeId = 'c9ab3795-0012-4cfe-8100-a7bb1dd9755b';
+        $positionAttributesAttributeId = 'c97a3c3b-7faa-4f51-9113-2390ebaba700';
+        $meetingTypeDictionaryId = '4cc5d6b5-5913-4e07-9fcb-09b6f3d3d2a0';
+        $meetingCategoryDictionaryId = 'ce12aa23-a5db-49f3-987b-d2db3ab24a3b';
+        $otherMeetingTypePositionId = '6e87acd5-70a0-4051-963b-42d439f44e42';
+        $otherMeetingCategoryPositionId = '137205e2-e9a1-4f8f-ada2-555319506b28';
         DB::table('attributes')->upsert([
             [
-                'id' => '540e2b26-1330-42ae-8209-55cf22bb3638',
+                'id' => $durationMinutesAttributeId,
                 'facility_id' => null,
                 'table' => 'positions',
                 'name' => 'duration_minutes',
@@ -56,13 +63,13 @@ return new class extends Migration {
                 'updated_at' => $date,
             ],
             [
-                'id' => 'c9ab3795-0012-4cfe-8100-a7bb1dd9755b',
+                'id' => $categoryAttributeId,
                 'facility_id' => null,
                 'table' => 'positions',
                 'name' => 'category',
                 'api_name' => 'category_dict_id',
                 'type' => 'dict',
-                'dictionary_id' => 'ce12aa23-a5db-49f3-987b-d2db3ab24a3b',
+                'dictionary_id' => $meetingCategoryDictionaryId,
                 'default_order' => 1,
                 'is_multi_value' => 0,
                 'requirement_level' => 'empty',
@@ -70,7 +77,7 @@ return new class extends Migration {
                 'updated_at' => $date,
             ],
             [
-                'id' => 'c97a3c3b-7faa-4f51-9113-2390ebaba700',
+                'id' => $positionAttributesAttributeId,
                 'facility_id' => null,
                 'table' => 'dictionaries',
                 'name' => 'position_required_attributes',
@@ -88,10 +95,10 @@ return new class extends Migration {
         DB::table('values')->upsert([
             [
                 'id' => '2a58e858-721b-4e8c-8d18-f419c408fc42',
-                'attribute_id' => 'c97a3c3b-7faa-4f51-9113-2390ebaba700',
-                'object_id' => '4cc5d6b5-5913-4e07-9fcb-09b6f3d3d2a0',
+                'attribute_id' => $positionAttributesAttributeId,
+                'object_id' => $meetingTypeDictionaryId,
                 'ref_dict_id' => null,
-                'ref_object_id' => '540e2b26-1330-42ae-8209-55cf22bb3638',
+                'ref_object_id' => $durationMinutesAttributeId,
                 'string_value' => null,
                 'int_value' => null,
                 'datetime_value' => null,
@@ -101,8 +108,8 @@ return new class extends Migration {
             ],
             [
                 'id' => '2b623b96-9299-48af-9605-9998f03d2e21',
-                'attribute_id' => '540e2b26-1330-42ae-8209-55cf22bb3638',
-                'object_id' => '6e87acd5-70a0-4051-963b-42d439f44e42',
+                'attribute_id' => $durationMinutesAttributeId,
+                'object_id' => $otherMeetingTypePositionId,
                 'ref_dict_id' => null,
                 'ref_object_id' => null,
                 'string_value' => null,
@@ -114,9 +121,9 @@ return new class extends Migration {
             ],
             [
                 'id' => '69acb967-8f0d-4404-bcfd-83d22e6b2e3b',
-                'attribute_id' => 'c9ab3795-0012-4cfe-8100-a7bb1dd9755b',
-                'object_id' => '6e87acd5-70a0-4051-963b-42d439f44e42',
-                'ref_dict_id' => '137205e2-e9a1-4f8f-ada2-555319506b28',
+                'attribute_id' => $categoryAttributeId,
+                'object_id' => $otherMeetingTypePositionId,
+                'ref_dict_id' => $otherMeetingCategoryPositionId,
                 'ref_object_id' => null,
                 'string_value' => null,
                 'int_value' => null,
@@ -127,10 +134,10 @@ return new class extends Migration {
             ],
             [
                 'id' => 'b97bf226-359c-42a7-b3a9-4fa2accdf18d',
-                'attribute_id' => 'c97a3c3b-7faa-4f51-9113-2390ebaba700',
-                'object_id' => '4cc5d6b5-5913-4e07-9fcb-09b6f3d3d2a0',
+                'attribute_id' => $positionAttributesAttributeId,
+                'object_id' => $meetingTypeDictionaryId,
                 'ref_dict_id' => null,
-                'ref_object_id' => 'c9ab3795-0012-4cfe-8100-a7bb1dd9755b',
+                'ref_object_id' => $categoryAttributeId,
                 'string_value' => null,
                 'int_value' => null,
                 'datetime_value' => null,
