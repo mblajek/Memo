@@ -21,6 +21,11 @@ Route::prefix('/v1')->group(function () {
         });
         Route::prefix('/facility')->group(function () {
             Route::get('/list', [SystemController::class, 'facilityList']);
+            Route::prefix('/{facility}')->group(function () {
+                Route::prefix('/meeting')->group(function () {
+                    Route::get('/list', [SystemController::class, 'facilityMeetingList']);
+                });
+            });
         });
         Route::prefix('/dictionary')->group(function () {
             Route::get('/list', [SystemController::class, 'dictionaryList']);
