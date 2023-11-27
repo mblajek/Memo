@@ -58,11 +58,9 @@ Route::prefix('/v1')->group(function () {
             Route::delete('/{member}', [AdminMemberController::class, 'delete']);
         });
     });
-    Route::prefix('/facility')->group(function () {
-        Route::prefix('/{facility}')->group(function () {
-            Route::prefix('/meeting')->group(function () {
-                Route::get('/list', [MeetingController::class, 'facilityMeetingList']);
-            });
+    Route::prefix('/facility/{facility}')->group(function () {
+        Route::prefix('/meeting')->group(function () {
+            Route::get('/list', [MeetingController::class, 'facilityMeetingList']);
         });
     });
     Route::prefix('/mail')->group(function () {

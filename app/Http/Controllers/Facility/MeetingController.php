@@ -19,7 +19,7 @@ class MeetingController  extends ApiController
     }
 
     #[OA\Get(
-        path: '/api/v1/system/facility/{facility}/meeting/list',
+        path: '/api/v1/facility/{facility}/meeting/list',
         description: new PermissionDescribe(Permission::facilityAdmin),
         summary: 'Meetings in the facility',
         tags: ['Facility meeting'],
