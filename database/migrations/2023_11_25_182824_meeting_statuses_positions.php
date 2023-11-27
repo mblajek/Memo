@@ -37,10 +37,6 @@ return new class extends Migration {
         }
 
         DB::table('positions')->upsert($positions, 'id');
-
-        Schema::table('meetings', function (Blueprint $table) {
-            $table->boolean('is_remote');
-        });
     }
 
     /**
@@ -48,8 +44,5 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('meetings', function (Blueprint $table) {
-            $table->dropColumn('is_remote');
-        });
     }
 };
