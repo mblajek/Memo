@@ -7,11 +7,9 @@ use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\AttributeResource;
 use App\Http\Resources\DictionaryResource;
 use App\Http\Resources\FacilityResource;
-use App\Http\Resources\MeetingResource;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Facility;
-use App\Models\Meeting;
 use App\Services\System\TranslationsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -62,39 +60,6 @@ class SystemController extends ApiController
     public function facilityList(): JsonResource
     {
         return FacilityResource::collection(Facility::query()->get());
-    }
-
-    #[OA\Get(
-        path: '/api/v1/system/facility/{facility}/meeting/list',
-        description: new PermissionDescribe(Permission::facilityAdmin),
-        summary: 'Meetings in the facility',
-        tags: ['System'],
-        parameters: [
-            new OA\Parameter(
-                name: 'facility',
-                description: 'Facility id',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            ),
-            new OA\Parameter(name: 'in', in: 'query'),
-        ],
-        responses: [
-            new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/MeetingResource'),
-                ),
-            ])
-            ),
-            new OA\Response(response: 401, description: 'Unauthorised'),
-        ]
-    )]
-    public function facilityMeetingList(Facility $facility): JsonResource
-    {
-        $meetingsQuery = Meeting::query()->where('facility_id', $facility->id);
-        $this->applyRequestIn($meetingsQuery);
-        return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources'])->get());
     }
 
     #[OA\Get(

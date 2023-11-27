@@ -34,7 +34,6 @@ class Meeting extends Model
     protected $table = 'meetings';
 
     protected $fillable = [
-        'id',
         'facility_id',
         'category_dict_id',
         'type_dict_id',
