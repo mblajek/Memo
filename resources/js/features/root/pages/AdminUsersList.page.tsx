@@ -2,13 +2,13 @@ import {Button} from "components/ui/Button";
 import {Email} from "components/ui/Email";
 import {AUTO_SIZE_COLUMN_DEFS, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {USER_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
+import {UserCreateModal, showUserCreateModal} from "features/user-edit/UserCreateModal";
+import {UserEditModal, showUserEditModal} from "features/user-edit/UserEditModal";
 import {FiEdit2} from "solid-icons/fi";
-import {TbUserPlus} from "solid-icons/tb";
 import {VoidComponent} from "solid-js";
-import {UserCreateForm} from "features/users-edit/UserCreate.form";
-import {UserEditForm} from "features/users-edit/UserEdit.form";
 
 export default (() => {
   const t = useLangFunc();
@@ -43,7 +43,7 @@ export default (() => {
             extraDataColumns: ["id"],
             columnDef: {
               cell: (c) => (
-                <Button onClick={() => UserEditForm.showModalFor({userId: c.row.getValue("id")})}>
+                <Button onClick={() => showUserEditModal({userId: c.row.getValue("id")})}>
                   <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
                 </Button>
               ),
@@ -55,14 +55,14 @@ export default (() => {
         initialSort={[{id: "name", desc: false}]}
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">
-            <Button class="secondarySmall" onClick={() => UserCreateForm.showModal()}>
-              <TbUserPlus class="inlineIcon strokeIcon text-current" /> {t("actions.add_user")}
+            <Button class="secondarySmall" onClick={() => showUserCreateModal()}>
+              <USER_ICONS.add class="inlineIcon text-current" /> {t("actions.add_user")}
             </Button>
           </div>
         }
       />
-      <UserEditForm.UserEditModal />
-      <UserCreateForm.UserCreateModal />
+      <UserEditModal />
+      <UserCreateModal />
     </>
   );
 }) satisfies VoidComponent;

@@ -21,8 +21,7 @@
     @apply flex-grow;
 
     .filterLine {
-      @apply flex flex-wrap items-stretch gap-0.5;
-      min-height: 26px;
+      @apply flex flex-wrap items-stretch gap-0.5 min-h-small-input;
 
       .wideEdit {
         @apply flex-grow basis-12;

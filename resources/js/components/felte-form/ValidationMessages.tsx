@@ -25,8 +25,8 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
             Array.isArray(messages)
               ? messages
               : messages && typeof messages === "object"
-              ? Object.values(messages).filter(NON_NULLABLE)
-              : []
+                ? Object.values(messages).filter(NON_NULLABLE)
+                : []
           }
         >
           {(message) => <li>{message()}</li>}
@@ -52,7 +52,7 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
   return (
     <HideableSection show={hasErrors()}>
       <MessagesForLevel level="error" cssClass="text-red-400" />
-      <MessagesForLevel level="warning" cssClass="text-yellow-300" />
+      <MessagesForLevel level="warning" cssClass="text-yellow-600" />
     </HideableSection>
   );
 };

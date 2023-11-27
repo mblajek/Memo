@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Facility\MeetingController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\Tquery\AdminFacilityTqueryController;
@@ -55,6 +56,11 @@ Route::prefix('/v1')->group(function () {
             Route::post('/', [AdminMemberController::class, 'post']);
             Route::patch('/{member}', [AdminMemberController::class, 'patch']);
             Route::delete('/{member}', [AdminMemberController::class, 'delete']);
+        });
+    });
+    Route::prefix('/facility/{facility}')->group(function () {
+        Route::prefix('/meeting')->group(function () {
+            Route::get('/list', [MeetingController::class, 'facilityMeetingList']);
         });
     });
     Route::prefix('/mail')->group(function () {

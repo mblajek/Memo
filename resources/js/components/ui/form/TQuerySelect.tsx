@@ -1,17 +1,15 @@
 import {QueryKey} from "@tanstack/solid-query";
-import {NON_NULLABLE, htmlAttributes, useLangFunc} from "components/utils";
+import {NON_NULLABLE, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {createSelectRequestCreator} from "data-access/memo-api/tquery/select";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {ColumnName, Sort} from "data-access/memo-api/tquery/types";
+import {BsScissors} from "solid-icons/bs";
 import {VoidComponent, createMemo, createUniqueId, mergeProps, splitProps} from "solid-js";
 import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSelectPropsPart} from "./Select";
 import {mergeSelectProps} from "./select_helper";
-import {BsScissors} from "solid-icons/bs";
 
-interface BaseProps
-  extends htmlAttributes.div,
-    Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
+interface BaseProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
   /**
    * The configuration of how the items are fetched from tquery.
    *

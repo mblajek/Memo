@@ -53,18 +53,19 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
   });
   return (
     <div class={s.filterLine}>
-      <Select
-        name={`table_filter_val_${props.name}`}
-        class="flex-grow"
-        items={items()}
-        value={value()}
-        onValueChange={(value) => {
-          setValue(value!);
-          props.setFilter(buildFilter(value!));
-        }}
-        nullable={false}
-        small
-      />
+      <div class="flex-grow flex flex-col items-stretch">
+        <Select
+          name={`table_filter_val_${props.name}`}
+          items={items()}
+          value={value()}
+          onValueChange={(value) => {
+            setValue(value!);
+            props.setFilter(buildFilter(value!));
+          }}
+          nullable={false}
+          small
+        />
+      </div>
     </div>
   );
 };
