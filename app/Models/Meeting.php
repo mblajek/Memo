@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string type_dict_id
  * @property string name
  * @property string notes
- * @property CarbonImmutable date
+ * @property string date
  * @property int start_dayminute
  * @property int duration_minutes
  * @property string status_dict_id
@@ -47,7 +47,6 @@ class Meeting extends Model
     ];
 
     protected $casts = [
-        'date' => 'immutable_date',
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];

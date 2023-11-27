@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string meeting_id
  * @property string user_id
  * @property AttendanceType attendance_type
- * @property string attendance_status_dict_id
+ * @property ?string attendance_status_dict_id
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @method static MeetingAttendantBuilder query()

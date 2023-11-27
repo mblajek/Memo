@@ -43,7 +43,7 @@ class MeetingResource extends AbstractJsonResource
             'typeDictId' => true,
             'name' => true,
             'notes' => true,
-            'date' => fn(self $meeting) => $meeting->date->format('Y-m-d'),
+            'date' => true,
             'startDayminute' => true,
             'durationMinutes' => true,
             'statusDictId' => true,
