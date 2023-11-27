@@ -14,10 +14,6 @@ Kategoria spotkania
 
 Typ, typy nalezą do kategorii
 
-### name
-
-Spotkanie może mieć nazwę
-
 ### notes
 
 Spotkanie może mieć notatki

@@ -22,10 +22,10 @@ Czyli w tabeli Attribute będą takie wpisy:
 
 ##### Meeting
 
-| id | facility_id | category_dict_id | type_dict_id | name                  | notes            | date       | start_dayminute | duration_minutes | status_dict_id | created_by |
-|----|-------------|------------------|--------------|-----------------------|------------------|------------|-----------------|------------------|----------------|------------|
-| 1  | 1           | 1                | 1            |                       | Dłuższy opis ... | 2023-08-06 | 600 (10:00)     | 60               | 1              | 3          |
-| 2  | 1           | 2                | 2            | Podsumowanie miesiąca |                  | 2023-19-15 | 700 (11:40)     | 150              | 2              | 3          |
+| id | facility_id | category_dict_id | type_dict_id | notes            | date       | start_dayminute | duration_minutes | status_dict_id | created_by |
+|----|-------------|------------------|--------------|------------------|------------|-----------------|------------------|----------------|------------|
+| 1  | 1           | 1                | 1            | Dłuższy opis ... | 2023-08-06 | 600 (10:00)     | 60               | 1              | 3          |
+| 2  | 1           | 2                | 2            |                  | 2023-19-15 | 700 (11:40)     | 150              | 2              | 3          |
 
 ##### MeetingAttendant
 
