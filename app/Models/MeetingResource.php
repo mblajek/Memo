@@ -22,7 +22,6 @@ class MeetingResource extends Model
     protected $table = 'meeting_resources';
 
     protected $fillable = [
-        'id',
         'meeting_id',
         'resource_dict_id',
     ];

@@ -25,7 +25,6 @@ class MeetingAttendant extends Model
     protected $table = 'meeting_attendants';
 
     protected $fillable = [
-        'id',
         'meeting_id',
         'user_id',
         'attendance_type',
