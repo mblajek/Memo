@@ -16,7 +16,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(
             property: 'positions', type: 'array', items: new OA\Items(
             ref: '#/components/schemas/PositionResource'
-        )),
+        )
+        ),
     ]
 )] /**
  * @method __construct(Dictionary $resource)
@@ -24,6 +25,11 @@ use OpenApi\Attributes as OA;
  */
 class DictionaryResource extends AbstractJsonResource
 {
+    protected function withAttrValues(): bool
+    {
+        return true;
+    }
+
     protected static function getMappedFields(): array
     {
         return [

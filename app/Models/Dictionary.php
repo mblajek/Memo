@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Collection $positions
  * @method static DictionaryBuilder query()
  */
-class Dictionary extends Model
+class Dictionary extends BaseModel
 {
     use HasFactory;
     use UuidTrait;

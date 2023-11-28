@@ -24,6 +24,11 @@ trait ApiExceptionTrait
         return json_encode($this->getData());
     }
 
+    public function throw()
+    {
+        throw $this;
+    }
+
     /** @param array<ApiExceptionTrait> $addErrors */
     public function renderMany(array $addErrors = []): JsonResponse
     {

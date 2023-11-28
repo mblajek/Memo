@@ -4,25 +4,20 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\PositionBuilder;
 use App\Utils\Uuid\UuidTrait;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string id
  * @property string dictionary_id
  * @property string facility_id
  * @property string name
  * @property bool is_fixed
  * @property bool is_disabled
  * @property int default_order
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
  * @property-read Member $member
  * @method static PositionBuilder query()
  */
-class Position extends Model
+class Position extends BaseModel
 {
     use HasFactory;
     use UuidTrait;
@@ -46,8 +41,10 @@ class Position extends Model
         'is_disabled' => 'boolean',
     ];
 
-    public function member(): HasOne
+    protected $with = ['dictionary'];
+
+    public function dictionary(): BelongsTo
     {
-        return $this->hasOne(Member::class);
+        return $this->belongsTo(Dictionary::class);
     }
 }
