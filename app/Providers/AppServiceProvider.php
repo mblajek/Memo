@@ -40,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
             Vite::useHotFile($hot2FilePath);
         }
 
+        // In Vite 5 the manifest file is in subdirectory.
+        Vite::useManifestFilename('.vite/manifest.json');
+
         Route::bind('facility', function ($value) {
             return Facility::query()->findOrFail($value);
         });
