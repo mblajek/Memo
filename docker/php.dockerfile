@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 ARG ME_USER_UID=$ME_USER_UID
 RUN useradd -mU -u $ME_USER_UID -s /bin/bash me

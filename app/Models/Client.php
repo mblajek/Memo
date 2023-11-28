@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string id
+ * @property string gender_dict_id
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
  * @property-read Member $member
@@ -24,6 +25,7 @@ class Client extends Model
     protected $table = 'clients';
 
     protected $fillable = [
+        'gender_dict_id',
     ];
 
     protected $casts = [
