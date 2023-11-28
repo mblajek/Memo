@@ -57,16 +57,24 @@ export function createTableRequestCreator({
     const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
     // eslint-disable-next-line solid/reactivity
     const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
+    function columnFilter(column: ColumnName) {
+      let signal = columnFilters()[column];
+      if (!signal) {
+        const [get, set] = createSignal<FilterH>();
+        signal = [get, set];
+        setColumnFilters({...columnFilters(), [column]: signal});
+      }
+      return signal;
+    }
     // Initialise the request parts based on the config.
     createComputed(() => {
-      const visibility: VisibilityState = {};
-      const colFilters: ColumnFilters = {};
-      for (const {name, initialVisible = true} of columnsConfig()) {
-        colFilters[name] = createSignal<FilterH>();
-        visibility[name] = initialVisible;
-      }
-      setColumnVisibility(visibility);
-      setColumnFilters(colFilters);
+      setColumnVisibility((oldVis) => {
+        const vis = {...oldVis};
+        for (const {name, initialVisible = true} of columnsConfig()) {
+          vis[name] = initialVisible;
+        }
+        return vis;
+      });
       // Don't try sorting by non-existent columns.
       setSorting((sorting) => sorting.filter((sort) => columnsConfig().some(({name}) => name === sort.id)));
       setAllInited(true);
@@ -161,7 +169,7 @@ export function createTableRequestCreator({
       requestController: {
         columnVisibility: [columnVisibility, setColumnVisibility],
         globalFilter: [globalFilter, setGlobalFilter],
-        columnFilter: (column) => columnFilters()[column]!,
+        columnFilter,
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],
       },

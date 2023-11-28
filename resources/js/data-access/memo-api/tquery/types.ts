@@ -20,7 +20,7 @@ export interface Schema {
 //  - enum-related types (enum and multi-enum)
 //  - dict-related types
 //  - possible JSON types with structured data
-export type ColumnSchema = BasicColumnSchema | CountColumnSchema;
+export type ColumnSchema = DataColumnSchema | CountColumnSchema;
 
 interface ColumnSchemaBase {
   readonly name: ColumnName;
@@ -28,7 +28,7 @@ interface ColumnSchemaBase {
 
 export type ColumnType = "bool" | "date" | "datetime" | "int" | "string" | "text" | "uuid";
 
-export interface BasicColumnSchema extends ColumnSchemaBase {
+export interface DataColumnSchema extends ColumnSchemaBase {
   readonly type: ColumnType;
   readonly nullable?: boolean;
 }
@@ -211,4 +211,8 @@ export function isDataType(column: ColumnSchema["type"]): column is ColumnType {
     default:
       return column satisfies never;
   }
+}
+
+export function isDataColumn(column: ColumnSchema): column is DataColumnSchema {
+  return isDataType(column.type);
 }

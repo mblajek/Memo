@@ -3,8 +3,8 @@ import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ColumnConfig, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery/table";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
-import {BasicColumnSchema, ColumnName, ColumnType, DataItem} from "data-access/memo-api/tquery/types";
-import {JSX, VoidComponent, createEffect, createMemo} from "solid-js";
+import {ColumnName, ColumnType, DataColumnSchema, DataItem, isDataColumn} from "data-access/memo-api/tquery/types";
+import {DEV, JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {
   DisplayMode,
@@ -30,10 +30,15 @@ declare module "@tanstack/table-core" {
 
 export interface ColumnMetaParams {
   readonly filtering?: FilteringParams;
+  /**
+   * Whether this column is a DEV column, i.e. an unconfigured column taken directly from tquery schema,
+   * displayed only in DEV mode.
+   */
+  readonly devColumn?: boolean;
 }
 
 /** Type of tquery-related information in column meta. */
-export interface TQueryColumnMeta extends ColumnMetaParams, Partial<BasicColumnSchema> {}
+export interface TQueryColumnMeta extends ColumnMetaParams, Partial<DataColumnSchema> {}
 
 export interface TQueryTableProps {
   /**
@@ -115,7 +120,19 @@ const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
 export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
-  const columnsConfig = createMemo(() => props.columns.map((col) => columnConfigFromPartial(col)));
+  const [devColumns, setDevColumns] = createSignal<DataColumnSchema[]>([]);
+  const columnsConfig = createMemo(() =>
+    [
+      ...props.columns,
+      ...devColumns().map((col) => ({
+        name: col.name,
+        metaParams: {
+          devColumn: true,
+        },
+        initialVisible: false,
+      })),
+    ].map((col) => columnConfigFromPartial(col)),
+  );
 
   const tableCells = useTableCells();
   const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<DataItem>>>([
@@ -142,6 +159,17 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     requestCreator,
     dataQueryOptions: {meta: {tquery: {isTable: true}}},
   });
+  if (DEV) {
+    // Schema is available, so initialise the DEV columns. This will cause a change to the columns
+    // list, but it's fine as it's only done in DEV mode.
+    createComputed(() =>
+      setDevColumns(
+        schema()
+          ?.columns.filter(isDataColumn)
+          .filter(({name}) => !props.columns.some((col) => col.name === name)) || [],
+      ),
+    );
+  }
   const {columnVisibility, globalFilter, columnFilter, sorting, pagination} = requestController;
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
@@ -158,7 +186,9 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
 
   const columns = createMemo(() => {
     const sch = schema();
-    if (!sch) return [];
+    if (!sch) {
+      return [];
+    }
     return columnsConfig().map((col) => {
       let schemaCol = undefined;
       if (col.isDataColumn) {
