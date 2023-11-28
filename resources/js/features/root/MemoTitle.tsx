@@ -25,7 +25,7 @@ export const MemoTitle: VoidComponent<Props> = (props) => {
     if (!translationsLoaded()) {
       return "Memo";
     }
-    return `${pageName()}${NBSP}${EM_DASH}${NBSP}${t("app_name")}${DEV ? " (DEV mode)" : undefined}`;
+    return `${pageName()}${NBSP}${EM_DASH}${NBSP}${t("app_name")}${DEV ? " (DEV mode)" : ""}`;
   };
   return <Title>{title()}</Title>;
 };
