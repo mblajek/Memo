@@ -13,6 +13,12 @@ enum AttributeType: string
     // Supported table names.
     case Users = 'users';
     case Clients = 'clients';
+    case Attributes = 'attributes';
     // Dictionary.
     case Dict = 'dict';
+
+    public function tryGetTable(): ?AttributeTable
+    {
+        return AttributeTable::tryFrom($this->value);
+    }
 }

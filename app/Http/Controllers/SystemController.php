@@ -84,7 +84,9 @@ class SystemController extends ApiController
     {
         $dictionariesQuery = Dictionary::query();
         $this->applyRequestIn($dictionariesQuery);
-        return DictionaryResource::collection($dictionariesQuery->with(['positions'])->get());
+        return DictionaryResource::collection(
+            $dictionariesQuery->with(['positions', 'values', 'positions.values'])->get()
+        );
     }
 
     #[OA\Get(
@@ -107,7 +109,7 @@ class SystemController extends ApiController
     )]
     public function attributeList(): JsonResource
     {
-        $attributesQuery = Attribute::query();
+        $attributesQuery = Attribute::query()->orderBy('default_order');
         $this->applyRequestIn($attributesQuery);
         return AttributeResource::collection($attributesQuery->get());
     }

@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string facility_id
  * @property string category_dict_id
  * @property string type_dict_id
- * @property string name
  * @property string notes
  * @property string date
  * @property int start_dayminute
@@ -37,7 +36,6 @@ class Meeting extends Model
         'facility_id',
         'category_dict_id',
         'type_dict_id',
-        'name',
         'date',
         'notes',
         'start_dayminute',

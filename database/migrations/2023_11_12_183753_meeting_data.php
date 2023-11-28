@@ -29,12 +29,13 @@ return new class extends Migration
             $table->char('facility_id', 36)->collation('ascii_bin');
             $table->char('category_dict_id', 36)->collation('ascii_bin');
             $table->char('type_dict_id', 36)->collation('ascii_bin');
-            $table->string('name')->nullable();
-            $table->text('notes')->nullable();
+            $table->string('notes', 4096)->nullable();
             $table->date('date');
             $table->integer('start_dayminute');
             $table->integer('duration_minutes');
             $table->char('status_dict_id', 36)->collation('ascii_bin');
+            $table->boolean('is_remote');
+
             $table->char('created_by', 36)->collation('ascii_bin');
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
@@ -74,6 +75,8 @@ return new class extends Migration
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
 
+            $table->unique(['meeting_id', 'user_id']);
+
             $table->foreign('meeting_id')
                 ->references('id')
                 ->on('meetings')
@@ -96,6 +99,8 @@ return new class extends Migration
             $table->char('resource_dict_id', 36)->collation('ascii_bin');
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
+
+            $table->unique(['meeting_id', 'resource_dict_id']);
 
             $table->foreign('meeting_id')
                 ->references('id')

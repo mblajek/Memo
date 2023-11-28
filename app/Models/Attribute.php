@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Enums\AttributeModel;
 use App\Models\Enums\AttributeRequirementLevel;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
@@ -16,7 +15,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string id
  * @property ?string facility_id
  * @property AttributeTable table
- * @property AttributeModel model
  * @property string name
  * @property string api_name
  * @property AttributeType type
@@ -38,7 +36,6 @@ class Attribute extends Model
     protected $fillable = [
         'facility_id',
         'table',
-        'model',
         'api_name',
         'type',
         'dictionary_id',
@@ -51,7 +48,6 @@ class Attribute extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
         'table' => AttributeTable::class,
-        'model' => AttributeModel::class,
         'type' => AttributeType::class,
         'is_multi_value' => 'boolean',
         'requirement_level' => AttributeRequirementLevel::class,
