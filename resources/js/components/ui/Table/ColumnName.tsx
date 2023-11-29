@@ -1,5 +1,5 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {TranslatedText} from "../TranslatedText";
 import {useTable} from "./TableContext";
 
@@ -16,12 +16,21 @@ export const ColumnName: VoidComponent<Props> = (props) => {
   const table = useTable();
   return (
     <span class="wrapText">
-      <TranslatedText
-        override={props.def.meta?.columnName}
-        langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
-        capitalize
-        fallbackCode={props.def.id}
-      />
+      <Show
+        when={props.def.meta?.tquery?.devColumn}
+        fallback={
+          <TranslatedText
+            override={props.def.meta?.columnName}
+            langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
+            capitalize
+            fallbackCode={props.def.id}
+          />
+        }
+      >
+        <span class="wrapTextAnywhere" title="Unconfigured data column shown in DEV mode">
+          <span class="text-xs">DEV</span> {props.def.id}
+        </span>
+      </Show>
     </span>
   );
 };
