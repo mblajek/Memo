@@ -17,7 +17,7 @@ describe("Dictionaries", () => {
             dictionaryId: "d1",
             facilityId: null,
             isDisabled: false,
-            isFixed: false,
+            isFixed: true,
             defaultOrder: 0,
           },
           {
@@ -118,14 +118,14 @@ describe("Dictionaries", () => {
   );
 
   function dictsToIds(dicts: Dictionaries) {
-    return Array.from(dicts.byId.values(), (d) => ({
+    return Array.from(dicts, (d) => ({
       label: d.id,
       allPositions: d.allPositions.map((p) => p.id),
     }));
   }
 
   function dictsToLabels(dicts: Dictionaries) {
-    return Array.from(dicts.byId.values(), (d) => ({
+    return Array.from(dicts, (d) => ({
       label: d.label,
       allPositions: d.allPositions.map((p) => p.label),
     }));
@@ -155,6 +155,12 @@ describe("Dictionaries", () => {
     expect(dictionaries.get("dict1-global")?.id).toEqual("d1");
     expect(() => dictionaries.get("dict2-fac1")).toThrow("not found");
     expect(() => dictionaries.get("+dict2-fac1")).toThrow("not found");
+  });
+
+  test("dictionary.get", () => {
+    expect(dictionaries.get("d1")?.get("d1p1").id).toEqual("d1p1");
+    expect(dictionaries.get("d1")?.get("dict1item1").id).toEqual("d1p1");
+    expect(() => dictionaries.get("d1")?.get("dict1item2").id).toThrow("not found"); // not fixed
   });
 
   test("positions", () => {

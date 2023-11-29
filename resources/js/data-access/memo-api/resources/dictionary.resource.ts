@@ -26,6 +26,8 @@ export interface DictionaryResource {
   readonly isFixed: boolean;
   /** Whether the admins can add positions to the dictionary. */
   readonly isExtendable: boolean;
+  /** The ids of attributes that are applied to every position in the dictionary. This is an attribute. */
+  readonly positionRequiredAttributes?: readonly string[];
 }
 
 /**

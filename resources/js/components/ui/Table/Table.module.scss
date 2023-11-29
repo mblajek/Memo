@@ -28,7 +28,7 @@
           @apply contents;
 
           > .cell {
-            @apply bg-white text-black rounded-sm px-2 py-1 flex items-center overflow-hidden;
+            @apply bg-white text-black rounded-sm px-1.5 py-1 flex items-center overflow-hidden;
             min-height: 30px;
           }
 
