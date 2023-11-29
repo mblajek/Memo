@@ -170,7 +170,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       ),
     );
   }
-  const {columnVisibility, globalFilter, columnFilter, sorting, pagination} = requestController;
+  const {columnVisibility, globalFilter, getColumnFilter, sorting, pagination} = requestController;
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
@@ -209,8 +209,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
             filter={
               <ColumnFilterController
                 name={ctx.column.id}
-                filter={columnFilter(ctx.column.id)[0]()}
-                setFilter={(filter) => columnFilter(ctx.column.id)[1](filter)}
+                filter={getColumnFilter(ctx.column.id)[0]()}
+                setFilter={(filter) => getColumnFilter(ctx.column.id)[1](filter)}
               />
             }
           />

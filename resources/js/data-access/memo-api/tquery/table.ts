@@ -24,7 +24,7 @@ export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;
 interface RequestController {
   readonly columnVisibility: Signal<VisibilityState>;
   readonly globalFilter: Signal<string>;
-  readonly columnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
+  readonly getColumnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
   readonly sorting: Signal<SortingState>;
   readonly pagination: Signal<PaginationState>;
 }
@@ -57,7 +57,7 @@ export function createTableRequestCreator({
     const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
     // eslint-disable-next-line solid/reactivity
     const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
-    function columnFilter(column: ColumnName) {
+    function getColumnFilter(column: ColumnName) {
       let signal = columnFilters()[column];
       if (!signal) {
         const [get, set] = createSignal<FilterH>();
@@ -169,7 +169,7 @@ export function createTableRequestCreator({
       requestController: {
         columnVisibility: [columnVisibility, setColumnVisibility],
         globalFilter: [globalFilter, setGlobalFilter],
-        columnFilter,
+        getColumnFilter,
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],
       },
