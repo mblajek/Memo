@@ -3,6 +3,7 @@ import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
 import {translationsLoaded} from "i18n_loader";
 import {createMemo} from "solid-js";
 import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
+import {makeAttributable} from "./attributable";
 import {System} from "./groups";
 import {DictionaryResource, PositionResource} from "./resources/dictionary.resource";
 import {getNameTranslation, isNameTranslatable} from "./resources/name_string";
@@ -35,6 +36,10 @@ export class Dictionaries {
     return new Dictionaries(byId, byName);
   }
 
+  [Symbol.iterator]() {
+    return this.byId.values();
+  }
+
   /** Returns a dictionary by id, or a fixed dictionary by name. Throws an error if not found. */
   get(idOrName: string) {
     const dictionary = this.byId.get(idOrName) || this.byName.get(idOrName);
@@ -50,17 +55,18 @@ export class Dictionaries {
    */
   subsetFor(facilityIdOrGlobal: FacilityIdOrGlobal) {
     return Dictionaries.fromDictionaries(
-      Array.from(this.byId.values(), (dictionary) => dictionary.subsetFor(facilityIdOrGlobal)).filter(NON_NULLABLE),
+      Array.from(this, (dictionary) => dictionary.subsetFor(facilityIdOrGlobal)).filter(NON_NULLABLE),
     );
   }
 }
 
 export class Dictionary {
+  readonly resource;
   /** A list of non-disabled positions in the dictionary. */
   readonly activePositions;
 
   private constructor(
-    readonly resource: DictionaryResource,
+    resource: DictionaryResource,
     readonly id: string,
     readonly isTranslatable: boolean,
     /** The translated name of the dictionary. */
@@ -68,7 +74,28 @@ export class Dictionary {
     /** The list of all positions of the dictionary, including the disabled ones. */
     readonly allPositions: Position[],
   ) {
+    this.resource = makeAttributable(resource, "dictionary");
     this.activePositions = this.allPositions.filter((position) => !position.resource.isDisabled);
+  }
+
+  get(positionIdOrName: string) {
+    return this.getPosition(this.allPositions, positionIdOrName);
+  }
+
+  getActive(positionIdOrName: string) {
+    return this.getPosition(this.activePositions, positionIdOrName);
+  }
+
+  private getPosition(positions: Position[], positionIdOrName: string) {
+    const position = positions.find(
+      (position) =>
+        position.id === positionIdOrName ||
+        (position.resource.isFixed && position.isTranslatable && position.resource.name === positionIdOrName),
+    );
+    if (!position) {
+      throw new Error(`Position ${positionIdOrName} not found.`);
+    }
+    return position;
   }
 
   static fromResource(t: LangFunc, resource: DictionaryResource) {
@@ -77,7 +104,7 @@ export class Dictionary {
       resource,
       resource.id,
       isTranslatable,
-      getNameTranslation(resource.name, (n) => t(`dictionary.${n}._name`)),
+      getNameTranslation(t, resource.name, (n) => `dictionary.${n}._name`),
       resource.positions.map((position) => new Position(t, position, isTranslatable ? resource.name : undefined)),
     );
   }
@@ -101,23 +128,27 @@ export class Dictionary {
 }
 
 export class Position {
+  readonly resource;
   readonly id;
+  readonly isTranslatable;
   readonly label;
   readonly disabled;
 
   constructor(
     t: LangFunc,
-    readonly resource: PositionResource,
+    resource: PositionResource,
     /** The name of the dictionary, if it's a translatable name. */
     readonly dictionaryTranslatableName: string | undefined,
   ) {
+    this.resource = makeAttributable(resource, "position");
     this.id = resource.id;
-    this.label = getNameTranslation(resource.name, (n) => {
+    this.isTranslatable = isNameTranslatable(resource.name);
+    this.label = getNameTranslation(t, resource.name, (n) => {
       if (!dictionaryTranslatableName)
         throw new Error(
           `Translatable position (${resource.id}: ${n}) inside a dictionary with an untranslatable name.`,
         );
-      return t(`dictionary.${dictionaryTranslatableName}.${n}`);
+      return `dictionary.${dictionaryTranslatableName}.${n}`;
     });
     this.disabled = resource.isDisabled;
   }

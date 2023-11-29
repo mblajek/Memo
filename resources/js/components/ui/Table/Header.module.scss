@@ -1,8 +1,7 @@
 .headerCell {
-  @apply h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip;
+  @apply h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1;
   // Create a positioned ancestor for the resize handler.
   @apply relative;
-  @apply px-2 py-1;
 
   .title {
     @apply font-bold;
