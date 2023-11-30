@@ -158,7 +158,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     ["uuid", {cell: tableCells.uuid, enableSorting: false, size: 80}],
   ]);
 
-  const [allInited, setAllInited] = createSignal(false);
+  const [allInitialised, setAllInitialised] = createSignal(false);
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     intrinsicFilter: () => props.intrinsicFilter,
@@ -166,7 +166,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     initialPageSize:
       props.initialPageSize ||
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
-    allInited,
+    allInitialised,
   });
   const {schema, requestController, dataQuery} = createTQuery({
     entityURL,
@@ -201,7 +201,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     },
   });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
-  setAllInited(true);
+  setAllInitialised(true);
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,

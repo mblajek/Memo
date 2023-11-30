@@ -37,7 +37,7 @@ const DEFAULT_PAGE_SIZE = 50;
  * The request itself is a memo combining data from the signals exposed in the RequestController.
  * These signals can be plugged directly into the table state.
  *
- * The allInited signal can be used to delay execution of the query if some more externa initialisation
+ * The allInitialised signal can be used to delay execution of the query if some more externa initialisation
  * is needed.
  */
 export function createTableRequestCreator({
@@ -45,16 +45,16 @@ export function createTableRequestCreator({
   intrinsicFilter = () => undefined,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
-  allInited = () => true,
+  allInitialised = () => true,
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
   initialSort?: SortingState;
   initialPageSize?: number;
-  allInited?: Accessor<boolean>;
+  allInitialised?: Accessor<boolean>;
 }): RequestCreator<RequestController> {
   return (schema) => {
-    const [allInitedInternal, setAllInitedInternal] = createSignal(false);
+    const [allInitialisedInternal, setAllInitialisedInternal] = createSignal(false);
     const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>({});
     const [globalFilter, setGlobalFilter] = createSignal<string>("");
     const [columnFilters, setColumnFilters] = createSignal<ColumnFilters>({});
@@ -77,7 +77,7 @@ export function createTableRequestCreator({
       setColumnVisibility((vis) => ({...defaultColumnVisibility(), ...vis}));
       // Don't try sorting by non-existent columns.
       setSorting((sorting) => sorting.filter((sort) => columnsConfig().some(({name}) => name === sort.id)));
-      setAllInitedInternal(true);
+      setAllInitialisedInternal(true);
     });
     createComputed<VisibilityState>((prevColumnVisibility) => {
       // Don't allow hiding all the columns.
@@ -139,7 +139,7 @@ export function createTableRequestCreator({
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
-      if (!allInitedInternal() || !allInited()) {
+      if (!allInitialisedInternal() || !allInitialised()) {
         return undefined;
       }
       return {
