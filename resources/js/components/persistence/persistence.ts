@@ -17,11 +17,29 @@ export function createPersistence<T, S = string>({
   serialiser: Serialiser<T, S>;
   storage: Storage<S>;
 }) {
-  const storedValue = storage.load();
-  if (storedValue !== undefined) {
-    onLoad(serialiser.deserialise(storedValue));
+  const stored = deserialise(serialiser, storage.load());
+  if (stored) {
+    try {
+      onLoad(stored.value);
+    } catch (e) {
+      console.warn("Failed to load the stored value:", stored.value);
+      console.warn(e);
+    }
   }
   createEffect(() => storage.store(serialiser.serialise(value())));
+}
+
+function deserialise<T, S>(serialiser: Serialiser<T, S>, storedSerialisedValue: S | undefined) {
+  if (storedSerialisedValue === undefined) {
+    return undefined;
+  }
+  try {
+    return {value: serialiser.deserialise(storedSerialisedValue)};
+  } catch (e) {
+    console.warn("Failed to deserialise the stored value:", storedSerialisedValue);
+    console.warn(e);
+    return undefined;
+  }
 }
 
 /**
