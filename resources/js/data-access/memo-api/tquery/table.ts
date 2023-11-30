@@ -36,20 +36,25 @@ const DEFAULT_PAGE_SIZE = 50;
  *
  * The request itself is a memo combining data from the signals exposed in the RequestController.
  * These signals can be plugged directly into the table state.
+ *
+ * The allInited signal can be used to delay execution of the query if some more externa initialisation
+ * is needed.
  */
 export function createTableRequestCreator({
   columnsConfig,
   intrinsicFilter = () => undefined,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
+  allInited = () => true,
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
   initialSort?: SortingState;
   initialPageSize?: number;
+  allInited?: Accessor<boolean>;
 }): RequestCreator<RequestController> {
   return (schema) => {
-    const [allInited, setAllInited] = createSignal(false);
+    const [allInitedInternal, setAllInitedInternal] = createSignal(false);
     const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>({});
     const [globalFilter, setGlobalFilter] = createSignal<string>("");
     const [columnFilters, setColumnFilters] = createSignal<ColumnFilters>({});
@@ -66,18 +71,13 @@ export function createTableRequestCreator({
       }
       return signal;
     }
+    const defaultColumnVisibility = () => getDefaultColumnVisibility(columnsConfig());
     // Initialise the request parts based on the config.
     createComputed(() => {
-      setColumnVisibility((oldVis) => {
-        const vis = {...oldVis};
-        for (const {name, initialVisible = true} of columnsConfig()) {
-          vis[name] = initialVisible;
-        }
-        return vis;
-      });
+      setColumnVisibility((vis) => ({...defaultColumnVisibility(), ...vis}));
       // Don't try sorting by non-existent columns.
       setSorting((sorting) => sorting.filter((sort) => columnsConfig().some(({name}) => name === sort.id)));
-      setAllInited(true);
+      setAllInitedInternal(true);
     });
     createComputed<VisibilityState>((prevColumnVisibility) => {
       // Don't allow hiding all the columns.
@@ -139,7 +139,7 @@ export function createTableRequestCreator({
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
-      if (!allInited()) {
+      if (!allInitedInternal() || !allInited()) {
         return undefined;
       }
       return {
@@ -175,6 +175,14 @@ export function createTableRequestCreator({
       },
     };
   };
+}
+
+export function getDefaultColumnVisibility(columnsConfig: readonly ColumnConfig[]) {
+  const columnVisibility: VisibilityState = {};
+  for (const {name, initialVisible = true} of columnsConfig) {
+    columnVisibility[name] = initialVisible;
+  }
+  return columnVisibility;
 }
 
 interface TableHelperInterface {
