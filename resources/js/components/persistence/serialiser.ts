@@ -8,18 +8,31 @@ export interface Serialiser<T, S = string> {
   version?: Version;
 }
 
+export type JSONValue<ExtraTypes = never> =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly JSONValue<ExtraTypes>[]
+  | Readonly<Partial<{readonly [key: string]: JSONValue<ExtraTypes>}>>
+  | ExtraTypes;
+
 /**
  * A JSON serialiser, supporting only values directly supported by JSON serialisation.
  *
  * Note that not all values are supported in JSON, see
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify.
  */
-export function rawJSONSerialiser<T>(): Serialiser<T> {
+export function rawJSONSerialiser<T extends JSONValue>(): Serialiser<T> {
   return {
     serialise: JSON.stringify,
     deserialise: JSON.parse,
   };
 }
+
+export type RichJSONValue = JSONValue<
+  ReadonlyMap<RichJSONValue, RichJSONValue> | ReadonlySet<RichJSONValue> | DateTime | Duration | Interval | DaysRange
+>;
 
 /**
  * A JSON serialiser that supports also some common classes. More classes can be added as needed.
@@ -27,7 +40,7 @@ export function rawJSONSerialiser<T>(): Serialiser<T> {
  * Note that there are still many values that are not supported, see
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify.
  */
-export function richJSONSerialiser<T>(): Serialiser<T> {
+export function richJSONSerialiser<T extends RichJSONValue>(): Serialiser<T> {
   const CLASS_KEY = "__rjs";
 
   return {

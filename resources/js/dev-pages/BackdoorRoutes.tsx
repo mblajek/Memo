@@ -38,6 +38,16 @@ export const BackdoorRoutes: VoidComponent = () => {
           path="/get"
           element={
             <FullScreenPre class={cx(DARK_MODE_CLASS, "text-xs")}>
+              <div class="text-red-500">
+                <p>
+                  UWAGA: Upewnij się, że przed przesłaniem komukolwiek poniższej zawartości, usuniesz z niej dane
+                  osobowe!
+                </p>
+                <p>
+                  WARNING: Make sure you remove any personal data from the content below before sending it to anyone!
+                </p>
+              </div>
+              <br />
               {JSON.stringify(localStorage, undefined, 2)}
             </FullScreenPre>
           }

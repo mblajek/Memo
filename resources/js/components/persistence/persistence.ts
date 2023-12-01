@@ -1,5 +1,5 @@
 import {Accessor, createEffect} from "solid-js";
-import {Serialiser, richJSONSerialiser} from "./serialiser";
+import {Serialiser} from "./serialiser";
 import {Storage, localStorageStorage} from "./storage";
 import {Version, isDisabledVersion, joinVersions} from "./version";
 
@@ -54,13 +54,13 @@ export function createLocalStoragePersistence<T>({
   key,
   value,
   onLoad,
-  serialiser = richJSONSerialiser<T>(),
+  serialiser,
   version,
 }: {
   key: string;
   value: Accessor<T>;
   onLoad: (value: T) => void;
-  serialiser?: Serialiser<T>;
+  serialiser: Serialiser<T>;
   version?: Version;
 }) {
   return createPersistence({value, onLoad, serialiser, storage: localStorageStorage(key), version});

@@ -1,3 +1,5 @@
+import {createLocalStoragePersistence} from "components/persistence/persistence";
+import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
 import {DateTime, Interval} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
@@ -31,7 +33,6 @@ import {AllDayEvent, PartDayEvent, Tag} from "./calendar-columns/events";
 import {DaysRange} from "./days_range";
 import {Block, Event} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
 
 export const MODES = ["month", "week", "day"] as const;
 export type Mode = (typeof MODES)[number];
@@ -57,6 +58,23 @@ const defaultProps = () =>
   }) satisfies Partial<Props>;
 
 const PIXELS_PER_HOUR_RANGE = [40, 400] as const;
+
+/**
+ * The state of the calendar persisted in the local storage.
+ *
+ * Warning: Changing this type may break the persistence and the whole application in a browser.
+ * Either make sure the change is backwards compatible (allows reading earlier data),
+ * or bump the version of the persistence.
+ */
+type PersistentState = {
+  readonly mode: Mode;
+  readonly daysSel: readonly [Mode, DaysRange][];
+  readonly resourcesSel: {
+    readonly checkbox: ReadonlySet<string>;
+    readonly radio: string | null;
+  };
+};
+const PERSISTENCE_VERSION = 1;
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -188,14 +206,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   });
 
   if (props.staticPersistenceKey) {
-    createLocalStoragePersistence({
+    createLocalStoragePersistence<PersistentState>({
       key: `FullCalendar:${props.staticPersistenceKey}`,
       value: () => ({
         mode: mode(),
         daysSel: Array.from(daysSelectionByMode, ([mode, [sel]]) => [mode, sel()] as const),
         resourcesSel: {
           checkbox: selectedResourcesCheckbox(),
-          radio: selectedResourceRadio(),
+          radio: selectedResourceRadio() || null,
         },
       }),
       onLoad: (state) =>
@@ -207,10 +225,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             daysSelectionByMode.get(mode)?.[1](daysSelection);
           }
           setSelectedResourcesCheckbox(state.resourcesSel.checkbox);
-          setSelectedResourceRadio(state.resourcesSel.radio);
+          setSelectedResourceRadio(state.resourcesSel.radio || undefined);
           setTinyCalMonth(daysSelection().center());
         }),
-      version: [1],
+      serialiser: richJSONSerialiser<PersistentState>(),
+      version: [PERSISTENCE_VERSION],
     });
   }
 
