@@ -51,9 +51,8 @@ tables:
       url: "$t(models.facility.url)"
       actions: "$t(tables.tables.generic.columnNames.actions)"
 
-search: "Szukaj"
 choose_columns: "Wybierz kolumny"
-sort_tooltip: "Sortuj"
+sort_tooltip: "$t(actions.sort)"
 
 filter:
   filter_for: "filtr kolumny {{data}}"

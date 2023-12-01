@@ -59,6 +59,7 @@ declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
     /** The translations for the table, used by various table-related components. */
     translations?: TableTranslations;
+    defaultColumnVisibility?: Accessor<VisibilityState>;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

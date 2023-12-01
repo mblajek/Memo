@@ -1,9 +1,12 @@
+import {createLocalStoragePersistence} from "components/persistence/persistence";
+import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
 import {DateTime, Interval} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {TbInfoTriangle} from "solid-icons/tb";
 import {
   Match,
+  Signal,
   Switch,
   VoidComponent,
   batch,
@@ -42,6 +45,8 @@ interface Props extends htmlAttributes.div {
   readonly initialMode?: Mode;
   readonly initialResourcesSelection?: readonly string[];
   readonly initialDay?: DateTime;
+  /** The key to use for persisting the parameters of the displayed page. If not present, nothing is persisted. */
+  readonly staticPersistenceKey?: string;
 }
 
 const defaultProps = () =>
@@ -53,6 +58,23 @@ const defaultProps = () =>
   }) satisfies Partial<Props>;
 
 const PIXELS_PER_HOUR_RANGE = [40, 400] as const;
+
+/**
+ * The state of the calendar persisted in the local storage.
+ *
+ * Warning: Changing this type may break the persistence and the whole application in a browser.
+ * Either make sure the change is backwards compatible (allows reading earlier data),
+ * or bump the version of the persistence.
+ */
+type PersistentState = {
+  readonly mode: Mode;
+  readonly daysSel: readonly [Mode, DaysRange][];
+  readonly resourcesSel: {
+    readonly checkbox: ReadonlySet<string>;
+    readonly radio: string | null;
+  };
+};
+const PERSISTENCE_VERSION = 1;
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -68,6 +90,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "initialMode",
     "initialResourcesSelection",
     "initialDay",
+    "staticPersistenceKey",
   ]);
 
   const t = useLangFunc();
@@ -86,8 +109,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   }
   const [tinyCalMonth, setTinyCalMonth] = createSignal(props.initialDay);
-  // Initialise to whatever range, it will be overwritten below.
-  const [daysSelection, daysSelectionSetter] = createSignal(DaysRange.oneDay(props.initialDay));
   // Initialise to whatever range, it will be immediately updated by the calendar.
   const [tinyCalVisibleRange, setTinyCalVisibleRange] = createSignal(DaysRange.oneDay(props.initialDay));
 
@@ -129,21 +150,20 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   }
 
-  // TODO: Consider keeping three separate signals with rays selection for each mode.
   /** The last days selection in each of the modes. */
-  const daysSelectionByMode = new Map<Mode, DaysRange>();
+  const daysSelectionByMode = new Map<Mode, Signal<DaysRange>>();
   for (const mode of MODES) {
     // eslint-disable-next-line solid/reactivity
-    daysSelectionByMode.set(mode, getRange(props.initialDay, mode));
+    const [daysRange, setDaysRange] = createSignal(getRange(props.initialDay, mode));
+    // eslint-disable-next-line solid/reactivity
+    daysSelectionByMode.set(mode, [daysRange, setDaysRange]);
   }
 
+  const daysSelection = () => daysSelectionByMode.get(mode())![0]();
   /** Sets the selection and stores the value in daysSelectionByMode. */
   function setDaysSelection(range: DaysRange) {
-    daysSelectionByMode.set(mode(), range);
-    daysSelectionSetter(range);
+    daysSelectionByMode.get(mode())![1](range);
   }
-  // eslint-disable-next-line solid/reactivity
-  setDaysSelection(getRange(props.initialDay));
 
   /**
    * Sets the selected range, and if the previous selected range was visible, sets the month to contain
@@ -185,27 +205,53 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     return result;
   });
 
+  if (props.staticPersistenceKey) {
+    createLocalStoragePersistence<PersistentState>({
+      key: `FullCalendar:${props.staticPersistenceKey}`,
+      value: () => ({
+        mode: mode(),
+        daysSel: Array.from(daysSelectionByMode, ([mode, [sel]]) => [mode, sel()] as const),
+        resourcesSel: {
+          checkbox: selectedResourcesCheckbox(),
+          radio: selectedResourceRadio() || null,
+        },
+      }),
+      onLoad: (state) =>
+        batch(() => {
+          if (props.modes?.includes(state.mode)) {
+            setMode(state.mode);
+          }
+          for (const [mode, daysSelection] of state.daysSel) {
+            daysSelectionByMode.get(mode)?.[1](daysSelection);
+          }
+          setSelectedResourcesCheckbox(state.resourcesSel.checkbox);
+          setSelectedResourceRadio(state.resourcesSel.radio || undefined);
+          setTinyCalMonth(daysSelection().center());
+        }),
+      serialiser: richJSONSerialiser<PersistentState>(),
+      version: [PERSISTENCE_VERSION],
+    });
+  }
+
   // Set the days selection when the mode is changed.
   createComputed(
     on(mode, (mode, prevMode) => {
       if (prevMode && mode !== prevMode) {
-        // Restore the previous selection for this mode if it overlaps with the current selection.
-        const savedDaysSelection = daysSelectionByMode.get(mode);
-        if (savedDaysSelection?.intersects(daysSelection())) {
-          setDaysSelectionAndMonth(savedDaysSelection);
-        } else {
+        // Update the selection for this mode if it does not overlap with the previous selection.
+        const prevDaysSelection = daysSelectionByMode.get(prevMode)![0]();
+        if (!prevDaysSelection?.intersects(daysSelection())) {
           // Calculate the new selection from the old selection (from different mode).
           if (mode === "month") {
-            setDaysSelectionAndMonthFromDay(daysSelection().center());
+            setDaysSelectionAndMonthFromDay(prevDaysSelection.center());
           } else if (mode === "week") {
             if (prevMode === "month") {
               // Never change tinyCalMonth when switching from month to week.
-              if (daysSelectionByMode.get("week")?.length() === 7) {
+              if (daysSelectionByMode.get("week")?.[0]().length() === 7) {
                 // Select a calendar week.
-                setDaysSelection(weekDayCalculator().dayToWeek(daysSelection().start));
+                setDaysSelection(weekDayCalculator().dayToWeek(prevDaysSelection.start));
               } else {
                 // Select the first work week of this month.
-                for (const day of daysSelection()) {
+                for (const day of prevDaysSelection) {
                   if (!weekDayCalculator().isWeekend(day)) {
                     setDaysSelection(weekDayCalculator().dayToWorkdays(day));
                     break;
@@ -213,10 +259,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 }
               }
             } else {
-              setDaysSelectionAndMonthFromDay(daysSelection().start);
+              setDaysSelectionAndMonthFromDay(prevDaysSelection.start);
             }
           } else if (mode === "day") {
-            setDaysSelectionAndMonthFromDay(daysSelection().start);
+            setDaysSelectionAndMonthFromDay(prevDaysSelection.start);
           } else {
             return mode satisfies never;
           }
