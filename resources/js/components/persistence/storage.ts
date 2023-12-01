@@ -13,7 +13,7 @@ export interface Storage<S = string> {
    * Loads and returns the value. Returns undefined if no value is found or a value stored with
    * a different version is found.
    */
-  load(version: Version): S | undefined;
+  load(currentVersion: Version): S | undefined;
   clear(): void;
 }
 
@@ -35,8 +35,8 @@ export function createVersioningStorage(base: NonVersioningStorage, addedVersion
         base.store(createVersionedStringValue(value, fullVersion));
       }
     },
-    load: (version) => {
-      const fullVersion = getFullVersion(version);
+    load: (currentVersion) => {
+      const fullVersion = getFullVersion(currentVersion);
       return isDisabledVersion(fullVersion) ? undefined : readVersionedStringValue(base.load(), fullVersion);
     },
     clear: () => base.clear(),

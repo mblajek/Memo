@@ -10,12 +10,14 @@ import {NON_NULLABLE} from "../utils";
  * A version with any component being a negative number or NaN or Infinity is a *disabled version*,
  * and it is not compatible with any version, including itself, which effectively disables loading
  * data completely. This mechanism might be useful if a bug is detected.
+ *
+ * The components must be regular finite numbers.
  */
 export type Version = readonly number[];
 
 /** Makes sure the object is really a version. This function might be useful as version can come partially from untrusted sources. */
 export function isVersion(version: Version | unknown): version is Version {
-  return Array.isArray(version) && version.every((v) => typeof v === "number");
+  return Array.isArray(version) && version.every((v) => typeof v === "number" && Number.isFinite(v));
 }
 
 /**
@@ -27,7 +29,7 @@ export function getVersionString(version: Version) {
 }
 
 export function isDisabledVersion(version: Version) {
-  return !isVersion(version) || version.some((v) => Number.isNaN(v) || !Number.isFinite(v) || v < 0);
+  return !isVersion(version) || version.some((v) => v < 0);
 }
 
 export function joinVersions(...versions: (Version | undefined)[]): Version {
@@ -43,10 +45,10 @@ export function createVersionedStringValue(value: string, version: Version) {
  * If the value is stored with the specified version, returns the content with version prefix stripped.
  * Otherwise returns undefined. Also returns undefined if the version is a disabled version.
  */
-export function readVersionedStringValue(versionedValue: string | undefined, version: Version) {
-  if (versionedValue === undefined || isDisabledVersion(version)) {
+export function readVersionedStringValue(versionedValue: string | undefined, currentVersion: Version) {
+  if (versionedValue === undefined || isDisabledVersion(currentVersion)) {
     return undefined;
   }
-  const versionString = getVersionString(version);
+  const versionString = getVersionString(currentVersion);
   return versionedValue.startsWith(versionString) ? versionedValue.slice(versionString.length) : undefined;
 }
