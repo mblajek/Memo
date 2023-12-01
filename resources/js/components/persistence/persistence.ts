@@ -1,6 +1,7 @@
 import {Accessor, createEffect} from "solid-js";
-import {Serialiser, jsonSerialiser} from "./serialiser";
-import {LocalStorageStorage, Storage} from "./storage";
+import {Serialiser, richJSONSerialiser} from "./serialiser";
+import {Storage, localStorageStorage} from "./storage";
+import {Version, isDisabledVersion, joinVersions} from "./version";
 
 /**
  * Persists a value. First, if there is any stored value, onLoad is called with that value immediately.
@@ -11,13 +12,19 @@ export function createPersistence<T, S = string>({
   onLoad,
   serialiser,
   storage,
+  version = [1],
 }: {
   value: Accessor<T>;
   onLoad: (value: T) => void;
   serialiser: Serialiser<T, S>;
   storage: Storage<S>;
+  version?: Version;
 }) {
-  const stored = deserialise(serialiser, storage.load());
+  const fullVersion = joinVersions(version, serialiser.version);
+  if (isDisabledVersion(fullVersion)) {
+    return;
+  }
+  const stored = deserialise(serialiser, storage.load(fullVersion));
   if (stored) {
     try {
       onLoad(stored.value);
@@ -26,7 +33,7 @@ export function createPersistence<T, S = string>({
       console.warn(e);
     }
   }
-  createEffect(() => storage.store(serialiser.serialise(value())));
+  createEffect(() => storage.store(serialiser.serialise(value()), fullVersion));
 }
 
 function deserialise<T, S>(serialiser: Serialiser<T, S>, storedSerialisedValue: S | undefined) {
@@ -42,19 +49,19 @@ function deserialise<T, S>(serialiser: Serialiser<T, S>, storedSerialisedValue: 
   }
 }
 
-/**
- * Persists a value in the local storage.
- */
+/** Persists a value in the local storage. */
 export function createLocalStoragePersistence<T>({
   key,
   value,
   onLoad,
-  serialiser = jsonSerialiser<T>(),
+  serialiser = richJSONSerialiser<T>(),
+  version,
 }: {
   key: string;
   value: Accessor<T>;
   onLoad: (value: T) => void;
   serialiser?: Serialiser<T>;
+  version?: Version;
 }) {
-  return createPersistence({value, onLoad, serialiser, storage: new LocalStorageStorage(key)});
+  return createPersistence({value, onLoad, serialiser, storage: localStorageStorage(key), version});
 }

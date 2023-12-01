@@ -199,6 +199,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       }
       columnVisibility[1](colVis);
     },
+    version: [2],
   });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
