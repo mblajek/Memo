@@ -3,6 +3,7 @@ import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api/groups";
 import {DEV, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
+import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
 import {DevRoutes} from "./dev-pages/DevRoutes";
 import {NotFound} from "./features/not-found/components/NotFound";
 import {NotYetImplemented} from "./features/not-found/components/NotYetImplemented";
@@ -53,6 +54,7 @@ const App: VoidComponent = () => {
           <LeafRoute routeKey="facility.admin.reports" path="/reports" component={NotYetImplemented} />
         </Route>
       </Route>
+      <BackdoorRoutes />
     </Routes>
   );
 };

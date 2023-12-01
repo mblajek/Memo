@@ -1,5 +1,13 @@
-import {ColumnDef, IdentifiedColumnDef, RowData, SortingState, createSolidTable} from "@tanstack/solid-table";
+import {
+  ColumnDef,
+  IdentifiedColumnDef,
+  RowData,
+  SortingState,
+  VisibilityState,
+  createSolidTable,
+} from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
+import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE} from "components/utils";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
@@ -131,6 +139,18 @@ function columnConfigFromPartial({
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
 const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
+/**
+ * The state of the table persisted in the local storage.
+ *
+ * Warning: Changing this type may break the persistence and the whole application in a browser.
+ * Either make sure the change is backwards compatible (allows reading earlier data),
+ * or bump the version of the persistence.
+ */
+type PersistentState = {
+  readonly colVis: Readonly<VisibilityState>;
+};
+const PERSISTENCE_VERSION = 2;
+
 export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
   const [devColumns, setDevColumns] = createSignal<DataColumnSchema[]>([]);
@@ -184,14 +204,15 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     );
   }
   const {columnVisibility, globalFilter, getColumnFilter, sorting, pagination} = requestController;
-  createLocalStoragePersistence({
+  createLocalStoragePersistence<PersistentState>({
     key: ["TQueryTable", entityURL, props.staticPersistenceKey].filter(NON_NULLABLE).join(":"),
     value: () => ({
       colVis: columnVisibility[0](),
     }),
-    onLoad: ({colVis}) => {
+    onLoad: (value) => {
       // Ensure a bad (e.g. outdated) entry won't affect visibility of a columnn that cannot have
       // the visibility controlled by the user.
+      const colVis = {...value.colVis};
       for (const col of columnsConfig()) {
         if (col.columnDef.enableHiding === false) {
           delete colVis[col.name];
@@ -199,6 +220,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       }
       columnVisibility[1](colVis);
     },
+    serialiser: richJSONSerialiser<PersistentState>(),
+    version: [PERSISTENCE_VERSION],
   });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
