@@ -15,5 +15,4 @@ use Illuminate\Database\Eloquent\Collection;
  */
 class MeetingResourceBuilder extends Builder
 {
-
 }

@@ -11,6 +11,7 @@ use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\User\ChangePasswordService;
+use App\Services\User\StorageService;
 use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -23,8 +24,7 @@ class UserController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::any);
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->only(['patch', 'status', 'password']);
+        $this->permissionOneOf(Permission::unverified, Permission::verified)->except(['login', 'logout']);
     }
 
     #[OA\Post(
@@ -189,5 +189,56 @@ class UserController extends ApiController
         $changePasswordService->handle($data);
 
         return new JsonResponse();
+    }
+
+    #[OA\Put(
+        path: '/api/v1/user/storage/{key}',
+        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        summary: 'Update user storage, send null value to unset key',
+        requestBody: new OA\RequestBody(content: new OA\JsonContent(example: '{}')),
+        tags: ['User'],
+        parameters: [
+            new OA\Parameter(
+                name: 'key',
+                description: 'Storage key',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', example: ''),
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ],
+    )] /** @throws ApiException */
+    public function storagePut(StorageService $storageService, Request $request, string $key): JsonResponse
+    {
+        return $storageService->put($this->getUserOrFail(), $key, $request->getContent());
+    }
+
+    #[OA\Get(
+        path: '/api/v1/user/storage/{key}',
+        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        summary: 'Read user storage, send empty key to list keys',
+        tags: ['User'],
+        parameters: [
+            new OA\Parameter(
+                name: 'key',
+                description: 'Storage key',
+                in: 'path',
+                allowEmptyValue: true,
+                schema: new OA\Schema(type: 'string', example: ''),
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ],
+    )]
+    public function storageGet(StorageService $storageService, string $key = ''): JsonResponse
+    {
+        return $storageService->get($this->getUserOrFail(), $key);
     }
 }
