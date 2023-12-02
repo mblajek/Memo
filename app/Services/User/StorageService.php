@@ -30,14 +30,14 @@ class StorageService
         ]);
     }
 
-    private function getStorageKey(array $storage, string $key): JsonResponse
+    private function getStorageKeys(array $storage): JsonResponse
     {
-        return new JsonResponse(
-            ($key === '')
-                ? json_encode(array_keys($storage))
-                : ($storage[$key] ?? 'null'),
-            json: true,
-        );
+        return new JsonResponse(array_keys($storage));
+    }
+
+    private function getStorageByKey(array $storage, string $key): JsonResponse
+    {
+        return new JsonResponse($storage[$key] ?? 'null', json: true);
     }
 
     /** @throws ApiException */
@@ -52,7 +52,7 @@ class StorageService
                 $storage[$key] = $contents;
             }
             $this->setUserStorage($user, $storage);
-            return $this->getStorageKey($storage, '');
+            return $this->getStorageKeys($storage);
         } catch (Throwable) {
             ExceptionFactory::validation()->throw();
         }
@@ -61,7 +61,9 @@ class StorageService
     public function get(User $user, string $key): JsonResponse
     {
         try {
-            return $this->getStorageKey($this->getUserStorage($user), $key);
+            $storage = $this->getUserStorage($user);
+            return ($key === '') ? $this->getStorageKeys($storage)
+                : $this->getStorageByKey($storage, $key);
         } catch (Throwable) {
             FatalExceptionFactory::unexpected()->throw();
         }
