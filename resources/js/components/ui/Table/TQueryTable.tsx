@@ -1,7 +1,22 @@
-import {ColumnDef, IdentifiedColumnDef, RowData, SortingState, createSolidTable} from "@tanstack/solid-table";
+import {
+  ColumnDef,
+  IdentifiedColumnDef,
+  RowData,
+  SortingState,
+  VisibilityState,
+  createSolidTable,
+} from "@tanstack/solid-table";
+import {createLocalStoragePersistence} from "components/persistence/persistence";
+import {richJSONSerialiser} from "components/persistence/serialiser";
+import {NON_NULLABLE} from "components/utils";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {ColumnConfig, createTableRequestCreator, tableHelper} from "data-access/memo-api/tquery/table";
+import {
+  ColumnConfig,
+  createTableRequestCreator,
+  getDefaultColumnVisibility,
+  tableHelper,
+} from "data-access/memo-api/tquery/table";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {ColumnName, ColumnType, DataColumnSchema, DataItem, isDataColumn} from "data-access/memo-api/tquery/types";
 import {DEV, JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
@@ -54,6 +69,12 @@ export interface TQueryTableProps {
   /** The entity URL, must not change. */
   readonly staticEntityURL: string;
   readonly staticTranslations?: TableTranslations;
+  /**
+   * The key part used to persist the table settings.
+   * If not provided, the settings are persisted with the entity URL as the key. Specifying this
+   * key allows persisting the settings separately for different tables showing the same entity.
+   */
+  readonly staticPersistenceKey?: string;
   /**
    * The filter that is always applied to the data, regardless of other filtering.
    * This is used to create e.g. a table of entities A on the details page of a particular
@@ -118,6 +139,18 @@ function columnConfigFromPartial({
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
 const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
+/**
+ * The state of the table persisted in the local storage.
+ *
+ * Warning: Changing this type may break the persistence and the whole application in a browser.
+ * Either make sure the change is backwards compatible (allows reading earlier data),
+ * or bump the version of the persistence.
+ */
+type PersistentState = {
+  readonly colVis: Readonly<VisibilityState>;
+};
+const PERSISTENCE_VERSION = 2;
+
 export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const entityURL = props.staticEntityURL;
   const [devColumns, setDevColumns] = createSignal<DataColumnSchema[]>([]);
@@ -145,6 +178,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     ["uuid", {cell: tableCells.uuid, enableSorting: false, size: 80}],
   ]);
 
+  const [allInitialised, setAllInitialised] = createSignal(false);
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     intrinsicFilter: () => props.intrinsicFilter,
@@ -152,6 +186,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     initialPageSize:
       props.initialPageSize ||
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
+    allInitialised,
   });
   const {schema, requestController, dataQuery} = createTQuery({
     entityURL,
@@ -160,8 +195,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     dataQueryOptions: {meta: {tquery: {isTable: true}}},
   });
   if (DEV) {
-    // Schema is available, so initialise the DEV columns. This will cause a change to the columns
-    // list, but it's fine as it's only done in DEV mode.
     createComputed(() =>
       setDevColumns(
         schema()
@@ -171,6 +204,27 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     );
   }
   const {columnVisibility, globalFilter, getColumnFilter, sorting, pagination} = requestController;
+  createLocalStoragePersistence<PersistentState>({
+    key: ["TQueryTable", entityURL, props.staticPersistenceKey].filter(NON_NULLABLE).join(":"),
+    value: () => ({
+      colVis: columnVisibility[0](),
+    }),
+    onLoad: (value) => {
+      // Ensure a bad (e.g. outdated) entry won't affect visibility of a columnn that cannot have
+      // the visibility controlled by the user.
+      const colVis = {...value.colVis};
+      for (const col of columnsConfig()) {
+        if (col.columnDef.enableHiding === false) {
+          delete colVis[col.name];
+        }
+      }
+      columnVisibility[1](colVis);
+    },
+    serialiser: richJSONSerialiser<PersistentState>(),
+    version: [PERSISTENCE_VERSION],
+  });
+  // Allow querying data now that the DEV columns are added and columns visibility is loaded.
+  setAllInitialised(true);
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
@@ -183,6 +237,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       toastMessages([...errors], toast.error);
     }
   });
+  const defaultColumnVisibility = createMemo(() => getDefaultColumnVisibility(columnsConfig()));
 
   const columns = createMemo(() => {
     const sch = schema();
@@ -248,6 +303,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     autoResetPageIndex: false,
     meta: {
       translations: props.staticTranslations || createTableTranslations("generic"),
+      defaultColumnVisibility,
     },
   });
 

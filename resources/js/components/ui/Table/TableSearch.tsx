@@ -18,7 +18,7 @@ export const TableSearch: VoidComponent<ParentProps<Props>> = (allProps) => {
         class="w-full h-full px-2 border border-input-border rounded"
         name="table_global_search"
         type="search"
-        placeholder={props.placeholder || t("tables.search")}
+        placeholder={props.placeholder || t("actions.search")}
         value={query()}
         onInput={({target: {value}}) => setQuery(value)}
       />

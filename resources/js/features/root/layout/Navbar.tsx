@@ -1,6 +1,7 @@
 import {FullLogo} from "components/ui/FullLogo";
 import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
 import {LangFunc, cx, useLangFunc} from "components/utils";
+import {BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3, BsCalendar3Week} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
 import {
@@ -159,6 +160,12 @@ function getDevSectionItems(): NavigationItemProps[] {
       icon: RiDevelopmentCodeBoxLine,
       href: "/dev/test-page",
       routeKey: "/dev/test-page",
+    },
+    {
+      icon: BiRegularTable,
+      href: "/dev/local-storage",
+      routeKey: "Local storage",
+      target: "_blank",
     },
   ];
 }

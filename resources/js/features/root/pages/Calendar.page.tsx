@@ -60,6 +60,7 @@ export default (() => {
         [12, 25],
         [12, 26],
       ].map(([month, day]) => DateTime.fromObject({month, day}))}
+      staticPersistenceKey="facilityCalendar"
     />
   );
 }) satisfies VoidComponent;

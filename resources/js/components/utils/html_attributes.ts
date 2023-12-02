@@ -37,6 +37,8 @@ export namespace htmlAttributes {
   export type input = JSX.HTMLElementTags["input"];
   export type select = JSX.HTMLElementTags["select"];
 
+  export type pre = JSX.HTMLElementTags["pre"];
+
   /** The events that can be overridden in a merge. Add more elements as needed. */
   const EVENT_HANDLERS = ["onClick", "onDblClick", "onMouseMove", "onMouseDown", "onMouseUp"] satisfies (keyof div)[];
   type EventType = (typeof EVENT_HANDLERS)[number];
@@ -47,10 +49,10 @@ export namespace htmlAttributes {
   ) {
     const attribs = (attributes || {}) as Partial<Record<string, unknown>>;
     const result = {...attribs, ...overrides};
-    if (attribs.class && overrides.class) {
+    if (attribs.class !== undefined && overrides.class !== undefined) {
       result.class = cx(attribs.class as string, overrides.class);
     }
-    if (attribs.style && overrides.style) {
+    if (attribs.style !== undefined && overrides.style !== undefined) {
       if (typeof attribs.style !== typeof overrides.style)
         throw new Error(
           `Cannot merge style from attributes (${JSON.stringify(
