@@ -32,8 +32,7 @@ readonly class CreateUserService
         $user->email_verified_at = $data['has_email_verified'] === true ? CarbonImmutable::now() : null;
         $user->password = $data['password'] !== null ? Hash::make($data['password']) : null;
         $user->password_expire_at = $data['password_expire_at'];
-        $user->created_by = Auth::user()->id;
-        $user->global_admin_grant_id = $data['has_global_admin'] ? Grant::createForUser()->id : null;
+        $user->global_admin_grant_id = $data['has_global_admin'] ? Grant::create()->id : null;
 
         $user->save();
 

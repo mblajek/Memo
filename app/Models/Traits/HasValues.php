@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Traits;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Utils\Uuid\UuidTrait;
+use App\Models\Value;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -14,20 +13,16 @@ use Illuminate\Support\Str;
 /**
  * @property string id
  * @property-read Collection<Value> values
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
+ * @mixin Model
  */
-class BaseModel extends Model
+trait HasValues
 {
-    use HasFactory;
-    use UuidTrait;
+    private ?array $attrValues = null;
 
     public function values(): HasMany
     {
         return $this->hasMany(Value::class, 'object_id');
     }
-
-    private ?array $attrValues = null;
 
     public function attrValues(): array
     {

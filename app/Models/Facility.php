@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\FacilityBuilder;
+use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasValidator;
+use App\Models\Traits\HasUuid;
 use App\Rules\Valid;
-use App\Utils\Uuid\UuidTrait;
-use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,19 +14,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
 
 /**
- * @property string id
  * @property string name
  * @property string url
  * @property ?string timetable_id
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
  * @property-read Timetable $timetable
  * @method static FacilityBuilder query()
  */
 class Facility extends Model
 {
-    use HasFactory;
-    use UuidTrait;
+    use BaseModel;
     use HasValidator;
 
     protected $table = 'facilities';
@@ -36,10 +33,7 @@ class Facility extends Model
         'timetable_id',
     ];
 
-    protected $casts = [
-        'created_at' => 'immutable_datetime',
-        'updated_at' => 'immutable_datetime',
-    ];
+    protected $casts = self::BASE_CASTS;
 
     protected static function fieldValidator(string $field): string|array
     {

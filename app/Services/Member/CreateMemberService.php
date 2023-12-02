@@ -17,7 +17,7 @@ class CreateMemberService
 
         $member->facility_id = $data['facility_id'];
         $member->user_id = $data['user_id'];
-        $member->facility_admin_grant_id = $data['has_facility_admin'] ? Grant::createForUser()->id : null;
+        $member->facility_admin_grant_id = $data['has_facility_admin'] ? Grant::create()->id : null;
 
         $member->saveOrFail();
 
