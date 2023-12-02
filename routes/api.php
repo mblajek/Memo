@@ -36,6 +36,8 @@ Route::prefix('/v1')->group(function () {
         Route::get('/status/{facility?}', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);
         Route::post('/password', [UserController::class, 'password']);
+        Route::put('/storage/{key}', [UserController::class, 'storagePut']);
+        Route::get('/storage/{key?}', [UserController::class, 'storageGet']);
     });
     Route::prefix('/admin')->group(function () {
         Route::get('/migrate/{hash?}', [AdminController::class, 'migrate']);
