@@ -4,9 +4,6 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\StaffMemberBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasUuid;
-use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;

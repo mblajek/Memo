@@ -4,8 +4,6 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\MeetingResourceBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasUuid;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
 /**

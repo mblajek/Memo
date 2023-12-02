@@ -5,8 +5,6 @@ namespace App\Models;
 use App\Models\Enums\AttendanceType;
 use App\Models\QueryBuilders\MeetingAttendantBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasUuid;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 
 /**

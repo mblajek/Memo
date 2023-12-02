@@ -6,10 +6,8 @@ use App\Models\QueryBuilders\MeetingBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCreatedBy;
 use App\Models\Traits\HasValidator;
-use App\Models\Traits\HasUuid;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Rules\Valid;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -45,6 +43,7 @@ class Meeting extends Model
         'start_dayminute',
         'duration_minutes',
         'status_dict_id',
+        'is_remote',
     ];
 
     protected $casts = [
@@ -59,9 +58,10 @@ class Meeting extends Model
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::meetingType),
             'date' => Valid::date(),
             'notes' => Valid::trimmed(max: 4000),
-            'start_dayminute' => Valid::int(['min:' . (2 * 60), 'max:' . (24 * 60)]),
+            'start_dayminute' => Valid::int(['min:' . (4 * 60), 'max:' . (24 * 60)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::meetingStatus),
+            'is_remote' => Valid::bool(),
         };
     }
 

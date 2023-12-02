@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
+use App\Exceptions\FatalExceptionFactory;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -25,6 +26,15 @@ trait BaseModel
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
+
+    public function saveOrApiFail(array $options = [])
+    {
+        try {
+           return $this->saveOrFail($options);
+        } catch (\Throwable) {
+            FatalExceptionFactory::unexpected()->throw();
+        }
+    }
 
     /** @throws ApiException */
     private static function getAuthOrFail()

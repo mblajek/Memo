@@ -7,9 +7,6 @@ use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\AttributeBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasUuid;
-use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**

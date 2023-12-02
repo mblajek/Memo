@@ -9,6 +9,7 @@ use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\MeetingResource;
 use App\Models\Facility;
 use App\Models\Meeting;
+use App\Services\Meeting\MeetingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
@@ -27,9 +28,15 @@ class MeetingController extends ApiController
         summary: 'Create meeting',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['name', 'url'],
+                required: ['typeDictId', 'date', 'startDayminute', 'durationMinutes', 'statusDictId', 'isRemote'],
                 properties: [
                     new OA\Property(property: 'typeDictId', type: 'string', example: 'UUID'),
+                    new OA\Property(property: 'date', type: 'string', example: '2023-12-13'),
+                    new OA\Property(property: 'notes', type: 'string', example: ''),
+                    new OA\Property(property: 'startDayminute', type: 'int', example: 600),
+                    new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
+                    new OA\Property(property: 'statusDictId', type: 'string', example: 'UUID'),
+                    new OA\Property(property: 'isRemote', type: 'bool', example: false),
                 ]
             )
         ),
@@ -49,11 +56,20 @@ class MeetingController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws Throwable|ApiException */
-    public function post(): JsonResponse
+    public function post(MeetingService $meetingService): JsonResponse
     {
-        $data = $this->validate(Meeting::getInsertValidator(['type_dict_id']));
-
-        $result = $data;
+        $data = $this->validate(
+            Meeting::getInsertValidator([
+                'type_dict_id',
+                'date',
+                'notes',
+                'start_dayminute',
+                'duration_minutes',
+                'status_dict_id',
+                'is_remote',
+            ])
+        );
+        $result = $meetingService->create($this->getFacilityOrFail(), $data);
 
         return new JsonResponse(data: ['data' => ['id' => $result]], status: 201);
     }

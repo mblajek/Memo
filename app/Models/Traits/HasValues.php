@@ -4,7 +4,6 @@ namespace App\Models\Traits;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Value;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -24,21 +23,21 @@ trait HasValues
         return $this->hasMany(Value::class, 'object_id');
     }
 
-    public function attrValues(): array
+    public function attrValues(bool $byId = false): array
     {
         if ($this->attrValues === null || $this->isDirty() === false) {
             $attrValues = [];
             $attrValuesOrder = [];
             foreach ($this->values as $value) {
                 $attribute = $value->attribute;
-                $apiName = Str::camel($attribute->api_name);
+                $arrayKey = $byId ? $attribute->id : Str::camel($attribute->api_name);
                 $isMultiValue = $attribute->is_multi_value;
                 $singleValue = $value->getScalarValue();
-                $attrValuesOrder[$apiName] = $attribute->default_order;
-                if (!array_key_exists($apiName, $attrValues)) {
-                    $attrValues[$apiName] = $isMultiValue ? [$singleValue] : $singleValue;
+                $attrValuesOrder[$arrayKey] = $attribute->default_order;
+                if (!array_key_exists($arrayKey, $attrValues)) {
+                    $attrValues[$arrayKey] = $isMultiValue ? [$singleValue] : $singleValue;
                 } elseif ($isMultiValue) {
-                    $attrValues[$apiName][] = $singleValue;
+                    $attrValues[$arrayKey][] = $singleValue;
                 } else {
                     FatalExceptionFactory::unexpected()->throw();
                 }

@@ -7,8 +7,6 @@ use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\ValueBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCreatedBy;
-use App\Models\Traits\HasUuid;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
