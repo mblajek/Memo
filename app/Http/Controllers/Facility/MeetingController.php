@@ -72,6 +72,9 @@ class MeetingController extends ApiController
                 'attendants.*.user_id',
                 'attendants.*.attendance_type',
                 'attendants.*.attendance_status_dict_id',
+                'resources',
+                'resources.*',
+                'resources.*.resource_dict_id',
             ])
         );
         $result = $meetingService->create($this->getFacilityOrFail(), $data);

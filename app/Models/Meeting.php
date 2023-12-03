@@ -47,6 +47,7 @@ class Meeting extends Model
     ];
 
     protected $casts = [
+        'is_remote' => 'boolean',
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
@@ -62,11 +63,13 @@ class Meeting extends Model
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::meetingStatus),
             'is_remote' => Valid::bool(),
-            'attendants' => Valid::list(min: 0),
+            'attendants', 'resources' => Valid::list(min: 0),
             'attendants.*' => Valid::array(keys: ['user_id', 'attendance_type', 'attendance_status_dict_id']),
             'attendants.*.user_id' => MeetingAttendant::fieldValidator('user_id'),
             'attendants.*.attendance_type' => MeetingAttendant::fieldValidator('attendance_type'),
             'attendants.*.attendance_status_dict_id' => MeetingAttendant::fieldValidator('attendance_status_dict_id'),
+            'resources.*' => Valid::array(keys: ['resource_dict_id']),
+            'resources.*.resource_dict_id' => MeetingResource::fieldValidator('resource_dict_id'),
         };
     }
 

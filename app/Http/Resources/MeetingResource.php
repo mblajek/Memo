@@ -11,13 +11,13 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'facilityId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'typeDictId', type: 'string', format: 'uuid', example: 'UUID'),
-        new OA\Property(property: 'name', type: 'string', example: 'Test'),
         new OA\Property(property: 'notes', type: 'string', example: 'Test'),
         new OA\Property(property: 'date', type: 'string', format: 'date', example: '2023-11-27'),
         new OA\Property(property: 'startDayminute', type: 'int', example: 600),
         new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
         new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'createdBy', type: 'string', format: 'uuid', example: 'UUID'),
+        new OA\Property(property: 'isRemote', type: 'bool', example: 'false'),
         new OA\Property(
             property: 'attendants', type: 'array', items: new OA\Items(
             ref: '#/components/schemas/MeetingAttendantResource'
@@ -40,13 +40,13 @@ class MeetingResource extends AbstractJsonResource
             'facilityId' => true,
             'categoryDictId' => true,
             'typeDictId' => true,
-            'name' => true,
             'notes' => true,
             'date' => true,
             'startDayminute' => true,
             'durationMinutes' => true,
             'statusDictId' => true,
             'createdBy' => true,
+            'isRemote' => true,
             'attendants' => fn(self $meeting) => MeetingAttendantResource::collection($meeting->attendants),
             'resources' => fn(self $meeting) => MeetingResourceResource::collection($meeting->resources),
         ];

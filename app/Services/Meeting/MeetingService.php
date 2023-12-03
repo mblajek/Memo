@@ -5,25 +5,27 @@ namespace App\Services\Meeting;
 use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
+use App\Models\MeetingResource;
 use App\Models\Position;
 use App\Models\UuidEnum\PositionAttributeUuidEnum;
+use Illuminate\Support\Facades\DB;
 
 class MeetingService
 {
     public function create(Facility $facility, array $data): string
     {
-        $attendantsData = $data['attendants'] ?? null;
-        unset($data['attendants']);
-
         $meeting = new Meeting($data);
         $this->fillMeeting($meeting, $facility);
 
-        foreach ($attendantsData as $attendantData) {
-            $attendant = new MeetingAttendant($attendantData);
-            $this->fillAttendant($attendant, $meeting);
-        }
+        $attendants = $this->extractAttendants($data);
+        $resources = $this->extractResources($data);
 
-        $meeting->saveOrApiFail();
+        DB::transaction(function () use ($meeting, $attendants, $resources) {
+            $meeting->save();
+            $meeting->attendants()->saveMany($attendants);
+            $meeting->resources()->saveMany($resources);
+        });
+
         return $meeting->id;
     }
 
@@ -34,7 +36,28 @@ class MeetingService
             ->attrValues(byId: true)[PositionAttributeUuidEnum::category->value]);
     }
 
-    private function fillAttendant(MeetingAttendant $attendant, Meeting $meeting): void
+    private function extractAttendants(array &$data): array
     {
+        $attendantsData = $data['attendants'] ?? null;
+        unset($data['attendants']);
+        $attendants = [];
+        foreach ($attendantsData as $attendantData) {
+            $attendant = new MeetingAttendant($attendantData);
+            $attendants[$attendant->user_id] = $attendant;
+        }
+        return array_values($attendants);
     }
+
+    private function extractResources(array &$data): array
+    {
+        $resourcesData = $data['resources'] ?? null;
+        unset($data['resources']);
+        $resources = [];
+        foreach ($resourcesData as $resourceData) {
+            $resource = new MeetingResource($resourceData);
+            $resources[$resource->resource_dict_id] = $resource;
+        }
+        return array_values($resources);
+    }
+
 }
