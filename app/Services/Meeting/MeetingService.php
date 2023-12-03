@@ -38,7 +38,7 @@ class MeetingService
 
     private function extractAttendants(array &$data): array
     {
-        if(!array_key_exists('attendants', $data)){
+        if (!array_key_exists('attendants', $data)) {
             return [];
         }
         $attendantsData = $data['attendants'] ?? null;
@@ -53,7 +53,7 @@ class MeetingService
 
     private function extractResources(array &$data): array
     {
-        if(!array_key_exists('resources', $data)){
+        if (!array_key_exists('resources', $data)) {
             return [];
         }
         $resourcesData = $data['resources'] ?? null;
