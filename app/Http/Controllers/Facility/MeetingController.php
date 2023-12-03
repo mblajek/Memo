@@ -67,6 +67,11 @@ class MeetingController extends ApiController
                 'duration_minutes',
                 'status_dict_id',
                 'is_remote',
+                'attendants',
+                'attendants.*',
+                'attendants.*.user_id',
+                'attendants.*.attendance_type',
+                'attendants.*.attendance_status_dict_id',
             ])
         );
         $result = $meetingService->create($this->getFacilityOrFail(), $data);

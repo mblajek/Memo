@@ -30,7 +30,7 @@ trait BaseModel
     public function saveOrApiFail(array $options = [])
     {
         try {
-           return $this->saveOrFail($options);
+            return $this->saveOrFail($options);
         } catch (\Throwable) {
             FatalExceptionFactory::unexpected()->throw();
         }

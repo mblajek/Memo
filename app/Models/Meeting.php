@@ -57,11 +57,16 @@ class Meeting extends Model
             'facility_id' => Valid::uuid([Rule::exists('facilities')]),
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::meetingType),
             'date' => Valid::date(),
-            'notes' => Valid::trimmed(max: 4000),
+            'notes' => Valid::trimmed(nullable: true, max: 4000),
             'start_dayminute' => Valid::int(['min:' . (4 * 60), 'max:' . (24 * 60)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::meetingStatus),
             'is_remote' => Valid::bool(),
+            'attendants' => Valid::list(min: 0),
+            'attendants.*' => Valid::array(keys: ['user_id', 'attendance_type', 'attendance_status_dict_id']),
+            'attendants.*.user_id' => MeetingAttendant::fieldValidator('user_id'),
+            'attendants.*.attendance_type' => MeetingAttendant::fieldValidator('attendance_type'),
+            'attendants.*.attendance_status_dict_id' => MeetingAttendant::fieldValidator('attendance_status_dict_id'),
         };
     }
 
