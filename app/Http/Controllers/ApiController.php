@@ -54,11 +54,12 @@ abstract class ApiController extends Controller
     protected function getPermissionObject(): PermissionObject
     {
         if (empty($this->permissionObject)) {
-            $this->permissionObject = $this->request->attributes->get(PermissionMiddleware::PERMISSIONS_KEY);
+            $this->permissionObject = PermissionMiddleware::permissions();
         }
         return $this->permissionObject;
     }
 
+    /** Require permission in initPermissions() */
     protected function permissionOneOf(Permission ...$permissions): ControllerMiddlewareOptions
     {
         return $this->middleware(

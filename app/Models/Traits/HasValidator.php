@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Utils\Validation;
+namespace App\Models\Traits;
 
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;

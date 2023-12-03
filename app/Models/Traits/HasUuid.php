@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Utils\Uuid;
+namespace App\Models\Traits;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Str;
 
-trait UuidTrait
+trait HasUuid
 {
     use HasUuids;
 

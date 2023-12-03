@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Facility;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -50,5 +51,7 @@ class AppServiceProvider extends ServiceProvider
         if (App::hasDebugModeEnabled()) {
             DB::enableQueryLog();
         }
+
+        PermissionMiddleware::reset();
     }
 }

@@ -4,43 +4,38 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\QueryBuilders\UserBuilder;
+use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasCreatedBy;
+use App\Models\Traits\HasValidator;
 use App\Rules\RequirePresentRule;
-use App\Utils\Uuid\UuidTrait;
-use App\Utils\Validation\HasValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 /**
- * @property string id
  * @property string name
  * @property ?string email
  * @property ?CarbonImmutable email_verified_at
  * @property ?string password
  * @property ?string remember_token
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
- * @property string created_by
  * @property ?string $last_login_facility_id
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $password_expire_at
  * @property-read Collection<Member> $members
- * @property-read User $createdBy
  * @property-read Facility $lastLoginFacility
  * @method static UserBuilder query()
  */
 class User extends Authenticatable
 {
-    use HasFactory;
+    use BaseModel;
     use Notifiable;
-    use UuidTrait;
     use HasValidator;
+    use HasCreatedBy;
 
     protected $table = 'users';
 
@@ -55,7 +50,6 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
-        'created_by',
         'last_login_facility_id',
         'global_admin_grant_id',
         'password_expire_at',
@@ -103,11 +97,6 @@ class User extends Authenticatable
     public function members(): HasMany
     {
         return $this->hasMany(Member::class);
-    }
-
-    public function createdBy(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'created_by');
     }
 
     public function lastLoginFacility(): BelongsTo

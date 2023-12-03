@@ -18,7 +18,6 @@ use OpenApi\Attributes as OA;
  */
 class MeetingResourceResource extends AbstractJsonResource
 {
-
     protected static function getMappedFields(): array
     {
         return [

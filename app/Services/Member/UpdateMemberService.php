@@ -27,7 +27,7 @@ class UpdateMemberService
 
             if ($data['has_facility_admin']) {
                 if ($grant === null) {
-                    $grant = Grant::createForUser();
+                    $grant = Grant::create();
                 }
             } else {
                 $grant?->delete();
