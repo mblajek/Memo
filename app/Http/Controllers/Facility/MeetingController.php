@@ -7,7 +7,6 @@ use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Meeting\MeetingResource;
-use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
 use App\Services\Meeting\MeetingService;

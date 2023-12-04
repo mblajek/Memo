@@ -5,12 +5,7 @@ namespace App\Models;
 use App\Models\Enums\AttendanceType;
 use App\Models\QueryBuilders\MeetingAttendantBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasValidator;
-use App\Models\UuidEnum\DictionaryUuidEnum;
-use App\Rules\MemberExistsRule;
-use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Validation\Rule;
 
 /**
  * @property string meeting_id
