@@ -45,7 +45,8 @@ class MeetingAttendant extends Model
             'user_id' => Valid::uuid([Rule::exists('users', 'id')]),
             'attendance_type' =>
             Valid::trimmed([Rule::in(array_map(fn(AttendanceType $case) => $case->value, AttendanceType::cases()))]),
-            'attendance_status_dict_id' => Valid::dict(DictionaryUuidEnum::attendanceStatus, nullable: true),
+            'attendance_status_dict_id' =>
+            Valid::dict(DictionaryUuidEnum::attendanceStatus, sometimes: true, nullable: true),
         };
     }
 }
