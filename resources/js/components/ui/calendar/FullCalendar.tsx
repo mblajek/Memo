@@ -67,6 +67,7 @@ const PIXELS_PER_HOUR_RANGE = [40, 400] as const;
  * or bump the version of the persistence.
  */
 type PersistentState = {
+  readonly today: string;
   readonly mode: Mode;
   readonly daysSel: readonly [Mode, DaysRange][];
   readonly resourcesSel: {
@@ -74,7 +75,7 @@ type PersistentState = {
     readonly radio: string | null;
   };
 };
-const PERSISTENCE_VERSION = 1;
+const PERSISTENCE_VERSION = 2;
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -209,6 +210,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     createLocalStoragePersistence<PersistentState>({
       key: `FullCalendar:${props.staticPersistenceKey}`,
       value: () => ({
+        today: currentDate().toISODate(),
         mode: mode(),
         daysSel: Array.from(daysSelectionByMode, ([mode, [sel]]) => [mode, sel()] as const),
         resourcesSel: {
@@ -222,6 +224,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             setMode(state.mode);
           }
           for (const [mode, daysSelection] of state.daysSel) {
+            // Don't restore the selection if it contained the previous date, but not the current date.
+            // In this situation the user probably prefers to see the current date.
+            const day = DateTime.fromISO(state.today);
+            if (!day.hasSame(currentDate(), "day")) {
+              if (daysSelection.contains(day) && !daysSelection.contains(currentDate())) {
+                continue;
+              }
+            }
             daysSelectionByMode.get(mode)?.[1](daysSelection);
           }
           setSelectedResourcesCheckbox(state.resourcesSel.checkbox);
