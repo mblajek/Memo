@@ -3,28 +3,22 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\MemberBuilder;
-use App\Utils\Uuid\UuidTrait;
-use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string id
  * @property string user_id
  * @property string facility_id
  * @property ?string staff_member_id
  * @property ?string client_id
  * @property ?string facility_admin_grant_id
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
  * @property-read Timetable $timetable
  * @method static MemberBuilder query()
  */
 class Member extends Model
 {
-    use HasFactory;
-    use UuidTrait;
+    use BaseModel;
 
     protected $table = 'members';
 
@@ -36,10 +30,7 @@ class Member extends Model
         'facility_admin_grant_id',
     ];
 
-    protected $casts = [
-        'created_at' => 'immutable_datetime',
-        'updated_at' => 'immutable_datetime',
-    ];
+    protected $casts = self::BASE_CASTS;
 
     public function user(): BelongsTo
     {

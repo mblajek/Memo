@@ -62,6 +62,7 @@ Route::prefix('/v1')->group(function () {
     });
     Route::prefix('/facility/{facility}')->group(function () {
         Route::prefix('/meeting')->group(function () {
+            Route::post('/', [MeetingController::class, 'post']);
             Route::get('/list', [MeetingController::class, 'facilityMeetingList']);
         });
     });

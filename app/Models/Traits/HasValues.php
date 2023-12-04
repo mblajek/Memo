@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Traits;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Utils\Uuid\UuidTrait;
-use Carbon\CarbonImmutable;
+use App\Models\Value;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -14,36 +12,32 @@ use Illuminate\Support\Str;
 /**
  * @property string id
  * @property-read Collection<Value> values
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
+ * @mixin Model
  */
-class BaseModel extends Model
+trait HasValues
 {
-    use HasFactory;
-    use UuidTrait;
+    private ?array $attrValues = null;
 
     public function values(): HasMany
     {
         return $this->hasMany(Value::class, 'object_id');
     }
 
-    private ?array $attrValues = null;
-
-    public function attrValues(): array
+    public function attrValues(bool $byId = false): array
     {
         if ($this->attrValues === null || $this->isDirty() === false) {
             $attrValues = [];
             $attrValuesOrder = [];
             foreach ($this->values as $value) {
                 $attribute = $value->attribute;
-                $apiName = Str::camel($attribute->api_name);
+                $arrayKey = $byId ? $attribute->id : Str::camel($attribute->api_name);
                 $isMultiValue = $attribute->is_multi_value;
                 $singleValue = $value->getScalarValue();
-                $attrValuesOrder[$apiName] = $attribute->default_order;
-                if (!array_key_exists($apiName, $attrValues)) {
-                    $attrValues[$apiName] = $isMultiValue ? [$singleValue] : $singleValue;
+                $attrValuesOrder[$arrayKey] = $attribute->default_order;
+                if (!array_key_exists($arrayKey, $attrValues)) {
+                    $attrValues[$arrayKey] = $isMultiValue ? [$singleValue] : $singleValue;
                 } elseif ($isMultiValue) {
-                    $attrValues[$apiName][] = $singleValue;
+                    $attrValues[$arrayKey][] = $singleValue;
                 } else {
                     FatalExceptionFactory::unexpected()->throw();
                 }

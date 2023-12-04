@@ -5,8 +5,9 @@ namespace App\Models;
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\ValueBuilder;
-use App\Utils\Uuid\UuidTrait;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasCreatedBy;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -17,14 +18,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string string_value
  * @property ?int int_value
  * @property ?int datetime_value
- * @property string created_by
  * @property-read Attribute attribute
  * @method static ValueBuilder query()
  */
-class Value extends BaseModel
+class Value extends Model
 {
-    use HasFactory;
-    use UuidTrait;
+    use BaseModel;
+    use HasCreatedBy;
 
     protected $table = 'values';
 

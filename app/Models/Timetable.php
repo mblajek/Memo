@@ -3,35 +3,22 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\TimetableBuilder;
-use App\Utils\Uuid\UuidTrait;
-use Carbon\CarbonImmutable;
+use App\Models\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property string id
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
  * @property-read Collection|Facility[] $facilities
  * @method static TimetableBuilder query()
  */
 class Timetable extends Model
 {
-    use HasFactory;
-    use UuidTrait;
+    use BaseModel;
 
     protected $table = 'timetables';
 
-    protected $fillable = [
-
-    ];
-
-    protected $casts = [
-        'created_at' => 'immutable_datetime',
-        'updated_at' => 'immutable_datetime',
-    ];
+    protected $casts = self::BASE_CASTS;
 
     public function facilities(): HasMany
     {

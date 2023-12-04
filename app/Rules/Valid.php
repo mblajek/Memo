@@ -2,13 +2,14 @@
 
 namespace App\Rules;
 
+use App\Models\Dictionary;
+use App\Models\UuidEnum\DictionaryUuidEnum;
 use Closure;
-
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Validator as ValidatorFacade;
 
 /**
  * Rule generator
@@ -55,6 +56,16 @@ class Valid extends AbstractDataRule
         bool $nullable = false,
     ): array {
         return self::base($sometimes, $nullable, ['string', 'lowercase', 'uuid'], $rules);
+    }
+
+    public static function dict(
+        string|Dictionary|DictionaryUuidEnum $dictionary,
+        bool $sometimes = false,
+        bool $nullable = false,
+    ): array {
+        $dictionaryId = ($dictionary instanceof DictionaryUuidEnum) ? $dictionary->value
+            : (($dictionary instanceof Dictionary) ? $dictionary->id : $dictionary);
+        return self::uuid([new PositionInDictionaryRule($dictionaryId)], $sometimes, $nullable);
     }
 
     public static function array(

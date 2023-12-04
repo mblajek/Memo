@@ -13,7 +13,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class PermissionMiddleware
 {
-    public const PERMISSIONS_KEY = 'permissions-key';
+    private static ?PermissionObject $permissionObject = null;
+
+    public static function permissions(): ?PermissionObject
+    {
+        return self::$permissionObject;
+    }
+
+    public static function reset(): void
+    {
+        self::$permissionObject = null;
+    }
 
     /**
      * Handle an incoming request.
@@ -26,14 +36,16 @@ class PermissionMiddleware
      */
     public function handle(Request $request, Closure $next, string  ...$permissions): Response
     {
-        $permissionObject = $this->requestPermissions($request);
+        if (!self::$permissionObject) {
+            self::$permissionObject = $this->requestPermissions($request);
+        }
         foreach ($permissions as $permissionCode) {
             $permission = Permission::fromName($permissionCode);
-            if ($permissionObject->getByPermission($permission)) {
+            if (self::$permissionObject->getByPermission($permission)) {
                 return $next($request);
             }
         }
-        if ($permissionObject->getByPermission(Permission::unauthorised)) {
+        if (self::$permissionObject->getByPermission(Permission::unauthorised)) {
             throw ExceptionFactory::unauthorised();
         }
         throw ExceptionFactory::forbidden();
@@ -41,11 +53,6 @@ class PermissionMiddleware
 
     private function requestPermissions(Request $request): PermissionObject
     {
-        $attributes = $request->attributes;
-        $permissionObject = $attributes->get(self::PERMISSIONS_KEY);
-        if ($permissionObject instanceof PermissionObject) {
-            return $permissionObject;
-        }
         $verified = false;
         $unverified = false;
         $globalAdmin = false;
@@ -72,7 +79,7 @@ class PermissionMiddleware
             }
         }
 
-        $permissionObject = new PermissionObject(
+        return new PermissionObject(
             user: $user,
             facility: $facility,
             unauthorised: !$authorised,
@@ -84,7 +91,5 @@ class PermissionMiddleware
             facilityStaff: $member && $member->staff_member_id,
             facilityAdmin: $member && $member->facility_admin_grant_id,
         );
-        $attributes->set(self::PERMISSIONS_KEY, $permissionObject);
-        return $permissionObject;
     }
 }

@@ -3,21 +3,22 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\MeetingResourceBuilder;
-use App\Utils\Uuid\UuidTrait;
-use Carbon\CarbonImmutable;
+use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasValidator;
+use App\Models\UuidEnum\DictionaryUuidEnum;
+use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rule;
 
 /**
- * @property string id
  * @property string meeting_id
  * @property string resource_dict_id
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
  * @method static MeetingResourceBuilder query()
  */
 class MeetingResource extends Model
 {
-    use UuidTrait;
+    use BaseModel;
+    use HasValidator;
 
     protected $table = 'meeting_resources';
 
@@ -26,8 +27,13 @@ class MeetingResource extends Model
         'resource_dict_id',
     ];
 
-    protected $casts = [
-        'created_at' => 'immutable_datetime',
-        'updated_at' => 'immutable_datetime',
-    ];
+    protected $casts = self::BASE_CASTS;
+
+    public static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'meeting_id' => Valid::uuid([Rule::exists('meetings')]),
+            'resource_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingResource),
+        };
+    }
 }

@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\PositionBuilder;
-use App\Utils\Uuid\UuidTrait;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasCreatedBy;
+use App\Models\Traits\HasValues;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -17,10 +19,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Member $member
  * @method static PositionBuilder query()
  */
-class Position extends BaseModel
+class Position extends Model
 {
-    use HasFactory;
-    use UuidTrait;
+    use BaseModel;
+    use HasValues;
+    use HasCreatedBy;
 
     protected $table = 'positions';
 
@@ -31,7 +34,6 @@ class Position extends BaseModel
         'is_fixed',
         'is_disabled',
         'default_order',
-        'created_by',
     ];
 
     protected $casts = [

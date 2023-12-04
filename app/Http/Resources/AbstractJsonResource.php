@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Models\BaseModel;
 use App\Utils\Date\DateHelper;
 use Closure;
 use DateTimeInterface;
@@ -53,7 +52,7 @@ abstract class AbstractJsonResource extends JsonResource
         }
         if ($this->withAttrValues()) {
             $resource = $this->resource;
-            if ($resource instanceof BaseModel) {
+            if (method_exists($resource, 'attrValues')) {
                 $result += $resource->attrValues();
             } else {
                 FatalExceptionFactory::unexpected()->throw();

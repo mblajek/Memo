@@ -39,7 +39,7 @@ readonly class UpdateUserService
 
             if ($data['has_global_admin']) {
                 if ($grant === null) {
-                    $grant = Grant::createForUser();
+                    $grant = Grant::create();
                 }
             } else {
                 $grant?->delete();
