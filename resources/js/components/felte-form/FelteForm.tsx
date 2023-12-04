@@ -93,7 +93,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
             }
             // Mark as touched first because errors are only stored and shown for touched fields.
-            // @ts-expect-error setErrors does not like generic types
+            // @ts-expect-error For some reason there are problems with the generic types.
             ctx.setTouched(field, true);
             // @ts-expect-error setErrors does not like generic types
             ctx.setErrors(field, (errors) => [...(errors || []), errorMessage]);
