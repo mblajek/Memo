@@ -98,7 +98,7 @@ password:
   numbers: "Pole „{{attribute}}” musi zawierać przynajmniej jedną liczbę."
   symbols: "Pole „{{attribute}}” musi zawierać przynajmniej jeden symbol."
   uncompromised: "Wartość „{{attribute}}” pojawiła się w wycieku danych. Proszę wybrać inną wartość „{{attribute}}”."
-  present: "Pole „{{attribute}}” musi być obecne."
+present: "Pole „{{attribute}}” musi być obecne."
 prohibited: "Pole „{{attribute}}” jest zabronione."
 prohibited_if: "Pole „{{attribute}}” jest zabronione gdy „{{other}}” to {{value}}."
 prohibited_unless: "Pole „{{attribute}}” jest zabronione, chyba że „{{other}}” jest w {{values, list(type: disjunction)}}."

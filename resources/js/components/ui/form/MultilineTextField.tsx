@@ -5,25 +5,24 @@ import {labelIdForField} from "./FieldLabel";
 
 export interface TextFieldProps
   extends Pick<
-    htmlAttributes.input,
-    "type" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
+    htmlAttributes.textarea,
+    "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
   > {
   readonly name: string;
   readonly label?: string;
 }
 
-/** Wrapper of native HTML's `<input>`. Intended for use with FelteForm (handles validation messages). */
-export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
+/** Wrapper of native HTML's `<textarea>`. Intended for use with FelteForm (handles validation messages). */
+export const MultilineTextField: VoidComponent<TextFieldProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["name", "label"]);
   return (
     <FieldBox {...props}>
-      <input
+      <textarea
         id={props.name}
         name={props.name}
-        autocomplete="off"
         {...htmlAttributes.merge(inputProps, {
           class:
-            "min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
+            "h-16 min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
         })}
         aria-labelledby={labelIdForField(props.name)}
       />

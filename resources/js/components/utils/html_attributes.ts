@@ -35,12 +35,21 @@ export namespace htmlAttributes {
   export type form = JSX.HTMLElementTags["form"];
   export type label = JSX.HTMLElementTags["label"];
   export type input = JSX.HTMLElementTags["input"];
+  export type textarea = JSX.HTMLElementTags["textarea"];
   export type select = JSX.HTMLElementTags["select"];
 
   export type pre = JSX.HTMLElementTags["pre"];
 
   /** The events that can be overridden in a merge. Add more elements as needed. */
-  const EVENT_HANDLERS = ["onClick", "onDblClick", "onMouseMove", "onMouseDown", "onMouseUp"] satisfies (keyof div)[];
+  const EVENT_HANDLERS = [
+    "onInput",
+    "onChange",
+    "onClick",
+    "onDblClick",
+    "onMouseMove",
+    "onMouseDown",
+    "onMouseUp",
+  ] satisfies (keyof div)[];
   type EventType = (typeof EVENT_HANDLERS)[number];
 
   export function merge<A extends object, O extends Pick<div, "class" | "style" | EventType>>(
@@ -68,16 +77,11 @@ export namespace htmlAttributes {
       if (attribs[eventHandler] && overrides[eventHandler]) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         result[eventHandler] = (event: any) => {
-          callHandler(overrides[eventHandler]!, event);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          callHandler(overrides[eventHandler]! as any, event);
           callHandler(attribs[eventHandler] as JSX.EventHandlerUnion<HTMLElement, Event>, event);
         };
       }
-    }
-    if (attribs.onClick && overrides.onClick) {
-      result.onClick = (event) => {
-        callHandler(overrides.onClick!, event);
-        callHandler(attribs.onClick as JSX.EventHandlerUnion<HTMLDivElement, MouseEvent>, event);
-      };
     }
     return result as A & O;
   }

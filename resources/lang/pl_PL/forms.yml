@@ -61,3 +61,21 @@ facility_edit:
     url: "$t(models.facility.url)"
   submit: "$t(actions.save)"
   success: "Pomyślnie zmieniono placówkę"
+
+meeting:
+  default_duration: "Sugerowane: {{text}}"
+
+meeting_create:
+  formName: "Nowe spotkanie"
+  fieldNames:
+    dateAndTime: "data i godzina"
+    date: "$t(models.meeting.date)"
+    startDayminute: "$t(models.meeting.startDayminute)"
+    durationMinutes: "długość spotkania"
+    typeDictId: "$t(models.meeting.typeDictId)"
+    statusDictId: "$t(models.meeting.statusDictId)"
+    isRemote: "$t(models.meeting.isRemote)"
+    resources: "$t(models.meeting.resources)"
+    notes: "$t(models.meeting.notes)"
+  submit: "$t(actions.create)"
+  success: "Pomyślnie utworzono spotkanie"

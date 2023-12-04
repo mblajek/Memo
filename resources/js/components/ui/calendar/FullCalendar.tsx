@@ -1,6 +1,7 @@
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
+import {MeetingCreateModal, showMeetingCreateModal} from "features/meeting/MeetingCreateModal";
 import {DateTime, Interval} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {TbInfoTriangle} from "solid-icons/tb";
@@ -507,12 +508,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         />
       ),
       hoursArea: () => (
-        <HoursArea
-          day={day}
-          blocks={blocks}
-          events={events}
-          onTimeClick={(t) => console.log(`New part-day event at ${t.toISO()}`)}
-        />
+        <HoursArea day={day} blocks={blocks} events={events} onTimeClick={(t) => showMeetingCreateModal({start: t})} />
       ),
     } satisfies Partial<CalendarColumn>;
   }
@@ -552,96 +548,99 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   };
 
   return (
-    <div {...htmlAttributes.merge(divProps, {class: "flex items-stretch gap-1"})}>
-      <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
-        <TinyCalendar
-          locale={props.locale}
-          showWeekdayNames
-          holidays={props.holidays}
-          selection={daysSelection()}
-          month={tinyCalMonth()}
-          setMonth={setTinyCalMonth}
-          getHoverRange={getRange}
-          onDayClick={(day, range) => {
-            setTinyCalMonth(day);
-            setDaysSelection(range!);
-          }}
-          onDayDoubleClick={(day) => {
-            // Switch between day and week modes.
-            batch(() => {
-              setMode(mode() === "day" ? "week" : "day");
-              setDaysSelectionAndMonthFromDay(day);
-            });
-          }}
-          onMonthNameClick={() => {
-            batch(() => {
-              setMode("month");
-              setDaysSelection(getRange(tinyCalMonth()));
-            });
-          }}
-          onVisibleRangeChange={setTinyCalVisibleRange}
-        />
-        <ResourcesSelector
-          class="overflow-y-auto"
-          resourceGroups={props.resourceGroups}
-          mode={resourcesSelectionMode()}
-          selection={selectedResources()}
-          setSelection={setSelectedResources}
-        />
-      </div>
-      <div class="min-w-0 grow flex flex-col items-stretch gap-3">
-        <div class="pt-1 pr-1 flex items-stretch gap-1">
-          <div>
-            <Button class="h-full secondarySmall !rounded-r-none" onClick={[moveDaysSelection, -1]}>
-              <IoArrowBackOutline class="text-current" />
-            </Button>
-            <Button
-              class="h-full secondarySmall !rounded-l-none"
-              style={{"margin-left": "-1px"}}
-              onClick={[moveDaysSelection, 1]}
-            >
-              <IoArrowForwardOutline class="text-current" />
-            </Button>
-          </div>
-          <Button class="secondarySmall" onClick={goToToday}>
-            <Capitalize text={t("calendar.today")} />
-          </Button>
-          <div class="grow self-center text-center text-lg text-ellipsis">
-            <Capitalize text={getDaysSelectionText()} />
-          </div>
-          <SegmentedControl
-            name="calendarMode"
-            value={mode()}
-            setValue={setMode}
-            items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
-            small
+    <>
+      <div {...htmlAttributes.merge(divProps, {class: "flex items-stretch gap-1"})}>
+        <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
+          <TinyCalendar
+            locale={props.locale}
+            showWeekdayNames
+            holidays={props.holidays}
+            selection={daysSelection()}
+            month={tinyCalMonth()}
+            setMonth={setTinyCalMonth}
+            getHoverRange={getRange}
+            onDayClick={(day, range) => {
+              setTinyCalMonth(day);
+              setDaysSelection(range!);
+            }}
+            onDayDoubleClick={(day) => {
+              // Switch between day and week modes.
+              batch(() => {
+                setMode(mode() === "day" ? "week" : "day");
+                setDaysSelectionAndMonthFromDay(day);
+              });
+            }}
+            onMonthNameClick={() => {
+              batch(() => {
+                setMode("month");
+                setDaysSelection(getRange(tinyCalMonth()));
+              });
+            }}
+            onVisibleRangeChange={setTinyCalVisibleRange}
+          />
+          <ResourcesSelector
+            class="overflow-y-auto"
+            resourceGroups={props.resourceGroups}
+            mode={resourcesSelectionMode()}
+            selection={selectedResources()}
+            setSelection={setSelectedResources}
           />
         </div>
-        <Switch>
-          <Match when={mode() === "month"}>
-            <div>Календар буде тут.</div>
-          </Match>
-          <Match when={!selectedResources().size}>
-            <div class="my-4 mx-1 self-start flex gap-1">
-              <TbInfoTriangle size={20} class="text-memo-active" />
-              {t("calendar.select_resource_to_show_calendar")}
+        <div class="min-w-0 grow flex flex-col items-stretch gap-3">
+          <div class="pt-1 pr-1 flex items-stretch gap-1">
+            <div>
+              <Button class="h-full secondarySmall !rounded-r-none" onClick={[moveDaysSelection, -1]}>
+                <IoArrowBackOutline class="text-current" />
+              </Button>
+              <Button
+                class="h-full secondarySmall !rounded-l-none"
+                style={{"margin-left": "-1px"}}
+                onClick={[moveDaysSelection, 1]}
+              >
+                <IoArrowForwardOutline class="text-current" />
+              </Button>
             </div>
-          </Match>
-          <Match when={true}>
-            <ColumnsCalendar
-              class="h-full min-h-0"
-              columns={calendarColumns()}
-              pixelsPerHour={pixelsPerHour()}
-              scrollToDayMinute={6 * 60 + 50}
-              onWheelWithAlt={(e) =>
-                setPixelsPerHour((v) =>
-                  Math.min(Math.max(v - 0.05 * e.deltaY, PIXELS_PER_HOUR_RANGE[0]), PIXELS_PER_HOUR_RANGE[1]),
-                )
-              }
+            <Button class="secondarySmall" onClick={goToToday}>
+              <Capitalize text={t("calendar.today")} />
+            </Button>
+            <div class="grow self-center text-center text-lg text-ellipsis">
+              <Capitalize text={getDaysSelectionText()} />
+            </div>
+            <SegmentedControl
+              name="calendarMode"
+              value={mode()}
+              setValue={setMode}
+              items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
+              small
             />
-          </Match>
-        </Switch>
+          </div>
+          <Switch>
+            <Match when={mode() === "month"}>
+              <div>Календар буде тут.</div>
+            </Match>
+            <Match when={!selectedResources().size}>
+              <div class="my-4 mx-1 self-start flex gap-1">
+                <TbInfoTriangle size={20} class="text-memo-active" />
+                {t("calendar.select_resource_to_show_calendar")}
+              </div>
+            </Match>
+            <Match when={true}>
+              <ColumnsCalendar
+                class="h-full min-h-0"
+                columns={calendarColumns()}
+                pixelsPerHour={pixelsPerHour()}
+                scrollToDayMinute={6 * 60 + 50}
+                onWheelWithAlt={(e) =>
+                  setPixelsPerHour((v) =>
+                    Math.min(Math.max(v - 0.05 * e.deltaY, PIXELS_PER_HOUR_RANGE[0]), PIXELS_PER_HOUR_RANGE[1]),
+                  )
+                }
+              />
+            </Match>
+          </Switch>
+        </div>
       </div>
-    </div>
+      <MeetingCreateModal />
+    </>
   );
 };

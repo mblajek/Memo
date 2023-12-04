@@ -18,16 +18,22 @@ export interface MeetingResource {
   resources: MeetingResourceResource[];
 }
 
+export type AttendanceType = "client" | "staff";
+
 export interface MeetingAttendantResource {
-  id: string;
-  meetingId: string;
   userId: string;
-  attendanceType: string;
+  attendanceType: AttendanceType;
   attendanceStatusDictId: string;
 }
 
 export interface MeetingResourceResource {
-  id: string;
-  meetingId: string;
   resourceDictId: string;
 }
+
+export type MeetingResourceForCreate = Pick<
+  MeetingResource,
+  "typeDictId" | "notes" | "isRemote" | "attendants" | "resources"
+> &
+  // This part is actually required by the API, but has no default values, so making it optional
+  // is necessary to construct a create form.
+  Partial<Pick<MeetingResource, "date" | "startDayminute" | "durationMinutes">>;

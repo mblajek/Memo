@@ -9,7 +9,7 @@ const APP_COLORS = {
   // A light blue color for currently selected areas of active elements.
   "select": "#b7e8f6",
   // A light grey color for the background of disabled elements.
-  "disabled": "#f0e8e8",
+  "disabled": "#ece8e8",
   // A grey color for the border of input elements.
   "input-border": "#b0b0b0",
 };
