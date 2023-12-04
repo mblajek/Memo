@@ -29,7 +29,8 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
   async function createMeeting(values: MeetingFormType) {
     await meetingMutation.mutateAsync({
       ...transformFormValues(values),
-      attendants: [],
+      staff: [],
+      clients: [],
     });
     toast.success(t("forms.meeting_create.success"));
     props.onSuccess?.();

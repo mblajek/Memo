@@ -14,15 +14,13 @@ export interface MeetingResource {
   statusDictId: string;
   createdBy: string;
   isRemote: boolean;
-  attendants: MeetingAttendantResource[];
+  staff: MeetingAttendantResource[];
+  clients: MeetingAttendantResource[];
   resources: MeetingResourceResource[];
 }
 
-export type AttendanceType = "client" | "staff";
-
 export interface MeetingAttendantResource {
   userId: string;
-  attendanceType: AttendanceType;
   attendanceStatusDictId: string;
 }
 
@@ -32,7 +30,7 @@ export interface MeetingResourceResource {
 
 export type MeetingResourceForCreate = Pick<
   MeetingResource,
-  "typeDictId" | "notes" | "isRemote" | "attendants" | "resources"
+  "typeDictId" | "notes" | "isRemote" | "staff" | "clients" | "resources"
 > &
   // This part is actually required by the API, but has no default values, so making it optional
   // is necessary to construct a create form.
