@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Enums\AttendanceType;
 use App\Models\QueryBuilders\MeetingBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCreatedBy;
@@ -54,6 +55,7 @@ class Meeting extends Model
 
     protected static function fieldValidator(string $field): string|array
     {
+        /** @noinspection PhpDuplicateMatchArmBodyInspection */
         return match ($field) {
             'facility_id' => Valid::uuid([Rule::exists('facilities')]),
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::meetingType),
@@ -63,11 +65,12 @@ class Meeting extends Model
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::meetingStatus),
             'is_remote' => Valid::bool(),
-            'attendants', 'resources' => Valid::list(sometimes: true, min: 0),
-            'attendants.*' => Valid::array(keys: ['user_id', 'attendance_type', 'attendance_status_dict_id']),
-            'attendants.*.user_id' => MeetingAttendant::fieldValidator('user_id'),
-            'attendants.*.attendance_type' => MeetingAttendant::fieldValidator('attendance_type'),
-            'attendants.*.attendance_status_dict_id' => MeetingAttendant::fieldValidator('attendance_status_dict_id'),
+            'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
+            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_type', 'attendance_status_dict_id']),
+            'staff.*.user_id' => MeetingAttendant::fieldValidator('user_id'),
+            'staff.*.attendance_status_dict_id' => MeetingAttendant::fieldValidator('attendance_status_dict_id'),
+            'clients.*.user_id' => MeetingAttendant::fieldValidator('user_id'),
+            'clients.*.attendance_status_dict_id' => MeetingAttendant::fieldValidator('attendance_status_dict_id'),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => MeetingResource::fieldValidator('resource_dict_id'),
         };
@@ -76,6 +79,13 @@ class Meeting extends Model
     public function attendants(): HasMany
     {
         return $this->hasMany(MeetingAttendant::class);
+    }
+
+    public function getAttendants(AttendanceType $attendanceType)
+    {
+        return $this->attendants->filter(
+            fn(MeetingAttendant $attendant) => $attendant->attendance_type === $attendanceType,
+        );
     }
 
     public function resources(): HasMany

@@ -1,7 +1,9 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Meeting;
 
+use App\Http\Resources\AbstractJsonResource;
+use App\Models\Enums\AttendanceType;
 use App\Models\Meeting;
 use OpenApi\Attributes as OA;
 
@@ -19,18 +21,25 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'createdBy', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'isRemote', type: 'bool', example: 'false'),
         new OA\Property(
-            property: 'attendants', type: 'array', items: new OA\Items(
-            ref: '#/components/schemas/MeetingAttendantResource'
-        )),
+            property: 'staff', type: 'array', items: new OA\Items(
+            ref: '#/components/schemas/MeetingStaffResource'
+        )
+        ),
+        new OA\Property(
+            property: 'clients', type: 'array', items: new OA\Items(
+            ref: '#/components/schemas/MeetingClientResource'
+        )
+        ),
         new OA\Property(
             property: 'resources', type: 'array', items: new OA\Items(
             ref: '#/components/schemas/MeetingResourceResource'
-        )),
+        )
+        ),
     ]
 )] /**
-* @method __construct(Meeting $resource)
-* @mixin Meeting
-*/
+ * @method __construct(Meeting $resource)
+ * @mixin Meeting
+ */
 class MeetingResource extends AbstractJsonResource
 {
     protected static function getMappedFields(): array
@@ -47,7 +56,10 @@ class MeetingResource extends AbstractJsonResource
             'statusDictId' => true,
             'createdBy' => true,
             'isRemote' => true,
-            'attendants' => fn(self $meeting) => MeetingAttendantResource::collection($meeting->attendants),
+            'staff' => fn(self $meeting) => //
+            MeetingStaffResource::collection($meeting->getAttendants(AttendanceType::Staff)),
+            'clients' => fn(self $meeting) => //
+            MeetingClientResource::collection($meeting->getAttendants(AttendanceType::Client)),
             'resources' => fn(self $meeting) => MeetingResourceResource::collection($meeting->resources),
         ];
     }
