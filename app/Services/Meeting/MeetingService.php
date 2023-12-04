@@ -36,7 +36,7 @@ class MeetingService
     {
         $meeting->facility_id = $facility->id;
         $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
-            ->attrValues(byId: true)[PositionAttributeUuidEnum::category->value]);
+            ->attrValues(byId: true)[PositionAttributeUuidEnum::Category->value]);
     }
 
     private function extract(array &$data, string $key)

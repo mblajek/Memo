@@ -8,6 +8,7 @@ use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCreatedBy;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
+use App\Rules\MemberExistsRule;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -55,22 +56,21 @@ class Meeting extends Model
 
     protected static function fieldValidator(string $field): string|array
     {
-        /** @noinspection PhpDuplicateMatchArmBodyInspection */
         return match ($field) {
             'facility_id' => Valid::uuid([Rule::exists('facilities')]),
-            'type_dict_id' => Valid::dict(DictionaryUuidEnum::meetingType),
+            'type_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingType),
             'date' => Valid::date(),
             'notes' => Valid::trimmed(sometimes: true, nullable: true, max: 4000),
             'start_dayminute' => Valid::int(['min:' . (4 * 60), 'max:' . (24 * 60)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
-            'status_dict_id' => Valid::dict(DictionaryUuidEnum::meetingStatus),
+            'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
             'is_remote' => Valid::bool(),
             'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
-            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_type', 'attendance_status_dict_id']),
-            'staff.*.user_id' => MeetingAttendant::fieldValidator('user_id'),
-            'staff.*.attendance_status_dict_id' => MeetingAttendant::fieldValidator('attendance_status_dict_id'),
-            'clients.*.user_id' => MeetingAttendant::fieldValidator('user_id'),
-            'clients.*.attendance_status_dict_id' => MeetingAttendant::fieldValidator('attendance_status_dict_id'),
+            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
+            'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
+            Valid::dict(DictionaryUuidEnum::AttendanceStatus, sometimes: true, nullable: true),
+            'staff.*.user_id' => Valid::uuid([new MemberExistsRule(AttendanceType::Staff)]),
+            'clients.*.user_id' => Valid::uuid([new MemberExistsRule(AttendanceType::Client)]),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => MeetingResource::fieldValidator('resource_dict_id'),
         };

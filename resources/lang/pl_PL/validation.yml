@@ -134,3 +134,4 @@ custom:
   trimmed: "Pole „{{attribute}}” nie może się zaczynać ani kończyć białymi znakami."
   regexp_is_valid: "Pole „{{attribute}}” musi być poprawnym wyrażeniem regularnym."
   position_in_dictionary: "Pole „{{attribute}}” musi być należeć do słownika {{dictionary}}."
+  member_exists: "Osoba „{{attribute}}” musi być należeć do słownika organizacji jako {{type}}."
