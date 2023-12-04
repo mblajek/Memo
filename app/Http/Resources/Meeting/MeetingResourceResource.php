@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Meeting;
 
+use App\Http\Resources\AbstractJsonResource;
 use App\Models\MeetingResource;
 use OpenApi\Attributes as OA;
 

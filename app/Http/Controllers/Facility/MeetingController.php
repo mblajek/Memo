@@ -6,7 +6,7 @@ use App\Exceptions\ApiException;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
-use App\Http\Resources\MeetingResource;
+use App\Http\Resources\Meeting\MeetingResource;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
@@ -94,11 +94,14 @@ class MeetingController extends ApiController
                 'duration_minutes',
                 'status_dict_id',
                 'is_remote',
-                'attendants',
-                'attendants.*',
-                'attendants.*.user_id',
-                'attendants.*.attendance_type',
-                'attendants.*.attendance_status_dict_id',
+                'staff',
+                'staff.*',
+                'staff.*.user_id',
+                'staff.*.attendance_status_dict_id',
+                'clients',
+                'clients.*',
+                'clients.*.user_id',
+                'clients.*.attendance_status_dict_id',
                 'resources',
                 'resources.*',
                 'resources.*.resource_dict_id',

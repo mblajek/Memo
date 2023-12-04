@@ -2,6 +2,7 @@
 
 namespace App\Services\Meeting;
 
+use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
@@ -17,7 +18,9 @@ class MeetingService
         $meeting = new Meeting($data);
         $this->fillMeeting($meeting, $facility);
 
-        $attendants = $this->extractAttendants($data);
+        $staff = $this->extractStaff($data);
+        $clients = $this->extractClients($data);
+        $attendants = array_merge($staff, $clients);
         $resources = $this->extractResources($data);
 
         DB::transaction(function () use ($meeting, $attendants, $resources) {
@@ -36,16 +39,33 @@ class MeetingService
             ->attrValues(byId: true)[PositionAttributeUuidEnum::category->value]);
     }
 
-    private function extractAttendants(array &$data): array
+    private function extract(array &$data, string $key)
     {
-        if (!array_key_exists('attendants', $data)) {
+        if (!array_key_exists($key, $data)) {
             return [];
         }
-        $attendantsData = $data['attendants'] ?? null;
-        unset($data['attendants']);
+        $dataKey = $data[$key];
+        unset($data[$key]);
+        return $dataKey;
+    }
+
+    private function extractStaff(array &$data): array
+    {
         $attendants = [];
-        foreach ($attendantsData as $attendantData) {
+        foreach ($this->extract($data, 'staff') as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
+            $attendant->attendance_type = AttendanceType::Staff;
+            $attendants[$attendant->user_id] = $attendant;
+        }
+        return array_values($attendants);
+    }
+
+    private function extractClients(array &$data): array
+    {
+        $attendants = [];
+        foreach ($this->extract($data, 'clients') as $attendantData) {
+            $attendant = new MeetingAttendant($attendantData);
+            $attendant->attendance_type = AttendanceType::Client;
             $attendants[$attendant->user_id] = $attendant;
         }
         return array_values($attendants);
@@ -65,5 +85,4 @@ class MeetingService
         }
         return array_values($resources);
     }
-
 }
