@@ -11,6 +11,7 @@ import {
   HiOutlineTableCells,
 } from "solid-icons/hi";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
+import {SiSwagger} from "solid-icons/si";
 import {TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, Show, VoidComponent, createMemo} from "solid-js";
@@ -165,6 +166,12 @@ function getDevSectionItems(): NavigationItemProps[] {
       icon: BiRegularTable,
       href: "/dev/local-storage",
       routeKey: "Local storage",
+      target: "_blank",
+    },
+    {
+      icon: SiSwagger,
+      href: "/api/documentation",
+      routeKey: "API",
       target: "_blank",
     },
   ];
