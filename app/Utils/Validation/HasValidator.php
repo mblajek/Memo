@@ -6,6 +6,10 @@ use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 
+use function App\Utils\array_flatten;
+use function App\Utils\process_conditional_array;
+use function App\Utils\is_conditional_array;
+
 trait HasValidator
 {
     abstract protected static function fieldValidator(string $field): string|array;
@@ -48,6 +52,32 @@ trait HasValidator
 
     public static function getResourceValidator(): array
     {
-        return static::validationRules(true, false, false);
+        return self::processRules(static::validationRules(true, false, false));
+    }
+
+    /** Rules is an array of rules for each field. Field rules could be: a single string, an object, a "conditional
+     * array" with a boolean as a first item or an array of the above. This function processes the "conditional arrays"
+     * and returns one of those: a string, an array of "validators" which are either strings or objects.
+     */
+    protected static function processRules(array $rules): array
+    {
+        return array_map(function ($fieldRules) {
+            if (!is_array($fieldRules)) {
+                return $fieldRules;
+            }
+
+            if (is_conditional_array($fieldRules)) {
+                return process_conditional_array($fieldRules);
+            }
+
+            return array_flatten(
+                array_map(function ($subRules) {
+                    if (!is_array($subRules)) {
+                        return $subRules;
+                    }
+                    return process_conditional_array($subRules);
+                }, $fieldRules)
+            );
+        }, $rules);
     }
 }

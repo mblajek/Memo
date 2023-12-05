@@ -2,7 +2,6 @@
 
 namespace Tests\Unit\Utils;
 
-use mysql_xdevapi\Exception;
 use PHPUnit\Framework\TestCase;
 
 use function App\Utils\array_flatten;

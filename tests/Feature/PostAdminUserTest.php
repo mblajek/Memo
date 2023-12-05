@@ -137,28 +137,13 @@ class PostAdminUserTest extends TestCase
         );
     }
 
-    public function testWithoutReferredFieldFails(): void
+    public function testWithNullPasswordExpireAtSucceeds(): void
     {
         $data = [
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
-            'password' => self::VALID_PASSWORD,
-            //'passwordExpireAt' => CarbonImmutable::now(),
-            'hasGlobalAdmin' => false,
-        ];
-
-        $result = $this->post(static::URL, $data);
-
-        $result->assertBadRequest();
-    }
-
-    public function testWithNullableReferredFieldSucceeds(): void
-    {
-        $data = [
-            'name' => 'Test',
-            'email' => 'test@test.pl',
-            'hasEmailVerified' => false,
+            'hasPassword' => false,
             'password' => null,
             'passwordExpireAt' => null,
             'hasGlobalAdmin' => false,
@@ -176,6 +161,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => null,
+            'hasPassword' => true,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
@@ -190,10 +176,12 @@ class PostAdminUserTest extends TestCase
                     "code" => "exception.validation"
                 ],
                 [
-                    "field" => "email",
-                    "code" => "validation.custom.require_not_null",
+                    "field" => "hasEmailVerified",
+                    "code" => "validation.required_with",
                     "data" => [
-                        "other" => "hasEmailVerified"
+                        "values" => [
+                            "email"
+                        ]
                     ]
                 ]
             ]
@@ -205,6 +193,7 @@ class PostAdminUserTest extends TestCase
         $data = [
             'name' => 'Test',
             'email' => 'test@test.pl',
+            'hasPassword' => true,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
@@ -219,10 +208,12 @@ class PostAdminUserTest extends TestCase
                     "code" => "exception.validation"
                 ],
                 [
-                    "field" => "email",
-                    "code" => "validation.custom.require_not_null",
+                    "field" => "hasEmailVerified",
+                    "code" => "validation.required_with",
                     "data" => [
-                        "other" => "hasEmailVerified"
+                        "values" => [
+                            "email"
+                        ]
                     ]
                 ]
             ]
@@ -235,6 +226,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => null,
             'hasEmailVerified' => false,
+            'hasPassword' => true,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
@@ -250,10 +242,10 @@ class PostAdminUserTest extends TestCase
                         "code" => "exception.validation"
                     ],
                     [
-                        "field" => "hasEmailVerified",
-                        "code" => "validation.custom.require_not_null",
+                        "field" => "email",
+                        "code" => "validation.required_if_accepted",
                         "data" => [
-                            "other" => "email"
+                            "other" => "hasPassword"
                         ]
                     ]
                 ]
@@ -266,6 +258,7 @@ class PostAdminUserTest extends TestCase
         $data = [
             'name' => 'Test',
             'email' => null,
+            'hasPassword' => true,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,
@@ -281,10 +274,10 @@ class PostAdminUserTest extends TestCase
                         "code" => "exception.validation"
                     ],
                     [
-                        "field" => "password",
-                        "code" => "validation.custom.require_not_null",
+                        "field" => "email",
+                        "code" => "validation.required_if_accepted",
                         "data" => [
-                            "other" => "email"
+                            "other" => "hasPassword"
                         ]
                     ]
                 ]
@@ -298,6 +291,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
+            'hasPassword' => true,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => null,
             'hasGlobalAdmin' => false,
@@ -314,6 +308,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
+            'hasPassword' => true,
             'password' => self::VALID_PASSWORD,
             'hasGlobalAdmin' => false,
         ];
@@ -323,16 +318,12 @@ class PostAdminUserTest extends TestCase
         $result->assertBadRequest();
         $result->assertJson(
             [
-                "errors" => [
+                'errors' => [
                     [
-                        "code" => "exception.validation"
+                        'code' => 'exception.validation'
                     ],
                     [
-                        "field" => "password",
-                        "code" => "validation.custom.require_present",
-                        "data" => [
-                            "other" => "passwordExpireAt"
-                        ]
+                        'code' => 'validation.present',
                     ]
                 ]
             ]
@@ -345,6 +336,7 @@ class PostAdminUserTest extends TestCase
             'name' => 'Test',
             'email' => 'test@test.pl',
             'hasEmailVerified' => false,
+            'hasPassword' => false,
             'password' => null,
             'passwordExpireAt' => self::now(),
             'hasGlobalAdmin' => false,

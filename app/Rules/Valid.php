@@ -3,15 +3,14 @@
 namespace App\Rules;
 
 use Closure;
-
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Validator as ValidatorFacade;
-use PHPUnit\Event\InvalidArgumentException;
 
 use function App\Utils\array_flatten;
+use function App\Utils\process_conditional_array;
 
 /**
  * Rule generator
@@ -102,21 +101,7 @@ class Valid extends AbstractDataRule
     ) {
         $this->rules = array_flatten(
             array_map(function ($rule) {
-                if (is_array($rule)) {
-                    if (count($rule)) {
-                        if (is_bool($rule[0])) {
-                            if ($rule[0]) {
-                                return array_slice($rule, 1);
-                            } else {
-                                return [];
-                            }
-                        }
-                        return $rule;
-                    } else {
-                        throw new InvalidArgumentException('An empty array is not a legal validation rule.');
-                    }
-                }
-                return $rule;
+                return is_array($rule) ? process_conditional_array($rule) : $rule;
             }, $rules)
         );
     }

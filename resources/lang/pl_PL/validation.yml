@@ -134,3 +134,4 @@ custom:
   data_type: "Pole „{{attribute}}” musi być typu „{{type}}”."
   trimmed: "Pole „{{attribute}}” nie może się zaczynać ani kończyć białymi znakami."
   regexp_is_valid: "Pole „{{attribute}}” musi być poprawnym wyrażeniem regularnym."
+  require_present_when_equals: "Pole „{{attribute}}” wymaga pola „{{other}}, gdy jego wartość to {{whenValue}}”."
