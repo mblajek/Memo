@@ -33,7 +33,7 @@ class MeetingResource extends Model
     {
         return match ($field) {
             'meeting_id' => Valid::uuid([Rule::exists('meetings')]),
-            'resource_dict_id' => Valid::dict(DictionaryUuidEnum::meetingResource),
+            'resource_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingResource),
         };
     }
 }

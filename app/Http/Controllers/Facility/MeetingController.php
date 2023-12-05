@@ -7,7 +7,6 @@ use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Meeting\MeetingResource;
-use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
 use App\Services\Meeting\MeetingService;
@@ -39,16 +38,25 @@ class MeetingController extends ApiController
                     new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
-                        property: 'attendants', type: 'array', items: new OA\Items(
+                        property: 'staff', type: 'array', items: new OA\Items(
                         required: ['userId', 'attendanceType'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
-                                property: 'attendanceType',
-                                type: 'enum',
-                                enum: AttendanceType::class,
-                                example: 'client',
+                                property: 'attendanceStatusDictId',
+                                type: 'string',
+                                format: 'uuid',
+                                example: null,
+                                nullable: true,
                             ),
+                        ]
+                    )
+                    ),
+                    new OA\Property(
+                        property: 'clients', type: 'array', items: new OA\Items(
+                        required: ['userId', 'attendanceType'],
+                        properties: [
+                            new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
                                 property: 'attendanceStatusDictId',
                                 type: 'string',
