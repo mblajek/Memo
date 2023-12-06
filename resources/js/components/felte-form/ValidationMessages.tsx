@@ -9,6 +9,13 @@ interface Props {
 }
 
 export const ValidationMessages: VoidComponent<Props> = (props) => {
+  const formContext = useFormContextIfInForm();
+  if (!formContext) {
+    // Being inside a form or not is not something that can change dynamically, so it's fine to return early.
+    // eslint-disable-next-line solid/components-return-once
+    return undefined;
+  }
+  const {form} = formContext;
   const MessagesForLevel: VoidComponent<{level: "error" | "warning"; cssClass: string}> = (pp) => (
     <ValidationMessage
       level={pp.level}
@@ -34,19 +41,15 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
       )}
     </ValidationMessage>
   );
-  const formContext = useFormContextIfInForm();
-  if (!formContext) {
-    // Being inside a form or not is not something that can change dynamically, so it's fine to return early.
-    // eslint-disable-next-line solid/components-return-once
-    return undefined;
+  function isEmpty(errorsOrWarnings: unknown): boolean {
+    return errorsOrWarnings == null || (Array.isArray(errorsOrWarnings) && errorsOrWarnings.every(isEmpty));
   }
-  const {form} = formContext;
   const hasErrors = createMemo(
     // For some reason, the "on" part is required for reaction to errors and warnings change.
     // Depending directly on form.errors(props.fieldName) does not work reliably for some fields.
     on(
       [() => props.fieldName, form.errors, form.warnings],
-      ([fieldName]) => !!(fieldName && (form.errors(fieldName) || form.warnings(fieldName))),
+      ([fieldName]) => !!fieldName && !(isEmpty(form.errors(fieldName)) && isEmpty(form.warnings(fieldName))),
     ),
   );
   return (

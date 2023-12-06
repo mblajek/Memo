@@ -65,10 +65,10 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     onSubmit: (values, ctx) =>
       // Remove the unknown validation field from values so that it doesn't get submitted.
       createFormOptions.onSubmit?.({...values, [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined}, ctx),
-    onError: (error, ctx) => {
-      createFormOptions.onError?.(error, ctx);
-      if (isAxiosError<Api.ErrorResponse>(error)) {
-        error.response?.data.errors.forEach((error) => {
+    onError: (errorResp, ctx) => {
+      createFormOptions.onError?.(errorResp, ctx);
+      if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
+        for (const error of errorResp.response.data.errors) {
           if (Api.isValidationError(error)) {
             // For existing fields, the error is either an array, or null.
             const formFieldExists = form.errors(error.field) !== undefined;
@@ -92,11 +92,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               });
               field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
             }
+            // Mark as touched first because errors are only stored and shown for touched fields.
+            // @ts-expect-error For some reason there are problems with the generic types.
+            ctx.setTouched(field, true);
             // @ts-expect-error setErrors does not like generic types
             ctx.setErrors(field, (errors) => [...(errors || []), errorMessage]);
           }
           // Other errors are already handled by the query client.
-        });
+        }
       }
     },
   }) as FormType<T>;

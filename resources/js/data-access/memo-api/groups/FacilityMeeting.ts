@@ -2,7 +2,7 @@ import {useQueryClient} from "@tanstack/solid-query";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
-import {MeetingResource} from "../resources/meeting.resource";
+import {MeetingResource, MeetingResourceForCreate} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
 
@@ -20,7 +20,7 @@ export namespace FacilityMeeting {
     getMeetingsListBase(request, config).then(parseGetListResponse);
   const getMeeting = createGetFromList(getMeetingsListBase);
 
-  export const createMeeting = (meeting: Api.Request.Create<MeetingResource>, config?: Api.Config) =>
+  export const createMeeting = (meeting: MeetingResourceForCreate, config?: Api.Config) =>
     V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/meeting`, meeting, config);
   export const updateMeeting = (meeting: Api.Request.Patch<MeetingResource>, config?: Api.Config) =>
     V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting, config);
