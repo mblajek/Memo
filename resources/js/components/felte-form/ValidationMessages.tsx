@@ -22,7 +22,7 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
       for={props.fieldName}
       as="ul"
       aria-live="polite"
-      class={cx("text-sm list-disc pl-6", pp.cssClass)}
+      class={cx("text-sm list-disc list-inside wrapTextAnywhere", pp.cssClass)}
     >
       {(messages: unknown) => (
         <Index
@@ -41,15 +41,14 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
       )}
     </ValidationMessage>
   );
-  function isEmpty(errorsOrWarnings: unknown): boolean {
-    return errorsOrWarnings == null || (Array.isArray(errorsOrWarnings) && errorsOrWarnings.every(isEmpty));
-  }
   const hasErrors = createMemo(
     // For some reason, the "on" part is required for reaction to errors and warnings change.
     // Depending directly on form.errors(props.fieldName) does not work reliably for some fields.
     on(
       [() => props.fieldName, form.errors, form.warnings],
-      ([fieldName]) => !!fieldName && !(isEmpty(form.errors(fieldName)) && isEmpty(form.warnings(fieldName))),
+      ([fieldName]) =>
+        !!fieldName &&
+        !(isValidationMessageEmpty(form.errors(fieldName)) && isValidationMessageEmpty(form.warnings(fieldName))),
     ),
   );
   return (
@@ -59,3 +58,11 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
     </HideableSection>
   );
 };
+
+export function isValidationMessageEmpty(errorsOrWarnings: unknown): boolean {
+  return (
+    errorsOrWarnings == null ||
+    (Array.isArray(errorsOrWarnings) && errorsOrWarnings.every(isValidationMessageEmpty)) ||
+    (typeof errorsOrWarnings === "object" && Object.values(errorsOrWarnings).every(isValidationMessageEmpty))
+  );
+}

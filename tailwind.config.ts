@@ -40,6 +40,10 @@ export default {
       fontWeight: {
         "weight-medium": "500",
       },
+      listStyleType: {
+        // Reduce spacing between the disc and the text when using list-disc.
+        disc: "'⦁ '",
+      },
     },
     fontFamily: {
       roboto: "Roboto",

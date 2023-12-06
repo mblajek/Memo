@@ -28,8 +28,8 @@ auth:
 unverified_user: "Użytkownik niezweryfikowany"
 
 bool_values:
-  yes: "Tak"
-  no: "Nie"
+  yes: "tak"
+  no: "nie"
 
 range:
   from: "od:"

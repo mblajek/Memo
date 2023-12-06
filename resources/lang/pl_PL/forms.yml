@@ -64,6 +64,9 @@ facility_edit:
 
 meeting:
   default_duration: "Sugerowane: {{text}}"
+  add_attendant:
+    staff: "Dodaj kolejnego pracownika"
+    clients: "Dodaj kolejnego klienta"
 
 meeting_create:
   formName: "Nowe spotkanie"
@@ -74,6 +77,9 @@ meeting_create:
     durationMinutes: "długość spotkania"
     typeDictId: "$t(models.meeting.typeDictId)"
     statusDictId: "$t(models.meeting.statusDictId)"
+    staff__interval: "(0-1)[$t(models.staff._name)];(2-inf)[$t(models.staff._name_plural)];"
+    clients__interval: "(0-1)[$t(models.client._name)];(2-inf)[$t(models.client._name_plural)];"
+    attendanceStatusDictId: "obecność"
     isRemote: "$t(models.meeting.isRemote)"
     resources: "$t(models.meeting.resources)"
     notes: "$t(models.meeting.notes)"

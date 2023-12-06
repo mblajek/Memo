@@ -59,6 +59,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   );
   // eslint-disable-next-line solid/reactivity
   const translations = createTranslationsFromPrefix(`forms.${formProps.id}`, ["formName", "fieldNames", "submit"]);
+  function getQuotedFieldName(field: string, {skipIfMissing = false} = {}) {
+    if (skipIfMissing) {
+      const name = translations.fieldNames(field, {defaultValue: ""});
+      return name && t("validation.quoted_field_name", {text: name});
+    } else {
+      return t("validation.quoted_field_name", {text: translations.fieldNames(field, {defaultValue: field})});
+    }
+  }
   const form = createForm<T>({
     ...createFormOptions,
     extend: [validator({schema: props.schema}), reporter],
@@ -76,10 +84,11 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
             let field: string;
             if (formFieldExists) {
               errorMessage = t(error.code, {
-                attribute: translations.fieldNames(error.field),
+                attribute: getQuotedFieldName(error.field, {skipIfMissing: true}),
                 ...error.data,
-                ...(typeof error.data?.other === "string"
-                  ? {other: translations.fieldNames(error.data.other, {defaultValue: error.data.other})}
+                ...(typeof error.data?.other === "string" ? {other: getQuotedFieldName(error.data.other)} : undefined),
+                ...(typeof error.data?.member_type === "string"
+                  ? {member_type: t(`validation.special_fields.member_type.${error.data.member_type}`)}
                   : undefined),
               });
               field = error.field;
@@ -87,7 +96,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               // The error was received for a field that does not exist directly in the form. Don't do
               // all the magic with the error message, and assign the error to the special unknown validation field.
               errorMessage = t(error.code, {
-                attribute: translations.fieldNames(error.field, {defaultValue: error.field}),
+                attribute: getQuotedFieldName(error.field),
                 ...error.data,
               });
               field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
