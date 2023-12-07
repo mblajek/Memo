@@ -22,7 +22,7 @@ export const FullScreenPre: ParentComponent<htmlAttributes.div> = (allProps) => 
   return (
     <div class="absolute inset-0 flex overflow-auto">
       <div {...htmlAttributes.merge(divProps, {class: "grow"})}>
-        <pre ref={pre} class={cx("inline-block p-1 bg-inherit", {wrapTextAnywhere: wrap()})}>
+        <pre ref={pre} class={cx("inline-block p-2 bg-inherit", {wrapTextAnywhere: wrap()})}>
           {childrenProps.children}
         </pre>
       </div>

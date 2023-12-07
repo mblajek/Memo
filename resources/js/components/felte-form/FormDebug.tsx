@@ -10,6 +10,11 @@ export const FormDebug: VoidComponent = () => {
       <pre class="text-red-400">errors: {JSON.stringify(form.errors(), undefined, 2)}</pre>
       <pre class="text-yellow-600">warnings: {JSON.stringify(form.warnings(), undefined, 2)}</pre>
       <pre class="text-gray-600">touched: {JSON.stringify(form.touched(), undefined, 2)}</pre>
+      <pre>
+        {(["isDirty", "interacted", "isValidating", "isValid", "isSubmitting"] as const)
+          .map((f) => `${f}: ${JSON.stringify(form[f]())}`)
+          .join(", ")}
+      </pre>
     </div>
   );
 };

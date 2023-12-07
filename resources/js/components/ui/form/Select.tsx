@@ -126,6 +126,16 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
 
   const formContext = useFormContextIfInForm();
 
+  function formValuesEqual(selectValue: string | readonly string[], currentFormValue: string | readonly string[]) {
+    return (
+      selectValue === currentFormValue ||
+      (Array.isArray(selectValue) &&
+        Array.isArray(currentFormValue) &&
+        selectValue.length === currentFormValue.length &&
+        selectValue.every((v, i) => v === currentFormValue[i]))
+    );
+  }
+
   // Temporarily assign an empty collection, and overwrite with the actual collection depending on
   // the filtered items later. It's done like this because filtering needs api() which is not created yet.
   let collection: Accessor<Collection<SelectItem>> = () => combobox.collection.empty();
@@ -158,8 +168,14 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             (props as SingleSelectPropsPart).onValueChange!(value[0]);
           }
         } else if (formContext) {
-          formContext.form.setTouched(props.name, true);
-          formContext.form.setData(props.name, props.multiple ? value : value[0] || "");
+          const valueForForm = props.multiple ? value : value[0] || "";
+          if (!formValuesEqual(valueForForm, formContext.form.data(props.name))) {
+            formContext.form.setTouched(props.name, true);
+            // eslint-disable-next-line solid/reactivity
+            formContext.form.setInteracted(() => props.name);
+            formContext.form.setIsDirty(true);
+            formContext.form.setData(props.name, valueForForm);
+          }
         } else {
           api().setValue(value);
         }
