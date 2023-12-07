@@ -5,7 +5,7 @@ import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
-import {Context, JSX, createContext, onMount, splitProps, useContext} from "solid-js";
+import {Context, JSX, createContext, onCleanup, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, htmlAttributes, useLangFunc} from "../utils";
@@ -40,6 +40,8 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     children: ChildrenOrFunc<[FormType<T>]>;
     disabled?: boolean;
     onFormCreated?: (form: FormType<T>) => void;
+    /** Whether closing the browser tab should display a warning if the form is dirty. Default: true. */
+    preventTabClose?: boolean;
   };
 
 /**
@@ -54,7 +56,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const t = useLangFunc();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
-    ["children", "schema", "disabled", "onFormCreated"],
+    ["children", "schema", "disabled", "onFormCreated", "preventTabClose"],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
   // eslint-disable-next-line solid/reactivity
@@ -112,6 +114,16 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       }
     },
   }) as FormType<T>;
+
+  onMount(() => {
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if ((props.preventTabClose ?? true) && (form.isDirty() || form.isSubmitting())) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", onBeforeUnload);
+    onCleanup(() => window.removeEventListener("beforeunload", onBeforeUnload));
+  });
 
   // eslint-disable-next-line solid/reactivity
   props.onFormCreated?.(form);

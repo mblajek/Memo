@@ -60,6 +60,7 @@ export namespace PasswordChangeForm {
         schema={getSchema()}
         initialValues={getInitialValues()}
         class="flex flex-col gap-2"
+        preventTabClose={false}
       >
         <input
           // For better integration with password managers.
