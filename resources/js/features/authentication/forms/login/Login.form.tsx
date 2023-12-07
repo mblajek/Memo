@@ -51,6 +51,7 @@ export namespace LoginForm {
         schema={getSchema()}
         initialValues={getInitialValues()}
         class="flex flex-col gap-2"
+        preventTabClose={false}
       >
         <TextField name="email" type="email" autocomplete="username" {...TRIM_ON_BLUR} autofocus />
         <TextField name="password" type="password" autocomplete="current-password" />
