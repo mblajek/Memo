@@ -1,4 +1,4 @@
-import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filter, Schema} from "./types";
+import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filter, Schema, isDataColumn} from "./types";
 
 /**
  * A helper for constructing filter. If it is a regular Filter, the values inside the filter
@@ -98,16 +98,17 @@ export class FilterReductor {
   private reduceColumnOp(filter: ColumnFilter): ReducedFilterH {
     const reducedIgnoredInv = ((): ReducedFilterH | undefined => {
       const {column, op} = filter;
-      const {nullable} = this.columnsData.get(column)!;
+      const columnSchema = this.columnsData.get(column)!;
+      const nullable = (isDataColumn(columnSchema) && columnSchema.nullable) || false;
       if (op === "null") {
         if (!nullable) {
           // For non-nullable columns selecting null matches nothing.
           return "never";
         }
       } else {
+        const nullFilter = (): ReducedFilterH => (nullable ? {type: "column", column, op: "null"} : "never");
         const {val} = filter;
         if (val === "") {
-          const nullFilter = (): ReducedFilterH => (nullable ? {type: "column", column, op: "null"} : "never");
           // Frontend treats the null values in string columns as empty strings (because this is what
           // is reasonable for the user).
           if (op === "=" || op === "==" || op === "lv" || op === "<" || op === "<=") {
@@ -119,38 +120,93 @@ export class FilterReductor {
           } else if (op === ">=" || op === "v%" || op === "%v" || op === "%v%" || op === "/v/") {
             // Matches everything.
             return "always";
-          } else if (op === "in") {
-            // Not really possible, included for the exhaustive check to work.
+          } else if (op === "has") {
+            // Even a null column is not considered to "have an empty string", but rather to contain nothing.
+            return "never";
+          } else if (op === "in" || op === "hasAll" || op === "hasAny" || op === "allIn") {
+            throw new Error(`Bad filter: ${JSON.stringify(filter)}`);
           } else {
             op satisfies never;
           }
         }
         if (typeof val === "string" && val !== val.trim()) {
-          if (op === "=" || op === "==") {
+          if (op === "=" || op === "==" || op === "has") {
             // Will not match anything.
             return "never";
           }
           // TODO: Consider the case when val is not empty, but becomes empty after trimming.
         }
-        if (op === "in") {
-          const vals = new Set<string | number>(
-            filter.val
-              // Reject untrimmed values, they cannot be equal.
-              .filter((v) => !(typeof v === "string" && v !== v.trim())),
-          );
-          /** Whether null satisfies this filter. */
-          const orNull = vals.delete("") && nullable;
-          let valsFilter: ReducedFilterH;
-          if (!vals.size) {
-            valsFilter = "never";
-          } else if (vals.size === 1) {
-            valsFilter = {type: "column", column, op: "=", val: [...vals][0]!};
-          } else {
-            valsFilter = {type: "column", column, op: "in", val: [...vals] as string[] | number[]};
+        if (Array.isArray(val)) {
+          const vals = new Set<string | number>(val);
+          function deleteEmptyVal() {
+            return vals.delete("");
           }
-          return orNull
-            ? this.reduce({type: "op", op: "|", val: [{type: "column", column, op: "null"}, valsFilter]})
-            : valsFilter;
+          function deleteUntrimmedVals() {
+            let modified = false;
+            for (const v of vals) {
+              if (typeof v !== "string") {
+                // No strings in the vals.
+                return false;
+              }
+              if (v !== v.trim()) {
+                vals.delete(v);
+                modified = true;
+              }
+            }
+            return modified;
+          }
+          const valsArray = () => [...vals] as string[] | number[];
+          if (op === "in") {
+            const containedEmpty = deleteEmptyVal();
+            deleteUntrimmedVals();
+            return this.reduce({
+              type: "op",
+              op: "|",
+              val: [
+                containedEmpty ? nullFilter() : "never",
+                vals.size === 0
+                  ? "never"
+                  : vals.size === 1
+                    ? {type: "column", column, op: "=", val: valsArray()[0]!}
+                    : {type: "column", column, op: "in", val: valsArray()},
+              ],
+            });
+          } else {
+            const stringValsArray = valsArray as () => string[];
+            if (op === "hasAll") {
+              return vals.size === 0
+                ? "always"
+                : deleteEmptyVal() || deleteUntrimmedVals()
+                  ? "never"
+                  : vals.size === 1
+                    ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
+                    : {type: "column", column, op: "hasAll", val: stringValsArray()};
+            } else if (op === "hasAny") {
+              deleteEmptyVal();
+              deleteUntrimmedVals();
+              return vals.size === 0
+                ? "never"
+                : vals.size === 1
+                  ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
+                  : {type: "column", column, op: "hasAny", val: stringValsArray()};
+            } else if (op === "allIn") {
+              deleteEmptyVal();
+              deleteUntrimmedVals();
+              return this.reduce({
+                type: "op",
+                op: "|",
+                val: [
+                  nullFilter(),
+                  vals.size === 0
+                    ? "never"
+                    : vals.size === 1
+                      ? {type: "column", column, op: "=", val: stringValsArray()}
+                      : {type: "column", column, op: "allIn", val: stringValsArray()},
+                ],
+              });
+            }
+          }
+          throw new Error(`Bad filter: ${JSON.stringify(filter)}`);
         }
       }
     })();

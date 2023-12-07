@@ -26,7 +26,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
   - stringiem poprawnie reprezentującą wartość (`date` - `Y-m-d`, `datetime` - `Y-m-d\TH:i:s\Z`, `uuid` - uuid v4)
   - dla operatorów `=`, `==` i `in` dla `string` wartość musi być strimmowana
   - wartość nie może być pustym stringiem
-- `null` - operator poprawny tylko dla typów nullable oraz list
+- `null` - operator poprawny tylko dla typów nullable oraz dict_list i list
   - `null` w bazie dla tego operatora daje `true`, dla wszystkich pozostałych daje `false`
   - dla kolumny typu lista, filtrowanie czy `list.length=0`
 - `=` - porównanie z wartością tego samego typu, int-int, string-string

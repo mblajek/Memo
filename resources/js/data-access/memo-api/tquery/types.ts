@@ -16,26 +16,38 @@ export interface Schema {
   readonly customFilters?: Mapping<CustomFilterName, CustomFilter>;
 }
 
-// TODO: There are more possible column types:
-//  - enum-related types (enum and multi-enum)
-//  - dict-related types
-//  - possible JSON types with structured data
 export type ColumnSchema = DataColumnSchema | CountColumnSchema;
 
-interface ColumnSchemaBase {
+interface DataColumnSchemaBase {
   readonly name: ColumnName;
-}
-
-export type ColumnType = "bool" | "date" | "datetime" | "int" | "string" | "text" | "uuid";
-
-export interface DataColumnSchema extends ColumnSchemaBase {
-  readonly type: ColumnType;
   readonly nullable?: boolean;
 }
 
-export interface CountColumnSchema extends ColumnSchemaBase {
+export type DataColumnSchema = PlainDataColumnSchema | DictDataColumnSchema;
+
+interface PlainDataColumnSchema extends DataColumnSchemaBase {
+  readonly type:
+    | "bool"
+    | "date"
+    | "datetime"
+    | "int"
+    // A list of objects of a form known both to backend and frontend.
+    | "list"
+    // An object of a form known both to backend and frontend.
+    | "object"
+    | "string"
+    | "text"
+    | "uuid";
+}
+
+interface DictDataColumnSchema extends DataColumnSchemaBase {
+  readonly type: "dict" | "dictList";
+  readonly dictId: string;
+}
+
+export interface CountColumnSchema {
+  readonly name: ColumnName;
   readonly type: "count";
-  readonly nullable?: false;
 }
 
 export interface CustomFilter {
@@ -88,9 +100,13 @@ export type ColumnValueFilter =
   | DateColumnFilter
   | DateTimeColumnFilter
   | IntColumnFilter
+  | ListColumnFilter
+  | ObjectColumnFilter
   | StringColumnFilter
   | TextColumnFilter
-  | UuidColumnFilter;
+  | UuidColumnFilter
+  | DictColumnFilter
+  | DictListColumnFilter;
 
 interface ColumnFilterBase extends FilterBase {
   readonly type: "column";
@@ -140,6 +156,14 @@ interface RegexpColumnFilter extends ColumnFilterBase {
   /** The regexp pattern to match. Cannot be empty. */
   readonly val: string;
 }
+interface HasColumnFilter<T> extends ColumnFilterBase {
+  readonly op: "has";
+  readonly val: T;
+}
+interface SetsOpColumnFilter<T> extends ColumnFilterBase {
+  readonly op: "hasAll" | "hasAny" | "allIn";
+  readonly val: readonly T[];
+}
 
 export type BoolColumnFilter = EqColumnFilter<boolean>;
 export type DateColumnFilter = EqColumnFilter<DateString> | InColumnFilter<DateString> | CmpColumnFilter<DateString>;
@@ -150,6 +174,8 @@ export type IntColumnFilter =
   | CmpColumnFilter<number>
   | ContainsColumnFilter
   | LikeColumnFilter;
+export type ListColumnFilter = never;
+export type ObjectColumnFilter = never;
 export type StringColumnFilter =
   | EqColumnFilter<string>
   | BinEqColumnFilter<string>
@@ -160,6 +186,11 @@ export type StringColumnFilter =
   | RegexpColumnFilter;
 export type TextColumnFilter = ContainsColumnFilter | LikeColumnFilter | RegexpColumnFilter;
 export type UuidColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
+export type DictColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
+export type DictListColumnFilter =
+  | EqColumnFilter<readonly string[]>
+  | HasColumnFilter<string>
+  | SetsOpColumnFilter<string>;
 
 export interface CustomFilter extends FilterBase {
   readonly type: "custom";
@@ -196,21 +227,10 @@ export interface SortColumn {
   readonly desc?: boolean;
 }
 
+export type ColumnType = DataColumnSchema["type"];
+
 export function isDataType(column: ColumnSchema["type"]): column is ColumnType {
-  switch (column) {
-    case "bool":
-    case "date":
-    case "datetime":
-    case "int":
-    case "string":
-    case "text":
-    case "uuid":
-      return true;
-    case "count":
-      return false;
-    default:
-      return column satisfies never;
-  }
+  return column !== "count";
 }
 
 export function isDataColumn(column: ColumnSchema): column is DataColumnSchema {

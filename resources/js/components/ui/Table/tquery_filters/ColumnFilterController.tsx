@@ -44,13 +44,21 @@ export const ColumnFilterController: VoidComponent<FilterControlProps> = (props)
         );
       case "int":
         return () => <IntFilterControl {...anyFilterProps} />;
+      case "list":
+        return undefined;
+      case "object":
+        return undefined;
       case "string":
       case "text":
         return () => <TextualFilterControl {...anyFilterProps} columnType={meta.type} />;
       case "uuid":
         return () => <UuidFilterControl {...anyFilterProps} />;
+      case "dict":
+        return undefined; // TODO: Implement.
+      case "dictList":
+        return undefined; // TODO: Implement.
       default:
-        return meta.type satisfies never;
+        return meta satisfies never;
     }
   };
   return (
