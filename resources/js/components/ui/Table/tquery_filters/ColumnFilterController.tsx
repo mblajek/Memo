@@ -55,7 +55,7 @@ export const ColumnFilterController: VoidComponent<FilterControlProps> = (props)
         return () => <UuidFilterControl {...anyFilterProps} />;
       case "dict":
         return undefined; // TODO: Implement.
-      case "dictList":
+      case "dict_list":
         return undefined; // TODO: Implement.
       default:
         return meta satisfies never;

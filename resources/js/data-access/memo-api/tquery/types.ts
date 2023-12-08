@@ -41,7 +41,7 @@ interface PlainDataColumnSchema extends DataColumnSchemaBase {
 }
 
 interface DictDataColumnSchema extends DataColumnSchemaBase {
-  readonly type: "dict" | "dictList";
+  readonly type: "dict" | "dict_list";
   readonly dictId: string;
 }
 
@@ -161,7 +161,7 @@ interface HasColumnFilter<T> extends ColumnFilterBase {
   readonly val: T;
 }
 interface SetsOpColumnFilter<T> extends ColumnFilterBase {
-  readonly op: "hasAll" | "hasAny" | "allIn";
+  readonly op: "has_all" | "has_any" | "has_only";
   readonly val: readonly T[];
 }
 

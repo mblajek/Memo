@@ -123,7 +123,7 @@ export class FilterReductor {
           } else if (op === "has") {
             // Even a null column is not considered to "have an empty string", but rather to contain nothing.
             return "never";
-          } else if (op === "in" || op === "hasAll" || op === "hasAny" || op === "allIn") {
+          } else if (op === "in" || op === "has_all" || op === "has_any" || op === "has_only") {
             throw new Error(`Bad filter: ${JSON.stringify(filter)}`);
           } else {
             op satisfies never;
@@ -173,23 +173,23 @@ export class FilterReductor {
             });
           } else {
             const stringValsArray = valsArray as () => string[];
-            if (op === "hasAll") {
+            if (op === "has_all") {
               return vals.size === 0
                 ? "always"
                 : deleteEmptyVal() || deleteUntrimmedVals()
                   ? "never"
                   : vals.size === 1
                     ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
-                    : {type: "column", column, op: "hasAll", val: stringValsArray()};
-            } else if (op === "hasAny") {
+                    : {type: "column", column, op: "has_all", val: stringValsArray()};
+            } else if (op === "has_any") {
               deleteEmptyVal();
               deleteUntrimmedVals();
               return vals.size === 0
                 ? "never"
                 : vals.size === 1
                   ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
-                  : {type: "column", column, op: "hasAny", val: stringValsArray()};
-            } else if (op === "allIn") {
+                  : {type: "column", column, op: "has_any", val: stringValsArray()};
+            } else if (op === "has_only") {
               deleteEmptyVal();
               deleteUntrimmedVals();
               return this.reduce({
@@ -201,7 +201,7 @@ export class FilterReductor {
                     ? "never"
                     : vals.size === 1
                       ? {type: "column", column, op: "=", val: stringValsArray()}
-                      : {type: "column", column, op: "allIn", val: stringValsArray()},
+                      : {type: "column", column, op: "has_only", val: stringValsArray()},
                 ],
               });
             }
