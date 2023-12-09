@@ -38,11 +38,13 @@ interface PlainDataColumnSchema extends DataColumnSchemaBase {
     | "string"
     | "text"
     | "uuid";
+  /** The attribute defining this data column. */
+  readonly attributeId?: string;
 }
 
 interface DictDataColumnSchema extends DataColumnSchemaBase {
   readonly type: "dict" | "dict_list";
-  readonly dictId: string;
+  readonly dictionaryId: string;
 }
 
 export interface CountColumnSchema {
@@ -199,9 +201,12 @@ export interface CustomFilter extends FilterBase {
 }
 
 export interface Paging {
-  /** The one-based page number. */
-  readonly number: number;
+  /** The number of requested records. */
   readonly size: number;
+  /** The one-based page number. */
+  readonly number?: number;
+  /** The zero-based index of the first record to return. */
+  readonly offset?: number;
 }
 
 export interface DataResponse {
