@@ -70,7 +70,7 @@ class OpenApiPost extends OA\Post
                     in: 'path',
                     required: true,
                     schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-                )
+                ),
             ] : [],
             responses: [
                 new OA\Response(

@@ -4,7 +4,8 @@ namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Attribute;
-use App\Models\UuidEnum\MeetingAttributeUuidEnum;
+use App\Models\UuidEnum\AttributeUuidEnum;
+use BackedEnum;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -12,7 +13,7 @@ final class TqConfig
 {
     /** @var array<string, TqColumnConfig> */
     public array $columns = [];
-    private const COUNT_COLUMN = '_count';
+    private const string COUNT_COLUMN = '_count';
 
     private ?array $filterableColumns = null;
 
@@ -62,7 +63,7 @@ final class TqConfig
         );
     }
 
-    public function addAttribute(string|MeetingAttributeUuidEnum $id): void
+    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $id): void
     {
         $attribute = Attribute::query()->findOrFail(is_string($id) ? $id : $id->value);
         $this->addColumn(

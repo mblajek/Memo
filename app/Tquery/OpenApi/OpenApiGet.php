@@ -28,7 +28,7 @@ class OpenApiGet extends OA\Get
                     in: 'path',
                     required: true,
                     schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-                )
+                ),
             ] : [],
             responses: [
                 new OA\Response(

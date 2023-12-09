@@ -94,6 +94,10 @@ readonly class TqEngine
 
     private function getMeta(): array
     {
-        return ['totalDataSize' => $this->builder->getCount(),];
+        $dataCount = $this->builder->getCount();
+        return [
+            'totalDataSize' => $dataCount,
+            'totalDataPages' => intdiv($dataCount - 1, $this->request->pageSize) + 1,
+        ];
     }
 }
