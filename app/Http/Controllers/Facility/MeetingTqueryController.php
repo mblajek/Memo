@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Facility;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Tquery\Engine\TqService;
 use App\Tquery\OpenApi\OpenApiGet;
 use App\Tquery\OpenApi\OpenApiPost;
-use App\Tquery\Tables\AdminFacilityTquery;
 use App\Tquery\Tables\MeetingTquery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ class MeetingTqueryController extends ApiController
         $this->permissionOneOf(Permission::globalAdmin);
     }
 
-    private function getTquery()
+    private function getTqService(): TqService
     {
         return App::make(MeetingTquery::class, ['facility' => $this->getFacilityOrFail()]);
     }
@@ -34,7 +34,7 @@ class MeetingTqueryController extends ApiController
     )]
     public function get(): JsonResponse
     {
-        return new JsonResponse($this->getTquery()->getConfigArray());
+        return new JsonResponse($this->getTqService()->getConfigArray());
     }
 
     #[OpenApiPost(
@@ -45,9 +45,8 @@ class MeetingTqueryController extends ApiController
         isFacility: true,
     )]
     public function post(
-        AdminFacilityTquery $tquery,
         Request $request,
     ): JsonResponse {
-        return new JsonResponse($this->getTquery()->query($request));
+        return new JsonResponse($this->getTqService()->query($request));
     }
 }
