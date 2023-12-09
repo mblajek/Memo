@@ -1,8 +1,9 @@
-import {Navigate, Outlet, Route, RouteProps, Routes, useParams} from "@solidjs/router";
+import {Navigate, Route, RouteProps, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api/groups";
-import {DEV, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
+import {DEV, ParentComponent, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
+import {Dynamic} from "solid-js/web";
 import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
 import {DevRoutes} from "./dev-pages/DevRoutes";
 import {NotFound} from "./features/not-found/components/NotFound";
@@ -18,7 +19,7 @@ const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   return (
-    <Routes>
+    <>
       <LeafRoute routeKey="login" path="/login" component={LoginPage} />
       <Route path="/" component={RootPage}>
         <UnknownNotFound />
@@ -38,7 +39,7 @@ const App: VoidComponent = () => {
         component={RootPageWithFacility}
       >
         <UnknownNotFound />
-        <Route path="/" element={<Navigate href="home" />} />
+        <Route path="/" component={() => <Navigate href="home" />} />
         <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
         <LeafRoute routeKey="facility.meetings" path="/meetings" component={NotYetImplemented} />
         <Route path="/" component={FacilityStaffPages}>
@@ -55,67 +56,64 @@ const App: VoidComponent = () => {
         </Route>
       </Route>
       <BackdoorRoutes />
-    </Routes>
+    </>
   );
 };
 export default App;
 
-type LeafRouteProps<S extends string> = RouteProps<S> & {
-  /** A translations sub-key in routes defining the page title. */
-  routeKey: string;
-};
+type LeafRouteProps<S extends string> = RouteProps<S> &
+  Required<Pick<RouteProps<S>, "component">> & {
+    /** A translations sub-key in routes defining the page title. */
+    routeKey: string;
+  };
 
 /** A leaf route for a page, also setting the page title based on routeKey. */
 const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => {
-  const [props, routeProps] = splitProps(allProps, ["routeKey"]);
+  const [props, routeProps] = splitProps(allProps, ["routeKey", "component"]);
   return (
     <Route
-      path="/"
-      element={
+      {...routeProps}
+      component={(innerProps) => (
         <>
           <MemoTitle routeKey={props.routeKey} />
-          <Outlet />
+          <Dynamic component={props.component} {...innerProps} />
         </>
-      }
-    >
-      <Route {...(routeProps as RouteProps<S>)} />
-    </Route>
+      )}
+    />
   );
 };
 
 const UnknownNotFound: VoidComponent = () => <Route path="/*" component={NotFound} />;
 
-const GlobalAdminPages: VoidComponent = () => (
-  <AccessBarrier roles={["globalAdmin"]}>
-    <Outlet />
-  </AccessBarrier>
+const GlobalAdminPages: ParentComponent = (props) => (
+  <AccessBarrier roles={["globalAdmin"]}>{props.children}</AccessBarrier>
 );
 
-const RootPageWithFacility: VoidComponent = () => {
+const RootPageWithFacility: ParentComponent = (props) => {
   const params = useParams();
   return (
     <RootPage facilityUrl={params.facilityUrl}>
       <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityMember"]}>
-        <Outlet />
+        {props.children}
       </AccessBarrier>
     </RootPage>
   );
 };
 
-const FacilityStaffPages: VoidComponent = () => {
+const FacilityStaffPages: ParentComponent = (props) => {
   const params = useParams();
   return (
     <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityStaff"]}>
-      <Outlet />
+      {props.children}
     </AccessBarrier>
   );
 };
 
-const FacilityAdminPages: VoidComponent = () => {
+const FacilityAdminPages: ParentComponent = (props) => {
   const params = useParams();
   return (
     <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityAdmin"]}>
-      <Outlet />
+      {props.children}
     </AccessBarrier>
   );
 };

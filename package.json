@@ -48,7 +48,7 @@
     "@felte/validator-zod": "^1.0.17",
     "@mbarzda/solid-i18next": "^1.4.1",
     "@solidjs/meta": "^0.29.1",
-    "@solidjs/router": "^0.9.1",
+    "@solidjs/router": "^0.10.1",
     "@tanstack/solid-query": "^5.13.4",
     "@tanstack/solid-table": "^8.10.7",
     "@zag-js/combobox": "0.26.0",
