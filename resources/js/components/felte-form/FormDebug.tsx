@@ -1,8 +1,14 @@
-import {VoidComponent} from "solid-js";
+import {DEV, VoidComponent} from "solid-js";
 import {useFormContext} from "./FelteForm";
 
-/** A component rendering debugging information about a form. Not for production. */
-export const FormDebug: VoidComponent = () => {
+/** A component rendering debugging information about a form. Only visible in the DEV mode. */
+// eslint-disable-next-line no-restricted-syntax
+export const FormDebug_onlyDEV: VoidComponent = () => {
+  if (!DEV) {
+    console.warn("Usage of FormDebug outside of DEV mode");
+    // eslint-disable-next-line solid/components-return-once
+    return undefined;
+  }
   const {form} = useFormContext();
   return (
     <div class="h-40 text-[0.6rem] overflow-auto wrap-text">

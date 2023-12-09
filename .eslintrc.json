@@ -35,6 +35,7 @@
     "no-inner-declarations": "off",
     "no-restricted-syntax": [
       "warn",
+      // For creating the selectors, use https://astexplorer.net/ with JavaScript and @typescript-eslint/parser.
       {
         "selector": "JSXOpeningElement > JSXIdentifier[name='button']",
         "message": "Use <Button> instead."
@@ -55,6 +56,10 @@
       {
         "selector": "TSInterfaceDeclaration[id.name=/Props$/] > TSInterfaceBody > TSPropertySignature > TSTypeAnnotation > TSTypeReference[typeName.name=/^(Set|Map)$/]",
         "message": "Mark Set/Map props as ReadonlySet/ReadonlyMap, this avoids some tricky bugs."
+      },
+      {
+        "selector": "Identifier[name=/_onlyDEV$/], JSXIdentifier[name=/_onlyDEV$/]",
+        "message": "Do not submit usage of the *_onlyDEV helpers."
       }
     ],
     "no-unused-expressions": "warn",
