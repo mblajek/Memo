@@ -16,6 +16,7 @@ enum TqDataTypeEnum
     case int;
     case string;
     case uuid;
+    case dict;
     case text;
     // nullable
     case bool_nullable;
@@ -24,6 +25,7 @@ enum TqDataTypeEnum
     case int_nullable;
     case string_nullable;
     case uuid_nullable;
+    case dict_nullable;
     case text_nullable;
     // additional
     case count;
@@ -34,7 +36,7 @@ enum TqDataTypeEnum
     {
         return match ($this) {
             self::bool_nullable, self::date_nullable, self::datetime_nullable, self::int_nullable,
-            self::string_nullable, self::uuid_nullable, self::text_nullable => true,
+            self::string_nullable, self::uuid_nullable, self::dict_nullable, self::text_nullable => true,
             default => false,
         };
     }
@@ -101,7 +103,7 @@ enum TqDataTypeEnum
                     ...TqFilterOperator::CMP,
                     ...TqFilterOperator::LIKE,
                 ],
-                self::uuid => [TqFilterOperator::eq, TqFilterOperator::in],
+                self::uuid, self::dict => [TqFilterOperator::eq, TqFilterOperator::in],
                 self::text => TqFilterOperator::LIKE,
                 default => FatalExceptionFactory::tquery(),
             }
@@ -120,7 +122,7 @@ enum TqDataTypeEnum
             self::int => Valid::int(),
             self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED, true)
                 ? Valid::trimmed() : Valid::string(),
-            self::uuid => Valid::uuid(),
+            self::uuid, self::dict => Valid::uuid(),
             default => FatalExceptionFactory::tquery(),
         };
     }

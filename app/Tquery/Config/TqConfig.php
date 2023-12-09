@@ -3,6 +3,8 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
+use App\Models\Attribute;
+use App\Models\UuidEnum\MeetingAttributeUuidEnum;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -60,6 +62,18 @@ final class TqConfig
         );
     }
 
+    public function addAttribute(string|MeetingAttributeUuidEnum $id): void
+    {
+        $attribute = Attribute::query()->findOrFail(is_string($id) ? $id : $id->value);
+        $this->addColumn(
+            type: $attribute->type->getTqueryDataType(nullable: $attribute->requirement_level->isNullable()),
+            columnOrQuery: $attribute->api_name,
+            table: null,
+            columnAlias: Str::camel($attribute->api_name),
+            attribute: $attribute,
+        );
+    }
+
     public function addJoined(
         TqDataTypeEnum $type,
         TqTableAliasEnum $table,
@@ -108,6 +122,8 @@ final class TqConfig
         string|Closure $columnOrQuery,
         ?TqTableAliasEnum $table,
         string $columnAlias,
+        ?Attribute $attribute = null,
+        ?Closure $selector = null,
         ?Closure $filter = null,
         ?Closure $sorter = null,
         ?Closure $renderer = null,
@@ -122,6 +138,8 @@ final class TqConfig
             columnOrQuery: $columnOrQuery,
             table: $table,
             columnAlias: $columnAlias,
+            attribute: $attribute,
+            selector: $selector,
             filter: $filter,
             sorter: $sorter,
             renderer: $renderer,

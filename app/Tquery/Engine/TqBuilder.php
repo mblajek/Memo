@@ -102,9 +102,9 @@ class TqBuilder
         $this->builder->where($group, boolean: $or ? 'or' : 'and');
     }
 
-    public function applyPaging(int $number, int $size): void
+    public function applyPaging(int $offset, int $limit): void
     {
-        $this->builder->forPage(page: $number, perPage: $size);
+        $this->builder->offset($offset)->limit($limit);
     }
 
     public function getSql(bool $raw): string

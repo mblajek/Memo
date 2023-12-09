@@ -4,6 +4,7 @@ namespace App\Tquery\Tables;
 
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
+use App\Models\UuidEnum\MeetingAttributeUuidEnum;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
@@ -40,6 +41,9 @@ readonly class MeetingTquery extends TqService
         $config->addSimple(TqDataTypeEnum::int, 'start_dayminute');
         $config->addSimple(TqDataTypeEnum::int, 'duration_minutes');
         $config->addSimple(TqDataTypeEnum::text_nullable, 'notes');
+        $config->addAttribute(MeetingAttributeUuidEnum::Category);
+        $config->addAttribute(MeetingAttributeUuidEnum::Type);
+        $config->addAttribute(MeetingAttributeUuidEnum::Status);
         $config->addSimple(TqDataTypeEnum::datetime, 'created_at');
         $config->addSimple(TqDataTypeEnum::datetime, 'updated_at');
         $config->addSimple(TqDataTypeEnum::uuid, 'created_by', 'created_by.id');
