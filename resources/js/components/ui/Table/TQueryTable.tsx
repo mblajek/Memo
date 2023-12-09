@@ -53,7 +53,7 @@ export interface ColumnMetaParams {
 }
 
 /** Type of tquery-related information in column meta. */
-export interface TQueryColumnMeta extends ColumnMetaParams, Partial<DataColumnSchema> {}
+export type TQueryColumnMeta = ColumnMetaParams & Partial<DataColumnSchema>;
 
 export interface TQueryTableProps {
   /**
