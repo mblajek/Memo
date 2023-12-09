@@ -1,11 +1,11 @@
 import {htmlAttributes} from "components/utils";
-import {For, VoidComponent, splitProps} from "solid-js";
+import {For, JSX, VoidComponent, splitProps} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
 
 export interface SimpleSelectProps extends htmlAttributes.select {
   readonly name: string;
-  readonly label?: string;
+  readonly label?: JSX.Element;
   readonly options: readonly Option[];
 }
 

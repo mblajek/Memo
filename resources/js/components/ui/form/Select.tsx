@@ -2,6 +2,7 @@ import {Collection} from "@zag-js/collection";
 import * as combobox from "@zag-js/combobox";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
+import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {cx, useLangFunc} from "components/utils";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
@@ -18,6 +19,7 @@ import {
   createComputed,
   createEffect,
   createMemo,
+  createSignal,
   createUniqueId,
   mergeProps,
   on,
@@ -25,11 +27,12 @@ import {
 import {Portal} from "solid-js/web";
 import {Button} from "../Button";
 import {FieldBox} from "./FieldBox";
+import {PlaceholderField} from "./PlaceholderField";
 import s from "./Select.module.scss";
 
 export interface SelectBaseProps {
   readonly name: string;
-  readonly label?: string;
+  readonly label?: JSX.Element;
   /**
    * The items to show in this select. In the external filtering mode, the list should change
    * when the filter changes. In the internal filtering mode, the list should not change, and will
@@ -123,6 +126,16 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
 
   const formContext = useFormContextIfInForm();
 
+  function formValuesEqual(selectValue: string | readonly string[], currentFormValue: string | readonly string[]) {
+    return (
+      selectValue === currentFormValue ||
+      (Array.isArray(selectValue) &&
+        Array.isArray(currentFormValue) &&
+        selectValue.length === currentFormValue.length &&
+        selectValue.every((v, i) => v === currentFormValue[i]))
+    );
+  }
+
   // Temporarily assign an empty collection, and overwrite with the actual collection depending on
   // the filtered items later. It's done like this because filtering needs api() which is not created yet.
   let collection: Accessor<Collection<SelectItem>> = () => combobox.collection.empty();
@@ -155,7 +168,14 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             (props as SingleSelectPropsPart).onValueChange!(value[0]);
           }
         } else if (formContext) {
-          formContext.form.setData(props.name, props.multiple ? value : value[0]);
+          const valueForForm = props.multiple ? value : value[0] || "";
+          if (!formValuesEqual(valueForForm, formContext.form.data(props.name))) {
+            formContext.form.setTouched(props.name, true);
+            // eslint-disable-next-line solid/reactivity
+            formContext.form.setInteracted(() => props.name);
+            formContext.form.setIsDirty(true);
+            formContext.form.setData(props.name, valueForForm);
+          }
         } else {
           api().setValue(value);
         }
@@ -192,7 +212,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         collection: collection(),
         multiple: props.multiple,
         disabled: props.disabled,
-        invalid: formContext?.form.errors(props.name) != null,
+        invalid: !isValidationMessageEmpty(formContext?.form.errors(props.name)),
       }),
     },
   );
@@ -273,22 +293,28 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
    * a filter is present, because otherwise the items don't exist, and api().selectedItems doesn't
    * return them, even though api().value has the corresponding entries.
    */
-  const itemsMap = new Map<string, SelectItem>();
-  createEffect(() => {
-    for (const item of filteredItems()) {
-      itemsMap.set(item.value, item);
-    }
+  const [itemsMap, setItemsMap] = createSignal<ReadonlyMap<string, SelectItem>>(new Map<string, SelectItem>());
+  createComputed(() => {
+    setItemsMap((map) => {
+      const newMap = new Map(map);
+      for (const item of filteredItems()) {
+        newMap.set(item.value, item);
+      }
+      return newMap;
+    });
   });
   /**
    * Returns the label for the specified value. If the value is unknown (not present in itemsMap),
-   * the value is removed from the selected values in api(), and undefined is returned.
+   * the value is removed from the selected values in api() (unless still loading), and undefined is returned.
    */
   function getValueLabel(value: string) {
-    const item = itemsMap.get(value);
+    const item = itemsMap().get(value);
     if (item) {
       return itemToLabel(item);
     }
-    api().clearValue(value);
+    if (!props.isLoading) {
+      api().clearValue(value);
+    }
     return undefined;
   }
 
@@ -311,6 +337,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   return (
     <>
       <FieldBox {...props}>
+        <PlaceholderField name={props.name} />
         <div
           ref={root}
           {...api().rootProps}

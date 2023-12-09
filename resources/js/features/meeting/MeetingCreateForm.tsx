@@ -29,8 +29,6 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
   async function createMeeting(values: MeetingFormType) {
     await meetingMutation.mutateAsync({
       ...transformFormValues(values),
-      staff: [],
-      clients: [],
     });
     toast.success(t("forms.meeting_create.success"));
     props.onSuccess?.();
@@ -46,6 +44,8 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
       typeDictId: "",
       statusDictId: dictionaries()?.get("meetingStatus").get("planned").id || "",
       isRemote: false,
+      staff: [],
+      clients: [],
       notes: "",
       resources: [],
     }) satisfies MeetingFormType;

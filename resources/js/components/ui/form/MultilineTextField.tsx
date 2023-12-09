@@ -1,5 +1,5 @@
 import {htmlAttributes} from "components/utils";
-import {VoidComponent, splitProps} from "solid-js";
+import {JSX, VoidComponent, splitProps} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
 
@@ -9,7 +9,7 @@ export interface TextFieldProps
     "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
   > {
   readonly name: string;
-  readonly label?: string;
+  readonly label?: JSX.Element;
 }
 
 /** Wrapper of native HTML's `<textarea>`. Intended for use with FelteForm (handles validation messages). */

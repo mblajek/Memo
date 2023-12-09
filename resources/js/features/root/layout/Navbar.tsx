@@ -97,7 +97,7 @@ function getSectionItems(
             routeKey: "facility.admin.clients",
           },
           {
-            icon: STAFF_ICONS.staffMembers,
+            icon: STAFF_ICONS.menu,
             href: `/${facilityUrl}/admin/staff`,
             routeKey: "facility.admin.staff",
           },

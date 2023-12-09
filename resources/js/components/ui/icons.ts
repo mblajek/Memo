@@ -18,8 +18,8 @@ export const USER_ICONS = {
 };
 
 export const STAFF_ICONS = {
+  menu: BsPersonBadge,
   staffMember: BsPersonBadge,
-  staffMembers: BsPersonBadge,
 };
 
 export const CLIENT_ICONS = {

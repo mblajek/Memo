@@ -2,6 +2,7 @@
 
 namespace App\Rules;
 
+use App\Models\Dictionary;
 use App\Models\Position;
 use Closure;
 
@@ -18,7 +19,7 @@ final class PositionInDictionaryRule extends AbstractRule
             return;
         }
         $this->validator->addFailure($attribute, 'custom.position_in_dictionary', [
-            'dictionary' => $this->dictionaryId,
+            'dictionary' => Dictionary::query()->findOrFail($this->dictionaryId)->name,
         ]);
     }
 }
