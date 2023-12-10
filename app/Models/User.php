@@ -142,20 +142,27 @@ class User extends Authenticatable
                         // Uniqueness is only checked for insert and patch
                         [$isInsert || $isPatch, self::getRuleUnique($original)],
                     ],
-                        sometimes: $isPatch,
                         nullable: true)
                 ],
             'has_email_verified' =>
                 [
                     [$isInsert || $isPatch, 'required_with:email'],
-                    ...Valid::bool(sometimes: $isPatch, nullable: true)
+                    ...Valid::bool(nullable: true)
                 ],
             'password' =>
                 [
                     [
+                        $isPatch,
+                        $original && blank($original->password) ? 'required_if_accepted:has_password' : null,
+                    ],
+                    [
                         $isInsert || $isPatch,
+                        'required_with:password_expire_at',
+                    ],
+                    [
+                        $isInsert || $isResource,
                         'required_if_accepted:has_password',
-                        'required_if_accepted:has_global_admin'
+                        'required_if_accepted:has_global_admin',
                     ],
                     ...Valid::string([
                         [
@@ -169,16 +176,15 @@ class User extends Authenticatable
                             // TODO: Learn if we should use it. UI sends null at the moment.
                         ],
                     ],
-                        sometimes: $isPatch,
                         nullable: true)
                 ],
-            [
+            'password_expire_at' => [
                 // TODO: Figure out how to implement an "implicit" custom validation rule
-                [$isInsert, 'present'],
                 // Password expiration is a valid datetime and if the date defined, the password must not be null.
-                ...Valid::datetime([new RequireNotNullRule('password')],
+                ...Valid::datetime(
                     sometimes: $isPatch,
-                    nullable: true)
+                    nullable: true
+                )
             ],
             'has_password' => Valid::bool([
                 // It must be true if the user is a global admin.

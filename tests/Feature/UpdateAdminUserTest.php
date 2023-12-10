@@ -180,9 +180,13 @@ class UpdateAdminUserTest extends TestCase
                         'code' => 'exception.validation'
                     ],
                     [
-                        'field' => 'email',
-                        'code' => 'validation.custom.require_present',
-                        'data' => ['other' => 'hasEmailVerified']
+                        'field' => 'hasEmailVerified',
+                        'code' => 'validation.required_with',
+                        'data' => [
+                            'values' => [
+                                'email'
+                            ]
+                        ]
                     ]
                 ]
             ]
@@ -191,7 +195,7 @@ class UpdateAdminUserTest extends TestCase
 
     public function testWithoutEmailWithEmailVerifiedFails(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['email' => null, 'password' => null]);
 
         $data = [
             'hasEmailVerified' => true,
@@ -207,9 +211,11 @@ class UpdateAdminUserTest extends TestCase
                         'code' => 'exception.validation'
                     ],
                     [
-                        'field' => 'hasEmailVerified',
-                        'code' => 'validation.custom.require_present',
-                        'data' => ['other' => 'email']
+                        'field' => 'email',
+                        'code' => 'validation.required_if_accepted',
+                        'data' => [
+                            'other' => 'hasEmailVerified'
+                        ]
                     ]
                 ]
             ]
@@ -224,7 +230,7 @@ class UpdateAdminUserTest extends TestCase
             'email' => 'test@test.com',
             'hasEmailVerified' => false,
             'password' => 'pBssword1',
-            'passwordExpireAt' => self::now()->roundSeconds(),
+            'passwordExpireAt' => self::now(),
         ];
 
         $result = $this->execute($user->id, $data);
@@ -232,7 +238,7 @@ class UpdateAdminUserTest extends TestCase
 
         $result->assertOk();
         $this->assertTrue(Hash::check('pBssword1', $user->password));
-        $this->assertEquals($data['passwordExpireAt'], $user->password_expire_at);
+        $this->assertEquals($data['passwordExpireAt'], $user->password_expire_at->toIso8601ZuluString());
     }
 
     public function testWithPasswordWithoutPasswordExpireAtFails(): void
