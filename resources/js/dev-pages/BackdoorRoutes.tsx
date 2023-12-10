@@ -12,7 +12,7 @@ export const BackdoorRoutes: VoidComponent = () => {
       <Route path="/local-storage">
         <Route
           path="/"
-          element={
+          component={() => (
             <FullScreenPre class={DARK_MODE_CLASS}>
               Local storage:
               <ul class="list-disc list-inside">
@@ -32,11 +32,11 @@ export const BackdoorRoutes: VoidComponent = () => {
                 </li>
               </ul>
             </FullScreenPre>
-          }
+          )}
         />
         <Route
           path="/get"
-          element={
+          component={() => (
             <FullScreenPre class={cx(DARK_MODE_CLASS, "text-xs")}>
               <div class="text-red-500">
                 <p>
@@ -50,7 +50,7 @@ export const BackdoorRoutes: VoidComponent = () => {
               <br />
               {JSON.stringify(localStorage, undefined, 2)}
             </FullScreenPre>
-          }
+          )}
         />
         <Route
           path="/clear"

@@ -51,9 +51,9 @@ export function getDayMinuteRange(day: DateTime, {start, end}: Interval): DayMin
   ];
 }
 
-export function timeInputToDayMinute(timeInputValue: string, params?: {assert?: false}): number | undefined;
+export function timeInputToDayMinute(timeInputValue: string | undefined, params?: {assert?: false}): number | undefined;
 export function timeInputToDayMinute(timeInputValue: string, params: {assert: true}): number;
-export function timeInputToDayMinute(timeInputValue: string, {assert = false} = {}) {
+export function timeInputToDayMinute(timeInputValue: string | undefined, {assert = false} = {}) {
   if (!timeInputValue) {
     if (assert) {
       throw new Error(`Empty time input value`);

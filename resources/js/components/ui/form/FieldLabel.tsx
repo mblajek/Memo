@@ -5,7 +5,7 @@ import {TranslatedText} from "../TranslatedText";
 
 interface Props extends htmlAttributes.label {
   readonly fieldName: string;
-  readonly text?: string;
+  readonly text?: JSX.Element;
   /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
   readonly wrapIn?: (text: JSX.Element) => JSX.Element;
 }

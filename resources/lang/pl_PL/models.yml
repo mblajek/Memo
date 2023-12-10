@@ -4,6 +4,8 @@ generic:
   name: "nazwa"
   email: "adres e-mail"
   createdBy: "utworzono przez"
+  notes: "opis"
+
 dictionary:
   _name: "słownik"
   _name_plural: "słowniki"
@@ -11,6 +13,7 @@ dictionary:
   facility: "placówka, właściciel słownika"
   isFixed: "nieusuwalny / systemowy"
   positions: "pozycje"
+
 position:
   _name: "pozycja słownika"
   _name_plural: "pozycje słownika"
@@ -19,6 +22,7 @@ position:
   facility: "placówka, właściciel pozycji"
   isFixed: "nieusuwalna / systemowa"
   defaultOrder: "domyślna kolejność"
+
 facility:
   _name: "placówka"
   _name_plural: "placówki"
@@ -29,12 +33,14 @@ facility:
   members: "osoby przypisane do placówki"
   userCount: "liczba osób"
   admins: "administratorzy"
+
 member:
   _name: "powiązanie osoby i placówki"
   _name_plural: "powiązania osób i placówek"
   user: "osoba"
   facility: "placówka"
   hasFacilityAdmin: "administrator placówki"
+
 permissions:
   _name: "uprawienia"
   unverified: "e-mail niezweryfikowany"
@@ -44,6 +50,7 @@ permissions:
   facilityClient: "klient placówki"
   facilityStaff: "pracownik placówki"
   facilityAdmin: "administrator placówki"
+
 user:
   _name: "osoba"
   _name_plural: "osoby"
@@ -59,7 +66,28 @@ user:
   hasEmailVerified: "e-mail zweryfikowany"
   members: "przypisane placówki"
   facilityCount: "liczba placówek"
+
+staff:
+  _name: "pracownik"
+  _name_plural: "pracownicy"
+
 client:
   _name: "klient"
   _name_plural: "klienci"
   gender: "$t(dictionary.gender._name)"
+
+meeting:
+  _name: "spotkanie"
+  _name_plural: "spotkania"
+  date: "data"
+  startDayminute: "godzina rozpoczęcia"
+  durationMinutes: "długość"
+  categoryDictId: "$t(dictionary.meetingCategory._name)"
+  typeDictId: "typ"
+  statusDictId: "$t(dictionary.meetingStatus._name)"
+  staff: "$t(models.staff._name_plural)"
+  clients: "$t(models.client._name_plural)"
+  attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
+  isRemote: "spotkanie zdalne"
+  resources: "zasoby"
+  notes: "$t(models.generic.notes)"
