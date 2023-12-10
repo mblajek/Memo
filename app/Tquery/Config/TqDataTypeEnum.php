@@ -27,6 +27,9 @@ enum TqDataTypeEnum
     case uuid_nullable;
     case dict_nullable;
     case text_nullable;
+    //list
+    case uuid_list;
+    case list;
     // additional
     case count;
     case is_null;

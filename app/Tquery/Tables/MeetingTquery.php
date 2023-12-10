@@ -53,26 +53,39 @@ readonly class MeetingTquery extends TqService
             'name',
             'created_by.name',
         );
-        $config->addQuery(
-            TqDataTypeEnum::int,
-            fn(string $tableName) => //
-            "select count(1) from `meeting_attendants` where `meeting_attendants`.`meeting_id` = `meetings`.`id`",
-            'attendants_count',
-        );
-        $config->addQuery(
-            TqDataTypeEnum::int,
-            fn(string $tableName) => //
-                "select count(1) from `meeting_attendants` where `meeting_attendants`.`meeting_id` = `meetings`.`id`"
-                . " and `meeting_attendants`.`attendance_type` = '" . AttendanceType::Staff->value . "'",
-            'staff_count',
-        );
-        $config->addQuery(
-            TqDataTypeEnum::int,
-            fn(string $tableName) => //
-                "select count(1) from `meeting_attendants` where `meeting_attendants`.`meeting_id` = `meetings`.`id`"
-                . " and `meeting_attendants`.`attendance_type` = '" . AttendanceType::Client->value . "'",
-            'clients_count',
-        );
+        /** @var array<string, ?AttendanceType> $attendanceTypes */
+        $attendanceTypes = [
+            'attendants' => null,
+            'clients' => AttendanceType::Client,
+            'staff' => AttendanceType::Staff,
+        ];
+        foreach ($attendanceTypes as $attendanceName => $attendanceType) {
+            $where = " where `meeting_attendants`.`meeting_id` = `meetings`.`id`" . ($attendanceType
+                    ? " and `meeting_attendants`.`attendance_type` = '" . $attendanceType->value . "'" : '');
+            $config->addQuery(
+                TqDataTypeEnum::int,
+                fn(string $tableName) => //
+                    "select count(1) from `meeting_attendants`"
+                    . $where,
+                "$attendanceName.count",
+            );
+            $config->addQuery(
+                TqDataTypeEnum::uuid_list,
+                fn(string $tableName) => //
+                    "select json_arrayagg(`meeting_attendants`.`user_id`) from `meeting_attendants`"
+                    . $where,
+                "$attendanceName.ids",
+            );
+            $config->addQuery(
+                TqDataTypeEnum::list,
+                fn(string $tableName) => //
+                    // todo: remove replace after updating mariadb to 11.2.3
+                    "select json_arrayagg(replace(replace(`users`.`name`,'ó','u'),'Ó','U')) from `meeting_attendants`"
+                    . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id`"
+                    . $where,
+                "$attendanceName.names",
+            );
+        }
         $config->addCount();
         return $config;
     }
