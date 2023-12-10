@@ -9,6 +9,7 @@ use App\Models\Traits\HasCreatedBy;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Rules\MemberExistsRule;
+use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -69,10 +70,19 @@ class Meeting extends Model
             'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
             Valid::dict(DictionaryUuidEnum::AttendanceStatus, sometimes: true, nullable: true),
-            'staff.*.user_id' => Valid::uuid([new MemberExistsRule(AttendanceType::Staff)]),
-            'clients.*.user_id' => Valid::uuid([new MemberExistsRule(AttendanceType::Client)]),
+            'staff.*.user_id' => Valid::uuid([
+                new UniqueWithMemoryRule('attendant'),
+                new MemberExistsRule(AttendanceType::Staff),
+            ]),
+            'clients.*.user_id' => Valid::uuid([
+                new UniqueWithMemoryRule('attendant'),
+                new MemberExistsRule(AttendanceType::Client),
+            ]),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
-            'resources.*.resource_dict_id' => MeetingResource::fieldValidator('resource_dict_id'),
+            'resources.*.resource_dict_id' =>Valid::dict(
+                DictionaryUuidEnum::MeetingResource,
+                [new UniqueWithMemoryRule('resource')],
+            ),
         };
     }
 

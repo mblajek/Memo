@@ -30,6 +30,7 @@ abstract class ApiController extends Controller
 
     protected function validate(array $rules): array
     {
+        Valid::reset();
         return $this->request->validate($rules + ['dry_run' => Valid::bool(['declined'], sometimes: true)]);
     }
 
