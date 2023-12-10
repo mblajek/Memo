@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Utils\Date\DateHelper;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Testing\TestResponse;
@@ -26,7 +27,6 @@ abstract class TestCase extends BaseTestCase
      */
     protected static function now(): string
     {
-        return CarbonImmutable::now()->toIso8601ZuluString();
+        return DateHelper::toZuluString(CarbonImmutable::now());
     }
-
 }

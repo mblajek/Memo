@@ -27,8 +27,7 @@
   },
   "autoload": {
     "files": [
-      "app/Utils/ArrayFunctions.php",
-      "app/Utils/Validation/RulesInContext.php"
+      "app/Utils/ArrayFunctions.php"
     ],
     "psr-4": {
       "App\\": "app/",

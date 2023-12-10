@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
-use App\Rules\RequireNotNullRule;
-use App\Rules\PresentWith;
 use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
 use App\Utils\Uuid\UuidTrait;
@@ -119,8 +117,12 @@ class User extends Authenticatable
         return $this->global_admin_grant_id !== null;
     }
 
-    public static function validationRules(bool $isResource, bool $isInsert, $isPatch, User $original = null): array
-    {
+    public static function validationRules(
+        bool $isResource,
+        bool $isInsert,
+        bool $isPatch,
+        User $original = null
+    ): array {
         return [
             'name' => Valid::trimmed(['required'], sometimes: $isPatch),
             'email' =>

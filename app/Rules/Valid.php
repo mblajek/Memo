@@ -4,12 +4,12 @@ namespace App\Rules;
 
 use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
 
-use function App\Utils\array_flatten;
 use function App\Utils\process_conditional_array;
 
 /**
@@ -99,7 +99,7 @@ class Valid extends AbstractDataRule
         private readonly bool $nullable,
         array $rules,
     ) {
-        $this->rules = array_flatten(
+        $this->rules = Arr::flatten(
             array_map(function ($rule) {
                 return is_array($rule) ? process_conditional_array($rule) : $rule;
             }, $rules)

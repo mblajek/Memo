@@ -4,31 +4,27 @@ namespace Tests\Unit\Utils;
 
 use PHPUnit\Framework\TestCase;
 
-use function App\Utils\array_flatten;
+use function App\Utils\is_conditional_array;
+use function App\Utils\process_conditional_array;
 
 class ArrayFunctionsTest extends TestCase
 {
-    public function testArrayFlattenWhenNotArrayThrows()
+    public function testIsConditionalArray()
     {
-        $this->expectException(\TypeError::class);
-        $this->expectExceptionMessage('Argument #1 ($array) must be of type array');
-
-        array_flatten(new \stdClass());
+        self::assertFalse(is_conditional_array([]));
+        self::assertFalse(is_conditional_array(['a', 'b', 'c']));
+        self::assertFalse(is_conditional_array([1, 2, 3]));
+        self::assertTrue(is_conditional_array([true, 'a', 'b', 'c']));
+        self::assertTrue(is_conditional_array([false, 'a', 'b', 'c']));
+        self::assertTrue(is_conditional_array([true, false, false]));
     }
 
-    public function testArrayFlattenDoesNotModifyAssociativeArrays()
+    public function testProcessConditionalArray()
     {
-        self::assertEquals(['non' => 'list'], array_flatten(['non' => 'list']));
-    }
-
-    public function testArrayFlatten()
-    {
-        self::assertEquals([], array_flatten([]));
-        self::assertEquals([1, 2, 3], array_flatten([1, 2, 3]));
-        self::assertEquals(['a', 'b', 'c'], array_flatten(['a', 'b', 'c']));
-        self::assertEquals([1, 2, 3, 'a', 'b', 'c'], array_flatten([[1, 2, 3], 'a', 'b', 'c']));
-        self::assertEquals([1, 2, 3, 'a', 'b', 'c'], array_flatten([[1, 2, 3], ['a', 'b', 'c']]));
-        self::assertEquals([1, 2, 3, 4, 5], array_flatten([1, [2, [3, [4, [5]]]]]));
-        self::assertEquals([1, 2, 3, 4, 5], array_flatten([[[[[1], 2], 3], 4], 5]));
+        self::assertEquals([], process_conditional_array([false, 'a', 'b', 'c']));
+        self::assertEquals(['a', 'b', 'c'], process_conditional_array([true, 'a', 'b', 'c']));
+        self::assertEquals([], process_conditional_array([true]));
+        self::assertEquals(['a', 'b', 'c'], process_conditional_array(['a', 'b', 'c']));
+        self::assertEquals([], process_conditional_array([]));
     }
 }

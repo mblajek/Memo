@@ -4,9 +4,9 @@ namespace App\Utils\Validation;
 
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Validation\Rules\Unique;
 
-use function App\Utils\array_flatten;
 use function App\Utils\process_conditional_array;
 use function App\Utils\is_conditional_array;
 
@@ -70,7 +70,7 @@ trait HasValidator
                 return process_conditional_array($fieldRules);
             }
 
-            return array_flatten(
+            return Arr::flatten(
                 array_map(function ($subRules) {
                     if (!is_array($subRules)) {
                         return $subRules;
