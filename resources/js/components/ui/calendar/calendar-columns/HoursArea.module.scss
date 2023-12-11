@@ -1,0 +1,21 @@
+.hoursArea {
+  @apply w-full h-full overflow-clip;
+  @apply relative;
+
+  .block {
+    @apply absolute overflow-clip;
+  }
+
+  .eventsArea {
+    @apply h-full ml-px;
+    @apply relative z-10; // For events positioning.
+    // Leave enough room on the right for labeled blocks.
+    margin-right: 11px;
+
+    .event {
+      @apply absolute overflow-clip pt-px;
+      // For some reason this value sometimes gives better rounding than 1px.
+      padding-right: 1.05px;
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import {createMutation} from "@tanstack/solid-query";
-import {FormType} from "components/felte-form";
+import {FormType} from "components/felte-form/FelteForm";
 import {trimInput} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
@@ -8,8 +8,8 @@ import toast from "solid-toast";
 import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
 
 interface Props {
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  readonly onSuccess?: () => void;
+  readonly onCancel?: () => void;
 }
 
 /** Produces best effort suggestion for the url, e.g. "My Facility Name" --> "my-facility-name" */

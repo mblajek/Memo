@@ -9,13 +9,17 @@ const APP_COLORS = {
   // A light blue color for currently selected areas of active elements.
   "select": "#b7e8f6",
   // A light grey color for the background of disabled elements.
-  "disabled": "#f0e8e8",
+  "disabled": "#ece8e8",
   // A grey color for the border of input elements.
   "input-border": "#b0b0b0",
 };
 
 const Z_INDEX = {
   modal: "1000",
+  // Higher than modal, because a dropdown on the main page will normally close when opening a modal,
+  // and dropdowns on modals need to be on top of it.
+  // TODO: Consider doing this better.
+  dropdown: "1100",
   fullScreenLoader: "2000",
 };
 
@@ -32,6 +36,13 @@ export default {
       minHeight: {
         "big-input": "2.5rem",
         "small-input": "1.8rem",
+      },
+      fontWeight: {
+        "weight-medium": "500",
+      },
+      listStyleType: {
+        // Reduce spacing between the disc and the text when using list-disc.
+        disc: "'⦁ '",
       },
     },
     fontFamily: {

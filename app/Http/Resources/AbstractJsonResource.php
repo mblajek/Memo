@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Utils\Date\DateHelper;
 use Closure;
 use DateTimeInterface;
@@ -14,6 +15,11 @@ abstract class AbstractJsonResource extends JsonResource
     abstract protected static function getMappedFields(): array;
 
     private static array $classMappedFields = [];
+
+    protected function withAttrValues(): bool
+    {
+        return false;
+    }
 
     public static function makeOrNull($resource): ?JsonResource
     {
@@ -43,6 +49,14 @@ abstract class AbstractJsonResource extends JsonResource
                 $property = DateHelper::toZuluString($property);
             }
             $result[$propertyName] = $property;
+        }
+        if ($this->withAttrValues()) {
+            $resource = $this->resource;
+            if (method_exists($resource, 'attrValues')) {
+                $result += $resource->attrValues();
+            } else {
+                FatalExceptionFactory::unexpected()->throw();
+            }
         }
         return $result;
     }

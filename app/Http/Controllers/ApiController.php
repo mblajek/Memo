@@ -30,6 +30,7 @@ abstract class ApiController extends Controller
 
     protected function validate(array $rules): array
     {
+        Valid::reset();
         return $this->request->validate($rules + ['dry_run' => Valid::bool(['declined'], sometimes: true)]);
     }
 
@@ -54,11 +55,12 @@ abstract class ApiController extends Controller
     protected function getPermissionObject(): PermissionObject
     {
         if (empty($this->permissionObject)) {
-            $this->permissionObject = $this->request->attributes->get(PermissionMiddleware::PERMISSIONS_KEY);
+            $this->permissionObject = PermissionMiddleware::permissions();
         }
         return $this->permissionObject;
     }
 
+    /** Require permission in initPermissions() */
     protected function permissionOneOf(Permission ...$permissions): ControllerMiddlewareOptions
     {
         return $this->middleware(

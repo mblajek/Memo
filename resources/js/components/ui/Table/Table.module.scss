@@ -1,55 +1,55 @@
 .tableContainer {
   @apply flex flex-col items-stretch gap-1;
 
-  .aboveTable,
-  .belowTable {
+  > .aboveTable,
+  > .belowTable {
     @apply basis-0;
   }
 
-  .scrollingWrapper {
+  > .scrollingWrapper {
     @apply overflow-x-auto;
 
-    .tableBg {
-      @apply w-max bg-gray-300 mr-6;
+    > .tableBg {
+      @apply w-max bg-gray-300 mr-16;
 
-      .table {
+      > .table {
         @apply grid p-px gap-px;
 
-        .headerRow {
+        > .headerRow {
           @apply contents;
 
-          .cell {
+          > .cell {
             @apply outline outline-1 outline-gray-400 bg-gray-100;
             min-height: 30px;
           }
         }
 
-        .dataRow {
+        > .dataRow {
           @apply contents;
 
-          .cell {
-            @apply bg-white text-black rounded-sm px-2 py-1 flex items-center overflow-hidden;
+          > .cell {
+            @apply bg-white text-black rounded-sm px-1.5 py-1 flex items-center overflow-hidden;
             min-height: 30px;
           }
 
-          &:hover .cell {
+          &:hover > .cell {
             @apply bg-hover;
           }
         }
 
-        .wideRow {
+        > .wideRow {
           grid-column: 1 / -1;
           @apply bg-white p-2 text-gray-500 text-center;
         }
 
-        .bottomBorder {
+        > .bottomBorder {
           grid-column: 1 / -1;
           @apply border-b border-b-gray-300;
           margin-top: -5px;
         }
 
         &.dimmed {
-          .dataRow .cell {
+          > .dataRow > .cell {
             @apply bg-opacity-70 text-opacity-30;
           }
         }
@@ -60,16 +60,16 @@
   &.standalone {
     @apply w-full h-full p-2 pr-0;
 
-    .aboveTable,
-    .belowTable {
+    > .aboveTable,
+    > .belowTable {
       @apply pr-2;
     }
 
-    .table {
-      .headerRow .cell {
+    > .scrollingWrapper > .tableBg > .table {
+      > .headerRow > .cell {
         @apply sticky top-px;
       }
-      .bottomBorder {
+      > .bottomBorder {
         @apply sticky;
         bottom: 0;
       }

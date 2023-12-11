@@ -9,6 +9,9 @@ export type DictionaryName = NameString;
  */
 export type DictionaryPositionName = NameString;
 
+/**
+ * @see `/app/Http/Resources/DictionaryResource.php`
+ */
 export interface DictionaryResource {
   readonly id: string;
   /** The facility that owns this dictionary, or null for global dictionary. */
@@ -23,8 +26,13 @@ export interface DictionaryResource {
   readonly isFixed: boolean;
   /** Whether the admins can add positions to the dictionary. */
   readonly isExtendable: boolean;
+  /** The ids of attributes that are applied to every position in the dictionary. This is an attribute. */
+  readonly positionRequiredAttributes?: readonly string[];
 }
 
+/**
+ * @see `/app/Http/Resources/PositionResource.php`
+ */
 export interface PositionResource {
   readonly id: string;
   readonly dictionaryId: string;

@@ -1,3 +1,5 @@
+app_name: "Memo"
+
 exception:
   configuration:
     translation: "Błędna konfiguracja tłumaczeń"
@@ -26,8 +28,8 @@ auth:
 unverified_user: "Użytkownik niezweryfikowany"
 
 bool_values:
-  yes: "Tak"
-  no: "Nie"
+  yes: "tak"
+  no: "nie"
 
 range:
   from: "od:"
@@ -36,6 +38,7 @@ range:
   max: "max:"
 
 quoted: "„{{text}}”"
+parenthesised: "({{text}})"
 with_colon: "{{text}}:"
 
 more_info: "Więcej informacji"
@@ -43,3 +46,4 @@ more_info: "Więcej informacji"
 select:
   no_items: "Brak opcji"
   no_matching_items: "Brak pasujących opcji"
+  limit_exceeded: "Wpisz filtr, aby zobaczyć inne opcje"

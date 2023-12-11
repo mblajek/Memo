@@ -1,5 +1,6 @@
 import {JSX} from "solid-js";
 import {cx} from "./classnames";
+import {DOMElement} from "solid-js/jsx-runtime";
 
 /**
  * A collection of super-interfaces for props for components that accept HTML element attributes,
@@ -34,18 +35,33 @@ export namespace htmlAttributes {
   export type form = JSX.HTMLElementTags["form"];
   export type label = JSX.HTMLElementTags["label"];
   export type input = JSX.HTMLElementTags["input"];
+  export type textarea = JSX.HTMLElementTags["textarea"];
   export type select = JSX.HTMLElementTags["select"];
 
-  export function merge<A extends object, O extends Pick<div, "class" | "style">>(
+  export type pre = JSX.HTMLElementTags["pre"];
+
+  /** The events that can be overridden in a merge. Add more elements as needed. */
+  const EVENT_HANDLERS = [
+    "onInput",
+    "onChange",
+    "onClick",
+    "onDblClick",
+    "onMouseMove",
+    "onMouseDown",
+    "onMouseUp",
+  ] satisfies (keyof div)[];
+  type EventType = (typeof EVENT_HANDLERS)[number];
+
+  export function merge<A extends object, O extends Pick<div, "class" | "style" | EventType>>(
     attributes: A | undefined,
     overrides: O,
   ) {
     const attribs = (attributes || {}) as Partial<Record<string, unknown>>;
     const result = {...attribs, ...overrides};
-    if (attribs.class && overrides.class) {
+    if (attribs.class !== undefined && overrides.class !== undefined) {
       result.class = cx(attribs.class as string, overrides.class);
     }
-    if (attribs.style && overrides.style) {
+    if (attribs.style !== undefined && overrides.style !== undefined) {
       if (typeof attribs.style !== typeof overrides.style)
         throw new Error(
           `Cannot merge style from attributes (${JSON.stringify(
@@ -57,6 +73,27 @@ export namespace htmlAttributes {
           ? `${attribs.style} ; ${overrides.style}`
           : {...attribs.style, ...(overrides.style as JSX.CSSProperties)};
     }
+    for (const eventHandler of EVENT_HANDLERS) {
+      if (attribs[eventHandler] && overrides[eventHandler]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        result[eventHandler] = (event: any) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          callHandler(overrides[eventHandler]! as any, event);
+          callHandler(attribs[eventHandler] as JSX.EventHandlerUnion<HTMLElement, Event>, event);
+        };
+      }
+    }
     return result as A & O;
+  }
+
+  export function callHandler<T, E extends Event>(
+    handler: JSX.EventHandlerUnion<T, E>,
+    event: E & {currentTarget: T; target: DOMElement},
+  ) {
+    if (typeof handler === "function") {
+      handler(event);
+    } else {
+      handler[0](handler[1], event);
+    }
   }
 }

@@ -8,7 +8,7 @@ import {makeSelectItem} from "./select_items";
 import {FilterControlProps} from "./types";
 
 interface StringColumnProps extends FilterControlProps {
-  columnType: "string" | "text";
+  readonly columnType: "string" | "text";
 }
 
 export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) => {
@@ -92,21 +92,22 @@ export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) =>
   const inputUsed = () => mode() === "~" || mode() === "=" || mode() === ".*";
   return (
     <div class={s.filterLine}>
-      <Select
-        class="w-10"
-        name={`table_filter_op_${props.name}`}
-        items={items()}
-        value={mode()}
-        onValueChange={(value) => setMode(value!)}
-        nullable={false}
-        small
-      />
+      <div class="w-10">
+        <Select
+          name={`table_filter_op_${props.name}`}
+          items={items()}
+          value={mode()}
+          onValueChange={(value) => setMode(value!)}
+          nullable={false}
+          small
+        />
+      </div>
       <div class={s.wideEdit}>
         <input
           name={`table_filter_val_${props.name}`}
           type="search"
           autocomplete="off"
-          class="h-full w-full border border-input-border rounded"
+          class="h-full w-full min-h-small-input border border-input-border rounded"
           value={inputUsed() ? text() : ""}
           maxlength={inputUsed() ? undefined : 0}
           disabled={!inputUsed()}

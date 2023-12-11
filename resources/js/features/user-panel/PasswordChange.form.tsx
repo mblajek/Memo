@@ -1,6 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {FelteForm, FelteSubmit} from "components/felte-form";
+import {FelteForm} from "components/felte-form/FelteForm";
+import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {TextField} from "components/ui/form/TextField";
 import {useLangFunc} from "components/utils";
@@ -27,8 +28,8 @@ export namespace PasswordChangeForm {
   export type Output = z.output<ReturnType<typeof getSchema>>;
 
   interface Props {
-    onSuccess?: () => void;
-    onCancel?: () => void;
+    readonly onSuccess?: () => void;
+    readonly onCancel?: () => void;
   }
 
   export const Component: VoidComponent<Props> = (props) => {
@@ -59,6 +60,7 @@ export namespace PasswordChangeForm {
         schema={getSchema()}
         initialValues={getInitialValues()}
         class="flex flex-col gap-2"
+        preventTabClose={false}
       >
         <input
           // For better integration with password managers.
@@ -70,7 +72,7 @@ export namespace PasswordChangeForm {
           value={statusQuery.data?.user.email}
           class="hidden"
         />
-        <TextField name="current" type="password" autocomplete="current-password" />
+        <TextField name="current" type="password" autocomplete="current-password" autofocus />
         <TextField name="password" type="password" autocomplete="new-password" />
         <TextField name="repeat" type="password" autocomplete="new-password" />
         <FelteSubmit cancel={props.onCancel} />

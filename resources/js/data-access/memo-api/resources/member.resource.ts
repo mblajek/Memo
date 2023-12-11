@@ -1,5 +1,5 @@
 /**
- * @see `/app/Http/Resources/MemebrResource.php`
+ * @see `/app/Http/Resources/MemeberResource.php`
  */
 export type MemberResource = {
   id: string;

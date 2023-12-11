@@ -7,13 +7,13 @@ interface Props {
    * Number of rows. Must be specified for backend tables where it cannot be taken from the
    * table object.
    */
-  rowsCount?: number;
+  readonly rowsCount?: number;
 }
 
 export const TableSummary: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const table = useTable();
-  const count = () => props.rowsCount ?? table.getRowModel().rows.length;
+  const count = () => props.rowsCount ?? table.getCoreRowModel().rows.length;
   return (
     <div class="w-auto flex items-center">
       <Show

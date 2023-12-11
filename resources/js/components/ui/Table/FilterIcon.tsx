@@ -5,9 +5,9 @@ import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 
 interface Props {
-  isFiltering?: boolean;
-  class?: string;
-  onClear?: () => void;
+  readonly isFiltering?: boolean;
+  readonly class?: string;
+  readonly onClear?: () => void;
 }
 
 export const FilterIcon: VoidComponent<Props> = (props) => {
@@ -23,8 +23,8 @@ export const FilterIcon: VoidComponent<Props> = (props) => {
           : t("tables.filter.filter_cleared")
       }
       classList={{"cursor-pointer": props.isFiltering}}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
+      onMouseEnter={[setHover, true]}
+      onMouseLeave={[setHover, false]}
       onClick={() => props.onClear?.()}
     >
       <Dynamic

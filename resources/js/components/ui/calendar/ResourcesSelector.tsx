@@ -5,10 +5,10 @@ import {EMPTY_VALUE_SYMBOL} from "../symbols";
 export type ResourcesSelectionMode = "radio" | "checkbox";
 
 interface Props extends htmlAttributes.div {
-  resourceGroups?: readonly ResourceGroup[];
-  mode: ResourcesSelectionMode;
-  selection: ReadonlySet<string>;
-  setSelection: (ids: ReadonlySet<string>) => void;
+  readonly resourceGroups?: readonly ResourceGroup[];
+  readonly mode: ResourcesSelectionMode;
+  readonly selection: ReadonlySet<string>;
+  readonly setSelection: (ids: ReadonlySet<string>) => void;
 }
 
 export interface ResourceGroup {
@@ -21,14 +21,11 @@ export interface Resource {
   readonly label: () => JSX.Element;
 }
 
-/**
- * A vertical list of people and resources, with checkboxes or radio buttons, depending on mode.
- */
+/** A vertical list of people and resources, with checkboxes or radio buttons, depending on mode. */
 export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["resourceGroups", "mode", "selection", "setSelection"]);
-  let div: HTMLDivElement | undefined;
   return (
-    <div ref={div} {...htmlAttributes.merge(divProps, {class: "flex flex-col gap-2"})}>
+    <div {...htmlAttributes.merge(divProps, {class: "flex flex-col gap-2"})}>
       <For each={props.resourceGroups}>
         {({label, resources}, i) => {
           const checkboxId = () => (props.mode === "checkbox" ? `resourceGroup_${i()}` : undefined);
@@ -74,6 +71,11 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                         }
                       }
                       props.setSelection(sel);
+                    }}
+                    onDblClick={() => {
+                      if (resources.length) {
+                        props.setSelection(new Set(resources.map((r) => r.id)));
+                      }
                     }}
                   />
                   {label()}

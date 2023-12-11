@@ -1,32 +1,37 @@
-import {Navigate, Outlet, Route, Routes, useParams} from "@solidjs/router";
+import {Navigate, Route, RouteProps, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api/groups";
-import {NotFound, NotYetImplemented} from "features/not-found/components";
-import {DEV, Show, lazy, type VoidComponent} from "solid-js";
+import {DEV, ParentComponent, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
+import {Dynamic} from "solid-js/web";
+import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
+import {DevRoutes} from "./dev-pages/DevRoutes";
+import {NotFound} from "./features/not-found/components/NotFound";
+import {NotYetImplemented} from "./features/not-found/components/NotYetImplemented";
+import {MemoTitle} from "./features/root/MemoTitle";
 
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
-const TestPage = lazy(() => import("TestPage"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   return (
-    <Routes>
-      <Route path="/login" component={LoginPage} />
+    <>
+      <LeafRoute routeKey="login" path="/login" component={LoginPage} />
       <Route path="/" component={RootPage}>
         <UnknownNotFound />
+        <Route path="/" component={() => <Navigate href="/help" />} />
         <Show when={DEV}>
-          <Route path="/test-page" component={TestPage} />
+          <DevRoutes />
         </Show>
-        <Route path="/help" component={NotYetImplemented} />
+        <LeafRoute routeKey="help" path="/help" component={NotYetImplemented} />
         <Route path="/admin" component={GlobalAdminPages}>
           <UnknownNotFound />
-          <Route path="/facilities" component={AdminFacilitiesListPage} />
-          <Route path="/users" component={AdminUsersListPage} />
+          <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
+          <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
         </Route>
       </Route>
       <Route
@@ -35,61 +40,81 @@ const App: VoidComponent = () => {
         component={RootPageWithFacility}
       >
         <UnknownNotFound />
-        <Route path="/" element={<Navigate href="home" />} />
-        <Route path="/home" component={NotYetImplemented} />
-        <Route path="/meetings" component={NotYetImplemented} />
+        <Route path="/" component={() => <Navigate href="home" />} />
+        <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
+        <LeafRoute routeKey="facility.meetings" path="/meetings" component={NotYetImplemented} />
         <Route path="/" component={FacilityStaffPages}>
-          <Route path="/calendar" component={NotYetImplemented} />
-          <Route path="/timetable" component={NotYetImplemented} />
-          <Route path="/clients" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.calendar" path="/calendar" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.timetable" path="/timetable" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.clients" path="/clients" component={NotYetImplemented} />
         </Route>
         <Route path="/admin" component={FacilityAdminPages}>
           <UnknownNotFound />
-          {/* This is a temporary location for the calendar. */}
-          <Route path="/calendar" component={CalendarPage} />
-          <Route path="/clients" component={NotYetImplemented} />
-          <Route path="/staff" component={NotYetImplemented} />
-          <Route path="/reports" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.admin.calendar" path="/calendar" component={CalendarPage} />
+          <LeafRoute routeKey="facility.admin.clients" path="/clients" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.admin.staff" path="/staff" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.admin.reports" path="/reports" component={NotYetImplemented} />
         </Route>
       </Route>
-    </Routes>
+      <BackdoorRoutes />
+    </>
   );
 };
 export default App;
 
+type LeafRouteProps<S extends string> = RouteProps<S> &
+  Required<Pick<RouteProps<S>, "component">> & {
+    /** A translations sub-key in routes defining the page title. */
+    routeKey: string;
+  };
+
+/** A leaf route for a page, also setting the page title based on routeKey. */
+const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => {
+  const [props, routeProps] = splitProps(allProps, ["routeKey", "component"]);
+  return (
+    <Route
+      {...routeProps}
+      component={(innerProps) => (
+        <>
+          <MemoTitle routeKey={props.routeKey} />
+          <Dynamic component={props.component} {...innerProps} />
+        </>
+      )}
+    />
+  );
+};
+
 const UnknownNotFound: VoidComponent = () => <Route path="/*" component={NotFound} />;
 
-const GlobalAdminPages: VoidComponent = () => (
-  <AccessBarrier roles={["globalAdmin"]}>
-    <Outlet />
-  </AccessBarrier>
+const GlobalAdminPages: ParentComponent = (props) => (
+  <AccessBarrier roles={["globalAdmin"]}>{props.children}</AccessBarrier>
 );
 
-const RootPageWithFacility: VoidComponent = () => {
+const RootPageWithFacility: ParentComponent = (props) => {
   const params = useParams();
   return (
     <RootPage facilityUrl={params.facilityUrl}>
       <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityMember"]}>
-        <Outlet />
+        {props.children}
       </AccessBarrier>
     </RootPage>
   );
 };
 
-const FacilityStaffPages: VoidComponent = () => {
+const FacilityStaffPages: ParentComponent = (props) => {
   const params = useParams();
   return (
     <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityStaff"]}>
-      <Outlet />
+      {props.children}
     </AccessBarrier>
   );
 };
 
-const FacilityAdminPages: VoidComponent = () => {
+const FacilityAdminPages: ParentComponent = (props) => {
   const params = useParams();
   return (
     <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityAdmin"]}>
-      <Outlet />
+      {props.children}
     </AccessBarrier>
   );
 };

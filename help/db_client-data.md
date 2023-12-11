@@ -46,25 +46,25 @@
 
 może np. istnieć jeszcze kolumna regexp
 
-| id | facility_id | table   | model  | name             | api_name                  | type     | dictionary_id | default_order | is_multi_value | requirement_level |
-|----|-------------|---------|--------|------------------|---------------------------|----------|---------------|---------------|----------------|-------------------|
-| 41 | null        | clients | client | gender           | gender_dict_id            | dict     | 21            | 1             | null           | recommended       |
-| 42 | null        | clients | client | offender_genders | offender_genders_dict_ids | dict     | 21            | 3             | true           | empty             |
-| 43 | 11          | clients | client | +powiat wlkp     | powiat_wlkp_c25b_dict_id  | dict     | 22            | 5             | false          | recommended       |
-| 44 | 11          | clients | client | +decyzja zespołu | decyzja_zespolu_d2b4      | string   |               | 6             | false          | empty             |
-| 45 | 11          | clients | client | +wiek sprawcy    | wiek_sprawcy_d5c1         | decimal0 |               | 4             | true           | empty             |
-| 46 | 11          | clients | client | contact_persons  | contact_persons_ids       | clients  |               | 2             | true           | optional          |
+| id | facility_id | table   | name             | api_name                  | type    | dictionary_id | default_order | is_multi_value | requirement_level |
+|----|-------------|---------|------------------|---------------------------|---------|---------------|---------------|----------------|-------------------|
+| 41 | null        | clients | gender           | gender_dict_id            | dict    | 21            | 1             | null           | recommended       |
+| 42 | null        | clients | offender_genders | offender_genders_dict_ids | dict    | 21            | 3             | true           | empty             |
+| 43 | 11          | clients | +powiat wlkp     | powiat_wlkp_c25b_dict_id  | dict    | 22            | 5             | false          | recommended       |
+| 44 | 11          | clients | +decyzja zespołu | decyzja_zespolu_d2b4      | string  |               | 6             | false          | empty             |
+| 45 | 11          | clients | +wiek sprawcy    | wiek_sprawcy_d5c1         | int     |               | 4             | true           | empty             |
+| 46 | 11          | clients | contact_persons  | contact_persons_ids       | clients |               | 2             | true           | optional          |
 
 ##### Value
 
 value może być rozbite na number_value, string_value, datetime_value
 
-| id | column_id | object_id | position_id | client_id | value |
-|----|-----------|-----------|-------------|-----------|-------|
-| 52 | 42        | 1         | 31          |           |       |
-| 53 | 42        | 1         | 32          |           |       |
-| 54 | 43        | 1         | 36          |           |       |
-| 55 | 44        | 1         |             |           | "abc" |
-| 56 | 45        | 1         |             |           | "35"  |
-| 57 | 45        | 1         |             |           | "41"  |
-| 58 | 46        | 1         |             | 2         |       |
+| id | attribute_id | object_id | ref_dict_id | ref_object_id | value |
+|----|--------------|-----------|-------------|---------------|-------|
+| 52 | 42           | 1         | 31          |               |       |
+| 53 | 42           | 1         | 32          |               |       |
+| 54 | 43           | 1         | 36          |               |       |
+| 55 | 44           | 1         |             |               | "abc" |
+| 56 | 45           | 1         |             |               | "35"  |
+| 57 | 45           | 1         |             |               | "41"  |
+| 58 | 46           | 1         |             | 2             |       |

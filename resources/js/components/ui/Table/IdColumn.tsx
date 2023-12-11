@@ -3,7 +3,7 @@ import {CopyToClipboard} from "../CopyToClipboard";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
 
 interface Props {
-  id: string | undefined;
+  readonly id: string | undefined;
 }
 
 /** A component for displaying a copiable id, truncated to take less space. */

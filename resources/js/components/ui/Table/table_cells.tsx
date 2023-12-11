@@ -3,6 +3,7 @@ import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT, useLangFunc} from "compone
 import {DateTime} from "luxon";
 import {JSX, Show} from "solid-js";
 import {Header} from "./Header";
+import {IdColumn} from "./IdColumn";
 
 /** The component used as header in column definition. */
 export type HeaderComponent = <T>(ctx: HeaderContext<T, unknown>) => JSX.Element;
@@ -26,13 +27,17 @@ export function useTableCells() {
     date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
     datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
     int: cellFunc<number>((v) => <span class="w-full text-right">{NUMBER_FORMAT.format(v)}</span>),
+    uuid: cellFunc<string>((v) => <IdColumn id={v} />),
   };
 }
 
-export function cellFunc<V>(func: (v: V) => JSX.Element | undefined, fallback?: () => JSX.Element): CellComponent {
-  return (c) => (
-    <Show when={c.getValue() != null} fallback={fallback?.()}>
-      {func(c.getValue() as V)}
+export function cellFunc<V>(
+  func: <T>(v: V, ctx: CellContext<T, unknown>) => JSX.Element | undefined,
+  fallback?: () => JSX.Element,
+): CellComponent {
+  return (ctx) => (
+    <Show when={ctx.getValue() != null} fallback={fallback?.()}>
+      {func(ctx.getValue() as V, ctx)}
     </Show>
   );
 }

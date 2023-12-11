@@ -4,15 +4,15 @@ import {Capitalize} from "./Capitalize";
 
 interface Props {
   /** The highest priority source. */
-  override?: () => JSX.Element;
+  readonly override?: () => JSX.Element;
   /** The second-highest priority source. */
-  langFunc?: LangEntryFunc | [func?: LangPrefixFunc, subKey?: string];
+  readonly langFunc?: LangEntryFunc | [func?: LangPrefixFunc, subKey?: string];
   /** Whether to capitalize. Applies to the result of the lang func only. */
-  capitalize?: boolean;
+  readonly capitalize?: boolean;
   /** The last source. */
-  fallbackCode?: string;
+  readonly fallbackCode?: string;
   /* The function that wraps the computed text. Called with no argument if there is no text. */
-  wrapIn?: (text?: JSX.Element) => JSX.Element;
+  readonly wrapIn?: (text?: JSX.Element) => JSX.Element;
 }
 
 /**

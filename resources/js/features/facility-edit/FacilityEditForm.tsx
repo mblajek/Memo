@@ -4,15 +4,15 @@ import {Admin, System} from "data-access/memo-api/groups";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {FacilityForm, FacilityFormOutput} from "./FacilityForm";
+import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
 
 interface FormParams {
   id: Api.Id;
 }
 
 interface Props extends FormParams {
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  readonly onSuccess?: () => void;
+  readonly onCancel?: () => void;
 }
 
 export const FacilityEditForm: VoidComponent<Props> = (props) => {
@@ -45,10 +45,13 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
   }
 
   const initialValues = () => {
-    return {
-      name: oldFacility()?.name,
-      url: oldFacility()?.url,
-    };
+    const facility = oldFacility();
+    return facility
+      ? ({
+          name: facility.name,
+          url: facility.url,
+        } satisfies FacilityFormInput)
+      : {};
   };
 
   return (

@@ -4,7 +4,7 @@ import {CopyToClipboard} from "./CopyToClipboard";
 import {EMPTY_VALUE_SYMBOL} from "./symbols";
 
 interface Props extends htmlAttributes.div {
-  email: string | undefined;
+  readonly email: string | undefined;
 }
 
 /** A component for displaying a copiable email address. No mailto. */

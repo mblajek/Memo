@@ -2,8 +2,8 @@ import {VoidComponent, splitProps} from "solid-js";
 import {cx, htmlAttributes} from "../utils";
 
 interface Props extends htmlAttributes.span {
-  text: string | undefined;
-  capitalize?: boolean;
+  readonly text: string | undefined;
+  readonly capitalize?: boolean;
 }
 
 /** Displays a span with the specified text with its first letter capitalised using CSS. */

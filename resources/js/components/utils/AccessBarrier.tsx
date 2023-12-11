@@ -1,7 +1,7 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {System, User} from "data-access/memo-api/groups";
-import {PermissionsResource} from "data-access/memo-api/resources";
+import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
 import {ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
 import {MemoLoader} from "../ui/MemoLoader";
 import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
@@ -12,7 +12,7 @@ export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "P
   /**
    * Component rendered when access is not granted
    */
-  Fallback?: VoidComponent;
+  readonly Fallback?: VoidComponent;
   /**
    * Map of roles that user must be granted in order to access this section
    * (logical AND)
@@ -21,11 +21,11 @@ export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "P
    *
    * @default []
    */
-  roles?: PermissionKey[];
+  readonly roles?: readonly PermissionKey[];
   /**
    * FacilityUrl available in params object (useParams)
    */
-  facilityUrl?: string;
+  readonly facilityUrl?: string;
 }
 
 /** The roles for which querying facility permissions is necessary. */

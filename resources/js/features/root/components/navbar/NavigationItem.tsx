@@ -1,19 +1,26 @@
 import {A, AnchorProps} from "@solidjs/router";
 import {useQueryClient} from "@tanstack/solid-query";
-import {cx, htmlAttributes} from "components/utils";
+import {Capitalize} from "components/ui/Capitalize";
+import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {IconTypes} from "solid-icons";
-import {ParentComponent, splitProps} from "solid-js";
+import {Show, VoidComponent, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 
-export interface NavigationItemProps extends AnchorProps {
-  icon: IconTypes;
+export interface NavigationItemProps extends Omit<AnchorProps, "children"> {
+  readonly icon: IconTypes;
+  /**
+   * A translations sub-key in routes defining the page title.
+   * Used directly as the page title if key is missing - only to be used for dev pages.
+   */
+  readonly routeKey: string;
 }
 
 /** Marker class to detect navigation item activity. */
 const ACTIVE_ITEM_CLASS = "__activeNavItem";
 
-export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) => {
-  const [props, aProps] = splitProps(allProps, ["children", "icon"]);
+export const NavigationItem: VoidComponent<NavigationItemProps> = (allProps) => {
+  const [props, aProps] = splitProps(allProps, ["icon", "routeKey"]);
+  const t = useLangFunc();
   const queryClient = useQueryClient();
   return (
     <A
@@ -28,7 +35,9 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
       }}
     >
       <Dynamic component={props.icon} size="25" />
-      <span>{props.children}</span>
+      <Show when={t(`routes.${props.routeKey}`, {defaultValue: ""})} fallback={props.routeKey}>
+        {(text) => <Capitalize text={text()} />}
+      </Show>
     </A>
   );
 };

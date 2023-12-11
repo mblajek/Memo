@@ -58,8 +58,8 @@
 - Php Inspections (EA Extended) - jeżeli przywrócą kompatybilność z najnowszym PhpStorm'em
 
 ### Laravel
-- jezeli implementacja endpointu ma całą jedną linię, niez zostanie w kontrolerze
-- unit testy raczej nie, feature testy jeżeli według uznania lub jeżeli są w zadaniu
+- jeżeli implementacja endpointu ma całą jedną linię, niech zostanie w kontrolerze
+- unit testy i feature testy według uznania lub jeżeli są dopisane w zadaniu, że mają być
 
 ### Jira
 - \[B\] - backend, \[F\] - frontend, \[K\] - praca koncepcyjna

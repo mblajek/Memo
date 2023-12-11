@@ -7,7 +7,7 @@
   [data-part="next-trigger"],
   [data-part="item"],
   [data-part="ellipsis"] {
-    @apply px-1 border border-input-border rounded flex justify-center items-center;
+    @apply px-1 border border-input-border bg-white rounded flex justify-center items-center;
 
     &[data-disabled] {
       @apply border-opacity-50;
@@ -23,12 +23,12 @@
 
   [data-part="prev-trigger"],
   [data-part="next-trigger"] {
-    min-width: 4em;
+    min-width: 4rem;
   }
 
   [data-part="item"],
   [data-part="ellipsis"] {
-    min-width: 2em;
+    min-width: 2rem;
 
     &[data-selected] {
       @apply bg-hover;

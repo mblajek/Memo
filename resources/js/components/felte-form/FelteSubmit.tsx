@@ -9,9 +9,9 @@ interface Props extends htmlAttributes.button {
    * The cancel handler. If present, there will be a cancel button to the right of the submit button.
    * The value is the handler called on cancel click. Default: no cancel.
    */
-  cancel?: () => void;
+  readonly cancel?: () => void;
   /** Whether to include the unknown validation messages above the button. Default: true. */
-  includeUnknownValidationMessages?: boolean;
+  readonly includeUnknownValidationMessages?: boolean;
 }
 
 /**

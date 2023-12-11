@@ -15,3 +15,17 @@ meetingCategory:
 meetingType:
   _name: "typ spotkania"
   other: "inne"
+
+meetingStatus:
+  _name: "status spotkania"
+  planned: "zaplanowane"
+  completed: "zakończone"
+  cancelled: "odwołane"
+
+meetingResource:
+  _name: "zasób"
+
+attendanceStatus:
+  _name: "status obecności"
+  present: "obecność"
+  absent: "nieobecność"

@@ -4,9 +4,9 @@ import {useLangFunc} from "../utils";
 import {Button} from "./Button";
 
 interface Props {
-  text: string | undefined;
+  readonly text: string | undefined;
   /** Whether the text should be displayed on hover. */
-  textInTitle?: boolean;
+  readonly textInTitle?: boolean;
 }
 
 /** A "Copy to clipboard" icon, copying the specified text on click. */

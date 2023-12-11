@@ -1,10 +1,11 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
-import {FelteForm, FelteSubmit} from "components/felte-form";
+import {FelteForm} from "components/felte-form/FelteForm";
+import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {FullLogo} from "components/ui/FullLogo";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {TextField} from "components/ui/form/TextField";
-import {getTrimInputHandler} from "components/ui/form/util";
+import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {User} from "data-access/memo-api/groups";
 import {VoidComponent, createSignal} from "solid-js";
 import {z} from "zod";
@@ -25,7 +26,7 @@ export namespace LoginForm {
   export type Output = z.output<ReturnType<typeof getSchema>>;
 
   interface Props {
-    onSuccess?: () => void;
+    readonly onSuccess?: () => void;
   }
 
   export const Component: VoidComponent<Props> = (props) => {
@@ -50,8 +51,9 @@ export namespace LoginForm {
         schema={getSchema()}
         initialValues={getInitialValues()}
         class="flex flex-col gap-2"
+        preventTabClose={false}
       >
-        <TextField name="email" type="email" autocomplete="username" onBlur={getTrimInputHandler()} />
+        <TextField name="email" type="email" autocomplete="username" {...TRIM_ON_BLUR} autofocus />
         <TextField name="password" type="password" autocomplete="current-password" />
         <FelteSubmit />
       </FelteForm>

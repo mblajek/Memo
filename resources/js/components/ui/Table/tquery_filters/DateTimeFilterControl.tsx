@@ -18,13 +18,13 @@ type DateTimeRangeFilter =
   | (DateColumnFilter & {op: "="});
 
 interface DateTimeColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  columnType?: "datetime";
+  readonly columnType?: "datetime";
   /** Whether the inputs should set date and time. Default is only date. */
-  useDateTimeInputs?: boolean;
+  readonly useDateTimeInputs?: boolean;
 }
 
 interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  columnType: "date";
+  readonly columnType: "date";
 }
 
 type Props = DateColumnProps | DateTimeColumnProps;
@@ -123,7 +123,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <input
           name={`table_filter_from_${props.name}`}
           type={inputsType()}
-          class="h-full w-full border border-input-border rounded"
+          class="w-full min-h-small-input border border-input-border rounded"
           max={upper()}
           value={lower()}
           onInput={({target: {value}}) => setLower(value)}
@@ -134,7 +134,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <input
           name={`table_filter_to_${props.name}`}
           type={inputsType()}
-          class="h-full w-full border border-input-border rounded"
+          class="w-full min-h-small-input border border-input-border rounded"
           min={lower()}
           value={upper()}
           onInput={({target: {value}}) => setUpper(value)}

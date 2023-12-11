@@ -1,7 +1,7 @@
+import {Select, SelectItem} from "components/ui/form/Select";
 import {useLangFunc} from "components/utils";
 import {BoolColumnFilter, NullColumnFilter} from "data-access/memo-api/tquery/types";
 import {createComputed, createMemo, createSignal} from "solid-js";
-import {Select, SelectItem} from "../../form/Select";
 import s from "./ColumnFilterController.module.scss";
 import {makeSelectItem} from "./select_items";
 import {FilterControl} from "./types";
@@ -53,18 +53,19 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
   });
   return (
     <div class={s.filterLine}>
-      <Select
-        name={`table_filter_val_${props.name}`}
-        class="flex-grow"
-        items={items()}
-        value={value()}
-        onValueChange={(value) => {
-          setValue(value!);
-          props.setFilter(buildFilter(value!));
-        }}
-        nullable={false}
-        small
-      />
+      <div class="flex-grow flex flex-col items-stretch">
+        <Select
+          name={`table_filter_val_${props.name}`}
+          items={items()}
+          value={value()}
+          onValueChange={(value) => {
+            setValue(value!);
+            props.setFilter(buildFilter(value!));
+          }}
+          nullable={false}
+          small
+        />
+      </div>
     </div>
   );
 };

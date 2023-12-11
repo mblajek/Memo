@@ -2,6 +2,8 @@
 
 namespace App\Rules;
 
+use App\Models\Dictionary;
+use App\Models\UuidEnum\DictionaryUuidEnum;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -23,6 +25,12 @@ use function App\Utils\process_conditional_array;
  */
 class Valid extends AbstractDataRule
 {
+    /** reset all rules having state */
+    public static function reset(): void
+    {
+        UniqueWithMemoryRule::reset();
+    }
+
     public static function bool(array $rules = [], bool $sometimes = false, bool $nullable = false): array
     {
         return self::base($sometimes, $nullable, ['boolean', DataTypeRule::bool()], $rules);
@@ -57,6 +65,17 @@ class Valid extends AbstractDataRule
         bool $nullable = false,
     ): array {
         return self::base($sometimes, $nullable, ['string', 'lowercase', 'uuid'], $rules);
+    }
+
+    public static function dict(
+        string|Dictionary|DictionaryUuidEnum $dictionary,
+        array $rules = [],
+        bool $sometimes = false,
+        bool $nullable = false,
+    ): array {
+        $dictionaryId = ($dictionary instanceof DictionaryUuidEnum) ? $dictionary->value
+            : (($dictionary instanceof Dictionary) ? $dictionary->id : $dictionary);
+        return self::uuid([new PositionInDictionaryRule($dictionaryId), ...$rules], $sometimes, $nullable);
     }
 
     public static function array(

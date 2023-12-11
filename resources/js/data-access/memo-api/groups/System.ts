@@ -1,8 +1,8 @@
 import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
-import {FacilityResource} from "../resources";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
+import {FacilityResource} from "../resources/facility.resource";
 import {Api} from "../types";
 import {parseGetListResponse} from "../utils";
 

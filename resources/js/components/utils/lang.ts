@@ -1,17 +1,20 @@
 import {useTransContext} from "@mbarzda/solid-i18next";
 import {TOptions} from "i18next";
 
+/** A function for getting the translation values at the top level. */
+export type LangFunc = (key: string, options?: TOptions) => string;
+
 /**
  * A wrapper for useTransContext with the basic overload options, and with better
  * types for usage as TSX attributes (no null returned).
  */
-export function useLangFunc(): LangPrefixFunc {
+export function useLangFunc(): LangFunc {
   const transContext = useTransContext();
   if (!transContext) {
     throw new Error(`Called useLangFunc outside of the provider.`);
   }
   const [t] = transContext;
-  return (key: string, options?: TOptions) => (options ? t(key, options) : t(key));
+  return (key, options) => (options ? t(key, options) : t(key));
 }
 
 /** A function for getting the translation value from a particular key. */

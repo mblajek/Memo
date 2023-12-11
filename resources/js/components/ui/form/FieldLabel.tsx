@@ -1,13 +1,13 @@
-import {useFormContextIfInForm} from "components/felte-form";
-import {cx, htmlAttributes} from "components/utils";
-import {JSX, VoidComponent, splitProps} from "solid-js";
+import {useFormContextIfInForm} from "components/felte-form/FelteForm";
+import {htmlAttributes} from "components/utils";
+import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {TranslatedText} from "../TranslatedText";
 
 interface Props extends htmlAttributes.label {
-  fieldName: string;
-  text?: string;
+  readonly fieldName: string;
+  readonly text?: JSX.Element;
   /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
-  wrapIn?: (text: JSX.Element) => JSX.Element;
+  readonly wrapIn?: (text: JSX.Element) => JSX.Element;
 }
 
 /**
@@ -27,16 +27,20 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
       override={() => props.text}
       langFunc={[form?.translations?.fieldNames, props.fieldName]}
       capitalize
-      wrapIn={(text) => (
-        <label
-          id={labelIdForField(props.fieldName)}
-          for={props.fieldName}
-          {...labelProps}
-          class={cx("font-medium", labelProps.class)}
-        >
-          {props.wrapIn?.(text) ?? text}
-        </label>
-      )}
+      wrapIn={(text) => {
+        const content = () => props.wrapIn?.(text) ?? text;
+        return (
+          <Show when={text !== undefined} fallback={content()}>
+            <label
+              id={labelIdForField(props.fieldName)}
+              for={props.fieldName}
+              {...htmlAttributes.merge(labelProps, {class: "font-medium"})}
+            >
+              {content()}
+            </label>
+          </Show>
+        );
+      }}
     />
   );
 };

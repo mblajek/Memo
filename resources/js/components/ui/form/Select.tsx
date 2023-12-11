@@ -1,7 +1,9 @@
 import {Collection} from "@zag-js/collection";
 import * as combobox from "@zag-js/combobox";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {useFormContextIfInForm} from "components/felte-form/FelteForm";
+import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
+import {cx, useLangFunc} from "components/utils";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
 import {ImCross, ImSpinner2} from "solid-icons/im";
@@ -14,29 +16,29 @@ import {
   Show,
   Switch,
   VoidComponent,
-  VoidProps,
   createComputed,
   createEffect,
   createMemo,
+  createSignal,
   createUniqueId,
   mergeProps,
-  splitProps,
+  on,
 } from "solid-js";
 import {Portal} from "solid-js/web";
 import {Button} from "../Button";
-import {FieldLabel} from "./FieldLabel";
+import {FieldBox} from "./FieldBox";
+import {PlaceholderField} from "./PlaceholderField";
 import s from "./Select.module.scss";
-import {on} from "solid-js";
 
-export interface SelectBaseProps extends VoidProps<htmlAttributes.div> {
-  name: string;
-  label?: string;
+export interface SelectBaseProps {
+  readonly name: string;
+  readonly label?: JSX.Element;
   /**
    * The items to show in this select. In the external filtering mode, the list should change
    * when the filter changes. In the internal filtering mode, the list should not change, and will
    * be filtered internally.
    */
-  items: SelectItem[];
+  readonly items: readonly SelectItem[];
   /**
    * Filtering:
    * - If missing, filtering is disabled (the default).
@@ -44,33 +46,33 @@ export interface SelectBaseProps extends VoidProps<htmlAttributes.div> {
    * - If a function, the function is called when the filter text changes, which typically results in the parent
    *   supplying a new list of items.
    */
-  onFilterChange?: "internal" | ((filterText: string | undefined) => void);
+  readonly onFilterChange?: "internal" | ((filterText: string | undefined) => void);
   /** Whether the items are still loading. */
-  isLoading?: boolean;
-  disabled?: boolean;
-  placeholder?: string;
+  readonly isLoading?: boolean;
+  readonly disabled?: boolean;
+  readonly placeholder?: string;
   /** Whether the control should be shown in the small version. */
-  small?: boolean;
+  readonly small?: boolean;
 }
 
 export interface SingleSelectPropsPart {
-  multiple?: false;
-  value?: string | undefined;
-  onValueChange?: (value: string | undefined) => void;
+  readonly multiple?: false;
+  readonly value?: string | undefined;
+  readonly onValueChange?: (value: string | undefined) => void;
   /**
    * Whether the value can be cleared from within the select control.
    * Even with nullable set to false, it is possible to have no value, but it is not possible
    * to set this value from within the select control.
    */
-  nullable: boolean;
+  readonly nullable: boolean;
 }
 
 export interface MultipleSelectPropsPart {
-  multiple: true;
-  value?: string[];
-  onValueChange?: (value: string[]) => void;
+  readonly multiple: true;
+  readonly value?: readonly string[];
+  readonly onValueChange?: (value: readonly string[]) => void;
   /** Whether to show the button to clear all of the selected values. Defaults to true. */
-  showClearButton?: boolean;
+  readonly showClearButton?: boolean;
 }
 
 export type SingleSelectProps = SelectBaseProps & SingleSelectPropsPart;
@@ -79,17 +81,17 @@ export type SelectProps = SingleSelectProps | MultipleSelectProps;
 
 export interface SelectItem {
   /** The internal value of the item. Must be unique among the items. Must not be empty. */
-  value: string;
+  readonly value: string;
   /**
    * The optional text, used only for internal filtering of the items (when onFilterChange is not specified).
    * If missing in the internal filtering mode, the items are filtered by the value string.
    */
-  text?: string;
+  readonly text?: string;
   /** The item, as displayed in the component when selected. If not specified, the text (or the value) is used. */
-  label?: () => JSX.Element;
+  readonly label?: () => JSX.Element;
   /** The item, as displayed on the expanded list. If not specified, label is used. */
-  labelOnList?: () => JSX.Element;
-  disabled?: boolean;
+  readonly labelOnList?: () => JSX.Element;
+  readonly disabled?: boolean;
 }
 
 function itemToString(item: SelectItem) {
@@ -107,14 +109,11 @@ const DEFAULT_PROPS = {
   small: false,
   nullable: false,
   showClearButton: true,
-};
+} satisfies Partial<SelectProps>;
 
 /**
  * A select-like component for selecting a single item from a list of items.
  * Supports searching using keyboard (the parent should provide the filtered list of items).
- *
- * TODO: Add support for placing the component in a form. Right now there is a hidden input with
- * the selected value, but the component does not receive the value from the form controller.
  *
  * WARNING: The implementation has many workarounds and specific solutions, and the zag component
  * it's based on is still in development and has bugs. It might also change in an incompatible way
@@ -122,23 +121,20 @@ const DEFAULT_PROPS = {
  * the zag library.
  */
 export const Select: VoidComponent<SelectProps> = (allProps) => {
-  const defProps = mergeProps(DEFAULT_PROPS, allProps);
-  const [props, divProps] = splitProps(defProps, [
-    "name",
-    "label",
-    "items",
-    "nullable",
-    "multiple",
-    "value",
-    "onValueChange",
-    "onFilterChange",
-    "showClearButton",
-    "disabled",
-    "isLoading",
-    "placeholder",
-    "small",
-  ]);
+  const props = mergeProps(DEFAULT_PROPS, allProps);
   const t = useLangFunc();
+
+  const formContext = useFormContextIfInForm();
+
+  function formValuesEqual(selectValue: string | readonly string[], currentFormValue: string | readonly string[]) {
+    return (
+      selectValue === currentFormValue ||
+      (Array.isArray(selectValue) &&
+        Array.isArray(currentFormValue) &&
+        selectValue.length === currentFormValue.length &&
+        selectValue.every((v, i) => v === currentFormValue[i]))
+    );
+  }
 
   // Temporarily assign an empty collection, and overwrite with the actual collection depending on
   // the filtered items later. It's done like this because filtering needs api() which is not created yet.
@@ -170,6 +166,15 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             (props as MultipleSelectPropsPart).onValueChange!(value);
           } else {
             (props as SingleSelectPropsPart).onValueChange!(value[0]);
+          }
+        } else if (formContext) {
+          const valueForForm = props.multiple ? value : value[0] || "";
+          if (!formValuesEqual(valueForForm, formContext.form.data(props.name))) {
+            formContext.form.setTouched(props.name, true);
+            // eslint-disable-next-line solid/reactivity
+            formContext.form.setInteracted(() => props.name);
+            formContext.form.setIsDirty(true);
+            formContext.form.setData(props.name, valueForForm);
           }
         } else {
           api().setValue(value);
@@ -207,17 +212,27 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         collection: collection(),
         multiple: props.multiple,
         disabled: props.disabled,
+        invalid: !isValidationMessageEmpty(formContext?.form.errors(props.name)),
       }),
     },
   );
   const api = createMemo(() => combobox.connect<PropTypes, SelectItem>(state, send, normalizeProps));
-  createComputed(
-    on(
-      () => props.value,
-      (propsValue) =>
-        api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
-    ),
-  );
+  if (formContext)
+    createComputed(
+      on(
+        () => formContext.form.data(props.name),
+        (formValue) =>
+          api().setValue(Array.isArray(formValue) ? (formValue as string[]) : formValue ? [formValue as string] : []),
+      ),
+    );
+  else
+    createComputed(
+      on(
+        () => props.value,
+        (propsValue) =>
+          api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
+      ),
+    );
 
   const isInternalFilteringMode = () => props.onFilterChange === "internal";
   // Wrap the input value in a memo to avoid an infinite loop of updates, where updating the filter changes the items,
@@ -234,7 +249,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
     return props.items;
   });
-  const itemsToShow = createMemo((): SelectItem[] => {
+  const itemsToShow = createMemo((): readonly SelectItem[] => {
     const filtered = filteredItems();
     if (filtered.length) {
       return filtered;
@@ -242,7 +257,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     if (props.isLoading) {
       return [
         {
-          value: " _loading",
+          value: `_loading_${createUniqueId()}`,
           label: () => (
             <div class="w-full flex justify-center">
               <ImSpinner2 class="m-1 w-4 h-4 animate-spin" />
@@ -254,7 +269,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
     return [
       {
-        value: " _noItems",
+        value: `_noItems_${createUniqueId()}`,
         label: () => <>{t(api().isInputValueEmpty ? "select.no_items" : "select.no_matching_items")}</>,
         disabled: true,
       },
@@ -278,22 +293,28 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
    * a filter is present, because otherwise the items don't exist, and api().selectedItems doesn't
    * return them, even though api().value has the corresponding entries.
    */
-  const itemsMap = new Map<string, SelectItem>();
-  createEffect(() => {
-    for (const item of filteredItems()) {
-      itemsMap.set(item.value, item);
-    }
+  const [itemsMap, setItemsMap] = createSignal<ReadonlyMap<string, SelectItem>>(new Map<string, SelectItem>());
+  createComputed(() => {
+    setItemsMap((map) => {
+      const newMap = new Map(map);
+      for (const item of filteredItems()) {
+        newMap.set(item.value, item);
+      }
+      return newMap;
+    });
   });
   /**
    * Returns the label for the specified value. If the value is unknown (not present in itemsMap),
-   * the value is removed from the selected values in api(), and undefined is returned.
+   * the value is removed from the selected values in api() (unless still loading), and undefined is returned.
    */
   function getValueLabel(value: string) {
-    const item = itemsMap.get(value);
+    const item = itemsMap().get(value);
     if (item) {
       return itemToLabel(item);
     }
-    api().clearValue(value);
+    if (!props.isLoading) {
+      api().clearValue(value);
+    }
     return undefined;
   }
 
@@ -315,120 +336,113 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
 
   return (
     <>
-      <div
-        ref={root}
-        {...api().rootProps}
-        {...htmlAttributes.merge(divProps, {
-          class: cx(s.select, {
+      <FieldBox {...props}>
+        <PlaceholderField name={props.name} />
+        <div
+          ref={root}
+          {...api().rootProps}
+          class={cx(s.select, {
             [s.single!]: !props.multiple,
             [s.multiple!]: props.multiple,
             [s.small!]: props.small,
-          }),
-        })}
-        inert={isDisabled() ? true : undefined}
-      >
-        <FieldLabel
-          fieldName={props.name}
-          text={props.label}
-          {...(api().labelProps as Omit<htmlAttributes.label, "children">)}
-        />
-        {/* An input that can be consumed by the form controller.
-        It cannot be set by the form controller though (yet). */}
-        <input class="hidden" name={props.name} value={api().value.join(",")} />
-        <div {...api().controlProps} onClick={() => api().open()}>
-          <Switch>
-            <Match when={props.multiple}>
-              <For each={api().value}>
-                {(value) => {
-                  return (
-                    <div class={s.value}>
-                      <div class={s.label}>{getValueLabel(value)}</div>
-                      <Button
-                        class={s.delete}
-                        onClick={(e) => {
-                          // Avoid opening the select.
-                          e.stopPropagation();
-                          api().clearValue(value);
-                        }}
-                      >
-                        <ImCross size="8" />
-                      </Button>
-                    </div>
-                  );
-                }}
-              </For>
-            </Match>
-            <Match when={!props.multiple}>
-              {/* The current value is displayed inside the input element, so only display it
-              when the input is empty (like a placeholder). */}
-              <Show when={api().isInputValueEmpty && api().value[0]}>
-                {(value) => <div class={s.value}>{getValueLabel(value())}</div>}
-              </Show>
-            </Match>
-          </Switch>
-          <input
-            ref={input}
-            {...api().inputProps}
-            // This is just for user entry, and not the actual form value.
-            name=""
-            placeholder={api().value.length ? undefined : props.placeholder}
-            // Without filtering, the input is used just for the placeholder.
-            inert={props.onFilterChange ? undefined : true}
-          />
-          <div class={s.buttons}>
-            {/* Display only one clear button at a time. */}
+          })}
+          inert={isDisabled() || undefined}
+        >
+          <div {...api().controlProps} onClick={() => api().open()}>
             <Switch>
-              <Match when={!api().isInputValueEmpty}>
-                <Button
-                  data-scope="combobox"
-                  class={cx(s.clearButton)}
-                  onClick={() => {
-                    api().setInputValue("");
-                    api().focus();
+              <Match when={props.multiple}>
+                <For each={api().value}>
+                  {(value) => {
+                    return (
+                      <div class={s.value}>
+                        <div class={s.label}>{getValueLabel(value)}</div>
+                        <Button
+                          class={s.delete}
+                          onClick={(e) => {
+                            // Avoid opening the select.
+                            e.stopPropagation();
+                            api().clearValue(value);
+                          }}
+                        >
+                          <ImCross size="8" />
+                        </Button>
+                      </div>
+                    );
                   }}
-                  title={t("actions.clear")}
-                >
-                  <FiDelete />
-                </Button>
+                </For>
               </Match>
-              <Match when={!props.multiple && props.nullable && api().value.length}>
-                <Button
-                  class={cx(s.clearButton)}
-                  onClick={(e) => {
-                    // Avoid opening the
-                    e.stopPropagation();
-                    api().clearValue();
-                  }}
-                  title={t("actions.clear")}
-                >
-                  <FiDelete />
-                </Button>
-              </Match>
-              <Match when={props.multiple && props.showClearButton && api().value.length}>
-                <Button
-                  class={cx(s.clearButton)}
-                  onClick={(e) => {
-                    // Avoid opening the
-                    e.stopPropagation();
-                    api().clearValue();
-                  }}
-                  title={t("actions.clear")}
-                >
-                  {/* Use a bin icon for multiple select because it looks more destructive, which is appropriate. */}
-                  <RiSystemDeleteBin6Line />
-                </Button>
+              <Match when={!props.multiple}>
+                {/* The current value is displayed inside the input element, so only display it
+              when the input is empty (like a placeholder). */}
+                <Show when={api().isInputValueEmpty && api().value[0]}>
+                  {(value) => <div class={s.value}>{getValueLabel(value())}</div>}
+                </Show>
               </Match>
             </Switch>
-            <Button
-              // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
-              // The control will handle clicks.
-              title={t("actions.expand")}
-            >
-              <AiFillCaretDown />
-            </Button>
+            <input
+              ref={input}
+              {...api().inputProps}
+              // This is just for user entry, and not the actual form value.
+              name=""
+              placeholder={api().value.length ? undefined : props.placeholder}
+              // Without filtering, the input is used just for the placeholder.
+              inert={props.onFilterChange ? undefined : true}
+            />
+            <div class={s.buttons}>
+              {/* Display only one clear button at a time. */}
+              <Switch>
+                <Match when={!api().isInputValueEmpty}>
+                  <Button
+                    data-scope="combobox"
+                    class={cx(s.clearButton)}
+                    onClick={() => {
+                      api().setInputValue("");
+                      api().focus();
+                    }}
+                    title={t("actions.clear")}
+                  >
+                    <FiDelete />
+                  </Button>
+                </Match>
+                <Match when={!props.multiple && props.nullable && api().value.length}>
+                  <Button
+                    class={cx(s.clearButton)}
+                    onClick={(e) => {
+                      // Avoid opening the select on button click.
+                      e.stopPropagation();
+                      api().clearValue();
+                    }}
+                    title={t("actions.clear")}
+                  >
+                    <FiDelete />
+                  </Button>
+                </Match>
+                <Match when={props.multiple && props.showClearButton && api().value.length}>
+                  <Button
+                    class={cx(s.clearButton)}
+                    onClick={(e) => {
+                      // Avoid opening the select on button click.
+                      e.stopPropagation();
+                      api().clearValue();
+                    }}
+                    title={t("actions.clear")}
+                  >
+                    {/* Use a bin icon for multiple select because it looks more destructive, which is appropriate. */}
+                    <RiSystemDeleteBin6Line />
+                  </Button>
+                </Match>
+              </Switch>
+              <Button
+                // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
+                // The control will handle clicks.
+                title={t("actions.expand")}
+              >
+                <AiFillCaretDown />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </FieldBox>
       <Portal>
         <div
           ref={portalRoot}

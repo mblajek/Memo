@@ -59,6 +59,7 @@ declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
     /** The translations for the table, used by various table-related components. */
     translations?: TableTranslations;
+    defaultColumnVisibility?: Accessor<VisibilityState>;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -91,9 +92,9 @@ export const AUTO_SIZE_COLUMN_DEFS = {
 } satisfies Partial<ColumnDef<object>>;
 
 interface Props<T = object> {
-  table: TanStackTable<T>;
+  readonly table: TanStackTable<T>;
   /** Table mode. Default: embedded. */
-  mode?: DisplayMode;
+  readonly mode?: DisplayMode;
   /**
    * The iteration component used for iterating over rows. Default: For.
    *
@@ -101,17 +102,17 @@ interface Props<T = object> {
    * collection of elements. For backend tables, when the rows change identity after each query
    * to the backend, Index might be a better choice.
    */
-  rowsIteration?: "For" | "Index";
+  readonly rowsIteration?: "For" | "Index";
   /** The content to put above the table, e.g. the global search bar. It has access to the table context */
-  aboveTable?: () => JSX.Element;
+  readonly aboveTable?: () => JSX.Element;
   /** The content to put below the table, e.g. the pagination controller. It has access to the table context */
-  belowTable?: () => JSX.Element;
+  readonly belowTable?: () => JSX.Element;
   /** Whether the whole table content is loading. This hides the whole table and displays a spinner. */
-  isLoading?: boolean;
+  readonly isLoading?: boolean;
   /** Whether the content of the table is reloading. This dims the table and makes it inert. */
-  isDimmed?: boolean;
+  readonly isDimmed?: boolean;
   /** A signal which changes when the table should scroll itself to the top. */
-  scrollToTopSignal?: Accessor<unknown>;
+  readonly scrollToTopSignal?: Accessor<unknown>;
 }
 
 const DEFAULT_PROPS = {
@@ -135,7 +136,11 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
   createEffect(
     on(
       () => props.scrollToTopSignal?.(),
-      () => scrollToTopPoint?.scrollIntoView({behavior: "smooth"}),
+      (_input, prevInput) => {
+        if (prevInput !== undefined) {
+          scrollToTopPoint?.scrollIntoView({behavior: "smooth"});
+        }
+      },
     ),
   );
   const gridTemplateColumns = () =>
@@ -188,8 +193,8 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
           <div
             ref={setScrollingWrapper}
             class={s.scrollingWrapper}
-            onScroll={() => setLastScrollTimestamp(Date.now())}
-            onScrollEnd={() => setLastScrollTimestamp(0)}
+            onScroll={[setLastScrollTimestamp, Date.now()]}
+            onScrollEnd={[setLastScrollTimestamp, 0]}
           >
             <div ref={scrollToTopPoint} class={s.tableBg}>
               <div

@@ -1,34 +1,32 @@
-import {ValidationMessages} from "components/felte-form/ValidationMessages";
 import {htmlAttributes} from "components/utils";
-import {VoidComponent} from "solid-js";
-import {FieldLabel, labelIdForField} from "./FieldLabel";
-import {splitProps} from "solid-js";
+import {JSX, VoidComponent, splitProps} from "solid-js";
+import {FieldBox} from "./FieldBox";
+import {labelIdForField} from "./FieldLabel";
 
-export interface TextFieldProps extends htmlAttributes.input {
-  name: string;
-  label?: string;
+export interface TextFieldProps
+  extends Pick<
+    htmlAttributes.input,
+    "type" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
+  > {
+  readonly name: string;
+  readonly label?: JSX.Element;
 }
 
-/**
- * Wrapper of native HTML's `<input>`
- *
- * Intended for use with FelteForm (handles validation messages)
- */
+/** Wrapper of native HTML's `<input>`. Intended for use with FelteForm (handles validation messages). */
 export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["name", "label"]);
   return (
-    <div>
-      <FieldLabel fieldName={props.name} text={props.label} />
+    <FieldBox {...props}>
       <input
         id={props.name}
         name={props.name}
+        autocomplete="off"
         {...htmlAttributes.merge(inputProps, {
           class:
-            "w-full min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
+            "min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
         })}
         aria-labelledby={labelIdForField(props.name)}
       />
-      <ValidationMessages fieldName={props.name} />
-    </div>
+    </FieldBox>
   );
 };

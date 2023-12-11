@@ -1,20 +1,20 @@
 import * as radio from "@zag-js/radio-group";
 import {normalizeProps, useMachine} from "@zag-js/solid";
-import {cx, htmlAttributes} from "components/utils";
-import {For, JSX, Show, VoidComponent, createComputed, createMemo, createUniqueId, splitProps} from "solid-js";
-import {FieldLabel} from "./FieldLabel";
+import {cx} from "components/utils";
+import {For, JSX, Show, VoidComponent, createComputed, createMemo, createUniqueId} from "solid-js";
+import {FieldBox} from "./FieldBox";
 import s from "./SegmentedControl.module.scss";
 
-interface Props extends htmlAttributes.div {
-  name: string;
-  items: Item[];
-  label?: string;
+interface Props {
+  readonly name: string;
+  readonly items: readonly Item[];
+  readonly label?: JSX.Element;
   /** Optionally value, if should be used in standalone mode (not in form). */
-  value?: string;
-  setValue?: (value: string) => void;
-  disabled?: boolean;
+  readonly value?: string;
+  readonly setValue?: (value: string) => void;
+  readonly disabled?: boolean;
   /** Whether to make the control smaller. */
-  small?: boolean;
+  readonly small?: boolean;
 }
 
 interface Item {
@@ -30,8 +30,7 @@ interface Item {
  *
  * To use in standalone mode, specify the controlling signal via value and setValue.
  */
-export const SegmentedControl: VoidComponent<Props> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["name", "label", "items", "value", "setValue", "disabled", "small"]);
+export const SegmentedControl: VoidComponent<Props> = (props) => {
   const [state, send] = useMachine(
     radio.machine({
       // eslint-disable-next-line solid/reactivity
@@ -56,14 +55,8 @@ export const SegmentedControl: VoidComponent<Props> = (allProps) => {
     }
   });
   return (
-    <>
-      <FieldLabel fieldName={props.name} text={props.label} />
-      <div
-        {...htmlAttributes.merge(divProps, {
-          class: cx(s.segmentedControl, {[s.small!]: props.small}),
-        })}
-        {...api().rootProps}
-      >
+    <FieldBox {...props}>
+      <div {...api().rootProps} class={cx(s.segmentedControl, {[s.small!]: props.small})}>
         <div {...api().indicatorProps} />
         <For each={props.items}>
           {(item) => (
@@ -78,6 +71,6 @@ export const SegmentedControl: VoidComponent<Props> = (allProps) => {
           )}
         </For>
       </div>
-    </>
+    </FieldBox>
   );
 };

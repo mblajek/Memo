@@ -3,8 +3,8 @@ import {For, Show, VoidComponent, splitProps} from "solid-js";
 import {NavigationItem, NavigationItemProps} from "./NavigationItem";
 
 export interface NavigationSectionProps extends Pick<AccessBarrierProps, "facilityUrl" | "roles"> {
-  title?: string;
-  items: NavigationItemProps[];
+  readonly title?: string;
+  readonly items: readonly NavigationItemProps[];
 }
 
 const noop = () => null;

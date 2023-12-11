@@ -12,30 +12,44 @@ export type DateTimeString = string;
 type Mapping<Key extends string, Value> = Readonly<Partial<Record<Key, Value>>>;
 
 export interface Schema {
-  readonly columns: ColumnSchema[];
+  readonly columns: readonly ColumnSchema[];
   readonly customFilters?: Mapping<CustomFilterName, CustomFilter>;
 }
 
-// TODO: There are more possible column types:
-//  - enum-related types (enum and multi-enum)
-//  - dict-related types
-//  - possible JSON types with structured data
-export type ColumnSchema = BasicColumnSchema | CountColumnSchema;
+export type ColumnSchema = DataColumnSchema | CountColumnSchema;
 
-interface ColumnSchemaBase {
+interface DataColumnSchemaBase {
   readonly name: ColumnName;
-}
-
-export type ColumnType = "bool" | "date" | "datetime" | "int" | "string" | "text" | "uuid";
-
-export interface BasicColumnSchema extends ColumnSchemaBase {
-  readonly type: ColumnType;
   readonly nullable?: boolean;
 }
 
-export interface CountColumnSchema extends ColumnSchemaBase {
+export type DataColumnSchema = PlainDataColumnSchema | DictDataColumnSchema;
+
+interface PlainDataColumnSchema extends DataColumnSchemaBase {
+  readonly type:
+    | "bool"
+    | "date"
+    | "datetime"
+    | "int"
+    // A list of objects of a form known both to backend and frontend.
+    | "list"
+    // An object of a form known both to backend and frontend.
+    | "object"
+    | "string"
+    | "text"
+    | "uuid";
+  /** The attribute defining this data column. */
+  readonly attributeId?: string;
+}
+
+interface DictDataColumnSchema extends DataColumnSchemaBase {
+  readonly type: "dict" | "dict_list";
+  readonly dictionaryId: string;
+}
+
+export interface CountColumnSchema {
+  readonly name: ColumnName;
   readonly type: "count";
-  readonly nullable?: false;
 }
 
 export interface CustomFilter {
@@ -44,10 +58,11 @@ export interface CustomFilter {
 }
 
 export interface DataRequest {
-  readonly columns: Column[];
+  readonly columns: readonly Column[];
   readonly filter?: ConstFilter | Filter;
   readonly sort: Sort;
   readonly paging: Paging;
+  /** Whether to only return distinct values. This also enables a count column. */
   readonly distinct?: boolean;
 }
 
@@ -78,7 +93,7 @@ export interface BoolOpFilter extends FilterBase {
   readonly type: "op";
   readonly op: "&" | "|";
   /** List of sub-filters. Cannot be empty. */
-  readonly val: Filter[];
+  readonly val: readonly Filter[];
 }
 
 export type ColumnFilter = NullColumnFilter | ColumnValueFilter;
@@ -87,9 +102,13 @@ export type ColumnValueFilter =
   | DateColumnFilter
   | DateTimeColumnFilter
   | IntColumnFilter
+  | ListColumnFilter
+  | ObjectColumnFilter
   | StringColumnFilter
   | TextColumnFilter
-  | UuidColumnFilter;
+  | UuidColumnFilter
+  | DictColumnFilter
+  | DictListColumnFilter;
 
 interface ColumnFilterBase extends FilterBase {
   readonly type: "column";
@@ -114,7 +133,7 @@ interface BinEqColumnFilter<T> extends ColumnFilterBase {
 interface InColumnFilter<T> extends ColumnFilterBase {
   readonly op: "in";
   /** The values to compare to. Cannot contain an empty string. */
-  readonly val: T[];
+  readonly val: readonly T[];
 }
 interface CmpColumnFilter<T> extends ColumnFilterBase {
   readonly op: ">" | "<" | ">=" | "<=";
@@ -139,6 +158,14 @@ interface RegexpColumnFilter extends ColumnFilterBase {
   /** The regexp pattern to match. Cannot be empty. */
   readonly val: string;
 }
+interface HasColumnFilter<T> extends ColumnFilterBase {
+  readonly op: "has";
+  readonly val: T;
+}
+interface SetsOpColumnFilter<T> extends ColumnFilterBase {
+  readonly op: "has_all" | "has_any" | "has_only";
+  readonly val: readonly T[];
+}
 
 export type BoolColumnFilter = EqColumnFilter<boolean>;
 export type DateColumnFilter = EqColumnFilter<DateString> | InColumnFilter<DateString> | CmpColumnFilter<DateString>;
@@ -149,6 +176,8 @@ export type IntColumnFilter =
   | CmpColumnFilter<number>
   | ContainsColumnFilter
   | LikeColumnFilter;
+export type ListColumnFilter = never;
+export type ObjectColumnFilter = never;
 export type StringColumnFilter =
   | EqColumnFilter<string>
   | BinEqColumnFilter<string>
@@ -159,6 +188,11 @@ export type StringColumnFilter =
   | RegexpColumnFilter;
 export type TextColumnFilter = ContainsColumnFilter | LikeColumnFilter | RegexpColumnFilter;
 export type UuidColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
+export type DictColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
+export type DictListColumnFilter =
+  | EqColumnFilter<readonly string[]>
+  | HasColumnFilter<string>
+  | SetsOpColumnFilter<string>;
 
 export interface CustomFilter extends FilterBase {
   readonly type: "custom";
@@ -167,14 +201,17 @@ export interface CustomFilter extends FilterBase {
 }
 
 export interface Paging {
-  /** The one-based page number. */
-  readonly number: number;
+  /** The number of requested records. */
   readonly size: number;
+  /** The one-based page number. */
+  readonly number?: number;
+  /** The zero-based index of the first record to return. */
+  readonly offset?: number;
 }
 
 export interface DataResponse {
   readonly meta: DataResponseMeta;
-  readonly data: DataItem[];
+  readonly data: readonly DataItem[];
 }
 
 export interface DataResponseMeta {
@@ -185,7 +222,7 @@ export interface DataResponseMeta {
 export type DataItem = Mapping<ColumnName, unknown>;
 
 /** Specification of the data sorting. The first element has the highest priority. */
-export type Sort = SortItem[];
+export type Sort = readonly SortItem[];
 
 export type SortItem = SortColumn;
 
@@ -195,19 +232,12 @@ export interface SortColumn {
   readonly desc?: boolean;
 }
 
+export type ColumnType = DataColumnSchema["type"];
+
 export function isDataType(column: ColumnSchema["type"]): column is ColumnType {
-  switch (column) {
-    case "bool":
-    case "date":
-    case "datetime":
-    case "int":
-    case "string":
-    case "text":
-    case "uuid":
-      return true;
-    case "count":
-      return false;
-    default:
-      return column satisfies never;
-  }
+  return column !== "count";
+}
+
+export function isDataColumn(column: ColumnSchema): column is DataColumnSchema {
+  return isDataType(column.type);
 }

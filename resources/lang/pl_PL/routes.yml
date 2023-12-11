@@ -1,0 +1,24 @@
+menu_sections:
+  system: "System"
+  facility: "Placówka"
+  my_work: "Moja praca"
+
+login: "logowanie"
+
+admin:
+  facilities: "$t(models.facility._name_plural)"
+  users: "$t(models.user._name_plural)"
+
+facility:
+  home: "$t(models.facility._name)"
+  admin:
+    calendar: "$t(calendar.calendar)"
+    clients: "$t(models.client._name_plural)"
+    staff: "pracownicy"
+    reports: "raporty"
+  calendar: "mój kalendarz"
+  timetable: "mój harmonogram"
+  clients: "moi klienci"
+  meetings: "moje spotkania"
+
+help: "pomoc"
