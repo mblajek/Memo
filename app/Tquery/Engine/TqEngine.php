@@ -76,7 +76,7 @@ readonly class TqEngine
 
     private function applyPaging(): void
     {
-        $this->builder->applyPaging($this->request->pageNumber, $this->request->pageSize);
+        $this->builder->applyPaging(offset: $this->request->pageOffset, limit: $this->request->pageSize);
     }
 
     private function getData(): array
@@ -94,6 +94,10 @@ readonly class TqEngine
 
     private function getMeta(): array
     {
-        return ['totalDataSize' => $this->builder->getCount(),];
+        $dataCount = $this->builder->getCount();
+        return [
+            'totalDataSize' => $dataCount,
+            'totalDataPages' => intdiv($dataCount - 1, $this->request->pageSize) + 1,
+        ];
     }
 }

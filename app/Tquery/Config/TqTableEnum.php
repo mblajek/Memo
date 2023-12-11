@@ -7,4 +7,5 @@ enum TqTableEnum
     case users;
     case members;
     case facilities;
+    case meetings;
 }

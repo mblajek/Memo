@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property ?string facility_id
+ * @property AttributeTable table
  * @property string name
  * @property string api_name
  * @property AttributeType type

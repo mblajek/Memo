@@ -2,6 +2,7 @@
 
 namespace App\Tquery\Config;
 
+use App\Models\Attribute;
 use App\Tquery\Engine\TqBuilder;
 use App\Tquery\Engine\TqFilterGenerator;
 use App\Tquery\Engine\TqRendererGenerator;
@@ -23,6 +24,7 @@ final readonly class TqColumnConfig
         private string|Closure $columnOrQuery,
         public ?TqTableAliasEnum $table,
         public string $columnAlias,
+        public ?Attribute $attribute = null,
         ?Closure $selector = null,
         ?Closure $filter = null,
         ?Closure $sorter = null,

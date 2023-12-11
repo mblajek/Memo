@@ -27,11 +27,13 @@ abstract readonly class TqService
     public function getConfigArray(): array
     {
         return [
-            'columns' => array_map(fn(TqColumnConfig $column) => [
+            'columns' => array_map(fn(TqColumnConfig $column) => array_filter([
                 'name' => $column->columnAlias,
                 'type' => $column->type->notNullBaseType()->name,
                 'nullable' => $column->type->isNullable(),
-            ], array_values($this->config->columns)),
+                'dictionaryId' => $column->attribute?->dictionary_id,
+                'attributeId' => $column->attribute?->id,
+            ], fn(mixed $value) => $value !== null), array_values($this->config->columns)),
             'customFilters' => new stdClass(),
         ];
     }

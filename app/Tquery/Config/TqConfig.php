@@ -3,6 +3,9 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
+use App\Models\Attribute;
+use App\Models\UuidEnum\AttributeUuidEnum;
+use BackedEnum;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -10,7 +13,7 @@ final class TqConfig
 {
     /** @var array<string, TqColumnConfig> */
     public array $columns = [];
-    private const COUNT_COLUMN = '_count';
+    private const string COUNT_COLUMN = '_count';
 
     private ?array $filterableColumns = null;
 
@@ -57,6 +60,18 @@ final class TqConfig
             columnOrQuery: $columnName,
             table: null,
             columnAlias: Str::camel($columnAlias ?? $columnName),
+        );
+    }
+
+    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $id): void
+    {
+        $attribute = Attribute::query()->findOrFail(is_string($id) ? $id : $id->value);
+        $this->addColumn(
+            type: $attribute->type->getTqueryDataType(nullable: $attribute->requirement_level->isNullable()),
+            columnOrQuery: $attribute->api_name,
+            table: null,
+            columnAlias: Str::camel($attribute->api_name),
+            attribute: $attribute,
         );
     }
 
@@ -108,6 +123,8 @@ final class TqConfig
         string|Closure $columnOrQuery,
         ?TqTableAliasEnum $table,
         string $columnAlias,
+        ?Attribute $attribute = null,
+        ?Closure $selector = null,
         ?Closure $filter = null,
         ?Closure $sorter = null,
         ?Closure $renderer = null,
@@ -122,6 +139,8 @@ final class TqConfig
             columnOrQuery: $columnOrQuery,
             table: $table,
             columnAlias: $columnAlias,
+            attribute: $attribute,
+            selector: $selector,
             filter: $filter,
             sorter: $sorter,
             renderer: $renderer,
