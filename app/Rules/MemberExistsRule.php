@@ -37,6 +37,6 @@ final class MemberExistsRule extends AbstractRule
         })->exists()) {
             return;
         }
-        $this->validator->addFailure($attribute, 'custom.member_exists', ['type' => $this->attendanceType->value]);
+        $this->validator->addFailure($attribute, 'custom.member_exists', ['member_type' => $this->attendanceType->value]);
     }
 }

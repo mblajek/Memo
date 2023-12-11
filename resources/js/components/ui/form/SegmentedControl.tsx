@@ -8,7 +8,7 @@ import s from "./SegmentedControl.module.scss";
 interface Props {
   readonly name: string;
   readonly items: readonly Item[];
-  readonly label?: string;
+  readonly label?: JSX.Element;
   /** Optionally value, if should be used in standalone mode (not in form). */
   readonly value?: string;
   readonly setValue?: (value: string) => void;

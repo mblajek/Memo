@@ -1,10 +1,10 @@
-import {VoidComponent} from "solid-js";
+import {JSX, VoidComponent} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
 
 interface Props {
   readonly name: string;
-  readonly label?: string;
+  readonly label?: JSX.Element;
   readonly disabled?: boolean;
   // TODO: Find a better solution for providing a hint like this.
   readonly title?: string;

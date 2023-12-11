@@ -22,6 +22,12 @@ use Illuminate\Validation\ValidationException;
  */
 class Valid extends AbstractDataRule
 {
+    /** reset all rules having state */
+    public static function reset(): void
+    {
+        UniqueWithMemoryRule::reset();
+    }
+
     public static function bool(array $rules = [], bool $sometimes = false, bool $nullable = false): array
     {
         return self::base($sometimes, $nullable, ['boolean', DataTypeRule::bool()], $rules);
@@ -60,12 +66,13 @@ class Valid extends AbstractDataRule
 
     public static function dict(
         string|Dictionary|DictionaryUuidEnum $dictionary,
+        array $rules = [],
         bool $sometimes = false,
         bool $nullable = false,
     ): array {
         $dictionaryId = ($dictionary instanceof DictionaryUuidEnum) ? $dictionary->value
             : (($dictionary instanceof Dictionary) ? $dictionary->id : $dictionary);
-        return self::uuid([new PositionInDictionaryRule($dictionaryId)], $sometimes, $nullable);
+        return self::uuid([new PositionInDictionaryRule($dictionaryId), ...$rules], $sometimes, $nullable);
     }
 
     public static function array(

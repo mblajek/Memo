@@ -12,15 +12,16 @@ import {DateTime} from "luxon";
 import {createComputed, on} from "solid-js";
 import {z} from "zod";
 
-export const meetingTimeFieldsSchemaPart = () => ({
-  dateAndTime: z.object({
+export const getMeetingTimeFieldsSchemaPart = () => ({
+  time: z.object({
     startTime: z.string(),
     endTime: z.string(),
   }),
 });
 
-interface FormDataType extends Obj {
-  readonly dateAndTime: {
+interface FormTimeDataType extends Obj {
+  readonly date?: string;
+  readonly time: {
     readonly startTime: string;
     readonly endTime: string;
   };
@@ -33,7 +34,7 @@ export function meetingTimeInitialValues(time?: DateTime, durationMinutes?: numb
   }
   return {
     date: localTime?.toISODate() || "",
-    dateAndTime: {
+    time: {
       startTime: timeInput(localTime),
       endTime: durationMinutes === undefined ? "" : timeInput(localTime?.plus({minutes: durationMinutes})),
     },
@@ -42,12 +43,15 @@ export function meetingTimeInitialValues(time?: DateTime, durationMinutes?: numb
     // (see UnknownValidationMessages.tsx).
     startDayminute: undefined,
     durationMinutes: undefined,
-  } satisfies FormDataType;
+  } satisfies FormTimeDataType;
 }
 
-function useForm() {
-  return useFormContext<FormDataType>().form;
+export function useMeetingTimeForm() {
+  return useFormContext<FormTimeDataType>().form;
 }
+
+/** The meeting duration used for meeting types that don't have default duration. */
+const DEFAULT_DURATION_MINUTES = 60;
 
 /**
  * Creates a controller that manipulates the form fields related to meeting time:
@@ -60,14 +64,14 @@ export function createMeetingTimeController() {
   const meetingTypesDict = () => dictionaries()?.get("meetingType");
   const attributes = useAttributes();
   const durationMinutesAttr = () => attributes()?.get<number>("durationMinutes");
-  const form = useForm();
-  const durationMinutes = () => getDurationMinutes(form.data("dateAndTime"));
+  const form = useMeetingTimeForm();
+  const durationMinutes = () => getDurationMinutes(form.data("time"));
   function setDurationMinutes(duration: number | undefined) {
-    const {startTime} = form.data("dateAndTime") || {};
+    const {startTime} = form.data("time") || {};
     if (startTime && duration) {
       const start = timeInputToDayMinute(startTime, {assert: true});
       const end = (start + duration) % MAX_DAY_MINUTE;
-      form.setFields("dateAndTime", (v) => ({startTime: v?.startTime || "", endTime: dayMinuteToTimeInput(end)}));
+      form.setFields("time", (v) => ({startTime: v?.startTime || "", endTime: dayMinuteToTimeInput(end)}));
     }
   }
   /** The default duration taken from the type. */
@@ -83,9 +87,9 @@ export function createMeetingTimeController() {
   // Change the end time when the start time changes to preserve duration.
   createComputed(
     on(
-      () => form.data("dateAndTime")?.startTime,
+      () => form.data("time")?.startTime,
       (startTime, prevStartTime) => {
-        const endTime = form.data("dateAndTime")?.endTime;
+        const endTime = form.data("time")?.endTime;
         if (prevStartTime && startTime && endTime) {
           setDurationMinutes(getDurationMinutes({startTime: prevStartTime, endTime}));
         }
@@ -95,13 +99,11 @@ export function createMeetingTimeController() {
   // Set the duration to the default duration for the meeting type.
   createComputed(
     on(defaultDurationMinutes, (defaultDurationMinutes, prevDefaultDurationMinutes) => {
-      if (defaultDurationMinutes) {
+      if (defaultDurationMinutes !== undefined) {
         const prevDuration = durationMinutes();
         const shouldSyncDuration = !prevDuration || prevDuration === prevDefaultDurationMinutes;
         if (shouldSyncDuration) {
-          setDurationMinutes(
-            durationMinutesAttr()!.readFrom(meetingTypesDict()!.get(form.data("typeDictId"))!.resource),
-          );
+          setDurationMinutes(defaultDurationMinutes || DEFAULT_DURATION_MINUTES);
         }
       }
     }),
@@ -129,11 +131,11 @@ function getDurationMinutes({startTime, endTime}: {startTime?: string; endTime?:
  * Transforms the form values to the values expected by the API. The result will typically be merged into
  * the values, as this function handles only the time fields.
  */
-export function transformTimeValues(values: FormDataType) {
+export function getTimeValues(values: FormTimeDataType) {
   return {
     // Remove the temporary fields.
-    dateAndTime: undefined,
-    startDayminute: timeInputToDayMinute(values.dateAndTime.startTime),
-    durationMinutes: getDurationMinutes(values.dateAndTime),
+    time: undefined,
+    startDayminute: timeInputToDayMinute(values.time.startTime),
+    durationMinutes: getDurationMinutes(values.time),
   };
 }
