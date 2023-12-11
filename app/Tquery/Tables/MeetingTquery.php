@@ -74,7 +74,7 @@ readonly class MeetingTquery extends TqService
                 fn(string $tableName) => //
                     "select json_arrayagg(`meeting_attendants`.`user_id`) from `meeting_attendants`"
                     . $where,
-                "$attendanceName.ids",
+                "$attendanceName.*.id",
             );
             $config->addQuery(
                 TqDataTypeEnum::list,
@@ -83,7 +83,7 @@ readonly class MeetingTquery extends TqService
                     "select json_arrayagg(replace(replace(`users`.`name`,'ó','u'),'Ó','U')) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id`"
                     . $where,
-                "$attendanceName.names",
+                "$attendanceName.*.name",
             );
         }
         $config->addCount();
