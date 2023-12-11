@@ -4,22 +4,23 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 
 ### Typy danych i operatory filtrów
 
-| typ kolumny  | null | = | in   | has* | cmp | like | select | sort |
-|--------------|------|---|------|------|-----|------|--------|------|
-| **typy danych:**
-| bool         | +    | + | .    | .    | .   | .    | +      | +    |
-| date         | +    | + | +    | .    | +   | .    | +      | +    |
-| datetime     | +    | . | .    | .    | +   | .    | +      | +    |
-| int          | +    | + | +    | .    | +   | +    | +      | +    |
-| string       | +    | + | +    | .    | +   | +    | +      | +    |
-| text         | +    | . | .    | .    | .   | +    | +?(8)  | .    |
-| uuid         | +    | + | +    | .    | .   | .    | +      | .    |
-| dict(1)      | *    | * | *    | .    | .   | .    | *      | *    |
-| dict_list(3) | *    | * | .    | *    | .   | .    | *      | .    |
-| object(2)    | *    | . | .    | .    | .   | .    | *      | .    |
-| list(4)      | *    | . | .    | .    | .   | .    | *      | .    |
-| **inne:**
-| count(5)     | .    | . | .    | .    | .   | .    | +      | +    |
+| typ kolumny      | null | = | in | has* | cmp | like | select | sort |
+|------------------|------|---|----|------|-----|------|--------|------|
+| **typy danych:** |
+| bool             | +    | + | .  | .    | .   | .    | +      | +    |
+| date             | +    | + | +  | .    | +   | .    | +      | +    |
+| datetime         | +    | . | .  | .    | +   | .    | +      | +    |
+| int              | +    | + | +  | .    | +   | +    | +      | +    |
+| string           | +    | + | +  | .    | +   | +    | +      | +    |
+| text             | +    | . | .  | .    | .   | +    | +?(8)  | .    |
+| uuid             | +    | + | +  | .    | .   | .    | +      | .    |
+| dict(1)          | *    | * | *  | .    | .   | .    | +      | *    |
+| dict_list(3)     | *    | * | .  | *    | .   | .    | +      | .    |
+| uuid_list(3)     | *    | * | .  | *    | .   | .    | +      | .    |
+| list(4)          | *    | . | .  | .    | .   | .    | +      | .    |
+| object(2)        | *    | . | .  | .    | .   | .    | *      | .    |
+| **inne:**        |
+| count(5)         | .    | . | .  | .    | .   | .    | +      | +    |
 
 - dla wszystkich porównań `val` powinno być (zależnie od typu porównania, wartością lub listą)
   - tego samego typu co kolumna dla `bool`, `int`, `string`, `text`-`string`
@@ -52,7 +53,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 
 - `(1)` - pojedyncza wartość słownikowa, zwracana jako uuid
 - `(2)` - obiekt o dowolnej strukturze, ustalonej z frontendem
-- `(3)` - wiele wartości słownikowych, zwracanych jako lista uuid
+- `(3)` - wiele wartości słownikowych, zwracanych jako lista uuid lub lista uuid np. użytkowników
 - `(4)` - lista obiektów/wartości o dowolnej strukturze, ustalonej z frontendem
 - `(5)` - liczba zgrupowanych rekordów, jeżeli tquery było wywołane z opcją `distnct=true`
 - `(8)` - mógłby to być opcją typu substring(256), żeby nie zwracać 100 wierszy po 4kb tekstu, a może nie musi
