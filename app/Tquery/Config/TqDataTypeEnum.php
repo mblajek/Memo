@@ -28,6 +28,7 @@ enum TqDataTypeEnum
     case dict_nullable;
     case text_nullable;
     //list
+    case dict_list;
     case uuid_list;
     case list;
     // additional
@@ -74,7 +75,7 @@ enum TqDataTypeEnum
     public function isSortable(): bool
     {
         return match ($this->notNullBaseType()) {
-            self::uuid, self::text => false,
+            self::uuid, self::text, self::dict_list, self::uuid_list, self::list => false,
             default => true,
         };
     }
