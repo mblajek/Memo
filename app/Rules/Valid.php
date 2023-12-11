@@ -90,7 +90,7 @@ class Valid extends AbstractDataRule
         bool $sometimes = false,
         bool $nullable = false,
     ): array {
-        return self::base($sometimes, $nullable, ['string', 'date_format:Y-m-d\\TH:i:sp'], $rules);
+        return self::base($sometimes, $nullable, ['string', 'date_format:Y-m-d\\TH:i:s\\Z'], $rules);
     }
 
     private readonly array $rules;

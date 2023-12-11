@@ -199,12 +199,14 @@ class User extends Authenticatable
 
     public static function getInsertValidator(): array
     {
-        return self::processRules(static::validationRules(false, true, false));
+        return self::processRules(static::validationRules(isResource: false, isInsert: true, isPatch: false));
     }
 
     public static function getPatchValidator(User $user): array
     {
-        return self::processRules(static::validationRules(false, false, true, $user));
+        return self::processRules(
+            static::validationRules(isResource: false, isInsert: false, isPatch: true, original: $user)
+        );
     }
 
     public function members(): HasMany
