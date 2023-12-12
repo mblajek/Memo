@@ -4,9 +4,11 @@ namespace App\Tquery\Tables;
 
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
+use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Models\UuidEnum\MeetingAttributeUuidEnum;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
+use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\TqBuilder;
@@ -93,7 +95,7 @@ readonly class MeetingTquery extends TqService
             'resources.count',
         );
         $config->addQuery(
-            TqDataTypeEnum::dict_list,
+            new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::MeetingResource),
             fn(string $tableName) => //
             "select json_arrayagg(`meeting_resources`.`resource_dict_id`) $resourceFromWhere",
             'resources.*.dict_id',

@@ -27,7 +27,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
             '' => Valid::array(keys: array_merge(['type', 'column', 'op', 'inv'], $nullOperator ? [] : ['val'])),
         ], $path);
         $value = null;
-        $valueValidator = $column->type->filterValueValidator($operator);
+        $valueValidator = $column->type->filterValueValidator($column, $operator);
         if (!$nullOperator) {
             if (in_array($operator, TqFilterOperator::ARR)) {
                 $value = self::validate($data, [

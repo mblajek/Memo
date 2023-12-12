@@ -46,6 +46,22 @@ enum TqDataTypeEnum
         };
     }
 
+    public function isDict(): bool
+    {
+        return match ($this) {
+            self::dict, self::dict_nullable, self::dict_list => true,
+            default => false,
+        };
+    }
+
+    public function isList(): bool
+    {
+        return match ($this) {
+            self::dict_list, self::uuid_list, self::list => true,
+            default => false,
+        };
+    }
+
     public function notNullType(): self
     {
         return match ($this) {
@@ -115,7 +131,7 @@ enum TqDataTypeEnum
         );
     }
 
-    public function filterValueValidator(TqFilterOperator $operator): array
+    public function filterValueValidator(TqColumnConfig $column, TqFilterOperator $operator): array
     {
         if (in_array($operator, TqFilterOperator::LIKE, true)) {
             return Valid::string($operator === TqFilterOperator::regexp ? [new RegexpIsValidRule()] : []);
@@ -127,7 +143,8 @@ enum TqDataTypeEnum
             self::int => Valid::int(),
             self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED, true)
                 ? Valid::trimmed() : Valid::string(),
-            self::uuid, self::dict => Valid::uuid(),
+            self::uuid => Valid::uuid(),
+            self::dict => Valid::dict($column->dictionaryId),
             default => FatalExceptionFactory::tquery(),
         };
     }
