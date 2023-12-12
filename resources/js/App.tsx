@@ -23,6 +23,7 @@ const App: VoidComponent = () => {
       <LeafRoute routeKey="login" path="/login" component={LoginPage} />
       <Route path="/" component={RootPage}>
         <UnknownNotFound />
+        <Route path="/" component={() => <Navigate href="/help" />} />
         <Show when={DEV}>
           <DevRoutes />
         </Show>

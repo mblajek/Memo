@@ -32,8 +32,8 @@ readonly class TqEngine
         $debug = (App::hasDebugModeEnabled() ? ['sql' => $this->builder->getSql(true)] : []);
         try {
             return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
-        } catch (Throwable) {
-            throw FatalExceptionFactory::tquery($debug);
+        } catch (Throwable $error) {
+            throw FatalExceptionFactory::tquery($debug ? (['message' => $error->getMessage()] + $debug) : []);
         }
     }
 
