@@ -79,7 +79,7 @@ class Meeting extends Model
                 new MemberExistsRule(AttendanceType::Client),
             ]),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
-            'resources.*.resource_dict_id' =>Valid::dict(
+            'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,
                 [new UniqueWithMemoryRule('resource')],
             ),
