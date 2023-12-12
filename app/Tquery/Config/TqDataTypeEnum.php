@@ -40,7 +40,8 @@ enum TqDataTypeEnum
     {
         return match ($this) {
             self::bool_nullable, self::date_nullable, self::datetime_nullable, self::int_nullable,
-            self::string_nullable, self::uuid_nullable, self::dict_nullable, self::text_nullable => true,
+            self::string_nullable, self::uuid_nullable, self::dict_nullable, self::text_nullable,
+            self::dict_list, self::uuid_list, self::list => true, // list have "null" operator
             default => false,
         };
     }

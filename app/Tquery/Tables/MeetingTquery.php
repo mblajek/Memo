@@ -41,6 +41,7 @@ readonly class MeetingTquery extends TqService
         $config->addSimple(TqDataTypeEnum::int, 'start_dayminute');
         $config->addSimple(TqDataTypeEnum::int, 'duration_minutes');
         $config->addSimple(TqDataTypeEnum::text_nullable, 'notes');
+        $config->addSimple(TqDataTypeEnum::bool, 'is_remote');
         $config->addAttribute(MeetingAttributeUuidEnum::Category);
         $config->addAttribute(MeetingAttributeUuidEnum::Type);
         $config->addAttribute(MeetingAttributeUuidEnum::Status);
