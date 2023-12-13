@@ -1,5 +1,5 @@
 export * from "./ColumnName";
-export * from "./FilterIcon";
+export * from "./FilterIconButton";
 export * from "./Header";
 export * from "./IdColumn";
 export * from "./Pagination";
