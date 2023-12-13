@@ -24,11 +24,12 @@ final readonly class TqColumnConfig
         private string|Closure $columnOrQuery,
         public ?TqTableAliasEnum $table,
         public string $columnAlias,
-        public ?Attribute $attribute = null,
-        ?Closure $selector = null,
-        ?Closure $filter = null,
-        ?Closure $sorter = null,
-        ?Closure $renderer = null,
+        public ?string $dictionaryId,
+        public ?Attribute $attribute,
+        ?Closure $selector,
+        ?Closure $filter,
+        ?Closure $sorter,
+        ?Closure $renderer,
     ) {
         $this->selector = $selector ?? TqSelectGenerator::getSelect($this);
         $this->filter = $filter ?? TqFilterGenerator::getFilter($this);
