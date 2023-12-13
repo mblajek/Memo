@@ -56,17 +56,17 @@ render(() => {
           return <FatalError error={error} />;
         }}
       >
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            className: "mr-4",
+            duration: TOAST_DURATION_SECS * 1000,
+          }}
+        />
         <MetaProvider>
           <InitializeTanstackQuery>
             <Router>
               <App />
-              <Toaster
-                position="bottom-right"
-                toastOptions={{
-                  className: "mr-4",
-                  duration: TOAST_DURATION_SECS * 1000,
-                }}
-              />
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>
