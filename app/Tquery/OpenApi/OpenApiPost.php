@@ -14,7 +14,7 @@ class OpenApiPost extends OA\Post
         PermissionDescribe $permissions,
         string $summary,
         string $tag,
-        bool $isFacility = false,
+        array $parameters = [],
     ) {
         parent::__construct(
             path: $path,
@@ -63,15 +63,7 @@ class OpenApiPost extends OA\Post
                 )
             ),
             tags: [$tag],
-            parameters: $isFacility ? [
-                new OA\Parameter(
-                    name: 'facility',
-                    description: 'Facility id',
-                    in: 'path',
-                    required: true,
-                    schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-                ),
-            ] : [],
+            parameters: $parameters,
             responses: [
                 new OA\Response(
                     response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
