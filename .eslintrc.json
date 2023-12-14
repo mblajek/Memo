@@ -65,6 +65,13 @@
     ],
     "no-unused-expressions": "warn",
     "no-unused-vars": "off",
+    "no-warning-comments": [
+      "warn",
+      {
+        "terms": ["DO NOT SUBMIT"],
+        "location": "anywhere"
+      }
+    ],
     "sort-imports": "off",
     "sort-keys": "off"
   },

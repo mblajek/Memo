@@ -9,7 +9,7 @@ import {translateError} from "../error_util";
 import {Api} from "../types";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
-import {Column, ColumnName, DataRequest, DataResponse, Filter} from "./types";
+import {Column, ColumnName, DataRequest, DataResponse, Filter, Sort, SortItem} from "./types";
 
 export interface ColumnConfig {
   readonly name: string;
@@ -43,12 +43,14 @@ const DEFAULT_PAGE_SIZE = 50;
 export function createTableRequestCreator({
   columnsConfig,
   intrinsicFilter = () => undefined,
+  intrinsicSort = () => undefined,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
   allInitialised = () => true,
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
+  intrinsicSort?: Accessor<Sort | undefined>;
   initialSort?: SortingState;
   initialPageSize?: number;
   allInitialised?: Accessor<boolean>;
@@ -85,6 +87,9 @@ export function createTableRequestCreator({
         let restoredColumnVisibility = prevColumnVisibility;
         // Revert to the previous visibility state if possible, otherwise show all columns.
         if (!restoredColumnVisibility || !Object.values(restoredColumnVisibility).some((v) => v)) {
+          if (!columnsConfig().length) {
+            return {};
+          }
           restoredColumnVisibility = {};
           for (const {name} of columnsConfig()) {
             restoredColumnVisibility[name] = true;
@@ -142,6 +147,24 @@ export function createTableRequestCreator({
       if (!allInitialisedInternal() || !allInitialised()) {
         return undefined;
       }
+      const sort: SortItem[] = sorting().map(({id, desc}) => ({
+        type: "column",
+        column: id,
+        desc,
+      }));
+      const intrinsicSortToApply = intrinsicSort()?.filter((sortItem) => {
+        if (sortItem.type === "column" && sort.some((s) => s.type === "column" && s.column === sortItem.column)) {
+          // Skip repeated columns.
+          return false;
+        }
+        return true;
+      });
+      for (const sortItem of intrinsicSortToApply || []) {
+        if (sortItem.type === "column" && sort.some((s) => s.type === "column" && s.column === sortItem.column)) {
+          continue;
+        }
+        sort.push(sortItem);
+      }
       return {
         columns: dataColumns(),
         filter: filterReductor()?.reduce({
@@ -153,11 +176,7 @@ export function createTableRequestCreator({
             columnFiltersJoined(),
           ].filter(NON_NULLABLE),
         }),
-        sort: sorting().map(({id, desc}) => ({
-          type: "column",
-          column: id,
-          desc,
-        })),
+        sort,
         paging: {
           number: pagination().pageIndex + 1,
           size: pagination().pageSize,

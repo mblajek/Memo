@@ -9,48 +9,52 @@
   > .scrollingWrapper {
     @apply overflow-x-auto;
 
-    > .tableBg {
-      @apply w-max bg-gray-300 mr-16;
+    > .scrollToTopElement {
+      @apply w-max;
 
-      > .table {
-        @apply grid p-px gap-px;
+      > .tableBg {
+        @apply w-max bg-gray-300 mr-16;
 
-        > .headerRow {
-          @apply contents;
+        > .table {
+          @apply grid p-px gap-px;
 
-          > .cell {
-            @apply outline outline-1 outline-gray-400 bg-gray-100;
-            min-height: 30px;
-          }
-        }
+          > .headerRow {
+            @apply contents;
 
-        > .dataRow {
-          @apply contents;
-
-          > .cell {
-            @apply bg-white text-black rounded-sm px-1.5 py-1 flex items-center overflow-hidden;
-            min-height: 30px;
+            > .cell {
+              @apply outline outline-1 outline-gray-400 bg-gray-100;
+              min-height: 30px;
+            }
           }
 
-          &:hover > .cell {
-            @apply bg-hover;
+          > .dataRow {
+            @apply contents;
+
+            > .cell {
+              @apply bg-white text-black rounded-sm px-1.5 py-1 flex items-center overflow-hidden;
+              min-height: 30px;
+            }
+
+            &:hover > .cell {
+              @apply bg-hover;
+            }
           }
-        }
 
-        > .wideRow {
-          grid-column: 1 / -1;
-          @apply bg-white p-2 text-gray-500 text-center;
-        }
+          > .wideRow {
+            grid-column: 1 / -1;
+            @apply bg-white p-2 text-gray-500 text-center;
+          }
 
-        > .bottomBorder {
-          grid-column: 1 / -1;
-          @apply border-b border-b-gray-300;
-          margin-top: -5px;
-        }
+          > .bottomBorder {
+            grid-column: 1 / -1;
+            @apply border-b border-b-gray-300;
+            margin-top: -5px;
+          }
 
-        &.dimmed {
-          > .dataRow > .cell {
-            @apply bg-opacity-70 text-opacity-30;
+          &.dimmed {
+            > .dataRow > .cell {
+              @apply bg-opacity-70 text-opacity-30;
+            }
           }
         }
       }
@@ -65,7 +69,7 @@
       @apply pr-2;
     }
 
-    > .scrollingWrapper > .tableBg > .table {
+    > .scrollingWrapper > .scrollToTopElement > .tableBg > .table {
       > .headerRow > .cell {
         @apply sticky top-px;
       }

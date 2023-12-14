@@ -138,17 +138,15 @@ export class FilterReductor {
         }
         if (Array.isArray(val)) {
           const vals = new Set<string | number>(val);
-          function deleteEmptyVal() {
-            return vals.delete("");
-          }
-          function deleteUntrimmedVals() {
+          /** Removes from vals all invalid values, i.e. empty and untrimmed strings. Returns whether modified. */
+          function deleteInvalidVals() {
             let modified = false;
             for (const v of vals) {
               if (typeof v !== "string") {
-                // No strings in the vals.
+                // Assume no strings in the vals.
                 return false;
               }
-              if (v !== v.trim()) {
+              if (!v || v !== v.trim()) {
                 vals.delete(v);
                 modified = true;
               }
@@ -157,53 +155,40 @@ export class FilterReductor {
           }
           const valsArray = () => [...vals] as string[] | number[];
           if (op === "in") {
-            const containedEmpty = deleteEmptyVal();
-            deleteUntrimmedVals();
-            return this.reduce({
-              type: "op",
-              op: "|",
-              val: [
-                containedEmpty ? nullFilter() : "never",
-                vals.size === 0
-                  ? "never"
-                  : vals.size === 1
-                    ? {type: "column", column, op: "=", val: valsArray()[0]!}
-                    : {type: "column", column, op: "in", val: valsArray()},
-              ],
-            });
+            deleteInvalidVals();
+            return vals.size === 0
+              ? "never"
+              : vals.size === 1
+                ? {type: "column", column, op: "=", val: valsArray()[0]!}
+                : {type: "column", column, op: "in", val: valsArray()};
+          } else if (op === "=") {
+            const hadInvalidVals = deleteInvalidVals();
+            return hadInvalidVals
+              ? "never"
+              : vals.size === 0
+                ? nullFilter()
+                : {type: "column", column, op: "=", val: valsArray() as /* currently only */ string[]};
           } else {
             const stringValsArray = valsArray as () => string[];
             if (op === "has_all") {
-              return vals.size === 0
-                ? "always"
-                : deleteEmptyVal() || deleteUntrimmedVals()
-                  ? "never"
+              const hadInvalidVals = deleteInvalidVals();
+              return hadInvalidVals
+                ? "never"
+                : vals.size === 0
+                  ? "always"
                   : vals.size === 1
                     ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
                     : {type: "column", column, op: "has_all", val: stringValsArray()};
             } else if (op === "has_any") {
-              deleteEmptyVal();
-              deleteUntrimmedVals();
+              deleteInvalidVals();
               return vals.size === 0
                 ? "never"
                 : vals.size === 1
                   ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
                   : {type: "column", column, op: "has_any", val: stringValsArray()};
             } else if (op === "has_only") {
-              deleteEmptyVal();
-              deleteUntrimmedVals();
-              return this.reduce({
-                type: "op",
-                op: "|",
-                val: [
-                  nullFilter(),
-                  vals.size === 0
-                    ? "never"
-                    : vals.size === 1
-                      ? {type: "column", column, op: "=", val: stringValsArray()}
-                      : {type: "column", column, op: "has_only", val: stringValsArray()},
-                ],
-              });
+              deleteInvalidVals();
+              return vals.size === 0 ? nullFilter() : {type: "column", column, op: "has_only", val: stringValsArray()};
             }
           }
           throw new Error(`Bad filter: ${JSON.stringify(filter)}`);

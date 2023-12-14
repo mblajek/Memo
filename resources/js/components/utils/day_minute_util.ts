@@ -19,13 +19,13 @@ export function dayMinuteToHM(dayMinute: number) {
   };
 }
 
-export function formatDayMinuteHM(dayMinute: number) {
+export function formatDayMinuteHM(dayMinute: number, formatOpts?: Intl.DateTimeFormatOptions) {
   return DateTime.fromObject({
     year: 2000,
     month: 1,
     day: 1,
     ...dayMinuteToHM(dayMinute),
-  }).toLocaleString({hour: "numeric", minute: "2-digit"});
+  }).toLocaleString({hour: "numeric", minute: "2-digit", ...formatOpts});
 }
 
 /** Checks whether the time span is at least partially on the given day. */

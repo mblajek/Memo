@@ -65,7 +65,7 @@ user:
   password: "hasło"
   hasEmailVerified: "e-mail zweryfikowany"
   members: "przypisane placówki"
-  facilityCount: "liczba placówek"
+  facilities.count: "liczba placówek"
 
 staff:
   _name: "pracownik"
@@ -82,7 +82,7 @@ meeting:
   date: "data"
   startDayminute: "godzina rozpoczęcia"
   durationMinutes: "długość"
-  categoryDictId: "$t(dictionary.meetingCategory._name)"
+  categoryDictId: "kategoria"
   typeDictId: "typ"
   statusDictId: "$t(dictionary.meetingStatus._name)"
   staff: "$t(models.staff._name_plural)"
@@ -91,3 +91,6 @@ meeting:
   isRemote: "spotkanie zdalne"
   resources: "zasoby"
   notes: "$t(models.generic.notes)"
+  createdAt: "$t(models.generic.createdAt)"
+  updatedAt: "$t(models.generic.updatedAt)"
+  createdBy: "$t(models.generic.createdBy)"

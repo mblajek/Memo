@@ -6,10 +6,13 @@ import {Match, Show, Switch, VoidComponent} from "solid-js";
 interface SelectItemSymbolProps {
   readonly symbol: string;
   readonly class?: string;
+  readonly title?: string;
 }
 
 export const SelectItemSymbol: VoidComponent<SelectItemSymbolProps> = (props) => (
-  <span class={cx("font-semibold", props.class)}>{props.symbol}</span>
+  <span class={cx("font-semibold", props.class)} title={props.title}>
+    {props.symbol}
+  </span>
 );
 
 interface SelectItemDescriptionProps {
@@ -40,7 +43,9 @@ export const SelectItemLabelOnList: VoidComponent<SelectItemLabelProps> = (props
 
 export const SelectItemLabel: VoidComponent<SelectItemLabelProps> = (props) => (
   <Switch>
-    <Match when={props.symbol}>{(symbol) => <SelectItemSymbol symbol={symbol()} class={props.symbolClass} />}</Match>
+    <Match when={props.symbol}>
+      {(symbol) => <SelectItemSymbol symbol={symbol()} class={props.symbolClass} title={props.description} />}
+    </Match>
     <Match when={props.description}>{(desc) => <SelectItemDescription description={desc()} />}</Match>
   </Switch>
 );
@@ -48,7 +53,7 @@ export const SelectItemLabel: VoidComponent<SelectItemLabelProps> = (props) => (
 export function makeSelectItem(opts: Partial<SelectItem> & SelectItemLabelProps = {}) {
   return {
     value: opts.symbol || "",
-    text: `${opts.symbol};${opts.description}`,
+    text: `${opts.symbol} ${opts.description}`,
     label: () => <SelectItemLabel {...opts} />,
     labelOnList: () => <SelectItemLabelOnList {...opts} />,
     ...opts,
