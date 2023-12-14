@@ -29,10 +29,10 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         $value = null;
         $valueValidator = $column->type->filterValueValidator($column, $operator);
         if (!$nullOperator) {
-            if (in_array($operator, TqFilterOperator::ARR)) {
+            if (in_array($operator, TqFilterOperator::LIST_FILTER)) {
                 $value = self::validate($data, [
                     'val' => Valid::list(),
-                    'val.*' => $valueValidator,
+                    'val.*' => [...$valueValidator, 'distinct:strict'],
                 ], $path)['val'];
             } else {
                 $value = self::validate($data, [

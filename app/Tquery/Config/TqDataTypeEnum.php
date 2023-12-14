@@ -126,7 +126,9 @@ enum TqDataTypeEnum
                 ],
                 self::uuid, self::dict => [TqFilterOperator::eq, TqFilterOperator::in],
                 self::text => TqFilterOperator::LIKE,
-                default => FatalExceptionFactory::tquery(),
+                self::dict_list, self::uuid_list, => TqFilterOperator::LIST_COLUMN,
+                self::list => [],
+                default => FatalExceptionFactory::tquery()->throw(),
             }
         );
     }
@@ -141,11 +143,11 @@ enum TqDataTypeEnum
             self::date => Valid::date(),
             self::datetime => Valid::datetime(),
             self::int => Valid::int(),
-            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED, true)
-                ? Valid::trimmed() : Valid::string(),
-            self::uuid => Valid::uuid(),
-            self::dict => Valid::dict($column->dictionaryId),
-            default => FatalExceptionFactory::tquery(),
+            self::string, self::text => in_array($operator, TqFilterOperator::LIKE, true)
+                ? Valid::string() : Valid::trimmed(),
+            self::uuid, self::uuid_list => Valid::uuid(),
+            self::dict, self::dict_list => Valid::dict($column->dictionaryId),
+            default => FatalExceptionFactory::tquery()->throw(),
         };
     }
 
