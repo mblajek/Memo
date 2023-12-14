@@ -34,6 +34,10 @@ export function invert(filter: FilterH, invert?: boolean): FilterH {
   }
 }
 
+function otherBoolOp(op: "&" | "|") {
+  return op === "&" ? "|" : "&";
+}
+
 export class FilterReductor {
   private readonly columnsData = new Map<ColumnName, ColumnSchema>();
 
@@ -78,6 +82,9 @@ export class FilterReductor {
           if (subFilter.type === "op" && subFilter.op === op && !subFilter.inv) {
             // Unnest a bool operation of the same type.
             subFiltersToProcess.push(...subFilter.val.toReversed());
+          } else if (subFilter.type === "op" && subFilter.op === otherBoolOp(op) && subFilter.inv) {
+            // Invert the inverted nested operation of the other type using De Morgan's laws.
+            subFiltersToProcess.push(...subFilter.val.map((f) => invert(f)).toReversed());
           } else {
             reducedSubFilters.push(subFilter);
           }
@@ -111,7 +118,7 @@ export class FilterReductor {
         if (val === "") {
           // Frontend treats the null values in string columns as empty strings (because this is what
           // is reasonable for the user).
-          if (op === "=" || op === "==" || op === "lv" || op === "<" || op === "<=") {
+          if (op === "=" || op === "==" || op === "lv" || op === "<=") {
             // Matches only null strings.
             return nullFilter();
           } else if (op === ">") {
@@ -120,7 +127,7 @@ export class FilterReductor {
           } else if (op === ">=" || op === "v%" || op === "%v" || op === "%v%" || op === "/v/") {
             // Matches everything.
             return "always";
-          } else if (op === "has") {
+          } else if (op === "<" || op === "has") {
             // Even a null column is not considered to "have an empty string", but rather to contain nothing.
             return "never";
           } else if (op === "in" || op === "has_all" || op === "has_any" || op === "has_only") {
