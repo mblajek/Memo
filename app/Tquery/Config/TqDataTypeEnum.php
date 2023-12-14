@@ -126,7 +126,7 @@ enum TqDataTypeEnum
                 ],
                 self::uuid, self::dict => [TqFilterOperator::eq, TqFilterOperator::in],
                 self::text => TqFilterOperator::LIKE,
-                self::dict_list, self::uuid_list, => TqFilterOperator::LIST_COLUMN,
+                self::dict_list, self::uuid_list, => [TqFilterOperator::eq, ...TqFilterOperator::LIST_COLUMN],
                 self::list => [],
                 default => FatalExceptionFactory::tquery()->throw(),
             }

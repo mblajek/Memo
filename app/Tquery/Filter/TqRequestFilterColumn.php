@@ -29,7 +29,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         $value = null;
         $valueValidator = $column->type->filterValueValidator($column, $operator);
         if (!$nullOperator) {
-            if (in_array($operator, TqFilterOperator::LIST_FILTER)) {
+            if ($column->type->isList()) {
                 $value = self::validate($data, [
                     'val' => Valid::list(),
                     'val.*' => [...$valueValidator, 'distinct:strict'],
@@ -70,7 +70,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         $inverse = ($this->inverse xor $invert);
 
         $sqlPrefix = $this->operator->sqlPrefix();
-        $sqlOperator = $this->operator->sqlOperator();
+        $sqlOperator = $this->operator->sqlOperator($this->column->type);
 
         if ($sqlOperator) {
             $builder->where(
