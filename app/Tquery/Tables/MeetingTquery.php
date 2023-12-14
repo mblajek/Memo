@@ -75,7 +75,7 @@ readonly class MeetingTquery extends TqService
                 TqDataTypeEnum::uuid_list,
                 fn(string $tableName) => //
                 "select json_arrayagg(`meeting_attendants`.`user_id`) from `meeting_attendants` $attendantWhere",
-                "$attendanceName.*.id",
+                "$attendanceName.*.userId",
             );
             $config->addQuery(
                 TqDataTypeEnum::list,
@@ -84,6 +84,15 @@ readonly class MeetingTquery extends TqService
                     "select json_arrayagg(replace(replace(`users`.`name`,'ó','u'),'Ó','U')) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
                 "$attendanceName.*.name",
+            );
+            $config->addQuery(
+                TqDataTypeEnum::list,
+                fn(string $tableName) => //
+                    "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
+                    . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
+                    . ")) from `meeting_attendants`"
+                    . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
+                $attendanceName,
             );
         }
 
