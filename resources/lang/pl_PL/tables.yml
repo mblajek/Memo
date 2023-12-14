@@ -67,6 +67,7 @@ tables:
       statusDictId: "$t(models.meeting.statusDictId)"
       staff.*.name: "$t(models.meeting.staff)"
       clients.*.name: "$t(models.meeting.clients)"
+      isRemote: "$t(models.meeting.isRemote)"
       notes: "$t(models.meeting.notes)"
       resources.*.dictId: "$t(models.meeting.resources)"
       createdAt: "$t(models.meeting.createdAt)"

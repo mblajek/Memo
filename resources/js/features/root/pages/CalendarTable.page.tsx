@@ -42,6 +42,7 @@ export default (() => {
           {name: "statusDictId"},
           {name: "staff.*.name"},
           {name: "clients.*.name"},
+          {name: "isRemote"},
           {name: "notes"},
           {name: "resources.*.dictId"},
           {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
