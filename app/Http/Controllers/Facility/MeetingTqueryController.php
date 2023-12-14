@@ -9,6 +9,7 @@ use App\Tquery\Engine\TqService;
 use App\Tquery\OpenApi\OpenApiGet;
 use App\Tquery\OpenApi\OpenApiPost;
 use App\Tquery\Tables\MeetingTquery;
+use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -28,9 +29,9 @@ class MeetingTqueryController extends ApiController
     #[OpenApiGet(
         path: '/api/v1/facility/{facility}/meeting/tquery',
         permissions: new PermissionDescribe(Permission::facilityAdmin),
-        summary: 'All facilities tquery',
+        summary: 'Facility meetings tquery',
         tag: 'Facility meeting',
-        isFacility: true,
+        parameters: [new FacilityParameter()],
     )]
     public function get(): JsonResponse
     {
@@ -40,9 +41,9 @@ class MeetingTqueryController extends ApiController
     #[OpenApiPost(
         path: '/api/v1/facility/{facility}/meeting/tquery',
         permissions: new PermissionDescribe(Permission::facilityAdmin),
-        summary: 'All facilities tquery',
+        summary: 'Facility meetings tquery',
         tag: 'Facility meeting',
-        isFacility: true,
+        parameters: [new FacilityParameter()],
     )]
     public function post(
         Request $request,
