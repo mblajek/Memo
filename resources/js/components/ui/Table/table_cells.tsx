@@ -24,17 +24,11 @@ export function useTableCells() {
   const dictionaries = useDictionaries();
   return {
     defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
-    default: cellFunc((v) => <div class="wrapText">{String(v)}</div>),
+    default: cellFunc((v) => <div class="wrapText">{defaultFormatValue(v)}</div>),
     bool: cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no"))),
     date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
     datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
     int: cellFunc<number>((v) => <span class="w-full text-right">{NUMBER_FORMAT.format(v)}</span>),
-    list: cellFunc<readonly unknown[]>((v) => (
-      <ul>
-        <Index each={v}>{(item) => <li>{String(item())}</li>}</Index>
-      </ul>
-    )),
-    object: cellFunc<unknown>((v) => <pre>{JSON.stringify(v)}</pre>),
     uuid: cellFunc<string>((v) => <IdColumn id={v} />),
     uuidList: cellFunc<readonly string[]>((v) => (
       <div class="w-full flex flex-col">
@@ -48,6 +42,22 @@ export function useTableCells() {
       </ul>
     )),
   };
+}
+
+function defaultFormatValue(value: unknown) {
+  if (value == undefined) {
+    return "";
+  } else if (Array.isArray(value)) {
+    return (
+      <ul>
+        <Index each={value}>{(item) => <li>{defaultFormatValue(item())}</li>}</Index>
+      </ul>
+    );
+  } else if (typeof value === "object") {
+    return JSON.stringify(value);
+  } else {
+    return String(value);
+  }
 }
 
 export function cellFunc<V>(
