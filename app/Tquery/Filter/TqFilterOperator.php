@@ -3,6 +3,7 @@
 namespace App\Tquery\Filter;
 
 use App\Exceptions\FatalExceptionFactory;
+use App\Tquery\Config\TqDataTypeEnum;
 
 enum TqFilterOperator: string
 {
@@ -49,10 +50,11 @@ enum TqFilterOperator: string
         };
     }
 
-    public function sqlOperator(): string
+    public function sqlOperator(TqDataTypeEnum $type): string
     {
         return match ($this) {
-            self::eq => '=',
+            // todo: implement "=" filter for array
+            self::eq => $type->isList() ? '= null or true or null in' : '=',
             self::null => 'is null',
             self::lt => '<',
             self::le => '<=',
