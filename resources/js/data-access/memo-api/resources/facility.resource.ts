@@ -1,8 +1,8 @@
 /**
  * @see `/app/Http/Resources/FacilityResource.php`
  */
-export type FacilityResource = {
-  id: string;
-  name: string;
-  url: string;
-};
+export interface FacilityResource {
+  readonly id: string;
+  readonly name: string;
+  readonly url: string;
+}
