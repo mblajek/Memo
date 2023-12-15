@@ -109,6 +109,13 @@ readonly class MeetingTquery extends TqService
             "select json_arrayagg(`meeting_resources`.`resource_dict_id`) $resourceFromWhere",
             'resources.*.dict_id',
         );
+        $config->addQuery(
+            TqDataTypeEnum::list ,
+            fn(string $tableName) => //
+            "select json_arrayagg(json_object('resourceDictId', `meeting_resources`.`resource_dict_id`"
+            . ")) $resourceFromWhere",
+            'resources',
+        );
 
         $config->addCount();
         return $config;
