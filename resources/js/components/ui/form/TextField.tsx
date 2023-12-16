@@ -2,6 +2,7 @@ import {htmlAttributes} from "components/utils";
 import {JSX, VoidComponent, splitProps} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
+import {TextInput} from "../TextInput";
 
 export interface TextFieldProps
   extends Pick<
@@ -17,14 +18,11 @@ export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["name", "label"]);
   return (
     <FieldBox {...props}>
-      <input
+      <TextInput
         id={props.name}
         name={props.name}
         autocomplete="off"
-        {...htmlAttributes.merge(inputProps, {
-          class:
-            "min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
-        })}
+        {...htmlAttributes.merge(inputProps, {class: "min-h-big-input px-2"})}
         aria-labelledby={labelIdForField(props.name)}
       />
     </FieldBox>

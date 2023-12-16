@@ -28,6 +28,26 @@ tables:
       facilities.count: "$t(models.user.facilities.count)"
       actions: "$t(tables.tables.generic.columnNames.actions)"
 
+  staff:
+    tableName: "$t(models.staff._name_plural)"
+    summary__zero: "Brak pracowników"
+    summary__one: "{{count, number}} pracownik"
+    summary__few: "{{count, number}} pracowników"
+    summary__many: "{{count, number}} pracowników"
+    columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
+      name: "$t(models.staff.name)"
+
+  clients:
+    tableName: "$t(models.client._name_plural)"
+    summary__zero: "Brak klientów"
+    summary__one: "{{count, number}} klient"
+    summary__few: "{{count, number}} klientów"
+    summary__many: "{{count, number}} klientów"
+    columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
+      name: "$t(models.client.name)"
+
   userFacilities:
     tableName: "$t(models.user.members)"
     columnNames:
@@ -81,6 +101,8 @@ filter:
   filter_for: "filtr kolumny {{data}}"
   filter_cleared: "Brak filtra"
   filter_set: "Filtr aktywny"
+  column_filters_cleared: "Brak filtrów w kolumnach"
+  column_filters_set: "Filtry w kolumnach aktywne:"
   click_to_clear: "Kliknij aby wyczyścić"
   click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
   click_to_sync_number_range: "Kliknij aby ustawić max = min"
