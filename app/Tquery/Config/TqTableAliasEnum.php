@@ -8,12 +8,14 @@ enum TqTableAliasEnum
 {
     case created_by;
     case last_login_facility;
+    case members;
 
     public function baseTable(): TqTableEnum
     {
         return match ($this) {
             self::created_by => TqTableEnum::users,
             self::last_login_facility => TqTableEnum::facilities,
+            self::members => TqTableEnum::members,
         };
     }
 
@@ -21,8 +23,8 @@ enum TqTableAliasEnum
     {
         $joinColumn = match ($this) {
             self::created_by => $this->name,
-            self::last_login_facility => $this->name . '_id',
+            default => $this->name . '_id',
         };
-        $builder->join($joinBase, $this, $joinColumn, $left);
+        $builder->join($joinBase, $this, $joinColumn, $left, false);
     }
 }
