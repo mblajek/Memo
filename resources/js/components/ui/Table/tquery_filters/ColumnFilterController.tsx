@@ -1,5 +1,5 @@
 import {JSX, Show, VoidComponent, mergeProps} from "solid-js";
-import {FilterIcon, useTable} from "..";
+import {FilterIconButton, useTable} from "..";
 import {BoolFilterControl} from "./BoolFilterControl";
 import s from "./ColumnFilterController.module.scss";
 import {DateTimeFilterControl} from "./DateTimeFilterControl";
@@ -67,7 +67,9 @@ export const ColumnFilterController: VoidComponent<FilterControlProps> = (props)
         {(filterControl) => (
           <>
             <div class={s.filterMain}>{filterControl()()}</div>
-            <FilterIcon class={s.filterIcon} isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
+            <div>
+              <FilterIconButton isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
+            </div>
           </>
         )}
       </Show>

@@ -1,5 +1,5 @@
 .columnFilterController {
-  @apply flex items-end gap-0.5;
+  @apply flex flex-wrap items-end gap-0.5;
 
   input {
     @apply px-1;
@@ -18,7 +18,7 @@
   }
 
   .filterMain {
-    @apply flex-grow;
+    @apply flex-grow basis-0;
 
     .filterLine {
       @apply flex flex-wrap items-stretch gap-0.5 min-h-small-input;
@@ -40,9 +40,5 @@
         @apply text-opacity-5 cursor-auto;
       }
     }
-  }
-
-  .filterIcon {
-    @apply mb-1;
   }
 }
