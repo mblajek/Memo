@@ -1,3 +1,4 @@
+import {SearchInput} from "components/ui/SearchInput";
 import {Select, SelectItem} from "components/ui/form/Select";
 import {debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
@@ -12,9 +13,9 @@ interface StringColumnProps extends FilterControlProps {
 }
 
 export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) => {
+  const t = useLangFunc();
   const [mode, setMode] = createSignal("~");
   const [text, setText] = createSignal("");
-  const t = useLangFunc();
   createComputed(() => {
     if (!props.filter) {
       setMode("~");
@@ -103,11 +104,10 @@ export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) =>
         />
       </div>
       <div class={s.wideEdit}>
-        <input
+        <SearchInput
           name={`table_filter_val_${props.name}`}
-          type="search"
           autocomplete="off"
-          class="h-full w-full min-h-small-input border border-input-border rounded"
+          class="h-full w-full min-h-small-input"
           value={inputUsed() ? text() : ""}
           maxlength={inputUsed() ? undefined : 0}
           disabled={!inputUsed()}

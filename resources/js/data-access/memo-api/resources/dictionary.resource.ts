@@ -18,7 +18,7 @@ export interface DictionaryResource {
   readonly facilityId: string | null;
   readonly name: DictionaryName;
   /** The positions in the dictionary, sorted by their sort order. */
-  readonly positions: PositionResource[];
+  readonly positions: readonly PositionResource[];
   /**
    * Whether the dictionary is unmodifiable even by the admin.
    * Fixed dictionaries can be referenced by name in the code.
