@@ -1,36 +1,36 @@
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {TbFilter, TbFilterOff} from "solid-icons/tb";
 import {VoidComponent, createSignal} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 
 interface Props {
-  readonly isFiltering?: boolean;
   readonly class?: string;
-  readonly onClear?: () => void;
+  readonly isFiltering: boolean;
+  readonly onClear: () => void;
+  readonly title?: string;
 }
 
-export const FilterIcon: VoidComponent<Props> = (props) => {
+export const FilterIconButton: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const [hover, setHover] = createSignal(false);
   return (
     <Button
+      class={props.class}
       title={
-        props.isFiltering
-          ? [t("tables.filter.filter_set"), props.onClear && t("tables.filter.click_to_clear")]
-              .filter(Boolean)
-              .join("\n")
-          : t("tables.filter.filter_cleared")
+        props.title ||
+        (props.isFiltering
+          ? `${t("tables.filter.filter_set")}\n${t("tables.filter.click_to_clear")}`
+          : t("tables.filter.filter_cleared"))
       }
-      classList={{"cursor-pointer": props.isFiltering}}
+      disabled={!props.isFiltering}
       onMouseEnter={[setHover, true]}
       onMouseLeave={[setHover, false]}
       onClick={() => props.onClear?.()}
     >
       <Dynamic
         component={props.isFiltering && !hover() ? TbFilter : TbFilterOff}
-        class={props.class}
-        classList={{dimmed: !props.isFiltering}}
+        class={cx({dimmed: !props.isFiltering})}
       />
     </Button>
   );

@@ -34,6 +34,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
+import {TableFiltersClearButton} from "./TableFiltersClearButton";
 import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
 
 declare module "@tanstack/table-core" {
@@ -203,7 +204,15 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       ),
     );
   }
-  const {columnVisibility, globalFilter, getColumnFilter, sorting, pagination} = requestController;
+  const {
+    columnVisibility,
+    globalFilter,
+    getColumnFilter,
+    columnsWithActiveFilters,
+    clearColumnFilters,
+    sorting,
+    pagination,
+  } = requestController;
   createLocalStoragePersistence<PersistentState>({
     key: ["TQueryTable", entityURL, props.staticPersistenceKey].filter(NON_NULLABLE).join(":"),
     value: () => ({
@@ -313,13 +322,17 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       mode={props.mode}
       rowsIteration="Index"
       aboveTable={() => (
-        <div class="h-8 flex items-stretch gap-1">
-          <TableSearch class="flex-grow" />
+        <div class="min-h-small-input flex items-stretch gap-1">
+          <TableSearch divClass="flex-grow" />
+          <TableFiltersClearButton
+            columnsWithActiveFilters={columnsWithActiveFilters()}
+            clearColumnFilters={clearColumnFilters}
+          />
           <TableColumnVisibilityController />
         </div>
       )}
       belowTable={() => (
-        <div class="h-8 flex items-stretch gap-2">
+        <div class="min-h-small-input flex items-stretch gap-2">
           <Pagination />
           <TableSummary rowsCount={rowsCount()} />
           {props.customSectionBelowTable}

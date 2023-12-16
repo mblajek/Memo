@@ -1,27 +1,25 @@
-import {htmlAttributes, useLangFunc} from "components/utils";
-import {ParentProps, VoidComponent, createComputed, createSignal, splitProps} from "solid-js";
+import {cx, useLangFunc} from "components/utils";
+import {ParentProps, VoidComponent} from "solid-js";
 import {useTable} from ".";
+import {SearchInput} from "../SearchInput";
 
-interface Props extends htmlAttributes.div {
+interface Props {
+  readonly divClass?: string;
   readonly placeholder?: string;
 }
 
-export const TableSearch: VoidComponent<ParentProps<Props>> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["placeholder"]);
+export const TableSearch: VoidComponent<ParentProps<Props>> = (props) => {
   const t = useLangFunc();
   const table = useTable();
-  const [query, setQuery] = createSignal(table.getState().globalFilter);
-  createComputed(() => table.setGlobalFilter(query()));
+  const globalFilter = (): string => table.getState().globalFilter;
   return (
-    <div {...divProps}>
-      <input
-        class="w-full h-full px-2 border border-input-border rounded"
-        name="table_global_search"
-        type="search"
-        placeholder={props.placeholder || t("actions.search")}
-        value={query()}
-        onInput={({target: {value}}) => setQuery(value)}
-      />
-    </div>
+    <SearchInput
+      divClass={cx("flex items-stretch", props.divClass)}
+      name="table_global_search"
+      class="px-1"
+      placeholder={props.placeholder || t("actions.search")}
+      value={globalFilter()}
+      onInput={({target: {value}}) => table.setGlobalFilter(value)}
+    />
   );
 };

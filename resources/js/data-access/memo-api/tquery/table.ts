@@ -4,7 +4,7 @@ import {AxiosError} from "axios";
 import {TableTranslations} from "components/ui/Table";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
-import {Accessor, Signal, createComputed, createMemo, createSignal, on} from "solid-js";
+import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
 import {translateError} from "../error_util";
 import {Api} from "../types";
 import {FilterH, FilterReductor} from "./filter_utils";
@@ -25,6 +25,8 @@ interface RequestController {
   readonly columnVisibility: Signal<VisibilityState>;
   readonly globalFilter: Signal<string>;
   readonly getColumnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
+  readonly columnsWithActiveFilters: Accessor<string[]>;
+  readonly clearColumnFilters: () => void;
   readonly sorting: Signal<SortingState>;
   readonly pagination: Signal<PaginationState>;
 }
@@ -70,6 +72,17 @@ export function createTableRequestCreator({
         setColumnFilters({...columnFilters(), [column]: signal});
       }
       return signal;
+    }
+    const columnsWithActiveFilters = () =>
+      Object.entries(columnFilters())
+        .map(([column, filter]) => filter[0]() && column)
+        .filter(NON_NULLABLE);
+    function clearColumnFilters() {
+      batch(() => {
+        for (const signal of Object.values(columnFilters())) {
+          signal[1](undefined);
+        }
+      });
     }
     const defaultColumnVisibility = () => getDefaultColumnVisibility(columnsConfig());
     // Initialise the request parts based on the config.
@@ -170,6 +183,8 @@ export function createTableRequestCreator({
         columnVisibility: [columnVisibility, setColumnVisibility],
         globalFilter: [globalFilter, setGlobalFilter],
         getColumnFilter,
+        columnsWithActiveFilters,
+        clearColumnFilters,
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],
       },
