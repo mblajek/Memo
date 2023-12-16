@@ -54,11 +54,11 @@ permissions:
 user:
   _name: "osoba"
   _name_plural: "osoby"
+  name: "imię i nazwisko"
   email: "$t(models.generic.email)"
   createdAt: "$t(models.generic.createdAt)"
   updatedAt: "$t(models.generic.updatedAt)"
   createdBy: "$t(models.generic.createdBy)"
-  name: "imię i nazwisko"
   hasGlobalAdmin: "globalny administrator"
   passwordExpireAt: "data wygaśnięcia hasła"
   hasPassword: "posiada hasło"
@@ -70,10 +70,12 @@ user:
 staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
+  name: "$t(models.user.name)"
 
 client:
   _name: "klient"
   _name_plural: "klienci"
+  name: "$t(models.user.name)"
   gender: "$t(dictionary.gender._name)"
 
 meeting:
