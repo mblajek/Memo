@@ -6,7 +6,6 @@ use App\Exceptions\FatalExceptionFactory;
 use App\Rules\Valid;
 use App\Rules\RegexpIsValidRule;
 use App\Tquery\Filter\TqFilterOperator;
-use App\Utils\Date\DateHelper;
 
 enum TqDataTypeEnum
 {
@@ -149,23 +148,5 @@ enum TqDataTypeEnum
             self::dict, self::dict_list => Valid::dict($column->dictionaryId),
             default => FatalExceptionFactory::tquery()->throw(),
         };
-    }
-
-    public function filterValuePrepare(
-        TqFilterOperator $operator,
-        bool|int|string|array $value,
-    ): bool|int|string|array {
-        if ($this->notNullBaseType() === self::datetime) {
-            return DateHelper::zuluToDbString($value);
-        }
-        if (in_array($operator, [TqFilterOperator::pv, TqFilterOperator::vp, TqFilterOperator::pvp])) {
-            if (!is_string($value)) {
-                throw FatalExceptionFactory::tquery();
-            }
-            return (($operator === TqFilterOperator::pv || $operator === TqFilterOperator::pvp) ? '%' : '')
-                . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                . (($operator === TqFilterOperator::vp || $operator === TqFilterOperator::pvp) ? '%' : '');
-        }
-        return $value;
     }
 }
