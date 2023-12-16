@@ -27,9 +27,10 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
             '' => Valid::array(keys: array_merge(['type', 'column', 'op', 'inv'], $nullOperator ? [] : ['val'])),
         ], $path);
         $value = null;
+        $dataTypeOperator = new TqDataTypeOperator($column->type, $operator, $column->dictionaryId);
         $valueValidator = $column->type->filterValueValidator($column, $operator);
         if (!$nullOperator) {
-            if ($column->type->isList()) {
+            if ($dataTypeOperator->isFilterValueList()) {
                 $value = self::validate($data, [
                     'val' => Valid::list(),
                     'val.*' => [...$valueValidator, 'distinct:strict'],
@@ -44,6 +45,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
             operator: $operator,
             inverse: $params['inv'] ?? false,
             column: $column,
+            dataTypeOperator: $dataTypeOperator,
             value: $value,
         );
     }
@@ -52,6 +54,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         TqFilterOperator $operator,
         bool $inverse,
         public TqColumnConfig $column,
+        private TqDataTypeOperator $dataTypeOperator,
         public bool|int|string|array|null $value,
     ) {
         parent::__construct($operator, $inverse);
@@ -65,7 +68,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
     public function applyFilter(TqBuilder $builder, bool $or, bool $invert): void
     {
         $value = ($this->operator === TqFilterOperator::null) ? null
-            : $this->column->type->filterValuePrepare($this->operator, $this->value);
+            : $this->dataTypeOperator->filterValuePrepare($this->value);
         $filterQuery = $this->column->getFilterQuery();
         $inverse = ($this->inverse xor $invert);
 

@@ -88,6 +88,13 @@ readonly class MeetingTquery extends TqService
             $config->addQuery(
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
+                    "select json_arrayagg(`meeting_attendants`.`attendance_status_dict_id`)"
+                    . " from `meeting_attendants` $attendantWhere",
+                "$attendanceName.*.attendanceStatusDictId",
+            );
+            $config->addQuery(
+                TqDataTypeEnum::list,
+                fn(string $tableName) => //
                     "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
                     . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
                     . ")) from `meeting_attendants`"
@@ -110,10 +117,10 @@ readonly class MeetingTquery extends TqService
             'resources.*.dict_id',
         );
         $config->addQuery(
-            TqDataTypeEnum::list ,
+            TqDataTypeEnum::list,
             fn(string $tableName) => //
-            "select json_arrayagg(json_object('resourceDictId', `meeting_resources`.`resource_dict_id`"
-            . ")) $resourceFromWhere",
+                "select json_arrayagg(json_object('resourceDictId', `meeting_resources`.`resource_dict_id`"
+                . ")) $resourceFromWhere",
             'resources',
         );
 

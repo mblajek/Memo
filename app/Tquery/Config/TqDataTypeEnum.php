@@ -150,22 +150,4 @@ enum TqDataTypeEnum
             default => FatalExceptionFactory::tquery()->throw(),
         };
     }
-
-    public function filterValuePrepare(
-        TqFilterOperator $operator,
-        bool|int|string|array $value,
-    ): bool|int|string|array {
-        if ($this->notNullBaseType() === self::datetime) {
-            return DateHelper::zuluToDbString($value);
-        }
-        if (in_array($operator, [TqFilterOperator::pv, TqFilterOperator::vp, TqFilterOperator::pvp])) {
-            if (!is_string($value)) {
-                throw FatalExceptionFactory::tquery();
-            }
-            return (($operator === TqFilterOperator::pv || $operator === TqFilterOperator::pvp) ? '%' : '')
-                . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                . (($operator === TqFilterOperator::vp || $operator === TqFilterOperator::pvp) ? '%' : '');
-        }
-        return $value;
-    }
 }
