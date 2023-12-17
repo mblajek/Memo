@@ -13,6 +13,7 @@ import {MemoTitle} from "./features/root/MemoTitle";
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
+const CalendarTablePage = lazy(() => import("features/root/pages/CalendarTable.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 
@@ -51,6 +52,7 @@ const App: VoidComponent = () => {
         <Route path="/admin" component={FacilityAdminPages}>
           <UnknownNotFound />
           <LeafRoute routeKey="facility.admin.calendar" path="/calendar" component={CalendarPage} />
+          <LeafRoute routeKey="facility.admin.calendar_table" path="/calendar-table" component={CalendarTablePage} />
           <LeafRoute routeKey="facility.admin.clients" path="/clients" component={NotYetImplemented} />
           <LeafRoute routeKey="facility.admin.staff" path="/staff" component={NotYetImplemented} />
           <LeafRoute routeKey="facility.admin.reports" path="/reports" component={NotYetImplemented} />

@@ -20,12 +20,12 @@ tables:
       email: "$t(models.user.email)"
       hasPassword: "$t(models.user.hasPassword)"
       createdAt: "$t(models.user.createdAt)"
+      updatedAt: "$t(models.user.updatedAt)"
+      createdBy.name: "$t(models.user.createdBy)"
       hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
       passwordExpireAt: "$t(models.user.passwordExpireAt)"
-      updatedAt: "$t(models.user.updatedAt)"
       hasEmailVerified: "$t(models.user.hasEmailVerified)"
-      createdBy.name: "$t(models.user.createdBy)"
-      facilityCount: "$t(models.user.facilityCount)"
+      facilities.count: "$t(models.user.facilities.count)"
       actions: "$t(tables.tables.generic.columnNames.actions)"
 
   userFacilities:
@@ -51,6 +51,29 @@ tables:
       url: "$t(models.facility.url)"
       actions: "$t(tables.tables.generic.columnNames.actions)"
 
+  meetings:
+    tableName: "$t(models.meeting._name_plural)"
+    summary__zero: "Brak spotkań"
+    summary__one: "{{count, number}} spotkanie"
+    summary__few: "{{count, number}} spotkania"
+    summary__many: "{{count, number}} spotkań"
+    columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
+      date: "$t(models.meeting.date)"
+      startDayminute: "godzina"
+      durationMinutes: "$t(models.meeting.durationMinutes)"
+      categoryDictId: "$t(models.meeting.categoryDictId)"
+      typeDictId: "$t(models.meeting.typeDictId)"
+      statusDictId: "$t(models.meeting.statusDictId)"
+      staff.*.name: "$t(models.meeting.staff)"
+      clients.*.name: "$t(models.meeting.clients)"
+      isRemote: "$t(models.meeting.isRemote)"
+      notes: "$t(models.meeting.notes)"
+      resources.*.dictId: "$t(models.meeting.resources)"
+      createdAt: "$t(models.meeting.createdAt)"
+      updatedAt: "$t(models.meeting.updatedAt)"
+      createdBy.name: "$t(models.meeting.createdBy)"
+
 choose_columns: "Wybierz kolumny"
 sort_tooltip: "$t(actions.sort)"
 
@@ -62,9 +85,19 @@ filter:
   column_filters_set: "Filtry w kolumnach aktywne:"
   click_to_clear: "Kliknij aby wyczyścić"
   click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
-  click_to_sync_number_range: "Kliknij aby ustawić maks = min"
+  click_to_sync_number_range: "Kliknij aby ustawić max = min"
   non_null_value: "niepuste"
   null_value: "puste"
+  set_operation:
+    has_all:
+      short: "wszystkie"
+      explanation: "Znajdź wiersze, które mają wszystkie wybrane wartości"
+    has_any:
+      short: "dowolne"
+      explanation: "Znajdź wiersze, które mają dowolną z wybranych wartości"
+    has_only:
+      short: "tylko"
+      explanation: "Znajdź wiersze, które mają tylko wybrane wartości (niekoniecznie wszystkie)"
   textual:
     fuzzy: "dopasowane"
     eq: "równe"

@@ -15,19 +15,19 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
     }
     // Ignore other external filter changes.
   });
-  function buildFilter(value: string): NullColumnFilter | BoolColumnFilter | undefined {
-    switch (value) {
+  function buildFilter(): NullColumnFilter | BoolColumnFilter | undefined {
+    switch (value()) {
       case "-":
         return undefined;
       case "t":
       case "f":
-        return {type: "column", column: props.name, op: "=", val: value === "t"};
+        return {type: "column", column: props.name, op: "=", val: value() === "t"};
       case "*":
         return {type: "column", column: props.name, op: "null", inv: true};
       case "null":
         return {type: "column", column: props.name, op: "null"};
       default:
-        throw new Error(`Invalid value: ${value}`);
+        throw new Error(`Invalid value: ${value()}`);
     }
   }
   const items = createMemo(() => {
@@ -60,7 +60,7 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
           value={value()}
           onValueChange={(value) => {
             setValue(value!);
-            props.setFilter(buildFilter(value!));
+            props.setFilter(buildFilter());
           }}
           nullable={false}
           small

@@ -19,6 +19,7 @@ export default (() => {
         staticPrefixQueryKey={Admin.keys.user()}
         staticEntityURL="admin/user"
         staticTranslations={createTableTranslations("users")}
+        staticPersistenceKey="adminUsers"
         columns={[
           {name: "id", initialVisible: false},
           {name: "name", columnDef: {enableHiding: false}},
@@ -26,7 +27,7 @@ export default (() => {
           {name: "hasEmailVerified", initialVisible: false},
           {name: "hasPassword"},
           {name: "passwordExpireAt", initialVisible: false},
-          {name: "facilityCount", initialVisible: false},
+          {name: "facilities.count", initialVisible: false},
           {
             name: "hasGlobalAdmin",
             columnDef: {
