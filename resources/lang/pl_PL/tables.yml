@@ -37,6 +37,14 @@ tables:
     columnNames:
       id: "$t(tables.tables.generic.columnNames.id)"
       name: "$t(models.staff.name)"
+      email: "$t(models.staff.email)"
+      hasEmailVerified: "$t(models.staff.hasEmailVerified)"
+      hasPassword: "$t(models.staff.hasPassword)"
+      passwordExpireAt: "$t(models.staff.passwordExpireAt)"
+      hasGlobalAdmin: "$t(models.staff.hasGlobalAdmin)"
+      createdAt: "$t(models.staff.createdAt)"
+      createdBy.name: "$t(models.staff.createdBy)"
+      updatedAt: "$t(models.staff.updatedAt)"
 
   clients:
     tableName: "$t(models.client._name_plural)"
@@ -47,6 +55,10 @@ tables:
     columnNames:
       id: "$t(tables.tables.generic.columnNames.id)"
       name: "$t(models.client.name)"
+      createdAt: "$t(models.client.createdAt)"
+      createdBy.name: "$t(models.client.createdBy)"
+      updatedAt: "$t(models.client.updatedAt)"
+      genderDictId: "$t(models.client.genderDictId)"
 
   userFacilities:
     tableName: "$t(models.user.members)"
