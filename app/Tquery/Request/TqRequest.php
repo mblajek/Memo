@@ -28,18 +28,20 @@ readonly class TqRequest
             'sort.*.type' => Valid::trimmed([Rule::in(['column'])]),
             'sort.*.column' => Valid::trimmed([Rule::in(array_keys($config->getSortableColumns($distinct)))]),
             'sort.*.desc' => Valid::bool(sometimes: true),
-            'paging' => Valid::array(keys: ['number', 'size']),
-            'paging.number' => Valid::int(['min:1']),
+            'paging' => Valid::array(keys: ['number', 'offset', 'size']),
+            'paging.number' => Valid::int(['min:1'], sometimes: true),
+            'paging.offset' => Valid::int(['min:0'], sometimes: true),
             'paging.size' => Valid::int(['min:1']),
         ]);
 
+        $pageSize = $data['paging']['size'];
         return new self(
             config: $config,
             selectColumns: self::parseColumns($config, $data['columns']),
             filter: self::parseFilter($config, $data['filter'] ?? 'always'),
             sortColumns: self::parseSort($config, $data['sort'] ?? []),
-            pageNumber: $data['paging']['number'],
-            pageSize: $data['paging']['size'],
+            pageOffset: $pageSize * (($data['paging']['number'] ?? 1) - 1) + ($data['paging']['offset'] ?? 0),
+            pageSize: $pageSize,
             isDistinct: $distinct,
         );
     }
@@ -88,7 +90,7 @@ readonly class TqRequest
         public array $selectColumns,
         public TqRequestAbstractFilter|bool $filter,
         public array $sortColumns,
-        public int $pageNumber,
+        public int $pageOffset,
         public int $pageSize,
         public bool $isDistinct,
     ) {

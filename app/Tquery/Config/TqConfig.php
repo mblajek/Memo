@@ -3,6 +3,9 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
+use App\Models\Attribute;
+use App\Models\UuidEnum\AttributeUuidEnum;
+use BackedEnum;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -10,7 +13,7 @@ final class TqConfig
 {
     /** @var array<string, TqColumnConfig> */
     public array $columns = [];
-    private const COUNT_COLUMN = '_count';
+    private const string COUNT_COLUMN = '_count';
 
     private ?array $filterableColumns = null;
 
@@ -48,7 +51,7 @@ final class TqConfig
     }
 
     public function addSimple(
-        TqDataTypeEnum $type,
+        TqDataTypeEnum|TqDictDef $type,
         string $columnName,
         ?string $columnAlias = null,
     ): void {
@@ -60,8 +63,20 @@ final class TqConfig
         );
     }
 
+    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $attribute): void
+    {
+        $attributeModel = Attribute::query()->findOrFail(is_string($attribute) ? $attribute : $attribute->value);
+        $this->addColumn(
+            type: $attributeModel->getTqueryDataType(),
+            columnOrQuery: $attributeModel->api_name,
+            table: null,
+            columnAlias: Str::camel($attributeModel->api_name),
+            attribute: $attributeModel,
+        );
+    }
+
     public function addJoined(
-        TqDataTypeEnum $type,
+        TqDataTypeEnum|TqDictDef $type,
         TqTableAliasEnum $table,
         string $columnName,
         ?string $columnAlias = null,
@@ -75,7 +90,7 @@ final class TqConfig
     }
 
     public function addQuery(
-        TqDataTypeEnum $type,
+        TqDataTypeEnum|TqDictDef $type,
         Closure $columnOrQuery,
         string $columnAlias,
         ?Closure $filter = null,
@@ -104,24 +119,34 @@ final class TqConfig
     }
 
     private function addColumn(
-        TqDataTypeEnum $type,
+        TqDataTypeEnum|TqDictDef $type,
         string|Closure $columnOrQuery,
         ?TqTableAliasEnum $table,
         string $columnAlias,
+        ?Attribute $attribute = null,
+        ?Closure $selector = null,
         ?Closure $filter = null,
         ?Closure $sorter = null,
         ?Closure $renderer = null,
     ): void {
-        if (array_key_exists($columnAlias, $this->columns)) {
+        if (
+            (($type instanceof TqDataTypeEnum) && $type->isDict())
+            || array_key_exists($columnAlias, $this->columns)
+        ) {
             throw FatalExceptionFactory::tquery();
         }
+        [$dataType, $dictionaryId] = ($type instanceof TqDataTypeEnum)
+            ? [$type, $attribute?->dictionary_id] : [$type->dataType, $type->dictionaryId];
         $this->filterableColumns = null;
         $this->columns[$columnAlias] = new TqColumnConfig(
             config: $this,
-            type: $type,
+            type: $dataType,
             columnOrQuery: $columnOrQuery,
             table: $table,
             columnAlias: $columnAlias,
+            dictionaryId: $dictionaryId,
+            attribute: $attribute,
+            selector: $selector,
             filter: $filter,
             sorter: $sorter,
             renderer: $renderer,

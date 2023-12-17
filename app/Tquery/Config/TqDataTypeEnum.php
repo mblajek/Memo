@@ -16,6 +16,7 @@ enum TqDataTypeEnum
     case int;
     case string;
     case uuid;
+    case dict;
     case text;
     // nullable
     case bool_nullable;
@@ -24,7 +25,12 @@ enum TqDataTypeEnum
     case int_nullable;
     case string_nullable;
     case uuid_nullable;
+    case dict_nullable;
     case text_nullable;
+    //list
+    case dict_list;
+    case uuid_list;
+    case list;
     // additional
     case count;
     case is_null;
@@ -34,7 +40,24 @@ enum TqDataTypeEnum
     {
         return match ($this) {
             self::bool_nullable, self::date_nullable, self::datetime_nullable, self::int_nullable,
-            self::string_nullable, self::uuid_nullable, self::text_nullable => true,
+            self::string_nullable, self::uuid_nullable, self::dict_nullable, self::text_nullable,
+            self::dict_list, self::uuid_list, self::list => true, // list have "null" operator
+            default => false,
+        };
+    }
+
+    public function isDict(): bool
+    {
+        return match ($this) {
+            self::dict, self::dict_nullable, self::dict_list => true,
+            default => false,
+        };
+    }
+
+    public function isList(): bool
+    {
+        return match ($this) {
+            self::dict_list, self::uuid_list, self::list => true,
             default => false,
         };
     }
@@ -69,7 +92,7 @@ enum TqDataTypeEnum
     public function isSortable(): bool
     {
         return match ($this->notNullBaseType()) {
-            self::uuid, self::text => false,
+            self::uuid, self::text, self::dict_list, self::uuid_list, self::list => false,
             default => true,
         };
     }
@@ -101,14 +124,16 @@ enum TqDataTypeEnum
                     ...TqFilterOperator::CMP,
                     ...TqFilterOperator::LIKE,
                 ],
-                self::uuid => [TqFilterOperator::eq, TqFilterOperator::in],
+                self::uuid, self::dict => [TqFilterOperator::eq, TqFilterOperator::in],
                 self::text => TqFilterOperator::LIKE,
-                default => FatalExceptionFactory::tquery(),
+                self::dict_list, self::uuid_list, => [TqFilterOperator::eq, ...TqFilterOperator::LIST_COLUMN],
+                self::list => [],
+                default => FatalExceptionFactory::tquery()->throw(),
             }
         );
     }
 
-    public function filterValueValidator(TqFilterOperator $operator): array
+    public function filterValueValidator(TqColumnConfig $column, TqFilterOperator $operator): array
     {
         if (in_array($operator, TqFilterOperator::LIKE, true)) {
             return Valid::string($operator === TqFilterOperator::regexp ? [new RegexpIsValidRule()] : []);
@@ -118,28 +143,11 @@ enum TqDataTypeEnum
             self::date => Valid::date(),
             self::datetime => Valid::datetime(),
             self::int => Valid::int(),
-            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED, true)
-                ? Valid::trimmed() : Valid::string(),
-            self::uuid => Valid::uuid(),
-            default => FatalExceptionFactory::tquery(),
+            self::string, self::text => in_array($operator, TqFilterOperator::LIKE, true)
+                ? Valid::string() : Valid::trimmed(),
+            self::uuid, self::uuid_list => Valid::uuid(),
+            self::dict, self::dict_list => Valid::dict($column->dictionaryId),
+            default => FatalExceptionFactory::tquery()->throw(),
         };
-    }
-
-    public function filterValuePrepare(
-        TqFilterOperator $operator,
-        bool|int|string|array $value,
-    ): bool|int|string|array {
-        if ($this->notNullBaseType() === self::datetime) {
-            return DateHelper::zuluToDbString($value);
-        }
-        if (in_array($operator, [TqFilterOperator::pv, TqFilterOperator::vp, TqFilterOperator::pvp])) {
-            if (!is_string($value)) {
-                throw FatalExceptionFactory::tquery();
-            }
-            return (($operator === TqFilterOperator::pv || $operator === TqFilterOperator::pvp) ? '%' : '')
-                . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                . (($operator === TqFilterOperator::vp || $operator === TqFilterOperator::pvp) ? '%' : '');
-        }
-        return $value;
     }
 }

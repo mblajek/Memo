@@ -32,8 +32,8 @@ readonly class TqEngine
         $debug = (App::hasDebugModeEnabled() ? ['sql' => $this->builder->getSql(true)] : []);
         try {
             return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
-        } catch (Throwable) {
-            throw FatalExceptionFactory::tquery($debug);
+        } catch (Throwable $error) {
+            throw FatalExceptionFactory::tquery($debug ? (['message' => $error->getMessage()] + $debug) : []);
         }
     }
 
@@ -76,7 +76,7 @@ readonly class TqEngine
 
     private function applyPaging(): void
     {
-        $this->builder->applyPaging($this->request->pageNumber, $this->request->pageSize);
+        $this->builder->applyPaging(offset: $this->request->pageOffset, limit: $this->request->pageSize);
     }
 
     private function getData(): array
@@ -94,6 +94,10 @@ readonly class TqEngine
 
     private function getMeta(): array
     {
-        return ['totalDataSize' => $this->builder->getCount(),];
+        $dataCount = $this->builder->getCount();
+        return [
+            'totalDataSize' => $dataCount,
+            'totalDataPages' => intdiv($dataCount - 1, $this->request->pageSize) + 1,
+        ];
     }
 }
