@@ -36,17 +36,19 @@ class TqBuilder
         TqTableAliasEnum $table,
         string $joinColumn,
         bool $left,
+        bool $inv,
     ): bool {
         if (in_array($table, $this->joins, strict: true)) {
             return false;
         }
+        [$tableColumn, $baseColumn] = $inv ? [$joinColumn, 'id'] : ['id', $joinColumn];
         $this->joins[] = $table;
         $tableBase = $table->baseTable();
         $this->builder->join(
             "{$tableBase->name} as {$table->name}",
-            "{$table->name}.id",
+            "{$table->name}.$tableColumn",
             '=',
-            "{$joinBase->name}.$joinColumn",
+            "{$joinBase->name}.$baseColumn",
             $left ? 'left' : 'inner',
         );
         return true;
