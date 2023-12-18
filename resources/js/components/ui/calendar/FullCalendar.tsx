@@ -75,8 +75,9 @@ type PersistentState = {
     readonly checkbox: ReadonlySet<string>;
     readonly radio: string | null;
   };
+  readonly pixelsPerHour: number;
 };
-const PERSISTENCE_VERSION = 2;
+const PERSISTENCE_VERSION = 3;
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -218,6 +219,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           checkbox: selectedResourcesCheckbox(),
           radio: selectedResourceRadio() || null,
         },
+        pixelsPerHour: pixelsPerHour(),
       }),
       onLoad: (state) =>
         batch(() => {
@@ -238,6 +240,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setSelectedResourcesCheckbox(state.resourcesSel.checkbox);
           setSelectedResourceRadio(state.resourcesSel.radio || undefined);
           setTinyCalMonth(daysSelection().center());
+          setPixelsPerHour(state.pixelsPerHour);
         }),
       serialiser: richJSONSerialiser<PersistentState>(),
       version: [PERSISTENCE_VERSION],
