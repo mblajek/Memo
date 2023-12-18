@@ -17,6 +17,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
         offset: {mainAxis: 1},
         strategy: "absolute",
         placement: "bottom-end",
+        overflowPadding: 20,
       },
       id: createUniqueId(),
     }),
@@ -26,17 +27,13 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const [resetHovered, setResetHovered] = createSignal(false);
   return (
     <div class={s.columnVisibility}>
-      <Button
-        class="pressedWithShadow border-input-border"
-        {...api().triggerProps}
-        disabled={!table.getAllLeafColumns().length}
-      >
+      <Button {...api().triggerProps} disabled={!table.getAllLeafColumns().length}>
         {t("tables.choose_columns")}
       </Button>
       <Portal>
         <div class={s.columnVisibilityPortal} {...api().positionerProps}>
           <div {...api().contentProps}>
-            <div class="bg-white border border-gray-700 rounded overflow-clip flex flex-col">
+            <div class="overflow-y-auto">
               <div class="flex flex-col">
                 <For each={table.getAllLeafColumns()}>
                   {(column) => (
@@ -58,19 +55,19 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                   )}
                 </For>
               </div>
-              <Show when={defaultColumnVisibility}>
-                {(defaultColumnVisibility) => (
-                  <Button
-                    class="secondarySmall m-1"
-                    onClick={() => table.setColumnVisibility(defaultColumnVisibility())}
-                    onMouseOver={[setResetHovered, true]}
-                    onMouseOut={[setResetHovered, false]}
-                  >
-                    {t("actions.restore_default")}
-                  </Button>
-                )}
-              </Show>
             </div>
+            <Show when={defaultColumnVisibility}>
+              {(defaultColumnVisibility) => (
+                <Button
+                  class="secondarySmall m-1"
+                  onClick={() => table.setColumnVisibility(defaultColumnVisibility())}
+                  onMouseOver={[setResetHovered, true]}
+                  onMouseOut={[setResetHovered, false]}
+                >
+                  {t("actions.restore_default")}
+                </Button>
+              )}
+            </Show>
           </div>
         </div>
       </Portal>

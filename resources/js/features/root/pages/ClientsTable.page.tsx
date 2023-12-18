@@ -16,6 +16,10 @@ export default (() => {
         columns={[
           {name: "id", initialVisible: false},
           {name: "name", columnDef: {enableHiding: false}},
+          // {name: "genderDictId"},
+          {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
+          {name: "createdBy.name", initialVisible: false},
+          {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
         ]}
         initialSort={[{id: "name", desc: false}]}
       />
