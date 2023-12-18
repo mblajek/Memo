@@ -31,7 +31,7 @@ describe("day_minute_util", () => {
         allDay: false,
         date: DateTime.fromISO(dateStr),
         startDayMinute: hmToDayMinute(startHM),
-        durationMinutes: (hmToDayMinute(endHM) - hmToDayMinute(startHM) + MAX_DAY_MINUTE) % MAX_DAY_MINUTE,
+        durationMinutes: ((hmToDayMinute(endHM) - hmToDayMinute(startHM) + MAX_DAY_MINUTE - 1) % MAX_DAY_MINUTE) + 1,
       };
       return expect(getDayMinuteRange(day, timeSpan));
     }
@@ -39,9 +39,11 @@ describe("day_minute_util", () => {
     expectDayMinuteRange("2023-03-25", "12:34", "00:00").toEqual(undefined);
     expectDayMinuteRange("2023-03-25", "12:34", "00:01").toEqual([0, 1]);
     expectDayMinuteRange("2023-03-25", "18:34", "16:00").toEqual([0, 16 * 60]);
-    expectDayMinuteRange("2023-03-25", "12:34", "16:00").toEqual([0, 24 * 60]);
+    expectDayMinuteRange("2023-03-25", "12:34", "16:00").toEqual(undefined);
+    expectDayMinuteRange("2023-03-25", "00:00", "00:00").toEqual(undefined);
     expectDayMinuteRange("2023-03-26", "12:00", "16:00").toEqual([12 * 60, 16 * 60]);
-    expectDayMinuteRange("2023-03-26", "12:00", "16:00").toEqual([12 * 60, 24 * 60]);
+    expectDayMinuteRange("2023-03-26", "12:00", "16:00").toEqual([12 * 60, 16 * 60]);
+    expectDayMinuteRange("2023-03-26", "00:00", "00:00").toEqual([0, 24 * 60]);
   });
 
   test("timeInputToDayMinute", () => {
