@@ -1,6 +1,8 @@
-import {DateTime, Interval} from "luxon";
+import {DateTime} from "luxon";
 import {describe, expect, test} from "vitest";
+import {PartDayTimeSpan} from "../ui/calendar/types";
 import {
+  MAX_DAY_MINUTE,
   dayMinuteToHM,
   dayMinuteToTimeInput,
   getDayMinute,
@@ -20,16 +22,26 @@ describe("day_minute_util", () => {
 
   test("getDayMinuteRange", () => {
     const day = DateTime.fromISO("2023-03-26T12:34:56");
-    function expectDayMinuteRange(start: string, end: string) {
-      return expect(getDayMinuteRange(day, Interval.fromDateTimes(DateTime.fromISO(start), DateTime.fromISO(end))));
+    function expectDayMinuteRange(dateStr: string, startHM: string, endHM: string) {
+      function hmToDayMinute(hm: string) {
+        const [hour, minute] = hm.split(":").map(Number);
+        return hour! * 60 + minute!;
+      }
+      const timeSpan: PartDayTimeSpan = {
+        allDay: false,
+        date: DateTime.fromISO(dateStr),
+        startDayMinute: hmToDayMinute(startHM),
+        durationMinutes: (hmToDayMinute(endHM) - hmToDayMinute(startHM) + MAX_DAY_MINUTE) % MAX_DAY_MINUTE,
+      };
+      return expect(getDayMinuteRange(day, timeSpan));
     }
-    expectDayMinuteRange("2023-03-25T12:34:56", "2023-03-25T23:00").toEqual(undefined);
-    expectDayMinuteRange("2023-03-25T12:34:56", "2023-03-26T00:00").toEqual(undefined);
-    expectDayMinuteRange("2023-03-25T12:34:56", "2023-03-26T00:01").toEqual([0, 1]);
-    expectDayMinuteRange("2023-03-25T12:34:56", "2023-03-26T16:00").toEqual([0, 16 * 60]);
-    expectDayMinuteRange("2023-03-25T12:34:56", "2023-03-27T16:00").toEqual([0, 24 * 60]);
-    expectDayMinuteRange("2023-03-26T12:00", "2023-03-26T16:00").toEqual([12 * 60, 16 * 60]);
-    expectDayMinuteRange("2023-03-26T12:00", "2023-03-27T16:00").toEqual([12 * 60, 24 * 60]);
+    expectDayMinuteRange("2023-03-25", "12:34", "23:00").toEqual(undefined);
+    expectDayMinuteRange("2023-03-25", "12:34", "00:00").toEqual(undefined);
+    expectDayMinuteRange("2023-03-25", "12:34", "00:01").toEqual([0, 1]);
+    expectDayMinuteRange("2023-03-25", "18:34", "16:00").toEqual([0, 16 * 60]);
+    expectDayMinuteRange("2023-03-25", "12:34", "16:00").toEqual([0, 24 * 60]);
+    expectDayMinuteRange("2023-03-26", "12:00", "16:00").toEqual([12 * 60, 16 * 60]);
+    expectDayMinuteRange("2023-03-26", "12:00", "16:00").toEqual([12 * 60, 24 * 60]);
   });
 
   test("timeInputToDayMinute", () => {

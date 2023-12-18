@@ -4,16 +4,19 @@ import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
-import {TQuerySelect} from "components/ui/form/TQuerySelect";
+import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
+import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {MeetingAttendantResource} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {Index, Show, VoidComponent, createComputed, createEffect, on} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 
 export const getAttendantsSchemaPart = () => ({
@@ -77,6 +80,19 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     }
     return attendants;
   });
+  const tquerySpec = (): TQueryConfig => {
+    if (props.name === "staff")
+      return {
+        entityURL: `facility/${activeFacilityId()}/user/staff`,
+        prefixQueryKey: [FacilityStaff.keys.staff()],
+      };
+    if (props.name === "clients")
+      return {
+        entityURL: `facility/${activeFacilityId()}/user/client`,
+        prefixQueryKey: [FacilityClient.keys.client()],
+      };
+    return props.name satisfies never;
+  };
 
   return (
     <div class="flex flex-col items-stretch">
@@ -123,10 +139,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <TQuerySelect
                     name={`${props.name}.${index}.userId`}
                     label=""
-                    querySpec={{
-                      entityURL: "admin/user",
-                      prefixQueryKey: ["x"],
-                    }}
+                    querySpec={tquerySpec()}
                     nullable={false}
                   />
                 </div>

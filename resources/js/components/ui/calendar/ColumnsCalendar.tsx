@@ -15,6 +15,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
+import {BigSpinner} from "../Spinner";
 import s from "./ColumnsCalendar.module.scss";
 
 interface GlobalParameters {
@@ -25,6 +26,7 @@ interface GlobalParameters {
 interface Props extends GlobalParameters, htmlAttributes.div {
   readonly columns: readonly CalendarColumn[];
   readonly scrollToDayMinute?: number;
+  readonly isLoading?: boolean;
 
   readonly onWheelWithAlt?: (e: WheelEvent) => void;
 }
@@ -63,6 +65,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
     "gridCellMinutes",
     "columns",
     "scrollToDayMinute",
+    "isLoading",
     "onWheelWithAlt",
   ]);
   const dayMinutes = createMemo(() => {
@@ -173,6 +176,11 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           </div>
         </div>
       </Context.Provider>
+      <Show when={props.isLoading}>
+        <div class={s.loadingPane}>
+          <BigSpinner />
+        </div>
+      </Show>
     </div>
   );
 };
