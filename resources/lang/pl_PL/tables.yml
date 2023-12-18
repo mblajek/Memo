@@ -28,6 +28,38 @@ tables:
       facilities.count: "$t(models.user.facilities.count)"
       actions: "$t(tables.tables.generic.columnNames.actions)"
 
+  staff:
+    tableName: "$t(models.staff._name_plural)"
+    summary__zero: "Brak pracowników"
+    summary__one: "{{count, number}} pracownik"
+    summary__few: "{{count, number}} pracowników"
+    summary__many: "{{count, number}} pracowników"
+    columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
+      name: "$t(models.staff.name)"
+      email: "$t(models.staff.email)"
+      hasEmailVerified: "$t(models.staff.hasEmailVerified)"
+      hasPassword: "$t(models.staff.hasPassword)"
+      passwordExpireAt: "$t(models.staff.passwordExpireAt)"
+      hasGlobalAdmin: "$t(models.staff.hasGlobalAdmin)"
+      createdAt: "$t(models.staff.createdAt)"
+      createdBy.name: "$t(models.staff.createdBy)"
+      updatedAt: "$t(models.staff.updatedAt)"
+
+  clients:
+    tableName: "$t(models.client._name_plural)"
+    summary__zero: "Brak klientów"
+    summary__one: "{{count, number}} klient"
+    summary__few: "{{count, number}} klientów"
+    summary__many: "{{count, number}} klientów"
+    columnNames:
+      id: "$t(tables.tables.generic.columnNames.id)"
+      name: "$t(models.client.name)"
+      createdAt: "$t(models.client.createdAt)"
+      createdBy.name: "$t(models.client.createdBy)"
+      updatedAt: "$t(models.client.updatedAt)"
+      genderDictId: "$t(models.client.genderDictId)"
+
   userFacilities:
     tableName: "$t(models.user.members)"
     columnNames:

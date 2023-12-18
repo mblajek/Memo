@@ -54,11 +54,8 @@ permissions:
 user:
   _name: "osoba"
   _name_plural: "osoby"
-  email: "$t(models.generic.email)"
-  createdAt: "$t(models.generic.createdAt)"
-  updatedAt: "$t(models.generic.updatedAt)"
-  createdBy: "$t(models.generic.createdBy)"
   name: "imię i nazwisko"
+  email: "$t(models.generic.email)"
   hasGlobalAdmin: "globalny administrator"
   passwordExpireAt: "data wygaśnięcia hasła"
   hasPassword: "posiada hasło"
@@ -66,15 +63,31 @@ user:
   hasEmailVerified: "e-mail zweryfikowany"
   members: "przypisane placówki"
   facilities.count: "liczba placówek"
+  createdAt: "$t(models.generic.createdAt)"
+  createdBy: "$t(models.generic.createdBy)"
+  updatedAt: "$t(models.generic.updatedAt)"
 
 staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
+  name: "$t(models.user.name)"
+  email: "$t(models.user.email)"
+  hasEmailVerified: "$t(models.user.hasEmailVerified)"
+  hasPassword: "$t(models.user.hasPassword)"
+  passwordExpireAt: "$t(models.user.passwordExpireAt)"
+  hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
+  createdAt: "$t(models.generic.createdAt)"
+  createdBy: "$t(models.generic.createdBy)"
+  updatedAt: "$t(models.generic.updatedAt)"
 
 client:
   _name: "klient"
   _name_plural: "klienci"
-  gender: "$t(dictionary.gender._name)"
+  name: "$t(models.user.name)"
+  createdAt: "$t(models.generic.createdAt)"
+  createdBy: "$t(models.generic.createdBy)"
+  updatedAt: "$t(models.generic.updatedAt)"
+  genderDictId: "$t(dictionary.gender._name)"
 
 meeting:
   _name: "spotkanie"

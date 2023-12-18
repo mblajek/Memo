@@ -92,14 +92,14 @@ function getSectionItems(
             routeKey: "facility.admin.calendar",
           },
           {
-            icon: CLIENT_ICONS.menu,
-            href: `/${facilityUrl}/admin/clients`,
-            routeKey: "facility.admin.clients",
-          },
-          {
             icon: STAFF_ICONS.menu,
             href: `/${facilityUrl}/admin/staff`,
             routeKey: "facility.admin.staff",
+          },
+          {
+            icon: CLIENT_ICONS.menu,
+            href: `/${facilityUrl}/admin/clients`,
+            routeKey: "facility.admin.clients",
           },
           {
             icon: HiOutlineClipboardDocumentList,
