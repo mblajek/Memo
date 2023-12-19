@@ -2,6 +2,7 @@ import {currentDate, currentTime, cx, htmlAttributes} from "components/utils";
 import {MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {
+  Accessor,
   For,
   Index,
   JSX,
@@ -10,6 +11,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createSignal,
   mergeProps,
   on,
   splitProps,
@@ -48,6 +50,7 @@ const Context = createContext<ContextValue>();
 interface ContextValue {
   readonly calProps: Required<GlobalParameters>;
   readonly dayMinuteToPixelY: (dayMinute: number) => number;
+  readonly hoursArea: Accessor<HTMLDivElement>;
 }
 
 export function useColumnsCalendar() {
@@ -79,34 +82,33 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
     return day.hasSame(currentDate(), "day");
   }
   const nowPixelY = createMemo(() => Math.round(dayMinuteToPixelY(getDayMinute(currentTime()))));
+  const [hoursArea, setHoursArea] = createSignal<HTMLDivElement>();
   const context: ContextValue = {
     calProps: props,
     dayMinuteToPixelY,
+    hoursArea: () => hoursArea()!,
   };
-  let hoursArea: HTMLDivElement | undefined;
   createEffect(
-    on(
-      () => props.scrollToDayMinute,
-      (scrollToDayMinute, _prevInput, prev) => {
-        if (scrollToDayMinute !== undefined) {
-          hoursArea?.scrollTo({
-            top: (scrollToDayMinute / 60) * props.pixelsPerHour,
-            // First scroll is instant, then smooth.
-            behavior: prev ? "smooth" : "instant",
-          });
-        }
-        return true;
-      },
-    ),
+    on([hoursArea, () => props.scrollToDayMinute], ([hoursArea, scrollToDayMinute], _prevInput, prev) => {
+      if (hoursArea && scrollToDayMinute !== undefined) {
+        hoursArea.scrollTo({
+          top: (scrollToDayMinute / 60) * props.pixelsPerHour,
+          // First scroll is instant, then smooth.
+          behavior: prev ? "smooth" : "instant",
+        });
+      }
+      return true;
+    }),
   );
   createEffect(
     on(
       () => props.pixelsPerHour,
       (pixelsPerHour, prevPixelsPerHour) => {
-        if (hoursArea && prevPixelsPerHour !== undefined) {
-          const h = hoursArea.clientHeight;
-          hoursArea.scrollTo({
-            top: ((hoursArea.scrollTop + h / 2) * pixelsPerHour) / prevPixelsPerHour - h / 2,
+        const hArea = hoursArea();
+        if (hArea && prevPixelsPerHour !== undefined) {
+          const h = hArea.clientHeight;
+          hArea.scrollTo({
+            top: ((hArea.scrollTop + h / 2) * pixelsPerHour) / prevPixelsPerHour - h / 2,
             behavior: "instant",
           });
         }
@@ -131,7 +133,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           <For each={props.columns}>{(col) => <div class={s.cell}>{col.allDayArea()}</div>}</For>
         </div>
         <div
-          ref={hoursArea}
+          ref={setHoursArea}
           class={s.hoursArea}
           onWheel={(e) => {
             if (e.altKey) {

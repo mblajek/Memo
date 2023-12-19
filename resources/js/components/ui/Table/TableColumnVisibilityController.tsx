@@ -14,10 +14,10 @@ export const TableColumnVisibilityController: VoidComponent = () => {
     popover.machine({
       portalled: true,
       positioning: {
-        offset: {mainAxis: 1},
+        gutter: 1,
         strategy: "absolute",
         placement: "bottom-end",
-        overflowPadding: 20,
+        overflowPadding: 0,
       },
       id: createUniqueId(),
     }),
