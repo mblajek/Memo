@@ -11,7 +11,7 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={FacilityClient.keys.client()}
         staticEntityURL={`facility/${activeFacilityId()}/user/client`}
-        staticTranslations={createTableTranslations("clients")}
+        staticTranslations={createTableTranslations("client")}
         staticPersistenceKey="facilityClients"
         columns={[
           {name: "id", initialVisible: false},

@@ -4,7 +4,7 @@ import {makeAttributable} from "./attributable";
 import {Attributes} from "./attributes";
 
 describe("Attributes", () => {
-  const langFunc = (key: string) => `t(${key})`;
+  const langFunc = (key: unknown) => `t(${key})`;
   const attributes = Attributes.fromResources(langFunc, [
     {
       id: "aa1",

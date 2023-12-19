@@ -1,12 +1,12 @@
+import {TOptions} from "i18next";
 import {JSX, Match, Show, Switch, VoidComponent, createMemo, mergeProps} from "solid-js";
-import {LangEntryFunc, LangPrefixFunc, getLangEntryFunc} from "../utils";
 import {Capitalize} from "./Capitalize";
 
 interface Props {
   /** The highest priority source. */
   readonly override?: () => JSX.Element;
   /** The second-highest priority source. */
-  readonly langFunc?: LangEntryFunc | [func?: LangPrefixFunc, subKey?: string];
+  readonly langFunc?: (o?: TOptions) => string;
   /** Whether to capitalize. Applies to the result of the lang func only. */
   readonly capitalize?: boolean;
   /** The last source. */
@@ -22,9 +22,9 @@ interface Props {
  *   - if specified, but returns an empty value, there is no text.
  *   - if missing or returns undefined (or null), continue:
  * - Check props.langFunc:
- *   - if fully specified and returns a non-empty value, it is displayed, capitalized if props.calitapize.
+ *   - if specified and returns a non-empty value, it is displayed, capitalized if props.calitapize.
  *   - if specified, but returns an empty value, the translation code is displayed
- *   - if missing, or any part is missing, continue:
+ *   - if missing, continue:
  * - Check props.fallbackCode:
  *   - if present and non-empty, it is displayed.
  *   - if missing or empty, there is no text.
@@ -45,12 +45,6 @@ export const TranslatedText: VoidComponent<Props> = (allProps) => {
     const value = props.override?.();
     return value == undefined ? undefined : {value, empty: value === "" || (Array.isArray(value) && !value.length)};
   });
-  const langFunc = () => {
-    if (!props.langFunc) return undefined;
-    if (typeof props.langFunc === "function") return props.langFunc;
-    const [langPrefixFunc, subKey] = props.langFunc;
-    return langPrefixFunc && subKey ? getLangEntryFunc(langPrefixFunc, subKey) : undefined;
-  };
   return (
     <Switch fallback={props.wrapIn()}>
       <Match when={override()}>
@@ -60,7 +54,7 @@ export const TranslatedText: VoidComponent<Props> = (allProps) => {
           </Show>
         )}
       </Match>
-      <Match when={langFunc()}>
+      <Match when={props.langFunc}>
         {(langFunc) => (
           <Show when={langFunc()({defaultValue: ""})} fallback={props.wrapIn(<>{langFunc()()}</>)}>
             {(text) => props.wrapIn(<Capitalize text={text()} capitalize={props.capitalize} />)}

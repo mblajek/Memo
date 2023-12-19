@@ -25,7 +25,7 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
   return (
     <TranslatedText
       override={() => props.text}
-      langFunc={[form?.translations?.fieldNames, props.fieldName]}
+      langFunc={form?.translations ? (o) => form.translations.fieldName(props.fieldName, o) : undefined}
       capitalize
       wrapIn={(text) => {
         const content = () => props.wrapIn?.(text) ?? text;

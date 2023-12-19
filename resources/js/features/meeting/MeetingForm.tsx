@@ -41,6 +41,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
     <FelteForm
       id={props.id}
       schema={getSchema()}
+      translationsModel="meeting"
       class="flex flex-col gap-3"
       {...formProps}
       onError={(errorResp, ctx) => {
