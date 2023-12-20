@@ -117,7 +117,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const staffResources = createMemo(
     () =>
       staff()?.map((staff) => {
-        const baseColor = randomColor({uuidSeed: staff.id, whiteness: [0, 50], blackness: [10, 40]});
+        const baseColor = randomColor({seedString: staff.id, whiteness: [0, 50], blackness: [10, 40]});
         const style = {
           "border-color": baseColor,
           "background-color": bleachColor(baseColor, {amount: 0.7}),

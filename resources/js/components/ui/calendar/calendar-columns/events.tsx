@@ -12,6 +12,7 @@ import {DateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {DateTime} from "luxon";
 import {
   For,
+  Index,
   JSX,
   ParentComponent,
   Show,
@@ -48,16 +49,45 @@ interface MeetingEventProps {
 
 const DISAPPEAR_MILLIS = 300;
 
+const MAX_TAG_LENGTH = 50;
+
 export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const calendar = useColumnsCalendar();
+  const notesWithTags = () => {
+    const {notes} = props.meeting;
+    if (!notes) {
+      // eslint-disable-next-line solid/components-return-once
+      return undefined;
+    }
+    const elements: JSX.Element[] = [];
+    for (const line of notes.split("\n")) {
+      if (line.match(/^#\w/)) {
+        const tags = line
+          .split(/(^|\s+)#(?=\w)/)
+          .map((tag) => tag.trim())
+          .filter(Boolean);
+        if (tags.every((tag) => tag.length <= MAX_TAG_LENGTH)) {
+          elements.push(
+            <div class="flex flex-wrap gap-px my-px">
+              {<Index each={tags}>{(tag) => <AutoColoredTag text={tag()} />}</Index>}
+            </div>,
+          );
+          continue;
+        }
+      }
+      elements.push(line + "\n");
+    }
+    return <div class="wrapText">{elements}</div>;
+  };
   const tags = () => {
-    const tags = [];
+    const tags: JSX.Element[] = [];
     tags.push(
-      <Tag color={randomColor({uuidSeed: props.meeting.statusDictId, whiteness: 10, blackness: 30})}>
-        {dictionaries()?.positionById(props.meeting.statusDictId).label}
-      </Tag>,
+      <AutoColoredTag
+        text={dictionaries()!.positionById(props.meeting.statusDictId).label}
+        colorSeed={props.meeting.statusDictId}
+      />,
     );
     if (props.meeting.isRemote) {
       tags.push(<Tag color="blue">{t("models.meeting.isRemote")}</Tag>);
@@ -129,7 +159,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           </Show>
           <div>{dictionaries()?.positionById(props.meeting.typeDictId).label}</div>
           <div class="flex flex-wrap gap-px">{tags()}</div>
-          <div>{props.meeting.notes}</div>
+          {notesWithTags()}
           <Show when={props.meeting.resources.length}>
             <div>{t("parenthesised", {text: resources()})}</div>
           </Show>
@@ -140,7 +170,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           <div {...hoverApi().positionerProps} class="pointer-events-auto">
             <div {...hoverApi().contentProps} class="z-modal">
               <div
-                class={cx("bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm", {
+                class={cx("max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm", {
                   "opacity-0": !hovered(),
                 })}
                 style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
@@ -178,11 +208,13 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                   </ul>
                 </Show>
                 <div class="flex flex-wrap gap-px">{tags()}</div>
-                <Show when={props.meeting.notes}>
-                  <FieldDisp field="notes">{props.meeting.notes}</FieldDisp>
+                <Show when={notesWithTags()}>
+                  {(notesWithTags) => <FieldDisp field="notes">{notesWithTags()}</FieldDisp>}
                 </Show>
                 <Show when={props.meeting.resources.length}>
-                  <FieldDisp field="resources">{resources()}</FieldDisp>
+                  <FieldDisp field="resources">
+                    <div class="wrapText">{resources()}</div>
+                  </FieldDisp>
                 </Show>
               </div>
             </div>
@@ -227,5 +259,18 @@ export const Tag: ParentComponent<TagProps> = (allProps) => {
         },
       })}
     />
+  );
+};
+
+interface AutoColoredTagProps {
+  readonly text: string;
+  readonly colorSeed?: string;
+}
+
+export const AutoColoredTag: VoidComponent<AutoColoredTagProps> = (props) => {
+  return (
+    <Tag color={randomColor({seedString: props.colorSeed || props.text, whiteness: 10, blackness: 30})}>
+      {props.text}
+    </Tag>
   );
 };

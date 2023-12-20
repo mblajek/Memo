@@ -8,8 +8,12 @@ export class Random {
     this.state = seed | 0;
   }
 
-  static fromUUID(uuid: string) {
-    return new Random(uuid.split("-").reduce((acc, cur) => (acc + parseInt(cur, 16)) | 0, 0));
+  static fromString(str: string) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+    }
+    return new Random(hash);
   }
 
   clone() {

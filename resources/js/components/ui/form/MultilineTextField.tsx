@@ -2,6 +2,7 @@ import {htmlAttributes} from "components/utils";
 import {JSX, VoidComponent, splitProps} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
+import {TRIM_ON_BLUR} from "./util";
 
 export interface TextFieldProps
   extends Pick<
@@ -20,6 +21,7 @@ export const MultilineTextField: VoidComponent<TextFieldProps> = (allProps) => {
       <textarea
         id={props.name}
         name={props.name}
+        {...TRIM_ON_BLUR}
         {...htmlAttributes.merge(inputProps, {
           class:
             "h-16 min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
