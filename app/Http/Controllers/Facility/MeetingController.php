@@ -10,6 +10,7 @@ use App\Http\Resources\Meeting\MeetingResource;
 use App\Models\Facility;
 use App\Models\Meeting;
 use App\Services\Meeting\MeetingService;
+use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
@@ -76,15 +77,7 @@ class MeetingController extends ApiController
             )
         ),
         tags: ['Facility meeting'],
-        parameters: [
-            new OA\Parameter(
-                name: 'facility',
-                description: 'Facility id',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            ),
-        ],
+        parameters: [new FacilityParameter()],
         responses: [
             new OA\Response(response: 201, description: 'Created'),
             new OA\Response(response: 400, description: 'Bad Request'),
@@ -125,15 +118,39 @@ class MeetingController extends ApiController
         description: new PermissionDescribe(Permission::facilityAdmin),
         summary: 'Meetings in the facility',
         tags: ['Facility meeting'],
+        parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
+        responses: [
+            new OA\Response(
+                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                new OA\Property(
+                    property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/MeetingResource'),
+                ),
+            ])
+            ),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )]
+    public function list(Facility $facility): JsonResource
+    {
+        $meetingsQuery = Meeting::query()->where('facility_id', $facility->id);
+        $this->applyRequestIn($meetingsQuery);
+        return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources'])->get());
+    }
+
+    #[OA\Delete(
+        path: '/api/v1/facility/{facility}/meeting/{meeting}',
+        description: new PermissionDescribe(Permission::facilityAdmin),
+        summary: 'Meetings in the facility',
+        tags: ['Facility meeting'],
         parameters: [
+            new FacilityParameter(),
             new OA\Parameter(
-                name: 'facility',
-                description: 'Facility id',
+                name: 'meeting',
+                description: 'Meeting id',
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
             ),
-            new OA\Parameter(name: 'in', in: 'query'),
         ],
         responses: [
             new OA\Response(
@@ -146,11 +163,12 @@ class MeetingController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )]
-    public function facilityMeetingList(Facility $facility): JsonResource
-    {
-        $meetingsQuery = Meeting::query()->where('facility_id', $facility->id);
-        $this->applyRequestIn($meetingsQuery);
-        return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources'])->get());
+    public function delete(
+        /** @noinspection PhpUnusedParameterInspection */
+        Facility $facility,
+        Meeting $meeting,
+    ): JsonResponse {
+        $meeting->delete();
+        return new JsonResponse();
     }
-
 }

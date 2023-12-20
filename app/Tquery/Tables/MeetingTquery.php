@@ -25,12 +25,13 @@ readonly class MeetingTquery extends TqService
     {
         $builder = parent::getBuilder();
         $builder->where(
-            query: fn(string $bind) => "meetings.facility_id = $bind",
+            query: fn(string $bind) => "`meetings`.`facility_id` = $bind",
             or: false,
             value: $this->facility->id,
             inverse: false,
             nullable: false,
         );
+        $builder->whereNotDeleted($this->config->table);
         return $builder;
     }
 
@@ -55,6 +56,13 @@ readonly class MeetingTquery extends TqService
             TqTableAliasEnum::created_by,
             'name',
             'created_by.name',
+        );
+        $config->addSimple(TqDataTypeEnum::uuid, 'updated_by', 'updated_by.id');
+        $config->addJoined(
+            TqDataTypeEnum::string,
+            TqTableAliasEnum::updated_by,
+            'name',
+            'updated_by.name',
         );
         /** @var array<string, ?AttendanceType> $attendanceTypes */
         $attendanceTypes = [
