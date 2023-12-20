@@ -118,15 +118,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     () =>
       staff()?.map((staff) => {
         const baseColor = randomColor({uuidSeed: staff.id, whiteness: [0, 50], blackness: [10, 40]});
-        const borderStyle = {
+        const style = {
           "border-color": baseColor,
           "background-color": bleachColor(baseColor, {amount: 0.7}),
+        };
+        const hoverStyle = {
+          "background-color": bleachColor(baseColor, {amount: 0.5}),
         };
         return {
           id: staff.id,
           text: staff.name,
           baseColor,
-          borderStyle,
+          styling: {style, hoverStyle},
+          hoverStyle,
           label: () => (
             <div class="w-full flex justify-between gap-1">
               <span>{staff.name}</span>
@@ -135,7 +139,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 style={{
                   width: "14px",
                   height: "14px",
-                  ...borderStyle,
+                  ...style,
                 }}
               />
             </div>
@@ -436,9 +440,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             .filter((ev) => ev.meeting.staff.some((staff) => staff.userId === staffId))
             .map((ev) => ({
               ...ev,
-              content: () => (
-                <MeetingEventBlock meeting={ev.meeting} style={staffResourcesById().get(staffId)?.borderStyle} />
-              ),
+              content: () => <MeetingEventBlock meeting={ev.meeting} {...staffResourcesById().get(staffId)?.styling} />,
             }))
         : [];
     return {

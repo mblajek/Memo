@@ -43,9 +43,10 @@ export const AllDayEventBlock: ParentComponent<AllDayEventProps> = (props) => (
 interface MeetingEventProps {
   readonly meeting: TQMeetingResource;
   readonly style?: JSX.CSSProperties;
+  readonly hoverStyle?: JSX.CSSProperties;
 }
 
-const DISAPPEAR_MILLIS = 1000;
+const DISAPPEAR_MILLIS = 300;
 
 export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const t = useLangFunc();
@@ -81,7 +82,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const [hoverState, hoverSend] = useMachine(
     hoverCard.machine({
       id: createUniqueId(),
-      openDelay: 0,
+      openDelay: 100,
       closeDelay: DISAPPEAR_MILLIS,
       positioning: {
         boundary,
@@ -99,7 +100,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     <>
       <div
         class="w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer"
-        style={props.style}
+        style={{...props.style, ...(hovered() ? props.hoverStyle : undefined)}}
         {...hoverApi().triggerProps}
         onMouseEnter={[setHovered, true]}
         onMouseLeave={[setHovered, false]}
