@@ -1,6 +1,7 @@
 import {EN_DASH} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
+import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
 
@@ -38,3 +39,17 @@ export const DateAndTimeInfo: VoidComponent<Props> = (props) => {
     </div>
   );
 };
+
+interface MeetingDateAndTimeInfoProps {
+  readonly meeting: Pick<MeetingResource, "date" | "startDayminute" | "durationMinutes">;
+  readonly twoLines?: boolean;
+}
+
+export const MeetingDateAndTimeInfo: VoidComponent<MeetingDateAndTimeInfoProps> = (props) => (
+  <DateAndTimeInfo
+    date={DateTime.fromISO(props.meeting.date)}
+    startDayMinute={props.meeting.startDayminute}
+    durationMinutes={props.meeting.durationMinutes}
+    twoLines={props.twoLines}
+  />
+);

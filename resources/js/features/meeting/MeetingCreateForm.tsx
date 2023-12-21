@@ -7,6 +7,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
+import {getInitialAttendantsForCreate} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
 import {meetingTimeInitialValues} from "./meeting_time_controller";
 
@@ -49,8 +50,7 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
       typeDictId: "",
       statusDictId: dictionaries()?.get("meetingStatus").get("planned").id || "",
       isRemote: false,
-      staff: props.initialData?.staff?.map((userId) => ({userId, attendanceStatusDictId: ""})) || [],
-      clients: [],
+      ...getInitialAttendantsForCreate(props.initialData?.staff),
       notes: "",
       resources: [],
     }) satisfies MeetingFormType;

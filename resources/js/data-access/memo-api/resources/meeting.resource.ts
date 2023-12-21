@@ -22,7 +22,7 @@ export interface MeetingResource {
 
 export interface MeetingAttendantResource {
   readonly userId: string;
-  readonly attendanceStatusDictId: string;
+  readonly attendanceStatusDictId: string | null;
 }
 
 export interface MeetingResourceResource {

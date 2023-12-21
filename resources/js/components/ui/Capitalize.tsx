@@ -19,3 +19,11 @@ export const Capitalize: VoidComponent<Props> = (allProps) => {
     </span>
   );
 };
+
+/**
+ * Capitalizes the first letter of the string.
+ * Consider using the Capitalize component instead, if possible.
+ */
+export function capitalizeString(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}

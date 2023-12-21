@@ -7,7 +7,7 @@ import toast from "solid-toast";
 import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
 
 interface FormParams {
-  id: Api.Id;
+  readonly id: Api.Id;
 }
 
 interface Props extends FormParams {

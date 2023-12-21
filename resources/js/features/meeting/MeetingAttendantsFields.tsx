@@ -11,7 +11,7 @@ import {cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
-import {MeetingAttendantResource} from "data-access/memo-api/resources/meeting.resource";
+import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {Index, Show, VoidComponent, createComputed, createEffect, on} from "solid-js";
@@ -43,10 +43,6 @@ interface FormAttendantsData extends Obj {
   readonly clients: readonly MeetingAttendantResource[];
 }
 
-function newItem(): MeetingAttendantResource {
-  return {userId: "", attendanceStatusDictId: ""};
-}
-
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
@@ -76,7 +72,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         !prevAttendants.at(-1)?.userId &&
         attendants.at(-1)!.userId)
     ) {
-      form.addField(props.name, newItem());
+      form.addField(props.name, createAttendant());
     }
     return attendants;
   });
@@ -183,7 +179,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       <Button
                         class="secondarySmall min-h-big-input"
                         title={t(`forms.meeting.add_attendant.${props.name}`)}
-                        onClick={() => form.addField(props.name, newItem(), index + 1)}
+                        onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                       >
                         <BiRegularPlus class="inlineIcon text-current" />
                       </Button>
@@ -198,6 +194,32 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     </div>
   );
 };
+
+function createAttendant({userId = "", attendanceStatusDictId}: Partial<MeetingAttendantResource> = {}) {
+  return {userId, attendanceStatusDictId: attendanceStatusDictId || ""} satisfies MeetingAttendantResource;
+}
+
+export function getInitialAttendantsForCreate(staff?: readonly string[]) {
+  return {
+    staff: staff?.map((userId) => createAttendant({userId})) || [],
+    clients: [],
+  } satisfies FormAttendantsData;
+}
+
+export function getInitialAttendantsForEdit(meeting: MeetingResource) {
+  function getAttendants(attendantsFromMeeting: readonly MeetingAttendantResource[]) {
+    const attendants = attendantsFromMeeting.map(createAttendant);
+    if (attendants.length > 1) {
+      // Start in multiple mode, make additional empty row.
+      attendants.push(createAttendant());
+    }
+    return attendants;
+  }
+  return {
+    staff: getAttendants(meeting.staff),
+    clients: getAttendants(meeting.clients),
+  } satisfies FormAttendantsData;
+}
 
 export function getAttendantsValues(values: FormAttendantsData) {
   return {

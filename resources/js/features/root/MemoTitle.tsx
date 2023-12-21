@@ -1,4 +1,5 @@
 import {Title} from "@solidjs/meta";
+import {capitalizeString} from "components/ui/Capitalize";
 import {EM_DASH, NBSP} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {translationsLoaded} from "i18n_loader";
@@ -16,7 +17,7 @@ export const MemoTitle: VoidComponent<Props> = (props) => {
     if (!name) {
       return props.routeKey;
     }
-    return name.slice(0, 1).toUpperCase() + name.slice(1);
+    return capitalizeString(name);
   };
   // The title is specified as a function instead of directly in JSX because the MemoTitle component
   // is used in router, and for some reason some usage of JSX causes warnings about

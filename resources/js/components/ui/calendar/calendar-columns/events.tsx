@@ -10,8 +10,7 @@ import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
-import {DateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
-import {DateTime} from "luxon";
+import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {For, JSX, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {useColumnsCalendar} from "../ColumnsCalendar";
@@ -141,12 +140,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                 style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
                 onMouseEnter={() => hoverApi().close()}
               >
-                <DateAndTimeInfo
-                  date={DateTime.fromISO(props.meeting.date)}
-                  startDayMinute={props.meeting.startDayminute}
-                  durationMinutes={props.meeting.durationMinutes}
-                  twoLines
-                />
+                <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
                 <div>{dictionaries()?.positionById(props.meeting.typeDictId).label}</div>
                 <Show when={props.meeting.staff.length}>
                   <ul>
