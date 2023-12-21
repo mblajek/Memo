@@ -180,15 +180,16 @@ export function createTableRequestCreator({
       }
       return {
         columns: dataColumns(),
-        filter: filterReductor()?.reduce({
-          type: "op",
-          op: "&",
-          val: [
-            intrinsicFilter(),
-            buildFuzzyGlobalFilter(debouncedGlobalFilter(), fuzzyGlobalFilterConfig()!),
-            columnFiltersJoined(),
-          ].filter(NON_NULLABLE),
-        }),
+        filter:
+          filterReductor()?.reduce({
+            type: "op",
+            op: "&",
+            val: [
+              intrinsicFilter(),
+              buildFuzzyGlobalFilter(debouncedGlobalFilter(), fuzzyGlobalFilterConfig()!),
+              columnFiltersJoined(),
+            ].filter(NON_NULLABLE),
+          }) || "always",
         sort,
         paging: {
           number: pagination().pageIndex + 1,
