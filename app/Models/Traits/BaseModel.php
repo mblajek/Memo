@@ -52,6 +52,7 @@ trait BaseModel
         parent::boot();
         $hasCreatedBy = method_exists(static::class, 'createdBy');
         $hasUpdatedBy = method_exists(static::class, 'updatedBy');
+        $hasDeletedBy = method_exists(static::class, 'deletedBy');
         if ($hasCreatedBy || $hasUpdatedBy) {
             static::creating(function (Model $model) use ($hasCreatedBy, $hasUpdatedBy) {
                 /** @var $model HasCreatedBy */
@@ -67,9 +68,14 @@ trait BaseModel
         if ($hasUpdatedBy) {
             static::updating(function (Model $model) {
                 /** @var $model HasUpdatedBy */
-                if (!$model->updated_by) {
-                    $model->updated_by = self::getAuthOrFail()->id;
-                }
+                $model->updated_by = self::getAuthOrFail()->id;
+            });
+        }
+        if ($hasDeletedBy) {
+            static::softDeleted(function (Model $model) {
+                /** @var $model HasDeletedBy */
+                $model->deleted_by = self::getAuthOrFail()->id;
+                $model->save();
             });
         }
     }
