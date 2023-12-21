@@ -11,9 +11,14 @@ import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
 import {meetingTimeInitialValues} from "./meeting_time_controller";
 
 interface Props {
-  readonly start?: DateTime;
+  readonly initialData?: InitialDataParams;
   readonly onSuccess?: () => void;
   readonly onCancel?: () => void;
+}
+
+export interface InitialDataParams {
+  readonly start?: DateTime;
+  readonly staff?: readonly string[];
 }
 
 export const MeetingCreateForm: VoidComponent<Props> = (props) => {
@@ -40,11 +45,11 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
 
   const initialValues = () =>
     ({
-      ...meetingTimeInitialValues(props.start),
+      ...meetingTimeInitialValues(props.initialData?.start),
       typeDictId: "",
       statusDictId: dictionaries()?.get("meetingStatus").get("planned").id || "",
       isRemote: false,
-      staff: [],
+      staff: props.initialData?.staff?.map((userId) => ({userId, attendanceStatusDictId: ""})) || [],
       clients: [],
       notes: "",
       resources: [],

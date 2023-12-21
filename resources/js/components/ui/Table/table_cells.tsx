@@ -35,10 +35,10 @@ export function useTableCells() {
         <Index each={v}>{(id) => <IdColumn id={id()} />}</Index>
       </div>
     )),
-    dict: cellFunc<string>((v) => dictionaries()?.positionsById.get(v)?.label || "??"),
+    dict: cellFunc<string>((v) => dictionaries()?.positionById(v)?.label || "??"),
     dictList: cellFunc<readonly string[]>((v) => (
       <ul>
-        <Index each={v}>{(id) => <li>{dictionaries()?.positionsById.get(id())?.label || "??"}</li>}</Index>
+        <Index each={v}>{(id) => <li>{dictionaries()?.positionById(id())?.label || "??"}</li>}</Index>
       </ul>
     )),
   };

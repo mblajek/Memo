@@ -6,6 +6,7 @@
 export interface MeetingResource {
   readonly id: string;
   readonly facilityId: string;
+  readonly categoryDictId: string;
   readonly typeDictId: string;
   readonly notes: string;
   readonly date: string;

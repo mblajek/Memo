@@ -33,7 +33,7 @@ export const DEFAULT_REQUEST_CREATOR: RequestCreator<SetStoreFunction<DataReques
   const [request, setRequest] = createStore<DataRequest>({
     columns: [],
     sort: [],
-    paging: {number: 1, size: INITIAL_PAGE_SIZE},
+    paging: {size: INITIAL_PAGE_SIZE},
   });
   const [requestReady, setRequestReady] = createSignal(false);
   createComputed(() => setRequestReady(!!schema()));
@@ -42,6 +42,14 @@ export const DEFAULT_REQUEST_CREATOR: RequestCreator<SetStoreFunction<DataReques
     requestController: setRequest,
   };
 };
+
+/** A function for creating a request creator with a static, predefined request, that cannot be configured later. */
+export function staticRequestCreator(request: DataRequest): RequestCreator<undefined> {
+  return () => ({
+    request: () => request,
+    requestController: undefined,
+  });
+}
 
 /**
  * Creates a tquery.

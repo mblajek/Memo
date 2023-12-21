@@ -34,7 +34,7 @@ export const HoursArea: VoidComponent<Props> = (allProps) => {
   const eventsData = createMemo((): EventData[] =>
     props.events
       .filter((event): event is PartDayEvent => !event.allDay)
-      .map((event) => ({event, dayMinuteRange: getDayMinuteRange(props.day, event.range)}))
+      .map((event) => ({event, dayMinuteRange: getDayMinuteRange(props.day, event)}))
       .filter((data): data is EventData => !!data.dayMinuteRange),
   );
   const overlapsMap = createMemo(() => calculateOverlaps(eventsData(), ({dayMinuteRange}) => dayMinuteRange!));
@@ -56,7 +56,7 @@ export const HoursArea: VoidComponent<Props> = (allProps) => {
           return {dayMinuteRange: FULL_DAY_MINUTE_RANGE, content: blockProps.block.contentInHoursArea};
         }
       } else {
-        const dayMinuteRange = getDayMinuteRange(props.day, blockProps.block.range);
+        const dayMinuteRange = getDayMinuteRange(props.day, blockProps.block);
         return dayMinuteRange && {dayMinuteRange, content: blockProps.block.content};
       }
     };

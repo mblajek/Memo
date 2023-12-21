@@ -64,6 +64,14 @@ export class Dictionaries {
       Array.from(this, (dictionary) => dictionary.subsetFor(facilityIdOrGlobal)).filter(NON_NULLABLE),
     );
   }
+
+  positionById(positionId: string) {
+    const position = this.positionsById.get(positionId);
+    if (!position) {
+      throw new Error(`Position ${positionId} not found.`);
+    }
+    return position;
+  }
 }
 
 export class Dictionary {

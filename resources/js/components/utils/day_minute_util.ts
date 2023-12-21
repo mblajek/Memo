@@ -1,4 +1,5 @@
-import {DateTime, Interval} from "luxon";
+import {DateTime} from "luxon";
+import {PartDayTimeSpan} from "../ui/calendar/types";
 
 export type DayMinuteRange = readonly [number, number];
 
@@ -29,26 +30,25 @@ export function formatDayMinuteHM(dayMinute: number, formatOpts?: Intl.DateTimeF
 }
 
 /** Checks whether the time span is at least partially on the given day. */
-export function isOnDay(day: DateTime, interval: Interval) {
-  return !!getDayMinuteRange(day, interval);
+export function isOnDay(day: DateTime, timeSpan: PartDayTimeSpan) {
+  return !!getDayMinuteRange(day, timeSpan);
 }
 
 /**
  * Returns the day minute range of the specified time span, clamping to the specified day.
  * Returns undefined if the range is empty.
  */
-export function getDayMinuteRange(day: DateTime, {start, end}: Interval): DayMinuteRange | undefined {
-  const dayStart = day.startOf("day");
-  const dayEnd = dayStart.plus({days: 1});
-  if (end <= dayStart || start >= dayEnd) {
+export function getDayMinuteRange(
+  day: DateTime,
+  {date, startDayMinute, durationMinutes}: PartDayTimeSpan,
+): DayMinuteRange | undefined {
+  if (date.hasSame(day, "day")) {
+    return [startDayMinute, Math.min(startDayMinute + durationMinutes, MAX_DAY_MINUTE)];
+  } else if (date.hasSame(day.minus({days: 1}), "day") && startDayMinute + durationMinutes > MAX_DAY_MINUTE) {
+    return [0, startDayMinute + durationMinutes - MAX_DAY_MINUTE];
+  } else {
     return undefined;
   }
-  const rangeStart = DateTime.max(dayStart, start);
-  const rangeEnd = DateTime.min(dayEnd, end);
-  return [
-    getDayMinute(rangeStart),
-    rangeEnd.toMillis() === dayEnd.toMillis() ? MAX_DAY_MINUTE : getDayMinute(rangeEnd),
-  ];
 }
 
 export function timeInputToDayMinute(timeInputValue: string | undefined, params?: {assert?: false}): number | undefined;

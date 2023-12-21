@@ -25,6 +25,7 @@ export const STAFF_ICONS = {
 export const CLIENT_ICONS = {
   menu: IoPeopleCircleOutline,
   client: IoPersonCircleOutline,
+  clients: IoPeopleCircleOutline,
 };
 
 export const FACILITY_ICONS = {
