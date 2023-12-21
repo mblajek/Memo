@@ -1,27 +1,18 @@
 import * as hoverCard from "@zag-js/hover-card";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {Capitalize} from "components/ui/Capitalize";
-import {bleachColor, randomColor} from "components/ui/colors";
+import {RichTextView} from "components/ui/RichTextView";
+import {SimpleTag, Tag, TagsLine} from "components/ui/Tag";
+import {bleachColor} from "components/ui/colors";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EN_DASH} from "components/ui/symbols";
-import {NON_NULLABLE, cx, htmlAttributes, useLangFunc} from "components/utils";
+import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {DateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {DateTime} from "luxon";
-import {
-  For,
-  Index,
-  JSX,
-  ParentComponent,
-  Show,
-  VoidComponent,
-  createMemo,
-  createSignal,
-  createUniqueId,
-  splitProps,
-} from "solid-js";
+import {For, JSX, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {useColumnsCalendar} from "../ColumnsCalendar";
 
@@ -45,46 +36,19 @@ interface MeetingEventProps {
   readonly meeting: TQMeetingResource;
   readonly style?: JSX.CSSProperties;
   readonly hoverStyle?: JSX.CSSProperties;
+  readonly onClick?: () => void;
 }
 
 const DISAPPEAR_MILLIS = 300;
-
-const MAX_TAG_LENGTH = 50;
 
 export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const calendar = useColumnsCalendar();
-  const notesWithTags = () => {
-    const {notes} = props.meeting;
-    if (!notes) {
-      // eslint-disable-next-line solid/components-return-once
-      return undefined;
-    }
-    const elements: JSX.Element[] = [];
-    for (const line of notes.split("\n")) {
-      if (line.match(/^#\w/)) {
-        const tags = line
-          .split(/(^|\s+)#(?=\w)/)
-          .map((tag) => tag.trim())
-          .filter(Boolean);
-        if (tags.every((tag) => tag.length <= MAX_TAG_LENGTH)) {
-          elements.push(
-            <div class="flex flex-wrap gap-px my-px">
-              {<Index each={tags}>{(tag) => <AutoColoredTag text={tag()} />}</Index>}
-            </div>,
-          );
-          continue;
-        }
-      }
-      elements.push(line + "\n");
-    }
-    return <div class="wrapText">{elements}</div>;
-  };
   const tags = () => {
     const tags: JSX.Element[] = [];
     tags.push(
-      <AutoColoredTag
+      <SimpleTag
         text={dictionaries()!.positionById(props.meeting.statusDictId).label}
         colorSeed={props.meeting.statusDictId}
       />,
@@ -134,6 +98,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         {...hoverApi().triggerProps}
         onMouseEnter={[setHovered, true]}
         onMouseLeave={[setHovered, false]}
+        onClick={() => props.onClick?.()}
       >
         <div class="whitespace-nowrap">
           <span class="font-weight-medium">{formatDayMinuteHM(props.meeting.startDayminute)}</span>
@@ -158,8 +123,8 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
             </div>
           </Show>
           <div>{dictionaries()?.positionById(props.meeting.typeDictId).label}</div>
-          <div class="flex flex-wrap gap-px">{tags()}</div>
-          {notesWithTags()}
+          <TagsLine>{tags()}</TagsLine>
+          <RichTextView text={props.meeting.notes} />
           <Show when={props.meeting.resources.length}>
             <div>{t("parenthesised", {text: resources()})}</div>
           </Show>
@@ -208,8 +173,10 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                   </ul>
                 </Show>
                 <div class="flex flex-wrap gap-px">{tags()}</div>
-                <Show when={notesWithTags()}>
-                  {(notesWithTags) => <FieldDisp field="notes">{notesWithTags()}</FieldDisp>}
+                <Show when={props.meeting.notes}>
+                  <FieldDisp field="notes">
+                    <RichTextView text={props.meeting.notes} />
+                  </FieldDisp>
                 </Show>
                 <Show when={props.meeting.resources.length}>
                   <FieldDisp field="resources">
@@ -238,39 +205,5 @@ const FieldDisp: ParentComponent<FieldLabelProps> = (props) => {
       </div>
       <div>{props.children}</div>
     </div>
-  );
-};
-
-interface TagProps extends htmlAttributes.div {
-  readonly color: string;
-}
-
-export const Tag: ParentComponent<TagProps> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["color"]);
-  return (
-    <div
-      {...htmlAttributes.merge(divProps, {
-        class: "border py-0.5 px-1 inline-block",
-        style: {
-          "color": props.color,
-          "border-color": props.color,
-          "border-radius": "0.7rem",
-          "background-color": bleachColor(props.color, {amount: 0.8}),
-        },
-      })}
-    />
-  );
-};
-
-interface AutoColoredTagProps {
-  readonly text: string;
-  readonly colorSeed?: string;
-}
-
-export const AutoColoredTag: VoidComponent<AutoColoredTagProps> = (props) => {
-  return (
-    <Tag color={randomColor({seedString: props.colorSeed || props.text, whiteness: 10, blackness: 30})}>
-      {props.text}
-    </Tag>
   );
 };
