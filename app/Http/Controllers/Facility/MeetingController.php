@@ -23,6 +23,11 @@ class MeetingController extends ApiController
         $this->permissionOneOf(Permission::facilityAdmin);
     }
 
+    private function getFacilityMeeting(string $id): Meeting
+    {
+        return Meeting::query()->where('facility_id', $this->getFacilityOrFail()->id)->findOrFail($id);
+    }
+
     #[OA\Post(
         path: '/api/v1/facility/{facility}/meeting',
         description: new PermissionDescribe(Permission::facilityAdmin),
@@ -116,7 +121,7 @@ class MeetingController extends ApiController
     #[OA\Get(
         path: '/api/v1/facility/{facility}/meeting/list',
         description: new PermissionDescribe(Permission::facilityAdmin),
-        summary: 'Meetings in the facility',
+        summary: 'Get facility meetings',
         tags: ['Facility meeting'],
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
@@ -137,10 +142,65 @@ class MeetingController extends ApiController
         return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources'])->get());
     }
 
+    #[OA\Patch(
+        path: '/api/v1/facility/{facility}/meeting/{meeting}',
+        description: new PermissionDescribe(Permission::facilityAdmin),
+        summary: 'Update facility meeting',
+        tags: ['Facility meeting'],
+        parameters: [
+            new FacilityParameter(),
+            new OA\Parameter(
+                name: 'meeting',
+                description: 'Meeting id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
+            ),
+        ],
+        responses: [
+            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )]
+    public function patch(
+        MeetingService $meetingService,
+        /** @noinspection PhpUnusedParameterInspection */
+        Facility $facility,
+        string $meeting,
+    ): JsonResponse {
+        $meetingObject = $this->getFacilityMeeting($meeting);
+        $data = $this->validate(
+            Meeting::getPatchValidator([
+                'type_dict_id',
+                'date',
+                'notes',
+                'start_dayminute',
+                'duration_minutes',
+                'status_dict_id',
+                'is_remote',
+                'staff',
+                'clients',
+                'resources',
+            ], $meetingObject) + Meeting::getInsertValidator([
+                'staff.*',
+                'staff.*.user_id',
+                'staff.*.attendance_status_dict_id',
+                'clients.*',
+                'clients.*.user_id',
+                'clients.*.attendance_status_dict_id',
+                'resources.*',
+                'resources.*.resource_dict_id',
+            ])
+        );
+        // todo: implementation
+        return new JsonResponse();
+    }
+
     #[OA\Delete(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
         description: new PermissionDescribe(Permission::facilityAdmin),
-        summary: 'Meetings in the facility',
+        summary: 'Delete facility meeting',
         tags: ['Facility meeting'],
         parameters: [
             new FacilityParameter(),
@@ -166,9 +226,9 @@ class MeetingController extends ApiController
     public function delete(
         /** @noinspection PhpUnusedParameterInspection */
         Facility $facility,
-        Meeting $meeting,
+        string $meeting,
     ): JsonResponse {
-        $meeting->delete();
+        $this->getFacilityMeeting($meeting)->delete();
         return new JsonResponse();
     }
 }
