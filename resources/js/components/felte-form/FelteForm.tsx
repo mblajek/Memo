@@ -39,6 +39,8 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     /** The id of the form element. It is also used as a translation key prefix. */
     readonly id: string;
     readonly schema: ZodSchema<T>;
+    /** The form names used to resolve translations. Defaults to the id. */
+    readonly translationsFormNames?: readonly string[];
     /** The name of the model of the object edited by this form. It is used for getting field translations. */
     readonly translationsModel?: string;
     readonly children: ChildrenOrFunc<[FormType<T>]>;
@@ -60,21 +62,38 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const t = useLangFunc();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
-    ["children", "schema", "translationsModel", "disabled", "onFormCreated", "preventTabClose"],
+    [
+      "children",
+      "schema",
+      "translationsFormNames",
+      "translationsModel",
+      "disabled",
+      "onFormCreated",
+      "preventTabClose",
+    ],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
+  const translationsFormNames = () => props.translationsFormNames || [allProps.id];
   const translations: FormTranslations = {
-    formName: (o) => t(`forms.${formProps.id}.formName`, o),
+    formName: (o) =>
+      t(
+        translationsFormNames().map((f) => `forms.${f}.formName`),
+        o,
+      ),
     fieldName: (field, o) =>
       t(
         [
-          `forms.${formProps.id}.fieldNames.${field}`,
+          ...translationsFormNames().map((f) => `forms.${f}.fieldNames.${field}`),
           props.translationsModel && `models.${props.translationsModel}.${field}`,
           `models.generic.${field}`,
         ].filter(NON_NULLABLE),
         o,
       ),
-    submit: (o) => t(`forms.${formProps.id}.submit`, o),
+    submit: (o) =>
+      t(
+        translationsFormNames().map((f) => `forms.${f}.submit`),
+        o,
+      ),
   };
   function getQuotedFieldName(field: string, {skipIfMissing = false} = {}) {
     if (skipIfMissing) {

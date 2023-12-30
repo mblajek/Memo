@@ -11,11 +11,14 @@ password_change:
   submit: "Zmień hasło"
   success: "Hasło zostało zmienione"
 
+user:
+  fieldNames:
+    hasPassword: "posiada hasło logowania do Memo"
+
 user_edit:
   formName: "Zmiana danych"
   fieldNames:
-    hasPassword: "$t(models.user.hasPassword) (jest użytkownikiem Memo)"
-    # Alternative to password, if the password is changed:
+    # Alternative to "password", if the password is changed:
     newPassword: "Nowe hasło"
   password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
   global_admin_requires_password: "Globalny administrator musi posiadać hasło (być użytkownikiem Memo)"
@@ -28,8 +31,6 @@ user_edit:
 
 user_create:
   formName: "Nowa osoba"
-  fieldNames:
-    hasPassword: "posiada hasło logowania do Memo"
   submit: "$t(actions.create)"
   success: "Pomyślnie utworzono"
 
@@ -48,14 +49,14 @@ meeting:
   add_attendant:
     staff: "Dodaj kolejnego pracownika"
     clients: "Dodaj kolejnego klienta"
-
-meeting_create:
-  formName: "Nowe spotkanie"
   fieldNames:
     dateAndTime: "data i godzina"
     durationMinutes: "długość spotkania"
     staff__interval: "(0-1)[$t(models.staff._name)];(2-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(0-1)[$t(models.client._name)];(2-inf)[$t(models.client._name_plural)];"
     attendanceStatusDictId: "obecność"
+
+meeting_create:
+  formName: "Nowe spotkanie"
   submit: "$t(actions.create)"
   success: "Pomyślnie utworzono spotkanie"
