@@ -59,7 +59,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             <Show when={defaultColumnVisibility}>
               {(defaultColumnVisibility) => (
                 <Button
-                  class="secondarySmall m-1"
+                  class="secondary small m-1"
                   onClick={() => table.setColumnVisibility(defaultColumnVisibility())}
                   onMouseOver={[setResetHovered, true]}
                   onMouseOut={[setResetHovered, false]}

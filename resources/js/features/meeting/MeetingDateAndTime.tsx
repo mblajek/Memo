@@ -104,7 +104,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               }
             >
               <Button
-                class="secondarySmall"
+                class="secondary small"
                 onClick={() => setDurationMinutes(defaultDurationMinutes())}
                 title={t("actions.set")}
               >
@@ -141,7 +141,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 )}
               </Show>
             </div>
-            <Button class="secondarySmall" onClick={() => setForceEditable(true)}>
+            <Button class="secondary small" onClick={() => setForceEditable(true)}>
               <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
             </Button>
           </div>
