@@ -38,6 +38,8 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
     <FelteForm
       id={props.id}
       schema={getSchema()}
+      translationsFormNames={[props.id, "user"]}
+      translationsModel="user"
       {...formProps}
       class="flex flex-col gap-4"
       onFormCreated={(form) => {

@@ -100,7 +100,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               }
             >
               <Button
-                class="secondarySmall"
+                class="secondary small"
                 onClick={() => setDurationMinutes(defaultDurationMinutes())}
                 title={t("actions.set")}
               >

@@ -3,27 +3,29 @@ import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
 import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
+import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
+import {TOptions} from "i18next";
 import {Context, JSX, createContext, onCleanup, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
-import {LangEntryFunc, LangPrefixFunc, createTranslationsFromPrefix, htmlAttributes, useLangFunc} from "../utils";
+import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 
 type FormContextValue<T extends Obj = Obj> = {
-  props: FormProps<T>;
-  form: FormType<T>;
-  translations: FormTranslations;
+  readonly props: FormProps<T>;
+  readonly form: FormType<T>;
+  readonly translations: FormTranslations;
 };
 
 export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 
 /** User strings for parts of the form. */
 export interface FormTranslations {
-  formName: LangEntryFunc;
-  fieldNames: LangPrefixFunc;
-  submit: LangEntryFunc;
+  formName(o?: TOptions): string;
+  fieldName(field: string, o?: TOptions): string;
+  submit(o?: TOptions): string;
 }
 
 const FormContext = createContext<FormContextValue>(undefined, {
@@ -35,13 +37,17 @@ const typedFormContext = <T extends Obj>() => FormContext as Context<FormContext
 type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "onError" | "children"> &
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
-    id: string;
-    schema: ZodSchema<T>;
-    children: ChildrenOrFunc<[FormType<T>]>;
-    disabled?: boolean;
-    onFormCreated?: (form: FormType<T>) => void;
+    readonly id: string;
+    readonly schema: ZodSchema<T>;
+    /** The form names used to resolve translations. Defaults to the id. */
+    readonly translationsFormNames?: readonly string[];
+    /** The name of the model of the object edited by this form. It is used for getting field translations. */
+    readonly translationsModel?: string;
+    readonly children: ChildrenOrFunc<[FormType<T>]>;
+    readonly disabled?: boolean;
+    readonly onFormCreated?: (form: FormType<T>) => void;
     /** Whether closing the browser tab should display a warning if the form is dirty. Default: true. */
-    preventTabClose?: boolean;
+    readonly preventTabClose?: boolean;
   };
 
 /**
@@ -56,17 +62,45 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const t = useLangFunc();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
-    ["children", "schema", "disabled", "onFormCreated", "preventTabClose"],
+    [
+      "children",
+      "schema",
+      "translationsFormNames",
+      "translationsModel",
+      "disabled",
+      "onFormCreated",
+      "preventTabClose",
+    ],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-  // eslint-disable-next-line solid/reactivity
-  const translations = createTranslationsFromPrefix(`forms.${formProps.id}`, ["formName", "fieldNames", "submit"]);
+  const translationsFormNames = () => props.translationsFormNames || [allProps.id];
+  const translations: FormTranslations = {
+    formName: (o) =>
+      t(
+        translationsFormNames().map((f) => `forms.${f}.formName`),
+        o,
+      ),
+    fieldName: (field, o) =>
+      t(
+        [
+          ...translationsFormNames().map((f) => `forms.${f}.fieldNames.${field}`),
+          props.translationsModel && `models.${props.translationsModel}.${field}`,
+          `models.generic.${field}`,
+        ].filter(NON_NULLABLE),
+        o,
+      ),
+    submit: (o) =>
+      t(
+        translationsFormNames().map((f) => `forms.${f}.submit`),
+        o,
+      ),
+  };
   function getQuotedFieldName(field: string, {skipIfMissing = false} = {}) {
     if (skipIfMissing) {
-      const name = translations.fieldNames(field, {defaultValue: ""});
+      const name = translations.fieldName(field, {defaultValue: ""});
       return name && t("validation.quoted_field_name", {text: name});
     } else {
-      return t("validation.quoted_field_name", {text: translations.fieldNames(field, {defaultValue: field})});
+      return t("validation.quoted_field_name", {text: translations.fieldName(field, {defaultValue: field})});
     }
   }
   const form = createForm<T>({
@@ -116,13 +150,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   }) as FormType<T>;
 
   onMount(() => {
-    function onBeforeUnload(e: BeforeUnloadEvent) {
-      if ((props.preventTabClose ?? true) && (form.isDirty() || form.isSubmitting())) {
+    function onBeforeUnload(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
+      if ((props.preventTabClose ?? true) && !e.defaultPrevented && (form.isDirty() || form.isSubmitting())) {
         e.preventDefault();
       }
     }
     window.addEventListener("beforeunload", onBeforeUnload);
     onCleanup(() => window.removeEventListener("beforeunload", onBeforeUnload));
+    useBeforeLeave(onBeforeUnload);
   });
 
   // eslint-disable-next-line solid/reactivity

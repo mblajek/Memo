@@ -4,7 +4,7 @@ import {createContext, ParentComponent, useContext} from "solid-js";
 type ProviderProps = {
   /** The table specified for the provider. Must not change. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  table: Table<any>;
+  readonly table: Table<any>;
 };
 
 const TableContext = createContext<Table<unknown>>();

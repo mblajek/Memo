@@ -19,7 +19,7 @@ export const TableFiltersClearButton: VoidComponent<Props> = (props) => {
       title={
         props.columnsWithActiveFilters.length
           ? `${t("tables.filter.column_filters_set")}\n${props.columnsWithActiveFilters
-              .map((column) => `- ${table.options.meta?.translations?.columnNames(column)}`)
+              .map((column) => `- ${table.options.meta?.translations?.columnName(column)}`)
               .join("\n")}\n${t("tables.filter.click_to_clear")}`
           : t("tables.filter.column_filters_cleared")
       }
