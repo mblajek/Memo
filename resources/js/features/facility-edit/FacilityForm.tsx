@@ -23,7 +23,13 @@ interface Props extends FormConfigWithoutTransformFn<FacilityFormInput> {
 export const FacilityForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "onCancel"]);
   return (
-    <FelteForm id={props.id} schema={getSchema()} {...formProps} class="flex flex-col gap-4">
+    <FelteForm
+      id={props.id}
+      schema={getSchema()}
+      translationsModel="facility"
+      {...formProps}
+      class="flex flex-col gap-4"
+    >
       <div class="flex flex-col gap-1">
         <TextField name="name" type="text" {...TRIM_ON_BLUR} autofocus />
         <TextField name="url" type="text" {...TRIM_ON_BLUR} />

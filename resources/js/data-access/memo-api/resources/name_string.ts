@@ -1,4 +1,4 @@
-import {LangPrefixFunc} from "components/utils";
+import {LangFunc} from "components/utils";
 
 /**
  * A string representing some name. There are two variants:
@@ -16,15 +16,15 @@ export function isNameTranslatable(name: NameString) {
 }
 
 export function getNameTranslation(name: NameString, translationFunc: (name: string) => string): string;
-export function getNameTranslation(t: LangPrefixFunc, name: NameString, keyFunc: (name: string) => string): string;
+export function getNameTranslation(t: LangFunc, name: NameString, keyFunc: (name: string) => string): string;
 export function getNameTranslation(
-  ...args: [NameString, (name: string) => string] | [LangPrefixFunc, NameString, (name: string) => string]
+  ...args: [NameString, (name: string) => string] | [LangFunc, NameString, (name: string) => string]
 ) {
   const [name, translationFunc] = args.length === 2 ? args : [args[1], makeTranslationFunc(args[0], args[2])];
   return isNameTranslatable(name) ? translationFunc(name) : name.substring(1);
 }
 
-export function makeTranslationFunc(t: LangPrefixFunc, keyFunc: (name: string) => string) {
+export function makeTranslationFunc(t: LangFunc, keyFunc: (name: string) => string) {
   return (name: string) => {
     const key = keyFunc(name);
     return t(key, {defaultValue: `?? ${key}`});

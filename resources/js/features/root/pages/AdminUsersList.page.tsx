@@ -18,7 +18,7 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.user()}
         staticEntityURL="admin/user"
-        staticTranslations={createTableTranslations("users")}
+        staticTranslations={createTableTranslations("user")}
         staticPersistenceKey="adminUsers"
         columns={[
           {name: "id", initialVisible: false},
@@ -56,7 +56,7 @@ export default (() => {
         initialSort={[{id: "name", desc: false}]}
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">
-            <Button class="secondarySmall" onClick={() => showUserCreateModal()}>
+            <Button class="secondary small" onClick={() => showUserCreateModal()}>
               <USER_ICONS.add class="inlineIcon text-current" /> {t("actions.add_user")}
             </Button>
           </div>

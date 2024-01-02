@@ -530,18 +530,18 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
             <div>
-              <Button class="h-full secondarySmall !rounded-r-none" onClick={[moveDaysSelection, -1]}>
+              <Button class="h-full secondary small !rounded-r-none" onClick={[moveDaysSelection, -1]}>
                 <IoArrowBackOutline class="text-current" />
               </Button>
               <Button
-                class="h-full secondarySmall !rounded-l-none"
+                class="h-full secondary small !rounded-l-none"
                 style={{"margin-left": "-1px"}}
                 onClick={[moveDaysSelection, 1]}
               >
                 <IoArrowForwardOutline class="text-current" />
               </Button>
             </div>
-            <Button class="secondarySmall" onClick={goToToday}>
+            <Button class="secondary small" onClick={goToToday}>
               <Capitalize text={t("calendar.today")} />
             </Button>
             <div class="grow self-center text-center text-lg text-ellipsis">

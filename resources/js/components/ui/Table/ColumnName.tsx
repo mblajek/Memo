@@ -21,7 +21,11 @@ export const ColumnName: VoidComponent<Props> = (props) => {
         fallback={
           <TranslatedText
             override={props.def.meta?.columnName}
-            langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
+            langFunc={
+              props.def.id && table.options.meta?.translations
+                ? (o) => table.options.meta!.translations!.columnName(props.def.id!, o)
+                : undefined
+            }
             capitalize
             fallbackCode={props.def.id}
           />

@@ -108,7 +108,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             fieldName={props.name}
             text={
               <Capitalize
-                text={t(`forms.meeting_create.fieldNames.${props.name}__interval`, {
+                text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
                   postProcess: "interval",
                   count: form.data(props.name).filter(Boolean).length,
                 })}
@@ -169,7 +169,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <Show when={form.data(props.name)[index]?.userId || index}>
                     <div>
                       <Button
-                        class="secondarySmall min-h-big-input"
+                        class="secondary small min-h-big-input"
                         title={t("actions.delete")}
                         onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                       >
@@ -181,7 +181,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
                     <div>
                       <Button
-                        class="secondarySmall min-h-big-input"
+                        class="secondary small min-h-big-input"
                         title={t(`forms.meeting.add_attendant.${props.name}`)}
                         onClick={() => form.addField(props.name, newItem(), index + 1)}
                       >

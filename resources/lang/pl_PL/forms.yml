@@ -1,8 +1,5 @@
 login:
   formName: "Logowanie"
-  fieldNames:
-    email: "$t(models.user.email)"
-    password: "$t(models.user.password)"
   submit: "Zaloguj"
 
 password_change:
@@ -14,16 +11,14 @@ password_change:
   submit: "Zmień hasło"
   success: "Hasło zostało zmienione"
 
+user:
+  fieldNames:
+    hasPassword: "posiada hasło logowania do Memo"
+
 user_edit:
   formName: "Zmiana danych"
   fieldNames:
-    name: "$t(models.user.name)"
-    email: "$t(models.user.email)"
-    hasEmailVerified: "$t(models.user.hasEmailVerified)"
-    hasPassword: "$t(models.user.hasPassword) (jest użytkownikiem Memo)"
-    password: "$t(models.user.password)"
-    hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
-    # Alternative to password, if the password is changed:
+    # Alternative to "password", if the password is changed:
     newPassword: "Nowe hasło"
   password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
   global_admin_requires_password: "Globalny administrator musi posiadać hasło (być użytkownikiem Memo)"
@@ -36,29 +31,16 @@ user_edit:
 
 user_create:
   formName: "Nowa osoba"
-  fieldNames:
-    name: "$t(models.user.name)"
-    email: "$t(models.user.email)"
-    hasEmailVerified: "$t(models.user.hasEmailVerified)"
-    hasPassword: "posiada hasło logowania do Memo"
-    password: "$t(models.user.password)"
-    hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
   submit: "$t(actions.create)"
   success: "Pomyślnie utworzono"
 
 facility_create:
   formName: "Nowa placówka"
-  fieldNames:
-    name: "$t(models.facility.name)"
-    url: "$t(models.facility.url)"
   submit: "$t(actions.create)"
   success: "Pomyślnie utworzono placówkę"
 
 facility_edit:
   formName: "Edycja placówki"
-  fieldNames:
-    name: "$t(models.facility.name)"
-    url: "$t(models.facility.url)"
   submit: "$t(actions.save)"
   success: "Pomyślnie zmieniono placówkę"
 
@@ -67,21 +49,14 @@ meeting:
   add_attendant:
     staff: "Dodaj kolejnego pracownika"
     clients: "Dodaj kolejnego klienta"
-
-meeting_create:
-  formName: "Nowe spotkanie"
   fieldNames:
     dateAndTime: "data i godzina"
-    date: "$t(models.meeting.date)"
-    startDayminute: "$t(models.meeting.startDayminute)"
     durationMinutes: "długość spotkania"
-    typeDictId: "$t(models.meeting.typeDictId)"
-    statusDictId: "$t(models.meeting.statusDictId)"
     staff__interval: "(0-1)[$t(models.staff._name)];(2-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(0-1)[$t(models.client._name)];(2-inf)[$t(models.client._name_plural)];"
     attendanceStatusDictId: "obecność"
-    isRemote: "$t(models.meeting.isRemote)"
-    resources: "$t(models.meeting.resources)"
-    notes: "$t(models.meeting.notes)"
+
+meeting_create:
+  formName: "Nowe spotkanie"
   submit: "$t(actions.create)"
   success: "Pomyślnie utworzono spotkanie"
