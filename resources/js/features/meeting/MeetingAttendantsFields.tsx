@@ -130,7 +130,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             {(_attendant, index) => (
               <>
                 <Dynamic
-                  component={props.name === "staff" ? STAFF_ICONS.staffMember : CLIENT_ICONS.client}
+                  component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
                   class="col-start-1 min-h-big-input"
                   size="24"
                 />

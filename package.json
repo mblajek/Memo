@@ -53,6 +53,7 @@
     "@tanstack/solid-table": "^8.10.7",
     "@zag-js/combobox": "0.26.0",
     "@zag-js/dialog": "0.26.0",
+    "@zag-js/hover-card": "^0.26.0",
     "@zag-js/pagination": "0.26.0",
     "@zag-js/popover": "0.26.0",
     "@zag-js/radio-group": "0.26.0",

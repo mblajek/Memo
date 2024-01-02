@@ -148,10 +148,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       // Needed but never used, the actual collection comes from the context below.
       collection: combobox.collection.empty(),
       positioning: {
-        offset: {mainAxis: 0},
+        gutter: 0,
         strategy: "absolute",
         placement: "bottom-end",
-        overflowPadding: 20,
+        overflowPadding: 10,
         flip: true,
         sameWidth: false,
       },
