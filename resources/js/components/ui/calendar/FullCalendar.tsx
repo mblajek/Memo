@@ -7,6 +7,7 @@ import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {createCalendarRequestCreator, meetingsFromQuery} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {MeetingCreateModal, showMeetingCreateModal} from "features/meeting/MeetingCreateModal";
+import {MeetingModal, showMeetingModal} from "features/meeting/MeetingModal";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {TbInfoTriangle} from "solid-icons/tb";
@@ -440,7 +441,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             .filter((ev) => ev.meeting.staff.some((staff) => staff.userId === staffId))
             .map((ev) => ({
               ...ev,
-              content: () => <MeetingEventBlock meeting={ev.meeting} {...staffResourcesById().get(staffId)?.styling} />,
+              content: () => (
+                <MeetingEventBlock
+                  meeting={ev.meeting}
+                  {...staffResourcesById().get(staffId)?.styling}
+                  onClick={() => showMeetingModal({meetingId: ev.meeting.id})}
+                />
+              ),
             }))
         : [];
     return {
@@ -583,6 +590,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         </div>
       </div>
       <MeetingCreateModal />
+      <MeetingModal />
     </>
   );
 };

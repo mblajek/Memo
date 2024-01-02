@@ -118,7 +118,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}
               durationMinutes={durationMinutes()}
             />
-            <Button class="secondarySmall" onClick={() => setForceEditable(true)}>
+            <Button class="secondary small" onClick={() => setForceEditable(true)}>
               <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
             </Button>
           </div>
