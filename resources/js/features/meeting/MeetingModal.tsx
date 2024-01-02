@@ -60,10 +60,10 @@ export const MeetingModal: VoidComponent = () => {
             <Match when={!editMode()}>
               <MeetingView id={params().meetingId} />
               <div class="flex gap-1 justify-end">
-                <Button class="secondarySmall" onClick={() => deleteMeeting()}>
+                <Button class="secondary small" onClick={() => deleteMeeting()}>
                   <AiOutlineDelete class="inlineIcon text-current" /> {t("actions.delete")}
                 </Button>
-                <Button class="secondarySmall" onClick={[setEditMode, true]}>
+                <Button class="secondary small" onClick={[setEditMode, true]}>
                   <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
                 </Button>
               </div>
