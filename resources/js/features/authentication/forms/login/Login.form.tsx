@@ -49,6 +49,7 @@ export namespace LoginForm {
         id="login"
         onSubmit={onSubmit}
         schema={getSchema()}
+        translationsModel="user"
         initialValues={getInitialValues()}
         class="flex flex-col gap-2"
         preventTabClose={false}

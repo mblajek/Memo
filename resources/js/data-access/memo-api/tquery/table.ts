@@ -286,7 +286,7 @@ export function tableHelper({
         if (val && typeof val === "object") {
           const leafFilter: Filter = val;
           if (leafFilter.type === "column") {
-            const translatedColumnName = translations?.columnNames(leafFilter.column) || leafFilter.column;
+            const translatedColumnName = translations?.columnName(leafFilter.column) || leafFilter.column;
             filterErrors.set(
               leafFilter.column,
               translateError({

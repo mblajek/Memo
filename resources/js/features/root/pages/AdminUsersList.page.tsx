@@ -18,7 +18,7 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.user()}
         staticEntityURL="admin/user"
-        staticTranslations={createTableTranslations("users")}
+        staticTranslations={createTableTranslations("user")}
         staticPersistenceKey="adminUsers"
         columns={[
           {name: "id", initialVisible: false},

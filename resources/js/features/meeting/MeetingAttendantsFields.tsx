@@ -108,7 +108,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             fieldName={props.name}
             text={
               <Capitalize
-                text={t(`forms.meeting_create.fieldNames.${props.name}__interval`, {
+                text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
                   postProcess: "interval",
                   count: form.data(props.name).filter(Boolean).length,
                 })}

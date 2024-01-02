@@ -13,14 +13,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import {
-  LangEntryFunc,
-  LangPrefixFunc,
-  createTranslationsFromPrefix,
-  currentTime,
-  cx,
-  debouncedAccessor,
-} from "components/utils";
+import {currentTime, cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {TOptions} from "i18next";
 import {
   Accessor,
   For,
@@ -43,15 +37,28 @@ import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
 
 export interface TableTranslations {
-  tableName: LangEntryFunc;
-  /** Entries for the table column names. */
-  columnNames: LangPrefixFunc;
+  tableName(o?: TOptions): string;
+  columnName(column: string, o?: TOptions): string;
   /** Summary of the table, taking the number of rows as count. */
-  summary: LangEntryFunc;
+  summary(o?: TOptions): string;
 }
 
 export function createTableTranslations(tableName: string): TableTranslations {
-  return createTranslationsFromPrefix(`tables.tables.${tableName}`, ["tableName", "columnNames", "summary"]);
+  const t = useLangFunc();
+  return {
+    tableName: (o) => t([`tables.tables.${tableName}.tableName`, `models.${tableName}._name_plural`], o),
+    columnName: (column, o) =>
+      t(
+        [
+          `tables.tables.${tableName}.columnNames.${column}`,
+          `models.${tableName}.${column}`,
+          `tables.tables.generic.columnNames.${column}`,
+          `models.generic.${column}`,
+        ],
+        o,
+      ),
+    summary: (o) => t([`tables.tables.${tableName}.summary`, `tables.tables.generic.summary`], o),
+  };
 }
 
 declare module "@tanstack/table-core" {
