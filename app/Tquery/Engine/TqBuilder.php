@@ -104,6 +104,12 @@ class TqBuilder
         $this->builder->where($group, boolean: $or ? 'or' : 'and');
     }
 
+    public function whereNotDeleted(
+        TqTableEnum $table,
+    ): void {
+        $this->where(fn(null $bind) => "`{$table->name}`.`deleted_at` is null", false, null, false, false);
+    }
+
     public function applyPaging(int $offset, int $limit): void
     {
         $this->builder->offset($offset)->limit($limit);

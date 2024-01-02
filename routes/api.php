@@ -74,10 +74,11 @@ Route::prefix('/v1')->group(function () {
                 Route::post('/tquery', [StaffTqueryController::class, 'post']);
             });
         });
-
         Route::prefix('/meeting')->group(function () {
             Route::post('/', [MeetingController::class, 'post']);
-            Route::get('/list', [MeetingController::class, 'facilityMeetingList']);
+            Route::get('/list', [MeetingController::class, 'list']);
+            Route::patch('/{meeting}', [MeetingController::class, 'patch']);
+            Route::delete('/{meeting}', [MeetingController::class, 'delete']);
             Route::get('/tquery', [MeetingTqueryController::class, 'get']);
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
         });
