@@ -45,18 +45,23 @@ export interface TQueryMeta {
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
-  function toastErrors(error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
-    if (!isAxiosError<Api.ErrorResponse>(error)) return;
+  function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
+    const invalidate = User.useInvalidator(queryClient);
+    if (!isAxiosError<Api.ErrorResponse>(error)) {
+      return;
+    }
     const status = error.response?.status;
     if (!status || !meta?.quietHTTPStatuses?.includes(status)) {
       const respErrors = error.response?.data.errors;
-      function getErrorsToShow() {
-        if (!respErrors) {
-          return [];
+      let errorsToShow: Api.Error[] = [];
+      if (respErrors) {
+        // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
+        if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {
+          invalidate.statusAndFacilityPermissions();
         }
         if (meta?.isFormSubmit) {
           // Validation errors will be handled by the form.
-          return respErrors.filter((e) => !Api.isValidationError(e));
+          errorsToShow = respErrors.filter((e) => !Api.isValidationError(e));
         } else if (meta?.tquery?.isTable) {
           // Table filter value errors will be handled by the table.
           /**
@@ -66,23 +71,20 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
           const seriousErrors = respErrors.filter((e) => e.code !== "exception.validation" && !isFilterValError(e));
           if (seriousErrors.length) {
             // Include the exception.validation error again.
-            return respErrors.filter((e) => !isFilterValError(e));
-          } else {
-            return [];
+            errorsToShow = respErrors.filter((e) => !isFilterValError(e));
           }
         } else {
-          return respErrors;
+          errorsToShow = respErrors;
         }
       }
-      const errors = getErrorsToShow();
-      if (errors.length) {
+      if (errorsToShow.length) {
         if (!translationsLoaded()) {
-          for (const e of errors) {
+          for (const e of errorsToShow) {
             console.warn("Error toast shown (translations not ready):", e);
           }
         }
         translationsLoadedPromise.then(() => {
-          const messages = errors.map((e) => translateError(e, t));
+          const messages = errorsToShow.map((e) => translateError(e, t));
           for (const msg of messages) {
             console.warn(`Error toast shown: ${msg}`);
           }
@@ -111,12 +113,12 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         },
         queryCache: new QueryCache({
           onError(error, query) {
-            toastErrors(error, query.meta);
+            toastErrors(queryClient(), error, query.meta);
           },
         }),
         mutationCache: new MutationCache({
           onError(error, _variables, _context, mutation) {
-            toastErrors(error, mutation.meta);
+            toastErrors(queryClient(), error, mutation.meta);
           },
         }),
       }),

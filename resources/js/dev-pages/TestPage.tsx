@@ -4,7 +4,7 @@ import {VoidComponent} from "solid-js";
 export default (() => {
   // During development, this place can be used to create a fake page and test components.
   // It is available at /dev/test-page, also via the "Test page" link in the menu (DEV mode only).
-  // Do not submit the changes to this file.
+  // Don't submit the changes to this file.
 
   return (
     <>

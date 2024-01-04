@@ -4,7 +4,7 @@ import {MetaProvider} from "@solidjs/meta";
 import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
 import {Settings} from "luxon";
-import {ErrorBoundary, Show} from "solid-js";
+import {DEV, ErrorBoundary, Show} from "solid-js";
 import {DelegatedEvents, render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
@@ -36,7 +36,7 @@ render(() => {
         backend: {
           loadPath: "/api/v1/system/translation/{{lng}}/list",
         },
-        debug: true,
+        debug: !!DEV,
         fallbackLng: false,
         initImmediate: false,
         lng: "pl",
