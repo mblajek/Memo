@@ -14,7 +14,7 @@ import {LoginForm} from "../forms/login/Login.form";
  * currently displayed as a separate page that triggers the modal on query error and redirects
  * otherwise.
  */
-const LoginPage: VoidComponent = () => {
+export default (() => {
   const statusQuery = createQuery(User.statusQueryOptions);
   onMount(() => setActiveFacilityId(undefined));
   createEffect(() => LoginForm.showModal(statusQuery.isError));
@@ -33,6 +33,4 @@ const LoginPage: VoidComponent = () => {
       </QueryBarrier>
     </>
   );
-};
-
-export default LoginPage;
+}) satisfies VoidComponent;
