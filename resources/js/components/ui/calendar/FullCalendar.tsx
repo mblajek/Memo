@@ -548,7 +548,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 <IoArrowForwardOutline class="text-current" />
               </Button>
             </div>
-            <Button class="secondary small" onClick={goToToday}>
+            <Button class="secondary small" onClick={goToToday} disabled={daysSelection().contains(currentDate())}>
               <Capitalize text={t("calendar.today")} />
             </Button>
             <div class="grow self-center text-center text-lg text-ellipsis">

@@ -74,7 +74,12 @@ type DefaultTQuerySelectItem = Required<Pick<SelectItem, "value" | "text">>;
 
 type Props = BaseProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
 
-const DEFAULT_LIMIT = 200;
+/**
+ * The default number of fetched items.
+ *
+ * TODO: Fix the problem that occurs when the current value is not found among the fetched items due to limit.
+ */
+const DEFAULT_LIMIT = 1e6;
 
 const DEFAULT_PROPS = {
   separatePriorityItems: true,
@@ -113,7 +118,7 @@ function makeQuery({
     }
     return dataQuery
       .data!.data.map((rowData) => {
-        const defItem = () => ({
+        const defItem = (): DefaultTQuerySelectItem => ({
           value: rowData[valueColumn] as string,
           text: labelColumns.map((column) => rowData[column]).join(" "),
         });

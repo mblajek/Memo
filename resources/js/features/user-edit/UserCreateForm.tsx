@@ -1,5 +1,6 @@
 import {createMutation} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils";
+import {System} from "data-access/memo-api/groups";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
@@ -13,7 +14,8 @@ interface Props {
 
 export const UserCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const invalidate = Admin.useInvalidator();
+  const adminInvalidate = Admin.useInvalidator();
+  const systemInvalidate = System.useInvalidator();
   const userMutation = createMutation(() => ({
     mutationFn: Admin.createUser,
     meta: {isFormSubmit: true},
@@ -44,13 +46,15 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
     // them fails, otherwise invalidation might happen before the final changes.
     try {
       await Promise.allSettled(membersUpdater.getCreatePromises(data.data.id, values.members));
+      toast.success(t("forms.user_create.success"));
+      props.onSuccess?.();
     } finally {
       // Invalidate the user even after partial success (e.g. only user creation succeeded),
       // or when there were no member mutations.
-      invalidate.users();
+      adminInvalidate.users();
+      // Invalidate facility admins.
+      systemInvalidate.facilities();
     }
-    toast.success(t("forms.user_create.success"));
-    props.onSuccess?.();
   }
 
   const initialValues = () =>
