@@ -30,6 +30,7 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
         ? {
             email: values.email,
             hasEmailVerified: values.hasEmailVerified,
+            hasPassword: values.hasPassword,
             ...(values.hasPassword && values.password
               ? {password: values.password, passwordExpireAt: null}
               : {password: null, passwordExpireAt: null}),
@@ -37,6 +38,7 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
         : {
             email: null,
             hasEmailVerified: false,
+            hasPassword: false,
             password: null,
             passwordExpireAt: null,
           }),
