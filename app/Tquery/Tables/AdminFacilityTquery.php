@@ -22,8 +22,9 @@ readonly class AdminFacilityTquery extends TqService
             TqDataTypeEnum::int,
             fn(string $tableName) => //
             "select count(1) from `members` where `members`.`facility_id` = `facilities`.`id`",
-            'user_count',
+            'users.count',
         );
+        // todo: change to *list, and name  facility_admins.*.name
         $config->addQuery(
             TqDataTypeEnum::text_nullable,
             fn(string $tableName) => //

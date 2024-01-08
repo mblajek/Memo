@@ -1,7 +1,7 @@
 import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {QueryBarrier, useLangFunc} from "components/utils";
-import {Admin, User} from "data-access/memo-api/groups";
+import {Admin, System, User} from "data-access/memo-api/groups";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
@@ -24,6 +24,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
   const user = () => userQuery.data;
   const adminInvalidate = Admin.useInvalidator();
   const userInvalidate = User.useInvalidator();
+  const systemInvalidate = System.useInvalidator();
   const userMutation = createMutation(() => ({
     mutationFn: Admin.updateUser,
     meta: {isFormSubmit: true},
@@ -85,6 +86,8 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
       // but also causes problems apparently.
       adminInvalidate.users();
+      // Invalidate facility admins.
+      systemInvalidate.facilities();
       if (oldUser.id === statusQuery.data?.user.id) {
         userInvalidate.statusAndFacilityPermissions();
       }

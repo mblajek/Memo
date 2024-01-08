@@ -19,12 +19,13 @@ export const USER_ICONS = {
 
 export const STAFF_ICONS = {
   menu: BsPersonBadge,
-  staffMember: BsPersonBadge,
+  staff: BsPersonBadge,
 };
 
 export const CLIENT_ICONS = {
   menu: IoPeopleCircleOutline,
   client: IoPersonCircleOutline,
+  clients: IoPeopleCircleOutline,
 };
 
 export const FACILITY_ICONS = {

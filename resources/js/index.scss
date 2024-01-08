@@ -49,7 +49,7 @@
   button {
     @mixin pressedWithShadow {
       transition: box-shadow 0.15s ease-out;
-      &:active {
+      &:active:not(:disabled) {
         @apply shadow-md;
       }
     }
@@ -59,16 +59,21 @@
     }
 
     &.primary {
-      @apply p-2 rounded bg-memo-active text-white disabled:bg-opacity-50;
+      @apply p-2 rounded bg-memo-active text-white;
+      @apply disabled:bg-opacity-50;
       @include pressedWithShadow;
     }
     &.secondary {
-      @apply p-2 rounded border border-memo-active text-memo-active disabled:bg-opacity-50 active:bg-hover;
+      @apply p-2 rounded border border-memo-active text-memo-active;
+      @apply disabled:text-opacity-50 disabled:border-opacity-50;
+      &:active:not(:disabled) {
+        @apply bg-hover;
+      }
       @include pressedWithShadow;
-    }
-    &.secondarySmall {
-      @apply px-1 rounded border border-memo-active text-memo-active disabled:bg-opacity-50 active:bg-hover;
-      @include pressedWithShadow;
+
+      &.small {
+        @apply px-1 py-0;
+      }
     }
   }
 

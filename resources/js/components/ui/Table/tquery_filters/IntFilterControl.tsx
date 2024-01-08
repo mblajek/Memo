@@ -70,7 +70,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
   const syncActive = () => lower() || upper();
   return (
     <div
-      class="grid gap-0.5 gap-x-1 items-baseline"
+      class="grid gap-0.5 items-baseline"
       style={{"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`}}
     >
       <div>{t("range.min")}</div>

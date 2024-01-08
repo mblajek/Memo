@@ -13,10 +13,10 @@ interface Props extends htmlAttributes.div {
 
 export interface ResourceGroup {
   readonly label: () => JSX.Element;
-  readonly resources: readonly Resource[];
+  readonly resources: readonly ResourceItem[];
 }
 
-export interface Resource {
+export interface ResourceItem {
   readonly id: string;
   readonly label: () => JSX.Element;
 }

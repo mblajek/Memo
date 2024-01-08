@@ -6,15 +6,18 @@ import {DEV, ParentComponent, Show, VoidProps, lazy, splitProps, type VoidCompon
 import {Dynamic} from "solid-js/web";
 import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
 import {DevRoutes} from "./dev-pages/DevRoutes";
-import {NotFound} from "./features/not-found/components/NotFound";
-import {NotYetImplemented} from "./features/not-found/components/NotYetImplemented";
+import NotFound from "./features/not-found/components/NotFound";
+import NotYetImplemented from "./features/not-found/components/NotYetImplemented";
 import {MemoTitle} from "./features/root/MemoTitle";
 
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
+const CalendarTablePage = lazy(() => import("features/root/pages/CalendarTable.page"));
+const ClientsTablePage = lazy(() => import("features/root/pages/ClientsTable.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
+const StaffTablePage = lazy(() => import("features/root/pages/StaffTable.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -51,8 +54,9 @@ const App: VoidComponent = () => {
         <Route path="/admin" component={FacilityAdminPages}>
           <UnknownNotFound />
           <LeafRoute routeKey="facility.admin.calendar" path="/calendar" component={CalendarPage} />
-          <LeafRoute routeKey="facility.admin.clients" path="/clients" component={NotYetImplemented} />
-          <LeafRoute routeKey="facility.admin.staff" path="/staff" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.admin.calendar_table" path="/calendar-table" component={CalendarTablePage} />
+          <LeafRoute routeKey="facility.admin.staff" path="/staff" component={StaffTablePage} />
+          <LeafRoute routeKey="facility.admin.clients" path="/clients" component={ClientsTablePage} />
           <LeafRoute routeKey="facility.admin.reports" path="/reports" component={NotYetImplemented} />
         </Route>
       </Route>

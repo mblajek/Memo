@@ -31,6 +31,7 @@
       }
     ],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-constant-condition": "warn",
     "no-empty": "off",
     "no-inner-declarations": "off",
     "no-restricted-syntax": [
@@ -64,6 +65,13 @@
     ],
     "no-unused-expressions": "warn",
     "no-unused-vars": "off",
+    "no-warning-comments": [
+      "warn",
+      {
+        "terms": ["DO NOT SUBMIT"],
+        "location": "anywhere"
+      }
+    ],
     "sort-imports": "off",
     "sort-keys": "off"
   },

@@ -9,7 +9,7 @@ interface RequestController {
   filterText: Signal<string>;
 }
 
-/** Creates a requets creator used by a tquery-based select component. */
+/** Creates a request creator used by a tquery-based select component. */
 export function createSelectRequestCreator({
   intrinsicFilter,
   columns,
@@ -54,7 +54,7 @@ export function createSelectRequestCreator({
           val: [intrinsicFilter, buildFuzzyGlobalFilter(debouncedFilter(), fuzzyFilterConfig()!)].filter(NON_NULLABLE),
         }),
         sort,
-        paging: {number: 1, size: limit},
+        paging: {size: limit},
         distinct,
       };
     });

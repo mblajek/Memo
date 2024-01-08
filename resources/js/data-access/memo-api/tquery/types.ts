@@ -37,7 +37,8 @@ interface PlainDataColumnSchema extends DataColumnSchemaBase {
     | "object"
     | "string"
     | "text"
-    | "uuid";
+    | "uuid"
+    | "uuid_list";
   /** The attribute defining this data column. */
   readonly attributeId?: string;
 }
@@ -107,6 +108,7 @@ export type ColumnValueFilter =
   | StringColumnFilter
   | TextColumnFilter
   | UuidColumnFilter
+  | UuidListColumnFilter
   | DictColumnFilter
   | DictListColumnFilter;
 
@@ -188,6 +190,10 @@ export type StringColumnFilter =
   | RegexpColumnFilter;
 export type TextColumnFilter = ContainsColumnFilter | LikeColumnFilter | RegexpColumnFilter;
 export type UuidColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
+export type UuidListColumnFilter =
+  | EqColumnFilter<readonly string[]>
+  | HasColumnFilter<string>
+  | SetsOpColumnFilter<string>;
 export type DictColumnFilter = EqColumnFilter<string> | InColumnFilter<string>;
 export type DictListColumnFilter =
   | EqColumnFilter<readonly string[]>

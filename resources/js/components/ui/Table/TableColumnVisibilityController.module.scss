@@ -1,11 +1,12 @@
 .columnVisibility {
   [data-part="trigger"] {
-    @apply h-full rounded px-2 border;
+    @apply w-full h-full rounded px-2 border border-input-border pressedWithShadow;
   }
 }
 
 .columnVisibilityPortal {
-  [data-part="content"] {
-    @apply shadow-xl;
+  [data-part="content"][data-state="open"] {
+    @apply bg-white border border-gray-700 rounded shadow-xl overflow-clip flex flex-col;
+    max-height: var(--available-height);
   }
 }

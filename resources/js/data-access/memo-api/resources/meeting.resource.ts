@@ -4,28 +4,29 @@
  * @see `/app/Http/Resources/MeetingResource.php`
  */
 export interface MeetingResource {
-  id: string;
-  facilityId: string;
-  typeDictId: string;
-  notes: string;
-  date: string;
-  startDayminute: number;
-  durationMinutes: number;
-  statusDictId: string;
-  createdBy: string;
-  isRemote: boolean;
-  staff: MeetingAttendantResource[];
-  clients: MeetingAttendantResource[];
-  resources: MeetingResourceResource[];
+  readonly id: string;
+  readonly facilityId: string;
+  readonly categoryDictId: string;
+  readonly typeDictId: string;
+  readonly notes: string;
+  readonly date: string;
+  readonly startDayminute: number;
+  readonly durationMinutes: number;
+  readonly statusDictId: string;
+  readonly createdBy: string;
+  readonly isRemote: boolean;
+  readonly staff: readonly MeetingAttendantResource[];
+  readonly clients: readonly MeetingAttendantResource[];
+  readonly resources: readonly MeetingResourceResource[];
 }
 
 export interface MeetingAttendantResource {
-  userId: string;
-  attendanceStatusDictId: string;
+  readonly userId: string;
+  readonly attendanceStatusDictId: string | null;
 }
 
 export interface MeetingResourceResource {
-  resourceDictId: string;
+  readonly resourceDictId: string;
 }
 
 export type MeetingResourceForCreate = Pick<

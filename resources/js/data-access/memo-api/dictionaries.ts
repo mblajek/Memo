@@ -18,6 +18,8 @@ export class Dictionaries {
      * Contains only the dictionaries with a translatable name (not starting with `+`).
      */
     readonly byName: ReadonlyMap<string, Dictionary>,
+    /** A map of all the positions from all the dictionaries, by id. */
+    readonly positionsById: ReadonlyMap<string, Position>,
   ) {}
 
   static fromResources(t: LangFunc, resources: DictionaryResource[]) {
@@ -27,13 +29,17 @@ export class Dictionaries {
   private static fromDictionaries(dictinoaries: Dictionary[]) {
     const byId = new Map<string, Dictionary>();
     const byName = new Map<string, Dictionary>();
+    const positionsById = new Map<string, Position>();
     for (const dictionary of dictinoaries) {
       byId.set(dictionary.id, dictionary);
       if (dictionary.resource.isFixed && dictionary.isTranslatable) {
         byName.set(dictionary.resource.name, dictionary);
       }
+      for (const position of dictionary.allPositions) {
+        positionsById.set(position.id, position);
+      }
     }
-    return new Dictionaries(byId, byName);
+    return new Dictionaries(byId, byName, positionsById);
   }
 
   [Symbol.iterator]() {
@@ -57,6 +63,14 @@ export class Dictionaries {
     return Dictionaries.fromDictionaries(
       Array.from(this, (dictionary) => dictionary.subsetFor(facilityIdOrGlobal)).filter(NON_NULLABLE),
     );
+  }
+
+  positionById(positionId: string) {
+    const position = this.positionsById.get(positionId);
+    if (!position) {
+      throw new Error(`Position ${positionId} not found.`);
+    }
+    return position;
   }
 }
 

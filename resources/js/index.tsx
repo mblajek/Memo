@@ -4,7 +4,7 @@ import {MetaProvider} from "@solidjs/meta";
 import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
 import {Settings} from "luxon";
-import {ErrorBoundary, Show} from "solid-js";
+import {DEV, ErrorBoundary, Show} from "solid-js";
 import {DelegatedEvents, render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
@@ -36,7 +36,7 @@ render(() => {
         backend: {
           loadPath: "/api/v1/system/translation/{{lng}}/list",
         },
-        debug: true,
+        debug: !!DEV,
         fallbackLng: false,
         initImmediate: false,
         lng: "pl",
@@ -56,17 +56,17 @@ render(() => {
           return <FatalError error={error} />;
         }}
       >
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            className: "mr-4",
+            duration: TOAST_DURATION_SECS * 1000,
+          }}
+        />
         <MetaProvider>
           <InitializeTanstackQuery>
             <Router>
               <App />
-              <Toaster
-                position="bottom-right"
-                toastOptions={{
-                  className: "mr-4",
-                  duration: TOAST_DURATION_SECS * 1000,
-                }}
-              />
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>

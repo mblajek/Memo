@@ -8,7 +8,6 @@ import {
 } from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
-import {NON_NULLABLE} from "components/utils";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {
@@ -18,7 +17,14 @@ import {
   tableHelper,
 } from "data-access/memo-api/tquery/table";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
-import {ColumnName, ColumnType, DataColumnSchema, DataItem, isDataColumn} from "data-access/memo-api/tquery/types";
+import {
+  ColumnName,
+  ColumnType,
+  DataColumnSchema,
+  DataItem,
+  Sort,
+  isDataColumn,
+} from "data-access/memo-api/tquery/types";
 import {DEV, JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
 import toast from "solid-toast";
 import {
@@ -34,6 +40,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
+import {TableFiltersClearButton} from "./TableFiltersClearButton";
 import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
 
 declare module "@tanstack/table-core" {
@@ -69,11 +76,7 @@ export interface TQueryTableProps {
   /** The entity URL, must not change. */
   readonly staticEntityURL: string;
   readonly staticTranslations?: TableTranslations;
-  /**
-   * The key part used to persist the table settings.
-   * If not provided, the settings are persisted with the entity URL as the key. Specifying this
-   * key allows persisting the settings separately for different tables showing the same entity.
-   */
+  /** The key to use for persisting the parameters of the displayed page. If not present, nothing is persisted. */
   readonly staticPersistenceKey?: string;
   /**
    * The filter that is always applied to the data, regardless of other filtering.
@@ -81,6 +84,8 @@ export interface TQueryTableProps {
    * entity B, so only entities A related direclty to that particular entity B should be shown.
    */
   readonly intrinsicFilter?: FilterH;
+  /** The sort that is always applied to the data at the end of the filter specified by the user. */
+  readonly intrinsicSort?: Sort;
   /** The definition of the columns in the table, in their correct order. */
   readonly columns: readonly PartialColumnConfig[];
   readonly initialSort?: SortingState;
@@ -172,16 +177,22 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     ["bool", {cell: tableCells.bool, size: 100}],
     ["date", {cell: tableCells.date}],
     ["datetime", {cell: tableCells.datetime}],
-    ["int", {cell: tableCells.int}],
+    ["int", {cell: tableCells.int, size: 150}],
+    ["list", {enableSorting: false}],
+    ["object", {enableSorting: false}],
     ["string", {}],
     ["text", {enableSorting: false}],
     ["uuid", {cell: tableCells.uuid, enableSorting: false, size: 80}],
+    ["uuid_list", {cell: tableCells.uuidList, enableSorting: false, size: 80}],
+    ["dict", {cell: tableCells.dict}],
+    ["dict_list", {cell: tableCells.dictList, enableSorting: false}],
   ]);
 
   const [allInitialised, setAllInitialised] = createSignal(false);
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     intrinsicFilter: () => props.intrinsicFilter,
+    intrinsicSort: () => props.intrinsicSort,
     initialSort: props.initialSort,
     initialPageSize:
       props.initialPageSize ||
@@ -203,26 +214,36 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       ),
     );
   }
-  const {columnVisibility, globalFilter, getColumnFilter, sorting, pagination} = requestController;
-  createLocalStoragePersistence<PersistentState>({
-    key: ["TQueryTable", entityURL, props.staticPersistenceKey].filter(NON_NULLABLE).join(":"),
-    value: () => ({
-      colVis: columnVisibility[0](),
-    }),
-    onLoad: (value) => {
-      // Ensure a bad (e.g. outdated) entry won't affect visibility of a columnn that cannot have
-      // the visibility controlled by the user.
-      const colVis = {...value.colVis};
-      for (const col of columnsConfig()) {
-        if (col.columnDef.enableHiding === false) {
-          delete colVis[col.name];
+  const {
+    columnVisibility,
+    globalFilter,
+    getColumnFilter,
+    columnsWithActiveFilters,
+    clearColumnFilters,
+    sorting,
+    pagination,
+  } = requestController;
+  if (props.staticPersistenceKey) {
+    createLocalStoragePersistence<PersistentState>({
+      key: `TQueryTable:${props.staticPersistenceKey}`,
+      value: () => ({
+        colVis: columnVisibility[0](),
+      }),
+      onLoad: (value) => {
+        // Ensure a bad (e.g. outdated) entry won't affect visibility of a columnn that cannot have
+        // the visibility controlled by the user.
+        const colVis = {...value.colVis};
+        for (const col of columnsConfig()) {
+          if (col.columnDef.enableHiding === false) {
+            delete colVis[col.name];
+          }
         }
-      }
-      columnVisibility[1](colVis);
-    },
-    serialiser: richJSONSerialiser<PersistentState>(),
-    version: [PERSISTENCE_VERSION],
-  });
+        columnVisibility[1](colVis);
+      },
+      serialiser: richJSONSerialiser<PersistentState>(),
+      version: [PERSISTENCE_VERSION],
+    });
+  }
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
@@ -313,13 +334,17 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       mode={props.mode}
       rowsIteration="Index"
       aboveTable={() => (
-        <div class="h-8 flex items-stretch gap-1">
-          <TableSearch class="flex-grow" />
+        <div class="min-h-small-input flex items-stretch gap-1">
+          <TableSearch divClass="flex-grow" />
+          <TableFiltersClearButton
+            columnsWithActiveFilters={columnsWithActiveFilters()}
+            clearColumnFilters={clearColumnFilters}
+          />
           <TableColumnVisibilityController />
         </div>
       )}
       belowTable={() => (
-        <div class="h-8 flex items-stretch gap-2">
+        <div class="min-h-small-input flex items-stretch gap-2">
           <Pagination />
           <TableSummary rowsCount={rowsCount()} />
           {props.customSectionBelowTable}

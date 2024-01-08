@@ -5,7 +5,10 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\MeetingController;
+use App\Http\Controllers\Facility\MeetingTqueryController;
+use App\Http\Controllers\Facility\StaffTqueryController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\Tquery\AdminFacilityTqueryController;
@@ -61,9 +64,23 @@ Route::prefix('/v1')->group(function () {
         });
     });
     Route::prefix('/facility/{facility}')->group(function () {
+        Route::prefix('/user')->group(function () {
+            Route::prefix('/client')->group(function () {
+                Route::get('/tquery', [ClientTqueryController::class, 'get']);
+                Route::post('/tquery', [ClientTqueryController::class, 'post']);
+            });
+            Route::prefix('/staff')->group(function () {
+                Route::get('/tquery', [StaffTqueryController::class, 'get']);
+                Route::post('/tquery', [StaffTqueryController::class, 'post']);
+            });
+        });
         Route::prefix('/meeting')->group(function () {
             Route::post('/', [MeetingController::class, 'post']);
-            Route::get('/list', [MeetingController::class, 'facilityMeetingList']);
+            Route::get('/list', [MeetingController::class, 'list']);
+            Route::patch('/{meeting}', [MeetingController::class, 'patch']);
+            Route::delete('/{meeting}', [MeetingController::class, 'delete']);
+            Route::get('/tquery', [MeetingTqueryController::class, 'get']);
+            Route::post('/tquery', [MeetingTqueryController::class, 'post']);
         });
     });
     Route::prefix('/mail')->group(function () {

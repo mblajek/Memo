@@ -7,6 +7,7 @@ import {Portal} from "solid-js/web";
 import {Button} from "./Button";
 import s from "./Modal.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
+import {onCleanup} from "solid-js";
 
 interface BaseProps<T> {
   readonly title?: string;
@@ -40,7 +41,7 @@ export const MODAL_STYLE_PRESETS = {
   medium: {width: "min(620px, 80%)"},
 } satisfies Partial<Record<string, JSX.CSSProperties>>;
 
-const ESCAPE_REASONS = ["escapeKey", "clickOutside"] as const;
+const ESCAPE_REASONS = ["escapeKey", "clickOutside", "modalCleanup"] as const;
 
 type EscapeReason = (typeof ESCAPE_REASONS)[number];
 
@@ -68,19 +69,21 @@ interface PropsWithCloseReason<T, C extends CloseReason = CloseReason> extends B
    * If the Esc or click outside is specified as a reason, it is still passed to onEscape,
    * but the same reason is also passed to onClose, so either of these two handlers can close
    * the modal.
+   *
+   * The modal cleanup is always a reason for closing the modal.
    */
   closeOn: C | C[];
   /**
    * Handler called when any of the close reasons (specified in closeOn) occurs. The handler
    * should typically set the open prop to false to actually close the modal.
    */
-  onClose: (reason: C) => void;
+  onClose: (reason: C | "modalCleanup") => void;
 }
 
-type CloseReason = EscapeReason | "closeButton";
+type CloseReason = "escapeKey" | "clickOutside" | "closeButton";
 
-function isEscapeReason(reason: CloseReason): reason is EscapeReason {
-  return (ESCAPE_REASONS as readonly CloseReason[]).includes(reason);
+function isEscapeReason(reason: EscapeReason | CloseReason): reason is EscapeReason {
+  return (ESCAPE_REASONS as readonly (EscapeReason | CloseReason)[]).includes(reason);
 }
 
 type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseReason<T, C>;
@@ -116,14 +119,15 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
         props.closeOn ? (typeof props.closeOn === "string" ? [props.closeOn] : props.closeOn) : undefined,
       ),
   );
-  function tryClose(reason: CloseReason) {
+  function tryClose(reason: EscapeReason | CloseReason) {
     if (props.onEscape && isEscapeReason(reason)) {
       props.onEscape(reason);
     }
-    if (closeOn().has(reason)) {
+    if (reason === "modalCleanup" || closeOn().has(reason)) {
       props.onClose?.(reason as C);
     }
   }
+  onCleanup(() => tryClose("modalCleanup"));
   const [state, send] = useMachine(
     dialog.machine({
       closeOnInteractOutside: false,

@@ -1,12 +1,12 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
-import {DateTime} from "luxon";
+import {InitialDataParams} from "features/meeting/MeetingCreateForm";
 import {VoidComponent, createSignal, lazy} from "solid-js";
 
 const MeetingCreateForm = lazy(() => import("features/meeting/MeetingCreateForm"));
 
 interface FormParams {
-  start?: DateTime;
+  readonly initialData?: InitialDataParams;
 }
 
 const [modalParams, setModalParams] = createSignal<FormParams>();
@@ -23,7 +23,7 @@ export const MeetingCreateModal: VoidComponent = () => {
     >
       {(params) => (
         <MeetingCreateForm
-          start={params().start}
+          initialData={params().initialData}
           onSuccess={() => setModalParams(undefined)}
           onCancel={() => setModalParams(undefined)}
         />

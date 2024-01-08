@@ -4,16 +4,19 @@ import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
-import {TQuerySelect} from "components/ui/form/TQuerySelect";
+import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
-import {MeetingAttendantResource} from "data-access/memo-api/resources/meeting.resource";
+import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
+import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {Index, Show, VoidComponent, createComputed, createEffect, on} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 
 export const getAttendantsSchemaPart = () => ({
@@ -38,10 +41,6 @@ interface Props {
 interface FormAttendantsData extends Obj {
   readonly staff: readonly MeetingAttendantResource[];
   readonly clients: readonly MeetingAttendantResource[];
-}
-
-function newItem(): MeetingAttendantResource {
-  return {userId: "", attendanceStatusDictId: ""};
 }
 
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
@@ -73,10 +72,23 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         !prevAttendants.at(-1)?.userId &&
         attendants.at(-1)!.userId)
     ) {
-      form.addField(props.name, newItem());
+      form.addField(props.name, createAttendant());
     }
     return attendants;
   });
+  const tquerySpec = (): TQueryConfig => {
+    if (props.name === "staff")
+      return {
+        entityURL: `facility/${activeFacilityId()}/user/staff`,
+        prefixQueryKey: [FacilityStaff.keys.staff()],
+      };
+    if (props.name === "clients")
+      return {
+        entityURL: `facility/${activeFacilityId()}/user/client`,
+        prefixQueryKey: [FacilityClient.keys.client()],
+      };
+    return props.name satisfies never;
+  };
 
   return (
     <div class="flex flex-col items-stretch">
@@ -92,7 +104,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             fieldName={props.name}
             text={
               <Capitalize
-                text={t(`forms.meeting_create.fieldNames.${props.name}__interval`, {
+                text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
                   postProcess: "interval",
                   count: form.data(props.name).filter(Boolean).length,
                 })}
@@ -114,7 +126,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             {(_attendant, index) => (
               <>
                 <Dynamic
-                  component={props.name === "staff" ? STAFF_ICONS.staffMember : CLIENT_ICONS.client}
+                  component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
                   class="col-start-1 min-h-big-input"
                   size="24"
                 />
@@ -123,10 +135,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <TQuerySelect
                     name={`${props.name}.${index}.userId`}
                     label=""
-                    querySpec={{
-                      entityURL: "admin/user",
-                      prefixQueryKey: ["x"],
-                    }}
+                    querySpec={tquerySpec()}
                     nullable={false}
                   />
                 </div>
@@ -156,7 +165,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <Show when={form.data(props.name)[index]?.userId || index}>
                     <div>
                       <Button
-                        class="secondarySmall min-h-big-input"
+                        class="secondary small min-h-big-input"
                         title={t("actions.delete")}
                         onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                       >
@@ -168,9 +177,9 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
                     <div>
                       <Button
-                        class="secondarySmall min-h-big-input"
+                        class="secondary small min-h-big-input"
                         title={t(`forms.meeting.add_attendant.${props.name}`)}
-                        onClick={() => form.addField(props.name, newItem(), index + 1)}
+                        onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                       >
                         <BiRegularPlus class="inlineIcon text-current" />
                       </Button>
@@ -185,6 +194,32 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     </div>
   );
 };
+
+function createAttendant({userId = "", attendanceStatusDictId}: Partial<MeetingAttendantResource> = {}) {
+  return {userId, attendanceStatusDictId: attendanceStatusDictId || ""} satisfies MeetingAttendantResource;
+}
+
+export function getInitialAttendantsForCreate(staff?: readonly string[]) {
+  return {
+    staff: staff?.map((userId) => createAttendant({userId})) || [],
+    clients: [],
+  } satisfies FormAttendantsData;
+}
+
+export function getInitialAttendantsForEdit(meeting: MeetingResource) {
+  function getAttendants(attendantsFromMeeting: readonly MeetingAttendantResource[]) {
+    const attendants = attendantsFromMeeting.map(createAttendant);
+    if (attendants.length > 1) {
+      // Start in multiple mode, make additional empty row.
+      attendants.push(createAttendant());
+    }
+    return attendants;
+  }
+  return {
+    staff: getAttendants(meeting.staff),
+    clients: getAttendants(meeting.clients),
+  } satisfies FormAttendantsData;
+}
 
 export function getAttendantsValues(values: FormAttendantsData) {
   return {

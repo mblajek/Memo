@@ -1,5 +1,6 @@
 import {Collection} from "@zag-js/collection";
 import * as combobox from "@zag-js/combobox";
+import {trackFormControl} from "@zag-js/form-utils";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
@@ -29,6 +30,7 @@ import {Button} from "../Button";
 import {FieldBox} from "./FieldBox";
 import {PlaceholderField} from "./PlaceholderField";
 import s from "./Select.module.scss";
+import {SmallSpinner} from "../Spinner";
 
 export interface SelectBaseProps {
   readonly name: string;
@@ -140,6 +142,17 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   // the filtered items later. It's done like this because filtering needs api() which is not created yet.
   let collection: Accessor<Collection<SelectItem>> = () => combobox.collection.empty();
 
+  // Track the disabled state of the fieldset. This is a workaround, it should happen automatically in the
+  // zag component.
+  const [fieldsetDisabled, setFieldsetDisabled] = createSignal(false);
+  createEffect(() =>
+    trackFormControl(root() || null, {
+      onFieldsetDisabledChange: setFieldsetDisabled,
+      // Ignore form reset.
+      onFormReset: () => {},
+    }),
+  );
+
   const [state, send] = useMachine(
     combobox.machine({
       id: createUniqueId(),
@@ -148,10 +161,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       // Needed but never used, the actual collection comes from the context below.
       collection: combobox.collection.empty(),
       positioning: {
-        offset: {mainAxis: 0},
+        gutter: 0,
         strategy: "absolute",
         placement: "bottom-end",
-        overflowPadding: 20,
+        overflowPadding: 10,
         flip: true,
         sameWidth: false,
       },
@@ -201,7 +214,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       allowCustomValue: true,
       onInteractOutside: (e) => {
         const {target} = e.detail.originalEvent;
-        const isReallyInside = target instanceof Node && (root?.contains(target) || portalRoot?.contains(target));
+        const isReallyInside = target instanceof Node && (root()?.contains(target) || portalRoot?.contains(target));
         if (!isReallyInside) {
           api().setInputValue("");
         }
@@ -211,12 +224,13 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       context: () => ({
         collection: collection(),
         multiple: props.multiple,
-        disabled: props.disabled,
+        disabled: props.disabled || fieldsetDisabled(),
         invalid: !isValidationMessageEmpty(formContext?.form.errors(props.name)),
       }),
     },
   );
   const api = createMemo(() => combobox.connect<PropTypes, SelectItem>(state, send, normalizeProps));
+
   if (formContext)
     createComputed(
       on(
@@ -312,9 +326,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     if (item) {
       return itemToLabel(item);
     }
-    if (!props.isLoading) {
-      api().clearValue(value);
+    if (props.isLoading) {
+      return <SmallSpinner />;
     }
+    api().clearValue(value);
     return undefined;
   }
 
@@ -327,7 +342,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
   });
 
-  let root: HTMLDivElement | undefined;
+  const [root, setRoot] = createSignal<HTMLDivElement>();
   let portalRoot: HTMLDivElement | undefined;
 
   /** Whether the component is disabled, either directly or via a fieldset. */
@@ -339,7 +354,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       <FieldBox {...props}>
         <PlaceholderField name={props.name} />
         <div
-          ref={root}
+          ref={setRoot}
           {...api().rootProps}
           class={cx(s.select, {
             [s.single!]: !props.multiple,
@@ -348,7 +363,14 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           })}
           inert={isDisabled() || undefined}
         >
-          <div {...api().controlProps} onClick={() => api().open()}>
+          <div
+            {...api().controlProps}
+            onClick={() => {
+              if (!isDisabled()) {
+                api().open();
+              }
+            }}
+          >
             <Switch>
               <Match when={props.multiple}>
                 <For each={api().value}>

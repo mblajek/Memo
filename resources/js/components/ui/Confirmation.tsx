@@ -11,8 +11,7 @@ interface ConfirmParams {
 }
 
 interface ConfirmData extends ConfirmParams {
-  confirm: () => void;
-  reject: (reason: "reject" | "close") => void;
+  resolve: (confirmed: boolean | undefined) => void;
 }
 
 const [data, setData] = createSignal<ConfirmData>();
@@ -25,7 +24,7 @@ export const Confirmation: VoidComponent = () => {
       open={data()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={() => {
-        data()?.reject("close");
+        data()?.resolve(undefined);
         setData(undefined);
       }}
     >
@@ -36,7 +35,7 @@ export const Confirmation: VoidComponent = () => {
             <Button
               class="flex-grow basis-0 secondary"
               onClick={() => {
-                data().reject("reject");
+                data().resolve(false);
                 setData(undefined);
               }}
             >
@@ -45,7 +44,7 @@ export const Confirmation: VoidComponent = () => {
             <Button
               class="flex-grow basis-0 primary"
               onClick={() => {
-                data().confirm();
+                data().resolve(true);
                 setData(undefined);
               }}
             >
@@ -58,12 +57,12 @@ export const Confirmation: VoidComponent = () => {
   );
 };
 
+/**
+ * Shows a confirmation dialog and returns a promise resolving to true if confirmed, false if cancelled
+ * and undefined if closed without clicking a button.
+ */
 export function confirm(params: ConfirmParams | string) {
-  return new Promise<void>((confirm, reject) =>
-    setData({
-      ...(typeof params === "string" ? {title: params} : params),
-      confirm,
-      reject,
-    }),
+  return new Promise<boolean | undefined>((resolve) =>
+    setData({...(typeof params === "string" ? {title: params} : params), resolve}),
   );
 }

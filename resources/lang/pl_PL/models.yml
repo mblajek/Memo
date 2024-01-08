@@ -1,15 +1,14 @@
 generic:
   createdAt: "utworzono"
+  createdBy.name: "utworzono przez"
   updatedAt: "zmodyfikowano"
   name: "nazwa"
   email: "adres e-mail"
-  createdBy: "utworzono przez"
   notes: "opis"
 
 dictionary:
   _name: "słownik"
   _name_plural: "słowniki"
-  name: "$t(models.generic.name)"
   facility: "placówka, właściciel słownika"
   isFixed: "nieusuwalny / systemowy"
   positions: "pozycje"
@@ -17,7 +16,6 @@ dictionary:
 position:
   _name: "pozycja słownika"
   _name_plural: "pozycje słownika"
-  name: "$t(models.generic.name)"
   dictionary: "słownik"
   facility: "placówka, właściciel pozycji"
   isFixed: "nieusuwalna / systemowa"
@@ -26,10 +24,7 @@ position:
 facility:
   _name: "placówka"
   _name_plural: "placówki"
-  name: "$t(models.generic.name)"
   url: "adres Memo"
-  createdAt: "$t(models.generic.createdAt)"
-  updatedAt: "$t(models.generic.updatedAt)"
   members: "osoby przypisane do placówki"
   userCount: "liczba osób"
   admins: "administratorzy"
@@ -54,10 +49,6 @@ permissions:
 user:
   _name: "osoba"
   _name_plural: "osoby"
-  email: "$t(models.generic.email)"
-  createdAt: "$t(models.generic.createdAt)"
-  updatedAt: "$t(models.generic.updatedAt)"
-  createdBy: "$t(models.generic.createdBy)"
   name: "imię i nazwisko"
   hasGlobalAdmin: "globalny administrator"
   passwordExpireAt: "data wygaśnięcia hasła"
@@ -65,16 +56,22 @@ user:
   password: "hasło"
   hasEmailVerified: "e-mail zweryfikowany"
   members: "przypisane placówki"
-  facilityCount: "liczba placówek"
+  facilities.count: "liczba placówek"
 
 staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
+  name: "$t(models.user.name)"
+  hasEmailVerified: "$t(models.user.hasEmailVerified)"
+  hasPassword: "$t(models.user.hasPassword)"
+  passwordExpireAt: "$t(models.user.passwordExpireAt)"
+  hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
 
 client:
   _name: "klient"
   _name_plural: "klienci"
-  gender: "$t(dictionary.gender._name)"
+  name: "$t(models.user.name)"
+  genderDictId: "$t(dictionary.gender._name)"
 
 meeting:
   _name: "spotkanie"
@@ -82,7 +79,7 @@ meeting:
   date: "data"
   startDayminute: "godzina rozpoczęcia"
   durationMinutes: "długość"
-  categoryDictId: "$t(dictionary.meetingCategory._name)"
+  categoryDictId: "kategoria"
   typeDictId: "typ"
   statusDictId: "$t(dictionary.meetingStatus._name)"
   staff: "$t(models.staff._name_plural)"
@@ -90,4 +87,3 @@ meeting:
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"
-  notes: "$t(models.generic.notes)"

@@ -1,4 +1,4 @@
-import {Interval} from "luxon";
+import {DateTime} from "luxon";
 import {JSX} from "solid-js";
 import {DaysRange} from "./days_range";
 
@@ -9,7 +9,9 @@ export interface AllDayTimeSpan {
 
 export interface PartDayTimeSpan {
   readonly allDay: false;
-  readonly range: Interval;
+  readonly date: DateTime;
+  readonly startDayMinute: number;
+  readonly durationMinutes: number;
 }
 
 export interface AllDayBlock extends AllDayTimeSpan {

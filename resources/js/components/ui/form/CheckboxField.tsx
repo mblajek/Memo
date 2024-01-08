@@ -24,7 +24,7 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
     <FieldLabel
       fieldName={props.name}
       text={props.label}
-      class="flex items-baseline gap-1"
+      class="self-start flex items-baseline gap-1"
       title={props.title}
       wrapIn={(text) => (
         <>
@@ -36,7 +36,7 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
             aria-labelledby={labelIdForField(props.name)}
             disabled={props.disabled}
           />
-          <span class="flex-grow">{text}</span>
+          {text}
         </>
       )}
     />

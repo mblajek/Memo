@@ -34,6 +34,10 @@ export function invert(filter: FilterH, invert?: boolean): FilterH {
   }
 }
 
+function otherBoolOp(op: "&" | "|") {
+  return op === "&" ? "|" : "&";
+}
+
 export class FilterReductor {
   private readonly columnsData = new Map<ColumnName, ColumnSchema>();
 
@@ -78,6 +82,9 @@ export class FilterReductor {
           if (subFilter.type === "op" && subFilter.op === op && !subFilter.inv) {
             // Unnest a bool operation of the same type.
             subFiltersToProcess.push(...subFilter.val.toReversed());
+          } else if (subFilter.type === "op" && subFilter.op === otherBoolOp(op) && subFilter.inv) {
+            // Invert the inverted nested operation of the other type using De Morgan's laws.
+            subFiltersToProcess.push(...subFilter.val.map((f) => invert(f)).toReversed());
           } else {
             reducedSubFilters.push(subFilter);
           }
@@ -111,7 +118,7 @@ export class FilterReductor {
         if (val === "") {
           // Frontend treats the null values in string columns as empty strings (because this is what
           // is reasonable for the user).
-          if (op === "=" || op === "==" || op === "lv" || op === "<" || op === "<=") {
+          if (op === "=" || op === "==" || op === "lv" || op === "<=") {
             // Matches only null strings.
             return nullFilter();
           } else if (op === ">") {
@@ -120,7 +127,7 @@ export class FilterReductor {
           } else if (op === ">=" || op === "v%" || op === "%v" || op === "%v%" || op === "/v/") {
             // Matches everything.
             return "always";
-          } else if (op === "has") {
+          } else if (op === "<" || op === "has") {
             // Even a null column is not considered to "have an empty string", but rather to contain nothing.
             return "never";
           } else if (op === "in" || op === "has_all" || op === "has_any" || op === "has_only") {
@@ -138,17 +145,15 @@ export class FilterReductor {
         }
         if (Array.isArray(val)) {
           const vals = new Set<string | number>(val);
-          function deleteEmptyVal() {
-            return vals.delete("");
-          }
-          function deleteUntrimmedVals() {
+          /** Removes from vals all invalid values, i.e. empty and untrimmed strings. Returns whether modified. */
+          function deleteInvalidVals() {
             let modified = false;
             for (const v of vals) {
               if (typeof v !== "string") {
-                // No strings in the vals.
+                // Assume no strings in the vals.
                 return false;
               }
-              if (v !== v.trim()) {
+              if (!v || v !== v.trim()) {
                 vals.delete(v);
                 modified = true;
               }
@@ -157,53 +162,40 @@ export class FilterReductor {
           }
           const valsArray = () => [...vals] as string[] | number[];
           if (op === "in") {
-            const containedEmpty = deleteEmptyVal();
-            deleteUntrimmedVals();
-            return this.reduce({
-              type: "op",
-              op: "|",
-              val: [
-                containedEmpty ? nullFilter() : "never",
-                vals.size === 0
-                  ? "never"
-                  : vals.size === 1
-                    ? {type: "column", column, op: "=", val: valsArray()[0]!}
-                    : {type: "column", column, op: "in", val: valsArray()},
-              ],
-            });
+            deleteInvalidVals();
+            return vals.size === 0
+              ? "never"
+              : vals.size === 1
+                ? {type: "column", column, op: "=", val: valsArray()[0]!}
+                : {type: "column", column, op: "in", val: valsArray()};
+          } else if (op === "=") {
+            const hadInvalidVals = deleteInvalidVals();
+            return hadInvalidVals
+              ? "never"
+              : vals.size === 0
+                ? nullFilter()
+                : {type: "column", column, op: "=", val: valsArray() as /* currently only */ string[]};
           } else {
             const stringValsArray = valsArray as () => string[];
             if (op === "has_all") {
-              return vals.size === 0
-                ? "always"
-                : deleteEmptyVal() || deleteUntrimmedVals()
-                  ? "never"
+              const hadInvalidVals = deleteInvalidVals();
+              return hadInvalidVals
+                ? "never"
+                : vals.size === 0
+                  ? "always"
                   : vals.size === 1
                     ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
                     : {type: "column", column, op: "has_all", val: stringValsArray()};
             } else if (op === "has_any") {
-              deleteEmptyVal();
-              deleteUntrimmedVals();
+              deleteInvalidVals();
               return vals.size === 0
                 ? "never"
                 : vals.size === 1
                   ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
                   : {type: "column", column, op: "has_any", val: stringValsArray()};
             } else if (op === "has_only") {
-              deleteEmptyVal();
-              deleteUntrimmedVals();
-              return this.reduce({
-                type: "op",
-                op: "|",
-                val: [
-                  nullFilter(),
-                  vals.size === 0
-                    ? "never"
-                    : vals.size === 1
-                      ? {type: "column", column, op: "=", val: stringValsArray()}
-                      : {type: "column", column, op: "has_only", val: stringValsArray()},
-                ],
-              });
+              deleteInvalidVals();
+              return vals.size === 0 ? nullFilter() : {type: "column", column, op: "has_only", val: stringValsArray()};
             }
           }
           throw new Error(`Bad filter: ${JSON.stringify(filter)}`);

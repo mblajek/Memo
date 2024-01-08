@@ -22,14 +22,14 @@
       @apply absolute top-0.5 bottom-0.5 right-0.5 flex items-center gap-0.5;
       background-color: var(--bg-color);
 
-      > button {
+      button {
         width: 16px;
         max-height: 20px;
       }
     }
 
-    &[data-disabled] > button > svg {
-      @apply text-opacity-60;
+    &[data-disabled] > .buttons button svg {
+      @apply text-opacity-30;
     }
 
     &[data-invalid] {
@@ -66,7 +66,7 @@
     @apply flex flex-wrap items-center gap-0.5;
 
     > .value {
-      @apply px-1 border border-gray-400 rounded flex gap-0.5;
+      @apply px-1 border border-input-border rounded flex gap-0.5;
 
       > .label {
         @apply wrapTextAnywhere;
@@ -76,10 +76,16 @@
       }
     }
 
+    &[data-disabled] > .value > button svg {
+      @apply text-opacity-30;
+    }
+
     > [data-part="input"] {
       @apply grow shrink basis-0;
       @apply rounded px-1;
       min-width: 2rem;
+      // This entry is needed, otherwise the input grows too much, despite min-width and flex-basis.
+      width: 2rem;
       @apply outline-none;
     }
   }

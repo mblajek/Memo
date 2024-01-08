@@ -36,17 +36,19 @@ class TqBuilder
         TqTableAliasEnum $table,
         string $joinColumn,
         bool $left,
+        bool $inv,
     ): bool {
         if (in_array($table, $this->joins, strict: true)) {
             return false;
         }
+        [$tableColumn, $baseColumn] = $inv ? [$joinColumn, 'id'] : ['id', $joinColumn];
         $this->joins[] = $table;
         $tableBase = $table->baseTable();
         $this->builder->join(
             "{$tableBase->name} as {$table->name}",
-            "{$table->name}.id",
+            "{$table->name}.$tableColumn",
             '=',
-            "{$joinBase->name}.$joinColumn",
+            "{$joinBase->name}.$baseColumn",
             $left ? 'left' : 'inner',
         );
         return true;
@@ -102,9 +104,15 @@ class TqBuilder
         $this->builder->where($group, boolean: $or ? 'or' : 'and');
     }
 
-    public function applyPaging(int $number, int $size): void
+    public function whereNotDeleted(
+        TqTableEnum $table,
+    ): void {
+        $this->where(fn(null $bind) => "`{$table->name}`.`deleted_at` is null", false, null, false, false);
+    }
+
+    public function applyPaging(int $offset, int $limit): void
     {
-        $this->builder->forPage(page: $number, perPage: $size);
+        $this->builder->offset($offset)->limit($limit);
     }
 
     public function getSql(bool $raw): string

@@ -8,6 +8,7 @@ use Closure;
 
 final class PositionInDictionaryRule extends AbstractRule
 {
+    // todo private $facilityId - check dictionary position for given facility
     public function __construct(
         private readonly string $dictionaryId,
     ) {

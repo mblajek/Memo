@@ -1,5 +1,5 @@
 .columnFilterController {
-  @apply flex items-end gap-0.5;
+  @apply flex flex-wrap items-end gap-0.5;
 
   input {
     @apply px-1;
@@ -18,7 +18,7 @@
   }
 
   .filterMain {
-    @apply flex-grow;
+    @apply flex-grow basis-0;
 
     .filterLine {
       @apply flex flex-wrap items-stretch gap-0.5 min-h-small-input;
@@ -29,9 +29,9 @@
     }
 
     .valuesSyncer {
-      width: 6px;
+      width: 5px;
       height: 55%;
-      @apply row-span-2 self-center -mr-0.5;
+      @apply row-span-2 self-center;
       @apply border-2 border-r-0 border-current text-black text-opacity-30 cursor-pointer;
       border-start-start-radius: 3px;
       border-end-start-radius: 3px;
@@ -40,9 +40,5 @@
         @apply text-opacity-5 cursor-auto;
       }
     }
-  }
-
-  .filterIcon {
-    @apply mb-1;
   }
 }

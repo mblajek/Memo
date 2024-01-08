@@ -13,6 +13,7 @@ facility:
   home: "$t(models.facility._name)"
   admin:
     calendar: "$t(calendar.calendar)"
+    calendar_table: "tabela spotkań"
     clients: "$t(models.client._name_plural)"
     staff: "pracownicy"
     reports: "raporty"

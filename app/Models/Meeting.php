@@ -6,6 +6,8 @@ use App\Models\Enums\AttendanceType;
 use App\Models\QueryBuilders\MeetingBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCreatedBy;
+use App\Models\Traits\HasDeletedBy;
+use App\Models\Traits\HasUpdatedBy;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Rules\MemberExistsRule;
@@ -14,6 +16,7 @@ use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\Rule;
 
 /**
@@ -34,6 +37,9 @@ class Meeting extends Model
     use HasValidator;
     use BaseModel;
     use HasCreatedBy;
+    use HasUpdatedBy;
+    use HasDeletedBy;
+    use SoftDeletes;
 
     protected $table = 'meetings';
 
@@ -79,7 +85,7 @@ class Meeting extends Model
                 new MemberExistsRule(AttendanceType::Client),
             ]),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
-            'resources.*.resource_dict_id' =>Valid::dict(
+            'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,
                 [new UniqueWithMemoryRule('resource')],
             ),

@@ -17,7 +17,8 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={Admin.keys.facility()}
         staticEntityURL="admin/facility"
-        staticTranslations={createTableTranslations("facilities")}
+        staticTranslations={createTableTranslations("facility")}
+        staticPersistenceKey="adminFacilities"
         columns={[
           {name: "id", initialVisible: false},
           {name: "name", columnDef: {enableHiding: false}},
@@ -42,7 +43,7 @@ export default (() => {
         initialSort={[{id: "name", desc: false}]}
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">
-            <Button class="secondarySmall" onClick={() => showFacilityCreateModal()}>
+            <Button class="secondary small" onClick={() => showFacilityCreateModal()}>
               <FACILITY_ICONS.add class="inlineIcon text-current" /> {t("actions.add_facility")}
             </Button>
           </div>

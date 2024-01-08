@@ -3,15 +3,11 @@ import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
-import {
-  DayMinuteRange,
-  dayMinuteToTimeInput,
-  formatDayMinuteHM,
-  timeInputToDayMinute,
-} from "components/utils/day_minute_util";
+import {DayMinuteRange, dayMinuteToTimeInput, timeInputToDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {FiEdit2} from "solid-icons/fi";
 import {For, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
 
 interface Props {
@@ -104,7 +100,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               }
             >
               <Button
-                class="secondarySmall"
+                class="secondary small"
                 onClick={() => setDurationMinutes(defaultDurationMinutes())}
                 title={t("actions.set")}
               >
@@ -117,31 +113,12 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
         </div>
         <Show when={!showEditable()}>
           <div class="flex gap-2 justify-between">
-            <div class="flex gap-1">
-              <div>
-                {DateTime.fromISO(form.data("date")).toLocaleString({
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </div>
-              <div class="font-semibold">
-                {formatDayMinuteHM(timeInputToDayMinute(form.data("time").startTime, {assert: true}))}
-              </div>
-              <Show when={form.data("time").endTime}>
-                {(endTime) => (
-                  <>
-                    <div class="font-semibold">{EN_DASH}</div>
-                    <div class="font-semibold">
-                      {formatDayMinuteHM(timeInputToDayMinute(endTime(), {assert: true}))}
-                    </div>
-                    <div>{t("parenthesised", {text: t("calendar.units.minutes", {count: durationMinutes()})})}</div>
-                  </>
-                )}
-              </Show>
-            </div>
-            <Button class="secondarySmall" onClick={() => setForceEditable(true)}>
+            <DateAndTimeInfo
+              date={DateTime.fromISO(form.data("date"))}
+              startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}
+              durationMinutes={durationMinutes()}
+            />
+            <Button class="secondary small" onClick={() => setForceEditable(true)}>
               <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
             </Button>
           </div>

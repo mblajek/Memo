@@ -6,7 +6,7 @@ import {VoidComponent, createSignal, lazy} from "solid-js";
 const FacilityEditForm = lazy(() => import("features/facility-edit/FacilityEditForm"));
 
 interface FormParams {
-  facilityId: Api.Id;
+  readonly facilityId: Api.Id;
 }
 
 const [modalParams, setModalParams] = createSignal<FormParams>();

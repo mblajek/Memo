@@ -1,8 +1,10 @@
 import {JSX, Show, VoidComponent, mergeProps} from "solid-js";
-import {FilterIcon, useTable} from "..";
+import {FilterIconButton, useTable} from "..";
 import {BoolFilterControl} from "./BoolFilterControl";
 import s from "./ColumnFilterController.module.scss";
 import {DateTimeFilterControl} from "./DateTimeFilterControl";
+import {DictFilterControl} from "./DictFilterControl";
+import {DictListFilterControl} from "./DictListFilterControl";
 import {IntFilterControl} from "./IntFilterControl";
 import {TextualFilterControl} from "./TextualFilterControl";
 import {UuidFilterControl} from "./UuidFilterControl";
@@ -53,10 +55,12 @@ export const ColumnFilterController: VoidComponent<FilterControlProps> = (props)
         return () => <TextualFilterControl {...anyFilterProps} columnType={meta.type} />;
       case "uuid":
         return () => <UuidFilterControl {...anyFilterProps} />;
+      case "uuid_list":
+        return undefined; // TODO: Implement.
       case "dict":
-        return undefined; // TODO: Implement.
+        return () => <DictFilterControl {...anyFilterProps} dictionaryId={meta.dictionaryId} />;
       case "dict_list":
-        return undefined; // TODO: Implement.
+        return () => <DictListFilterControl {...anyFilterProps} dictionaryId={meta.dictionaryId} />;
       default:
         return meta satisfies never;
     }
@@ -67,7 +71,9 @@ export const ColumnFilterController: VoidComponent<FilterControlProps> = (props)
         {(filterControl) => (
           <>
             <div class={s.filterMain}>{filterControl()()}</div>
-            <FilterIcon class={s.filterIcon} isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
+            <div>
+              <FilterIconButton isFiltering={!!props.filter} onClear={() => props.setFilter(undefined)} />
+            </div>
           </>
         )}
       </Show>

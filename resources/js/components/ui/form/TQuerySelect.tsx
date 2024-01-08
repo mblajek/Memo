@@ -74,7 +74,12 @@ type DefaultTQuerySelectItem = Required<Pick<SelectItem, "value" | "text">>;
 
 type Props = BaseProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
 
-const DEFAULT_LIMIT = 200;
+/**
+ * The default number of fetched items.
+ *
+ * TODO: Fix the problem that occurs when the current value is not found among the fetched items due to limit.
+ */
+const DEFAULT_LIMIT = 1e6;
 
 const DEFAULT_PROPS = {
   separatePriorityItems: true,
@@ -113,7 +118,7 @@ function makeQuery({
     }
     return dataQuery
       .data!.data.map((rowData) => {
-        const defItem = () => ({
+        const defItem = (): DefaultTQuerySelectItem => ({
           value: rowData[valueColumn] as string,
           text: labelColumns.map((column) => rowData[column]).join(" "),
         });
@@ -142,57 +147,61 @@ export const TQuerySelect: VoidComponent<Props> = (allProps) => {
   const {dataQuery, items, filterText} = makeQuery(querySpec);
   const isSuccess = () => (priorityData?.dataQuery.isSuccess ?? true) && dataQuery.isSuccess;
   const isFetching = () => priorityData?.dataQuery.isFetching || dataQuery.isFetching;
-  const joinedItems = createMemo<readonly SelectItem[]>((prevJoinedItems) => {
-    if (!isSuccess() || isFetching()) {
-      // Wait for both queries to finish fetching before processing any results.
-      return prevJoinedItems;
-    }
-    let array: SelectItem[];
-    if (priorityData) {
-      array = priorityData.items().slice(0, limit);
-      const numPriorityItems = array.length;
-      if (numPriorityItems < limit) {
-        const values = new Set(array.map((i) => i.value));
-        const regularItems = items().filter(({value}) => !values.has(value));
-        if (regularItems.length) {
-          if (numPriorityItems && props.separatePriorityItems) {
-            array.push({
-              value: `_prioritySeparator_${createUniqueId()}`,
-              label: () => <hr class="border-input-border" />,
-              disabled: true,
-            });
-          }
-          array = [...array, ...regularItems.slice(0, limit - numPriorityItems)];
-        }
+  /** The items and loading status. They are returned in a single memo to avoid races. */
+  const joinedItemsAndIsLoading = createMemo<{items: readonly SelectItem[]; isLoading: boolean}>(
+    (prev) => {
+      if (!isSuccess() || isFetching()) {
+        // Wait for both queries to finish fetching before processing any results.
+        return {...prev, isLoading: true};
       }
-    } else {
-      array = items().slice(0, limit);
-    }
-    if (dataQuery.data!.meta.totalDataSize > limit) {
-      array.push({
-        value: `_limitExceeded_${createUniqueId()}`,
-        label: () => (
-          <div class="flex flex-col items-center">
-            <div class="self-stretch flex items-center">
-              <BsScissors class="rotate-90" />
-              <hr class="w-full border-current border-dashed" />
+      let array: SelectItem[];
+      if (priorityData) {
+        array = priorityData.items().slice(0, limit);
+        const numPriorityItems = array.length;
+        if (numPriorityItems < limit) {
+          const values = new Set(array.map((i) => i.value));
+          const regularItems = items().filter(({value}) => !values.has(value));
+          if (regularItems.length) {
+            if (numPriorityItems && props.separatePriorityItems) {
+              array.push({
+                value: `_prioritySeparator_${createUniqueId()}`,
+                label: () => <hr class="border-input-border" />,
+                disabled: true,
+              });
+            }
+            array = [...array, ...regularItems.slice(0, limit - numPriorityItems)];
+          }
+        }
+      } else {
+        array = items().slice(0, limit);
+      }
+      if (dataQuery.data!.meta.totalDataSize > limit) {
+        array.push({
+          value: `_limitExceeded_${createUniqueId()}`,
+          label: () => (
+            <div class="flex flex-col items-center">
+              <div class="self-stretch flex items-center">
+                <BsScissors class="rotate-90" />
+                <hr class="w-full border-current border-dashed" />
+              </div>
+              <div class="text-sm">{t("select.limit_exceeded")}</div>
             </div>
-            <div class="text-sm">{t("select.limit_exceeded")}</div>
-          </div>
-        ),
-        disabled: true,
-      });
-    }
-    return array;
-  }, []);
+          ),
+          disabled: true,
+        });
+      }
+      return {items: array, isLoading: false};
+    },
+    {items: [], isLoading: true},
+  );
   function setFilterText(filter = "") {
     priorityData?.filterText[1](filter);
     filterText[1](filter);
   }
   const mergedSelectProps = mergeSelectProps<"items" | "onFilterChange" | "isLoading">(selectProps, {
-    items: joinedItems,
+    items: () => joinedItemsAndIsLoading().items,
+    isLoading: () => joinedItemsAndIsLoading().isLoading,
     onFilterChange: () => setFilterText,
-    isLoading: isFetching,
   });
   return <Select {...mergedSelectProps} />;
 };

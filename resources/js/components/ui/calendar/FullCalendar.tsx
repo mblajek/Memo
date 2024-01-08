@@ -1,8 +1,14 @@
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
+import {createOneTimeEffect} from "components/utils/one_time_effect";
+import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {createCalendarRequestCreator, meetingsFromQuery} from "data-access/memo-api/tquery/calendar";
+import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {MeetingCreateModal, showMeetingCreateModal} from "features/meeting/MeetingCreateModal";
-import {DateTime, Interval} from "luxon";
+import {MeetingModal, showMeetingModal} from "features/meeting/MeetingModal";
+import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {TbInfoTriangle} from "solid-icons/tb";
 import {
@@ -18,21 +24,22 @@ import {
   on,
   splitProps,
 } from "solid-js";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
+import {bleachColor, randomColor} from "../colors";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {EM_DASH} from "../symbols";
 import {CalendarColumn, ColumnsCalendar} from "./ColumnsCalendar";
-import {Resource, ResourceGroup, ResourcesSelector} from "./ResourcesSelector";
+import {ResourceGroup, ResourceItem, ResourcesSelector} from "./ResourcesSelector";
 import {TinyCalendar} from "./TinyCalendar";
 import {AllDayArea} from "./calendar-columns/AllDayArea";
 import {DayHeader} from "./calendar-columns/DayHeader";
 import {HoursArea} from "./calendar-columns/HoursArea";
 import {ResourceHeader} from "./calendar-columns/ResourceHeader";
-import {AllDayAreaBlock, HoursAreaBlock} from "./calendar-columns/blocks";
-import {AllDayEvent, PartDayEvent, Tag} from "./calendar-columns/events";
+import {MeetingEventBlock} from "./calendar-columns/events";
 import {DaysRange} from "./days_range";
-import {Block, Event} from "./types";
+import {PartDayTimeSpan} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
 export const MODES = ["month", "week", "day"] as const;
@@ -40,7 +47,6 @@ export type Mode = (typeof MODES)[number];
 
 interface Props extends htmlAttributes.div {
   readonly locale: Intl.Locale;
-  readonly resourceGroups: readonly ResourceGroup[];
   readonly holidays?: readonly DateTime[];
   readonly modes?: readonly Mode[];
   readonly initialMode?: Mode;
@@ -75,8 +81,9 @@ type PersistentState = {
     readonly checkbox: ReadonlySet<string>;
     readonly radio: string | null;
   };
+  readonly pixelsPerHour: number;
 };
-const PERSISTENCE_VERSION = 2;
+const PERSISTENCE_VERSION = 3;
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -86,7 +93,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const mProps = mergeProps(defaultProps(), propsArg);
   const [props, divProps] = splitProps(mProps, [
     "locale",
-    "resourceGroups",
     "holidays",
     "modes",
     "initialMode",
@@ -94,8 +100,72 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "initialDay",
     "staticPersistenceKey",
   ]);
-
   const t = useLangFunc();
+
+  const {dataQuery: staffDataQuery} = createTQuery({
+    prefixQueryKey: FacilityStaff.keys.staff(),
+    entityURL: `facility/${activeFacilityId()}/user/staff`,
+    requestCreator: staticRequestCreator({
+      columns: [
+        {type: "column", column: "id"},
+        {type: "column", column: "name"},
+      ],
+      sort: [{type: "column", column: "name", desc: false}],
+      paging: {size: 1000},
+    }),
+  });
+  const staff = () => staffDataQuery.data?.data as readonly {id: string; name: string}[];
+  const staffResources = createMemo(
+    () =>
+      staff()?.map((staff) => {
+        const baseColor = randomColor({seedString: staff.id, whiteness: [0, 50], blackness: [10, 40]});
+        const style = {
+          "border-color": baseColor,
+          "background-color": bleachColor(baseColor, {amount: 0.7}),
+        };
+        const hoverStyle = {
+          "background-color": bleachColor(baseColor, {amount: 0.5}),
+        };
+        return {
+          id: staff.id,
+          text: staff.name,
+          baseColor,
+          styling: {style, hoverStyle},
+          hoverStyle,
+          label: () => (
+            <div class="w-full flex justify-between gap-1">
+              <span>{staff.name}</span>
+              <span
+                class="self-center border rounded"
+                style={{
+                  width: "14px",
+                  height: "14px",
+                  ...style,
+                }}
+              />
+            </div>
+          ),
+        } satisfies ResourceItem & Record<string, unknown>;
+      }) || [],
+  );
+  const staffResourcesById = createMemo(() => {
+    const byId = new Map<string, ReturnType<typeof staffResources>[number]>();
+    for (const resource of staffResources()) {
+      byId.set(resource.id, resource);
+    }
+    return byId;
+  });
+  const resourceGroups = createMemo((): ResourceGroup[] => [
+    {
+      label: () => (
+        <span class="font-bold">
+          <Capitalize text={t("models.staff._name_plural")} />
+        </span>
+      ),
+      resources: staffResources(),
+    },
+  ]);
+
   const [mode, setMode] = createSignal(props.initialMode);
   const weekDayCalculator = createMemo(() => new WeekDaysCalculator(props.locale));
   function getRange(day: DateTime, m = mode()) {
@@ -125,7 +195,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     if (!ids.size) {
       return undefined;
     }
-    for (const resourceGroup of props.resourceGroups) {
+    for (const resourceGroup of resourceGroups()) {
       for (const resource of resourceGroup.resources) {
         if (ids.has(resource.id)) {
           return resource.id;
@@ -197,16 +267,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
 
   const [pixelsPerHour, setPixelsPerHour] = createSignal(120);
 
-  const resources = createMemo(() => {
-    const result = new Map<string, Resource>();
-    for (const group of props.resourceGroups) {
-      for (const resource of group.resources) {
-        result.set(resource.id, resource);
-      }
-    }
-    return result;
-  });
-
   if (props.staticPersistenceKey) {
     createLocalStoragePersistence<PersistentState>({
       key: `FullCalendar:${props.staticPersistenceKey}`,
@@ -218,8 +278,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           checkbox: selectedResourcesCheckbox(),
           radio: selectedResourceRadio() || null,
         },
+        pixelsPerHour: pixelsPerHour(),
       }),
-      onLoad: (state) =>
+      onLoad: (state) => {
         batch(() => {
           if (props.modes?.includes(state.mode)) {
             setMode(state.mode);
@@ -238,7 +299,31 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setSelectedResourcesCheckbox(state.resourcesSel.checkbox);
           setSelectedResourceRadio(state.resourcesSel.radio || undefined);
           setTinyCalMonth(daysSelection().center());
-        }),
+          setPixelsPerHour(state.pixelsPerHour);
+        });
+        // Once resources are loaded, make sure there aren't selected resources that don't really exist.
+        createOneTimeEffect({
+          input: staff,
+          effect: () => {
+            const validResourceIds = new Set<string>();
+            for (const {id} of staff()) {
+              validResourceIds.add(id);
+            }
+            if (selectedResourceRadio() && !validResourceIds.has(selectedResourceRadio()!)) {
+              setSelectedResourceRadio(undefined);
+            }
+            const resourcesCheckbox = new Set(selectedResourcesCheckbox());
+            for (const id of resourcesCheckbox) {
+              if (!validResourceIds.has(id)) {
+                resourcesCheckbox.delete(id);
+              }
+            }
+            if (resourcesCheckbox.size !== selectedResourcesCheckbox().size) {
+              setSelectedResourcesCheckbox(resourcesCheckbox);
+            }
+          },
+        });
+      },
       serialiser: richJSONSerialiser<PersistentState>(),
       version: [PERSISTENCE_VERSION],
     });
@@ -326,199 +411,55 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   }
 
-  function getFakeColumnData(resource: Resource, day: DateTime) {
-    // Produce some fake data for the specified day.
-    const blocks: Block[] = [];
-    const events: Event[] = [];
-    if (day.weekday === 3) {
-      blocks.push(
-        {
-          allDay: true,
-          range: new DaysRange(day.minus({days: 1}), day.plus({days: 1})),
-          contentInAllDayArea: () => <AllDayAreaBlock class="bg-gray-200" label="Trzydniowe aktualne" />,
-        },
-        {
-          allDay: true,
-          range: new DaysRange(day.minus({days: 3}), day.minus({days: 1})),
-          contentInAllDayArea: () => <AllDayAreaBlock class="bg-gray-200" label="Trzydniowe nieaktualne" />,
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").minus({hours: 2}), {hours: 4}),
-          content: () => <HoursAreaBlock class="bg-indigo-200" label="Noc jest" />,
-        },
-      );
-      events.push(
-        {
-          allDay: true,
-          range: new DaysRange(day.minus({days: 1}), day.plus({days: 1})),
-          content: () => <AllDayEvent baseColor="blue">Trzydniowe aktualne</AllDayEvent>,
-        },
-        {
-          allDay: true,
-          range: new DaysRange(day.minus({days: 3}), day.minus({days: 1})),
-          content: () => <AllDayEvent baseColor="red">Trzydniowe nieaktualne</AllDayEvent>,
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").minus({hours: 2}), {hours: 3}),
-          content: () => (
-            <PartDayEvent range={Interval.after(day.startOf("day").minus({hours: 1}), {hours: 2})} baseColor="green" />
-          ),
-        },
-        {
-          // Not on this day.
-          allDay: false,
-          range: Interval.after(day.startOf("day").minus({hours: 2}), {hours: 1}),
-          content: () => (
-            <PartDayEvent range={Interval.after(day.startOf("day").minus({hours: 2}), {hours: 1})} baseColor="green" />
-          ),
-        },
-      );
-    } else if (day.weekday <= 5) {
-      blocks.push(
-        {
-          allDay: true,
-          range: DaysRange.oneDay(day),
-          contentInAllDayArea: () => <AllDayAreaBlock class="bg-gray-200" label="Dzień jakiś" />,
-          contentInHoursArea: () => <HoursAreaBlock class="bg-gray-200" />,
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").set({hour: 8}), {hours: 8}),
-          content: () => <HoursAreaBlock class="bg-white" label="Do roboty!" />,
-        },
-      );
-      events.push(
-        {
-          allDay: true,
-          range: DaysRange.oneDay(day),
-          content: () => <AllDayEvent baseColor="blue">Tego...</AllDayEvent>,
-        },
-        {
-          allDay: true,
-          range: DaysRange.oneDay(day),
-          content: () => (
-            <AllDayEvent baseColor="red">asd serg s rtgh asrg adr tga srg adth adth adt dargadrg</AllDayEvent>
-          ),
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").set({hour: 7}), {hours: 1}),
-          content: () => (
-            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 7}), {hours: 1})} baseColor="green">
-              Spotkanie: <span class="font-bold">{resource.label()}</span>
-            </PartDayEvent>
-          ),
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").set({hour: 8, minute: 15}), {hours: 1}),
-          content: () => (
-            <PartDayEvent
-              range={Interval.after(day.startOf("day").set({hour: 8, minute: 15}), {hours: 1})}
-              baseColor="purple"
-            >
-              <div>Anna Kowalska</div>
-              <div class="flex flex-wrap gap-px">
-                <Tag color="red">odbyta</Tag>
-                <Tag color="black">tag</Tag>
-                <Tag color="orange">jakiś tag</Tag>
-              </div>
-              <div>Konsultacja</div>
-            </PartDayEvent>
-          ),
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").set({hour: 10}), {hours: 1}),
-          content: () => (
-            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 10}), {hours: 1})} baseColor="purple">
-              <div>Anna Kowalska</div>
-              <div class="flex flex-wrap gap-px">
-                <Tag color="red">odbyta</Tag>
-                <Tag color="black">tag</Tag>
-                <Tag color="orange">jakiś tag</Tag>
-              </div>
-              <div>Konsultacja</div>
-            </PartDayEvent>
-          ),
-        },
-        {
-          allDay: false,
-          range: Interval.fromDateTimes(
-            day.startOf("day").set({hour: 10, minute: 30}),
-            day.startOf("day").set({hour: 12}),
-          ),
-          content: () => (
-            <PartDayEvent
-              range={Interval.fromDateTimes(
-                day.startOf("day").set({hour: 10, minute: 30}),
-                day.startOf("day").set({hour: 12}),
-              )}
-              baseColor="purple"
-            >
-              asd serg s rtgh asrg adr tga srg adth adth adt dargadrg
-            </PartDayEvent>
-          ),
-        },
-      );
-    } else {
-      blocks.push({
+  const {dataQuery: meetingsDataQuery} = createTQuery({
+    prefixQueryKey: FacilityMeeting.keys.meeting(),
+    entityURL: `facility/${activeFacilityId()}/meeting`,
+    requestCreator: createCalendarRequestCreator({
+      daysRange: daysSelection,
+      staff: () => [...selectedResources()],
+    }),
+  });
+  const meetingResources = meetingsFromQuery(meetingsDataQuery);
+  const events = () =>
+    meetingResources()?.map((meeting) => {
+      const timeSpan: PartDayTimeSpan = {
         allDay: false,
-        range: Interval.after(day.startOf("day"), {hours: 11, minutes: 30}),
-        content: () => <HoursAreaBlock class="bg-fuchsia-100" label="Spanko" />,
-      });
-      events.push(
-        {
-          allDay: true,
-          range: DaysRange.oneDay(day),
-          content: () => <AllDayEvent baseColor="pink">Leniuchowanie</AllDayEvent>,
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").set({hour: 12}), {minutes: 30}),
-          content: () => (
-            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 12}), {minutes: 30})} baseColor="green">
-              Śniadanko
-            </PartDayEvent>
-          ),
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").set({hour: 12, minute: 30}), {hours: 1, minutes: 30}),
-          content: () => (
-            <PartDayEvent
-              range={Interval.after(day.startOf("day").set({hour: 12, minute: 30}), {hours: 1, minutes: 30})}
-              baseColor="green"
-            >
-              Memiki
-            </PartDayEvent>
-          ),
-        },
-        {
-          allDay: false,
-          range: Interval.after(day.startOf("day").set({hour: 14}), {hours: 1}),
-          content: () => (
-            <PartDayEvent range={Interval.after(day.startOf("day").set({hour: 14}), {hours: 1})} baseColor="green">
-              Pizza
-            </PartDayEvent>
-          ),
-        },
-      );
-    }
+        date: DateTime.fromISO(meeting.date),
+        startDayMinute: meeting.startDayminute,
+        durationMinutes: meeting.durationMinutes,
+      };
+      return {
+        meeting,
+        ...timeSpan,
+      };
+    }) || [];
+
+  function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
+    const selectedEvents = () =>
+      staffId
+        ? events()
+            .filter((ev) => ev.meeting.staff.some((staff) => staff.userId === staffId))
+            .map((ev) => ({
+              ...ev,
+              content: () => (
+                <MeetingEventBlock
+                  meeting={ev.meeting}
+                  {...staffResourcesById().get(staffId)?.styling}
+                  onClick={() => showMeetingModal({meetingId: ev.meeting.id})}
+                />
+              ),
+            }))
+        : [];
     return {
       day,
-      allDayArea: () => (
-        <AllDayArea
-          day={day}
-          blocks={blocks}
-          events={events}
-          onClick={() => console.log(`New all-day event on ${day.toISO()}`)}
-        />
-      ),
+      allDayArea: () => <AllDayArea day={day} blocks={[]} events={[]} />,
       hoursArea: () => (
-        <HoursArea day={day} blocks={blocks} events={events} onTimeClick={(t) => showMeetingCreateModal({start: t})} />
+        <HoursArea
+          day={day}
+          blocks={[]}
+          events={selectedEvents()}
+          onTimeClick={(t) => showMeetingCreateModal({initialData: {start: t, staff: staffId ? [staffId] : undefined}})}
+        />
       ),
     } satisfies Partial<CalendarColumn>;
   }
@@ -529,28 +470,25 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       case "month":
         // The columns calendar is not displayed in this mode anyway.
         return [];
-      case "week":
-        // eslint-disable-next-line solid/reactivity
+      case "week": {
+        const staff = selectedResourceRadio();
         return Array.from(daysSelection(), (day) => ({
-          ...getFakeColumnData(resources().get(selectedResourceRadio()!)!, day),
           header: () => <DayHeader day={day} />,
+          ...getCalendarColumnPart(day, staff),
         }));
+      }
       case "day": {
         const day = daysSelection().start;
-        // eslint-disable-next-line solid/reactivity
-        return Array.from(resources(), ([resourceId, resource]) =>
-          selectedResources().has(resourceId)
-            ? {
-                ...getFakeColumnData(resource, day),
-                header: () => (
-                  <ResourceHeader
-                    // TODO: Consider a better way to get the resource label.
-                    label={() => resource.label()}
-                  />
-                ),
-              }
-            : undefined,
-        ).filter(NON_NULLABLE);
+        return staffResources()
+          .map(({id, text}) =>
+            selectedResources().has(id)
+              ? {
+                  header: () => <ResourceHeader label={() => <>{text}</>} title={text} />,
+                  ...getCalendarColumnPart(day, id),
+                }
+              : undefined,
+          )
+          .filter(NON_NULLABLE);
       }
       default:
         return m satisfies never;
@@ -590,7 +528,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           />
           <ResourcesSelector
             class="overflow-y-auto"
-            resourceGroups={props.resourceGroups}
+            resourceGroups={resourceGroups()}
             mode={resourcesSelectionMode()}
             selection={selectedResources()}
             setSelection={setSelectedResources}
@@ -599,18 +537,18 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
             <div>
-              <Button class="h-full secondarySmall !rounded-r-none" onClick={[moveDaysSelection, -1]}>
+              <Button class="h-full secondary small !rounded-r-none" onClick={[moveDaysSelection, -1]}>
                 <IoArrowBackOutline class="text-current" />
               </Button>
               <Button
-                class="h-full secondarySmall !rounded-l-none"
+                class="h-full secondary small !rounded-l-none"
                 style={{"margin-left": "-1px"}}
                 onClick={[moveDaysSelection, 1]}
               >
                 <IoArrowForwardOutline class="text-current" />
               </Button>
             </div>
-            <Button class="secondarySmall" onClick={goToToday}>
+            <Button class="secondary small" onClick={goToToday} disabled={daysSelection().contains(currentDate())}>
               <Capitalize text={t("calendar.today")} />
             </Button>
             <div class="grow self-center text-center text-lg text-ellipsis">
@@ -629,7 +567,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               <div>Календар буде тут.</div>
             </Match>
             <Match when={!selectedResources().size}>
-              <div class="my-4 mx-1 self-start flex gap-1">
+              <div class="mx-2 my-6 flex justify-center gap-1">
                 <TbInfoTriangle size={20} class="text-memo-active" />
                 {t("calendar.select_resource_to_show_calendar")}
               </div>
@@ -637,6 +575,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <Match when={true}>
               <ColumnsCalendar
                 class="h-full min-h-0"
+                isLoading={meetingsDataQuery.isFetching}
                 columns={calendarColumns()}
                 pixelsPerHour={pixelsPerHour()}
                 scrollToDayMinute={6 * 60 + 50}
@@ -651,6 +590,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         </div>
       </div>
       <MeetingCreateModal />
+      <MeetingModal />
     </>
   );
 };

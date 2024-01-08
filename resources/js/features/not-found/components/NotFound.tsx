@@ -1,7 +1,7 @@
 import {A, useLocation} from "@solidjs/router";
 import {VoidComponent} from "solid-js";
 
-export const NotFound: VoidComponent = () => {
+export default (() => {
   const location = useLocation();
   return (
     <div class="w-fit bg-blue-50 p-4 mx-auto rounded-md">
@@ -12,4 +12,4 @@ export const NotFound: VoidComponent = () => {
       </p>
     </div>
   );
-};
+}) satisfies VoidComponent;

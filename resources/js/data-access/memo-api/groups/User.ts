@@ -88,8 +88,7 @@ export namespace User {
       ...STATUS_QUERY_OPTIONS,
     }) satisfies SolidQueryOptions<GetStatusData>;
 
-  export function useInvalidator() {
-    const queryClient = useQueryClient();
+  export function useInvalidator(queryClient = useQueryClient()) {
     return {
       statusAndFacilityPermissions: () => queryClient.invalidateQueries({queryKey: keys.statusAll()}),
     };
