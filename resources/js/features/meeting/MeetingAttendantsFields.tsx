@@ -4,6 +4,7 @@ import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
+import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
@@ -14,10 +15,11 @@ import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {Index, Show, VoidComponent, createComputed, createEffect, on} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, on} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
+import {UserLink} from "../facility-users/UserLink";
 
 export const getAttendantsSchemaPart = () => ({
   staff: getAttendantsSchema(),
@@ -36,6 +38,7 @@ interface Props {
   readonly name: "staff" | "clients";
   /** Whether to show the attendance status label. Default: true. */
   readonly showAttendanceStatusLabel?: boolean;
+  readonly viewMode?: boolean;
 }
 
 interface FormAttendantsData extends Obj {
@@ -60,20 +63,20 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const {form} = useFormContext<FormAttendantsData>();
   createEffect<readonly MeetingAttendantResource[]>((prevAttendants) => {
     const attendants = form.data(props.name);
-    // Add an empty row at the end in the following situations:
+    // When in edit mode, add an empty row at the end in the following situations:
     if (
+      !props.viewMode &&
       // there are no rows, or...
-      !attendants.length ||
-      // ...the last row was empty and it got filled in, but it was not the only row
-      // (in case of one row, the component is in "one row mode" and doesn't add rows automatically).
-      (prevAttendants &&
-        attendants.length > 1 &&
-        attendants.length === prevAttendants.length &&
-        !prevAttendants.at(-1)?.userId &&
-        attendants.at(-1)!.userId)
-    ) {
+      (!attendants.length ||
+        // ...the last row was empty and it got filled in, but it was not the only row
+        // (in case of one row, the component is in "one row mode" and doesn't add rows automatically).
+        (prevAttendants &&
+          attendants.length > 1 &&
+          attendants.length === prevAttendants.length &&
+          !prevAttendants.at(-1)?.userId &&
+          attendants.at(-1)!.userId))
+    )
       form.addField(props.name, createAttendant());
-    }
     return attendants;
   });
   const tquerySpec = (): TQueryConfig => {
@@ -122,23 +125,33 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             "grid-template-columns": "subgrid",
           }}
         >
-          <Index each={form.data(props.name)}>
+          <Index each={form.data(props.name)} fallback={EMPTY_VALUE_SYMBOL}>
             {(_attendant, index) => (
-              <>
+              <Show
+                when={form.data(`${props.name}.${index}.userId`) || !props.viewMode}
+                fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
+              >
                 <Dynamic
                   component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
                   class="col-start-1 min-h-big-input"
                   size="24"
                 />
-                <div class="grow">
-                  {/* TODO: Replace with the correct select for staff/clients when backend is ready. */}
-                  <TQuerySelect
-                    name={`${props.name}.${index}.userId`}
-                    label=""
-                    querySpec={tquerySpec()}
-                    nullable={false}
-                  />
-                </div>
+                <Switch>
+                  <Match when={props.viewMode}>
+                    <div class="flex items-center">
+                      <PlaceholderField name={`${props.name}.${index}.userId`} />
+                      <UserLink type={props.name} userId={form.data(`${props.name}.${index}.userId`)} />
+                    </div>
+                  </Match>
+                  <Match when={!props.viewMode}>
+                    <TQuerySelect
+                      name={`${props.name}.${index}.userId`}
+                      label=""
+                      querySpec={tquerySpec()}
+                      nullable={false}
+                    />
+                  </Match>
+                </Switch>
                 <div class="flex gap-1">
                   <div
                     class={cx("grow", {
@@ -161,32 +174,34 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       disabled={!form.data(`${props.name}.${index}.userId`)}
                     />
                   </div>
-                  {/* Show delete button for filled in rows, and for the empty row (unless it's the only row). */}
-                  <Show when={form.data(props.name)[index]?.userId || index}>
-                    <div>
-                      <Button
-                        class="secondary small min-h-big-input"
-                        title={t("actions.delete")}
-                        onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
-                      >
-                        <RiSystemDeleteBin6Line class="inlineIcon text-current" />
-                      </Button>
-                    </div>
-                  </Show>
-                  {/* Show add button in the last row, unless that row is already empty. */}
-                  <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
-                    <div>
-                      <Button
-                        class="secondary small min-h-big-input"
-                        title={t(`forms.meeting.add_attendant.${props.name}`)}
-                        onClick={() => form.addField(props.name, createAttendant(), index + 1)}
-                      >
-                        <BiRegularPlus class="inlineIcon text-current" />
-                      </Button>
-                    </div>
+                  <Show when={!props.viewMode}>
+                    {/* Show delete button for filled in rows, and for the empty row (unless it's the only row). */}
+                    <Show when={form.data(props.name)[index]?.userId || index}>
+                      <div>
+                        <Button
+                          class="secondary small min-h-big-input"
+                          title={t("actions.delete")}
+                          onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
+                        >
+                          <RiSystemDeleteBin6Line class="inlineIcon text-current" />
+                        </Button>
+                      </div>
+                    </Show>
+                    {/* Show add button in the last row, unless that row is already empty. */}
+                    <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
+                      <div>
+                        <Button
+                          class="secondary small min-h-big-input"
+                          title={t(`forms.meeting.add_attendant.${props.name}`)}
+                          onClick={() => form.addField(props.name, createAttendant(), index + 1)}
+                        >
+                          <BiRegularPlus class="inlineIcon text-current" />
+                        </Button>
+                      </div>
+                    </Show>
                   </Show>
                 </div>
-              </>
+              </Show>
             )}
           </Index>
         </div>

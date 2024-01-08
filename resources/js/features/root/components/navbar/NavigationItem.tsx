@@ -25,7 +25,8 @@ export const NavigationItem: VoidComponent<NavigationItemProps> = (allProps) => 
   return (
     <A
       {...htmlAttributes.merge(aProps, {
-        class: "mb-2 py-2 px-4 rounded-lg flex flex-row items-center gap-3 no-underline text-black hover:bg-white",
+        class:
+          "mb-2 py-2 px-4 rounded-lg flex flex-row items-center gap-3 no-underline text-black whitespace-nowrap hover:bg-white",
       })}
       activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
       onClick={(event) => {

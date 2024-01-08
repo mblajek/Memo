@@ -1,4 +1,5 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
+import {confirm} from "components/ui/Confirmation";
 import {BigSpinner} from "components/ui/Spinner";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {dayMinuteToTimeInput} from "components/utils/day_minute_util";
@@ -16,11 +17,14 @@ interface FormParams {
 }
 
 interface Props extends FormParams {
-  readonly onSuccess?: () => void;
+  readonly viewMode?: boolean;
+  readonly onViewModeChange?: (viewMode: boolean) => void;
+  readonly onEdited?: () => void;
+  readonly onDeleted?: () => void;
   readonly onCancel?: () => void;
 }
 
-export const MeetingEditForm: VoidComponent<Props> = (props) => {
+export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const dictionaries = useDictionaries();
@@ -30,6 +34,9 @@ export const MeetingEditForm: VoidComponent<Props> = (props) => {
     mutationFn: FacilityMeeting.updateMeeting,
     meta: {isFormSubmit: true},
   }));
+  const deleteMeetingMutation = createMutation(() => ({
+    mutationFn: FacilityMeeting.deleteMeeting,
+  }));
 
   async function updateMeeting(values: MeetingFormType) {
     await meetingMutation.mutateAsync({
@@ -37,8 +44,26 @@ export const MeetingEditForm: VoidComponent<Props> = (props) => {
       ...transformFormValues(values),
     });
     toast.success(t("forms.meeting_edit.success"));
-    props.onSuccess?.();
-    // Important: Invalidation should happen after calling onSuccess which typically closes the form.
+    props.onEdited?.();
+    // Important: Invalidation should happen after calling onEdited which typically closes the form.
+    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+    // but also causes problems apparently.
+    invalidate.meetings();
+  }
+
+  async function deleteMeeting() {
+    if (
+      !(await confirm({
+        title: t("forms.meeting_delete.formName"),
+        body: t("forms.meeting_delete.confirmationText"),
+        confirmText: t("forms.meeting_delete.submit"),
+      }))
+    )
+      return;
+    await deleteMeetingMutation.mutateAsync(props.id);
+    toast.success(t("forms.meeting_delete.success"));
+    props.onDeleted?.();
+    // Important: Invalidation should happen after calling onDeleted which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
     invalidate.meetings();
@@ -66,7 +91,11 @@ export const MeetingEditForm: VoidComponent<Props> = (props) => {
         <MeetingForm
           id="meeting_edit"
           initialValues={initialValues()}
+          viewMode={props.viewMode}
+          onViewModeChange={props.onViewModeChange}
           onSubmit={updateMeeting}
+          onDelete={deleteMeeting}
+          isDeleting={deleteMeetingMutation.isPending}
           onCancel={props.onCancel}
         />
       </Show>
@@ -75,4 +104,4 @@ export const MeetingEditForm: VoidComponent<Props> = (props) => {
 };
 
 // For lazy loading
-export default MeetingEditForm;
+export default MeetingViewEditForm;
