@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
 
-use function App\Utils\process_conditional_array;
+use App\Utils\ConditionalArrayRule;
 
 /**
  * Rule generator
@@ -120,7 +120,7 @@ class Valid extends AbstractDataRule
     ) {
         $this->rules = Arr::flatten(
             array_map(function ($rule) {
-                return is_array($rule) ? process_conditional_array($rule) : $rule;
+                return is_array($rule) ? ConditionalArrayRule::process_conditional_array($rule) : $rule;
             }, $rules)
         );
     }

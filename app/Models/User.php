@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
 use App\Models\Traits\HasValidator;
+use App\Rules\DataTypeRule;
 use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
 use App\Models\Traits\BaseModel;
@@ -142,7 +143,8 @@ class User extends Authenticatable
             'has_email_verified' =>
                 [
                     [$isInsert || $isPatch, 'required_with:email'],
-                    ...Valid::bool(nullable: true)
+                    'boolean',
+                    DataTypeRule::bool(),
                 ],
             'password' =>
                 [
@@ -181,10 +183,10 @@ class User extends Authenticatable
                     nullable: true
                 )
             ],
-            'has_password' => Valid::bool([
+            'has_password' => [
                 // It must be true if the user is a global admin.
-                [$isResource || $isInsert, 'accepted_if:has_global_admin,true'],
-            ]),
+                [$isResource, 'accepted_if:has_global_admin,true', Valid::bool()],
+            ],
             // A valid boolean
             'has_global_admin' => Valid::bool(sometimes: $isInsert || $isPatch, nullable: true)
         ];

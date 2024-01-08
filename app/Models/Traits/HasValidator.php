@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Validation\Rules\Unique;
 
-use function App\Utils\process_conditional_array;
-use function App\Utils\is_conditional_array;
+use App\Utils\ConditionalArrayRule;
 
 trait HasValidator
 {
@@ -66,8 +65,8 @@ trait HasValidator
                 return $fieldRules;
             }
 
-            if (is_conditional_array($fieldRules)) {
-                return process_conditional_array($fieldRules);
+            if (ConditionalArrayRule::is_conditional_array($fieldRules)) {
+                return ConditionalArrayRule::process_conditional_array($fieldRules);
             }
 
             return Arr::flatten(
@@ -75,7 +74,7 @@ trait HasValidator
                     if (!is_array($subRules)) {
                         return $subRules;
                     }
-                    return process_conditional_array($subRules);
+                    return ConditionalArrayRule::process_conditional_array($subRules);
                 }, $fieldRules)
             );
         }, $rules);
