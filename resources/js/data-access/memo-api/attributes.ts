@@ -107,7 +107,10 @@ export class Attribute<T = unknown> {
       resource.id,
       resource.model,
       isNameTranslatable(resource.name),
-      getNameTranslation(t, resource.name, (n) => `models.${resource.model}.${n}`),
+      getNameTranslation(t, resource.name, (n) => [
+        `attributes.${resource.model}.${n}`,
+        `models.${resource.model}.${resource.apiName}`,
+      ]),
       resource.apiName,
       resource.type,
       resource.typeModel || undefined,
