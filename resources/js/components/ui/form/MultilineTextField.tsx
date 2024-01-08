@@ -24,7 +24,7 @@ export const MultilineTextField: VoidComponent<TextFieldProps> = (allProps) => {
         {...TRIM_ON_BLUR}
         {...htmlAttributes.merge(inputProps, {
           class:
-            "h-16 min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
+            "h-24 min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled",
         })}
         aria-labelledby={labelIdForField(props.name)}
       />

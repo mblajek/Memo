@@ -6,8 +6,8 @@ import {DEV, ParentComponent, Show, VoidProps, lazy, splitProps, type VoidCompon
 import {Dynamic} from "solid-js/web";
 import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
 import {DevRoutes} from "./dev-pages/DevRoutes";
-import {NotFound} from "./features/not-found/components/NotFound";
-import {NotYetImplemented} from "./features/not-found/components/NotYetImplemented";
+import NotFound from "./features/not-found/components/NotFound";
+import NotYetImplemented from "./features/not-found/components/NotYetImplemented";
 import {MemoTitle} from "./features/root/MemoTitle";
 
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
