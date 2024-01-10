@@ -23,11 +23,11 @@ export default (() => {
       <LoginForm.LoginModal />
       <QueryBarrier
         queries={[statusQuery]}
-        Error={
+        error={
           // Do not show any errors, instead just show this login form.
           () => undefined
         }
-        Pending={MemoLoader}
+        pending={() => <MemoLoader />}
       >
         <Navigate href="/help" state={{fromLoginPage: true}} />
       </QueryBarrier>
