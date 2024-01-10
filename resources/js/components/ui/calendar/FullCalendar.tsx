@@ -445,7 +445,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 <MeetingEventBlock
                   meeting={ev.meeting}
                   {...staffResourcesById().get(staffId)?.styling}
-                  onClick={() => showMeetingModal({meetingId: ev.meeting.id})}
+                  onClick={() => showMeetingModal({meetingId: ev.meeting.id, initialViewMode: true})}
                 />
               ),
             }))
@@ -464,7 +464,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     } satisfies Partial<CalendarColumn>;
   }
 
-  const calendarColumns = (): CalendarColumn[] => {
+  const calendarColumns = createMemo((): CalendarColumn[] => {
     const m = mode();
     switch (m) {
       case "month":
@@ -493,7 +493,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       default:
         return m satisfies never;
     }
-  };
+  });
 
   return (
     <>
@@ -575,7 +575,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <Match when={true}>
               <ColumnsCalendar
                 class="h-full min-h-0"
-                isLoading={meetingsDataQuery.isFetching}
+                isLoading={!calendarColumns().length || meetingsDataQuery.isFetching}
                 columns={calendarColumns()}
                 pixelsPerHour={pixelsPerHour()}
                 scrollToDayMinute={6 * 60 + 50}

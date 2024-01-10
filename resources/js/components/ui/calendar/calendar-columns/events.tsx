@@ -61,6 +61,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     props.meeting.resources
       .map((r) => dictionaries()?.positionById(r.resourceDictId).label)
       .filter(NON_NULLABLE)
+      // Join by comma because Intl.ListFormat doesn't seem to work very well in Polish.
       .join(", ");
   /** The boundary for the hovers. Allow the full width of the page. */
   const boundary = () => {
@@ -75,7 +76,6 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const [hoverState, hoverSend] = useMachine(
     hoverCard.machine({
       id: createUniqueId(),
-      openDelay: 100,
       closeDelay: DISAPPEAR_MILLIS,
       positioning: {
         boundary,
@@ -86,6 +86,9 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         flip: true,
       },
     }),
+    // Make sure the hover is not opened initially - this causes the position to be calculated incorrectly.
+    // This is a workaround for what seems to be a zag bug.
+    {context: () => ({openDelay: dictionaries() ? 100 : 2000})},
   );
   const hoverApi = createMemo(() => hoverCard.connect(hoverState, hoverSend, normalizeProps));
   const [hovered, setHovered] = createSignal(false);
@@ -195,7 +198,9 @@ const FieldDisp: ParentComponent<FieldLabelProps> = (props) => {
   return (
     <div class="flex flex-col">
       <div class="font-medium">
-        <Capitalize text={t("with_colon", {text: t(`models.meeting.${props.field}`)})} />
+        <Capitalize
+          text={t("with_colon", {text: t([`models.meeting.${props.field}`, `models.generic.${props.field}`])})}
+        />
       </div>
       <div>{props.children}</div>
     </div>

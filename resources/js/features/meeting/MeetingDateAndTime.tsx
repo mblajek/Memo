@@ -16,6 +16,7 @@ interface Props {
    * Warning: It looks like it does not work very well in chrome as of December 2023.
    */
   readonly suggestedTimes?: SuggestedTimes;
+  readonly viewMode?: boolean;
 }
 
 interface SuggestedTimes {
@@ -49,10 +50,11 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
     };
   });
   const showEditable = () =>
-    isForceEditable() ||
-    !form.data("date") ||
-    !form.data("time.startTime") ||
-    (form.data("typeDictId") && durationMinutes() !== defaultDurationMinutes());
+    !props.viewMode &&
+    (isForceEditable() ||
+      !form.data("date") ||
+      !form.data("time.startTime") ||
+      (form.data("typeDictId") && durationMinutes() !== defaultDurationMinutes()));
   return (
     <>
       <FieldBox name="dateAndTime" validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
@@ -118,9 +120,11 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}
               durationMinutes={durationMinutes()}
             />
-            <Button class="secondary small" onClick={() => setForceEditable(true)}>
-              <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
-            </Button>
+            <Show when={!props.viewMode}>
+              <Button class="secondary small" onClick={() => setForceEditable(true)}>
+                <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
+              </Button>
+            </Show>
           </div>
         </Show>
       </FieldBox>

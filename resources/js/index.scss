@@ -33,8 +33,13 @@
     border: 4px solid var(--sb-track-color);
   }
 
-  input[type="checkbox"]:disabled:not(:checked) {
-    filter: brightness(0.8);
+  input[type="checkbox"] {
+    &:disabled {
+      filter: brightness(0.8);
+      &:checked {
+        filter: brightness(0.75) contrast(3);
+      }
+    }
   }
 
   select {

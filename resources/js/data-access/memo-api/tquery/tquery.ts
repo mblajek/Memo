@@ -43,10 +43,12 @@ export const DEFAULT_REQUEST_CREATOR: RequestCreator<SetStoreFunction<DataReques
   };
 };
 
-/** A function for creating a request creator with a static, predefined request, that cannot be configured later. */
-export function staticRequestCreator(request: DataRequest): RequestCreator<undefined> {
+/** A function for creating a request creator with a request that is a simple accessor. */
+export function staticRequestCreator(
+  request: DataRequest | Accessor<DataRequest | undefined>,
+): RequestCreator<undefined> {
   return () => ({
-    request: () => request,
+    request: typeof request === "function" ? request : () => request,
     requestController: undefined,
   });
 }
