@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {NonVersioningStorage, createVersioningStorage, Storage} from "./storage";
+import {NonVersioningStorage, createVersioningStorage} from "./storage";
 import {Version} from "./version";
 
 describe("persistence storage", () => {

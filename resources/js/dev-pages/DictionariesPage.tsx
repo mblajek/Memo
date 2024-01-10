@@ -94,9 +94,7 @@ export default (() => {
           id: "Positions",
           enableSorting: false,
           cell: (ctx) => {
-            // eslint-disable-next-line solid/reactivity
             const dict = ctx.row.original;
-            // eslint-disable-next-line solid/reactivity
             const positions = ctx.getValue() as Position[];
             const h = createColumnHelper<Position>();
             const table = createSolidTable({

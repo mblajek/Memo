@@ -8,7 +8,7 @@ password_change:
     current: "aktualne hasło"
     password: "nowe hasło"
     repeat: "powtórz nowe hasło"
-  submit: "Zmień hasło"
+  submit: "$t(actions.change_password)"
   success: "Hasło zostało zmienione"
 
 user:

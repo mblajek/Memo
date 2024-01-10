@@ -13,6 +13,7 @@ restore_default: "Przywróć domyślne"
 search: "Szukaj"
 sort: "Sortuj"
 set: "Ustaw"
+change_password: "Zmień hasło"
 
 add_user: "Dodaj osobę"
 add_facility: "Dodaj placówkę"

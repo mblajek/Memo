@@ -25,6 +25,7 @@ auth:
   password: "Hasło jest nieprawidłowe."
   throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds, number}} sekund."
 
+verified_user: "Użytkownik zweryfikowany"
 unverified_user: "Użytkownik niezweryfikowany"
 
 bool_values:
@@ -47,3 +48,5 @@ select:
   no_items: "Brak opcji"
   no_matching_items: "Brak pasujących opcji"
   limit_exceeded: "Wpisz filtr, aby zobaczyć inne opcje"
+
+user_settings: "Opcje użytkownika"
