@@ -13,11 +13,13 @@ import {MemoTitle} from "./features/root/MemoTitle";
 const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
-const CalendarTablePage = lazy(() => import("features/root/pages/CalendarTable.page"));
-const ClientsTablePage = lazy(() => import("features/root/pages/ClientsTable.page"));
+const ClientDetailsPage = lazy(() => import("features/root/pages/ClientDetails.page"));
+const ClientsListPage = lazy(() => import("features/root/pages/ClientsList.page"));
 const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
+const MeetingsListPage = lazy(() => import("features/root/pages/MeetingsList.page"));
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
-const StaffTablePage = lazy(() => import("features/root/pages/StaffTable.page"));
+const StaffDetailsPage = lazy(() => import("features/root/pages/StaffDetails.page"));
+const StaffListPage = lazy(() => import("features/root/pages/StaffList.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -45,19 +47,23 @@ const App: VoidComponent = () => {
         <UnknownNotFound />
         <Route path="/" component={() => <Navigate href="home" />} />
         <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
-        <LeafRoute routeKey="facility.meetings" path="/meetings" component={NotYetImplemented} />
-        <Route path="/" component={FacilityStaffPages}>
-          <LeafRoute routeKey="facility.calendar" path="/calendar" component={NotYetImplemented} />
-          <LeafRoute routeKey="facility.timetable" path="/timetable" component={NotYetImplemented} />
-          <LeafRoute routeKey="facility.clients" path="/clients" component={NotYetImplemented} />
+        <Route path="/" component={FacilityAdminOrStaffPages}>
+          <Route path="/calendar">
+            <LeafRoute routeKey="facility.calendar" path="/" component={CalendarPage} />
+            <LeafRoute routeKey="facility.meetings_list" path="/table" component={MeetingsListPage} />
+          </Route>
+          <Route path="/staff">
+            <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
+            <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
+          </Route>
+          <Route path="/clients">
+            <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
+            <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+          </Route>
         </Route>
         <Route path="/admin" component={FacilityAdminPages}>
           <UnknownNotFound />
-          <LeafRoute routeKey="facility.admin.calendar" path="/calendar" component={CalendarPage} />
-          <LeafRoute routeKey="facility.admin.calendar_table" path="/calendar-table" component={CalendarTablePage} />
-          <LeafRoute routeKey="facility.admin.staff" path="/staff" component={StaffTablePage} />
-          <LeafRoute routeKey="facility.admin.clients" path="/clients" component={ClientsTablePage} />
-          <LeafRoute routeKey="facility.admin.reports" path="/reports" component={NotYetImplemented} />
+          <LeafRoute routeKey="facility.facility_admin.reports" path="/reports" component={NotYetImplemented} />
         </Route>
       </Route>
       <BackdoorRoutes />
@@ -105,19 +111,27 @@ const RootPageWithFacility: ParentComponent = (props) => {
   );
 };
 
-const FacilityStaffPages: ParentComponent = (props) => {
+const FacilityAdminPages: ParentComponent = (props) => {
   const params = useParams();
   return (
-    <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityStaff"]}>
+    <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityAdmin"]}>
       {props.children}
     </AccessBarrier>
   );
 };
 
-const FacilityAdminPages: ParentComponent = (props) => {
+const FacilityAdminOrStaffPages: ParentComponent = (props) => {
   const params = useParams();
   return (
-    <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityAdmin"]}>
+    <AccessBarrier
+      facilityUrl={params.facilityUrl}
+      roles={["facilityAdmin"]}
+      fallback={() => (
+        <AccessBarrier facilityUrl={params.facilityUrl} roles={["facilityStaff"]}>
+          {props.children}
+        </AccessBarrier>
+      )}
+    >
       {props.children}
     </AccessBarrier>
   );

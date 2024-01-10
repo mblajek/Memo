@@ -1,7 +1,8 @@
 menu_sections:
-  system: "System"
+  global_admin: "Globalny administrator"
   facility: "Placówka"
-  my_work: "Moja praca"
+  facility_admin: "Administrator placówki"
+  other: "Inne"
 
 login: "logowanie"
 
@@ -10,16 +11,15 @@ admin:
   users: "$t(models.user._name_plural)"
 
 facility:
-  home: "$t(models.facility._name)"
-  admin:
-    calendar: "$t(calendar.calendar)"
-    calendar_table: "tabela spotkań"
-    clients: "$t(models.client._name_plural)"
-    staff: "pracownicy"
+  home: "informacje"
+  calendar: "$t(calendar.calendar)"
+  meetings_list: "lista spotkań"
+  staff: "$t(models.staff._name_plural)"
+  staff_details: "$t(models.staff._name)"
+  clients: "$t(models.client._name_plural)"
+  client_details: "$t(models.client._name)"
+
+  facility_admin:
     reports: "raporty"
-  calendar: "mój kalendarz"
-  timetable: "mój harmonogram"
-  clients: "moi klienci"
-  meetings: "moje spotkania"
 
 help: "pomoc"

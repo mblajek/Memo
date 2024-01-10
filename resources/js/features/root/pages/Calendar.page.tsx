@@ -15,6 +15,7 @@ export default (() => {
         [12, 26],
       ].map(([month, day]) => DateTime.fromObject({month, day}))}
       staticPersistenceKey="facilityCalendar"
+      meetingListLinkProps={{href: "table"}}
     />
   );
 }) satisfies VoidComponent;

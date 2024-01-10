@@ -1,5 +1,7 @@
-import {createTableTranslations} from "components/ui/Table";
+import {A} from "@solidjs/router";
+import {cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {CLIENT_ICONS} from "components/ui/icons";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -15,7 +17,19 @@ export default (() => {
         staticPersistenceKey="facilityClients"
         columns={[
           {name: "id", initialVisible: false},
-          {name: "name", columnDef: {enableHiding: false}},
+          {
+            name: "name",
+            extraDataColumns: ["id"],
+            columnDef: {
+              cell: cellFunc<string>((v, ctx) => (
+                <div class="flex gap-0.5 items-center">
+                  <CLIENT_ICONS.client />
+                  <A href={ctx.row.getValue("id")}>{v}</A>
+                </div>
+              )),
+              enableHiding: false,
+            },
+          },
           // {name: "genderDictId"},
           {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
           {name: "createdBy.name", initialVisible: false},

@@ -1,7 +1,9 @@
 import {
+  BsHouse,
   BsHouseAdd,
   BsHouseDash,
   BsHouseGear,
+  BsHouses,
   BsPersonAdd,
   BsPersonBadge,
   BsPersonDash,
@@ -12,7 +14,7 @@ import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 // A set of reusable icons for some of the repeatable entities.
 
 export const USER_ICONS = {
-  menu: BsPersonGear,
+  adminMenu: BsPersonGear,
   add: BsPersonAdd,
   remove: BsPersonDash,
 };
@@ -29,7 +31,9 @@ export const CLIENT_ICONS = {
 };
 
 export const FACILITY_ICONS = {
-  menu: BsHouseGear,
+  adminMenu: BsHouseGear,
   add: BsHouseAdd,
   remove: BsHouseDash,
+  facility: BsHouse,
+  facilities: BsHouses,
 };

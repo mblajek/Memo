@@ -1,5 +1,5 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {Match, ParentProps, Switch, VoidComponent, createEffect, mergeProps, on} from "solid-js";
+import {JSX, Match, ParentProps, Switch, createEffect, mergeProps, on} from "solid-js";
 import {BigSpinner} from "../ui/Spinner";
 
 export interface QueryBarrierProps {
@@ -10,10 +10,10 @@ export interface QueryBarrierProps {
    * See `Query.isFetchedAfterMount`.
    */
   readonly ignoreCachedData?: boolean;
-  /** Component to show when query is in error state. */
-  readonly Error?: VoidComponent;
-  /** Component to show when query is in pending state. */
-  readonly Pending?: VoidComponent;
+  /** Elements to show when query is in error state. */
+  readonly error?: () => JSX.Element;
+  /** Elements to show when query is in pending state. */
+  readonly pending?: () => JSX.Element;
 }
 
 /**
@@ -25,8 +25,8 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
   const props = mergeProps(
     {
       // TODO: dedicated Error element
-      Error: LocalError,
-      Pending: LocalSpinner,
+      error: () => <LocalError />,
+      pending: () => <LocalSpinner />,
     },
     allProps,
   );
@@ -51,12 +51,8 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
 
   return (
     <Switch>
-      <Match when={isError()}>
-        <props.Error />
-      </Match>
-      <Match when={isPending()}>
-        <props.Pending />
-      </Match>
+      <Match when={isError()}>{props.error()}</Match>
+      <Match when={isPending()}>{props.pending()}</Match>
       <Match when={isSuccess()}>{props.children}</Match>
     </Switch>
   );

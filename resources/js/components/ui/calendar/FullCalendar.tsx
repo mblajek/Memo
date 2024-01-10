@@ -1,3 +1,4 @@
+import {A, AnchorProps} from "@solidjs/router";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
@@ -10,9 +11,11 @@ import {MeetingCreateModal, showMeetingCreateModal} from "features/meeting/Meeti
 import {MeetingModal, showMeetingModal} from "features/meeting/MeetingModal";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
+import {OcTable3} from "solid-icons/oc";
 import {TbInfoTriangle} from "solid-icons/tb";
 import {
   Match,
+  Show,
   Signal,
   Switch,
   VoidComponent,
@@ -54,6 +57,7 @@ interface Props extends htmlAttributes.div {
   readonly initialDay?: DateTime;
   /** The key to use for persisting the parameters of the displayed page. If not present, nothing is persisted. */
   readonly staticPersistenceKey?: string;
+  readonly meetingListLinkProps?: AnchorProps;
 }
 
 const defaultProps = () =>
@@ -99,6 +103,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "initialResourcesSelection",
     "initialDay",
     "staticPersistenceKey",
+    "meetingListLinkProps",
   ]);
   const t = useLangFunc();
 
@@ -533,6 +538,18 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             selection={selectedResources()}
             setSelection={setSelectedResources}
           />
+          <Show when={props.meetingListLinkProps}>
+            <div class="grow" />
+            <div class="p-1 border-t border-r flex gap-0.5">
+              <Show when={props.meetingListLinkProps}>
+                {(linkProps) => (
+                  <A {...linkProps()} class="flex items-center" title={t("calendar.show_meeting_list")}>
+                    <OcTable3 />
+                  </A>
+                )}
+              </Show>
+            </div>
+          </Show>
         </div>
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
