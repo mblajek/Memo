@@ -95,7 +95,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   return (
     <>
       <div
-        class="w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer"
+        class="w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer select-none"
         style={{...props.style, ...(hovered() ? props.hoverStyle : undefined)}}
         {...hoverApi().triggerProps}
         onMouseEnter={[setHovered, true]}

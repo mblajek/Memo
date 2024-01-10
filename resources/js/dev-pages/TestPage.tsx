@@ -10,7 +10,7 @@ export default (() => {
     <>
       <Title>/dev/test-page</Title>
       <div class="flex flex-col gap-1">
-        <div class="w-fit bg-purple-100 p-4 mx-auto rounded-md">
+        <div class="w-fit bg-purple-100 m-2 p-4 rounded-md">
           Test your components here during development by creating a test page in TestPage.tsx.
         </div>
       </div>

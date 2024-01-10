@@ -48,7 +48,8 @@
   }
 
   a {
-    @apply underline text-blue-500;
+    @apply underline;
+    color: color-mix(in srgb, theme("colors.memo-active"), black 5%);
   }
 
   button {

@@ -124,7 +124,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                 </FieldBox>
               }
             />
-            <DictionarySelect name="resources" dictionary="meetingResource" multiple />
+            <DictionarySelect name="resources" dictionary="meetingResource" multiple placeholder={EMPTY_VALUE_SYMBOL} />
             <ByMode edit={<FelteSubmit cancel={props.onCancel} />} />
           </>
         )}

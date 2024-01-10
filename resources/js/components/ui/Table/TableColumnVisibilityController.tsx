@@ -24,6 +24,8 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   );
   const api = createMemo(() => popover.connect(state, send, normalizeProps));
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
+  const isDefaultVisibility = () =>
+    table.getAllLeafColumns().every((c) => c.getIsVisible() === defaultColumnVisibility?.()[c.id] ?? true);
   const [resetHovered, setResetHovered] = createSignal(false);
   return (
     <div class={s.columnVisibility}>
@@ -39,7 +41,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                   {(column) => (
                     <Show when={column.getCanHide()}>
                       <label
-                        class={cx("px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline", {
+                        class={cx("px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline select-none", {
                           "!bg-select": resetHovered() ? defaultColumnVisibility?.()[column.id] : column.getIsVisible(),
                         })}
                       >
@@ -61,6 +63,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 <Button
                   class="secondary small m-1"
                   onClick={() => table.setColumnVisibility(defaultColumnVisibility())}
+                  disabled={isDefaultVisibility()}
                   onMouseOver={[setResetHovered, true]}
                   onMouseOut={[setResetHovered, false]}
                 >

@@ -138,7 +138,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           styling: {style, hoverStyle},
           hoverStyle,
           label: () => (
-            <div class="w-full flex justify-between gap-1">
+            <div class="w-full flex justify-between gap-1 select-none">
               <span>{staff.name}</span>
               <span
                 class="self-center border rounded"
@@ -163,7 +163,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const resourceGroups = createMemo((): ResourceGroup[] => [
     {
       label: () => (
-        <span class="font-bold">
+        <span class="font-bold select-none">
           <Capitalize text={t("models.staff._name_plural")} />
         </span>
       ),
