@@ -43,12 +43,18 @@ export const DEFAULT_REQUEST_CREATOR: RequestCreator<SetStoreFunction<DataReques
   };
 };
 
-/** A function for creating a request creator with a request that is a simple accessor. */
+/** A function for creating a request creator with a request that is a simple accessor or function of schema. */
 export function staticRequestCreator(
-  request: DataRequest | Accessor<DataRequest | undefined>,
+  request: DataRequest | ((schema: Schema) => DataRequest | undefined),
 ): RequestCreator<undefined> {
-  return () => ({
-    request: typeof request === "function" ? request : () => request,
+  return (schema) => ({
+    request: () => {
+      if (typeof request === "function") {
+        const sch = schema();
+        return sch ? request(sch) : undefined;
+      }
+      return request;
+    },
     requestController: undefined,
   });
 }
@@ -68,7 +74,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   prefixQueryKey: K;
   entityURL: EntityURL;
   requestCreator: RequestCreator<C>;
-  dataQueryOptions?: Partial<CreateQueryOpts<DataResponse, DataQueryKey<K>> & {meta: QueryMeta}>;
+  dataQueryOptions?: Partial<CreateQueryOpts<DataResponse, DataQueryKey<K>> | {meta: QueryMeta}>;
 }) {
   const schemaQuery = createQuery(() => ({
     queryKey: ["tquery-schema", entityURL] satisfies SchemaQueryKey,

@@ -49,7 +49,7 @@
 
   a {
     @apply underline;
-    color: color-mix(in srgb, theme("colors.memo-active"), black 5%);
+    color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity)), black 5%);
   }
 
   button {
