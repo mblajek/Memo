@@ -10,6 +10,7 @@ import {Api} from "../types";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
 import {Column, ColumnName, DataRequest, DataResponse, Filter, Sort, SortItem} from "./types";
+import {useDictionaries} from "../dictionaries";
 
 export interface ColumnConfig {
   readonly name: string;
@@ -57,6 +58,7 @@ export function createTableRequestCreator({
   initialPageSize?: number;
   allInitialised?: Accessor<boolean>;
 }): RequestCreator<RequestController> {
+  const dictionaries = useDictionaries();
   return (schema) => {
     const [allInitialisedInternal, setAllInitialisedInternal] = createSignal(false);
     const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>({});
@@ -152,7 +154,8 @@ export function createTableRequestCreator({
         return undefined;
       }
       return {
-        columns: sch.columns.filter(({type}) => type === "string" || type === "text").map(({name}) => name),
+        schema: sch,
+        dictionaries: dictionaries(),
         // TODO: Add columnsByPrefix for some columns, e.g. tel:, id= (for Versum ids).
       } satisfies FuzzyGlobalFilterConfig;
     });

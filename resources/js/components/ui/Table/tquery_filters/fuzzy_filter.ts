@@ -1,9 +1,13 @@
 import {NON_NULLABLE} from "components/utils";
+import {Dictionaries, Dictionary} from "data-access/memo-api/dictionaries";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {ColumnName, StringColumnFilter} from "data-access/memo-api/tquery/types";
+import {ColumnName, Schema, StringColumnFilter} from "data-access/memo-api/tquery/types";
 
 export const GLOBAL_CHAR = "*";
 export const QUOTE = "'";
+
+export const EMPTY_CODE = QUOTE + QUOTE;
+export const NONEMPTY_CODE = GLOBAL_CHAR;
 
 const GLOB = `\\${GLOBAL_CHAR}`;
 
@@ -46,57 +50,88 @@ function fuzzyWordFilter(word: string, {exact = false} = {}) {
   }
   const op = exact ? "=" : startsWithGlob === endsWithGlob ? "%v%" : startsWithGlob ? "%v" : "v%";
   word = word.slice(startsWithGlob ? 1 : 0, endsWithGlob ? -1 : undefined);
-  if (word.length > 2 && word.startsWith(QUOTE) && word.endsWith(QUOTE))
-    // Unquote, unless it's just "'" or "''".
+  // Unquote, unless it's just "'" or "''".
+  if (word.length > 2 && word.startsWith(QUOTE) && word.endsWith(QUOTE)) {
     word = word.slice(1, -1);
+  }
   return {op, val: word} satisfies Pick<StringColumnFilter, "op" | "val">;
 }
+
+type WordFilter = ReturnType<typeof fuzzyWordFilter>;
 
 /**
  * Creates a column filter for a string or text column, from the filter text.
  *
- * Special values of the filter text (regardless of the `exact` parameter):
+ * Special values of the filter text:
  * | Filter text:            | Matches strings:
  * | :-                      | :-
  * | `*`                     | non-empty
  * | `''`                    | empty
  *
  * If the filter is not any of these values, it is split into words, and each word must match the
- * string independently. See fuzzyWordFilter.
+ * string independently. See fuzzyWordFilter (the default, non-exact mode).
  */
-function fuzzyTextualColumnFilter(
-  filterText: string,
-  {column, exact = false}: {column: string; exact?: boolean},
-): FilterH {
+export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {column: string}): FilterH {
   const filterBase = {type: "column", column} as const;
   filterText = filterText.trim();
-  if (filterText === QUOTE + QUOTE) {
-    return {...filterBase, op: "=", val: ""};
+  if (filterText === EMPTY_CODE) {
+    return {...filterBase, op: "null"};
   }
-  if (filterText === GLOBAL_CHAR) {
-    return {...filterBase, op: "=", val: "", inv: true};
+  if (filterText === NONEMPTY_CODE) {
+    return {...filterBase, op: "null", inv: true};
   }
   return {
     type: "op",
     op: "&",
     val: Array.from(filterText.matchAll(WORD_REGEXP), ([_match, word]) =>
-      word ? {...filterBase, ...fuzzyWordFilter(word, {exact})} : undefined,
+      word ? {...filterBase, ...fuzzyWordFilter(word)} : undefined,
     ).filter(NON_NULLABLE),
   };
 }
 
-/**
- * Creates a column filter for a string or text column, from the filter text.
- * See fuzzyTextualColumnFilter (the non-exact mode).
- */
-export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {column: string}): FilterH {
-  return fuzzyTextualColumnFilter(filterText, {column});
+/** Runs the word filter on the value on frontend. Useful for static values, like dictionary positions. */
+function matchesWordFilter(value: string, wordFilter: WordFilter) {
+  value = value.toLocaleLowerCase();
+  const filterVal = wordFilter.val.toLocaleLowerCase();
+  switch (wordFilter.op) {
+    case "%v%":
+      return value.includes(filterVal);
+    case "%v":
+      return value.endsWith(filterVal);
+    case "v%":
+      return value.startsWith(filterVal);
+    case "=":
+      return value === filterVal;
+    default:
+      return wordFilter.op satisfies never;
+  }
 }
 
-export interface FuzzyGlobalFilterConfig {
-  columns: ColumnName[];
-  columnsByPrefix?: Map<string, ColumnName>;
+interface FuzzyGlobalFilterConfigBase {
+  readonly schema: Schema;
+  /** The dictionaries, if dictionary columns filtering should be supported. */
+  readonly dictionaries?: Dictionaries;
+  /**
+   * The list of columns filterable using prefix, e.g. `col:abc` or `col=abc`. The columns might be from outside
+   * the columns list specified.
+   */
+  readonly columnsByPrefix?: ReadonlyMap<string, ColumnName>;
 }
+
+/** Config for filtering the specified columns. */
+interface FuzzyGlobalFilterWithColumnsConfig extends FuzzyGlobalFilterConfigBase {
+  /** The list of columns to run the fuzzy search on. */
+  readonly columns: ColumnName[];
+}
+
+/** Config for filtering all the schema columns. */
+interface FuzzyGlobalFilterWithAutoColumnsConfig extends FuzzyGlobalFilterConfigBase {
+  readonly columns?: undefined;
+  /** The list of columns to skip from the schema. */
+  readonly skipColumns?: ColumnName[];
+}
+
+export type FuzzyGlobalFilterConfig = FuzzyGlobalFilterWithColumnsConfig | FuzzyGlobalFilterWithAutoColumnsConfig;
 
 const COLUMN_PREFIX_PAT = `(?:\\p{L}|[._\\d])+`;
 const COLUMN_PREFIX_OPS = [":", "="];
@@ -115,11 +150,81 @@ const GLOBAL_WORD_REGEXP = new RegExp(
  *
  * | Word:     | Matches records:
  * | :-        | :-
- * | `abc`     | containing _abc_ in any column (etc, see fuzzyWordFilter)
- * | `col:abc` | containing _abc_ in the column with the short prefix _col_ (etc, see buildFuzzyTextualColumnFilter)
+ * | `abc`     | containing _abc_ in any of the specified columns
+ * | `col:abc` | containing _abc_ in the column with the short prefix _col_
  * | `col=abc` | with the exact value _abc_ in the column with the short prefix _col_
+ *
+ * See fuzzyWordFilter.
  */
 export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFilterConfig): FilterH {
+  const columns = ((): ColumnName[] => {
+    if (config.columns) {
+      for (const column of config.columns) {
+        if (!config.schema.columns.some((c) => c.name === column)) {
+          throw new Error(`Column ${column} not found in schema`);
+        }
+      }
+      return config.columns;
+    }
+    if (config.skipColumns) {
+      for (const column of config.skipColumns) {
+        if (!config.schema.columns.some((c) => c.name === column)) {
+          throw new Error(`Column ${column} not found in schema`);
+        }
+      }
+      return config.schema.columns.filter((c) => !config.skipColumns?.includes(c.name)).map(({name}) => name);
+    }
+    return config.schema.columns.map(({name}) => name);
+  })();
+
+  function matchingDictPositions(dict: Dictionary, wordFilter: WordFilter): string[] | "all" {
+    const matching = dict.allPositions.filter((p) => matchesWordFilter(p.label, wordFilter)).map((p) => p.id);
+    return matching.length === dict.allPositions.length ? "all" : matching;
+  }
+
+  function columnFilter(column: ColumnName, wordFilter: WordFilter): FilterH | undefined {
+    const colConfig = config.schema.columns.find((c) => c.name === column);
+    if (!colConfig) {
+      return undefined;
+    }
+    const {type} = colConfig;
+    if (type === "string" || type === "text") {
+      return {type: "column", column, ...wordFilter};
+    } else if (type === "dict") {
+      if (!config.dictionaries) {
+        return undefined;
+      }
+      const matching = matchingDictPositions(config.dictionaries.get(colConfig.dictionaryId), wordFilter);
+      return matching === "all"
+        ? {type: "column", column, op: "null", inv: true}
+        : {type: "column", column, op: "in", val: matching};
+    } else if (type === "dict_list") {
+      if (!config.dictionaries) {
+        return undefined;
+      }
+      const matching = matchingDictPositions(config.dictionaries.get(colConfig.dictionaryId), wordFilter);
+      return matching === "all"
+        ? {type: "column", column, op: "null", inv: true}
+        : {type: "column", column, op: "has_any", val: matching};
+    } else {
+      return undefined;
+    }
+  }
+
+  function getColPrefixFilter(colPrefix: string, word: string, exact: boolean): FilterH | undefined {
+    const column = config.columnsByPrefix?.get(colPrefix);
+    if (!column) {
+      return undefined;
+    }
+    if (word === EMPTY_CODE) {
+      return {type: "column", column, op: "null"};
+    }
+    if (word === NONEMPTY_CODE) {
+      return {type: "column", column, op: "null", inv: true};
+    }
+    return columnFilter(column, fuzzyWordFilter(word, {exact}));
+  }
+
   return {
     type: "op",
     op: "&",
@@ -130,16 +235,16 @@ export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFi
           return undefined;
         }
         if (colPrefix && colPrefixWord) {
-          const column = config.columnsByPrefix?.get(colPrefix);
-          if (column) {
-            return fuzzyTextualColumnFilter(colPrefixWord, {column, exact: colPrefixOp === "="});
+          const colPrefixFilter = getColPrefixFilter(colPrefix, colPrefixWord, colPrefixOp === "=");
+          if (colPrefixFilter) {
+            return colPrefixFilter;
           }
         }
-        const fuzzy = fuzzyWordFilter(word);
+        const wordFilter = fuzzyWordFilter(word);
         return {
           type: "op",
           op: "|",
-          val: config.columns.map((column) => ({type: "column", column, ...fuzzy})),
+          val: columns.map((column) => columnFilter(column, wordFilter)).filter(NON_NULLABLE),
         };
       },
     ).filter(NON_NULLABLE),
