@@ -20,7 +20,7 @@ class MeetingController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::facilityAdmin);
+        $this->permissionOneOf(Permission::facilityAdmin, Permission::facilityStaff);
     }
 
     private function getFacilityMeeting(string $id): Meeting
@@ -30,7 +30,7 @@ class MeetingController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/facility/{facility}/meeting',
-        description: new PermissionDescribe(Permission::facilityAdmin),
+        description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Create meeting',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -120,7 +120,7 @@ class MeetingController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/facility/{facility}/meeting/list',
-        description: new PermissionDescribe(Permission::facilityAdmin),
+        description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Get facility meetings',
         tags: ['Facility meeting'],
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
@@ -144,7 +144,7 @@ class MeetingController extends ApiController
 
     #[OA\Patch(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
-        description: new PermissionDescribe(Permission::facilityAdmin),
+        description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Update facility meeting',
         tags: ['Facility meeting'],
         parameters: [
@@ -199,7 +199,7 @@ class MeetingController extends ApiController
 
     #[OA\Delete(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
-        description: new PermissionDescribe(Permission::facilityAdmin),
+        description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Delete facility meeting',
         tags: ['Facility meeting'],
         parameters: [
