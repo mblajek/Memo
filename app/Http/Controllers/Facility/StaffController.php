@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Facility;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
-use App\Http\Resources\Facility\FacilityUserClientResource;
+use App\Http\Resources\Facility\FacilityUserStaffResource;
 use App\Models\User;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -46,6 +46,6 @@ class StaffController extends ApiController
         $usersQuery->whereNotNull('members.staff_member_id');
 
         $this->applyRequestIn($usersQuery, 'users.id');
-        return FacilityUserClientResource::collection($usersQuery->get());
+        return FacilityUserStaffResource::collection($usersQuery->get());
     }
 }
