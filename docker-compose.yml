@@ -3,7 +3,8 @@ services:
   memo-php:
     container_name: "memo-php"
     deploy: {resources: {limits: {memory: "1792M"}}}
-    build: {context: ".", dockerfile: "docker/php.dockerfile", args: {ME_USER_UID: "$ME_USER_UID"}}
+    build: {context: ".", dockerfile: "docker/php.dockerfile",
+      args: {ME_USER_UID: "$ME_USER_UID", XDEBUG: "$XDEBUG"}}
     volumes: [".:/var/www", "./docker/php.ini:/usr/local/etc/php/php.ini"]
     ports: ["9081:80", "9082:9082", "9083:8025"] #apache+vite+mailpit
     user: "$CLI_USER"
