@@ -1,4 +1,4 @@
-import {createTableTranslations} from "components/ui/Table";
+import {PaddedCell, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {EN_DASH} from "components/ui/symbols";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
@@ -24,13 +24,13 @@ export default (() => {
             extraDataColumns: ["durationMinutes"],
             columnDef: {
               cell: (c) => (
-                <span>
+                <PaddedCell>
                   {formatDayMinuteHM(c.row.getValue<number>("startDayminute"), {hour: "2-digit"})} {EN_DASH}{" "}
                   {formatDayMinuteHM(
                     c.row.getValue<number>("startDayminute") + c.row.getValue<number>("durationMinutes"),
                     {hour: "2-digit"},
                   )}
-                </span>
+                </PaddedCell>
               ),
               enableColumnFilter: false,
               size: 120,

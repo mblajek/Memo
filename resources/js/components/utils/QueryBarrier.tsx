@@ -2,7 +2,7 @@ import {CreateQueryResult} from "@tanstack/solid-query";
 import {JSX, Match, ParentProps, Switch, createEffect, mergeProps, on} from "solid-js";
 import {BigSpinner} from "../ui/Spinner";
 
-export interface QueryBarrierProps {
+interface Props {
   /** List of queries to handle. */
   readonly queries: readonly CreateQueryResult<unknown, unknown>[];
   /**
@@ -21,7 +21,7 @@ export interface QueryBarrierProps {
  *
  * @todo better looking Error
  */
-export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
+export function QueryBarrier(allProps: ParentProps<Props>) {
   const props = mergeProps(
     {
       // TODO: dedicated Error element
@@ -37,7 +37,7 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
         // We expect all queries to have fresh (not cached) data, so force fetch on those queries
         // that didn't start their first fetch yet.
         for (const query of queries) {
-          if (!query.isFetchedAfterMount && !query.isFetching) {
+          if (!query.isFetchedAfterMount && query.fetchStatus === "idle") {
             query.refetch();
           }
         }

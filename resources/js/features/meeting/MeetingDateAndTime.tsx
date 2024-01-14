@@ -1,11 +1,10 @@
-import {Button} from "components/ui/Button";
+import {Button, EditButton} from "components/ui/Button";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {DayMinuteRange, dayMinuteToTimeInput, timeInputToDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
-import {FiEdit2} from "solid-icons/fi";
 import {For, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
@@ -121,9 +120,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               durationMinutes={durationMinutes()}
             />
             <Show when={!props.viewMode}>
-              <Button class="secondary small" onClick={() => setForceEditable(true)}>
-                <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
-              </Button>
+              <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
             </Show>
           </div>
         </Show>

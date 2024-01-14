@@ -140,7 +140,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   <Match when={props.viewMode}>
                     <div class="flex items-center">
                       <PlaceholderField name={`${props.name}.${index}.userId`} />
-                      <UserLink type={props.name} userId={form.data(`${props.name}.${index}.userId`)} />
+                      <UserLink type={props.name} icon={false} userId={form.data(`${props.name}.${index}.userId`)} />
                     </div>
                   </Match>
                   <Match when={!props.viewMode}>

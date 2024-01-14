@@ -4,12 +4,12 @@ import {Capitalize} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {SimpleTag, Tag, TagsLine} from "components/ui/Tag";
 import {bleachColor} from "components/ui/colors";
-import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
+import {UserLink} from "features/facility-users/UserLink";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {For, JSX, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
@@ -114,13 +114,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           <Show when={props.meeting.clients.length}>
             <div>
               <For each={props.meeting.clients}>
-                {(client) => (
-                  // Allow wrapping the client name, but not just after the icon.
-                  <div style={{"white-space": "nowrap"}}>
-                    <CLIENT_ICONS.client size="16" class="inline mb-px shrink-0" />
-                    <span style={{"white-space": "initial"}}>{client.name}</span>
-                  </div>
-                )}
+                {(client) => <UserLink type="clients" link={false} userId={client.userId} name={client.name} />}
               </For>
             </div>
           </Show>
@@ -150,8 +144,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                     <For each={props.meeting.staff}>
                       {(staff) => (
                         <li>
-                          <STAFF_ICONS.staff size="20" class="inline mb-px shrink-0 mr-1" />
-                          <span>{staff.name}</span>
+                          <UserLink type="staff" link={false} userId={staff.userId} name={staff.name} />
                         </li>
                       )}
                     </For>
@@ -162,8 +155,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                     <For each={props.meeting.clients}>
                       {(client) => (
                         <li>
-                          <CLIENT_ICONS.client size="20" class="inline mb-px shrink-0 mr-1" />
-                          <span>{client.name}</span>
+                          <UserLink type="clients" link={false} userId={client.userId} name={client.name} />
                         </li>
                       )}
                     </For>
