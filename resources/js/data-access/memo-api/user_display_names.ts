@@ -26,6 +26,7 @@ export function useUserDisplayNames() {
     entityURL: `facility/${activeFacilityId()}/user/staff`,
     prefixQueryKey: [FacilityStaff.keys.staff()],
     requestCreator: staticRequestCreator(request),
+    dataQueryOptions: {refetchOnMount: false},
   });
   function byId(list: SimpleUser[] | undefined) {
     if (!list) {
@@ -41,13 +42,19 @@ export function useUserDisplayNames() {
     entityURL: `facility/${activeFacilityId()}/user/client`,
     prefixQueryKey: [FacilityClient.keys.client()],
     requestCreator: staticRequestCreator(request),
+    dataQueryOptions: {refetchOnMount: false},
   });
   const staff = createMemo(() => byId(staffQuery.dataQuery.data?.data as SimpleUser[] | undefined));
   const clients = createMemo(() => byId(clientsQuery.dataQuery.data?.data as SimpleUser[] | undefined));
   const users = {staff, clients};
   return {
     get(type: FacilityUserType, userId: string) {
-      return users[type]()?.get(userId);
+      const map = users[type]();
+      if (!map) {
+        return undefined;
+      }
+      const displayName = map.get(userId);
+      return {displayName, exists: !!displayName};
     },
   };
 }

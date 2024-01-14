@@ -6,6 +6,7 @@ import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {
   AUTO_SIZE_COLUMN_DEFS,
+  PaddedCell,
   Table,
   createTableTranslations,
   getBaseTableOptions,
@@ -101,7 +102,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
             fallback={tableCells.default(ctx)}
           >
             {/* For the new row, display a select with the available facilities. */}
-            <div class="w-full flex flex-col items-stretch">
+            <PaddedCell>
               <Select
                 name="__addedFacility"
                 label=""
@@ -121,7 +122,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                 }}
                 small
               />
-            </div>
+            </PaddedCell>
           </Show>
         ),
       }),
@@ -129,20 +130,20 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
         id: "hasFacilityAdmin",
         cell: (ctx) => (
           <Show when={!ctx.row.getValue("isNewRow")}>
-            <div class="w-full flex flex-col items-center">
+            <PaddedCell class="text-center">
               <input
                 type="checkbox"
                 name={`${membersPath}.${ctx.row.index}.hasFacilityAdmin`}
                 data-felte-keep-on-remove
               />
-            </div>
+            </PaddedCell>
           </Show>
         ),
       }),
       h.display({
         id: "actions",
         cell: (ctx) => (
-          <div>
+          <PaddedCell>
             <Show when={!ctx.row.getValue("isNewRow")}>
               <Button
                 onClick={() => {
@@ -153,7 +154,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                 <USER_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
               </Button>
             </Show>
-          </div>
+          </PaddedCell>
         ),
       }),
     ],

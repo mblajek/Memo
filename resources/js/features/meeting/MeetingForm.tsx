@@ -2,7 +2,7 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {isAxiosError} from "axios";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
-import {Button} from "components/ui/Button";
+import {Button, EditButton} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {SmallSpinner} from "components/ui/Spinner";
 import {CheckboxField} from "components/ui/form/CheckboxField";
@@ -10,11 +10,10 @@ import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {MultilineTextField} from "components/ui/form/MultilineTextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
+import {ACTION_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Api} from "data-access/memo-api/types";
-import {AiOutlineDelete} from "solid-icons/ai";
-import {FiEdit2} from "solid-icons/fi";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
 import {MeetingAttendantsFields, getAttendantsSchemaPart, getAttendantsValues} from "./MeetingAttendantsFields";
@@ -133,15 +132,17 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
         view={
           <div class="flex gap-1 justify-end">
             <Button class="secondary small" onClick={() => props.onDelete?.()} disabled={props.isDeleting}>
-              <AiOutlineDelete class="inlineIcon text-current" />
+              <ACTION_ICONS.delete class="inlineIcon text-current" />
               {t("actions.delete")}
               <Show when={props.isDeleting}>
                 <SmallSpinner />
               </Show>
             </Button>
-            <Button class="secondary small" onClick={() => props.onViewModeChange?.(false)} disabled={props.isDeleting}>
-              <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
-            </Button>
+            <EditButton
+              class="secondary small"
+              onClick={() => props.onViewModeChange?.(false)}
+              disabled={props.isDeleting}
+            />
           </div>
         }
       />

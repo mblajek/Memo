@@ -1,5 +1,6 @@
-import {htmlAttributes} from "components/utils";
-import {ParentComponent} from "solid-js";
+import {htmlAttributes, useLangFunc} from "components/utils";
+import {ParentComponent, VoidComponent} from "solid-js";
+import {ACTION_ICONS} from "./icons";
 
 /**
  * Wrapper for the native `<button>` element.
@@ -7,3 +8,12 @@ import {ParentComponent} from "solid-js";
  */
 // eslint-disable-next-line no-restricted-syntax
 export const Button: ParentComponent<htmlAttributes.button> = (props) => <button type="button" {...props} />;
+
+export const EditButton: VoidComponent<htmlAttributes.button> = (props) => {
+  const t = useLangFunc();
+  return (
+    <Button {...props}>
+      <ACTION_ICONS.edit class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
+    </Button>
+  );
+};

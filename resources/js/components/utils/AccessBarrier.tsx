@@ -5,13 +5,17 @@ import {PermissionsResource} from "data-access/memo-api/resources/permissions.re
 import {BiRegularErrorAlt} from "solid-icons/bi";
 import {JSX, ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
 import {MemoLoader} from "../ui/MemoLoader";
-import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
+import {QueryBarrier} from "./QueryBarrier";
 
 export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;
 
-export interface AccessBarrierProps extends Pick<QueryBarrierProps, "error" | "pending"> {
+interface Props {
   /** Element rendered when access is not granted. */
   readonly fallback?: () => JSX.Element;
+  /** Elements to show when query is in error state. */
+  readonly error?: () => JSX.Element;
+  /** Elements to show when query is in pending state. */
+  readonly pending?: () => JSX.Element;
   /**
    * Map of roles that user must be granted in order to access this section
    * (logical AND)
@@ -38,14 +42,14 @@ const FACILITY_ROLES = new Set<PermissionKey>(["facilityMember", "facilityClient
  * - Default Error -> redirect to `/login` page
  * - Default Pending -> `<MemoLoader />`
  */
-export const AccessBarrier: ParentComponent<AccessBarrierProps> = (allProps) => {
+export const AccessBarrier: ParentComponent<Props> = (allProps) => {
   const defProps = mergeProps(
     {
       fallback: () => <DefaultFallback />,
       roles: [],
       error: () => <Navigate href="/login" />,
       pending: () => <MemoLoader />,
-    },
+    } satisfies Partial<Props>,
     allProps,
   );
   const [queryBarrierProps, props] = splitProps(defProps, ["error", "pending"]);
@@ -98,6 +102,6 @@ const DefaultFallback: VoidComponent = () => (
 );
 
 /** An access barrier not showing any pending, error or fallback. */
-export const SilentAccessBarrier: ParentComponent<AccessBarrierProps> = (props) => (
+export const SilentAccessBarrier: ParentComponent<Props> = (props) => (
   <AccessBarrier error={() => undefined} pending={() => undefined} fallback={() => undefined} {...props} />
 );

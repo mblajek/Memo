@@ -1,10 +1,12 @@
 import {CellContext, HeaderContext} from "@tanstack/solid-table";
-import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT, useLangFunc} from "components/utils";
+import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT, htmlAttributes, useLangFunc} from "components/utils";
+import {FormattedDateTime} from "components/utils/date_formatting";
+import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {DateTime} from "luxon";
-import {Index, JSX, Show} from "solid-js";
+import {Index, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
+import {EMPTY_VALUE_SYMBOL} from "../symbols";
 import {Header} from "./Header";
 import {IdColumn} from "./IdColumn";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
 
 /** The component used as header in column definition. */
 export type HeaderComponent = <T>(ctx: HeaderContext<T, unknown>) => JSX.Element;
@@ -24,22 +26,40 @@ export function useTableCells() {
   const dictionaries = useDictionaries();
   return {
     defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
-    default: cellFunc((v) => <div class="wrapText">{defaultFormatValue(v)}</div>),
-    bool: cellFunc<boolean>((v) => (v ? t("bool_values.yes") : t("bool_values.no"))),
-    date: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
-    datetime: cellFunc<string>((v) => DateTime.fromISO(v).toLocaleString(DATE_TIME_FORMAT)),
-    int: cellFunc<number>((v) => <span class="w-full text-right">{NUMBER_FORMAT.format(v)}</span>),
-    uuid: cellFunc<string>((v) => <IdColumn id={v} />),
-    uuidList: cellFunc<readonly string[]>((v) => (
-      <div class="w-full flex flex-col">
-        <Index each={v}>{(id) => <IdColumn id={id()} />}</Index>
-      </div>
+    default: cellFunc((v) => <PaddedCell class="wrapText">{defaultFormatValue(v)}</PaddedCell>),
+    bool: cellFunc<boolean>((v) => <PaddedCell>{v ? t("bool_values.yes") : t("bool_values.no")}</PaddedCell>),
+    date: cellFunc<string>((v) => (
+      <PaddedCell>
+        <FormattedDateTime dateTime={DateTime.fromISO(v)} format={{...DATE_FORMAT, weekday: "short"}} alignWeekday />
+      </PaddedCell>
     )),
-    dict: cellFunc<string>((v) => dictionaries()?.positionById(v)?.label || "??"),
+    datetime: cellFunc<string>((v) => (
+      <PaddedCell>
+        <FormattedDateTime
+          dateTime={DateTime.fromISO(v)}
+          format={{...DATE_TIME_FORMAT, weekday: "short"}}
+          alignWeekday
+        />
+      </PaddedCell>
+    )),
+    int: cellFunc<number>((v) => <PaddedCell class="w-full text-right">{NUMBER_FORMAT.format(v)}</PaddedCell>),
+    uuid: cellFunc<string>((v) => (
+      <PaddedCell>
+        <IdColumn id={v} />
+      </PaddedCell>
+    )),
+    uuidList: cellFunc<readonly string[]>((v) => (
+      <PaddedCell class="w-full flex flex-col">
+        <Index each={v}>{(id) => <IdColumn id={id()} />}</Index>
+      </PaddedCell>
+    )),
+    dict: cellFunc<string>((v) => <PaddedCell>{dictionaries()?.positionById(v)?.label || "??"}</PaddedCell>),
     dictList: cellFunc<readonly string[]>((v) => (
-      <ul>
-        <Index each={v}>{(id) => <li>{dictionaries()?.positionById(id())?.label || "??"}</li>}</Index>
-      </ul>
+      <PaddedCell>
+        <ul>
+          <Index each={v}>{(id) => <li>{dictionaries()?.positionById(id())?.label || "??"}</li>}</Index>
+        </ul>
+      </PaddedCell>
     )),
   };
 }
@@ -70,3 +90,10 @@ export function cellFunc<V>(
     </Show>
   );
 }
+
+/** Table cell content, with padding. */
+export const PaddedCell: ParentComponent<htmlAttributes.div> = (props) => (
+  <div {...htmlAttributes.merge(props, {class: "w-full h-full px-1.5 py-1"})} />
+);
+
+export const EmptyValueCell: VoidComponent = () => <PaddedCell>{EMPTY_VALUE_SYMBOL}</PaddedCell>;
