@@ -50,3 +50,6 @@ select:
   limit_exceeded: "Wpisz filtr, aby zobaczyć inne opcje"
 
 user_settings: "Opcje użytkownika"
+
+created_by: "Utworzono przez:"
+unknown: "nieznany"
