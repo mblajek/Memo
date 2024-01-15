@@ -7,8 +7,8 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {createCalendarRequestCreator, meetingsFromQuery} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
-import {MeetingCreateModal, showMeetingCreateModal} from "features/meeting/MeetingCreateModal";
-import {MeetingModal, showMeetingModal} from "features/meeting/MeetingModal";
+import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
+import {createMeetingModal} from "features/meeting/meeting_modal";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {OcTable3} from "solid-icons/oc";
@@ -106,6 +106,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "meetingListLinkProps",
   ]);
   const t = useLangFunc();
+  const meetingCreateModal = createMeetingCreateModal();
+  const meetingModal = createMeetingModal();
 
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
@@ -450,7 +452,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 <MeetingEventBlock
                   meeting={ev.meeting}
                   {...staffResourcesById().get(staffId)?.styling}
-                  onClick={() => showMeetingModal({meetingId: ev.meeting.id, initialViewMode: true})}
+                  onClick={() => meetingModal.show({meetingId: ev.meeting.id, initialViewMode: true})}
                 />
               ),
             }))
@@ -463,7 +465,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           day={day}
           blocks={[]}
           events={selectedEvents()}
-          onTimeClick={(t) => showMeetingCreateModal({initialData: {start: t, staff: staffId ? [staffId] : undefined}})}
+          onTimeClick={(t) =>
+            meetingCreateModal.show({initialData: {start: t, staff: staffId ? [staffId] : undefined}})
+          }
         />
       ),
     } satisfies Partial<CalendarColumn>;
@@ -606,8 +610,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           </Switch>
         </div>
       </div>
-      <MeetingCreateModal />
-      <MeetingModal />
     </>
   );
 };

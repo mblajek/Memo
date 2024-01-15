@@ -1,6 +1,6 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {confirm} from "components/ui/Confirmation";
 import {BigSpinner} from "components/ui/Spinner";
+import {createConfirmation} from "components/ui/confirmation";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
@@ -29,6 +29,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   const attributes = useAttributes();
   const dictionaries = useDictionaries();
   const invalidate = FacilityMeeting.useInvalidator();
+  const confirmation = createConfirmation();
   const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.id));
   const meetingMutation = createMutation(() => ({
     mutationFn: FacilityMeeting.updateMeeting,
@@ -53,7 +54,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
 
   async function deleteMeeting() {
     if (
-      !(await confirm({
+      !(await confirmation.confirm({
         title: t("forms.meeting_delete.formName"),
         body: t("forms.meeting_delete.confirmationText"),
         confirmText: t("forms.meeting_delete.submit"),
