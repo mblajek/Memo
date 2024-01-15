@@ -1,4 +1,3 @@
-import {useQueryClient} from "@tanstack/solid-query";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
@@ -49,11 +48,4 @@ export namespace FacilityMeeting {
       queryFn: ({signal}) => getMeeting(id, {signal}),
       queryKey: keys.meetingGet(id),
     }) satisfies SolidQueryOpts<MeetingResource>;
-
-  export function useInvalidator() {
-    const queryClient = useQueryClient();
-    return {
-      meetings: () => queryClient.invalidateQueries({queryKey: keys.meeting()}),
-    };
-  }
 }

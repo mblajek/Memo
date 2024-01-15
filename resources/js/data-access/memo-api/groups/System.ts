@@ -1,10 +1,11 @@
-import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
+import {SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
 import {FacilityResource} from "../resources/facility.resource";
 import {Api} from "../types";
 import {parseGetListResponse} from "../utils";
+import {Facilities} from "./shared";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/System production docs}
@@ -42,19 +43,9 @@ export namespace System {
     }) satisfies SolidQueryOptions;
 
   export const keys = {
-    all: () => ["system"] as const,
-    facility: () => [...keys.all(), "facility"] as const,
+    facility: () => [...Facilities.keys.facility(), "system"] as const,
     facilityList: () => [...keys.facility(), "list"] as const,
-    dictionary: () => [...keys.all(), "dictionary"] as const,
-    attribute: () => [...keys.all(), "attribute"] as const,
+    dictionary: () => ["dictionary"] as const,
+    attribute: () => ["attribute"] as const,
   };
-
-  export function useInvalidator() {
-    const queryClient = useQueryClient();
-    return {
-      facilities: () => queryClient.invalidateQueries({queryKey: keys.facilityList()}),
-      dictionaries: () => queryClient.invalidateQueries({queryKey: keys.dictionary()}),
-      attributes: () => queryClient.invalidateQueries({queryKey: keys.attribute()}),
-    };
-  }
 }

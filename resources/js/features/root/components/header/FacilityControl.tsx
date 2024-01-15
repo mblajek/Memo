@@ -3,6 +3,7 @@ import {createQuery} from "@tanstack/solid-query";
 import {Select} from "components/ui/form/Select";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {System, User} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Match, Show, Switch, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 
@@ -11,7 +12,7 @@ export const FacilityControl: VoidComponent = () => {
   const params = useParams();
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(User.statusQueryOptions);
-  const invalidate = User.useInvalidator();
+  const invalidate = useInvalidator();
   const userFacilities = createMemo(
     () =>
       facilitiesQuery.data
@@ -58,7 +59,7 @@ export const FacilityControl: VoidComponent = () => {
                     navigate(`/${url}`);
                   }
                 }
-                User.setLastLoginFacilityId(facilityId!).then(() => invalidate.statusAndFacilityPermissions());
+                User.setLastLoginFacilityId(facilityId!).then(() => invalidate.userStatusAndFacilityPermissions());
               }}
             />
           </Match>
