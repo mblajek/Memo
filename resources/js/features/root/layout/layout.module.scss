@@ -4,10 +4,9 @@ $border: rgba(92, 92, 92, 0.283);
   display: grid;
   grid-template-areas:
     "sidebar header"
-    "sidebar main"
-    "sidebar footer";
+    "sidebar main";
   grid-template-columns: auto 1fr;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr;
 }
 
 .sidebar {
@@ -37,15 +36,4 @@ $border: rgba(92, 92, 92, 0.283);
 .main {
   grid-area: main;
   overflow: hidden auto;
-}
-
-.footer {
-  grid-area: footer;
-  border-top: 1px solid $border;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  justify-items: center;
-  padding: 0.5rem;
-  color: #949494;
 }
