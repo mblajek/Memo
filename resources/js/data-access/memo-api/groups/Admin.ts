@@ -1,4 +1,3 @@
-import {useQueryClient} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
 import {AdminUserResource, AdminUserResourceForCreate} from "../resources/adminUser.resource";
@@ -6,6 +5,7 @@ import {FacilityResource} from "../resources/facility.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
+import {Facilities, Users} from "./shared";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/Admin production docs}
@@ -36,11 +36,10 @@ export namespace Admin {
   export const deleteMember = (memberId: Api.Id, config?: Api.Config) => V1.delete(`/admin/member/${memberId}`, config);
 
   export const keys = {
-    all: () => ["admin"] as const,
-    user: () => [...keys.all(), "user"] as const,
+    user: () => [...Users.keys.user(), "admin"] as const,
     userList: (request?: Api.Request.GetListParams) => [...keys.user(), "list", request] as const,
     userGet: (id: Api.Id) => keys.userList(createListRequest(id)),
-    facility: () => [...keys.all(), "facility"] as const,
+    facility: () => [...Facilities.keys.facility(), "admin"] as const,
   };
 
   export const usersQueryOptions = (ids?: ListInParam) => {
@@ -56,12 +55,4 @@ export namespace Admin {
       queryFn: ({signal}) => getUser(id, {signal}),
       queryKey: keys.userGet(id),
     }) satisfies SolidQueryOpts<AdminUserResource>;
-
-  export function useInvalidator() {
-    const queryClient = useQueryClient();
-    return {
-      users: () => queryClient.invalidateQueries({queryKey: keys.user()}),
-      facilities: () => queryClient.invalidateQueries({queryKey: keys.facility()}),
-    };
-  }
 }

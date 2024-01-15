@@ -10,6 +10,7 @@ import {
 import {isAxiosError} from "axios";
 import {translateError} from "data-access/memo-api/error_util";
 import {System, User} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {SolidQueryOpts} from "data-access/memo-api/query_utils";
 import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
@@ -46,7 +47,7 @@ export interface TQueryMeta {
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
   function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
-    const invalidate = User.useInvalidator(queryClient);
+    const invalidate = useInvalidator(queryClient);
     if (!isAxiosError<Api.ErrorResponse>(error)) {
       return;
     }
@@ -57,7 +58,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       if (respErrors) {
         // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
         if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {
-          invalidate.statusAndFacilityPermissions();
+          invalidate.userStatusAndFacilityPermissions();
         }
         if (meta?.isFormSubmit) {
           // Validation errors will be handled by the form.

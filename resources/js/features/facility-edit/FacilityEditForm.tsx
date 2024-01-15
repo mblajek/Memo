@@ -1,6 +1,7 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
@@ -22,8 +23,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const oldFacility = () => facilitiesQuery.data?.find((facility) => facility.id === props.id);
 
-  const adminInvalidator = Admin.useInvalidator();
-  const systemInvalidator = System.useInvalidator();
+  const invalidate = useInvalidator();
   const facilityMutation = createMutation(() => ({
     mutationFn: Admin.updateFacility,
     meta: {isFormSubmit: true},
@@ -40,8 +40,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
     // Important: Invalidation should happen after calling onSuccess which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
-    adminInvalidator.facilities();
-    systemInvalidator.facilities();
+    invalidate.facilities();
   }
 
   const initialValues = () => {

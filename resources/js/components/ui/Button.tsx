@@ -1,5 +1,5 @@
 import {htmlAttributes, useLangFunc} from "components/utils";
-import {ParentComponent, VoidComponent} from "solid-js";
+import {ParentComponent, VoidComponent, splitProps} from "solid-js";
 import {ACTION_ICONS} from "./icons";
 
 /**
@@ -9,11 +9,16 @@ import {ACTION_ICONS} from "./icons";
 // eslint-disable-next-line no-restricted-syntax
 export const Button: ParentComponent<htmlAttributes.button> = (props) => <button type="button" {...props} />;
 
-export const EditButton: VoidComponent<htmlAttributes.button> = (props) => {
+interface EditButtonProps extends htmlAttributes.button {
+  readonly label?: string;
+}
+
+export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
+  const [props, buttonProps] = splitProps(allProps, ["label"]);
   const t = useLangFunc();
   return (
-    <Button {...props}>
-      <ACTION_ICONS.edit class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
+    <Button {...buttonProps}>
+      <ACTION_ICONS.edit class="inlineIcon strokeIcon text-current" /> {props.label || t("actions.edit")}
     </Button>
   );
 };

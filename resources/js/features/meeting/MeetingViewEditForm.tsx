@@ -6,6 +6,7 @@ import {dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
@@ -28,7 +29,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const dictionaries = useDictionaries();
-  const invalidate = FacilityMeeting.useInvalidator();
+  const invalidate = useInvalidator();
   const confirmation = createConfirmation();
   const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.id));
   const meetingMutation = createMutation(() => ({
@@ -49,7 +50,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
     // Important: Invalidation should happen after calling onEdited which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
-    invalidate.meetings();
+    invalidate.facility.meetings();
   }
 
   async function deleteMeeting() {
@@ -67,7 +68,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
-    invalidate.meetings();
+    invalidate.facility.meetings();
   }
 
   const initialValues = () => {
