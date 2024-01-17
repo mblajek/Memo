@@ -1,6 +1,7 @@
 import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {QueryBarrier, useLangFunc} from "components/utils";
+import {notFoundError} from "components/utils/NotFoundError";
 import {Admin, User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
@@ -109,7 +110,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
   };
 
   return (
-    <QueryBarrier queries={[userQuery]} ignoreCachedData>
+    <QueryBarrier queries={[userQuery]} ignoreCachedData {...notFoundError()}>
       <UserForm id="user_edit" initialValues={initialValues()} onSubmit={updateUser} onCancel={props.onCancel} />
     </QueryBarrier>
   );

@@ -1,8 +1,8 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {JSX, Match, ParentProps, Switch, createEffect, mergeProps, on} from "solid-js";
+import {For, JSX, Match, ParentProps, Show, Switch, VoidComponent, createEffect, mergeProps, on} from "solid-js";
 import {BigSpinner} from "../ui/Spinner";
 
-interface Props {
+export interface QueryBarrierProps {
   /** List of queries to handle. */
   readonly queries: readonly CreateQueryResult<unknown, unknown>[];
   /**
@@ -11,7 +11,7 @@ interface Props {
    */
   readonly ignoreCachedData?: boolean;
   /** Elements to show when query is in error state. */
-  readonly error?: () => JSX.Element;
+  readonly error?: (queries: readonly CreateQueryResult<unknown, unknown>[]) => JSX.Element;
   /** Elements to show when query is in pending state. */
   readonly pending?: () => JSX.Element;
 }
@@ -21,12 +21,11 @@ interface Props {
  *
  * @todo better looking Error
  */
-export function QueryBarrier(allProps: ParentProps<Props>) {
+export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
   const props = mergeProps(
     {
-      // TODO: dedicated Error element
-      error: () => <LocalError />,
-      pending: () => <LocalSpinner />,
+      error: () => <SimpleErrors queries={props.queries} />,
+      pending: () => <BigSpinner />,
     },
     allProps,
   );
@@ -51,13 +50,26 @@ export function QueryBarrier(allProps: ParentProps<Props>) {
 
   return (
     <Switch>
-      <Match when={isError()}>{props.error()}</Match>
+      <Match when={isError()}>{props.error(props.queries)}</Match>
       <Match when={isPending()}>{props.pending()}</Match>
       <Match when={isSuccess()}>{props.children}</Match>
     </Switch>
   );
 }
 
-const LocalSpinner = () => <BigSpinner />;
+export type QueryErrorsProps = Pick<QueryBarrierProps, "queries">;
 
-const LocalError = () => <p>error</p>;
+export const SimpleErrors: VoidComponent<QueryErrorsProps> = (props) => (
+  <div class="text-red-700 wrapTextAnywhere">
+    <p>Errors:</p>
+    <ul class="list-disc list-inside">
+      <For each={props.queries}>
+        {(query) => (
+          <Show when={query.isError}>
+            <li>{JSON.stringify(query.error)}</li>
+          </Show>
+        )}
+      </For>
+    </ul>
+  </div>
+);

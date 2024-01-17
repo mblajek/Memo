@@ -2,6 +2,7 @@ import {createMutation, createQuery} from "@tanstack/solid-query";
 import {BigSpinner} from "components/ui/Spinner";
 import {createConfirmation} from "components/ui/confirmation";
 import {QueryBarrier, useLangFunc} from "components/utils";
+import {notFoundError} from "components/utils/NotFoundError";
 import {dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
@@ -88,7 +89,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   };
 
   return (
-    <QueryBarrier queries={[meetingQuery]} ignoreCachedData>
+    <QueryBarrier queries={[meetingQuery]} ignoreCachedData {...notFoundError()}>
       <Show when={attributes() && dictionaries()} fallback={<BigSpinner />}>
         <MeetingForm
           id="meeting_edit"

@@ -1,5 +1,6 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {QueryBarrier, useLangFunc} from "components/utils";
+import {notFoundError} from "components/utils/NotFoundError";
 import {Admin, System} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
@@ -54,7 +55,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
   };
 
   return (
-    <QueryBarrier queries={[facilitiesQuery]} ignoreCachedData>
+    <QueryBarrier queries={[facilitiesQuery]} ignoreCachedData {...notFoundError()}>
       <FacilityForm
         id="facility_edit"
         initialValues={initialValues()}
