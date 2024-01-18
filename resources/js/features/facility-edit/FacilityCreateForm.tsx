@@ -2,7 +2,8 @@ import {createMutation} from "@tanstack/solid-query";
 import {FormType} from "components/felte-form/FelteForm";
 import {trimInput} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
-import {Admin, System} from "data-access/memo-api/groups";
+import {Admin} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent, createComputed} from "solid-js";
 import toast from "solid-toast";
 import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
@@ -34,8 +35,7 @@ export function getUrlSuggestion(name: string) {
 
 export const FacilityCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const adminInvalidator = Admin.useInvalidator();
-  const systemInvalidator = System.useInvalidator();
+  const invalidate = useInvalidator();
   const facilityMutation = createMutation(() => ({
     mutationFn: Admin.createFacility,
     meta: {isFormSubmit: true},
@@ -51,8 +51,7 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
     // Important: Invalidation should happen after calling onSuccess which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
-    adminInvalidator.facilities();
-    systemInvalidator.facilities();
+    invalidate.facilities();
   }
 
   function initForm(form: FormType<FacilityFormInput>) {

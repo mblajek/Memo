@@ -5,6 +5,7 @@ import {Button} from "components/ui/Button";
 import {MemoLoader} from "components/ui/MemoLoader";
 import {DATE_TIME_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
@@ -17,7 +18,7 @@ export const UserInfo: VoidComponent = () => {
   const statusQuery = createQuery(User.statusQueryOptions);
   const passwordChangeModal = createPasswordChangeModal();
 
-  const invalidate = User.useInvalidator();
+  const invalidate = useInvalidator();
   const logout = createMutation(() => ({
     mutationFn: () => User.logout(),
     meta: {
@@ -26,7 +27,7 @@ export const UserInfo: VoidComponent = () => {
     onSuccess() {
       setActiveFacilityId(undefined);
       // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
-      invalidate.statusAndFacilityPermissions();
+      invalidate.userStatusAndFacilityPermissions();
     },
   }));
 

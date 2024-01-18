@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {FilterH, FilterReductor, invert} from "./filter_utils";
+import {FilterH, FilterReductor, invertFilter} from "./filter_utils";
 
 describe("filter_utils", () => {
   const reductor = new FilterReductor({
@@ -10,23 +10,23 @@ describe("filter_utils", () => {
     ],
   });
 
-  test("invert", () => {
-    expect(invert({type: "column", column: "foo", op: "=", val: "bar"})).toEqual({
+  test("invertFilter", () => {
+    expect(invertFilter({type: "column", column: "foo", op: "=", val: "bar"})).toEqual({
       type: "column",
       column: "foo",
       op: "=",
       val: "bar",
       inv: true,
     });
-    expect(invert({type: "column", column: "foo", op: "=", val: "bar", inv: true})).toEqual({
+    expect(invertFilter({type: "column", column: "foo", op: "=", val: "bar", inv: true})).toEqual({
       type: "column",
       column: "foo",
       op: "=",
       val: "bar",
       inv: false,
     });
-    expect(invert("always")).toEqual("never");
-    expect(invert("never")).toEqual("always");
+    expect(invertFilter("always")).toEqual("never");
+    expect(invertFilter("never")).toEqual("always");
   });
 
   test("op null", () => {
@@ -183,11 +183,11 @@ describe("filter_utils", () => {
       expect(reductor.reduce({type: "op", op: "|", val: [neverFilter, f]})).toEqual(f);
       expect(reductor.reduce({type: "op", op: "|", val: [alwaysFilter, neverFilter, f]})).toEqual("always");
 
-      expect(reductor.reduce({type: "op", op: "&", val: [alwaysFilter, f], inv: true})).toEqual(invert(f));
+      expect(reductor.reduce({type: "op", op: "&", val: [alwaysFilter, f], inv: true})).toEqual(invertFilter(f));
       expect(reductor.reduce({type: "op", op: "&", val: [neverFilter, f], inv: true})).toEqual("always");
       expect(reductor.reduce({type: "op", op: "&", val: [alwaysFilter, neverFilter, f], inv: true})).toEqual("always");
       expect(reductor.reduce({type: "op", op: "|", val: [alwaysFilter, f], inv: true})).toEqual("never");
-      expect(reductor.reduce({type: "op", op: "|", val: [neverFilter, f], inv: true})).toEqual(invert(f));
+      expect(reductor.reduce({type: "op", op: "|", val: [neverFilter, f], inv: true})).toEqual(invertFilter(f));
       expect(reductor.reduce({type: "op", op: "|", val: [alwaysFilter, neverFilter, f], inv: true})).toEqual("never");
     });
 
@@ -226,7 +226,7 @@ describe("filter_utils", () => {
             {type: "op", op: "|", val: [h], inv: true},
           ],
         }),
-      ).toEqual({type: "op", op: "&", val: [invert(f), invert(g), invert(h)]});
+      ).toEqual({type: "op", op: "&", val: [invertFilter(f), invertFilter(g), invertFilter(h)]});
       expect(
         reductor.reduce({
           type: "op",
@@ -236,7 +236,7 @@ describe("filter_utils", () => {
             {type: "op", op: "&", val: [h], inv: true},
           ],
         }),
-      ).toEqual({type: "op", op: "|", val: [invert(f), invert(g), invert(h)]});
+      ).toEqual({type: "op", op: "|", val: [invertFilter(f), invertFilter(g), invertFilter(h)]});
     });
   });
 });

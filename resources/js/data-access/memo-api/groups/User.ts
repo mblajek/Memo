@@ -1,10 +1,11 @@
-import {SolidQueryOptions, useQueryClient} from "@tanstack/solid-query";
+import {SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "../config";
 import {MemberResource} from "../resources/member.resource";
 import {PermissionsResource} from "../resources/permissions.resource";
 import {UserResource} from "../resources/user.resource";
 import {Api} from "../types";
 import {parseGetResponse} from "../utils";
+import {Users} from "./shared";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/User production docs}
@@ -45,7 +46,7 @@ export namespace User {
   };
 
   export const keys = {
-    all: () => ["user"] as const,
+    all: () => [...Users.keys.user()] as const,
     statusAll: () => [...keys.all(), "status"] as const,
     status: (facilityId?: Api.Id) => [...keys.statusAll(), facilityId] as const,
   };
@@ -87,10 +88,4 @@ export namespace User {
       queryKey: keys.status(facilityId),
       ...STATUS_QUERY_OPTIONS,
     }) satisfies SolidQueryOptions<GetStatusData>;
-
-  export function useInvalidator(queryClient = useQueryClient()) {
-    return {
-      statusAndFacilityPermissions: () => queryClient.invalidateQueries({queryKey: keys.statusAll()}),
-    };
-  }
 }

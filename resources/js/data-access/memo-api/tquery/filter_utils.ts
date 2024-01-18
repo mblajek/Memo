@@ -13,9 +13,9 @@ export type BoolOpFilterH = Omit<BoolOpFilter, "val"> & {readonly val: readonly 
 /** A reduced filter. It is a regular, fully correct and at least somewhat optimised filter. */
 export type ReducedFilterH = ConstFilter | Filter;
 
-export function invert(filter: ReducedFilterH, invert?: boolean | undefined): ReducedFilterH;
-export function invert(filter: FilterH, invert?: boolean | undefined): FilterH;
-export function invert(filter: FilterH, invert?: boolean): FilterH {
+export function invertFilter(filter: ReducedFilterH, invert?: boolean | undefined): ReducedFilterH;
+export function invertFilter(filter: FilterH, invert?: boolean | undefined): FilterH;
+export function invertFilter(filter: FilterH, invert?: boolean): FilterH {
   invert =
     arguments.length === 1
       ? true
@@ -84,7 +84,7 @@ export class FilterReductor {
             subFiltersToProcess.push(...subFilter.val.toReversed());
           } else if (subFilter.type === "op" && subFilter.op === otherBoolOp(op) && subFilter.inv) {
             // Invert the inverted nested operation of the other type using De Morgan's laws.
-            subFiltersToProcess.push(...subFilter.val.map((f) => invert(f)).toReversed());
+            subFiltersToProcess.push(...subFilter.val.map((f) => invertFilter(f)).toReversed());
           } else {
             reducedSubFilters.push(subFilter);
           }
@@ -98,7 +98,7 @@ export class FilterReductor {
       }
       return {type: "op", op, val: reducedSubFilters};
     })();
-    return invert(reducedIgnoredInv, filter.inv);
+    return invertFilter(reducedIgnoredInv, filter.inv);
   }
 
   /** Reduces the column filter if necessary (also applies inv). */
@@ -123,7 +123,7 @@ export class FilterReductor {
             return nullFilter();
           } else if (op === ">") {
             // Matches non-null strings.
-            return invert(nullFilter());
+            return invertFilter(nullFilter());
           } else if (op === ">=" || op === "v%" || op === "%v" || op === "%v%" || op === "/v/") {
             // Matches everything.
             return "always";
@@ -202,7 +202,7 @@ export class FilterReductor {
         }
       }
     })();
-    return reducedIgnoredInv ? invert(reducedIgnoredInv, filter.inv) : filter;
+    return reducedIgnoredInv ? invertFilter(reducedIgnoredInv, filter.inv) : filter;
   }
 
   /** Returns a reduced filter. The returned filter is correct and optimised. */

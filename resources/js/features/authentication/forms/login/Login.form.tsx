@@ -5,6 +5,7 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {TextField} from "components/ui/form/TextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {User} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent} from "solid-js";
 import {z} from "zod";
 
@@ -27,11 +28,11 @@ interface Props {
 }
 
 export const LoginForm: VoidComponent<Props> = (props) => {
-  const invalidateUser = User.useInvalidator();
+  const invalidate = useInvalidator();
   const mutation = createMutation(() => ({
     mutationFn: User.login,
     onSuccess() {
-      invalidateUser.statusAndFacilityPermissions();
+      invalidate.userStatusAndFacilityPermissions();
       props.onSuccess?.();
     },
     meta: {isFormSubmit: true},

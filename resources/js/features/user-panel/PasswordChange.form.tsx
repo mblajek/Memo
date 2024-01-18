@@ -5,6 +5,7 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {TextField} from "components/ui/form/TextField";
 import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
 import {z} from "zod";
@@ -32,12 +33,12 @@ interface Props {
 
 export const PasswordChangeForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const invalidateUser = User.useInvalidator();
+  const invalidate = useInvalidator();
   const statusQuery = createQuery(User.statusQueryOptions);
   const mutation = createMutation(() => ({
     mutationFn: User.changePassword,
     onSuccess() {
-      invalidateUser.statusAndFacilityPermissions();
+      invalidate.userStatusAndFacilityPermissions();
       // For better integration with password managers.
       // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
       history.replaceState({passwordChanged: true}, "");
@@ -67,7 +68,7 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
         id="username"
         autocomplete="username"
         type="email"
-        value={statusQuery.data?.user.email}
+        value={statusQuery.data?.user.email || undefined}
         class="hidden"
       />
       <TextField name="current" type="password" autocomplete="current-password" autofocus />
