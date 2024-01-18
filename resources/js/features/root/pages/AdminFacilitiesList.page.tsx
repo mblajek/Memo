@@ -1,12 +1,11 @@
-import {Button} from "components/ui/Button";
-import {AUTO_SIZE_COLUMN_DEFS, cellFunc, createTableTranslations} from "components/ui/Table";
+import {Button, EditButton} from "components/ui/Button";
+import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FACILITY_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityCreateModal, showFacilityCreateModal} from "features/facility-edit/FacilityCreateModal";
 import {FacilityEditModal, showFacilityEditModal} from "features/facility-edit/FacilityEditModal";
-import {FiEdit2} from "solid-icons/fi";
 import {Component} from "solid-js";
 
 export default (() => {
@@ -22,7 +21,7 @@ export default (() => {
         columns={[
           {name: "id", initialVisible: false},
           {name: "name", columnDef: {enableHiding: false}},
-          {name: "url", columnDef: {cell: cellFunc<string>((url) => `/${url}`)}},
+          {name: "url", columnDef: {cell: cellFunc<string>((url) => <PaddedCell>/{url}</PaddedCell>)}},
           {name: "createdAt", columnDef: {sortDescFirst: true}},
           {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
           {
@@ -31,9 +30,9 @@ export default (() => {
             extraDataColumns: ["id"],
             columnDef: {
               cell: (c) => (
-                <Button onClick={() => showFacilityEditModal({facilityId: c.row.getValue("id")})}>
-                  <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
-                </Button>
+                <PaddedCell>
+                  <EditButton onClick={() => showFacilityEditModal({facilityId: c.row.getValue("id")})} />
+                </PaddedCell>
               ),
               enableSorting: false,
               ...AUTO_SIZE_COLUMN_DEFS,

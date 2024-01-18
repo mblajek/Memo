@@ -1,3 +1,4 @@
+import {AiOutlineDelete} from "solid-icons/ai";
 import {
   BsHouse,
   BsHouseAdd,
@@ -9,6 +10,7 @@ import {
   BsPersonDash,
   BsPersonGear,
 } from "solid-icons/bs";
+import {FiEdit2} from "solid-icons/fi";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 
 // A set of reusable icons for some of the repeatable entities.
@@ -36,4 +38,9 @@ export const FACILITY_ICONS = {
   remove: BsHouseDash,
   facility: BsHouse,
   facilities: BsHouses,
+};
+
+export const ACTION_ICONS = {
+  edit: FiEdit2,
+  delete: AiOutlineDelete,
 };

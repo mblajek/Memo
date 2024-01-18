@@ -1,9 +1,8 @@
-import {A} from "@solidjs/router";
 import {Email} from "components/ui/Email";
-import {cellFunc, createTableTranslations} from "components/ui/Table";
+import {PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {STAFF_ICONS} from "components/ui/icons";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {UserLink} from "features/facility-users/UserLink";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
@@ -23,24 +22,29 @@ export default (() => {
             extraDataColumns: ["id"],
             columnDef: {
               cell: cellFunc<string>((v, ctx) => (
-                <div class="flex gap-0.5 items-center">
-                  <STAFF_ICONS.staff />
-                  <A href={ctx.row.getValue("id")}>{v}</A>
-                </div>
+                <PaddedCell>
+                  <UserLink type="staff" userId={ctx.row.getValue("id")} name={v} />
+                </PaddedCell>
               )),
               enableHiding: false,
             },
           },
-          {name: "email", columnDef: {cell: cellFunc<string>((v) => <Email class="w-full" email={v} />)}},
+          {
+            name: "email",
+            columnDef: {
+              cell: cellFunc<string>((v) => (
+                <PaddedCell>
+                  <Email class="w-full" email={v} />
+                </PaddedCell>
+              )),
+            },
+          },
           {name: "hasEmailVerified", initialVisible: false},
           {name: "hasPassword"},
           {name: "passwordExpireAt", initialVisible: false},
           {
             name: "hasGlobalAdmin",
-            columnDef: {
-              cell: cellFunc<boolean>((adm) => <span class="w-full text-center">{adm ? "💪🏽" : ""}</span>),
-              size: 130,
-            },
+            columnDef: {size: 130},
             initialVisible: false,
           },
           {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
