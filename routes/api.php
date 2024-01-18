@@ -5,9 +5,11 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Facility\ClientController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\MeetingController;
 use App\Http\Controllers\Facility\MeetingTqueryController;
+use App\Http\Controllers\Facility\StaffController;
 use App\Http\Controllers\Facility\StaffTqueryController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\SystemController;
@@ -66,10 +68,12 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/facility/{facility}')->group(function () {
         Route::prefix('/user')->group(function () {
             Route::prefix('/client')->group(function () {
+                Route::get('/list', [ClientController::class, 'list']);
                 Route::get('/tquery', [ClientTqueryController::class, 'get']);
                 Route::post('/tquery', [ClientTqueryController::class, 'post']);
             });
             Route::prefix('/staff')->group(function () {
+                Route::get('/list', [StaffController::class, 'list']);
                 Route::get('/tquery', [StaffTqueryController::class, 'get']);
                 Route::post('/tquery', [StaffTqueryController::class, 'post']);
             });
