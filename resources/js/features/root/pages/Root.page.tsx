@@ -1,4 +1,3 @@
-import {Confirmation} from "components/ui/Confirmation";
 import {AccessBarrier} from "components/utils";
 import {ParentComponent} from "solid-js";
 import {Container} from "../layout/Container";
@@ -17,7 +16,6 @@ export default ((props) => {
         <Navbar />
         <Header />
         <Main>{props.children}</Main>
-        <Confirmation />
       </Container>
     </AccessBarrier>
   );

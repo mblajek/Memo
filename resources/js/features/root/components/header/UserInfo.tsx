@@ -5,7 +5,7 @@ import {Button} from "components/ui/Button";
 import {MemoLoader} from "components/ui/MemoLoader";
 import {DATE_TIME_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
-import {PasswordChangeForm} from "features/user-panel/PasswordChange.form";
+import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
 import {Index, Match, Show, Switch, VoidComponent, createMemo, createUniqueId} from "solid-js";
@@ -15,6 +15,7 @@ import {setActiveFacilityId} from "state/activeFacilityId.state";
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
   const statusQuery = createQuery(User.statusQueryOptions);
+  const passwordChangeModal = createPasswordChangeModal();
 
   const invalidate = User.useInvalidator();
   const logout = createMutation(() => ({
@@ -80,7 +81,7 @@ export const UserInfo: VoidComponent = () => {
                   {...menuApi().positionerProps}
                 >
                   <div class="flex flex-col items-stretch" {...menuApi().contentProps}>
-                    <Button class="px-2 py-1 text-left hover:bg-hover" onClick={() => PasswordChangeForm.showModal()}>
+                    <Button class="px-2 py-1 text-left hover:bg-hover" onClick={() => passwordChangeModal.show()}>
                       {t("actions.change_password")}
                     </Button>
                     <Button class="px-2 py-1 text-left hover:bg-hover" onClick={() => logout.mutate()}>
@@ -93,7 +94,6 @@ export const UserInfo: VoidComponent = () => {
           </div>
         </div>
       </div>
-      <PasswordChangeForm.PasswordChangeModal />
       <Show when={logout.isPending}>
         <MemoLoader />
       </Show>

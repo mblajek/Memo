@@ -12,6 +12,7 @@ import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
+import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 
 const root = document.getElementById("root");
 
@@ -70,6 +71,7 @@ render(() => {
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>
+        <GlobalPageElements />
         <LoaderInPortal />
       </ErrorBoundary>
     </TransProvider>

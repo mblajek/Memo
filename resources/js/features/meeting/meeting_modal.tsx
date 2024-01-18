@@ -1,8 +1,9 @@
 import {capitalizeString} from "components/ui/Capitalize";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
+import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {Api} from "data-access/memo-api/types";
-import {VoidComponent, createComputed, createSignal, lazy} from "solid-js";
+import {createComputed, createSignal, lazy} from "solid-js";
 
 const MeetingViewEditForm = lazy(() => import("features/meeting/MeetingViewEditForm"));
 
@@ -12,18 +13,15 @@ interface FormParams {
   readonly initialViewMode?: boolean;
 }
 
-const [modalParams, setModalParams] = createSignal<FormParams>();
-
-/** Modal for viewing and editing a meeting. */
-export const MeetingModal: VoidComponent = () => {
+export const createMeetingModal = registerGlobalPageElement<FormParams>((args) => {
   const t = useLangFunc();
   const [viewMode, setViewMode] = createSignal(true);
   return (
     <Modal
       title={viewMode() ? capitalizeString(t("models.meeting._name")) : t("forms.meeting_edit.formName")}
-      open={modalParams()}
+      open={args.params()}
       closeOn={viewMode() ? ["escapeKey", "closeButton", "clickOutside"] : ["escapeKey", "closeButton"]}
-      onClose={() => setModalParams(undefined)}
+      onClose={args.clearParams}
       style={MODAL_STYLE_PRESETS.medium}
     >
       {(params) => {
@@ -33,16 +31,12 @@ export const MeetingModal: VoidComponent = () => {
             id={params().meetingId}
             viewMode={viewMode()}
             onViewModeChange={setViewMode}
-            onEdited={() => setModalParams(undefined)}
-            onDeleted={() => setModalParams(undefined)}
-            onCancel={() => setModalParams(undefined)}
+            onEdited={args.clearParams}
+            onDeleted={args.clearParams}
+            onCancel={args.clearParams}
           />
         );
       }}
     </Modal>
   );
-};
-
-export function showMeetingModal(params: FormParams) {
-  setModalParams(params);
-}
+});
