@@ -48,3 +48,8 @@ weekday_overrides:
   "pt.": "pt"
   "sob.": "so"
   "niedz.": "nd"
+
+relative_time:
+  in_one_day: "następnego dnia"
+  in_one_week: "tydzień później"
+  in_two_weeks: "dwa tygodnie później"

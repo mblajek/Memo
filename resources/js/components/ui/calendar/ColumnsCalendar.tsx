@@ -1,5 +1,5 @@
 import {currentDate, currentTime, cx, htmlAttributes} from "components/utils";
-import {MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "components/utils/day_minute_util";
+import {DayMinuteRange, MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {
   Accessor,
@@ -8,6 +8,7 @@ import {
   JSX,
   Show,
   VoidComponent,
+  createComputed,
   createContext,
   createEffect,
   createMemo,
@@ -27,6 +28,7 @@ interface GlobalParameters {
 
 interface Props extends GlobalParameters, htmlAttributes.div {
   readonly columns: readonly CalendarColumn[];
+  readonly onVisibleRangeChange?: (range: DayMinuteRange) => void;
   readonly scrollToDayMinute?: number;
   readonly isLoading?: boolean;
 
@@ -67,6 +69,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
     "pixelsPerHour",
     "gridCellMinutes",
     "columns",
+    "onVisibleRangeChange",
     "scrollToDayMinute",
     "isLoading",
     "onWheelWithAlt",
@@ -78,6 +81,9 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
   function dayMinuteToPixelY(dayMinute: number) {
     return (dayMinute / 60) * props.pixelsPerHour;
   }
+  function pixelYToDayMinute(pixelY: number) {
+    return Math.min(Math.max(Math.round((pixelY / props.pixelsPerHour) * 60), 0), MAX_DAY_MINUTE);
+  }
   function isToday(day: DateTime) {
     return day.hasSame(currentDate(), "day");
   }
@@ -88,6 +94,15 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
     dayMinuteToPixelY,
     hoursArea: () => hoursArea()!,
   };
+  const [hoursAreaScrollOffset, setHoursAreaScrollOffset] = createSignal(0);
+  createComputed(() => {
+    if (hoursArea() && props.onVisibleRangeChange) {
+      props.onVisibleRangeChange?.([
+        pixelYToDayMinute(hoursAreaScrollOffset()),
+        pixelYToDayMinute(hoursAreaScrollOffset() + hoursArea()!.clientHeight),
+      ]);
+    }
+  });
   createEffect(
     on([hoursArea, () => props.scrollToDayMinute], ([hoursArea, scrollToDayMinute], _prevInput, prev) => {
       if (hoursArea && scrollToDayMinute !== undefined) {
@@ -141,6 +156,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
               e.preventDefault();
             }
           }}
+          onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}
         >
           <div class={s.timeTrack}>
             <Index each={dayMinutes()}>

@@ -27,7 +27,7 @@ interface FormTimeDataType extends Obj {
   };
 }
 
-export function meetingTimeInitialValues(time?: DateTime, durationMinutes?: number) {
+export function meetingTimeInitialValue(time?: DateTime, durationMinutes?: number) {
   const localTime = time?.toLocal().startOf("minute");
   function timeInput(time: DateTime | undefined) {
     return time ? dateTimeToTimeInput(time) : "";

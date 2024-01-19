@@ -214,14 +214,14 @@ function createAttendant({userId = "", attendanceStatusDictId}: Partial<MeetingA
   return {userId, attendanceStatusDictId: attendanceStatusDictId || ""} satisfies MeetingAttendantResource;
 }
 
-export function getInitialAttendantsForCreate(staff?: readonly string[]) {
+export function attendantsInitialValueForCreate(staff?: readonly string[]) {
   return {
     staff: staff?.map((userId) => createAttendant({userId})) || [],
     clients: [],
   } satisfies FormAttendantsData;
 }
 
-export function getInitialAttendantsForEdit(meeting: MeetingResource) {
+export function attendantsInitialValueForEdit(meeting: MeetingResource) {
   function getAttendants(attendantsFromMeeting: readonly MeetingAttendantResource[]) {
     const attendants = attendantsFromMeeting.map(createAttendant);
     if (attendants.length > 1) {

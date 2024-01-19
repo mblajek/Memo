@@ -14,6 +14,7 @@ import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {For, JSX, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {useColumnsCalendar} from "../ColumnsCalendar";
+import s from "./events.module.scss";
 
 interface AllDayEventProps {
   readonly baseColor: string;
@@ -34,7 +35,12 @@ export const AllDayEventBlock: ParentComponent<AllDayEventProps> = (props) => (
 interface MeetingEventProps {
   readonly meeting: TQMeetingResource;
   readonly style?: JSX.CSSProperties;
+  /** Whether the event block should blink initially to call the user's attention. */
+  readonly blink?: boolean;
   readonly hoverStyle?: JSX.CSSProperties;
+  readonly onHoverChange?: (hovered: boolean) => void;
+  /** Whether the hovered style should be used. If not provided, the real element hover state is used. */
+  readonly hovered?: boolean;
   readonly onClick?: () => void;
 }
 
@@ -91,11 +97,19 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     {context: () => ({openDelay: dictionaries() ? 100 : 2000})},
   );
   const hoverApi = createMemo(() => hoverCard.connect(hoverState, hoverSend, normalizeProps));
-  const [hovered, setHovered] = createSignal(false);
+  const [hoveredGetter, hoveredSetter] = createSignal(false);
+  function setHovered(hovered: boolean) {
+    hoveredSetter(hovered);
+    props.onHoverChange?.(hovered);
+  }
+  const hovered = () => props.hovered ?? hoveredGetter();
   return (
     <>
       <div
-        class="w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer select-none"
+        class={cx(
+          "w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer select-none",
+          {[s.blink!]: props.blink},
+        )}
         style={{...props.style, ...(hovered() ? props.hoverStyle : undefined)}}
         {...hoverApi().triggerProps}
         onMouseEnter={[setHovered, true]}
