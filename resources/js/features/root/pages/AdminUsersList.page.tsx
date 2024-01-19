@@ -63,7 +63,7 @@ export default (() => {
       customSectionBelowTable={
         <div class="ml-2 flex gap-1">
           <Button class="secondary small" onClick={() => userCreateModal.show()}>
-            <USER_ICONS.add class="inlineIcon text-current" /> {t("actions.add_user")}
+            <USER_ICONS.add class="inlineIcon text-current" /> {t("actions.user.add")}
           </Button>
         </div>
       }

@@ -18,7 +18,7 @@ const root = document.getElementById("root");
 
 if (!(root instanceof HTMLElement)) throw new Error("Root element not found.");
 
-const TOAST_DURATION_SECS = 8;
+const TOAST_DURATION_SECS = 10;
 
 Settings.throwOnInvalid = true;
 declare module "luxon" {

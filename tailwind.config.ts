@@ -12,6 +12,8 @@ const APP_COLORS = {
   "disabled": "#ece8e8",
   // A grey color for the border of input elements.
   "input-border": "#b0b0b0",
+  // A grey text for displaying additional information.
+  "grey-text": "#566272",
 };
 
 const Z_INDEX = {

@@ -21,7 +21,7 @@ interface SelectItemDescriptionProps {
 }
 
 export const SelectItemDescription: VoidComponent<SelectItemDescriptionProps> = (props) => (
-  <span class={cx("text-sm text-gray-600", props.class)}>{props.description}</span>
+  <span class={cx("text-sm text-grey-text", props.class)}>{props.description}</span>
 );
 
 interface SelectItemLabelProps {

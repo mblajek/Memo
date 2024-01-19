@@ -44,7 +44,7 @@ export default (() => {
       customSectionBelowTable={
         <div class="ml-2 flex gap-1">
           <Button class="secondary small" onClick={() => facilityCreateModal.show()}>
-            <FACILITY_ICONS.add class="inlineIcon text-current" /> {t("actions.add_facility")}
+            <FACILITY_ICONS.add class="inlineIcon text-current" /> {t("actions.facility.add")}
           </Button>
         </div>
       }

@@ -27,22 +27,22 @@ user_edit:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
     cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu email jako niezweryfikowany."
   submit: "$t(actions.save)"
-  success: "Pomyślnie zmieniono dane"
+  success: "Zmieniono dane"
 
 user_create:
   formName: "Nowa osoba"
   submit: "$t(actions.create)"
-  success: "Pomyślnie utworzono"
+  success: "Utworzono osobę"
 
 facility_create:
   formName: "Nowa placówka"
   submit: "$t(actions.create)"
-  success: "Pomyślnie utworzono placówkę"
+  success: "Utworzono placówkę"
 
 facility_edit:
   formName: "Edycja placówki"
   submit: "$t(actions.save)"
-  success: "Pomyślnie zmieniono placówkę"
+  success: "Zmieniono dane placówki"
 
 meeting:
   default_duration: "Sugerowane: {{text}}"
@@ -59,15 +59,15 @@ meeting:
 meeting_create:
   formName: "Nowe spotkanie"
   submit: "$t(actions.create)"
-  success: "Pomyślnie utworzono spotkanie"
+  success: "Utworzono spotkanie"
 
 meeting_edit:
   formName: "Edycja spotkania"
   submit: "$t(actions.save)"
-  success: "Pomyślnie zmieniono spotkanie"
+  success: "Zmieniono spotkanie"
 
 meeting_delete:
   formName: "Usunięcie spotkania"
   confirmationText: "Czy na pewno usunąć to spotkanie?"
   submit: "Usuń spotkanie"
-  success: "Pomyślnie usunięto spotkanie"
+  success: "Usunięto spotkanie"

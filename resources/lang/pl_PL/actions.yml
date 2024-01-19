@@ -14,6 +14,12 @@ search: "Szukaj"
 sort: "Sortuj"
 set: "Ustaw"
 change_password: "Zmień hasło"
+make_a_copy: "Utwórz kopię"
+show: "Pokaż"
 
-add_user: "Dodaj osobę"
-add_facility: "Dodaj placówkę"
+user:
+  add: "Dodaj osobę"
+facility:
+  add: "Dodaj placówkę"
+meeting:
+  make_a_copy: "Utwórz kopię spotkania"
