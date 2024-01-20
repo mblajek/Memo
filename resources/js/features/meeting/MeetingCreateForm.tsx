@@ -5,22 +5,20 @@ import {useAttributes} from "data-access/memo-api/attributes";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {DateTime} from "luxon";
+import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {getInitialAttendantsForCreate} from "./MeetingAttendantsFields";
+import {attendantsInitialValueForCreate} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
-import {meetingTimeInitialValues} from "./meeting_time_controller";
+import {MeetingChangeSuccessData} from "./meeting_change_success_data";
+import {meetingTimeInitialValue} from "./meeting_time_controller";
 
 interface Props {
-  readonly initialData?: InitialDataParams;
-  readonly onSuccess?: () => void;
+  readonly initialValues?: Partial<MeetingFormType>;
+  readonly onSuccess?: (meeting: MeetingChangeSuccessData) => void;
   readonly onCancel?: () => void;
-}
-
-export interface InitialDataParams {
-  readonly start?: DateTime;
-  readonly staff?: readonly string[];
+  /** Whether to show toast on success. Default: true. */
+  readonly showToast?: boolean;
 }
 
 export const MeetingCreateForm: VoidComponent<Props> = (props) => {
@@ -34,11 +32,12 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
   }));
 
   async function createMeeting(values: MeetingFormType) {
-    await meetingMutation.mutateAsync({
-      ...transformFormValues(values),
-    });
-    toast.success(t("forms.meeting_create.success"));
-    props.onSuccess?.();
+    const meeting = transformFormValues(values);
+    const {id} = (await meetingMutation.mutateAsync(meeting)).data.data;
+    if (props.showToast ?? true) {
+      toast.success(t("forms.meeting_create.success"));
+    }
+    props.onSuccess?.({...(meeting as Required<MeetingResourceForCreate>), id});
     // Important: Invalidation should happen after calling onSuccess which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
@@ -47,13 +46,15 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
 
   const initialValues = () =>
     ({
-      ...meetingTimeInitialValues(props.initialData?.start),
+      ...meetingTimeInitialValue(),
       typeDictId: "",
       statusDictId: dictionaries()?.get("meetingStatus").get("planned").id || "",
+      ...attendantsInitialValueForCreate(),
       isRemote: false,
-      ...getInitialAttendantsForCreate(props.initialData?.staff),
       notes: "",
       resources: [],
+      fromMeetingId: "",
+      ...props.initialValues,
     }) satisfies MeetingFormType;
 
   return (

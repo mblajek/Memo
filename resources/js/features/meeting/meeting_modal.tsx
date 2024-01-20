@@ -4,6 +4,7 @@ import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {Api} from "data-access/memo-api/types";
 import {createComputed, createSignal, lazy} from "solid-js";
+import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 
 const MeetingViewEditForm = lazy(() => import("features/meeting/MeetingViewEditForm"));
 
@@ -11,6 +12,11 @@ interface FormParams {
   readonly meetingId: Api.Id;
   /** Whether to show the meeting initially in view mode (and not in edit mode). Default: true. */
   readonly initialViewMode?: boolean;
+  onDeleted?: (meetingId: string) => void;
+  onEdited?: (meeting: MeetingChangeSuccessData) => void;
+  onCopyCreated?: (meeting: MeetingChangeSuccessData) => void;
+  /** Whether to show toast on success. Default: true. */
+  readonly showToast?: boolean;
 }
 
 export const createMeetingModal = registerGlobalPageElement<FormParams>((args) => {
@@ -31,9 +37,20 @@ export const createMeetingModal = registerGlobalPageElement<FormParams>((args) =
             id={params().meetingId}
             viewMode={viewMode()}
             onViewModeChange={setViewMode}
-            onEdited={args.clearParams}
-            onDeleted={args.clearParams}
+            onEdited={(meeting) => {
+              params().onEdited?.(meeting);
+              args.clearParams();
+            }}
+            onCopyCreated={(meeting) => {
+              params().onCopyCreated?.(meeting);
+              args.clearParams();
+            }}
+            onDeleted={() => {
+              params().onDeleted?.(params().meetingId);
+              args.clearParams();
+            }}
             onCancel={args.clearParams}
+            showToast={params().showToast}
           />
         );
       }}

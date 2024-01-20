@@ -11,7 +11,7 @@ admin:
   users: "$t(models.user._name_plural)"
 
 facility:
-  home: "informacje"
+  home: "placówka"
   calendar: "$t(calendar.calendar)"
   meetings_list: "lista spotkań"
   staff: "$t(models.staff._name_plural)"

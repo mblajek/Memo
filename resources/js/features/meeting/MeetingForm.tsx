@@ -2,17 +2,14 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {isAxiosError} from "axios";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
-import {Button, EditButton} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
-import {SmallSpinner} from "components/ui/Spinner";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {MultilineTextField} from "components/ui/form/MultilineTextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
-import {ACTION_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
@@ -31,6 +28,7 @@ const getSchema = () =>
     ...getAttendantsSchemaPart(),
     notes: z.string(),
     resources: z.array(z.string()),
+    fromMeetingId: z.string(),
   });
 
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
@@ -38,24 +36,13 @@ export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 interface Props extends FormConfigWithoutTransformFn<MeetingFormType> {
   readonly id: string;
   readonly viewMode?: boolean;
-  readonly onViewModeChange?: (viewMode: boolean) => void;
-  readonly onDelete?: () => void;
-  readonly isDeleting?: boolean;
   readonly onCancel?: () => void;
 }
 
 export const MeetingForm: VoidComponent<Props> = (allProps) => {
-  const [props, formPropsObj] = splitProps(allProps, [
-    "id",
-    "viewMode",
-    "onViewModeChange",
-    "onDelete",
-    "isDeleting",
-    "onCancel",
-  ]);
+  const [props, formPropsObj] = splitProps(allProps, ["id", "viewMode", "onCancel"]);
   // eslint-disable-next-line solid/reactivity
   const formProps: FormConfigWithoutTransformFn<MeetingFormType> = formPropsObj;
-  const t = useLangFunc();
   const ByMode: VoidComponent<{view?: JSX.Element; edit?: JSX.Element}> = (byModeProps) => (
     <Show when={props.viewMode} fallback={byModeProps.edit}>
       {byModeProps.view}
@@ -128,24 +115,6 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
           </>
         )}
       </FelteForm>
-      <ByMode
-        view={
-          <div class="flex gap-1 justify-end">
-            <Button class="secondary small" onClick={() => props.onDelete?.()} disabled={props.isDeleting}>
-              <ACTION_ICONS.delete class="inlineIcon text-current" />
-              {t("actions.delete")}
-              <Show when={props.isDeleting}>
-                <SmallSpinner />
-              </Show>
-            </Button>
-            <EditButton
-              class="secondary small"
-              onClick={() => props.onViewModeChange?.(false)}
-              disabled={props.isDeleting}
-            />
-          </div>
-        }
-      />
     </div>
   );
 };
@@ -156,7 +125,7 @@ function getResourceValues(values: MeetingFormType) {
   };
 }
 
-export function transformFormValues(values: MeetingFormType) {
+export function transformFormValues(values: MeetingFormType): MeetingResourceForCreate {
   return {
     ...values,
     ...getTimeValues(values),

@@ -1,13 +1,17 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
-import {InitialDataParams} from "features/meeting/MeetingCreateForm";
 import {lazy} from "solid-js";
+import {MeetingFormType} from "./MeetingForm";
+import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 
 const MeetingCreateForm = lazy(() => import("features/meeting/MeetingCreateForm"));
 
 interface FormParams {
-  readonly initialData?: InitialDataParams;
+  readonly initialValues?: Partial<MeetingFormType>;
+  readonly onSuccess?: (meeting: MeetingChangeSuccessData) => void;
+  /** Whether to show toast on success. Default: true. */
+  readonly showToast?: boolean;
 }
 
 export const createMeetingCreateModal = registerGlobalPageElement<FormParams>((args) => {
@@ -22,9 +26,13 @@ export const createMeetingCreateModal = registerGlobalPageElement<FormParams>((a
     >
       {(params) => (
         <MeetingCreateForm
-          initialData={params().initialData}
-          onSuccess={args.clearParams}
+          initialValues={params().initialValues}
+          onSuccess={(meeting) => {
+            params().onSuccess?.(meeting);
+            args.clearParams();
+          }}
           onCancel={args.clearParams}
+          showToast={params().showToast}
         />
       )}
     </Modal>

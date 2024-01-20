@@ -18,6 +18,7 @@ export interface MeetingResource {
   readonly staff: readonly MeetingAttendantResource[];
   readonly clients: readonly MeetingAttendantResource[];
   readonly resources: readonly MeetingResourceResource[];
+  readonly fromMeetingId: string | null;
 }
 
 export interface MeetingAttendantResource {
@@ -31,7 +32,18 @@ export interface MeetingResourceResource {
 
 export type MeetingResourceForCreate = Pick<
   MeetingResource,
-  "typeDictId" | "notes" | "isRemote" | "staff" | "clients" | "resources"
+  | "typeDictId"
+  | "notes"
+  // See below for why these are not included.
+  // | "date"
+  // | "startDayminute"
+  // | "durationMinutes"
+  | "statusDictId"
+  | "isRemote"
+  | "staff"
+  | "clients"
+  | "resources"
+  | "fromMeetingId"
 > &
   // This part is actually required by the API, but has no default values, so making it optional
   // is necessary to construct a create form.

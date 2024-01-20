@@ -2,13 +2,17 @@ import {A, AnchorProps} from "@solidjs/router";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
+import {DayMinuteRange} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {createCalendarRequestCreator, meetingsFromQuery} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
+import {attendantsInitialValueForCreate} from "features/meeting/MeetingAttendantsFields";
+import {MeetingChangeSuccessData} from "features/meeting/meeting_change_success_data";
 import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
 import {createMeetingModal} from "features/meeting/meeting_modal";
+import {meetingTimeInitialValue} from "features/meeting/meeting_time_controller";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {OcTable3} from "solid-icons/oc";
@@ -23,10 +27,14 @@ import {
   createComputed,
   createMemo,
   createSignal,
+  getOwner,
   mergeProps,
   on,
+  onMount,
+  runWithOwner,
   splitProps,
 } from "solid-js";
+import toast from "solid-toast";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
@@ -190,6 +198,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [tinyCalMonth, setTinyCalMonth] = createSignal(props.initialDay);
   // Initialise to whatever range, it will be immediately updated by the calendar.
   const [tinyCalVisibleRange, setTinyCalVisibleRange] = createSignal(DaysRange.oneDay(props.initialDay));
+  const [visibleDayMinuteRange, setVisibleDayMinuteRange] = createSignal<DayMinuteRange>([0, 0]);
 
   /** The resources selection view, allowing multiple selection only in the day mode. */
   const resourcesSelectionMode = () => (mode() === "day" ? "checkbox" : "radio");
@@ -441,6 +450,88 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       };
     }) || [];
 
+  const [blinkingMeetings, setBlinkingMeetings] = createSignal<ReadonlyMap<string, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  );
+  function blinkMeeting(meetingId: string) {
+    clearTimeout(blinkingMeetings().get(meetingId));
+    setBlinkingMeetings((map) =>
+      new Map(map).set(
+        meetingId,
+        setTimeout(() => {
+          setBlinkingMeetings((map) => {
+            const modified = new Map(map);
+            modified.delete(meetingId);
+            return modified;
+          });
+        }, 3000),
+      ),
+    );
+  }
+
+  const owner = getOwner();
+  function meetingChange(operation: "create" | "edit", meeting: MeetingChangeSuccessData) {
+    blinkMeeting(meeting.id);
+    const message = t(
+      operation === "create"
+        ? "forms.meeting_create.success"
+        : operation === "edit"
+          ? "forms.meeting_edit.success"
+          : (operation satisfies never),
+    );
+    const meetingDate = DateTime.fromISO(meeting.date);
+    toast.success(
+      runWithOwner(owner, () => (
+        <div class="flex gap-2 align-baseline">
+          <span>{message}</span>
+          <Button
+            class="secondary small"
+            onClick={() => {
+              if (!daysSelection().contains(meetingDate)) {
+                setDaysSelectionAndMonthFromDay(meetingDate);
+              }
+              if (meeting.staff.length) {
+                if (mode() === "day") {
+                  const selectedResources = new Set(selectedResourcesCheckbox());
+                  for (const {userId} of meeting.staff) {
+                    selectedResources.add(userId);
+                  }
+                  setSelectedResourcesCheckbox(selectedResources);
+                } else if (!meeting.staff.some((staff) => staff.userId === selectedResourceRadio())) {
+                  setSelectedResourceRadio(meeting.staff[0]!.userId);
+                }
+              }
+              scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
+              blinkMeeting(meeting.id);
+            }}
+          >
+            {t("actions.show")}
+          </Button>
+        </div>
+      )),
+    );
+  }
+
+  const SCROLL_MARGIN_PIXELS = 20;
+  const scrollMarginMinutes = createMemo(() => Math.round((SCROLL_MARGIN_PIXELS / pixelsPerHour()) * 60));
+  const [scrollToDayMinute, setScrollToDayMinute] = createSignal<number>();
+  function scrollIntoView(start: number, duration = 0) {
+    const [currScrollStart, currScrollEnd] = visibleDayMinuteRange();
+    const scrollLen = currScrollEnd - currScrollStart;
+    let scroll = currScrollStart;
+    scroll = Math.max(scroll, start + duration + scrollMarginMinutes() - scrollLen);
+    scroll = Math.min(scroll, start - scrollMarginMinutes());
+    if (scroll !== currScrollStart) {
+      setScrollToDayMinute(scroll);
+      setTimeout(() => setScrollToDayMinute(undefined), 0);
+    }
+  }
+  onMount(() => {
+    scrollIntoView(7 * 60, 1e3);
+  });
+
+  const [hoveredMeetingId, setHoveredMeetingId] = createSignal<string>();
+
   function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
     const selectedEvents = () =>
       staffId
@@ -452,7 +543,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 <MeetingEventBlock
                   meeting={ev.meeting}
                   {...staffResourcesById().get(staffId)?.styling}
-                  onClick={() => meetingModal.show({meetingId: ev.meeting.id, initialViewMode: true})}
+                  blink={!isCalendarLoading() && blinkingMeetings().has(ev.meeting.id)}
+                  onHoverChange={(hovered) => setHoveredMeetingId(hovered ? ev.meeting.id : undefined)}
+                  hovered={hoveredMeetingId() === ev.meeting.id}
+                  onClick={() =>
+                    meetingModal.show({
+                      meetingId: ev.meeting.id,
+                      initialViewMode: true,
+                      onEdited: (meeting) => meetingChange("edit", meeting),
+                      onCopyCreated: (meeting) => meetingChange("create", meeting),
+                      onDeleted: () => toast.success(t("forms.meeting_delete.success")),
+                      showToast: false,
+                    })
+                  }
                 />
               ),
             }))
@@ -466,7 +569,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           blocks={[]}
           events={selectedEvents()}
           onTimeClick={(t) =>
-            meetingCreateModal.show({initialData: {start: t, staff: staffId ? [staffId] : undefined}})
+            meetingCreateModal.show({
+              initialValues: {
+                ...meetingTimeInitialValue(t),
+                ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
+              },
+              onSuccess: (meeting) => meetingChange("create", meeting),
+              showToast: false,
+            })
           }
         />
       ),
@@ -492,7 +602,22 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           .map(({id, text}) =>
             selectedResources().has(id)
               ? {
-                  header: () => <ResourceHeader label={() => <>{text}</>} title={text} />,
+                  header: () => (
+                    <ResourceHeader
+                      label={() => (
+                        <Button
+                          class="hover:underline"
+                          onClick={() => {
+                            setMode("week");
+                            setDaysSelectionAndMonthFromDay(day);
+                          }}
+                        >
+                          {text}
+                        </Button>
+                      )}
+                      title={text}
+                    />
+                  ),
                   ...getCalendarColumnPart(day, id),
                 }
               : undefined,
@@ -503,6 +628,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return m satisfies never;
     }
   });
+
+  const isCalendarLoading = () => !calendarColumns().length || meetingsDataQuery.isFetching;
 
   return (
     <>
@@ -596,10 +723,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <Match when={true}>
               <ColumnsCalendar
                 class="h-full min-h-0"
-                isLoading={!calendarColumns().length || meetingsDataQuery.isFetching}
+                isLoading={isCalendarLoading()}
                 columns={calendarColumns()}
                 pixelsPerHour={pixelsPerHour()}
-                scrollToDayMinute={6 * 60 + 50}
+                onVisibleRangeChange={setVisibleDayMinuteRange}
+                scrollToDayMinute={scrollToDayMinute()}
                 onWheelWithAlt={(e) =>
                   setPixelsPerHour((v) =>
                     Math.min(Math.max(v - 0.05 * e.deltaY, PIXELS_PER_HOUR_RANGE[0]), PIXELS_PER_HOUR_RANGE[1]),
