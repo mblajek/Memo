@@ -23,7 +23,7 @@
 
             > .cell {
               @apply outline outline-1 outline-gray-400 bg-gray-100;
-              min-height: 30px;
+              min-height: 2em;
             }
           }
 
@@ -31,18 +31,18 @@
             @apply contents;
 
             > .cell {
-              @apply bg-white text-black rounded-sm px-1.5 py-1 flex items-center overflow-hidden;
-              min-height: 30px;
+              @apply bg-white text-black rounded-sm overflow-hidden;
+              min-height: 2em;
             }
 
             &:hover > .cell {
-              @apply bg-hover;
+              background-color: color-mix(in srgb, theme("colors.hover") 60%, white);
             }
           }
 
           > .wideRow {
             grid-column: 1 / -1;
-            @apply bg-white p-2 text-gray-500 text-center;
+            @apply bg-white p-2 text-grey-text;
           }
 
           > .bottomBorder {
@@ -75,7 +75,7 @@
       }
       > .bottomBorder {
         @apply sticky;
-        bottom: 0;
+        bottom: 0.5px;
       }
     }
   }

@@ -5,20 +5,20 @@ import {ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/t
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
+  EmptyValueCell,
+  PaddedCell,
   Pagination,
   Table,
   cellFunc,
   getBaseTableOptions,
   useTableCells,
 } from "components/ui/Table";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {QueryBarrier} from "components/utils";
 import {useAllAttributes} from "data-access/memo-api/attributes";
 import {Dictionary, Position, useAllDictionaries} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
-import {Show, VoidComponent} from "solid-js";
+import {Show, VoidComponent, createMemo} from "solid-js";
 import {useAttrValueFormatter} from "./util";
-import {createMemo} from "solid-js";
 
 export default (() => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -50,7 +50,7 @@ export default (() => {
       }),
       helper.accessor("label", {
         id: "Label",
-        cell: cellFunc<string>((l) => <div class="italic">{l}</div>),
+        cell: cellFunc<string>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
         ...textSort,
       }),
       helper.accessor("resource.isFixed", {
@@ -58,10 +58,9 @@ export default (() => {
       }),
       helper.accessor("resource.facilityId", {
         id: "Facility",
-        cell: (ctx) => (
-          <Show when={ctx.getValue()} fallback={EMPTY_VALUE_SYMBOL}>
-            {(facilityId) => getFacility(facilityId())}
-          </Show>
+        cell: cellFunc<string>(
+          (v) => <PaddedCell>{getFacility(v)}</PaddedCell>,
+          () => <EmptyValueCell />,
         ),
         ...textSort,
       }),
@@ -87,16 +86,14 @@ export default (() => {
           .map((attr) =>
             h.accessor((row) => attr.readFrom(row.resource), {
               id: `@${attr.resource.name}`,
-              cell: (ctx) => <>{attrValueFormatter(attr, ctx.getValue())}</>,
+              cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
             }),
           ) || []),
         h.accessor("allPositions", {
           id: "Positions",
           enableSorting: false,
           cell: (ctx) => {
-            // eslint-disable-next-line solid/reactivity
             const dict = ctx.row.original;
-            // eslint-disable-next-line solid/reactivity
             const positions = ctx.getValue() as Position[];
             const h = createColumnHelper<Position>();
             const table = createSolidTable({
@@ -119,24 +116,26 @@ export default (() => {
                     .map((attr) =>
                       h.accessor((p) => attr.readFrom(p.resource), {
                         id: `@${attr.resource.name}`,
-                        cell: (ctx) => <>{attrValueFormatter(attr, ctx.getValue())}</>,
+                        cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
                       }),
                     )) ||
                   []),
               ],
             });
             return (
-              <Table
-                table={table}
-                belowTable={() =>
-                  positions.length ? (
-                    <div class="flex items-stretch gap-1">
-                      <Pagination />
-                      <div class="flex items-center">Positions: {positions.length}</div>
-                    </div>
-                  ) : undefined
-                }
-              />
+              <PaddedCell class="!p-1">
+                <Table
+                  table={table}
+                  belowTable={() =>
+                    positions.length ? (
+                      <div class="flex items-stretch gap-1">
+                        <Pagination />
+                        <div class="flex items-center">Positions: {positions.length}</div>
+                      </div>
+                    ) : undefined
+                  }
+                />
+              </PaddedCell>
             );
           },
         }),

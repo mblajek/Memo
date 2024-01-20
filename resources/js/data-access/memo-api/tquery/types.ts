@@ -43,7 +43,7 @@ interface PlainDataColumnSchema extends DataColumnSchemaBase {
   readonly attributeId?: string;
 }
 
-interface DictDataColumnSchema extends DataColumnSchemaBase {
+export interface DictDataColumnSchema extends DataColumnSchemaBase {
   readonly type: "dict" | "dict_list";
   readonly dictionaryId: string;
 }

@@ -4,6 +4,7 @@ import {Signal, createMemo, createSignal, on} from "solid-js";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
 import {ColumnName, DataRequest, Sort} from "./types";
+import {useDictionaries} from "../dictionaries";
 
 interface RequestController {
   filterText: Signal<string>;
@@ -23,6 +24,7 @@ export function createSelectRequestCreator({
   limit: number;
   distinct?: boolean;
 }): RequestCreator<RequestController> {
+  const dictionaries = useDictionaries();
   return (schema) => {
     const [filter, setFilter] = createSignal<string>("");
     // eslint-disable-next-line solid/reactivity
@@ -34,10 +36,8 @@ export function createSelectRequestCreator({
         return undefined;
       }
       return {
-        columns: columns.filter((c) => {
-          const type = sch.columns.find(({name}) => name === c)?.type;
-          return type === "string" || type === "text";
-        }),
+        schema: sch,
+        dictionaries: dictionaries(),
         // TODO: Consider adding columnsByPrefix for some columns, e.g. id= for Versum ids.
         // This would allow selecting e.g. a person by their Versum id.
       } satisfies FuzzyGlobalFilterConfig;

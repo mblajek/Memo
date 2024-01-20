@@ -43,7 +43,7 @@
       grid-column: time-track;
       @apply relative;
       .label {
-        @apply absolute w-full px-1 text-right text-xs text-gray-500;
+        @apply absolute w-full px-1 text-right text-xs text-grey-text;
       }
     }
 

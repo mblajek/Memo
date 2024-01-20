@@ -2,17 +2,20 @@ import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {System, User} from "data-access/memo-api/groups";
 import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
-import {ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
+import {BiRegularErrorAlt} from "solid-icons/bi";
+import {JSX, ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
 import {MemoLoader} from "../ui/MemoLoader";
-import {QueryBarrier, QueryBarrierProps} from "./QueryBarrier";
+import {QueryBarrier} from "./QueryBarrier";
 
 export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;
 
-export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "Pending"> {
-  /**
-   * Component rendered when access is not granted
-   */
-  readonly Fallback?: VoidComponent;
+interface Props {
+  /** Element rendered when access is not granted. */
+  readonly fallback?: () => JSX.Element;
+  /** Elements to show when query is in error state. */
+  readonly error?: () => JSX.Element;
+  /** Elements to show when query is in pending state. */
+  readonly pending?: () => JSX.Element;
   /**
    * Map of roles that user must be granted in order to access this section
    * (logical AND)
@@ -32,30 +35,24 @@ export interface AccessBarrierProps extends Pick<QueryBarrierProps, "Error" | "P
 const FACILITY_ROLES = new Set<PermissionKey>(["facilityMember", "facilityClient", "facilityStaff", "facilityAdmin"]);
 
 /**
- * Utility component that checks authentication
- * state and user's permissions
- *
- * If not authenticated, redirects to `/login`
- *
- * If not authorized, renders Fallback (by default some simple reference)
- *
- * Authorization is calculated as `AND(...props.roles)`
- *
- * Default Error -> redirect to `/login` page
- *
- * Default Pending -> `<MemoLoader />`
+ * Utility component that checks authentication state and user's permissions.
+ * Authorization is calculated as `AND(...props.roles)`.
+ * - If not authenticated, redirects to `/login`.
+ * - If not authorized, renders Fallback (by default a simple message).
+ * - Default Error -> redirect to `/login` page
+ * - Default Pending -> `<MemoLoader />`
  */
-export const AccessBarrier: ParentComponent<AccessBarrierProps> = (allProps) => {
+export const AccessBarrier: ParentComponent<Props> = (allProps) => {
   const defProps = mergeProps(
     {
-      Fallback: () => <p>Nie masz uprawnień do tego zasobu</p>,
+      fallback: () => <DefaultFallback />,
       roles: [],
-      Error: () => <Navigate href="/login" />,
-      Pending: MemoLoader,
-    },
+      error: () => <Navigate href="/login" />,
+      pending: () => <MemoLoader />,
+    } satisfies Partial<Props>,
     allProps,
   );
-  const [queryBarrierProps, props] = splitProps(defProps, ["Error", "Pending"]);
+  const [queryBarrierProps, props] = splitProps(defProps, ["error", "pending"]);
   const needFacilityPermissions = () => props.roles.some((role) => FACILITY_ROLES.has(role));
   // Create the query even if it's not needed, it is fetched on all pages anyway.
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -90,10 +87,21 @@ export const AccessBarrier: ParentComponent<AccessBarrierProps> = (allProps) => 
   return (
     <QueryBarrier queries={needFacilityPermissions() ? [facilitiesQuery] : []} {...queryBarrierProps}>
       <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
-        <Show when={accessGranted()} fallback={<props.Fallback />}>
+        <Show when={accessGranted()} fallback={props.fallback()}>
           {props.children}
         </Show>
       </QueryBarrier>
     </QueryBarrier>
   );
 };
+
+const DefaultFallback: VoidComponent = () => (
+  <p class="m-2">
+    <BiRegularErrorAlt class="inlineIcon text-red-600" /> Nie masz uprawnień do tego zasobu
+  </p>
+);
+
+/** An access barrier not showing any pending, error or fallback. */
+export const SilentAccessBarrier: ParentComponent<Props> = (props) => (
+  <AccessBarrier error={() => undefined} pending={() => undefined} fallback={() => undefined} {...props} />
+);

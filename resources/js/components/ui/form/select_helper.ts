@@ -9,6 +9,7 @@ import {SelectBaseProps, SelectProps} from "./Select";
  * in some situations.
  *
  * Example usage:
+ *
  *     const items = createMemo(() => ...);
  *     const mergedSelectProps = mergeSelectProps<"items">(someSelectProps, {items});
  *     return <Select {...mergedSelectProps} />;

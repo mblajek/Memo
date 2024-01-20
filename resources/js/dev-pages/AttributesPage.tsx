@@ -3,8 +3,16 @@ import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
 import {BigSpinner} from "components/ui/Spinner";
-import {AUTO_SIZE_COLUMN_DEFS, Header, Table, cellFunc, getBaseTableOptions, useTableCells} from "components/ui/Table";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {
+  AUTO_SIZE_COLUMN_DEFS,
+  EmptyValueCell,
+  Header,
+  PaddedCell,
+  Table,
+  cellFunc,
+  getBaseTableOptions,
+  useTableCells,
+} from "components/ui/Table";
 import {QueryBarrier} from "components/utils";
 import {Attribute, useAllAttributes} from "data-access/memo-api/attributes";
 import {useAllDictionaries} from "data-access/memo-api/dictionaries";
@@ -67,7 +75,7 @@ export default (() => {
         }),
         h.accessor("label", {
           id: "Label",
-          cell: cellFunc<string>((l) => <div class="italic">{l}</div>),
+          cell: cellFunc<string>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
           ...textSort,
         }),
         h.accessor("resource.isFixed", {
@@ -75,10 +83,9 @@ export default (() => {
         }),
         h.accessor("resource.facilityId", {
           id: "Facility",
-          cell: (ctx) => (
-            <Show when={ctx.getValue()} fallback={EMPTY_VALUE_SYMBOL}>
-              {(facilityId) => getFacility(facilityId())}
-            </Show>
+          cell: cellFunc<string>(
+            (v) => <PaddedCell>{getFacility(v)}</PaddedCell>,
+            () => <EmptyValueCell />,
           ),
           ...textSort,
         }),
@@ -107,14 +114,16 @@ export default (() => {
         }),
         h.accessor("type", {
           id: "Type",
-          cell: cellFunc<AttributeType>((type, ctx) => <>{getAttributeTypeString(ctx.row.original as Attribute)}</>),
+          cell: cellFunc<AttributeType>((type, ctx) => (
+            <PaddedCell>{getAttributeTypeString(ctx.row.original as Attribute)}</PaddedCell>
+          )),
           ...textSort,
         }),
         h.accessor("multiple", {
           id: "Multiple",
           cell: cellFunc<boolean>(
-            (multiple) => String(multiple),
-            () => EMPTY_VALUE_SYMBOL,
+            (multiple) => <PaddedCell>{String(multiple)}</PaddedCell>,
+            () => <EmptyValueCell />,
           ),
         }),
         h.accessor("requirementLevel", {
@@ -126,7 +135,7 @@ export default (() => {
           .map((attr) =>
             h.accessor((row) => attr.readFrom(row.resource), {
               id: `@${attr.resource.name}`,
-              cell: (ctx) => <>{attrValueFormatter(attr, ctx.getValue())}</>,
+              cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
             }),
           ) || []),
       ],

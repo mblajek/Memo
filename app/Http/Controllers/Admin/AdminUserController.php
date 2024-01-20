@@ -43,9 +43,9 @@ class AdminUserController extends ApiController
     )]
     public function list(): JsonResource
     {
-        $dictionariesQuery = User::query();
-        $this->applyRequestIn($dictionariesQuery);
-        return AdminUserResource::collection($dictionariesQuery->with(['members'])->get());
+        $userQuery = User::query();
+        $this->applyRequestIn($userQuery);
+        return AdminUserResource::collection($userQuery->with(['members'])->get());
     }
 
     #[OA\Post(

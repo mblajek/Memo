@@ -1,3 +1,4 @@
+import {A, AnchorProps} from "@solidjs/router";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
@@ -6,13 +7,15 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {createCalendarRequestCreator, meetingsFromQuery} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
-import {MeetingCreateModal, showMeetingCreateModal} from "features/meeting/MeetingCreateModal";
-import {MeetingModal, showMeetingModal} from "features/meeting/MeetingModal";
+import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
+import {createMeetingModal} from "features/meeting/meeting_modal";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
+import {OcTable3} from "solid-icons/oc";
 import {TbInfoTriangle} from "solid-icons/tb";
 import {
   Match,
+  Show,
   Signal,
   Switch,
   VoidComponent,
@@ -54,6 +57,7 @@ interface Props extends htmlAttributes.div {
   readonly initialDay?: DateTime;
   /** The key to use for persisting the parameters of the displayed page. If not present, nothing is persisted. */
   readonly staticPersistenceKey?: string;
+  readonly meetingListLinkProps?: AnchorProps;
 }
 
 const defaultProps = () =>
@@ -99,8 +103,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "initialResourcesSelection",
     "initialDay",
     "staticPersistenceKey",
+    "meetingListLinkProps",
   ]);
   const t = useLangFunc();
+  const meetingCreateModal = createMeetingCreateModal();
+  const meetingModal = createMeetingModal();
 
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
@@ -133,7 +140,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           styling: {style, hoverStyle},
           hoverStyle,
           label: () => (
-            <div class="w-full flex justify-between gap-1">
+            <div class="w-full flex justify-between gap-1 select-none">
               <span>{staff.name}</span>
               <span
                 class="self-center border rounded"
@@ -158,7 +165,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const resourceGroups = createMemo((): ResourceGroup[] => [
     {
       label: () => (
-        <span class="font-bold">
+        <span class="font-bold select-none">
           <Capitalize text={t("models.staff._name_plural")} />
         </span>
       ),
@@ -445,7 +452,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 <MeetingEventBlock
                   meeting={ev.meeting}
                   {...staffResourcesById().get(staffId)?.styling}
-                  onClick={() => showMeetingModal({meetingId: ev.meeting.id})}
+                  onClick={() => meetingModal.show({meetingId: ev.meeting.id, initialViewMode: true})}
                 />
               ),
             }))
@@ -458,13 +465,15 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           day={day}
           blocks={[]}
           events={selectedEvents()}
-          onTimeClick={(t) => showMeetingCreateModal({initialData: {start: t, staff: staffId ? [staffId] : undefined}})}
+          onTimeClick={(t) =>
+            meetingCreateModal.show({initialData: {start: t, staff: staffId ? [staffId] : undefined}})
+          }
         />
       ),
     } satisfies Partial<CalendarColumn>;
   }
 
-  const calendarColumns = (): CalendarColumn[] => {
+  const calendarColumns = createMemo((): CalendarColumn[] => {
     const m = mode();
     switch (m) {
       case "month":
@@ -493,7 +502,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       default:
         return m satisfies never;
     }
-  };
+  });
 
   return (
     <>
@@ -533,6 +542,18 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             selection={selectedResources()}
             setSelection={setSelectedResources}
           />
+          <Show when={props.meetingListLinkProps}>
+            <div class="grow" />
+            <div class="p-1 border-t border-r flex gap-0.5">
+              <Show when={props.meetingListLinkProps}>
+                {(linkProps) => (
+                  <A {...linkProps()} class="flex items-center" title={t("calendar.show_meeting_list")}>
+                    <OcTable3 />
+                  </A>
+                )}
+              </Show>
+            </div>
+          </Show>
         </div>
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
@@ -575,7 +596,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <Match when={true}>
               <ColumnsCalendar
                 class="h-full min-h-0"
-                isLoading={meetingsDataQuery.isFetching}
+                isLoading={!calendarColumns().length || meetingsDataQuery.isFetching}
                 columns={calendarColumns()}
                 pixelsPerHour={pixelsPerHour()}
                 scrollToDayMinute={6 * 60 + 50}
@@ -589,8 +610,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           </Switch>
         </div>
       </div>
-      <MeetingCreateModal />
-      <MeetingModal />
     </>
   );
 };

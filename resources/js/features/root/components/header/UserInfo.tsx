@@ -1,35 +1,44 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
-import {DATE_TIME_WITH_WEEKDAY_FORMAT, currentTime, useLangFunc} from "components/utils";
+import {MemoLoader} from "components/ui/MemoLoader";
+import {PopOver} from "components/ui/PopOver";
+import {SimpleMenu} from "components/ui/SimpleMenu";
+import {DATE_TIME_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
-import {HeaderSeparator} from "features/root/layout/HeaderSeparator";
-import {PasswordChangeForm} from "features/user-panel/PasswordChange.form";
-import {HiOutlineCheckCircle, HiOutlinePower, HiOutlineXCircle} from "solid-icons/hi";
+import {useInvalidator} from "data-access/memo-api/invalidator";
+import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
+import {HiOutlineCheckCircle, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
-import {Index, Match, Switch, VoidComponent} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
   const statusQuery = createQuery(User.statusQueryOptions);
+  const passwordChangeModal = createPasswordChangeModal();
 
-  const invalidate = User.useInvalidator();
+  const invalidate = useInvalidator();
   const logout = createMutation(() => ({
     mutationFn: () => User.logout(),
+    meta: {
+      isFormSubmit: true,
+    },
     onSuccess() {
       setActiveFacilityId(undefined);
       // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
-      invalidate.statusAndFacilityPermissions();
+      invalidate.userStatusAndFacilityPermissions();
     },
   }));
 
   return (
-    <div class="pr-2 text-sm flex flex-row justify-between items-center gap-4">
-      <div class="flex flex-row justify-between items-center gap-2">
+    <div class="pr-2 text-sm flex justify-between items-center gap-4">
+      <div class="flex justify-between items-center gap-2">
         <div>
           <Switch>
             <Match when={statusQuery.data?.permissions.verified}>
-              <HiOutlineCheckCircle class="text-green-700" size="30" />
+              <div title={t("verified_user")}>
+                <HiOutlineCheckCircle class="text-memo-active" size="30" />
+              </div>
             </Match>
             <Match when={statusQuery.data?.permissions.unverified}>
               <div title={t("unverified_user")}>
@@ -39,38 +48,36 @@ export const UserInfo: VoidComponent = () => {
           </Switch>
         </div>
         <div class="flex flex-col justify-between items-stretch">
-          <span>
+          <div>
             <Index
               // Display each part in a separate span to allow selecting the date.
-              each={currentTime().toLocaleParts(DATE_TIME_WITH_WEEKDAY_FORMAT)}
+              each={currentTime().toLocaleParts({...DATE_TIME_FORMAT, weekday: "long"})}
             >
               {(item) => <span>{item().value}</span>}
             </Index>
-          </span>
-          <span>
+          </div>
+          <div class="flex gap-1">
             {statusQuery.data?.user.name}
-            {/* This is a temporary location for the change password button. */}
-            <Button
-              class="m-1"
-              onClick={() => PasswordChangeForm.showModal()}
-              title={t("forms.password_change.formName")}
+            <PopOver
+              trigger={(triggerProps) => (
+                <Button title={t("user_settings")} {...triggerProps()}>
+                  <TbPassword class="inlineIcon" />
+                </Button>
+              )}
             >
-              <TbPassword />
-            </Button>
-            <PasswordChangeForm.PasswordChangeModal />
-          </span>
+              <SimpleMenu
+                items={[
+                  {label: t("actions.change_password"), onClick: () => passwordChangeModal.show()},
+                  {label: t("actions.log_out"), onClick: () => logout.mutate()},
+                ]}
+              />
+            </PopOver>
+          </div>
         </div>
       </div>
-      <HeaderSeparator />
-      <div class="flex justify-center items-center">
-        <Button
-          class="rounded-lg flex flex-row justify-center items-center hover:bg-white"
-          onClick={() => logout.mutate()}
-          title={t("actions.log_out")}
-        >
-          <HiOutlinePower class="text-red-500" size="30" />
-        </Button>
-      </div>
+      <Show when={logout.isPending}>
+        <MemoLoader />
+      </Show>
     </div>
   );
 };

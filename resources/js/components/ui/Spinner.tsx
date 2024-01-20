@@ -10,6 +10,6 @@ export const BigSpinner: VoidComponent = () => (
 
 export const SmallSpinner: VoidComponent = () => (
   <span class="mx-0.5">
-    <ImSpinner2 size={16} class="inlineIcon animate-spin" />
+    <ImSpinner2 size="0.9em" class="inlineIcon animate-spin" />
   </span>
 );

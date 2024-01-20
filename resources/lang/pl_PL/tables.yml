@@ -40,6 +40,7 @@ tables:
     summary__many: "{{count, number}} placówek"
 
   meeting:
+    tableName: "$t(models.meeting._name_plural)"
     summary__zero: "Brak spotkań"
     summary__one: "{{count, number}} spotkanie"
     summary__few: "{{count, number}} spotkania"

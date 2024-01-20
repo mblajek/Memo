@@ -144,7 +144,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
     on(
       () => props.scrollToTopSignal?.(),
       (_input, prevInput) => {
-        if (prevInput !== undefined) {
+        if (props.mode === "standalone" && prevInput !== undefined) {
           scrollToTopElement?.scrollIntoView({behavior: "smooth"});
         }
       },

@@ -4,12 +4,12 @@ import {Capitalize} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {SimpleTag, Tag, TagsLine} from "components/ui/Tag";
 import {bleachColor} from "components/ui/colors";
-import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
+import {UserLink} from "features/facility-users/UserLink";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {For, JSX, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
@@ -61,6 +61,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     props.meeting.resources
       .map((r) => dictionaries()?.positionById(r.resourceDictId).label)
       .filter(NON_NULLABLE)
+      // Join by comma because Intl.ListFormat doesn't seem to work very well in Polish.
       .join(", ");
   /** The boundary for the hovers. Allow the full width of the page. */
   const boundary = () => {
@@ -75,7 +76,6 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const [hoverState, hoverSend] = useMachine(
     hoverCard.machine({
       id: createUniqueId(),
-      openDelay: 100,
       closeDelay: DISAPPEAR_MILLIS,
       positioning: {
         boundary,
@@ -86,13 +86,16 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         flip: true,
       },
     }),
+    // Make sure the hover is not opened initially - this causes the position to be calculated incorrectly.
+    // This is a workaround for what seems to be a zag bug.
+    {context: () => ({openDelay: dictionaries() ? 100 : 2000})},
   );
   const hoverApi = createMemo(() => hoverCard.connect(hoverState, hoverSend, normalizeProps));
   const [hovered, setHovered] = createSignal(false);
   return (
     <>
       <div
-        class="w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer"
+        class="w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer select-none"
         style={{...props.style, ...(hovered() ? props.hoverStyle : undefined)}}
         {...hoverApi().triggerProps}
         onMouseEnter={[setHovered, true]}
@@ -111,13 +114,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           <Show when={props.meeting.clients.length}>
             <div>
               <For each={props.meeting.clients}>
-                {(client) => (
-                  // Allow wrapping the client name, but not just after the icon.
-                  <div style={{"white-space": "nowrap"}}>
-                    <CLIENT_ICONS.client size="16" class="inline mb-px shrink-0" />
-                    <span style={{"white-space": "initial"}}>{client.name}</span>
-                  </div>
-                )}
+                {(client) => <UserLink type="clients" link={false} userId={client.userId} name={client.name} />}
               </For>
             </div>
           </Show>
@@ -147,8 +144,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                     <For each={props.meeting.staff}>
                       {(staff) => (
                         <li>
-                          <STAFF_ICONS.staff size="20" class="inline mb-px shrink-0 mr-1" />
-                          <span>{staff.name}</span>
+                          <UserLink type="staff" link={false} userId={staff.userId} name={staff.name} />
                         </li>
                       )}
                     </For>
@@ -159,8 +155,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                     <For each={props.meeting.clients}>
                       {(client) => (
                         <li>
-                          <CLIENT_ICONS.client size="20" class="inline mb-px shrink-0 mr-1" />
-                          <span>{client.name}</span>
+                          <UserLink type="clients" link={false} userId={client.userId} name={client.name} />
                         </li>
                       )}
                     </For>
@@ -195,7 +190,9 @@ const FieldDisp: ParentComponent<FieldLabelProps> = (props) => {
   return (
     <div class="flex flex-col">
       <div class="font-medium">
-        <Capitalize text={t("with_colon", {text: t(`models.meeting.${props.field}`)})} />
+        <Capitalize
+          text={t("with_colon", {text: t([`models.meeting.${props.field}`, `models.generic.${props.field}`])})}
+        />
       </div>
       <div>{props.children}</div>
     </div>

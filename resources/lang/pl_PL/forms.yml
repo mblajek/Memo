@@ -8,7 +8,7 @@ password_change:
     current: "aktualne hasło"
     password: "nowe hasło"
     repeat: "powtórz nowe hasło"
-  submit: "Zmień hasło"
+  submit: "$t(actions.change_password)"
   success: "Hasło zostało zmienione"
 
 user:
@@ -27,22 +27,22 @@ user_edit:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
     cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu email jako niezweryfikowany."
   submit: "$t(actions.save)"
-  success: "Pomyślnie zmieniono dane"
+  success: "Zmieniono dane"
 
 user_create:
   formName: "Nowa osoba"
   submit: "$t(actions.create)"
-  success: "Pomyślnie utworzono"
+  success: "Utworzono osobę"
 
 facility_create:
   formName: "Nowa placówka"
   submit: "$t(actions.create)"
-  success: "Pomyślnie utworzono placówkę"
+  success: "Utworzono placówkę"
 
 facility_edit:
   formName: "Edycja placówki"
   submit: "$t(actions.save)"
-  success: "Pomyślnie zmieniono placówkę"
+  success: "Zmieniono dane placówki"
 
 meeting:
   default_duration: "Sugerowane: {{text}}"
@@ -52,11 +52,22 @@ meeting:
   fieldNames:
     dateAndTime: "data i godzina"
     durationMinutes: "długość spotkania"
-    staff__interval: "(0-1)[$t(models.staff._name)];(2-inf)[$t(models.staff._name_plural)];"
-    clients__interval: "(0-1)[$t(models.client._name)];(2-inf)[$t(models.client._name_plural)];"
+    staff__interval: "(1)[$t(models.staff._name)];(0-inf)[$t(models.staff._name_plural)];"
+    clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
     attendanceStatusDictId: "obecność"
 
 meeting_create:
   formName: "Nowe spotkanie"
   submit: "$t(actions.create)"
-  success: "Pomyślnie utworzono spotkanie"
+  success: "Utworzono spotkanie"
+
+meeting_edit:
+  formName: "Edycja spotkania"
+  submit: "$t(actions.save)"
+  success: "Zmieniono spotkanie"
+
+meeting_delete:
+  formName: "Usunięcie spotkania"
+  confirmationText: "Czy na pewno usunąć to spotkanie?"
+  submit: "Usuń spotkanie"
+  success: "Usunięto spotkanie"

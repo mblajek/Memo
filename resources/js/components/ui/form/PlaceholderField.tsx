@@ -12,4 +12,6 @@ interface Props {
  * API fields that don't exist directly in the form, but can receive validation errors, should also
  * be present in the form as a placeholder field.
  */
-export const PlaceholderField: VoidComponent<Props> = (props) => <input name={props.name} type="hidden" />;
+export const PlaceholderField: VoidComponent<Props> = (props) => (
+  <input name={props.name} type="hidden" data-felte-keep-on-remove />
+);

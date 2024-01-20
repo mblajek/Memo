@@ -5,7 +5,7 @@ import {QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {VoidComponent, createEffect, onMount} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
-import {LoginForm} from "../forms/login/Login.form";
+import {createLoginModal} from "../forms/login/login_modal";
 
 /**
  * The login page.
@@ -17,20 +17,22 @@ import {LoginForm} from "../forms/login/Login.form";
 export default (() => {
   const statusQuery = createQuery(User.statusQueryOptions);
   onMount(() => setActiveFacilityId(undefined));
-  createEffect(() => LoginForm.showModal(statusQuery.isError));
+  const loginModal = createLoginModal();
+  createEffect(() => {
+    if (statusQuery.isError && !loginModal.getValue()) {
+      loginModal.show();
+    }
+  });
   return (
-    <>
-      <LoginForm.LoginModal />
-      <QueryBarrier
-        queries={[statusQuery]}
-        Error={
-          // Do not show any errors, instead just show this login form.
-          () => undefined
-        }
-        Pending={MemoLoader}
-      >
-        <Navigate href="/help" state={{fromLoginPage: true}} />
-      </QueryBarrier>
-    </>
+    <QueryBarrier
+      queries={[statusQuery]}
+      error={
+        // Do not show any errors, instead just show this login form.
+        () => undefined
+      }
+      pending={() => <MemoLoader />}
+    >
+      <Navigate href="/help" state={{fromLoginPage: true}} />
+    </QueryBarrier>
   );
 }) satisfies VoidComponent;

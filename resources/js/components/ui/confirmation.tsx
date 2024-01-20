@@ -1,31 +1,30 @@
-import {JSX, VoidComponent, createSignal} from "solid-js";
+import {JSX} from "solid-js";
 import {useLangFunc} from "../utils";
+import {registerGlobalPageElement} from "../utils/GlobalPageElements";
 import {Button} from "./Button";
 import {Modal} from "./Modal";
 
 interface ConfirmParams {
-  title: string;
-  body?: JSX.Element;
-  confirmText?: string;
-  cancelText?: string;
+  readonly title: string;
+  readonly body?: JSX.Element;
+  readonly confirmText?: string;
+  readonly cancelText?: string;
 }
 
 interface ConfirmData extends ConfirmParams {
-  resolve: (confirmed: boolean | undefined) => void;
+  readonly resolve: (confirmed: boolean | undefined) => void;
 }
 
-const [data, setData] = createSignal<ConfirmData>();
-
-export const Confirmation: VoidComponent = () => {
+const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args) => {
   const t = useLangFunc();
   return (
     <Modal
-      title={data()?.title}
-      open={data()}
+      title={args.params()?.title}
+      open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={() => {
-        data()?.resolve(undefined);
-        setData(undefined);
+        args.params()?.resolve(undefined);
+        args.clearParams();
       }}
     >
       {(data) => (
@@ -36,7 +35,7 @@ export const Confirmation: VoidComponent = () => {
               class="flex-grow basis-0 secondary"
               onClick={() => {
                 data().resolve(false);
-                setData(undefined);
+                args.clearParams();
               }}
             >
               {data().cancelText || t("actions.cancel")}
@@ -45,7 +44,7 @@ export const Confirmation: VoidComponent = () => {
               class="flex-grow basis-0 primary"
               onClick={() => {
                 data().resolve(true);
-                setData(undefined);
+                args.clearParams();
               }}
             >
               {data().confirmText || t("actions.confirm")}
@@ -55,14 +54,14 @@ export const Confirmation: VoidComponent = () => {
       )}
     </Modal>
   );
-};
+});
 
-/**
- * Shows a confirmation dialog and returns a promise resolving to true if confirmed, false if cancelled
- * and undefined if closed without clicking a button.
- */
-export function confirm(params: ConfirmParams | string) {
-  return new Promise<boolean | undefined>((resolve) =>
-    setData({...(typeof params === "string" ? {title: params} : params), resolve}),
-  );
+export function createConfirmation() {
+  const {show} = createConfirmationInternal();
+  return {
+    confirm: (params: ConfirmParams | string) =>
+      new Promise<boolean | undefined>((resolve) =>
+        show({...(typeof params === "string" ? {title: params} : params), resolve}),
+      ),
+  };
 }

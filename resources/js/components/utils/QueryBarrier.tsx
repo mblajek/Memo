@@ -1,5 +1,5 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {Match, ParentProps, Switch, VoidComponent, createEffect, mergeProps, on} from "solid-js";
+import {For, JSX, Match, ParentProps, Show, Switch, VoidComponent, createEffect, mergeProps, on} from "solid-js";
 import {BigSpinner} from "../ui/Spinner";
 
 export interface QueryBarrierProps {
@@ -10,10 +10,10 @@ export interface QueryBarrierProps {
    * See `Query.isFetchedAfterMount`.
    */
   readonly ignoreCachedData?: boolean;
-  /** Component to show when query is in error state. */
-  readonly Error?: VoidComponent;
-  /** Component to show when query is in pending state. */
-  readonly Pending?: VoidComponent;
+  /** Elements to show when query is in error state. */
+  readonly error?: (queries: readonly CreateQueryResult<unknown, unknown>[]) => JSX.Element;
+  /** Elements to show when query is in pending state. */
+  readonly pending?: () => JSX.Element;
 }
 
 /**
@@ -24,9 +24,8 @@ export interface QueryBarrierProps {
 export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
   const props = mergeProps(
     {
-      // TODO: dedicated Error element
-      Error: LocalError,
-      Pending: LocalSpinner,
+      error: () => <SimpleErrors queries={props.queries} />,
+      pending: () => <BigSpinner />,
     },
     allProps,
   );
@@ -37,7 +36,7 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
         // We expect all queries to have fresh (not cached) data, so force fetch on those queries
         // that didn't start their first fetch yet.
         for (const query of queries) {
-          if (!query.isFetchedAfterMount && !query.isFetching) {
+          if (!query.isFetchedAfterMount && query.fetchStatus === "idle") {
             query.refetch();
           }
         }
@@ -51,17 +50,26 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
 
   return (
     <Switch>
-      <Match when={isError()}>
-        <props.Error />
-      </Match>
-      <Match when={isPending()}>
-        <props.Pending />
-      </Match>
+      <Match when={isError()}>{props.error(props.queries)}</Match>
+      <Match when={isPending()}>{props.pending()}</Match>
       <Match when={isSuccess()}>{props.children}</Match>
     </Switch>
   );
 }
 
-const LocalSpinner = () => <BigSpinner />;
+export type QueryErrorsProps = Pick<QueryBarrierProps, "queries">;
 
-const LocalError = () => <p>error</p>;
+export const SimpleErrors: VoidComponent<QueryErrorsProps> = (props) => (
+  <div class="text-red-700 wrapTextAnywhere">
+    <p>Errors:</p>
+    <ul class="list-disc list-inside">
+      <For each={props.queries}>
+        {(query) => (
+          <Show when={query.isError}>
+            <li>{JSON.stringify(query.error)}</li>
+          </Show>
+        )}
+      </For>
+    </ul>
+  </div>
+);

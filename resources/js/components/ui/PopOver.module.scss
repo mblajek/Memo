@@ -1,10 +1,6 @@
-.columnVisibility {
-  [data-part="trigger"] {
-    @apply w-full h-full rounded px-2 border border-input-border pressedWithShadow;
-  }
-}
+.popOverPortal {
+  @apply absolute z-dropdown;
 
-.columnVisibilityPortal {
   [data-part="content"][data-state="open"] {
     @apply bg-white border border-gray-700 rounded shadow-xl overflow-clip flex flex-col;
     max-height: var(--available-height);

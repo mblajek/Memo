@@ -58,6 +58,7 @@
     "@zag-js/popover": "0.26.0",
     "@zag-js/radio-group": "0.26.0",
     "@zag-js/solid": "0.26.0",
+    "@zag-js/tabs": "^0.26.0",
     "axios": "^1.6.4",
     "classnames": "^2.5.1",
     "html-parse-string": "^0.0.9",

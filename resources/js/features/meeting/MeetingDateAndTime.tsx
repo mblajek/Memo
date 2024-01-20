@@ -1,11 +1,10 @@
-import {Button} from "components/ui/Button";
+import {Button, EditButton} from "components/ui/Button";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {DayMinuteRange, dayMinuteToTimeInput, timeInputToDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
-import {FiEdit2} from "solid-icons/fi";
 import {For, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
@@ -16,6 +15,7 @@ interface Props {
    * Warning: It looks like it does not work very well in chrome as of December 2023.
    */
   readonly suggestedTimes?: SuggestedTimes;
+  readonly viewMode?: boolean;
 }
 
 interface SuggestedTimes {
@@ -49,10 +49,11 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
     };
   });
   const showEditable = () =>
-    isForceEditable() ||
-    !form.data("date") ||
-    !form.data("time.startTime") ||
-    (form.data("typeDictId") && durationMinutes() !== defaultDurationMinutes());
+    !props.viewMode &&
+    (isForceEditable() ||
+      !form.data("date") ||
+      !form.data("time.startTime") ||
+      (form.data("typeDictId") && durationMinutes() !== defaultDurationMinutes()));
   return (
     <>
       <FieldBox name="dateAndTime" validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
@@ -118,9 +119,9 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}
               durationMinutes={durationMinutes()}
             />
-            <Button class="secondary small" onClick={() => setForceEditable(true)}>
-              <FiEdit2 class="inlineIcon strokeIcon text-current" /> {t("actions.edit")}
-            </Button>
+            <Show when={!props.viewMode}>
+              <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
+            </Show>
           </div>
         </Show>
       </FieldBox>

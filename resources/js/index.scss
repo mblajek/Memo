@@ -4,7 +4,16 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap");
 
+// Colour Contrast Checker: https://colourcontrast.cc/
+
 @layer base {
+  // A darker version of the memo-active color, giving enough contrast on a white background, according to the WCAG tests.
+  $memo-active-contrasted: color-mix(
+    in srgb,
+    rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)),
+    black 30%
+  );
+
   html {
     @apply font-roboto;
 
@@ -33,8 +42,13 @@
     border: 4px solid var(--sb-track-color);
   }
 
-  input[type="checkbox"]:disabled:not(:checked) {
-    filter: brightness(0.8);
+  input[type="checkbox"] {
+    &:disabled {
+      filter: brightness(0.8);
+      &:checked {
+        filter: brightness(0.62) contrast(7);
+      }
+    }
   }
 
   select {
@@ -43,7 +57,9 @@
   }
 
   a {
-    @apply underline text-blue-500;
+    @apply underline;
+    // Make sure this color gives enough contrast on a hovered table row, according to the WCAG tests.
+    color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)), blue 45%);
   }
 
   button {
@@ -59,12 +75,18 @@
     }
 
     &.primary {
-      @apply p-2 rounded bg-memo-active text-white;
+      @apply p-2 rounded text-white;
+      background-color: $memo-active-contrasted;
       @apply disabled:bg-opacity-50;
+      &:active:not(:disabled) {
+        @apply bg-memo-active;
+      }
       @include pressedWithShadow;
     }
+
     &.secondary {
-      @apply p-2 rounded border border-memo-active text-memo-active;
+      @apply p-2 rounded border border-memo-active;
+      color: $memo-active-contrasted;
       @apply disabled:text-opacity-50 disabled:border-opacity-50;
       &:active:not(:disabled) {
         @apply bg-hover;

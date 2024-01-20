@@ -18,7 +18,7 @@ class ClientTqueryController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::facilityAdmin);
+        $this->permissionOneOf(Permission::facilityAdmin, Permission::facilityStaff);
     }
 
     private function getTqService(): TqService
@@ -28,7 +28,7 @@ class ClientTqueryController extends ApiController
 
     #[OpenApiGet(
         path: '/api/v1/facility/{facility}/user/client/tquery',
-        permissions: new PermissionDescribe(Permission::facilityAdmin),
+        permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Facility clients tquery',
         tag: 'Facility client',
         parameters: [new FacilityParameter()],
@@ -40,7 +40,7 @@ class ClientTqueryController extends ApiController
 
     #[OpenApiPost(
         path: '/api/v1/facility/{facility}/user/client/tquery',
-        permissions: new PermissionDescribe(Permission::facilityAdmin),
+        permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Facility clients tquery',
         tag: 'Facility client',
         parameters: [new FacilityParameter()],

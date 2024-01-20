@@ -12,12 +12,13 @@ import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
+import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 
 const root = document.getElementById("root");
 
 if (!(root instanceof HTMLElement)) throw new Error("Root element not found.");
 
-const TOAST_DURATION_SECS = 8;
+const TOAST_DURATION_SECS = 10;
 
 Settings.throwOnInvalid = true;
 declare module "luxon" {
@@ -70,6 +71,7 @@ render(() => {
             </Router>
           </InitializeTanstackQuery>
         </MetaProvider>
+        <GlobalPageElements />
         <LoaderInPortal />
       </ErrorBoundary>
     </TransProvider>

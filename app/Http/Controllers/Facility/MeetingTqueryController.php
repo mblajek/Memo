@@ -18,7 +18,7 @@ class MeetingTqueryController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::facilityAdmin);
+        $this->permissionOneOf(Permission::facilityAdmin, Permission::facilityStaff);
     }
 
     private function getTqService(): TqService
@@ -28,7 +28,7 @@ class MeetingTqueryController extends ApiController
 
     #[OpenApiGet(
         path: '/api/v1/facility/{facility}/meeting/tquery',
-        permissions: new PermissionDescribe(Permission::facilityAdmin),
+        permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Facility meetings tquery',
         tag: 'Facility meeting',
         parameters: [new FacilityParameter()],
@@ -40,7 +40,7 @@ class MeetingTqueryController extends ApiController
 
     #[OpenApiPost(
         path: '/api/v1/facility/{facility}/meeting/tquery',
-        permissions: new PermissionDescribe(Permission::facilityAdmin),
+        permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Facility meetings tquery',
         tag: 'Facility meeting',
         parameters: [new FacilityParameter()],

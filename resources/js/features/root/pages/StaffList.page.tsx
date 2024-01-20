@@ -1,9 +1,10 @@
-import {cellFunc, createTableTranslations} from "components/ui/Table";
+import {Email} from "components/ui/Email";
+import {PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {UserLink} from "features/facility-users/UserLink";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
-import {Email} from "components/ui/Email";
 
 export default (() => {
   return (
@@ -16,17 +17,34 @@ export default (() => {
         staticPersistenceKey="facilityStaff"
         columns={[
           {name: "id", initialVisible: false},
-          {name: "name", columnDef: {enableHiding: false}},
-          {name: "email", columnDef: {cell: cellFunc<string>((v) => <Email class="w-full" email={v} />)}},
+          {
+            name: "name",
+            extraDataColumns: ["id"],
+            columnDef: {
+              cell: cellFunc<string>((v, ctx) => (
+                <PaddedCell>
+                  <UserLink type="staff" userId={ctx.row.getValue("id")} name={v} />
+                </PaddedCell>
+              )),
+              enableHiding: false,
+            },
+          },
+          {
+            name: "email",
+            columnDef: {
+              cell: cellFunc<string>((v) => (
+                <PaddedCell>
+                  <Email class="w-full" email={v} />
+                </PaddedCell>
+              )),
+            },
+          },
           {name: "hasEmailVerified", initialVisible: false},
           {name: "hasPassword"},
           {name: "passwordExpireAt", initialVisible: false},
           {
             name: "hasGlobalAdmin",
-            columnDef: {
-              cell: cellFunc<boolean>((adm) => <span class="w-full text-center">{adm ? "💪🏽" : ""}</span>),
-              size: 130,
-            },
+            columnDef: {size: 130},
             initialVisible: false,
           },
           {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
