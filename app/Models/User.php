@@ -131,13 +131,12 @@ class User extends Authenticatable
                         // If there's a password, there must also be an email.
                         'required_with:password',
                     ],
-                    ...Valid::trimmed([
+                    ...array_filter(Valid::trimmed([
                         // It is a valid email address
                         'email',
                         // Uniqueness is only checked for insert and patch
                         [$isInsert || $isPatch, self::getRuleUnique($original)],
-                    ],
-                        nullable: true),
+                    ], nullable: true), fn(mixed $rule) => $rule !== 'present'),
                 ],
             'has_email_verified' =>
                 [
@@ -160,7 +159,7 @@ class User extends Authenticatable
                         'required_if_accepted:has_password',
                         'required_if_accepted:has_global_admin',
                     ],
-                    ...Valid::string([
+                    ...array_filter(Valid::string([
                         [
                             $isInsert || $isPatch,
                             // This is only applied to insert and patch because later on the password field gets replaced
@@ -171,16 +170,12 @@ class User extends Authenticatable
                             // new RequirePresentRule('password_expire_at')
                             // TODO: Learn if we should use it. UI sends null at the moment.
                         ],
-                    ],
-                        nullable: true),
+                    ], nullable: true), fn(mixed $rule) => $rule !== 'present'),
                 ],
             'password_expire_at' => [
                 // TODO: Figure out how to implement an "implicit" custom validation rule
                 // Password expiration is a valid datetime and if the date defined, the password must not be null.
-                ...Valid::datetime(
-                    sometimes: $isPatch,
-                    nullable: true
-                ),
+                ...Valid::datetime(sometimes: $isPatch, nullable: true),
             ],
             'has_password' => [
                 // It must be true if the user is a global admin.

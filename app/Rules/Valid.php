@@ -161,8 +161,7 @@ class Valid extends AbstractDataRule
         return array_merge(
             $sometimes ? ['sometimes'] : [],
             // todo: consider: ['present', new self($nullable, ['bail', ...$rules]), ...$additionalRules],
-            // TODO!: restore "present" rule
-            [new self($nullable, array_merge(['bail'], $rules, $additionalRules))],
+            ['present', new self($nullable, array_merge(['bail'], $rules, $additionalRules))],
         );
     }
 }

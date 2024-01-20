@@ -80,13 +80,10 @@ class UserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function patch(UpdateUserService $service): JsonResponse
     {
-        // TODO!: fix for new validator
         $user = $this->getUserOrFail();
-        $data = $this->validate(
-            User::getPatchValidator([
-                'last_login_facility_id',
-            ], $user)
-        );
+        $data = $this->validate([
+            'last_login_facility_id' => 'nullable|uuid|exists:facilities,id|sometimes',
+        ]);
         $service->handle($user, $data);
 
         return new JsonResponse();

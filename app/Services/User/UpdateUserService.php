@@ -12,8 +12,9 @@ use Throwable;
 
 readonly class UpdateUserService
 {
-    public function __construct(private MergePatchService $mergePatchService)
-    {
+    public function __construct(
+        private MergePatchService $mergePatchService
+    ) {
     }
 
     /**
