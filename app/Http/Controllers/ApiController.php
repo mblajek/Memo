@@ -22,7 +22,7 @@ abstract class ApiController extends Controller
     private readonly PermissionObject $permissionObject;
     private readonly array $requestIn;
 
-    public function __construct(protected readonly Request $request)
+    public function __construct(private readonly Request $request)
     {
         $this->permissionOneOf(Permission::any);
         $this->initPermissions();
