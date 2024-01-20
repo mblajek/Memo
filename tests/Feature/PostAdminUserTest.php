@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
@@ -123,16 +122,16 @@ class PostAdminUserTest extends TestCase
             [
                 "errors" => [
                     [
-                        "code" => "exception.validation"
+                        "code" => "exception.validation",
                     ],
                     [
                         "field" => "email",
                         "code" => "validation.required_if_accepted",
                         "data" => [
-                            "other" => "hasGlobalAdmin"
-                        ]
-                    ]
-                ]
+                            "other" => "hasGlobalAdmin",
+                        ],
+                    ],
+                ],
             ]
         );
     }
@@ -173,18 +172,18 @@ class PostAdminUserTest extends TestCase
         $result->assertJson([
             "errors" => [
                 [
-                    "code" => "exception.validation"
+                    "code" => "exception.validation",
                 ],
                 [
                     "field" => "hasEmailVerified",
                     "code" => "validation.required_with",
                     "data" => [
                         "values" => [
-                            "email"
-                        ]
-                    ]
-                ]
-            ]
+                            "email",
+                        ],
+                    ],
+                ],
+            ],
         ]);
     }
 
@@ -205,18 +204,18 @@ class PostAdminUserTest extends TestCase
         $result->assertJson([
             "errors" => [
                 [
-                    "code" => "exception.validation"
+                    "code" => "exception.validation",
                 ],
                 [
                     "field" => "hasEmailVerified",
                     "code" => "validation.required_with",
                     "data" => [
                         "values" => [
-                            "email"
-                        ]
-                    ]
-                ]
-            ]
+                            "email",
+                        ],
+                    ],
+                ],
+            ],
         ]);
     }
 
@@ -239,16 +238,16 @@ class PostAdminUserTest extends TestCase
             [
                 "errors" => [
                     [
-                        "code" => "exception.validation"
+                        "code" => "exception.validation",
                     ],
                     [
                         "field" => "email",
                         "code" => "validation.required_if_accepted",
                         "data" => [
-                            "other" => "hasPassword"
-                        ]
-                    ]
-                ]
+                            "other" => "hasPassword",
+                        ],
+                    ],
+                ],
             ]
         );
     }
@@ -271,16 +270,16 @@ class PostAdminUserTest extends TestCase
             [
                 "errors" => [
                     [
-                        "code" => "exception.validation"
+                        "code" => "exception.validation",
                     ],
                     [
                         "field" => "email",
                         "code" => "validation.required_if_accepted",
                         "data" => [
-                            "other" => "hasPassword"
-                        ]
-                    ]
-                ]
+                            "other" => "hasPassword",
+                        ],
+                    ],
+                ],
             ]
         );
     }

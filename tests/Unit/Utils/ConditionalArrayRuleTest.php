@@ -9,25 +9,25 @@ class ConditionalArrayRuleTest extends TestCase
 {
     public function testIsConditionalArray()
     {
-        self::assertFalse(ConditionalArrayRule::is_conditional_array([]));
-        self::assertFalse(ConditionalArrayRule::is_conditional_array(['a', 'b', 'c']));
-        self::assertFalse(ConditionalArrayRule::is_conditional_array([1, 2, 3]));
-        self::assertTrue(ConditionalArrayRule::is_conditional_array([true, 'a', 'b', 'c']));
-        self::assertTrue(ConditionalArrayRule::is_conditional_array([false, 'a', 'b', 'c']));
-        self::assertTrue(ConditionalArrayRule::is_conditional_array([true, false, false]));
+        self::assertFalse(ConditionalArrayRule::isConditionalArray([]));
+        self::assertFalse(ConditionalArrayRule::isConditionalArray(['a', 'b', 'c']));
+        self::assertFalse(ConditionalArrayRule::isConditionalArray([1, 2, 3]));
+        self::assertTrue(ConditionalArrayRule::isConditionalArray([true, 'a', 'b', 'c']));
+        self::assertTrue(ConditionalArrayRule::isConditionalArray([false, 'a', 'b', 'c']));
+        self::assertTrue(ConditionalArrayRule::isConditionalArray([true, false, false]));
     }
 
     public function testProcessConditionalArray()
     {
         self::assertEquals([],
-            ConditionalArrayRule::process_conditional_array([false, 'a', 'b', 'c']));
+            ConditionalArrayRule::processIfConditionalArray([false, 'a', 'b', 'c']));
         self::assertEquals(['a', 'b', 'c'],
-            ConditionalArrayRule::process_conditional_array([true, 'a', 'b', 'c']));
+            ConditionalArrayRule::processIfConditionalArray([true, 'a', 'b', 'c']));
         self::assertEquals([],
-            ConditionalArrayRule::process_conditional_array([true]));
+            ConditionalArrayRule::processIfConditionalArray([true]));
         self::assertEquals(['a', 'b', 'c'],
-            ConditionalArrayRule::process_conditional_array(['a', 'b', 'c']));
+            ConditionalArrayRule::processIfConditionalArray(['a', 'b', 'c']));
         self::assertEquals([],
-            ConditionalArrayRule::process_conditional_array([]));
+            ConditionalArrayRule::processIfConditionalArray([]));
     }
 }

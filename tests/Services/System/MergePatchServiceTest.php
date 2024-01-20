@@ -42,17 +42,17 @@ class MergePatchServiceTest extends TestCase
  // Update array field (no merging arrays)
  8 => [["a" => ["b", "c"]],           ["a" => ["c", "d"]],                    ["a" => ["c", "d"]]                  ],
  // Update object to array
- 9 => [["a" => ["b" => "c"]],         ["a"=>["d"]],                           ["a"=>["d"]],                        ],
+ 9 => [["a" => ["b" => "c"]],         ["a" => ["d"]],                         ["a" => ["d"]],                      ],
 // Update object to string
-10 => [["a" => ["b" => "c"]],         ["a"=>"d"],                             ["a"=>"d"],                          ],
+10 => [["a" => ["b" => "c"]],         ["a" => "d"],                           ["a" => "d"],                        ],
 // Update object to number
-11 => [["a" => ["b" => "c"]],         ["a"=>1],                               ["a"=>1],                            ],
+11 => [["a" => ["b" => "c"]],         ["a" => 1],                             ["a" => 1],                          ],
 // Add field with preexisting empty field
 12 => [["e" => null],                 ["a" => 1],                             ["e" => null, "a" => 1]              ],
 // Add object field
 13 => [(object)[],                    ["a" => ["bb" => ["ccc" => null]]],     ["a" => ["bb" => ["ccc" => null]]]   ],
 // Empty patch doesn't change anything
-14 => [["a" => "b", "c"=>[1,2,3]],    [],                                     ["a" => "b", "c"=>[1,2,3]]           ],
+14 => [["a" => "b", "c" => [1,2,3]],    [],                                   ["a" => "b", "c" => [1,2,3]]         ],
 //@formatter:on
                 ]);
     }

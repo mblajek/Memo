@@ -105,7 +105,7 @@ class AdminUserController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )
+            ),
         ],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),

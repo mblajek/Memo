@@ -53,7 +53,7 @@ class UserFactory extends Factory
     {
         $grant = Grant::factory()->create();
         return $this->state([
-            'global_admin_grant_id' => $grant->id
+            'global_admin_grant_id' => $grant->id,
         ]);
     }
 }

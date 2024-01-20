@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
-use App\Models\Traits\HasValidator;
+use App\Models\Traits\HasResourceValidator;
 use App\Rules\DataTypeRule;
 use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
@@ -11,13 +11,12 @@ use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCreatedBy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Validation\Rules\Unique;
 
 /**
  * @property string name
@@ -39,7 +38,7 @@ class User extends Authenticatable
 {
     use BaseModel;
     use Notifiable;
-    use HasValidator;
+    use HasResourceValidator;
     use SerializeDate;
     use HasCreatedBy;
 
@@ -115,7 +114,7 @@ class User extends Authenticatable
         bool $isResource,
         bool $isInsert,
         bool $isPatch,
-        User $original = null
+        Model $original = null
     ): array {
         return [
             'name' => Valid::trimmed(['required'], sometimes: $isPatch),
@@ -130,7 +129,7 @@ class User extends Authenticatable
                         // Required when has_email_verified is anything but null
                         'required_if_accepted:has_email_verified',
                         // If there's a password, there must also be an email.
-                        'required_with:password'
+                        'required_with:password',
                     ],
                     ...Valid::trimmed([
                         // It is a valid email address
@@ -138,7 +137,7 @@ class User extends Authenticatable
                         // Uniqueness is only checked for insert and patch
                         [$isInsert || $isPatch, self::getRuleUnique($original)],
                     ],
-                        nullable: true)
+                        nullable: true),
                 ],
             'has_email_verified' =>
                 [
@@ -173,7 +172,7 @@ class User extends Authenticatable
                             // TODO: Learn if we should use it. UI sends null at the moment.
                         ],
                     ],
-                        nullable: true)
+                        nullable: true),
                 ],
             'password_expire_at' => [
                 // TODO: Figure out how to implement an "implicit" custom validation rule
@@ -181,27 +180,15 @@ class User extends Authenticatable
                 ...Valid::datetime(
                     sometimes: $isPatch,
                     nullable: true
-                )
+                ),
             ],
             'has_password' => [
                 // It must be true if the user is a global admin.
                 [$isResource, 'accepted_if:has_global_admin,true', Valid::bool()],
             ],
             // A valid boolean
-            'has_global_admin' => Valid::bool(sometimes: $isInsert || $isPatch, nullable: true)
+            'has_global_admin' => Valid::bool(sometimes: $isInsert || $isPatch, nullable: true),
         ];
-    }
-
-    public static function getInsertValidator(): array
-    {
-        return self::processRules(static::validationRules(isResource: false, isInsert: true, isPatch: false));
-    }
-
-    public static function getPatchValidator(User $user): array
-    {
-        return self::processRules(
-            static::validationRules(isResource: false, isInsert: false, isPatch: true, original: $user)
-        );
     }
 
     public function members(): HasMany
@@ -212,21 +199,5 @@ class User extends Authenticatable
     public function lastLoginFacility(): BelongsTo
     {
         return $this->belongsTo(Facility::class);
-    }
-
-    protected static function fieldValidator(string $field): string|array
-    {
-        // I would like to remove this method when I implement `validationRules`
-        // in all entities.
-        return [];
-    }
-
-    private static function getRuleUnique(?User $original): Unique
-    {
-        $unique = Rule::unique('users', 'email');
-        if ($original) {
-            $unique->ignore($original->id);
-        }
-        return $unique;
     }
 }

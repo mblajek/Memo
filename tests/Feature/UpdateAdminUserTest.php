@@ -75,7 +75,7 @@ class UpdateAdminUserTest extends TestCase
         /** @var User $user */
         $user = User::factory()->create([
             'password_expire_at' => self::now(),
-            'global_admin_grant_id' => $grant->id
+            'global_admin_grant_id' => $grant->id,
         ]);
 
         $data = [
@@ -133,13 +133,13 @@ class UpdateAdminUserTest extends TestCase
             [
                 'errors' => [
                     [
-                        'code' => 'exception.validation'
+                        'code' => 'exception.validation',
                     ],
                     [
                         'field' => 'email',
                         'code' => 'validation.email',
-                    ]
-                ]
+                    ],
+                ],
             ]
         );
     }
@@ -177,18 +177,18 @@ class UpdateAdminUserTest extends TestCase
             [
                 'errors' => [
                     [
-                        'code' => 'exception.validation'
+                        'code' => 'exception.validation',
                     ],
                     [
                         'field' => 'hasEmailVerified',
                         'code' => 'validation.required_with',
                         'data' => [
                             'values' => [
-                                'email'
-                            ]
-                        ]
-                    ]
-                ]
+                                'email',
+                            ],
+                        ],
+                    ],
+                ],
             ]
         );
     }
@@ -208,16 +208,16 @@ class UpdateAdminUserTest extends TestCase
             [
                 'errors' => [
                     [
-                        'code' => 'exception.validation'
+                        'code' => 'exception.validation',
                     ],
                     [
                         'field' => 'email',
                         'code' => 'validation.required_if_accepted',
                         'data' => [
-                            'other' => 'hasEmailVerified'
-                        ]
-                    ]
-                ]
+                            'other' => 'hasEmailVerified',
+                        ],
+                    ],
+                ],
             ]
         );
     }
@@ -300,7 +300,7 @@ class UpdateAdminUserTest extends TestCase
         $user = User::factory()->create();
 
         $data = [
-            'email' => null
+            'email' => null,
         ];
 
         $result = $this->execute($user->id, $data);
@@ -313,7 +313,7 @@ class UpdateAdminUserTest extends TestCase
         $user = User::factory()->globalAdmin()->create();
 
         $data = [
-            'email' => null
+            'email' => null,
         ];
 
         $result = $this->execute($user->id, $data);
@@ -326,7 +326,7 @@ class UpdateAdminUserTest extends TestCase
         $user = User::factory()->globalAdmin()->create();
 
         $data = [
-            'password' => null
+            'password' => null,
         ];
 
         $result = $this->execute($user->id, $data);

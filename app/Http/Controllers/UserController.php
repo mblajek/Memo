@@ -80,6 +80,7 @@ class UserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function patch(UpdateUserService $service): JsonResponse
     {
+        // TODO!: fix for new validator
         $user = $this->getUserOrFail();
         $data = $this->validate(
             User::getPatchValidator([
@@ -180,7 +181,7 @@ class UserController extends ApiController
         $data = $this->validate([
             'current' => 'bail|required|string|current_password',
             'repeat' => 'bail|required|string|same:password',
-            'password' => ['bail', 'required', 'string', 'different:current', User::getPasswordRules()]
+            'password' => ['bail', 'required', 'string', 'different:current', User::getPasswordRules()],
         ]);
 
         $changePasswordService->handle($data);

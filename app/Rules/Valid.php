@@ -119,9 +119,7 @@ class Valid extends AbstractDataRule
         array $rules,
     ) {
         $this->rules = Arr::flatten(
-            array_map(function ($rule) {
-                return is_array($rule) ? ConditionalArrayRule::process_conditional_array($rule) : $rule;
-            }, $rules)
+            array_map(ConditionalArrayRule::processIfConditionalArray(...), $rules)
         );
     }
 
@@ -151,9 +149,8 @@ class Valid extends AbstractDataRule
             foreach ($validationException->validator->failed() as $fieldErrors) {
                 foreach ($fieldErrors as $rule => $interpolationData) {
                     $this->validator->addRules([$attribute => $this->rules]);
-                    // TODO: Tech debt: remove Str::snake because it creates confusing identifiers, especially with
-                    // classes, ex. "illuminate\_validation\_rules\_password"
-                    $this->validator->addFailure($attribute, Str::snake($rule), $interpolationData);
+                    $ruleOrClass = str_contains($rule, '\\') ? $rule : Str::snake($rule);
+                    $this->validator->addFailure($attribute, $ruleOrClass, $interpolationData);
                 }
             }
         }
@@ -164,6 +161,7 @@ class Valid extends AbstractDataRule
         return array_merge(
             $sometimes ? ['sometimes'] : [],
             // todo: consider: ['present', new self($nullable, ['bail', ...$rules]), ...$additionalRules],
+            // TODO!: restore "present" rule
             [new self($nullable, array_merge(['bail'], $rules, $additionalRules))],
         );
     }
