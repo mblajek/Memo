@@ -81,11 +81,9 @@ class UserController extends ApiController
     public function patch(UpdateUserService $service): JsonResponse
     {
         $user = $this->getUserOrFail();
-        $data = $this->validate(
-            User::getPatchValidator([
-                'last_login_facility_id',
-            ], $user)
-        );
+        $data = $this->validate([
+            'last_login_facility_id' => 'nullable|uuid|exists:facilities,id|sometimes',
+        ]);
         $service->handle($user, $data);
 
         return new JsonResponse();
@@ -180,10 +178,7 @@ class UserController extends ApiController
         $data = $this->validate([
             'current' => 'bail|required|string|current_password',
             'repeat' => 'bail|required|string|same:password',
-            'password' => array_merge(
-                ['bail', 'required', 'string', 'different:current'],
-                User::getInsertValidator(['_password'])['_password'],
-            ),
+            'password' => ['bail', 'required', 'string', 'different:current', User::getPasswordRules()],
         ]);
 
         $changePasswordService->handle($data);

@@ -6,10 +6,12 @@ use App\Models\Dictionary;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
+use App\Utils\ConditionalArrayRule;
 
 /**
  * Rule generator
@@ -109,10 +111,15 @@ class Valid extends AbstractDataRule
         return self::base($sometimes, $nullable, ['string', 'date_format:Y-m-d\\TH:i:s\\Z'], $rules);
     }
 
+    private readonly array $rules;
+
     private function __construct(
         private readonly bool $nullable,
-        private readonly array $rules,
+        array $rules,
     ) {
+        $this->rules = Arr::flatten(
+            array_map(ConditionalArrayRule::processIfConditionalArray(...), $rules)
+        );
     }
 
     /** forward ignore to inner Unique rules */
@@ -141,7 +148,8 @@ class Valid extends AbstractDataRule
             foreach ($validationException->validator->failed() as $fieldErrors) {
                 foreach ($fieldErrors as $rule => $interpolationData) {
                     $this->validator->addRules([$attribute => $this->rules]);
-                    $this->validator->addFailure($attribute, Str::snake($rule), $interpolationData);
+                    $ruleOrClass = str_contains($rule, '\\') ? $rule : Str::snake($rule);
+                    $this->validator->addFailure($attribute, $ruleOrClass, $interpolationData);
                 }
             }
         }

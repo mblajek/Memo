@@ -97,7 +97,7 @@ class UserAuthenticationTest extends TestCase
         $result->assertOk();
     }
 
-    public function testChangePasswordWIthInvalidRepeatWillFail(): void
+    public function testChangePasswordWithInvalidRepeatWillFail(): void
     {
         /** @var User $user */
         $user = User::factory()->create();

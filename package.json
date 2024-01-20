@@ -1,6 +1,6 @@
 {
-  "name": "Memo",
-  "private": true,
+  "name": "fdds-memo",
+  "license": "MIT",
   "scripts": {
     "dev": "npm install --include=dev && vite",
     "build": "npm clean-install && vite build",

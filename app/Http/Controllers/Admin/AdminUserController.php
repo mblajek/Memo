@@ -12,6 +12,7 @@ use App\Services\User\CreateUserService;
 use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -73,14 +74,7 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function post(CreateUserService $service): JsonResponse
     {
-        $data = $this->validate(User::getInsertValidator([
-            'name',
-            'email',
-            'has_email_verified',
-            'password',
-            'password_expire_at',
-            'has_global_admin',
-        ]));
+        $data = $this->validate(User::getInsertValidator());
 
         $result = $service->handle($data);
 
@@ -111,7 +105,8 @@ class AdminUserController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )],
+            ),
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),
             new OA\Response(response: 400, description: 'Bad Request'),
@@ -120,17 +115,13 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function patch(User $user, UpdateUserService $service): JsonResponse
     {
-        $data = $this->validate(User::getPatchValidator([
-            'name',
-            'email',
-            'has_email_verified',
-            'password',
-            'password_expire_at',
-            'has_global_admin',
-        ], $user));
+        $rules = User::getPatchValidator($user);
+        $requestData = $this->validate($rules);
+        $userAttributes = $service->getAttributesAfterPatch($user, $requestData);
 
-        $service->handle($user, $data);
+        Validator::validate($userAttributes, User::getResourceValidator());
 
+        $service->handle($user, $userAttributes);
         return new JsonResponse();
     }
 }
