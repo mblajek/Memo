@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
-
 use App\Utils\ConditionalArrayRule;
 
 /**
