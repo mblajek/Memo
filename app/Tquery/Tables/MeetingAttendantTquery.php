@@ -2,17 +2,13 @@
 
 namespace App\Tquery\Tables;
 
-use App\Models\Enums\AttendanceType;
-use App\Models\Facility;
 use App\Models\UuidEnum\DictionaryUuidEnum;
-use App\Models\UuidEnum\MeetingAttributeUuidEnum;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\TqBuilder;
-use App\Tquery\Engine\TqService;
 
 readonly class MeetingAttendantTquery extends MeetingTquery
 {

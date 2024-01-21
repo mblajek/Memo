@@ -9,7 +9,6 @@ use App\Tquery\Engine\TqService;
 use App\Tquery\OpenApi\OpenApiGet;
 use App\Tquery\OpenApi\OpenApiPost;
 use App\Tquery\Tables\MeetingAttendantTquery;
-use App\Tquery\Tables\MeetingTquery;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
