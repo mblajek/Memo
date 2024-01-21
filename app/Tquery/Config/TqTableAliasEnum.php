@@ -10,6 +10,8 @@ enum TqTableAliasEnum
     case updated_by;
     case last_login_facility;
     case members;
+    case meetings;
+    case meeting_attendants;
 
     public function baseTable(): TqTableEnum
     {
@@ -17,6 +19,8 @@ enum TqTableAliasEnum
             self::created_by, self::updated_by => TqTableEnum::users,
             self::last_login_facility => TqTableEnum::facilities,
             self::members => TqTableEnum::members,
+            self::meetings => TqTableEnum::meetings,
+            self::meeting_attendants => TqTableEnum::meeting_attendants,
         };
     }
 
