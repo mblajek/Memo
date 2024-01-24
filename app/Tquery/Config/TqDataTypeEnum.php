@@ -71,6 +71,7 @@ enum TqDataTypeEnum
             self::string_nullable => self::string,
             self::uuid_nullable => self::uuid,
             self::text_nullable => self::text,
+            self::dict_nullable => self::dict,
             default => $this,
         };
     }
