@@ -43,7 +43,7 @@ readonly class MeetingAttendantTquery extends MeetingTquery
             'attendant.user_id'
         );
         $config->addJoined(
-            TqDataTypeEnum::uuid,
+            TqDataTypeEnum::string,
             TqTableAliasEnum::attendant,
             'name',
             'attendant.name'
