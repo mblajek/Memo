@@ -12,6 +12,7 @@ exception:
   route_not_found: "Błędny adres"
   unexpected: "Nieoczekiwany błąd serwera"
   invalid_json: "Zapytanie nie ma formatu JSON"
+  too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
 
 passwords:
   reset: "Hasło zostało zresetowane!"

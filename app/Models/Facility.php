@@ -40,7 +40,7 @@ class Facility extends Model
                 'max:30',
                 'lowercase',
                 'regex:/^[a-z][a-z0-9-]+[a-z0-9]$/',
-                'not_in:admin,user,api,system',
+                'not_in:admin,user,api,system,login,help,home',
                 Rule::unique('facilities', 'url'),
             ]),
         };
