@@ -75,7 +75,7 @@ class Meeting extends Model
             'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
             'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
-            Valid::dict(DictionaryUuidEnum::AttendanceStatus, sometimes: true, nullable: true),
+            Valid::dict(DictionaryUuidEnum::AttendanceStatus),
             'staff.*.user_id' => Valid::uuid([
                 new UniqueWithMemoryRule('attendant'),
                 new MemberExistsRule(AttendanceType::Staff),

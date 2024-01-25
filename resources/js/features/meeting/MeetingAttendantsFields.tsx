@@ -56,8 +56,8 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         return;
       }
       const dict = dictionaries.get("attendanceStatus");
-      attendanceStatusTextByPosId.set(dict.get("present").id, t("bool_values.yes"));
-      attendanceStatusTextByPosId.set(dict.get("absent").id, t("bool_values.no"));
+      attendanceStatusTextByPosId.set(dict.get("ok").id, t("bool_values.yes"));
+      attendanceStatusTextByPosId.set(dict.get("cancelled").id, t("bool_values.no"));
     }),
   );
   const {form} = useFormContext<FormAttendantsData>();

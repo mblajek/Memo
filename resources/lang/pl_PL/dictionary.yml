@@ -27,5 +27,8 @@ meetingResource:
 
 attendanceStatus:
   _name: "status obecności"
-  present: "obecność"
-  absent: "nieobecność"
+  ok: "--- (zgodnie z planem)"
+  cancelled: "odwołano"
+  no_show: "nieobecność"
+  late_present: "spóźnienie - obecność"
+  too_late: "spóźnienie - nieobecność"
