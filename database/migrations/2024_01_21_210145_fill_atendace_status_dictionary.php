@@ -12,11 +12,13 @@ return new class extends Migration {
     public function up(): void
     {
         $pDate = '2023-11-25 00:00:00';
+        $presentUuid = '1adb737f-da0f-4473-ab9c-55fc1634b397';
+        $absentUuid = 'f39903be-45b2-4e85-a3cb-aada4e81b9be';
         DB::table('meeting_attendants')->whereNull('attendance_status_dict_id')
-            ->update(['attendance_status_dict_id' => '1adb737f-da0f-4473-ab9c-55fc1634b397']);
-        DB::table('positions')->where('id', '1adb737f-da0f-4473-ab9c-55fc1634b397') // present
+            ->update(['attendance_status_dict_id' => $presentUuid]);
+        DB::table('positions')->where('id', $presentUuid)
             ->update(['created_at' => $pDate, 'updated_at' => $pDate, 'name' => 'ok', 'default_order' => 1]);
-        DB::table('positions')->where('id', 'f39903be-45b2-4e85-a3cb-aada4e81b9be') // absent
+        DB::table('positions')->where('id', $absentUuid)
             ->update(['created_at' => $pDate, 'updated_at' => $pDate, 'name' => 'cancelled', 'default_order' => 2]);
 
         $attendanceStatusDictionaryId = 'a2874757-aca7-4c16-a0dc-2fc368f795fb';
