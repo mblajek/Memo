@@ -18,6 +18,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'startDayminute', type: 'int', example: 600),
         new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
         new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),
+        new OA\Property(property: 'createdAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+        new OA\Property(property: 'updatedAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
         new OA\Property(property: 'createdBy', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'isRemote', type: 'bool', example: 'false'),
         new OA\Property(
@@ -54,6 +56,8 @@ class MeetingResource extends AbstractJsonResource
             'startDayminute' => true,
             'durationMinutes' => true,
             'statusDictId' => true,
+            'createdAt' => true,
+            'updatedAt' => true,
             'createdBy' => true,
             'isRemote' => true,
             'staff' => fn(self $meeting) => //
