@@ -85,5 +85,7 @@ meeting:
   staff: "$t(models.staff._name_plural)"
   clients: "$t(models.client._name_plural)"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
+  # The name of the attendance status field when treated as "attendance notes".
+  attendanceStatusNotes: "uwagi"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"

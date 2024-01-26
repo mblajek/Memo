@@ -38,7 +38,7 @@ export default (() => {
 
   function getAttributeTypeString(attr: Attribute) {
     if (attr.type === "dict") {
-      return `dict: ${dictionaries()?.get(attr.dictionaryId!).resource.name}`;
+      return `dict: ${dictionaries()?.get(attr.dictionaryId!).name}`;
     } else if (attr.typeModel) {
       return `model: ${attr.typeModel}`;
     } else {
@@ -69,7 +69,7 @@ export default (() => {
           enableSorting: false,
           size: 60,
         }),
-        h.accessor((a) => a.resource.name, {
+        h.accessor("name", {
           id: "Name",
           ...textSort,
         }),
@@ -134,7 +134,7 @@ export default (() => {
           ?.getForModel("attribute")
           .map((attr) =>
             h.accessor((row) => attr.readFrom(row.resource), {
-              id: `@${attr.resource.name}`,
+              id: `@${attr.name}`,
               cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
             }),
           ) || []),

@@ -50,6 +50,8 @@ tables:
       staff.*.name: "$t(models.meeting.staff)"
       clients.*.name: "$t(models.meeting.clients)"
       resources.*.dictId: "$t(models.meeting.resources)"
+      attendant.name: "uczestnik"
+      attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
 
 choose_columns: "Wybierz kolumny"
 sort_tooltip: "$t(actions.sort)"

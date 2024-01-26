@@ -15,11 +15,12 @@ import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, on} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
+import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
 
 export const getAttendantsSchemaPart = () => ({
   staff: getAttendantsSchema(),
@@ -42,6 +43,7 @@ interface Props {
 }
 
 interface FormAttendantsData extends Obj {
+  readonly statusDictId?: string;
   readonly staff: readonly MeetingAttendantResource[];
   readonly clients: readonly MeetingAttendantResource[];
 }
@@ -49,18 +51,10 @@ interface FormAttendantsData extends Obj {
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
-  const attendanceStatusTextByPosId = new Map<string, string>();
-  createComputed(
-    on(dictionaries, (dictionaries) => {
-      if (!dictionaries) {
-        return;
-      }
-      const dict = dictionaries.get("attendanceStatus");
-      attendanceStatusTextByPosId.set(dict.get("ok").id, t("bool_values.yes"));
-      attendanceStatusTextByPosId.set(dict.get("cancelled").id, t("bool_values.no"));
-    }),
-  );
+  const {createAttendant} = useAttendantsCreator();
   const {form} = useFormContext<FormAttendantsData>();
+  const meetingStatusId = () => form.data("statusDictId");
+  const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
   createEffect<readonly MeetingAttendantResource[]>((prevAttendants) => {
     const attendants = form.data(props.name);
     // When in edit mode, add an empty row at the end in the following situations:
@@ -116,7 +110,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           />
         </div>
         <Show when={props.showAttendanceStatusLabel !== false}>
-          <FieldLabel fieldName="attendanceStatusDictId" />
+          <div class="flex gap-1">
+            <FieldLabel fieldName="attendanceStatusNotes" />
+            <MeetingAttendanceStatusInfoIcon />
+          </div>
         </Show>
         <div
           class="grid gap-1"
@@ -164,13 +161,27 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       dictionary="attendanceStatus"
                       itemFunc={(pos, defItem) => {
                         const item = defItem();
+                        const label = () => (
+                          <MeetingAttendanceStatus
+                            attendanceStatusId={item.value}
+                            meetingStatusId={meetingStatus()?.id}
+                          />
+                        );
                         return {
                           ...item,
-                          text: attendanceStatusTextByPosId.get(pos.id) || item.text,
+                          label,
+                          labelOnList: () => (
+                            <div class="flex justify-between gap-1">
+                              {label()}
+                              <MeetingAttendanceStatusInfoIcon
+                                attendanceStatusId={item.value}
+                                meetingStatusId={meetingStatusId()}
+                              />
+                            </div>
+                          ),
                         };
                       }}
-                      nullable
-                      placeholder={EMPTY_VALUE_SYMBOL}
+                      nullable={false}
                       disabled={!form.data(`${props.name}.${index}.userId`)}
                     />
                   </div>
@@ -210,30 +221,58 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   );
 };
 
-function createAttendant({userId = "", attendanceStatusDictId}: Partial<MeetingAttendantResource> = {}) {
-  return {userId, attendanceStatusDictId: attendanceStatusDictId || ""} satisfies MeetingAttendantResource;
-}
+export function useAttendantsCreator() {
+  const dictionaries = useDictionaries();
+  const attendanceStatusOK = createMemo(() => dictionaries()?.get("attendanceStatus").get("ok").id);
 
-export function attendantsInitialValueForCreate(staff?: readonly string[]) {
-  return {
-    staff: staff?.map((userId) => createAttendant({userId})) || [],
-    clients: [],
-  } satisfies FormAttendantsData;
-}
-
-export function attendantsInitialValueForEdit(meeting: MeetingResource) {
-  function getAttendants(attendantsFromMeeting: readonly MeetingAttendantResource[]) {
-    const attendants = attendantsFromMeeting.map(createAttendant);
-    if (attendants.length > 1) {
-      // Start in multiple mode, make additional empty row.
-      attendants.push(createAttendant());
-    }
-    return attendants;
+  function createAttendant({userId = "", attendanceStatusDictId}: Partial<MeetingAttendantResource> = {}) {
+    return {
+      userId,
+      attendanceStatusDictId: attendanceStatusDictId || attendanceStatusOK()!,
+    } satisfies MeetingAttendantResource;
   }
+
+  function attendantsInitialValueForCreate(staff?: readonly string[]) {
+    return {
+      staff: staff?.map((userId) => createAttendant({userId})) || [],
+      clients: [],
+    } satisfies FormAttendantsData;
+  }
+
+  function attendantsInitialValueFromMeeting(
+    meeting: MeetingResource,
+    attendanceStatusOverride?: Partial<MeetingAttendantResource>,
+  ) {
+    function getAttendants(attendantsFromMeeting: readonly MeetingAttendantResource[]) {
+      const attendants = attendantsFromMeeting.map((attendant) =>
+        createAttendant({...attendant, ...attendanceStatusOverride}),
+      );
+      if (attendants.length > 1) {
+        // Start in multiple mode, make additional empty row.
+        attendants.push(createAttendant());
+      }
+      return attendants;
+    }
+    return {
+      staff: getAttendants(meeting.staff),
+      clients: getAttendants(meeting.clients),
+    } satisfies FormAttendantsData;
+  }
+
+  function attendantsInitialValueForEdit(meeting: MeetingResource) {
+    return attendantsInitialValueFromMeeting(meeting);
+  }
+
+  function attendantsInitialValueForCreateCopy(meeting: MeetingResource) {
+    return attendantsInitialValueFromMeeting(meeting, {attendanceStatusDictId: attendanceStatusOK()});
+  }
+
   return {
-    staff: getAttendants(meeting.staff),
-    clients: getAttendants(meeting.clients),
-  } satisfies FormAttendantsData;
+    createAttendant,
+    attendantsInitialValueForCreate,
+    attendantsInitialValueForEdit,
+    attendantsInitialValueForCreateCopy,
+  };
 }
 
 export function getAttendantsValues(values: FormAttendantsData) {

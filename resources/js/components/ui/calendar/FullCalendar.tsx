@@ -8,7 +8,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {createCalendarRequestCreator, meetingsFromQuery} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
-import {attendantsInitialValueForCreate} from "features/meeting/MeetingAttendantsFields";
+import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
 import {MeetingChangeSuccessData} from "features/meeting/meeting_change_success_data";
 import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
 import {createMeetingModal} from "features/meeting/meeting_modal";
@@ -40,7 +40,7 @@ import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {bleachColor, randomColor} from "../colors";
 import {SegmentedControl} from "../form/SegmentedControl";
-import {EM_DASH} from "../symbols";
+import {EN_DASH} from "../symbols";
 import {CalendarColumn, ColumnsCalendar} from "./ColumnsCalendar";
 import {ResourceGroup, ResourceItem, ResourcesSelector} from "./ResourcesSelector";
 import {TinyCalendar} from "./TinyCalendar";
@@ -114,6 +114,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "meetingListLinkProps",
   ]);
   const t = useLangFunc();
+  const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
 
@@ -418,7 +419,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           day: "numeric",
           month: fitsInMonth ? undefined : "long",
           year: fitsInYear ? undefined : "numeric",
-        })} ${EM_DASH} ${daysSelection().end.toLocaleString({day: "numeric", month: "long", year: "numeric"})}`;
+        })} ${EN_DASH} ${daysSelection().end.toLocaleString({day: "numeric", month: "long", year: "numeric"})}`;
       }
       case "day":
         return daysSelection().start.toLocaleString({weekday: "long", day: "numeric", month: "long", year: "numeric"});

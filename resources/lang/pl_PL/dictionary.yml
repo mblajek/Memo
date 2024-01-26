@@ -21,14 +21,36 @@ meetingStatus:
   planned: "zaplanowane"
   completed: "zakończone"
   cancelled: "odwołane"
+  _explanations:
+    planned: "Spotkanie jest zaplanowane"
+    completed: "Spotkanie odbyło się"
+    cancelled: "Spotkanie zostało odwołane przez któregoś z uczestników (lub z innych przyczyn)"
+    more_info: "Kliknij żeby zobaczyć więcej informacji o statusach spotkań"
 
 meetingResource:
   _name: "zasób"
 
 attendanceStatus:
   _name: "status obecności"
-  ok: "--- (zgodnie z planem)"
-  cancelled: "odwołano"
-  no_show: "nieobecność"
-  late_present: "spóźnienie - obecność"
+  ok: "\u2714" # check mark
+  # Additional explanation for the ok status text, depending on the meeting status.
+  _ok_extra_info_by_meeting_status:
+    planned: "zaplanowane"
+    completed: "obecność"
+    cancelled: "ktoś inny odwołał"
+  # The gender-neutral form "odwołano" is not good here because it does not convey that
+  # it is this particular person who cancelled the meeting.
+  cancelled: "odwołał/a"
+  no_show: "niestawienie się"
+  late_present: "niepunktualność"
   too_late: "spóźnienie - nieobecność"
+  _explanations:
+    ok:
+      planned: "Uczestnik planuje wziąć udział w spotkaniu"
+      completed: "Uczestnik wziął udział w spotkaniu"
+      cancelled: "Uczestnik planował wziąć udział w spotkaniu, ale zostało odwołane przez innego uczestnika (lub z innych przyczyn)"
+    cancelled: "Uczestnik zgłosił z wyprzedzeniem, że nie weźmie udziału w spotkaniu"
+    no_show: "Uczestnik nie pojawił się na spotkaniu bez wcześniejszego odwołania obecności"
+    late_present: "Uczestnik pojawił się na spotkaniu z niewielkim opóźnieniem"
+    too_late: "Uczestnik pojawił się z tak dużym opóźnieniem, że nie mógł już wziąć udziału w spotkaniu"
+    more_info: "Więcej informacji o statusach obecności"

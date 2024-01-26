@@ -7,6 +7,7 @@ import {useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
+import {Sort} from "data-access/memo-api/tquery/types";
 import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useMeetingTableColumns} from "../meeting/meeting_tables";
@@ -19,6 +20,7 @@ interface Props {
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
+  const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns();
   const isPlannedFilter = (): FilterH => ({
     type: "column",
@@ -26,6 +28,12 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
     op: "=",
     val: dictionaries()!.get("meetingStatus").get("planned").id,
   });
+  function sortByDate({desc}: {desc: boolean}) {
+    return [
+      {type: "column", column: "date", desc},
+      {type: "column", column: "startDayminute", desc},
+    ] satisfies Sort;
+  }
   const tableTranslations = createTableTranslations("meeting");
   return (
     <div>
@@ -41,7 +49,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                   <TQueryTable
                     mode="embedded"
                     staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                    staticEntityURL={`facility/${activeFacilityId()}/meeting`}
+                    staticEntityURL={entityURL()}
                     staticTranslations={tableTranslations}
                     staticPersistenceKey={`${props.staticPersistenceKey}.planned`}
                     intrinsicFilter={{
@@ -49,7 +57,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       op: "&",
                       val: [props.intrinsicFilter, isPlannedFilter()],
                     }}
-                    intrinsicSort={[{type: "column", column: "date", desc: false}]}
+                    intrinsicSort={sortByDate({desc: false})}
                     columns={meetingTableColumns.get(
                       "id",
                       "date",
@@ -58,6 +66,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       "category",
                       "type",
                       {...meetingTableColumns.columns.status, initialVisible: false},
+                      "attendanceStatus",
                       "staff",
                       "clients",
                       "isRemote",
@@ -81,7 +90,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                   <TQueryTable
                     mode="embedded"
                     staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                    staticEntityURL={`facility/${activeFacilityId()}/meeting`}
+                    staticEntityURL={entityURL()}
                     staticTranslations={tableTranslations}
                     staticPersistenceKey={`${props.staticPersistenceKey}.completed`}
                     intrinsicFilter={{
@@ -89,7 +98,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       op: "&",
                       val: [props.intrinsicFilter, invertFilter(isPlannedFilter())],
                     }}
-                    intrinsicSort={[{type: "column", column: "date", desc: true}]}
+                    intrinsicSort={sortByDate({desc: true})}
                     columns={meetingTableColumns.get(
                       "id",
                       "date",
@@ -98,6 +107,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       "category",
                       "type",
                       "status",
+                      "attendanceStatus",
                       "staff",
                       "clients",
                       "isRemote",
@@ -121,11 +131,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                   <TQueryTable
                     mode="embedded"
                     staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                    staticEntityURL={`facility/${activeFacilityId()}/meeting`}
+                    staticEntityURL={entityURL()}
                     staticTranslations={tableTranslations}
                     staticPersistenceKey={`${props.staticPersistenceKey}.all`}
                     intrinsicFilter={props.intrinsicFilter}
-                    intrinsicSort={[{type: "column", column: "date", desc: true}]}
+                    intrinsicSort={sortByDate({desc: true})}
                     columns={meetingTableColumns.get(
                       "id",
                       "date",
@@ -134,6 +144,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       "category",
                       "type",
                       "status",
+                      "attendanceStatus",
                       "staff",
                       "clients",
                       "isRemote",

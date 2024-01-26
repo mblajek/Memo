@@ -44,7 +44,7 @@ export default (() => {
         enableSorting: false,
         size: 60,
       }),
-      h.accessor((d) => d.resource.name, {
+      helper.accessor("name", {
         id: "Name",
         ...textSort,
       }),
@@ -85,7 +85,7 @@ export default (() => {
           ?.getForModel("dictionary")
           .map((attr) =>
             h.accessor((row) => attr.readFrom(row.resource), {
-              id: `@${attr.resource.name}`,
+              id: `@${attr.name}`,
               cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
             }),
           ) || []),
@@ -99,12 +99,15 @@ export default (() => {
             const table = createSolidTable({
               ...getBaseTableOptions<Position>({
                 features: {
-                  sorting: [{id: "Label", desc: false}],
+                  sorting: [{id: "Order", desc: false}],
                 },
                 defaultColumn: AUTO_SIZE_COLUMN_DEFS,
               }),
               data: positions,
               columns: [
+                h.accessor((p) => p.resource.defaultOrder, {
+                  id: "Order",
+                }),
                 ...getCommonColumns(h),
                 h.accessor("disabled", {
                   id: "Disabled",
@@ -115,7 +118,7 @@ export default (() => {
                     .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
                     .map((attr) =>
                       h.accessor((p) => attr.readFrom(p.resource), {
-                        id: `@${attr.resource.name}`,
+                        id: `@${attr.name}`,
                         cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
                       }),
                     )) ||

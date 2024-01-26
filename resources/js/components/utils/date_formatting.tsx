@@ -100,10 +100,11 @@ const AlignedWeekday: VoidComponent<{value: string; format: Intl.DateTimeFormatO
             // To reduce the number of elements, keep just the longest name.
             onMount(() => {
               if (weekdayNames().length > 1) {
-                const widestChild = Array.from(span.children, (child) => child.firstElementChild as HTMLElement).reduce(
-                  (a, el) => (a.offsetWidth > el.offsetWidth ? a : el),
-                );
-                weekdayNamesSignal()[1]([widestChild.textContent!]);
+                const daysChildren = Array.from(span.children, (child) => child.firstElementChild as HTMLElement);
+                if (daysChildren[0]?.offsetWidth) {
+                  const widestChild = daysChildren.reduce((a, el) => (a.offsetWidth > el.offsetWidth ? a : el));
+                  weekdayNamesSignal()[1]([widestChild.textContent!]);
+                }
               }
             });
           }

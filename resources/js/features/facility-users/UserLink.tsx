@@ -1,4 +1,4 @@
-import {A, AnchorProps} from "@solidjs/router";
+import {A, AnchorProps, useLocation} from "@solidjs/router";
 import {SmallSpinner} from "components/ui/Spinner";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
@@ -26,7 +26,18 @@ const ICONS = {
 };
 
 export const UserLink: VoidComponent<Props> = (allProps) => {
-  const defProps = mergeProps({icon: true, link: true}, allProps);
+  const location = useLocation();
+  const href = () => `/${activeFacility()!.url}/${allProps.type}/${allProps.userId}`;
+  const isOnThisUserPage = () => location.pathname === href();
+  const defProps = mergeProps(
+    {
+      icon: true,
+      get link() {
+        return !isOnThisUserPage();
+      },
+    },
+    allProps,
+  );
   const [props, anchorProps] = splitProps(defProps, ["type", "icon", "link", "userId", "name"]);
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
@@ -50,7 +61,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
               <Show when={activeFacility() && name().displayName} fallback={t("parenthesised", {text: t("unknown")})}>
                 {(displayName) => (
                   <Show when={props.link} fallback={<>{displayName()}</>}>
-                    <A {...anchorProps} href={`/${activeFacility()!.url}/${props.type}/${props.userId}`}>
+                    <A {...anchorProps} href={href()}>
                       {displayName()}
                     </A>
                   </Show>

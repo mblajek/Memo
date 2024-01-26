@@ -53,11 +53,11 @@ export function useTableCells() {
         <Index each={v}>{(id) => <IdColumn id={id()} />}</Index>
       </PaddedCell>
     )),
-    dict: cellFunc<string>((v) => <PaddedCell>{dictionaries()?.positionById(v)?.label || "??"}</PaddedCell>),
+    dict: cellFunc<string>((v) => <PaddedCell>{dictionaries()?.getPositionById(v)?.label || "??"}</PaddedCell>),
     dictList: cellFunc<readonly string[]>((v) => (
       <PaddedCell>
         <ul>
-          <Index each={v}>{(id) => <li>{dictionaries()?.positionById(id())?.label || "??"}</li>}</Index>
+          <Index each={v}>{(id) => <li>{dictionaries()?.getPositionById(id())?.label || "??"}</li>}</Index>
         </ul>
       </PaddedCell>
     )),

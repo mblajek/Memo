@@ -4,13 +4,15 @@ import {Capitalize} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {SimpleTag, Tag, TagsLine} from "components/ui/Tag";
 import {bleachColor} from "components/ui/colors";
-import {EN_DASH} from "components/ui/symbols";
+import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
-import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
+import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
+import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
+import {MeetingAttendanceStatus} from "features/meeting/attendance_status_info";
 import {For, JSX, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {useColumnsCalendar} from "../ColumnsCalendar";
@@ -54,7 +56,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     const tags: JSX.Element[] = [];
     tags.push(
       <SimpleTag
-        text={dictionaries()!.positionById(props.meeting.statusDictId).label}
+        text={dictionaries()!.getPositionById(props.meeting.statusDictId).label}
         colorSeed={props.meeting.statusDictId}
       />,
     );
@@ -65,7 +67,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   };
   const resources = () =>
     props.meeting.resources
-      .map((r) => dictionaries()?.positionById(r.resourceDictId).label)
+      .map((r) => dictionaries()?.getPositionById(r.resourceDictId).label)
       .filter(NON_NULLABLE)
       // Join by comma because Intl.ListFormat doesn't seem to work very well in Polish.
       .join(", ");
@@ -126,13 +128,13 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         <hr class="border-inherit" />
         <Show when={dictionaries()}>
           <Show when={props.meeting.clients.length}>
-            <div>
+            <ul>
               <For each={props.meeting.clients}>
-                {(client) => <UserLink type="clients" link={false} userId={client.userId} name={client.name} />}
+                {(client) => <AttendantListItem type="clients" attendant={client} />}
               </For>
-            </div>
+            </ul>
           </Show>
-          <div>{dictionaries()?.positionById(props.meeting.typeDictId).label}</div>
+          <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
           <TagsLine>{tags()}</TagsLine>
           <RichTextView text={props.meeting.notes} />
           <Show when={props.meeting.resources.length}>
@@ -152,26 +154,18 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                 onMouseEnter={() => hoverApi().close()}
               >
                 <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
-                <div>{dictionaries()?.positionById(props.meeting.typeDictId).label}</div>
+                <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
                 <Show when={props.meeting.staff.length}>
                   <ul>
                     <For each={props.meeting.staff}>
-                      {(staff) => (
-                        <li>
-                          <UserLink type="staff" link={false} userId={staff.userId} name={staff.name} />
-                        </li>
-                      )}
+                      {(staff) => <AttendantListItem type="staff" attendant={staff} showAttendance />}
                     </For>
                   </ul>
                 </Show>
                 <Show when={props.meeting.clients.length}>
                   <ul>
                     <For each={props.meeting.clients}>
-                      {(client) => (
-                        <li>
-                          <UserLink type="clients" link={false} userId={client.userId} name={client.name} />
-                        </li>
-                      )}
+                      {(client) => <AttendantListItem type="clients" attendant={client} showAttendance />}
                     </For>
                   </ul>
                 </Show>
@@ -192,6 +186,28 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         </Portal>
       </Show>
     </>
+  );
+};
+
+interface AttendantListItemProps {
+  readonly type: FacilityUserType;
+  readonly attendant: TQMeetingAttendantResource;
+  readonly showAttendance?: boolean;
+}
+
+const AttendantListItem: VoidComponent<AttendantListItemProps> = (props) => {
+  const dictionaries = useDictionaries();
+  const attendanceStatus = createMemo(() => dictionaries()?.getPositionById(props.attendant.attendanceStatusDictId));
+  return (
+    <li>
+      <UserLink type={props.type} link={false} userId={props.attendant.userId} name={props.attendant.name} />
+      <Show when={props.showAttendance && attendanceStatus()?.name !== "ok"}>
+        {" "}
+        <span class="text-grey-text">
+          {EM_DASH} <MeetingAttendanceStatus attendanceStatusId={props.attendant.attendanceStatusDictId} />
+        </span>
+      </Show>
+    </li>
   );
 };
 
