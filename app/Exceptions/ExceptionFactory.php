@@ -48,4 +48,9 @@ class ExceptionFactory
     {
         return new ApiValidationException(400, 'exception.invalid_json');
     }
+
+    public static function tooManyRequests(): ApiException
+    {
+        return new ApiException(429, 'exception.too_many_requests');
+    }
 }
