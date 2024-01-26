@@ -42,7 +42,7 @@ class Kernel extends HttpKernel
             //\Illuminate\Foundation\Http\Middleware\TrimStrings::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':500,1,api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             // from web:
             \App\Http\Middleware\EncryptCookies::class,

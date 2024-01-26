@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Psr\Log\LogLevel;
@@ -55,6 +56,9 @@ class Handler extends ExceptionHandler
             //
         });
         $this->renderable(function (ValidationException|HttpExceptionInterface $e): ?JsonResponse {
+            if ($e instanceof ThrottleRequestsException) {
+                return ExceptionFactory::tooManyRequests()->render();
+            }
             if ($e instanceof NotFoundHttpException) {
                 return ExceptionFactory::notFound()->render();
             }
