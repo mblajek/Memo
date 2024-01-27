@@ -7,10 +7,10 @@ import {EN_DASH} from "components/ui/symbols";
 import {htmlAttributes} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
-import {DataItem} from "data-access/memo-api/tquery/types";
+import {TQMeetingAttendantResource} from "data-access/memo-api/tquery/calendar";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
-import {Index, ParentComponent, Show, VoidComponent} from "solid-js";
+import {For, ParentComponent, Show, VoidComponent} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
@@ -54,21 +54,15 @@ export function useMeetingTableColumns() {
       },
     },
     staff: {
-      name: "staff.*.name",
-      extraDataColumns: ["staff.*.userId"],
+      name: "staff",
       columnDef: {
-        cell: cellFunc<Api.Id[], DataItem>((v, ctx) => (
-          <UserLinksCell type="staff" userIds={ctx.row.original["staff.*.userId"] as string[]} names={v} />
-        )),
+        cell: (c) => <UserLinksCell type="staff" users={c.getValue() as TQMeetingAttendantResource[]} />,
       },
     },
     clients: {
-      name: "clients.*.name",
-      extraDataColumns: ["clients.*.userId"],
+      name: "clients",
       columnDef: {
-        cell: cellFunc<Api.Id[]>((v, ctx) => (
-          <UserLinksCell type="clients" userIds={ctx.row.original["clients.*.userId"] as string[]} names={v} />
-        )),
+        cell: (c) => <UserLinksCell type="clients" users={c.getValue() as TQMeetingAttendantResource[]} />,
       },
     },
     isRemote: {name: "isRemote"},
@@ -157,20 +151,19 @@ const Scrollable: ParentComponent<htmlAttributes.div> = (props) => (
 
 interface UserLinksProps {
   readonly type: FacilityUserType;
-  readonly userIds: readonly Api.Id[];
-  readonly names: readonly string[];
+  readonly users: readonly TQMeetingAttendantResource[];
 }
 
 const UserLinksCell: VoidComponent<UserLinksProps> = (props) => (
   <Scrollable>
     <ul>
-      <Index each={props.userIds}>
-        {(id, index) => (
+      <For each={props.users}>
+        {({userId, name}) => (
           <li>
-            <UserLink type={props.type} icon userId={id()} name={props.names[index]} />
+            <UserLink type={props.type} icon userId={userId} name={name} />
           </li>
         )}
-      </Index>
+      </For>
     </ul>
   </Scrollable>
 );
