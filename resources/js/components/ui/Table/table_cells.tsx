@@ -8,8 +8,10 @@ import {EMPTY_VALUE_SYMBOL} from "../symbols";
 import {Header} from "./Header";
 import {IdColumn} from "./IdColumn";
 
+export type RowDataType = Readonly<Record<string, unknown>>;
+
 /** The component used as header in column definition. */
-export type HeaderComponent = <T>(ctx: HeaderContext<T, unknown>) => JSX.Element;
+export type HeaderComponent<T = RowDataType> = (ctx: HeaderContext<T, unknown>) => JSX.Element;
 
 /**
  * The component used as cell in column definition.
@@ -18,49 +20,57 @@ export type HeaderComponent = <T>(ctx: HeaderContext<T, unknown>) => JSX.Element
  * e.g. `<>{someString}</>`. Otherwise the reactivity is lost and the cell will show stale data.
  * It is not possible to express this requirement in the type.
  */
-export type CellComponent = <T>(ctx: CellContext<T, unknown>) => JSX.Element;
+export type CellComponent<T = RowDataType> = (ctx: CellContext<T, unknown>) => JSX.Element;
 
 /** Returns a collection of cell functions for various data types. */
 export function useTableCells() {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   return {
-    defaultHeader: ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent,
-    default: cellFunc((v) => <PaddedCell class="wrapText">{defaultFormatValue(v)}</PaddedCell>),
-    bool: cellFunc<boolean>((v) => <PaddedCell>{v ? t("bool_values.yes") : t("bool_values.no")}</PaddedCell>),
-    date: cellFunc<string>((v) => (
-      <PaddedCell>
-        <FormattedDateTime dateTime={DateTime.fromISO(v)} format={{...DATE_FORMAT, weekday: "short"}} alignWeekday />
-      </PaddedCell>
-    )),
-    datetime: cellFunc<string>((v) => (
-      <PaddedCell>
-        <FormattedDateTime
-          dateTime={DateTime.fromISO(v)}
-          format={{...DATE_TIME_FORMAT, weekday: "short"}}
-          alignWeekday
-        />
-      </PaddedCell>
-    )),
-    int: cellFunc<number>((v) => <PaddedCell class="w-full text-right">{NUMBER_FORMAT.format(v)}</PaddedCell>),
-    uuid: cellFunc<string>((v) => (
-      <PaddedCell>
-        <IdColumn id={v} />
-      </PaddedCell>
-    )),
-    uuidList: cellFunc<readonly string[]>((v) => (
-      <PaddedCell class="w-full flex flex-col">
-        <Index each={v}>{(id) => <IdColumn id={id()} />}</Index>
-      </PaddedCell>
-    )),
-    dict: cellFunc<string>((v) => <PaddedCell>{dictionaries()?.getPositionById(v)?.label || "??"}</PaddedCell>),
-    dictList: cellFunc<readonly string[]>((v) => (
-      <PaddedCell>
-        <ul>
-          <Index each={v}>{(id) => <li>{dictionaries()?.getPositionById(id())?.label || "??"}</li>}</Index>
-        </ul>
-      </PaddedCell>
-    )),
+    defaultHeader: <T,>() => ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent<T>,
+    default: <T,>() => cellFunc<unknown, T>((v) => <PaddedCell class="wrapText">{defaultFormatValue(v)}</PaddedCell>),
+    bool: <T,>() =>
+      cellFunc<boolean, T>((v) => <PaddedCell>{v ? t("bool_values.yes") : t("bool_values.no")}</PaddedCell>),
+    date: <T,>() =>
+      cellFunc<string, T>((v) => (
+        <PaddedCell>
+          <FormattedDateTime dateTime={DateTime.fromISO(v)} format={{...DATE_FORMAT, weekday: "short"}} alignWeekday />
+        </PaddedCell>
+      )),
+    datetime: <T,>() =>
+      cellFunc<string, T>((v) => (
+        <PaddedCell>
+          <FormattedDateTime
+            dateTime={DateTime.fromISO(v)}
+            format={{...DATE_TIME_FORMAT, weekday: "short"}}
+            alignWeekday
+          />
+        </PaddedCell>
+      )),
+    int: <T,>() =>
+      cellFunc<number, T>((v) => <PaddedCell class="w-full text-right">{NUMBER_FORMAT.format(v)}</PaddedCell>),
+    uuid: <T,>() =>
+      cellFunc<string, T>((v) => (
+        <PaddedCell>
+          <IdColumn id={v} />
+        </PaddedCell>
+      )),
+    uuidList: <T,>() =>
+      cellFunc<readonly string[], T>((v) => (
+        <PaddedCell class="w-full flex flex-col">
+          <Index each={v}>{(id) => <IdColumn id={id()} />}</Index>
+        </PaddedCell>
+      )),
+    dict: <T,>() =>
+      cellFunc<string, T>((v) => <PaddedCell>{dictionaries()?.getPositionById(v)?.label || "??"}</PaddedCell>),
+    dictList: <T,>() =>
+      cellFunc<readonly string[], T>((v) => (
+        <PaddedCell>
+          <ul>
+            <Index each={v}>{(id) => <li>{dictionaries()?.getPositionById(id())?.label || "??"}</li>}</Index>
+          </ul>
+        </PaddedCell>
+      )),
   };
 }
 
@@ -80,10 +90,10 @@ function defaultFormatValue(value: unknown) {
   }
 }
 
-export function cellFunc<V>(
-  func: <T>(v: V, ctx: CellContext<T, unknown>) => JSX.Element | undefined,
+export function cellFunc<V, T = RowDataType>(
+  func: (v: V, ctx: CellContext<T, unknown>) => JSX.Element | undefined,
   fallback?: () => JSX.Element,
-): CellComponent {
+): CellComponent<T> {
   return (ctx) => (
     <Show when={ctx.getValue() != null} fallback={fallback?.()}>
       {func(ctx.getValue() as V, ctx)}

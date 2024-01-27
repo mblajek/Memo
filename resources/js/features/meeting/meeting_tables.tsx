@@ -7,6 +7,7 @@ import {EN_DASH} from "components/ui/symbols";
 import {htmlAttributes} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {DataItem} from "data-access/memo-api/tquery/types";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {Index, ParentComponent, Show, VoidComponent} from "solid-js";
@@ -24,8 +25,8 @@ export function useMeetingTableColumns() {
       extraDataColumns: ["durationMinutes"],
       columnDef: {
         cell: (c) => {
-          const startDayMinute = () => c.row.getValue<number>("startDayminute");
-          const durationMinutes = () => c.row.getValue<number>("durationMinutes");
+          const startDayMinute = () => c.row.original.startDayminute as number;
+          const durationMinutes = () => c.row.original.durationMinutes as number;
           return (
             <PaddedCell>
               {formatDayMinuteHM(startDayMinute(), {hour: "2-digit"})} {EN_DASH}{" "}
@@ -56,8 +57,8 @@ export function useMeetingTableColumns() {
       name: "staff.*.name",
       extraDataColumns: ["staff.*.userId"],
       columnDef: {
-        cell: cellFunc<Api.Id[]>((v, ctx) => (
-          <UserLinksCell type="staff" userIds={ctx.row.getValue<string[]>("staff.*.userId")} names={v} />
+        cell: cellFunc<Api.Id[], DataItem>((v, ctx) => (
+          <UserLinksCell type="staff" userIds={ctx.row.original["staff.*.userId"] as string[]} names={v} />
         )),
       },
     },
@@ -66,7 +67,7 @@ export function useMeetingTableColumns() {
       extraDataColumns: ["clients.*.userId"],
       columnDef: {
         cell: cellFunc<Api.Id[]>((v, ctx) => (
-          <UserLinksCell type="clients" userIds={ctx.row.getValue<string[]>("clients.*.userId")} names={v} />
+          <UserLinksCell type="clients" userIds={ctx.row.original["clients.*.userId"] as string[]} names={v} />
         )),
       },
     },
@@ -92,7 +93,7 @@ export function useMeetingTableColumns() {
       columnDef: {
         cell: (c) => (
           <PaddedCell>
-            <EditButton onClick={() => meetingModal.show({meetingId: c.row.getValue("id")})} />
+            <EditButton onClick={() => meetingModal.show({meetingId: c.row.original.id as string})} />
           </PaddedCell>
         ),
         enableSorting: false,
@@ -106,18 +107,22 @@ export function useMeetingTableColumns() {
       columnDef: {
         cell: (c) => {
           const type = () => {
-            switch (c.row.getValue("attendant.attendanceType")) {
+            switch (c.row.original["attendant.attendanceType"]) {
               case "staff":
                 return "staff";
               case "client":
                 return "clients";
               default:
-                throw new Error(`Invalid attendance type: ${c.row.getValue("attendant.attendanceType")}`);
+                throw new Error(`Invalid attendance type: ${c.row.original["attendant.attendanceType"]}`);
             }
           };
           return (
             <PaddedCell>
-              <UserLink type={type()} userId={c.row.getValue("attendant.userId")} name={c.getValue<string>()} />
+              <UserLink
+                type={type()}
+                userId={c.row.original["attendant.userId"] as string}
+                name={c.getValue<string>()}
+              />
             </PaddedCell>
           );
         },
@@ -131,7 +136,7 @@ export function useMeetingTableColumns() {
           <PaddedCell>
             <MeetingAttendanceStatus
               attendanceStatusId={c.getValue<string>()}
-              meetingStatusId={c.row.getValue<string>("statusDictId")}
+              meetingStatusId={c.row.original.statusDictId as string}
             />
           </PaddedCell>
         ),

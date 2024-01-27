@@ -32,6 +32,7 @@
     ],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-constant-condition": "warn",
+    "no-debugger": "warn",
     "no-empty": "off",
     "no-inner-declarations": "off",
     "no-restricted-syntax": [

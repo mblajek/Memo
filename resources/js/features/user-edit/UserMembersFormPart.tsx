@@ -99,7 +99,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
           <Show
             when={ctx.row.getValue("isNewRow")}
             // For existing rows, display the facility name.
-            fallback={tableCells.default(ctx)}
+            fallback={tableCells.default<MemberRow>()(ctx)}
           >
             {/* For the new row, display a select with the available facilities. */}
             <PaddedCell>

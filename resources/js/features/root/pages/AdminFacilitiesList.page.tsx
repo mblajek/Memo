@@ -32,7 +32,7 @@ export default (() => {
           columnDef: {
             cell: (c) => (
               <PaddedCell>
-                <EditButton onClick={() => facilityEditModal.show({facilityId: c.row.getValue("id")})} />
+                <EditButton onClick={() => facilityEditModal.show({facilityId: c.row.original.id as string})} />
               </PaddedCell>
             ),
             enableSorting: false,

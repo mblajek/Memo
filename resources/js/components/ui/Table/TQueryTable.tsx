@@ -174,18 +174,18 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
 
   const tableCells = useTableCells();
   const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<DataItem>>>([
-    ["bool", {cell: tableCells.bool, size: 100}],
-    ["date", {cell: tableCells.date}],
-    ["datetime", {cell: tableCells.datetime}],
-    ["int", {cell: tableCells.int, size: 150}],
+    ["bool", {cell: tableCells.bool(), size: 100}],
+    ["date", {cell: tableCells.date()}],
+    ["datetime", {cell: tableCells.datetime()}],
+    ["int", {cell: tableCells.int(), size: 150}],
     ["list", {enableSorting: false}],
     ["object", {enableSorting: false}],
     ["string", {}],
     ["text", {enableSorting: false}],
-    ["uuid", {cell: tableCells.uuid, enableSorting: false, size: 80}],
-    ["uuid_list", {cell: tableCells.uuidList, enableSorting: false, size: 80}],
-    ["dict", {cell: tableCells.dict}],
-    ["dict_list", {cell: tableCells.dictList, enableSorting: false}],
+    ["uuid", {cell: tableCells.uuid(), enableSorting: false, size: 80}],
+    ["uuid_list", {cell: tableCells.uuidList(), enableSorting: false, size: 80}],
+    ["dict", {cell: tableCells.dict()}],
+    ["dict_list", {cell: tableCells.dictList(), enableSorting: false}],
   ]);
 
   const [allInitialised, setAllInitialised] = createSignal(false);

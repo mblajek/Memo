@@ -65,7 +65,7 @@ export default (() => {
       columns: [
         h.accessor("id", {
           id: "Id",
-          cell: tableCells.uuid,
+          cell: tableCells.uuid(),
           enableSorting: false,
           size: 60,
         }),
@@ -75,7 +75,7 @@ export default (() => {
         }),
         h.accessor("label", {
           id: "Label",
-          cell: cellFunc<string>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
+          cell: cellFunc<string, Attribute>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
           ...textSort,
         }),
         h.accessor("resource.isFixed", {
@@ -83,7 +83,7 @@ export default (() => {
         }),
         h.accessor("resource.facilityId", {
           id: "Facility",
-          cell: cellFunc<string>(
+          cell: cellFunc<string, Attribute>(
             (v) => <PaddedCell>{getFacility(v)}</PaddedCell>,
             () => <EmptyValueCell />,
           ),
@@ -114,14 +114,14 @@ export default (() => {
         }),
         h.accessor("type", {
           id: "Type",
-          cell: cellFunc<AttributeType>((type, ctx) => (
-            <PaddedCell>{getAttributeTypeString(ctx.row.original as Attribute)}</PaddedCell>
+          cell: cellFunc<AttributeType, Attribute>((type, ctx) => (
+            <PaddedCell>{getAttributeTypeString(ctx.row.original)}</PaddedCell>
           )),
           ...textSort,
         }),
         h.accessor("multiple", {
           id: "Multiple",
-          cell: cellFunc<boolean>(
+          cell: cellFunc<boolean, Attribute>(
             (multiple) => <PaddedCell>{String(multiple)}</PaddedCell>,
             () => <EmptyValueCell />,
           ),

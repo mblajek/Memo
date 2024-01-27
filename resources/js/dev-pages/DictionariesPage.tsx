@@ -40,7 +40,7 @@ export default (() => {
     return [
       helper.accessor("id", {
         id: "Id",
-        cell: tableCells.uuid,
+        cell: tableCells.uuid(),
         enableSorting: false,
         size: 60,
       }),

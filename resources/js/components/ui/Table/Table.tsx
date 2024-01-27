@@ -332,8 +332,8 @@ export function getBaseTableOptions<T>({
     enableSortingRemoval: false,
     columnResizeMode: "onChange",
     defaultColumn: {
-      header: tableCells.defaultHeader,
-      cell: tableCells.default,
+      header: tableCells.defaultHeader(),
+      cell: tableCells.default(),
       minSize: 50,
       size: 250,
       ...defaultColumn,

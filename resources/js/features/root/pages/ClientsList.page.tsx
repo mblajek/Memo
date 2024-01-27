@@ -22,7 +22,7 @@ export default (() => {
             columnDef: {
               cell: cellFunc<string>((v, ctx) => (
                 <PaddedCell>
-                  <UserLink type="clients" userId={ctx.row.getValue("id")} name={v} />
+                  <UserLink type="clients" userId={ctx.row.original.id as string} name={v} />
                 </PaddedCell>
               )),
               enableHiding: false,
