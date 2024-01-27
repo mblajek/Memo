@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tquery\Engine;
 
 use App\Exceptions\FatalExceptionFactory;
@@ -84,10 +86,10 @@ class TqBuilder
     ): void {
         if (is_array($value)) {
             $bindings = count($value) ? array_values($value) : [null];
-            $bind = '(' . trim(str_repeat('?,', count($bindings)), ',') . ')';
+            $bind = TqBind::list(count($bindings));
         } else {
             $bindings = ($value !== null) ? [$value] : [];
-            $bind = count($bindings) ? '?' : null;
+            $bind = count($bindings) ? TqBind::single() : null;
         }
         $queryString = '(' . $query(bind: $bind) . ')';
         if ($nullable) {

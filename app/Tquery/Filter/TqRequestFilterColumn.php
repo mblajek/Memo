@@ -2,7 +2,6 @@
 
 namespace App\Tquery\Filter;
 
-use App\Exceptions\FatalExceptionFactory;
 use App\Rules\Valid;
 use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
@@ -28,8 +27,8 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         ], $path);
         $value = null;
         $dataTypeOperator = new TqDataTypeOperator($column->type, $operator, $column->dictionaryId);
-        $valueValidator = $column->type->filterValueValidator($column, $operator);
         if (!$nullOperator) {
+            $valueValidator = $column->type->filterValueValidator($column, $operator);
             if ($dataTypeOperator->isFilterValueList()) {
                 $value = self::validate($data, [
                     'val' => Valid::list(),
@@ -72,19 +71,12 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         $filterQuery = $this->column->getFilterQuery();
         $inverse = ($this->inverse xor $invert);
 
-        $sqlPrefix = $this->operator->sqlPrefix();
-        $sqlOperator = $this->operator->sqlOperator($this->column->type);
-
-        if ($sqlOperator) {
-            $builder->where(
-                query: fn(string|null $bind) => trim("$sqlPrefix $filterQuery $sqlOperator $bind"),
-                or: $or,
-                value: $value,
-                inverse: $inverse,
-                nullable: $this->column->type->isNullable(),
-            );
-        } else {
-            throw FatalExceptionFactory::tquery();
-        }
+        $builder->where(
+            query: $this->dataTypeOperator->getQuery($filterQuery),
+            or: $or,
+            value: $value,
+            inverse: $inverse,
+            nullable: $this->column->type->isNullable(),
+        );
     }
 }
