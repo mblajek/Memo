@@ -29,7 +29,7 @@ export class Attributes {
     for (const attribute of attributes) {
       byId.set(attribute.id, attribute);
       if (attribute.resource.isFixed && attribute.isTranslatable) {
-        byName.set(attribute.resource.name, attribute);
+        byName.set(attribute.name, attribute);
       }
       const model = attribute.model;
       let modelAttributes = byModel.get(model);
@@ -87,6 +87,7 @@ export class Attribute<T = unknown> {
   private constructor(
     resource: AttributeResource,
     readonly id: string,
+    readonly name: string,
     readonly model: string,
     readonly isTranslatable: boolean,
     /** The translated name of the attribute. */
@@ -105,6 +106,7 @@ export class Attribute<T = unknown> {
     return new Attribute(
       resource,
       resource.id,
+      resource.name,
       resource.model,
       isNameTranslatable(resource.name),
       getNameTranslation(t, resource.name, (n) => [

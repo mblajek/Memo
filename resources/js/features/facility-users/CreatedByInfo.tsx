@@ -1,24 +1,25 @@
-import {useLangFunc} from "components/utils";
+import {htmlAttributes, useLangFunc} from "components/utils";
 import {FormattedDateTime} from "components/utils/date_formatting";
 import {DATE_TIME_FORMAT} from "components/utils/formatting";
-import {UserResource} from "data-access/memo-api/resources/user.resource";
+import {CreatedUpdatedResource} from "data-access/memo-api/resources/resource";
 import {DateTime} from "luxon";
-import {VoidComponent} from "solid-js";
+import {VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "./UserLink";
 
-interface Props {
-  readonly user: UserResource;
+interface Props extends htmlAttributes.div {
+  readonly data: CreatedUpdatedResource;
 }
 
-export const CreatedByInfo: VoidComponent<Props> = (props) => {
+export const CreatedByInfo: VoidComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["data"]);
   const t = useLangFunc();
   return (
-    <div class="flex flex-col items-end text-xs">
+    <div {...htmlAttributes.merge(divProps, {class: "flex flex-col items-end text-xs"})}>
       <div>
-        {t("created_by")} <UserLink type="staff" userId={props.user.createdBy} />
+        {t("created_by")} <UserLink type="staff" userId={props.data.createdBy} />
       </div>
       <FormattedDateTime
-        dateTime={DateTime.fromISO(props.user.createdAt)}
+        dateTime={DateTime.fromISO(props.data.createdAt)}
         format={{...DATE_TIME_FORMAT, weekday: "short"}}
       />
     </div>

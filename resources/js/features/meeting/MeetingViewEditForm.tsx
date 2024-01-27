@@ -18,7 +18,7 @@ import {DateTime} from "luxon";
 import {FaRegularCalendarPlus} from "solid-icons/fa";
 import {Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {attendantsInitialValueForEdit} from "./MeetingAttendantsFields";
+import {useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 import {createMeetingCreateModal} from "./meeting_create_modal";
@@ -42,6 +42,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const dictionaries = useDictionaries();
+  const {attendantsInitialValueForEdit, attendantsInitialValueForCreateCopy} = useAttendantsCreator();
   const invalidate = useInvalidator();
   const meetingCreateModal = createMeetingCreateModal();
   const confirmation = createConfirmation();
@@ -114,6 +115,8 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
       initialValues: {
         ...initialValues(),
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
+        statusDictId: dictionaries()!.get("meetingStatus").get("planned").id,
+        ...attendantsInitialValueForCreateCopy(meeting()),
         fromMeetingId: props.id,
       },
       onSuccess: props.onCopyCreated,
@@ -129,6 +132,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
             id="meeting_edit"
             initialValues={initialValues()}
             viewMode={props.viewMode}
+            meeting={meeting()}
             onSubmit={updateMeeting}
             onCancel={() => {
               if (props.onViewModeChange) {

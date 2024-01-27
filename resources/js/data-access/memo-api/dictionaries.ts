@@ -33,7 +33,7 @@ export class Dictionaries {
     for (const dictionary of dictinoaries) {
       byId.set(dictionary.id, dictionary);
       if (dictionary.resource.isFixed && dictionary.isTranslatable) {
-        byName.set(dictionary.resource.name, dictionary);
+        byName.set(dictionary.name, dictionary);
       }
       for (const position of dictionary.allPositions) {
         positionsById.set(position.id, position);
@@ -65,7 +65,7 @@ export class Dictionaries {
     );
   }
 
-  positionById(positionId: string) {
+  getPositionById(positionId: string) {
     const position = this.positionsById.get(positionId);
     if (!position) {
       throw new Error(`Position ${positionId} not found.`);
@@ -82,6 +82,7 @@ export class Dictionary {
   private constructor(
     resource: DictionaryResource,
     readonly id: string,
+    readonly name: string,
     readonly isTranslatable: boolean,
     /** The translated name of the dictionary. */
     readonly label: string,
@@ -104,7 +105,7 @@ export class Dictionary {
     const position = positions.find(
       (position) =>
         position.id === positionIdOrName ||
-        (position.resource.isFixed && position.isTranslatable && position.resource.name === positionIdOrName),
+        (position.resource.isFixed && position.isTranslatable && position.name === positionIdOrName),
     );
     if (!position) {
       throw new Error(`Position ${positionIdOrName} not found.`);
@@ -117,6 +118,7 @@ export class Dictionary {
     return new Dictionary(
       resource,
       resource.id,
+      resource.name,
       isTranslatable,
       getNameTranslation(t, resource.name, (n) => `dictionary.${n}._name`),
       resource.positions.map((position) => new Position(t, position, isTranslatable ? resource.name : undefined)),
@@ -135,7 +137,7 @@ export class Dictionary {
       if (positionsSubset.length === this.allPositions.length) {
         return this;
       }
-      return new Dictionary(this.resource, this.id, this.isTranslatable, this.label, positionsSubset);
+      return new Dictionary(this.resource, this.id, this.name, this.isTranslatable, this.label, positionsSubset);
     }
     return undefined;
   }
@@ -144,6 +146,7 @@ export class Dictionary {
 export class Position {
   readonly resource;
   readonly id;
+  readonly name;
   readonly isTranslatable;
   readonly label;
   readonly disabled;
@@ -156,6 +159,7 @@ export class Position {
   ) {
     this.resource = makeAttributable(resource, "position");
     this.id = resource.id;
+    this.name = resource.name;
     this.isTranslatable = isNameTranslatable(resource.name);
     this.label = getNameTranslation(t, resource.name, (n) => {
       if (!dictionaryTranslatableName)

@@ -8,7 +8,7 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {attendantsInitialValueForCreate} from "./MeetingAttendantsFields";
+import {useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 import {meetingTimeInitialValue} from "./meeting_time_controller";
@@ -25,6 +25,7 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const dictionaries = useDictionaries();
+  const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const invalidate = useInvalidator();
   const meetingMutation = createMutation(() => ({
     mutationFn: FacilityMeeting.createMeeting,
@@ -48,7 +49,7 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
     ({
       ...meetingTimeInitialValue(),
       typeDictId: "",
-      statusDictId: dictionaries()?.get("meetingStatus").get("planned").id || "",
+      statusDictId: dictionaries()!.get("meetingStatus").get("planned").id,
       ...attendantsInitialValueForCreate(),
       isRemote: false,
       notes: "",

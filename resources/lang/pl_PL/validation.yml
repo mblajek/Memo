@@ -49,7 +49,7 @@ gte:
   numeric: "Pole {{attribute}} musi być większe lub równe {{value, number}}."
   string: "Pole {{attribute}} musi być dłuższe lub równe {{value, number}} znaków."
   image: "Pole {{attribute}} musi być obrazkiem."
-in: "Zaznaczony element {{attribute}} musi mieć jedną z wartości: {{values, list(type: disjunction)}}."
+in: "Pole {{attribute}} musi mieć jedną z wartości: {{values, list(type: disjunction)}}."
 in_array: "Pole {{attribute}} nie znajduje się w {{other}}."
 integer: "Pole {{attribute}} musi być liczbą całkowitą."
 ip: "Pole {{attribute}} musi być prawidłowym adresem IP."
@@ -88,7 +88,7 @@ missing_unless: "Pole {{attribute}} nie może występować, chyba że {{other}} 
 missing_with: "Jeśli występuje wartość {{values}}, pole {{attribute}} nie może występować."
 missing_with_all: "Jeśli występuje {{values}}, pole {{attribute}} nie może występować."
 multiple_of: "Pole {{attribute}} musi być wielokrotnością wartości {{value, number}}"
-not_in: "Zaznaczony {{attribute}} jest nieprawidłowy."
+not_in: "Pole {{attribute}} zawiera niedozwoloną wartość."
 not_regex: "Format pola {{attribute}} jest nieprawidłowy."
 numeric: "Pole {{attribute}} musi być liczbą."
 password:

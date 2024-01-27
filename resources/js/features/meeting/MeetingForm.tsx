@@ -6,16 +6,19 @@ import {RichTextView} from "components/ui/RichTextView";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldBox} from "components/ui/form/FieldBox";
+import {FieldLabel} from "components/ui/form/FieldLabel";
 import {MultilineTextField} from "components/ui/form/MultilineTextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
-import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
+import {MeetingResource, MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
+import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {MeetingAttendantsFields, getAttendantsSchemaPart, getAttendantsValues} from "./MeetingAttendantsFields";
 import {MeetingDateAndTime} from "./MeetingDateAndTime";
 import {MeetingTypeFields} from "./MeetingTypeFields";
+import {MeetingStatusInfoIcon} from "./attendance_status_info";
 import {getMeetingTimeFieldsSchemaPart, getTimeValues} from "./meeting_time_controller";
 
 const getSchema = () =>
@@ -36,11 +39,13 @@ export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 interface Props extends FormConfigWithoutTransformFn<MeetingFormType> {
   readonly id: string;
   readonly viewMode?: boolean;
+  /** The meeting resource, for showing some of the readonly information about the meeting. */
+  readonly meeting?: MeetingResource;
   readonly onCancel?: () => void;
 }
 
 export const MeetingForm: VoidComponent<Props> = (allProps) => {
-  const [props, formPropsObj] = splitProps(allProps, ["id", "viewMode", "onCancel"]);
+  const [props, formPropsObj] = splitProps(allProps, ["id", "viewMode", "meeting", "onCancel"]);
   // eslint-disable-next-line solid/reactivity
   const formProps: FormConfigWithoutTransformFn<MeetingFormType> = formPropsObj;
   const ByMode: VoidComponent<{view?: JSX.Element; edit?: JSX.Element}> = (byModeProps) => (
@@ -82,17 +87,30 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
       >
         {(form) => (
           <>
-            <MeetingDateAndTime
-              // Does not work very well on Chrome currently.
-              // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
-              viewMode={props.viewMode}
-            />
+            <div class="flex gap-x-2 justify-between flex-wrap-reverse">
+              <MeetingDateAndTime
+                // Does not work very well on Chrome currently.
+                // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
+                viewMode={props.viewMode}
+              />
+              <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="flex-grow" data={meeting()} />}</Show>
+            </div>
             <div class="flex gap-1">
               <div class="basis-0 grow">
                 <MeetingTypeFields />
               </div>
               <div class="basis-0 grow">
-                <DictionarySelect name="statusDictId" dictionary="meetingStatus" nullable={false} />
+                <DictionarySelect
+                  name="statusDictId"
+                  label={
+                    <div class="flex gap-1">
+                      <FieldLabel fieldName="statusDictId" />
+                      <MeetingStatusInfoIcon meetingStatusId={form.data("statusDictId")} />
+                    </div>
+                  }
+                  dictionary="meetingStatus"
+                  nullable={false}
+                />
               </div>
             </div>
             <div class="flex flex-col gap-1">

@@ -44,7 +44,7 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
         </Show>
       </div>
       <div class="flex flex-col items-end gap-0.5">
-        <CreatedByInfo user={props.user} />
+        <CreatedByInfo data={props.user} />
         <Show when={status.data?.permissions.globalAdmin}>
           <EditButton
             onClick={() => userEditModal.show({userId: props.user.id})}

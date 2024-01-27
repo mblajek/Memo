@@ -1,9 +1,11 @@
+import {CreatedUpdatedResource} from "./resource";
+
 /**
  * The meeting resource.
  * @see `/help/tables/meetings.md`
  * @see `/app/Http/Resources/MeetingResource.php`
  */
-export interface MeetingResource {
+export interface MeetingResource extends CreatedUpdatedResource {
   readonly id: string;
   readonly facilityId: string;
   readonly categoryDictId: string;
@@ -13,7 +15,6 @@ export interface MeetingResource {
   readonly startDayminute: number;
   readonly durationMinutes: number;
   readonly statusDictId: string;
-  readonly createdBy: string;
   readonly isRemote: boolean;
   readonly staff: readonly MeetingAttendantResource[];
   readonly clients: readonly MeetingAttendantResource[];
@@ -23,7 +24,7 @@ export interface MeetingResource {
 
 export interface MeetingAttendantResource {
   readonly userId: string;
-  readonly attendanceStatusDictId: string | null;
+  readonly attendanceStatusDictId: string;
 }
 
 export interface MeetingResourceResource {

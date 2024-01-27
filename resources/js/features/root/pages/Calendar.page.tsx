@@ -1,6 +1,7 @@
 import {FullCalendar} from "components/ui/calendar/FullCalendar";
 import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
+import {activeFacilityId} from "state/activeFacilityId.state";
 
 export default (() => {
   return (
@@ -14,7 +15,7 @@ export default (() => {
         [12, 25],
         [12, 26],
       ].map(([month, day]) => DateTime.fromObject({month, day}))}
-      staticPersistenceKey="facilityCalendar"
+      staticPersistenceKey={`facility.${activeFacilityId()}.calendar`}
       meetingListLinkProps={{href: "table"}}
     />
   );

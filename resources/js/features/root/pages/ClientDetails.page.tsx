@@ -22,8 +22,8 @@ export default (() => {
               <UserMeetingsTables
                 intrinsicFilter={{
                   type: "column",
-                  column: "clients.*.userId",
-                  op: "has",
+                  column: "attendant.userId",
+                  op: "=",
                   val: userId(),
                 }}
                 staticPersistenceKey="clientMeetings"

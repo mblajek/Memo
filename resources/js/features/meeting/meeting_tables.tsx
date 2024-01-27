@@ -11,6 +11,7 @@ import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {Index, ParentComponent, Show, VoidComponent} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
+import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
 
 export function useMeetingTableColumns() {
@@ -23,15 +24,16 @@ export function useMeetingTableColumns() {
       extraDataColumns: ["durationMinutes"],
       columnDef: {
         cell: (c) => {
-          const startDayMinute = c.row.getValue<number>("startDayminute");
-          const durationMinutes = c.row.getValue<number>("durationMinutes");
+          const startDayMinute = () => c.row.getValue<number>("startDayminute");
+          const durationMinutes = () => c.row.getValue<number>("durationMinutes");
           return (
             <PaddedCell>
-              {formatDayMinuteHM(startDayMinute, {hour: "2-digit"})} {EN_DASH}{" "}
-              {formatDayMinuteHM(startDayMinute + durationMinutes, {hour: "2-digit"})}
+              {formatDayMinuteHM(startDayMinute(), {hour: "2-digit"})} {EN_DASH}{" "}
+              {formatDayMinuteHM(startDayMinute() + durationMinutes(), {hour: "2-digit"})}
             </PaddedCell>
           );
         },
+        sortDescFirst: false,
         enableColumnFilter: false,
         size: 120,
       },
@@ -97,6 +99,45 @@ export function useMeetingTableColumns() {
         ...AUTO_SIZE_COLUMN_DEFS,
       },
     },
+    // Attendance tables only:
+    attendant: {
+      name: "attendant.name",
+      extraDataColumns: ["attendant.userId", "attendant.attendanceType"],
+      columnDef: {
+        cell: (c) => {
+          const type = () => {
+            switch (c.row.getValue("attendant.attendanceType")) {
+              case "staff":
+                return "staff";
+              case "client":
+                return "clients";
+              default:
+                throw new Error(`Invalid attendance type: ${c.row.getValue("attendant.attendanceType")}`);
+            }
+          };
+          return (
+            <PaddedCell>
+              <UserLink type={type()} userId={c.row.getValue("attendant.userId")} name={c.getValue<string>()} />
+            </PaddedCell>
+          );
+        },
+      },
+    },
+    attendanceStatus: {
+      name: "attendant.attendanceStatusDictId",
+      extraDataColumns: ["statusDictId"],
+      columnDef: {
+        cell: (c) => (
+          <PaddedCell>
+            <MeetingAttendanceStatus
+              attendanceStatusId={c.getValue<string>()}
+              meetingStatusId={c.row.getValue<string>("statusDictId")}
+            />
+          </PaddedCell>
+        ),
+        size: 200,
+      },
+    },
   } satisfies Partial<Record<string, PartialColumnConfig>>;
   return {
     columns,
@@ -137,7 +178,9 @@ export const MeetingStatus: VoidComponent<StatusProps> = (props) => {
   const dictionaries = useDictionaries();
   return (
     <Show when={dictionaries()}>
-      {(dictionaries) => <SimpleTag text={dictionaries()?.positionById(props.status).label} colorSeed={props.status} />}
+      {(dictionaries) => (
+        <SimpleTag text={dictionaries()?.getPositionById(props.status).label} colorSeed={props.status} />
+      )}
     </Show>
   );
 };
