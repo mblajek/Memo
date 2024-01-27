@@ -9,7 +9,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const table = useTable();
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
   const isDefaultVisibility = () =>
-    table.getAllLeafColumns().every((c) => c.getIsVisible() === defaultColumnVisibility?.()[c.id] ?? true);
+    table.getAllLeafColumns().every((c) => c.getIsVisible() === (defaultColumnVisibility?.()[c.id] ?? true));
   const [resetHovered, setResetHovered] = createSignal(false);
   return (
     <PopOver
