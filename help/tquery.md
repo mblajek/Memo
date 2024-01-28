@@ -14,10 +14,10 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 | string           | +    | + | +  | .    | +   | +    | +      | +    |
 | text             | +    | . | .  | .    | .   | +    | +?(8)  | .    |
 | uuid             | +    | + | +  | .    | .   | .    | +      | .    |
-| dict(1)          | *    | * | *  | .    | .   | .    | +      | *    |
-| dict_list(3)     | *    | * | .  | *    | .   | .    | +      | .    |
-| uuid_list(3)     | *    | * | .  | *    | .   | .    | +      | .    |
-| list(4)          | *    | . | .  | .    | .   | .    | +      | .    |
+| dict(1)          | +    | + | +  | .    | .   | .    | +      | +    |
+| dict_list(3)     | +    | + | .  | +    | .   | .    | +      | .    |
+| uuid_list(3)     | +    | + | .  | +    | .   | .    | +      | .    |
+| list(4)          | +    | . | .  | .    | .   | .    | +      | .    |
 | object(2)        | *    | . | .  | .    | .   | .    | *      | .    |
 | **inne:**        |
 | count(5)         | .    | . | .  | .    | .   | .    | +      | +    |
@@ -52,7 +52,8 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 
 
 - `(1)` - pojedyncza wartość słownikowa, zwracana jako uuid
-- `(2)` - obiekt o dowolnej strukturze, ustalonej z frontendem
+- `(2)` - obiekt o dowolnej strukturze, ustalonej z frontendem, możliwe, że nie wystąpi,
+i zawsze będzie przekazywany jako pola "object.*" w płaskiej strukturze
 - `(3)` - wiele wartości słownikowych, zwracanych jako lista uuid lub lista uuid np. użytkowników
 - `(4)` - lista obiektów/wartości o dowolnej strukturze, ustalonej z frontendem
 - `(5)` - liczba zgrupowanych rekordów, jeżeli tquery było wywołane z opcją `distnct=true`
