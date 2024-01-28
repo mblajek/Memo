@@ -18,10 +18,10 @@ class MeetingService
         $meeting = new Meeting($data);
         $this->fillMeeting($meeting, $facility);
 
-        $staff = $this->extractStaff($data);
-        $clients = $this->extractClients($data);
+        $staff = $this->extractStaff($data) ?? [];
+        $clients = $this->extractClients($data) ?? [];
         $attendants = array_merge($staff, $clients);
-        $resources = $this->extractResources($data);
+        $resources = $this->extractResources($data) ?? [];
 
         DB::transaction(function () use ($meeting, $attendants, $resources) {
             $meeting->save();
