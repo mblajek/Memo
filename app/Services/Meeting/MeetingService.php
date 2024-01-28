@@ -36,35 +36,22 @@ class MeetingService
     {
         $meeting->fill($data);
 
-        $newStaff = $this->extractStaff($data);
-        $newClients = $this->extractClients($data);
-
-        $currentStaff = $meeting->getAttendants(AttendanceType::Staff);
-        $currentClients = $meeting->getAttendants(AttendanceType::Client);
-
-        $finalStaff = empty($newStaff) ? $currentStaff : $newStaff;
-        $finalClients = empty($newClients) ? $currentClients : $newClients;
-
-        $finalAttendants = !empty($newStaff) || !empty($newClients) ? array_merge($finalStaff, $finalClients) : null;
-
-        // Resources is the only array that can be set to empty, so we need to distinguish that with null.
-        $finalResources = $this->extractResources($data, valueWhenAbsent: null);
+        // TODO: Go through those list elements one by one to figure out which ones need to be added,
+        //       updated, or deleted separately.
+        $finalAttendants = $this->extractPatchAttendants($data, $meeting);
+        $finalResources = $this->extractResources($data);
 
         DB::transaction(function () use ($meeting, $finalAttendants, $finalResources) {
             if ($meeting->isDirty()) {
-                Log::info(var_export($meeting->getDirty(), true));
                 $meeting->save();
             }
-            // We could go through those one by one and decide which to remove and which to update etc., but this one is
-            // easier and less error prone (as those arrays work with put semantics anyway) - with the expected number
-            // of attendants and resources just checking whether any modification has been made, should be enough.
             if (!is_null($finalAttendants)) {
                 $meeting->attendants()->delete();
                 $meeting->attendants()->saveMany($finalAttendants);
             }
             if (!is_null($finalResources)) {
                 $meeting->resources()->delete();
-                if (!empty($finalResources)) {
+                if (count($finalResources) > 0) {
                     $meeting->resources()->saveMany($finalResources);
                 }
             }
@@ -81,17 +68,21 @@ class MeetingService
     private function extract(array &$data, string $key)
     {
         if (!array_key_exists($key, $data)) {
-            return [];
+            return null;
         }
         $dataKey = $data[$key];
         unset($data[$key]);
         return $dataKey;
     }
 
-    private function extractStaff(array &$data): array
+    private function extractStaff(array &$data): ?array
     {
         $attendants = [];
-        foreach ($this->extract($data, 'staff') as $attendantData) {
+        $attendantsData = $this->extract($data, 'staff');
+        if (is_null($attendantsData)) {
+            return null;
+        }
+        foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
             $attendant->attendance_type = AttendanceType::Staff;
             $attendants[$attendant->user_id] = $attendant;
@@ -99,10 +90,14 @@ class MeetingService
         return array_values($attendants);
     }
 
-    private function extractClients(array &$data): array
+    private function extractClients(array &$data): ?array
     {
         $attendants = [];
-        foreach ($this->extract($data, 'clients') as $attendantData) {
+        $attendantsData = $this->extract($data, 'clients');
+        if (is_null($attendantsData)) {
+            return null;
+        }
+        foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
             $attendant->attendance_type = AttendanceType::Client;
             $attendants[$attendant->user_id] = $attendant;
@@ -110,18 +105,32 @@ class MeetingService
         return array_values($attendants);
     }
 
-    private function extractResources(array &$data, ?array $valueWhenAbsent = []): ?array
+    private function extractResources(array &$data): ?array
     {
-        if (!array_key_exists('resources', $data)) {
-            return $valueWhenAbsent;
-        }
-        $resourcesData = $data['resources'] ?? null;
-        unset($data['resources']);
         $resources = [];
+        $resourcesData = $this->extract($data, 'resources');
+        if (is_null($resourcesData)) {
+            return null;
+        }
         foreach ($resourcesData as $resourceData) {
             $resource = new MeetingResource($resourceData);
             $resources[$resource->resource_dict_id] = $resource;
         }
         return array_values($resources);
+    }
+
+    public function extractPatchAttendants(array &$data, Meeting $meeting): ?array
+    {
+        $newStaff = $this->extractStaff($data);
+        $newClients = $this->extractClients($data);
+
+        if (is_null($newStaff) && is_null($newClients)) {
+            return null;
+        }
+
+        $finalStaff = $newStaff ?? $meeting->getAttendants(AttendanceType::Staff);
+        $finalClients = $newClients ?? $meeting->getAttendants(AttendanceType::Client);
+
+        return array_merge($finalStaff, $finalClients);
     }
 }
