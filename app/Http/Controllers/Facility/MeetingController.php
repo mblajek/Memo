@@ -146,6 +146,54 @@ class MeetingController extends ApiController
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Update facility meeting',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'typeDictId', type: 'string', format: 'uuid', example: 'UUID'),
+                    new OA\Property(property: 'date', type: 'string', example: '2023-12-13'),
+                    new OA\Property(property: 'notes', type: 'string', example: '', nullable: true),
+                    new OA\Property(property: 'startDayminute', type: 'int', example: 600),
+                    new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
+                    new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),
+                    new OA\Property(property: 'isRemote', type: 'bool', example: false),
+                    new OA\Property(
+                        property: 'staff', type: 'array', items: new OA\Items(
+                        required: ['userId', 'attendanceType'],
+                        properties: [
+                            new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
+                            new OA\Property(
+                                property: 'attendanceStatusDictId',
+                                type: 'string',
+                                format: 'uuid',
+                                example: null,
+                                nullable: true,
+                            ),
+                        ]
+                    )
+                    ),
+                    new OA\Property(
+                        property: 'clients', type: 'array', items: new OA\Items(
+                        required: ['userId', 'attendanceType'],
+                        properties: [
+                            new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
+                            new OA\Property(
+                                property: 'attendanceStatusDictId',
+                                type: 'string',
+                                format: 'uuid',
+                                example: null,
+                                nullable: true,
+                            ),
+                        ]
+                    )
+                    ),
+                    new OA\Property(
+                        property: 'resources', type: 'array', items: new OA\Items(properties: [
+                        new OA\Property(property: 'resourceDictId', type: 'string', example: 'UUID'),
+                    ])
+                    ),
+                ]
+            )
+        ),
         tags: ['Facility meeting'],
         parameters: [
             new FacilityParameter(),
@@ -158,7 +206,7 @@ class MeetingController extends ApiController
             ),
         ],
         responses: [
-            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 200, description: 'Updated'),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
@@ -193,7 +241,7 @@ class MeetingController extends ApiController
                 'resources.*.resource_dict_id',
             ])
         );
-        // todo: implementation
+        $meetingService->patch($meetingObject, $data);
         return new JsonResponse();
     }
 
