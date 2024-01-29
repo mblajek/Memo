@@ -16,6 +16,9 @@ set: "Ustaw"
 change_password: "Zmień hasło"
 make_a_copy: "Utwórz kopię"
 show: "Pokaż"
+open: "Otwórz"
+
+details: "Szczegóły"
 
 user:
   add: "Dodaj osobę"

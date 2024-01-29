@@ -1,9 +1,9 @@
-import {EditButton} from "components/ui/Button";
+import {Button} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
@@ -16,6 +16,7 @@ import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
 
 export function useMeetingTableColumns() {
+  const t = useLangFunc();
   const meetingModal = createMeetingModal();
   const columns = {
     id: {name: "id", initialVisible: false},
@@ -109,8 +110,13 @@ export function useMeetingTableColumns() {
       extraDataColumns: ["id"],
       columnDef: {
         cell: (c) => (
-          <PaddedCell>
-            <EditButton onClick={() => meetingModal.show({meetingId: c.row.original.id as string})} />
+          <PaddedCell class="flex gap-2 items-start">
+            <Button
+              class="minimal"
+              onClick={() => meetingModal.show({meetingId: c.row.original.id as string, initialViewMode: true})}
+            >
+              {t("actions.details")}
+            </Button>
           </PaddedCell>
         ),
         enableSorting: false,

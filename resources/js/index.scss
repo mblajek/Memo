@@ -110,6 +110,14 @@
     &.small {
       @apply px-1 py-0;
     }
+
+    &.minimal {
+      @apply px-0.5 -my-px border border-gray-300 rounded bg-white hover:bg-hover;
+
+      &[aria-disabled="true"] {
+        @apply bg-opacity-50;
+      }
+    }
   }
 
   // Icons

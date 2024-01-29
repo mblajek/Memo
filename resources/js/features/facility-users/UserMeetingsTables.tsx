@@ -6,7 +6,7 @@ import {Tabs} from "components/ui/Tabs";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
-import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {Sort} from "data-access/memo-api/tquery/types";
 import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -19,15 +19,9 @@ interface Props {
 
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const {meetingStatusDict} = useFixedDictionaries();
+  const {dictionaries, meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns();
-  const isPlannedFilter = (): FilterH => ({
-    type: "column",
-    column: "statusDictId",
-    op: "=",
-    val: meetingStatusDict()!.planned.id,
-  });
   function sortByDate({desc}: {desc: boolean}) {
     return [
       {type: "column", column: "date", desc},
@@ -37,7 +31,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const tableTranslations = createTableTranslations("meeting");
   return (
     <div>
-      <Show when={meetingStatusDict()} fallback={<BigSpinner />}>
+      <Show when={dictionaries()} fallback={<BigSpinner />}>
         <Capitalize class="font-medium" text={tableTranslations.tableName()} />
         <Tabs
           tabs={[
@@ -55,7 +49,15 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                     intrinsicFilter={{
                       type: "op",
                       op: "&",
-                      val: [props.intrinsicFilter, isPlannedFilter()],
+                      val: [
+                        props.intrinsicFilter,
+                        {
+                          type: "column",
+                          column: "statusDictId",
+                          op: "=",
+                          val: meetingStatusDict()!.planned.id,
+                        },
+                      ],
                     }}
                     intrinsicSort={sortByDate({desc: false})}
                     columns={meetingTableColumns.get(
@@ -99,7 +101,29 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                     intrinsicFilter={{
                       type: "op",
                       op: "&",
-                      val: [props.intrinsicFilter, invertFilter(isPlannedFilter())],
+                      val: [
+                        props.intrinsicFilter,
+                        {
+                          type: "op",
+                          op: "|",
+                          val: [
+                            {
+                              type: "column",
+                              column: "statusDictId",
+                              op: "=",
+                              val: meetingStatusDict()!.planned.id,
+                              inv: true,
+                            },
+                            {
+                              type: "column",
+                              column: "attendant.attendanceStatusDictId",
+                              op: "=",
+                              val: attendanceStatusDict()!.ok.id,
+                              inv: true,
+                            },
+                          ],
+                        },
+                      ],
                     }}
                     intrinsicSort={sortByDate({desc: true})}
                     columns={meetingTableColumns.get(

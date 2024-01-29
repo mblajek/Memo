@@ -73,8 +73,8 @@ filter:
       short: "wszystkie"
       explanation: "Znajdź wiersze, które mają wszystkie wybrane wartości"
     has_any:
-      short: "dowolne"
-      explanation: "Znajdź wiersze, które mają dowolną z wybranych wartości"
+      short: "którekolwiek"
+      explanation: "Znajdź wiersze, które mają którąkolwiek z wybranych wartości"
     has_only:
       short: "tylko"
       explanation: "Znajdź wiersze, które mają tylko wybrane wartości (niekoniecznie wszystkie)"

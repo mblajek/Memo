@@ -666,7 +666,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <div class="p-1 border-t border-r flex gap-0.5">
               <Show when={props.meetingListLinkProps}>
                 {(linkProps) => (
-                  <A {...linkProps()} class="flex gap-1 items-center text-sm">
+                  <A {...linkProps()} class="py-0.5 flex gap-1 items-center text-sm">
                     <OcTable3 /> {t("calendar.show_meeting_list")}
                   </A>
                 )}

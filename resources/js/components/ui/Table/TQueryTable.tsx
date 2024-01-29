@@ -185,7 +185,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     ["uuid", {cell: tableCells.uuid(), enableSorting: false, size: 80}],
     ["uuid_list", {cell: tableCells.uuidList(), enableSorting: false, size: 80}],
     ["dict", {cell: tableCells.dict()}],
-    ["dict_list", {cell: tableCells.dictList(), enableSorting: false}],
+    ["dict_list", {cell: tableCells.dictList(), enableSorting: false, size: 270}],
   ]);
 
   const [allInitialised, setAllInitialised] = createSignal(false);
