@@ -85,7 +85,7 @@ readonly class MeetingTquery extends TqService
                 TqDataTypeEnum::uuid_list,
                 '`meeting_attendants`.`user_id`',
                 "`meeting_attendants` $attendantWhere",
-                "$attendanceName.*.userId",
+                "$attendanceName.*.user_id",
             );
             $config->addQuery(
                 TqDataTypeEnum::list,
@@ -97,12 +97,11 @@ readonly class MeetingTquery extends TqService
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
                 "$attendanceName.*.name",
             );
-            $config->addQuery(
-                TqDataTypeEnum::list,
-                fn(string $tableName) => //
-                    "select json_arrayagg(`meeting_attendants`.`attendance_status_dict_id`)"
-                    . " from `meeting_attendants` $attendantWhere",
-                "$attendanceName.*.attendanceStatusDictId",
+            $config->addUuidListQuery(
+                new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::AttendanceStatus),
+                '`meeting_attendants`.`attendance_status_dict_id`',
+                "`meeting_attendants` $attendantWhere",
+                "$attendanceName.*.attendance_status_dict_id",
             );
             $config->addQuery(
                 TqDataTypeEnum::list,
