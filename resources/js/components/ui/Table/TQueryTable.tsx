@@ -1,13 +1,16 @@
 import {
   ColumnDef,
+  ColumnSizingState,
   IdentifiedColumnDef,
   RowData,
+  Table as SolidTable,
   SortingState,
   VisibilityState,
   createSolidTable,
 } from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
+import {debouncedAccessor} from "components/utils";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {
@@ -25,7 +28,7 @@ import {
   Sort,
   isDataColumn,
 } from "data-access/memo-api/tquery/types";
-import {DEV, JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
+import {DEV, JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal, onMount} from "solid-js";
 import toast from "solid-toast";
 import {
   DisplayMode,
@@ -153,6 +156,7 @@ const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
  */
 type PersistentState = {
   readonly colVis: Readonly<VisibilityState>;
+  readonly colSize: Readonly<ColumnSizingState>;
 };
 const PERSISTENCE_VERSION = 2;
 
@@ -223,11 +227,15 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     sorting,
     pagination,
   } = requestController;
+  const [table, setTable] = createSignal<SolidTable<DataItem>>();
   if (props.staticPersistenceKey) {
+    // eslint-disable-next-line solid/reactivity
+    const columnSizing = debouncedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
     createLocalStoragePersistence<PersistentState>({
       key: `TQueryTable:${props.staticPersistenceKey}`,
       value: () => ({
         colVis: columnVisibility[0](),
+        colSize: columnSizing() || {},
       }),
       onLoad: (value) => {
         // Ensure a bad (e.g. outdated) entry won't affect visibility of a columnn that cannot have
@@ -239,6 +247,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           }
         }
         columnVisibility[1](colVis);
+        onMount(() => table()!.setColumnSizing(value.colSize || {}));
       },
       serialiser: richJSONSerialiser<PersistentState>(),
       version: [PERSISTENCE_VERSION],
@@ -307,30 +316,32 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     });
   });
 
-  const table = createSolidTable<DataItem>({
-    ...getBaseTableOptions<DataItem>({features: {columnVisibility, sorting, globalFilter, pagination}}),
-    get data() {
-      return (dataQuery.data?.data as DataItem[]) || [];
-    },
-    get columns() {
-      return columns();
-    },
-    manualFiltering: true,
-    manualSorting: true,
-    manualPagination: true,
-    get pageCount() {
-      return pageCount();
-    },
-    autoResetPageIndex: false,
-    meta: {
-      translations: props.staticTranslations || createTableTranslations("generic"),
-      defaultColumnVisibility,
-    },
-  });
+  setTable(
+    createSolidTable<DataItem>({
+      ...getBaseTableOptions<DataItem>({features: {columnVisibility, sorting, globalFilter, pagination}}),
+      get data() {
+        return (dataQuery.data?.data as DataItem[]) || [];
+      },
+      get columns() {
+        return columns();
+      },
+      manualFiltering: true,
+      manualSorting: true,
+      manualPagination: true,
+      get pageCount() {
+        return pageCount();
+      },
+      autoResetPageIndex: false,
+      meta: {
+        translations: props.staticTranslations || createTableTranslations("generic"),
+        defaultColumnVisibility,
+      },
+    }),
+  );
 
   return (
     <Table
-      table={table}
+      table={table()!}
       mode={props.mode}
       rowsIteration="Index"
       aboveTable={() => (

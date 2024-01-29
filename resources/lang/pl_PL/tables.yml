@@ -55,6 +55,7 @@ tables:
       statusTags: "tagi statusu"
 
 choose_columns: "Wybierz kolumny"
+reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"
 
 filter:
