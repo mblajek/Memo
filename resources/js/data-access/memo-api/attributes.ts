@@ -1,5 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {LangFunc, useLangFunc} from "components/utils";
+import {createCached} from "components/utils/cache";
 import {translationsLoaded} from "i18n_loader";
 import {createMemo} from "solid-js";
 import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
@@ -139,39 +140,23 @@ export class Attribute<T = unknown> {
   }
 }
 
-/**
- * A cache of the Attributes objects created from the backend's response. It is here to prevent
- * creating the Attributes object separately for every subscriber of the query.
- *
- * A simple createMemo approach will not work because a file-level memo is not allowed, and a
- * memo in useAttributes will run its code for each subscriber separately.
- */
-const attributesMap = new WeakMap<AttributeResource[], Attributes>();
-
 /** Returns an Attributes object containing all the attributes in the system. */
-export function useAllAttributes() {
+export const useAllAttributes = createCached(() => {
   const t = useLangFunc();
   const query = createQuery(System.attributesQueryOptions);
   const allAttributes = createMemo(() => {
     if (!query.isSuccess) {
       return undefined;
     }
-    const resources = query.data;
-    let attributes = attributesMap.get(resources);
-    if (attributes) {
-      return attributes;
-    }
     // Make sure the translations are loaded. Here it is critical because the created Attributes objects
     // are not reactive and will not update later.
     if (!translationsLoaded()) {
       return undefined;
     }
-    attributes = Attributes.fromResources(t, resources);
-    attributesMap.set(resources, attributes);
-    return attributes;
+    return Attributes.fromResources(t, query.data);
   });
   return allAttributes;
-}
+});
 
 /**
  * Returns an Attributes object with the dictionaries available in the current facility, or global

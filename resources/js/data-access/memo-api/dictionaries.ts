@@ -1,5 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
+import {createCached} from "components/utils/cache";
 import {translationsLoaded} from "i18n_loader";
 import {createMemo} from "solid-js";
 import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
@@ -199,46 +200,30 @@ export class Position {
   }
 }
 
-/**
- * A cache of the Dictionaries objects created from the backend's response. It is here to prevent
- * creating the Dictionaries object separately for every subscriber of the query.
- *
- * A simple createMemo approach will not work because a file-level memo is not allowed, and a
- * memo in useDictionaries will run its code for each subscriber separately.
- */
-const dictionariesMap = new WeakMap<DictionaryResource[], Dictionaries>();
-
 /** Returns a Dictionaries object containing all the dictionaries in the system. */
-export function useAllDictionaries() {
+export const useAllDictionaries = createCached(() => {
   const t = useLangFunc();
   const query = createQuery(System.dictionariesQueryOptions);
   const allDictionaries = createMemo(() => {
     if (!query.isSuccess) {
       return undefined;
     }
-    const resources = query.data;
-    let dictionaries = dictionariesMap.get(resources);
-    if (dictionaries) {
-      return dictionaries;
-    }
     // Make sure the translations are loaded. Here it is critical because the created Dictionary objects
     // are not reactive and will not update later.
     if (!translationsLoaded()) {
       return undefined;
     }
-    dictionaries = Dictionaries.fromResources(t, resources);
-    dictionariesMap.set(resources, dictionaries);
-    return dictionaries;
+    return Dictionaries.fromResources(t, query.data);
   });
   return allDictionaries;
-}
+});
 
 /**
  * Returns a Dictionaries object with the dictionaries available in the current facility, or global
  * if there is no current facility.
  */
-export function useDictionaries() {
+export const useDictionaries = createCached(() => {
   const allDictionaries = useAllDictionaries();
   const dictionaries = createMemo(() => allDictionaries()?.subsetFor(activeFacilityId()));
   return dictionaries;
-}
+});
