@@ -4,7 +4,8 @@ import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {NON_NULLABLE, currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {Position} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {Show, VoidComponent} from "solid-js";
@@ -17,23 +18,21 @@ interface Props {
 
 export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
+  const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   const {form} = useFormContext<MeetingFormType>();
-  const attendanceStatusOK = () => dictionaries()!.get("attendanceStatus").get("ok").id;
 
   function shouldSubmitCancelImmediately(type: FacilityUserType) {
     const data = form.data(type);
-    return data.length === 1 && data[0]?.attendanceStatusDictId === attendanceStatusOK();
+    return data.length === 1 && data[0]?.attendanceStatusDictId === attendanceStatusDict()?.ok.id;
   }
 
-  function cancelBy(type: FacilityUserType) {
+  function cancelBy(type: FacilityUserType, attendanceStatus: Position) {
     const submitImmediately = shouldSubmitCancelImmediately(type);
-    form.setFields("statusDictId", dictionaries()!.get("meetingStatus").get("cancelled").id);
+    form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
     const data = form.data(type);
-    const attendanceStatusCancelled = dictionaries()!.get("attendanceStatus").get("cancelled").id;
     for (let i = 0; i < data.length; i++) {
-      if (data[i]?.userId && data[i]?.attendanceStatusDictId === attendanceStatusOK())
-        form.setFields(`${type}.${i}.attendanceStatusDictId`, attendanceStatusCancelled);
+      if (data[i]?.userId && data[i]?.attendanceStatusDictId === attendanceStatusDict()!.ok.id)
+        form.setFields(`${type}.${i}.attendanceStatusDictId`, attendanceStatus.id);
     }
     if (submitImmediately) {
       form.handleSubmit();
@@ -73,7 +72,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
                         <Show when={!shouldSubmitCancelImmediately("staff")}>{t("ellipsis")}</Show>
                       </div>
                     ),
-                    onClick: () => cancelBy("staff"),
+                    onClick: () => cancelBy("staff", attendanceStatusDict()!.cancelled),
                   }
                 : undefined,
               form.data("clients").some(({userId}) => userId)
@@ -84,13 +83,36 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
                         <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
                       </div>
                     ),
-                    onClick: () => cancelBy("clients"),
+                    onClick: () => cancelBy("clients", attendanceStatusDict()!.cancelled),
+                  }
+                : undefined,
+              hasBegun() && form.data("clients").some(({userId}) => userId)
+                ? {
+                    label: (
+                      <div>
+                        <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client_no_show")}
+                        <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
+                      </div>
+                    ),
+                    onClick: () => cancelBy("clients", attendanceStatusDict()!.no_show),
                   }
                 : undefined,
               {
+                label: (
+                  <>
+                    {t("meetings.mark_as_cancelled.other")}
+                    {t("ellipsis")}
+                  </>
+                ),
+                onClick: () => {
+                  form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
+                  props.onViewModeChange(false);
+                },
+              },
+              {
                 label: t("meetings.mark_as_cancelled.undetermined"),
                 onClick: () => {
-                  form.setFields("statusDictId", dictionaries()!.get("meetingStatus").get("cancelled").id);
+                  form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
                   form.handleSubmit();
                 },
               },
@@ -102,7 +124,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
       <ButtonLike
         class={cx("flex-grow-[8] flex items-center justify-center small", hasBegun() ? "primary" : "secondary")}
         onClick={() => {
-          form.setFields("statusDictId", dictionaries()!.get("meetingStatus").get("completed").id);
+          form.setFields("statusDictId", meetingStatusDict()!.completed.id);
           form.handleSubmit();
         }}
         disabled={form.isSubmitting()}

@@ -20,7 +20,7 @@ meetingStatus:
   _name: "status spotkania"
   planned: "zaplanowane"
   completed: "zakończone"
-  cancelled: "odwołane"
+  cancelled: "anulowane"
   _explanations:
     planned: "Spotkanie jest zaplanowane"
     completed: "Spotkanie odbyło się"

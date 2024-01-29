@@ -79,6 +79,8 @@ export class Dictionary {
   /** A list of non-disabled positions in the dictionary. */
   readonly activePositions;
 
+  private readonly byIdOrName = new Map<string, Position>();
+
   private constructor(
     resource: DictionaryResource,
     readonly id: string,
@@ -91,22 +93,18 @@ export class Dictionary {
   ) {
     this.resource = makeAttributable(resource, "dictionary");
     this.activePositions = this.allPositions.filter((position) => !position.resource.isDisabled);
+    for (const position of allPositions) {
+      if (position.resource.isFixed && position.isTranslatable) {
+        this.byIdOrName.set(position.resource.name, position);
+      }
+    }
+    for (const position of allPositions) {
+      this.byIdOrName.set(position.id, position);
+    }
   }
 
   get(positionIdOrName: string) {
-    return this.getPosition(this.allPositions, positionIdOrName);
-  }
-
-  getActive(positionIdOrName: string) {
-    return this.getPosition(this.activePositions, positionIdOrName);
-  }
-
-  private getPosition(positions: Position[], positionIdOrName: string) {
-    const position = positions.find(
-      (position) =>
-        position.id === positionIdOrName ||
-        (position.resource.isFixed && position.isTranslatable && position.name === positionIdOrName),
-    );
+    const position = this.byIdOrName.get(positionIdOrName);
     if (!position) {
       throw new Error(`Position ${positionIdOrName} not found.`);
     }
@@ -143,10 +141,40 @@ export class Dictionary {
   }
 }
 
+export type TypedDictionary<P extends string> = {
+  getDictionary(): Dictionary;
+  getPosition(positionIdOrName: string): Position;
+} & {
+  readonly [positionName in P]: Position;
+};
+
+export function typedDictionary<P extends string>(dict: Dictionary, positionNames: P[]) {
+  const positions: Partial<Record<P, Position>> = {};
+  for (const name of positionNames) {
+    positions[name] = dict.get(name);
+  }
+  return {
+    getDictionary: () => dict,
+    getPosition: (positionIdOrName: string) => dict.get(positionIdOrName),
+    ...positions,
+  } as TypedDictionary<P>;
+}
+
+/**
+ * A dictionary position.
+ *
+ * The name property is not surfaced in the Position because it is not recommended to compare a position's name
+ * to a string literal, as this is prone to typos. Compare instead like this:
+ *
+ *     position.id === dictionaries().get("dictName").get("positionName").id
+ *
+ * or:
+ *
+ *     position.id === typedDict.positionName.id
+ */
 export class Position {
   readonly resource;
   readonly id;
-  readonly name;
   readonly isTranslatable;
   readonly label;
   readonly disabled;
@@ -159,7 +187,6 @@ export class Position {
   ) {
     this.resource = makeAttributable(resource, "position");
     this.id = resource.id;
-    this.name = resource.name;
     this.isTranslatable = isNameTranslatable(resource.name);
     this.label = getNameTranslation(t, resource.name, (n) => {
       if (!dictionaryTranslatableName)

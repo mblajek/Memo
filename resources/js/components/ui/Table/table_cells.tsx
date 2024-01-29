@@ -66,9 +66,16 @@ export function useTableCells() {
     dictList: <T,>() =>
       cellFunc<readonly string[], T>((v) => (
         <PaddedCell>
-          <ul>
-            <Index each={v}>{(id) => <li>{dictionaries()?.getPositionById(id())?.label || "??"}</li>}</Index>
-          </ul>
+          <Index each={v}>
+            {(id, index) => (
+              <>
+                <Show when={index}>
+                  <span class="text-grey-text">, </span>
+                </Show>
+                {dictionaries()?.getPositionById(id())?.label || "??"}
+              </>
+            )}
+          </Index>
         </PaddedCell>
       )),
   };

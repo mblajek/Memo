@@ -8,7 +8,7 @@ export function useAttrValueFormatter() {
   return (attr: Attribute, val: unknown) => {
     function formatV(v: unknown) {
       if (attr.type === "dict" && typeof v === "string") {
-        return dictionaries()?.get(attr.dictionaryId!)?.get(v).name;
+        return dictionaries()?.get(attr.dictionaryId!)?.get(v).resource.name;
       } else if (attr.type === "attribute" && typeof v === "string") {
         return `@${attributes()?.get(v).name}`;
       } else {

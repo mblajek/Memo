@@ -1,47 +1,37 @@
 import {Tag, TagsLine} from "components/ui/Tag";
 import {useLangFunc} from "components/utils";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
-import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
-import {JSX, VoidComponent} from "solid-js";
+import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
-interface Props {
-  readonly meeting: MeetingResource | TQMeetingResource;
+interface MeetingStatusTagsProps {
+  readonly meeting: Pick<MeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">;
+  /** If true, a single "planned" tag is shown for a planned meeting. If false, nothing is shown. */
+  readonly showPlannedTag?: boolean;
 }
 
-export const MeetingStatusTags: VoidComponent<Props> = (props) => {
-  const t = useLangFunc();
-  const dictionaries = useDictionaries();
-  const attendanceStatusDict = () => dictionaries()?.get("attendanceStatus");
-
-  const CompletedTag: VoidComponent = () => <Tag color="#2d8855">{t("dictionary.meetingStatus.completed")}</Tag>;
-  const CancelledByStaffTag: VoidComponent = () => (
-    <Tag color="#88662c">
-      <CancelledTag /> {t("meetings.tags.cancelled.by_staff")}
-    </Tag>
-  );
-  const CancelledByClientTag: VoidComponent = () => (
-    <Tag color="#4d1186">
-      <CancelledTag /> {t("meetings.tags.cancelled.by_client")}
-    </Tag>
-  );
-  const CancelledTag: VoidComponent = () => <Tag color="#782c66">{t("dictionary.meetingStatus.cancelled")}</Tag>;
-  const ClientNoShowTag: VoidComponent = () => <Tag color="#200000">{t("meetings.tags.client_no_show")}</Tag>;
-  const ClientTooLateTag: VoidComponent = () => <Tag color="#400000">{t("meetings.tags.client_too_late")}</Tag>;
-  const ClientLatePresentTag: VoidComponent = () => <Tag color="#005869">{t("meetings.tags.client_late_present")}</Tag>;
-
-  const RemoteTag: VoidComponent = () => <Tag color="#705faf">{t("models.meeting.isRemote")}</Tag>;
-
+export const MeetingStatusTags: VoidComponent<MeetingStatusTagsProps> = (props) => {
+  const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
+  const {
+    PlannedTag,
+    CompletedTag,
+    CancelledByStaffTag,
+    CancelledByClientTag,
+    CancelledTag,
+    ClientNoShowTag,
+    ClientTooLateTag,
+    ClientLatePresentTag,
+    RemoteTag,
+  } = useStatusTags();
   function anyHasStatus(attendants: readonly MeetingAttendantResource[], statusName: string) {
     return attendants.some(
-      ({attendanceStatusDictId}) => attendanceStatusDict()?.get(statusName).id === attendanceStatusDictId,
+      ({attendanceStatusDictId}) => attendanceStatusDictId === attendanceStatusDict()?.getPosition(statusName).id,
     );
   }
-
   const tags = () => {
+    // This logic is subject to change based on feedback.
     const tags: JSX.Element[] = [];
-    const status = dictionaries()!.getPositionById(props.meeting.statusDictId);
-    if (status.name === "completed") {
+    if (props.meeting.statusDictId === meetingStatusDict()?.completed.id) {
       tags.push(<CompletedTag />);
     }
     if (anyHasStatus(props.meeting.clients, "no_show")) {
@@ -50,19 +40,14 @@ export const MeetingStatusTags: VoidComponent<Props> = (props) => {
     if (anyHasStatus(props.meeting.clients, "too_late")) {
       tags.push(<ClientTooLateTag />);
     }
-    if (status.name === "cancelled") {
-      let cancelledByAttendant = false;
-      if (anyHasStatus(props.meeting.staff, "cancelled")) {
-        tags.push(<CancelledByStaffTag />);
-        cancelledByAttendant = true;
-      }
-      if (anyHasStatus(props.meeting.clients, "cancelled")) {
-        tags.push(<CancelledByClientTag />);
-        cancelledByAttendant = true;
-      }
-      if (!cancelledByAttendant) {
-        tags.push(<CancelledTag />);
-      }
+    if (anyHasStatus(props.meeting.staff, "cancelled")) {
+      tags.push(<CancelledByStaffTag />);
+    }
+    if (anyHasStatus(props.meeting.clients, "cancelled")) {
+      tags.push(<CancelledByClientTag />);
+    }
+    if (props.meeting.statusDictId === meetingStatusDict()?.cancelled.id) {
+      tags.push(<CancelledTag />);
     }
     if (anyHasStatus(props.meeting.clients, "late_present")) {
       tags.push(<ClientLatePresentTag />);
@@ -72,5 +57,55 @@ export const MeetingStatusTags: VoidComponent<Props> = (props) => {
     }
     return tags;
   };
-  return <TagsLine>{tags()}</TagsLine>;
+  return (
+    <Switch>
+      <Match when={props.meeting.statusDictId !== meetingStatusDict()?.planned.id}>
+        <TagsLine>{tags()}</TagsLine>
+      </Match>
+      <Match when={props.showPlannedTag}>
+        <PlannedTag />
+      </Match>
+    </Switch>
+  );
 };
+
+interface SimpleMeetingStatusTagProps {
+  readonly status: string;
+}
+
+export const SimpleMeetingStatusTag: VoidComponent<SimpleMeetingStatusTagProps> = (props) => {
+  const {meetingStatusDict} = useFixedDictionaries();
+
+  const {PlannedTag, CompletedTag, CancelledTag} = useStatusTags();
+
+  return (
+    <Show when={meetingStatusDict()}>
+      <Switch>
+        <Match when={props.status === meetingStatusDict()?.planned.id}>
+          <PlannedTag />
+        </Match>
+        <Match when={props.status === meetingStatusDict()?.completed.id}>
+          <CompletedTag />
+        </Match>
+        <Match when={props.status === meetingStatusDict()?.cancelled.id}>
+          <CancelledTag />
+        </Match>
+      </Switch>
+    </Show>
+  );
+};
+
+export function useStatusTags() {
+  const t = useLangFunc();
+  return {
+    PlannedTag: () => <Tag color="#10648a">{t("dictionary.meetingStatus.planned")}</Tag>,
+    CompletedTag: () => <Tag color="#2d8855">{t("dictionary.meetingStatus.completed")}</Tag>,
+    CancelledByStaffTag: () => <Tag color="#88662c">{t("meetings.tags.cancelled_by_staff")}</Tag>,
+    CancelledByClientTag: () => <Tag color="#4d1186">{t("meetings.tags.cancelled_by_client")}</Tag>,
+    CancelledTag: () => <Tag color="#782c66">{t("dictionary.meetingStatus.cancelled")}</Tag>,
+    ClientNoShowTag: () => <Tag color="#200000">{t("meetings.tags.client_no_show")}</Tag>,
+    ClientTooLateTag: () => <Tag color="#400000">{t("meetings.tags.client_too_late")}</Tag>,
+    ClientLatePresentTag: () => <Tag color="#005869">{t("meetings.tags.client_late_present")}</Tag>,
+    RemoteTag: () => <Tag color="#705faf">{t("models.meeting.isRemote")}</Tag>,
+  } satisfies Partial<Record<string, VoidComponent>>;
+}

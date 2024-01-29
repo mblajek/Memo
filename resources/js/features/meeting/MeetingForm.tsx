@@ -11,7 +11,7 @@ import {MultilineTextField} from "components/ui/form/MultilineTextField";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingResource, MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
@@ -52,7 +52,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
   const [props, formPropsObj] = splitProps(allProps, ["id", "viewMode", "meeting", "onViewModeChange", "onCancel"]);
   // eslint-disable-next-line solid/reactivity
   const formProps: FormConfigWithoutTransformFn<MeetingFormType> = formPropsObj;
-  const dictionaries = useDictionaries();
+  const {meetingStatusDict} = useFixedDictionaries();
 
   const ByMode: VoidComponent<{view?: JSX.Element; edit?: JSX.Element}> = (byModeProps) => (
     <Show when={props.viewMode} fallback={byModeProps.edit}>
@@ -125,7 +125,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                     when={
                       props.viewMode &&
                       formProps.initialValues?.statusDictId &&
-                      dictionaries()?.getPositionById(formProps.initialValues.statusDictId)?.name === "planned" &&
+                      formProps.initialValues.statusDictId === meetingStatusDict()?.planned.id &&
                       props.onViewModeChange
                     }
                   >

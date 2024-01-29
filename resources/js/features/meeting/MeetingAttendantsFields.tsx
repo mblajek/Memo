@@ -10,12 +10,13 @@ import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent, createEffect} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
@@ -232,13 +233,12 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 };
 
 export function useAttendantsCreator() {
-  const dictionaries = useDictionaries();
-  const attendanceStatusOK = createMemo(() => dictionaries()?.get("attendanceStatus").get("ok").id);
+  const {attendanceStatusDict} = useFixedDictionaries();
 
   function createAttendant({userId = "", attendanceStatusDictId}: Partial<MeetingAttendantResource> = {}) {
     return {
       userId,
-      attendanceStatusDictId: attendanceStatusDictId || attendanceStatusOK()!,
+      attendanceStatusDictId: attendanceStatusDictId || attendanceStatusDict()!.ok.id,
     } satisfies MeetingAttendantResource;
   }
 
@@ -274,7 +274,7 @@ export function useAttendantsCreator() {
   }
 
   function attendantsInitialValueForCreateCopy(meeting: MeetingResource) {
-    return attendantsInitialValueFromMeeting(meeting, {attendanceStatusDictId: attendanceStatusOK()});
+    return attendantsInitialValueFromMeeting(meeting, {attendanceStatusDictId: attendanceStatusDict()!.ok.id});
   }
 
   return {

@@ -8,6 +8,7 @@ import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {UserLink} from "features/facility-users/UserLink";
@@ -53,6 +54,7 @@ const DISAPPEAR_MILLIS = 300;
 export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
+  const {meetingStatusDict} = useFixedDictionaries();
   const calendar = useColumnsCalendar();
   const resources = () =>
     props.meeting.resources
@@ -95,13 +97,12 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   }
   const hovered = () => props.hovered ?? hoveredGetter();
   const coloringStyle = () => {
-    const statusName = dictionaries()?.getPositionById(props.meeting.statusDictId).name;
     const coloring =
-      statusName === "planned"
+      props.meeting.statusDictId === meetingStatusDict()?.planned.id
         ? props.plannedColoring
-        : statusName === "completed"
+        : props.meeting.statusDictId === meetingStatusDict()?.completed.id
           ? COMPLETED_MEETING_COLORING
-          : statusName === "cancelled"
+          : props.meeting.statusDictId === meetingStatusDict()?.cancelled.id
             ? CANCELLED_MEETING_COLORING
             : undefined;
     return hovered() ? coloring?.hover : coloring?.regular;
@@ -197,12 +198,11 @@ interface AttendantListItemProps {
 }
 
 const AttendantListItem: VoidComponent<AttendantListItemProps> = (props) => {
-  const dictionaries = useDictionaries();
-  const attendanceStatus = createMemo(() => dictionaries()?.getPositionById(props.attendant.attendanceStatusDictId));
+  const {attendanceStatusDict} = useFixedDictionaries();
   return (
     <li>
       <UserLink type={props.type} link={false} userId={props.attendant.userId} name={props.attendant.name} />
-      <Show when={props.showAttendance && attendanceStatus()?.name !== "ok"}>
+      <Show when={props.showAttendance && props.attendant.attendanceStatusDictId !== attendanceStatusDict()?.ok.id}>
         {" "}
         <span class="text-grey-text">
           {EM_DASH} <MeetingAttendanceStatus attendanceStatusId={props.attendant.attendanceStatusDictId} />

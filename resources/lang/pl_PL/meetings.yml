@@ -3,12 +3,13 @@ mark_as_cancelled:
   text: "Odwołaj"
   by_staff: "pracownik odwołuje"
   by_client: "klient odwołuje"
+  by_client_no_show: "klient nie przyszedł"
+  other: "inny powód"
   undetermined: "bez określenia przyczyny"
 
 tags:
-  cancelled:
-    by_staff: "przez pracownika"
-    by_client: "przez klienta"
+  cancelled_by_staff: "odwołane przez pracownika"
+  cancelled_by_client: "odwołane przez klienta"
   client_no_show: "klient nie przyszedł"
-  client_too_late: "klient mocno się spóźnił"
+  client_too_late: "klient przyszedł za późno"
   client_late_present: "klient był niepunktualny"

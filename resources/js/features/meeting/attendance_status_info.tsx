@@ -1,7 +1,7 @@
 import {InfoIcon} from "components/ui/InfoIcon";
 import {useLangFunc} from "components/utils";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
-import {Show, VoidComponent, createMemo} from "solid-js";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {Show, VoidComponent} from "solid-js";
 
 interface MeetingStatusInfoIconProps {
   readonly meetingStatusId?: string;
@@ -9,15 +9,17 @@ interface MeetingStatusInfoIconProps {
 
 export const MeetingStatusInfoIcon: VoidComponent<MeetingStatusInfoIconProps> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
-  const meetingStatus = createMemo(() =>
-    props.meetingStatusId ? dictionaries()?.getPositionById(props.meetingStatusId) : undefined,
-  );
+  const {meetingStatusDict} = useFixedDictionaries();
   return (
     <InfoIcon
       href="/help/meeting#status"
       title={[
-        meetingStatus() && t(`dictionary.meetingStatus._explanations.${meetingStatus()!.name}`),
+        props.meetingStatusId &&
+          t(
+            `dictionary.meetingStatus._explanations.${
+              meetingStatusDict()!.getPosition(props.meetingStatusId).resource.name
+            }`,
+          ),
         t("dictionary.meetingStatus._explanations.more_info"),
       ]
         .filter(Boolean)
@@ -33,21 +35,24 @@ interface MeetingAttendanceStatusInfoIconProps {
 
 export const MeetingAttendanceStatusInfoIcon: VoidComponent<MeetingAttendanceStatusInfoIconProps> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
-  const attendanceStatus = createMemo(() =>
-    props.attendanceStatusId ? dictionaries()?.getPositionById(props.attendanceStatusId) : undefined,
-  );
-  const meetingStatus = createMemo(() =>
-    props.meetingStatusId ? dictionaries()?.getPositionById(props.meetingStatusId) : undefined,
-  );
+  const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   return (
     <InfoIcon
       href="/help/meeting#attendance-status"
       title={
-        (attendanceStatus() &&
-          (attendanceStatus()!.name === "ok"
-            ? meetingStatus() && t(`dictionary.attendanceStatus._explanations.ok.${meetingStatus()!.name}`)
-            : t(`dictionary.attendanceStatus._explanations.${attendanceStatus()!.name}`))) ||
+        (props.attendanceStatusId &&
+          (props.attendanceStatusId === attendanceStatusDict()?.ok.id
+            ? props.meetingStatusId &&
+              t(
+                `dictionary.attendanceStatus._explanations.ok.${
+                  meetingStatusDict()!.getPosition(props.meetingStatusId).resource.name
+                }`,
+              )
+            : t(
+                `dictionary.attendanceStatus._explanations.${
+                  attendanceStatusDict()!.getPosition(props.attendanceStatusId).resource.name
+                }`,
+              ))) ||
         t("dictionary.attendanceStatus._explanations.more_info")
       }
     />
@@ -61,20 +66,18 @@ interface MeetingAttendanceStatusProps {
 
 export const MeetingAttendanceStatus: VoidComponent<MeetingAttendanceStatusProps> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
-  const attendanceStatus = createMemo(() =>
-    props.attendanceStatusId ? dictionaries()?.getPositionById(props.attendanceStatusId) : undefined,
-  );
-  const meetingStatus = createMemo(() =>
-    props.meetingStatusId ? dictionaries()?.getPositionById(props.meetingStatusId) : undefined,
-  );
+  const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   return (
     <span>
-      {attendanceStatus()?.label}
-      <Show when={attendanceStatus()?.name === "ok" && meetingStatus()}>
+      {attendanceStatusDict()?.getPosition(props.attendanceStatusId).label}
+      <Show when={props.attendanceStatusId === attendanceStatusDict()?.ok.id && props.meetingStatusId}>
         {" "}
         <span class="text-grey-text">
-          {t(`dictionary.attendanceStatus._ok_extra_info_by_meeting_status.${meetingStatus()?.name}`)}
+          {t(
+            `dictionary.attendanceStatus._ok_extra_info_by_meeting_status.${
+              meetingStatusDict()!.getPosition(props.meetingStatusId!).resource.name
+            }`,
+          )}
         </span>
       </Show>
     </span>

@@ -2,7 +2,7 @@ import {createMutation} from "@tanstack/solid-query";
 import {BigSpinner} from "components/ui/Spinner";
 import {useLangFunc} from "components/utils";
 import {useAttributes} from "data-access/memo-api/attributes";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
@@ -24,7 +24,7 @@ interface Props {
 export const MeetingCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
-  const dictionaries = useDictionaries();
+  const {meetingStatusDict} = useFixedDictionaries();
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const invalidate = useInvalidator();
   const meetingMutation = createMutation(() => ({
@@ -49,7 +49,7 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
     ({
       ...meetingTimeInitialValue(),
       typeDictId: "",
-      statusDictId: dictionaries()!.get("meetingStatus").get("planned").id,
+      statusDictId: meetingStatusDict()!.planned.id,
       ...attendantsInitialValueForCreate(),
       isRemote: false,
       notes: "",
@@ -59,7 +59,7 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
     }) satisfies MeetingFormType;
 
   return (
-    <Show when={attributes() && dictionaries()} fallback={<BigSpinner />}>
+    <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
       <MeetingForm
         id="meeting_create"
         initialValues={initialValues()}

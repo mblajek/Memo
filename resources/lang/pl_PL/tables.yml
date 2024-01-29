@@ -47,11 +47,12 @@ tables:
     summary__many: "{{count, number}} spotkań"
     columnNames:
       startDayminute: "godzina"
-      staff.*.name: "$t(models.meeting.staff)"
-      clients.*.name: "$t(models.meeting.clients)"
+      staff.*.attendanceStatusDictId: "uczestnictwo pracowników"
+      clients.*.attendanceStatusDictId: "uczestnictwo klientów"
       resources.*.dictId: "$t(models.meeting.resources)"
       attendant.name: "uczestnik"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
+      statusTags: "tagi statusu"
 
 choose_columns: "Wybierz kolumny"
 sort_tooltip: "$t(actions.sort)"

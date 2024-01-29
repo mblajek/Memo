@@ -10,7 +10,7 @@ import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
@@ -42,7 +42,7 @@ interface Props extends FormParams {
 export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
-  const dictionaries = useDictionaries();
+  const {meetingStatusDict} = useFixedDictionaries();
   const {attendantsInitialValueForEdit, attendantsInitialValueForCreateCopy} = useAttendantsCreator();
   const invalidate = useInvalidator();
   const meetingCreateModal = createMeetingCreateModal();
@@ -116,7 +116,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
       initialValues: {
         ...initialValues(),
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
-        statusDictId: dictionaries()!.get("meetingStatus").get("planned").id,
+        statusDictId: meetingStatusDict()!.planned.id,
         ...attendantsInitialValueForCreateCopy(meeting()),
         fromMeetingId: props.id,
       },
@@ -127,7 +127,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
 
   return (
     <QueryBarrier queries={[meetingQuery]} ignoreCachedData {...notFoundError()}>
-      <Show when={attributes() && dictionaries()} fallback={<BigSpinner />}>
+      <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
         <div class="flex flex-col gap-3">
           <div class="relative">
             <MeetingForm

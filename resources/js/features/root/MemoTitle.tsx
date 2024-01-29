@@ -1,6 +1,6 @@
 import {Title} from "@solidjs/meta";
 import {capitalizeString} from "components/ui/Capitalize";
-import {EM_DASH, NBSP} from "components/ui/symbols";
+import {EM_DASH} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {translationsLoaded} from "i18n_loader";
 import {DEV, VoidComponent} from "solid-js";
@@ -26,7 +26,7 @@ export const MemoTitle: VoidComponent<Props> = (props) => {
     if (!translationsLoaded()) {
       return "Memo";
     }
-    return `${pageName()}${NBSP}${EM_DASH}${NBSP}${t("app_name")}${DEV ? " (DEV mode)" : ""}`;
+    return `${pageName()} ${EM_DASH} ${t("app_name")}${DEV ? " (DEV mode)" : ""}`;
   };
   return <Title>{title()}</Title>;
 };

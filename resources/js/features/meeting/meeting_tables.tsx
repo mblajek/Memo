@@ -2,16 +2,16 @@ import {EditButton} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
-import {SimpleTag} from "components/ui/Tag";
-import {EN_DASH} from "components/ui/symbols";
+import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes} from "components/utils";
 import {formatDayMinuteHM} from "components/utils/day_minute_util";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
-import {TQMeetingAttendantResource} from "data-access/memo-api/tquery/calendar";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {For, ParentComponent, Show, VoidComponent} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
+import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
 
@@ -47,7 +47,7 @@ export function useMeetingTableColumns() {
       columnDef: {
         cell: cellFunc<Api.Id>((v) => (
           <PaddedCell>
-            <MeetingStatus status={v} />
+            <SimpleMeetingStatusTag status={v} />
           </PaddedCell>
         )),
         size: 200,
@@ -59,13 +59,36 @@ export function useMeetingTableColumns() {
         cell: (c) => <UserLinksCell type="staff" users={c.getValue() as TQMeetingAttendantResource[]} />,
       },
     },
+    staffAttendance: {
+      name: "staff.*.attendanceStatusDictId",
+      initialVisible: false,
+    },
     clients: {
       name: "clients",
       columnDef: {
         cell: (c) => <UserLinksCell type="clients" users={c.getValue() as TQMeetingAttendantResource[]} />,
       },
     },
+    clientsAttendance: {
+      name: "clients.*.attendanceStatusDictId",
+      initialVisible: false,
+    },
     isRemote: {name: "isRemote"},
+    statusTags: {
+      name: "statusTags",
+      isDataColumn: false,
+      extraDataColumns: ["statusDictId", "staff", "clients", "isRemote"],
+      columnDef: {
+        cell: (c) => (
+          <Scrollable>
+            <MeetingStatusTags
+              meeting={c.row.original as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
+              showPlannedTag
+            />
+          </Scrollable>
+        ),
+      },
+    },
     notes: {
       name: "notes",
       columnDef: {
@@ -154,31 +177,25 @@ interface UserLinksProps {
   readonly users: readonly TQMeetingAttendantResource[];
 }
 
-const UserLinksCell: VoidComponent<UserLinksProps> = (props) => (
-  <Scrollable>
-    <ul>
-      <For each={props.users}>
-        {({userId, name}) => (
-          <li>
-            <UserLink type={props.type} icon userId={userId} name={name} />
-          </li>
-        )}
-      </For>
-    </ul>
-  </Scrollable>
-);
-
-interface StatusProps {
-  readonly status: Api.Id;
-}
-
-export const MeetingStatus: VoidComponent<StatusProps> = (props) => {
-  const dictionaries = useDictionaries();
+const UserLinksCell: VoidComponent<UserLinksProps> = (props) => {
+  const {attendanceStatusDict} = useFixedDictionaries();
   return (
-    <Show when={dictionaries()}>
-      {(dictionaries) => (
-        <SimpleTag text={dictionaries()?.getPositionById(props.status).label} colorSeed={props.status} />
-      )}
-    </Show>
+    <Scrollable>
+      <ul>
+        <For each={props.users}>
+          {({userId, name, attendanceStatusDictId}) => (
+            <li>
+              <UserLink type={props.type} icon userId={userId} name={name} />
+              <Show when={attendanceStatusDictId !== attendanceStatusDict()?.ok.id}>
+                {" "}
+                <span class="text-grey-text">
+                  {EM_DASH} <MeetingAttendanceStatus attendanceStatusId={attendanceStatusDictId} />
+                </span>
+              </Show>
+            </li>
+          )}
+        </For>
+      </ul>
+    </Scrollable>
   );
 };

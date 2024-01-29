@@ -4,7 +4,7 @@ import {createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {Tabs} from "components/ui/Tabs";
 import {useLangFunc} from "components/utils";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
 import {Sort} from "data-access/memo-api/tquery/types";
@@ -19,14 +19,14 @@ interface Props {
 
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
+  const {meetingStatusDict} = useFixedDictionaries();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns();
   const isPlannedFilter = (): FilterH => ({
     type: "column",
     column: "statusDictId",
     op: "=",
-    val: dictionaries()!.get("meetingStatus").get("planned").id,
+    val: meetingStatusDict()!.planned.id,
   });
   function sortByDate({desc}: {desc: boolean}) {
     return [
@@ -37,7 +37,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const tableTranslations = createTableTranslations("meeting");
   return (
     <div>
-      <Show when={dictionaries()} fallback={<BigSpinner />}>
+      <Show when={meetingStatusDict()} fallback={<BigSpinner />}>
         <Capitalize class="font-medium" text={tableTranslations.tableName()} />
         <Tabs
           tabs={[
@@ -68,8 +68,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       {...meetingTableColumns.columns.status, initialVisible: false},
                       "attendanceStatus",
                       "staff",
+                      "staffAttendance",
                       "clients",
+                      "clientsAttendance",
                       "isRemote",
+                      "statusTags",
                       "notes",
                       "resources",
                       "createdAt",
@@ -109,8 +112,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       "status",
                       "attendanceStatus",
                       "staff",
+                      "staffAttendance",
                       "clients",
+                      "clientsAttendance",
                       "isRemote",
+                      "statusTags",
                       "notes",
                       "resources",
                       "createdAt",
@@ -146,8 +152,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       "status",
                       "attendanceStatus",
                       "staff",
+                      "staffAttendance",
                       "clients",
+                      "clientsAttendance",
                       "isRemote",
+                      "statusTags",
                       "notes",
                       "resources",
                       "createdAt",
