@@ -113,7 +113,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
           </div>
         </div>
         <Show when={!showEditable()}>
-          <div class="flex gap-2 justify-between">
+          <div class="flex gap-2 items-baseline justify-between">
             <DateAndTimeInfo
               date={DateTime.fromISO(form.data("date"))}
               startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}

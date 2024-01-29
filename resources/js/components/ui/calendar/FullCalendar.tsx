@@ -38,7 +38,6 @@ import toast from "solid-toast";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
-import {bleachColor, randomColor} from "../colors";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {EN_DASH} from "../symbols";
 import {CalendarColumn, ColumnsCalendar} from "./ColumnsCalendar";
@@ -49,6 +48,7 @@ import {DayHeader} from "./calendar-columns/DayHeader";
 import {HoursArea} from "./calendar-columns/HoursArea";
 import {ResourceHeader} from "./calendar-columns/ResourceHeader";
 import {MeetingEventBlock} from "./calendar-columns/events";
+import {getRandomEventColors} from "./colors";
 import {DaysRange} from "./days_range";
 import {PartDayTimeSpan} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
@@ -134,20 +134,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const staffResources = createMemo(
     () =>
       staff()?.map((staff) => {
-        const baseColor = randomColor({seedString: staff.id, whiteness: [0, 50], blackness: [10, 40]});
-        const style = {
-          "border-color": baseColor,
-          "background-color": bleachColor(baseColor, {amount: 0.7}),
-        };
-        const hoverStyle = {
-          "background-color": bleachColor(baseColor, {amount: 0.5}),
-        };
+        const coloring = getRandomEventColors(staff.id);
         return {
           id: staff.id,
           text: staff.name,
-          baseColor,
-          styling: {style, hoverStyle},
-          hoverStyle,
+          coloring,
           label: () => (
             <div class="w-full flex justify-between gap-1 select-none">
               <span>{staff.name}</span>
@@ -156,7 +147,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 style={{
                   width: "14px",
                   height: "14px",
-                  ...style,
+                  ...coloring.regular,
                 }}
               />
             </div>
@@ -483,7 +474,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     const meetingDate = DateTime.fromISO(meeting.date);
     toast.success(
       runWithOwner(owner, () => (
-        <div class="flex gap-2 align-baseline">
+        <div class="flex gap-2 items-baseline">
           <span>{message}</span>
           <Button
             class="secondary small"
@@ -543,7 +534,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               content: () => (
                 <MeetingEventBlock
                   meeting={ev.meeting}
-                  {...staffResourcesById().get(staffId)?.styling}
+                  plannedColoring={staffResourcesById().get(staffId)!.coloring}
                   blink={!isCalendarLoading() && blinkingMeetings().has(ev.meeting.id)}
                   onHoverChange={(hovered) => setHoveredMeetingId(hovered ? ev.meeting.id : undefined)}
                   hovered={hoveredMeetingId() === ev.meeting.id}
@@ -675,8 +666,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <div class="p-1 border-t border-r flex gap-0.5">
               <Show when={props.meetingListLinkProps}>
                 {(linkProps) => (
-                  <A {...linkProps()} class="flex items-center" title={t("calendar.show_meeting_list")}>
-                    <OcTable3 />
+                  <A {...linkProps()} class="flex gap-1 items-center text-sm">
+                    <OcTable3 /> {t("calendar.show_meeting_list")}
                   </A>
                 )}
               </Show>

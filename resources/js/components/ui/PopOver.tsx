@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const PopOver: Component<Props> = (props) => {
-  const [state, send] = useMachine(
+  const [state, send, machine] = useMachine(
     popover.machine({
       portalled: true,
       positioning: {
@@ -25,6 +25,21 @@ export const PopOver: Component<Props> = (props) => {
     }),
   );
   const api = createMemo(() => popover.connect(state, send, normalizeProps));
+  /**
+   * A wrapper of the api for the children function. It ignores the close() call if the machine is not running.
+   * This might happen if the element no longer exists at this point.
+   */
+  const apiWrapper = createMemo(() => {
+    const theApi = api();
+    return {
+      ...theApi,
+      close: () => {
+        if (machine.status === "Running") {
+          theApi.close();
+        }
+      },
+    };
+  });
   return (
     <>
       {props.trigger(() => api().triggerProps)}
@@ -32,7 +47,7 @@ export const PopOver: Component<Props> = (props) => {
         <div class={s.popOverPortal}>
           <div {...api().positionerProps}>
             <div {...api().contentProps}>
-              <Show when={api().isOpen}>{getChildrenElement(props.children, api)}</Show>
+              <Show when={api().isOpen}>{getChildrenElement(props.children, apiWrapper)}</Show>
             </div>
           </div>
         </div>

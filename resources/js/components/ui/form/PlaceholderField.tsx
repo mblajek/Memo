@@ -13,5 +13,5 @@ interface Props {
  * be present in the form as a placeholder field.
  */
 export const PlaceholderField: VoidComponent<Props> = (props) => (
-  <input name={props.name} type="hidden" data-felte-keep-on-remove />
+  <input id={props.name} name={props.name} type="hidden" data-felte-keep-on-remove />
 );

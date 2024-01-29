@@ -1,8 +1,8 @@
 import * as hoverCard from "@zag-js/hover-card";
 import {normalizeProps, useMachine} from "@zag-js/solid";
+import {ButtonLike} from "components/ui/ButtonLike";
 import {Capitalize} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
-import {SimpleTag, Tag, TagsLine} from "components/ui/Tag";
 import {bleachColor} from "components/ui/colors";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
@@ -12,10 +12,12 @@ import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-ap
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
+import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
 import {MeetingAttendanceStatus} from "features/meeting/attendance_status_info";
-import {For, JSX, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
+import {For, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {useColumnsCalendar} from "../ColumnsCalendar";
+import {CANCELLED_MEETING_COLORING, COMPLETED_MEETING_COLORING, Coloring} from "../colors";
 import s from "./events.module.scss";
 
 interface AllDayEventProps {
@@ -36,10 +38,10 @@ export const AllDayEventBlock: ParentComponent<AllDayEventProps> = (props) => (
 
 interface MeetingEventProps {
   readonly meeting: TQMeetingResource;
-  readonly style?: JSX.CSSProperties;
+  /** The colors of the event block, if it is a planned event. */
+  readonly plannedColoring: Coloring;
   /** Whether the event block should blink initially to call the user's attention. */
   readonly blink?: boolean;
-  readonly hoverStyle?: JSX.CSSProperties;
   readonly onHoverChange?: (hovered: boolean) => void;
   /** Whether the hovered style should be used. If not provided, the real element hover state is used. */
   readonly hovered?: boolean;
@@ -52,19 +54,6 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const calendar = useColumnsCalendar();
-  const tags = () => {
-    const tags: JSX.Element[] = [];
-    tags.push(
-      <SimpleTag
-        text={dictionaries()!.getPositionById(props.meeting.statusDictId).label}
-        colorSeed={props.meeting.statusDictId}
-      />,
-    );
-    if (props.meeting.isRemote) {
-      tags.push(<Tag color="blue">{t("models.meeting.isRemote")}</Tag>);
-    }
-    return tags;
-  };
   const resources = () =>
     props.meeting.resources
       .map((r) => dictionaries()?.getPositionById(r.resourceDictId).label)
@@ -105,14 +94,26 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     props.onHoverChange?.(hovered);
   }
   const hovered = () => props.hovered ?? hoveredGetter();
+  const coloringStyle = () => {
+    const statusName = dictionaries()?.getPositionById(props.meeting.statusDictId).name;
+    const coloring =
+      statusName === "planned"
+        ? props.plannedColoring
+        : statusName === "completed"
+          ? COMPLETED_MEETING_COLORING
+          : statusName === "cancelled"
+            ? CANCELLED_MEETING_COLORING
+            : undefined;
+    return hovered() ? coloring?.hover : coloring?.regular;
+  };
   return (
     <>
-      <div
+      <ButtonLike
         class={cx(
           "w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer select-none",
           {[s.blink!]: props.blink},
         )}
-        style={{...props.style, ...(hovered() ? props.hoverStyle : undefined)}}
+        style={coloringStyle()}
         {...hoverApi().triggerProps}
         onMouseEnter={[setHovered, true]}
         onMouseLeave={[setHovered, false]}
@@ -135,13 +136,13 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
             </ul>
           </Show>
           <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
-          <TagsLine>{tags()}</TagsLine>
+          <MeetingStatusTags meeting={props.meeting} />
           <RichTextView text={props.meeting.notes} />
           <Show when={props.meeting.resources.length}>
             <div>{t("parenthesised", {text: resources()})}</div>
           </Show>
         </Show>
-      </div>
+      </ButtonLike>
       <Show when={dictionaries() && hoverApi().isOpen}>
         <Portal>
           <div {...hoverApi().positionerProps} class="pointer-events-auto">
@@ -155,6 +156,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
               >
                 <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
                 <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
+                <MeetingStatusTags meeting={props.meeting} />
                 <Show when={props.meeting.staff.length}>
                   <ul>
                     <For each={props.meeting.staff}>
@@ -169,7 +171,6 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                     </For>
                   </ul>
                 </Show>
-                <div class="flex flex-wrap gap-px">{tags()}</div>
                 <Show when={props.meeting.notes}>
                   <FieldDisp field="notes">
                     <RichTextView text={props.meeting.notes} />

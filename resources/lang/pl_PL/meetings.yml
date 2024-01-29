@@ -1,0 +1,14 @@
+mark_as_completed: "Zakończ"
+mark_as_cancelled:
+  text: "Odwołaj"
+  by_staff: "pracownik odwołuje"
+  by_client: "klient odwołuje"
+  undetermined: "bez określenia przyczyny"
+
+tags:
+  cancelled:
+    by_staff: "przez pracownika"
+    by_client: "przez klienta"
+  client_no_show: "klient nie przyszedł"
+  client_too_late: "klient mocno się spóźnił"
+  client_late_present: "klient był niepunktualny"

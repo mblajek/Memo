@@ -16,7 +16,7 @@ export const Tag: ParentComponent<TagProps> = (allProps) => {
         style: {
           "color": colorWithOpacity(),
           "border-color": colorWithOpacity(),
-          "border-radius": "0.7rem",
+          "border-radius": "0.8em",
           "background-color": bleachColor(colorWithOpacity(), {amount: 0.8}),
         },
       })}
@@ -35,13 +35,13 @@ interface SimpleTagProps {
 }
 
 export const SimpleTag: VoidComponent<SimpleTagProps> = (props) => {
-  return (
-    <Tag color={props.color || randomColor({seedString: props.colorSeed || props.text, whiteness: 10, blackness: 30})}>
-      {props.text}
-    </Tag>
-  );
+  return <Tag color={props.color || simpleTagRandomColor(props.colorSeed || props.text)}>{props.text}</Tag>;
 };
 
+export function simpleTagRandomColor(seedString: string) {
+  return randomColor({seedString, whiteness: 10, blackness: 30});
+}
+
 export const TagsLine: ParentComponent<htmlAttributes.div> = (props) => {
-  return <div {...htmlAttributes.merge(props, {class: "flex flex-wrap gap-px"})} />;
+  return <div {...htmlAttributes.merge(props, {class: "flex flex-wrap items-baseline gap-px"})} />;
 };

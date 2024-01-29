@@ -87,12 +87,12 @@ export namespace htmlAttributes {
   }
 
   export function callHandler<T, E extends Event>(
-    handler: JSX.EventHandlerUnion<T, E>,
+    handler: JSX.EventHandlerUnion<T, E> | undefined,
     event: E & {currentTarget: T; target: DOMElement},
   ) {
     if (typeof handler === "function") {
       handler(event);
-    } else {
+    } else if (handler) {
       handler[0](handler[1], event);
     }
   }

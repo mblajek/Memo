@@ -5,10 +5,11 @@ import {
   dateTimeToTimeInput,
   dayMinuteToTimeInput,
   timeInputToDayMinute,
+  timeInputToHM,
 } from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
-import {DateTime} from "luxon";
+import {DateTime, Duration, Interval} from "luxon";
 import {createComputed, on} from "solid-js";
 import {z} from "zod";
 
@@ -138,4 +139,14 @@ export function getTimeValues(values: FormTimeDataType) {
     startDayminute: timeInputToDayMinute(values.time.startTime),
     durationMinutes: getDurationMinutes(values.time),
   };
+}
+
+export function getMeetingTimeInterval(values: FormTimeDataType) {
+  if (!values.date) {
+    return undefined;
+  }
+  return Interval.after(
+    DateTime.fromISO(values.date).set(timeInputToHM(values.time.startTime)),
+    Duration.fromObject({minutes: getDurationMinutes(values.time)}),
+  );
 }

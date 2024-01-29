@@ -33,3 +33,7 @@ export function applyOpacity(baseColor: string, opacity: number | string) {
 export function applyTextOpacity(baseColor: string) {
   return applyOpacity(baseColor, "var(--tw-text-opacity, 1)");
 }
+
+export function applyBgOpacity(baseColor: string) {
+  return applyOpacity(baseColor, "var(--tw-bg-opacity, 1)");
+}

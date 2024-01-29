@@ -16,6 +16,7 @@ import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 type FormContextValue<T extends Obj = Obj> = {
   readonly props: FormProps<T>;
   readonly form: FormType<T>;
+  isFormDisabled(): boolean;
   readonly translations: FormTranslations;
 };
 
@@ -160,6 +161,8 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     useBeforeLeave(onBeforeUnload);
   });
 
+  const formDisabled = () => props.disabled || form.isSubmitting();
+
   // eslint-disable-next-line solid/reactivity
   props.onFormCreated?.(form);
 
@@ -169,6 +172,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       value={{
         props: allProps,
         form: form as FormType<T>,
+        isFormDisabled: () => formDisabled(),
         translations,
       }}
     >
@@ -187,11 +191,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         }}
         {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1"})}
       >
-        <fieldset
-          class="contents"
-          disabled={props.disabled || form.isSubmitting()}
-          inert={form.isSubmitting() || undefined}
-        >
+        <fieldset class="contents" disabled={formDisabled()} inert={form.isSubmitting() || undefined}>
           {getChildrenElement(props.children, form)}
         </fieldset>
       </form>

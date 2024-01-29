@@ -42,6 +42,7 @@ range:
 quoted: "„{{text}}”"
 parenthesised: "({{text}})"
 with_colon: "{{text}}:"
+ellipsis: "…"
 
 more_info: "Więcej informacji"
 
@@ -54,3 +55,5 @@ user_settings: "Opcje użytkownika"
 
 created_by: "Utworzono przez:"
 unknown: "nieznany"
+
+open_in_new_tab: "Otwórz w nowej karcie"

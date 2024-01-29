@@ -1,7 +1,8 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button, EditButton} from "components/ui/Button";
+import {LoadingPane} from "components/ui/LoadingPane";
 import {MenuItem, SimpleMenu} from "components/ui/SimpleMenu";
-import {BigSpinner, SmallSpinner} from "components/ui/Spinner";
+import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
@@ -55,7 +56,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   const deleteMeetingMutation = createMutation(() => ({
     mutationFn: FacilityMeeting.deleteMeeting,
   }));
-  const isDeleting = () => deleteMeetingMutation.isPending;
+  const isBusy = () => meetingMutation.isPending || deleteMeetingMutation.isPending;
 
   async function updateMeeting(values: MeetingFormType) {
     const meeting = {
@@ -128,28 +129,29 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
     <QueryBarrier queries={[meetingQuery]} ignoreCachedData {...notFoundError()}>
       <Show when={attributes() && dictionaries()} fallback={<BigSpinner />}>
         <div class="flex flex-col gap-3">
-          <MeetingForm
-            id="meeting_edit"
-            initialValues={initialValues()}
-            viewMode={props.viewMode}
-            meeting={meeting()}
-            onSubmit={updateMeeting}
-            onCancel={() => {
-              if (props.onViewModeChange) {
-                props.onViewModeChange(true);
-              } else {
-                props.onCancel?.();
-              }
-            }}
-          />
+          <div class="relative">
+            <MeetingForm
+              id="meeting_edit"
+              initialValues={initialValues()}
+              viewMode={props.viewMode}
+              onViewModeChange={props.onViewModeChange}
+              meeting={meeting()}
+              onSubmit={updateMeeting}
+              onCancel={() => {
+                if (props.onViewModeChange) {
+                  props.onViewModeChange(true);
+                } else {
+                  props.onCancel?.();
+                }
+              }}
+            />
+            <LoadingPane isLoading={isBusy()} />
+          </div>
           <Show when={props.viewMode && props.onViewModeChange}>
             <div class="flex gap-1 justify-between">
-              <Button class="secondary small" onClick={deleteMeeting} disabled={isDeleting()}>
+              <Button class="secondary small" onClick={deleteMeeting} disabled={isBusy()}>
                 <ACTION_ICONS.delete class="inlineIcon text-current" />
                 {t("actions.delete")}
-                <Show when={isDeleting()}>
-                  <SmallSpinner />
-                </Show>
               </Button>
               <div class="flex gap-1">
                 <SplitButton
@@ -184,15 +186,11 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
                       />
                     );
                   }}
-                  disabled={isDeleting()}
+                  disabled={isBusy()}
                 >
                   <FaRegularCalendarPlus class="inlineIcon text-current" /> {t("actions.meeting.make_a_copy")}
                 </SplitButton>
-                <EditButton
-                  class="secondary small"
-                  onClick={[props.onViewModeChange!, false]}
-                  disabled={isDeleting()}
-                />
+                <EditButton class="secondary small" onClick={[props.onViewModeChange!, false]} disabled={isBusy()} />
               </div>
             </div>
           </Show>

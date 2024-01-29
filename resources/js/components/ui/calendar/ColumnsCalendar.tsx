@@ -1,4 +1,4 @@
-import {currentDate, currentTime, cx, htmlAttributes} from "components/utils";
+import {currentDate, currentTimeMinute, cx, htmlAttributes} from "components/utils";
 import {DayMinuteRange, MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {
@@ -18,7 +18,7 @@ import {
   splitProps,
   useContext,
 } from "solid-js";
-import {BigSpinner} from "../Spinner";
+import {LoadingPane} from "../LoadingPane";
 import s from "./ColumnsCalendar.module.scss";
 
 interface GlobalParameters {
@@ -87,7 +87,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
   function isToday(day: DateTime) {
     return day.hasSame(currentDate(), "day");
   }
-  const nowPixelY = createMemo(() => Math.round(dayMinuteToPixelY(getDayMinute(currentTime()))));
+  const nowPixelY = createMemo(() => Math.round(dayMinuteToPixelY(getDayMinute(currentTimeMinute()))));
   const [hoursArea, setHoursArea] = createSignal<HTMLDivElement>();
   const context: ContextValue = {
     calProps: props,
@@ -194,11 +194,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           </div>
         </div>
       </Context.Provider>
-      <Show when={props.isLoading}>
-        <div class={s.loadingPane}>
-          <BigSpinner />
-        </div>
-      </Show>
+      <LoadingPane isLoading={props.isLoading} />
     </div>
   );
 };

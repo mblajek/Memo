@@ -13,6 +13,11 @@
     rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)),
     black 30%
   );
+  $memo-bg-active-contrasted: color-mix(
+    in srgb,
+    rgb(from theme("colors.memo-active") r g b / var(--tw-bg-opacity, 1)),
+    black 30%
+  );
 
   html {
     @apply font-roboto;
@@ -62,10 +67,14 @@
     color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)), blue 45%);
   }
 
-  button {
+  button,
+  [role="button"] {
+    // Use [aria-disabled="true"] to match disabled elements (and not :disabled)
+    // to support non-button elements with role="button".
+
     @mixin pressedWithShadow {
       transition: box-shadow 0.15s ease-out;
-      &:active:not(:disabled) {
+      &:active:not([aria-disabled="true"]) {
         @apply shadow-md;
       }
     }
@@ -76,26 +85,30 @@
 
     &.primary {
       @apply p-2 rounded text-white;
-      background-color: $memo-active-contrasted;
-      @apply disabled:bg-opacity-50;
-      &:active:not(:disabled) {
+      background-color: $memo-bg-active-contrasted;
+      &[aria-disabled="true"] {
+        @apply bg-opacity-50;
+      }
+      &:active:not([aria-disabled="true"]) {
         @apply bg-memo-active;
       }
       @include pressedWithShadow;
     }
 
     &.secondary {
-      @apply p-2 rounded border border-memo-active;
+      @apply p-2 min-h-8 rounded border border-memo-active;
       color: $memo-active-contrasted;
-      @apply disabled:text-opacity-50 disabled:border-opacity-50;
-      &:active:not(:disabled) {
+      &[aria-disabled="true"] {
+        @apply text-opacity-50 border-opacity-50;
+      }
+      &:active:not([aria-disabled="true"]) {
         @apply bg-hover;
       }
       @include pressedWithShadow;
+    }
 
-      &.small {
-        @apply px-1 py-0;
-      }
+    &.small {
+      @apply px-1 py-0;
     }
   }
 

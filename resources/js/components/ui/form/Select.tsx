@@ -157,6 +157,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     combobox.machine({
       id: createUniqueId(),
       // eslint-disable-next-line solid/reactivity
+      ids: {input: props.name},
+      // eslint-disable-next-line solid/reactivity
       name: props.name,
       // Needed but never used, the actual collection comes from the context below.
       collection: combobox.collection.empty(),
@@ -394,8 +396,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                 </For>
               </Match>
               <Match when={!props.multiple}>
-                {/* The current value is displayed inside the input element, so only display it
-              when the input is empty (like a placeholder). */}
+                {/*
+                  The current value is displayed inside the input element, so only display it
+                  when the input is empty (like a placeholder).
+                */}
                 <Show when={api().isInputValueEmpty && api().value[0]}>
                   {(value) => <div class={s.value}>{getValueLabel(value())}</div>}
                 </Show>

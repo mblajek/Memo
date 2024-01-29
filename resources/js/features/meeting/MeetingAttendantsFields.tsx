@@ -52,7 +52,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const {createAttendant} = useAttendantsCreator();
-  const {form} = useFormContext<FormAttendantsData>();
+  const {form, isFormDisabled} = useFormContext<FormAttendantsData>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
   createEffect<readonly MeetingAttendantResource[]>((prevAttendants) => {
@@ -150,47 +150,57 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   </Match>
                 </Switch>
                 <div class="flex gap-1">
-                  <div
-                    class={cx("grow", {
-                      "opacity-30": !form.data(`${props.name}.${index}.userId`),
-                    })}
+                  <Show
+                    when={form.data(`${props.name}.${index}.userId`)}
+                    fallback={
+                      <>
+                        <PlaceholderField name={`${props.name}.${index}.attendanceStatusDictId`} />
+                        <div
+                          class={cx("w-full h-full rounded border border-input-border", {
+                            "bg-disabled": isFormDisabled(),
+                          })}
+                        />
+                      </>
+                    }
                   >
-                    <DictionarySelect
-                      name={`${props.name}.${index}.attendanceStatusDictId`}
-                      label=""
-                      dictionary="attendanceStatus"
-                      itemFunc={(pos, defItem) => {
-                        const item = defItem();
-                        const label = () => (
-                          <MeetingAttendanceStatus
-                            attendanceStatusId={item.value}
-                            meetingStatusId={meetingStatus()?.id}
-                          />
-                        );
-                        return {
-                          ...item,
-                          label,
-                          labelOnList: () => (
-                            <div class="flex justify-between gap-1">
-                              {label()}
-                              <MeetingAttendanceStatusInfoIcon
-                                attendanceStatusId={item.value}
-                                meetingStatusId={meetingStatusId()}
-                              />
-                            </div>
-                          ),
-                        };
-                      }}
-                      nullable={false}
-                      disabled={!form.data(`${props.name}.${index}.userId`)}
-                    />
-                  </div>
+                    <div class="grow">
+                      <DictionarySelect
+                        name={`${props.name}.${index}.attendanceStatusDictId`}
+                        label=""
+                        dictionary="attendanceStatus"
+                        itemFunc={(pos, defItem) => {
+                          const item = defItem();
+                          const label = () => (
+                            <MeetingAttendanceStatus
+                              attendanceStatusId={item.value}
+                              meetingStatusId={meetingStatus()?.id}
+                            />
+                          );
+                          return {
+                            ...item,
+                            label,
+                            labelOnList: () => (
+                              <div class="flex justify-between gap-1">
+                                {label()}
+                                <MeetingAttendanceStatusInfoIcon
+                                  attendanceStatusId={item.value}
+                                  meetingStatusId={meetingStatusId()}
+                                />
+                              </div>
+                            ),
+                          };
+                        }}
+                        nullable={false}
+                        disabled={!form.data(`${props.name}.${index}.userId`)}
+                      />
+                    </div>
+                  </Show>
                   <Show when={!props.viewMode}>
                     {/* Show delete button for filled in rows, and for the empty row (unless it's the only row). */}
                     <Show when={form.data(props.name)[index]?.userId || index}>
                       <div>
                         <Button
-                          class="secondary small min-h-big-input"
+                          class="secondary small !min-h-big-input"
                           title={t("actions.delete")}
                           onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                         >
@@ -202,7 +212,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
                       <div>
                         <Button
-                          class="secondary small min-h-big-input"
+                          class="secondary small !min-h-big-input"
                           title={t(`forms.meeting.add_attendant.${props.name}`)}
                           onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                         >

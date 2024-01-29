@@ -51,6 +51,11 @@ export function getDayMinuteRange(
   }
 }
 
+export function timeInputToHM(timeInputValue: string) {
+  const [hour, minute] = timeInputValue.split(":").map((e) => Number(e));
+  return {hour: hour!, minute: minute!};
+}
+
 export function timeInputToDayMinute(timeInputValue: string | undefined, params?: {assert?: false}): number | undefined;
 export function timeInputToDayMinute(timeInputValue: string, params: {assert: true}): number;
 export function timeInputToDayMinute(timeInputValue: string | undefined, {assert = false} = {}) {
@@ -60,8 +65,8 @@ export function timeInputToDayMinute(timeInputValue: string | undefined, {assert
     }
     return undefined;
   }
-  const [hour, minute] = timeInputValue.split(":").map(Number);
-  return hour! * 60 + minute!;
+  const {hour, minute} = timeInputToHM(timeInputValue);
+  return hour * 60 + minute;
 }
 
 export function dayMinuteToTimeInput(dayMinute: number) {

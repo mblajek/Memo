@@ -71,8 +71,4 @@
   .nowLine {
     @apply absolute w-full h-0 border-b-2 border-red-500 z-50;
   }
-
-  .loadingPane {
-    @apply absolute inset-0 z-50 flex items-center justify-center bg-white opacity-70 pointer-events-none;
-  }
 }
