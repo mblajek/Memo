@@ -514,8 +514,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     scroll = Math.max(scroll, start + duration + scrollMarginMinutes() - scrollLen);
     scroll = Math.min(scroll, start - scrollMarginMinutes());
     if (scroll !== currScrollStart) {
-      setScrollToDayMinute(scroll);
-      setTimeout(() => setScrollToDayMinute(undefined), 0);
+      setScrollToDayMinute(undefined);
+      setTimeout(() => setScrollToDayMinute(scroll), 0);
     }
   }
   onMount(() => {
