@@ -65,9 +65,11 @@ export function createTableTranslations(tableName: string): TableTranslations {
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
+    /** An optional table id, used to differentiate element ids if there are multiple tables on the page. */
+    readonly tableId?: string;
     /** The translations for the table, used by various table-related components. */
-    translations?: TableTranslations;
-    defaultColumnVisibility?: Accessor<VisibilityState>;
+    readonly translations?: TableTranslations;
+    readonly defaultColumnVisibility?: Accessor<VisibilityState>;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -76,7 +78,7 @@ declare module "@tanstack/table-core" {
      * The simple representation of the translated column name. If set, overrides the value from
      * table meta translations.
      */
-    columnName?: () => JSX.Element;
+    readonly columnName?: () => JSX.Element;
   }
 }
 

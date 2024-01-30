@@ -56,7 +56,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       (form.data("typeDictId") && durationMinutes() !== defaultDurationMinutes()));
   return (
     <>
-      <FieldBox name="dateAndTime" validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
+      <FieldBox name="dateAndTime" umbrella validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
         <PlaceholderField name="startDayminute" />
         <PlaceholderField name="durationMinutes" />
         <div class={cx("flex items-start gap-1", {hidden: !showEditable()})}>

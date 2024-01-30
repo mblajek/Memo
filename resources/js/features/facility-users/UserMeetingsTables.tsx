@@ -46,6 +46,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                     staticEntityURL={entityURL()}
                     staticTranslations={tableTranslations}
                     staticPersistenceKey={`${props.staticPersistenceKey}.planned`}
+                    staticTableId="planned"
                     intrinsicFilter={{
                       type: "op",
                       op: "&",
@@ -98,6 +99,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                     staticEntityURL={entityURL()}
                     staticTranslations={tableTranslations}
                     staticPersistenceKey={`${props.staticPersistenceKey}.completed`}
+                    staticTableId="completed"
                     intrinsicFilter={{
                       type: "op",
                       op: "&",
@@ -164,6 +166,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                     staticEntityURL={entityURL()}
                     staticTranslations={tableTranslations}
                     staticPersistenceKey={`${props.staticPersistenceKey}.all`}
+                    staticTableId="all"
                     intrinsicFilter={props.intrinsicFilter}
                     intrinsicSort={sortByDate({desc: true})}
                     columns={meetingTableColumns.get(

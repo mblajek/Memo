@@ -3,11 +3,13 @@ import {useLangFunc} from "components/utils";
 import {BoolColumnFilter, NullColumnFilter} from "data-access/memo-api/tquery/types";
 import {createComputed, createMemo, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
+import {useFilterFieldNames} from "./filter_field_names";
 import {makeSelectItem} from "./select_items";
 import {FilterControl} from "./types";
 
 export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilter> = (props) => {
   const t = useLangFunc();
+  const filterFieldNames = useFilterFieldNames();
   const [value, setValue] = createSignal("-");
   createComputed(() => {
     if (!props.filter) {
@@ -55,7 +57,7 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
     <div class={s.filterLine}>
       <div class="flex-grow flex flex-col items-stretch">
         <Select
-          name={`table_filter_val_${props.name}`}
+          name={filterFieldNames.get(`val_${props.name}`)}
           items={items()}
           value={value()}
           onValueChange={(value) => {

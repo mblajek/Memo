@@ -81,6 +81,8 @@ export interface TQueryTableProps {
   readonly staticTranslations?: TableTranslations;
   /** The key to use for persisting the parameters of the displayed page. If not present, nothing is persisted. */
   readonly staticPersistenceKey?: string;
+  /** A differentiator to be used when there are multiple tables on a page. */
+  readonly staticTableId?: string;
   /**
    * The filter that is always applied to the data, regardless of other filtering.
    * This is used to create e.g. a table of entities A on the details page of a particular
@@ -333,6 +335,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       },
       autoResetPageIndex: false,
       meta: {
+        tableId: props.staticTableId,
         translations: props.staticTranslations || createTableTranslations("generic"),
         defaultColumnVisibility,
       },

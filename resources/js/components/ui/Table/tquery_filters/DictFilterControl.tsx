@@ -3,6 +3,7 @@ import {useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
+import {useFilterFieldNames} from "./filter_field_names";
 import {SelectItemLabelOnList, makeSelectItem} from "./select_items";
 import {FilterControlProps} from "./types";
 
@@ -12,6 +13,7 @@ interface Props extends FilterControlProps {
 
 export const DictFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const filterFieldNames = useFilterFieldNames();
   const dictionaries = useDictionaries();
 
   const [value, setValue] = createSignal<readonly string[]>([]);
@@ -72,7 +74,7 @@ export const DictFilterControl: VoidComponent<Props> = (props) => {
   return (
     <div style={{"min-width": "160px"}}>
       <Select
-        name={`table_filter_val_${props.name}`}
+        name={filterFieldNames.get(`val_${props.name}`)}
         items={items()}
         value={value()}
         onValueChange={(newValue) => {
