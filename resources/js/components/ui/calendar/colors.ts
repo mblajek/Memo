@@ -10,7 +10,7 @@ function coloringFromColor(baseColor: string): Coloring {
   return {
     regular: {
       "border-color": baseColor,
-      "background-color": bleachColor(baseColor, {amount: 0.7}),
+      "background-color": bleachColor(baseColor, {amount: 0.75}),
     },
     hover: {
       "border-color": baseColor,
@@ -20,7 +20,7 @@ function coloringFromColor(baseColor: string): Coloring {
 }
 
 export function getRandomEventColors(seedString: string): Coloring {
-  return coloringFromColor(randomColor({seedString, whiteness: [0, 50], blackness: [20, 40]}));
+  return coloringFromColor(randomColor({seedString, whiteness: [30, 40], blackness: [10, 20]}));
 }
 
 export const COMPLETED_MEETING_COLORING = coloringFromColor("#ccc");
