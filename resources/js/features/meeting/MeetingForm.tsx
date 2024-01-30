@@ -2,6 +2,7 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {isAxiosError} from "axios";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {Capitalize} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
@@ -23,7 +24,6 @@ import {MeetingDateAndTime} from "./MeetingDateAndTime";
 import {MeetingTypeFields} from "./MeetingTypeFields";
 import {MeetingStatusInfoIcon} from "./attendance_status_info";
 import {getMeetingTimeFieldsSchemaPart, getTimeValues} from "./meeting_time_controller";
-import {Capitalize} from "../../components/ui/Capitalize";
 
 const getSchema = () =>
   z.object({
