@@ -88,7 +88,7 @@ const PIXELS_PER_HOUR_RANGE = [40, 400] as const;
 type PersistentState = {
   readonly today: string;
   readonly mode: Mode;
-  readonly daysSel: readonly [Mode, DaysRange][];
+  readonly daysSel: readonly (readonly [Mode, DaysRange])[];
   readonly resourcesSel: {
     readonly checkbox: ReadonlySet<string>;
     readonly radio: string | null;
