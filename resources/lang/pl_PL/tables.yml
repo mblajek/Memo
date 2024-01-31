@@ -26,12 +26,8 @@ tables:
     summary__few: "{{count, number}} klientów"
     summary__many: "{{count, number}} klientów"
 
-  userFacility:
+  userFacilityMember:
     tableName: "$t(models.user.members)"
-    columnNames:
-      facility: "$t(models.member.facility)"
-      hasFacilityAdmin: "$t(models.member.hasFacilityAdmin)"
-      actions: "$t(tables.tables.generic.columnNames.actions)"
 
   facility:
     summary__zero: "Brak placówek"

@@ -14,6 +14,10 @@ password_change:
 user:
   fieldNames:
     hasPassword: "posiada hasło logowania do Memo"
+  members_destructive_update_warning:
+    header: "UWAGA!"
+    line1: "Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki."
+    line2: "Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
 
 user_edit:
   formName: "Zmiana danych"

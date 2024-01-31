@@ -29,12 +29,14 @@ facility:
   userCount: "liczba osób"
   admins: "administratorzy"
 
-member:
+userFacilityMember:
   _name: "powiązanie osoby i placówki"
   _name_plural: "powiązania osób i placówek"
   user: "osoba"
   facility: "placówka"
-  hasFacilityAdmin: "administrator placówki"
+  hasFacilityAdmin: "administrator"
+  isFacilityStaff: "pracownik"
+  isFacilityClient: "klient"
 
 permissions:
   _name: "uprawienia"
