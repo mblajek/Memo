@@ -11,7 +11,7 @@ use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
-use App\Tquery\Engine\TqBind;
+use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 use App\Tquery\Engine\TqService;
 use Illuminate\Support\Facades\App;
@@ -27,7 +27,7 @@ readonly class MeetingTquery extends TqService
     {
         $builder = parent::getBuilder();
         $builder->where(
-            query: fn(TqBind $bind) => "`meetings`.`facility_id` = $bind",
+            query: fn(TqSingleBind $bind) => "`meetings`.`facility_id` = {$bind->use()}",
             or: false,
             value: $this->facility->id,
             inverse: false,

@@ -4,7 +4,9 @@ namespace App\Tquery\Filter;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqDataTypeEnum;
-use App\Tquery\Engine\TqBind;
+use App\Tquery\Engine\Bind\TqBind;
+use App\Tquery\Engine\Bind\TqListBind;
+use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Utils\Date\DateHelper;
 use Closure;
 
@@ -39,12 +41,13 @@ readonly class TqDataTypeOperator
             $anyValue = 'is null or true';
             return match ($this->operator) {
                 TqFilterOperator::null => fn(null $bind) => "($query $anyValue)) = 0",
-                TqFilterOperator::has => fn(TqBind $bind) => "($query = $bind)) != 0",
-                TqFilterOperator::has_any => fn(TqBind $bind) => "($query in $bind)) != 0",
-                TqFilterOperator::has_only => fn(TqBind $bind) => "($query in $bind)) = ($query $anyValue))",
-                TqFilterOperator::has_all => fn(TqBind $bind) => "($query in $bind)) = {$bind->length}",
-                TqFilterOperator::eq => fn(TqBind $bind) => //
-                "($query in $bind)) = {$bind->length} and ($query $anyValue)) = {$bind->length}",
+                TqFilterOperator::has => fn(TqSingleBind $bind) => "($query = {$bind->use()})) != 0",
+                TqFilterOperator::has_any => fn(TqListBind $bind) => "($query in {$bind->use()})) != 0",
+                TqFilterOperator::has_only => //
+                fn(TqListBind $bind) => "($query in {$bind->use()})) = ($query $anyValue))",
+                TqFilterOperator::has_all => fn(TqListBind $bind) => "($query in {$bind->use()})) = {$bind->length}",
+                TqFilterOperator::eq => fn(TqListBind $bind) => //
+                "($query in {$bind->use()})) = {$bind->length} and ($query $anyValue)) = {$bind->length}",
                 default => FatalExceptionFactory::tquery()->throw(),
             };
         }
@@ -52,7 +55,7 @@ readonly class TqDataTypeOperator
         $sqlOperator = $this->operator->sqlOperator();
         return match ($this->operator) {
             TqFilterOperator::null => fn(null $bind) => trim("$sqlPrefix $query $sqlOperator"),
-            default => fn(TqBind|null $bind) => trim("$sqlPrefix $query $sqlOperator $bind"),
+            default => fn(TqBind $bind) => trim("$sqlPrefix $query $sqlOperator {$bind->use()}"),
         };
     }
 }
