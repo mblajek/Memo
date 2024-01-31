@@ -41,7 +41,7 @@ abstract readonly class TqBind
 
     public function use(): string
     {
-        // this class may support multiple __toString calls, then $builder->where $bindings
+        // this class may support multiple use() calls, then $builder->where $bindings
         // must me multiplicated by number of calls: [1,2,3] => [1,2,3,1,2,3]
         if ($this->used ?? false) {
             FatalExceptionFactory::tquery()->throw();
