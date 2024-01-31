@@ -2,9 +2,13 @@
 
 namespace App\Tquery\Filter;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Rules\Valid;
 use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
+use App\Tquery\Engine\Bind\TqBind;
+use App\Tquery\Engine\Bind\TqListBind;
+use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 use Illuminate\Validation\Rule;
 
@@ -70,13 +74,34 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
             : $this->dataTypeOperator->filterValuePrepare($this->value);
         $filterQuery = $this->column->getFilterQuery();
         $inverse = ($this->inverse xor $invert);
+        $columnType = $this->column->type;
 
-        $builder->where(
-            query: $this->dataTypeOperator->getQuery($filterQuery),
-            or: $or,
-            value: $value,
-            inverse: $inverse,
-            nullable: $this->column->type->isNullable(),
-        );
+        if ($columnType->isUuidList()) {
+            // "where ... and (column" appended with "is null or true)" matches any value
+            $anyValue = 'is null or true';
+            $query = match ($this->operator) {
+                TqFilterOperator::null => fn(null $bind) => "($filterQuery $anyValue)) = 0",
+                TqFilterOperator::has => fn(TqSingleBind $bind) => "($filterQuery = {$bind->use()})) != 0",
+                TqFilterOperator::has_any => fn(TqListBind $bind) => "($filterQuery in {$bind->use()})) != 0",
+                TqFilterOperator::has_only => fn(TqListBind $bind) => //
+                "($filterQuery in {$bind->use()})) = ($filterQuery $anyValue))",
+                TqFilterOperator::has_all => fn(TqListBind $bind) => //
+                "($filterQuery in {$bind->use()})) = {$bind->length}",
+                TqFilterOperator::eq => fn(TqListBind $bind) => //
+                "($filterQuery in {$bind->use()})) = {$bind->length} and ($filterQuery $anyValue)) = {$bind->length}",
+                default => FatalExceptionFactory::tquery()->throw(),
+            };
+            $nullable = false;
+        } else {
+            $sqlPrefix = $this->operator->sqlPrefix();
+            $sqlOperator = $this->operator->sqlOperator();
+            $query = match ($this->operator) {
+                TqFilterOperator::null => fn(null $bind) => trim("$sqlPrefix $filterQuery $sqlOperator"),
+                default => fn(TqBind $bind) => trim("$sqlPrefix $filterQuery $sqlOperator {$bind->use()}"),
+            };
+            $nullable = $columnType->isNullable();
+        }
+
+        $builder->where($query, $or, $value, $inverse, $nullable);
     }
 }

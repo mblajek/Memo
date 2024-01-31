@@ -88,7 +88,7 @@ class TqBuilder
         $bind = ($value instanceof TqBind) ? $value : TqBind::any($value);
         $queryString = '(' . $query(bind: $bind) . ')';
         if ($nullable) {
-            $queryString = "coalesce(($queryString), false)";
+            $queryString = "coalesce($queryString, false)";
         }
         if ($inverse) {
             $queryString = "(not $queryString)";
