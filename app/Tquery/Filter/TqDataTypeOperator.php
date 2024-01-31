@@ -4,7 +4,11 @@ namespace App\Tquery\Filter;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqDataTypeEnum;
+use App\Tquery\Engine\Bind\TqBind;
+use App\Tquery\Engine\Bind\TqListBind;
+use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Utils\Date\DateHelper;
+use Closure;
 
 readonly class TqDataTypeOperator
 {
@@ -18,7 +22,7 @@ readonly class TqDataTypeOperator
     public function isFilterValueList(): bool
     {
         return in_array($this->operator, TqFilterOperator::LIST_FILTER)
-            || ($this->operator === TqFilterOperator::eq && $this->type->isList());
+            || ($this->operator === TqFilterOperator::eq && $this->type->isUuidList());
     }
 
     public function filterValuePrepare(
@@ -27,14 +31,6 @@ readonly class TqDataTypeOperator
         if ($this->type->notNullBaseType() === TqDataTypeEnum::datetime) {
             return DateHelper::zuluToDbString($value);
         }
-        if (in_array($this->operator, [TqFilterOperator::pv, TqFilterOperator::vp, TqFilterOperator::pvp])) {
-            if (!is_string($value)) {
-                throw FatalExceptionFactory::tquery();
-            }
-            return (($this->operator === TqFilterOperator::pv || $this->operator === TqFilterOperator::pvp) ? '%' : '')
-                . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                . (($this->operator === TqFilterOperator::vp || $this->operator === TqFilterOperator::pvp) ? '%' : '');
-        }
-        return $value;
+        return $this->operator->prepareIfLikeValue($value);
     }
 }

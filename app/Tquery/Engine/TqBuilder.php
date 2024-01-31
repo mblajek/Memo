@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tquery\Engine;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
+use App\Tquery\Engine\Bind\TqBind;
 use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -78,25 +81,19 @@ class TqBuilder
     public function where(
         Closure $query,
         bool $or,
-        bool|int|string|array|null $value,
+        bool|int|string|array|null|TqBind $value,
         bool $inverse,
         bool $nullable,
     ): void {
-        if (is_array($value)) {
-            $bindings = count($value) ? array_values($value) : [null];
-            $bind = '(' . trim(str_repeat('?,', count($bindings)), ',') . ')';
-        } else {
-            $bindings = ($value !== null) ? [$value] : [];
-            $bind = count($bindings) ? '?' : null;
-        }
+        $bind = ($value instanceof TqBind) ? $value : TqBind::any($value);
         $queryString = '(' . $query(bind: $bind) . ')';
         if ($nullable) {
-            $queryString = "coalesce(($queryString), false)";
+            $queryString = "coalesce($queryString, false)";
         }
         if ($inverse) {
             $queryString = "(not $queryString)";
         }
-        $this->builder->whereRaw(sql: $queryString, bindings: $bindings, boolean: $or ? 'or' : 'and');
+        $this->builder->whereRaw(sql: $queryString, bindings: $bind?->bindings() ?? [], boolean: $or ? 'or' : 'and');
     }
 
     public function whereGroup(Closure $group, bool $or): void
