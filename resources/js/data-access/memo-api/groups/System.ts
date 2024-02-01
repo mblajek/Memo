@@ -1,10 +1,11 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "../config";
+import {StatusResource} from "../resources/StatusResource";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
 import {FacilityResource} from "../resources/facility.resource";
 import {Api} from "../types";
-import {parseGetListResponse} from "../utils";
+import {parseGetListResponse, parseGetResponse} from "../utils";
 import {Facilities} from "./shared";
 
 /**
@@ -42,10 +43,20 @@ export namespace System {
       staleTime: 3600 * 1000,
     }) satisfies SolidQueryOptions;
 
+  const getStatus = (config?: Api.Config) =>
+    V1.get<Api.Response.Get<StatusResource>>("/system/status", config).then(parseGetResponse);
+  export const statusQueryOptions = () =>
+    ({
+      queryFn: ({signal}) => getStatus({signal}),
+      queryKey: keys.status(),
+      staleTime: 0,
+    }) satisfies SolidQueryOptions;
+
   export const keys = {
     facility: () => [...Facilities.keys.facility(), "system"] as const,
     facilityList: () => [...keys.facility(), "list"] as const,
     dictionary: () => ["dictionary"] as const,
     attribute: () => ["attribute"] as const,
+    status: () => ["status"] as const,
   };
 }

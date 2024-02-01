@@ -20,6 +20,7 @@ const MeetingsListPage = lazy(() => import("features/root/pages/MeetingsList.pag
 const RootPage = lazy(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazy(() => import("features/root/pages/StaffDetails.page"));
 const StaffListPage = lazy(() => import("features/root/pages/StaffList.page"));
+const StatusPage = lazy(() => import("features/root/pages/help/Status.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -32,7 +33,11 @@ const App: VoidComponent = () => {
         <Show when={DEV}>
           <DevRoutes />
         </Show>
-        <LeafRoute routeKey="help" path="/help" component={NotYetImplemented} />
+        <Route path="/help">
+          <UnknownNotFound />
+          <LeafRoute routeKey="help" path="/" component={NotYetImplemented} />
+          <LeafRoute routeKey="help_pages.status" path="/status" component={StatusPage} />
+        </Route>
         <Route path="/admin" component={GlobalAdminPages}>
           <UnknownNotFound />
           <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
