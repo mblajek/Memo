@@ -2,7 +2,7 @@ import {A, AnchorProps} from "@solidjs/router";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
-import {DayMinuteRange} from "components/utils/day_minute_util";
+import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
@@ -511,7 +511,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     const [currScrollStart, currScrollEnd] = visibleDayMinuteRange();
     const scrollLen = currScrollEnd - currScrollStart;
     let scroll = currScrollStart;
-    scroll = Math.max(scroll, start + duration + scrollMarginMinutes() - scrollLen);
+    scroll = Math.max(scroll, Math.max(start + duration, MAX_DAY_MINUTE) + scrollMarginMinutes() - scrollLen);
     scroll = Math.min(scroll, start - scrollMarginMinutes());
     if (scroll !== currScrollStart) {
       setScrollToDayMinute(undefined);

@@ -6,7 +6,7 @@ import {RichTextView} from "components/ui/RichTextView";
 import {bleachColor} from "components/ui/colors";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
-import {formatDayMinuteHM} from "components/utils/day_minute_util";
+import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
@@ -124,7 +124,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           <span class="font-weight-medium">{formatDayMinuteHM(props.meeting.startDayminute)}</span>
           {EN_DASH}
           <span class="font-weight-medium">
-            {formatDayMinuteHM(props.meeting.startDayminute + props.meeting.durationMinutes)}
+            {formatDayMinuteHM((props.meeting.startDayminute + props.meeting.durationMinutes) % MAX_DAY_MINUTE)}
           </span>
         </div>
         <hr class="border-inherit" />

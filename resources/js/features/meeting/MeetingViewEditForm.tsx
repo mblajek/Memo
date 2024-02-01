@@ -8,7 +8,7 @@ import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
-import {dayMinuteToTimeInput} from "components/utils/day_minute_util";
+import {MAX_DAY_MINUTE, dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -99,7 +99,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
       date: meeting().date,
       time: {
         startTime: dayMinuteToTimeInput(meeting().startDayminute),
-        endTime: dayMinuteToTimeInput(meeting().startDayminute + meeting().durationMinutes),
+        endTime: dayMinuteToTimeInput((meeting().startDayminute + meeting().durationMinutes) % MAX_DAY_MINUTE),
       },
       typeDictId: meeting().typeDictId,
       statusDictId: meeting().statusDictId,
