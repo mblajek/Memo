@@ -2,13 +2,8 @@
 
 namespace App\Tquery\Filter;
 
-use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqDataTypeEnum;
-use App\Tquery\Engine\Bind\TqBind;
-use App\Tquery\Engine\Bind\TqListBind;
-use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Utils\Date\DateHelper;
-use Closure;
 
 readonly class TqDataTypeOperator
 {

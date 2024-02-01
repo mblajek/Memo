@@ -17,9 +17,7 @@ use App\Http\Controllers\SystemController;
 use App\Http\Controllers\Tquery\AdminFacilityTqueryController;
 use App\Http\Controllers\Tquery\AdminUserTqueryController;
 use App\Http\Controllers\UserController;
-use App\Utils\Date\DateHelper;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 
 Route::prefix('/v1')->group(function () {
     Route::prefix('/system')->group(function () {
@@ -35,6 +33,7 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/attribute')->group(function () {
             Route::get('/list', [SystemController::class, 'attributeList']);
         });
+        Route::get('/status', [SystemController::class, 'status']);
     });
     Route::prefix('/user')->group(function () {
         Route::patch('', [UserController::class, 'patch']);
@@ -93,11 +92,6 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/mail')->group(function () {
         Route::post('/test', [MailController::class, 'test']);
     });
-});
-
-Route::prefix('/util')->group(function () {
-    Route::get('/uuid', fn() => Str::uuid()->toString());
-    Route::get('/date', fn() => DateHelper::toZuluString((new DateTimeImmutable(timezone: new DateTimeZone('UTC')))));
 });
 
 Route::any('{any}', fn() => ExceptionFactory::routeNotFound()->render())->where('any', '.*');
