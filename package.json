@@ -2,8 +2,8 @@
   "name": "fdds-memo",
   "license": "MIT",
   "scripts": {
-    "dev": "npm install --include=dev && vite",
-    "build": "npm clean-install && vite build",
+    "dev": "npm install --include=dev && node git-version.mjs > storage/app/git-version.txt && vite",
+    "build": "npm clean-install && vite build && node git-version.mjs > storage/app/git-version.txt",
     "clean": "rm -rf public/build",
     "format": "prettier resources/js --write",
     "typecheck": "tsc --noEmit",
