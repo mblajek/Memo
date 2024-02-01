@@ -676,7 +676,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         </div>
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
-            <div>
+            <div class="flex">
               <Button class="h-full secondary small !rounded-r-none" onClick={[moveDaysSelection, -1]}>
                 <IoArrowBackOutline class="text-current" />
               </Button>

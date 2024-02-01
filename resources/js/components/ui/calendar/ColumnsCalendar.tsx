@@ -111,8 +111,9 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           // First scroll is instant, then smooth.
           behavior: prev ? "smooth" : "instant",
         });
+        return true;
       }
-      return true;
+      return prev;
     }),
   );
   createEffect(
