@@ -4,8 +4,11 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\MemberBuilder;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasValidator;
+use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\Rule;
 
 /**
  * @property string user_id
@@ -19,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Member extends Model
 {
     use BaseModel;
+    use HasValidator;
 
     protected $table = 'members';
 
@@ -31,6 +35,14 @@ class Member extends Model
     ];
 
     protected $casts = self::BASE_CASTS;
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'facility_id' => Valid::uuid(['exists:facilities,id']),
+            'has_facility_admin', 'is_facility_client', 'is_facility_staff' => Valid::bool(),
+        };
+    }
 
     public function user(): BelongsTo
     {
