@@ -25,7 +25,6 @@ export const ButtonLike: ParentComponent<Props> = (props) => {
       aria-disabled={props.disabled}
       tabindex="0"
       inert={props.disabled || undefined}
-      onPointerDown={(e) => e.currentTarget.click()}
       onKeyPress={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();

@@ -119,6 +119,8 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         onMouseEnter={[setHovered, true]}
         onMouseLeave={[setHovered, false]}
         onClick={() => props.onClick?.()}
+        // Needed to make the event clickable on a touch screen.
+        onTouchEnd={() => props.onClick?.()}
       >
         <div class="whitespace-nowrap">
           <span class="font-weight-medium">{formatDayMinuteHM(props.meeting.startDayminute)}</span>
