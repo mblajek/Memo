@@ -53,10 +53,10 @@ enum TqDataTypeEnum
         };
     }
 
-    public function isList(): bool
+    public function isUuidList(): bool
     {
         return match ($this) {
-            self::dict_list, self::uuid_list, self::list => true,
+            self::dict_list, self::uuid_list => true,
             default => false,
         };
     }

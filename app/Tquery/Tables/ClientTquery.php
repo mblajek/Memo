@@ -5,6 +5,7 @@ namespace App\Tquery\Tables;
 use App\Models\Facility;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
+use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
 readonly class ClientTquery extends AdminUserTquery
@@ -18,7 +19,8 @@ readonly class ClientTquery extends AdminUserTquery
     {
         $builder = TqBuilder::fromTable(TqTableEnum::users);
         $builder->join(TqTableEnum::users, TqTableAliasEnum::members, 'user_id', left: false, inv: true);
-        $builder->where(fn(string $bind) => "members.facility_id = $bind", false, $this->facility->id, false, false);
+        $builder->where(fn(TqSingleBind $bind) => //
+        "members.facility_id = {$bind->use()}", false, $this->facility->id, false, false);
         $builder->where(fn(null $bind) => 'members.client_id is not null', false, null, false, false);
         return $builder;
     }

@@ -55,6 +55,7 @@ final class TqConfig
         string $columnName,
         ?string $columnAlias = null,
     ): void {
+        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnName,
@@ -66,8 +67,10 @@ final class TqConfig
     public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $attribute): void
     {
         $attributeModel = Attribute::query()->findOrFail(is_string($attribute) ? $attribute : $attribute->value);
+        $type = $attributeModel->getTqueryDataType();
+        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
         $this->addColumn(
-            type: $attributeModel->getTqueryDataType(),
+            type: $type,
             columnOrQuery: $attributeModel->api_name,
             table: null,
             columnAlias: Str::camel($attributeModel->api_name),
@@ -81,6 +84,7 @@ final class TqConfig
         string $columnName,
         ?string $columnAlias = null,
     ): void {
+        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnName,
@@ -97,6 +101,7 @@ final class TqConfig
         ?Closure $order = null,
         ?Closure $renderer = null,
     ): void {
+        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnOrQuery,
@@ -105,6 +110,22 @@ final class TqConfig
             filter: $filter,
             sorter: $order,
             renderer: $renderer,
+        );
+    }
+
+    public function addUuidListQuery(
+        TqDataTypeEnum|TqDictDef $type,
+        string $select,
+        string $from,
+        string $columnAlias,
+    ): void {
+        self::assertType($type, true, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        $this->addColumn(
+            type: $type,
+            columnOrQuery: fn(string $tableName) => "select json_arrayagg($select) from $from",
+            table: null,
+            columnAlias: Str::camel($columnAlias),
+            filter: fn(string $query) => "select count(distinct $select) from $from and ($select",
         );
     }
 
@@ -151,5 +172,13 @@ final class TqConfig
             sorter: $sorter,
             renderer: $renderer,
         );
+    }
+
+    private static function assertType(TqDataTypeEnum|TqDictDef $type, bool $is, TqDataTypeEnum ...$types): void
+    {
+        $dataType = ($type instanceof TqDictDef) ? $type->dataType : $type;
+        if ($is xor in_array($dataType, $types)) {
+            FatalExceptionFactory::tquery()->throw();
+        }
     }
 }

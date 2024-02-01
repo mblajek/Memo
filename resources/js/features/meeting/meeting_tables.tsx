@@ -4,7 +4,7 @@ import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
-import {formatDayMinuteHM} from "components/utils/day_minute_util";
+import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {Api} from "data-access/memo-api/types";
@@ -31,7 +31,7 @@ export function useMeetingTableColumns() {
           return (
             <PaddedCell>
               {formatDayMinuteHM(startDayMinute(), {hour: "2-digit"})} {EN_DASH}{" "}
-              {formatDayMinuteHM(startDayMinute() + durationMinutes(), {hour: "2-digit"})}
+              {formatDayMinuteHM((startDayMinute() + durationMinutes()) % MAX_DAY_MINUTE, {hour: "2-digit"})}
             </PaddedCell>
           );
         },

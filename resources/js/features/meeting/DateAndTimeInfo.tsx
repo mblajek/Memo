@@ -1,6 +1,6 @@
 import {EN_DASH} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
-import {formatDayMinuteHM} from "components/utils/day_minute_util";
+import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
@@ -30,7 +30,9 @@ export const DateAndTimeInfo: VoidComponent<Props> = (props) => {
           {(durationMinutes) => (
             <>
               <span>{EN_DASH}</span>
-              <span class="font-semibold">{formatDayMinuteHM(props.startDayMinute + durationMinutes())}</span>
+              <span class="font-semibold">
+                {formatDayMinuteHM((props.startDayMinute + durationMinutes()) % MAX_DAY_MINUTE)}
+              </span>
               <span>{t("parenthesised", {text: t("calendar.units.minutes", {count: durationMinutes()})})}</span>
             </>
           )}
