@@ -19,7 +19,7 @@ export const PopOver: Component<Props> = (props) => {
         gutter: 1,
         strategy: "absolute",
         placement: "bottom-end",
-        overflowPadding: 0,
+        overflowPadding: 10,
       },
       id: createUniqueId(),
     }),

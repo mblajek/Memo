@@ -13,11 +13,10 @@ export const FacilityControl: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(User.statusQueryOptions);
   const invalidate = useInvalidator();
-  const userFacilities = createMemo(
-    () =>
-      facilitiesQuery.data
-        ?.filter((facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id))
-        .sort((a, b) => a.name.localeCompare(b.name)),
+  const userFacilities = createMemo(() =>
+    facilitiesQuery.data
+      ?.filter((facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id))
+      .sort((a, b) => a.name.localeCompare(b.name)),
   );
   createOneTimeEffect({
     input: () => {
@@ -59,7 +58,8 @@ export const FacilityControl: VoidComponent = () => {
                     navigate(`/${url}`);
                   }
                 }
-                User.setLastLoginFacilityId(facilityId!).then(() => invalidate.userStatusAndFacilityPermissions());
+                if (facilityId !== statusQuery.data!.user.lastLoginFacilityId)
+                  User.setLastLoginFacilityId(facilityId!).then(() => invalidate.userStatusAndFacilityPermissions());
               }}
             />
           </Match>

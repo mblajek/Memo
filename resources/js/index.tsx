@@ -9,10 +9,11 @@ import {DelegatedEvents, render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
 import {FatalError} from "./FatalError";
+import {AppContextProvider} from "./app_context";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
+import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
-import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 
 const root = document.getElementById("root");
 
@@ -66,9 +67,11 @@ render(() => {
         />
         <MetaProvider>
           <InitializeTanstackQuery>
-            <Router>
-              <App />
-            </Router>
+            <AppContextProvider>
+              <Router>
+                <App />
+              </Router>
+            </AppContextProvider>
           </InitializeTanstackQuery>
         </MetaProvider>
         <GlobalPageElements />

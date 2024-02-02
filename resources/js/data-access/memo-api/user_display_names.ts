@@ -26,9 +26,13 @@ export const useUserDisplayNames = createCached(
     };
     const staffQuery = createTQuery({
       entityURL: `facility/${activeFacilityId()}/user/staff`,
-      prefixQueryKey: [FacilityStaff.keys.staff()],
+      prefixQueryKey: [FacilityStaff.keys.staffList()],
       requestCreator: staticRequestCreator(request),
-      dataQueryOptions: {refetchOnMount: false},
+    });
+    const clientsQuery = createTQuery({
+      entityURL: `facility/${activeFacilityId()}/user/client`,
+      prefixQueryKey: [FacilityClient.keys.clientList()],
+      requestCreator: staticRequestCreator(request),
     });
     function byId(list: SimpleUser[] | undefined) {
       if (!list) {
@@ -40,12 +44,6 @@ export const useUserDisplayNames = createCached(
       }
       return map;
     }
-    const clientsQuery = createTQuery({
-      entityURL: `facility/${activeFacilityId()}/user/client`,
-      prefixQueryKey: [FacilityClient.keys.client()],
-      requestCreator: staticRequestCreator(request),
-      dataQueryOptions: {refetchOnMount: false},
-    });
     const staff = createMemo(() => byId(staffQuery.dataQuery.data?.data as SimpleUser[] | undefined));
     const clients = createMemo(() => byId(clientsQuery.dataQuery.data?.data as SimpleUser[] | undefined));
     return {staff, clients};
