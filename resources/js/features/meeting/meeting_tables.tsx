@@ -2,14 +2,17 @@ import {Button} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
+import {ACTION_ICONS} from "components/ui/icons";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
+import {DATE_FORMAT} from "components/utils/formatting";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
-import {For, ParentComponent, Show, VoidComponent} from "solid-js";
+import {DateTime} from "luxon";
+import {For, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
@@ -18,6 +21,22 @@ import {createMeetingModal} from "./meeting_modal";
 export function useMeetingTableColumns() {
   const t = useLangFunc();
   const meetingModal = createMeetingModal();
+
+  const MeetingTime: VoidComponent<{startDayMinute: number; durationMinutes: number}> = (props) => (
+    <>
+      {formatDayMinuteHM(props.startDayMinute, {hour: "2-digit"})} {EN_DASH}{" "}
+      {formatDayMinuteHM((props.startDayMinute + props.durationMinutes) % MAX_DAY_MINUTE, {hour: "2-digit"})}
+    </>
+  );
+  const DetailsButton: ParentComponent<{meetingId: string} & htmlAttributes.button> = (allProps) => {
+    const [props, buttonProps] = splitProps(allProps, ["meetingId", "children"]);
+    return (
+      <Button {...buttonProps} onClick={() => meetingModal.show({meetingId: props.meetingId, initialViewMode: true})}>
+        <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
+      </Button>
+    );
+  };
+
   const columns = {
     id: {name: "id", initialVisible: false},
     date: {name: "date", columnDef: {size: 190}},
@@ -25,16 +44,11 @@ export function useMeetingTableColumns() {
       name: "startDayminute",
       extraDataColumns: ["durationMinutes"],
       columnDef: {
-        cell: (c) => {
-          const startDayMinute = () => c.row.original.startDayminute as number;
-          const durationMinutes = () => c.row.original.durationMinutes as number;
-          return (
-            <PaddedCell>
-              {formatDayMinuteHM(startDayMinute(), {hour: "2-digit"})} {EN_DASH}{" "}
-              {formatDayMinuteHM((startDayMinute() + durationMinutes()) % MAX_DAY_MINUTE, {hour: "2-digit"})}
-            </PaddedCell>
-          );
-        },
+        cell: cellFunc<number>((v, c) => (
+          <PaddedCell>
+            <MeetingTime startDayMinute={v} durationMinutes={(c.row.original.durationMinutes as number) ?? 0} />
+          </PaddedCell>
+        )),
         sortDescFirst: false,
         enableColumnFilter: false,
         size: 120,
@@ -54,10 +68,24 @@ export function useMeetingTableColumns() {
         size: 200,
       },
     },
+    statusTags: {
+      name: "statusDictId",
+      extraDataColumns: ["staff", "clients", "isRemote"],
+      columnDef: {
+        cell: cellFunc<string>((v, c) => (
+          <Scrollable>
+            <MeetingStatusTags
+              meeting={c.row.original as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
+              showPlannedTag
+            />
+          </Scrollable>
+        )),
+      },
+    },
     staff: {
       name: "staff",
       columnDef: {
-        cell: (c) => <UserLinksCell type="staff" users={c.getValue() as TQMeetingAttendantResource[]} />,
+        cell: cellFunc<TQMeetingAttendantResource[]>((v) => <UserLinksCell type="staff" users={v} />),
       },
     },
     staffAttendance: {
@@ -67,7 +95,7 @@ export function useMeetingTableColumns() {
     clients: {
       name: "clients",
       columnDef: {
-        cell: (c) => <UserLinksCell type="clients" users={c.getValue() as TQMeetingAttendantResource[]} />,
+        cell: cellFunc<TQMeetingAttendantResource[]>((v) => <UserLinksCell type="clients" users={v} />),
       },
     },
     clientsAttendance: {
@@ -75,21 +103,6 @@ export function useMeetingTableColumns() {
       initialVisible: false,
     },
     isRemote: {name: "isRemote"},
-    statusTags: {
-      name: "statusTags",
-      isDataColumn: false,
-      extraDataColumns: ["statusDictId", "staff", "clients", "isRemote"],
-      columnDef: {
-        cell: (c) => (
-          <Scrollable>
-            <MeetingStatusTags
-              meeting={c.row.original as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
-              showPlannedTag
-            />
-          </Scrollable>
-        ),
-      },
-    },
     notes: {
       name: "notes",
       columnDef: {
@@ -110,17 +123,44 @@ export function useMeetingTableColumns() {
       extraDataColumns: ["id"],
       columnDef: {
         cell: (c) => (
-          <PaddedCell class="flex gap-2 items-start">
-            <Button
-              class="minimal"
-              onClick={() => meetingModal.show({meetingId: c.row.original.id as string, initialViewMode: true})}
-            >
-              {t("actions.details")}
-            </Button>
+          <PaddedCell>
+            <DetailsButton class="minimal" meetingId={c.row.original.id as string} />
           </PaddedCell>
         ),
         enableSorting: false,
         ...AUTO_SIZE_COLUMN_DEFS,
+      },
+    },
+    dateTimeActions: {
+      name: "date",
+      extraDataColumns: ["startDayminute", "durationMinutes", "id"],
+      columnDef: {
+        cell: cellFunc<string>((v, c) => (
+          <PaddedCell>
+            <div class="flex gap-2 justify-between items-start">
+              <div class="flex flex-col overflow-clip">
+                <div>{DateTime.fromISO(v).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
+                <Show when={c.row.original.startDayminute as number | undefined}>
+                  {(strtDayMinute) => (
+                    <div>
+                      <MeetingTime
+                        startDayMinute={strtDayMinute()}
+                        durationMinutes={(c.row.original.durationMinutes as number) ?? 0}
+                      />
+                    </div>
+                  )}
+                </Show>
+              </div>
+              <DetailsButton
+                meetingId={c.row.original.id as string}
+                class="shrink-0 secondary small"
+                title={t("meetings.click_to_see_details")}
+              >
+                {t("meetings.show_details")}
+              </DetailsButton>
+            </div>
+          </PaddedCell>
+        )),
       },
     },
     // Attendance tables only:
@@ -128,9 +168,13 @@ export function useMeetingTableColumns() {
       name: "attendant.name",
       extraDataColumns: ["attendant.userId", "attendant.attendanceType"],
       columnDef: {
-        cell: (c) => {
-          const type = () => {
-            switch (c.row.original["attendant.attendanceType"]) {
+        cell: cellFunc<string>((v, c) => {
+          const type = (): FacilityUserType | undefined => {
+            const attendanceType = c.row.original["attendant.attendanceType"];
+            if (!attendanceType) {
+              return undefined;
+            }
+            switch (attendanceType) {
               case "staff":
                 return "staff";
               case "client":
@@ -141,41 +185,54 @@ export function useMeetingTableColumns() {
           };
           return (
             <PaddedCell>
-              <UserLink
-                type={type()}
-                userId={c.row.original["attendant.userId"] as string}
-                name={c.getValue<string>()}
-              />
+              <Show when={type()}>
+                {(type) => <UserLink type={type()} userId={c.row.original["attendant.userId"] as string} name={v} />}
+              </Show>
             </PaddedCell>
           );
-        },
+        }),
       },
     },
     attendanceStatus: {
       name: "attendant.attendanceStatusDictId",
       extraDataColumns: ["statusDictId"],
       columnDef: {
-        cell: (c) => (
+        cell: cellFunc<string>((v, ctx) => (
           <PaddedCell>
-            <MeetingAttendanceStatus
-              attendanceStatusId={c.getValue<string>()}
-              meetingStatusId={c.row.original.statusDictId as string}
-            />
+            <MeetingAttendanceStatus attendanceStatusId={v} meetingStatusId={ctx.row.original.statusDictId as string} />
           </PaddedCell>
-        ),
+        )),
         size: 200,
       },
     },
   } satisfies Partial<Record<string, PartialColumnConfig>>;
+  type KnownColumns = keyof typeof columns;
   return {
     columns,
-    get: (...cols: (keyof typeof columns | PartialColumnConfig)[]) =>
-      cols.map((c) => (typeof c === "string" ? columns[c] : c)),
+    get: (
+      ...cols: (KnownColumns | PartialColumnConfig | [KnownColumns, Partial<PartialColumnConfig>])[]
+    ): PartialColumnConfig[] =>
+      cols.map((c) => (typeof c === "string" ? columns[c] : Array.isArray(c) ? {...columns[c[0]], ...c[1]} : c)),
   };
 }
 
 const Scrollable: ParentComponent<htmlAttributes.div> = (props) => (
-  <PaddedCell {...htmlAttributes.merge(props, {class: "wrapTextAnywhere max-h-16 overflow-auto"})} />
+  <PaddedCell {...htmlAttributes.merge(props, {class: "overflow-auto"})}>
+    <div
+      class="wrapTextAnywhere max-h-20"
+      style={{
+        // Whatever this style means, it seems to work, i.e.:
+        // - when there is little text, the row is allowed to shrink,
+        // - when there is more text, the row grows to accommodate it,
+        // - when there is a lot of text, the cell gets a scrollbar and the row doesn't grow,
+        // - when the row is already higher because of other cells, the scrolling area grows to fit
+        //   (possibly to the point when it no longer scrolls).
+        "min-height": "max-content",
+      }}
+    >
+      {props.children}
+    </div>
+  </PaddedCell>
 );
 
 interface UserLinksProps {
