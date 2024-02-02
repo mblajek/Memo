@@ -43,6 +43,7 @@ tables:
     summary__many: "{{count, number}} spotkań"
     columnNames:
       startDayminute: "godzina"
+      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
       staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
       clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"

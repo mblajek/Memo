@@ -82,10 +82,29 @@ export function useMeetingTableColumns() {
         )),
       },
     },
+    attendants: {
+      name: "attendants",
+      columnDef: {
+        cell: cellFunc<TQMeetingAttendantResource[]>((v) => (
+          <Scrollable class="flex flex-col gap-1">
+            <UserLinks type="staff" users={v.filter((u) => u.attendanceType === "staff")} />
+            <UserLinks type="clients" users={v.filter((u) => u.attendanceType === "client")} />
+          </Scrollable>
+        )),
+      },
+    },
+    attendantsAttendance: {
+      name: "attendants.*.attendanceStatusDictId",
+      initialVisible: false,
+    },
     staff: {
       name: "staff",
       columnDef: {
-        cell: cellFunc<TQMeetingAttendantResource[]>((v) => <UserLinksCell type="staff" users={v} />),
+        cell: cellFunc<TQMeetingAttendantResource[]>((v) => (
+          <Scrollable>
+            <UserLinks type="staff" users={v} />
+          </Scrollable>
+        )),
       },
     },
     staffAttendance: {
@@ -95,7 +114,11 @@ export function useMeetingTableColumns() {
     clients: {
       name: "clients",
       columnDef: {
-        cell: cellFunc<TQMeetingAttendantResource[]>((v) => <UserLinksCell type="clients" users={v} />),
+        cell: cellFunc<TQMeetingAttendantResource[]>((v) => (
+          <Scrollable>
+            <UserLinks type="clients" users={v} />
+          </Scrollable>
+        )),
       },
     },
     clientsAttendance: {
@@ -217,18 +240,20 @@ export function useMeetingTableColumns() {
 }
 
 const Scrollable: ParentComponent<htmlAttributes.div> = (props) => (
-  <PaddedCell {...htmlAttributes.merge(props, {class: "overflow-auto"})}>
+  <PaddedCell class="overflow-auto">
     <div
-      class="wrapTextAnywhere max-h-20"
-      style={{
-        // Whatever this style means, it seems to work, i.e.:
-        // - when there is little text, the row is allowed to shrink,
-        // - when there is more text, the row grows to accommodate it,
-        // - when there is a lot of text, the cell gets a scrollbar and the row doesn't grow,
-        // - when the row is already higher because of other cells, the scrolling area grows to fit
-        //   (possibly to the point when it no longer scrolls).
-        "min-height": "max-content",
-      }}
+      {...htmlAttributes.merge(props, {
+        class: "wrapTextAnywhere max-h-20",
+        style: {
+          // Whatever this style means, it seems to work, i.e.:
+          // - when there is little text, the row is allowed to shrink,
+          // - when there is more text, the row grows to accommodate it,
+          // - when there is a lot of text, the cell gets a scrollbar and the row doesn't grow,
+          // - when the row is already higher because of other cells, the scrolling area grows to fit
+          //   (possibly to the point when it no longer scrolls).
+          "min-height": "max-content",
+        },
+      })}
     >
       {props.children}
     </div>
@@ -240,25 +265,23 @@ interface UserLinksProps {
   readonly users: readonly TQMeetingAttendantResource[];
 }
 
-const UserLinksCell: VoidComponent<UserLinksProps> = (props) => {
+const UserLinks: VoidComponent<UserLinksProps> = (props) => {
   const {attendanceStatusDict} = useFixedDictionaries();
   return (
-    <Scrollable>
-      <ul>
-        <For each={props.users}>
-          {({userId, name, attendanceStatusDictId}) => (
-            <li>
-              <UserLink type={props.type} icon userId={userId} name={name} />
-              <Show when={attendanceStatusDictId !== attendanceStatusDict()?.ok.id}>
-                {" "}
-                <span class="text-grey-text">
-                  {EM_DASH} <MeetingAttendanceStatus attendanceStatusId={attendanceStatusDictId} />
-                </span>
-              </Show>
-            </li>
-          )}
-        </For>
-      </ul>
-    </Scrollable>
+    <ul>
+      <For each={props.users}>
+        {({userId, name, attendanceStatusDictId}) => (
+          <li>
+            <UserLink type={props.type} icon userId={userId} name={name} />
+            <Show when={attendanceStatusDictId !== attendanceStatusDict()?.ok.id}>
+              {" "}
+              <span class="text-grey-text">
+                {EM_DASH} <MeetingAttendanceStatus attendanceStatusId={attendanceStatusDictId} />
+              </span>
+            </Show>
+          </li>
+        )}
+      </For>
+    </ul>
   );
 };

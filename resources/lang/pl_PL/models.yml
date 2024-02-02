@@ -84,6 +84,7 @@ meeting:
   categoryDictId: "kategoria"
   typeDictId: "typ"
   statusDictId: "$t(dictionary.meetingStatus._name)"
+  attendants: "uczestnicy"
   staff: "$t(models.staff._name_plural)"
   clients: "$t(models.client._name_plural)"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"

@@ -23,6 +23,8 @@ export default (() => {
         "category",
         "type",
         "statusTags",
+        ["attendants", {initialVisible: false}],
+        "attendantsAttendance",
         "staff",
         "staffAttendance",
         "clients",
