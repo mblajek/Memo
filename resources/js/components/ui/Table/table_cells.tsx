@@ -66,7 +66,7 @@ export function useTableCells() {
     dictList: <T,>() =>
       cellFunc<readonly string[], T>((v) => (
         <PaddedCell>
-          <Index each={v}>
+          <Index each={v} fallback={EMPTY_VALUE_SYMBOL}>
             {(id, index) => (
               <>
                 <Show when={index}>

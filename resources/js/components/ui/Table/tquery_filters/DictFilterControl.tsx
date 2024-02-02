@@ -72,7 +72,7 @@ export const DictFilterControl: VoidComponent<Props> = (props) => {
     return items;
   });
   return (
-    <div style={{"min-width": "160px"}}>
+    <div class="min-w-24">
       <Select
         name={filterFieldNames.get(`val_${props.name}`)}
         items={items()}

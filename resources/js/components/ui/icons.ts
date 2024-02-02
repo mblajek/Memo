@@ -11,6 +11,7 @@ import {
   BsPersonGear,
 } from "solid-icons/bs";
 import {FiEdit2} from "solid-icons/fi";
+import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 
 // A set of reusable icons for some of the repeatable entities.
@@ -43,4 +44,5 @@ export const FACILITY_ICONS = {
 export const ACTION_ICONS = {
   edit: FiEdit2,
   delete: AiOutlineDelete,
+  details: ImCircleRight,
 };

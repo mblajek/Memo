@@ -47,12 +47,11 @@ tables:
     summary__many: "{{count, number}} spotkań"
     columnNames:
       startDayminute: "godzina"
-      staff.*.attendanceStatusDictId: "uczestnictwo pracowników"
-      clients.*.attendanceStatusDictId: "uczestnictwo klientów"
+      staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
+      clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
       attendant.name: "uczestnik"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
-      statusTags: "tagi statusu"
 
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"

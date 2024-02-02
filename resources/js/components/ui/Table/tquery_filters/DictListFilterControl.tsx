@@ -38,7 +38,7 @@ export const DictListFilterControl: VoidComponent<Props> = (props) => {
   }
   createComputed(() => props.setFilter(buildFilter()));
   return (
-    <div class="flex flex-col items-stretch gap-0.5" style={{"min-width": "160px"}}>
+    <div class="min-w-24 flex flex-col items-stretch gap-0.5">
       <SegmentedControl
         name={filterFieldNames.get(`mode_${props.name}`)}
         items={MODES.map((m) => ({

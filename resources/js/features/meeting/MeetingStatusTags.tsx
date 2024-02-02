@@ -31,42 +31,39 @@ export const MeetingStatusTags: VoidComponent<MeetingStatusTagsProps> = (props) 
   const tags = () => {
     // This logic is subject to change based on feedback.
     const tags: JSX.Element[] = [];
-    if (props.meeting.statusDictId === meetingStatusDict()?.completed.id) {
-      tags.push(<CompletedTag />);
-    }
-    if (anyHasStatus(props.meeting.clients, "no_show")) {
-      tags.push(<ClientNoShowTag />);
-    }
-    if (anyHasStatus(props.meeting.clients, "too_late")) {
-      tags.push(<ClientTooLateTag />);
-    }
-    if (anyHasStatus(props.meeting.staff, "cancelled")) {
-      tags.push(<CancelledByStaffTag />);
-    }
-    if (anyHasStatus(props.meeting.clients, "cancelled")) {
-      tags.push(<CancelledByClientTag />);
-    }
-    if (props.meeting.statusDictId === meetingStatusDict()?.cancelled.id) {
-      tags.push(<CancelledTag />);
-    }
-    if (anyHasStatus(props.meeting.clients, "late_present")) {
-      tags.push(<ClientLatePresentTag />);
+    if (props.meeting.statusDictId === meetingStatusDict()?.planned.id) {
+      if (props.showPlannedTag) {
+        tags.push(<PlannedTag />);
+      }
+    } else {
+      if (props.meeting.statusDictId === meetingStatusDict()?.completed.id) {
+        tags.push(<CompletedTag />);
+      }
+      if (anyHasStatus(props.meeting.clients, "no_show")) {
+        tags.push(<ClientNoShowTag />);
+      }
+      if (anyHasStatus(props.meeting.clients, "too_late")) {
+        tags.push(<ClientTooLateTag />);
+      }
+      if (anyHasStatus(props.meeting.staff, "cancelled")) {
+        tags.push(<CancelledByStaffTag />);
+      }
+      if (anyHasStatus(props.meeting.clients, "cancelled")) {
+        tags.push(<CancelledByClientTag />);
+      }
+      if (props.meeting.statusDictId === meetingStatusDict()?.cancelled.id) {
+        tags.push(<CancelledTag />);
+      }
+      if (anyHasStatus(props.meeting.clients, "late_present")) {
+        tags.push(<ClientLatePresentTag />);
+      }
     }
     if (props.meeting.isRemote) {
       tags.push(<RemoteTag />);
     }
     return tags;
   };
-  return (
-    <Switch>
-      <Match when={props.meeting.statusDictId !== meetingStatusDict()?.planned.id}>
-        <TagsLine>{tags()}</TagsLine>
-      </Match>
-      <Match when={props.showPlannedTag}>
-        <PlannedTag />
-      </Match>
-    </Switch>
-  );
+  return <TagsLine>{tags()}</TagsLine>;
 };
 
 interface SimpleMeetingStatusTagProps {
@@ -106,6 +103,6 @@ export function useStatusTags() {
     ClientNoShowTag: () => <Tag color="#200000">{t("meetings.tags.client_no_show")}</Tag>,
     ClientTooLateTag: () => <Tag color="#400000">{t("meetings.tags.client_too_late")}</Tag>,
     ClientLatePresentTag: () => <Tag color="#005869">{t("meetings.tags.client_late_present")}</Tag>,
-    RemoteTag: () => <Tag color="#705faf">{t("models.meeting.isRemote")}</Tag>,
+    RemoteTag: () => <Tag color="#4d2dcb">{t("models.meeting.isRemote")}</Tag>,
   } satisfies Partial<Record<string, VoidComponent>>;
 }
