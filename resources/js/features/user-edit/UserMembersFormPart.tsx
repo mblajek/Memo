@@ -13,7 +13,7 @@ import {
   useTableCells,
 } from "components/ui/Table";
 import {Select} from "components/ui/form/Select";
-import {USER_ICONS} from "components/ui/icons";
+import {FACILITY_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
@@ -106,6 +106,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
               <Select
                 name="__addedFacility"
                 label=""
+                placeholder={t("actions.add")}
                 aria-label={t("models.userFacilityMember.facility")}
                 items={[...freeFacilities().map(({id, name}) => ({value: id, text: name}))]}
                 onFilterChange="internal"
@@ -155,7 +156,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                   form.setFields(membersPath, form.data(membersPath).toSpliced(index, 1));
                 }}
               >
-                <USER_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
+                <FACILITY_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
               </Button>
             </Show>
           </PaddedCell>
