@@ -1,3 +1,4 @@
+import {Api} from "../types";
 import {CreatedUpdatedResource} from "./resource";
 
 /**
@@ -16,6 +17,7 @@ export interface MeetingResource extends CreatedUpdatedResource {
   readonly durationMinutes: number;
   readonly statusDictId: string;
   readonly isRemote: boolean;
+  readonly attendants: readonly MeetingAttendantResource[];
   readonly staff: readonly MeetingAttendantResource[];
   readonly clients: readonly MeetingAttendantResource[];
   readonly resources: readonly MeetingResourceResource[];
@@ -36,17 +38,20 @@ export type MeetingResourceForCreate = Pick<
   MeetingResource,
   | "typeDictId"
   | "notes"
-  // See below for why these are not included.
+  // The date and time part is actually required by the API, but has no default values,
+  // so making it optional is necessary to construct a create form.
   // | "date"
   // | "startDayminute"
   // | "durationMinutes"
   | "statusDictId"
   | "isRemote"
-  | "staff"
-  | "clients"
   | "resources"
   | "fromMeetingId"
-> &
-  // This part is actually required by the API, but has no default values, so making it optional
-  // is necessary to construct a create form.
-  Partial<Pick<MeetingResource, "date" | "startDayminute" | "durationMinutes">>;
+> & {
+  readonly staff: readonly MeetingAttendantResourceForCreate[];
+  readonly clients: readonly MeetingAttendantResourceForCreate[];
+} & Partial<Pick<MeetingResource, "date" | "startDayminute" | "durationMinutes">>;
+
+export type MeetingAttendantResourceForCreate = Pick<MeetingAttendantResource, "userId" | "attendanceStatusDictId">;
+
+export type MeetingResourceForPatch = Api.Entity & MeetingResourceForCreate;
