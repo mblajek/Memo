@@ -21,6 +21,7 @@ export namespace System {
       queryKey: keys.facilityList(),
       // Prevent refetching on every page.
       staleTime: 10 * 60 * 1000,
+      refetchOnMount: false,
     }) satisfies SolidQueryOptions;
 
   const getDictionariesList = (config?: Api.Config) =>
@@ -31,6 +32,7 @@ export namespace System {
       queryKey: keys.dictionary(),
       // The dictionaries normally don't change.
       staleTime: 3600 * 1000,
+      refetchOnMount: false,
     }) satisfies SolidQueryOptions;
 
   const getAttributesList = (config?: Api.Config) =>
@@ -41,6 +43,7 @@ export namespace System {
       queryKey: keys.attribute(),
       // The attributes normally don't change.
       staleTime: 3600 * 1000,
+      refetchOnMount: false,
     }) satisfies SolidQueryOptions;
 
   const getStatus = (config?: Api.Config) =>
