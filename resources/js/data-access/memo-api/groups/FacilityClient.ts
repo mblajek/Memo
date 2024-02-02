@@ -11,6 +11,11 @@ import {Users} from "./shared";
  * @see {@link http://localhost:9081/api/documentation#/Facility%20client local docs}
  */
 export namespace FacilityClient {
+  export const createClient = (client: Api.Request.Create<ClientResource>, config?: Api.Config) =>
+    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/user/client`, client, config);
+  export const updateClient = (client: Api.Request.Patch<ClientResource>, config?: Api.Config) =>
+    V1.patch(`/facility/${activeFacilityId()}/user/client/${client.id}`, client, config);
+
   const getClientsListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<ClientResource>>(`/facility/${activeFacilityId()}/user/client/list`, {
       ...config,
