@@ -37,7 +37,7 @@ export const LoaderInPortal: VoidComponent = () => {
           style={{transition: "opacity 300ms ease"}}
         >
           <div class="animate-pulse">
-            <MemoIcon height={300} />
+            <MemoIcon height={300} class="dark:brightness-150" />
           </div>
         </div>
       </Portal>

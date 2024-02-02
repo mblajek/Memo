@@ -6,6 +6,15 @@
 
 // Colour Contrast Checker: https://colourcontrast.cc/
 
+html {
+  @apply bg-white;
+
+  transition: filter 500ms;
+  &.dark {
+    filter: hue-rotate(0.5turn) invert(0.9);
+  }
+}
+
 @layer base {
   // A darker version of the memo-active color, giving enough contrast on a white background, according to the WCAG tests.
   $memo-active-contrasted: color-mix(

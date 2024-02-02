@@ -11,11 +11,13 @@ import {HiOutlineCheckCircle, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
 import {Index, Match, Show, Switch, VoidComponent} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
+import {ThemeIcon, useThemeControl} from "../theme_control";
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
   const statusQuery = createQuery(User.statusQueryOptions);
   const passwordChangeModal = createPasswordChangeModal();
+  const {toggleTheme} = useThemeControl();
 
   const invalidate = useInvalidator();
   const logout = createMutation(() => ({
@@ -68,6 +70,14 @@ export const UserInfo: VoidComponent = () => {
               <SimpleMenu
                 items={[
                   {label: t("actions.change_password"), onClick: () => passwordChangeModal.show()},
+                  {
+                    label: (
+                      <>
+                        {t("switch_theme")} <ThemeIcon class="inlineIcon" />
+                      </>
+                    ),
+                    onClick: toggleTheme,
+                  },
                   {label: t("actions.log_out"), onClick: () => logout.mutate()},
                 ]}
               />

@@ -51,4 +51,5 @@ export default {
       roboto: "Roboto",
     },
   },
+  darkMode: "class",
 } satisfies Config;
