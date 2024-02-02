@@ -132,8 +132,8 @@ class SystemController extends ApiController
                 new OA\Property(property: 'data', type: 'array', items: new OA\Items(properties: [
                     new OA\Property(property: 'randomUuid', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'currentDate', type: 'datetime'),
-                    new OA\Property(property: 'commitHash', type: 'string'),
-                    new OA\Property(property: 'commitDate', type: 'datetime'),
+                    new OA\Property(property: 'commitHash', type: 'string', nullable: true),
+                    new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
                     new OA\Property(property: 'backendHash', type: 'string'),
                     new OA\Property(property: 'frontendHash', type: 'string'),
                 ])),

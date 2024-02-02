@@ -4,7 +4,7 @@ import {Admin} from "data-access/memo-api/groups/Admin";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {UserForm, UserFormInput, UserFormOutput} from "./UserForm";
+import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
 
 interface Props {
@@ -21,7 +21,7 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
   }));
   const membersUpdater = useMembersUpdater();
 
-  async function updateUser(values: UserFormOutput) {
+  async function updateUser(values: UserFormType) {
     // First create the user fields (without the members).
     const {data} = await userMutation.mutateAsync({
       name: values.name,
@@ -69,7 +69,7 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
       // that it should be an array.
       members: [],
       hasGlobalAdmin: false,
-    }) satisfies UserFormInput;
+    }) satisfies UserFormType;
 
   return <UserForm id="user_create" initialValues={initialValues()} onSubmit={updateUser} onCancel={props.onCancel} />;
 };

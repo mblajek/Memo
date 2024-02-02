@@ -7,7 +7,7 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {UserForm, UserFormInput, UserFormOutput} from "./UserForm";
+import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
 
 interface FormParams {
@@ -31,7 +31,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
   }));
   const membersUpdater = useMembersUpdater();
 
-  async function updateUser(values: UserFormOutput, ctx: SubmitContext<UserFormOutput>) {
+  async function updateUser(values: UserFormType, ctx: SubmitContext<UserFormType>) {
     const oldUser = user()!;
     if (oldUser.id === statusQuery.data?.user.id) {
       let err = false;
@@ -95,18 +95,21 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
   }
 
   const initialValues = () => {
-    const u = user();
-    return u
-      ? ({
-          name: u.name,
-          email: u.email || "",
-          hasEmailVerified: u.hasEmailVerified,
-          hasPassword: u.hasPassword,
-          password: "",
-          members: u.members.map(({facilityId, hasFacilityAdmin}) => ({facilityId, hasFacilityAdmin})),
-          hasGlobalAdmin: u.hasGlobalAdmin,
-        } satisfies UserFormInput)
-      : {};
+    const u = user()!;
+    return {
+      name: u.name,
+      email: u.email || "",
+      hasEmailVerified: u.hasEmailVerified,
+      hasPassword: u.hasPassword,
+      password: "",
+      members: u.members.map(({facilityId, hasFacilityAdmin, isFacilityStaff, isFacilityClient}) => ({
+        facilityId,
+        hasFacilityAdmin,
+        isFacilityStaff,
+        isFacilityClient,
+      })),
+      hasGlobalAdmin: u.hasGlobalAdmin,
+    } satisfies UserFormType;
   };
 
   return (

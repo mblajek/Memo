@@ -219,7 +219,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                                 class={s.cell}
                                 onWheel={(e) => {
                                   const scrWrapper = scrollingWrapper();
-                                  if (scrWrapper && e.deltaY) {
+                                  if (scrWrapper && !e.shiftKey && e.deltaY) {
                                     setDesiredScrollX((l = scrWrapper.scrollLeft) =>
                                       Math.min(
                                         Math.max(l + e.deltaY, 0),
@@ -242,13 +242,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                     <Dynamic
                       component={{For, Index}[props.rowsIteration]}
                       each={props.table.getRowModel().rows}
-                      fallback={
-                        <div class={s.wideRow}>
-                          <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
-                            <BigSpinner />
-                          </Show>
-                        </div>
-                      }
+                      fallback={<div class={s.wideRow}>{EMPTY_VALUE_SYMBOL}</div>}
                     >
                       {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
                         const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
