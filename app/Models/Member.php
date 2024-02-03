@@ -8,7 +8,6 @@ use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Validation\Rule;
 
 /**
  * @property string user_id
