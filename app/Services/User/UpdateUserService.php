@@ -54,10 +54,6 @@ readonly class UpdateUserService
             $userAttributes['global_admin_grant_id'] = $grant?->id;
         }
 
-        if (array_key_exists('password', $userAttributes) && $userAttributes['password'] !== null) {
-            $userAttributes['password'] = Hash::make($userAttributes['password']);
-        }
-
         $user->update($userAttributes);
     }
 
@@ -72,6 +68,10 @@ readonly class UpdateUserService
         // We should probably create separate classes for API objects and DB objects what would
         // contain this logic and the logic of the `update` method above.
         // Another option: move the logic to the AdminUserResource class.
+        if (array_key_exists('password', $requestData)) {
+            $patchedAttributes['password'] = ($requestData['password'] !== null)
+                ? Hash::make($requestData['password']) : null;
+        }
         $patchedAttributes['has_password'] = $patchedAttributes['password'] !== null;
         if (!isset($requestData['has_email_verified'])) {
             $patchedAttributes['has_email_verified'] = $patchedAttributes['email_verified_at'] !== null;

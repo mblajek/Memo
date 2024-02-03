@@ -53,7 +53,7 @@ class AdminMemberController extends ApiController
                 'user_id' => [
                     ...Valid::uuid(),
                     Rule::unique('members')->where(fn($query) => //
-                    $query->where('user_id', $request['user_id'])->where('facility_id', $request['facility_id']))
+                    $query->where('user_id', $request['user_id'])->where('facility_id', $request['facility_id'])),
                 ],
             ] + Member::getInsertValidator(
                 ['facility_id', 'has_facility_admin', 'is_facility_client', 'is_facility_staff']
@@ -86,7 +86,7 @@ class AdminMemberController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )
+            ),
         ],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),
@@ -117,7 +117,7 @@ class AdminMemberController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )
+            ),
         ],
         responses: [
             new OA\Response(response: 200, description: 'Deleted'),
