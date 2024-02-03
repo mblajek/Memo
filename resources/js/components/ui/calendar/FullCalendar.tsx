@@ -47,10 +47,11 @@ import {AllDayArea} from "./calendar-columns/AllDayArea";
 import {DayHeader} from "./calendar-columns/DayHeader";
 import {HoursArea} from "./calendar-columns/HoursArea";
 import {ResourceHeader} from "./calendar-columns/ResourceHeader";
+import {HoursAreaBlock} from "./calendar-columns/blocks";
 import {MeetingEventBlock} from "./calendar-columns/events";
 import {getRandomEventColors} from "./colors";
 import {DaysRange} from "./days_range";
-import {PartDayTimeSpan} from "./types";
+import {Block, PartDayTimeSpan} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
 export const MODES = ["month", "week", "day"] as const;
@@ -525,6 +526,17 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [hoveredMeetingId, setHoveredMeetingId] = createSignal<string>();
 
   function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
+    const fakeWorkingHours: Block[] = weekDayCalculator().isWeekend(day)
+      ? []
+      : [
+          {
+            allDay: false,
+            date: day,
+            startDayMinute: 9 * 60,
+            durationMinutes: 8 * 60,
+            content: () => <HoursAreaBlock class="bg-white" />,
+          },
+        ];
     const selectedEvents = () =>
       staffId
         ? events()
@@ -557,8 +569,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       allDayArea: () => <AllDayArea day={day} blocks={[]} events={[]} />,
       hoursArea: () => (
         <HoursArea
+          class="bg-[rgb(236,237,241)]"
           day={day}
-          blocks={[]}
+          blocks={fakeWorkingHours}
           events={selectedEvents()}
           onTimeClick={(t) =>
             meetingCreateModal.show({
@@ -583,6 +596,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return [];
       case "week": {
         const staff = selectedResourceRadio();
+        // eslint-disable-next-line solid/reactivity
         return Array.from(daysSelection(), (day) => ({
           header: () => <DayHeader day={day} />,
           ...getCalendarColumnPart(day, staff),
