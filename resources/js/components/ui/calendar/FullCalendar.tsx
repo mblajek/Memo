@@ -144,7 +144,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <div class="w-full flex justify-between gap-1 select-none">
               <span>{staff.name}</span>
               <span
-                class="self-center border rounded"
+                class="shrink-0 self-center border rounded"
                 style={{
                   width: "14px",
                   height: "14px",
