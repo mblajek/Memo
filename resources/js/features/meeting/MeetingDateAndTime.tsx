@@ -5,7 +5,7 @@ import {EN_DASH} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {DayMinuteRange, dayMinuteToTimeInput, timeInputToDayMinute} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
-import {For, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
 
@@ -27,6 +27,11 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const form = useMeetingTimeForm();
   const [isForceEditable, setForceEditable] = createSignal(false);
+  createComputed(() => {
+    if (!props.viewMode) {
+      setForceEditable(false);
+    }
+  });
   const {
     durationMinutes: [durationMinutes, setDurationMinutes],
     defaultDurationMinutes,
@@ -113,7 +118,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
           </div>
         </div>
         <Show when={!showEditable()}>
-          <div class="flex gap-2 items-baseline justify-between">
+          <div class="flex gap-2 items-baseline">
             <DateAndTimeInfo
               date={DateTime.fromISO(form.data("date"))}
               startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}

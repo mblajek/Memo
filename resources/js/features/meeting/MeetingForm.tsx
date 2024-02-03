@@ -96,15 +96,13 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
       >
         {(form) => (
           <>
-            <div class="flex gap-x-2 justify-between flex-wrap-reverse">
-              <div class="flex-grow">
-                <MeetingDateAndTime
-                  // Does not work very well on Chrome currently.
-                  // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
-                  viewMode={props.viewMode}
-                />
-              </div>
-              <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="flex-grow" data={meeting()} />}</Show>
+            <div class="flex flex-col">
+              <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="-mb-4" data={meeting()} />}</Show>
+              <MeetingDateAndTime
+                // Does not work very well on Chrome currently.
+                // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
+                viewMode={props.viewMode}
+              />
             </div>
             <div class="flex gap-1">
               <div class="basis-0 grow">
