@@ -68,7 +68,7 @@ class Meeting extends Model
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingType),
             'date' => Valid::date(),
             'notes' => Valid::trimmed(sometimes: true, nullable: true, max: 4000),
-            'start_dayminute' => Valid::int(['min:' . (4 * 60), 'max:' . (24 * 60)]),
+            'start_dayminute' => Valid::int(['min:' . (0), 'max:' . (24 * 60 - 1)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
             'is_remote' => Valid::bool(),
