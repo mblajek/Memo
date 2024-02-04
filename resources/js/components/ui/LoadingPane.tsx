@@ -1,4 +1,5 @@
-import {Show, VoidComponent} from "solid-js";
+import {VoidComponent} from "solid-js";
+import {cx} from "../utils";
 import {BigSpinner} from "./Spinner";
 
 interface Props {
@@ -11,10 +12,13 @@ interface Props {
  */
 export const LoadingPane: VoidComponent<Props> = (props) => {
   return (
-    <Show when={props.isLoading ?? true}>
-      <div class="absolute inset-0 z-50 flex items-center justify-center bg-white opacity-70 pointer-events-none">
-        <BigSpinner />
-      </div>
-    </Show>
+    <div
+      class={cx("absolute inset-0 z-50 flex items-center justify-center bg-white pointer-events-none opacity-0", {
+        "opacity-70": props.isLoading,
+      })}
+      style={{transition: "opacity 0.4s"}}
+    >
+      <BigSpinner />
+    </div>
   );
 };

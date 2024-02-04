@@ -49,17 +49,19 @@ export const FacilityControl: VoidComponent = () => {
               nullable={false}
               value={activeFacilityId()}
               onValueChange={(facilityId) => {
-                if (facilityId !== activeFacilityId()) {
-                  setActiveFacilityId(facilityId);
-                  const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
-                  if (url) {
-                    // Facility pages might assume that the active facility id never changes, because changing the facility
-                    // always recreates the whole page by performing this navigation.
-                    navigate(`/${url}`);
+                if (facilityId) {
+                  if (facilityId !== activeFacilityId()) {
+                    setActiveFacilityId(facilityId);
+                    const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
+                    if (url) {
+                      // Facility pages might assume that the active facility id never changes, because changing the facility
+                      // always recreates the whole page by performing this navigation.
+                      navigate(`/${url}`);
+                    }
                   }
+                  if (facilityId !== statusQuery.data!.user.lastLoginFacilityId)
+                    User.setLastLoginFacilityId(facilityId).then(() => invalidate.userStatusAndFacilityPermissions());
                 }
-                if (facilityId !== statusQuery.data!.user.lastLoginFacilityId)
-                  User.setLastLoginFacilityId(facilityId!).then(() => invalidate.userStatusAndFacilityPermissions());
               }}
             />
           </Match>
