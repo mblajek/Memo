@@ -67,7 +67,8 @@ export namespace User {
     // Prevent displaying toast when user is not logged in - the login page will be displayed.
     meta: {quietHTTPStatuses: [401]},
     refetchOnMount: false,
-  };
+    refetchOnWindowFocus: true,
+  } satisfies Partial<SolidQueryOptions>;
 
   /** Query options for user status, without facility permissions. */
   export const statusQueryOptions = () =>
