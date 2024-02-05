@@ -144,8 +144,11 @@ class SystemController extends ApiController
     {
         try {
             [$commitHash, $commitDate] = file(App::storagePath('app/git-version.txt'), FILE_IGNORE_NEW_LINES);
+            $commitDateZulu = DateHelper::toZuluString(
+                DateTimeImmutable::createFromFormat('Y-m-d H:i:s P', $commitDate)->setTimezone(new DateTimeZone('UTC'))
+            );
         } catch (Throwable) {
-            [$commitHash, $commitDate] = [null, null];
+            [$commitHash, $commitDateZulu] = [null, null];
         }
         [$backendHash, $frontendHash] = Cache::get('codeHash', [null, null]);
         if (!$backendHash || !$frontendHash) {
@@ -157,10 +160,7 @@ class SystemController extends ApiController
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'commitHash' => $commitHash,
-                'commitDate' => $commitDate ? DateHelper::toZuluString(
-                    DateTimeImmutable::createFromFormat('Y-m-d H:i:s P', $commitDate)
-                        ->setTimezone(new DateTimeZone('UTC'))
-                ) : null,
+                'commitDate' => $commitDateZulu,
                 'backendHash' => $backendHash,
                 'frontendHash' => $frontendHash,
             ],
