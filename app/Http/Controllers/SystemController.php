@@ -157,10 +157,10 @@ class SystemController extends ApiController
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'commitHash' => $commitHash,
-                'commitDate' => DateHelper::toZuluString(
+                'commitDate' => $commitDate ? DateHelper::toZuluString(
                     DateTimeImmutable::createFromFormat('Y-m-d H:i:s P', $commitDate)
                         ->setTimezone(new DateTimeZone('UTC'))
-                ),
+                ) : null,
                 'backendHash' => $backendHash,
                 'frontendHash' => $frontendHash,
             ],
