@@ -1,6 +1,6 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "../config";
-import {StatusResource} from "../resources/StatusResource";
+import {SystemStatusResource} from "../resources/SystemStatusResource";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
 import {FacilityResource} from "../resources/facility.resource";
@@ -47,12 +47,14 @@ export namespace System {
     }) satisfies SolidQueryOptions;
 
   const getStatus = (config?: Api.Config) =>
-    V1.get<Api.Response.Get<StatusResource>>("/system/status", config).then(parseGetResponse);
+    V1.get<Api.Response.Get<SystemStatusResource>>("/system/status", config).then(parseGetResponse);
   export const statusQueryOptions = () =>
     ({
       queryFn: ({signal}) => getStatus({signal}),
       queryKey: keys.status(),
       staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchInterval: 60 * 1000,
     }) satisfies SolidQueryOptions;
 
   export const keys = {

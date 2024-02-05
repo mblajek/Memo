@@ -30,7 +30,7 @@
         "destructuredArrayIgnorePattern": "^_"
       }
     ],
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": ["warn", { "allow": ["info", "warn", "error"] }],
     "no-constant-condition": "warn",
     "no-debugger": "warn",
     "no-empty": "off",

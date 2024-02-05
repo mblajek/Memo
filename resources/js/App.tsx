@@ -1,9 +1,10 @@
-import {Navigate, Route, RouteProps, useParams} from "@solidjs/router";
+import {Navigate, Route, RouteProps, Router, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AccessBarrier} from "components/utils";
 import {System} from "data-access/memo-api/groups";
 import {DEV, ParentComponent, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {AppContextProvider} from "./app_context";
 import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
 import {DevRoutes} from "./dev-pages/DevRoutes";
 import NotFound from "./features/not-found/components/NotFound";
@@ -26,56 +27,58 @@ const StatusPage = lazy(() => import("features/root/pages/help/Status.page"));
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   return (
-    <>
-      <Route path="/" component={PageWithTheme}>
-        <LeafRoute routeKey="login" path="/login" component={LoginPage} />
-        <Route path="/" component={RootPage}>
-          <UnknownNotFound />
-          <Route path="/" component={() => <Navigate href="/help" />} />
-          <Show when={DEV}>
-            <DevRoutes />
-          </Show>
-          <Route path="/help">
+    <AppContextProvider>
+      <Router>
+        <Route path="/" component={PageWithTheme}>
+          <LeafRoute routeKey="login" path="/login" component={LoginPage} />
+          <Route path="/" component={RootPage}>
             <UnknownNotFound />
-            <LeafRoute routeKey="help" path="/" component={NotYetImplemented} />
-            <LeafRoute routeKey="help_pages.status" path="/status" component={StatusPage} />
+            <Route path="/" component={() => <Navigate href="/help" />} />
+            <Show when={DEV}>
+              <DevRoutes />
+            </Show>
+            <Route path="/help">
+              <UnknownNotFound />
+              <LeafRoute routeKey="help" path="/" component={NotYetImplemented} />
+              <LeafRoute routeKey="help_pages.status" path="/status" component={StatusPage} />
+            </Route>
+            <Route path="/admin" component={GlobalAdminPages}>
+              <UnknownNotFound />
+              <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
+              <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
+            </Route>
           </Route>
-          <Route path="/admin" component={GlobalAdminPages}>
+          <Route
+            path="/:facilityUrl"
+            matchFilters={{facilityUrl: facilitiesQuery.data?.map(({url}) => url) || []}}
+            component={RootPageWithFacility}
+          >
             <UnknownNotFound />
-            <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
-            <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
+            <Route path="/" component={() => <Navigate href="home" />} />
+            <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
+            <Route path="/" component={FacilityAdminOrStaffPages}>
+              <Route path="/calendar">
+                <LeafRoute routeKey="facility.calendar" path="/" component={CalendarPage} />
+                <LeafRoute routeKey="facility.meetings_list" path="/table" component={MeetingsListPage} />
+              </Route>
+              <Route path="/staff">
+                <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
+                <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
+              </Route>
+              <Route path="/clients">
+                <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
+                <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+              </Route>
+            </Route>
+            <Route path="/admin" component={FacilityAdminPages}>
+              <UnknownNotFound />
+              <LeafRoute routeKey="facility.facility_admin.reports" path="/reports" component={NotYetImplemented} />
+            </Route>
           </Route>
         </Route>
-        <Route
-          path="/:facilityUrl"
-          matchFilters={{facilityUrl: facilitiesQuery.data?.map(({url}) => url) || []}}
-          component={RootPageWithFacility}
-        >
-          <UnknownNotFound />
-          <Route path="/" component={() => <Navigate href="home" />} />
-          <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
-          <Route path="/" component={FacilityAdminOrStaffPages}>
-            <Route path="/calendar">
-              <LeafRoute routeKey="facility.calendar" path="/" component={CalendarPage} />
-              <LeafRoute routeKey="facility.meetings_list" path="/table" component={MeetingsListPage} />
-            </Route>
-            <Route path="/staff">
-              <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
-              <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
-            </Route>
-            <Route path="/clients">
-              <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
-              <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
-            </Route>
-          </Route>
-          <Route path="/admin" component={FacilityAdminPages}>
-            <UnknownNotFound />
-            <LeafRoute routeKey="facility.facility_admin.reports" path="/reports" component={NotYetImplemented} />
-          </Route>
-        </Route>
-      </Route>
-      <BackdoorRoutes />
-    </>
+        <BackdoorRoutes />
+      </Router>
+    </AppContextProvider>
   );
 };
 export default App;

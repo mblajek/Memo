@@ -3,6 +3,7 @@ import {createQuery} from "@tanstack/solid-query";
 import {MemoLoader} from "components/ui/MemoLoader";
 import {QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api/groups";
+import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {VoidComponent, createEffect, onMount} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {createLoginModal} from "../forms/login/login_modal";
@@ -16,11 +17,18 @@ import {createLoginModal} from "../forms/login/login_modal";
  */
 export default (() => {
   const statusQuery = createQuery(User.statusQueryOptions);
+  const systemStatusMonitor = useSystemStatusMonitor();
   onMount(() => setActiveFacilityId(undefined));
   const loginModal = createLoginModal();
   createEffect(() => {
     if (statusQuery.isError && !loginModal.getValue()) {
       loginModal.show();
+    }
+  });
+  createEffect(() => {
+    if (systemStatusMonitor.needsReload()) {
+      // If on the login screen, just reload without asking.
+      location.reload();
     }
   });
   return (
