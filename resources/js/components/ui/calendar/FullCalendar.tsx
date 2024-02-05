@@ -427,6 +427,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       daysRange: daysSelection,
       staff: () => [...selectedResources()],
     }),
+    dataQueryOptions: {refetchOnWindowFocus: true},
   });
   const meetingResources = meetingsFromQuery(meetingsDataQuery);
   const events = () =>
@@ -635,6 +636,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   });
 
+  // TODO: Don't show the loading pane when refetching in the background.
   const isCalendarLoading = () => !calendarColumns().length || meetingsDataQuery.isFetching;
 
   return (
