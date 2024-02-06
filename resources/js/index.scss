@@ -58,19 +58,8 @@ html {
 
   // Style of a grey, disabled-looking scrollbar.
   .disabledScrollBar {
-    $thumb-color: #bbb;
-    $track-color: #eee;
-    scrollbar-color: $thumb-color $track-color;
-    // scrollbar-color: red green;
-
-    &::-webkit-scrollbar-track {
-      background: $track-color;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: $thumb-color;
-      border-color: $track-color;
-    }
+    --sb-thumb-color: #bbb;
+    --sb-track-color: #eee;
   }
 
   input[type="checkbox"] {
