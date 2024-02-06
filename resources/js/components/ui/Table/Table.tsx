@@ -186,7 +186,8 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
         if (scrWrapper && !isScrolling) {
           // Use the most up-to-date value of desiredScrollX, not the debounced one.
           const desiredX = desiredScrollX();
-          if (desiredX !== undefined && desiredX !== scrWrapper.scrollLeft) {
+          // Use a tolerance when comparing. Some devices count position with fractional pixels.
+          if (desiredX !== undefined && Math.abs(desiredX - scrWrapper.scrollLeft) >= 2) {
             scrWrapper.scrollTo({left: desiredX, behavior: "smooth"});
           } else {
             setDesiredScrollX(undefined);
@@ -218,6 +219,11 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                               <div
                                 class={s.cell}
                                 onWheel={(e) => {
+                                  if (e.deltaX) {
+                                    // With 2d wheels (like a touchpad) avoid too much interference between the axes.
+                                    setDesiredScrollX(undefined);
+                                    return;
+                                  }
                                   const scrWrapper = scrollingWrapper();
                                   if (scrWrapper && !e.shiftKey && e.deltaY) {
                                     setDesiredScrollX((l = scrWrapper.scrollLeft) =>
