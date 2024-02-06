@@ -1,6 +1,6 @@
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import * as tabs from "@zag-js/tabs";
-import {For, JSX, VoidComponent, createMemo, createUniqueId} from "solid-js";
+import {Accessor, For, JSX, VoidComponent, createMemo, createUniqueId} from "solid-js";
 import {Button} from "./Button";
 import s from "./Tabs.module.scss";
 
@@ -12,7 +12,8 @@ interface Props {
 interface Tab {
   readonly id: string;
   readonly label: JSX.Element;
-  readonly contents: JSX.Element;
+  /** The contents of the tab. This function is called immediately and only once for every tab. */
+  readonly contents: (isActive: Accessor<boolean>) => JSX.Element;
 }
 
 export const Tabs: VoidComponent<Props> = (props) => {
@@ -35,7 +36,9 @@ export const Tabs: VoidComponent<Props> = (props) => {
           <div class={s.indicatorLine} />
         </div>
       </div>
-      <For each={props.tabs}>{(tab) => <div {...api().getContentProps({value: tab.id})}>{tab.contents}</div>}</For>
+      <For each={props.tabs}>
+        {(tab) => <div {...api().getContentProps({value: tab.id})}>{tab.contents(() => api().value === tab.id)}</div>}
+      </For>
     </div>
   );
 };

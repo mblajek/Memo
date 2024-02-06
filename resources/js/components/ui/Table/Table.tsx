@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {currentTime, cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
   Accessor,
@@ -113,6 +114,11 @@ interface Props<T = object> {
    * to the backend, Index might be a better choice.
    */
   readonly rowsIteration?: "For" | "Index";
+  /**
+   * Whether to use the `<NonBlocking>` component for rendering rows, which reduces page freezing.
+   * Default: false.
+   */
+  readonly nonBlocking?: boolean;
   /** The content to put above the table, e.g. the global search bar. It has access to the table context */
   readonly aboveTable?: () => JSX.Element;
   /** The content to put below the table, e.g. the pagination controller. It has access to the table context */
@@ -128,6 +134,7 @@ interface Props<T = object> {
 const DEFAULT_PROPS = {
   mode: "embedded",
   rowsIteration: "For",
+  nonBlocking: false,
   isLoading: false,
   isDimmed: false,
 } satisfies Partial<Props>;
@@ -253,15 +260,20 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                       {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
                         const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
                         return (
-                          <div class={s.dataRow} inert={props.isDimmed || undefined}>
-                            <Index each={row().getVisibleCells()}>
-                              {(cell) => (
-                                <span class={s.cell}>
-                                  <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
-                                </span>
-                              )}
-                            </Index>
-                          </div>
+                          <NonBlocking nonBlocking={props.nonBlocking}>
+                            <div class={s.dataRow} inert={props.isDimmed || undefined}>
+                              <Index each={row().getVisibleCells()}>
+                                {(cell) => (
+                                  <span class={s.cell}>
+                                    <CellRenderer
+                                      component={cell().column.columnDef.cell}
+                                      props={cell().getContext()}
+                                    />
+                                  </span>
+                                )}
+                              </Index>
+                            </div>
+                          </NonBlocking>
                         );
                       }}
                     </Dynamic>

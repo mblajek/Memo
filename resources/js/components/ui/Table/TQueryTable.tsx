@@ -84,6 +84,11 @@ export interface TQueryTableProps {
   /** A differentiator to be used when there are multiple tables on a page. */
   readonly staticTableId?: string;
   /**
+   * Whether to use the `<NonBlocking>` component for rendering rows, which reduces page freezing.
+   * Default: false.
+   */
+  readonly nonBlocking?: boolean;
+  /**
    * The filter that is always applied to the data, regardless of other filtering.
    * This is used to create e.g. a table of entities A on the details page of a particular
    * entity B, so only entities A related direclty to that particular entity B should be shown.
@@ -347,6 +352,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       table={table()!}
       mode={props.mode}
       rowsIteration="Index"
+      nonBlocking={props.nonBlocking}
       aboveTable={() => (
         <div class="min-h-small-input flex items-stretch gap-1">
           <TableSearch divClass="flex-grow" />

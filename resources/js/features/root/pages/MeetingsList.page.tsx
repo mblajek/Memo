@@ -14,6 +14,8 @@ export default (() => {
       staticEntityURL={`facility/${activeFacilityId()}/meeting`}
       staticTranslations={createTableTranslations("meeting")}
       staticPersistenceKey="facilityMeetings"
+      // This table has multiple heavy to render columns.
+      nonBlocking
       intrinsicSort={[{type: "column", column: "date", desc: true}]}
       columns={meetingTableColumns.get(
         "id",

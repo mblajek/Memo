@@ -8,7 +8,7 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {Sort} from "data-access/memo-api/tquery/types";
-import {Show, VoidComponent} from "solid-js";
+import {ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useMeetingTableColumns} from "../meeting/meeting_tables";
 
@@ -38,160 +38,166 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
             {
               id: "planned",
               label: <Capitalize text={t("facility_user.meetings_lists.planned")} />,
-              contents: (
-                <div class="text-sm">
-                  <TQueryTable
-                    mode="embedded"
-                    staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                    staticEntityURL={entityURL()}
-                    staticTranslations={tableTranslations}
-                    staticPersistenceKey={`${props.staticPersistenceKey}.planned`}
-                    staticTableId="planned"
-                    intrinsicFilter={{
-                      type: "op",
-                      op: "&",
-                      val: [
-                        props.intrinsicFilter,
-                        {
-                          type: "column",
-                          column: "statusDictId",
-                          op: "=",
-                          val: meetingStatusDict()!.planned.id,
-                        },
-                        {
-                          type: "column",
-                          column: "attendant.attendanceStatusDictId",
-                          op: "in",
-                          val: [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id],
-                        },
-                      ],
-                    }}
-                    intrinsicSort={sortByDate({desc: false})}
-                    columns={meetingTableColumns.get(
-                      "id",
-                      "dateTimeActions",
-                      ["time", {initialVisible: false}],
-                      ["duration", {initialVisible: false}],
-                      "category",
-                      "type",
-                      "statusTags",
-                      ["attendanceStatus", {initialVisible: false}],
-                      "attendants",
-                      "attendantsAttendance",
-                      ["staff", {initialVisible: false}],
-                      "staffAttendance",
-                      ["clients", {initialVisible: false}],
-                      "clientsAttendance",
-                      ["isRemote", {initialVisible: false}],
-                      "notes",
-                      "resources",
-                      "createdAt",
-                      "createdBy",
-                      "updatedAt",
-                    )}
-                    initialSort={[{id: "date", desc: false}]}
-                  />
-                </div>
+              contents: (active) => (
+                <ShowOnceShown when={active()}>
+                  <div class="text-sm">
+                    <TQueryTable
+                      mode="embedded"
+                      staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
+                      staticEntityURL={entityURL()}
+                      staticTranslations={tableTranslations}
+                      staticPersistenceKey={`${props.staticPersistenceKey}.planned`}
+                      staticTableId="planned"
+                      intrinsicFilter={{
+                        type: "op",
+                        op: "&",
+                        val: [
+                          props.intrinsicFilter,
+                          {
+                            type: "column",
+                            column: "statusDictId",
+                            op: "=",
+                            val: meetingStatusDict()!.planned.id,
+                          },
+                          {
+                            type: "column",
+                            column: "attendant.attendanceStatusDictId",
+                            op: "in",
+                            val: [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id],
+                          },
+                        ],
+                      }}
+                      intrinsicSort={sortByDate({desc: false})}
+                      columns={meetingTableColumns.get(
+                        "id",
+                        "dateTimeActions",
+                        ["time", {initialVisible: false}],
+                        ["duration", {initialVisible: false}],
+                        "category",
+                        "type",
+                        "statusTags",
+                        ["attendanceStatus", {initialVisible: false}],
+                        "attendants",
+                        "attendantsAttendance",
+                        ["staff", {initialVisible: false}],
+                        "staffAttendance",
+                        ["clients", {initialVisible: false}],
+                        "clientsAttendance",
+                        ["isRemote", {initialVisible: false}],
+                        "notes",
+                        "resources",
+                        "createdAt",
+                        "createdBy",
+                        "updatedAt",
+                      )}
+                      initialSort={[{id: "date", desc: false}]}
+                    />
+                  </div>
+                </ShowOnceShown>
               ),
             },
             {
               id: "completed",
               label: <Capitalize text={t("facility_user.meetings_lists.completed")} />,
-              contents: (
-                <div class="text-sm">
-                  <TQueryTable
-                    mode="embedded"
-                    staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                    staticEntityURL={entityURL()}
-                    staticTranslations={tableTranslations}
-                    staticPersistenceKey={`${props.staticPersistenceKey}.completed`}
-                    staticTableId="completed"
-                    intrinsicFilter={{
-                      type: "op",
-                      op: "&",
-                      val: [
-                        props.intrinsicFilter,
-                        {
-                          type: "column",
-                          column: "statusDictId",
-                          op: "=",
-                          val: meetingStatusDict()!.completed.id,
-                        },
-                        {
-                          type: "column",
-                          column: "attendant.attendanceStatusDictId",
-                          op: "in",
-                          val: [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id],
-                        },
-                      ],
-                    }}
-                    intrinsicSort={sortByDate({desc: true})}
-                    columns={meetingTableColumns.get(
-                      "id",
-                      "dateTimeActions",
-                      ["time", {initialVisible: false}],
-                      ["duration", {initialVisible: false}],
-                      "category",
-                      "type",
-                      "statusTags",
-                      ["attendanceStatus", {initialVisible: false}],
-                      "attendants",
-                      "attendantsAttendance",
-                      ["staff", {initialVisible: false}],
-                      "staffAttendance",
-                      ["clients", {initialVisible: false}],
-                      "clientsAttendance",
-                      ["isRemote", {initialVisible: false}],
-                      "notes",
-                      "resources",
-                      "createdAt",
-                      "createdBy",
-                      "updatedAt",
-                    )}
-                    initialSort={[{id: "date", desc: true}]}
-                  />
-                </div>
+              contents: (active) => (
+                <ShowOnceShown when={active()}>
+                  <div class="text-sm">
+                    <TQueryTable
+                      mode="embedded"
+                      staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
+                      staticEntityURL={entityURL()}
+                      staticTranslations={tableTranslations}
+                      staticPersistenceKey={`${props.staticPersistenceKey}.completed`}
+                      staticTableId="completed"
+                      intrinsicFilter={{
+                        type: "op",
+                        op: "&",
+                        val: [
+                          props.intrinsicFilter,
+                          {
+                            type: "column",
+                            column: "statusDictId",
+                            op: "=",
+                            val: meetingStatusDict()!.completed.id,
+                          },
+                          {
+                            type: "column",
+                            column: "attendant.attendanceStatusDictId",
+                            op: "in",
+                            val: [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id],
+                          },
+                        ],
+                      }}
+                      intrinsicSort={sortByDate({desc: true})}
+                      columns={meetingTableColumns.get(
+                        "id",
+                        "dateTimeActions",
+                        ["time", {initialVisible: false}],
+                        ["duration", {initialVisible: false}],
+                        "category",
+                        "type",
+                        "statusTags",
+                        ["attendanceStatus", {initialVisible: false}],
+                        "attendants",
+                        "attendantsAttendance",
+                        ["staff", {initialVisible: false}],
+                        "staffAttendance",
+                        ["clients", {initialVisible: false}],
+                        "clientsAttendance",
+                        ["isRemote", {initialVisible: false}],
+                        "notes",
+                        "resources",
+                        "createdAt",
+                        "createdBy",
+                        "updatedAt",
+                      )}
+                      initialSort={[{id: "date", desc: true}]}
+                    />
+                  </div>
+                </ShowOnceShown>
               ),
             },
             {
               id: "all",
               label: <Capitalize text={t("facility_user.meetings_lists.all")} />,
-              contents: (
-                <div class="text-sm">
-                  <TQueryTable
-                    mode="embedded"
-                    staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                    staticEntityURL={entityURL()}
-                    staticTranslations={tableTranslations}
-                    staticPersistenceKey={`${props.staticPersistenceKey}.all`}
-                    staticTableId="all"
-                    intrinsicFilter={props.intrinsicFilter}
-                    intrinsicSort={sortByDate({desc: true})}
-                    columns={meetingTableColumns.get(
-                      "id",
-                      "dateTimeActions",
-                      ["time", {initialVisible: false}],
-                      ["duration", {initialVisible: false}],
-                      "category",
-                      "type",
-                      "statusTags",
-                      "attendanceStatus",
-                      "attendants",
-                      "attendantsAttendance",
-                      ["staff", {initialVisible: false}],
-                      "staffAttendance",
-                      ["clients", {initialVisible: false}],
-                      "clientsAttendance",
-                      ["isRemote", {initialVisible: false}],
-                      "notes",
-                      "resources",
-                      "createdAt",
-                      "createdBy",
-                      "updatedAt",
-                    )}
-                    initialSort={[{id: "date", desc: true}]}
-                  />
-                </div>
+              contents: (active) => (
+                <ShowOnceShown when={active()}>
+                  <div class="text-sm">
+                    <TQueryTable
+                      mode="embedded"
+                      staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
+                      staticEntityURL={entityURL()}
+                      staticTranslations={tableTranslations}
+                      staticPersistenceKey={`${props.staticPersistenceKey}.all`}
+                      staticTableId="all"
+                      intrinsicFilter={props.intrinsicFilter}
+                      intrinsicSort={sortByDate({desc: true})}
+                      columns={meetingTableColumns.get(
+                        "id",
+                        "dateTimeActions",
+                        ["time", {initialVisible: false}],
+                        ["duration", {initialVisible: false}],
+                        "category",
+                        "type",
+                        "statusTags",
+                        "attendanceStatus",
+                        "attendants",
+                        "attendantsAttendance",
+                        ["staff", {initialVisible: false}],
+                        "staffAttendance",
+                        ["clients", {initialVisible: false}],
+                        "clientsAttendance",
+                        ["isRemote", {initialVisible: false}],
+                        "notes",
+                        "resources",
+                        "createdAt",
+                        "createdBy",
+                        "updatedAt",
+                      )}
+                      initialSort={[{id: "date", desc: true}]}
+                    />
+                  </div>
+                </ShowOnceShown>
               ),
             },
           ]}
@@ -199,4 +205,14 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
       </Show>
     </div>
   );
+};
+
+const ShowOnceShown: ParentComponent<{when: boolean}> = (props) => {
+  const [shown, setShown] = createSignal(false);
+  createComputed(() => {
+    if (props.when) {
+      setShown(true);
+    }
+  });
+  return <Show when={shown()}>{props.children}</Show>;
 };
