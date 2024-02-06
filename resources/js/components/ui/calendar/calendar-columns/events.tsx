@@ -140,7 +140,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           </Show>
           <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
           <MeetingStatusTags meeting={props.meeting} />
-          <RichTextView text={props.meeting.notes} />
+          <RichTextView class="max-h-20 overflow-y-clip" text={props.meeting.notes} />
           <Show when={props.meeting.resources.length}>
             <div>{t("parenthesised", {text: resources()})}</div>
           </Show>
@@ -151,9 +151,12 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           <div {...hoverApi().positionerProps} class="pointer-events-auto">
             <div {...hoverApi().contentProps} class="z-modal">
               <div
-                class={cx("max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm", {
-                  "opacity-0": !hovered(),
-                })}
+                class={cx(
+                  "max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm overflow-clip",
+                  {
+                    "opacity-0": !hovered(),
+                  },
+                )}
                 style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
                 onMouseEnter={() => hoverApi().close()}
               >
@@ -176,7 +179,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                 </Show>
                 <Show when={props.meeting.notes}>
                   <FieldDisp field="notes">
-                    <RichTextView text={props.meeting.notes} />
+                    <RichTextView class="max-h-60 disabledScrollBar" text={props.meeting.notes} />
                   </FieldDisp>
                 </Show>
                 <Show when={props.meeting.resources.length}>

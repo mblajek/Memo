@@ -145,7 +145,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                 <FieldBox name="notes">
                   <PlaceholderField name="notes" />
                   <Show when={form.data("notes")} fallback={EMPTY_VALUE_SYMBOL}>
-                    {(notes) => <RichTextView text={notes()} />}
+                    {(notes) => <RichTextView class="max-h-60" text={notes()} />}
                   </Show>
                 </FieldBox>
               }
