@@ -1,10 +1,10 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {Api} from "data-access/memo-api/types";
-import {lazy} from "solid-js";
 
-const UserEditForm = lazy(() => import("features/user-edit/UserEditForm"));
+const UserEditForm = lazyAutoPreload(() => import("features/user-edit/UserEditForm"));
 
 interface FormParams {
   readonly userId: Api.Id;

@@ -1,11 +1,11 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
-import {lazy} from "solid-js";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 
-const MeetingCreateForm = lazy(() => import("features/meeting/MeetingCreateForm"));
+const MeetingCreateForm = lazyAutoPreload(() => import("features/meeting/MeetingCreateForm"));
 
 interface FormParams {
   readonly initialValues?: Partial<MeetingFormType>;

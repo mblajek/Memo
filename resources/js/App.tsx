@@ -1,28 +1,29 @@
 import {Navigate, Route, RouteProps, Router, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
+import {AppContextProvider} from "app_context";
 import {AccessBarrier} from "components/utils";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {System} from "data-access/memo-api/groups";
-import {DEV, ParentComponent, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
+import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
+import {DevRoutes} from "dev-pages/DevRoutes";
+import NotFound from "features/not-found/components/NotFound";
+import NotYetImplemented from "features/not-found/components/NotYetImplemented";
+import {MemoTitle} from "features/root/MemoTitle";
+import {PageWithTheme} from "features/root/components/theme_control";
+import {DEV, ParentComponent, Show, VoidProps, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {AppContextProvider} from "./app_context";
-import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
-import {DevRoutes} from "./dev-pages/DevRoutes";
-import NotFound from "./features/not-found/components/NotFound";
-import NotYetImplemented from "./features/not-found/components/NotYetImplemented";
-import {MemoTitle} from "./features/root/MemoTitle";
-import {PageWithTheme} from "./features/root/components/theme_control";
 
-const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
-const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
-const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
-const ClientDetailsPage = lazy(() => import("features/root/pages/ClientDetails.page"));
-const ClientsListPage = lazy(() => import("features/root/pages/ClientsList.page"));
-const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
-const MeetingsListPage = lazy(() => import("features/root/pages/MeetingsList.page"));
-const RootPage = lazy(() => import("features/root/pages/Root.page"));
-const StaffDetailsPage = lazy(() => import("features/root/pages/StaffDetails.page"));
-const StaffListPage = lazy(() => import("features/root/pages/StaffList.page"));
-const StatusPage = lazy(() => import("features/root/pages/help/Status.page"));
+const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
+const AdminUsersListPage = lazyAutoPreload(() => import("features/root/pages/AdminUsersList.page"));
+const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.page"));
+const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
+const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
+const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
+const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
+const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
+const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
+const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
+const StatusPage = lazyAutoPreload(() => import("features/root/pages/help/Status.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);

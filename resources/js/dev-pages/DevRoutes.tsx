@@ -1,9 +1,10 @@
 import {Route} from "@solidjs/router";
-import {VoidComponent, lazy} from "solid-js";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
+import {VoidComponent} from "solid-js";
 
-const AttributesPage = lazy(() => import("dev-pages/AttributesPage"));
-const DictionariesPage = lazy(() => import("dev-pages/DictionariesPage"));
-const TestPage = lazy(() => import("dev-pages/TestPage"));
+const AttributesPage = lazyAutoPreload(() => import("dev-pages/AttributesPage"));
+const DictionariesPage = lazyAutoPreload(() => import("dev-pages/DictionariesPage"));
+const TestPage = lazyAutoPreload(() => import("dev-pages/TestPage"));
 
 export const DevRoutes: VoidComponent = () => (
   <Route path="/dev">
