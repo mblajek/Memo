@@ -140,7 +140,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
             </div>
             <CheckboxField name="isRemote" />
             <ByMode
-              edit={<MultilineTextField name="notes" {...TRIM_ON_BLUR} />}
+              edit={<MultilineTextField name="notes" {...TRIM_ON_BLUR} data-felte-keep-on-remove />}
               view={
                 <FieldBox name="notes">
                   <PlaceholderField name="notes" />
