@@ -67,20 +67,13 @@ export const UserInfo: VoidComponent = () => {
                 </Button>
               )}
             >
-              <SimpleMenu
-                items={[
-                  {label: t("actions.change_password"), onClick: () => passwordChangeModal.show()},
-                  {
-                    label: (
-                      <>
-                        {t("switch_theme")} <ThemeIcon class="inlineIcon" />
-                      </>
-                    ),
-                    onClick: toggleTheme,
-                  },
-                  {label: t("actions.log_out"), onClick: () => logout.mutate()},
-                ]}
-              />
+              <SimpleMenu>
+                <Button onClick={() => passwordChangeModal.show()}>{t("actions.change_password")}</Button>
+                <Button onClick={toggleTheme}>
+                  {t("switch_theme")} <ThemeIcon class="inlineIcon" />
+                </Button>
+                <Button onClick={() => logout.mutate()}>{t("actions.log_out")}</Button>
+              </SimpleMenu>
             </PopOver>
           </div>
         </div>

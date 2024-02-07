@@ -1,9 +1,10 @@
 import {useFormContext} from "components/felte-form/FelteForm";
+import {Button} from "components/ui/Button";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
-import {NON_NULLABLE, currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
+import {currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
@@ -62,63 +63,43 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         )}
       >
         {(popOver) => (
-          <SimpleMenu
-            items={[
-              form.data("staff").some(({userId}) => userId)
-                ? {
-                    label: (
-                      <div>
-                        <STAFF_ICONS.staff class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_staff")}
-                        <Show when={!shouldSubmitCancelImmediately("staff")}>{t("ellipsis")}</Show>
-                      </div>
-                    ),
-                    onClick: () => cancelBy("staff", attendanceStatusDict()!.cancelled),
-                  }
-                : undefined,
-              form.data("clients").some(({userId}) => userId)
-                ? {
-                    label: (
-                      <div>
-                        <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client")}
-                        <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
-                      </div>
-                    ),
-                    onClick: () => cancelBy("clients", attendanceStatusDict()!.cancelled),
-                  }
-                : undefined,
-              hasBegun() && form.data("clients").some(({userId}) => userId)
-                ? {
-                    label: (
-                      <div>
-                        <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client_no_show")}
-                        <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
-                      </div>
-                    ),
-                    onClick: () => cancelBy("clients", attendanceStatusDict()!.no_show),
-                  }
-                : undefined,
-              {
-                label: (
-                  <>
-                    {t("meetings.mark_as_cancelled.other")}
-                    {t("ellipsis")}
-                  </>
-                ),
-                onClick: () => {
-                  form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
-                  props.onViewModeChange(false);
-                },
-              },
-              {
-                label: t("meetings.mark_as_cancelled.undetermined"),
-                onClick: () => {
-                  form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
-                  form.handleSubmit();
-                },
-              },
-            ].filter(NON_NULLABLE)}
-            onClick={() => popOver().close()}
-          />
+          <SimpleMenu onClick={() => popOver().close()}>
+            <Show when={form.data("staff").some(({userId}) => userId)}>
+              <Button onClick={() => cancelBy("staff", attendanceStatusDict()!.cancelled)}>
+                <STAFF_ICONS.staff class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_staff")}
+                <Show when={!shouldSubmitCancelImmediately("staff")}>{t("ellipsis")}</Show>
+              </Button>
+            </Show>
+            <Show when={form.data("clients").some(({userId}) => userId)}>
+              <Button onClick={() => cancelBy("clients", attendanceStatusDict()!.cancelled)}>
+                <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client")}
+                <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
+              </Button>
+            </Show>
+            <Show when={hasBegun() && form.data("clients").some(({userId}) => userId)}>
+              <Button onClick={() => cancelBy("clients", attendanceStatusDict()!.no_show)}>
+                <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client_no_show")}
+                <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
+              </Button>
+            </Show>
+            <Button
+              onClick={() => {
+                form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
+                props.onViewModeChange(false);
+              }}
+            >
+              {t("meetings.mark_as_cancelled.other")}
+              {t("ellipsis")}
+            </Button>
+            <Button
+              onClick={() => {
+                form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
+                form.handleSubmit();
+              }}
+            >
+              {t("meetings.mark_as_cancelled.undetermined")}
+            </Button>
+          </SimpleMenu>
         )}
       </PopOver>
       <ButtonLike
