@@ -1,6 +1,5 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {MemoLoader} from "components/ui/MemoLoader";
 import {QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
@@ -34,11 +33,9 @@ export default (() => {
   return (
     <QueryBarrier
       queries={[statusQuery]}
-      error={
-        // Do not show any errors, instead just show this login form.
-        () => undefined
-      }
-      pending={() => <MemoLoader />}
+      // Do not show any errors, instead just show this login form.
+      error={() => undefined}
+      pending={() => undefined}
     >
       <Navigate href="/help" state={{fromLoginPage: true}} />
     </QueryBarrier>
