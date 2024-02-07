@@ -49,7 +49,7 @@ facility_edit:
   success: "Zmieniono dane placówki"
 
 meeting:
-  default_duration: "Sugerowane: {{text}}"
+  default_duration: "Sugerowane:"
   add_attendant:
     staff: "Dodaj kolejnego pracownika"
     clients: "Dodaj kolejnego klienta"

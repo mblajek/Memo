@@ -546,6 +546,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               ...ev,
               content: () => (
                 <MeetingEventBlock
+                  day={day}
                   meeting={ev.meeting}
                   plannedColoring={staffResourcesById().get(staffId)!.coloring}
                   blink={!isCalendarLoading() && blinkingMeetings().has(ev.meeting.id)}

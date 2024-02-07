@@ -1,4 +1,5 @@
 import {Button, EditButton} from "components/ui/Button";
+import {TimeDuration} from "components/ui/TimeDuration";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
@@ -94,7 +95,11 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               />
               <div class="basis-32 grow">
                 <Show when={durationMinutes()}>
-                  <>{t("parenthesised", {text: t("calendar.units.minutes", {count: durationMinutes()})})}</>
+                  <>
+                    {t("parenthesis.open")}
+                    <TimeDuration minutes={durationMinutes()!} />
+                    {t("parenthesis.close")}
+                  </>
                 </Show>
               </div>
             </div>
@@ -110,9 +115,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 onClick={() => setDurationMinutes(defaultDurationMinutes())}
                 title={t("actions.set")}
               >
-                {t("forms.meeting.default_duration", {
-                  text: t("calendar.units.minutes", {count: defaultDurationMinutes()}),
-                })}
+                {t("forms.meeting.default_duration")} <TimeDuration minutes={defaultDurationMinutes()!} />
               </Button>
             </Show>
           </div>

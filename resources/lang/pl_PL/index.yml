@@ -40,7 +40,10 @@ range:
   max: "max:"
 
 quoted: "„{{text}}”"
-parenthesised: "({{text}})"
+parenthesis:
+  open: "("
+  close: ")"
+parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
 with_colon: "{{text}}:"
 ellipsis: "…"
 

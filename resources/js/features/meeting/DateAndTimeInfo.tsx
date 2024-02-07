@@ -1,3 +1,4 @@
+import {TimeDuration} from "components/ui/TimeDuration";
 import {EN_DASH} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
@@ -33,7 +34,11 @@ export const DateAndTimeInfo: VoidComponent<Props> = (props) => {
               <span class="font-semibold">
                 {formatDayMinuteHM((props.startDayMinute + durationMinutes()) % MAX_DAY_MINUTE)}
               </span>
-              <span>{t("parenthesised", {text: t("calendar.units.minutes", {count: durationMinutes()})})}</span>
+              <span>
+                {t("parenthesis.open")}
+                <TimeDuration minutes={durationMinutes()} />
+                {t("parenthesis.close")}
+              </span>
             </>
           )}
         </Show>
