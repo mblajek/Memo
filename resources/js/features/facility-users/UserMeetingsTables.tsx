@@ -1,6 +1,6 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {BigSpinner} from "components/ui/Spinner";
-import {createTableTranslations} from "components/ui/Table";
+import {TableExportConfig, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {Tabs} from "components/ui/Tabs";
 import {useLangFunc} from "components/utils";
@@ -8,11 +8,14 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {Sort} from "data-access/memo-api/tquery/types";
+import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
 import {ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useMeetingTableColumns} from "../meeting/meeting_tables";
 
 interface Props {
+  readonly userName: string;
+  readonly userType: FacilityUserType;
   readonly intrinsicFilter: FilterH;
   readonly staticPersistenceKey?: string;
 }
@@ -20,6 +23,7 @@ interface Props {
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {dictionaries, meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
+  const userDisplayNames = useUserDisplayNames();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns();
   function sortByDate({desc}: {desc: boolean}) {
@@ -29,6 +33,14 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
     ] satisfies Sort;
   }
   const tableTranslations = createTableTranslations("meeting");
+  function exportConfig(tableType: "planned" | "completed" | "all"): TableExportConfig {
+    const baseName =
+      tableType === "all" ? tableTranslations.tableName() : t(`facility_user.meetings_lists.${tableType}`);
+    const userName = `${props.userName.replaceAll(" ", "_")}_(${userDisplayNames.getTypeName(props.userType)})`;
+    return {
+      tableName: `${baseName}__${userName}`,
+    };
+  }
   return (
     <div>
       <Show when={dictionaries()} fallback={<BigSpinner />}>
@@ -91,6 +103,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         "updatedAt",
                       )}
                       initialSort={[{id: "date", desc: false}]}
+                      exportConfig={exportConfig("planned")}
                     />
                   </div>
                 </ShowOnceShown>
@@ -152,6 +165,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         "updatedAt",
                       )}
                       initialSort={[{id: "date", desc: true}]}
+                      exportConfig={exportConfig("completed")}
                     />
                   </div>
                 </ShowOnceShown>
@@ -195,6 +209,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         "updatedAt",
                       )}
                       initialSort={[{id: "date", desc: true}]}
+                      exportConfig={exportConfig("all")}
                     />
                   </div>
                 </ShowOnceShown>

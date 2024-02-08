@@ -1,5 +1,6 @@
 tables:
   generic:
+    tableName: "tabela"
     summary__zero: "Brak wyników"
     summary__one: "{{count, number}} wynik"
     summary__few: "{{count, number}} wyniki"
@@ -79,3 +80,10 @@ filter:
     fuzzy: "dopasowane"
     eq: "równe"
     regexp: "wyr. regularne"
+
+export:
+  label: "$t(actions.export)"
+  current_page: "bieżącą stronę"
+  all_pages: "wszystkie strony"
+  success: "Zapisano dane do pliku"
+  error: "Nie udało się wyeksportowć danych"
