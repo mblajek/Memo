@@ -1,19 +1,8 @@
 import {Table} from "@tanstack/solid-table";
-import {createContext, ParentComponent, useContext} from "solid-js";
+import {createContext, useContext} from "solid-js";
 
-type ProviderProps = {
-  /** The table specified for the provider. Must not change. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly table: Table<any>;
-};
-
-const TableContext = createContext<Table<unknown>>();
-
-export const TableContextProvider: ParentComponent<ProviderProps> = (props) => (
-  // Table does not change.
-  // eslint-disable-next-line solid/reactivity
-  <TableContext.Provider value={props.table}>{props.children}</TableContext.Provider>
-);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const TableContext = createContext<Table<any>>();
 
 export const useTable = () => {
   const table = useContext(TableContext);

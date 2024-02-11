@@ -2,10 +2,11 @@ import {Button} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
+import {exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
 import {ACTION_ICONS} from "components/ui/icons";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
-import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
+import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
@@ -37,155 +38,173 @@ export function useMeetingTableColumns() {
     );
   };
 
+  const attendantsTextExport = exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v) =>
+    v.map((u) => u.name).join(", "),
+  );
+
   const columns = {
-    id: {name: "id", initialVisible: false},
-    date: {name: "date", columnDef: {size: 190}},
-    time: {
-      name: "startDayminute",
-      extraDataColumns: ["durationMinutes"],
-      columnDef: {
-        cell: cellFunc<number>((v, c) => (
-          <PaddedCell>
-            <MeetingTime startDayMinute={v} durationMinutes={(c.row.original.durationMinutes as number) ?? 0} />
-          </PaddedCell>
-        )),
-        sortDescFirst: false,
-        enableColumnFilter: false,
-        size: 120,
+    ...({
+      id: {name: "id", initialVisible: false},
+      date: {name: "date", columnDef: {size: 190}},
+      time: {
+        name: "startDayminute",
+        extraDataColumns: ["durationMinutes"],
+        columnDef: {
+          cell: cellFunc<number, TQMeetingResource>((v, c) => (
+            <PaddedCell>
+              <MeetingTime startDayMinute={v} durationMinutes={(c.row.original.durationMinutes as number) ?? 0} />
+            </PaddedCell>
+          )),
+          sortDescFirst: false,
+          enableColumnFilter: false,
+          size: 120,
+        },
+        metaParams: {
+          textExportCell: exportCellFunc<string, number, TQMeetingResource>((v) => formatDayMinuteHM(v)),
+        },
       },
-    },
-    duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
-    category: {name: "categoryDictId", initialVisible: false},
-    type: {name: "typeDictId"},
-    status: {
-      name: "statusDictId",
-      columnDef: {
-        cell: cellFunc<Api.Id>((v) => (
-          <PaddedCell>
-            <SimpleMeetingStatusTag status={v} />
-          </PaddedCell>
-        )),
-        size: 200,
+      duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
+      category: {name: "categoryDictId", initialVisible: false},
+      type: {name: "typeDictId"},
+      status: {
+        name: "statusDictId",
+        columnDef: {
+          cell: cellFunc<Api.Id, TQMeetingResource>((v) => (
+            <PaddedCell>
+              <SimpleMeetingStatusTag status={v} />
+            </PaddedCell>
+          )),
+          size: 200,
+        },
       },
-    },
-    statusTags: {
-      name: "statusDictId",
-      extraDataColumns: ["staff", "clients", "isRemote"],
-      columnDef: {
-        cell: cellFunc<string>((v, c) => (
-          <Scrollable>
-            <MeetingStatusTags
-              meeting={c.row.original as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
-              showPlannedTag
-            />
-          </Scrollable>
-        )),
+      statusTags: {
+        name: "statusDictId",
+        extraDataColumns: ["staff", "clients", "isRemote"],
+        columnDef: {
+          cell: cellFunc<string, TQMeetingResource>((v, c) => (
+            <Scrollable>
+              <MeetingStatusTags
+                meeting={c.row.original as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
+                showPlannedTag
+              />
+            </Scrollable>
+          )),
+        },
+        // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
       },
-    },
-    attendants: {
-      name: "attendants",
-      columnDef: {
-        cell: cellFunc<TQMeetingAttendantResource[]>((v) => (
-          <Scrollable class="flex flex-col gap-1">
-            <UserLinks type="staff" users={v.filter((u) => u.attendanceType === "staff")} />
-            <UserLinks type="clients" users={v.filter((u) => u.attendanceType === "client")} />
-          </Scrollable>
-        )),
+      attendants: {
+        name: "attendants",
+        columnDef: {
+          cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((v) => (
+            <Scrollable class="flex flex-col gap-1">
+              <UserLinks type="staff" users={v.filter((u) => u.attendanceType === "staff")} />
+              <UserLinks type="clients" users={v.filter((u) => u.attendanceType === "client")} />
+            </Scrollable>
+          )),
+        },
+        metaParams: {textExportCell: attendantsTextExport},
       },
-    },
-    attendantsAttendance: {
-      name: "attendants.*.attendanceStatusDictId",
-      initialVisible: false,
-    },
-    staff: {
-      name: "staff",
-      columnDef: {
-        cell: cellFunc<TQMeetingAttendantResource[]>((v) => (
-          <Scrollable>
-            <UserLinks type="staff" users={v} />
-          </Scrollable>
-        )),
+      attendantsAttendance: {
+        name: "attendants.*.attendanceStatusDictId",
+        initialVisible: false,
       },
-    },
-    staffAttendance: {
-      name: "staff.*.attendanceStatusDictId",
-      initialVisible: false,
-    },
-    clients: {
-      name: "clients",
-      columnDef: {
-        cell: cellFunc<TQMeetingAttendantResource[]>((v) => (
-          <Scrollable>
-            <UserLinks type="clients" users={v} />
-          </Scrollable>
-        )),
+      staff: {
+        name: "staff",
+        columnDef: {
+          cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((v) => (
+            <Scrollable>
+              <UserLinks type="staff" users={v} />
+            </Scrollable>
+          )),
+        },
+        metaParams: {textExportCell: attendantsTextExport},
       },
-    },
-    clientsAttendance: {
-      name: "clients.*.attendanceStatusDictId",
-      initialVisible: false,
-    },
-    isRemote: {name: "isRemote"},
-    notes: {
-      name: "notes",
-      columnDef: {
-        cell: cellFunc<string>((v) => (
-          <Scrollable>
-            <RichTextView text={v} />
-          </Scrollable>
-        )),
+      staffAttendance: {
+        name: "staff.*.attendanceStatusDictId",
+        initialVisible: false,
       },
-    },
-    resources: {name: "resources.*.dictId"},
-    createdAt: {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
-    createdBy: {name: "createdBy.name", initialVisible: false},
-    updatedAt: {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
-    actions: {
-      name: "actions",
-      isDataColumn: false,
-      extraDataColumns: ["id"],
-      columnDef: {
-        cell: (c) => (
-          <PaddedCell>
-            <DetailsButton class="minimal" meetingId={c.row.original.id as string} />
-          </PaddedCell>
-        ),
-        enableSorting: false,
-        ...AUTO_SIZE_COLUMN_DEFS,
+      clients: {
+        name: "clients",
+        columnDef: {
+          cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((v) => (
+            <Scrollable>
+              <UserLinks type="clients" users={v} />
+            </Scrollable>
+          )),
+        },
+        metaParams: {textExportCell: attendantsTextExport},
       },
-    },
-    dateTimeActions: {
-      name: "date",
-      extraDataColumns: ["startDayminute", "durationMinutes", "id"],
-      columnDef: {
-        cell: cellFunc<string>((v, c) => (
-          <PaddedCell>
-            <div class="flex gap-2 justify-between items-start">
-              <div class="flex flex-col overflow-clip">
-                <div>{DateTime.fromISO(v).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
-                <Show when={c.row.original.startDayminute as number | undefined}>
-                  {(strtDayMinute) => (
-                    <div>
-                      <MeetingTime
-                        startDayMinute={strtDayMinute()}
-                        durationMinutes={(c.row.original.durationMinutes as number) ?? 0}
-                      />
-                    </div>
-                  )}
-                </Show>
+      clientsAttendance: {
+        name: "clients.*.attendanceStatusDictId",
+        initialVisible: false,
+      },
+      isRemote: {name: "isRemote"},
+      notes: {
+        name: "notes",
+        columnDef: {
+          cell: cellFunc<string, TQMeetingResource>((v) => (
+            <Scrollable>
+              <RichTextView text={v} />
+            </Scrollable>
+          )),
+        },
+      },
+      resources: {name: "resources.*.dictId"},
+      createdAt: {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
+      createdBy: {name: "createdBy.name", initialVisible: false},
+      updatedAt: {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
+      actions: {
+        name: "actions",
+        isDataColumn: false,
+        extraDataColumns: ["id"],
+        columnDef: {
+          cell: (c) => (
+            <PaddedCell>
+              <DetailsButton class="minimal" meetingId={c.row.original.id as string} />
+            </PaddedCell>
+          ),
+          enableSorting: false,
+          ...AUTO_SIZE_COLUMN_DEFS,
+        },
+      },
+      dateTimeActions: {
+        name: "date",
+        extraDataColumns: ["startDayminute", "durationMinutes", "id"],
+        columnDef: {
+          cell: cellFunc<string, TQMeetingResource>((v, c) => (
+            <PaddedCell>
+              <div class="flex gap-2 justify-between items-start">
+                <div class="flex flex-col overflow-clip">
+                  <div>{DateTime.fromISO(v).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
+                  <Show when={c.row.original.startDayminute as number | undefined}>
+                    {(strtDayMinute) => (
+                      <div>
+                        <MeetingTime
+                          startDayMinute={strtDayMinute()}
+                          durationMinutes={(c.row.original.durationMinutes as number) ?? 0}
+                        />
+                      </div>
+                    )}
+                  </Show>
+                </div>
+                <DetailsButton
+                  meetingId={c.row.original.id as string}
+                  class="shrink-0 secondary small"
+                  title={t("meetings.click_to_see_details")}
+                >
+                  {t("meetings.show_details")}
+                </DetailsButton>
               </div>
-              <DetailsButton
-                meetingId={c.row.original.id as string}
-                class="shrink-0 secondary small"
-                title={t("meetings.click_to_see_details")}
-              >
-                {t("meetings.show_details")}
-              </DetailsButton>
-            </div>
-          </PaddedCell>
-        )),
+            </PaddedCell>
+          )),
+        },
+        metaParams: {
+          textExportCell: exportCellFunc<string, string, TQMeetingResource>((v, ctx) =>
+            formatDateTimeForTextExport(DateTime.fromISO(v).set(dayMinuteToHM(ctx.row.startDayminute))),
+          ),
+        },
       },
-    },
+    } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingResource>>>),
     // Attendance tables only:
     attendant: {
       name: "attendant.name",
@@ -228,7 +247,7 @@ export function useMeetingTableColumns() {
         size: 200,
       },
     },
-  } satisfies Partial<Record<string, PartialColumnConfig>>;
+  };
   type KnownColumns = keyof typeof columns;
   return {
     columns,

@@ -11,6 +11,7 @@ import {
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {debouncedAccessor} from "components/utils";
+import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {
@@ -36,6 +37,7 @@ import {
   Pagination,
   Table,
   TableColumnVisibilityController,
+  TableExportConfig,
   TableSearch,
   TableSummary,
   TableTranslations,
@@ -43,29 +45,32 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
+import {TableExportButton} from "./TableExportButton";
 import {TableFiltersClearButton} from "./TableFiltersClearButton";
+import {ExportCellFunc, useTableTextExportCells} from "./table_export_cells";
 import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
 
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
-    readonly tquery?: TQueryColumnMeta;
+    readonly tquery?: TQueryColumnMeta<TData>;
   }
 }
 
-export interface ColumnMetaParams {
+export interface ColumnMetaParams<TData = DataItem> {
   readonly filtering?: FilteringParams;
   /**
    * Whether this column is a DEV column, i.e. an unconfigured column taken directly from tquery schema,
    * displayed only in DEV mode.
    */
   readonly devColumn?: boolean;
+  readonly textExportCell?: ExportCellFunc<string | undefined, TData>;
 }
 
 /** Type of tquery-related information in column meta. */
-export type TQueryColumnMeta = ColumnMetaParams & Partial<DataColumnSchema>;
+export type TQueryColumnMeta<TData = DataItem> = ColumnMetaParams<TData> & Partial<DataColumnSchema>;
 
-export interface TQueryTableProps {
+export interface TQueryTableProps<TData = DataItem> {
   /**
    * Mode in which the table is displayed:
    * - standalone - the table is the main element on the page, typically displays many rows,
@@ -97,14 +102,15 @@ export interface TQueryTableProps {
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
   /** The definition of the columns in the table, in their correct order. */
-  readonly columns: readonly PartialColumnConfig[];
+  readonly columns: readonly PartialColumnConfig<TData>[];
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
+  readonly exportConfig?: TableExportConfig;
 }
 
-export interface PartialColumnConfig {
+export interface PartialColumnConfig<TData = DataItem> {
   /** The name (id) of the column. */
   readonly name: string;
   /**
@@ -119,17 +125,17 @@ export interface PartialColumnConfig {
    * default. Otherwise, columnDef needs to be specified to display anything.
    * All additional data columns used in columnDef.cell needs to be specified in extraDataColumns.
    */
-  readonly columnDef?: IdentifiedColumnDef<DataItem>;
+  readonly columnDef?: IdentifiedColumnDef<TData>;
   /** Some meta params for the column. They are merged into columnDef.meta.tquery (this is a shorthand). */
-  readonly metaParams?: ColumnMetaParams;
+  readonly metaParams?: ColumnMetaParams<TData>;
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
 }
 
-interface FullColumnConfig extends ColumnConfig {
+interface FullColumnConfig<TData = DataItem> extends ColumnConfig {
   /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
   readonly isDataColumn: boolean;
-  readonly columnDef: IdentifiedColumnDef<DataItem>;
+  readonly columnDef: IdentifiedColumnDef<TData>;
   readonly metaParams?: ColumnMetaParams;
 }
 
@@ -184,20 +190,52 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   );
 
   const tableCells = useTableCells();
-  const columnDefByType = new Map<ColumnType, Partial<IdentifiedColumnDef<DataItem>>>([
-    ["bool", {cell: tableCells.bool(), size: 100}],
-    ["date", {cell: tableCells.date()}],
-    ["datetime", {cell: tableCells.datetime()}],
-    ["int", {cell: tableCells.int(), size: 150}],
-    ["list", {enableSorting: false}],
-    ["object", {enableSorting: false}],
-    ["string", {}],
-    ["text", {enableSorting: false}],
-    ["uuid", {cell: tableCells.uuid(), enableSorting: false, size: 80}],
-    ["uuid_list", {cell: tableCells.uuidList(), enableSorting: false, size: 80}],
-    ["dict", {cell: tableCells.dict()}],
-    ["dict_list", {cell: tableCells.dictList(), enableSorting: false, size: 270}],
-  ]);
+  const tableTextExportCells = useTableTextExportCells();
+  const defaultColumnConfigByType = new Map<ColumnType, Partial<PartialColumnConfig<DataItem>>>()
+    .set("bool", {
+      columnDef: {cell: tableCells.bool(), size: 100},
+      metaParams: {textExportCell: tableTextExportCells.bool()},
+    })
+    .set("date", {
+      columnDef: {cell: tableCells.date()},
+      metaParams: {textExportCell: tableTextExportCells.date()},
+    })
+    .set("datetime", {
+      columnDef: {cell: tableCells.datetime()},
+      metaParams: {textExportCell: tableTextExportCells.datetime()},
+    })
+    .set("int", {
+      columnDef: {cell: tableCells.int(), size: 150},
+      metaParams: {textExportCell: tableTextExportCells.int()},
+    })
+    .set("list", {
+      columnDef: {enableSorting: false},
+      metaParams: {textExportCell: tableTextExportCells.list()},
+    })
+    .set("object", {
+      columnDef: {enableSorting: false},
+      metaParams: {textExportCell: tableTextExportCells.object()},
+    })
+    .set("string", {})
+    .set("text", {
+      columnDef: {enableSorting: false},
+    })
+    .set("uuid", {
+      columnDef: {cell: tableCells.uuid(), enableSorting: false, size: 80},
+      metaParams: {textExportCell: tableTextExportCells.uuid()},
+    })
+    .set("uuid_list", {
+      columnDef: {cell: tableCells.uuidList(), enableSorting: false, size: 80},
+      metaParams: {textExportCell: tableTextExportCells.uuidList()},
+    })
+    .set("dict", {
+      columnDef: {cell: tableCells.dict()},
+      metaParams: {textExportCell: tableTextExportCells.dict()},
+    })
+    .set("dict_list", {
+      columnDef: {cell: tableCells.dictList(), enableSorting: false, size: 270},
+      metaParams: {textExportCell: tableTextExportCells.dictList()},
+    });
 
   const [allInitialised, setAllInitialised] = createSignal(false);
   const requestCreator = createTableRequestCreator({
@@ -292,34 +330,33 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           throw new Error(`Column ${col.name} is a count column`);
         }
       }
-      return {
-        id: col.name,
-        accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
-        header: (ctx) => (
-          <Header
-            ctx={ctx}
-            filter={
-              <ColumnFilterController
-                name={ctx.column.id}
-                filter={getColumnFilter(ctx.column.id)[0]()}
-                setFilter={(filter) => getColumnFilter(ctx.column.id)[1](filter)}
-              />
-            }
-          />
-        ),
-        ...(schemaCol?.type && columnDefByType.get(schemaCol.type)),
+      const defColumnConfig = (schemaCol && defaultColumnConfigByType.get(schemaCol.type)) || {};
+      return objectRecursiveMerge<ColumnDef<DataItem, unknown>>(
+        {
+          id: col.name,
+          accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
+          header: (ctx) => (
+            <Header
+              ctx={ctx}
+              filter={
+                <ColumnFilterController
+                  name={ctx.column.id}
+                  filter={getColumnFilter(ctx.column.id)[0]()}
+                  setFilter={(filter) => getColumnFilter(ctx.column.id)[1](filter)}
+                />
+              }
+            />
+          ),
+        },
         // It would be ideal to restrict the cell function to only accessing the data columns declared
         // by the column config, but there is no easy way to do this. The whole row is a store and cannot
         // be mutated, and wrapping it would be complicated.
-        ...col.columnDef,
-        meta: {
-          ...col.columnDef.meta,
-          tquery: {
-            ...schemaCol,
-            ...col.metaParams,
-          } satisfies TQueryColumnMeta,
-        },
-      } satisfies ColumnDef<DataItem, unknown>;
+        defColumnConfig.columnDef,
+        col.columnDef,
+        {meta: {tquery: schemaCol}},
+        {meta: {tquery: defColumnConfig.metaParams}},
+        {meta: {tquery: col.metaParams}},
+      ) satisfies ColumnDef<DataItem, unknown>;
     });
   });
 
@@ -343,6 +380,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         tableId: props.staticTableId,
         translations: props.staticTranslations || createTableTranslations("generic"),
         defaultColumnVisibility,
+        exportConfig: props.exportConfig,
       },
     }),
   );
@@ -364,10 +402,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         </div>
       )}
       belowTable={() => (
-        <div class="min-h-small-input flex items-stretch gap-2">
-          <Pagination />
-          <TableSummary rowsCount={rowsCount()} />
-          {props.customSectionBelowTable}
+        <div class="min-h-small-input flex items-stretch justify-between gap-2 text-base">
+          <div class="flex items-stretch gap-2">
+            <Pagination />
+            <TableSummary rowsCount={rowsCount()} />
+            {props.customSectionBelowTable}
+          </div>
+          <TableExportButton />
         </div>
       )}
       isLoading={!schema()}

@@ -31,7 +31,7 @@ import {
   on,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContextProvider, getHeaders, useTableCells} from ".";
+import {TableContext, getHeaders, useTableCells} from ".";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
@@ -48,7 +48,11 @@ export interface TableTranslations {
 export function createTableTranslations(tableName: string): TableTranslations {
   const t = useLangFunc();
   return {
-    tableName: (o) => t([`tables.tables.${tableName}.tableName`, `models.${tableName}._name_plural`], o),
+    tableName: (o) =>
+      t(
+        [`tables.tables.${tableName}.tableName`, `models.${tableName}._name_plural`, `tables.tables.generic.tableName`],
+        o,
+      ),
     columnName: (column, o) =>
       t(
         [
@@ -71,6 +75,7 @@ declare module "@tanstack/table-core" {
     /** The translations for the table, used by various table-related components. */
     readonly translations?: TableTranslations;
     readonly defaultColumnVisibility?: Accessor<VisibilityState>;
+    readonly exportConfig?: TableExportConfig;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -81,6 +86,11 @@ declare module "@tanstack/table-core" {
      */
     readonly columnName?: () => JSX.Element;
   }
+}
+
+export interface TableExportConfig {
+  /** A table name override used to create the export file name. */
+  readonly tableName?: string;
 }
 
 /**
@@ -204,7 +214,8 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
     ),
   );
   return (
-    <TableContextProvider table={props.table}>
+    // eslint-disable-next-line solid/reactivity
+    <TableContext.Provider value={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
         <div class={cx(s.tableContainer, s[props.mode])}>
           <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
@@ -289,7 +300,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
           <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
         </div>
       </Show>
-    </TableContextProvider>
+    </TableContext.Provider>
   );
 };
 
