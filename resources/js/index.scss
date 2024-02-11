@@ -36,8 +36,12 @@ html {
     --sb-size: 14px;
   }
 
-  * {
-    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  // As of 2024-02-11, chrome ignores the ::-webkit-scrollbar* selectors if any of the standard scrollbar
+  // properties is set, so ensure it is not set.
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    }
   }
 
   *::-webkit-scrollbar {
