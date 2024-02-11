@@ -11,7 +11,7 @@ import {
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {debouncedAccessor} from "components/utils";
-import {objectMerge} from "components/utils/object_merge";
+import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {
@@ -331,7 +331,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         }
       }
       const defColumnConfig = (schemaCol && defaultColumnConfigByType.get(schemaCol.type)) || {};
-      return objectMerge<ColumnDef<DataItem, unknown>>(
+      return objectRecursiveMerge<ColumnDef<DataItem, unknown>>(
         {
           id: col.name,
           accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
