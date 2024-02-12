@@ -3,6 +3,7 @@ import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {VoidComponent, createComputed, createSignal} from "solid-js";
+import {useFilterFieldNames} from "./filter_field_names";
 import {FilterControlProps} from "./types";
 
 interface Props extends FilterControlProps {
@@ -14,6 +15,7 @@ type Mode = (typeof MODES)[number];
 
 export const DictListFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const filterFieldNames = useFilterFieldNames();
   const [mode, setMode] = createSignal<Mode>("has_all");
   const [value, setValue] = createSignal<readonly string[]>([]);
   createComputed(() => {
@@ -36,9 +38,9 @@ export const DictListFilterControl: VoidComponent<Props> = (props) => {
   }
   createComputed(() => props.setFilter(buildFilter()));
   return (
-    <div class="flex flex-col items-stretch gap-0.5" style={{"min-width": "160px"}}>
+    <div class="min-w-24 flex flex-col items-stretch gap-0.5">
       <SegmentedControl
-        name={`table_filter_mode_${props.name}`}
+        name={filterFieldNames.get(`mode_${props.name}`)}
         items={MODES.map((m) => ({
           value: m,
           label: () => (
@@ -52,7 +54,7 @@ export const DictListFilterControl: VoidComponent<Props> = (props) => {
         small
       />
       <DictionarySelect
-        name={`table_filter_val_${props.name}`}
+        name={filterFieldNames.get(`val_${props.name}`)}
         dictionary={props.dictionaryId}
         value={value()}
         onValueChange={setValue}

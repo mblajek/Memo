@@ -1,14 +1,14 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button, EditButton} from "components/ui/Button";
 import {LoadingPane} from "components/ui/LoadingPane";
-import {MenuItem, SimpleMenu} from "components/ui/SimpleMenu";
+import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
-import {dayMinuteToTimeInput} from "components/utils/day_minute_util";
+import {MAX_DAY_MINUTE, dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -17,7 +17,7 @@ import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {FaRegularCalendarPlus} from "solid-icons/fa";
-import {Show, VoidComponent} from "solid-js";
+import {For, Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
 import {useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
@@ -99,7 +99,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
       date: meeting().date,
       time: {
         startTime: dayMinuteToTimeInput(meeting().startDayminute),
-        endTime: dayMinuteToTimeInput(meeting().startDayminute + meeting().durationMinutes),
+        endTime: dayMinuteToTimeInput((meeting().startDayminute + meeting().durationMinutes) % MAX_DAY_MINUTE),
       },
       typeDictId: meeting().typeDictId,
       statusDictId: meeting().statusDictId,
@@ -157,11 +157,19 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
                 <SplitButton
                   class="secondary small"
                   onClick={[createCopyInDays, 0]}
-                  popOver={(popOver) => {
-                    function createItem(labelKey: string, days: number): MenuItem {
-                      return {
-                        label: (
-                          <div class="flex justify-between gap-2">
+                  popOver={(popOver) => (
+                    <SimpleMenu onClick={() => popOver().close()}>
+                      <For
+                        each={
+                          [
+                            ["in_one_day", 1],
+                            ["in_one_week", 7],
+                            ["in_two_weeks", 14],
+                          ] as const
+                        }
+                      >
+                        {([labelKey, days]) => (
+                          <Button class="flex justify-between gap-2" onClick={[createCopyInDays, days]}>
                             <span>{t(`calendar.relative_time.${labelKey}`)}</span>
                             <span class="text-grey-text">
                               {t("parenthesised", {
@@ -170,22 +178,11 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
                                   .toLocaleString({day: "numeric", month: "long"}),
                               })}
                             </span>
-                          </div>
-                        ),
-                        onClick: [createCopyInDays, days],
-                      };
-                    }
-                    return (
-                      <SimpleMenu
-                        items={[
-                          createItem("in_one_day", 1),
-                          createItem("in_one_week", 7),
-                          createItem("in_two_weeks", 14),
-                        ]}
-                        onClick={() => popOver().close()}
-                      />
-                    );
-                  }}
+                          </Button>
+                        )}
+                      </For>
+                    </SimpleMenu>
+                  )}
                   disabled={isBusy()}
                 >
                   <FaRegularCalendarPlus class="inlineIcon text-current" /> {t("actions.meeting.make_a_copy")}

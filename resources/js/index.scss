@@ -6,6 +6,15 @@
 
 // Colour Contrast Checker: https://colourcontrast.cc/
 
+html {
+  @apply bg-white;
+
+  transition: filter 500ms;
+  &.dark {
+    filter: hue-rotate(0.5turn) invert(0.9);
+  }
+}
+
 @layer base {
   // A darker version of the memo-active color, giving enough contrast on a white background, according to the WCAG tests.
   $memo-active-contrasted: color-mix(
@@ -24,11 +33,15 @@
 
     --sb-thumb-color: color-mix(in srgb, theme("colors.memo-active") 80%, white);
     --sb-track-color: color-mix(in srgb, var(--sb-thumb-color) 20%, white);
-    --sb-size: 12px;
+    --sb-size: 14px;
   }
 
-  * {
-    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  // As of 2024-02-11, chrome ignores the ::-webkit-scrollbar* selectors if any of the standard scrollbar
+  // properties is set, so ensure it is not set.
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    }
   }
 
   *::-webkit-scrollbar {
@@ -45,6 +58,12 @@
     background: var(--sb-thumb-color);
     border-radius: 14px;
     border: 4px solid var(--sb-track-color);
+  }
+
+  // Style of a grey, disabled-looking scrollbar.
+  .disabledScrollBar {
+    --sb-thumb-color: #bbb;
+    --sb-track-color: #eee;
   }
 
   input[type="checkbox"] {
@@ -109,6 +128,14 @@
 
     &.small {
       @apply px-1 py-0;
+    }
+
+    &.minimal {
+      @apply px-0.5 -my-px border border-gray-300 rounded bg-white hover:bg-hover;
+
+      &[aria-disabled="true"] {
+        @apply bg-opacity-50;
+      }
     }
   }
 

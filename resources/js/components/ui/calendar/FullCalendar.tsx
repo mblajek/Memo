@@ -2,7 +2,7 @@ import {A, AnchorProps} from "@solidjs/router";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
-import {DayMinuteRange} from "components/utils/day_minute_util";
+import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
@@ -47,10 +47,11 @@ import {AllDayArea} from "./calendar-columns/AllDayArea";
 import {DayHeader} from "./calendar-columns/DayHeader";
 import {HoursArea} from "./calendar-columns/HoursArea";
 import {ResourceHeader} from "./calendar-columns/ResourceHeader";
+import {HoursAreaBlock} from "./calendar-columns/blocks";
 import {MeetingEventBlock} from "./calendar-columns/events";
 import {getRandomEventColors} from "./colors";
 import {DaysRange} from "./days_range";
-import {PartDayTimeSpan} from "./types";
+import {Block, PartDayTimeSpan} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
 export const MODES = ["month", "week", "day"] as const;
@@ -88,7 +89,7 @@ const PIXELS_PER_HOUR_RANGE = [40, 400] as const;
 type PersistentState = {
   readonly today: string;
   readonly mode: Mode;
-  readonly daysSel: readonly [Mode, DaysRange][];
+  readonly daysSel: readonly (readonly [Mode, DaysRange])[];
   readonly resourcesSel: {
     readonly checkbox: ReadonlySet<string>;
     readonly radio: string | null;
@@ -143,7 +144,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <div class="w-full flex justify-between gap-1 select-none">
               <span>{staff.name}</span>
               <span
-                class="self-center border rounded"
+                class="shrink-0 self-center border rounded"
                 style={{
                   width: "14px",
                   height: "14px",
@@ -426,6 +427,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       daysRange: daysSelection,
       staff: () => [...selectedResources()],
     }),
+    dataQueryOptions: {refetchOnWindowFocus: true},
   });
   const meetingResources = meetingsFromQuery(meetingsDataQuery);
   const events = () =>
@@ -511,11 +513,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     const [currScrollStart, currScrollEnd] = visibleDayMinuteRange();
     const scrollLen = currScrollEnd - currScrollStart;
     let scroll = currScrollStart;
-    scroll = Math.max(scroll, start + duration + scrollMarginMinutes() - scrollLen);
+    scroll = Math.max(scroll, Math.min(start + duration, MAX_DAY_MINUTE) + scrollMarginMinutes() - scrollLen);
     scroll = Math.min(scroll, start - scrollMarginMinutes());
     if (scroll !== currScrollStart) {
-      setScrollToDayMinute(scroll);
-      setTimeout(() => setScrollToDayMinute(undefined), 0);
+      setScrollToDayMinute(undefined);
+      setTimeout(() => setScrollToDayMinute(scroll), 0);
     }
   }
   onMount(() => {
@@ -525,6 +527,17 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [hoveredMeetingId, setHoveredMeetingId] = createSignal<string>();
 
   function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
+    const fakeWorkingHours: Block[] = weekDayCalculator().isWeekend(day)
+      ? []
+      : [
+          {
+            allDay: false,
+            date: day,
+            startDayMinute: 9 * 60,
+            durationMinutes: 8 * 60,
+            content: () => <HoursAreaBlock class="bg-white" />,
+          },
+        ];
     const selectedEvents = () =>
       staffId
         ? events()
@@ -533,6 +546,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               ...ev,
               content: () => (
                 <MeetingEventBlock
+                  day={day}
                   meeting={ev.meeting}
                   plannedColoring={staffResourcesById().get(staffId)!.coloring}
                   blink={!isCalendarLoading() && blinkingMeetings().has(ev.meeting.id)}
@@ -557,8 +571,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       allDayArea: () => <AllDayArea day={day} blocks={[]} events={[]} />,
       hoursArea: () => (
         <HoursArea
+          class="bg-[rgb(236,237,241)]"
           day={day}
-          blocks={[]}
+          blocks={fakeWorkingHours}
           events={selectedEvents()}
           onTimeClick={(t) =>
             meetingCreateModal.show({
@@ -583,6 +598,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return [];
       case "week": {
         const staff = selectedResourceRadio();
+        // eslint-disable-next-line solid/reactivity
         return Array.from(daysSelection(), (day) => ({
           header: () => <DayHeader day={day} />,
           ...getCalendarColumnPart(day, staff),
@@ -621,6 +637,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   });
 
+  // TODO: Don't show the loading pane when refetching in the background.
   const isCalendarLoading = () => !calendarColumns().length || meetingsDataQuery.isFetching;
 
   return (
@@ -666,7 +683,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <div class="p-1 border-t border-r flex gap-0.5">
               <Show when={props.meetingListLinkProps}>
                 {(linkProps) => (
-                  <A {...linkProps()} class="flex gap-1 items-center text-sm">
+                  <A {...linkProps()} class="py-0.5 flex gap-1 items-center text-sm">
                     <OcTable3 /> {t("calendar.show_meeting_list")}
                   </A>
                 )}
@@ -676,7 +693,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         </div>
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
-            <div>
+            <div class="flex">
               <Button class="h-full secondary small !rounded-r-none" onClick={[moveDaysSelection, -1]}>
                 <IoArrowBackOutline class="text-current" />
               </Button>

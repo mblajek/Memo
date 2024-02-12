@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {currentTime, cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
   Accessor,
@@ -30,7 +31,8 @@ import {
   on,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContextProvider, getHeaders, useTableCells} from ".";
+import {TableContext, getHeaders, useTableCells} from ".";
+import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
 import {CellRenderer} from "./CellRenderer";
@@ -46,7 +48,11 @@ export interface TableTranslations {
 export function createTableTranslations(tableName: string): TableTranslations {
   const t = useLangFunc();
   return {
-    tableName: (o) => t([`tables.tables.${tableName}.tableName`, `models.${tableName}._name_plural`], o),
+    tableName: (o) =>
+      t(
+        [`tables.tables.${tableName}.tableName`, `models.${tableName}._name_plural`, `tables.tables.generic.tableName`],
+        o,
+      ),
     columnName: (column, o) =>
       t(
         [
@@ -64,9 +70,12 @@ export function createTableTranslations(tableName: string): TableTranslations {
 declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface TableMeta<TData extends RowData> {
+    /** An optional table id, used to differentiate element ids if there are multiple tables on the page. */
+    readonly tableId?: string;
     /** The translations for the table, used by various table-related components. */
-    translations?: TableTranslations;
-    defaultColumnVisibility?: Accessor<VisibilityState>;
+    readonly translations?: TableTranslations;
+    readonly defaultColumnVisibility?: Accessor<VisibilityState>;
+    readonly exportConfig?: TableExportConfig;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -75,8 +84,13 @@ declare module "@tanstack/table-core" {
      * The simple representation of the translated column name. If set, overrides the value from
      * table meta translations.
      */
-    columnName?: () => JSX.Element;
+    readonly columnName?: () => JSX.Element;
   }
+}
+
+export interface TableExportConfig {
+  /** A table name override used to create the export file name. */
+  readonly tableName?: string;
 }
 
 /**
@@ -110,6 +124,11 @@ interface Props<T = object> {
    * to the backend, Index might be a better choice.
    */
   readonly rowsIteration?: "For" | "Index";
+  /**
+   * Whether to use the `<NonBlocking>` component for rendering rows, which reduces page freezing.
+   * Default: false.
+   */
+  readonly nonBlocking?: boolean;
   /** The content to put above the table, e.g. the global search bar. It has access to the table context */
   readonly aboveTable?: () => JSX.Element;
   /** The content to put below the table, e.g. the pagination controller. It has access to the table context */
@@ -125,6 +144,7 @@ interface Props<T = object> {
 const DEFAULT_PROPS = {
   mode: "embedded",
   rowsIteration: "For",
+  nonBlocking: false,
   isLoading: false,
   isDimmed: false,
 } satisfies Partial<Props>;
@@ -183,7 +203,8 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
         if (scrWrapper && !isScrolling) {
           // Use the most up-to-date value of desiredScrollX, not the debounced one.
           const desiredX = desiredScrollX();
-          if (desiredX !== undefined && desiredX !== scrWrapper.scrollLeft) {
+          // Use a tolerance when comparing. Some devices count position with fractional pixels.
+          if (desiredX !== undefined && Math.abs(desiredX - scrWrapper.scrollLeft) >= 2) {
             scrWrapper.scrollTo({left: desiredX, behavior: "smooth"});
           } else {
             setDesiredScrollX(undefined);
@@ -193,86 +214,93 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
     ),
   );
   return (
-    <TableContextProvider table={props.table}>
+    // eslint-disable-next-line solid/reactivity
+    <TableContext.Provider value={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
         <div class={cx(s.tableContainer, s[props.mode])}>
           <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
-          <div
-            ref={setScrollingWrapper}
-            class={s.scrollingWrapper}
-            onScroll={[setLastScrollTimestamp, Date.now()]}
-            onScrollEnd={[setLastScrollTimestamp, 0]}
-          >
-            <div ref={scrollToTopElement} class={s.scrollToTopElement}>
-              <div class={s.tableBg}>
-                <div
-                  class={cx(s.table, {[s.dimmed!]: props.isDimmed})}
-                  style={{"grid-template-columns": gridTemplateColumns()}}
-                >
-                  <div class={s.headerRow}>
-                    <For each={getHeaders(props.table)}>
-                      {({header, column}) => (
-                        <Show when={header()}>
-                          {(header) => (
-                            <div
-                              class={s.cell}
-                              onWheel={(e) => {
-                                const scrWrapper = scrollingWrapper();
-                                if (scrWrapper && e.deltaY) {
-                                  setDesiredScrollX((l = scrWrapper.scrollLeft) =>
-                                    Math.min(
-                                      Math.max(l + e.deltaY, 0),
-                                      scrWrapper.scrollWidth - scrWrapper.clientWidth,
-                                    ),
-                                  );
-                                  e.preventDefault();
-                                }
-                              }}
-                            >
-                              <Show when={!header().isPlaceholder}>
-                                <CellRenderer component={column.columnDef.header} props={header().getContext()} />
-                              </Show>
-                            </div>
-                          )}
-                        </Show>
-                      )}
-                    </For>
-                  </div>
-                  <Dynamic
-                    component={{For, Index}[props.rowsIteration]}
-                    each={props.table.getRowModel().rows}
-                    fallback={
-                      <div class={s.wideRow}>
-                        <Show when={props.isDimmed} fallback={EMPTY_VALUE_SYMBOL}>
-                          <BigSpinner />
-                        </Show>
-                      </div>
-                    }
-                  >
-                    {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
-                      const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
-                      return (
-                        <div class={s.dataRow} inert={props.isDimmed || undefined}>
-                          <Index each={row().getVisibleCells()}>
-                            {(cell) => (
-                              <span class={s.cell}>
-                                <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
-                              </span>
+          <div class={s.tableMain}>
+            <div
+              ref={setScrollingWrapper}
+              class={s.scrollingWrapper}
+              onScroll={[setLastScrollTimestamp, Date.now()]}
+              onScrollEnd={[setLastScrollTimestamp, 0]}
+            >
+              <div ref={scrollToTopElement} class={s.scrollToTopElement}>
+                <div class={s.tableBg}>
+                  <div class={s.table} style={{"grid-template-columns": gridTemplateColumns()}}>
+                    <div class={s.headerRow}>
+                      <For each={getHeaders(props.table)}>
+                        {({header, column}) => (
+                          <Show when={header()}>
+                            {(header) => (
+                              <div
+                                class={s.cell}
+                                onWheel={(e) => {
+                                  if (e.deltaX) {
+                                    // With 2d wheels (like a touchpad) avoid too much interference between the axes.
+                                    setDesiredScrollX(undefined);
+                                    return;
+                                  }
+                                  const scrWrapper = scrollingWrapper();
+                                  if (scrWrapper && !e.shiftKey && e.deltaY) {
+                                    setDesiredScrollX((l = scrWrapper.scrollLeft) =>
+                                      Math.min(
+                                        Math.max(l + e.deltaY, 0),
+                                        scrWrapper.scrollWidth - scrWrapper.clientWidth,
+                                      ),
+                                    );
+                                    e.preventDefault();
+                                  }
+                                }}
+                              >
+                                <Show when={!header().isPlaceholder}>
+                                  <CellRenderer component={column.columnDef.header} props={header().getContext()} />
+                                </Show>
+                              </div>
                             )}
-                          </Index>
-                        </div>
-                      );
-                    }}
-                  </Dynamic>
-                  <div class={s.bottomBorder} />
+                          </Show>
+                        )}
+                      </For>
+                    </div>
+                    <Dynamic
+                      component={{For, Index}[props.rowsIteration]}
+                      each={props.table.getRowModel().rows}
+                      fallback={<div class={s.wideRow}>{EMPTY_VALUE_SYMBOL}</div>}
+                    >
+                      {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
+                        const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
+                        return (
+                          <NonBlocking nonBlocking={props.nonBlocking}>
+                            <div class={s.dataRow} inert={props.isDimmed || undefined}>
+                              <Index each={row().getVisibleCells()}>
+                                {(cell) => (
+                                  <span class={s.cell}>
+                                    <CellRenderer
+                                      component={cell().column.columnDef.cell}
+                                      props={cell().getContext()}
+                                    />
+                                  </span>
+                                )}
+                              </Index>
+                            </div>
+                          </NonBlocking>
+                        );
+                      }}
+                    </Dynamic>
+                    <div class={s.bottomBorder} />
+                  </div>
                 </div>
               </div>
+            </div>
+            <div class={s.dimmingPane}>
+              <LoadingPane isLoading={props.isDimmed} />
             </div>
           </div>
           <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
         </div>
       </Show>
-    </TableContextProvider>
+    </TableContext.Provider>
   );
 };
 

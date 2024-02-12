@@ -1,7 +1,7 @@
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
-import {MeetingResource, MeetingResourceForCreate} from "../resources/meeting.resource";
+import {MeetingResource, MeetingResourceForCreate, MeetingResourceForPatch} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
 
@@ -21,7 +21,7 @@ export namespace FacilityMeeting {
 
   export const createMeeting = (meeting: MeetingResourceForCreate, config?: Api.Config) =>
     V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/meeting`, meeting, config);
-  export const updateMeeting = (meeting: Api.Request.Patch<MeetingResource>, config?: Api.Config) =>
+  export const updateMeeting = (meeting: Api.Request.Patch<MeetingResourceForPatch>, config?: Api.Config) =>
     V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting, config);
   export const deleteMeeting = (meetingId: Api.Id, config?: Api.Config) =>
     V1.delete(`/facility/${activeFacilityId()}/meeting/${meetingId}`, config);

@@ -1,5 +1,6 @@
 tables:
   generic:
+    tableName: "tabela"
     summary__zero: "Brak wyników"
     summary__one: "{{count, number}} wynik"
     summary__few: "{{count, number}} wyniki"
@@ -26,12 +27,8 @@ tables:
     summary__few: "{{count, number}} klientów"
     summary__many: "{{count, number}} klientów"
 
-  userFacility:
+  userFacilityMember:
     tableName: "$t(models.user.members)"
-    columnNames:
-      facility: "$t(models.member.facility)"
-      hasFacilityAdmin: "$t(models.member.hasFacilityAdmin)"
-      actions: "$t(tables.tables.generic.columnNames.actions)"
 
   facility:
     summary__zero: "Brak placówek"
@@ -47,14 +44,15 @@ tables:
     summary__many: "{{count, number}} spotkań"
     columnNames:
       startDayminute: "godzina"
-      staff.*.attendanceStatusDictId: "uczestnictwo pracowników"
-      clients.*.attendanceStatusDictId: "uczestnictwo klientów"
+      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
+      staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
+      clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
       attendant.name: "uczestnik"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
-      statusTags: "tagi statusu"
 
 choose_columns: "Wybierz kolumny"
+reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"
 
 filter:
@@ -73,8 +71,8 @@ filter:
       short: "wszystkie"
       explanation: "Znajdź wiersze, które mają wszystkie wybrane wartości"
     has_any:
-      short: "dowolne"
-      explanation: "Znajdź wiersze, które mają dowolną z wybranych wartości"
+      short: "którekolwiek"
+      explanation: "Znajdź wiersze, które mają którąkolwiek z wybranych wartości"
     has_only:
       short: "tylko"
       explanation: "Znajdź wiersze, które mają tylko wybrane wartości (niekoniecznie wszystkie)"
@@ -82,3 +80,10 @@ filter:
     fuzzy: "dopasowane"
     eq: "równe"
     regexp: "wyr. regularne"
+
+export:
+  label: "$t(actions.export)"
+  current_page: "bieżącą stronę"
+  all_pages: "wszystkie strony"
+  success: "Zapisano dane do pliku"
+  error: "Nie udało się wyeksportowć danych"

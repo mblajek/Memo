@@ -1,73 +1,85 @@
-import {Navigate, Route, RouteProps, useParams} from "@solidjs/router";
+import {Navigate, Route, RouteProps, Router, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
+import {AppContextProvider} from "app_context";
 import {AccessBarrier} from "components/utils";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {System} from "data-access/memo-api/groups";
-import {DEV, ParentComponent, Show, VoidProps, lazy, splitProps, type VoidComponent} from "solid-js";
+import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
+import {DevRoutes} from "dev-pages/DevRoutes";
+import NotFound from "features/not-found/components/NotFound";
+import NotYetImplemented from "features/not-found/components/NotYetImplemented";
+import {MemoTitle} from "features/root/MemoTitle";
+import {PageWithTheme} from "features/root/components/theme_control";
+import {DEV, ParentComponent, Show, VoidProps, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {BackdoorRoutes} from "./dev-pages/BackdoorRoutes";
-import {DevRoutes} from "./dev-pages/DevRoutes";
-import NotFound from "./features/not-found/components/NotFound";
-import NotYetImplemented from "./features/not-found/components/NotYetImplemented";
-import {MemoTitle} from "./features/root/MemoTitle";
 
-const AdminFacilitiesListPage = lazy(() => import("features/root/pages/AdminFacilitiesList.page"));
-const AdminUsersListPage = lazy(() => import("features/root/pages/AdminUsersList.page"));
-const CalendarPage = lazy(() => import("features/root/pages/Calendar.page"));
-const ClientDetailsPage = lazy(() => import("features/root/pages/ClientDetails.page"));
-const ClientsListPage = lazy(() => import("features/root/pages/ClientsList.page"));
-const LoginPage = lazy(() => import("features/authentication/pages/Login.page"));
-const MeetingsListPage = lazy(() => import("features/root/pages/MeetingsList.page"));
-const RootPage = lazy(() => import("features/root/pages/Root.page"));
-const StaffDetailsPage = lazy(() => import("features/root/pages/StaffDetails.page"));
-const StaffListPage = lazy(() => import("features/root/pages/StaffList.page"));
+const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
+const AdminUsersListPage = lazyAutoPreload(() => import("features/root/pages/AdminUsersList.page"));
+const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.page"));
+const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
+const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
+const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
+const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
+const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
+const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
+const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
+const StatusPage = lazyAutoPreload(() => import("features/root/pages/help/Status.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   return (
-    <>
-      <LeafRoute routeKey="login" path="/login" component={LoginPage} />
-      <Route path="/" component={RootPage}>
-        <UnknownNotFound />
-        <Route path="/" component={() => <Navigate href="/help" />} />
-        <Show when={DEV}>
-          <DevRoutes />
-        </Show>
-        <LeafRoute routeKey="help" path="/help" component={NotYetImplemented} />
-        <Route path="/admin" component={GlobalAdminPages}>
-          <UnknownNotFound />
-          <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
-          <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
-        </Route>
-      </Route>
-      <Route
-        path="/:facilityUrl"
-        matchFilters={{facilityUrl: facilitiesQuery.data?.map(({url}) => url) || []}}
-        component={RootPageWithFacility}
-      >
-        <UnknownNotFound />
-        <Route path="/" component={() => <Navigate href="home" />} />
-        <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
-        <Route path="/" component={FacilityAdminOrStaffPages}>
-          <Route path="/calendar">
-            <LeafRoute routeKey="facility.calendar" path="/" component={CalendarPage} />
-            <LeafRoute routeKey="facility.meetings_list" path="/table" component={MeetingsListPage} />
+    <AppContextProvider>
+      <Router>
+        <Route path="/" component={PageWithTheme}>
+          <LeafRoute routeKey="login" path="/login" component={LoginPage} />
+          <Route path="/" component={RootPage}>
+            <UnknownNotFound />
+            <Route path="/" component={() => <Navigate href="/help" />} />
+            <Show when={DEV}>
+              <DevRoutes />
+            </Show>
+            <Route path="/help">
+              <UnknownNotFound />
+              <LeafRoute routeKey="help" path="/" component={NotYetImplemented} />
+              <LeafRoute routeKey="help_pages.status" path="/status" component={StatusPage} />
+            </Route>
+            <Route path="/admin" component={GlobalAdminPages}>
+              <UnknownNotFound />
+              <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
+              <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
+            </Route>
           </Route>
-          <Route path="/staff">
-            <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
-            <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
-          </Route>
-          <Route path="/clients">
-            <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
-            <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+          <Route
+            path="/:facilityUrl"
+            matchFilters={{facilityUrl: facilitiesQuery.data?.map(({url}) => url) || []}}
+            component={RootPageWithFacility}
+          >
+            <UnknownNotFound />
+            <Route path="/" component={() => <Navigate href="home" />} />
+            <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
+            <Route path="/" component={FacilityAdminOrStaffPages}>
+              <Route path="/calendar">
+                <LeafRoute routeKey="facility.calendar" path="/" component={CalendarPage} />
+                <LeafRoute routeKey="facility.meetings_list" path="/table" component={MeetingsListPage} />
+              </Route>
+              <Route path="/staff">
+                <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
+                <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
+              </Route>
+              <Route path="/clients">
+                <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
+                <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+              </Route>
+            </Route>
+            <Route path="/admin" component={FacilityAdminPages}>
+              <UnknownNotFound />
+              <LeafRoute routeKey="facility.facility_admin.reports" path="/reports" component={NotYetImplemented} />
+            </Route>
           </Route>
         </Route>
-        <Route path="/admin" component={FacilityAdminPages}>
-          <UnknownNotFound />
-          <LeafRoute routeKey="facility.facility_admin.reports" path="/reports" component={NotYetImplemented} />
-        </Route>
-      </Route>
-      <BackdoorRoutes />
-    </>
+        <BackdoorRoutes />
+      </Router>
+    </AppContextProvider>
   );
 };
 export default App;

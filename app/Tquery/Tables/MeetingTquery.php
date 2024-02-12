@@ -11,8 +11,10 @@ use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
+use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 use App\Tquery\Engine\TqService;
+use Illuminate\Support\Facades\App;
 
 readonly class MeetingTquery extends TqService
 {
@@ -25,7 +27,7 @@ readonly class MeetingTquery extends TqService
     {
         $builder = parent::getBuilder();
         $builder->where(
-            query: fn(string $bind) => "`meetings`.`facility_id` = $bind",
+            query: fn(TqSingleBind $bind) => "`meetings`.`facility_id` = {$bind->use()}",
             or: false,
             value: $this->facility->id,
             inverse: false,
@@ -79,31 +81,33 @@ readonly class MeetingTquery extends TqService
                 "select count(1) from `meeting_attendants` $attendantWhere",
                 "$attendanceName.count",
             );
-            $config->addQuery(
+            $config->addUuidListQuery(
                 TqDataTypeEnum::uuid_list,
-                fn(string $tableName) => //
-                "select json_arrayagg(`meeting_attendants`.`user_id`) from `meeting_attendants` $attendantWhere",
-                "$attendanceName.*.userId",
+                '`meeting_attendants`.`user_id`',
+                "`meeting_attendants` $attendantWhere",
+                "$attendanceName.*.user_id",
             );
             $config->addQuery(
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
-                    // todo: remove replace after updating mariadb to 11.2.3
-                    "select json_arrayagg(replace(replace(`users`.`name`,'ó','u'),'Ó','U')) from `meeting_attendants`"
+                    (App::hasDebugModeEnabled()
+                        // todo: remove after updating mariadb to 11.2.3
+                        ? "select concat('[',group_concat(concat('\"',replace(`users`.`name`,'\"','\\\"'),'\"')),']') from `meeting_attendants`"
+                        : "select json_arrayagg(`users`.`name`) from `meeting_attendants`")
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
                 "$attendanceName.*.name",
             );
-            $config->addQuery(
-                TqDataTypeEnum::list,
-                fn(string $tableName) => //
-                    "select json_arrayagg(`meeting_attendants`.`attendance_status_dict_id`)"
-                    . " from `meeting_attendants` $attendantWhere",
-                "$attendanceName.*.attendanceStatusDictId",
+            $config->addUuidListQuery(
+                new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::AttendanceStatus),
+                '`meeting_attendants`.`attendance_status_dict_id`',
+                "`meeting_attendants` $attendantWhere",
+                "$attendanceName.*.attendance_status_dict_id",
             );
             $config->addQuery(
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
                     "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
+                    . "'attendanceType', `meeting_attendants`.`attendance_type`,"
                     . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
                     . ")) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
@@ -111,24 +115,23 @@ readonly class MeetingTquery extends TqService
             );
         }
 
-        $resourceFromWhere = 'from `meeting_resources` where `meeting_resources`.`meeting_id` = `meetings`.`id`';
+        $resourceFromWhere = '`meeting_resources` where `meeting_resources`.`meeting_id` = `meetings`.`id`';
         $config->addQuery(
             TqDataTypeEnum::int,
             fn(string $tableName) => //
-            "select count(1) $resourceFromWhere",
+            "select count(1) from $resourceFromWhere",
             'resources.count',
         );
-        $config->addQuery(
+        $config->addUuidListQuery(
             new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::MeetingResource),
-            fn(string $tableName) => //
-            "select json_arrayagg(`meeting_resources`.`resource_dict_id`) $resourceFromWhere",
+            '`meeting_resources`.`resource_dict_id`',
+            $resourceFromWhere,
             'resources.*.dict_id',
         );
         $config->addQuery(
             TqDataTypeEnum::list,
             fn(string $tableName) => //
-                "select json_arrayagg(json_object('resourceDictId', `meeting_resources`.`resource_dict_id`"
-                . ")) $resourceFromWhere",
+            "select json_arrayagg(json_object('resourceDictId', `meeting_resources`.`resource_dict_id`)) from $resourceFromWhere",
             'resources',
         );
 

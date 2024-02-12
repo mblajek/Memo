@@ -76,6 +76,10 @@ export function createCalendarRequestCreator({
       ],
     });
     const staffFilter = (): FilterH | undefined => {
+      // Fetch for all staff if showing a single day.
+      if (daysRange().length() <= 1) {
+        return undefined;
+      }
       const staffIds = staff?.();
       return (
         staffIds && {

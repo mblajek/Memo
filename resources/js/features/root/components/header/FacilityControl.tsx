@@ -13,11 +13,10 @@ export const FacilityControl: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(User.statusQueryOptions);
   const invalidate = useInvalidator();
-  const userFacilities = createMemo(
-    () =>
-      facilitiesQuery.data
-        ?.filter((facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id))
-        .sort((a, b) => a.name.localeCompare(b.name)),
+  const userFacilities = createMemo(() =>
+    facilitiesQuery.data
+      ?.filter((facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id))
+      .sort((a, b) => a.name.localeCompare(b.name)),
   );
   createOneTimeEffect({
     input: () => {
@@ -50,16 +49,19 @@ export const FacilityControl: VoidComponent = () => {
               nullable={false}
               value={activeFacilityId()}
               onValueChange={(facilityId) => {
-                if (facilityId !== activeFacilityId()) {
-                  setActiveFacilityId(facilityId);
-                  const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
-                  if (url) {
-                    // Facility pages might assume that the active facility id never changes, because changing the facility
-                    // always recreates the whole page by performing this navigation.
-                    navigate(`/${url}`);
+                if (facilityId) {
+                  if (facilityId !== activeFacilityId()) {
+                    setActiveFacilityId(facilityId);
+                    const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
+                    if (url) {
+                      // Facility pages might assume that the active facility id never changes, because changing the facility
+                      // always recreates the whole page by performing this navigation.
+                      navigate(`/${url}`);
+                    }
                   }
+                  if (facilityId !== statusQuery.data!.user.lastLoginFacilityId)
+                    User.setLastLoginFacilityId(facilityId).then(() => invalidate.userStatusAndFacilityPermissions());
                 }
-                User.setLastLoginFacilityId(facilityId!).then(() => invalidate.userStatusAndFacilityPermissions());
               }}
             />
           </Match>

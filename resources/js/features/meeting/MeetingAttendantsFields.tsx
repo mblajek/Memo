@@ -45,9 +45,11 @@ interface Props {
 
 interface FormAttendantsData extends Obj {
   readonly statusDictId?: string;
-  readonly staff: readonly MeetingAttendantResource[];
-  readonly clients: readonly MeetingAttendantResource[];
+  readonly staff: readonly FormAttendantData[];
+  readonly clients: readonly FormAttendantData[];
 }
+
+type FormAttendantData = Pick<MeetingAttendantResource, "userId" | "attendanceStatusDictId">;
 
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -56,7 +58,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const {form, isFormDisabled} = useFormContext<FormAttendantsData>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
-  createEffect<readonly MeetingAttendantResource[]>((prevAttendants) => {
+  createEffect<readonly FormAttendantData[]>((prevAttendants) => {
     const attendants = form.data(props.name);
     // When in edit mode, add an empty row at the end in the following situations:
     if (
@@ -100,6 +102,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         <div class="col-span-2">
           <FieldLabel
             fieldName={props.name}
+            umbrella
             text={
               <Capitalize
                 text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
@@ -112,7 +115,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         </div>
         <Show when={props.showAttendanceStatusLabel !== false}>
           <div class="flex gap-1">
-            <FieldLabel fieldName="attendanceStatusNotes" />
+            <FieldLabel fieldName="attendanceStatusNotes" umbrella />
             <MeetingAttendanceStatusInfoIcon />
           </div>
         </Show>
@@ -235,11 +238,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 export function useAttendantsCreator() {
   const {attendanceStatusDict} = useFixedDictionaries();
 
-  function createAttendant({userId = "", attendanceStatusDictId}: Partial<MeetingAttendantResource> = {}) {
+  function createAttendant({userId = "", attendanceStatusDictId}: Partial<FormAttendantData> = {}) {
     return {
       userId,
       attendanceStatusDictId: attendanceStatusDictId || attendanceStatusDict()!.ok.id,
-    } satisfies MeetingAttendantResource;
+    } satisfies FormAttendantData;
   }
 
   function attendantsInitialValueForCreate(staff?: readonly string[]) {
@@ -251,9 +254,9 @@ export function useAttendantsCreator() {
 
   function attendantsInitialValueFromMeeting(
     meeting: MeetingResource,
-    attendanceStatusOverride?: Partial<MeetingAttendantResource>,
+    attendanceStatusOverride?: Partial<FormAttendantData>,
   ) {
-    function getAttendants(attendantsFromMeeting: readonly MeetingAttendantResource[]) {
+    function getAttendants(attendantsFromMeeting: readonly FormAttendantData[]) {
       const attendants = attendantsFromMeeting.map((attendant) =>
         createAttendant({...attendant, ...attendanceStatusOverride}),
       );

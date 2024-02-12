@@ -100,16 +100,11 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         defaultOptions: {
           queries: {
             refetchOnReconnect: true,
-            // When opening a page, reload data if it's older than a couple of seconds.
-            staleTime: 5 * 1000,
-            // By default don't refetch on browser tab change.
+            refetchOnMount: true,
             refetchOnWindowFocus: false,
+            // When opening a page, reload data if it's older than a couple of seconds.
+            staleTime: 15 * 1000,
             retry: false,
-            // This is very important. The default reconcile algorithm somehow breaks the data and
-            // reactivity in complicated ways. This line is basically `broken: false`.
-            // See https://github.com/TanStack/query/pull/6125
-            // About `reconcile`: https://github.com/TanStack/query/pull/5287
-            reconcile: false,
           },
         },
         queryCache: new QueryCache({

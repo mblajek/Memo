@@ -6,7 +6,7 @@ import {CheckboxField} from "components/ui/form/CheckboxField";
 import {TextField} from "components/ui/form/TextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
-import {VoidComponent, createComputed, on, splitProps} from "solid-js";
+import {Show, VoidComponent, createComputed, on, splitProps} from "solid-js";
 import {z} from "zod";
 import * as userMembersFormPart from "./UserMembersFormPart";
 
@@ -21,10 +21,9 @@ const getSchema = () =>
     hasGlobalAdmin: z.boolean(),
   });
 
-export type UserFormInput = z.input<ReturnType<typeof getSchema>>;
-export type UserFormOutput = z.output<ReturnType<typeof getSchema>>;
+export type UserFormType = z.infer<ReturnType<typeof getSchema>>;
 
-interface Props extends FormConfigWithoutTransformFn<UserFormInput> {
+interface Props extends FormConfigWithoutTransformFn<UserFormType> {
   readonly id: string;
   readonly onCancel?: () => void;
 }
@@ -33,7 +32,7 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "onCancel"]);
   const t = useLangFunc();
   // Cast because otherwise type info is lost for some reason.
-  const initialValues = () => (formProps as Props).initialValues;
+  const initialValues = () => (formProps as Props).initialValues as UserFormType;
   return (
     <FelteForm
       id={props.id}
@@ -102,6 +101,13 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
             disabled={!form.data("hasPassword")}
             title={!form.data("hasPassword") ? t("forms.user_edit.global_admin_requires_password") : undefined}
           />
+          <Show when={userMembersFormPart.isUpdateDestructive(initialValues()?.members, form.data("members"))}>
+            <div class="text-red-600 font-medium">
+              <p>{t("forms.user.members_destructive_update_warning.header")}</p>
+              <p>{t("forms.user.members_destructive_update_warning.line1")}</p>
+              <p>{t("forms.user.members_destructive_update_warning.line2")}</p>
+            </div>
+          </Show>
           <FelteSubmit cancel={props.onCancel} />
         </>
       )}

@@ -1,11 +1,17 @@
 import {Button, EditButton} from "components/ui/Button";
+import {TimeDuration} from "components/ui/TimeDuration";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
-import {cx, useLangFunc} from "components/utils";
-import {DayMinuteRange, dayMinuteToTimeInput, timeInputToDayMinute} from "components/utils/day_minute_util";
+import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {
+  DayMinuteRange,
+  MAX_DAY_MINUTE,
+  dayMinuteToTimeInput,
+  timeInputToDayMinute,
+} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
-import {For, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
 
@@ -31,6 +37,20 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
     durationMinutes: [durationMinutes, setDurationMinutes],
     defaultDurationMinutes,
   } = createMeetingTimeController();
+  const durationDifferentFromSuggestion = () =>
+    durationMinutes() !== undefined &&
+    defaultDurationMinutes() !== undefined &&
+    durationMinutes() !== defaultDurationMinutes();
+  createComputed(
+    on([() => props.viewMode, () => form.data("time.startTime")], (viewMode, _startTime) => {
+      if (viewMode) {
+        setForceEditable(false);
+      }
+      if (durationDifferentFromSuggestion()) {
+        setForceEditable(true);
+      }
+    }),
+  );
   const hoursList = createMemo(() => {
     if (!props.suggestedTimes) {
       return undefined;
@@ -50,13 +70,42 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   });
   const showEditable = () =>
     !props.viewMode &&
-    (isForceEditable() ||
-      !form.data("date") ||
-      !form.data("time.startTime") ||
-      (form.data("typeDictId") && durationMinutes() !== defaultDurationMinutes()));
+    (isForceEditable() || !form.data("date") || !form.data("time.startTime") || durationDifferentFromSuggestion());
+  const TimeInput: VoidComponent<htmlAttributes.input> = (props) => (
+    <input
+      {...props}
+      type="time"
+      step={5 * 60}
+      list={hoursList()?.listId}
+      class="basis-24 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
+      onKeyDown={({key, target}) => {
+        if (key === "ArrowUp" || key === "ArrowDown") {
+          // Fix the UX problem that normally pressing up/down on minute field wraps without changing the hour field.
+          const input = target as HTMLInputElement;
+          if (!input.value) {
+            return;
+          }
+          const dayMinuteBefore = timeInputToDayMinute(input.value, {assert: true});
+          setTimeout(() => {
+            const dayMinuteAfter = timeInputToDayMinute(input.value, {assert: true});
+            const delta =
+              ((dayMinuteAfter - dayMinuteBefore + MAX_DAY_MINUTE / 2) % MAX_DAY_MINUTE) - MAX_DAY_MINUTE / 2;
+            if (delta % 60 !== 0) {
+              // Probably on minute field.
+              const expectedDelta = key === "ArrowUp" ? 5 : -5;
+              if (delta === -11 * expectedDelta) {
+                // The hour didn't change but it should. As a result, instead of +5/-5 minutes, we got -55/+55 minutes.
+                input.value = dayMinuteToTimeInput((dayMinuteBefore + expectedDelta + MAX_DAY_MINUTE) % MAX_DAY_MINUTE);
+              }
+            }
+          }, 0);
+        }
+      }}
+    />
+  );
   return (
     <>
-      <FieldBox name="dateAndTime" validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
+      <FieldBox name="dateAndTime" umbrella validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
         <PlaceholderField name="startDayminute" />
         <PlaceholderField name="durationMinutes" />
         <div class={cx("flex items-start gap-1", {hidden: !showEditable()})}>
@@ -67,29 +116,19 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               type="date"
               class="basis-32 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
             />
-            <input
-              id="time.startTime"
-              name="time.startTime"
-              type="time"
-              step={5 * 60}
-              list={hoursList()?.listId}
-              class="basis-24 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
-            />
+            <TimeInput id="time.startTime" name="time.startTime" />
           </div>
           <div class="min-h-big-input flex items-center">{EN_DASH}</div>
           <div class="basis-0 grow flex flex-col items-stretch gap-0.5">
             <div class="flex items-center gap-0.5">
-              <input
-                id="time.endTime"
-                name="time.endTime"
-                type="time"
-                step={5 * 60}
-                list={hoursList()?.listId}
-                class="basis-24 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
-              />
+              <TimeInput id="time.endTime" name="time.endTime" />
               <div class="basis-32 grow">
                 <Show when={durationMinutes()}>
-                  <>{t("parenthesised", {text: t("calendar.units.minutes", {count: durationMinutes()})})}</>
+                  <>
+                    {t("parenthesis.open")}
+                    <TimeDuration minutes={durationMinutes()!} />
+                    {t("parenthesis.close")}
+                  </>
                 </Show>
               </div>
             </div>
@@ -105,15 +144,13 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 onClick={() => setDurationMinutes(defaultDurationMinutes())}
                 title={t("actions.set")}
               >
-                {t("forms.meeting.default_duration", {
-                  text: t("calendar.units.minutes", {count: defaultDurationMinutes()}),
-                })}
+                {t("forms.meeting.default_duration")} <TimeDuration minutes={defaultDurationMinutes()!} />
               </Button>
             </Show>
           </div>
         </div>
         <Show when={!showEditable()}>
-          <div class="flex gap-2 items-baseline justify-between">
+          <div class="flex gap-2 items-baseline">
             <DateAndTimeInfo
               date={DateTime.fromISO(form.data("date"))}
               startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}

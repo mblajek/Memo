@@ -1,10 +1,11 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "../config";
+import {SystemStatusResource} from "../resources/SystemStatusResource";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
 import {FacilityResource} from "../resources/facility.resource";
 import {Api} from "../types";
-import {parseGetListResponse} from "../utils";
+import {parseGetListResponse, parseGetResponse} from "../utils";
 import {Facilities} from "./shared";
 
 /**
@@ -20,6 +21,7 @@ export namespace System {
       queryKey: keys.facilityList(),
       // Prevent refetching on every page.
       staleTime: 10 * 60 * 1000,
+      refetchOnMount: false,
     }) satisfies SolidQueryOptions;
 
   const getDictionariesList = (config?: Api.Config) =>
@@ -30,6 +32,7 @@ export namespace System {
       queryKey: keys.dictionary(),
       // The dictionaries normally don't change.
       staleTime: 3600 * 1000,
+      refetchOnMount: false,
     }) satisfies SolidQueryOptions;
 
   const getAttributesList = (config?: Api.Config) =>
@@ -40,6 +43,18 @@ export namespace System {
       queryKey: keys.attribute(),
       // The attributes normally don't change.
       staleTime: 3600 * 1000,
+      refetchOnMount: false,
+    }) satisfies SolidQueryOptions;
+
+  const getStatus = (config?: Api.Config) =>
+    V1.get<Api.Response.Get<SystemStatusResource>>("/system/status", config).then(parseGetResponse);
+  export const statusQueryOptions = () =>
+    ({
+      queryFn: ({signal}) => getStatus({signal}),
+      queryKey: keys.status(),
+      staleTime: 0,
+      refetchOnWindowFocus: true,
+      refetchInterval: 60 * 1000,
     }) satisfies SolidQueryOptions;
 
   export const keys = {
@@ -47,5 +62,6 @@ export namespace System {
     facilityList: () => [...keys.facility(), "list"] as const,
     dictionary: () => ["dictionary"] as const,
     attribute: () => ["attribute"] as const,
+    status: () => ["status"] as const,
   };
 }

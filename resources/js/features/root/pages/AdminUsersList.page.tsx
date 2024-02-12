@@ -51,7 +51,7 @@ export default (() => {
           columnDef: {
             cell: (c) => (
               <PaddedCell>
-                <EditButton onClick={() => userEditModal.show({userId: c.row.original.id as string})} />
+                <EditButton class="minimal" onClick={() => userEditModal.show({userId: c.row.original.id as string})} />
               </PaddedCell>
             ),
             enableSorting: false,

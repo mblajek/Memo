@@ -4,6 +4,7 @@ import {debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
+import {useFilterFieldNames} from "./filter_field_names";
 import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
 import {makeSelectItem} from "./select_items";
 import {FilterControlProps} from "./types";
@@ -14,6 +15,7 @@ interface StringColumnProps extends FilterControlProps {
 
 export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) => {
   const t = useLangFunc();
+  const filterFieldNames = useFilterFieldNames();
   const [mode, setMode] = createSignal("~");
   const [text, setText] = createSignal("");
   createComputed(() => {
@@ -95,7 +97,7 @@ export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) =>
     <div class={s.filterLine}>
       <div class="w-10">
         <Select
-          name={`table_filter_op_${props.name}`}
+          name={filterFieldNames.get(`op_${props.name}`)}
           items={items()}
           value={mode()}
           onValueChange={(value) => setMode(value!)}
@@ -105,7 +107,7 @@ export const TextualFilterControl: VoidComponent<StringColumnProps> = (props) =>
       </div>
       <div class={s.wideEdit}>
         <SearchInput
-          name={`table_filter_val_${props.name}`}
+          name={filterFieldNames.get(`val_${props.name}`)}
           autocomplete="off"
           class="h-full w-full min-h-small-input"
           value={inputUsed() ? text() : ""}

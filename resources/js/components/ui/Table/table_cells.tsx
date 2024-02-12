@@ -16,7 +16,7 @@ export type HeaderComponent<T = RowDataType> = (ctx: HeaderContext<T, unknown>) 
 /**
  * The component used as cell in column definition.
  *
- * Warning: It function must not return a string directly, it needs to be wrapped in a JSX.Element,
+ * Warning: It must not return a string directly, it needs to be wrapped in a JSX.Element,
  * e.g. `<>{someString}</>`. Otherwise the reactivity is lost and the cell will show stale data.
  * It is not possible to express this requirement in the type.
  */
@@ -66,7 +66,7 @@ export function useTableCells() {
     dictList: <T,>() =>
       cellFunc<readonly string[], T>((v) => (
         <PaddedCell>
-          <Index each={v}>
+          <Index each={v} fallback={EMPTY_VALUE_SYMBOL}>
             {(id, index) => (
               <>
                 <Show when={index}>
@@ -83,7 +83,7 @@ export function useTableCells() {
 
 function defaultFormatValue(value: unknown) {
   if (value == undefined) {
-    return "";
+    return undefined;
   } else if (Array.isArray(value)) {
     return (
       <ul>
@@ -102,7 +102,7 @@ export function cellFunc<V, T = RowDataType>(
   fallback?: () => JSX.Element,
 ): CellComponent<T> {
   return (ctx) => (
-    <Show when={ctx.getValue() != null} fallback={fallback?.()}>
+    <Show when={ctx.getValue() != undefined} fallback={fallback?.()}>
       {func(ctx.getValue() as V, ctx)}
     </Show>
   );

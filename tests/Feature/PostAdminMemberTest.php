@@ -38,6 +38,8 @@ class PostAdminMemberTest extends TestCase
             'userId' => $user->id,
             'facilityId' => $facility->id,
             'hasFacilityAdmin' => false,
+            'isFacilityClient' => false,
+            'isFacilityStaff' => false,
         ];
 
         $result = $this->post(static::URL, $data);
@@ -61,6 +63,8 @@ class PostAdminMemberTest extends TestCase
             'userId' => $user->id,
             'facilityId' => $facility->id,
             'hasFacilityAdmin' => true,
+            'isFacilityClient' => false,
+            'isFacilityStaff' => false,
         ];
 
         $result = $this->post(static::URL, $data);

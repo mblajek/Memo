@@ -1,6 +1,6 @@
 meetings_lists:
   planned: zaplanowane
-  completed: sfinalizowane
+  completed: zrealizowane
   all: wszystkie
 
 is_memo_user_note: "(użytkownik Memo)"

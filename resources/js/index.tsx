@@ -1,7 +1,6 @@
 /* @refresh reload */
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
-import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
 import {Settings} from "luxon";
 import {DEV, ErrorBoundary, Show} from "solid-js";
@@ -10,9 +9,9 @@ import {Toaster} from "solid-toast";
 import App from "./App";
 import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
+import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
-import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 
 const root = document.getElementById("root");
 
@@ -66,9 +65,7 @@ render(() => {
         />
         <MetaProvider>
           <InitializeTanstackQuery>
-            <Router>
-              <App />
-            </Router>
+            <App />
           </InitializeTanstackQuery>
         </MetaProvider>
         <GlobalPageElements />

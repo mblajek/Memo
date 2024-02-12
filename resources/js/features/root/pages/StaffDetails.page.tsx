@@ -20,6 +20,8 @@ export default (() => {
             <div class="flex flex-col items-stretch gap-2">
               <UserDetailsHeader type="staff" user={user()} />
               <UserMeetingsTables
+                userName={user().name}
+                userType="staff"
                 intrinsicFilter={{
                   type: "column",
                   column: "attendant.userId",

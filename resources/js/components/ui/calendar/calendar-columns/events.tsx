@@ -6,8 +6,7 @@ import {RichTextView} from "components/ui/RichTextView";
 import {bleachColor} from "components/ui/colors";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
-import {formatDayMinuteHM} from "components/utils/day_minute_util";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
@@ -15,6 +14,7 @@ import {UserLink} from "features/facility-users/UserLink";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
 import {MeetingAttendanceStatus} from "features/meeting/attendance_status_info";
+import {DateTime} from "luxon";
 import {For, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {useColumnsCalendar} from "../ColumnsCalendar";
@@ -38,6 +38,7 @@ export const AllDayEventBlock: ParentComponent<AllDayEventProps> = (props) => (
 );
 
 interface MeetingEventProps {
+  readonly day: DateTime;
   readonly meeting: TQMeetingResource;
   /** The colors of the event block, if it is a planned event. */
   readonly plannedColoring: Coloring;
@@ -53,8 +54,7 @@ const DISAPPEAR_MILLIS = 300;
 
 export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const t = useLangFunc();
-  const dictionaries = useDictionaries();
-  const {meetingStatusDict} = useFixedDictionaries();
+  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
   const calendar = useColumnsCalendar();
   const resources = () =>
     props.meeting.resources
@@ -107,11 +107,23 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
             : undefined;
     return hovered() ? coloring?.hover : coloring?.regular;
   };
+
+  const meetingTypeOther = () => dictionaries()?.get("meetingType").get("other");
+  const MeetingType: VoidComponent<{typeId: string}> = (props) => (
+    <Show when={props.typeId !== meetingTypeOther()?.id}>
+      <div>{dictionaries()?.getPositionById(props.typeId).label}</div>
+    </Show>
+  );
+
   return (
     <>
       <ButtonLike
         class={cx(
           "w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer select-none",
+          props.meeting.startDayminute + props.meeting.durationMinutes > MAX_DAY_MINUTE &&
+            (DateTime.fromISO(props.meeting.date).day === props.day.day
+              ? "border-b-0 rounded-b-none"
+              : "border-t-0 rounded-t-none"),
           {[s.blink!]: props.blink},
         )}
         style={coloringStyle()}
@@ -119,12 +131,14 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         onMouseEnter={[setHovered, true]}
         onMouseLeave={[setHovered, false]}
         onClick={() => props.onClick?.()}
+        // Needed to make the event clickable on a touch screen.
+        onTouchEnd={() => props.onClick?.()}
       >
         <div class="whitespace-nowrap">
           <span class="font-weight-medium">{formatDayMinuteHM(props.meeting.startDayminute)}</span>
           {EN_DASH}
           <span class="font-weight-medium">
-            {formatDayMinuteHM(props.meeting.startDayminute + props.meeting.durationMinutes)}
+            {formatDayMinuteHM((props.meeting.startDayminute + props.meeting.durationMinutes) % MAX_DAY_MINUTE)}
           </span>
         </div>
         <hr class="border-inherit" />
@@ -136,9 +150,9 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
               </For>
             </ul>
           </Show>
-          <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
+          <MeetingType typeId={props.meeting.typeDictId} />
           <MeetingStatusTags meeting={props.meeting} />
-          <RichTextView text={props.meeting.notes} />
+          <RichTextView class="max-h-20 overflow-y-clip" text={props.meeting.notes} />
           <Show when={props.meeting.resources.length}>
             <div>{t("parenthesised", {text: resources()})}</div>
           </Show>
@@ -149,14 +163,17 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           <div {...hoverApi().positionerProps} class="pointer-events-auto">
             <div {...hoverApi().contentProps} class="z-modal">
               <div
-                class={cx("max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm", {
-                  "opacity-0": !hovered(),
-                })}
+                class={cx(
+                  "max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm overflow-clip",
+                  {
+                    "opacity-0": !hovered(),
+                  },
+                )}
                 style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
                 onMouseEnter={() => hoverApi().close()}
               >
                 <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
-                <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
+                <MeetingType typeId={props.meeting.typeDictId} />
                 <MeetingStatusTags meeting={props.meeting} />
                 <Show when={props.meeting.staff.length}>
                   <ul>
@@ -174,7 +191,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                 </Show>
                 <Show when={props.meeting.notes}>
                   <FieldDisp field="notes">
-                    <RichTextView text={props.meeting.notes} />
+                    <RichTextView class="max-h-60 disabledScrollBar" text={props.meeting.notes} />
                   </FieldDisp>
                 </Show>
                 <Show when={props.meeting.resources.length}>

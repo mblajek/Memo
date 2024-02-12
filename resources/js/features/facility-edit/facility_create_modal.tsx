@@ -1,9 +1,9 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
-import {lazy} from "solid-js";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 
-const FacilityCreateForm = lazy(() => import("features/facility-edit/FacilityCreateForm"));
+const FacilityCreateForm = lazyAutoPreload(() => import("features/facility-edit/FacilityCreateForm"));
 
 export const createFacilityCreateModal = registerGlobalPageElement<true>((args) => {
   const t = useLangFunc();

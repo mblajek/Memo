@@ -1,4 +1,5 @@
 log_out: "Wyloguj"
+add: "Dodaj"
 edit: "Edytuj"
 delete: "Usuń"
 close: "Zamknij"
@@ -16,6 +17,10 @@ set: "Ustaw"
 change_password: "Zmień hasło"
 make_a_copy: "Utwórz kopię"
 show: "Pokaż"
+open: "Otwórz"
+export: "Eksportuj"
+
+details: "Szczegóły"
 
 user:
   add: "Dodaj osobę"

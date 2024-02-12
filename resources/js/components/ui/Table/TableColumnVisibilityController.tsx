@@ -23,7 +23,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
         </Button>
       )}
     >
-      <div class="overflow-y-auto">
+      <div class="overflow-y-auto flex flex-col gap-0.5">
         <div class="flex flex-col">
           <For each={table.getAllLeafColumns()}>
             {(column) => (
@@ -46,19 +46,28 @@ export const TableColumnVisibilityController: VoidComponent = () => {
           </For>
         </div>
       </div>
-      <Show when={defaultColumnVisibility}>
-        {(defaultColumnVisibility) => (
-          <Button
-            class="secondary small m-1"
-            onClick={() => table.setColumnVisibility(defaultColumnVisibility())}
-            disabled={isDefaultVisibility()}
-            onMouseOver={[setResetHovered, true]}
-            onMouseOut={[setResetHovered, false]}
-          >
-            {t("actions.restore_default")}
-          </Button>
-        )}
-      </Show>
+      <div class="p-1 flex flex-col gap-1">
+        <Show when={defaultColumnVisibility}>
+          {(defaultColumnVisibility) => (
+            <Button
+              class="secondary small"
+              onClick={() => table.setColumnVisibility(defaultColumnVisibility())}
+              disabled={isDefaultVisibility()}
+              onMouseOver={[setResetHovered, true]}
+              onMouseOut={[setResetHovered, false]}
+            >
+              {t("actions.restore_default")}
+            </Button>
+          )}
+        </Show>
+        <Button
+          class="secondary small"
+          onClick={() => table.setColumnSizing({})}
+          disabled={!Object.keys(table.getState().columnSizing).length}
+        >
+          {t("tables.reset_column_sizes")}
+        </Button>
+      </div>
     </PopOver>
   );
 };

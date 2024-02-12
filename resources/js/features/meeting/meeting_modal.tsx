@@ -2,11 +2,12 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {Api} from "data-access/memo-api/types";
-import {createComputed, createSignal, lazy} from "solid-js";
+import {createComputed, createSignal} from "solid-js";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 
-const MeetingViewEditForm = lazy(() => import("features/meeting/MeetingViewEditForm"));
+const MeetingViewEditForm = lazyAutoPreload(() => import("features/meeting/MeetingViewEditForm"));
 
 interface FormParams {
   readonly meetingId: Api.Id;

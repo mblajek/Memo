@@ -19,7 +19,7 @@ class TranslationsService
     private static function readJsonFile(string $locale, string $name): array
     {
         try {
-            return Yaml::parseFile(App::resourcePath('lang') . "/$locale/$name");
+            return Yaml::parseFile(App::resourcePath("lang/$locale/$name"));
         } catch (ParseException $e) {
             echo $e->getMessage();
             throw FatalExceptionFactory::translations();
@@ -44,7 +44,7 @@ class TranslationsService
         $index = 'index.yml';
         $readFile = fn(string $name): array => self::readJsonFile($locale, $name);
         $result = array_merge(["" => $locale], $readFile($index));
-        foreach (scandir(App::resourcePath('lang') . "/$locale") as $file) {
+        foreach (scandir(App::resourcePath("lang/$locale")) as $file) {
             if ($file !== $index && !str_starts_with($file, '.')) {
                 $result[pathinfo($file, PATHINFO_FILENAME)] = $readFile($file);
             }

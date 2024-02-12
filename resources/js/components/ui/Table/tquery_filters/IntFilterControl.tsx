@@ -2,6 +2,7 @@ import {useLangFunc} from "components/utils";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import s from "./ColumnFilterController.module.scss";
+import {useFilterFieldNames} from "./filter_field_names";
 import {FilterControlProps} from "./types";
 
 type IntRangeFilter =
@@ -20,6 +21,7 @@ interface Props extends FilterControlProps<IntRangeFilter> {}
  */
 export const IntFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const filterFieldNames = useFilterFieldNames();
   const [lower, setLower] = createSignal("");
   const [upper, setUpper] = createSignal("");
   createComputed(() => {
@@ -90,7 +92,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
       </Show>
       <div class={s.wideEdit}>
         <input
-          name={`table_filter_from_${props.name}`}
+          name={filterFieldNames.get(`from_${props.name}`)}
           type="number"
           class="w-full min-h-small-input border border-input-border rounded"
           max={upper()}
@@ -101,7 +103,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.max")}</div>
       <div class={s.wideEdit}>
         <input
-          name={`table_filter_to_${props.name}`}
+          name={filterFieldNames.get(`to_${props.name}`)}
           type="number"
           class="w-full min-h-small-input border border-input-border rounded"
           min={lower()}

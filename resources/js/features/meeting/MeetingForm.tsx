@@ -2,15 +2,16 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {isAxiosError} from "axios";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {Capitalize} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldBox} from "components/ui/form/FieldBox";
-import {FieldLabel} from "components/ui/form/FieldLabel";
 import {MultilineTextField} from "components/ui/form/MultilineTextField";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingResource, MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
@@ -52,6 +53,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
   const [props, formPropsObj] = splitProps(allProps, ["id", "viewMode", "meeting", "onViewModeChange", "onCancel"]);
   // eslint-disable-next-line solid/reactivity
   const formProps: FormConfigWithoutTransformFn<MeetingFormType> = formPropsObj;
+  const t = useLangFunc();
   const {meetingStatusDict} = useFixedDictionaries();
 
   const ByMode: VoidComponent<{view?: JSX.Element; edit?: JSX.Element}> = (byModeProps) => (
@@ -94,15 +96,13 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
       >
         {(form) => (
           <>
-            <div class="flex gap-x-2 justify-between flex-wrap-reverse">
-              <div class="flex-grow">
-                <MeetingDateAndTime
-                  // Does not work very well on Chrome currently.
-                  // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
-                  viewMode={props.viewMode}
-                />
-              </div>
-              <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="flex-grow" data={meeting()} />}</Show>
+            <div class="flex flex-col">
+              <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="-mb-4" data={meeting()} />}</Show>
+              <MeetingDateAndTime
+                // Does not work very well on Chrome currently.
+                // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
+                viewMode={props.viewMode}
+              />
             </div>
             <div class="flex gap-1">
               <div class="basis-0 grow">
@@ -113,10 +113,10 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                   <DictionarySelect
                     name="statusDictId"
                     label={
-                      <div class="flex gap-1">
-                        <FieldLabel fieldName="statusDictId" />
+                      <>
+                        <Capitalize text={t("models.meeting.statusDictId")} />{" "}
                         <MeetingStatusInfoIcon meetingStatusId={form.data("statusDictId")} />
-                      </div>
+                      </>
                     }
                     dictionary="meetingStatus"
                     nullable={false}
@@ -140,12 +140,12 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
             </div>
             <CheckboxField name="isRemote" />
             <ByMode
-              edit={<MultilineTextField name="notes" {...TRIM_ON_BLUR} />}
+              edit={<MultilineTextField name="notes" {...TRIM_ON_BLUR} data-felte-keep-on-remove />}
               view={
                 <FieldBox name="notes">
                   <PlaceholderField name="notes" />
                   <Show when={form.data("notes")} fallback={EMPTY_VALUE_SYMBOL}>
-                    {(notes) => <RichTextView text={notes()} />}
+                    {(notes) => <RichTextView class="max-h-60" text={notes()} />}
                   </Show>
                 </FieldBox>
               }

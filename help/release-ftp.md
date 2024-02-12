@@ -1,0 +1,24 @@
+# Wgrywanie wydań przez ftp:
+
+- przebudować kontener: `docker compose up --build`
+- wykonać komendy:
+  - `composer install --no-dev`
+  - `npm run dev`
+  - `php artisan l5-swagger:generate`
+  - `php artisan cache:clear`
+  - bez: `artisan config/event/route:cache`
+- do `x-new` skopiować foldery:
+  - app
+  - bootstrap
+  - config
+  - database
+  - public
+  - resources (bez js)
+  - routes
+  - storage (bez logs)
+  - vendor
+- usunąć zawartość `x-old`
+- wszystko (oprócz `x-*` i `*env`) przenieść z `/` do `x-old`
+- wszystko z `x-new` przenieść do `/`
+- sprawdzić, czy nie został zgubiony `.env`
+  - w razie czego przywrócić z `x-env`

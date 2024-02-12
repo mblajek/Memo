@@ -1,5 +1,5 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {SortingState, createColumnHelper, createSolidTable} from "@tanstack/solid-table";
+import {createColumnHelper, createSolidTable} from "@tanstack/solid-table";
 import {AxiosResponse} from "axios";
 import {useFormContext} from "components/felte-form/FelteForm";
 import {Button} from "components/ui/Button";
@@ -13,14 +13,14 @@ import {
   useTableCells,
 } from "components/ui/Table";
 import {Select} from "components/ui/form/Select";
-import {USER_ICONS} from "components/ui/icons";
+import {FACILITY_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {MemberResource} from "data-access/memo-api/resources/member.resource";
 import {Api} from "data-access/memo-api/types";
 import {byId} from "data-access/memo-api/utils";
-import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {Show, VoidComponent, createMemo} from "solid-js";
 import {z} from "zod";
 
 export const getSchema = () =>
@@ -28,6 +28,8 @@ export const getSchema = () =>
     z.object({
       facilityId: z.string(),
       hasFacilityAdmin: z.boolean(),
+      isFacilityStaff: z.boolean(),
+      isFacilityClient: z.boolean(),
     }),
   );
 
@@ -36,7 +38,9 @@ export type Output = z.output<ReturnType<typeof getSchema>>;
 
 interface MemberRow {
   /** Member information, or undefined for the new member row. */
-  readonly member: Pick<MemberResource, "facilityId" | "hasFacilityAdmin"> | undefined;
+  readonly member:
+    | Pick<MemberResource, "facilityId" | "hasFacilityAdmin" | "isFacilityStaff" | "isFacilityClient">
+    | undefined;
 }
 
 interface Props {
@@ -51,7 +55,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
   // A trick: we assume the form has only the key specified by membersPath, and it's of type Input.
   const {form} = useFormContext<Record<typeof membersPath, Input>>();
   const t = useLangFunc();
-  const translations = createTableTranslations("userFacility");
+  const translations = createTableTranslations("userFacilityMember");
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const facilitiesById = createMemo(() => byId(facilitiesQuery.data));
   /** A list of facilities that are not yet present in any row. Only those can be added. */
@@ -74,17 +78,13 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
   });
   const tableCells = useTableCells();
   const h = createColumnHelper<MemberRow>();
-  const [sorting, setSorting] = createSignal<SortingState>([{id: "facility", desc: false}]);
   const table = createSolidTable<MemberRow>({
     ...getBaseTableOptions<MemberRow>({
-      features: {columnVisibility: {isNewRow: false}, sorting: [sorting, setSorting]},
-      state: {
-        get sorting() {
-          // Inject artificial sorting, so that the new row is always last.
-          return [{id: "isNewRow", desc: false}, ...sorting()];
-        },
+      features: {columnVisibility: {isNewRow: false}},
+      defaultColumn: {
+        ...AUTO_SIZE_COLUMN_DEFS,
+        enableSorting: false,
       },
-      defaultColumn: AUTO_SIZE_COLUMN_DEFS,
     }),
     get data(): MemberRow[] {
       return data();
@@ -106,14 +106,20 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
               <Select
                 name="__addedFacility"
                 label=""
-                aria-label={t("models.member.facility")}
+                placeholder={t("actions.add")}
+                aria-label={t("models.userFacilityMember.facility")}
                 items={[...freeFacilities().map(({id, name}) => ({value: id, text: name}))]}
                 onFilterChange="internal"
                 nullable
                 onValueChange={(facilityId) => {
                   if (facilityId) {
                     // When something is selected, convert this to an existing row.
-                    const newRow: Input[number] = {facilityId, hasFacilityAdmin: false};
+                    const newRow: Input[number] = {
+                      facilityId,
+                      hasFacilityAdmin: false,
+                      isFacilityStaff: false,
+                      isFacilityClient: false,
+                    };
                     // The form trick causes type problems here, for some reason expecting array as
                     // the second parameter.
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -126,32 +132,31 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
           </Show>
         ),
       }),
-      h.accessor((row) => row.member?.hasFacilityAdmin, {
-        id: "hasFacilityAdmin",
-        cell: (ctx) => (
-          <Show when={!ctx.row.getValue("isNewRow")}>
-            <PaddedCell class="text-center">
-              <input
-                type="checkbox"
-                name={`${membersPath}.${ctx.row.index}.hasFacilityAdmin`}
-                data-felte-keep-on-remove
-              />
-            </PaddedCell>
-          </Show>
-        ),
-      }),
+      ...(["hasFacilityAdmin", "isFacilityStaff", "isFacilityClient"] as const).map((field) =>
+        h.accessor((row) => row.member?.[field], {
+          id: field,
+          cell: (ctx) => (
+            <Show when={!ctx.row.getValue("isNewRow")}>
+              <PaddedCell class="text-center">
+                <input type="checkbox" name={`${membersPath}.${ctx.row.index}.${field}`} data-felte-keep-on-remove />
+              </PaddedCell>
+            </Show>
+          ),
+        }),
+      ),
       h.display({
         id: "actions",
         cell: (ctx) => (
           <PaddedCell>
             <Show when={!ctx.row.getValue("isNewRow")}>
               <Button
+                class="minimal"
                 onClick={() => {
                   const {index} = ctx.row;
                   form.setFields(membersPath, form.data(membersPath).toSpliced(index, 1));
                 }}
               >
-                <USER_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
+                <FACILITY_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
               </Button>
             </Show>
           </PaddedCell>
@@ -186,27 +191,12 @@ export function useMembersUpdater(): MembersUpdater {
   return {
     getUpdatePromises: (oldUser, values) => {
       const promises = [];
-      /**
-       * Checks whether the member entry is modified. The two member entries are for the same
-       * user and facility, only other fields should be compared.
-       */
-      function isChanged(oldMember: MemberResource, newMember: Output[number]) {
-        return newMember.hasFacilityAdmin !== oldMember.hasFacilityAdmin;
-      }
       for (const member of values) {
         const oldMember = oldUser.members.find(({facilityId}) => facilityId === member.facilityId);
         if (oldMember) {
           if (isChanged(oldMember, member))
             promises.push(updateMemberMutation.mutateAsync({id: oldMember.id, ...member}));
-        } else
-          promises.push(
-            createMemberMutation.mutateAsync({
-              userId: oldUser.id,
-              ...member,
-              clientId: null,
-              staffMemberId: null,
-            }),
-          );
+        } else promises.push(createMemberMutation.mutateAsync({userId: oldUser.id, ...member}));
       }
       for (const oldMember of oldUser.members)
         if (!values.some(({facilityId}) => facilityId === oldMember.facilityId))
@@ -214,13 +204,23 @@ export function useMembersUpdater(): MembersUpdater {
       return promises;
     },
     getCreatePromises: (userId, values) =>
-      values.map((member) =>
-        createMemberMutation.mutateAsync({
-          userId: userId,
-          ...member,
-          clientId: null,
-          staffMemberId: null,
-        }),
-      ),
+      values.map((member) => createMemberMutation.mutateAsync({userId: userId, ...member})),
   };
+}
+
+export function isUpdateDestructive(initialValues: Output, values: Output) {
+  return initialValues.some((oldMember) => {
+    const newMember = values.find(({facilityId}) => facilityId === oldMember.facilityId);
+    return (["isFacilityStaff", "isFacilityClient"] as const).some((field) => oldMember[field] && !newMember?.[field]);
+  });
+}
+
+/**
+ * Checks whether the member entry is modified. The two member entries are for the same
+ * user and facility, only other fields should be compared.
+ */
+function isChanged(oldMember: MemberResource, newMember: Output[number]) {
+  return (["hasFacilityAdmin", "isFacilityStaff", "isFacilityClient"] as const).some(
+    (field) => oldMember[field] !== newMember[field],
+  );
 }

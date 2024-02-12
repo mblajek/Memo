@@ -1,5 +1,6 @@
 import {useLocation} from "@solidjs/router";
 import {isAxiosError} from "axios";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Show, VoidComponent, createEffect, createMemo} from "solid-js";
 import {QueryBarrierProps, QueryErrorsProps, SimpleErrors} from "./QueryBarrier";
 import {useLangFunc} from "./lang";
@@ -43,9 +44,11 @@ export const NotFoundError: VoidComponent<Props> = (props) => {
       },
     });
   };
+  const invalidate = useInvalidator();
   createEffect(() => {
     if (isNotFoundError()) {
       console.error("404 response:", error());
+      invalidate.everythingNoLoop();
     }
   });
   return (

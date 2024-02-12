@@ -1,10 +1,10 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {Api} from "data-access/memo-api/types";
-import {lazy} from "solid-js";
 
-const FacilityEditForm = lazy(() => import("features/facility-edit/FacilityEditForm"));
+const FacilityEditForm = lazyAutoPreload(() => import("features/facility-edit/FacilityEditForm"));
 
 interface FormParams {
   readonly facilityId: Api.Id;

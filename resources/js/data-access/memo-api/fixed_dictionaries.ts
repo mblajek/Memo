@@ -1,7 +1,7 @@
 import {Accessor, createMemo} from "solid-js";
-import {Dictionaries, typedDictionary, useDictionaries} from "./dictionaries";
+import {Dictionaries, TypedDictionary, typedDictionary, useDictionaries} from "./dictionaries";
 
-export function useMeetingStatusDictionary(dictionaries?: Dictionaries) {
+export function useMeetingStatusDictionary(dictionaries?: DictionariesInput) {
   return useTypedDictionary({
     dictionaries,
     dictionaryName: "meetingStatus",
@@ -9,7 +9,7 @@ export function useMeetingStatusDictionary(dictionaries?: Dictionaries) {
   });
 }
 
-export function useAttendanceStatusDictionary(dictionaries?: Dictionaries) {
+export function useAttendanceStatusDictionary(dictionaries?: DictionariesInput) {
   return useTypedDictionary({
     dictionaries,
     dictionaryName: "attendanceStatus",
@@ -17,10 +17,12 @@ export function useAttendanceStatusDictionary(dictionaries?: Dictionaries) {
   });
 }
 
-export function useFixedDictionaries(dictionaries?: Dictionaries) {
+export function useFixedDictionaries(dictionaries?: DictionariesInput) {
+  const dicts = unwrap(dictionaries);
   return {
-    meetingStatusDict: useMeetingStatusDictionary(dictionaries),
-    attendanceStatusDict: useAttendanceStatusDictionary(dictionaries),
+    dictionaries: dicts,
+    meetingStatusDict: useMeetingStatusDictionary(dicts),
+    attendanceStatusDict: useAttendanceStatusDictionary(dicts),
   };
 }
 
@@ -29,18 +31,20 @@ function useTypedDictionary<P extends string>({
   dictionaryName,
   positionNames,
 }: {
-  dictionaries?: Dictionaries | Accessor<Dictionaries>;
+  dictionaries?: DictionariesInput;
   dictionaryName: string;
   positionNames: P[];
-}) {
-  const dicts = dictionaries
-    ? typeof dictionaries === "function"
-      ? dictionaries
-      : () => dictionaries
-    : useDictionaries();
-  const dict = createMemo(() => {
+}): Accessor<TypedDictionary<P> | undefined> {
+  const dicts = unwrap(dictionaries);
+  const typedDict = createMemo(() => {
     const dict = dicts()?.get(dictionaryName);
     return dict && typedDictionary(dict, positionNames);
   });
-  return dict;
+  return typedDict;
+}
+
+type DictionariesInput = Dictionaries | Accessor<Dictionaries | undefined> | undefined;
+
+function unwrap(dicts: DictionariesInput): Accessor<Dictionaries | undefined> {
+  return typeof dicts === "function" ? dicts : dicts ? () => dicts : useDictionaries();
 }

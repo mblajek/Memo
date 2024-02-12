@@ -157,8 +157,6 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     combobox.machine({
       id: createUniqueId(),
       // eslint-disable-next-line solid/reactivity
-      ids: {input: props.name},
-      // eslint-disable-next-line solid/reactivity
       name: props.name,
       // Needed but never used, the actual collection comes from the context below.
       collection: combobox.collection.empty(),

@@ -5,6 +5,11 @@ import {TranslatedText} from "../TranslatedText";
 
 interface Props extends htmlAttributes.label {
   readonly fieldName: string;
+  /**
+   * If specified, this label describes a collection of fields, and not a single field with exactly the same name.
+   * Default: false.
+   */
+  readonly umbrella?: boolean;
   readonly text?: JSX.Element;
   /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
   readonly wrapIn?: (text: JSX.Element) => JSX.Element;
@@ -20,7 +25,7 @@ interface Props extends htmlAttributes.label {
  * Otherwise, the label is not present.
  */
 export const FieldLabel: VoidComponent<Props> = (allProps) => {
-  const [props, labelProps] = splitProps(allProps, ["fieldName", "text", "wrapIn"]);
+  const [props, labelProps] = splitProps(allProps, ["fieldName", "umbrella", "text", "wrapIn"]);
   const form = useFormContextIfInForm();
   return (
     <TranslatedText
@@ -33,7 +38,7 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
           <Show when={text !== undefined} fallback={content()}>
             <label
               id={labelIdForField(props.fieldName)}
-              for={props.fieldName}
+              for={props.umbrella ? undefined : props.fieldName}
               {...htmlAttributes.merge(labelProps, {class: "font-medium"})}
             >
               {content()}
