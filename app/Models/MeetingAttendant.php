@@ -18,6 +18,8 @@ class MeetingAttendant extends Model
 {
     use BaseModel;
 
+    private const string ATTENDANCE_STATUS_OK = '1adb737f-da0f-4473-ab9c-55fc1634b397';
+
     protected $table = 'meeting_attendants';
 
     protected $fillable = [
@@ -32,4 +34,9 @@ class MeetingAttendant extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
+
+    public function resetAttendanceStatus(): void
+    {
+        $this->attendance_status_dict_id = self::ATTENDANCE_STATUS_OK;
+    }
 }

@@ -48,6 +48,7 @@ class MeetingResource extends AbstractJsonResource
     {
         return [
             'id' => true,
+            'fromMeetingId' => true,
             'facilityId' => true,
             'categoryDictId' => true,
             'typeDictId' => true,
