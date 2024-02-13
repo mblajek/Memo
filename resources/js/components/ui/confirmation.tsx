@@ -42,7 +42,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
               {data().cancelText || t("actions.cancel")}
             </Button>
             <Button
-              ref={focusThis}
+              ref={(el) => focusThis(el)}
               class="flex-grow basis-0 primary"
               onClick={() => {
                 data().resolve(true);
