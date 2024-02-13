@@ -75,3 +75,20 @@ meeting_delete:
   confirmationText: "Czy na pewno usunąć to spotkanie?"
   submit: "Usuń spotkanie"
   success: "Usunięto spotkanie"
+
+meeting_series:
+  fieldNames:
+    interval: "powtarzaj"
+    maxIndex: "długość serii"
+    # Umbrella fields for the meeting dates table:
+    meetingDates: "daty spotkań"
+  total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
+  interval_labels:
+    every_day: "w kolejne dni"
+    every_week: "co tydzień"
+    every_two_weeks: "co dwa tygodnie"
+
+meeting_series_create:
+  formName: "Utwórz serię spotkań"
+  submit: "Utwórz spotkania"
+  success: "Utworzono serię spotkań"

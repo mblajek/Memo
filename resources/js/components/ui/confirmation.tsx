@@ -1,6 +1,7 @@
 import {JSX} from "solid-js";
 import {useLangFunc} from "../utils";
 import {registerGlobalPageElement} from "../utils/GlobalPageElements";
+import {focusThis} from "../utils/focus_this";
 import {Button} from "./Button";
 import {Modal} from "./Modal";
 
@@ -41,6 +42,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
               {data().cancelText || t("actions.cancel")}
             </Button>
             <Button
+              ref={focusThis}
               class="flex-grow basis-0 primary"
               onClick={() => {
                 data().resolve(true);

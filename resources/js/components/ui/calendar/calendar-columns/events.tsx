@@ -152,7 +152,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           </Show>
           <MeetingType typeId={props.meeting.typeDictId} />
           <MeetingStatusTags meeting={props.meeting} />
-          <RichTextView class="max-h-20 overflow-y-clip" text={props.meeting.notes} />
+          <RichTextView class="max-h-30 !overflow-x-clip overflow-y-hidden" text={props.meeting.notes} />
           <Show when={props.meeting.resources.length}>
             <div>{t("parenthesised", {text: resources()})}</div>
           </Show>

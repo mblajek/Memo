@@ -13,7 +13,11 @@ import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
-import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
+import {
+  MeetingAttendantResource,
+  MeetingResource,
+  MeetingResourceForCreate,
+} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {Index, Match, Show, Switch, VoidComponent, createEffect} from "solid-js";
@@ -280,11 +284,20 @@ export function useAttendantsCreator() {
     return attendantsInitialValueFromMeeting(meeting, {attendanceStatusDictId: attendanceStatusDict()!.ok.id});
   }
 
+  function attendantsForCreateCopy(meeting: MeetingResource): Pick<MeetingResourceForCreate, "staff" | "clients"> {
+    const {staff, clients} = attendantsInitialValueForCreateCopy(meeting);
+    return {
+      staff: staff.filter(({userId}) => userId),
+      clients: clients.filter(({userId}) => userId),
+    };
+  }
+
   return {
     createAttendant,
     attendantsInitialValueForCreate,
     attendantsInitialValueForEdit,
     attendantsInitialValueForCreateCopy,
+    attendantsForCreateCopy,
   };
 }
 

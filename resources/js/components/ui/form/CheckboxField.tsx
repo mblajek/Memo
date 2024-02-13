@@ -2,13 +2,15 @@ import {JSX, VoidComponent} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
 
-interface Props {
+type Props = {
   readonly name: string;
   readonly label?: JSX.Element;
   readonly disabled?: boolean;
   // TODO: Find a better solution for providing a hint like this.
   readonly title?: string;
-}
+} & {
+  readonly "data-felte-keep-on-remove"?: true;
+};
 
 /**
  * Wrapper of native HTML's `<input>` in the checkbox form.
@@ -32,9 +34,10 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
             type="checkbox"
             id={props.name}
             name={props.name}
-            class="border border-input-border m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
-            aria-labelledby={labelIdForField(props.name)}
+            class="m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
+            aria-labelledby={text === undefined ? undefined : labelIdForField(props.name)}
             disabled={props.disabled}
+            data-felte-keep-on-remove={props["data-felte-keep-on-remove"]}
           />
           {text}
         </>

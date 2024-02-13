@@ -10,6 +10,7 @@ import App from "./App";
 import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {GlobalPageElements} from "./components/utils/GlobalPageElements";
+import {LocaleContext} from "./components/utils/LocaleContext";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
 
@@ -45,32 +46,34 @@ render(() => {
         pluralSeparator: "__",
       }}
     >
-      <Show when={!translationsLoaded()}>
-        {/* Show the loader until the translations are loaded. The page is displayed underneath, and
+      <LocaleContext.Provider value={new Intl.Locale("pl")}>
+        <Show when={!translationsLoaded()}>
+          {/* Show the loader until the translations are loaded. The page is displayed underneath, and
         the strings will get updated reactively when the translations are ready. */}
-        <MemoLoader />
-      </Show>
-      <ErrorBoundary
-        fallback={(error) => {
-          console.error(error);
-          return <FatalError error={error} />;
-        }}
-      >
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            className: "mr-4",
-            duration: TOAST_DURATION_SECS * 1000,
+          <MemoLoader />
+        </Show>
+        <ErrorBoundary
+          fallback={(error) => {
+            console.error(error);
+            return <FatalError error={error} />;
           }}
-        />
-        <MetaProvider>
-          <InitializeTanstackQuery>
-            <App />
-          </InitializeTanstackQuery>
-        </MetaProvider>
-        <GlobalPageElements />
-        <LoaderInPortal />
-      </ErrorBoundary>
+        >
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: "mr-4",
+              duration: TOAST_DURATION_SECS * 1000,
+            }}
+          />
+          <MetaProvider>
+            <InitializeTanstackQuery>
+              <App />
+            </InitializeTanstackQuery>
+          </MetaProvider>
+          <GlobalPageElements />
+          <LoaderInPortal />
+        </ErrorBoundary>
+      </LocaleContext.Provider>
     </TransProvider>
   );
 }, root);

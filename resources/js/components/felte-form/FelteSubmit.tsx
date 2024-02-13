@@ -1,5 +1,6 @@
 import {ParentComponent, Show, splitProps} from "solid-js";
 import {Button} from "../ui/Button";
+import {SmallSpinner} from "../ui/Spinner";
 import {htmlAttributes, useLangFunc} from "../utils";
 import {useFormContext} from "./FelteForm";
 import {UnknownValidationMessages} from "./UnknownValidationMessages";
@@ -30,11 +31,7 @@ export const FelteSubmit: ParentComponent<Props> = (allProps) => {
       </Show>
       <div class="flex gap-1 justify-center items-stretch">
         <Show when={props.cancel}>
-          <Button
-            class="flex-grow basis-0 secondary"
-            disabled={form.isSubmitting() || buttonProps.disabled}
-            onClick={props.cancel}
-          >
+          <Button class="flex-grow basis-0 secondary" disabled={form.isSubmitting()} onClick={props.cancel}>
             {t("actions.cancel")}
           </Button>
         </Show>
@@ -45,6 +42,9 @@ export const FelteSubmit: ParentComponent<Props> = (allProps) => {
           disabled={form.isSubmitting() || buttonProps.disabled}
           {...buttonProps}
         >
+          <Show when={form.isSubmitting()}>
+            <SmallSpinner />
+          </Show>{" "}
           {props.children || translations.submit()}
         </Button>
       </div>

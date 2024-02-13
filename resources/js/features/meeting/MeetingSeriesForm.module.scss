@@ -1,0 +1,7 @@
+// Apply the line-through style to all the parts of the date (workaround).
+.meetingDateSkip {
+  @apply text-opacity-60;
+  * {
+    @apply line-through;
+  }
+}

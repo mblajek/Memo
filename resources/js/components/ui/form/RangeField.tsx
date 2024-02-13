@@ -2,27 +2,23 @@ import {htmlAttributes} from "components/utils";
 import {JSX, VoidComponent, splitProps} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
-import {TextInput} from "../TextInput";
 
-export interface TextFieldProps
-  extends Pick<
-    htmlAttributes.input,
-    "type" | "min" | "max" | "step" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
-  > {
+export interface RangeFieldProps
+  extends Pick<htmlAttributes.input, "min" | "max" | "step" | "readonly" | "onInput" | "onChange"> {
   readonly name: string;
   readonly label?: JSX.Element;
 }
 
 /** Wrapper of native HTML's `<input>`. Intended for use with FelteForm (handles validation messages). */
-export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
+export const RangeField: VoidComponent<RangeFieldProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["name", "label"]);
   return (
     <FieldBox {...props}>
-      <TextInput
+      <input
         id={props.name}
         name={props.name}
-        autocomplete="off"
-        {...htmlAttributes.merge(inputProps, {class: "min-h-big-input px-2"})}
+        type="range"
+        {...htmlAttributes.merge(inputProps, {class: "h-6"})}
         aria-labelledby={labelIdForField(props.name)}
       />
     </FieldBox>
