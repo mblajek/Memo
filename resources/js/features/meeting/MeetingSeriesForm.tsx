@@ -10,6 +10,7 @@ import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {DATE_FORMAT, cx, useLangFunc} from "components/utils";
 import {useLocale} from "components/utils/LocaleContext";
 import {FormattedDateTime} from "components/utils/date_formatting";
+import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {DateTime} from "luxon";
 import {For, VoidComponent, createComputed, createMemo, createSignal, on, onMount, splitProps} from "solid-js";
 import {z} from "zod";
@@ -17,8 +18,7 @@ import s from "./MeetingSeriesForm.module.scss";
 
 const getSchema = () =>
   z.object({
-    // A string representing the number of days.
-    interval: z.string(),
+    interval: z.string(), // FacilityMeeting.CloneInterval
     maxIndex: z.number(),
     includeDate: z.record(z.boolean()),
   });
@@ -31,11 +31,7 @@ interface Props extends FormConfigWithoutTransformFn<MeetingSeriesFormType> {
   readonly onCancel?: () => void;
 }
 
-const INTERVALS = new Map([
-  [1, "every_day"],
-  [7, "every_week"],
-  [14, "every_two_weeks"],
-]);
+const INTERVALS: FacilityMeeting.CloneInterval[] = ["1d", "7d", "14d"];
 
 const MAX_NUM_MEETINGS = 55;
 
@@ -55,15 +51,6 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
       {...formProps}
     >
       {(form) => {
-        // Keep the meeting dates as millis to make them equal by identity, and thus suitable for the <For> loop.
-        const potentialMeetingDatesMillis = createMemo(() =>
-          // eslint-disable-next-line solid/reactivity
-          Array.from({length: form.data("maxIndex") + 1}, (_, i) =>
-            startDate()
-              .plus({days: Number(form.data("interval")) * i})
-              .toMillis(),
-          ),
-        );
         // Keep meeting dates scrolled to bottom if it was already scrolled to bottom.
         createComputed(
           on(
@@ -79,27 +66,54 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
             },
           ),
         );
-        const meetingSeriesDates = createMemo(() => getMeetingSeriesDates(startDate(), form.data()));
+        const meetingSeriesCloneParams = createMemo(() =>
+          getMeetingSeriesCloneParams({startDate: startDate(), values: form.data()}),
+        );
+
+        const MeetingDate: VoidComponent<{date: DateTime; class?: string}> = (props) => (
+          <span
+            class={cx(
+              weekDaysCalculator.isWeekend(props.date) || holidays.isHoliday(props.date)
+                ? "text-red-800"
+                : "text-black",
+              props.class,
+            )}
+          >
+            <FormattedDateTime dateTime={props.date} format={{...DATE_FORMAT, weekday: "short"}} alignWeekday />
+          </span>
+        );
+
         return (
           <div class="flex flex-col gap-2">
             <SegmentedControl
               name="interval"
-              items={Array.from(INTERVALS, ([value, name]) => ({
-                value: String(value),
-                label: () => t(`forms.meeting_series.interval_labels.${name}`),
+              items={Array.from(INTERVALS, (interval) => ({
+                value: interval,
+                label: () => t(`forms.meeting_series.interval_labels.${interval}`),
               }))}
             />
             <RangeField name="maxIndex" min="1" max={MAX_NUM_MEETINGS - 1} />
             <FieldBox name="meetingDates" umbrella>
               <div ref={setMeetingDatesTable} class="self-start h-72 flex flex-col overflow-y-auto">
-                <For each={potentialMeetingDatesMillis()}>
-                  {(dateMillis, index) => {
-                    const date = DateTime.fromMillis(dateMillis);
-                    const isoDate = date.toISODate();
-                    if (form.data("includeDate")[isoDate] == undefined) {
+                <span>
+                  <MeetingDate date={startDate()} class="px-1" />{" "}
+                  <span class="text-sm">{t("parenthesised", {text: t("meetings.first_meeting")})}</span>
+                </span>
+                <For
+                  each={
+                    getMeetingSeriesCloneParams({
+                      startDate: startDate(),
+                      values: form.data(),
+                      includeAllDates: true,
+                    }).dates
+                  }
+                >
+                  {(dateISO) => {
+                    const date = DateTime.fromISO(dateISO);
+                    if (form.data("includeDate")[dateISO] == undefined) {
                       onMount(() =>
                         form.setFields(
-                          `includeDate.${isoDate}`,
+                          `includeDate.${dateISO}`,
                           date.hasSame(startDate(), "day")
                             ? true
                             : // By default skip weekends (unless the start date is on a weekend) and holidays.
@@ -110,22 +124,11 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
                     }
                     return (
                       <label class="flex items-baseline gap-2 select-none px-1 hover:bg-hover">
-                        <div
-                          class={cx(
-                            weekDaysCalculator.isWeekend(date) || holidays.isHoliday(date)
-                              ? "text-red-800"
-                              : "text-black",
-                            {[s.meetingDateSkip!]: !form.data("includeDate")[isoDate]},
-                          )}
-                        >
-                          <FormattedDateTime dateTime={date} format={{...DATE_FORMAT, weekday: "short"}} alignWeekday />
-                        </div>
-                        <CheckboxField
-                          name={`includeDate.${isoDate}`}
-                          label=""
-                          disabled={!index()}
-                          data-felte-keep-on-remove
+                        <MeetingDate
+                          date={date}
+                          class={cx({[s.meetingDateSkip!]: !form.data("includeDate")[dateISO]})}
                         />
+                        <CheckboxField name={`includeDate.${dateISO}`} label="" data-felte-keep-on-remove />
                       </label>
                     );
                   }}
@@ -134,10 +137,10 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
             </FieldBox>
             <div>
               {t("forms.meeting_series.total_number_of_meetings", {
-                count: meetingSeriesDates().length,
+                count: meetingSeriesCloneParams().dates.length + 1,
               })}
             </div>
-            <FelteSubmit cancel={props.onCancel} disabled={meetingSeriesDates().length < 2} />
+            <FelteSubmit cancel={props.onCancel} disabled={meetingSeriesCloneParams().dates.length < 1} />
           </div>
         );
       }}
@@ -145,8 +148,23 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
   );
 };
 
-export function getMeetingSeriesDates(startDate: DateTime, formValues: MeetingSeriesFormType) {
-  return Array.from({length: formValues.maxIndex + 1}, (_, i) =>
-    startDate.plus({days: Number(formValues.interval) * i}),
-  ).filter((date) => formValues.includeDate[date.toISODate()]);
+export function getMeetingSeriesCloneParams({
+  startDate,
+  values,
+  includeAllDates = false,
+}: {
+  startDate: DateTime;
+  values: MeetingSeriesFormType;
+  includeAllDates?: boolean;
+}): FacilityMeeting.CloneRequest {
+  const interval = values.interval as FacilityMeeting.CloneInterval;
+  const daysInterval =
+    interval === "1d" ? 1 : interval === "7d" ? 7 : interval === "14d" ? 14 : (interval satisfies never);
+  const allDates = Array.from({length: values.maxIndex}, (_, i) =>
+    startDate.plus({days: daysInterval * (i + 1)}).toISODate(),
+  );
+  return {
+    interval,
+    dates: includeAllDates ? allDates : allDates.filter((date) => values.includeDate[date]),
+  };
 }

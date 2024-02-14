@@ -29,7 +29,8 @@ export interface MeetingViewEditFormProps {
   readonly viewMode?: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
   readonly onEdited?: (meeting: MeetingChangeSuccessData) => void;
-  readonly onCreated?: (meeting: MeetingChangeSuccessData[]) => void;
+  readonly onCreated?: (meeting: MeetingChangeSuccessData) => void;
+  readonly onCloned?: (firstMeeting: MeetingChangeSuccessData, otherMeetingIds: string[]) => void;
   readonly onDeleted?: (meetingId: string) => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Default: true. */
@@ -118,7 +119,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         ...attendantsInitialValueForCreateCopy(meeting()),
         fromMeetingId: props.meetingId,
       },
-      onSuccess: (meeting) => props.onCreated?.([meeting]),
+      onSuccess: (meeting) => props.onCreated?.(meeting),
       forceTimeEditable: !days,
       showToast: props.showToast,
     });
@@ -158,7 +159,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                   onClick={() => {
                     meetingSeriesCreateModal.show({
                       startMeeting: meeting(),
-                      onSuccess: props.onCreated,
+                      onSuccess: props.onCloned,
                       showToast: props.showToast,
                     });
                   }}

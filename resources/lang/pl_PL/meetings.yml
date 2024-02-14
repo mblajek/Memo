@@ -18,8 +18,7 @@ show_details: "Więcej"
 click_to_see_details: "Kliknij, aby zobaczyć szczegóły spotkania"
 
 create_series: "Powtarzaj spotkanie"
-# Button in toast after creating a series.
-show_first: "Pokaż pierwsze"
+first_meeting: "pierwsze spotkanie"
 
 create_copy:
   any: "Utwórz i edytuj kopię"

@@ -5,6 +5,7 @@ exception:
     translation: "Błędna konfiguracja tłumaczeń"
     tquery: "Błędna konfiguracja tabel"
   validation: "Przesłano niepoprawne dane"
+  form_submit: "Błąd przetwarzania formularza"
   unauthorised: "Brak autoryzacji"
   bad_credentials: "Błędne dane logowania"
   forbidden: "Brak dostępu"

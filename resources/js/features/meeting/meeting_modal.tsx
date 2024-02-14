@@ -3,6 +3,7 @@ import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
+import {doAndClearParams} from "components/utils/modals";
 import {MeetingViewEditFormProps} from "features/meeting/MeetingViewEditForm";
 import {createComputed, createSignal} from "solid-js";
 
@@ -32,22 +33,11 @@ export const createMeetingModal = registerGlobalPageElement<Params>((args) => {
               params().onViewModeChange?.(viewMode);
               setViewMode(viewMode);
             }}
-            onEdited={(meeting) => {
-              params().onEdited?.(meeting);
-              args.clearParams();
-            }}
-            onCreated={(meeting) => {
-              params().onCreated?.(meeting);
-              args.clearParams();
-            }}
-            onDeleted={() => {
-              params().onDeleted?.(params().meetingId);
-              args.clearParams();
-            }}
-            onCancel={() => {
-              params().onCancel?.();
-              args.clearParams();
-            }}
+            onEdited={doAndClearParams(args, params().onEdited)}
+            onCreated={doAndClearParams(args, params().onCreated)}
+            onCloned={doAndClearParams(args, params().onCloned)}
+            onDeleted={doAndClearParams(args, params().onDeleted)}
+            onCancel={doAndClearParams(args, params().onCancel)}
           />
         );
       }}

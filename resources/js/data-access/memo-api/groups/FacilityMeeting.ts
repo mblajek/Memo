@@ -25,6 +25,24 @@ export namespace FacilityMeeting {
     V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting, config);
   export const deleteMeeting = (meetingId: Api.Id, config?: Api.Config) =>
     V1.delete(`/facility/${activeFacilityId()}/meeting/${meetingId}`, config);
+  export const cloneMeeting = ({meetingId, request}: {meetingId: Api.Id; request: CloneRequest}, config?: Api.Config) =>
+    V1.post<Api.Response.Post<CloneResponse>>(
+      `/facility/${activeFacilityId()}/meeting/${meetingId}/clone`,
+      request,
+      config,
+    );
+
+  export type CloneInterval = "1d" | "7d" | "14d";
+
+  export interface CloneRequest {
+    readonly interval: CloneInterval;
+    /** Dates of the clones of the meeting. */
+    readonly dates: string[];
+  }
+
+  export interface CloneResponse {
+    readonly ids: string[];
+  }
 
   export const keys = {
     meeting: () => ["meeting"] as const,

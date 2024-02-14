@@ -84,9 +84,9 @@ meeting_series:
     meetingDates: "daty spotkań"
   total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
   interval_labels:
-    every_day: "w kolejne dni"
-    every_week: "co tydzień"
-    every_two_weeks: "co dwa tygodnie"
+    1d: "w kolejne dni"
+    7d: "co tydzień"
+    14d: "co dwa tygodnie"
 
 meeting_series_create:
   formName: "Utwórz serię spotkań"

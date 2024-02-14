@@ -19,6 +19,7 @@ import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {OcTable3} from "solid-icons/oc";
 import {TbInfoTriangle} from "solid-icons/tb";
 import {
+  JSX,
   Match,
   Show,
   Signal,
@@ -462,20 +463,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   const owner = getOwner();
-  function meetingChange(operation: "create" | "edit", meetings: MeetingChangeSuccessData[]) {
-    for (const meeting of meetings) {
-      blinkMeeting(meeting.id);
+  function meetingChange(message: JSX.Element, meeting: MeetingChangeSuccessData, otherMeetingIds?: string[]) {
+    blinkMeeting(meeting.id);
+    for (const id of otherMeetingIds || []) {
+      blinkMeeting(id);
     }
-    const message = t(
-      operation === "create"
-        ? meetings.length === 1
-          ? "forms.meeting_create.success"
-          : "forms.meeting_series_create.success"
-        : operation === "edit"
-          ? "forms.meeting_edit.success"
-          : (operation satisfies never),
-    );
-    const meeting = meetings[0]!;
     const meetingDate = DateTime.fromISO(meeting.date);
     toast.success(
       runWithOwner(owner, () => (
@@ -502,7 +494,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               blinkMeeting(meeting.id);
             }}
           >
-            {t(meetings.length > 1 ? "meetings.show_first" : "actions.show")}
+            {t("actions.show")}
           </Button>
         </div>
       )),
@@ -559,8 +551,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                     meetingModal.show({
                       meetingId: ev.meeting.id,
                       initialViewMode: true,
-                      onEdited: (meeting) => meetingChange("edit", [meeting]),
-                      onCreated: (meetings) => meetingChange("create", meetings),
+                      onEdited: (meeting) => meetingChange(t("forms.meeting_edit.success"), meeting),
+                      onCreated: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
+                      onCloned: (meeting, otherMeetingIds) =>
+                        meetingChange(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
                       onDeleted: () => toast.success(t("forms.meeting_delete.success")),
                       showToast: false,
                     })
@@ -578,13 +572,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           day={day}
           blocks={fakeWorkingHours}
           events={selectedEvents()}
-          onTimeClick={(t) =>
+          onTimeClick={(time) =>
             meetingCreateModal.show({
               initialValues: {
-                ...meetingTimeInitialValue(t),
+                ...meetingTimeInitialValue(time),
                 ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
               },
-              onSuccess: (meeting) => meetingChange("create", [meeting]),
+              onSuccess: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
               showToast: false,
             })
           }

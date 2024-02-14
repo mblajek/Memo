@@ -3,6 +3,7 @@ import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {MeetingSeriesCreateFormProps} from "features/meeting/MeetingSeriesCreateForm";
+import {doAndClearParams} from "components/utils/modals";
 
 const MeetingSeriesCreateForm = lazyAutoPreload(() => import("features/meeting/MeetingSeriesCreateForm"));
 
@@ -19,14 +20,8 @@ export const createMeetingSeriesCreateModal = registerGlobalPageElement<MeetingS
       {(params) => (
         <MeetingSeriesCreateForm
           {...params()}
-          onSuccess={(meetings) => {
-            params().onSuccess?.(meetings);
-            args.clearParams();
-          }}
-          onCancel={() => {
-            params().onCancel?.();
-            args.clearParams();
-          }}
+          onSuccess={doAndClearParams(args, params().onSuccess)}
+          onCancel={doAndClearParams(args, params().onCancel)}
         />
       )}
     </Modal>
