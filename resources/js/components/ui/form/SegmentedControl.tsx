@@ -4,11 +4,12 @@ import {cx} from "components/utils";
 import {For, JSX, Show, VoidComponent, createComputed, createMemo, createUniqueId} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import s from "./SegmentedControl.module.scss";
+import {LabelOverride} from "./labels";
 
 interface Props {
   readonly name: string;
   readonly items: readonly Item[];
-  readonly label?: JSX.Element;
+  readonly label?: LabelOverride;
   /** Optionally value, if should be used in standalone mode (not in form). */
   readonly value?: string;
   readonly setValue?: (value: string) => void;

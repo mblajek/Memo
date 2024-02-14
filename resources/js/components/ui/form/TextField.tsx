@@ -1,8 +1,9 @@
 import {htmlAttributes} from "components/utils";
-import {JSX, VoidComponent, splitProps} from "solid-js";
+import {VoidComponent, splitProps} from "solid-js";
+import {TextInput} from "../TextInput";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
-import {TextInput} from "../TextInput";
+import {LabelOverride} from "./labels";
 
 export interface TextFieldProps
   extends Pick<
@@ -10,7 +11,7 @@ export interface TextFieldProps
     "type" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
   > {
   readonly name: string;
-  readonly label?: JSX.Element;
+  readonly label?: LabelOverride;
 }
 
 /** Wrapper of native HTML's `<input>`. Intended for use with FelteForm (handles validation messages). */

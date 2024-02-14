@@ -25,7 +25,7 @@ meetingStatus:
     planned: "Spotkanie jest zaplanowane"
     completed: "Spotkanie odbyło się"
     cancelled: "Spotkanie zostało odwołane przez któregoś z uczestników (lub z innych przyczyn)"
-    more_info: "Kliknij żeby zobaczyć więcej informacji o statusach spotkań"
+    more_info: "Kliknij aby zobaczyć więcej informacji o statusach spotkań"
 
 meetingResource:
   _name: "zasób"

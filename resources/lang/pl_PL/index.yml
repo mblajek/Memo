@@ -64,3 +64,5 @@ open_in_new_tab: "Otwórz w nowej karcie"
 switch_theme: "Motyw aplikacji"
 
 system_version_update: "Odśwież stronę aby zaktualizować aplikację"
+
+rich_text_field: "Pole tekstowe wspierające tagi. Kliknij aby zobaczyć więcej informacji."

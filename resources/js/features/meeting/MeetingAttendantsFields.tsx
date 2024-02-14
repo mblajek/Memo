@@ -103,7 +103,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           <FieldLabel
             fieldName={props.name}
             umbrella
-            text={
+            label={
               <Capitalize
                 text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
                   postProcess: "interval",
@@ -115,8 +115,15 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         </div>
         <Show when={props.showAttendanceStatusLabel !== false}>
           <div class="flex gap-1">
-            <FieldLabel fieldName="attendanceStatusNotes" umbrella />
-            <MeetingAttendanceStatusInfoIcon />
+            <FieldLabel
+              fieldName="attendanceStatusNotes"
+              umbrella
+              label={(origLabel) => (
+                <>
+                  {origLabel} <MeetingAttendanceStatusInfoIcon />
+                </>
+              )}
+            />
           </div>
         </Show>
         <div

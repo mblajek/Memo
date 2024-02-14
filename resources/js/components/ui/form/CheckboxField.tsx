@@ -1,10 +1,11 @@
-import {JSX, VoidComponent} from "solid-js";
+import {VoidComponent} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
+import {LabelOverride} from "./labels";
 
 interface Props {
   readonly name: string;
-  readonly label?: JSX.Element;
+  readonly label?: LabelOverride;
   readonly disabled?: boolean;
   // TODO: Find a better solution for providing a hint like this.
   readonly title?: string;
@@ -23,7 +24,7 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
   >
     <FieldLabel
       fieldName={props.name}
-      text={props.label}
+      label={props.label}
       class="self-start flex items-baseline gap-1"
       title={props.title}
       wrapIn={(text) => (
@@ -36,7 +37,7 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
             aria-labelledby={labelIdForField(props.name)}
             disabled={props.disabled}
           />
-          {text}
+          <span class="select-none">{text}</span>
         </>
       )}
     />
