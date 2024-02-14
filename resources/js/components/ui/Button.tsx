@@ -1,5 +1,5 @@
 import {htmlAttributes, useLangFunc} from "components/utils";
-import {ParentComponent, VoidComponent, splitProps} from "solid-js";
+import {JSX, ParentComponent, VoidComponent, splitProps} from "solid-js";
 import {ACTION_ICONS} from "./icons";
 
 /**
@@ -12,7 +12,7 @@ export const Button: ParentComponent<htmlAttributes.button> = (props) => (
 );
 
 interface EditButtonProps extends htmlAttributes.button {
-  readonly label?: string;
+  readonly label?: JSX.Element;
 }
 
 export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
@@ -20,7 +20,8 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
   const t = useLangFunc();
   return (
     <Button {...buttonProps}>
-      <ACTION_ICONS.edit class="inlineIcon strokeIcon text-current" /> {props.label || t("actions.edit")}
+      <ACTION_ICONS.edit class="inlineIcon strokeIcon text-current" />{" "}
+      {props.label === undefined ? t("actions.edit") : props.label}
     </Button>
   );
 };

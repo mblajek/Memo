@@ -27,14 +27,15 @@ import {
 } from "solid-js";
 import {Portal} from "solid-js/web";
 import {Button} from "../Button";
+import {SmallSpinner} from "../Spinner";
 import {FieldBox} from "./FieldBox";
 import {PlaceholderField} from "./PlaceholderField";
 import s from "./Select.module.scss";
-import {SmallSpinner} from "../Spinner";
+import {LabelOverride} from "./labels";
 
 export interface SelectBaseProps {
   readonly name: string;
-  readonly label?: JSX.Element;
+  readonly label?: LabelOverride;
   /**
    * The items to show in this select. In the external filtering mode, the list should change
    * when the filter changes. In the internal filtering mode, the list should not change, and will

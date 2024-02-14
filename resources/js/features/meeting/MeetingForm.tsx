@@ -2,14 +2,13 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {isAxiosError} from "axios";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
-import {Capitalize} from "components/ui/Capitalize";
+import {InfoIcon} from "components/ui/InfoIcon";
 import {RichTextView} from "components/ui/RichTextView";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {MultilineTextField} from "components/ui/form/MultilineTextField";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
-import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -119,12 +118,11 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
               <div class="flex flex-col items-stretch gap-1">
                 <DictionarySelect
                   name="statusDictId"
-                  label={
+                  label={(origLabel) => (
                     <>
-                      <Capitalize text={t("models.meeting.statusDictId")} />{" "}
-                      <MeetingStatusInfoIcon meetingStatusId={form.data("statusDictId")} />
+                      {origLabel} <MeetingStatusInfoIcon meetingStatusId={form.data("statusDictId")} />
                     </>
-                  }
+                  )}
                   dictionary="meetingStatus"
                   nullable={false}
                 />
@@ -147,7 +145,17 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
           </div>
           <CheckboxField name="isRemote" />
           <ByMode
-            edit={<MultilineTextField name="notes" {...TRIM_ON_BLUR} data-felte-keep-on-remove />}
+            edit={
+              <MultilineTextField
+                name="notes"
+                label={(origLabel) => (
+                  <>
+                    {origLabel} <InfoIcon href="/help/rich-text" title={t("rich_text_field")} />
+                  </>
+                )}
+                data-felte-keep-on-remove
+              />
+            }
             view={
               <FieldBox name="notes">
                 <PlaceholderField name="notes" />

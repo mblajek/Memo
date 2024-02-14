@@ -2,6 +2,7 @@ import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {htmlAttributes} from "components/utils";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {TranslatedText} from "../TranslatedText";
+import {LabelOverride, applyLabelOverride, getDirectLabelOverride} from "./labels";
 
 interface Props extends htmlAttributes.label {
   readonly fieldName: string;
@@ -10,7 +11,7 @@ interface Props extends htmlAttributes.label {
    * Default: false.
    */
   readonly umbrella?: boolean;
-  readonly text?: JSX.Element;
+  readonly label?: LabelOverride;
   /** Optional function that takes the label text and returns JSX. The result is then wrapped in label. */
   readonly wrapIn?: (text: JSX.Element) => JSX.Element;
 }
@@ -25,17 +26,18 @@ interface Props extends htmlAttributes.label {
  * Otherwise, the label is not present.
  */
 export const FieldLabel: VoidComponent<Props> = (allProps) => {
-  const [props, labelProps] = splitProps(allProps, ["fieldName", "umbrella", "text", "wrapIn"]);
+  const [props, labelProps] = splitProps(allProps, ["fieldName", "umbrella", "label", "wrapIn"]);
   const form = useFormContextIfInForm();
   return (
     <TranslatedText
-      override={() => props.text}
+      override={getDirectLabelOverride(props.label)}
       langFunc={form?.translations ? (o) => form.translations.fieldName(props.fieldName, o) : undefined}
       capitalize
       wrapIn={(text) => {
-        const content = () => props.wrapIn?.(text) ?? text;
+        const overridden = applyLabelOverride(text, props.label);
+        const content = () => props.wrapIn?.(overridden) ?? overridden;
         return (
-          <Show when={text !== undefined} fallback={content()}>
+          <Show when={overridden !== undefined} fallback={content()}>
             <label
               id={labelIdForField(props.fieldName)}
               for={props.umbrella ? undefined : props.fieldName}

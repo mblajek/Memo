@@ -150,7 +150,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
             </Show>
             <MeetingType typeId={props.meeting.typeDictId} />
             <MeetingStatusTags meeting={props.meeting} />
-            <RichTextView class="max-h-30 !overflow-x-clip overflow-y-hidden" text={props.meeting.notes} />
+            <RichTextView class="max-h-20 overflow-y-clip !overflow-x-visible" text={props.meeting.notes} />
             <Show when={props.meeting.resources.length}>
               <div>{t("parenthesised", {text: resources()})}</div>
             </Show>
@@ -164,9 +164,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
               <div
                 class={cx(
                   "max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm overflow-clip",
-                  {
-                    "opacity-0": !hovered(),
-                  },
+                  {"opacity-0": !hovered()},
                 )}
                 style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
                 onMouseEnter={() => hoverApi().close()}
