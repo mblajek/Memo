@@ -44,7 +44,7 @@ export default (() => {
         enableSorting: false,
         size: 60,
       }),
-      helper.accessor("name", {
+      helper.accessor("resource.name", {
         id: "Name",
         ...textSort,
       }),
