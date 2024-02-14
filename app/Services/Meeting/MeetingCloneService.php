@@ -8,9 +8,10 @@ use Illuminate\Support\Facades\DB;
 
 class MeetingCloneService
 {
-    public function clone(Meeting $meeting, array $dates): array
+    public function clone(Meeting $meeting, array $dates, string $interval): array
     {
         $meeting->from_meeting_id ??= $meeting->id;
+        $meeting->interval = $interval;
 
         // withoutRelations is clone, without relations which may save incorrectly
         $meetingWithoutRelations = $meeting->withoutRelations();

@@ -35,8 +35,7 @@ class MeetingService
     public function patch(Meeting $meeting, array $data): void
     {
         $meeting->fill($data);
-        // TODO: reset only when anything but status/attendance_status is changed, or on demand
-        $meeting->from_meeting_id = null;
+        $meeting->interval = null;
 
         // TODO: Go through those list elements one by one to figure out which ones need to be added,
         //       updated, or deleted separately.

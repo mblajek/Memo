@@ -28,7 +28,8 @@ use Illuminate\Validation\Rule;
  * @property int start_dayminute
  * @property int duration_minutes
  * @property string status_dict_id
- * @property string from_meeting_id
+ * @property ?string from_meeting_id
+ * @property ?string interval
  * @property-read Collection|MeetingAttendant[] $attendants
  * @property-read Collection|MeetingResource[] $resources
  * @method static MeetingBuilder query()
@@ -57,6 +58,7 @@ class Meeting extends Model
         'status_dict_id',
         'is_remote',
         'from_meeting_id',
+        'interval',
     ];
 
     protected $casts = [
