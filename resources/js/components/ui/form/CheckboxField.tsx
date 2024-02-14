@@ -1,4 +1,4 @@
-import {VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
 import {LabelOverride} from "./labels";
@@ -33,11 +33,13 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
             type="checkbox"
             id={props.name}
             name={props.name}
-            class="border border-input-border m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
-            aria-labelledby={labelIdForField(props.name)}
+            class="m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
+            aria-labelledby={text ? labelIdForField(props.name) : undefined}
             disabled={props.disabled}
           />
-          <span class="select-none">{text}</span>
+          <Show when={text}>
+            <span class="select-none">{text}</span>
+          </Show>
         </>
       )}
     />

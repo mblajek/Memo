@@ -35,15 +35,14 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
       capitalize
       wrapIn={(text) => {
         const overridden = applyLabelOverride(text, props.label);
-        const content = () => props.wrapIn?.(overridden) ?? overridden;
         return (
-          <Show when={overridden !== undefined} fallback={content()}>
+          <Show when={overridden} fallback={props.wrapIn?.(overridden)}>
             <label
               id={labelIdForField(props.fieldName)}
               for={props.umbrella ? undefined : props.fieldName}
               {...htmlAttributes.merge(labelProps, {class: "font-medium"})}
             >
-              {content()}
+              {props.wrapIn?.(overridden) ?? overridden}
             </label>
           </Show>
         );

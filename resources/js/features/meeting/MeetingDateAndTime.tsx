@@ -154,7 +154,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               }
             >
               <Button
-                class="secondary small"
+                class="w-full secondary small"
                 onClick={() => setDurationMinutes(defaultDurationMinutes())}
                 title={t("actions.set")}
               >
