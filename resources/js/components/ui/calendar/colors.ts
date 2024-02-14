@@ -18,7 +18,7 @@ function coloringFromColor(baseColor: string): Coloring {
 }
 
 export function getRandomEventColors(seedString: string): Coloring {
-  return coloringFromColor(randomColor({seedString, whiteness: [40, 50], blackness: [10, 20]}));
+  return coloringFromColor(randomColor({seedString, lightness: [50, 70], chroma: [20, 30]}));
 }
 
 export const COMPLETED_MEETING_COLORING = {...coloringFromColor("#ccc"), headerBg: "#ccc"};
