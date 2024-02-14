@@ -34,7 +34,7 @@ units:
   seconds__many: "{{count, number}} sekund"
 
 duration:
-  hours_minutes: "{{hours}} godz. {{minutes}} min"
+  hours_minutes: "{{hours}} godz. {{minutes}} min."
 
 today: "dzisiaj"
 
