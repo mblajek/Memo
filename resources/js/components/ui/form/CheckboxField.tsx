@@ -1,4 +1,4 @@
-import {VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
 import {LabelOverride} from "./labels";
@@ -36,11 +36,13 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
             id={props.name}
             name={props.name}
             class="m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
-            aria-labelledby={text === undefined ? undefined : labelIdForField(props.name)}
+            aria-labelledby={text ? labelIdForField(props.name) : undefined}
             disabled={props.disabled}
             data-felte-keep-on-remove={props["data-felte-keep-on-remove"]}
           />
-          <span class="select-none">{text}</span>
+          <Show when={text}>
+            <span class="select-none">{text}</span>
+          </Show>
         </>
       )}
     />
