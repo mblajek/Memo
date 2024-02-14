@@ -3,10 +3,16 @@ import {Random} from "../utils/random";
 interface RandomColorParams {
   /** The seed for the color, if should be deterministic. */
   readonly seedString?: string;
-  /** Whiteness percent, or range to pick randomly. */
-  readonly whiteness: number | RandomRange;
-  /** Blackness percent, or range to pick randomly. */
-  readonly blackness: number | RandomRange;
+  /**
+   * Lightness percent, or range to pick randomly.
+   * See [lch](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/lch).
+   */
+  readonly lightness: number | RandomRange;
+  /**
+   * Chroma percent, or range to pick randomly.
+   * See [lch](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value/lch).
+   */
+  readonly chroma: number | RandomRange;
 }
 
 type RandomRange = readonly [number, number];
@@ -15,9 +21,10 @@ function getFromRange(r: Random, range: number | RandomRange): number {
   return typeof range === "number" ? range : r.nextInt(...range);
 }
 
-export function randomColor({seedString, whiteness, blackness}: RandomColorParams) {
+export function randomColor({seedString, lightness, chroma}: RandomColorParams) {
   const r = seedString ? Random.fromString(seedString) : Random.RANDOM;
-  return `hwb(${r.nextFloat()}turn ${getFromRange(r, whiteness)}% ${getFromRange(r, blackness)}%)`;
+  const hue = r.nextFloat();
+  return `lch(${getFromRange(r, lightness)}% ${getFromRange(r, chroma)}% ${hue}turn)`;
 }
 
 /** Mixes the color with the specified amount of white. */
