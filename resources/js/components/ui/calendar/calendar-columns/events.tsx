@@ -18,7 +18,7 @@ import {DateTime} from "luxon";
 import {For, ParentComponent, Show, VoidComponent, createMemo, createSignal, createUniqueId} from "solid-js";
 import {Portal} from "solid-js/web";
 import {useColumnsCalendar} from "../ColumnsCalendar";
-import {CANCELLED_MEETING_COLORING, COMPLETED_MEETING_COLORING, Coloring} from "../colors";
+import {CANCELLED_MEETING_COLORING, COMPLETED_MEETING_COLORING, Coloring, coloringToStyle} from "../colors";
 import s from "./events.module.scss";
 
 interface AllDayEventProps {
@@ -96,17 +96,15 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     props.onHoverChange?.(hovered);
   }
   const hovered = () => props.hovered ?? hoveredGetter();
-  const coloringStyle = () => {
-    const coloring =
-      props.meeting.statusDictId === meetingStatusDict()?.planned.id
-        ? props.plannedColoring
-        : props.meeting.statusDictId === meetingStatusDict()?.completed.id
-          ? COMPLETED_MEETING_COLORING
-          : props.meeting.statusDictId === meetingStatusDict()?.cancelled.id
-            ? CANCELLED_MEETING_COLORING
-            : undefined;
-    return hovered() ? coloring?.hover : coloring?.regular;
-  };
+  const coloring = createMemo(() =>
+    props.meeting.statusDictId === meetingStatusDict()?.planned.id
+      ? props.plannedColoring
+      : props.meeting.statusDictId === meetingStatusDict()?.completed.id
+        ? COMPLETED_MEETING_COLORING
+        : props.meeting.statusDictId === meetingStatusDict()?.cancelled.id
+          ? CANCELLED_MEETING_COLORING
+          : undefined,
+  );
 
   const meetingTypeOther = () => dictionaries()?.get("meetingType").get("other");
   const MeetingType: VoidComponent<{typeId: string}> = (props) => (
@@ -119,14 +117,14 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     <>
       <ButtonLike
         class={cx(
-          "w-full h-full border rounded px-0.5 overflow-clip flex flex-col items-stretch cursor-pointer select-none",
+          "w-full h-full border rounded overflow-clip flex flex-col items-stretch cursor-pointer select-none",
           props.meeting.startDayminute + props.meeting.durationMinutes > MAX_DAY_MINUTE &&
             (DateTime.fromISO(props.meeting.date).day === props.day.day
               ? "border-b-0 rounded-b-none"
               : "border-t-0 rounded-t-none"),
           {[s.blink!]: props.blink},
         )}
-        style={coloringStyle()}
+        style={coloringToStyle(coloring()!, {hover: hovered()})}
         {...hoverApi().triggerProps}
         onMouseEnter={[setHovered, true]}
         onMouseLeave={[setHovered, false]}
@@ -134,28 +132,29 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
         // Needed to make the event clickable on a touch screen.
         onTouchEnd={() => props.onClick?.()}
       >
-        <div class="whitespace-nowrap">
+        <div class="px-0.5 whitespace-nowrap" style={coloringToStyle(coloring()!, {part: "header"})}>
           <span class="font-weight-medium">{formatDayMinuteHM(props.meeting.startDayminute)}</span>
           {EN_DASH}
           <span class="font-weight-medium">
             {formatDayMinuteHM((props.meeting.startDayminute + props.meeting.durationMinutes) % MAX_DAY_MINUTE)}
           </span>
         </div>
-        <hr class="border-inherit" />
         <Show when={dictionaries()}>
-          <Show when={props.meeting.clients.length}>
-            <ul>
-              <For each={props.meeting.clients}>
-                {(client) => <AttendantListItem type="clients" attendant={client} />}
-              </For>
-            </ul>
-          </Show>
-          <MeetingType typeId={props.meeting.typeDictId} />
-          <MeetingStatusTags meeting={props.meeting} />
-          <RichTextView class="max-h-20 overflow-y-clip" text={props.meeting.notes} />
-          <Show when={props.meeting.resources.length}>
-            <div>{t("parenthesised", {text: resources()})}</div>
-          </Show>
+          <div class="px-0.5">
+            <Show when={props.meeting.clients.length}>
+              <ul>
+                <For each={props.meeting.clients}>
+                  {(client) => <AttendantListItem type="clients" attendant={client} />}
+                </For>
+              </ul>
+            </Show>
+            <MeetingType typeId={props.meeting.typeDictId} />
+            <MeetingStatusTags meeting={props.meeting} />
+            <RichTextView class="max-h-20 overflow-y-clip" text={props.meeting.notes} />
+            <Show when={props.meeting.resources.length}>
+              <div>{t("parenthesised", {text: resources()})}</div>
+            </Show>
+          </div>
         </Show>
       </ButtonLike>
       <Show when={dictionaries() && hoverApi().isOpen}>

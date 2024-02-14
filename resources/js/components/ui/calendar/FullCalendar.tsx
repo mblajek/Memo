@@ -49,7 +49,7 @@ import {HoursArea} from "./calendar-columns/HoursArea";
 import {ResourceHeader} from "./calendar-columns/ResourceHeader";
 import {HoursAreaBlock} from "./calendar-columns/blocks";
 import {MeetingEventBlock} from "./calendar-columns/events";
-import {getRandomEventColors} from "./colors";
+import {coloringToStyle, getRandomEventColors} from "./colors";
 import {DaysRange} from "./days_range";
 import {Block, PartDayTimeSpan} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
@@ -148,7 +148,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 style={{
                   width: "14px",
                   height: "14px",
-                  ...coloring.regular,
+                  ...coloringToStyle(coloring),
                 }}
               />
             </div>
