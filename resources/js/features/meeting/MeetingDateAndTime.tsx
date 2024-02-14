@@ -1,9 +1,10 @@
 import {Button, EditButton} from "components/ui/Button";
+import {HideableSection} from "components/ui/HideableSection";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {
   DayMinuteRange,
   MAX_DAY_MINUTE,
@@ -71,15 +72,22 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   const showEditable = () =>
     !props.viewMode &&
     (isForceEditable() || !form.data("date") || !form.data("time.startTime") || durationDifferentFromSuggestion());
+
+  const STEP_MINUTES = 5;
+  const KEY_DIRS = new Map([
+    ["ArrowUp", 1],
+    ["ArrowDown", -1],
+  ]);
   const TimeInput: VoidComponent<htmlAttributes.input> = (props) => (
     <input
       {...props}
       type="time"
-      step={5 * 60}
+      step={STEP_MINUTES * 60}
       list={hoursList()?.listId}
       class="basis-24 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
       onKeyDown={({key, target}) => {
-        if (key === "ArrowUp" || key === "ArrowDown") {
+        const dir = KEY_DIRS.get(key);
+        if (dir) {
           // Fix the UX problem that normally pressing up/down on minute field wraps without changing the hour field.
           const input = target as HTMLInputElement;
           if (!input.value) {
@@ -92,10 +100,13 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               ((dayMinuteAfter - dayMinuteBefore + MAX_DAY_MINUTE / 2) % MAX_DAY_MINUTE) - MAX_DAY_MINUTE / 2;
             if (delta % 60 !== 0) {
               // Probably on minute field.
-              const expectedDelta = key === "ArrowUp" ? 5 : -5;
-              if (delta === -11 * expectedDelta) {
-                // The hour didn't change but it should. As a result, instead of +5/-5 minutes, we got -55/+55 minutes.
-                input.value = dayMinuteToTimeInput((dayMinuteBefore + expectedDelta + MAX_DAY_MINUTE) % MAX_DAY_MINUTE);
+              const expectedDelta = STEP_MINUTES * dir;
+              if (delta === expectedDelta - 60 * dir) {
+                // Set the value in the form. Setting it directly on the input doesn't update the value in the form.
+                form.setFields(
+                  input.name,
+                  dayMinuteToTimeInput((dayMinuteBefore + expectedDelta + MAX_DAY_MINUTE) % MAX_DAY_MINUTE),
+                );
               }
             }
           }, 0);
@@ -103,6 +114,11 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       }}
     />
   );
+
+  // Delay the duration minutes displayed on the page by a fraction of a second to avoid blinking of the wrong value
+  // while the hour wrapping correct is applied.
+  const delayedDurationMinutes = debouncedAccessor(durationMinutes, {timeMs: 10});
+
   return (
     <>
       <FieldBox name="dateAndTime" umbrella validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
@@ -124,16 +140,14 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               <TimeInput id="time.endTime" name="time.endTime" />
               <div class="basis-32 grow">
                 <Show when={durationMinutes()}>
-                  <>
-                    {t("parenthesis.open")}
-                    <TimeDuration minutes={durationMinutes()!} />
-                    {t("parenthesis.close")}
-                  </>
+                  {t("parenthesis.open")}
+                  <TimeDuration minutes={delayedDurationMinutes()!} />
+                  {t("parenthesis.close")}
                 </Show>
               </div>
             </div>
-            <Show
-              when={
+            <HideableSection
+              show={
                 defaultDurationMinutes() &&
                 defaultDurationMinutes() !== durationMinutes() &&
                 form.data("time").startTime
@@ -146,7 +160,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               >
                 {t("forms.meeting.default_duration")} <TimeDuration minutes={defaultDurationMinutes()!} />
               </Button>
-            </Show>
+            </HideableSection>
           </div>
         </div>
         <Show when={!showEditable()}>
