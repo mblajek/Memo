@@ -8,7 +8,7 @@ import {LabelOverride} from "./labels";
 export interface TextFieldProps
   extends Pick<
     htmlAttributes.input,
-    "type" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
+    "type" | "min" | "max" | "step" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
   > {
   readonly name: string;
   readonly label?: LabelOverride;

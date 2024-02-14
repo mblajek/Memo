@@ -16,3 +16,12 @@ tags:
 
 show_details: "Więcej"
 click_to_see_details: "Kliknij aby zobaczyć szczegóły spotkania"
+
+create_series: "Powtarzaj spotkanie"
+first_meeting: "pierwsze spotkanie"
+
+create_copy:
+  any: "Utwórz i edytuj kopię"
+  in_one_day: "– następnego dnia"
+  in_one_week: "– tydzień później"
+  in_two_weeks: "– dwa tygodnie później"

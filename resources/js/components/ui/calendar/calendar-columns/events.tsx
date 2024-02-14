@@ -164,9 +164,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
               <div
                 class={cx(
                   "max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm overflow-clip",
-                  {
-                    "opacity-0": !hovered(),
-                  },
+                  {"opacity-0": !hovered()},
                 )}
                 style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
                 onMouseEnter={() => hoverApi().close()}

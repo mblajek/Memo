@@ -2,6 +2,7 @@ import {A, AnchorProps} from "@solidjs/router";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
+import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -18,6 +19,7 @@ import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {OcTable3} from "solid-icons/oc";
 import {TbInfoTriangle} from "solid-icons/tb";
 import {
+  JSX,
   Match,
   Show,
   Signal,
@@ -58,8 +60,6 @@ export const MODES = ["month", "week", "day"] as const;
 export type Mode = (typeof MODES)[number];
 
 interface Props extends htmlAttributes.div {
-  readonly locale: Intl.Locale;
-  readonly holidays?: readonly DateTime[];
   readonly modes?: readonly Mode[];
   readonly initialMode?: Mode;
   readonly initialResourcesSelection?: readonly string[];
@@ -105,8 +105,6 @@ const PERSISTENCE_VERSION = 3;
 export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const mProps = mergeProps(defaultProps(), propsArg);
   const [props, divProps] = splitProps(mProps, [
-    "locale",
-    "holidays",
     "modes",
     "initialMode",
     "initialResourcesSelection",
@@ -115,6 +113,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "meetingListLinkProps",
   ]);
   const t = useLangFunc();
+  const locale = useLocale();
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
@@ -175,13 +174,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   ]);
 
   const [mode, setMode] = createSignal(props.initialMode);
-  const weekDayCalculator = createMemo(() => new WeekDaysCalculator(props.locale));
+  const weekDayCalculator = new WeekDaysCalculator(locale);
   function getRange(day: DateTime, m = mode()) {
     switch (m) {
       case "month":
         return new DaysRange(day.startOf("month"), day.endOf("month"));
       case "week":
-        return weekDayCalculator().dayToWorkdays(day);
+        return weekDayCalculator.dayToWorkdays(day);
       case "day":
         return DaysRange.oneDay(day);
       default:
@@ -267,7 +266,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     let range;
     if (mode() === "week" && daysSelection().length() === 7) {
       // Keep the 7-day week.
-      range = weekDayCalculator().dayToWeek(currentDate());
+      range = weekDayCalculator.dayToWeek(currentDate());
     } else {
       range = getRange(currentDate());
     }
@@ -353,12 +352,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               // Never change tinyCalMonth when switching from month to week.
               if (daysSelectionByMode.get("week")?.[0]().length() === 7) {
                 // Select a calendar week.
-                setDaysSelection(weekDayCalculator().dayToWeek(prevDaysSelection.start));
+                setDaysSelection(weekDayCalculator.dayToWeek(prevDaysSelection.start));
               } else {
                 // Select the first work week of this month.
                 for (const day of prevDaysSelection) {
-                  if (!weekDayCalculator().isWeekend(day)) {
-                    setDaysSelection(weekDayCalculator().dayToWorkdays(day));
+                  if (!weekDayCalculator.isWeekend(day)) {
+                    setDaysSelection(weekDayCalculator.dayToWorkdays(day));
                     break;
                   }
                 }
@@ -464,15 +463,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   const owner = getOwner();
-  function meetingChange(operation: "create" | "edit", meeting: MeetingChangeSuccessData) {
+  function meetingChange(message: JSX.Element, meeting: MeetingChangeSuccessData, otherMeetingIds?: string[]) {
     blinkMeeting(meeting.id);
-    const message = t(
-      operation === "create"
-        ? "forms.meeting_create.success"
-        : operation === "edit"
-          ? "forms.meeting_edit.success"
-          : (operation satisfies never),
-    );
+    for (const id of otherMeetingIds || []) {
+      blinkMeeting(id);
+    }
     const meetingDate = DateTime.fromISO(meeting.date);
     toast.success(
       runWithOwner(owner, () => (
@@ -527,7 +522,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [hoveredMeetingId, setHoveredMeetingId] = createSignal<string>();
 
   function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
-    const fakeWorkingHours: Block[] = weekDayCalculator().isWeekend(day)
+    const fakeWorkingHours: Block[] = weekDayCalculator.isWeekend(day)
       ? []
       : [
           {
@@ -556,8 +551,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                     meetingModal.show({
                       meetingId: ev.meeting.id,
                       initialViewMode: true,
-                      onEdited: (meeting) => meetingChange("edit", meeting),
-                      onCopyCreated: (meeting) => meetingChange("create", meeting),
+                      onEdited: (meeting) => meetingChange(t("forms.meeting_edit.success"), meeting),
+                      onCreated: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
+                      onCloned: (meeting, otherMeetingIds) =>
+                        meetingChange(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
                       onDeleted: () => toast.success(t("forms.meeting_delete.success")),
                       showToast: false,
                     })
@@ -575,13 +572,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           day={day}
           blocks={fakeWorkingHours}
           events={selectedEvents()}
-          onTimeClick={(t) =>
+          onTimeClick={(time) =>
             meetingCreateModal.show({
               initialValues: {
-                ...meetingTimeInitialValue(t),
+                ...meetingTimeInitialValue(time),
                 ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
               },
-              onSuccess: (meeting) => meetingChange("create", meeting),
+              onSuccess: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
               showToast: false,
             })
           }
@@ -598,7 +595,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return [];
       case "week": {
         const staff = selectedResourceRadio();
-        // eslint-disable-next-line solid/reactivity
         return Array.from(daysSelection(), (day) => ({
           header: () => <DayHeader day={day} />,
           ...getCalendarColumnPart(day, staff),
@@ -645,9 +641,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       <div {...htmlAttributes.merge(divProps, {class: "flex items-stretch gap-1"})}>
         <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
           <TinyCalendar
-            locale={props.locale}
             showWeekdayNames
-            holidays={props.holidays}
             selection={daysSelection()}
             month={tinyCalMonth()}
             setMonth={setTinyCalMonth}

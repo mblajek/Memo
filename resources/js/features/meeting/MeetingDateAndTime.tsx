@@ -23,6 +23,7 @@ interface Props {
    */
   readonly suggestedTimes?: SuggestedTimes;
   readonly viewMode?: boolean;
+  readonly forceEditable?: boolean;
 }
 
 interface SuggestedTimes {
@@ -33,7 +34,8 @@ interface SuggestedTimes {
 export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const form = useMeetingTimeForm();
-  const [isForceEditable, setForceEditable] = createSignal(false);
+  // eslint-disable-next-line solid/reactivity
+  const [isForceEditable, setForceEditable] = createSignal(props.forceEditable || false);
   const {
     durationMinutes: [durationMinutes, setDurationMinutes],
     defaultDurationMinutes,
@@ -45,7 +47,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   createComputed(
     on([() => props.viewMode, () => form.data("time.startTime")], (viewMode, _startTime) => {
       if (viewMode) {
-        setForceEditable(false);
+        setForceEditable(props.forceEditable || false);
       }
       if (durationDifferentFromSuggestion()) {
         setForceEditable(true);
