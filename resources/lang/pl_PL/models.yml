@@ -81,6 +81,7 @@ meeting:
   date: "data"
   startDayminute: "godzina rozpoczęcia"
   durationMinutes: "długość"
+  isClone: "w serii"
   categoryDictId: "kategoria"
   typeDictId: "typ"
   statusDictId: "$t(dictionary.meetingStatus._name)"

@@ -12,7 +12,7 @@ function coloringFromColor(baseColor: string): Coloring {
   return {
     border: baseColor,
     bg: bleachColor(baseColor, {amount: 0.75}),
-    bgHover: bleachColor(baseColor, {amount: 0.5}),
+    bgHover: bleachColor(baseColor, {amount: 0.52}),
     headerBg: bleachColor(baseColor, {amount: 0.35}),
   };
 }
@@ -21,7 +21,7 @@ export function getRandomEventColors(seedString: string): Coloring {
   return coloringFromColor(randomColor({seedString, lightness: [50, 70], chroma: [20, 30]}));
 }
 
-export const COMPLETED_MEETING_COLORING = {...coloringFromColor("#ccc"), headerBg: "#ccc"};
+export const COMPLETED_MEETING_COLORING = {...coloringFromColor("#ccc"), bgHover: "#ddd", headerBg: "#ccc"};
 export const CANCELLED_MEETING_COLORING = (() => {
   const coloring = coloringFromColor("black");
   return {...coloring, headerBg: coloring.bgHover};

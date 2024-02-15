@@ -18,6 +18,7 @@ show_details: "Więcej"
 click_to_see_details: "Kliknij aby zobaczyć szczegóły spotkania"
 
 create_series: "Powtarzaj spotkanie"
+meeting_is_in_series: "spotkanie w serii"
 first_meeting: "pierwsze spotkanie"
 
 create_copy:

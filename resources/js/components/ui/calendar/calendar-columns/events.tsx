@@ -4,6 +4,7 @@ import {ButtonLike} from "components/ui/ButtonLike";
 import {Capitalize} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {bleachColor} from "components/ui/colors";
+import {ACTION_ICONS} from "components/ui/icons";
 import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
@@ -155,6 +156,11 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
               <div>{t("parenthesised", {text: resources()})}</div>
             </Show>
           </div>
+          <Show when={props.meeting.fromMeetingId}>
+            <div class="absolute bottom-px right-1 bg-inherit rounded">
+              <ACTION_ICONS.repeat />
+            </div>
+          </Show>
         </Show>
       </ButtonLike>
       <Show when={dictionaries() && hoverApi().isOpen}>
@@ -169,7 +175,14 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                 style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
                 onMouseEnter={() => hoverApi().close()}
               >
-                <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
+                <div class="flex flex-col">
+                  <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
+                  <Show when={props.meeting.fromMeetingId}>
+                    <div>
+                      <ACTION_ICONS.repeat class="inlineIcon" /> {t("meetings.meeting_is_in_series")}
+                    </div>
+                  </Show>
+                </div>
                 <MeetingType typeId={props.meeting.typeDictId} />
                 <MeetingStatusTags meeting={props.meeting} />
                 <Show when={props.meeting.staff.length}>
