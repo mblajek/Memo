@@ -16,12 +16,16 @@ export default (() => {
       staticPersistenceKey="facilityMeetings"
       // This table has multiple heavy to render columns.
       nonBlocking
-      intrinsicSort={[{type: "column", column: "date", desc: true}]}
+      intrinsicSort={[
+        {type: "column", column: "date", desc: true},
+        {type: "column", column: "startDayminute", desc: true},
+      ]}
       columns={meetingTableColumns.get(
         "id",
         "date",
         "time",
         "duration",
+        "isInSeries",
         "category",
         "type",
         "statusTags",

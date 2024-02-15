@@ -1,4 +1,5 @@
 import {Button} from "components/ui/Button";
+import {capitalizeString} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
@@ -8,6 +9,7 @@ import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
+import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {Api} from "data-access/memo-api/types";
@@ -45,7 +47,7 @@ export function useMeetingTableColumns() {
   const columns = {
     ...({
       id: {name: "id", initialVisible: false},
-      date: {name: "date", columnDef: {size: 190}},
+      date: {name: "date", columnDef: {size: 190, sortDescFirst: true}},
       time: {
         name: "startDayminute",
         extraDataColumns: ["durationMinutes"],
@@ -64,6 +66,7 @@ export function useMeetingTableColumns() {
         },
       },
       duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
+      isInSeries: {name: "isClone"},
       category: {name: "categoryDictId", initialVisible: false},
       type: {name: "typeDictId"},
       status: {
@@ -169,7 +172,7 @@ export function useMeetingTableColumns() {
       },
       dateTimeActions: {
         name: "date",
-        extraDataColumns: ["startDayminute", "durationMinutes", "id"],
+        extraDataColumns: ["startDayminute", "durationMinutes", "fromMeetingId", "id"],
         columnDef: {
           cell: cellFunc<string, TQMeetingResource>((v, c) => (
             <PaddedCell>
@@ -183,6 +186,13 @@ export function useMeetingTableColumns() {
                           startDayMinute={strtDayMinute()}
                           durationMinutes={(c.row.original.durationMinutes as number) ?? 0}
                         />
+                        <Show when={c.row.original.fromMeetingId}>
+                          {" "}
+                          <ACTION_ICONS.repeat
+                            class="inlineIcon"
+                            title={capitalizeString(t("meetings.meeting_is_in_series"))}
+                          />
+                        </Show>
                       </div>
                     )}
                   </Show>
@@ -254,7 +264,13 @@ export function useMeetingTableColumns() {
     get: (
       ...cols: (KnownColumns | PartialColumnConfig | [KnownColumns, Partial<PartialColumnConfig>])[]
     ): PartialColumnConfig[] =>
-      cols.map((c) => (typeof c === "string" ? columns[c] : Array.isArray(c) ? {...columns[c[0]], ...c[1]} : c)),
+      cols.map((c) =>
+        typeof c === "string"
+          ? columns[c]
+          : Array.isArray(c)
+            ? objectRecursiveMerge<(typeof columns)[KnownColumns]>(columns[c[0]], c[1])
+            : c,
+      ),
   };
 }
 

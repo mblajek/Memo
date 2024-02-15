@@ -42,6 +42,9 @@ readonly class MeetingTquery extends TqService
         $config = new TqConfig(table: TqTableEnum::meetings);
 
         $config->addSimple(TqDataTypeEnum::uuid, 'id');
+        $config->addSimple(TqDataTypeEnum::uuid_nullable, 'from_meeting_id');
+        $config->addSimple(TqDataTypeEnum::is_not_null, 'from_meeting_id', 'is_clone');
+        $config->addSimple(TqDataTypeEnum::string_nullable, 'interval');
         $config->addSimple(TqDataTypeEnum::date, 'date');
         $config->addSimple(TqDataTypeEnum::int, 'start_dayminute');
         $config->addSimple(TqDataTypeEnum::int, 'duration_minutes');

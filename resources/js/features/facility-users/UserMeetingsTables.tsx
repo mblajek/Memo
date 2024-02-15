@@ -85,6 +85,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         "dateTimeActions",
                         ["time", {initialVisible: false}],
                         ["duration", {initialVisible: false}],
+                        ["isInSeries", {initialVisible: false}],
                         "category",
                         "type",
                         "statusTags",
@@ -144,9 +145,10 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       intrinsicSort={sortByDate({desc: true})}
                       columns={meetingTableColumns.get(
                         "id",
-                        "dateTimeActions",
+                        ["dateTimeActions", {columnDef: {sortDescFirst: true}}],
                         ["time", {initialVisible: false}],
                         ["duration", {initialVisible: false}],
+                        ["isInSeries", {initialVisible: false}],
                         "category",
                         "type",
                         "statusTags",
@@ -188,9 +190,10 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       intrinsicSort={sortByDate({desc: true})}
                       columns={meetingTableColumns.get(
                         "id",
-                        "dateTimeActions",
+                        ["dateTimeActions", {columnDef: {sortDescFirst: true}}],
                         ["time", {initialVisible: false}],
                         ["duration", {initialVisible: false}],
+                        ["isInSeries", {initialVisible: false}],
                         "category",
                         "type",
                         "statusTags",

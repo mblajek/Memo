@@ -11,9 +11,11 @@ use OpenApi\Attributes as OA;
     schema: 'MeetingResource',
     properties: [
         new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+        new OA\Property(property: 'fromMeetingId', type: 'string', format: 'uuid', example: 'UUID', nullable: true),
+        new OA\Property(property: 'interval', type: 'string', example: '7d', nullable: true),
         new OA\Property(property: 'facilityId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'typeDictId', type: 'string', format: 'uuid', example: 'UUID'),
-        new OA\Property(property: 'notes', type: 'string', example: 'Test'),
+        new OA\Property(property: 'notes', type: 'string', example: 'Test', nullable: true),
         new OA\Property(property: 'date', type: 'string', format: 'date', example: '2023-11-27'),
         new OA\Property(property: 'startDayminute', type: 'int', example: 600),
         new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
@@ -49,6 +51,7 @@ class MeetingResource extends AbstractJsonResource
         return [
             'id' => true,
             'fromMeetingId' => true,
+            'interval' => true,
             'facilityId' => true,
             'categoryDictId' => true,
             'typeDictId' => true,

@@ -289,13 +289,13 @@ class MeetingController extends ApiController
         summary: 'Clone meeting',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['dates'],
+                required: ['dates', 'interval'],
                 properties: [
                     new OA\Property(
-                        property: 'date', type: 'array', items: new OA\Items(
-                        type: 'string', example: '2023-12-13'
+                        property: 'date', type: 'array',
+                        items: new OA\Items(type: 'string', example: '2023-12-13'),
                     ),
-                    ),
+                    new OA\Property(property: 'interval', type: 'string', example: '1d'),
                 ]
             )
         ),
@@ -324,12 +324,13 @@ class MeetingController extends ApiController
     ): JsonResponse {
         $meetingObject = $this->getFacilityMeeting($meeting);
 
-        $dates = $this->validate([
+        ['dates' => $dates, 'interval' => $interval] = $this->validate([
             'dates' => Valid::list(['max:100']),
             'dates.*' => Valid::date([new UniqueWithMemoryRule('dates')]),
-        ])['dates'];
+            'interval' => Valid::trimmed(['ascii'], max: 32),
+        ]);
 
-        $ids = $meetingCloneService->clone($meetingObject, $dates);
+        $ids = $meetingCloneService->clone($meetingObject, $dates, $interval);
 
         return new JsonResponse(data: ['data' => ['ids' => $ids]], status: 201);
     }

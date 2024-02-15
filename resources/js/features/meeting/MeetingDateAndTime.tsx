@@ -15,6 +15,7 @@ import {DateTime} from "luxon";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
+import {ACTION_ICONS} from "components/ui/icons";
 
 interface Props {
   /**
@@ -166,14 +167,21 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
           </div>
         </div>
         <Show when={!showEditable()}>
-          <div class="flex gap-2 items-baseline">
-            <DateAndTimeInfo
-              date={DateTime.fromISO(form.data("date"))}
-              startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}
-              durationMinutes={durationMinutes()}
-            />
-            <Show when={!props.viewMode}>
-              <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
+          <div class="flex gap-2 justify-between">
+            <div class="flex gap-2 items-baseline">
+              <DateAndTimeInfo
+                date={DateTime.fromISO(form.data("date"))}
+                startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}
+                durationMinutes={durationMinutes()}
+              />
+              <Show when={!props.viewMode}>
+                <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
+              </Show>
+            </div>
+            <Show when={form.data("fromMeetingId")}>
+              <div>
+                <ACTION_ICONS.repeat class="inlineIcon" /> {t("meetings.meeting_is_in_series")}
+              </div>
             </Show>
           </div>
         </Show>
