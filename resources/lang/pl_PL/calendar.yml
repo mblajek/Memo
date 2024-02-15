@@ -40,8 +40,6 @@ today: "dzisiaj"
 
 select_resource_to_show_calendar: "Wybierz terapeutę lub zasób aby wyświetlić kalendarz."
 
-show_meeting_list: "Lista spotkań"
-
 # Override for the weekday names as formatted by the browser. This is useful especially for the "short" format.
 weekday_overrides:
   "pon.": "pn"

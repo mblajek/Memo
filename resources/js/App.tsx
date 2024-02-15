@@ -20,6 +20,7 @@ const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/Clie
 const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
 const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
+const MeetingAttendantsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingAttendantsList.page"));
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
 const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
@@ -58,10 +59,13 @@ const App: VoidComponent = () => {
             <Route path="/" component={() => <Navigate href="home" />} />
             <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
             <Route path="/" component={FacilityAdminOrStaffPages}>
-              <Route path="/calendar">
-                <LeafRoute routeKey="facility.calendar" path="/" component={CalendarPage} />
-                <LeafRoute routeKey="facility.meetings_list" path="/table" component={MeetingsListPage} />
-              </Route>
+              <LeafRoute routeKey="facility.calendar" path="/calendar" component={CalendarPage} />
+              <LeafRoute routeKey="facility.meetings" path="/meetings" component={MeetingsListPage} />
+              <LeafRoute
+                routeKey="facility.meeting_attendants"
+                path="/meeting_attendants"
+                component={MeetingAttendantsListPage}
+              />
               <Route path="/staff">
                 <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
                 <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />

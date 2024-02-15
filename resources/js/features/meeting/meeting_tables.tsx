@@ -96,6 +96,7 @@ export function useMeetingTableColumns() {
         // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
       },
       attendants: {
+        // TODO: Make this column filterable by TQuerySelect.
         name: "attendants",
         columnDef: {
           cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((v) => (
@@ -112,6 +113,7 @@ export function useMeetingTableColumns() {
         initialVisible: false,
       },
       staff: {
+        // TODO: Make this column filterable by TQuerySelect.
         name: "staff",
         columnDef: {
           cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((v) => (
@@ -127,6 +129,7 @@ export function useMeetingTableColumns() {
         initialVisible: false,
       },
       clients: {
+        // TODO: Make this column filterable by TQuerySelect.
         name: "clients",
         columnDef: {
           cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((v) => (
@@ -216,7 +219,12 @@ export function useMeetingTableColumns() {
       },
     } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingResource>>>),
     // Attendance tables only:
+    attendanceType: {
+      // TODO: Make this a dictionary column.
+      name: "attendant.attendanceType",
+    },
     attendant: {
+      // TODO: Make this a user column filterable by TQuerySelect.
       name: "attendant.name",
       extraDataColumns: ["attendant.userId", "attendant.attendanceType"],
       columnDef: {

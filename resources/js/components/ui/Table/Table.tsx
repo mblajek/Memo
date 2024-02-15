@@ -45,25 +45,29 @@ export interface TableTranslations {
   summary(o?: TOptions): string;
 }
 
-export function createTableTranslations(tableName: string): TableTranslations {
+export function createTableTranslations(tableName: string | string[]): TableTranslations {
   const t = useLangFunc();
+  const names = typeof tableName === "string" ? [tableName] : tableName;
+  const tableNameKeys = [
+    ...names.map((n) => `tables.tables.${n}.tableName`),
+    ...names.map((n) => `models.${n}._name_plural`),
+    `tables.tables.generic.tableName`,
+  ];
+  const columnNameKeyPrefixes = [
+    ...names.map((n) => `tables.tables.${n}.columnNames.`),
+    ...names.map((n) => `models.${n}.`),
+    `tables.tables.generic.columnNames.`,
+    `models.generic.`,
+  ];
+  const summaryKeys = [...names.map((n) => `tables.tables.${n}.summary`), `tables.tables.generic.summary`];
   return {
-    tableName: (o) =>
-      t(
-        [`tables.tables.${tableName}.tableName`, `models.${tableName}._name_plural`, `tables.tables.generic.tableName`],
-        o,
-      ),
+    tableName: (o) => t(tableNameKeys, o),
     columnName: (column, o) =>
       t(
-        [
-          `tables.tables.${tableName}.columnNames.${column}`,
-          `models.${tableName}.${column}`,
-          `tables.tables.generic.columnNames.${column}`,
-          `models.generic.${column}`,
-        ],
+        columnNameKeyPrefixes.map((p) => p + column),
         o,
       ),
-    summary: (o) => t([`tables.tables.${tableName}.summary`, `tables.tables.generic.summary`], o),
+    summary: (o) => t(summaryKeys, o),
   };
 }
 
