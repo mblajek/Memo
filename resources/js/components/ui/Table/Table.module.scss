@@ -22,10 +22,11 @@
             @apply grid p-px gap-px;
 
             > .headerRow {
-              @apply contents;
+              @apply col-span-full grid grid-flow-col grid-cols-subgrid;
+              @apply outline outline-1 outline-gray-400 bg-gray-400;
 
               > .cell {
-                @apply outline outline-1 outline-gray-400 bg-gray-100;
+                @apply bg-gray-100;
                 min-height: 2em;
               }
             }
@@ -44,13 +45,11 @@
             }
 
             > .wideRow {
-              grid-column: 1 / -1;
-              @apply bg-white p-2 text-grey-text;
+              @apply col-span-full bg-white p-2 text-grey-text;
             }
 
             > .bottomBorder {
-              grid-column: 1 / -1;
-              @apply border-b border-b-gray-300;
+              @apply col-span-full border-b border-b-gray-300;
               margin-top: -5px;
             }
           }
@@ -72,12 +71,11 @@
     }
 
     > .tableMain > .scrollingWrapper > .scrollToTopElement > .tableBg > .table {
-      > .headerRow > .cell {
+      > .headerRow {
         @apply sticky top-px;
       }
       > .bottomBorder {
-        @apply sticky;
-        bottom: 0.5px;
+        @apply sticky bottom-0;
       }
     }
   }
