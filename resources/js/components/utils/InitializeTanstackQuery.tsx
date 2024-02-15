@@ -104,7 +104,12 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             refetchOnWindowFocus: false,
             // When opening a page, reload data if it's older than a couple of seconds.
             staleTime: 15 * 1000,
-            retry: false,
+            retry: (failureCount, error) =>
+              failureCount <= 2 &&
+              isAxiosError<Api.ErrorResponse>(error) &&
+              error.response?.status === 500 &&
+              error.response.data.errors.some((e) => e.code === "exception.unexpected"),
+            retryDelay: 500,
           },
         },
         queryCache: new QueryCache({
