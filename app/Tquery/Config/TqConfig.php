@@ -72,7 +72,7 @@ final class TqConfig
         $this->addColumn(
             type: $type,
             columnOrQuery: $attributeModel->api_name,
-            table: null,
+            table: TqTableAliasEnum::fromTableName($attributeModel->table->value),
             columnAlias: Str::camel($attributeModel->api_name),
             attribute: $attributeModel,
         );
@@ -137,6 +137,18 @@ final class TqConfig
             table: null,
             columnAlias: self::COUNT_COLUMN,
         );
+    }
+
+    public function removeColumns(string ...$columnAliases): void
+    {
+        foreach ($columnAliases as $columnAlias) {
+            $columnAlias = Str::camel($columnAlias);
+            if (array_key_exists($columnAlias, $this->columns)) {
+                unset($this->columns[$columnAlias]);
+            } else {
+                throw FatalExceptionFactory::tquery();
+            }
+        }
     }
 
     private function addColumn(

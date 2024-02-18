@@ -13,6 +13,12 @@ enum TqTableAliasEnum
     case members;
     case meetings;
     case meeting_attendants;
+    case clients;
+
+    public static function fromTableName(string $table): self
+    {
+        return self::{$table};
+    }
 
     public function baseTable(): TqTableEnum
     {
@@ -22,6 +28,7 @@ enum TqTableAliasEnum
             self::members => TqTableEnum::members,
             self::meetings => TqTableEnum::meetings,
             self::meeting_attendants => TqTableEnum::meeting_attendants,
+            self::clients => TqTableEnum::clients,
         };
     }
 

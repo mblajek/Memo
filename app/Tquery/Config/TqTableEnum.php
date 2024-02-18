@@ -9,4 +9,5 @@ enum TqTableEnum
     case facilities;
     case meetings;
     case meeting_attendants;
+    case clients;
 }
