@@ -3,12 +3,15 @@
 namespace App\Tquery\Tables;
 
 use App\Models\Facility;
+use App\Models\Meeting;
+use App\Models\MeetingAttendant;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
+use Illuminate\Support\Facades\App;
 
 readonly class ClientTquery extends AdminUserTquery
 {
@@ -39,10 +42,9 @@ readonly class ClientTquery extends AdminUserTquery
                 inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
                 where `meetings`.`facility_id` = '{$this->facility->id}'
                 and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meetings`.`status_dict_id` = 'f6001030-c061-480e-9a5a-7013cee7ff40' /* completed */
                 and `meeting_attendants`.`attendance_status_dict_id` in
-                    ('1adb737f-da0f-4473-ab9c-55fc1634b397' /* ok */,
-                     '1ce7a7ac-3562-4dff-bd4b-5eee8eb8f90b' /* late_present */)",
+                    ({MeetingAttendant::ATTENDANCE_STATUS_OK}, {MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT})
+                and `meetings`.`status_dict_id` = {Meeting::STATUS_COMPLETED}",
             "last_meeting_date"
         );
 
@@ -54,10 +56,9 @@ readonly class ClientTquery extends AdminUserTquery
                 inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
                 where `meetings`.`facility_id` = '{$this->facility->id}'
                 and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meetings`.`status_dict_id` = 'f6001030-c061-480e-9a5a-7013cee7ff40' /* completed */
                 and `meeting_attendants`.`attendance_status_dict_id` in
-                    ('1adb737f-da0f-4473-ab9c-55fc1634b397' /* ok */,
-                     '1ce7a7ac-3562-4dff-bd4b-5eee8eb8f90b' /* late_present */)",
+                    ({MeetingAttendant::ATTENDANCE_STATUS_OK}, {MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT})
+                and `meetings`.`status_dict_id` = {Meeting::STATUS_COMPLETED}",
             "first_meeting_date"
         );
 
@@ -69,10 +70,9 @@ readonly class ClientTquery extends AdminUserTquery
                 inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
                 where `meetings`.`facility_id` = '{$this->facility->id}'
                 and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meetings`.`status_dict_id` = 'f6001030-c061-480e-9a5a-7013cee7ff40' /* completed */
                 and `meeting_attendants`.`attendance_status_dict_id` in
-                    ('1adb737f-da0f-4473-ab9c-55fc1634b397' /* ok */,
-                     '1ce7a7ac-3562-4dff-bd4b-5eee8eb8f90b' /* late_present */)",
+                    ({MeetingAttendant::ATTENDANCE_STATUS_OK}, {MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT})
+                and `meetings`.`status_dict_id` = {Meeting::STATUS_COMPLETED}",
             "completed_meetings_count"
         );
 
@@ -83,14 +83,14 @@ readonly class ClientTquery extends AdminUserTquery
                 from `meetings`
                 inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
                 where `meetings`.`facility_id` = '{$this->facility->id}'
+                and `meeting_attendants`.`user_id` = `users`.`id`
+                and `meeting_attendants`.`attendance_status_dict_id` in
+                    ({MeetingAttendant::ATTENDANCE_STATUS_OK}, {MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT})
+
+                and `meetings`.`status_dict_id` = {Meeting::STATUS_COMPLETED}
                 /* Last month */
                 and year(date) = year(date_sub(curdate(), interval 1 month))
-                and month(date) = month(date_sub(curdate(), interval 1 month))
-                and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meetings`.`status_dict_id` = 'f6001030-c061-480e-9a5a-7013cee7ff40' /* completed */
-                and `meeting_attendants`.`attendance_status_dict_id` in
-                    ('1adb737f-da0f-4473-ab9c-55fc1634b397' /* ok */,
-                     '1ce7a7ac-3562-4dff-bd4b-5eee8eb8f90b' /* late_present */)",
+                and month(date) = month(date_sub(curdate(), interval 1 month))",
             "completed_meetings_count_last_month"
         );
 
@@ -101,12 +101,11 @@ readonly class ClientTquery extends AdminUserTquery
                 from `meetings`
                 inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
                 where `meetings`.`facility_id` = '{$this->facility->id}'
-                and `meetings`.`date` >= CURDATE()
                 and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meetings`.`status_dict_id` = '86aaead1-bbcc-4af1-a74a-ed2bdff46d0a' /* planned */
                 and `meeting_attendants`.`attendance_status_dict_id` in
-                    ('1adb737f-da0f-4473-ab9c-55fc1634b397' /* ok */,
-                     '1ce7a7ac-3562-4dff-bd4b-5eee8eb8f90b' /* late_present */)",
+                    ({MeetingAttendant::ATTENDANCE_STATUS_OK}, {MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT})
+                and `meetings`.`date` >= CURDATE()
+                and `meetings`.`status_dict_id` = {Meeting::STATUS_PLANNED}",
             "planned_meetings_count"
         );
 
