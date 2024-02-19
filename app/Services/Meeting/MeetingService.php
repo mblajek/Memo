@@ -17,7 +17,7 @@ class MeetingService
     {
         $meeting = new Meeting($data);
         $meeting->facility_id = $facility->id;
-        $this->fillMeetingCategory($meeting, $facility);
+        $this->fillMeetingCategory($meeting);
 
         $staff = $this->extractStaff($data) ?? [];
         $clients = $this->extractClients($data) ?? [];
