@@ -18,8 +18,11 @@ import s from "./MeetingSeriesForm.module.scss";
 
 const getSchema = () =>
   z.object({
-    interval: z.string(), // FacilityMeeting.CloneInterval
-    maxIndex: z.number(),
+    // The real type is FacilityMeeting.CloneInterval.
+    interval: z.string(),
+    // Float between 0 and 1, scaled non-linearly to the number of meetings, so that the slider is more accurate
+    // closer to the start of the range.
+    seriesLength: z.number(),
     includeDate: z.record(z.boolean()),
   });
 
@@ -33,7 +36,7 @@ interface Props extends FormConfigWithoutTransformFn<MeetingSeriesFormType> {
 
 const INTERVALS: FacilityMeeting.CloneInterval[] = ["1d", "7d", "14d"];
 
-const MAX_NUM_MEETINGS = 55;
+const MAX_NUM_MEETINGS = 100;
 
 export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["locale", "id", "startDate", "onCancel"]);
@@ -92,7 +95,7 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
                 label: () => t(`forms.meeting_series.interval_labels.${interval}`),
               }))}
             />
-            <RangeField name="maxIndex" min="1" max={MAX_NUM_MEETINGS - 1} />
+            <RangeField name="seriesLength" min="0" max="1" step="any" />
             <FieldBox name="meetingDates" umbrella>
               <div ref={setMeetingDatesTable} class="self-start h-72 flex flex-col overflow-y-auto">
                 <span>
@@ -148,6 +151,16 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
   );
 };
 
+const SERIES_LENGTH_EXP = 2;
+
+export function numMeetingsToSeriesLength(numMeetings: number) {
+  return ((numMeetings - 2) / (MAX_NUM_MEETINGS - 2)) ** (1 / SERIES_LENGTH_EXP);
+}
+
+function seriesLengthToNumMeetings(seriesLength: number) {
+  return 2 + Math.ceil((MAX_NUM_MEETINGS - 2) * seriesLength ** SERIES_LENGTH_EXP - 0.1);
+}
+
 export function getMeetingSeriesCloneParams({
   startDate,
   values,
@@ -160,7 +173,7 @@ export function getMeetingSeriesCloneParams({
   const interval = values.interval as FacilityMeeting.CloneInterval;
   const daysInterval =
     interval === "1d" ? 1 : interval === "7d" ? 7 : interval === "14d" ? 14 : (interval satisfies never);
-  const allDates = Array.from({length: values.maxIndex}, (_, i) =>
+  const allDates = Array.from({length: seriesLengthToNumMeetings(values.seriesLength) - 1}, (_, i) =>
     startDate.plus({days: daysInterval * (i + 1)}).toISODate(),
   );
   return {

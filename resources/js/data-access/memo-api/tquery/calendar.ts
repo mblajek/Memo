@@ -1,5 +1,3 @@
-import {CreateQueryResult} from "@tanstack/solid-query";
-import {AxiosError} from "axios";
 import {DaysRange} from "components/ui/calendar/days_range";
 import {NON_NULLABLE} from "components/utils";
 import {Accessor, createMemo, on} from "solid-js";
@@ -8,7 +6,7 @@ import {Api} from "../types";
 import {dateToISO} from "../utils";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
-import {DataRequest, DataResponse} from "./types";
+import {DataRequest} from "./types";
 
 const DEFAULT_LIMIT = 1000;
 
@@ -111,8 +109,4 @@ export function createCalendarRequestCreator({
       requestController: undefined,
     };
   };
-}
-
-export function meetingsFromQuery(query: CreateQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>) {
-  return () => query.data?.data as readonly TQMeetingResource[] | undefined;
 }

@@ -1,5 +1,5 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {Button, EditButton} from "components/ui/Button";
+import {Button, DeleteButton, EditButton} from "components/ui/Button";
 import {LoadingPane} from "components/ui/LoadingPane";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
@@ -74,14 +74,6 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   }
 
   async function deleteMeeting() {
-    if (
-      !(await confirmation.confirm({
-        title: t("forms.meeting_delete.formName"),
-        body: t("forms.meeting_delete.confirmationText"),
-        confirmText: t("forms.meeting_delete.submit"),
-      }))
-    )
-      return;
     await deleteMeetingMutation.mutateAsync(props.meetingId);
     if (props.showToast ?? true) {
       toast.success(t("forms.meeting_delete.success"));
@@ -149,10 +141,18 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
           </div>
           <Show when={props.viewMode}>
             <div class="flex gap-1 justify-between">
-              <Button class="secondary small" onClick={deleteMeeting} disabled={isBusy()}>
-                <ACTION_ICONS.delete class="inlineIcon text-current" />
-                {t("actions.delete")}
-              </Button>
+              <DeleteButton
+                class="secondary small"
+                confirm={() =>
+                  confirmation.confirm({
+                    title: t("forms.meeting_delete.formName"),
+                    body: t("forms.meeting_delete.confirmationText"),
+                    confirmText: t("forms.meeting_delete.submit"),
+                  })
+                }
+                delete={deleteMeeting}
+                disabled={isBusy()}
+              />
               <div class="flex gap-1">
                 <SplitButton
                   class="secondary small"

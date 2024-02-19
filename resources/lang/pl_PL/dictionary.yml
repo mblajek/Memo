@@ -16,8 +16,8 @@ meetingCategory:
 meetingType:
   _name: "typ spotkania"
   other: "inne"
-  work_time: "praca"
-  leave_time: "wolne"
+  work_time: "godziny pracy"
+  leave_time: "urlop"
 
 meetingStatus:
   _name: "status spotkania"

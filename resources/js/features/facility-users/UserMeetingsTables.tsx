@@ -11,7 +11,7 @@ import {Sort} from "data-access/memo-api/tquery/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
 import {ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
-import {useMeetingTableColumns} from "../meeting/meeting_tables";
+import {useMeetingTableColumns, useMeetingTableFilters} from "../meeting/meeting_tables";
 
 interface Props {
   readonly userName: string;
@@ -26,6 +26,12 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const userDisplayNames = useUserDisplayNames();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns();
+  const meetingTableFilters = useMeetingTableFilters();
+  const intrinsicFilter = (): FilterH => ({
+    type: "op",
+    op: "&",
+    val: [meetingTableFilters.isRegularMeeting()!, props.intrinsicFilter],
+  });
   function sortByDate({desc}: {desc: boolean}) {
     return [
       {type: "column", column: "date", desc},
@@ -64,7 +70,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         type: "op",
                         op: "&",
                         val: [
-                          props.intrinsicFilter,
+                          intrinsicFilter(),
                           {
                             type: "column",
                             column: "statusDictId",
@@ -127,7 +133,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         type: "op",
                         op: "&",
                         val: [
-                          props.intrinsicFilter,
+                          intrinsicFilter(),
                           {
                             type: "column",
                             column: "statusDictId",
@@ -186,7 +192,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTranslations={tableTranslations}
                       staticPersistenceKey={`${props.staticPersistenceKey}.all`}
                       staticTableId="all"
-                      intrinsicFilter={props.intrinsicFilter}
+                      intrinsicFilter={intrinsicFilter()}
                       intrinsicSort={sortByDate({desc: true})}
                       columns={meetingTableColumns.get(
                         "id",

@@ -25,6 +25,7 @@ const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
 const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
 const StatusPage = lazyAutoPreload(() => import("features/root/pages/help/Status.page"));
+const SystemMeetingsListPage = lazyAutoPreload(() => import("features/root/pages/SystemMeetingsList.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -66,9 +67,10 @@ const App: VoidComponent = () => {
                 path="/meeting_attendants"
                 component={MeetingAttendantsListPage}
               />
+              <LeafRoute routeKey="System meetings" path="/system_meetings" component={SystemMeetingsListPage} />
               <Route path="/staff">
                 <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
-                <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
+                <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />S
               </Route>
               <Route path="/clients">
                 <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />

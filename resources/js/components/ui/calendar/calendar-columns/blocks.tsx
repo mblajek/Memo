@@ -1,5 +1,7 @@
+import {Button} from "components/ui/Button";
+import {ACTION_ICONS} from "components/ui/icons";
 import {htmlAttributes} from "components/utils";
-import {JSX, Show, VoidComponent, splitProps} from "solid-js";
+import {DEV, JSX, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 
 interface AllDayBlockProps extends htmlAttributes.div {
   readonly label: string | (() => JSX.Element);
@@ -18,8 +20,8 @@ interface PartDayBlockProps extends htmlAttributes.div {
   readonly label?: string;
 }
 
-export const HoursAreaBlock: VoidComponent<PartDayBlockProps> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["label"]);
+export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["label", "children"]);
   return (
     <div {...htmlAttributes.merge(divProps, {class: "w-full h-full cursor-default"})}>
       <Show when={props.label}>
@@ -27,6 +29,31 @@ export const HoursAreaBlock: VoidComponent<PartDayBlockProps> = (allProps) => {
           {props.label}
         </div>
       </Show>
+      {props.children}
     </div>
+  );
+};
+
+interface WorkTimeBlockProps extends PartDayBlockProps {
+  readonly onDEVEditClick?: () => void;
+}
+
+export const WorkTimeBlock: VoidComponent<WorkTimeBlockProps> = (allProps) => {
+  const [props, hProps] = splitProps(allProps, ["onDEVEditClick"]);
+  return (
+    <HoursAreaBlock {...hProps}>
+      <Show when={DEV && props.onDEVEditClick}>
+        <Button
+          class="absolute right-0 bottom-0"
+          title="Edit the work time (DEV only)"
+          onClick={(e) => {
+            props.onDEVEditClick?.();
+            e.stopPropagation();
+          }}
+        >
+          <ACTION_ICONS.edit class="text-gray-200" size="12" />
+        </Button>
+      </Show>
+    </HoursAreaBlock>
   );
 };
