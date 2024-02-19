@@ -10,7 +10,6 @@ use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
-use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 use App\Tquery\Engine\TqService;
@@ -39,7 +38,7 @@ readonly class MeetingTquery extends TqService
 
     protected function getConfig(): TqConfig
     {
-        $config = new TqConfig(table: TqTableEnum::meetings);
+        $config = new TqConfig(table: TqTableAliasEnum::meetings);
 
         $config->addSimple(TqDataTypeEnum::uuid, 'id');
         $config->addSimple(TqDataTypeEnum::uuid_nullable, 'from_meeting_id');

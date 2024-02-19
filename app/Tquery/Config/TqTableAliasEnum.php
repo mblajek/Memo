@@ -6,10 +6,14 @@ use App\Tquery\Engine\TqBuilder;
 
 enum TqTableAliasEnum
 {
+    case users;
     case created_by;
     case updated_by;
     case attendant;
+
+    case facilities;
     case last_login_facility;
+
     case members;
     case meetings;
     case meeting_attendants;
@@ -20,19 +24,20 @@ enum TqTableAliasEnum
         return self::{$table};
     }
 
-    public function baseTable(): TqTableEnum
+    public function baseTable(): string
     {
         return match ($this) {
-            self::created_by, self::updated_by, self::attendant => TqTableEnum::users,
-            self::last_login_facility => TqTableEnum::facilities,
-            self::members => TqTableEnum::members,
+            self::created_by, self::updated_by, self::attendant => 'users',
+            self::last_login_facility => 'facilities',
+            default => $this->name,
+            /* self::members => TqTableEnum::members,
             self::meetings => TqTableEnum::meetings,
             self::meeting_attendants => TqTableEnum::meeting_attendants,
-            self::clients => TqTableEnum::clients,
+            self::clients => TqTableEnum::clients, */
         };
     }
 
-    public function applyJoin(TqBuilder $builder, TqTableEnum $joinBase, bool $left): void
+    public function applyJoin(TqBuilder $builder, TqTableAliasEnum $joinBase, bool $left): void
     {
         $joinColumn = match ($this) {
             self::created_by, self::updated_by => $this->name,

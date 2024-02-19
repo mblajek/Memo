@@ -18,7 +18,7 @@ final class TqConfig
     private ?array $filterableColumns = null;
 
     public function __construct(
-        public readonly TqTableEnum $table,
+        public readonly TqTableAliasEnum $table,
     ) {
     }
 
