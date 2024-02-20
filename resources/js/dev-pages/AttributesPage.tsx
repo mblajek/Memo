@@ -20,6 +20,7 @@ import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {Show, VoidComponent, createMemo} from "solid-js";
 import {Select} from "../components/ui/form/Select";
+import {EMPTY_VALUE_SYMBOL} from "../components/ui/symbols";
 import {useAttrValueFormatter} from "./util";
 
 export default (() => {
@@ -122,7 +123,13 @@ export default (() => {
         }),
         h.accessor("multiple", {
           id: "Multiple",
-          cell: cellFunc<boolean, Attribute>((props) => <PaddedCell>{String(props.v)}</PaddedCell>),
+          cell: cellFunc<boolean, Attribute>((props) => (
+            <PaddedCell>
+              <ShowCellVal v={props.v} fallback={EMPTY_VALUE_SYMBOL}>
+                {(v) => String(v())}
+              </ShowCellVal>
+            </PaddedCell>
+          )),
         }),
         h.accessor("requirementLevel", {
           id: "Req. level",
