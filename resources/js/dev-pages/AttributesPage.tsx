@@ -5,9 +5,9 @@ import {IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
-  EmptyValueCell,
   Header,
   PaddedCell,
+  ShowCellVal,
   Table,
   cellFunc,
   getBaseTableOptions,
@@ -75,7 +75,7 @@ export default (() => {
         }),
         h.accessor("label", {
           id: "Label",
-          cell: cellFunc<string, Attribute>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
+          cell: cellFunc<string, Attribute>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
           ...textSort,
         }),
         h.accessor("resource.isFixed", {
@@ -83,10 +83,11 @@ export default (() => {
         }),
         h.accessor("resource.facilityId", {
           id: "Facility",
-          cell: cellFunc<string, Attribute>(
-            (v) => <PaddedCell>{getFacility(v)}</PaddedCell>,
-            () => <EmptyValueCell />,
-          ),
+          cell: cellFunc<string, Attribute>((props) => (
+            <PaddedCell>
+              <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
+            </PaddedCell>
+          )),
           ...textSort,
         }),
         h.accessor("model", {
@@ -114,17 +115,14 @@ export default (() => {
         }),
         h.accessor("type", {
           id: "Type",
-          cell: cellFunc<AttributeType, Attribute>((type, ctx) => (
-            <PaddedCell>{getAttributeTypeString(ctx.row.original)}</PaddedCell>
+          cell: cellFunc<AttributeType, Attribute>((props) => (
+            <PaddedCell>{getAttributeTypeString(props.row)}</PaddedCell>
           )),
           ...textSort,
         }),
         h.accessor("multiple", {
           id: "Multiple",
-          cell: cellFunc<boolean, Attribute>(
-            (multiple) => <PaddedCell>{String(multiple)}</PaddedCell>,
-            () => <EmptyValueCell />,
-          ),
+          cell: cellFunc<boolean, Attribute>((props) => <PaddedCell>{String(props.v)}</PaddedCell>),
         }),
         h.accessor("requirementLevel", {
           id: "Req. level",

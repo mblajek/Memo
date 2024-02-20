@@ -1,5 +1,5 @@
 import {Email} from "components/ui/Email";
-import {PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
+import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {UserLink} from "features/facility-users/UserLink";
@@ -21,9 +21,11 @@ export default (() => {
             name: "name",
             extraDataColumns: ["id"],
             columnDef: {
-              cell: cellFunc<string>((v, ctx) => (
+              cell: cellFunc<string>((props) => (
                 <PaddedCell>
-                  <UserLink type="staff" userId={ctx.row.original.id as string} name={v} />
+                  <ShowCellVal v={props.v}>
+                    {(v) => <UserLink type="staff" userId={props.row.id as string} name={v()} />}
+                  </ShowCellVal>
                 </PaddedCell>
               )),
               enableHiding: false,
@@ -32,9 +34,9 @@ export default (() => {
           {
             name: "email",
             columnDef: {
-              cell: cellFunc<string>((v) => (
+              cell: cellFunc<string>((props) => (
                 <PaddedCell>
-                  <Email class="w-full" email={v} />
+                  <ShowCellVal v={props.v}>{(v) => <Email class="w-full" email={v()} />}</ShowCellVal>
                 </PaddedCell>
               )),
             },

@@ -31,7 +31,7 @@ import {
   on,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContext, getHeaders, useTableCells} from ".";
+import {TableContext, getColumns, useTableCells} from ".";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
@@ -217,6 +217,12 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
       },
     ),
   );
+  const columns = createMemo(
+    on(
+      () => props.table.getAllLeafColumns(),
+      () => getColumns(props.table),
+    ),
+  );
   return (
     // eslint-disable-next-line solid/reactivity
     <TableContext.Provider value={props.table}>
@@ -256,16 +262,12 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                       }
                       class={s.headerRow}
                     >
-                      <For each={getHeaders(props.table)}>
-                        {({header, column}) => (
-                          <Show when={header()}>
-                            {(header) => (
-                              <div class={s.cell}>
-                                <Show when={!header().isPlaceholder}>
-                                  <CellRenderer component={column.columnDef.header} props={header().getContext()} />
-                                </Show>
-                              </div>
-                            )}
+                      <For each={columns()}>
+                        {({column, headerContext}) => (
+                          <Show when={column.getIsVisible()}>
+                            <div class={s.cell}>
+                              <CellRenderer component={column.columnDef.header} props={headerContext} />
+                            </div>
                           </Show>
                         )}
                       </For>
@@ -280,16 +282,15 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                         return (
                           <NonBlocking nonBlocking={props.nonBlocking}>
                             <div class={s.dataRow} inert={props.isDimmed || undefined}>
-                              <Index each={row().getVisibleCells()}>
-                                {(cell) => (
-                                  <span class={s.cell}>
-                                    <CellRenderer
-                                      component={cell().column.columnDef.cell}
-                                      props={cell().getContext()}
-                                    />
-                                  </span>
+                              <For each={columns()}>
+                                {({column, cellContext}) => (
+                                  <Show when={column.getIsVisible()}>
+                                    <div class={s.cell}>
+                                      <CellRenderer component={column.columnDef.cell} props={cellContext(row())} />
+                                    </div>
+                                  </Show>
                                 )}
-                              </Index>
+                              </For>
                             </div>
                           </NonBlocking>
                         );

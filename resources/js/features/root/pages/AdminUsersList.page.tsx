@@ -1,6 +1,6 @@
 import {Button, EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
-import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
+import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {USER_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
@@ -27,9 +27,9 @@ export default (() => {
         {
           name: "email",
           columnDef: {
-            cell: cellFunc<string>((v) => (
+            cell: cellFunc<string>((props) => (
               <PaddedCell>
-                <Email class="w-full" email={v} />
+                <ShowCellVal v={props.v}>{(v) => <Email class="w-full" email={v()} />}</ShowCellVal>
               </PaddedCell>
             )),
           },

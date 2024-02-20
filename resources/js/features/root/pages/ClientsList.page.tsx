@@ -1,4 +1,4 @@
-import {PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
+import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {UserLink} from "features/facility-users/UserLink";
@@ -20,9 +20,11 @@ export default (() => {
             name: "name",
             extraDataColumns: ["id"],
             columnDef: {
-              cell: cellFunc<string>((v, ctx) => (
+              cell: cellFunc<string>((props) => (
                 <PaddedCell>
-                  <UserLink type="clients" userId={ctx.row.original.id as string} name={v} />
+                  <ShowCellVal v={props.v}>
+                    {(v) => <UserLink type="clients" userId={props.row.id as string} name={v()} />}
+                  </ShowCellVal>
                 </PaddedCell>
               )),
               enableHiding: false,
