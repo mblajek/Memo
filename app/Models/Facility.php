@@ -39,7 +39,7 @@ class Facility extends Model
             'url' => Valid::trimmed([
                 'lowercase',
                 'regex:/^[a-z][a-z0-9-]+[a-z0-9]$/',
-                'not_in:admin,user,api,system,login,help,home',
+                'not_in:admin,user,api,system,login,help,home,dev,docs',
                 Rule::unique('facilities', 'url'),
             ], max: 30),
         };
