@@ -69,8 +69,11 @@
     "i18next-http-backend": "^2.4.3",
     "i18next-intervalplural-postprocessor": "^3.0.0",
     "luxon": "^3.4.4",
+    "rehype-autolink-headings": "^7.1.0",
+    "remark-custom-heading-id": "^1.0.1",
     "solid-icons": "^1.1.0",
     "solid-js": "^1.8.15",
+    "solid-markdown": "^2.0.0",
     "solid-toast": "^0.5.0",
     "zod": "^3.22.4"
   }

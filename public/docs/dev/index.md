@@ -1,0 +1,24 @@
+# Developers help
+
+This document presents some of the Markdown features that can be used in Memo documentation.
+
+## Markdown syntax {#syntax}
+
+- Standard [Markdown syntax](https://commonmark.org/help/) is supported.
+- Headers:
+  - The text of the `# Title` header is used as the page title.
+  - Use `## Header title {#header-anchor}` to create an anchor for the section.
+- Links:
+  - For links inside the documentation, use `[text](relative_path)` (e.g. [this file](index)), `[text](relative-path#anchor)`, `[text](../relative-path)` (e.g. [markdown syntax](../dev/index#syntax)).
+  - For links to the Memo app, use `[text](/absolute/memo/path)` (e.g. [the help](/help)).
+    - For links to facility pages, use `[text](/__facility/path)` (e.g. [calendar](/__facility/calendar)).
+  - For external links just use the full URL (e.g. [Memo on GitHub](https://github.com/mblajek/Memo/)).
+- Tables are supported (see [below](#files) for an example).
+- The created markdown should pass the configured markdown linter (although the linter rules can be tweaked as needed).
+
+## Files organisation {#files}
+
+| Help types                                                                       | Markdown file URL                        | Entry app URL          |
+| -------------------------------------------------------------------------------- | ---------------------------------------- | ---------------------- |
+| Documentation for the Memo users                                                 | /docs/\<language>/index.md               | [/help](/help)         |
+| Documentation for the Memo developers, mainly related to creating the help pages | [/docs/dev/index.md](/docs/dev/index.md) | [/help/dev](/help/dev) |
