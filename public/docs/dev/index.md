@@ -1,5 +1,7 @@
 # Developers help
 
+![Memo logo](memo_logo.png "Memo logo")
+
 This document presents some of the Markdown features that can be used in Memo documentation.
 
 ## Markdown syntax {#syntax}
@@ -13,6 +15,7 @@ This document presents some of the Markdown features that can be used in Memo do
   - For links to the Memo app, use `[text](/absolute/memo/path)` (e.g. [the help](/help)).
     - For links to facility pages, use `[text](/__facility/path)` (e.g. [calendar](/__facility/calendar)).
   - For external links just use the full URL (e.g. [Memo on GitHub](https://github.com/mblajek/Memo/)).
+- Images are supported using the standard syntax `![alt text](path "optional title")` (see the Memo logo above).
 - Tables are supported (see [below](#files) for an example).
 - The created markdown should pass the configured markdown linter (although the linter rules can be tweaked as needed).
 

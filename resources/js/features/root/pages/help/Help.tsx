@@ -57,6 +57,19 @@ export const Help: VoidComponent<Props> = (props) => {
                 </>
               );
             },
+            img: (imgProps) => {
+              // Rewrite the image source to path relative to mdPath, and not to the current app URL.
+              const src = () => [...props.mdPath.split("/").slice(0, -1), imgProps.src!].join("/");
+              return (
+                <img
+                  {...{
+                    ...imgProps,
+                    node: undefined,
+                    src: src(),
+                  }}
+                />
+              );
+            },
           }}
         />
       </QueryBarrier>

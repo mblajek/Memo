@@ -36,6 +36,7 @@ export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
                 {...{
                   href: "",
                   ...aProps,
+                  node: undefined,
                   // Open external links in a new tab. Don't use _self as it reloads the page.
                   target: aProps.href?.startsWith("http")
                     ? "_blank"
