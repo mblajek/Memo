@@ -34,7 +34,7 @@ readonly class StaffTquery extends AdminUserTquery
             TqDataTypeEnum::is_not_null,
             TqTableAliasEnum::members,
             'facility_admin_grant_id',
-            'has_facility_admin',
+            'staff.has_facility_admin',
         );
 
         return $config;

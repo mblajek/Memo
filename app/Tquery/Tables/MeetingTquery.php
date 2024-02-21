@@ -13,7 +13,6 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 use App\Tquery\Engine\TqService;
-use Illuminate\Support\Facades\App;
 
 readonly class MeetingTquery extends TqService
 {
@@ -92,10 +91,7 @@ readonly class MeetingTquery extends TqService
             $config->addQuery(
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
-                    (App::hasDebugModeEnabled()
-                        // todo: remove after updating mariadb to 11.2.3
-                        ? "select concat('[',group_concat(concat('\"',replace(`users`.`name`,'\"','\\\"'),'\"')),']') from `meeting_attendants`"
-                        : "select json_arrayagg(`users`.`name`) from `meeting_attendants`")
+                    "select json_arrayagg(`users`.`name`) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
                 "$attendanceName.*.name",
             );
