@@ -126,12 +126,15 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           {[s.blink!]: props.blink},
         )}
         style={coloringToStyle(coloring()!, {hover: hovered()})}
-        {...hoverApi().triggerProps}
+        {...{
+          ...hoverApi().triggerProps,
+          // Remove the default touch scroll behaviour, which is to block touch scrolling.
+          onTouchStart: undefined,
+        }}
         onMouseEnter={[setHovered, true]}
         onMouseLeave={[setHovered, false]}
-        onClick={() => props.onClick?.()}
         // Needed to make the event clickable on a touch screen.
-        onTouchEnd={() => props.onClick?.()}
+        onPointerUp={() => props.onClick?.()}
       >
         <div class="px-0.5 whitespace-nowrap" style={coloringToStyle(coloring()!, {part: "header"})}>
           <span class="font-weight-medium">{formatDayMinuteHM(props.meeting.startDayminute)}</span>

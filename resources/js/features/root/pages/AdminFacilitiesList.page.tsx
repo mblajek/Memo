@@ -22,7 +22,7 @@ export default (() => {
       columns={[
         {name: "id", initialVisible: false},
         {name: "name", columnDef: {enableHiding: false}},
-        {name: "url", columnDef: {cell: cellFunc<string>((url) => <PaddedCell>/{url}</PaddedCell>)}},
+        {name: "url", columnDef: {cell: cellFunc<string>((props) => <PaddedCell>/{props.v}</PaddedCell>)}},
         {name: "createdAt", columnDef: {sortDescFirst: true}},
         {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
         {

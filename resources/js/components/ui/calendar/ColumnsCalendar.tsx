@@ -149,14 +149,20 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           <For each={props.columns}>{(col) => <div class={s.cell}>{col.allDayArea()}</div>}</For>
         </div>
         <div
-          ref={setHoursArea}
-          class={s.hoursArea}
-          onWheel={(e) => {
-            if (e.altKey) {
-              props.onWheelWithAlt?.(e);
-              e.preventDefault();
-            }
+          ref={(div) => {
+            setHoursArea(div);
+            div.addEventListener(
+              "wheel",
+              (e) => {
+                if (e.altKey) {
+                  props.onWheelWithAlt?.(e);
+                  e.preventDefault();
+                }
+              },
+              {passive: false},
+            );
           }}
+          class={s.hoursArea}
           onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}
         >
           <div class={s.timeTrack}>
