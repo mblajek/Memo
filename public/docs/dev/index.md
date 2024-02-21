@@ -21,7 +21,11 @@ This document presents some of the Markdown features that can be used in Memo do
 
 ## Files organisation {#files}
 
-| Help types                                                                       | Markdown file URL                        | Entry app URL          |
+| Help types                                                                       | Markdown file URL                        | App URL                |
 | -------------------------------------------------------------------------------- | ---------------------------------------- | ---------------------- |
-| Documentation for the Memo users                                                 | /docs/\<language>/index.md               | [/help](/help)         |
+| Documentation for the Memo users                                                 | /docs/`language code`/index.md           | [/help](/help)         |
 | Documentation for the Memo developers, mainly related to creating the help pages | [/docs/dev/index.md](/docs/dev/index.md) | [/help/dev](/help/dev) |
+
+### Translations {#translations}
+
+The user documentation for each supported language is placed in a separate directory under /docs. Keep in mind that file names and anchors should have English names so that the documentation structure is the same in every language.
