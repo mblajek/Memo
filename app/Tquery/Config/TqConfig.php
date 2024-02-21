@@ -64,7 +64,7 @@ final class TqConfig
         );
     }
 
-    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $attribute): void
+    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $attribute, ?string $prefix = null): void
     {
         $attributeModel = Attribute::query()->findOrFail(is_string($attribute) ? $attribute : $attribute->value);
         $type = $attributeModel->getTqueryDataType();
@@ -73,7 +73,7 @@ final class TqConfig
             type: $type,
             columnOrQuery: $attributeModel->api_name,
             table: TqTableAliasEnum::fromTableName($attributeModel->table->value),
-            columnAlias: Str::camel($attributeModel->api_name),
+            columnAlias: Str::camel((($prefix !== null) ? "$prefix." : '') . $attributeModel->api_name),
             attribute: $attributeModel,
         );
     }

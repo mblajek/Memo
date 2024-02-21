@@ -32,7 +32,7 @@ readonly class ClientTquery extends AdminUserTquery
         $config = parent::getConfig();
 
         foreach (Attribute::getByFacility($this->facility, 'clients') as $attribute) {
-            $config->addAttribute($attribute->id);
+            $config->addAttribute($attribute->id, 'client');
         }
 
         return $config;
