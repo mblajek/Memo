@@ -13,7 +13,6 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 use App\Tquery\Engine\TqService;
-use Illuminate\Support\Facades\App;
 
 readonly class MeetingTquery extends TqService
 {
