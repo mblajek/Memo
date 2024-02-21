@@ -2,6 +2,7 @@ import {Email} from "components/ui/Email";
 import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
 import {UserLink} from "features/facility-users/UserLink";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -13,7 +14,7 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={FacilityStaff.keys.staff()}
         staticEntityURL={`facility/${activeFacilityId()}/user/staff`}
-        staticTranslations={createTableTranslations("staff")}
+        staticTranslations={createTableTranslations(["staff", "user"])}
         staticPersistenceKey="facilityStaff"
         columns={[
           {name: "id", initialVisible: false},
@@ -44,14 +45,9 @@ export default (() => {
           {name: "hasEmailVerified", initialVisible: false},
           {name: "hasPassword"},
           {name: "passwordExpireAt", initialVisible: false},
-          {
-            name: "hasGlobalAdmin",
-            columnDef: {size: 130},
-            initialVisible: false,
-          },
-          {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
-          {name: "createdBy.name", initialVisible: false},
-          {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
+          {name: "hasFacilityAdmin", columnDef: {size: 130}, initialVisible: false},
+          {name: "hasGlobalAdmin", columnDef: {size: 130}, initialVisible: false},
+          ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
         ]}
         initialSort={[{id: "name", desc: false}]}
       />
