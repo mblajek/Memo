@@ -56,7 +56,7 @@ tables:
     tableName: "$t(models.meeting.attendants)"
     summary__zero: "Brak uczestników"
     summary__one: "{{count, number}} uczestnik"
-    summary__few: "{{count, number}} uczestnicy"
+    summary__few: "{{count, number}} uczestników"
     summary__many: "{{count, number}} uczestników"
 
 choose_columns: "Wybierz kolumny"
