@@ -11,6 +11,12 @@ interface Props {
   readonly mdPath: string;
 }
 
+/**
+ * A component displaying a help page, loaded from the mdPath as markdown.
+ *
+ * This component sets the page title to props.title, prepended with the `# Title` from the markdown.
+ * It also rewrites image sources to be relative to the mdPath.
+ */
 export const Help: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const location = useLocation();

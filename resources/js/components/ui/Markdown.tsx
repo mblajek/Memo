@@ -11,6 +11,14 @@ interface MarkdownProps extends ComponentProps<typeof SolidMarkdown> {
   readonly markdown: string;
 }
 
+/**
+ * The component for rendering markdown.
+ *
+ * Markdown supports standard syntax, tables and custom header anchors (ids). It also creates
+ * `<A>` elements for links so that the page does not reload.
+ *
+ * The component can be further configured using the props of the underlying SolidMarkdown component.
+ */
 export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
   const [props, markdownProps] = splitProps(allProps, ["markdown"]);
   return (
