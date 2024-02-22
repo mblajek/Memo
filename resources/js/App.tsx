@@ -1,4 +1,4 @@
-import {Navigate, Route, RouteProps, Router, useParams} from "@solidjs/router";
+import {Navigate, Route, RouteProps, Router, useNavigate, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AppContextProvider} from "app_context";
 import {AccessBarrier} from "components/utils";
@@ -8,16 +8,19 @@ import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
 import {DevRoutes} from "dev-pages/DevRoutes";
 import NotFound from "features/not-found/components/NotFound";
 import NotYetImplemented from "features/not-found/components/NotYetImplemented";
-import {MemoTitle} from "features/root/MemoTitle";
 import {PageWithTheme} from "features/root/components/theme_control";
-import {DEV, ParentComponent, Show, VoidProps, splitProps, type VoidComponent} from "solid-js";
+import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {MemoRouteTitle} from "./features/root/MemoRouteTitle";
+import {activeFacilityId} from "./state/activeFacilityId.state";
 
 const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazyAutoPreload(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.page"));
 const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
 const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
+const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHelp.page"));
+const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
 const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const MeetingAttendantsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingAttendantsList.page"));
@@ -25,9 +28,30 @@ const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
 const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
 const StatusPage = lazyAutoPreload(() => import("features/root/pages/help/Status.page"));
+const SystemMeetingsListPage = lazyAutoPreload(() => import("features/root/pages/SystemMeetingsList.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+
+  /**
+   * A component for redirecting the __facility links to an actual facility.
+   *
+   * Such links make sense in places like documentation, where the actual facility URL is not known.
+   */
+  const RedirectToFacility = (() => {
+    const params = useParams();
+    const navigate = useNavigate();
+    createEffect(() => {
+      if (facilitiesQuery.isSuccess && activeFacilityId()) {
+        const activeFacility = facilitiesQuery.data!.find((facility) => facility.id === activeFacilityId());
+        if (activeFacility) {
+          navigate(`/${activeFacility.url}/${params.facilityPath}`);
+        }
+      }
+    });
+    return <></>;
+  }) satisfies VoidComponent;
+
   return (
     <AppContextProvider>
       <Router>
@@ -36,19 +60,22 @@ const App: VoidComponent = () => {
           <Route path="/" component={RootPage}>
             <UnknownNotFound />
             <Route path="/" component={() => <Navigate href="/help" />} />
-            <Show when={DEV}>
-              <DevRoutes />
-            </Show>
+            <DevRoutes />
             <Route path="/help">
-              <UnknownNotFound />
-              <LeafRoute routeKey="help" path="/" component={NotYetImplemented} />
               <LeafRoute routeKey="help_pages.status" path="/status" component={StatusPage} />
+              <Route path="/" component={() => <Navigate href="index" />} />
+              <LeafRoute routeKey="help" path="/*helpPath" component={HelpPage} />
+              <Route path="/dev">
+                <LeafRoute routeKey="help" path="/" component={() => <Navigate href="index" />} />
+                <LeafRoute routeKey="help" path="/*helpPath" component={DevHelpPage} />
+              </Route>
             </Route>
             <Route path="/admin" component={GlobalAdminPages}>
               <UnknownNotFound />
               <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
               <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
             </Route>
+            <Route path="/__facility/*facilityPath" component={RedirectToFacility} />
           </Route>
           <Route
             path="/:facilityUrl"
@@ -66,9 +93,10 @@ const App: VoidComponent = () => {
                 path="/meeting_attendants"
                 component={MeetingAttendantsListPage}
               />
+              <LeafRoute routeKey="System meetings" path="/system_meetings" component={SystemMeetingsListPage} />
               <Route path="/staff">
                 <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
-                <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
+                <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />S
               </Route>
               <Route path="/clients">
                 <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
@@ -102,7 +130,7 @@ const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => 
       {...routeProps}
       component={(innerProps) => (
         <>
-          <MemoTitle routeKey={props.routeKey} />
+          <MemoRouteTitle routeKey={props.routeKey} />
           <Dynamic component={props.component} {...innerProps} />
         </>
       )}

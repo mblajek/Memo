@@ -11,6 +11,7 @@ import {
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {debouncedAccessor} from "components/utils";
+import {isDEV} from "components/utils/dev_mode";
 import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
@@ -29,7 +30,7 @@ import {
   Sort,
   isDataColumn,
 } from "data-access/memo-api/tquery/types";
-import {DEV, JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal, onMount} from "solid-js";
+import {JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal, onMount} from "solid-js";
 import toast from "solid-toast";
 import {
   DisplayMode,
@@ -254,15 +255,15 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     requestCreator,
     dataQueryOptions: {meta: {tquery: {isTable: true}}},
   });
-  if (DEV) {
-    createComputed(() =>
-      setDevColumns(
-        schema()
-          ?.columns.filter(isDataColumn)
-          .filter(({name}) => !props.columns.some((col) => col.name === name)) || [],
-      ),
-    );
-  }
+  createComputed(() =>
+    setDevColumns(
+      isDEV()
+        ? schema()
+            ?.columns.filter(isDataColumn)
+            .filter(({name}) => !props.columns.some((col) => col.name === name)) || []
+        : [],
+    ),
+  );
   const {
     columnVisibility,
     globalFilter,

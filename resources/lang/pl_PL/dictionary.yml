@@ -11,10 +11,13 @@ gender:
 meetingCategory:
   _name: "kategoria spotkania"
   other: "inne"
+  system: "systemowe"
 
 meetingType:
   _name: "typ spotkania"
   other: "inne"
+  work_time: "godziny pracy"
+  leave_time: "urlop"
 
 meetingStatus:
   _name: "status spotkania"

@@ -10,3 +10,7 @@ resource_not_found:
   title: "404 Nie znaleziono zasobu"
   body: "Ten obiekt nie istnieje. Skontaktuj się z Administratorem w celu uzyskania pomocy."
   debug_message_header: "Informacje dla programisty:"
+
+docs_page_not_found:
+  title: "404 Nie znaleziono strony"
+  body: "Strona dokumentacji znajdująca się pod adresem {{-url}} nie istnieje. Skontaktuj się z Administratorem w celu uzyskania pomocy."

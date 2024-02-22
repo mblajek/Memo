@@ -1,6 +1,7 @@
 import {FullLogo} from "components/ui/FullLogo";
 import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
+import {isDEV} from "components/utils/dev_mode";
 import {BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
@@ -31,6 +32,9 @@ export const Navbar: VoidComponent = () => {
           routeKey="facility.meeting_attendants"
           small
         />
+        <Show when={isDEV()}>
+          <NavigationItem icon={OcTable3} href={`/${facilityUrl()}/system_meetings`} routeKey="DEV System" small />
+        </Show>
       </NavigationItem>
       <NavigationItem icon={STAFF_ICONS.menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
       <NavigationItem icon={CLIENT_ICONS.menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
@@ -70,11 +74,13 @@ export const Navbar: VoidComponent = () => {
         <NavigationSection title={t("routes.menu_sections.other")}>
           <NavigationItem icon={TbHelp} href="/help" routeKey="help" />
         </NavigationSection>
-        <Show when={DEV}>
+        <Show when={isDEV()}>
           <NavigationSection title="DEV">
             <NavigationItem icon={FaSolidList} href="/dev/attributes" routeKey="Attributes" small />
             <NavigationItem icon={TiSortAlphabetically} href="/dev/dictionaries" routeKey="Dictionaries" small />
-            <NavigationItem icon={RiDevelopmentCodeBoxLine} href="/dev/test-page" routeKey="Test page" small />
+            <Show when={DEV}>
+              <NavigationItem icon={RiDevelopmentCodeBoxLine} href="/dev/test-page" routeKey="Test page" small />
+            </Show>
             <NavigationItem
               icon={BiRegularTable}
               href="/dev/local-storage"
@@ -83,6 +89,7 @@ export const Navbar: VoidComponent = () => {
               small
             />
             <NavigationItem icon={SiSwagger} href="/api/documentation" routeKey="API" target="_blank" small />
+            <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />
           </NavigationSection>
         </Show>
       </nav>

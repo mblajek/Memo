@@ -1,0 +1,6 @@
+{
+  "no-trailing-punctuation": false,
+  "code-fence-style": {"style": "consistent"},
+  "line-length": false,
+  "fenced-code-language": false
+}

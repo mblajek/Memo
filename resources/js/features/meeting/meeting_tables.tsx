@@ -1,9 +1,11 @@
-import {Button} from "components/ui/Button";
+import {createMutation} from "@tanstack/solid-query";
+import {Button, DeleteButton} from "components/ui/Button";
 import {capitalizeString} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
+import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL, EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
@@ -11,11 +13,15 @@ import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils
 import {DATE_FORMAT} from "components/utils/formatting";
 import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
+import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
 import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
+import toast from "solid-toast";
 import {UserLink} from "../facility-users/UserLink";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
@@ -24,6 +30,16 @@ import {createMeetingModal} from "./meeting_modal";
 export function useMeetingTableColumns() {
   const t = useLangFunc();
   const meetingModal = createMeetingModal();
+  const confirmation = createConfirmation();
+  const deleteMeetingMutation = createMutation(() => ({
+    mutationFn: FacilityMeeting.deleteMeeting,
+  }));
+  const invalidate = useInvalidator();
+  async function deleteMeeting(meetingId: string) {
+    await deleteMeetingMutation.mutateAsync(meetingId);
+    toast.success(t("forms.meeting_delete.success"));
+    invalidate.facility.meetings();
+  }
 
   const MeetingTime: VoidComponent<{startDayMinute: number; durationMinutes: number}> = (props) => (
     <>
@@ -174,8 +190,19 @@ export function useMeetingTableColumns() {
         extraDataColumns: ["id"],
         columnDef: {
           cell: (c) => (
-            <PaddedCell>
+            <PaddedCell class="flex gap-1 h-min">
               <DetailsButton class="minimal" meetingId={c.row.original.id as string} />
+              <DeleteButton
+                class="minimal"
+                confirm={() =>
+                  confirmation.confirm({
+                    title: t("forms.meeting_delete.formName"),
+                    body: t("forms.meeting_delete.confirmationText"),
+                    confirmText: t("forms.meeting_delete.submit"),
+                  })
+                }
+                delete={() => deleteMeeting(c.row.original.id as string)}
+              />
             </PaddedCell>
           ),
           enableSorting: false,
@@ -347,3 +374,22 @@ const UserLinks: VoidComponent<UserLinksProps> = (props) => {
     </Show>
   );
 };
+
+export function useMeetingTableFilters() {
+  const {meetingCategoryDict} = useFixedDictionaries();
+  const isSystemMeeting = () =>
+    meetingCategoryDict() &&
+    ({
+      type: "column",
+      column: "categoryDictId",
+      op: "=",
+      val: meetingCategoryDict()!.system.id,
+    } satisfies FilterH);
+  return {
+    isSystemMeeting,
+    isRegularMeeting: () => {
+      const system = isSystemMeeting();
+      return system && invertFilter(system);
+    },
+  };
+}

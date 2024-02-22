@@ -4,9 +4,10 @@ import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components
 import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
-import {createCalendarRequestCreator, meetingsFromQuery} from "data-access/memo-api/tquery/calendar";
+import {TQMeetingResource, createCalendarRequestCreator} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
 import {MeetingChangeSuccessData} from "features/meeting/meeting_change_success_data";
@@ -46,11 +47,11 @@ import {AllDayArea} from "./calendar-columns/AllDayArea";
 import {DayHeader} from "./calendar-columns/DayHeader";
 import {HoursArea} from "./calendar-columns/HoursArea";
 import {ResourceHeader} from "./calendar-columns/ResourceHeader";
-import {HoursAreaBlock} from "./calendar-columns/blocks";
+import {WorkTimeBlock} from "./calendar-columns/blocks";
 import {MeetingEventBlock} from "./calendar-columns/events";
 import {coloringToStyle, getRandomEventColors} from "./colors";
 import {DaysRange} from "./days_range";
-import {Block, PartDayTimeSpan} from "./types";
+import {PartDayTimeSpan} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
 export const MODES = ["month", "week", "day"] as const;
@@ -109,6 +110,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   ]);
   const t = useLangFunc();
   const locale = useLocale();
+  const {meetingCategoryDict, meetingTypeDict} = useFixedDictionaries();
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
@@ -423,9 +425,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }),
     dataQueryOptions: {refetchOnWindowFocus: true},
   });
-  const meetingResources = meetingsFromQuery(meetingsDataQuery);
   const events = () =>
-    meetingResources()?.map((meeting) => {
+    (meetingsDataQuery.data?.data as TQMeetingResource[] | undefined)?.map((meeting) => {
       const timeSpan: PartDayTimeSpan = {
         allDay: false,
         date: DateTime.fromISO(meeting.date),
@@ -517,46 +518,72 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [hoveredMeetingId, setHoveredMeetingId] = createSignal<string>();
 
   function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
-    const fakeWorkingHours: Block[] = weekDayCalculator.isWeekend(day)
-      ? []
-      : [
-          {
-            allDay: false,
-            date: day,
-            startDayMinute: 9 * 60,
-            durationMinutes: 8 * 60,
-            content: () => <HoursAreaBlock class="bg-white" />,
-          },
-        ];
+    const range = new DaysRange(day.minus({days: 1}), day);
+    const workTimeBlocks = () => {
+      const workTimes = events().filter(
+        (e) => e.meeting.typeDictId === meetingTypeDict()?.work_time.id && range.contains(e.date),
+      );
+      let staffWorkTimes: typeof workTimes | undefined;
+      if (staffId) {
+        staffWorkTimes = workTimes.filter((e) => e.meeting.staff.some((staff) => staff.userId === staffId));
+      }
+      if (!staffWorkTimes?.length) {
+        staffWorkTimes = workTimes.filter((e) => !e.meeting.staff.length);
+      }
+      return staffWorkTimes.map((e) => ({
+        ...e,
+        content: () => (
+          <WorkTimeBlock
+            class="bg-white"
+            label={e.meeting.notes || undefined}
+            onEditClick={() =>
+              meetingModal.show({
+                meetingId: e.meeting.id,
+                initialViewMode: true,
+                showToast: false,
+              })
+            }
+          />
+        ),
+      }));
+    };
     const selectedEvents = () =>
       staffId
         ? events()
-            .filter((ev) => ev.meeting.staff.some((staff) => staff.userId === staffId))
-            .map((ev) => ({
-              ...ev,
-              content: () => (
-                <MeetingEventBlock
-                  day={day}
-                  meeting={ev.meeting}
-                  plannedColoring={staffResourcesById().get(staffId)!.coloring}
-                  blink={!isCalendarLoading() && blinkingMeetings().has(ev.meeting.id)}
-                  onHoverChange={(hovered) => setHoveredMeetingId(hovered ? ev.meeting.id : undefined)}
-                  hovered={hoveredMeetingId() === ev.meeting.id}
-                  onClick={() =>
-                    meetingModal.show({
-                      meetingId: ev.meeting.id,
-                      initialViewMode: true,
-                      onEdited: (meeting) => meetingChange(t("forms.meeting_edit.success"), meeting),
-                      onCreated: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
-                      onCloned: (meeting, otherMeetingIds) =>
-                        meetingChange(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
-                      onDeleted: () => toast.success(t("forms.meeting_delete.success")),
-                      showToast: false,
-                    })
-                  }
-                />
-              ),
-            }))
+            .filter(
+              (e) =>
+                e.meeting.categoryDictId !== meetingCategoryDict()?.system.id &&
+                range.contains(e.date) &&
+                e.meeting.staff.some((staff) => staff.userId === staffId),
+            )
+            .map((e) => {
+              const {meeting} = e;
+              return {
+                ...e,
+                content: () => (
+                  <MeetingEventBlock
+                    day={day}
+                    meeting={meeting}
+                    plannedColoring={staffResourcesById().get(staffId)!.coloring}
+                    blink={!isCalendarLoading() && blinkingMeetings().has(meeting.id)}
+                    onHoverChange={(hovered) => setHoveredMeetingId(hovered ? meeting.id : undefined)}
+                    hovered={hoveredMeetingId() === meeting.id}
+                    onClick={() =>
+                      meetingModal.show({
+                        meetingId: meeting.id,
+                        initialViewMode: true,
+                        onEdited: (meeting) => meetingChange(t("forms.meeting_edit.success"), meeting),
+                        onCreated: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
+                        onCloned: (meeting, otherMeetingIds) =>
+                          meetingChange(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
+                        onDeleted: () => toast.success(t("forms.meeting_delete.success")),
+                        showToast: false,
+                      })
+                    }
+                  />
+                ),
+              };
+            })
         : [];
     return {
       day,
@@ -565,7 +592,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         <HoursArea
           class="bg-[rgb(236,237,241)]"
           day={day}
-          blocks={fakeWorkingHours}
+          blocks={workTimeBlocks()}
           events={selectedEvents()}
           onTimeClick={(time) =>
             meetingCreateModal.show({
