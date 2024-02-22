@@ -18,12 +18,14 @@ export interface CellRendererProps<TProps extends object> {
  */
 export const CellRenderer = <TProps extends object>(props: VoidProps<CellRendererProps<TProps>>): JSX.Element => (
   <Show when={props.component}>
-    <Show
-      when={typeof props.component === "function"}
-      // The TS inference does not work in <Show>, so we need to manually cast it to a string.
-      fallback={props.component as string}
-    >
-      <Dynamic component={props.component} {...props.props} />
-    </Show>
+    {(component) => (
+      <Show
+        when={typeof component() === "function"}
+        // The TS inference does not work in <Show>, so we need to manually cast it to a string.
+        fallback={component() as string}
+      >
+        <Dynamic component={component()} {...props.props} />
+      </Show>
+    )}
   </Show>
 );

@@ -18,7 +18,7 @@ final class TqConfig
     private ?array $filterableColumns = null;
 
     public function __construct(
-        public readonly TqTableEnum $table,
+        public readonly TqTableAliasEnum $table,
     ) {
     }
 
@@ -64,7 +64,7 @@ final class TqConfig
         );
     }
 
-    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $attribute): void
+    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $attribute, ?string $prefix = null): void
     {
         $attributeModel = Attribute::query()->findOrFail(is_string($attribute) ? $attribute : $attribute->value);
         $type = $attributeModel->getTqueryDataType();
@@ -72,8 +72,8 @@ final class TqConfig
         $this->addColumn(
             type: $type,
             columnOrQuery: $attributeModel->api_name,
-            table: null,
-            columnAlias: Str::camel($attributeModel->api_name),
+            table: TqTableAliasEnum::fromTableName($attributeModel->table->value),
+            columnAlias: Str::camel((($prefix !== null) ? "$prefix." : '') . $attributeModel->api_name),
             attribute: $attributeModel,
         );
     }
@@ -137,6 +137,18 @@ final class TqConfig
             table: null,
             columnAlias: self::COUNT_COLUMN,
         );
+    }
+
+    public function removeColumns(string ...$columnAliases): void
+    {
+        foreach ($columnAliases as $columnAlias) {
+            $columnAlias = Str::camel($columnAlias);
+            if (array_key_exists($columnAlias, $this->columns)) {
+                unset($this->columns[$columnAlias]);
+            } else {
+                throw FatalExceptionFactory::tquery();
+            }
+        }
     }
 
     private function addColumn(
