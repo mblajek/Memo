@@ -1,8 +1,9 @@
-import {DictionarySelect} from "components/ui/form/DictionarySelect";
+import {DefaultDictionarySelectItem, DictionarySelect} from "components/ui/form/DictionarySelect";
+import {isDEV} from "components/utils/dev_mode";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {DEV, VoidComponent} from "solid-js";
+import {VoidComponent} from "solid-js";
 
 /**
  * Selection of meeting type.
@@ -20,29 +21,30 @@ export const MeetingTypeFields: VoidComponent = () => {
   function isSystemType(pos: Position) {
     return categoryAttribute()?.readFrom(pos.resource) === meetingCategoryDict()?.system.id;
   }
+  function itemFunc(pos: Position, defItem: () => DefaultDictionarySelectItem, dev = false) {
+    if (isSystemType(pos)) {
+      if (dev) {
+        const item = defItem();
+        return {
+          ...item,
+          labelOnList: () => (
+            <div class="flex gap-2 items-baseline justify-between">
+              <span>{item.text}</span>
+              <span class="text-xs">DEV</span>
+            </div>
+          ),
+        };
+      }
+      return undefined;
+    }
+    return defItem();
+  }
   return (
     <DictionarySelect
       name="typeDictId"
       dictionary="meetingType"
       nullable={false}
-      itemFunc={(pos, defItem) => {
-        if (isSystemType(pos)) {
-          if (DEV) {
-            const item = defItem();
-            return {
-              ...item,
-              labelOnList: () => (
-                <div class="flex gap-2 items-baseline justify-between">
-                  <span>{item.text}</span>
-                  <span class="text-xs">DEV</span>
-                </div>
-              ),
-            };
-          }
-          return undefined;
-        }
-        return defItem();
-      }}
+      itemFunc={isDEV() ? (pos, defItem) => itemFunc(pos, defItem, true) : (pos, defItem) => itemFunc(pos, defItem)}
     />
   );
 };

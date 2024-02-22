@@ -10,7 +10,7 @@ import NotFound from "features/not-found/components/NotFound";
 import NotYetImplemented from "features/not-found/components/NotYetImplemented";
 import {MemoTitle} from "features/root/MemoTitle";
 import {PageWithTheme} from "features/root/components/theme_control";
-import {DEV, ParentComponent, Show, VoidProps, splitProps, type VoidComponent} from "solid-js";
+import {ParentComponent, VoidProps, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 
 const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
@@ -37,9 +37,7 @@ const App: VoidComponent = () => {
           <Route path="/" component={RootPage}>
             <UnknownNotFound />
             <Route path="/" component={() => <Navigate href="/help" />} />
-            <Show when={DEV}>
-              <DevRoutes />
-            </Show>
+            <DevRoutes />
             <Route path="/help">
               <UnknownNotFound />
               <LeafRoute routeKey="help" path="/" component={NotYetImplemented} />

@@ -536,7 +536,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           <WorkTimeBlock
             class="bg-white"
             label={e.meeting.notes || undefined}
-            onDEVEditClick={() =>
+            onEditClick={() =>
               meetingModal.show({
                 meetingId: e.meeting.id,
                 initialViewMode: true,

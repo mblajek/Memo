@@ -1,7 +1,7 @@
 /**
  * @see `/app/Http/Resources/PermissionResource.php`
  */
-export type PermissionsResource = {
+export interface PermissionsResource {
   readonly userId: string;
   readonly facilityId: string;
   readonly unverified: boolean;
@@ -11,4 +11,5 @@ export type PermissionsResource = {
   readonly facilityClient: boolean;
   readonly facilityStaff: boolean;
   readonly facilityAdmin: boolean;
-};
+  readonly developer: boolean;
+}

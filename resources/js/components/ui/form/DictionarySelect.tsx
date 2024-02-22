@@ -15,7 +15,7 @@ interface BaseProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" 
   readonly itemFunc?: (pos: Position, defItem: () => DefaultDictionarySelectItem) => SelectItem | undefined;
 }
 
-type DefaultDictionarySelectItem = Required<Pick<SelectItem, "value" | "text" | "disabled">>;
+export type DefaultDictionarySelectItem = Required<Pick<SelectItem, "value" | "text" | "disabled">>;
 
 type Props = BaseProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
 

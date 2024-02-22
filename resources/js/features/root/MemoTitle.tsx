@@ -2,8 +2,9 @@ import {Title} from "@solidjs/meta";
 import {capitalizeString} from "components/ui/Capitalize";
 import {EM_DASH} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
+import {isDEV} from "components/utils/dev_mode";
 import {translationsLoaded} from "i18n_loader";
-import {DEV, VoidComponent} from "solid-js";
+import {VoidComponent} from "solid-js";
 
 interface Props {
   /** A translations sub-key in routes defining the page title. */
@@ -26,7 +27,7 @@ export const MemoTitle: VoidComponent<Props> = (props) => {
     if (!translationsLoaded()) {
       return "Memo";
     }
-    return `${pageName()} ${EM_DASH} ${t("app_name")}${DEV ? " (DEV mode)" : ""}`;
+    return `${pageName()} ${EM_DASH} ${t("app_name")}${isDEV() ? " (DEV mode)" : ""}`;
   };
   return <Title>{title()}</Title>;
 };
