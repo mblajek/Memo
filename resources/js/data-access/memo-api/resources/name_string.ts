@@ -20,13 +20,6 @@ export function getNameTranslation(t: LangFunc, name: NameString, keyFunc: (name
 export function getNameTranslation(
   ...args: [NameString, (name: string) => string] | [LangFunc, NameString, (name: string) => string | string[]]
 ) {
-  const [name, translationFunc] = args.length === 2 ? args : [args[1], makeTranslationFunc(args[0], args[2])];
+  const [name, translationFunc] = args.length === 2 ? args : [args[1], (name: string) => args[0](args[2](name))];
   return isNameTranslatable(name) ? translationFunc(name) : name.substring(1);
-}
-
-export function makeTranslationFunc(t: LangFunc, keyFunc: (name: string) => string | string[]) {
-  return (name: string) => {
-    const key = keyFunc(name);
-    return t(key, {defaultValue: `?? ${key}`});
-  };
 }
