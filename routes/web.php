@@ -1,6 +1,9 @@
 <?php
 
+use App\Exceptions\ExceptionFactory;
 use Illuminate\Support\Facades\Route;
+
+Route::any('/docs/{any}', fn() => ExceptionFactory::notFound()->render())->where('any', '.*');
 
 /*
 |--------------------------------------------------------------------------

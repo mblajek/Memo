@@ -86,6 +86,7 @@ export const Navbar: VoidComponent = () => {
               small
             />
             <NavigationItem icon={SiSwagger} href="/api/documentation" routeKey="API" target="_blank" small />
+            <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />
           </NavigationSection>
         </Show>
       </nav>
