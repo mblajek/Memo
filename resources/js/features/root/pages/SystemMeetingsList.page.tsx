@@ -5,6 +5,7 @@ import {useMeetingTableColumns, useMeetingTableFilters} from "features/meeting/m
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
+// List page for meetings from category system. It is not accessible from the menu (only for DEV).
 export default (() => {
   const meetingTableColumns = useMeetingTableColumns();
   const meetingTableFilters = useMeetingTableFilters();
@@ -14,13 +15,11 @@ export default (() => {
       staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
       staticEntityURL={`facility/${activeFacilityId()}/meeting`}
       staticTranslations={createTableTranslations("meeting")}
-      staticPersistenceKey="facilityMeetings"
-      // This table has multiple heavy to render columns.
-      nonBlocking
-      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
+      staticPersistenceKey="systemMeetings"
+      intrinsicFilter={meetingTableFilters.isSystemMeeting()}
       intrinsicSort={[
-        {type: "column", column: "date", desc: true},
-        {type: "column", column: "startDayminute", desc: true},
+        {type: "column", column: "date", desc: false},
+        {type: "column", column: "startDayminute", desc: false},
       ]}
       columns={meetingTableColumns.get(
         "id",
@@ -30,22 +29,13 @@ export default (() => {
         "isInSeries",
         "category",
         "type",
-        "statusTags",
-        ["attendants", {initialVisible: false}],
-        "attendantsAttendance",
         "staff",
-        "staffAttendance",
-        "clients",
-        "clientsAttendance",
-        "isRemote",
-        "notes",
-        "resources",
         "createdAt",
         "createdBy",
         "updatedAt",
         "actions",
       )}
-      initialSort={[{id: "date", desc: true}]}
+      initialSort={[{id: "date", desc: false}]}
     />
   );
 }) satisfies VoidComponent;

@@ -6,7 +6,12 @@ import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {MeetingSeriesForm, MeetingSeriesFormType, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
+import {
+  MeetingSeriesForm,
+  MeetingSeriesFormType,
+  getMeetingSeriesCloneParams,
+  numMeetingsToSeriesLength,
+} from "./MeetingSeriesForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 
 export interface MeetingSeriesCreateFormProps {
@@ -52,7 +57,7 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
   const initialValues = () =>
     ({
       interval: "7d",
-      maxIndex: 9,
+      seriesLength: numMeetingsToSeriesLength(10),
       includeDate: {},
       ...props.initialValues,
     }) satisfies MeetingSeriesFormType;

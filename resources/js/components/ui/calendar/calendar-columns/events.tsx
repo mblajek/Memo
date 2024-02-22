@@ -55,7 +55,7 @@ const DISAPPEAR_MILLIS = 300;
 
 export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
   const t = useLangFunc();
-  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
+  const {dictionaries, meetingTypeDict, meetingStatusDict} = useFixedDictionaries();
   const calendar = useColumnsCalendar();
   const resources = () =>
     props.meeting.resources
@@ -107,9 +107,8 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
           : undefined,
   );
 
-  const meetingTypeOther = () => dictionaries()?.get("meetingType").get("other");
   const MeetingType: VoidComponent<{typeId: string}> = (props) => (
-    <Show when={props.typeId !== meetingTypeOther()?.id}>
+    <Show when={props.typeId !== meetingTypeDict()?.other.id}>
       <div>{dictionaries()?.getPositionById(props.typeId).label}</div>
     </Show>
   );
@@ -154,7 +153,10 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
             </Show>
             <MeetingType typeId={props.meeting.typeDictId} />
             <MeetingStatusTags meeting={props.meeting} />
-            <RichTextView class="max-h-20 overflow-y-clip !overflow-x-visible" text={props.meeting.notes} />
+            <RichTextView
+              class="max-h-20 overflow-y-clip !overflow-x-visible"
+              text={props.meeting.notes || undefined}
+            />
             <Show when={props.meeting.resources.length}>
               <div>{t("parenthesised", {text: resources()})}</div>
             </Show>
@@ -204,7 +206,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                 </Show>
                 <Show when={props.meeting.notes}>
                   <FieldDisp field="notes">
-                    <RichTextView class="max-h-60 disabledScrollBar" text={props.meeting.notes} />
+                    <RichTextView class="max-h-60 disabledScrollBar" text={props.meeting.notes || undefined} />
                   </FieldDisp>
                 </Show>
                 <Show when={props.meeting.resources.length}>

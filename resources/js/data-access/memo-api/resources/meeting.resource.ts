@@ -11,7 +11,7 @@ export interface MeetingResource extends CreatedUpdatedResource {
   readonly facilityId: string;
   readonly categoryDictId: string;
   readonly typeDictId: string;
-  readonly notes: string;
+  readonly notes: string | null;
   readonly date: string;
   readonly startDayminute: number;
   readonly durationMinutes: number;

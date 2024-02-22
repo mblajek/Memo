@@ -79,7 +79,7 @@ meeting_delete:
 meeting_series:
   fieldNames:
     interval: "powtarzaj"
-    maxIndex: "długość serii"
+    seriesLength: "długość serii"
     # Umbrella fields for the meeting dates table:
     meetingDates: "daty spotkań"
   total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
