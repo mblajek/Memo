@@ -21,6 +21,8 @@ export type ColumnSchema = DataColumnSchema | CountColumnSchema;
 interface DataColumnSchemaBase {
   readonly name: ColumnName;
   readonly nullable?: boolean;
+  /** The attribute defining this data column. */
+  readonly attributeId?: string;
 }
 
 export type DataColumnSchema = PlainDataColumnSchema | DictDataColumnSchema;
@@ -39,8 +41,6 @@ interface PlainDataColumnSchema extends DataColumnSchemaBase {
     | "text"
     | "uuid"
     | "uuid_list";
-  /** The attribute defining this data column. */
-  readonly attributeId?: string;
 }
 
 export interface DictDataColumnSchema extends DataColumnSchemaBase {

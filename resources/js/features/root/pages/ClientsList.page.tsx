@@ -13,7 +13,7 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={FacilityClient.keys.client()}
         staticEntityURL={`facility/${activeFacilityId()}/user/client`}
-        staticTranslations={createTableTranslations("client")}
+        staticTranslations={createTableTranslations(["client", "user"])}
         staticPersistenceKey="facilityClients"
         columns={[
           {name: "id", initialVisible: false},
@@ -31,8 +31,7 @@ export default (() => {
               enableHiding: false,
             },
           },
-          // TODO: Iterate over attributes instead.
-          {name: "genderDictId"},
+          {name: "client.genderDictId"},
           ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
         ]}
         initialSort={[{id: "name", desc: false}]}
