@@ -20,7 +20,7 @@ export const useSystemStatusMonitor = createCached(() => {
       return;
     }
     if (needsRefresh(lastStatus()!, status)) {
-      console.info("System version changed", "Last status:", lastStatus(), "Current status:", status);
+      console.info("System version changed. Last status:", {...lastStatus()}, "Current status:", {...status});
       setNeedsReload(true);
     }
     setLastStatus(status);

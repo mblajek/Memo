@@ -35,10 +35,10 @@ export const Header: VoidComponent<Props> = (props) => {
       <Show when={props.ctx.column.getCanFilter()}>{props.filter}</Show>
       <Show when={props.ctx.column.getCanResize()}>
         <div
+          ref={(div) => div.addEventListener("touchstart", (e) => resizeHandler()(e), {passive: true})}
           class={s.resizeHandler}
           classList={{[s.resizing!]: props.ctx.column.getIsResizing()}}
           onMouseDown={(e) => resizeHandler()(e)}
-          onTouchStart={(e) => resizeHandler()(e)}
         />
       </Show>
     </div>

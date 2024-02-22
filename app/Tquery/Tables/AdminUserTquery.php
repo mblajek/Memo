@@ -5,14 +5,13 @@ namespace App\Tquery\Tables;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
-use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\TqService;
 
 readonly class AdminUserTquery extends TqService
 {
     protected function getConfig(): TqConfig
     {
-        $config = new TqConfig(table: TqTableEnum::users);
+        $config = new TqConfig(table: TqTableAliasEnum::users);
         $config->addSimple(TqDataTypeEnum::uuid, 'id');
         $config->addSimple(TqDataTypeEnum::string, 'name');
         $config->addSimple(TqDataTypeEnum::string_nullable, 'email');

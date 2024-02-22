@@ -5,12 +5,12 @@ import {TableTranslations} from "components/ui/Table";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
+import {useDictionaries} from "../dictionaries";
 import {translateError} from "../error_util";
 import {Api} from "../types";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
 import {Column, ColumnName, DataRequest, DataResponse, Filter, Sort, SortItem} from "./types";
-import {useDictionaries} from "../dictionaries";
 
 export interface ColumnConfig {
   readonly name: string;
@@ -160,7 +160,7 @@ export function createTableRequestCreator({
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
-      if (!allInitialisedInternal() || !allInitialised()) {
+      if (!allInitialisedInternal() || !allInitialised() || !dataColumns().length) {
         return undefined;
       }
       const sort: SortItem[] = sorting().map(({id, desc}) => ({

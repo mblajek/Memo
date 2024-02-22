@@ -9,6 +9,7 @@ use App\Models\QueryBuilders\AttributeBuilder;
 use App\Models\Traits\BaseModel;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -63,5 +64,14 @@ class Attribute extends Model
             AttributeType::Dict => $nullable ? TqDataTypeEnum::dict_nullable : TqDataTypeEnum::dict,
         };
         return $type->isDict() ? (new TqDictDef($type, $this->dictionary_id)) : $type;
+    }
+
+    /** @return self[] */
+    public static function getByFacility(Facility $facility, string $table): array
+    {
+        // todo: read from cache
+        return self::query()->where(
+            fn(Builder $builder) => $builder->orWhere('facility_id', $facility->id)->orWhereNull('facility_id')
+        )->where('table', $table)->get()->all();
     }
 }

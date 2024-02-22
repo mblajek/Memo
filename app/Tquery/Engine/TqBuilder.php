@@ -6,7 +6,6 @@ namespace App\Tquery\Engine;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqTableAliasEnum;
-use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\Bind\TqBind;
 use Closure;
 use Illuminate\Database\Query\Builder;
@@ -17,7 +16,7 @@ class TqBuilder
 {
     private bool $distinct = false;
 
-    public static function fromTable(TqTableEnum $table): self
+    public static function fromTable(TqTableAliasEnum $table): self
     {
         $joins = [$table];
         return new self($joins, DB::table($table->name));
@@ -35,7 +34,7 @@ class TqBuilder
     }
 
     public function join(
-        TqTableAliasEnum|TqTableEnum $joinBase,
+        TqTableAliasEnum $joinBase,
         TqTableAliasEnum $table,
         string $joinColumn,
         bool $left,
@@ -46,9 +45,8 @@ class TqBuilder
         }
         [$tableColumn, $baseColumn] = $inv ? [$joinColumn, 'id'] : ['id', $joinColumn];
         $this->joins[] = $table;
-        $tableBase = $table->baseTable();
         $this->builder->join(
-            "{$tableBase->name} as {$table->name}",
+            "{$table->baseTable()} as {$table->name}",
             "{$table->name}.$tableColumn",
             '=',
             "{$joinBase->name}.$baseColumn",
@@ -102,7 +100,7 @@ class TqBuilder
     }
 
     public function whereNotDeleted(
-        TqTableEnum $table,
+        TqTableAliasEnum $table,
     ): void {
         $this->where(fn(null $bind) => "`{$table->name}`.`deleted_at` is null", false, null, false, false);
     }
