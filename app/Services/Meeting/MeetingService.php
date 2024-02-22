@@ -16,7 +16,8 @@ class MeetingService
     public function create(Facility $facility, array $data): string
     {
         $meeting = new Meeting($data);
-        $this->fillMeeting($meeting, $facility);
+        $meeting->facility_id = $facility->id;
+        $this->fillMeetingCategory($meeting);
 
         $staff = $this->extractStaff($data) ?? [];
         $clients = $this->extractClients($data) ?? [];
@@ -35,6 +36,7 @@ class MeetingService
     public function patch(Meeting $meeting, array $data): void
     {
         $meeting->fill($data);
+        $this->fillMeetingCategory($meeting);
         $meeting->interval = null;
 
         // TODO: Go through those list elements one by one to figure out which ones need to be added,
@@ -59,9 +61,8 @@ class MeetingService
         });
     }
 
-    private function fillMeeting(Meeting $meeting, Facility $facility): void
+    private function fillMeetingCategory(Meeting $meeting): void
     {
-        $meeting->facility_id = $facility->id;
         $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
             ->attrValues(byId: true)[PositionAttributeUuidEnum::Category->value]);
     }

@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Facility;
 
 use App\Http\Resources\AbstractJsonResource;
+use App\Models\StaffMember;
 use App\Models\User;
 use OpenApi\Attributes as OA;
-use stdClass;
 
 #[OA\Schema(
     schema: 'FacilityUserStaffResource',
@@ -23,6 +23,7 @@ use stdClass;
     ],
 )] /**
  * @method __construct(User $resource)
+ * @property StaffMember $staff
  * @mixin User
  */
 class FacilityUserStaffResource extends AbstractJsonResource
@@ -39,7 +40,7 @@ class FacilityUserStaffResource extends AbstractJsonResource
             'updatedAt' => true,
             'hasEmailVerified' => fn(self $user) => ($user->email_verified_at !== null),
             'createdBy' => true,
-            'staff' => fn(self $user) => new stdClass() /* FacilityStaffResource */,
+            'staff' => fn(self $user) => FacilityStaffResource::make($user->staff),
         ];
     }
 }

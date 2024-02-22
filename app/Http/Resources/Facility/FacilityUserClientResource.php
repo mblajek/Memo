@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Facility;
 
 use App\Http\Resources\AbstractJsonResource;
+use App\Models\Client;
 use App\Models\User;
 use OpenApi\Attributes as OA;
-use stdClass;
 
 #[OA\Schema(
     schema: 'FacilityUserClientResource',
@@ -23,6 +23,7 @@ use stdClass;
     ],
 )] /**
  * @method __construct(User $resource)
+ * @property Client $client
  * @mixin User
  */
 class FacilityUserClientResource extends AbstractJsonResource
@@ -39,7 +40,7 @@ class FacilityUserClientResource extends AbstractJsonResource
             'updatedAt' => true,
             'hasEmailVerified' => fn(self $user) => ($user->email_verified_at !== null),
             'createdBy' => true,
-            'client' => fn(self $user) => new stdClass() /* FacilityClientResource */,
+            'client' => fn(self $user) => FacilityClientResource::make($user->client),
         ];
     }
 }
