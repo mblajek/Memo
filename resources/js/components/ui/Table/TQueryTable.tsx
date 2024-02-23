@@ -12,7 +12,7 @@ import {createLocalStoragePersistence} from "components/persistence/persistence"
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {debouncedAccessor} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
-import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
+import {objectRecursiveMerge} from "components/utils/object_merge";
 import {toastMessages} from "components/utils/toast";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {

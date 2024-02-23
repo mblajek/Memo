@@ -18,3 +18,13 @@ export function objectRecursiveMerge<T>(...objects: (Partial<T> | undefined)[]):
 function isObject(o: unknown): o is object {
   return o !== null && typeof o === "object" && !Array.isArray(o);
 }
+
+export function skipUndefinedValues<T extends object>(object: T) {
+  const result: Partial<Record<string, unknown>> = {};
+  for (const [key, value] of Object.entries(object)) {
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  }
+  return result as T;
+}

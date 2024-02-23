@@ -9,6 +9,7 @@ import {ACTION_ICONS} from "components/ui/icons";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {MAX_DAY_MINUTE, dayMinuteToTimeInput} from "components/utils/day_minute_util";
+import {skipUndefinedValues} from "components/utils/object_merge";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -68,7 +69,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     if (props.showToast ?? true) {
       toast.success(t("forms.meeting_edit.success"));
     }
-    props.onEdited?.({...origMeeting, ...meetingPatch});
+    props.onEdited?.({...origMeeting, ...skipUndefinedValues(meetingPatch)});
     // Important: Invalidation should happen after calling onEdited which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.

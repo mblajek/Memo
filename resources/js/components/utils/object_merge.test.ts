@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {objectRecursiveMerge} from "./object_recursive_merge";
+import {objectRecursiveMerge} from "./object_merge";
 
 interface T {
   a: number;
