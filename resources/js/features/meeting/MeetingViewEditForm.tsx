@@ -13,16 +13,17 @@ import {useAttributes} from "data-access/memo-api/attributes";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
+import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {useAttendantsCreator} from "./MeetingAttendantsFields";
-import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
+import {getAttendantsValuesForEdit, useAttendantsCreator} from "./MeetingAttendantsFields";
+import {MeetingForm, MeetingFormType, getResourceValuesForEdit} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 import {createMeetingCreateModal} from "./meeting_create_modal";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
+import {getTimeValues} from "./meeting_time_controller";
 
 export interface MeetingViewEditFormProps {
   readonly meetingId: Api.Id;
@@ -57,16 +58,17 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   }));
   const isBusy = () => meetingMutation.isPending || deleteMeetingMutation.isPending;
 
-  async function updateMeeting(values: MeetingFormType) {
-    const meeting = {
+  async function updateMeeting(values: Partial<MeetingFormType>) {
+    const origMeeting = meeting();
+    const meetingPatch = {
       id: props.meetingId,
       ...transformFormValues(values),
     };
-    await meetingMutation.mutateAsync(meeting);
+    await meetingMutation.mutateAsync(meetingPatch);
     if (props.showToast ?? true) {
       toast.success(t("forms.meeting_edit.success"));
     }
-    props.onEdited?.(meeting as MeetingResource);
+    props.onEdited?.({...origMeeting, ...meetingPatch});
     // Important: Invalidation should happen after calling onEdited which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
@@ -208,3 +210,12 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
 
 // For lazy loading
 export default MeetingViewEditForm;
+
+export function transformFormValues(values: Partial<MeetingFormType>): Partial<MeetingResourceForPatch> {
+  return {
+    ...values,
+    ...getTimeValues(values),
+    ...getAttendantsValuesForEdit(values),
+    ...getResourceValuesForEdit(values),
+  };
+}

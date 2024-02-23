@@ -1,4 +1,4 @@
-import {Form, FormConfigWithoutTransformFn, KnownHelpers, Obj, Paths} from "@felte/core";
+import {AssignableErrors, Form, FormConfigWithoutTransformFn, KnownHelpers, Obj, Paths} from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
 import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
@@ -16,6 +16,7 @@ import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 
 type FormContextValue<T extends Obj = Obj> = {
   readonly props: FormProps<T>;
+  readonly formConfig: FormConfigWithoutTransformFn<T>;
   readonly form: FormType<T>;
   isFormDisabled(): boolean;
   readonly translations: FormTranslations;
@@ -105,8 +106,9 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       return t("validation.quoted_field_name", {text: translations.fieldName(field, {defaultValue: field})});
     }
   }
-  const form = createForm<T>({
+  const formConfig: FormConfigWithoutTransformFn<T> = {
     ...createFormOptions,
+    // eslint-disable-next-line solid/reactivity
     extend: [validator({schema: props.schema}), reporter],
     onSubmit: (values, ctx) =>
       // Remove the unknown validation field from values so that it doesn't get submitted.
@@ -142,8 +144,26 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
             // Mark as touched first because errors are only stored and shown for touched fields.
             // @ts-expect-error For some reason there are problems with the generic types.
             ctx.setTouched(field, true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            function addError(errors: Readonly<AssignableErrors<any>>, errorMessage: string): AssignableErrors<any> {
+              if (!errors) {
+                return [errorMessage];
+              }
+              if (Array.isArray(errors)) {
+                return [...errors, errorMessage];
+              }
+              // The field has sub-fields apparently. Attach the error to one of them.
+              const anySubField = Object.keys(errors)[0];
+              if (!anySubField) {
+                return [errorMessage];
+              }
+              return {
+                ...errors,
+                [anySubField]: addError(errors[anySubField], errorMessage),
+              };
+            }
             // @ts-expect-error setErrors does not like generic types
-            ctx.setErrors(field, (errors) => [...(errors || []), errorMessage]);
+            ctx.setErrors(field, (errors) => addError(errors, errorMessage));
           }
           // Other errors are already handled by the query client.
         }
@@ -156,7 +176,8 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         throw errorResp;
       }
     },
-  }) as FormType<T>;
+  };
+  const form = createForm<T>(formConfig) as FormType<T>;
 
   onMount(() => {
     function onBeforeUnload(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
@@ -179,6 +200,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     <TypedFormContext.Provider
       value={{
         props: allProps,
+        formConfig,
         form: form as FormType<T>,
         isFormDisabled: () => formDisabled(),
         translations,
