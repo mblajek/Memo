@@ -184,9 +184,6 @@ export function useMeetingTableColumns() {
         },
       },
       resources: {name: "resources.*.dictId"},
-      createdAt: {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
-      createdBy: {name: "createdBy.name", initialVisible: false},
-      updatedAt: {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
       actions: {
         name: "actions",
         isDataColumn: false,
