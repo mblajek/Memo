@@ -1,6 +1,7 @@
 import {createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
 import {useMeetingTableColumns, useMeetingTableFilters} from "features/meeting/meeting_tables";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -30,9 +31,7 @@ export default (() => {
         "category",
         "type",
         "staff",
-        "createdAt",
-        "createdBy",
-        "updatedAt",
+        ...getCreatedUpdatedColumns(),
         "actions",
       )}
       initialSort={[{id: "date", desc: false}]}

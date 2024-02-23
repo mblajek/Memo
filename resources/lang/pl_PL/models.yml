@@ -2,6 +2,7 @@ generic:
   createdAt: "utworzono"
   createdBy.name: "utworzono przez"
   updatedAt: "zmodyfikowano"
+  updatedBy.name: "zmodyfikowano przez"
   name: "nazwa"
   email: "adres e-mail"
   notes: "opis"
@@ -64,10 +65,7 @@ staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
   name: "$t(models.user.name)"
-  hasEmailVerified: "$t(models.user.hasEmailVerified)"
-  hasPassword: "$t(models.user.hasPassword)"
-  passwordExpireAt: "$t(models.user.passwordExpireAt)"
-  hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
+  hasFacilityAdmin: "$t(models.permissions.facilityAdmin)"
 
 client:
   _name: "klient"

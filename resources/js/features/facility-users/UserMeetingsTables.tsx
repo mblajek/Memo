@@ -7,6 +7,7 @@ import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
 import {Sort} from "data-access/memo-api/tquery/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
 import {ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
@@ -86,29 +87,29 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ],
                       }}
                       intrinsicSort={sortByDate({desc: false})}
-                      columns={meetingTableColumns.get(
-                        "id",
-                        "dateTimeActions",
-                        ["time", {initialVisible: false}],
-                        ["duration", {initialVisible: false}],
-                        ["isInSeries", {initialVisible: false}],
-                        "category",
-                        "type",
-                        "statusTags",
-                        ["attendanceStatus", {initialVisible: false}],
-                        "attendants",
-                        "attendantsAttendance",
-                        ["staff", {initialVisible: false}],
-                        "staffAttendance",
-                        ["clients", {initialVisible: false}],
-                        "clientsAttendance",
-                        ["isRemote", {initialVisible: false}],
-                        "notes",
-                        "resources",
-                        "createdAt",
-                        "createdBy",
-                        "updatedAt",
-                      )}
+                      columns={[
+                        ...meetingTableColumns.get(
+                          "id",
+                          "dateTimeActions",
+                          ["time", {initialVisible: false}],
+                          ["duration", {initialVisible: false}],
+                          ["isInSeries", {initialVisible: false}],
+                          "category",
+                          "type",
+                          "statusTags",
+                          ["attendanceStatus", {initialVisible: false}],
+                          "attendants",
+                          "attendantsAttendance",
+                          ["staff", {initialVisible: false}],
+                          "staffAttendance",
+                          ["clients", {initialVisible: false}],
+                          "clientsAttendance",
+                          ["isRemote", {initialVisible: false}],
+                          "notes",
+                          "resources",
+                        ),
+                        ...getCreatedUpdatedColumns(),
+                      ]}
                       initialSort={[{id: "date", desc: false}]}
                       exportConfig={exportConfig("planned")}
                     />
@@ -149,29 +150,29 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ],
                       }}
                       intrinsicSort={sortByDate({desc: true})}
-                      columns={meetingTableColumns.get(
-                        "id",
-                        ["dateTimeActions", {columnDef: {sortDescFirst: true}}],
-                        ["time", {initialVisible: false}],
-                        ["duration", {initialVisible: false}],
-                        ["isInSeries", {initialVisible: false}],
-                        "category",
-                        "type",
-                        "statusTags",
-                        ["attendanceStatus", {initialVisible: false}],
-                        "attendants",
-                        "attendantsAttendance",
-                        ["staff", {initialVisible: false}],
-                        "staffAttendance",
-                        ["clients", {initialVisible: false}],
-                        "clientsAttendance",
-                        ["isRemote", {initialVisible: false}],
-                        "notes",
-                        "resources",
-                        "createdAt",
-                        "createdBy",
-                        "updatedAt",
-                      )}
+                      columns={[
+                        ...meetingTableColumns.get(
+                          "id",
+                          ["dateTimeActions", {columnDef: {sortDescFirst: true}}],
+                          ["time", {initialVisible: false}],
+                          ["duration", {initialVisible: false}],
+                          ["isInSeries", {initialVisible: false}],
+                          "category",
+                          "type",
+                          "statusTags",
+                          ["attendanceStatus", {initialVisible: false}],
+                          "attendants",
+                          "attendantsAttendance",
+                          ["staff", {initialVisible: false}],
+                          "staffAttendance",
+                          ["clients", {initialVisible: false}],
+                          "clientsAttendance",
+                          ["isRemote", {initialVisible: false}],
+                          "notes",
+                          "resources",
+                        ),
+                        ...getCreatedUpdatedColumns(),
+                      ]}
                       initialSort={[{id: "date", desc: true}]}
                       exportConfig={exportConfig("completed")}
                     />
@@ -194,29 +195,29 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTableId="all"
                       intrinsicFilter={intrinsicFilter()}
                       intrinsicSort={sortByDate({desc: true})}
-                      columns={meetingTableColumns.get(
-                        "id",
-                        ["dateTimeActions", {columnDef: {sortDescFirst: true}}],
-                        ["time", {initialVisible: false}],
-                        ["duration", {initialVisible: false}],
-                        ["isInSeries", {initialVisible: false}],
-                        "category",
-                        "type",
-                        "statusTags",
-                        "attendanceStatus",
-                        "attendants",
-                        "attendantsAttendance",
-                        ["staff", {initialVisible: false}],
-                        "staffAttendance",
-                        ["clients", {initialVisible: false}],
-                        "clientsAttendance",
-                        ["isRemote", {initialVisible: false}],
-                        "notes",
-                        "resources",
-                        "createdAt",
-                        "createdBy",
-                        "updatedAt",
-                      )}
+                      columns={[
+                        ...meetingTableColumns.get(
+                          "id",
+                          ["dateTimeActions", {columnDef: {sortDescFirst: true}}],
+                          ["time", {initialVisible: false}],
+                          ["duration", {initialVisible: false}],
+                          ["isInSeries", {initialVisible: false}],
+                          "category",
+                          "type",
+                          "statusTags",
+                          "attendanceStatus",
+                          "attendants",
+                          "attendantsAttendance",
+                          ["staff", {initialVisible: false}],
+                          "staffAttendance",
+                          ["clients", {initialVisible: false}],
+                          "clientsAttendance",
+                          ["isRemote", {initialVisible: false}],
+                          "notes",
+                          "resources",
+                        ),
+                        ...getCreatedUpdatedColumns(),
+                      ]}
                       initialSort={[{id: "date", desc: true}]}
                       exportConfig={exportConfig("all")}
                     />
