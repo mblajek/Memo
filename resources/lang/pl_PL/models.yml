@@ -64,14 +64,11 @@ user:
 staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
-  name: "$t(models.user.name)"
   hasFacilityAdmin: "$t(models.permissions.facilityAdmin)"
 
 client:
   _name: "klient"
   _name_plural: "klienci"
-  name: "$t(models.user.name)"
-  genderDictId: "$t(dictionary.gender._name)"
 
 meeting:
   _name: "spotkanie"

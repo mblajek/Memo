@@ -20,7 +20,7 @@ export function useLangFunc(): LangFunc {
   const [t] = transContext;
   return (key, options) => {
     if (typeof key === "string") {
-      return options ? t(key, options) : t(key);
+      return t(key, {defaultValue: `??${key}`, ...options});
     }
     if (!key.length) {
       throw new Error(`Called useLangFunc with an empty key list.`);

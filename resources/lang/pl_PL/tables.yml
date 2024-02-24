@@ -20,6 +20,8 @@ tables:
     summary__one: "{{count, number}} pracownik"
     summary__few: "{{count, number}} pracowników"
     summary__many: "{{count, number}} pracowników"
+    columnNames:
+      staff.hasFacilityAdmin: "$t(models.staff.hasFacilityAdmin)"
 
   client:
     summary__zero: "Brak klientów"

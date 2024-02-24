@@ -1,10 +1,11 @@
 import {createQuery} from "@tanstack/solid-query";
-import {LangFunc, useLangFunc} from "components/utils";
+import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
 import {createCached} from "components/utils/cache";
 import {translationsLoaded} from "i18n_loader";
 import {createMemo} from "solid-js";
 import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
 import {Attributable, getAttributeModel, makeAttributable, readAttribute} from "./attributable";
+import {Dictionaries, useAllDictionaries} from "./dictionaries";
 import {System} from "./groups";
 import {AttributeModel, AttributeResource, AttributeType, RequirementLevel} from "./resources/attribute.resource";
 import {getNameTranslation, isNameTranslatable} from "./resources/name_string";
@@ -19,8 +20,8 @@ export class Attributes {
     readonly byModel: ReadonlyMap<string, Attribute[]>,
   ) {}
 
-  static fromResources(t: LangFunc, resources: AttributeResource[]) {
-    return Attributes.fromAttributes(resources.map((resource) => Attribute.fromResource(t, resource)));
+  static fromResources(t: LangFunc, dictionaries: Dictionaries, resources: AttributeResource[]) {
+    return Attributes.fromAttributes(resources.map((resource) => Attribute.fromResource(t, dictionaries, resource)));
   }
 
   private static fromAttributes(attributes: Attribute[]) {
@@ -103,17 +104,23 @@ export class Attribute<T = unknown> {
     this.resource = makeAttributable(resource, "attribute");
   }
 
-  static fromResource(t: LangFunc, resource: AttributeResource) {
+  static fromResource(t: LangFunc, dictionaries: Dictionaries, resource: AttributeResource) {
     return new Attribute(
       resource,
       resource.id,
       resource.name,
       resource.model,
       isNameTranslatable(resource.name),
-      getNameTranslation(t, resource.name, (n) => [
-        `attributes.${resource.model}.${n}`,
-        `models.${resource.model}.${resource.apiName}`,
-      ]),
+      getNameTranslation(
+        t,
+        resource.name,
+        (n) =>
+          [
+            `attributes.${resource.model}.${n}`,
+            resource.isFixed ? `models.${resource.model}.${resource.apiName}` : undefined,
+          ].filter(NON_NULLABLE),
+        resource.dictionaryId ? {defaultValue: dictionaries.get(resource.dictionaryId).label} : undefined,
+      ),
       resource.apiName,
       resource.type,
       resource.typeModel || undefined,
@@ -143,9 +150,11 @@ export class Attribute<T = unknown> {
 /** Returns an Attributes object containing all the attributes in the system. */
 export const useAllAttributes = createCached(() => {
   const t = useLangFunc();
+  const dictionaries = useAllDictionaries();
   const query = createQuery(System.attributesQueryOptions);
   const allAttributes = createMemo(() => {
-    if (!query.isSuccess) {
+    const dicts = dictionaries();
+    if (!query.isSuccess || !dicts) {
       return undefined;
     }
     // Make sure the translations are loaded. Here it is critical because the created Attributes objects
@@ -153,7 +162,7 @@ export const useAllAttributes = createCached(() => {
     if (!translationsLoaded()) {
       return undefined;
     }
-    return Attributes.fromResources(t, query.data);
+    return Attributes.fromResources(t, dicts, query.data);
   });
   return allAttributes;
 });

@@ -45,7 +45,7 @@ export default (() => {
           {name: "hasEmailVerified", initialVisible: false},
           {name: "hasPassword"},
           {name: "passwordExpireAt", initialVisible: false},
-          {name: "hasFacilityAdmin", columnDef: {size: 130}, initialVisible: false},
+          {name: "staff.hasFacilityAdmin", columnDef: {size: 130}},
           {name: "hasGlobalAdmin", columnDef: {size: 130}, initialVisible: false},
           ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
         ]}
