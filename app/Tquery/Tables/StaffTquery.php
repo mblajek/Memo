@@ -2,7 +2,6 @@
 
 namespace App\Tquery\Tables;
 
-use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;

@@ -3,7 +3,6 @@
 namespace App\Tquery\Tables;
 
 use App\Models\Attribute;
-use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
