@@ -41,8 +41,8 @@ class Meeting extends Model
     use HasDeletedBy;
     use SoftDeletes;
 
-    public const STATUS_COMPLETED = 'f6001030-c061-480e-9a5a-7013cee7ff40';
-    public const STATUS_PLANNED = '86aaead1-bbcc-4af1-a74a-ed2bdff46d0a';
+    public const string STATUS_COMPLETED = 'f6001030-c061-480e-9a5a-7013cee7ff40';
+    public const string STATUS_PLANNED = '86aaead1-bbcc-4af1-a74a-ed2bdff46d0a';
 
     protected $table = 'meetings';
 
