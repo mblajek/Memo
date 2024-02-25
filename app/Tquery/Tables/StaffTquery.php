@@ -2,7 +2,7 @@
 
 namespace App\Tquery\Tables;
 
-use App\Models\Facility;
+use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
@@ -10,11 +10,6 @@ use App\Tquery\Engine\TqBuilder;
 
 readonly class StaffTquery extends AdminUserTquery
 {
-    public function __construct(private Facility $facility)
-    {
-        parent::__construct();
-    }
-
     protected function getBuilder(): TqBuilder
     {
         $builder = TqBuilder::fromTable(TqTableEnum::users);
@@ -23,5 +18,12 @@ readonly class StaffTquery extends AdminUserTquery
         "members.facility_id = {$bind->use()}", false, $this->facility->id, false, false);
         $builder->where(fn(null $bind) => 'members.staff_member_id is not null', false, null, false, false);
         return $builder;
+    }
+
+    protected function getConfig(): TqConfig
+    {
+        $config = parent::getConfig();
+        $this->addMeetingsRelatedColumns($config);
+        return $config;
     }
 }
