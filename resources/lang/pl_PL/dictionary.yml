@@ -11,10 +11,13 @@ gender:
 meetingCategory:
   _name: "kategoria spotkania"
   other: "inne"
+  system: "systemowe"
 
 meetingType:
   _name: "typ spotkania"
   other: "inne"
+  work_time: "godziny pracy"
+  leave_time: "urlop"
 
 meetingStatus:
   _name: "status spotkania"
@@ -25,7 +28,7 @@ meetingStatus:
     planned: "Spotkanie jest zaplanowane"
     completed: "Spotkanie odbyło się"
     cancelled: "Spotkanie zostało odwołane przez któregoś z uczestników (lub z innych przyczyn)"
-    more_info: "Kliknij żeby zobaczyć więcej informacji o statusach spotkań"
+    more_info: "Kliknij aby zobaczyć więcej informacji o statusach spotkań"
 
 meetingResource:
   _name: "zasób"

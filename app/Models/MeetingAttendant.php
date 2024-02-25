@@ -35,4 +35,9 @@ class MeetingAttendant extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
+
+    public function resetAttendanceStatus(): void
+    {
+        $this->attendance_status_dict_id = self::ATTENDANCE_STATUS_OK;
+    }
 }

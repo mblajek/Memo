@@ -9,7 +9,8 @@ use App\Http\Permissions\PermissionObject;
 use App\Models\Facility;
 use App\Models\User;
 use App\Rules\Valid;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\ControllerMiddlewareOptions;
@@ -85,7 +86,7 @@ abstract class ApiController extends Controller
         return $this->requestIn;
     }
 
-    protected function applyRequestIn(Builder $query, string $column = 'id'): void
+    protected function applyRequestIn(EloquentBuilder|Builder $query, string $column = 'id'): void
     {
         $in = $this->getRequestIn();
         if ($in) {

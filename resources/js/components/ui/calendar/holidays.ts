@@ -1,3 +1,4 @@
+import {createCached} from "components/utils/cache";
 import {DateTime} from "luxon";
 
 export const SIMPLE_HOLIDAYS = [
@@ -68,7 +69,12 @@ export const SIMPLE_HOLIDAYS = [
   "2027-12-26", // Second Day of Christmas
 ];
 
-export function useHolidays() {
-  // TODO: This should be replaced with some configurable holidays system.
-  return () => SIMPLE_HOLIDAYS.map((date) => DateTime.fromISO(date));
-}
+// TODO: This should be replaced with some configurable holidays system.
+export const useHolidays = createCached(() => {
+  const dates = SIMPLE_HOLIDAYS.map((date) => DateTime.fromISO(date));
+  const datesSet = new Set(dates.map((d) => d.toISODate()));
+  return {
+    dates,
+    isHoliday: (date: DateTime) => datesSet.has(date.toISODate()),
+  };
+});

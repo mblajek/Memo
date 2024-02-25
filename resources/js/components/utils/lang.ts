@@ -1,5 +1,6 @@
 import {useTransContext} from "@mbarzda/solid-i18next";
 import {TOptions} from "i18next";
+import {isDEV} from "./dev_mode";
 
 /**
  * A function for getting the translation from a particular key. A list of keys can be used
@@ -19,7 +20,7 @@ export function useLangFunc(): LangFunc {
   const [t] = transContext;
   return (key, options) => {
     if (typeof key === "string") {
-      return options ? t(key, options) : t(key);
+      return t(key, {defaultValue: `??${key}`, ...options});
     }
     if (!key.length) {
       throw new Error(`Called useLangFunc with an empty key list.`);
@@ -31,7 +32,7 @@ export function useLangFunc(): LangFunc {
     }
     // If it's not present, try using the translation mechanism normally, but provide a default value
     // listing all the keys, if the options don't have a default value.
-    return t(key[0]!, {defaultValue: key.join("|"), ...options});
+    return t(key[0]!, {defaultValue: `??${isDEV() ? key.join("|") : key[0]}`, ...options});
   };
 }
 

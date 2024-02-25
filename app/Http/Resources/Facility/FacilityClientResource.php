@@ -16,8 +16,16 @@ use OpenApi\Attributes as OA;
  */
 class FacilityClientResource extends AbstractJsonResource
 {
+    protected function withAttrValues(): bool
+    {
+        return true;
+    }
+
     protected static function getMappedFields(): array
     {
-        return [];
+        return [
+            // todo: get from attributes
+            'genderDictId' => true,
+        ];
     }
 }

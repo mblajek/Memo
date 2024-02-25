@@ -1,5 +1,5 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {Button, EditButton} from "components/ui/Button";
+import {Button, DeleteButton, EditButton} from "components/ui/Button";
 import {LoadingPane} from "components/ui/LoadingPane";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
@@ -16,38 +16,37 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
-import {FaRegularCalendarPlus} from "solid-icons/fa";
 import {For, Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
 import {useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 import {createMeetingCreateModal} from "./meeting_create_modal";
+import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 
-interface FormParams {
-  readonly id: Api.Id;
-}
-
-interface Props extends FormParams {
+export interface MeetingViewEditFormProps {
+  readonly meetingId: Api.Id;
   readonly viewMode?: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
   readonly onEdited?: (meeting: MeetingChangeSuccessData) => void;
-  readonly onCopyCreated?: (meeting: MeetingChangeSuccessData) => void;
+  readonly onCreated?: (meeting: MeetingChangeSuccessData) => void;
+  readonly onCloned?: (firstMeeting: MeetingChangeSuccessData, otherMeetingIds: string[]) => void;
   readonly onDeleted?: (meetingId: string) => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Default: true. */
   readonly showToast?: boolean;
 }
 
-export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
+export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const {meetingStatusDict} = useFixedDictionaries();
   const {attendantsInitialValueForEdit, attendantsInitialValueForCreateCopy} = useAttendantsCreator();
   const invalidate = useInvalidator();
   const meetingCreateModal = createMeetingCreateModal();
+  const meetingSeriesCreateModal = createMeetingSeriesCreateModal();
   const confirmation = createConfirmation();
-  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.id));
+  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.meetingId));
   const meeting = () => meetingQuery.data!;
   const meetingMutation = createMutation(() => ({
     mutationFn: FacilityMeeting.updateMeeting,
@@ -60,7 +59,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
 
   async function updateMeeting(values: MeetingFormType) {
     const meeting = {
-      id: props.id,
+      id: props.meetingId,
       ...transformFormValues(values),
     };
     await meetingMutation.mutateAsync(meeting);
@@ -75,19 +74,11 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
   }
 
   async function deleteMeeting() {
-    if (
-      !(await confirmation.confirm({
-        title: t("forms.meeting_delete.formName"),
-        body: t("forms.meeting_delete.confirmationText"),
-        confirmText: t("forms.meeting_delete.submit"),
-      }))
-    )
-      return;
-    await deleteMeetingMutation.mutateAsync(props.id);
+    await deleteMeetingMutation.mutateAsync(props.meetingId);
     if (props.showToast ?? true) {
       toast.success(t("forms.meeting_delete.success"));
     }
-    props.onDeleted?.(props.id);
+    props.onDeleted?.(props.meetingId);
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
@@ -118,9 +109,10 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
         statusDictId: meetingStatusDict()!.planned.id,
         ...attendantsInitialValueForCreateCopy(meeting()),
-        fromMeetingId: props.id,
+        fromMeetingId: props.meetingId,
       },
-      onSuccess: props.onCopyCreated,
+      onSuccess: (meeting) => props.onCreated?.(meeting),
+      forceTimeEditable: !days,
       showToast: props.showToast,
     });
   }
@@ -147,18 +139,33 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
             />
             <LoadingPane isLoading={isBusy()} />
           </div>
-          <Show when={props.viewMode && props.onViewModeChange}>
+          <Show when={props.viewMode}>
             <div class="flex gap-1 justify-between">
-              <Button class="secondary small" onClick={deleteMeeting} disabled={isBusy()}>
-                <ACTION_ICONS.delete class="inlineIcon text-current" />
-                {t("actions.delete")}
-              </Button>
+              <DeleteButton
+                class="secondary small"
+                confirm={() =>
+                  confirmation.confirm({
+                    title: t("forms.meeting_delete.formName"),
+                    body: t("forms.meeting_delete.confirmationText"),
+                    confirmText: t("forms.meeting_delete.submit"),
+                  })
+                }
+                delete={deleteMeeting}
+                disabled={isBusy()}
+              />
               <div class="flex gap-1">
                 <SplitButton
                   class="secondary small"
-                  onClick={[createCopyInDays, 0]}
+                  onClick={() => {
+                    meetingSeriesCreateModal.show({
+                      startMeeting: meeting(),
+                      onSuccess: props.onCloned,
+                      showToast: props.showToast,
+                    });
+                  }}
                   popOver={(popOver) => (
                     <SimpleMenu onClick={() => popOver().close()}>
+                      <Button onClick={[createCopyInDays, 0]}>{t("meetings.create_copy.any")}</Button>
                       <For
                         each={
                           [
@@ -170,7 +177,7 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
                       >
                         {([labelKey, days]) => (
                           <Button class="flex justify-between gap-2" onClick={[createCopyInDays, days]}>
-                            <span>{t(`calendar.relative_time.${labelKey}`)}</span>
+                            <span>{t(`meetings.create_copy.${labelKey}`)}</span>
                             <span class="text-grey-text">
                               {t("parenthesised", {
                                 text: DateTime.fromISO(meeting().date)
@@ -185,9 +192,11 @@ export const MeetingViewEditForm: VoidComponent<Props> = (props) => {
                   )}
                   disabled={isBusy()}
                 >
-                  <FaRegularCalendarPlus class="inlineIcon text-current" /> {t("actions.meeting.make_a_copy")}
+                  <ACTION_ICONS.repeat class="inlineIcon text-current" /> {t("meetings.create_series")}
                 </SplitButton>
-                <EditButton class="secondary small" onClick={[props.onViewModeChange!, false]} disabled={isBusy()} />
+                <Show when={props.onViewModeChange}>
+                  <EditButton class="secondary small" onClick={[props.onViewModeChange!, false]} disabled={isBusy()} />
+                </Show>
               </div>
             </div>
           </Show>

@@ -107,7 +107,7 @@ export class Dictionary {
   get(positionIdOrName: string) {
     const position = this.byIdOrName.get(positionIdOrName);
     if (!position) {
-      throw new Error(`Position ${positionIdOrName} not found.`);
+      throw new Error(`Position ${positionIdOrName} not found in dictionary ${this.name}.`);
     }
     return position;
   }

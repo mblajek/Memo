@@ -67,11 +67,32 @@ html {
   }
 
   input[type="checkbox"] {
+    &:checked {
+      // Make it similar to the memo-active color on Chrome.
+      filter: hue-rotate(-0.11turn);
+    }
     &:disabled {
       filter: brightness(0.8);
       &:checked {
         filter: brightness(0.62) contrast(7);
       }
+    }
+  }
+
+  progress {
+    &::-webkit-progress-bar {
+      @apply bg-gray-100;
+    }
+    &::-webkit-progress-value {
+      @apply bg-memo-active;
+      background-image: -webkit-linear-gradient(
+        -45deg,
+        transparent 30%,
+        rgba(0, 0, 0, 0.2) 30%,
+        rgba(0, 0, 0, 0.2) 70%,
+        transparent 70%
+      );
+      background-size: 40px 100%;
     }
   }
 
@@ -134,7 +155,7 @@ html {
       @apply px-0.5 -my-px border border-gray-300 rounded bg-white hover:bg-hover;
 
       &[aria-disabled="true"] {
-        @apply bg-opacity-50;
+        @apply opacity-50;
       }
     }
   }

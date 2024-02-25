@@ -16,7 +16,7 @@ interface Props {
 export const DateAndTimeInfo: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   return (
-    <div class={cx("flex", props.twoLines ? "flex-col" : "gap-1")}>
+    <div class={cx("flex", props.twoLines ? "flex-col" : "gap-2")}>
       <div>
         {props.date.toLocaleString({
           weekday: "long",

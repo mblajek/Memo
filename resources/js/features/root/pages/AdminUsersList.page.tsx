@@ -1,13 +1,15 @@
 import {Button, EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
-import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
+import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {USER_ICONS} from "components/ui/icons";
+import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
+import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
 import {createUserCreateModal} from "features/user-edit/user_create_modal";
 import {createUserEditModal} from "features/user-edit/user_edit_modal";
-import {VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 
 export default (() => {
   const t = useLangFunc();
@@ -26,9 +28,9 @@ export default (() => {
         {
           name: "email",
           columnDef: {
-            cell: cellFunc<string>((v) => (
+            cell: cellFunc<string>((props) => (
               <PaddedCell>
-                <Email class="w-full" email={v} />
+                <ShowCellVal v={props.v}>{(v) => <Email class="w-full" email={v()} />}</ShowCellVal>
               </PaddedCell>
             )),
           },
@@ -41,17 +43,24 @@ export default (() => {
           name: "hasGlobalAdmin",
           columnDef: {size: 130},
         },
-        {name: "createdAt", columnDef: {sortDescFirst: true}},
-        {name: "createdBy.name", initialVisible: false},
-        {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
+        ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
         {
           name: "actions",
           isDataColumn: false,
-          extraDataColumns: ["id"],
+          // TODO: Introduce a proper safety check for unmodifiable users once the backend supports it.
+          extraDataColumns: ["id", "email"],
           columnDef: {
             cell: (c) => (
               <PaddedCell>
-                <EditButton class="minimal" onClick={() => userEditModal.show({userId: c.row.original.id as string})} />
+                <Show
+                  when={!c.row.original.email || (c.row.original.email as string).includes("@")}
+                  fallback={EMPTY_VALUE_SYMBOL}
+                >
+                  <EditButton
+                    class="minimal"
+                    onClick={() => userEditModal.show({userId: c.row.original.id as string})}
+                  />
+                </Show>
               </PaddedCell>
             ),
             enableSorting: false,

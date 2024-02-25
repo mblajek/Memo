@@ -7,14 +7,13 @@
  * This function also removes double spaces from the text.
  */
 export function trimInput(inputValue: string) {
-  return inputValue.trim().replaceAll(EXTRA_SPACES_REGEXP, "$1");
+  return inputValue
+    .trim()
+    .replaceAll(new RegExp(`${HORIZONTAL_WHITESPACE}+$`, "gm"), "")
+    .replaceAll(new RegExp(`(.)${HORIZONTAL_WHITESPACE}+(.)`, "gm"), "$1 $2");
 }
 
-/**
- * Matches whitespace at line start and end, and spaces after whitespace.
- * Replace with `"$1"` to remove the extra spaces.
- */
-const EXTRA_SPACES_REGEXP = /\s+$|(^|\s) +/gm;
+const HORIZONTAL_WHITESPACE = "[^\\S\\r\\n]";
 
 /**
  * A helper for inputs and textareas that trims them on blur. Intended use:

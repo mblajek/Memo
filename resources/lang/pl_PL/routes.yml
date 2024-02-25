@@ -13,7 +13,8 @@ admin:
 facility:
   home: "placówka"
   calendar: "$t(calendar.calendar)"
-  meetings_list: "lista spotkań"
+  meetings: "$t(models.meeting._name_plural)"
+  meeting_attendants: "$t(models.meeting.attendants)"
   staff: "$t(models.staff._name_plural)"
   staff_details: "$t(models.staff._name)"
   clients: "$t(models.client._name_plural)"

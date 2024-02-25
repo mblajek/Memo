@@ -2,12 +2,11 @@ import * as dialog from "@zag-js/dialog";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
-import {Accessor, JSX, Show, createMemo, createRenderEffect, createUniqueId} from "solid-js";
+import {Accessor, JSX, Show, createMemo, createRenderEffect, createUniqueId, onCleanup} from "solid-js";
 import {Portal} from "solid-js/web";
 import {Button} from "./Button";
 import s from "./Modal.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
-import {onCleanup} from "solid-js";
 
 interface BaseProps<T> {
   readonly title?: string;
@@ -156,6 +155,11 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
               <div {...api().positionerProps}>
                 <div {...api().contentProps} style={props.style}>
                   <div class={s.innerContent}>
+                    <Show when={props.title}>
+                      <h2 {...api().titleProps}>{props.title}</h2>
+                    </Show>
+                    <div class={s.body}>{getChildrenElement(props.children, value)}</div>
+                    {/* Place the close button at the end so that it is focused last. */}
                     <Show when={closeOn().has("closeButton")}>
                       <Button
                         class={s.closeButton}
@@ -165,10 +169,6 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
                         <VsClose class="w-6 h-6" />
                       </Button>
                     </Show>
-                    <Show when={props.title}>
-                      <h2 {...api().titleProps}>{props.title}</h2>
-                    </Show>
-                    <div class={s.body}>{getChildrenElement(props.children, value)}</div>
                   </div>
                 </div>
               </div>

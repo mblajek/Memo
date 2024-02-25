@@ -1,14 +1,17 @@
-import {JSX, VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {FieldLabel, labelIdForField} from "./FieldLabel";
+import {LabelOverride} from "./labels";
 
-interface Props {
+type Props = {
   readonly name: string;
-  readonly label?: JSX.Element;
+  readonly label?: LabelOverride;
   readonly disabled?: boolean;
   // TODO: Find a better solution for providing a hint like this.
   readonly title?: string;
-}
+} & {
+  readonly "data-felte-keep-on-remove"?: true;
+};
 
 /**
  * Wrapper of native HTML's `<input>` in the checkbox form.
@@ -23,7 +26,7 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
   >
     <FieldLabel
       fieldName={props.name}
-      text={props.label}
+      label={props.label}
       class="self-start flex items-baseline gap-1"
       title={props.title}
       wrapIn={(text) => (
@@ -32,11 +35,14 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
             type="checkbox"
             id={props.name}
             name={props.name}
-            class="border border-input-border m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
-            aria-labelledby={labelIdForField(props.name)}
+            class="m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
+            aria-labelledby={text ? labelIdForField(props.name) : undefined}
             disabled={props.disabled}
+            data-felte-keep-on-remove={props["data-felte-keep-on-remove"]}
           />
-          {text}
+          <Show when={text}>
+            <span class="select-none">{text}</span>
+          </Show>
         </>
       )}
     />

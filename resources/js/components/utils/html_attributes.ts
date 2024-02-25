@@ -40,6 +40,8 @@ export namespace htmlAttributes {
 
   export type pre = JSX.HTMLElementTags["pre"];
 
+  export type progress = JSX.HTMLElementTags["progress"];
+
   /** The events that can be overridden in a merge. Add more elements as needed. */
   const EVENT_HANDLERS = [
     "onInput",
@@ -61,10 +63,10 @@ export namespace htmlAttributes {
     }
     const attribs = attributes as Partial<Record<string, unknown>>;
     const result = {...attribs, ...overrides};
-    if (attribs.class !== undefined && overrides.class !== undefined) {
+    if (attribs.class !== undefined && result.class !== attribs.class) {
       result.class = cx(attribs.class as string, overrides.class);
     }
-    if (attribs.style !== undefined && overrides.style !== undefined) {
+    if (attribs.style !== undefined && result.style !== attribs.style) {
       if (typeof attribs.style !== typeof overrides.style)
         throw new Error(
           `Cannot merge style from attributes (${JSON.stringify(

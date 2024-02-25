@@ -1,4 +1,5 @@
 import {AiOutlineDelete} from "solid-icons/ai";
+import {BiRegularRepeat} from "solid-icons/bi";
 import {
   BsHouse,
   BsHouseAdd,
@@ -45,4 +46,5 @@ export const ACTION_ICONS = {
   edit: FiEdit2,
   delete: AiOutlineDelete,
   details: ImCircleRight,
+  repeat: BiRegularRepeat,
 };

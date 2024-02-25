@@ -1,4 +1,5 @@
 import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
+import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
 import {CgCalendar, CgCalendarToday} from "solid-icons/cg";
 import {FaSolidArrowLeft, FaSolidArrowRight} from "solid-icons/fa";
@@ -7,16 +8,15 @@ import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
+import {useHolidays} from "./holidays";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
 interface Props extends htmlAttributes.div {
-  readonly locale: Intl.Locale;
   /** The current selection visible in the tiny calendar. */
   readonly selection?: DaysRange;
   /** The currently displayed month. */
   readonly month: DateTime;
   readonly showWeekdayNames?: boolean;
-  readonly holidays?: readonly DateTime[];
 
   /** Returns the range that should be marked as hovered when hovering a day. */
   readonly getHoverRange?: (hoveredDay: DateTime) => DaysRange | undefined;
@@ -49,11 +49,9 @@ interface DayInfo {
 export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   const defProps = mergeProps(DEFAULT_PROPS, allProps);
   const [props, divProps] = splitProps(defProps, [
-    "locale",
     "selection",
     "month",
     "showWeekdayNames",
-    "holidays",
     "getHoverRange",
     "setMonth",
     "onDayClick",
@@ -63,7 +61,9 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   ]);
 
   const t = useLangFunc();
-  const weekDaysCalculator = createMemo(() => new WeekDaysCalculator(props.locale));
+  const locale = useLocale();
+  const weekDaysCalculator = new WeekDaysCalculator(locale);
+  const holidays = useHolidays();
   const monthStart = createMemo(() => props.month.startOf("month"), undefined, {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
   });
@@ -86,32 +86,31 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   /** The range of days to show in the calendar. */
   const range = createMemo(() => {
     // Always show (at least) two days of the previous month.
-    const start = weekDaysCalculator().startOfWeek(monthStart().minus({days: 2}));
+    const start = weekDaysCalculator.startOfWeek(monthStart().minus({days: 2}));
     // Show 6 weeks.
     const numDays = 6 * 7;
     return new DaysRange(start, start.plus({days: numDays - 1}));
   });
 
   /** List of days to show in the calendar. */
-  const days = createMemo(() => {
-    const holidaysSet = new Set(props.holidays?.map((d) => d.startOf("day").toMillis()));
+  const days = createMemo(() =>
     // eslint-disable-next-line solid/reactivity
-    return Array.from(range(), (day): DayInfo => {
+    Array.from(range(), (day): DayInfo => {
       const isToday = day.hasSame(currentDate(), "day");
       return {
         day,
         isToday,
         classes: cx({
           [s.today!]: isToday,
-          [s.weekend!]: weekDaysCalculator().isWeekend(day),
-          [s.startOfWeek!]: weekDaysCalculator().isStartOfWeek(day),
-          [s.endOfWeek!]: weekDaysCalculator().isEndOfWeek(day),
-          [s.holiday!]: holidaysSet.has(day.toMillis()),
+          [s.weekend!]: weekDaysCalculator.isWeekend(day),
+          [s.startOfWeek!]: weekDaysCalculator.isStartOfWeek(day),
+          [s.endOfWeek!]: weekDaysCalculator.isEndOfWeek(day),
+          [s.holiday!]: holidays.isHoliday(day),
           [s.otherMonth!]: day.month !== monthStart().month,
         }),
       };
-    });
-  });
+    }),
+  );
   createComputed(() => props.onVisibleRangeChange?.(range()));
 
   /**
@@ -160,9 +159,9 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
       </div>
       <div class={s.days}>
         <Show when={props.showWeekdayNames}>
-          <For each={[...weekDaysCalculator().dayToWeek(DateTime.fromMillis(0))]}>
+          <For each={[...weekDaysCalculator.dayToWeek(DateTime.fromMillis(0))]}>
             {(day) => (
-              <div class={cx(s.weekday, {[s.weekend!]: weekDaysCalculator().isWeekend(day)})}>
+              <div class={cx(s.weekday, {[s.weekend!]: weekDaysCalculator.isWeekend(day)})}>
                 {day.toLocaleString({weekday: "narrow"})}
               </div>
             )}

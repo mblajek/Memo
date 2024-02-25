@@ -13,7 +13,7 @@
     @apply select-none touch-none;
 
     &.resizing {
-      @apply bg-blue-700;
+      @apply bg-memo-active;
     }
   }
 }

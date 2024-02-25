@@ -22,7 +22,7 @@ export namespace Api {
   export namespace Response {
     export type Get<T extends object> = {data: T};
     export type GetList<T extends Entity> = {data: T[]};
-    export type Post = {data: Entity};
+    export type Post<T = Entity> = {data: T};
   }
 
   export type ErrorResponse = {

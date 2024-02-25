@@ -83,6 +83,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [MeetingController::class, 'list']);
             Route::patch('/{meeting}', [MeetingController::class, 'patch']);
             Route::delete('/{meeting}', [MeetingController::class, 'delete']);
+            Route::post('/{meeting}/clone', [MeetingController::class, 'clone']);
             Route::get('/tquery', [MeetingTqueryController::class, 'get']);
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
             Route::get('/attendant/tquery', [MeetingAttendantTqueryController::class, 'get']);

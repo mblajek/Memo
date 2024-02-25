@@ -5,9 +5,9 @@ import {ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/t
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
-  EmptyValueCell,
   PaddedCell,
   Pagination,
+  ShowCellVal,
   Table,
   cellFunc,
   getBaseTableOptions,
@@ -44,13 +44,13 @@ export default (() => {
         enableSorting: false,
         size: 60,
       }),
-      helper.accessor("name", {
+      helper.accessor("resource.name", {
         id: "Name",
         ...textSort,
       }),
       helper.accessor("label", {
         id: "Label",
-        cell: cellFunc<string>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
+        cell: cellFunc<string>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
         ...textSort,
       }),
       helper.accessor("resource.isFixed", {
@@ -58,10 +58,11 @@ export default (() => {
       }),
       helper.accessor("resource.facilityId", {
         id: "Facility",
-        cell: cellFunc<string>(
-          (v) => <PaddedCell>{getFacility(v)}</PaddedCell>,
-          () => <EmptyValueCell />,
-        ),
+        cell: cellFunc<string>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
+          </PaddedCell>
+        )),
         ...textSort,
       }),
     ];

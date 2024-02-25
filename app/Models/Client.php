@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\ClientBuilder;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasValues;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -15,12 +16,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Client extends Model
 {
     use BaseModel;
+    use HasValues;
 
     protected $table = 'clients';
-
-    protected $fillable = [
-        'gender_dict_id',
-    ];
 
     protected $casts = self::BASE_CASTS;
 

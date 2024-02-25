@@ -1,14 +1,16 @@
 import * as radio from "@zag-js/radio-group";
 import {normalizeProps, useMachine} from "@zag-js/solid";
+import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {cx} from "components/utils";
-import {For, JSX, Show, VoidComponent, createComputed, createMemo, createUniqueId} from "solid-js";
+import {For, JSX, Show, VoidComponent, createComputed, createMemo, createUniqueId, onMount} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import s from "./SegmentedControl.module.scss";
+import {LabelOverride} from "./labels";
 
 interface Props {
   readonly name: string;
   readonly items: readonly Item[];
-  readonly label?: JSX.Element;
+  readonly label?: LabelOverride;
   /** Optionally value, if should be used in standalone mode (not in form). */
   readonly value?: string;
   readonly setValue?: (value: string) => void;
@@ -31,6 +33,7 @@ interface Item {
  * To use in standalone mode, specify the controlling signal via value and setValue.
  */
 export const SegmentedControl: VoidComponent<Props> = (props) => {
+  const formContext = useFormContextIfInForm();
   const [state, send] = useMachine(
     radio.machine({
       // eslint-disable-next-line solid/reactivity
@@ -54,8 +57,13 @@ export const SegmentedControl: VoidComponent<Props> = (props) => {
       api().setValue(props.value);
     }
   });
+  onMount(() => {
+    if (props.value === undefined && formContext) {
+      api().setValue(formContext.form.data(props.name));
+    }
+  });
   return (
-    <FieldBox {...props}>
+    <FieldBox {...props} umbrella>
       <div {...api().rootProps} class={cx(s.segmentedControl, {[s.small!]: props.small})}>
         <div {...api().indicatorProps} />
         <For each={props.items}>

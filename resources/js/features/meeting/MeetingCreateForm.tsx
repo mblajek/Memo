@@ -13,15 +13,17 @@ import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
 import {meetingTimeInitialValue} from "./meeting_time_controller";
 
-interface Props {
+export interface MeetingCreateFormProps {
   readonly initialValues?: Partial<MeetingFormType>;
   readonly onSuccess?: (meeting: MeetingChangeSuccessData) => void;
   readonly onCancel?: () => void;
+  /** Whether the meeting date and time should start as editable, even if provided in the initial values. */
+  readonly forceTimeEditable?: boolean;
   /** Whether to show toast on success. Default: true. */
   readonly showToast?: boolean;
 }
 
-export const MeetingCreateForm: VoidComponent<Props> = (props) => {
+export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const {meetingStatusDict} = useFixedDictionaries();
@@ -63,6 +65,7 @@ export const MeetingCreateForm: VoidComponent<Props> = (props) => {
       <MeetingForm
         id="meeting_create"
         initialValues={initialValues()}
+        forceTimeEditable={props.forceTimeEditable}
         onSubmit={createMeeting}
         onCancel={props.onCancel}
       />

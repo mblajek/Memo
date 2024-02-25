@@ -4,14 +4,14 @@ namespace App\Tquery\Tables;
 
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
-use App\Tquery\Config\TqTableEnum;
+use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\TqService;
 
 readonly class AdminFacilityTquery extends TqService
 {
     protected function getConfig(): TqConfig
     {
-        $config = new TqConfig(table: TqTableEnum::facilities);
+        $config = new TqConfig(table: TqTableAliasEnum::facilities);
 
         $config->addSimple(TqDataTypeEnum::uuid, 'id');
         $config->addSimple(TqDataTypeEnum::string, 'name');

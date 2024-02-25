@@ -55,7 +55,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         trigger={(triggerProps) => (
           <ButtonLike
             {...(triggerProps() as htmlAttributes.div)}
-            class="flex-grow flex items-center justify-center secondary small"
+            class="flex-grow flex items-center justify-center secondary small select-none"
             disabled={form.isSubmitting()}
           >
             {t("meetings.mark_as_cancelled.text")} <AiFillCaretDown class="text-current" />
@@ -103,7 +103,10 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         )}
       </PopOver>
       <ButtonLike
-        class={cx("flex-grow-[8] flex items-center justify-center small", hasBegun() ? "primary" : "secondary")}
+        class={cx(
+          "flex-grow-[8] flex items-center justify-center small select-none",
+          hasBegun() ? "primary" : "secondary",
+        )}
         onClick={() => {
           form.setFields("statusDictId", meetingStatusDict()!.completed.id);
           form.handleSubmit();

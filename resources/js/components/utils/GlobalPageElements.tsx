@@ -2,7 +2,7 @@ import {JSX, VoidComponent, createSignal, onCleanup, onMount} from "solid-js";
 
 const [globalPageElements, setGlobalPageElements] = createSignal<JSX.Element[]>([]);
 
-interface GlobalPageElementArgs<T> {
+export interface GlobalPageElementArgs<T> {
   params(): T | undefined;
   setParams(params: T | undefined): void;
   clearParams(): void;

@@ -10,9 +10,11 @@ import {
 } from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
-import {debouncedAccessor} from "components/utils";
+import {NON_NULLABLE, debouncedAccessor} from "components/utils";
+import {isDEV} from "components/utils/dev_mode";
 import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
 import {toastMessages} from "components/utils/toast";
+import {useAttributes} from "data-access/memo-api/attributes";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {
   ColumnConfig,
@@ -29,7 +31,7 @@ import {
   Sort,
   isDataColumn,
 } from "data-access/memo-api/tquery/types";
-import {DEV, JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal, onMount} from "solid-js";
+import {JSX, VoidComponent, batch, createComputed, createEffect, createMemo, createSignal, onMount} from "solid-js";
 import toast from "solid-toast";
 import {
   DisplayMode,
@@ -102,7 +104,7 @@ export interface TQueryTableProps<TData = DataItem> {
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
   /** The definition of the columns in the table, in their correct order. */
-  readonly columns: readonly PartialColumnConfig<TData>[];
+  readonly columns: readonly PartialColumnConfigEntry<TData>[];
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
@@ -131,6 +133,8 @@ export interface PartialColumnConfig<TData = DataItem> {
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
 }
+
+type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "nonFixedAttributes";
 
 interface FullColumnConfig<TData = DataItem> extends ColumnConfig {
   /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
@@ -174,18 +178,29 @@ type PersistentState = {
 const PERSISTENCE_VERSION = 2;
 
 export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
+  const attributes = useAttributes();
   const entityURL = props.staticEntityURL;
+  const [nonFixedAttributeColumns, setNonFixedAttributeColumns] = createSignal<DataColumnSchema[]>([]);
+  const nonFixedAttributeColumnsConfig = () =>
+    nonFixedAttributeColumns().map(
+      (col) => ({name: col.name, initialVisible: false}) satisfies PartialColumnConfig<DataItem>,
+    );
   const [devColumns, setDevColumns] = createSignal<DataColumnSchema[]>([]);
+  const devColumnsConfig = () =>
+    devColumns().map(
+      (col) =>
+        ({
+          name: col.name,
+          metaParams: {devColumn: true},
+          initialVisible: false,
+        }) satisfies PartialColumnConfig<DataItem>,
+    );
   const columnsConfig = createMemo(() =>
     [
-      ...props.columns,
-      ...devColumns().map((col) => ({
-        name: col.name,
-        metaParams: {
-          devColumn: true,
-        },
-        initialVisible: false,
-      })),
+      ...props.columns.flatMap<PartialColumnConfig<DataItem>>((colEntry) =>
+        colEntry === "nonFixedAttributes" ? nonFixedAttributeColumnsConfig() : [colEntry],
+      ),
+      ...devColumnsConfig(),
     ].map((col) => columnConfigFromPartial(col)),
   );
 
@@ -254,15 +269,51 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     requestCreator,
     dataQueryOptions: {meta: {tquery: {isTable: true}}},
   });
-  if (DEV) {
-    createComputed(() =>
-      setDevColumns(
-        schema()
-          ?.columns.filter(isDataColumn)
-          .filter(({name}) => !props.columns.some((col) => col.name === name)) || [],
-      ),
-    );
-  }
+  createComputed(() => {
+    const sch = schema();
+    if (sch) {
+      if (attributes()) {
+        batch(() => {
+          const configuredColumns = new Set();
+          for (const colEntry of props.columns) {
+            if (colEntry !== "nonFixedAttributes") {
+              configuredColumns.add(colEntry.name);
+            }
+          }
+          setNonFixedAttributeColumns(
+            sch.columns
+              .map((col) => {
+                if (!isDataColumn(col)) {
+                  return undefined;
+                }
+                if (col.attributeId) {
+                  const attribute = attributes()!.get(col.attributeId);
+                  if (!attribute.resource.isFixed) {
+                    if (configuredColumns.has(col.name)) {
+                      console.warn(
+                        `Column ${col.name} is configured statically, but it is a non-fixed attribute ${attribute.name}.`,
+                      );
+                      return undefined;
+                    }
+                    return col;
+                  }
+                }
+                return undefined;
+              })
+              .filter(NON_NULLABLE),
+          );
+          if (isDEV()) {
+            for (const col of nonFixedAttributeColumns()) {
+              configuredColumns.add(col.name);
+            }
+            setDevColumns(sch.columns.filter(isDataColumn).filter(({name}) => !configuredColumns.has(name)));
+          } else {
+            setDevColumns([]);
+          }
+        });
+      }
+    }
+  });
   const {
     columnVisibility,
     globalFilter,

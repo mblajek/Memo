@@ -14,7 +14,7 @@ export const ResourceHeader: VoidComponent<Props> = (allProps) => {
         class: "w-full flex flex-col justify-end px-1 overflow-clip",
       })}
     >
-      <div class="text-center">{props.label()}</div>
+      {props.label()}
     </div>
   );
 };
