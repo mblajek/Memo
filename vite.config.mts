@@ -17,7 +17,7 @@ export default defineConfig({
     solidPlugin({
       solid: {
         // Repeating the default, needed because this field is not optional for some reason.
-        omitNestedClosingTags: false,
+        omitNestedClosingTags: true,
         // Allow stopping propagation of events (see https://github.com/solidjs/solid/issues/1786#issuecomment-1694589801).
         delegateEvents: false,
       },
