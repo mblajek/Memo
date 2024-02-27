@@ -12,17 +12,21 @@ import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {MeetingResource, MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
+import {
+  MeetingResource,
+  MeetingResourceForCreate,
+  MeetingResourceForPatch,
+} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
 import {CreatedByInfo} from "../facility-users/CreatedByInfo";
-import {MeetingAttendantsFields, getAttendantsSchemaPart, getAttendantsValues} from "./MeetingAttendantsFields";
+import {MeetingAttendantsFields, getAttendantsSchemaPart} from "./MeetingAttendantsFields";
 import {MeetingCannedStatusEdits} from "./MeetingCannedStatusEdits";
 import {MeetingDateAndTime} from "./MeetingDateAndTime";
 import {MeetingTypeFields} from "./MeetingTypeFields";
 import {MeetingStatusInfoIcon} from "./attendance_status_info";
-import {getMeetingTimeFieldsSchemaPart, getTimeValues} from "./meeting_time_controller";
+import {getMeetingTimeFieldsSchemaPart} from "./meeting_time_controller";
 
 const getSchema = () =>
   z.object({
@@ -183,17 +187,13 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
   );
 };
 
-function getResourceValues(values: MeetingFormType) {
+export function getResourceValuesForEdit(values: Partial<MeetingFormType>) {
   return {
-    resources: values.resources.map((resourceDictId) => ({resourceDictId})),
-  };
+    resources: values.resources?.map((resourceDictId) => ({resourceDictId})),
+  } satisfies Partial<MeetingResourceForPatch>;
 }
 
-export function transformFormValues(values: MeetingFormType): MeetingResourceForCreate {
-  return {
-    ...values,
-    ...getTimeValues(values),
-    ...getAttendantsValues(values),
-    ...getResourceValues(values),
-  };
+export function getResourceValuesForCreate(values: Partial<MeetingFormType>) {
+  const {resources = []} = getResourceValuesForEdit(values);
+  return {resources} satisfies Partial<MeetingResourceForCreate>;
 }

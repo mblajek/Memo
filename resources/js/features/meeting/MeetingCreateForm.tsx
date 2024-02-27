@@ -8,10 +8,10 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Show, VoidComponent} from "solid-js";
 import toast from "solid-toast";
-import {useAttendantsCreator} from "./MeetingAttendantsFields";
-import {MeetingForm, MeetingFormType, transformFormValues} from "./MeetingForm";
+import {getAttendantsValuesForCreate, useAttendantsCreator} from "./MeetingAttendantsFields";
+import {MeetingForm, MeetingFormType, getResourceValuesForCreate} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
-import {meetingTimeInitialValue} from "./meeting_time_controller";
+import {getTimeValues, meetingTimeInitialValue} from "./meeting_time_controller";
 
 export interface MeetingCreateFormProps {
   readonly initialValues?: Partial<MeetingFormType>;
@@ -75,3 +75,12 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
 
 // For lazy loading
 export default MeetingCreateForm;
+
+function transformFormValues(values: MeetingFormType): MeetingResourceForCreate {
+  return {
+    ...values,
+    ...getTimeValues(values),
+    ...getAttendantsValuesForCreate(values),
+    ...getResourceValuesForCreate(values),
+  };
+}

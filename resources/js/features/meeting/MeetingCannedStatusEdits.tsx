@@ -20,11 +20,33 @@ interface Props {
 export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
-  const {form} = useFormContext<MeetingFormType>();
+  const {form, formConfig} = useFormContext<MeetingFormType>();
 
   function shouldSubmitCancelImmediately(type: FacilityUserType) {
     const data = form.data(type);
     return data.length === 1 && data[0]?.attendanceStatusDictId === attendanceStatusDict()?.ok.id;
+  }
+
+  /** Submits the form, sending just the specified fields (if specified). */
+  function submitForm(fields?: (keyof MeetingFormType)[]) {
+    form.createSubmitHandler({
+      onSubmit: (values, context) => {
+        let selectedValues: Partial<MeetingFormType>;
+        if (fields) {
+          selectedValues = {};
+          for (const field of fields) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            selectedValues[field] = values[field] as any;
+          }
+        } else {
+          selectedValues = values;
+        }
+        // The cast here is necessary to trick the form into accepting partial data. This might not
+        // be very elegant, but is simplest for patch, if we want to reuse the form for both create
+        // and update.
+        formConfig.onSubmit?.(selectedValues as MeetingFormType, context);
+      },
+    })();
   }
 
   function cancelBy(type: FacilityUserType, attendanceStatus: Position) {
@@ -36,7 +58,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         form.setFields(`${type}.${i}.attendanceStatusDictId`, attendanceStatus.id);
     }
     if (submitImmediately) {
-      form.handleSubmit();
+      submitForm(["statusDictId", type]);
     } else {
       props.onViewModeChange(false);
     }
@@ -94,7 +116,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
             <Button
               onClick={() => {
                 form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
-                form.handleSubmit();
+                submitForm(["statusDictId"]);
               }}
             >
               {t("meetings.mark_as_cancelled.undetermined")}
@@ -109,7 +131,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         )}
         onClick={() => {
           form.setFields("statusDictId", meetingStatusDict()!.completed.id);
-          form.handleSubmit();
+          submitForm(["statusDictId"]);
         }}
         disabled={form.isSubmitting()}
       >
