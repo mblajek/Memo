@@ -1,4 +1,5 @@
 import {LangFunc} from "components/utils";
+import {TOptions} from "i18next";
 
 /**
  * A string representing some name. There are two variants:
@@ -16,10 +17,20 @@ export function isNameTranslatable(name: NameString) {
 }
 
 export function getNameTranslation(name: NameString, translationFunc: (name: string) => string): string;
-export function getNameTranslation(t: LangFunc, name: NameString, keyFunc: (name: string) => string | string[]): string;
 export function getNameTranslation(
-  ...args: [NameString, (name: string) => string] | [LangFunc, NameString, (name: string) => string | string[]]
+  t: LangFunc,
+  name: NameString,
+  keyFunc: (name: string) => string | string[],
+  o?: TOptions,
+): string;
+export function getNameTranslation(
+  ...args:
+    | [NameString, (name: string) => string]
+    | [LangFunc, NameString, (name: string) => string | string[], TOptions?]
 ) {
-  const [name, translationFunc] = args.length === 2 ? args : [args[1], (name: string) => args[0](args[2](name))];
+  function isDirect(a: typeof args): a is [NameString, (name: string) => string] {
+    return typeof args[0] === "string";
+  }
+  const [name, translationFunc] = isDirect(args) ? args : [args[1], (name: string) => args[0](args[2](name), args[3])];
   return isNameTranslatable(name) ? translationFunc(name) : name.substring(1);
 }
