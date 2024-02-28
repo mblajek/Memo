@@ -18,6 +18,7 @@ readonly class PermissionObject
         public bool $facilityClient,
         public bool $facilityStaff,
         public bool $facilityAdmin,
+        public bool $developer,
     ) {
     }
 
@@ -33,6 +34,7 @@ readonly class PermissionObject
             Permission::facilityClient => $this->facilityClient,
             Permission::facilityStaff => $this->facilityStaff,
             Permission::facilityAdmin => $this->facilityAdmin,
+            Permission::developer => $this->developer,
         };
     }
 }

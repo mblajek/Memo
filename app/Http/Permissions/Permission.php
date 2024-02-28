@@ -40,8 +40,12 @@ enum Permission
     // contains: verified, facilityMember
     case facilityAdmin;
 
+    // user with develop mode, only available for globalAdmin
+    // contains: globalAdmin
+    case developer;
+
     public static function fromName(string $name): self
     {
-        return constant("self::$name");
+        return self::{$name};
     }
 }

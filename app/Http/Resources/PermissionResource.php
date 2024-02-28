@@ -17,6 +17,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'facilityClient', type: 'bool', example: 'false'),
         new OA\Property(property: 'facilityStaff', type: 'bool', example: 'false'),
         new OA\Property(property: 'facilityAdmin', type: 'bool', example: 'false'),
+        new OA\Property(property: 'developer', type: 'bool', example: 'false'),
     ]
 )] /**
  * @method __construct(PermissionObject $resource)
@@ -36,6 +37,7 @@ class PermissionResource extends AbstractJsonResource
             'facilityClient' => false,
             'facilityStaff' => false,
             'facilityAdmin' => false,
+            'developer' => false,
         ];
     }
 }

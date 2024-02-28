@@ -90,6 +90,7 @@ class PermissionMiddleware
             facilityClient: $member && $member->client_id,
             facilityStaff: $member && $member->staff_member_id,
             facilityAdmin: $member && $member->facility_admin_grant_id,
+            developer: $globalAdmin && $request->hasSession() && $request->session()->get('developer_mode'),
         );
     }
 }
