@@ -56,11 +56,8 @@ class UserController extends ApiController
                 return new JsonResponse();
             }
         }
-        $loginData = $this->validate([
-            'email' => 'bail|required|string|email',
-            'password' => 'required|string',
-        ]);
-        if (Auth::attempt($loginData)) {
+        if (Auth::attempt($this->validate(['email' => Valid::string(['email']), 'password' => Valid::string()]))) {
+            $request->session()->forget('developer_mode');
             $request->session()->regenerate();
             return new JsonResponse();
         }
