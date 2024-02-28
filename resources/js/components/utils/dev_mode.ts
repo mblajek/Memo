@@ -13,3 +13,7 @@ export const isDEV = dev;
 export function toggleDEV(value?: boolean) {
   setDev(value ?? !dev());
 }
+
+export function resetDEV() {
+  setDev(!!DEV);
+}
