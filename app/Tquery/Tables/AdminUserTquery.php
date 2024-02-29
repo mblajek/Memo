@@ -69,6 +69,7 @@ readonly class AdminUserTquery extends TqService
                     ({$c(MeetingAttendant::ATTENDANCE_STATUS_OK)},
                      {$c(MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT)})
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
+                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
             "first_meeting_date"
         );
@@ -85,6 +86,7 @@ readonly class AdminUserTquery extends TqService
                     ({$c(MeetingAttendant::ATTENDANCE_STATUS_OK)},
                      {$c(MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT)})
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
+                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
             "last_meeting_date"
         );
@@ -101,6 +103,7 @@ readonly class AdminUserTquery extends TqService
                     ({$c(MeetingAttendant::ATTENDANCE_STATUS_OK)},
                      {$c(MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT)})
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
+                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
             "completed_meetings_count"
         );
@@ -117,6 +120,7 @@ readonly class AdminUserTquery extends TqService
                     ({$c(MeetingAttendant::ATTENDANCE_STATUS_OK)},
                      {$c(MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT)})
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
+                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null
                 /* Last month */
                 and date > date_sub(curdate(), interval 1 month)
@@ -136,8 +140,29 @@ readonly class AdminUserTquery extends TqService
                     ({$c(MeetingAttendant::ATTENDANCE_STATUS_OK)},
                      {$c(MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT)})
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_PLANNED)}
+                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
             "planned_meetings_count"
+        );
+
+        $config->addQuery(
+            TqDataTypeEnum::int,
+            fn(string $tableName) => //
+            "select count(1)
+                from `meetings`
+                inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
+                where `meetings`.`facility_id` = '{$this->facility->id}'
+                and `meeting_attendants`.`user_id` = `users`.`id`
+                and `meeting_attendants`.`attendance_status_dict_id` in
+                    ({$c(MeetingAttendant::ATTENDANCE_STATUS_OK)},
+                     {$c(MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT)})
+                and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_PLANNED)}
+                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
+                and `meetings`.`deleted_at` is null
+                /* Next month */
+                and date > curdate()
+                and date <= date_add(curdate(), interval 1 month)",
+            "planned_meetings_count_next_month"
         );
     }
 }
