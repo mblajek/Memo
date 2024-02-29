@@ -2,6 +2,7 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {User} from "data-access/memo-api/groups";
@@ -53,7 +54,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       preventTabClose={false}
     >
       <TextField name="email" type="email" autocomplete="username" {...TRIM_ON_BLUR} autofocus />
-      <TextField name="password" type="password" autocomplete="current-password" />
+      <PasswordField name="password" autocomplete="current-password" />
       <FelteSubmit />
     </FelteForm>
   );
