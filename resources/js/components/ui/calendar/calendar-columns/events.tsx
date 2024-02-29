@@ -150,6 +150,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                   {(client) => <AttendantListItem type="clients" attendant={client} />}
                 </For>
               </ul>
+              <hr class="-mx-1 border-black border-opacity-30" />
             </Show>
             <MeetingType typeId={props.meeting.typeDictId} />
             <MeetingStatusTags meeting={props.meeting} />

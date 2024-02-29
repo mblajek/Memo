@@ -743,7 +743,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 scrollToDayMinute={scrollToDayMinute()}
                 onWheelWithAlt={(e) =>
                   setPixelsPerHour((v) =>
-                    Math.min(Math.max(v - 0.05 * e.deltaY, PIXELS_PER_HOUR_RANGE[0]), PIXELS_PER_HOUR_RANGE[1]),
+                    Math.min(
+                      Math.max(v * (1 - 0.0005) ** e.deltaY, PIXELS_PER_HOUR_RANGE[0]),
+                      PIXELS_PER_HOUR_RANGE[1],
+                    ),
                   )
                 }
               />
