@@ -8,7 +8,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class ClientTquery extends AdminUserTquery
+readonly class ClientTquery extends FacilityUserTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -24,12 +24,9 @@ readonly class ClientTquery extends AdminUserTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-        $this->addMeetingsRelatedColumns($config);
-
         foreach (Attribute::getByFacility($this->facility, 'clients') as $attribute) {
             $config->addAttribute($attribute->id, 'client');
         }
-
         return $config;
     }
 }

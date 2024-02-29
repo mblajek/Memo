@@ -8,7 +8,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class StaffTquery extends AdminUserTquery
+readonly class StaffTquery extends FacilityUserTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -23,8 +23,6 @@ readonly class StaffTquery extends AdminUserTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-        $this->addMeetingsRelatedColumns($config);
-
         $config->addJoined(
             TqDataTypeEnum::is_not_null,
             TqTableAliasEnum::members,
