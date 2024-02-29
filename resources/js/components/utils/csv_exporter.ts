@@ -1,5 +1,38 @@
 import {PossiblyAsyncIterable} from "./async";
 
+const BUFFER_SIZE = 10000;
+
+/** Buffers the writes to speed up saving the file. */
+class BufferedWriter {
+  private readonly buffer: string[] = [];
+  private totalLength = 0;
+
+  constructor(private readonly writer: WritableStreamDefaultWriter<string>) {}
+
+  async write(data: string) {
+    this.buffer.push(data);
+    this.totalLength += data.length;
+    if (this.totalLength >= BUFFER_SIZE) {
+      await this.flush();
+    }
+  }
+
+  async close() {
+    await this.flush();
+    await this.writer.close();
+  }
+
+  abort() {
+    this.writer.abort();
+  }
+
+  private async flush() {
+    await this.writer.write(this.buffer.join(""));
+    this.buffer.length = 0;
+    this.totalLength = 0;
+  }
+}
+
 /** Exports the data to a CSV file. */
 export async function exportCSV({
   fileName,
@@ -25,8 +58,8 @@ export async function exportCSV({
     }
     throw e;
   }
-  const writer = (await saveHandler.createWritable()).getWriter();
-  const charactersToEscape = [...new Set([separator, ",", `"`, " ", "\n"])];
+  const writer = new BufferedWriter((await saveHandler.createWritable()).getWriter());
+  const charactersToEscape = [...new Set([" ", ",", separator, `"`, "\n"])];
   function format(value: string) {
     if (charactersToEscape.some((c) => value.includes(c))) {
       return `"${value.replaceAll(`"`, `""`)}"`;
@@ -34,19 +67,9 @@ export async function exportCSV({
     return value;
   }
   try {
-    for await (const row of data) {
-      for (let i = 0; i < row.length; i++) {
-        if (i) {
-          await writer.write(separator);
-        }
-        const cell = row[i];
-        if (cell !== undefined) {
-          await writer.write(format(cell));
-        }
-      }
-      await writer.write(lineEnd);
-    }
-    writer.close();
+    for await (const row of data)
+      await writer.write(row.map((cell) => (cell === undefined ? "" : format(cell))).join(separator) + lineEnd);
+    await writer.close();
   } catch (e) {
     writer.abort();
     throw e;

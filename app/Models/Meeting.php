@@ -104,7 +104,8 @@ class Meeting extends Model
         return $this->hasMany(MeetingAttendant::class);
     }
 
-    public function getAttendants(AttendanceType $attendanceType)
+    /** @return Collection<MeetingAttendant> */
+    public function getAttendants(AttendanceType $attendanceType): Collection
     {
         return $this->attendants->filter(
             fn(MeetingAttendant $attendant) => $attendant->attendance_type === $attendanceType,

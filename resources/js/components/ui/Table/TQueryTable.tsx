@@ -12,9 +12,10 @@ import {createLocalStoragePersistence} from "components/persistence/persistence"
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, debouncedAccessor} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
-import {objectRecursiveMerge} from "components/utils/object_recursive_merge";
+import {objectRecursiveMerge} from "components/utils/object_merge";
 import {toastMessages} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/attributes";
+import {getAllRowsExportIterator} from "data-access/memo-api/tquery/export";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {
   ColumnConfig,
@@ -53,11 +54,22 @@ import {ExportCellFunc, useTableTextExportCells} from "./table_export_cells";
 import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
 
 declare module "@tanstack/table-core" {
+  interface TableMeta<TData extends RowData> {
+    readonly tquery?: TQueryTableMeta<TData>;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     readonly tquery?: TQueryColumnMeta<TData>;
   }
 }
+
+interface TQueryTableMeta<TData extends RowData> {
+  /** Iterator over all the rows, for export purposes. */
+  readonly allRowsExportIterable?: AllRowsExportIterable<TData>;
+}
+
+export type AllRowsExportIterable<TData extends RowData = RowData> = AsyncIterable<TData> & {readonly length?: number};
 
 export interface ColumnMetaParams<TData = DataItem> {
   readonly filtering?: FilteringParams;
@@ -263,7 +275,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
     allInitialised,
   });
-  const {schema, requestController, dataQuery} = createTQuery({
+  const {schema, request, requestController, dataQuery} = createTQuery({
     entityURL,
     prefixQueryKey: props.staticPrefixQueryKey,
     requestCreator,
@@ -432,6 +444,18 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         translations: props.staticTranslations || createTableTranslations("generic"),
         defaultColumnVisibility,
         exportConfig: props.exportConfig,
+        tquery: {
+          allRowsExportIterable: {
+            [Symbol.asyncIterator]: () =>
+              getAllRowsExportIterator({
+                entityURL: props.staticEntityURL,
+                baseRequest: request()!,
+              }),
+            get length() {
+              return rowsCount();
+            },
+          },
+        },
       },
     }),
   );

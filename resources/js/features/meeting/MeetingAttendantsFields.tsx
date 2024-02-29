@@ -13,7 +13,12 @@ import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
-import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
+import {
+  MeetingAttendantResource,
+  MeetingResource,
+  MeetingResourceForCreate,
+  MeetingResourceForPatch,
+} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {Index, Match, Show, Switch, VoidComponent, createEffect} from "solid-js";
@@ -295,9 +300,14 @@ export function useAttendantsCreator() {
   };
 }
 
-export function getAttendantsValues(values: FormAttendantsData) {
+export function getAttendantsValuesForEdit(values: Partial<FormAttendantsData>) {
   return {
-    staff: values.staff.filter(({userId}) => userId),
-    clients: values.clients.filter(({userId}) => userId),
-  };
+    staff: values.staff?.filter(({userId}) => userId),
+    clients: values.clients?.filter(({userId}) => userId),
+  } satisfies Partial<MeetingResourceForPatch>;
+}
+
+export function getAttendantsValuesForCreate(values: Partial<FormAttendantsData>) {
+  const {staff = [], clients = []} = getAttendantsValuesForEdit(values);
+  return {staff, clients} satisfies Partial<MeetingResourceForCreate>;
 }

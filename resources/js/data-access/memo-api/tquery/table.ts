@@ -35,7 +35,7 @@ interface RequestController {
 const DEFAULT_PAGE_SIZE = 50;
 
 /**
- * Creates a requets creator with a collection of helpers to use together with a TanStack Table.
+ * Creates a request creator with a collection of helpers to use together with a TanStack Table.
  *
  * The request itself is a memo combining data from the signals exposed in the RequestController.
  * These signals can be plugged directly into the table state.

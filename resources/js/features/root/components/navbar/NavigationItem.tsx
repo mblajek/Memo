@@ -55,7 +55,9 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
         activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
         onClick={(event) => {
           if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS)) {
-            queryClient.invalidateQueries();
+            // Invalidate all queries. Add a delay to avoid a bug in TanStack Query.
+            // See https://github.com/TanStack/query/issues/6995
+            setTimeout(() => queryClient.invalidateQueries(), 0);
           }
         }}
       >

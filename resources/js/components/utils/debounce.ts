@@ -41,9 +41,7 @@ export function debouncedAccessor<T>(
         timeoutId = undefined;
       }, timeMs);
   });
-  onCleanup(() => {
-    clearTimeout(timeoutId);
-  });
+  onCleanup(() => clearTimeout(timeoutId));
   return output;
 }
 

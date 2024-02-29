@@ -7,11 +7,11 @@ use App\Http\Permissions\Permission;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
 
-class AdminController extends ApiController
+class DeveloperController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::globalAdmin);
+        $this->permissionOneOf(Permission::developer);
     }
 
     public function migrate(string $hash = ''): Response

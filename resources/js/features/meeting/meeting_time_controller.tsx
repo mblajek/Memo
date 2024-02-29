@@ -9,6 +9,7 @@ import {
 } from "components/utils/day_minute_util";
 import {useAttributes} from "data-access/memo-api/attributes";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime, Duration, Interval} from "luxon";
 import {createComputed, on} from "solid-js";
 import {z} from "zod";
@@ -132,12 +133,14 @@ function getDurationMinutes({startTime, endTime}: {startTime?: string; endTime?:
  * Transforms the form values to the values expected by the API. The result will typically be merged into
  * the values, as this function handles only the time fields.
  */
-export function getTimeValues(values: FormTimeDataType) {
+export function getTimeValues(values: Partial<FormTimeDataType>) {
   return {
     // Remove the temporary fields.
     time: undefined,
-    startDayminute: timeInputToDayMinute(values.time.startTime),
-    durationMinutes: getDurationMinutes(values.time),
+    ...({
+      startDayminute: timeInputToDayMinute(values.time?.startTime),
+      durationMinutes: getDurationMinutes(values.time),
+    } satisfies Partial<MeetingResource>),
   };
 }
 
