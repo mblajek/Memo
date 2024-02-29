@@ -12,13 +12,13 @@
     }
 
     [data-part="trigger"] {
-      @apply px-1.5 py-1 text-black hover:bg-hover;
-      @apply rounded-t-lg border-input-border;
+      @apply p-0.5 text-black hover:bg-hover;
+      @apply rounded-t-lg border;
       &[aria-selected="true"] {
-        @apply border-x border-t underline decoration-2 underline-offset-8 decoration-memo-active;
+        @apply border-input-border border-b-transparent;
       }
       &[aria-selected="false"] {
-        @apply text-opacity-70 border-b;
+        @apply text-opacity-70 border-gray-100 border-b-input-border;
       }
     }
 

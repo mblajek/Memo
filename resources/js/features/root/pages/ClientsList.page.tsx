@@ -13,7 +13,7 @@ export default (() => {
         mode="standalone"
         staticPrefixQueryKey={FacilityClient.keys.client()}
         staticEntityURL={`facility/${activeFacilityId()}/user/client`}
-        staticTranslations={createTableTranslations(["client", "user"])}
+        staticTranslations={createTableTranslations(["client", "facility_user", "user"])}
         staticPersistenceKey="facilityClients"
         columns={[
           {name: "id", initialVisible: false},
@@ -32,6 +32,12 @@ export default (() => {
             },
           },
           {name: "client.genderDictId"},
+          {name: "firstMeetingDate", initialVisible: false},
+          {name: "lastMeetingDate"},
+          {name: "completedMeetingsCount"},
+          {name: "completedMeetingsCountLastMonth", initialVisible: false},
+          {name: "plannedMeetingsCount", initialVisible: false},
+          {name: "plannedMeetingsCountNextMonth"},
           ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
         ]}
         initialSort={[{id: "name", desc: false}]}

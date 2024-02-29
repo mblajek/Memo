@@ -140,6 +140,10 @@ export function useMeetingTableColumns() {
         name: "attendants.*.attendanceStatusDictId",
         initialVisible: false,
       },
+      attendantsCount: {
+        name: "attendants.count",
+        initialVisible: false,
+      },
       staff: {
         // TODO: Make this column filterable by TQuerySelect.
         name: "staff",
@@ -156,6 +160,10 @@ export function useMeetingTableColumns() {
         name: "staff.*.attendanceStatusDictId",
         initialVisible: false,
       },
+      staffCount: {
+        name: "staff.count",
+        initialVisible: false,
+      },
       clients: {
         // TODO: Make this column filterable by TQuerySelect.
         name: "clients",
@@ -170,6 +178,10 @@ export function useMeetingTableColumns() {
       },
       clientsAttendance: {
         name: "clients.*.attendanceStatusDictId",
+        initialVisible: false,
+      },
+      clientsCount: {
+        name: "clients.count",
         initialVisible: false,
       },
       isRemote: {name: "isRemote"},
