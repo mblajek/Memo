@@ -33,3 +33,5 @@ The DEV mode directly controls some areas of the app, e.g. only in the DEV mode:
 - some system data is editable
 - missing translations are more verbose
 - etc.
+
+The DEV mode is initially active in the SolidJS `DEV` mode. It is also activated when obtaining the developer permission.
