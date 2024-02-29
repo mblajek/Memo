@@ -95,5 +95,7 @@ export:
   label: "$t(actions.export)"
   current_page: "bieżącą stronę"
   all_pages: "wszystkie strony"
+  exporting: "Eksportowanie…"
   success: "Zapisano dane do pliku"
   error: "Nie udało się wyeksportowć danych"
+  aborted: "Anulowano eksport"

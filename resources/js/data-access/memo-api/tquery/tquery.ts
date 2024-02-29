@@ -96,6 +96,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   }));
   return {
     schema,
+    request,
     requestController,
     dataQuery,
   };
