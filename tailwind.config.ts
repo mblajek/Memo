@@ -1,19 +1,12 @@
 import type {Config} from "tailwindcss";
 
 const APP_COLORS = {
-  //  A bright blue color used for various active elements on page.
-  "memo-active": "#06b6d4",
-  // A pale blue-grey color for highlighting hovered areas of active elements by setting their background color.
-  // Not necessarily good for hovered buttons etc.
-  "hover": "#e6f0f7",
-  // A light blue color for currently selected areas of active elements.
-  "select": "#b7e8f6",
-  // A light grey color for the background of disabled elements.
-  "disabled": "#ece8e8",
-  // A grey color for the border of input elements.
-  "input-border": "#b0b0b0",
-  // A grey text for displaying additional information.
-  "grey-text": "#566272",
+  "memo-active": "rgb(from var(--tc-memo-active) r g b / <alpha-value>)",
+  "hover": "rgb(from var(--tc-hover) r g b / <alpha-value>)",
+  "select": "rgb(from var(--tc-select) r g b / <alpha-value>)",
+  "disabled": "rgb(from var(--tc-disabled) r g b / <alpha-value>)",
+  "input-border": "rgb(from var(--tc-input-border) r g b / <alpha-value>)",
+  "grey-text": "rgb(from var(--tc-grey-text) r g b / <alpha-value>)",
 };
 
 const Z_INDEX = {

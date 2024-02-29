@@ -409,6 +409,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
               {...api().inputProps}
               // This is just for user entry, and not the actual form value.
               name=""
+              class="bg-inherit"
               placeholder={api().value.length ? undefined : props.placeholder}
               // Without filtering, the input is used just for the placeholder.
               inert={props.onFilterChange ? undefined : true}

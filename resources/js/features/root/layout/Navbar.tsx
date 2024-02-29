@@ -15,11 +15,13 @@ import {DEV, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
+import {useThemeControl} from "../components/theme_control";
 import s from "./layout.module.scss";
 
 export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
+  const {theme} = useThemeControl();
   const facilityUrl = () => activeFacility()?.url;
   const CommonFacilityItems: VoidComponent = () => (
     <>
@@ -40,8 +42,12 @@ export const Navbar: VoidComponent = () => {
       <NavigationItem icon={CLIENT_ICONS.menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
     </>
   );
+  const themeStyle = () => {
+    const t = theme();
+    return {"--navbar-color": t === "light" ? "#f3f0e0" : t === "dark" ? "#e3e0d0" : (t satisfies never)};
+  };
   return (
-    <aside class={s.sidebar}>
+    <aside class={s.sidebar} style={themeStyle()}>
       <FullLogo class="h-16 p-2 mt-2" />
       <nav class={cx("p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}>
         <Show when={facilityUrl()}>
