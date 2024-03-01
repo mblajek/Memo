@@ -18,7 +18,8 @@ class MeetingAttendant extends Model
 {
     use BaseModel;
 
-    private const string ATTENDANCE_STATUS_OK = '1adb737f-da0f-4473-ab9c-55fc1634b397';
+    public const string ATTENDANCE_STATUS_OK = '1adb737f-da0f-4473-ab9c-55fc1634b397';
+    public const string ATTENDANCE_STATUS_LATE_PRESENT = '1ce7a7ac-3562-4dff-bd4b-5eee8eb8f90b';
 
     protected $table = 'meeting_attendants';
 

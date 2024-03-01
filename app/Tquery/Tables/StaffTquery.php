@@ -2,20 +2,14 @@
 
 namespace App\Tquery\Tables;
 
-use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class StaffTquery extends AdminUserTquery
+readonly class StaffTquery extends FacilityUserTquery
 {
-    public function __construct(private Facility $facility)
-    {
-        parent::__construct();
-    }
-
     protected function getBuilder(): TqBuilder
     {
         $builder = TqBuilder::fromTable(TqTableAliasEnum::users);
@@ -29,7 +23,6 @@ readonly class StaffTquery extends AdminUserTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-
         $config->addJoined(
             TqDataTypeEnum::is_not_null,
             TqTableAliasEnum::members,

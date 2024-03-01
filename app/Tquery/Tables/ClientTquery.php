@@ -3,19 +3,13 @@
 namespace App\Tquery\Tables;
 
 use App\Models\Attribute;
-use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class ClientTquery extends AdminUserTquery
+readonly class ClientTquery extends FacilityUserTquery
 {
-    public function __construct(private Facility $facility)
-    {
-        parent::__construct();
-    }
-
     protected function getBuilder(): TqBuilder
     {
         $builder = TqBuilder::fromTable(TqTableAliasEnum::users);
@@ -30,11 +24,9 @@ readonly class ClientTquery extends AdminUserTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-
         foreach (Attribute::getByFacility($this->facility, 'clients') as $attribute) {
             $config->addAttribute($attribute->id, 'client');
         }
-
         return $config;
     }
 }
