@@ -1,6 +1,7 @@
 import {
   ColumnDef,
   ColumnSizingState,
+  HeaderContext,
   IdentifiedColumnDef,
   RowData,
   Table as SolidTable,
@@ -32,7 +33,17 @@ import {
   Sort,
   isDataColumn,
 } from "data-access/memo-api/tquery/types";
-import {JSX, VoidComponent, batch, createComputed, createEffect, createMemo, createSignal, onMount} from "solid-js";
+import {
+  JSX,
+  Signal,
+  VoidComponent,
+  batch,
+  createComputed,
+  createEffect,
+  createMemo,
+  createSignal,
+  onMount,
+} from "solid-js";
 import toast from "solid-toast";
 import {
   DisplayMode,
@@ -140,10 +151,18 @@ export interface PartialColumnConfig<TData = DataItem> {
    * All additional data columns used in columnDef.cell needs to be specified in extraDataColumns.
    */
   readonly columnDef?: IdentifiedColumnDef<TData>;
+  /** Override for the column header. */
+  readonly header?: (params: HeaderParams<TData>) => JSX.Element;
   /** Some meta params for the column. They are merged into columnDef.meta.tquery (this is a shorthand). */
   readonly metaParams?: ColumnMetaParams<TData>;
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
+}
+
+interface HeaderParams<TData = DataItem> {
+  readonly ctx: HeaderContext<TData, unknown>;
+  readonly filter: Signal<FilterH | undefined>;
+  readonly defFilterControl: () => JSX.Element;
 }
 
 type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "nonFixedAttributes";
@@ -152,6 +171,7 @@ interface FullColumnConfig<TData = DataItem> extends ColumnConfig {
   /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
   readonly isDataColumn: boolean;
   readonly columnDef: IdentifiedColumnDef<TData>;
+  readonly header?: (params: HeaderParams<TData>) => JSX.Element;
   readonly metaParams?: ColumnMetaParams;
 }
 
@@ -160,6 +180,7 @@ function columnConfigFromPartial({
   isDataColumn = true,
   extraDataColumns = [],
   columnDef = {},
+  header,
   metaParams,
   initialVisible = true,
 }: PartialColumnConfig): FullColumnConfig {
@@ -168,6 +189,7 @@ function columnConfigFromPartial({
     isDataColumn,
     dataColumns: isDataColumn ? [name, ...extraDataColumns] : extraDataColumns,
     columnDef,
+    header,
     metaParams,
     initialVisible,
   };
@@ -394,27 +416,23 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         }
       }
       const defColumnConfig = (schemaCol && defaultColumnConfigByType.get(schemaCol.type)) || {};
+      const filter = getColumnFilter(col.name);
+      const defFilterControl = (ctx: HeaderContext<DataItem, unknown>) => (
+        <ColumnFilterController name={ctx.column.id} filter={filter[0]()} setFilter={filter[1]} />
+      );
       return objectRecursiveMerge<ColumnDef<DataItem, unknown>>(
         {
           id: col.name,
           accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
-          header: (ctx) => (
-            <Header
-              ctx={ctx}
-              filter={
-                <ColumnFilterController
-                  name={ctx.column.id}
-                  filter={getColumnFilter(ctx.column.id)[0]()}
-                  setFilter={(filter) => getColumnFilter(ctx.column.id)[1](filter)}
-                />
-              }
-            />
-          ),
+          header: (ctx) => <Header ctx={ctx} filter={defFilterControl(ctx)} />,
         },
         // It would be ideal to restrict the cell function to only accessing the data columns declared
         // by the column config, but there is no easy way to do this. The whole row is a store and cannot
         // be mutated, and wrapping it would be complicated.
         defColumnConfig.columnDef,
+        col.header && {
+          header: (ctx) => col.header!({ctx, filter, defFilterControl: () => defFilterControl(ctx)}),
+        },
         col.columnDef,
         {meta: {tquery: schemaCol}},
         {meta: {tquery: defColumnConfig.metaParams}},

@@ -93,7 +93,7 @@ filter:
 
 export:
   label: "$t(actions.export)"
-  current_page: "bieżącą stronę"
+  current_page: "bieżąca strona"
   all_pages: "wszystkie strony"
   exporting: "Eksportowanie…"
   success: "Zapisano dane do pliku"

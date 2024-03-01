@@ -4,7 +4,8 @@ import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
 import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {IconTypes} from "solid-icons";
-import {ParentComponent, Show, createMemo, createSignal, on, splitProps} from "solid-js";
+import {FaSolidAngleDown} from "solid-icons/fa";
+import {ParentComponent, Show, children, createMemo, createSignal, on, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 
 export interface NavigationItemProps extends Omit<AnchorProps, "children"> {
@@ -43,6 +44,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
     // eslint-disable-next-line solid/reactivity
     on(debouncedAccessor(activeItemTrigger, {timeMs: 20}), () => container()?.querySelector(`a.${ACTIVE_ITEM_CLASS}`)),
   );
+  const ch = children(() => props.children);
   return (
     <div ref={setContainer} class="flex flex-col">
       <A
@@ -62,11 +64,17 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
         }}
       >
         <Dynamic component={props.icon} size={props.small ? 18 : 25} />
-        <Show when={t(`routes.${props.routeKey}`, {defaultValue: ""})} fallback={props.routeKey}>
-          {(text) => <Capitalize text={text()} />}
-        </Show>
+        <span>
+          <Show when={t(`routes.${props.routeKey}`, {defaultValue: ""})} fallback={props.routeKey}>
+            {(text) => <Capitalize text={text()} />}
+          </Show>
+          <Show when={ch()}>
+            {" "}
+            <FaSolidAngleDown size="12" class="inlineIcon !mb-0 text-gray-400" />
+          </Show>
+        </span>
       </A>
-      <Show when={props.children}>
+      <Show when={ch()}>
         {(children) => (
           <HideableSection show={hasActiveItem()}>
             <div class="mt-1 ml-3 flex flex-col gap-1">{children()}</div>

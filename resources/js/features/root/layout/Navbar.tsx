@@ -25,19 +25,7 @@ export const Navbar: VoidComponent = () => {
   const facilityUrl = () => activeFacility()?.url;
   const CommonFacilityItems: VoidComponent = () => (
     <>
-      <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar">
-        {/* Consider moving the table pages under reports. */}
-        <NavigationItem icon={OcTable3} href={`/${facilityUrl()}/meetings`} routeKey="facility.meetings" small />
-        <NavigationItem
-          icon={OcTable3}
-          href={`/${facilityUrl()}/meeting_attendants`}
-          routeKey="facility.meeting_attendants"
-          small
-        />
-        <Show when={isDEV()}>
-          <NavigationItem icon={OcTable3} href={`/${facilityUrl()}/system_meetings`} routeKey="DEV System" small />
-        </Show>
-      </NavigationItem>
+      <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar" />
       <NavigationItem icon={STAFF_ICONS.menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
       <NavigationItem icon={CLIENT_ICONS.menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
     </>
@@ -66,7 +54,28 @@ export const Navbar: VoidComponent = () => {
                 icon={HiOutlineClipboardDocumentList}
                 href={`/${facilityUrl()}/admin/reports`}
                 routeKey="facility.facility_admin.reports"
-              />
+              >
+                <NavigationItem
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/meetings`}
+                  routeKey="facility.meetings"
+                  small
+                />
+                <NavigationItem
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/meeting_attendants`}
+                  routeKey="facility.meeting_attendants"
+                  small
+                />
+                <Show when={isDEV()}>
+                  <NavigationItem
+                    icon={OcTable3}
+                    href={`/${facilityUrl()}/system_meetings`}
+                    routeKey="DEV System"
+                    small
+                  />
+                </Show>
+              </NavigationItem>
             </SilentAccessBarrier>
             <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" />
           </NavigationSection>

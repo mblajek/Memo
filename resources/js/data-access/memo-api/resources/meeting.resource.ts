@@ -26,9 +26,11 @@ export interface MeetingResource extends CreatedUpdatedResource {
 
 export interface MeetingAttendantResource {
   readonly userId: string;
-  readonly attendanceType: "staff" | "client";
+  readonly attendanceType: AttendanceType;
   readonly attendanceStatusDictId: string;
 }
+
+export type AttendanceType = "staff" | "client";
 
 export interface MeetingResourceResource {
   readonly resourceDictId: string;
