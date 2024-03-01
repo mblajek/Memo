@@ -1,5 +1,5 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {DATE_FORMAT, DATE_TIME_FORMAT} from "components/utils";
+import {DATE_FORMAT, DATE_TIME_FORMAT, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries";
 import {DateTime} from "luxon";
 import {RowDataType} from "./table_cells";
@@ -17,6 +17,7 @@ export type TextExportedCell = string | undefined;
 
 /** Returns a collection of export cell functions for various data types, for exporting into textual format. */
 export function useTableTextExportCells() {
+  const t = useLangFunc();
   const dictionaries = useDictionaries();
   const def =
     <T>() =>
@@ -24,7 +25,7 @@ export function useTableTextExportCells() {
       defaultFormatTextExportValue(ctx.value);
   return {
     default: def,
-    bool: def,
+    bool: <T>() => exportCellFunc<TextExportedCell, boolean, T>((v) => t(v ? "bool_values.yes" : "bool_values.no")),
     date: <T>() => exportCellFunc<TextExportedCell, string, T>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
     datetime: <T>() =>
       exportCellFunc<TextExportedCell, string, T>((v) => formatDateTimeForTextExport(DateTime.fromISO(v))),
