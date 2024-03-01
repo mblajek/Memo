@@ -75,7 +75,7 @@ readonly class MeetingTquery extends TqService
         ];
         foreach ($attendanceTypes as $attendanceName => $attendanceType) {
             $attendantWhere = 'where `meeting_attendants`.`meeting_id` = `meetings`.`id`' . ($attendanceType
-                    ? " and `meeting_attendants`.`attendance_type` = '{$attendanceType->value}'" : '');
+                    ? " and `meeting_attendants`.`attendance_type_dict_id` = '{$attendanceType->value}'" : '');
             $config->addQuery(
                 TqDataTypeEnum::int,
                 fn(string $tableName) => //
@@ -105,7 +105,7 @@ readonly class MeetingTquery extends TqService
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
                     "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
-                    . "'attendanceType', `meeting_attendants`.`attendance_type`,"
+                    . "'attendanceTypeDictId', `meeting_attendants`.`attendance_type_dict_id`,"
                     . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
                     . ")) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",

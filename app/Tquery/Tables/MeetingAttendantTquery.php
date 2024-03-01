@@ -48,10 +48,10 @@ readonly class MeetingAttendantTquery extends MeetingTquery
             'attendant.name'
         );
         $config->addJoined(
-            TqDataTypeEnum::string,
+            new TqDictDef(TqDataTypeEnum::dict, DictionaryUuidEnum::AttendanceStatus),
             TqTableAliasEnum::meeting_attendants,
-            'attendance_type',
-            'attendant.attendance_type'
+            'attendance_type_dict_id',
+            'attendant.attendance_type_dict_id'
         );
         $config->addJoined(
             new TqDictDef(TqDataTypeEnum::dict, DictionaryUuidEnum::AttendanceStatus),

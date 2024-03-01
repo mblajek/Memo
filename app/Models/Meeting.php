@@ -109,7 +109,7 @@ class Meeting extends Model
     public function getAttendants(AttendanceType $attendanceType): Collection
     {
         return $this->attendants->filter(
-            fn(MeetingAttendant $attendant) => $attendant->attendance_type === $attendanceType,
+            fn(MeetingAttendant $attendant) => $attendant->attendance_type_dict_id === $attendanceType->value,
         );
     }
 
