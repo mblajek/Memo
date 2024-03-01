@@ -24,7 +24,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config = parent::getConfig();
 
-        $commonQueryPart = <<<SQL
+        $commonQueryPart = <<<"SQL"
             from `meetings`
             inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
             where `meetings`.`facility_id` = '{$this->facility->id}'
@@ -39,7 +39,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config->addQuery(
             TqDataTypeEnum::date_nullable,
-            fn(string $tableName) => <<<SQL
+            fn(string $tableName) => <<<"SQL"
             select min(`meetings`.`date`)
             {$commonQueryPart}
             {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}
@@ -49,7 +49,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config->addQuery(
             TqDataTypeEnum::date_nullable,
-            fn(string $tableName) => <<<SQL
+            fn(string $tableName) => <<<"SQL"
             select max(`meetings`.`date`)
             {$commonQueryPart}
             {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}
@@ -59,7 +59,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config->addQuery(
             TqDataTypeEnum::int,
-            fn(string $tableName) => <<<SQL
+            fn(string $tableName) => <<<"SQL"
             select count(1)
             {$commonQueryPart}
             {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}
@@ -69,7 +69,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config->addQuery(
             TqDataTypeEnum::int,
-            fn(string $tableName) => <<<SQL
+            fn(string $tableName) => <<<"SQL"
             select count(1)
             {$commonQueryPart}
             {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}
@@ -82,7 +82,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config->addQuery(
             TqDataTypeEnum::int,
-            fn(string $tableName) => <<<SQL
+            fn(string $tableName) => <<<"SQL"
             select count(1)
             {$commonQueryPart}
             {$andMeetingStatusIs(Meeting::STATUS_PLANNED)}
@@ -92,7 +92,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config->addQuery(
             TqDataTypeEnum::int,
-            fn(string $tableName) => <<<SQL
+            fn(string $tableName) => <<<"SQL"
             select count(1)
             {$commonQueryPart}
             {$andMeetingStatusIs(Meeting::STATUS_PLANNED)}
