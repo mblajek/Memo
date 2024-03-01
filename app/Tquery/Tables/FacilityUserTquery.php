@@ -24,18 +24,24 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
 
         $config = parent::getConfig();
 
+        $commonQueryPart = //
+            "from `meetings`
+            inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
+            where `meetings`.`facility_id` = '{$this->facility->id}'
+            and `meeting_attendants`.`user_id` = `users`.`id`
+            and `meeting_attendants`.`attendance_status_dict_id` in $present
+            and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
+            and `meetings`.`deleted_at` is null";
+
+        $andMeetingStatusIs = fn(string $meetingStatusDictId
+        ) => "and `meetings`.`status_dict_id` = '$meetingStatusDictId'";
+
         $config->addQuery(
             TqDataTypeEnum::date_nullable,
             fn(string $tableName) => //
             "select min(`meetings`.`date`)
-                from `meetings`
-                inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
-                where `meetings`.`facility_id` = '{$this->facility->id}'
-                and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meeting_attendants`.`attendance_status_dict_id` in $present
-                and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
-                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
-                and `meetings`.`deleted_at` is null",
+            {$commonQueryPart}
+            {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}",
             'first_meeting_date'
         );
 
@@ -43,14 +49,8 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
             TqDataTypeEnum::date_nullable,
             fn(string $tableName) => //
             "select max(`meetings`.`date`)
-                from `meetings`
-                inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
-                where `meetings`.`facility_id` = '{$this->facility->id}'
-                and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meeting_attendants`.`attendance_status_dict_id` in $present
-                and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
-                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
-                and `meetings`.`deleted_at` is null",
+            {$commonQueryPart}
+            {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}",
             'last_meeting_date'
         );
 
@@ -58,14 +58,8 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
             TqDataTypeEnum::int,
             fn(string $tableName) => //
             "select count(1)
-                from `meetings`
-                inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
-                where `meetings`.`facility_id` = '{$this->facility->id}'
-                and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meeting_attendants`.`attendance_status_dict_id` in $present
-                and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
-                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
-                and `meetings`.`deleted_at` is null",
+            {$commonQueryPart}
+            {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}",
             'completed_meetings_count'
         );
 
@@ -73,17 +67,11 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
             TqDataTypeEnum::int,
             fn(string $tableName) => //
             "select count(1)
-                from `meetings`
-                inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
-                where `meetings`.`facility_id` = '{$this->facility->id}'
-                and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meeting_attendants`.`attendance_status_dict_id` in $present
-                and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
-                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
-                and `meetings`.`deleted_at` is null
-                /* Last month */
-                and date > date_sub(curdate(), interval 1 month)
-                and date <= curdate()",
+            {$commonQueryPart}
+            {$andMeetingStatusIs(Meeting::STATUS_COMPLETED)}
+            /* Last month */
+            and date > date_sub(curdate(), interval 1 month)
+            and date <= curdate()",
             'completed_meetings_count_last_month'
         );
 
@@ -91,14 +79,8 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
             TqDataTypeEnum::int,
             fn(string $tableName) => //
             "select count(1)
-                from `meetings`
-                inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
-                where `meetings`.`facility_id` = '{$this->facility->id}'
-                and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meeting_attendants`.`attendance_status_dict_id` in $present
-                and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_PLANNED)}
-                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
-                and `meetings`.`deleted_at` is null",
+            {$commonQueryPart}
+            {$andMeetingStatusIs(Meeting::STATUS_PLANNED)}",
             'planned_meetings_count'
         );
 
@@ -106,17 +88,11 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
             TqDataTypeEnum::int,
             fn(string $tableName) => //
             "select count(1)
-                from `meetings`
-                inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
-                where `meetings`.`facility_id` = '{$this->facility->id}'
-                and `meeting_attendants`.`user_id` = `users`.`id`
-                and `meeting_attendants`.`attendance_status_dict_id` in $present
-                and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_PLANNED)}
-                and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
-                and `meetings`.`deleted_at` is null
-                /* Next month */
-                and date > curdate()
-                and date <= date_add(curdate(), interval 1 month)",
+            {$commonQueryPart}
+            {$andMeetingStatusIs(Meeting::STATUS_PLANNED)}
+            /* Next month */
+            and date > curdate()
+            and date <= date_add(curdate(), interval 1 month)",
             'planned_meetings_count_next_month'
         );
 
