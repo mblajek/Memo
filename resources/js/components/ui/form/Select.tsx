@@ -1,10 +1,10 @@
 import {Collection} from "@zag-js/collection";
 import * as combobox from "@zag-js/combobox";
-import {trackFormControl} from "@zag-js/form-utils";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {cx, useLangFunc} from "components/utils";
+import {useIsFieldsetDisabled} from "components/utils/fieldset_disabled_tracker";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
 import {ImCross, ImSpinner2} from "solid-icons/im";
@@ -143,16 +143,12 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   // the filtered items later. It's done like this because filtering needs api() which is not created yet.
   let collection: Accessor<Collection<SelectItem>> = () => combobox.collection.empty();
 
+  const [root, setRoot] = createSignal<HTMLDivElement>();
+  let portalRoot: HTMLDivElement | undefined;
+
   // Track the disabled state of the fieldset. This is a workaround, it should happen automatically in the
   // zag component.
-  const [fieldsetDisabled, setFieldsetDisabled] = createSignal(false);
-  createEffect(() =>
-    trackFormControl(root() || null, {
-      onFieldsetDisabledChange: setFieldsetDisabled,
-      // Ignore form reset.
-      onFormReset: () => {},
-    }),
-  );
+  const fieldsetDisabled = useIsFieldsetDisabled(root);
 
   const [state, send] = useMachine(
     combobox.machine({
@@ -342,9 +338,6 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       input.value = api().inputValue;
     }
   });
-
-  const [root, setRoot] = createSignal<HTMLDivElement>();
-  let portalRoot: HTMLDivElement | undefined;
 
   /** Whether the component is disabled, either directly or via a fieldset. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

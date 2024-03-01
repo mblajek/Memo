@@ -1,4 +1,3 @@
-import {Title} from "@solidjs/meta";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
@@ -18,6 +17,7 @@ import {useAllAttributes} from "data-access/memo-api/attributes";
 import {Dictionary, Position, useAllDictionaries} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
 import {Show, VoidComponent, createMemo} from "solid-js";
+import {MemoTitle} from "../features/root/MemoTitle";
 import {useAttrValueFormatter} from "./util";
 
 export default (() => {
@@ -149,7 +149,7 @@ export default (() => {
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <Title>Dictionaries</Title>
+      <MemoTitle title="Dictionaries" />
       <div class="contents text-sm">
         <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
           <Table table={table()} mode="standalone" />

@@ -718,8 +718,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <SegmentedControl
               name="calendarMode"
               value={mode()}
-              setValue={setMode}
-              items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
+              onValueChange={setMode}
+              items={props.modes.map((m) => ({
+                value: m,
+                label: () => t(`calendar.units.${m}`),
+                disabled: m === "month",
+              }))}
               small
             />
           </div>

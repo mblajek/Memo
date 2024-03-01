@@ -5,9 +5,9 @@ import {LabelOverride} from "./labels";
 
 interface Props {
   readonly name: string;
+  readonly label?: LabelOverride;
   /** Whether this is a collection of fields, grouped with an umbrella label. Default: false. */
   readonly umbrella?: boolean;
-  readonly label?: LabelOverride;
   readonly validationMessagesForFields?: readonly string[];
 }
 

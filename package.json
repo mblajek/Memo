@@ -59,7 +59,6 @@
     "@zag-js/hover-card": "^0.26.0",
     "@zag-js/pagination": "0.26.0",
     "@zag-js/popover": "0.26.0",
-    "@zag-js/radio-group": "0.26.0",
     "@zag-js/solid": "0.26.0",
     "axios": "^1.6.7",
     "classnames": "^2.5.1",

@@ -50,7 +50,7 @@ export const DictListFilterControl: VoidComponent<Props> = (props) => {
           ),
         }))}
         value={mode()}
-        setValue={setMode}
+        onValueChange={setMode}
         small
       />
       <DictionarySelect

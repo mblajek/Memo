@@ -1,4 +1,3 @@
-import {Title} from "@solidjs/meta";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
@@ -21,6 +20,7 @@ import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {Show, VoidComponent, createMemo} from "solid-js";
 import {Select} from "../components/ui/form/Select";
 import {EMPTY_VALUE_SYMBOL} from "../components/ui/symbols";
+import {MemoTitle} from "../features/root/MemoTitle";
 import {useAttrValueFormatter} from "./util";
 
 export default (() => {
@@ -149,7 +149,7 @@ export default (() => {
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <Title>Attributes</Title>
+      <MemoTitle title="Attributes" />
       <div class="contents text-sm">
         <Show when={attributes()} fallback={<BigSpinner />}>
           <Table table={table()} mode="standalone" />
