@@ -1,8 +1,7 @@
-import {normalizeProps, useMachine} from "@zag-js/solid";
-import * as tabs from "@zag-js/tabs";
-import {Accessor, For, JSX, VoidComponent, createMemo, createUniqueId} from "solid-js";
+import {Accessor, For, JSX, VoidComponent, createSignal} from "solid-js";
+import {cx} from "../utils";
+import {TrackingMarker} from "../utils/TrackingMarker";
 import {Button} from "./Button";
-import s from "./Tabs.module.scss";
 
 interface Props {
   readonly tabs: readonly Tab[];
@@ -18,27 +17,49 @@ interface Tab {
 
 export const Tabs: VoidComponent<Props> = (props) => {
   // eslint-disable-next-line solid/reactivity
-  const initialActiveTab = props.initialActiveTab || props.tabs[0]?.id;
-  const [state, send] = useMachine(tabs.machine({id: createUniqueId(), value: initialActiveTab}));
-  const api = createMemo(() => tabs.connect(state, send, normalizeProps));
+  const [activeId, setActiveId] = createSignal(props.initialActiveTab || props.tabs[0]?.id);
   return (
-    <div class={s.tabs} {...api().rootProps}>
-      <div {...api().tablistProps}>
-        <div class={s.triggersRow}>
-          <div class={s.triggers}>
+    <div class="flex flex-col items-stretch gap-1">
+      <TrackingMarker
+        activeId={activeId()}
+        markerClass={({active}) => cx("border-b-2", active ? "border-memo-active" : "border-transparent")}
+      >
+        {(MarkerTarget) => (
+          <div role="tablist" class="flex items-stretch">
             <For each={props.tabs}>
-              {(tab) => <Button {...api().getTriggerProps({value: tab.id})}>{tab.label}</Button>}
+              {(tab) => {
+                const isActive = () => tab.id === activeId();
+                return (
+                  <Button
+                    class={cx(
+                      "px-1.5 pt-1 text-black hover:bg-hover rounded-t-lg border",
+                      isActive()
+                        ? "border-input-border border-b-transparent"
+                        : "text-opacity-70 border-gray-100 border-b-input-border",
+                    )}
+                    role="tab"
+                    aria-selected={isActive()}
+                    onClick={() => setActiveId(tab.id)}
+                  >
+                    <MarkerTarget id={tab.id} class="w-full h-full -mb-px">
+                      {tab.label}
+                    </MarkerTarget>
+                  </Button>
+                );
+              }}
             </For>
+            <div class="grow border-b border-input-border" />
           </div>
-          <div class={s.spacer} />
-        </div>
-        <div {...api().indicatorProps}>
-          <div class={s.indicatorLine} />
-        </div>
+        )}
+      </TrackingMarker>
+      <div>
+        <For each={props.tabs}>
+          {(tab) => {
+            const isActive = () => tab.id === activeId();
+            return <div class={cx(isActive() ? undefined : "hidden")}>{tab.contents(isActive)}</div>;
+          }}
+        </For>
       </div>
-      <For each={props.tabs}>
-        {(tab) => <div {...api().getContentProps({value: tab.id})}>{tab.contents(() => api().value === tab.id)}</div>}
-      </For>
     </div>
   );
 };
