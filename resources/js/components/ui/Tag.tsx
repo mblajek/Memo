@@ -36,7 +36,7 @@ interface SimpleTagProps {
 
 export const SimpleTag: VoidComponent<SimpleTagProps> = (props) => {
   return (
-    <Tag color={props.color || simpleTagRandomColor(props.colorSeed || props.text.toLocaleLowerCase())}>
+    <Tag color={props.color || simpleTagRandomColor(props.colorSeed || props.text.trim().toLocaleLowerCase())}>
       {props.text}
     </Tag>
   );

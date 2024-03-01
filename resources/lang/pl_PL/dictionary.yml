@@ -43,10 +43,10 @@ attendanceStatus:
     cancelled: "ktoś inny odwołał"
   # The gender-neutral form "odwołano" is not good here because it does not convey that
   # it is this particular person who cancelled the meeting.
-  cancelled: "odwołał/a"
-  no_show: "niestawienie się"
   late_present: "niepunktualność"
-  too_late: "spóźnienie - nieobecność"
+  too_late: "spóźnienie-nieobecność"
+  no_show: "niestawienie się"
+  cancelled: "odwołał/a"
   _explanations:
     ok:
       planned: "Uczestnik planuje wziąć udział w spotkaniu"

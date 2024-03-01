@@ -1,5 +1,6 @@
 import {useLocation} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
+import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
 import {EM_DASH} from "components/ui/symbols";
 import {QueryBarrier, SimpleErrors, useLangFunc} from "components/utils";
@@ -31,6 +32,12 @@ export const Help: VoidComponent<Props> = (props) => {
     },
     queryKey: ["help", props.mdPath],
   }));
+  function processMarkdown(markdown: string) {
+    return markdown.replaceAll(/\$t\((\w[\w.]+)(\|cap)?\)/g, (match, key, cap) => {
+      const text = t(key);
+      return cap ? capitalizeString(text) : text;
+    });
+  }
   return (
     <div class="overflow-y-auto p-2">
       <QueryBarrier
@@ -49,7 +56,7 @@ export const Help: VoidComponent<Props> = (props) => {
         )}
       >
         <Markdown
-          markdown={query.data!}
+          markdown={processMarkdown(query.data!)}
           components={{
             // Set the page title based on the # header.
             h1: (h1Props) => {
