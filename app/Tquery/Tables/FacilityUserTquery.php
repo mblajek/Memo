@@ -36,7 +36,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
                 and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
-            "first_meeting_date"
+            'first_meeting_date'
         );
 
         $config->addQuery(
@@ -51,7 +51,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
                 and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
-            "last_meeting_date"
+            'last_meeting_date'
         );
 
         $config->addQuery(
@@ -66,7 +66,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_COMPLETED)}
                 and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
-            "completed_meetings_count"
+            'completed_meetings_count'
         );
 
         $config->addQuery(
@@ -84,7 +84,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
                 /* Last month */
                 and date > date_sub(curdate(), interval 1 month)
                 and date <= curdate()",
-            "completed_meetings_count_last_month"
+            'completed_meetings_count_last_month'
         );
 
         $config->addQuery(
@@ -99,7 +99,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
                 and `meetings`.`status_dict_id` = {$c(Meeting::STATUS_PLANNED)}
                 and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
                 and `meetings`.`deleted_at` is null",
-            "planned_meetings_count"
+            'planned_meetings_count'
         );
 
         $config->addQuery(
@@ -117,7 +117,7 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
                 /* Next month */
                 and date > curdate()
                 and date <= date_add(curdate(), interval 1 month)",
-            "planned_meetings_count_next_month"
+            'planned_meetings_count_next_month'
         );
 
         return $config;
