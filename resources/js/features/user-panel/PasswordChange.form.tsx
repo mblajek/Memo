@@ -2,7 +2,7 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
-import {TextField} from "components/ui/form/TextField";
+import {PasswordField} from "components/ui/form/PasswordField";
 import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -71,9 +71,9 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
         value={statusQuery.data?.user.email || undefined}
         class="hidden"
       />
-      <TextField name="current" type="password" autocomplete="current-password" autofocus />
-      <TextField name="password" type="password" autocomplete="new-password" />
-      <TextField name="repeat" type="password" autocomplete="new-password" />
+      <PasswordField name="current" autocomplete="current-password" autofocus />
+      <PasswordField name="password" autocomplete="new-password" allowShow="whileHeld" />
+      <PasswordField name="repeat" autocomplete="new-password" />
       <FelteSubmit cancel={props.onCancel} />
     </FelteForm>
   );
