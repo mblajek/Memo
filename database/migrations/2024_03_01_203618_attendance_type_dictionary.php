@@ -30,9 +30,9 @@ return new class extends Migration {
 
         DB::table('positions')->upsert([
             [
-                'id' => 'e2d3c06c-ea2d-4808-adca-6be2c1ea23c2',
+                'id' => '6e1bad86-8b69-43ac-81c1-82f564f2ffb8',
                 'dictionary_id' => $attendanceTypeDictionary,
-                'name' => 'client',
+                'name' => 'staff',
                 'is_fixed' => true,
                 'is_disabled' => false,
                 'default_order' => 1,
@@ -41,9 +41,9 @@ return new class extends Migration {
                 'updated_at' => $date,
             ],
             [
-                'id' => '6e1bad86-8b69-43ac-81c1-82f564f2ffb8',
+                'id' => 'e2d3c06c-ea2d-4808-adca-6be2c1ea23c2',
                 'dictionary_id' => $attendanceTypeDictionary,
-                'name' => 'staff',
+                'name' => 'client',
                 'is_fixed' => true,
                 'is_disabled' => false,
                 'default_order' => 2,
@@ -87,13 +87,17 @@ SQL
             <<<"SQL"
             update meeting_attendants inner join positions on attendance_type_dict_id = positions.id
             and positions.dictionary_id = '$attendanceTypeDictionary' set meeting_attendants.attendance_type = positions.name
-SQL
-        );
+        SQL);
 
         Schema::table('meeting_attendants', function (Blueprint $table) {
             $table->dropForeign(['attendance_type_dict_id']);
             $table->dropColumn('attendance_type_dict_id');
             $table->string('attendance_type', 36)->collation('ascii_bin')->change();
         });
+
+        DB::table('positions')
+            ->whereIn('id', ['6e1bad86-8b69-43ac-81c1-82f564f2ffb8', 'e2d3c06c-ea2d-4808-adca-6be2c1ea23c2'])
+            ->delete();
+        DB::table('dictionaries')->where('id', '1f68adf4-e0b7-495b-a6ea-305987cf2a33')->delete();
     }
 };
