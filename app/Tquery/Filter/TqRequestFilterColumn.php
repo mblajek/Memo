@@ -6,6 +6,7 @@ use App\Exceptions\FatalExceptionFactory;
 use App\Rules\Valid;
 use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Engine\Bind\TqBind;
 use App\Tquery\Engine\Bind\TqListBind;
 use App\Tquery\Engine\Bind\TqSingleBind;
@@ -95,10 +96,17 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         } else {
             $sqlPrefix = $this->operator->sqlPrefix();
             $sqlOperator = $this->operator->sqlOperator();
-            $query = match ($this->operator) {
-                TqFilterOperator::null => fn(null $bind) => trim("$sqlPrefix $filterQuery $sqlOperator"),
-                default => fn(TqBind $bind) => trim("$sqlPrefix $filterQuery $sqlOperator {$bind->use()}"),
-            };
+            if ($this->operator === TqFilterOperator::null) {
+                $query = fn(null $bind) => trim("$sqlPrefix $filterQuery $sqlOperator");
+            } else {
+                if ($columnType->notNullBaseType() === TqDataTypeEnum::string) {
+                    // fix for 'Illegal mix of collations (ascii*) and (utf8*)' error
+                    // todo: add 'ascii' column type, and cast only this type
+                    // there are no 'text' columns with ascii encoding
+                    $filterQuery = "cast($filterQuery as varchar(255))";
+                }
+                $query = fn(TqBind $bind) => trim("$sqlPrefix $filterQuery $sqlOperator {$bind->use()}");
+            }
             $nullable = $columnType->isNullable();
         }
 
