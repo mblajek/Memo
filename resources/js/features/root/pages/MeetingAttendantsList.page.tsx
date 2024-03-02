@@ -30,6 +30,7 @@ export default (() => {
         "time",
         "duration",
         "isInSeries",
+        "seriesType",
         "category",
         "type",
         "statusTags",
