@@ -61,6 +61,16 @@ user:
   members: "przypisane placówki"
   facilities.count: "liczba placówek"
 
+facility_user:
+  _name: "pracownik/klient"
+  _name_plural: "pracownicy/klienci"
+  firstMeetingDate: "Pierwsza wizyta"
+  lastMeetingDate: "Ostatnia wizyta"
+  completedMeetingsCount: "Liczba odbytych wizyt"
+  completedMeetingsCountLastMonth: "Liczba wizyt w ost. miesiącu"
+  plannedMeetingsCount: "Liczba zaplanowanych wizyt"
+  plannedMeetingsCountNextMonth: "Liczba wizyt w nast. miesiącu"
+
 staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
@@ -82,8 +92,11 @@ meeting:
   typeDictId: "typ"
   statusDictId: "$t(dictionary.meetingStatus._name)"
   attendants: "uczestnicy"
+  attendants.count: "$t(models.meeting.attendants) – liczba"
   staff: "$t(models.staff._name_plural)"
+  staff.count: "$t(models.meeting.staff) – liczba"
   clients: "$t(models.client._name_plural)"
+  clients.count: "$t(models.meeting.clients) – liczba"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
   # The name of the attendance status field when treated as "attendance notes".
   attendanceStatusNotes: "uwagi"

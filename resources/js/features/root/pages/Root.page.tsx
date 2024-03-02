@@ -30,7 +30,7 @@ const SystemStatusUpdateNotification: VoidComponent = () => {
   return (
     <Show when={systemStatusMonitor.needsReload()}>
       <Button
-        class="absolute m-3 p-2 w-48 bg-yellow-200 border border-input-border rounded z-modal animate-bounce"
+        class="absolute m-3 p-2 w-48 bg-yellow-200 dark:bg-yellow-400 border border-input-border rounded z-modal animate-bounce"
         onClick={() => location.reload()}
       >
         {t("system_version_update")}

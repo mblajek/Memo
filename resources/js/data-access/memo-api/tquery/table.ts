@@ -5,7 +5,7 @@ import {TableTranslations} from "components/ui/Table";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
-import {useDictionaries} from "../dictionaries";
+import {useDictionaries} from "../dictionaries_and_attributes_context";
 import {translateError} from "../error_util";
 import {Api} from "../types";
 import {FilterH, FilterReductor} from "./filter_utils";

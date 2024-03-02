@@ -13,10 +13,10 @@ import {
   useTableCells,
 } from "components/ui/Table";
 import {QueryBarrier} from "components/utils";
-import {useAllAttributes} from "data-access/memo-api/attributes";
-import {Dictionary, Position, useAllDictionaries} from "data-access/memo-api/dictionaries";
+import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
 import {Show, VoidComponent, createMemo} from "solid-js";
+import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
 import {MemoTitle} from "../features/root/MemoTitle";
 import {useAttrValueFormatter} from "./util";
 

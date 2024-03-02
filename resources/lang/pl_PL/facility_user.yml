@@ -1,7 +1,10 @@
 meetings_lists:
-  planned: zaplanowane
-  completed: zrealizowane
-  all: wszystkie
+  planned: "zaplanowane"
+  completed: "zrealizowane"
+  all: "wszystkie"
+  next_month: "w nast. miesiącu"
+  prev_month: "w ost. miesiącu"
+  last_meeting: "ostatnie"
 
 is_memo_user_note: "(użytkownik Memo)"
 

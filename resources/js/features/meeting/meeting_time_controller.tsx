@@ -7,8 +7,7 @@ import {
   timeInputToDayMinute,
   timeInputToHM,
 } from "components/utils/day_minute_util";
-import {useAttributes} from "data-access/memo-api/attributes";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime, Duration, Interval} from "luxon";
 import {createComputed, on} from "solid-js";

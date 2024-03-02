@@ -56,6 +56,7 @@ export const TableExportButton: VoidComponent = () => {
       const {result} = await exportCSV({
         fileName,
         data: data(),
+        excelMode: true,
       });
       if (result === "done") {
         toast.success(t("tables.export.success"));
@@ -98,7 +99,7 @@ export const TableExportButton: VoidComponent = () => {
                   exportRows(getCurrentPageRows());
                 }}
               >
-                <ItemLabel labelKey="current_page" type="CSV" />
+                <ItemLabel labelKey="current_page" type="Excel CSV" />
               </Button>
               <Button
                 onClick={() => {
@@ -107,7 +108,7 @@ export const TableExportButton: VoidComponent = () => {
                 }}
                 disabled={!allRowsExportIterable()}
               >
-                <ItemLabel labelKey="all_pages" type="CSV" />
+                <ItemLabel labelKey="all_pages" type="Excel CSV" />
               </Button>
             </SimpleMenu>
           );

@@ -1,7 +1,7 @@
 import {createMutation} from "@tanstack/solid-query";
 import {BigSpinner} from "components/ui/Spinner";
 import {useLangFunc} from "components/utils";
-import {useAttributes} from "data-access/memo-api/attributes";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -66,6 +66,7 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
         id="meeting_create"
         initialValues={initialValues()}
         forceTimeEditable={props.forceTimeEditable}
+        viewMode={false}
         onSubmit={createMeeting}
         onCancel={props.onCancel}
       />

@@ -1,57 +1,25 @@
 import {Accessor, createMemo} from "solid-js";
-import {Dictionaries, TypedDictionary, typedDictionary, useDictionaries} from "./dictionaries";
+import {TypedDictionary, typedDictionary} from "./dictionaries";
+import {useDictionaries} from "./dictionaries_and_attributes_context";
 
-export function useFixedDictionaries(dictionaries?: DictionariesInput) {
-  const dicts = unwrap(dictionaries);
+export function useFixedDictionaries() {
+  const dictionaries = useDictionaries();
+  function tDict<P extends string>(
+    dictionaryName: string,
+    positionNames: P[],
+  ): Accessor<TypedDictionary<P> | undefined> {
+    const typedDict = createMemo(() => {
+      const dict = dictionaries()?.get(dictionaryName);
+      return dict && typedDictionary(dict, positionNames);
+    });
+    return typedDict;
+  }
   return {
-    dictionaries: dicts,
-    meetingCategoryDict: useTypedDictionary({
-      dictionaries,
-      dictionaryName: "meetingCategory",
-      positionNames: ["other", "system"],
-    }),
-    meetingTypeDict: useTypedDictionary({
-      dictionaries,
-      dictionaryName: "meetingType",
-      positionNames: ["work_time", "leave_time", "other"],
-    }),
-    meetingStatusDict: useTypedDictionary({
-      dictionaries,
-      dictionaryName: "meetingStatus",
-      positionNames: ["planned", "completed", "cancelled"],
-    }),
-    attendanceTypeDict: useTypedDictionary({
-      dictionaries,
-      dictionaryName: "attendanceType",
-      positionNames: ["staff", "client"],
-    }),
-    attendanceStatusDict: useTypedDictionary({
-      dictionaries,
-      dictionaryName: "attendanceStatus",
-      positionNames: ["ok", "cancelled", "no_show", "late_present", "too_late"],
-    }),
+    dictionaries,
+    meetingCategoryDict: tDict("meetingCategory", ["other", "system"]),
+    meetingTypeDict: tDict("meetingType", ["work_time", "leave_time", "other"]),
+    meetingStatusDict: tDict("meetingStatus", ["planned", "completed", "cancelled"]),
+    attendanceTypeDict: tDict("attendanceType", ["staff", "client"]),
+    attendanceStatusDict: tDict("attendanceStatus", ["ok", "cancelled", "no_show", "late_present", "too_late"]),
   };
-}
-
-function useTypedDictionary<P extends string>({
-  dictionaries,
-  dictionaryName,
-  positionNames,
-}: {
-  dictionaries?: DictionariesInput;
-  dictionaryName: string;
-  positionNames: P[];
-}): Accessor<TypedDictionary<P> | undefined> {
-  const dicts = unwrap(dictionaries);
-  const typedDict = createMemo(() => {
-    const dict = dicts()?.get(dictionaryName);
-    return dict && typedDictionary(dict, positionNames);
-  });
-  return typedDict;
-}
-
-type DictionariesInput = Dictionaries | Accessor<Dictionaries | undefined> | undefined;
-
-function unwrap(dicts: DictionariesInput): Accessor<Dictionaries | undefined> {
-  return typeof dicts === "function" ? dicts : dicts ? () => dicts : useDictionaries();
 }

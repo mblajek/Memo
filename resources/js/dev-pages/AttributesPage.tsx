@@ -13,13 +13,14 @@ import {
   useTableCells,
 } from "components/ui/Table";
 import {QueryBarrier} from "components/utils";
-import {Attribute, useAllAttributes} from "data-access/memo-api/attributes";
-import {useAllDictionaries} from "data-access/memo-api/dictionaries";
+import {Attribute} from "data-access/memo-api/attributes";
+import {} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {Show, VoidComponent, createMemo} from "solid-js";
 import {Select} from "../components/ui/form/Select";
 import {EMPTY_VALUE_SYMBOL} from "../components/ui/symbols";
+import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
 import {MemoTitle} from "../features/root/MemoTitle";
 import {useAttrValueFormatter} from "./util";
 
@@ -29,7 +30,6 @@ export default (() => {
     return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
   }
   const attributes = useAllAttributes();
-  const dictionaries = useAllDictionaries();
 
   const models = createMemo(() => [...new Set(Array.from(attributes() || [], (a) => a.model))].sort());
 
@@ -39,7 +39,7 @@ export default (() => {
 
   function getAttributeTypeString(attr: Attribute) {
     if (attr.type === "dict") {
-      return `dict: ${dictionaries()?.get(attr.dictionaryId!).name}`;
+      return `dict: ${attr.dictionary!.name}`;
     } else if (attr.typeModel) {
       return `model: ${attr.typeModel}`;
     } else {
@@ -79,7 +79,7 @@ export default (() => {
           cell: cellFunc<string, Attribute>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
           ...textSort,
         }),
-        h.accessor("resource.isFixed", {
+        h.accessor("isFixed", {
           id: "Fixed",
         }),
         h.accessor("resource.facilityId", {

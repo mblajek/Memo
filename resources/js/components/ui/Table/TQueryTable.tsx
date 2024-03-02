@@ -15,7 +15,7 @@ import {NON_NULLABLE, debouncedAccessor} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {objectRecursiveMerge} from "components/utils/object_merge";
 import {toastMessages} from "components/utils/toast";
-import {useAttributes} from "data-access/memo-api/attributes";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {getAllRowsExportIterator} from "data-access/memo-api/tquery/export";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {
@@ -322,7 +322,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
                 }
                 if (col.attributeId) {
                   const attribute = attributes()!.get(col.attributeId);
-                  if (!attribute.resource.isFixed) {
+                  if (!attribute.isFixed) {
                     if (configuredColumns.has(col.name)) {
                       console.warn(
                         `Column ${col.name} is configured statically, but it is a non-fixed attribute ${attribute.name}.`,

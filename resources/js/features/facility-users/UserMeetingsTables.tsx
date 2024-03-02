@@ -3,22 +3,25 @@ import {BigSpinner} from "components/ui/Spinner";
 import {TableExportConfig, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {Tabs} from "components/ui/Tabs";
-import {useLangFunc} from "components/utils";
+import {EM_DASH} from "components/ui/symbols";
+import {DATE_FORMAT, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
 import {Sort} from "data-access/memo-api/tquery/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
-import {ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
+import {Accessor, ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useMeetingTableColumns, useMeetingTableFilters} from "../meeting/meeting_tables";
+import {UserMeetingsStats} from "./user_meetings_stats";
 
 interface Props {
   readonly userName: string;
   readonly userType: FacilityUserType;
   readonly intrinsicFilter: FilterH;
   readonly staticPersistenceKey?: string;
+  readonly userMeetingsStats?: Accessor<UserMeetingsStats | undefined>;
 }
 
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
@@ -56,7 +59,31 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
           tabs={[
             {
               id: "planned",
-              label: <Capitalize text={t("facility_user.meetings_lists.planned")} />,
+              label: (
+                <div class="min-w-48 h-full flex flex-col items-center justify-center">
+                  <span>
+                    <Capitalize text={t("facility_user.meetings_lists.planned")} />
+                    <Show when={props.userMeetingsStats?.()}>
+                      {(stats) => (
+                        <span class="text-grey-text">
+                          {" "}
+                          {EM_DASH} {stats().plannedMeetingsCount}
+                        </span>
+                      )}
+                    </Show>
+                  </span>
+                  <Show when={props.userMeetingsStats?.()}>
+                    {(stats) => (
+                      <Show when={stats().plannedMeetingsCount}>
+                        <span class="text-sm text-grey-text">
+                          {t("facility_user.meetings_lists.next_month")} {EM_DASH}{" "}
+                          {stats().plannedMeetingsCountNextMonth}
+                        </span>
+                      </Show>
+                    )}
+                  </Show>
+                </div>
+              ),
               contents: (active) => (
                 <ShowOnceShown when={active()}>
                   <div class="text-sm">
@@ -101,10 +128,13 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                           ["attendanceStatus", {initialVisible: false}],
                           "attendants",
                           "attendantsAttendance",
+                          "attendantsCount",
                           ["staff", {initialVisible: false}],
                           "staffAttendance",
+                          "staffCount",
                           ["clients", {initialVisible: false}],
                           "clientsAttendance",
+                          "clientsCount",
                           ["isRemote", {initialVisible: false}],
                           "notes",
                           "resources",
@@ -120,7 +150,41 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
             },
             {
               id: "completed",
-              label: <Capitalize text={t("facility_user.meetings_lists.completed")} />,
+              label: (
+                <div class="min-w-48 h-full flex flex-col items-center justify-center">
+                  <span>
+                    <Capitalize text={t("facility_user.meetings_lists.completed")} />
+                    <Show when={props.userMeetingsStats?.()}>
+                      {(stats) => (
+                        <span class="text-grey-text">
+                          {" "}
+                          {EM_DASH} {stats().completedMeetingsCount}
+                        </span>
+                      )}
+                    </Show>
+                  </span>
+                  <Show when={props.userMeetingsStats?.()}>
+                    {(stats) => (
+                      <Show when={stats().completedMeetingsCount}>
+                        <span class="text-sm text-grey-text">
+                          <Show
+                            when={stats().completedMeetingsCountLastMonth}
+                            fallback={
+                              <>
+                                {t("facility_user.meetings_lists.last_meeting")}{" "}
+                                {stats().lastMeetingDate!.toLocaleString(DATE_FORMAT)}
+                              </>
+                            }
+                          >
+                            {t("facility_user.meetings_lists.prev_month")} {EM_DASH}{" "}
+                            {stats().completedMeetingsCountLastMonth}
+                          </Show>
+                        </span>
+                      </Show>
+                    )}
+                  </Show>
+                </div>
+              ),
               contents: (active) => (
                 <ShowOnceShown when={active()}>
                   <div class="text-sm">
@@ -165,10 +229,13 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                           ["attendanceStatus", {initialVisible: false}],
                           "attendants",
                           "attendantsAttendance",
+                          "attendantsCount",
                           ["staff", {initialVisible: false}],
                           "staffAttendance",
+                          "staffCount",
                           ["clients", {initialVisible: false}],
                           "clientsAttendance",
+                          "clientsCount",
                           ["isRemote", {initialVisible: false}],
                           "notes",
                           "resources",
@@ -184,7 +251,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
             },
             {
               id: "all",
-              label: <Capitalize text={t("facility_user.meetings_lists.all")} />,
+              label: (
+                <div class="min-w-48 h-full flex flex-col items-center justify-center">
+                  <Capitalize text={t("facility_user.meetings_lists.all")} />
+                </div>
+              ),
               contents: (active) => (
                 <ShowOnceShown when={active()}>
                   <div class="text-sm">
@@ -211,10 +282,13 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                           "attendanceStatus",
                           "attendants",
                           "attendantsAttendance",
+                          "attendantsCount",
                           ["staff", {initialVisible: false}],
                           "staffAttendance",
+                          "staffCount",
                           ["clients", {initialVisible: false}],
                           "clientsAttendance",
+                          "clientsCount",
                           ["isRemote", {initialVisible: false}],
                           "notes",
                           "resources",

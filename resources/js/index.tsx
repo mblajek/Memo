@@ -11,6 +11,7 @@ import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 import {LocaleContext} from "./components/utils/LocaleContext";
+import {DictionariesAndAttributesProvider} from "./data-access/memo-api/dictionaries_and_attributes_context";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
 
@@ -67,7 +68,9 @@ render(() => {
           />
           <MetaProvider>
             <InitializeTanstackQuery>
-              <App />
+              <DictionariesAndAttributesProvider>
+                <App />
+              </DictionariesAndAttributesProvider>
             </InitializeTanstackQuery>
           </MetaProvider>
           <GlobalPageElements />
