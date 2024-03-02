@@ -3,6 +3,7 @@ import {HideableSection} from "components/ui/HideableSection";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
+import {ACTION_ICONS} from "components/ui/icons";
 import {EN_DASH} from "components/ui/symbols";
 import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {
@@ -15,7 +16,6 @@ import {DateTime} from "luxon";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
-import {ACTION_ICONS} from "components/ui/icons";
 
 interface Props {
   /**
@@ -23,7 +23,7 @@ interface Props {
    * Warning: It looks like it does not work very well in chrome as of December 2023.
    */
   readonly suggestedTimes?: SuggestedTimes;
-  readonly viewMode?: boolean;
+  readonly viewMode: boolean;
   readonly forceEditable?: boolean;
 }
 
@@ -46,7 +46,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
     defaultDurationMinutes() !== undefined &&
     durationMinutes() !== defaultDurationMinutes();
   createComputed(
-    on([() => props.viewMode, () => form.data("time.startTime")], (viewMode, _startTime) => {
+    on([() => props.viewMode, () => form.data("time.startTime")], ([viewMode]) => {
       if (viewMode) {
         setForceEditable(props.forceEditable || false);
       }

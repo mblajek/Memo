@@ -45,7 +45,7 @@ export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 
 interface Props extends FormConfigWithoutTransformFn<MeetingFormType> {
   readonly id: string;
-  readonly viewMode?: boolean;
+  readonly viewMode: boolean;
   /** The meeting resource, for showing some of the readonly information about the meeting. */
   readonly meeting?: MeetingResource;
   /** Whether the meeting date and time should start as editable, even if provided in the initial values. */

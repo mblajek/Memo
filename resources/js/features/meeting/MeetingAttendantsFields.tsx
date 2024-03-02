@@ -45,7 +45,7 @@ interface Props {
   readonly name: "staff" | "clients";
   /** Whether to show the attendance status label. Default: true. */
   readonly showAttendanceStatusLabel?: boolean;
-  readonly viewMode?: boolean;
+  readonly viewMode: boolean;
 }
 
 interface FormAttendantsData extends Obj {

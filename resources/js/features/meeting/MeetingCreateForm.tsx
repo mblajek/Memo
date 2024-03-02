@@ -66,6 +66,7 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
         id="meeting_create"
         initialValues={initialValues()}
         forceTimeEditable={props.forceTimeEditable}
+        viewMode={false}
         onSubmit={createMeeting}
         onCancel={props.onCancel}
       />

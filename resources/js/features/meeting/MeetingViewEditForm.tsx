@@ -28,7 +28,7 @@ import {getTimeValues} from "./meeting_time_controller";
 
 export interface MeetingViewEditFormProps {
   readonly meetingId: Api.Id;
-  readonly viewMode?: boolean;
+  readonly viewMode: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
   readonly onEdited?: (meeting: MeetingChangeSuccessData) => void;
   readonly onCreated?: (meeting: MeetingChangeSuccessData) => void;
