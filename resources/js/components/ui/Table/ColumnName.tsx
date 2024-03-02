@@ -1,5 +1,5 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {useAttributes} from "data-access/memo-api/attributes";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {Match, Switch, VoidComponent} from "solid-js";
 import {Capitalize} from "../Capitalize";
 import {TranslatedText} from "../TranslatedText";

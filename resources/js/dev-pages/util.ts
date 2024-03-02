@@ -1,14 +1,13 @@
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
-import {Attribute, useAllAttributes} from "data-access/memo-api/attributes";
-import {useAllDictionaries} from "data-access/memo-api/dictionaries";
+import {Attribute} from "data-access/memo-api/attributes";
+import {useAllAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 
 export function useAttrValueFormatter() {
   const attributes = useAllAttributes();
-  const dictionaries = useAllDictionaries();
   return (attr: Attribute, val: unknown) => {
     function formatV(v: unknown) {
       if (attr.type === "dict" && typeof v === "string") {
-        return dictionaries()?.get(attr.dictionaryId!)?.get(v).resource.name;
+        return attr.dictionary!.get(v).resource.name;
       } else if (attr.type === "attribute" && typeof v === "string") {
         return `@${attributes()?.get(v).name}`;
       } else {

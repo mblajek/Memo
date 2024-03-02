@@ -1,11 +1,6 @@
-import {createQuery} from "@tanstack/solid-query";
-import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
-import {createCached} from "components/utils/cache";
-import {translationsLoaded} from "i18n_loader";
-import {createMemo} from "solid-js";
-import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
+import {LangFunc, NON_NULLABLE} from "components/utils";
+import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {makeAttributable} from "./attributable";
-import {System} from "./groups";
 import {DictionaryResource, PositionResource} from "./resources/dictionary.resource";
 import {getNameTranslation, isNameTranslatable} from "./resources/name_string";
 import {facilityIdMatches} from "./utils";
@@ -199,31 +194,3 @@ export class Position {
     this.disabled = resource.isDisabled;
   }
 }
-
-/** Returns a Dictionaries object containing all the dictionaries in the system. */
-export const useAllDictionaries = createCached(() => {
-  const t = useLangFunc();
-  const query = createQuery(System.dictionariesQueryOptions);
-  const allDictionaries = createMemo(() => {
-    if (!query.isSuccess) {
-      return undefined;
-    }
-    // Make sure the translations are loaded. Here it is critical because the created Dictionary objects
-    // are not reactive and will not update later.
-    if (!translationsLoaded()) {
-      return undefined;
-    }
-    return Dictionaries.fromResources(t, query.data);
-  });
-  return allDictionaries;
-});
-
-/**
- * Returns a Dictionaries object with the dictionaries available in the current facility, or global
- * if there is no current facility.
- */
-export const useDictionaries = createCached(() => {
-  const allDictionaries = useAllDictionaries();
-  const dictionaries = createMemo(() => allDictionaries()?.subsetFor(activeFacilityId()));
-  return dictionaries;
-});

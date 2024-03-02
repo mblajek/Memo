@@ -10,7 +10,7 @@ import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {MAX_DAY_MINUTE, dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {skipUndefinedValues} from "components/utils/object_merge";
-import {useAttributes} from "data-access/memo-api/attributes";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";

@@ -1,7 +1,7 @@
 import {DefaultDictionarySelectItem, DictionarySelect} from "components/ui/form/DictionarySelect";
 import {isDEV} from "components/utils/dev_mode";
-import {useAttributes} from "data-access/memo-api/attributes";
 import {Position} from "data-access/memo-api/dictionaries";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {VoidComponent} from "solid-js";
 

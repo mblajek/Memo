@@ -9,7 +9,7 @@ import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";

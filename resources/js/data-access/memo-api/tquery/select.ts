@@ -1,10 +1,10 @@
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
 import {Signal, createMemo, createSignal, on} from "solid-js";
+import {useDictionaries} from "../dictionaries_and_attributes_context";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
 import {ColumnName, DataRequest, Sort} from "./types";
-import {useDictionaries} from "../dictionaries";
 
 interface RequestController {
   filterText: Signal<string>;
