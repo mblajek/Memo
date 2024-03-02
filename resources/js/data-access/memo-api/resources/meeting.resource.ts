@@ -17,7 +17,6 @@ export interface MeetingResource extends CreatedUpdatedResource {
   readonly durationMinutes: number;
   readonly statusDictId: string;
   readonly isRemote: boolean;
-  readonly attendants: readonly MeetingAttendantResource[];
   readonly staff: readonly MeetingAttendantResource[];
   readonly clients: readonly MeetingAttendantResource[];
   readonly resources: readonly MeetingResourceResource[];
@@ -26,11 +25,8 @@ export interface MeetingResource extends CreatedUpdatedResource {
 
 export interface MeetingAttendantResource {
   readonly userId: string;
-  readonly attendanceType: AttendanceType;
   readonly attendanceStatusDictId: string;
 }
-
-export type AttendanceType = "staff" | "client";
 
 export interface MeetingResourceResource {
   readonly resourceDictId: string;
