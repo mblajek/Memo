@@ -35,6 +35,7 @@ export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof COLUMNS)[n
 
 export interface TQMeetingAttendantResource extends MeetingAttendantResource {
   readonly name: string;
+  readonly attendanceTypeDictId: string;
 }
 
 /**

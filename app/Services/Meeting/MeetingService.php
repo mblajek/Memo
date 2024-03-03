@@ -95,7 +95,7 @@ class MeetingService
         }
         foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
-            $attendant->attendance_type = AttendanceType::Staff;
+            $attendant->attendance_type_dict_id = AttendanceType::Staff->value;
             $attendants[$attendant->user_id] = $attendant;
         }
         return $attendants;
@@ -111,7 +111,7 @@ class MeetingService
         }
         foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
-            $attendant->attendance_type = AttendanceType::Client;
+            $attendant->attendance_type_dict_id = AttendanceType::Client->value;
             $attendants[$attendant->user_id] = $attendant;
         }
         return $attendants;

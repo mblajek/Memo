@@ -19,6 +19,7 @@ export function useFixedDictionaries() {
     meetingCategoryDict: tDict("meetingCategory", ["other", "system"]),
     meetingTypeDict: tDict("meetingType", ["work_time", "leave_time", "other"]),
     meetingStatusDict: tDict("meetingStatus", ["planned", "completed", "cancelled"]),
+    attendanceTypeDict: tDict("attendanceType", ["staff", "client"]),
     attendanceStatusDict: tDict("attendanceStatus", ["ok", "cancelled", "no_show", "late_present", "too_late"]),
   };
 }

@@ -33,6 +33,11 @@ meetingStatus:
 meetingResource:
   _name: "zasób"
 
+attendanceType:
+  _name: "typ uczestnika"
+  staff: "$t(models.staff._name)"
+  client: "$t(models.client._name)"
+
 attendanceStatus:
   _name: "status obecności"
   ok: "\u2714" # check mark

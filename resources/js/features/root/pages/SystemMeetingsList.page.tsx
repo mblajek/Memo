@@ -28,6 +28,7 @@ export default (() => {
         "time",
         "duration",
         "isInSeries",
+        "seriesType",
         "category",
         "type",
         "staff",

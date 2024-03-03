@@ -2,15 +2,10 @@ import {createMutation} from "@tanstack/solid-query";
 import {Button, DeleteButton} from "components/ui/Button";
 import {capitalizeString} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
-import {AUTO_SIZE_COLUMN_DEFS, FilterIconButton, Header, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
+import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
-import filterStyle from "components/ui/Table/tquery_filters/ColumnFilterController.module.scss";
-import {useFilterFieldNames} from "components/ui/Table/tquery_filters/filter_field_names";
-import {makeSelectItem} from "components/ui/Table/tquery_filters/select_items";
-import {FilterControl} from "components/ui/Table/tquery_filters/types";
 import {createConfirmation} from "components/ui/confirmation";
-import {Select} from "components/ui/form/Select";
 import {ACTION_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL, EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
@@ -20,14 +15,12 @@ import {objectRecursiveMerge} from "components/utils/object_merge";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {AttendanceType} from "data-access/memo-api/resources/meeting.resource";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
-import {StringColumnFilter} from "data-access/memo-api/tquery/types";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
-import {Index, ParentComponent, Show, VoidComponent, createComputed, createSignal, splitProps} from "solid-js";
+import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 import toast from "solid-toast";
 import {UserLink} from "../facility-users/UserLink";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
@@ -36,6 +29,7 @@ import {createMeetingModal} from "./meeting_modal";
 
 export function useMeetingTableColumns() {
   const t = useLangFunc();
+  const {attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
   const confirmation = createConfirmation();
   const deleteMeetingMutation = createMutation(() => ({
@@ -67,82 +61,6 @@ export function useMeetingTableColumns() {
     v.map((u) => u.name).join(", "),
   );
 
-  function attendanceTypeColumn() {
-    function attendanceTypeName(attendanceType: AttendanceType) {
-      return t(`models.${attendanceType}._name`);
-    }
-    // TODO: This is ugly code repetition, replace it with a better solution!
-    const FilterControl: FilterControl<StringColumnFilter> = (props) => {
-      const filterFieldNames = useFilterFieldNames();
-      const [value, setValue] = createSignal("-");
-      createComputed(() => {
-        if (!props.filter) {
-          setValue("-");
-        }
-        // Ignore other external filter changes.
-      });
-      function buildFilter(): StringColumnFilter | undefined {
-        return value() === "-"
-          ? undefined
-          : {type: "column", column: "attendant.attendanceType", op: "=", val: value()};
-      }
-      return (
-        <div class={filterStyle.filterLine}>
-          <div class="flex-grow flex flex-col items-stretch">
-            <Select
-              name={filterFieldNames.get(`val_${props.name}`)}
-              items={[
-                makeSelectItem({value: "-"}),
-                ...(["staff", "client"] as const).map((t) => ({value: t, label: () => attendanceTypeName(t)})),
-              ]}
-              value={value()}
-              onValueChange={(value) => {
-                setValue(value!);
-                props.setFilter(buildFilter());
-              }}
-              nullable={false}
-              small
-            />
-          </div>
-        </div>
-      );
-    };
-    return {
-      name: "attendant.attendanceType",
-      columnDef: {
-        cell: cellFunc<AttendanceType>((props) => (
-          <PaddedCell>
-            <ShowCellVal v={props.v}>{(v) => attendanceTypeName(v())}</ShowCellVal>
-          </PaddedCell>
-        )),
-      },
-      header: (h) => (
-        <Header
-          ctx={h.ctx}
-          filter={
-            <div class={filterStyle.columnFilterController}>
-              <div class={filterStyle.filterMain}>
-                {
-                  <FilterControl
-                    name="attendant.attendanceType"
-                    filter={h.filter[0]() as StringColumnFilter | undefined}
-                    setFilter={h.filter[1]}
-                  />
-                }
-              </div>
-              <div>
-                <FilterIconButton isFiltering={!!h.filter[0]()} onClear={() => h.filter[1](undefined)} />
-              </div>
-            </div>
-          }
-        />
-      ),
-      metaParams: {
-        textExportCell: exportCellFunc<string, AttendanceType>((v) => attendanceTypeName(v)),
-      },
-    } satisfies PartialColumnConfig;
-  }
-
   const columns = {
     ...({
       id: {name: "id", initialVisible: false},
@@ -170,6 +88,7 @@ export function useMeetingTableColumns() {
       },
       duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
       isInSeries: {name: "isClone"},
+      seriesType: {name: "interval", initialVisible: false},
       category: {name: "categoryDictId", initialVisible: false},
       type: {name: "typeDictId"},
       status: {
@@ -209,8 +128,14 @@ export function useMeetingTableColumns() {
               <ShowCellVal v={props.v}>
                 {(v) => (
                   <>
-                    <UserLinks type="staff" users={v().filter((u) => u.attendanceType === "staff")} />
-                    <UserLinks type="clients" users={v().filter((u) => u.attendanceType === "client")} />
+                    <UserLinks
+                      type="staff"
+                      users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.staff.id)}
+                    />
+                    <UserLinks
+                      type="clients"
+                      users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.client.id)}
+                    />
                   </>
                 )}
               </ShowCellVal>
@@ -354,25 +279,27 @@ export function useMeetingTableColumns() {
       },
     } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingResource>>>),
     // Attendance tables only:
-    attendanceType: attendanceTypeColumn(),
+    attendanceType: {
+      name: "attendant.attendanceTypeDictId",
+    },
     attendant: {
       // TODO: Make this a user column filterable by TQuerySelect.
       name: "attendant.name",
-      extraDataColumns: ["attendant.userId", "attendant.attendanceType"],
+      extraDataColumns: ["attendant.userId", "attendant.attendanceTypeDictId"],
       columnDef: {
         cell: cellFunc<string>((props) => {
           const type = (): FacilityUserType | undefined => {
-            const attendanceType = props.row["attendant.attendanceType"];
+            const attendanceType = props.row["attendant.attendanceTypeDictId"];
             if (!attendanceType) {
               return undefined;
             }
             switch (attendanceType) {
-              case "staff":
+              case attendanceTypeDict()?.staff.id:
                 return "staff";
-              case "client":
+              case attendanceTypeDict()?.client.id:
                 return "clients";
               default:
-                throw new Error(`Invalid attendance type: ${props.row["attendant.attendanceType"]}`);
+                throw new Error("Invalid attendance type");
             }
           };
           return (

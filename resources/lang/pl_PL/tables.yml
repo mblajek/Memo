@@ -50,7 +50,7 @@ tables:
       staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
       clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
-      attendant.attendanceType: "typ uczestnika"
+      attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
       attendant.name: "uczestnik"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
 
