@@ -7,9 +7,9 @@ Spotkanie posiada status, który jest jedną z następujących wartości:
 - **$t(dictionary.meetingStatus.planned)** — Wizyta jest dodana do kalendarza i (zgodnie z aktualną wiedzą) ma się odbyć.
   Taki status powinny mieć tylko wizyty w przyszłości, a potem ich status powinien zostać zaktualizowany
   (zwykle zmieniony na "$t(dictionary.meetingStatus.completed)").
-- **$t(dictionary.meetingStatus.completed)**: — Wizyta się odbyła. Możliwe jest, że niektórzy z uczestników nie wzięli
+- **$t(dictionary.meetingStatus.completed)** — Wizyta się odbyła. Możliwe jest, że niektórzy z uczestników nie wzięli
   w niej udziału, co jest zaznaczone jako odpowiedni $t(models.meeting.attendanceStatusDictId) (patrz poniżej).
-- **$t(dictionary.meetingStatus.cancelled)**: — Wizyta się nie odbyła. Powód nieodbycia się wizyty jest zwykle zaznaczony
+- **$t(dictionary.meetingStatus.cancelled)** — Wizyta się nie odbyła. Powód nieodbycia się wizyty jest zwykle zaznaczony
   jako odpowiedni $t(models.meeting.attendanceStatusDictId) (patrz poniżej), ewentualnie dodatkowo w opisie wizyty.
 
 ## Uczestnicy
@@ -23,7 +23,7 @@ dowolną liczbę pracowników oraz dowolną liczbę klientów. Przykłady:
 
 ### $t(models.meeting.attendanceStatusDictId|cap) {#attendance-status}
 
-Każdy z uczestników spotkania posiada $t(models.meeting.attendanceStatusDictId). Wartości te są niezależne od siebie,
+Każdy z uczestników spotkania posiada $t(models.meeting.attendanceStatusDictId). Wartości te są niezależne od siebie
 i niezależne od statusu spotkania (chociaż pewne kombinacje mogą być mało sensowne). Objaśnienie poszczególnych wartości:
 
 - status **$t(dictionary.attendanceStatus.ok)** — Ten status oznacza brak dodatkowych informacji w odniesieniu do tego uczestnika.
@@ -51,6 +51,6 @@ i niezależne od statusu spotkania (chociaż pewne kombinacje mogą być mało s
 Brak któregoś z uczestników (status **$t(dictionary.attendanceStatus.too_late)**, **$t(dictionary.attendanceStatus.no_show)** lub
 **$t(dictionary.attendanceStatus.cancelled)**) powoduje różne konsekwencje, zależnie od typu spotkania. Przykładowo:
 
-- Brak uczestnika na spotkaniu terapii indywidyalnej oznacza, że spotkanie nie może się odbyć, i powinno mieć status **$t(dictionary.meetingStatus.cancelled)**.
+- Brak uczestnika na spotkaniu terapii indywidualnej oznacza, że spotkanie nie może się odbyć, i powinno mieć status **$t(dictionary.meetingStatus.cancelled)**.
 - Brak klienta na zajęciach grupowych albo brak pracownika na spotkaniu całego zespołu terapeutów nie powoduje potrzeby odwołania spotkania.
   Takie spotkanie może nadal mieć status **$t(dictionary.meetingStatus.planned)** lub **$t(dictionary.meetingStatus.completed)**.
