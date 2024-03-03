@@ -4,6 +4,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "ext-curl": "*",
         "ext-intl": "*",
         "ext-json": "*",
         "darkaonline/l5-swagger": "^8.5",
