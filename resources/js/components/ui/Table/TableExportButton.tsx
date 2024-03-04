@@ -211,17 +211,15 @@ export const TableExportButton: VoidComponent = () => {
                 </div>
               </div>
               <SimpleMenu>
-                <Show when={!currentPageHasAllData() && allRowsExportData()}>
-                  {(allRowsExportData) => (
-                    <Button
-                      onClick={() => {
-                        popOver().close();
-                        exportRows(allRowsExportData());
-                      }}
-                    >
-                      <ItemLabel labelKey="all_pages" count={allRowsExportData().numRows} />
-                    </Button>
-                  )}
+                <Show when={allRowsExportData() && !currentPageHasAllData()}>
+                  <Button
+                    onClick={() => {
+                      popOver().close();
+                      exportRows(allRowsExportData()!);
+                    }}
+                  >
+                    <ItemLabel labelKey="all_pages" count={allRowsExportData()!.numRows} />
+                  </Button>
                 </Show>
                 <Button
                   onClick={() => {
