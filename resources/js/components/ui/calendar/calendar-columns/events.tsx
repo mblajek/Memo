@@ -113,6 +113,8 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     </Show>
   );
 
+  const Separator: VoidComponent = () => <hr class="-mx-1 border-black border-opacity-30" />;
+
   return (
     <>
       <ButtonLike
@@ -150,15 +152,22 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
                   {(client) => <AttendantListItem type="clients" attendant={client} />}
                 </For>
               </ul>
-              <hr class="-mx-1 border-black border-opacity-30" />
+              <Separator />
             </Show>
             <MeetingType typeId={props.meeting.typeDictId} />
             <MeetingStatusTags meeting={props.meeting} />
-            <RichTextView
-              class="max-h-20 overflow-y-clip !overflow-x-visible"
-              text={props.meeting.notes || undefined}
-            />
+            <Show when={props.meeting.notes}>
+              <Separator />
+              <RichTextView
+                class={cx(
+                  "overflow-y-clip !overflow-x-visible",
+                  props.meeting.resources.length ? "max-h-20" : undefined,
+                )}
+                text={props.meeting.notes!}
+              />
+            </Show>
             <Show when={props.meeting.resources.length}>
+              <Separator />
               <div>{t("parenthesised", {text: resources()})}</div>
             </Show>
           </div>
