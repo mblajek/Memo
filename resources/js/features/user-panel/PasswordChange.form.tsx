@@ -4,10 +4,10 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {useLangFunc} from "components/utils";
+import {toastSuccess} from "components/utils/toast";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent} from "solid-js";
-import toast from "solid-toast";
 import {z} from "zod";
 
 const getSchema = () =>
@@ -42,7 +42,7 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
       // For better integration with password managers.
       // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
       history.replaceState({passwordChanged: true}, "");
-      toast.success(t("forms.password_change.success"));
+      toastSuccess(t("forms.password_change.success"));
       props.onSuccess?.();
     },
     meta: {isFormSubmit: true},

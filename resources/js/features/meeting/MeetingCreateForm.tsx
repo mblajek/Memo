@@ -1,13 +1,13 @@
 import {createMutation} from "@tanstack/solid-query";
 import {BigSpinner} from "components/ui/Spinner";
 import {useLangFunc} from "components/utils";
+import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {Show, VoidComponent} from "solid-js";
-import toast from "solid-toast";
 import {getAttendantsValuesForCreate, useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, getResourceValuesForCreate} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
@@ -38,7 +38,7 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
     const meeting = transformFormValues(values);
     const {id} = (await meetingMutation.mutateAsync(meeting)).data.data;
     if (props.showToast ?? true) {
-      toast.success(t("forms.meeting_create.success"));
+      toastSuccess(t("forms.meeting_create.success"));
     }
     props.onSuccess?.({...(meeting as Required<MeetingResourceForCreate>), id});
     // Important: Invalidation should happen after calling onSuccess which typically closes the form.

@@ -1,11 +1,11 @@
 import {createMutation} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils";
+import {toastSuccess} from "components/utils/toast";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
-import toast from "solid-toast";
 import {
   MeetingSeriesForm,
   MeetingSeriesFormType,
@@ -38,7 +38,7 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
     }
     const ids = (await meetingMutation.mutateAsync({meetingId: props.startMeeting.id, request: params})).data.data.ids;
     if (props.showToast ?? true) {
-      toast.success(t("forms.meeting_series_create.success"));
+      toastSuccess(t("forms.meeting_series_create.success"));
     }
     props.onSuccess?.(
       {

@@ -62,7 +62,7 @@ render(() => {
           <Toaster
             position="bottom-right"
             toastOptions={{
-              className: "mr-4",
+              className: "mr-4 !pr-0",
               duration: TOAST_DURATION_SECS * 1000,
             }}
           />

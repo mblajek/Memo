@@ -14,7 +14,7 @@ import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, debouncedAccessor} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {objectRecursiveMerge} from "components/utils/object_merge";
-import {toastMessages} from "components/utils/toast";
+import {ToastMessages, toastError} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {getAllRowsExportIterator} from "data-access/memo-api/tquery/export";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
@@ -44,7 +44,6 @@ import {
   createSignal,
   onMount,
 } from "solid-js";
-import toast from "solid-toast";
 import {
   DisplayMode,
   Header,
@@ -394,7 +393,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     const errors = filterErrors()?.values();
     if (errors) {
       // TODO: Consider showing the errors in the table header.
-      toastMessages([...errors], toast.error);
+      toastError(<ToastMessages messages={[...errors]} />);
     }
   });
   const defaultColumnVisibility = createMemo(() => getDefaultColumnVisibility(columnsConfig()));

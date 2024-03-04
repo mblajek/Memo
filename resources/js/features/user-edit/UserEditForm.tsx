@@ -2,11 +2,11 @@ import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
+import {toastSuccess} from "components/utils/toast";
 import {Admin, User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
-import toast from "solid-toast";
 import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
 
@@ -77,7 +77,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
     // them fails, otherwise invalidation might happen before the final changes.
     try {
       await Promise.allSettled(membersUpdater.getUpdatePromises(oldUser, values.members));
-      toast.success(t("forms.user_edit.success"));
+      toastSuccess(t("forms.user_edit.success"));
       props.onSuccess?.();
     } finally {
       // Invalidate the user even after partial success (e.g. only user edit succeeded), or when there were

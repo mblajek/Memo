@@ -1,11 +1,11 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
+import {toastSuccess} from "components/utils/toast";
 import {Admin, System} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
-import toast from "solid-toast";
 import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
 
 interface FormParams {
@@ -37,7 +37,7 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
       url: values.url,
     });
     props.onSuccess?.();
-    toast.success(t("forms.user_edit.success"));
+    toastSuccess(t("forms.user_edit.success"));
     // Important: Invalidation should happen after calling onSuccess which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.

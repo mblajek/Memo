@@ -10,6 +10,7 @@ import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {MAX_DAY_MINUTE, dayMinuteToTimeInput} from "components/utils/day_minute_util";
 import {skipUndefinedValues} from "components/utils/object_merge";
+import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -18,7 +19,6 @@ import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.re
 import {Api} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
-import toast from "solid-toast";
 import {getAttendantsValuesForEdit, useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, getResourceValuesForEdit} from "./MeetingForm";
 import {MeetingChangeSuccessData} from "./meeting_change_success_data";
@@ -67,7 +67,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     };
     await meetingMutation.mutateAsync(meetingPatch);
     if (props.showToast ?? true) {
-      toast.success(t("forms.meeting_edit.success"));
+      toastSuccess(t("forms.meeting_edit.success"));
     }
     props.onEdited?.({...origMeeting, ...skipUndefinedValues(meetingPatch)});
     // Important: Invalidation should happen after calling onEdited which typically closes the form.
@@ -79,7 +79,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   async function deleteMeeting() {
     await deleteMeetingMutation.mutateAsync(props.meetingId);
     if (props.showToast ?? true) {
-      toast.success(t("forms.meeting_delete.success"));
+      toastSuccess(t("forms.meeting_delete.success"));
     }
     props.onDeleted?.(props.meetingId);
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.

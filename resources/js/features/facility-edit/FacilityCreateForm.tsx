@@ -2,10 +2,10 @@ import {createMutation} from "@tanstack/solid-query";
 import {FormType} from "components/felte-form/FelteForm";
 import {trimInput} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
+import {toastSuccess} from "components/utils/toast";
 import {Admin} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent, createComputed} from "solid-js";
-import toast from "solid-toast";
 import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
 
 interface Props {
@@ -46,7 +46,7 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
       name: values.name,
       url: values.url,
     });
-    toast.success(t("forms.facility_create.success"));
+    toastSuccess(t("forms.facility_create.success"));
     props.onSuccess?.();
     // Important: Invalidation should happen after calling onSuccess which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,

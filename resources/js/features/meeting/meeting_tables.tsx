@@ -12,6 +12,7 @@ import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
 import {objectRecursiveMerge} from "components/utils/object_merge";
+import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -21,7 +22,6 @@ import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
 import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
-import toast from "solid-toast";
 import {UserLink} from "../facility-users/UserLink";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
@@ -38,7 +38,7 @@ export function useMeetingTableColumns() {
   const invalidate = useInvalidator();
   async function deleteMeeting(meetingId: string) {
     await deleteMeetingMutation.mutateAsync(meetingId);
-    toast.success(t("forms.meeting_delete.success"));
+    toastSuccess(t("forms.meeting_delete.success"));
     invalidate.facility.meetings();
   }
 

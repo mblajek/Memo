@@ -4,6 +4,7 @@ import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components
 import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
+import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
@@ -34,7 +35,6 @@ import {
   runWithOwner,
   splitProps,
 } from "solid-js";
-import toast from "solid-toast";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
@@ -465,8 +465,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       blinkMeeting(id);
     }
     const meetingDate = DateTime.fromISO(meeting.date);
-    toast.success(
-      runWithOwner(owner, () => (
+    runWithOwner(owner, () =>
+      toastSuccess(
         <div class="flex gap-2 items-baseline">
           <span>{message}</span>
           <Button
@@ -492,8 +492,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           >
             {t("actions.show")}
           </Button>
-        </div>
-      )),
+        </div>,
+      ),
     );
   }
 
@@ -576,7 +576,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                         onCreated: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
                         onCloned: (meeting, otherMeetingIds) =>
                           meetingChange(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
-                        onDeleted: () => toast.success(t("forms.meeting_delete.success")),
+                        onDeleted: () => toastSuccess(t("forms.meeting_delete.success")),
                         showToast: false,
                       })
                     }

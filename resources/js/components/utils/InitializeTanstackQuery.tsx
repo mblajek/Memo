@@ -16,10 +16,9 @@ import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
 import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
 import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
-import toast from "solid-toast";
 import {useLangFunc} from ".";
 import {MemoLoader} from "../ui/MemoLoader";
-import {toastMessages} from "./toast";
+import {ToastMessages, toastError} from "./toast";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
@@ -85,11 +84,13 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
           }
         }
         translationsLoadedPromise.then(() => {
-          const messages = errorsToShow.map((e) => translateError(e, t));
-          for (const msg of messages) {
-            console.warn(`Error toast shown: ${msg}`);
+          if (errorsToShow.length) {
+            const messages = errorsToShow.map((e) => translateError(e, t));
+            for (const msg of messages) {
+              console.warn(`Error toast shown: ${msg}`);
+            }
+            toastError(<ToastMessages messages={messages} />);
           }
-          toastMessages(messages, toast.error);
         });
       }
     }

@@ -8,10 +8,10 @@ import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
 import {Context, JSX, createContext, onCleanup, onMount, splitProps, useContext} from "solid-js";
-import toast from "solid-toast";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
+import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 
 type FormContextValue<T extends Obj = Obj> = {
@@ -172,7 +172,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         if (!(errorResp instanceof Error)) {
           errorResp = new Error(`Form error: ${JSON.stringify(errorResp)}`);
         }
-        toast.error(t("exception.form_submit"));
+        toastError(t("exception.form_submit"));
         throw errorResp;
       }
     },

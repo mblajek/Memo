@@ -1,10 +1,10 @@
 import {RowData} from "@tanstack/solid-table";
 import {useLangFunc} from "components/utils";
 import {exportCSV} from "components/utils/csv_exporter";
+import {toastError, toastSuccess} from "components/utils/toast";
 import {DateTime} from "luxon";
 import {AiOutlineFileExcel} from "solid-icons/ai";
 import {VoidComponent, createSignal} from "solid-js";
-import toast from "solid-toast";
 import {Button} from "../Button";
 import {Modal} from "../Modal";
 import {PopOver} from "../PopOver";
@@ -59,11 +59,11 @@ export const TableExportButton: VoidComponent = () => {
         excelMode: true,
       });
       if (result === "done") {
-        toast.success(t("tables.export.success"));
+        toastSuccess(t("tables.export.success"));
       }
     } catch (e) {
       console.error("CSV export error:", e);
-      toast.error(t(e === "aborted" ? "tables.export.aborted" : "tables.export.error"));
+      toastError(t(e === "aborted" ? "tables.export.aborted" : "tables.export.error"));
     } finally {
       setExportProgress(undefined);
     }
