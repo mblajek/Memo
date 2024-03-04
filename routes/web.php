@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/docs/{branch}/{path}', function (string $branch, string $path) {
-    $data = Cache::remember("docs/$branch/$path", 150 /* 1.5m */, function () use ($branch, $path): int|array {
+    $data = Cache::remember("docs/$branch/$path", 150 /* 2.5m */, function () use ($branch, $path): int|array {
         $response = Http::get(str_replace('{branch}', $branch, env('DOCS_URL') . $path));
         return ($response->status() === 200) ? [$response->header('Content-Type'), $response->body()] : 404;
     });
