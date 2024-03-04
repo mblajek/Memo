@@ -8,6 +8,7 @@ Strona pomocy dla systemu Memo.
 
 - [Tekst z tagami](rich-text)
 - [$t(models.meeting._name|cap)](meeting)
+- [Eksport tabel](table-export)
 
 ## Linki zewnętrzne
 
