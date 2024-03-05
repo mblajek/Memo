@@ -144,7 +144,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 style={{
                   width: "14px",
                   height: "14px",
-                  ...coloringToStyle(coloring),
+                  ...coloringToStyle(coloring, {part: "colorMarker"}),
                 }}
               />
             </div>
