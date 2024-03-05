@@ -16,7 +16,7 @@ import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, createMemo
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {ThemeIcon, useThemeControl} from "../theme_control";
 
-interface WindowWithLoginDeveloper {
+interface WindowWithDeveloperLogin {
   developerLogin(developer: boolean): void;
 }
 
@@ -49,19 +49,22 @@ export const UserInfo: VoidComponent = () => {
   const isGlobalAdmin = createMemo(() => statusQuery.data?.permissions.globalAdmin);
   createEffect(() => {
     if (isGlobalAdmin()) {
-      // eslint-disable-next-line no-console
-      console.debug("Call developerLogin(true) to gain developer permission.");
-      (window as unknown as WindowWithLoginDeveloper).developerLogin = (developer) => {
-        (async () => {
-          if (typeof developer !== "boolean") {
-            throw new Error("Expected boolean argument");
-          }
-          await developerLogin.mutateAsync({developer});
-          toggleDEV(developer);
-          // eslint-disable-next-line no-console
-          console.debug(developer ? "Developer login success." : "Developer logout success.");
-        })();
-      };
+      const windowWithDeveloperLogin = window as unknown as WindowWithDeveloperLogin;
+      if (!windowWithDeveloperLogin.developerLogin) {
+        // eslint-disable-next-line no-console
+        console.debug("Call developerLogin(true) to gain developer permission.");
+        windowWithDeveloperLogin.developerLogin = (developer) => {
+          (async () => {
+            if (typeof developer !== "boolean") {
+              throw new Error("Expected boolean argument");
+            }
+            await developerLogin.mutateAsync({developer});
+            toggleDEV(developer);
+            // eslint-disable-next-line no-console
+            console.debug(developer ? "Developer login success." : "Developer logout success.");
+          })();
+        };
+      }
     }
   });
 
