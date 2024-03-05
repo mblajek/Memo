@@ -17,13 +17,12 @@ export function useInvalidator(queryClient = useQueryClient()) {
   }
   return {
     everything,
-    everythingNoLoop: () => {
+    everythingThrottled: () => {
       if (
         !lastInvalidateEverythingTime ||
-        DateTime.now().toMillis() - lastInvalidateEverythingTime.toMillis() > INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS
-      ) {
+        Date.now() - lastInvalidateEverythingTime.toMillis() > INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS
+      )
         everything();
-      }
     },
     // Shared:
     users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
