@@ -67,11 +67,17 @@
   }
 
   ul {
-    @apply pl-4 list-disc marg;
+    @apply pl-6 marg;
+    list-style-type: disc;
+  }
+
+  ul ul,
+  ol ul {
+    list-style-type: circle;
   }
 
   ol {
-    @apply pl-4 list-decimal marg;
+    @apply pl-6 list-decimal marg;
   }
 
   strong {

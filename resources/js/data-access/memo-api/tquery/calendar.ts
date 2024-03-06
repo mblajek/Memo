@@ -81,14 +81,18 @@ export function createCalendarRequestCreator({
         return undefined;
       }
       const staffIds = staff?.();
-      return (
-        staffIds && {
-          type: "column",
-          column: "staff.*.userId",
-          op: "has_any",
-          val: staffIds.toSorted(),
-        }
-      );
+      const hasStaffFilter: FilterH | undefined = staffIds && {
+        type: "column",
+        column: "staff.*.userId",
+        op: "has_any",
+        val: staffIds.toSorted(),
+      };
+      const isFacilityWide: FilterH = {type: "column", column: "staff.count", op: "=", val: 0};
+      return {
+        type: "op",
+        op: "|",
+        val: [hasStaffFilter, isFacilityWide].filter(NON_NULLABLE),
+      };
     };
     const request = createMemo((): DataRequest | undefined => {
       if (!schema()) {

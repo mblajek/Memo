@@ -6,16 +6,18 @@ import {cx} from "./classnames";
 
 function showToast(toastFunction: ToastHandler, message: JSX.Element, options?: ToastOptions) {
   const id = toastFunction(
-    <div class="flex gap-2">
-      {message}
-      <Button
-        // TODO: Use translated text as the label. This is hard because we can't use useLangFunc here.
-        aria-label="close"
-        onClick={() => toast.dismiss(id)}
-      >
-        <VsClose size="24" class="text-black" />
-      </Button>
-    </div>,
+    () => (
+      <div class="flex gap-2">
+        {message}
+        <Button
+          // TODO: Use translated text as the label. This is hard because we can't use useLangFunc here.
+          aria-label="close"
+          onClick={() => toast.dismiss(id)}
+        >
+          <VsClose size="24" class="text-black" />
+        </Button>
+      </div>
+    ),
     options,
   );
   return id;
