@@ -7,10 +7,11 @@ use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Models\Member;
-use App\Services\Member\CreateMemberService;
+use App\Rules\Valid;
 use App\Services\Member\UpdateMemberService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 use Throwable;
@@ -28,11 +29,13 @@ class AdminMemberController extends ApiController
         summary: 'Create member',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['userId', 'facilityId' , 'hasFacilityAdmin'],
+                required: ['userId', 'facilityId', 'hasFacilityAdmin', 'isFacilityClient', 'isFacilityStaff'],
                 properties: [
                     new OA\Property(property: 'userId', type: 'string', example: 'UUID'),
                     new OA\Property(property: 'facilityId', type: 'string', example: 'UUID'),
                     new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: true),
+                    new OA\Property(property: 'isFacilityClient', type: 'bool', example: true),
+                    new OA\Property(property: 'isFacilityStaff', type: 'bool', example: true),
                 ]
             )
         ),
@@ -43,23 +46,21 @@ class AdminMemberController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )] /** @throws Throwable|ApiException */
-    public function post(Request $request, CreateMemberService $service): JsonResponse
+    public function post(Request $request, UpdateMemberService $service): JsonResponse
     {
-        $data = $this->validate([
-            'user_id' => [
-                'required',
-                'uuid',
-                'exists:users,id',
-                Rule::unique('members')->where(function ($query) use ($request) {
-                    return $query->where('user_id', $request['user_id'])
-                        ->where('facility_id', $request['facility_id']);
-                }),
-            ],
-            'facility_id' => 'required|uuid|exists:facilities,id',
-            'has_facility_admin' => 'required|bool',
-        ]);
+        $data = $this->validate(
+            [
+                'user_id' => [
+                    ...Valid::uuid(),
+                    Rule::unique('members')->where(fn($query) => //
+                    $query->where('user_id', $request['user_id'])->where('facility_id', $request['facility_id'])),
+                ],
+            ] + Member::getInsertValidator(
+                ['facility_id', 'has_facility_admin', 'is_facility_client', 'is_facility_staff']
+            )
+        );
 
-        $result = $service->handle($data);
+        $result = $service->create($data);
 
         return new JsonResponse(data: ['data' => ['id' => $result]], status: 201);
     }
@@ -71,9 +72,9 @@ class AdminMemberController extends ApiController
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'userId', type: 'string', example: 'UUID'),
-                    new OA\Property(property: 'facilityId', type: 'string', example: 'UUID'),
                     new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: true),
+                    new OA\Property(property: 'isFacilityClient', type: 'bool', example: true),
+                    new OA\Property(property: 'isFacilityStaff', type: 'bool', example: true),
                 ]
             )
         ),
@@ -85,7 +86,8 @@ class AdminMemberController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )],
+            ),
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),
             new OA\Response(response: 400, description: 'Bad Request'),
@@ -94,21 +96,11 @@ class AdminMemberController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function patch(Member $member, Request $request, UpdateMemberService $service): JsonResponse
     {
-        $data = $this->validate([
-            'user_id' => [
-                'sometimes',
-                'uuid',
-                'exists:users,id',
-                Rule::unique('members')->where(function ($query) use ($request) {
-                    return $query->where('user_id', $request['user_id'])
-                        ->where('facility_id', $request['facility_id']);
-                })->ignore($member->id),
-            ],
-            'facility_id' => 'sometimes|required|uuid|exists:facilities,id',
-            'has_facility_admin' => 'sometimes|required|bool',
-        ]);
+        $data = $this->validate(
+            Member::getPatchValidator(['has_facility_admin', 'is_facility_client', 'is_facility_staff'], $member)
+        );
 
-        $service->handle($member, $data);
+        $service->update($member, $data);
 
         return new JsonResponse();
     }
@@ -125,16 +117,21 @@ class AdminMemberController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )],
+            ),
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Deleted'),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
-    )] /** @throws Throwable|ApiException */
+    )] /** @throws Throwable */
     public function delete(Member $member): JsonResponse
     {
-        $member->deleteOrFail();
+        DB::transaction(function () use ($member) {
+            $member->client()?->delete();
+            $member->staffMember()?->delete();
+            $member->delete();
+        });
 
         return new JsonResponse();
     }

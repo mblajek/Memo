@@ -24,32 +24,25 @@ enum TqFilterOperator: string
     case regexp = '/v/';
     // array
     case in = 'in';
-    case all = 'all';
-    case any = 'any';
+    case has = 'has';
+    case has_all = 'has_all';
+    case has_any = 'has_any';
+    case has_only = 'has_only';
 
-    /** @var TqFilterOperator[] */
-    public const GROUP = [self::and, self::or];
-    /** @var TqFilterOperator[] */
-    public const CMP = [self::lt, self::le, self::gt, self::ge];
-    /** @var TqFilterOperator[] */
-    public const LIKE = [self::lv, self::pv, self::vp, self::pvp, self::regexp];
-    /** @var TqFilterOperator[] */
-    public const ARR = [self::in, self::all, self::any];
-    /** @var TqFilterOperator[] */
-    public const TRIMMED = [self::eq, self::in, self::all, self::any];
+    /** @var self[] */
+    public const array GROUP = [self::and, self::or];
+    /** @var self[] */
+    public const array CMP = [self::lt, self::le, self::gt, self::ge];
+    /** @var self[] */
+    public const array LIKE = [self::lv, self::pv, self::vp, self::pvp, self::regexp];
+    /** @var self[] */
+    public const array BINARY = [self::regexp];
+    /** @var self[] - filter "val" is list */
+    public const array LIST_FILTER = [self::in, self::has_all, self::has_any, self::has_only];
+    /** @var self[] - db column is list */
+    public const array LIST_COLUMN = [self::has, self::has_all, self::has_any, self::has_only];
 
-    public function prepareValue(bool|int|string|array|null $value): bool|int|string|array|null
-    {
-        if ($this === self::pv || $this === self::vp || $this === self::pvp) {
-            return (($this === self::pv || $this === self::pvp) ? '%' : '')
-                . (is_string($value) ? str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
-                    : (throw FatalExceptionFactory::tquery()))
-                . (($this === self::vp || $this === self::pvp) ? '%' : '');
-        }
-        return $value;
-    }
-
-    public function sqlPrefix(): ?string
+    public function sqlPrefix(): string
     {
         return match ($this) {
             self::regexp => 'binary',
@@ -57,7 +50,7 @@ enum TqFilterOperator: string
         };
     }
 
-    public function sqlOperator(): ?string
+    public function sqlOperator(): string
     {
         return match ($this) {
             self::eq => '=',
@@ -69,9 +62,20 @@ enum TqFilterOperator: string
             self::lv, self::pv, self::vp, self::pvp => 'like',
             self::regexp => 'regexp',
             self::in => 'in',
-            self::all => throw new \Exception('To be implemented'),
-            self::any => throw new \Exception('To be implemented'),
-            default => FatalExceptionFactory::tquery(),
+            default => FatalExceptionFactory::tquery(['operator' => $this->value])->throw(),
         };
+    }
+
+    public function prepareIfLikeValue(bool|int|string|array $value): bool|int|string|array
+    {
+        if (!in_array($this, [self::pv, self::vp, self::pvp])) {
+            return $value;
+        }
+        if (!is_string($value)) {
+            throw FatalExceptionFactory::tquery();
+        }
+        return (($this === self::pv || $this === self::pvp) ? '%' : '')
+            . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $value)
+            . (($this === self::vp || $this === self::pvp) ? '%' : '');
     }
 }

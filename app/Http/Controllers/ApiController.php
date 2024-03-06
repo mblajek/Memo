@@ -8,6 +8,7 @@ use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObject;
 use App\Models\Facility;
 use App\Models\User;
+use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -27,9 +28,10 @@ abstract class ApiController extends Controller
         $this->initPermissions();
     }
 
-    protected function validate(array $rules)
+    protected function validate(array $rules): array
     {
-        return $this->request->validate($rules + array_fill_keys(['dryRun', 'dry_run'], 'sometimes|declined'));
+        Valid::reset();
+        return $this->request->validate($rules + ['dry_run' => Valid::bool(['declined'], sometimes: true)]);
     }
 
     public function getFacilityOrFail(): Facility
@@ -53,11 +55,12 @@ abstract class ApiController extends Controller
     protected function getPermissionObject(): PermissionObject
     {
         if (empty($this->permissionObject)) {
-            $this->permissionObject = $this->request->attributes->get(PermissionMiddleware::PERMISSIONS_KEY);
+            $this->permissionObject = PermissionMiddleware::permissions();
         }
         return $this->permissionObject;
     }
 
+    /** Require permission in initPermissions() */
     protected function permissionOneOf(Permission ...$permissions): ControllerMiddlewareOptions
     {
         return $this->middleware(
@@ -69,6 +72,7 @@ abstract class ApiController extends Controller
     protected function getRequestIn(): array
     {
         if (!isset($this->requestIn)) {
+            // no use of Valid rule generator to keep this fast as possible
             $in = $this->request->validate(['in' => 'nullable|string|lowercase'])['in'] ?? null;
             if ($in) {
                 $inArr = explode(',', $in);

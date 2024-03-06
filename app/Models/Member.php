@@ -3,28 +3,25 @@
 namespace App\Models;
 
 use App\Models\QueryBuilders\MemberBuilder;
-use App\Utils\Uuid\UuidTrait;
-use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasValidator;
+use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string id
  * @property string user_id
  * @property string facility_id
  * @property ?string staff_member_id
  * @property ?string client_id
  * @property ?string facility_admin_grant_id
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
  * @property-read Timetable $timetable
  * @method static MemberBuilder query()
  */
 class Member extends Model
 {
-    use HasFactory;
-    use UuidTrait;
+    use BaseModel;
+    use HasValidator;
 
     protected $table = 'members';
 
@@ -36,10 +33,15 @@ class Member extends Model
         'facility_admin_grant_id',
     ];
 
-    protected $casts = [
-        'created_at' => 'immutable_datetime',
-        'updated_at' => 'immutable_datetime',
-    ];
+    protected $casts = self::BASE_CASTS;
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'facility_id' => Valid::uuid(['exists:facilities,id']),
+            'has_facility_admin', 'is_facility_client', 'is_facility_staff' => Valid::bool(),
+        };
+    }
 
     public function user(): BelongsTo
     {

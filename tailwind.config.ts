@@ -1,11 +1,27 @@
 import type {Config} from "tailwindcss";
 
 const APP_COLORS = {
+  //  A bright blue color used for various active elements on page.
   "memo-active": "#06b6d4",
+  // A pale blue-grey color for highlighting hovered areas of active elements by setting their background color.
+  // Not necessarily good for hovered buttons etc.
+  "hover": "#e6f0f7",
+  // A light blue color for currently selected areas of active elements.
+  "select": "#b7e8f6",
+  // A light grey color for the background of disabled elements.
+  "disabled": "#ece8e8",
+  // A grey color for the border of input elements.
+  "input-border": "#b0b0b0",
+  // A grey text for displaying additional information.
+  "grey-text": "#566272",
 };
 
 const Z_INDEX = {
   modal: "1000",
+  // Higher than modal, because a dropdown on the main page will normally close when opening a modal,
+  // and dropdowns on modals need to be on top of it.
+  // TODO: Consider doing this better.
+  dropdown: "1100",
   fullScreenLoader: "2000",
 };
 
@@ -19,9 +35,21 @@ export default {
       },
       colors: APP_COLORS,
       zIndex: Z_INDEX,
+      minHeight: {
+        "big-input": "2.5rem",
+        "small-input": "1.8rem",
+      },
+      fontWeight: {
+        "weight-medium": "500",
+      },
+      listStyleType: {
+        // Reduce spacing between the disc and the text when using list-disc.
+        disc: "'⦁ '",
+      },
     },
     fontFamily: {
       roboto: "Roboto",
     },
   },
+  darkMode: "class",
 } satisfies Config;

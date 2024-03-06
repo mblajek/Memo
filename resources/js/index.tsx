@@ -3,21 +3,23 @@ import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
 import {Router} from "@solidjs/router";
 import {InitializeTanstackQuery} from "components/utils";
-import i18next from "i18next";
-import I18NextHttpBackend from "i18next-http-backend";
 import {Settings} from "luxon";
-import {Show, createSignal} from "solid-js";
-import {render} from "solid-js/web";
+import {DEV, ErrorBoundary, Show} from "solid-js";
+import {DelegatedEvents, render} from "solid-js/web";
 import {Toaster} from "solid-toast";
 import App from "./App";
-import {LoaderInPortal, MemoLoader} from "./components/ui";
+import {FatalError} from "./FatalError";
+import {AppContextProvider} from "./app_context";
+import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
+import {GlobalPageElements} from "./components/utils/GlobalPageElements";
+import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
 
 const root = document.getElementById("root");
 
 if (!(root instanceof HTMLElement)) throw new Error("Root element not found.");
 
-const TOAST_DURATION_SECS = 8;
+const TOAST_DURATION_SECS = 10;
 
 Settings.throwOnInvalid = true;
 declare module "luxon" {
@@ -26,17 +28,17 @@ declare module "luxon" {
   }
 }
 
-render(() => {
-  const [transLoaded, setTransLoaded] = createSignal(false);
-  i18next.use(I18NextHttpBackend).on("loaded", () => setTransLoaded(true));
+// Allow stopping propagation of events (see https://github.com/solidjs/solid/issues/1786#issuecomment-1694589801).
+DelegatedEvents.clear();
 
+render(() => {
   return (
     <TransProvider
       options={{
         backend: {
           loadPath: "/api/v1/system/translation/{{lng}}/list",
         },
-        debug: true,
+        debug: !!DEV,
         fallbackLng: false,
         initImmediate: false,
         lng: "pl",
@@ -45,26 +47,36 @@ render(() => {
         pluralSeparator: "__",
       }}
     >
-      <Show when={!transLoaded()}>
+      <Show when={!translationsLoaded()}>
         {/* Show the loader until the translations are loaded. The page is displayed underneath, and
         the strings will get updated reactively when the translations are ready. */}
         <MemoLoader />
       </Show>
-      <MetaProvider>
-        <InitializeTanstackQuery>
-          <Router>
-            <App />
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                className: "mr-4",
-                duration: TOAST_DURATION_SECS * 1000,
-              }}
-            />
-          </Router>
-        </InitializeTanstackQuery>
-      </MetaProvider>
-      <LoaderInPortal />
+      <ErrorBoundary
+        fallback={(error) => {
+          console.error(error);
+          return <FatalError error={error} />;
+        }}
+      >
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            className: "mr-4",
+            duration: TOAST_DURATION_SECS * 1000,
+          }}
+        />
+        <MetaProvider>
+          <InitializeTanstackQuery>
+            <AppContextProvider>
+              <Router>
+                <App />
+              </Router>
+            </AppContextProvider>
+          </InitializeTanstackQuery>
+        </MetaProvider>
+        <GlobalPageElements />
+        <LoaderInPortal />
+      </ErrorBoundary>
     </TransProvider>
   );
 }, root);

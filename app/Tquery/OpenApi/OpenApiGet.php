@@ -14,12 +14,14 @@ class OpenApiGet extends OA\Get
         PermissionDescribe $permissions,
         string $summary,
         string $tag,
+        array $parameters = [],
     ) {
         parent::__construct(
             path: $path,
             description: $permissions,
             summary: $summary,
             tags: [$tag],
+            parameters: $parameters,
             responses: [
                 new OA\Response(
                     response: 200, description: 'OK', content: new  OA\JsonContent(properties: [

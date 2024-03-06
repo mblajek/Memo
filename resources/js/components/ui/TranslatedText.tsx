@@ -1,18 +1,18 @@
-import {JSX, Show, VoidComponent, createMemo, mergeProps} from "solid-js";
-import {LangEntryFunc, LangPrefixFunc, getLangEntryFunc} from "../utils";
+import {TOptions} from "i18next";
+import {JSX, Match, Show, Switch, VoidComponent, createMemo, mergeProps} from "solid-js";
 import {Capitalize} from "./Capitalize";
 
 interface Props {
   /** The highest priority source. */
-  override?: () => JSX.Element;
+  readonly override?: () => JSX.Element;
   /** The second-highest priority source. */
-  langFunc?: LangEntryFunc | [func?: LangPrefixFunc, subKey?: string];
+  readonly langFunc?: (o?: TOptions) => string;
   /** Whether to capitalize. Applies to the result of the lang func only. */
-  capitalize?: boolean;
+  readonly capitalize?: boolean;
   /** The last source. */
-  fallbackCode?: string;
+  readonly fallbackCode?: string;
   /* The function that wraps the computed text. Called with no argument if there is no text. */
-  wrapIn?: (text?: JSX.Element) => JSX.Element;
+  readonly wrapIn?: (text?: JSX.Element) => JSX.Element;
 }
 
 /**
@@ -22,9 +22,9 @@ interface Props {
  *   - if specified, but returns an empty value, there is no text.
  *   - if missing or returns undefined (or null), continue:
  * - Check props.langFunc:
- *   - if fully specified and returns a non-empty value, it is displayed, capitalized if props.calitapize.
+ *   - if specified and returns a non-empty value, it is displayed, capitalized if props.calitapize.
  *   - if specified, but returns an empty value, the translation code is displayed
- *   - if missing, or any part is missing, continue:
+ *   - if missing, continue:
  * - Check props.fallbackCode:
  *   - if present and non-empty, it is displayed.
  *   - if missing or empty, there is no text.
@@ -39,43 +39,29 @@ interface Props {
  * a translation system by default, with a possible override for a particular field, and with a fallback
  * code displayed if nothing else gives a value.
  */
-export const TranslatedText: VoidComponent<Props> = (props) => {
-  const mProps = mergeProps({capitalize: false, wrapIn: (text?: JSX.Element) => text} satisfies Props, props);
+export const TranslatedText: VoidComponent<Props> = (allProps) => {
+  const props = mergeProps({capitalize: false, wrapIn: (text?: JSX.Element) => text} satisfies Props, allProps);
   const override = createMemo(() => {
-    const value = mProps.override?.();
+    const value = props.override?.();
     return value == undefined ? undefined : {value, empty: value === "" || (Array.isArray(value) && !value.length)};
   });
-  const langFunc = () => {
-    if (!mProps.langFunc) return undefined;
-    if (typeof mProps.langFunc === "function") return mProps.langFunc;
-    const [langPrefixFunc, subKey] = mProps.langFunc;
-    return langPrefixFunc && subKey ? getLangEntryFunc(langPrefixFunc, subKey) : undefined;
-  };
   return (
-    <Show
-      when={override()}
-      fallback={
-        <Show
-          when={langFunc()}
-          fallback={
-            <Show when={mProps.fallbackCode} fallback={mProps.wrapIn()}>
-              {mProps.wrapIn(<>{mProps.fallbackCode}</>)}
-            </Show>
-          }
-        >
-          {(langFunc) => (
-            <Show when={langFunc()({defaultValue: ""})} fallback={mProps.wrapIn(<>{langFunc()()}</>)}>
-              {(text) => mProps.wrapIn(<Capitalize text={text()} capitalize={mProps.capitalize} />)}
-            </Show>
-          )}
-        </Show>
-      }
-    >
-      {(override) => (
-        <Show when={!override().empty} fallback={mProps.wrapIn()}>
-          {mProps.wrapIn(<>{override().value}</>)}
-        </Show>
-      )}
-    </Show>
+    <Switch fallback={props.wrapIn()}>
+      <Match when={override()}>
+        {(override) => (
+          <Show when={!override().empty} fallback={props.wrapIn()}>
+            {props.wrapIn(<>{override().value}</>)}
+          </Show>
+        )}
+      </Match>
+      <Match when={props.langFunc}>
+        {(langFunc) => (
+          <Show when={langFunc()({defaultValue: ""})} fallback={props.wrapIn(<>{langFunc()()}</>)}>
+            {(text) => props.wrapIn(<Capitalize text={text()} capitalize={props.capitalize} />)}
+          </Show>
+        )}
+      </Match>
+      <Match when={props.fallbackCode}>{props.wrapIn(<>{props.fallbackCode}</>)}</Match>
+    </Switch>
   );
 };

@@ -6,7 +6,7 @@
 import {JSX} from "solid-js";
 
 /** Parameters for the children function. There needs to be at least one parameter. */
-type ChildrenFuncParams = [unknown, ...unknown[]];
+type ChildrenFuncParams = readonly [unknown, ...unknown[]];
 
 /** A function that can be specified as props.children. */
 export type ChildrenFunc<P extends ChildrenFuncParams> = (...params: P) => JSX.Element;

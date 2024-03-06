@@ -7,17 +7,14 @@
     @apply uppercase;
 
     button {
-      @apply px-0.5 rounded grow-0;
-      &:hover {
-        @apply bg-gray-100;
-      }
+      @apply h-full px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover;
       svg {
         @apply mb-0.5;
       }
     }
 
-    .date {
-      @apply grow p-1 flex items-center align-middle gap-1 justify-between;
+    .monthYear {
+      @apply grow px-1 flex items-center align-middle gap-1 justify-between uppercase;
     }
   }
 
@@ -40,8 +37,21 @@
       @apply text-gray-900;
       @apply relative;
 
+      &.startOfWeek {
+        @apply rounded-s;
+        .inner {
+          @apply rounded-s;
+        }
+      }
+      &.endOfWeek {
+        @apply rounded-e;
+        .inner {
+          @apply rounded-e;
+        }
+      }
+
       &.hover {
-        @apply bg-gray-100;
+        @apply bg-hover;
         &.start {
           @apply rounded-s;
         }
@@ -56,7 +66,7 @@
         padding-bottom: 1px;
 
         &.selected {
-          @apply bg-blue-200;
+          @apply bg-select;
           &.start {
             @apply rounded-s;
           }

@@ -4,5 +4,7 @@
   // Allow HTML in md.
   "MD033": false,
   // Don't require starting a page with h1 header.
-  "MD041": false
+  "MD041": false,
+  // Allow e.g. h3 after h1.
+  "MD001": false
 }

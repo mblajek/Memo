@@ -1,0 +1,8 @@
+meetings_lists:
+  planned: zaplanowane
+  completed: zrealizowane
+  all: wszystkie
+
+is_memo_user_note: "(użytkownik Memo)"
+
+edit_as_global_administrator: "Edytuj jako globalny administrator"

@@ -1,0 +1,39 @@
+$border: rgba(92, 92, 92, 0.283);
+
+.container {
+  display: grid;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  background-color: #f7f3e7;
+  border-right: 1px solid $border;
+  min-width: 200px;
+  max-width: 300px;
+  overflow-y: auto;
+}
+
+.navScroll {
+  --sb-track-color: #f7f3e7;
+}
+
+.header {
+  grid-area: header;
+  padding: 0.5rem;
+  border-bottom: 1px solid $border;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.main {
+  grid-area: main;
+  overflow: hidden auto;
+}

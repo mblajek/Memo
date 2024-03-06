@@ -4,6 +4,8 @@ namespace App\Exceptions;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
+use Stringable;
+use UnitEnum;
 
 trait ApiExceptionTrait
 {
@@ -30,6 +32,11 @@ trait ApiExceptionTrait
             $errorData = is_array($error) ? $error : $error->getData();
             if (App::hasDebugModeEnabled() && ($error instanceof ApiFatalException)) {
                 $errorData['trace'] = $error->getTrace();
+                array_walk_recursive($errorData['trace'], function (&$field) {
+                    if (is_object($field) && !($field instanceof Stringable)) {
+                        $field = '@' . get_class($field) . (($field instanceof UnitEnum) ? ('::' . $field->name) : '');
+                    }
+                });
             }
             $errors[] = array_filter($errorData, fn($field) => $field !== [] && $field !== '' && $field !== null);
         }

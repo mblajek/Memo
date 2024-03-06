@@ -4,13 +4,36 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap");
 
+// Colour Contrast Checker: https://colourcontrast.cc/
+
+html {
+  @apply bg-white;
+
+  transition: filter 500ms;
+  &.dark {
+    filter: hue-rotate(0.5turn) invert(0.9);
+  }
+}
+
 @layer base {
+  // A darker version of the memo-active color, giving enough contrast on a white background, according to the WCAG tests.
+  $memo-active-contrasted: color-mix(
+    in srgb,
+    rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)),
+    black 30%
+  );
+  $memo-bg-active-contrasted: color-mix(
+    in srgb,
+    rgb(from theme("colors.memo-active") r g b / var(--tw-bg-opacity, 1)),
+    black 30%
+  );
+
   html {
     @apply font-roboto;
 
-    --sb-thumb-color: theme("colors.memo-active");
-    --sb-track-color: color-mix(in srgb, var(--sb-thumb-color) 15%, white);
-    --sb-size: 12px;
+    --sb-thumb-color: color-mix(in srgb, theme("colors.memo-active") 80%, white);
+    --sb-track-color: color-mix(in srgb, var(--sb-thumb-color) 20%, white);
+    --sb-size: 14px;
   }
 
   * {
@@ -30,11 +53,16 @@
   *::-webkit-scrollbar-thumb {
     background: var(--sb-thumb-color);
     border-radius: 14px;
-    border: 3px solid var(--sb-track-color);
+    border: 4px solid var(--sb-track-color);
   }
 
-  input[type="checkbox"]:disabled:not(:checked) {
-    filter: brightness(0.8);
+  input[type="checkbox"] {
+    &:disabled {
+      filter: brightness(0.8);
+      &:checked {
+        filter: brightness(0.62) contrast(7);
+      }
+    }
   }
 
   select {
@@ -43,13 +71,19 @@
   }
 
   a {
-    @apply underline text-blue-500;
+    @apply underline;
+    // Make sure this color gives enough contrast on a hovered table row, according to the WCAG tests.
+    color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)), blue 45%);
   }
 
-  button {
+  button,
+  [role="button"] {
+    // Use [aria-disabled="true"] to match disabled elements (and not :disabled)
+    // to support non-button elements with role="button".
+
     @mixin pressedWithShadow {
       transition: box-shadow 0.15s ease-out;
-      &:active {
+      &:active:not([aria-disabled="true"]) {
         @apply shadow-md;
       }
     }
@@ -59,16 +93,39 @@
     }
 
     &.primary {
-      @apply p-2 rounded bg-memo-active text-white disabled:bg-opacity-50;
+      @apply p-2 rounded text-white;
+      background-color: $memo-bg-active-contrasted;
+      &[aria-disabled="true"] {
+        @apply bg-opacity-50;
+      }
+      &:active:not([aria-disabled="true"]) {
+        @apply bg-memo-active;
+      }
       @include pressedWithShadow;
     }
+
     &.secondary {
-      @apply p-2 rounded border border-memo-active text-memo-active disabled:bg-opacity-50;
+      @apply p-2 min-h-8 rounded border border-memo-active;
+      color: $memo-active-contrasted;
+      &[aria-disabled="true"] {
+        @apply text-opacity-50 border-opacity-50;
+      }
+      &:active:not([aria-disabled="true"]) {
+        @apply bg-hover;
+      }
       @include pressedWithShadow;
     }
-    &.secondarySmall {
-      @apply px-1 rounded border border-memo-active text-memo-active disabled:bg-opacity-50;
-      @include pressedWithShadow;
+
+    &.small {
+      @apply px-1 py-0;
+    }
+
+    &.minimal {
+      @apply px-0.5 -my-px border border-gray-300 rounded bg-white hover:bg-hover;
+
+      &[aria-disabled="true"] {
+        @apply bg-opacity-50;
+      }
     }
   }
 
@@ -77,7 +134,7 @@
     // An icon displayed inline in text. It is black by default, and reacts to text-opacity-* classes.
     // Use the dimmed class to dim.
     &.inlineIcon {
-      @apply inline mb-1 fill-current;
+      @apply shrink-0 inline mb-1 fill-current;
       &.strokeIcon {
         @apply stroke-current fill-none;
       }
@@ -89,5 +146,16 @@
     &.dimmed {
       @apply text-opacity-30;
     }
+  }
+
+  // Text that wraps text at natural wrapping points.
+  .wrapText {
+    @apply whitespace-pre-line;
+    hyphens: auto;
+  }
+  // Text that wraps to always be fully visible.
+  .wrapTextAnywhere {
+    @apply wrapText;
+    overflow-wrap: anywhere;
   }
 }

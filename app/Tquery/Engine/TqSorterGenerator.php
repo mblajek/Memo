@@ -13,11 +13,17 @@ class TqSorterGenerator
         return $query;
     }
 
+    private static function dict(string $query): string
+    {
+        return "(select `default_order` from positions where `id` = ($query))";
+    }
+
     public static function getSort(TqColumnConfig $columnConfig): Closure
     {
         return match ($columnConfig->type) {
-            TqDataTypeEnum::is_null => fn($query) => "($query) is null",
-            TqDataTypeEnum::is_not_null => fn($query) => "($query) is not null",
+            TqDataTypeEnum::is_null => fn(string $query) => "($query) is null",
+            TqDataTypeEnum::is_not_null => fn(string $query) => "($query) is not null",
+            TqDataTypeEnum::dict, TqDataTypeEnum::dict_nullable => self::dict(...),
             default => self::forward(...),
         };
     }

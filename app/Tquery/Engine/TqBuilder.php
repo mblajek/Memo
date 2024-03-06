@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tquery\Engine;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Config\TqTableEnum;
+use App\Tquery\Engine\Bind\TqBind;
 use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -11,13 +15,15 @@ use Illuminate\Support\Facades\DB;
 
 class TqBuilder
 {
+    private bool $distinct = false;
+
     public static function fromTable(TqTableEnum $table): self
     {
         $joins = [$table];
         return new self($joins, DB::table($table->name));
     }
 
-    public function fromBuilders(Builder $builder): self
+    public function fromBuilder(Builder $builder): self
     {
         return new self($this->joins, $builder);
     }
@@ -33,25 +39,38 @@ class TqBuilder
         TqTableAliasEnum $table,
         string $joinColumn,
         bool $left,
+        bool $inv,
     ): bool {
         if (in_array($table, $this->joins, strict: true)) {
             return false;
         }
+        [$tableColumn, $baseColumn] = $inv ? [$joinColumn, 'id'] : ['id', $joinColumn];
         $this->joins[] = $table;
         $tableBase = $table->baseTable();
         $this->builder->join(
             "{$tableBase->name} as {$table->name}",
-            "{$table->name}.id",
+            "{$table->name}.$tableColumn",
             '=',
-            "{$joinBase->name}.$joinColumn",
+            "{$joinBase->name}.$baseColumn",
             $left ? 'left' : 'inner',
         );
         return true;
     }
 
-    public function select(string $query, string $alias): void
+    public function distinct(): void
+    {
+        if (count($this->builder->columns ?? [])) {
+            throw FatalExceptionFactory::tquery();
+        }
+        $this->distinct = true;
+    }
+
+    public function select(string $query, string $alias, bool $isAggregate): void
     {
         $this->builder->selectRaw("$query as `$alias`");
+        if ($this->distinct && !$isAggregate) {
+            $this->builder->groupByRaw("`$alias`");
+        }
     }
 
     public function orderBy(string $query, bool $desc): void
@@ -62,25 +81,19 @@ class TqBuilder
     public function where(
         Closure $query,
         bool $or,
-        bool|int|string|array|null $value,
+        bool|int|string|array|null|TqBind $value,
         bool $inverse,
         bool $nullable,
     ): void {
-        if (is_array($value)) {
-            $bindings = count($value) ? array_values($value) : [null];
-            $bind = '(' . trim(str_repeat('?,', count($bindings)), ',') . ')';
-        } else {
-            $bindings = ($value !== null) ? [$value] : [];
-            $bind = count($bindings) ? '?' : null;
-        }
+        $bind = ($value instanceof TqBind) ? $value : TqBind::any($value);
         $queryString = '(' . $query(bind: $bind) . ')';
         if ($nullable) {
-            $queryString = "coalesce(($queryString), false)";
+            $queryString = "coalesce($queryString, false)";
         }
         if ($inverse) {
             $queryString = "(not $queryString)";
         }
-        $this->builder->whereRaw(sql: $queryString, bindings: $bindings, boolean: $or ? 'or' : 'and');
+        $this->builder->whereRaw(sql: $queryString, bindings: $bind?->bindings() ?? [], boolean: $or ? 'or' : 'and');
     }
 
     public function whereGroup(Closure $group, bool $or): void
@@ -88,9 +101,15 @@ class TqBuilder
         $this->builder->where($group, boolean: $or ? 'or' : 'and');
     }
 
-    public function applyPaging(int $number, int $size): void
+    public function whereNotDeleted(
+        TqTableEnum $table,
+    ): void {
+        $this->where(fn(null $bind) => "`{$table->name}`.`deleted_at` is null", false, null, false, false);
+    }
+
+    public function applyPaging(int $offset, int $limit): void
     {
-        $this->builder->forPage(page: $number, perPage: $size);
+        $this->builder->offset($offset)->limit($limit);
     }
 
     public function getSql(bool $raw): string

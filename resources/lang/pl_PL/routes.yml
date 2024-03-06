@@ -1,0 +1,27 @@
+menu_sections:
+  global_admin: "Globalny administrator"
+  facility: "Placówka"
+  facility_admin: "Administrator placówki"
+  other: "Inne"
+
+login: "logowanie"
+
+admin:
+  facilities: "$t(models.facility._name_plural)"
+  users: "$t(models.user._name_plural)"
+
+facility:
+  home: "placówka"
+  calendar: "$t(calendar.calendar)"
+  meetings_list: "lista spotkań"
+  staff: "$t(models.staff._name_plural)"
+  staff_details: "$t(models.staff._name)"
+  clients: "$t(models.client._name_plural)"
+  client_details: "$t(models.client._name)"
+
+  facility_admin:
+    reports: "raporty"
+
+help: "pomoc"
+help_pages:
+  status: "status aplikacji"

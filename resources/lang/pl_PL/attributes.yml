@@ -1,0 +1,8 @@
+meetingResource.resource: "$t(models.meeting.resources)"
+dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
+meetingAttendant.attendanceStatus: "$t(models.meeting.attendanceStatusDictId)"
+
+position:
+  # attributes of meetingType dictionary:
+  category: "$t(dictionary.meetingCategory._name)"
+  durationMinutes: "domyślna długość spotkania"

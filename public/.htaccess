@@ -25,5 +25,5 @@
 </IfModule>
 
 <FilesMatch "\.php$">
-    SetEnv CGI_HANDLER php82
+    SetEnv CGI_HANDLER php83
 </FilesMatch>

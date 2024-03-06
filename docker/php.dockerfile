@@ -1,21 +1,23 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 ARG ME_USER_UID=$ME_USER_UID
+ARG XDEBUG=$XDEBUG
 RUN useradd -mU -u $ME_USER_UID -s /bin/bash me
 
 RUN a2enmod rewrite
 
 RUN apt update
-RUN apt install -y unzip nano git htop curl libicu-dev psmisc
+RUN apt install -y unzip nano git htop curl libicu-dev psmisc libzip-dev mc
 
 RUN git config --global --add safe.directory /var/www
 
 # php
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN docker-php-ext-install pdo_mysql intl
+RUN docker-php-ext-install pdo_mysql intl zip
+RUN if [ $XDEBUG = 1 ]; then pecl install xdebug && docker-php-ext-enable xdebug; fi;
 
-#apache
+# apache
 
 RUN echo "ServerName memo-php:80">>/etc/apache2/apache2.conf
 

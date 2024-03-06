@@ -1,4 +1,5 @@
 log_out: "Wyloguj"
+add: "Dodaj"
 edit: "Edytuj"
 delete: "Usuń"
 close: "Zamknij"
@@ -7,5 +8,22 @@ confirm: "Potwierdź"
 save: "Zapisz"
 create: "Utwórz"
 copy_to_clipboard: "Kopiuj do schowka"
+expand: "Rozwiń"
+clear: "Wyczyść"
+restore_default: "Przywróć domyślne"
+search: "Szukaj"
+sort: "Sortuj"
+set: "Ustaw"
+change_password: "Zmień hasło"
+make_a_copy: "Utwórz kopię"
+show: "Pokaż"
+open: "Otwórz"
 
-add_user: "Dodaj użytkownika"
+details: "Szczegóły"
+
+user:
+  add: "Dodaj osobę"
+facility:
+  add: "Dodaj placówkę"
+meeting:
+  make_a_copy: "Utwórz kopię spotkania"

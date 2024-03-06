@@ -1,126 +1,75 @@
-import {createQuery} from "@tanstack/solid-query";
-import {FullLogo} from "components/ui";
-import {cx} from "components/utils";
-import {System} from "data-access/memo-api";
-import {
-  HiOutlineBuildingOffice,
-  HiOutlineCalendarDays,
-  HiOutlineClipboardDocumentList,
-  HiOutlineClock,
-  HiOutlineQuestionMarkCircle,
-  HiOutlineTableCells,
-  HiOutlineUserGroup,
-  HiOutlineUsers,
-  HiOutlineVideoCamera,
-} from "solid-icons/hi";
-import {Show, VoidComponent, createMemo} from "solid-js";
-import {activeFacilityId} from "state/activeFacilityId.state";
-import {NavigationItemProps, NavigationSection} from "../components/navbar";
-import s from "./style.module.scss";
+import {FullLogo} from "components/ui/FullLogo";
+import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
+import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
+import {BiRegularTable} from "solid-icons/bi";
+import {BsCalendar3} from "solid-icons/bs";
+import {FaSolidList} from "solid-icons/fa";
+import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
+import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
+import {SiSwagger} from "solid-icons/si";
+import {TbHelp} from "solid-icons/tb";
+import {TiSortAlphabetically} from "solid-icons/ti";
+import {DEV, Show, VoidComponent} from "solid-js";
+import {useActiveFacility} from "state/activeFacilityId.state";
+import {NavigationItem} from "../components/navbar/NavigationItem";
+import {NavigationSection} from "../components/navbar/NavigationSection";
+import s from "./layout.module.scss";
 
 export const Navbar: VoidComponent = () => {
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-
-  const facilityUrl = () => facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId())?.url;
-
-  const sectionItems = createMemo(() => getSectionItems(facilityUrl()));
-
+  const t = useLangFunc();
+  const activeFacility = useActiveFacility();
+  const facilityUrl = () => activeFacility()?.url;
+  const CommonFacilityItems: VoidComponent = () => (
+    <>
+      <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} routeKey="facility.calendar" />
+      <NavigationItem icon={STAFF_ICONS.menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
+      <NavigationItem icon={CLIENT_ICONS.menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
+    </>
+  );
   return (
-    <aside class={cx(s.sidebar)}>
-      <div class={cx("py-4 px-8 bg-inherit")}>
-        <FullLogo />
-      </div>
-      <nav class={cx("flex-1 px-8 py-4 overflow-y-auto", s.navScroll)}>
+    <aside class={s.sidebar}>
+      <FullLogo class="h-16 p-2 mt-2" />
+      <nav class={cx("p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}>
         <Show when={facilityUrl()}>
-          <NavigationSection facilityUrl={facilityUrl()} roles={["verified"]} items={sectionItems().verified} />
+          <NavigationSection>
+            <SilentAccessBarrier
+              facilityUrl={facilityUrl()}
+              roles={["facilityAdmin"]}
+              fallback={() => (
+                <SilentAccessBarrier facilityUrl={facilityUrl()} roles={["facilityStaff"]}>
+                  <CommonFacilityItems />
+                </SilentAccessBarrier>
+              )}
+            >
+              <CommonFacilityItems />
+              <NavigationItem
+                icon={HiOutlineClipboardDocumentList}
+                href={`/${facilityUrl()}/admin/reports`}
+                routeKey="facility.facility_admin.reports"
+              />
+            </SilentAccessBarrier>
+            <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" />
+          </NavigationSection>
         </Show>
-        <NavigationSection items={sectionItems().unauthorized} />
-        <NavigationSection roles={["globalAdmin"]} items={sectionItems().globalAdmin} title="System" />
-        <Show when={facilityUrl()}>
-          <NavigationSection
-            facilityUrl={facilityUrl()}
-            roles={["facilityAdmin"]}
-            items={sectionItems().facilityAdmin}
-            title="Placówka"
-          />
-          <NavigationSection
-            facilityUrl={facilityUrl()}
-            roles={["facilityStaff"]}
-            items={sectionItems().facilityStaff}
-            title="Moja praca"
-          />
+        <SilentAccessBarrier roles={["globalAdmin"]}>
+          <NavigationSection title={t("routes.menu_sections.global_admin")}>
+            <NavigationItem icon={FACILITY_ICONS.adminMenu} href="/admin/facilities" routeKey="admin.facilities" />
+            <NavigationItem icon={USER_ICONS.adminMenu} href="/admin/users" routeKey="admin.users" />
+          </NavigationSection>
+        </SilentAccessBarrier>
+        <NavigationSection title={t("routes.menu_sections.other")}>
+          <NavigationItem icon={TbHelp} href="/help" routeKey="help" />
+        </NavigationSection>
+        <Show when={DEV}>
+          <NavigationSection title="DEV">
+            <NavigationItem icon={FaSolidList} href="/dev/attributes" routeKey="Attributes" />
+            <NavigationItem icon={TiSortAlphabetically} href="/dev/dictionaries" routeKey="Dictionaries" />
+            <NavigationItem icon={RiDevelopmentCodeBoxLine} href="/dev/test-page" routeKey="Test page" />
+            <NavigationItem icon={BiRegularTable} href="/dev/local-storage" routeKey="Local storage" target="_blank" />
+            <NavigationItem icon={SiSwagger} href="/api/documentation" routeKey="API" target="_blank" />
+          </NavigationSection>
         </Show>
       </nav>
     </aside>
   );
 };
-
-const getSectionItems = (
-  facilityUrl?: string,
-): {
-  globalAdmin: NavigationItemProps[];
-  facilityAdmin: NavigationItemProps[];
-  facilityStaff: NavigationItemProps[];
-  verified: NavigationItemProps[];
-  unauthorized: NavigationItemProps[];
-} => ({
-  globalAdmin: [
-    {
-      icon: HiOutlineBuildingOffice,
-      href: "/admin/facilities",
-      children: "Placówki",
-    },
-    {
-      icon: HiOutlineUserGroup,
-      href: "/admin/users",
-      children: "Użytkownicy",
-    },
-  ],
-  facilityAdmin: !facilityUrl
-    ? []
-    : [
-        {
-          icon: HiOutlineCalendarDays,
-          href: `/${facilityUrl}/admin/calendar`,
-          children: "Kalendarz",
-        },
-        {
-          icon: HiOutlineTableCells,
-          href: `/${facilityUrl}/admin/clients`,
-          children: "Klienci",
-        },
-        {
-          icon: HiOutlineUsers,
-          href: `/${facilityUrl}/admin/staff`,
-          children: "Pracownicy",
-        },
-        {
-          icon: HiOutlineClipboardDocumentList,
-          href: `/${facilityUrl}/admin/reports`,
-          children: "Raporty",
-        },
-      ],
-  facilityStaff: !facilityUrl
-    ? []
-    : [
-        {
-          icon: HiOutlineCalendarDays,
-          href: `/${facilityUrl}/calendar`,
-          children: "Mój kalendarz",
-        },
-        {
-          icon: HiOutlineClock,
-          href: `/${facilityUrl}/timetable`,
-          children: "Mój harmonogram",
-        },
-        {
-          icon: HiOutlineTableCells,
-          href: `/${facilityUrl}/clients`,
-          children: "Moi klienci",
-        },
-      ],
-  verified: !facilityUrl
-    ? []
-    : [{icon: HiOutlineVideoCamera, href: `/${facilityUrl}/meetings`, children: "Moje spotkania"}],
-  unauthorized: [{icon: HiOutlineQuestionMarkCircle, href: "/help", children: "Pomoc"}],
-});

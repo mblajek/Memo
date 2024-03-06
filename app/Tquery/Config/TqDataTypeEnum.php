@@ -3,8 +3,8 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Rules\DataTypeRule;
-use App\Rules\StringIsTrimmedRule;
+use App\Rules\Valid;
+use App\Rules\RegexpIsValidRule;
 use App\Tquery\Filter\TqFilterOperator;
 
 enum TqDataTypeEnum
@@ -15,6 +15,7 @@ enum TqDataTypeEnum
     case int;
     case string;
     case uuid;
+    case dict;
     case text;
     // nullable
     case bool_nullable;
@@ -23,8 +24,14 @@ enum TqDataTypeEnum
     case int_nullable;
     case string_nullable;
     case uuid_nullable;
+    case dict_nullable;
     case text_nullable;
+    //list
+    case dict_list;
+    case uuid_list;
+    case list;
     // additional
+    case count;
     case is_null;
     case is_not_null;
 
@@ -32,7 +39,24 @@ enum TqDataTypeEnum
     {
         return match ($this) {
             self::bool_nullable, self::date_nullable, self::datetime_nullable, self::int_nullable,
-            self::string_nullable, self::uuid_nullable, self::text_nullable => true,
+            self::string_nullable, self::uuid_nullable, self::dict_nullable, self::text_nullable,
+            self::dict_list, self::uuid_list, self::list => true, // list have "null" operator
+            default => false,
+        };
+    }
+
+    public function isDict(): bool
+    {
+        return match ($this) {
+            self::dict, self::dict_nullable, self::dict_list => true,
+            default => false,
+        };
+    }
+
+    public function isUuidList(): bool
+    {
+        return match ($this) {
+            self::dict_list, self::uuid_list => true,
             default => false,
         };
     }
@@ -47,6 +71,7 @@ enum TqDataTypeEnum
             self::string_nullable => self::string,
             self::uuid_nullable => self::uuid,
             self::text_nullable => self::text,
+            self::dict_nullable => self::dict,
             default => $this,
         };
     }
@@ -67,8 +92,16 @@ enum TqDataTypeEnum
     public function isSortable(): bool
     {
         return match ($this->notNullBaseType()) {
-            self::uuid, self::text => false,
+            self::uuid, self::text, self::dict_list, self::uuid_list, self::list => false,
             default => true,
+        };
+    }
+
+    public function isAggregate(): bool
+    {
+        return match ($this) {
+            self::count => true,
+            default => false,
         };
     }
 
@@ -91,27 +124,30 @@ enum TqDataTypeEnum
                     ...TqFilterOperator::CMP,
                     ...TqFilterOperator::LIKE,
                 ],
-                self::uuid => [TqFilterOperator::eq, TqFilterOperator::in],
+                self::uuid, self::dict => [TqFilterOperator::eq, TqFilterOperator::in],
                 self::text => TqFilterOperator::LIKE,
-                default => FatalExceptionFactory::tquery(),
+                self::dict_list, self::uuid_list, => [TqFilterOperator::eq, ...TqFilterOperator::LIST_COLUMN],
+                self::list => [],
+                default => FatalExceptionFactory::tquery()->throw(),
             }
         );
     }
 
-    public function valueValidator(TqFilterOperator $operator): array
+    public function filterValueValidator(TqColumnConfig $column, TqFilterOperator $operator): array
     {
-        if (in_array($operator, TqFilterOperator::LIKE)) {
-            return ['string'];
+        if (in_array($operator, TqFilterOperator::LIKE, true)) {
+            return Valid::string($operator === TqFilterOperator::regexp ? [new RegexpIsValidRule()] : []);
         }
         return match ($this->notNullBaseType()) {
-            self::bool => ['bool', DataTypeRule::bool()],
-            self::date => throw new \Exception('To be implemented'),
-            self::datetime => throw new \Exception('To be implemented'),
-            self::int => ['numeric', 'integer', DataTypeRule::int()],
-            self::string, self::text => in_array($operator, TqFilterOperator::TRIMMED)
-                ? ['string', new StringIsTrimmedRule()] : ['string'],
-            self::uuid => ['string', 'uuid'],
-            default => FatalExceptionFactory::tquery(),
+            self::bool => Valid::bool(),
+            self::date => Valid::date(),
+            self::datetime => Valid::datetime(),
+            self::int => Valid::int(),
+            self::string, self::text => in_array($operator, TqFilterOperator::LIKE, true)
+                ? Valid::string() : Valid::trimmed(),
+            self::uuid, self::uuid_list => Valid::uuid(),
+            self::dict, self::dict_list => Valid::dict($column->dictionaryId),
+            default => FatalExceptionFactory::tquery()->throw(),
         };
     }
 }

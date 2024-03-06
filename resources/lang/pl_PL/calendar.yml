@@ -1,2 +1,55 @@
+calendar: "Kalendarz"
+
 go_to_current_month: "Przejdź do bieżącego miesiąca"
 go_to_selection: "Przejdź do zaznaczenia"
+
+units:
+  year: "rok"
+  years__one: "{{count, number}} rok"
+  years__few: "{{count, number}} lata"
+  years__many: "{{count, number}} lat"
+  month: "miesiąc"
+  months__one: "{{count, number}} miesiąc"
+  months__few: "{{count, number}} miesiące"
+  months__many: "{{count, number}} miesięcy"
+  week: "tydzień"
+  weeks__one: "{{count, number}} tydzień"
+  weeks__few: "{{count, number}} tygodnie"
+  weeks__many: "{{count, number}} tygodni"
+  day: "dzień"
+  days__one: "{{count, number}} dzień"
+  days__few: "{{count, number}} dni"
+  days__many: "{{count, number}} dni"
+  hour: "godzina"
+  hours__one: "{{count, number}} godzina"
+  hours__few: "{{count, number}} godziny"
+  hours__many: "{{count, number}} godzin"
+  minute: "minuta"
+  minutes__one: "{{count, number}} minuta"
+  minutes__few: "{{count, number}} minuty"
+  minutes__many: "{{count, number}} minut"
+  second: "sekunda"
+  seconds__one: "{{count, number}} sekunda"
+  seconds__few: "{{count, number}} sekundy"
+  seconds__many: "{{count, number}} sekund"
+
+today: "dzisiaj"
+
+select_resource_to_show_calendar: "Wybierz terapeutę lub zasób aby wyświetlić kalendarz."
+
+show_meeting_list: "Lista spotkań"
+
+# Override for the weekday names as formatted by the browser. This is useful especially for the "short" format.
+weekday_overrides:
+  "pon.": "pn"
+  "wt.": "wt"
+  "śr.": "śr"
+  "czw.": "cz"
+  "pt.": "pt"
+  "sob.": "so"
+  "niedz.": "nd"
+
+relative_time:
+  in_one_day: "następnego dnia"
+  in_one_week: "tydzień później"
+  in_two_weeks: "dwa tygodnie później"

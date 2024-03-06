@@ -3,26 +3,40 @@ import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
-  createQuery,
+  useQueryClient,
   type MutationMeta,
   type QueryMeta,
 } from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
-import {System, User} from "data-access/memo-api";
+import {translateError} from "data-access/memo-api/error_util";
+import {System, User} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
+import {SolidQueryOpts} from "data-access/memo-api/query_utils";
+import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
-import {For, ParentComponent, Show, VoidComponent, createMemo} from "solid-js";
+import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
+import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import toast from "solid-toast";
-import {cx, useLangFunc} from ".";
-import {MemoLoader} from "../ui";
+import {useLangFunc} from ".";
+import {MemoLoader} from "../ui/MemoLoader";
+import {toastMessages} from "./toast";
+
+/** A list of HTTP response status codes for which a toast should not be displayed. */
+type QuietHTTPStatuses = number[];
 
 declare module "@tanstack/query-core" {
   interface QueryMeta {
-    quietError?: boolean;
+    quietHTTPStatuses?: QuietHTTPStatuses;
+    tquery?: TQueryMeta;
   }
   interface MutationMeta {
-    quietError?: boolean;
+    quietHTTPStatuses?: QuietHTTPStatuses;
     isFormSubmit?: boolean;
   }
+}
+
+export interface TQueryMeta {
+  isTable?: boolean;
 }
 
 /**
@@ -32,29 +46,51 @@ declare module "@tanstack/query-core" {
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
-  function toastErrors(error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
-    if (!isAxiosError<Api.ErrorResponse>(error)) return;
-    if ((error?.status && error.status >= 500) || !meta?.quietError) {
-      let errors = error.response?.data.errors;
-      if (meta?.isFormSubmit) {
-        // Validation errors will be handled by the form.
-        errors = errors?.filter((e) => !Api.isValidationError(e));
-      }
-      if (errors?.length) {
-        const errorMessages = errors.map((e) =>
-          t(e.code, {
-            ...(Api.isValidationError(e) ? {attribute: e.field} : undefined),
-            ...e.data,
-          }),
-        );
-        for (const msg of errorMessages) {
-          console.warn(`Error toast shown: ${msg}`);
+  function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
+    const invalidate = useInvalidator(queryClient);
+    if (!isAxiosError<Api.ErrorResponse>(error)) {
+      return;
+    }
+    const status = error.response?.status;
+    if (!status || !meta?.quietHTTPStatuses?.includes(status)) {
+      const respErrors = error.response?.data.errors;
+      let errorsToShow: Api.Error[] = [];
+      if (respErrors) {
+        // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
+        if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {
+          invalidate.userStatusAndFacilityPermissions();
         }
-        toast.error(() => (
-          <ul class={cx({"list-disc pl-6": errorMessages.length > 1})} style={{"overflow-wrap": "anywhere"}}>
-            <For each={errorMessages}>{(msg) => <li>{msg}</li>}</For>
-          </ul>
-        ));
+        if (meta?.isFormSubmit) {
+          // Validation errors will be handled by the form.
+          errorsToShow = respErrors.filter((e) => !Api.isValidationError(e));
+        } else if (meta?.tquery?.isTable) {
+          // Table filter value errors will be handled by the table.
+          /**
+           * A list of serious errors, not caused by bad filter val. Excludes also the exception.validation error
+           * which might be caused by just the filter val errors.
+           */
+          const seriousErrors = respErrors.filter((e) => e.code !== "exception.validation" && !isFilterValError(e));
+          if (seriousErrors.length) {
+            // Include the exception.validation error again.
+            errorsToShow = respErrors.filter((e) => !isFilterValError(e));
+          }
+        } else {
+          errorsToShow = respErrors;
+        }
+      }
+      if (errorsToShow.length) {
+        if (!translationsLoaded()) {
+          for (const e of errorsToShow) {
+            console.warn("Error toast shown (translations not ready):", e);
+          }
+        }
+        translationsLoadedPromise.then(() => {
+          const messages = errorsToShow.map((e) => translateError(e, t));
+          for (const msg of messages) {
+            console.warn(`Error toast shown: ${msg}`);
+          }
+          toastMessages(messages, toast.error);
+        });
       }
     }
   }
@@ -64,20 +100,19 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         defaultOptions: {
           queries: {
             refetchOnReconnect: true,
-            refetchOnMount: false,
-            refetchOnWindowFocus: false,
+            // When opening a page, reload data if it's older than a couple of seconds.
+            staleTime: 15 * 1000,
             retry: false,
-            retryOnMount: false,
           },
         },
         queryCache: new QueryCache({
           onError(error, query) {
-            toastErrors(error, query.meta);
+            toastErrors(queryClient(), error, query.meta);
           },
         }),
         mutationCache: new MutationCache({
           onError(error, _variables, _context, mutation) {
-            toastErrors(error, mutation.meta);
+            toastErrors(queryClient(), error, mutation.meta);
           },
         }),
       }),
@@ -90,11 +125,16 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
   );
 };
 
-/** Initialize some of the required queries beforehand, but don't block on them. */
+/** Prefetch some of the required queries beforehand. */
 const InitQueries: VoidComponent = () => {
-  const queries = [createQuery(System.facilitiesQueryOptions), createQuery(User.statusQueryOptions)];
+  const queryClient = useQueryClient();
+  const fetchPromises = [System.facilitiesQueryOptions(), User.statusQueryOptions()].map((opts) =>
+    queryClient.fetchQuery(opts as SolidQueryOpts<unknown>),
+  );
+  const [isPrefetching, setIsPrefetching] = createSignal(true);
+  Promise.allSettled(fetchPromises).then(() => setIsPrefetching(false));
   return (
-    <Show when={queries.some((q) => q.isLoading)}>
+    <Show when={isPrefetching()}>
       <MemoLoader />
     </Show>
   );

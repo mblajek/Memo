@@ -1,10 +1,11 @@
 import {cx, useLangFunc} from "components/utils";
-import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery";
+import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import {FilterControlProps} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {useFilterFieldNames} from "./filter_field_names";
+import {FilterControlProps} from "./types";
 
 type DateTimeRangeFilter =
   | {
@@ -18,21 +19,26 @@ type DateTimeRangeFilter =
   | (DateColumnFilter & {op: "="});
 
 interface DateTimeColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  columnType?: "datetime";
-  /** Whether the inputs should only set date (and no time). Default is false. */
-  useDateOnlyInputs?: boolean;
+  readonly columnType?: "datetime";
+  /** Whether the inputs should set date and time. Default is only date. */
+  readonly useDateTimeInputs?: boolean;
 }
 
 interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  columnType: "date";
+  readonly columnType: "date";
 }
 
 type Props = DateColumnProps | DateTimeColumnProps;
 
+/**
+ * Filter for a date and datetime columns.
+ * TODO: Add support for nullable columns.
+ */
 export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const filterFieldNames = useFilterFieldNames();
   const columnType = () => props.columnType || "datetime";
-  const inputsType = () => (props.columnType === "date" || props.useDateOnlyInputs ? "date" : "datetime-local");
+  const inputsType = () => (props.columnType === "datetime" && props.useDateTimeInputs ? "datetime-local" : "date");
   const [lower, setLower] = createSignal("");
   const [upper, setUpper] = createSignal("");
   createComputed(() => {
@@ -97,14 +103,14 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const syncActive = () => !!lower() || !!upper();
   return (
     <div
-      class="grid gap-0.5 gap-x-1 items-baseline"
+      class="grid gap-0.5 items-baseline"
       style={{"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`}}
     >
       <div>{t("range.from")}</div>
       <Show when={canSyncRange()}>
         <div
-          class={ts.valuesSyncer}
-          classList={{[ts.inactive!]: !syncActive()}}
+          class={s.valuesSyncer}
+          classList={{[s.inactive!]: !syncActive()}}
           title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
           onClick={() => {
             if (lower()) {
@@ -115,22 +121,22 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
           }}
         />
       </Show>
-      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
-          name={`table_filter_from_${props.name}`}
+          name={filterFieldNames.get(`from_${props.name}`)}
           type={inputsType()}
-          class="h-full w-full border rounded"
+          class="w-full min-h-small-input border border-input-border rounded"
           max={upper()}
           value={lower()}
           onInput={({target: {value}}) => setLower(value)}
         />
       </div>
       <div>{t("range.to")}</div>
-      <div class={cx(ts.wideEdit, inputsType() === "date" ? ts.dateInputContainer : ts.dateTimeInputContainer)}>
+      <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
-          name={`table_filter_to_${props.name}`}
+          name={filterFieldNames.get(`to_${props.name}`)}
           type={inputsType()}
-          class="h-full w-full border rounded"
+          class="w-full min-h-small-input border border-input-border rounded"
           min={lower()}
           value={upper()}
           onInput={({target: {value}}) => setUpper(value)}

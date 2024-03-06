@@ -1,23 +1,21 @@
-import {Outlet} from "@solidjs/router";
-import {Confirmation} from "components/ui";
 import {AccessBarrier} from "components/utils";
-import {ParentComponent, mergeProps} from "solid-js";
-import {Container, Footer, Header, Main, Navbar} from "../layout";
+import {ParentComponent} from "solid-js";
+import {Container} from "../layout/Container";
+import {Header} from "../layout/Header";
+import {Main} from "../layout/Main";
+import {Navbar} from "../layout/Navbar";
 
 interface Props {
-  facilityUrl?: string;
+  readonly facilityUrl?: string;
 }
 
 export default ((props) => {
-  const mProps = mergeProps({children: <Outlet />}, props);
   return (
-    <AccessBarrier facilityUrl={mProps.facilityUrl}>
+    <AccessBarrier facilityUrl={props.facilityUrl}>
       <Container>
         <Navbar />
         <Header />
-        <Main>{mProps.children}</Main>
-        <Footer />
-        <Confirmation />
+        <Main>{props.children}</Main>
       </Container>
     </AccessBarrier>
   );

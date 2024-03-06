@@ -2,8 +2,7 @@
 
 namespace App\Tquery\Filter;
 
-use App\Rules\ArrayIsListRule;
-use App\Rules\DataTypeRule;
+use App\Rules\Valid;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Engine\TqBuilder;
 use Illuminate\Database\Query\Builder;
@@ -15,10 +14,10 @@ readonly class TqRequestFilterGroup extends TqRequestAbstractFilter
     {
         $operatorsNames = array_map(fn(TqFilterOperator $operator) => $operator->value, TqFilterOperator::GROUP);
         $params = self::validate($data, [
-            '' => 'array:type,op,inv,val',
-            'op' => ['required', 'string', Rule::in($operatorsNames)],
-            'inv' => ['sometimes', 'bool', DataTypeRule::bool(true)],
-            'val' => ['required', 'array', new ArrayIsListRule()],
+            '' => Valid::array(keys: ['type', 'op', 'inv', 'val']),
+            'op' => Valid::trimmed([Rule::in($operatorsNames)]),
+            'inv' => Valid::bool(sometimes: true),
+            'val' => Valid::list(),
         ], $path);
         $operator = TqFilterOperator::from($params['op']);
         $value = array_map(
@@ -60,7 +59,7 @@ readonly class TqRequestFilterGroup extends TqRequestAbstractFilter
     {
         $inverse = ($this->inverse xor $invert);
         $builder->whereGroup(function (Builder $groupBuilder) use ($builder, $inverse) {
-            $innerBuilder = $builder->fromBuilders($groupBuilder);
+            $innerBuilder = $builder->fromBuilder($groupBuilder);
             foreach ($this->value as $child) {
                 $child->applyFilter(
                     $innerBuilder,

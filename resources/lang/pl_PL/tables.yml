@@ -7,51 +7,75 @@ tables:
     columnNames:
       id: "id"
       actions: "akcje"
-  users:
-    tableName: "$t(models.user._name_plural)"
-    summary__zero: "Brak użytkowników"
-    summary__one: "{{count, number}} użytkownik"
-    summary__few: "{{count, number}} użytkowników"
-    summary__many: "{{count, number}} użytkowników"
-    columnNames:
-      id: "$t(tables.tables.generic.columnNames.id)"
-      name: "$t(models.user.name)"
-      email: "$t(models.user.email)"
-      hasPassword: "$t(models.user.hasPassword)"
-      createdAt: "$t(models.user.createdAt)"
-      hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
-      passwordExpireAt: "$t(models.user.passwordExpireAt)"
-      updatedAt: "$t(models.user.updatedAt)"
-      hasEmailVerified: "$t(models.user.hasEmailVerified)"
-      createdBy.name: "$t(models.user.createdBy)"
-      facilityCount: "$t(models.user.facilityCount)"
-      actions: "$t(tables.tables.generic.columnNames.actions)"
-  userFacilities:
+
+  user:
+    summary__zero: "Brak osób"
+    summary__one: "{{count, number}} osoba"
+    summary__few: "{{count, number}} osoby"
+    summary__many: "{{count, number}} osób"
+
+  staff:
+    summary__zero: "Brak pracowników"
+    summary__one: "{{count, number}} pracownik"
+    summary__few: "{{count, number}} pracowników"
+    summary__many: "{{count, number}} pracowników"
+
+  client:
+    summary__zero: "Brak klientów"
+    summary__one: "{{count, number}} klient"
+    summary__few: "{{count, number}} klientów"
+    summary__many: "{{count, number}} klientów"
+
+  userFacilityMember:
     tableName: "$t(models.user.members)"
-    columnNames:
-      facility: "$t(models.member.facility)"
-      hasFacilityAdmin: "$t(models.member.hasFacilityAdmin)"
-      actions: "$t(tables.tables.generic.columnNames.actions)"
-  facilities:
-    tableName: "$t(models.facility._name_plural)"
+
+  facility:
     summary__zero: "Brak placówek"
     summary__one: "{{count, number}} placówka"
     summary__few: "{{count, number}} placówki"
     summary__many: "{{count, number}} placówek"
+
+  meeting:
+    tableName: "$t(models.meeting._name_plural)"
+    summary__zero: "Brak spotkań"
+    summary__one: "{{count, number}} spotkanie"
+    summary__few: "{{count, number}} spotkania"
+    summary__many: "{{count, number}} spotkań"
     columnNames:
-      id: "$t(tables.tables.generic.columnNames.id)"
-      name: "$t(models.facility.name)"
-      createdAt: "$t(models.facility.createdAt)"
-      updatedAt: "$t(models.facility.updatedAt)"
-      userCount: "$t(models.facility.userCount)"
-      facilityAdmins: "$t(models.facility.admins)"
-      url: "$t(models.facility.url)"
-search: "Szukaj"
+      startDayminute: "godzina"
+      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
+      staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
+      clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
+      resources.*.dictId: "$t(models.meeting.resources)"
+      attendant.name: "uczestnik"
+      attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
+
 choose_columns: "Wybierz kolumny"
-sort_tooltip: "Sortuj"
+reset_column_sizes: "Resetuj szerokości kolumn"
+sort_tooltip: "$t(actions.sort)"
+
 filter:
+  filter_for: "filtr kolumny {{data}}"
   filter_cleared: "Brak filtra"
   filter_set: "Filtr aktywny"
+  column_filters_cleared: "Brak filtrów w kolumnach"
+  column_filters_set: "Filtry w kolumnach aktywne:"
   click_to_clear: "Kliknij aby wyczyścić"
   click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
-  click_to_sync_decimal_range: "Kliknij aby ustawić maks = min"
+  click_to_sync_number_range: "Kliknij aby ustawić max = min"
+  non_null_value: "niepuste"
+  null_value: "puste"
+  set_operation:
+    has_all:
+      short: "wszystkie"
+      explanation: "Znajdź wiersze, które mają wszystkie wybrane wartości"
+    has_any:
+      short: "którekolwiek"
+      explanation: "Znajdź wiersze, które mają którąkolwiek z wybranych wartości"
+    has_only:
+      short: "tylko"
+      explanation: "Znajdź wiersze, które mają tylko wybrane wartości (niekoniecznie wszystkie)"
+  textual:
+    fuzzy: "dopasowane"
+    eq: "równe"
+    regexp: "wyr. regularne"

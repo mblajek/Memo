@@ -1,8 +1,9 @@
 import {useLangFunc} from "components/utils";
-import {IntColumnFilter} from "data-access/memo-api/tquery";
+import {IntColumnFilter} from "data-access/memo-api/tquery/types";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import {FilterControlProps} from ".";
-import {tableStyle as ts} from "..";
+import s from "./ColumnFilterController.module.scss";
+import {useFilterFieldNames} from "./filter_field_names";
+import {FilterControlProps} from "./types";
 
 type IntRangeFilter =
   | {
@@ -14,8 +15,13 @@ type IntRangeFilter =
 
 interface Props extends FilterControlProps<IntRangeFilter> {}
 
+/**
+ * Filter for int columns.
+ * TODO: Add support for nullable columns.
+ */
 export const IntFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const filterFieldNames = useFilterFieldNames();
   const [lower, setLower] = createSignal("");
   const [upper, setUpper] = createSignal("");
   createComputed(() => {
@@ -66,15 +72,15 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
   const syncActive = () => lower() || upper();
   return (
     <div
-      class="grid gap-0.5 gap-x-1 items-baseline"
+      class="grid gap-0.5 items-baseline"
       style={{"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`}}
     >
       <div>{t("range.min")}</div>
       <Show when={canSyncRange()}>
         <div
-          class={ts.valuesSyncer}
-          classList={{[ts.inactive!]: !syncActive()}}
-          title={syncActive() ? t("tables.filter.click_to_sync_decimal_range") : undefined}
+          class={s.valuesSyncer}
+          classList={{[s.inactive!]: !syncActive()}}
+          title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());
@@ -84,22 +90,22 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
           }}
         />
       </Show>
-      <div class={ts.wideEdit}>
+      <div class={s.wideEdit}>
         <input
-          name={`table_filter_from_${props.name}`}
+          name={filterFieldNames.get(`from_${props.name}`)}
           type="number"
-          class="h-full w-full border rounded"
+          class="w-full min-h-small-input border border-input-border rounded"
           max={upper()}
           value={lower()}
           onInput={({target: {value}}) => setLower(value)}
         />
       </div>
       <div>{t("range.max")}</div>
-      <div class={ts.wideEdit}>
+      <div class={s.wideEdit}>
         <input
-          name={`table_filter_to_${props.name}`}
+          name={filterFieldNames.get(`to_${props.name}`)}
           type="number"
-          class="h-full w-full border rounded"
+          class="w-full min-h-small-input border border-input-border rounded"
           min={lower()}
           value={upper()}
           onInput={({target: {value}}) => setUpper(value)}

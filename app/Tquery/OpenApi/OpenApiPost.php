@@ -14,6 +14,7 @@ class OpenApiPost extends OA\Post
         PermissionDescribe $permissions,
         string $summary,
         string $tag,
+        array $parameters = [],
     ) {
         parent::__construct(
             path: $path,
@@ -53,14 +54,16 @@ class OpenApiPost extends OA\Post
                         ),
                         new OA\Property(
                             property: 'paging', properties: [
-                            new OA\Property(property: 'number', type: 'int', example: '1'),
-                            new OA\Property(property: 'size', type: 'int', example: '20'),
+                            new OA\Property(property: 'number', type: 'int', example: 1),
+                            new OA\Property(property: 'size', type: 'int', example: 20),
                         ]
                         ),
+                        new OA\Property(property: 'distinct', type: 'bool', example: false),
                     ]
                 )
             ),
             tags: [$tag],
+            parameters: $parameters,
             responses: [
                 new OA\Response(
                     response: 200, description: 'OK', content: new  OA\JsonContent(properties: [

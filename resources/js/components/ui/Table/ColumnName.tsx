@@ -1,11 +1,11 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {TranslatedText} from "../TranslatedText";
 import {useTable} from "./TableContext";
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  def: ColumnDef<any>;
+  readonly def: ColumnDef<any>;
 }
 
 /**
@@ -15,11 +15,26 @@ interface Props {
 export const ColumnName: VoidComponent<Props> = (props) => {
   const table = useTable();
   return (
-    <TranslatedText
-      override={props.def.meta?.columnName}
-      langFunc={[table.options.meta?.translations?.columnNames, props.def.id]}
-      capitalize={true}
-      fallbackCode={props.def.id}
-    />
+    <span class="wrapText">
+      <Show
+        when={props.def.meta?.tquery?.devColumn}
+        fallback={
+          <TranslatedText
+            override={props.def.meta?.columnName}
+            langFunc={
+              props.def.id && table.options.meta?.translations
+                ? (o) => table.options.meta!.translations!.columnName(props.def.id!, o)
+                : undefined
+            }
+            capitalize
+            fallbackCode={props.def.id}
+          />
+        }
+      >
+        <span class="wrapTextAnywhere" title="Unconfigured data column shown in DEV mode">
+          <span class="text-xs">DEV</span> {props.def.id}
+        </span>
+      </Show>
+    </span>
   );
 };

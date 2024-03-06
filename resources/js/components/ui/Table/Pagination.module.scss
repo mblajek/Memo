@@ -1,0 +1,37 @@
+.pagination {
+  [data-part="root"] {
+    @apply h-full flex items-stretch gap-1;
+  }
+
+  [data-part="prev-trigger"],
+  [data-part="next-trigger"],
+  [data-part="item"],
+  [data-part="ellipsis"] {
+    @apply px-1 border border-input-border bg-white rounded flex justify-center items-center;
+
+    &[data-disabled] {
+      @apply border-opacity-50;
+      svg {
+        @apply opacity-20;
+      }
+    }
+  }
+
+  [data-part="ellipsis"] svg {
+    @apply opacity-40;
+  }
+
+  [data-part="prev-trigger"],
+  [data-part="next-trigger"] {
+    min-width: 4rem;
+  }
+
+  [data-part="item"],
+  [data-part="ellipsis"] {
+    min-width: 2rem;
+
+    &[data-selected] {
+      @apply bg-hover;
+    }
+  }
+}

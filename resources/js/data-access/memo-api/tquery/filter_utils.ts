@@ -1,4 +1,4 @@
-import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filter, Schema} from "./types";
+import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filter, Schema, isDataColumn} from "./types";
 
 /**
  * A helper for constructing filter. If it is a regular Filter, the values inside the filter
@@ -8,14 +8,14 @@ import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filte
  */
 export type FilterH = ConstFilter | Filter | BoolOpFilterH;
 /** A bool operation filter that accepts FilterH as sub-filters. */
-export type BoolOpFilterH = Omit<BoolOpFilter, "val"> & {readonly val: FilterH[]};
+export type BoolOpFilterH = Omit<BoolOpFilter, "val"> & {readonly val: readonly FilterH[]};
 
 /** A reduced filter. It is a regular, fully correct and at least somewhat optimised filter. */
 export type ReducedFilterH = ConstFilter | Filter;
 
-export function invert(filter: ReducedFilterH, invert?: boolean | undefined): ReducedFilterH;
-export function invert(filter: FilterH, invert?: boolean | undefined): FilterH;
-export function invert(filter: FilterH, invert?: boolean): FilterH {
+export function invertFilter(filter: ReducedFilterH, invert?: boolean | undefined): ReducedFilterH;
+export function invertFilter(filter: FilterH, invert?: boolean | undefined): FilterH;
+export function invertFilter(filter: FilterH, invert?: boolean): FilterH {
   invert =
     arguments.length === 1
       ? true
@@ -32,6 +32,10 @@ export function invert(filter: FilterH, invert?: boolean): FilterH {
     default:
       return {...filter, inv: !filter.inv};
   }
+}
+
+function otherBoolOp(op: "&" | "|") {
+  return op === "&" ? "|" : "&";
 }
 
 export class FilterReductor {
@@ -78,6 +82,9 @@ export class FilterReductor {
           if (subFilter.type === "op" && subFilter.op === op && !subFilter.inv) {
             // Unnest a bool operation of the same type.
             subFiltersToProcess.push(...subFilter.val.toReversed());
+          } else if (subFilter.type === "op" && subFilter.op === otherBoolOp(op) && subFilter.inv) {
+            // Invert the inverted nested operation of the other type using De Morgan's laws.
+            subFiltersToProcess.push(...subFilter.val.map((f) => invertFilter(f)).toReversed());
           } else {
             reducedSubFilters.push(subFilter);
           }
@@ -91,70 +98,111 @@ export class FilterReductor {
       }
       return {type: "op", op, val: reducedSubFilters};
     })();
-    return invert(reducedIgnoredInv, filter.inv);
+    return invertFilter(reducedIgnoredInv, filter.inv);
   }
 
   /** Reduces the column filter if necessary (also applies inv). */
   private reduceColumnOp(filter: ColumnFilter): ReducedFilterH {
     const reducedIgnoredInv = ((): ReducedFilterH | undefined => {
       const {column, op} = filter;
-      const {nullable} = this.columnsData.get(column)!;
+      const columnSchema = this.columnsData.get(column)!;
+      const nullable = (isDataColumn(columnSchema) && columnSchema.nullable) || false;
       if (op === "null") {
         if (!nullable) {
           // For non-nullable columns selecting null matches nothing.
           return "never";
         }
       } else {
+        const nullFilter = (): ReducedFilterH => (nullable ? {type: "column", column, op: "null"} : "never");
         const {val} = filter;
         if (val === "") {
-          const nullFilter = (): ReducedFilterH => (nullable ? {type: "column", column, op: "null"} : "never");
           // Frontend treats the null values in string columns as empty strings (because this is what
           // is reasonable for the user).
-          if (op === "=" || op === "==" || op === "lv" || op === "<" || op === "<=") {
+          if (op === "=" || op === "==" || op === "lv" || op === "<=") {
             // Matches only null strings.
             return nullFilter();
           } else if (op === ">") {
             // Matches non-null strings.
-            return invert(nullFilter());
+            return invertFilter(nullFilter());
           } else if (op === ">=" || op === "v%" || op === "%v" || op === "%v%" || op === "/v/") {
             // Matches everything.
             return "always";
-          } else if (op === "in") {
-            // Not really possible, included for the exhaustive check to work.
+          } else if (op === "<" || op === "has") {
+            // Even a null column is not considered to "have an empty string", but rather to contain nothing.
+            return "never";
+          } else if (op === "in" || op === "has_all" || op === "has_any" || op === "has_only") {
+            throw new Error(`Bad filter: ${JSON.stringify(filter)}`);
           } else {
             op satisfies never;
           }
         }
         if (typeof val === "string" && val !== val.trim()) {
-          if (op === "=" || op === "==") {
+          if (op === "=" || op === "==" || op === "has") {
             // Will not match anything.
             return "never";
           }
           // TODO: Consider the case when val is not empty, but becomes empty after trimming.
         }
-        if (op === "in") {
-          const vals = new Set<string | number>(
-            filter.val
-              // Reject untrimmed values, they cannot be equal.
-              .filter((v) => !(typeof v === "string" && v !== v.trim())),
-          );
-          /** Whether null satisfies this filter. */
-          const orNull = vals.delete("") && nullable;
-          let valsFilter: ReducedFilterH;
-          if (!vals.size) {
-            valsFilter = "never";
-          } else if (vals.size === 1) {
-            valsFilter = {type: "column", column, op: "=", val: [...vals][0]!};
-          } else {
-            valsFilter = {type: "column", column, op: "in", val: [...vals] as string[] | number[]};
+        if (Array.isArray(val)) {
+          const vals = new Set<string | number>(val);
+          /** Removes from vals all invalid values, i.e. empty and untrimmed strings. Returns whether modified. */
+          function deleteInvalidVals() {
+            let modified = false;
+            for (const v of vals) {
+              if (typeof v !== "string") {
+                // Assume no strings in the vals.
+                return false;
+              }
+              if (!v || v !== v.trim()) {
+                vals.delete(v);
+                modified = true;
+              }
+            }
+            return modified;
           }
-          return orNull
-            ? this.reduce({type: "op", op: "|", val: [{type: "column", column, op: "null"}, valsFilter]})
-            : valsFilter;
+          const valsArray = () => [...vals] as string[] | number[];
+          if (op === "in") {
+            deleteInvalidVals();
+            return vals.size === 0
+              ? "never"
+              : vals.size === 1
+                ? {type: "column", column, op: "=", val: valsArray()[0]!}
+                : {type: "column", column, op: "in", val: valsArray()};
+          } else if (op === "=") {
+            const hadInvalidVals = deleteInvalidVals();
+            return hadInvalidVals
+              ? "never"
+              : vals.size === 0
+                ? nullFilter()
+                : {type: "column", column, op: "=", val: valsArray() as /* currently only */ string[]};
+          } else {
+            const stringValsArray = valsArray as () => string[];
+            if (op === "has_all") {
+              const hadInvalidVals = deleteInvalidVals();
+              return hadInvalidVals
+                ? "never"
+                : vals.size === 0
+                  ? "always"
+                  : vals.size === 1
+                    ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
+                    : {type: "column", column, op: "has_all", val: stringValsArray()};
+            } else if (op === "has_any") {
+              deleteInvalidVals();
+              return vals.size === 0
+                ? "never"
+                : vals.size === 1
+                  ? {type: "column", column, op: "has", val: stringValsArray()[0]!}
+                  : {type: "column", column, op: "has_any", val: stringValsArray()};
+            } else if (op === "has_only") {
+              deleteInvalidVals();
+              return vals.size === 0 ? nullFilter() : {type: "column", column, op: "has_only", val: stringValsArray()};
+            }
+          }
+          throw new Error(`Bad filter: ${JSON.stringify(filter)}`);
         }
       }
     })();
-    return reducedIgnoredInv ? invert(reducedIgnoredInv, filter.inv) : filter;
+    return reducedIgnoredInv ? invertFilter(reducedIgnoredInv, filter.inv) : filter;
   }
 
   /** Returns a reduced filter. The returned filter is correct and optimised. */
