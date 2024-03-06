@@ -2,8 +2,13 @@ import {VoidComponent} from "solid-js";
 import {MemoTitle} from "../features/root/MemoTitle";
 
 export const TestComponent: VoidComponent = () => {
-  /* TEST_CODE_HERE */
-  return <>{/* TEST_CODE_HERE */}</>;
+  // TEST CODE HERE:
+
+  return (
+    <>
+      {/* TEST CODE HERE:                                                                                              */}
+    </>
+  );
 };
 
 export default (() => {

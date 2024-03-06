@@ -38,7 +38,6 @@ const getSchema = () =>
     ...getAttendantsSchemaPart(),
     notes: z.string(),
     resources: z.array(z.string()),
-    fromMeetingId: z.string(),
   });
 
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
@@ -105,7 +104,6 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
     >
       {(form) => (
         <>
-          <PlaceholderField name="fromMeetingId" />
           <div class="flex flex-col">
             <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="-mb-4" data={meeting()} />}</Show>
             <MeetingDateAndTime

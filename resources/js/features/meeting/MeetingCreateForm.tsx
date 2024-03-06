@@ -56,7 +56,6 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
       isRemote: false,
       notes: "",
       resources: [],
-      fromMeetingId: "",
       ...props.initialValues,
     }) satisfies MeetingFormType;
 

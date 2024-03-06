@@ -44,7 +44,6 @@ export type MeetingResourceForCreate = Pick<
   | "statusDictId"
   | "isRemote"
   | "resources"
-  | "fromMeetingId"
 > & {
   readonly staff: readonly MeetingAttendantResourceForCreate[];
   readonly clients: readonly MeetingAttendantResourceForCreate[];

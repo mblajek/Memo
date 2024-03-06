@@ -241,10 +241,10 @@ export function useMeetingTableColumns() {
                     <div class="flex flex-col overflow-clip">
                       <div>{DateTime.fromISO(v()).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
                       <Show when={props.row.startDayminute as number | undefined}>
-                        {(strtDayMinute) => (
+                        {(startDayMinute) => (
                           <div>
                             <MeetingTime
-                              startDayMinute={strtDayMinute()}
+                              startDayMinute={startDayMinute()}
                               durationMinutes={(props.row.durationMinutes as number) ?? 0}
                             />
                             <Show when={props.row.fromMeetingId}>

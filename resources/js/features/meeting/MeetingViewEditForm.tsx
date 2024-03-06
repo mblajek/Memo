@@ -101,7 +101,6 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
       isRemote: meeting().isRemote,
       notes: meeting().notes || "",
       resources: meeting().resources.map(({resourceDictId}) => resourceDictId),
-      fromMeetingId: meeting().fromMeetingId || "",
     } satisfies MeetingFormType;
   };
 
@@ -112,7 +111,6 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
         statusDictId: meetingStatusDict()!.planned.id,
         ...attendantsInitialValueForCreateCopy(meeting()),
-        fromMeetingId: props.meetingId,
       },
       onSuccess: (meeting) => props.onCreated?.(meeting),
       forceTimeEditable: !days,
