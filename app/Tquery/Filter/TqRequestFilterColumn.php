@@ -102,8 +102,8 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
                 if ($columnType->notNullBaseType() === TqDataTypeEnum::string) {
                     // fix for 'Illegal mix of collations (ascii*) and (utf8*)' error
                     // todo: add 'ascii' column type, and cast only this type
-                    // there are no 'text' columns with ascii encoding
-                    $filterQuery = "cast($filterQuery as varchar(255))";
+                    // there are no 'text' columns with 'ascii' encoding
+                    $filterQuery = "convert($filterQuery using utf8mb4)";
                 }
                 $query = fn(TqBind $bind) => trim("$sqlPrefix $filterQuery $sqlOperator {$bind->use()}");
             }

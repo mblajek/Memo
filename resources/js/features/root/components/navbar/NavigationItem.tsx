@@ -1,8 +1,8 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
-import {useQueryClient} from "@tanstack/solid-query";
 import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
 import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {IconTypes} from "solid-icons";
 import {FaSolidAngleDown} from "solid-icons/fa";
 import {ParentComponent, Show, children, createMemo, createSignal, on, splitProps} from "solid-js";
@@ -26,7 +26,7 @@ const ACTIVE_ITEM_CLASS = "__activeNavItem";
 export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) => {
   const [props, aProps] = splitProps(allProps, ["icon", "routeKey", "small", "children"]);
   const t = useLangFunc();
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidator();
   const location = useLocation();
   const [container, setContainer] = createSignal<HTMLDivElement>();
   /* A signal that changes whenever the active navigation item might change. */
@@ -57,9 +57,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
         activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
         onClick={(event) => {
           if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS)) {
-            // Invalidate all queries. Add a delay to avoid a bug in TanStack Query.
-            // See https://github.com/TanStack/query/issues/6995
-            setTimeout(() => queryClient.invalidateQueries(), 0);
+            invalidate.everythingThrottled();
           }
         }}
       >

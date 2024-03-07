@@ -93,9 +93,12 @@ filter:
 
 export:
   label: "$t(actions.export)"
+  format:
+    csv: "CSV"
+    excel_csv: "Excel CSV"
+  all_pages: "cała tabela"
   current_page: "bieżąca strona"
-  all_pages: "wszystkie strony"
   exporting: "Eksportowanie…"
   success: "Zapisano dane do pliku"
-  error: "Nie udało się wyeksportowć danych"
+  error: "Nie udało się wyeksportować danych"
   aborted: "Anulowano eksport"

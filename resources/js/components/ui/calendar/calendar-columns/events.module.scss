@@ -5,13 +5,15 @@
   animation-direction: alternate;
   animation-timing-function: ease-in-out;
 
-  @apply outline outline-4 outline-transparent;
-  outline-offset: -4px;
+  @apply outline outline-memo-active;
+  outline-width: 0px;
+  outline-offset: -1px;
 }
 
 @keyframes blink {
   to {
-    @apply opacity-60 outline-memo-active;
-    outline-offset: -6px;
+    @apply opacity-60;
+    outline-width: 6px;
+    outline-offset: -7px;
   }
 }

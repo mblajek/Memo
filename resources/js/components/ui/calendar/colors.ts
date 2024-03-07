@@ -29,7 +29,7 @@ export const CANCELLED_MEETING_COLORING = (() => {
 
 export function coloringToStyle(
   coloring: Coloring,
-  {hover = false, part = "main"}: {hover?: boolean; part?: "main" | "header"} = {},
+  {hover = false, part = "main"}: {hover?: boolean; part?: "main" | "header" | "colorMarker"} = {},
 ): JSX.CSSProperties {
   switch (part) {
     case "main":
@@ -44,6 +44,11 @@ export function coloringToStyle(
           };
     case "header":
       return {
+        "background-color": coloring.headerBg,
+      };
+    case "colorMarker":
+      return {
+        "border-color": coloring.border,
         "background-color": coloring.headerBg,
       };
     default:

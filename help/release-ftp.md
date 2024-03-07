@@ -3,7 +3,7 @@
 - przebudować kontener: `docker compose up --build`
 - wykonać komendy:
   - `composer install --no-dev`
-  - `npm run dev`
+  - `npm run build`
   - `php artisan l5-swagger:generate`
   - `php artisan cache:clear`
   - bez: `artisan config/event/route:cache`

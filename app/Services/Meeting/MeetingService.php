@@ -36,8 +36,11 @@ class MeetingService
     public function patch(Meeting $meeting, array $data): void
     {
         $meeting->fill($data);
-        $this->fillMeetingCategory($meeting);
-        $meeting->interval = null;
+        if (array_key_exists('type_dict_id', $meeting->getDirty())) {
+            $this->fillMeetingCategory($meeting);
+            $meeting->from_meeting_id = null;
+            $meeting->interval = null;
+        }
 
         $finalAttendants = $this->extractPatchAttendants($data, $meeting);
         $finalResources = $this->extractResources($data);
