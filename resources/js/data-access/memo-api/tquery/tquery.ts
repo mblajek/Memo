@@ -86,6 +86,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
     queryFn: () => V1.get<Schema>(`${entityURL}/tquery`).then((res) => res.data),
     staleTime: 3600 * 1000,
     refetchOnMount: false,
+    enabled: !disabledByExtraDataQueryOptions(),
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
