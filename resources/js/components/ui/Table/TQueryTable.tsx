@@ -285,7 +285,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       metaParams: {textExportCell: tableTextExportCells.dictList()},
     });
 
-  const [allInitialised, setAllInitialised] = createSignal(false);
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     intrinsicFilter: () => props.intrinsicFilter,
@@ -294,13 +293,16 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     initialPageSize:
       props.initialPageSize ||
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
-    allInitialised,
   });
+  const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
     entityURL,
     prefixQueryKey: props.staticPrefixQueryKey,
     requestCreator,
-    dataQueryOptions: {meta: {tquery: {isTable: true}}},
+    dataQueryOptions: () => ({
+      enabled: allInitialised(),
+      meta: {tquery: {isTable: true}},
+    }),
   });
   createComputed(() => {
     const sch = schema();

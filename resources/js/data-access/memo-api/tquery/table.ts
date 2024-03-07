@@ -49,14 +49,12 @@ export function createTableRequestCreator({
   intrinsicSort = () => undefined,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
-  allInitialised = () => true,
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
   intrinsicSort?: Accessor<Sort | undefined>;
   initialSort?: SortingState;
   initialPageSize?: number;
-  allInitialised?: Accessor<boolean>;
 }): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   return (schema) => {
@@ -160,7 +158,7 @@ export function createTableRequestCreator({
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
-      if (!allInitialisedInternal() || !allInitialised() || !dataColumns().length) {
+      if (!allInitialisedInternal() || !dataColumns().length) {
         return undefined;
       }
       const sort: SortItem[] = sorting().map(({id, desc}) => ({

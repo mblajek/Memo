@@ -32,6 +32,8 @@ interface BaseProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" 
 }
 
 export interface TQueryConfig {
+  /** Whether the query is enabled. Default: true. */
+  readonly enabled?: boolean;
   /** The prefix used for the data query (this allows invalidating the tquery data). */
   readonly prefixQueryKey: QueryKey;
   readonly entityURL: string;
@@ -86,6 +88,7 @@ const DEFAULT_PROPS = {
 } satisfies Partial<BaseProps>;
 
 function makeQuery({
+  enabled = true,
   prefixQueryKey,
   entityURL,
   intrinsicFilter,
@@ -111,6 +114,7 @@ function makeQuery({
     prefixQueryKey: prefixQueryKey,
     entityURL: entityURL,
     requestCreator,
+    dataQueryOptions: {enabled},
   });
   const items = createMemo<readonly SelectItem[]>(() => {
     if (!dataQuery.isSuccess) {

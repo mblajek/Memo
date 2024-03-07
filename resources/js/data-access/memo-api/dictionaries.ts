@@ -18,6 +18,8 @@ export class Dictionaries {
     readonly positionsById: ReadonlyMap<string, Position>,
   ) {}
 
+  static readonly EMPTY = new Dictionaries(new Map(), new Map(), new Map());
+
   static fromResources(t: LangFunc, resources: DictionaryResource[]) {
     return Dictionaries.fromDictionaries(resources.map((resource) => Dictionary.fromResource(t, resource)));
   }

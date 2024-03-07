@@ -7,14 +7,15 @@ import {LabelOverride} from "./labels";
 
 export interface TextFieldProps extends TextFieldTextFieldProps {
   readonly label?: LabelOverride;
+  readonly small?: boolean;
 }
 
 /** Wrapper of native HTML's `<input>`. Intended for use with FelteForm (handles validation messages). */
 export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
-  const [props, inputProps] = splitProps(allProps, ["name", "label"]);
+  const [props, inputProps] = splitProps(allProps, ["name", "label", "small"]);
   return (
     <FieldBox {...props}>
-      <TextFieldTextInput name={props.name} {...inputProps} />
+      <TextFieldTextInput name={props.name} small={props.small} {...inputProps} />
     </FieldBox>
   );
 };
@@ -25,16 +26,17 @@ interface TextFieldTextFieldProps
     "type" | "min" | "max" | "step" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
   > {
   readonly name: string;
+  readonly small?: boolean;
 }
 
 export const TextFieldTextInput: VoidComponent<TextFieldTextFieldProps> = (allProps) => {
-  const [props, inputProps] = splitProps(allProps, ["name"]);
+  const [props, inputProps] = splitProps(allProps, ["name", "small"]);
   return (
     <TextInput
       id={props.name}
       name={props.name}
       autocomplete="off"
-      {...htmlAttributes.merge(inputProps, {class: "min-h-big-input px-2"})}
+      {...htmlAttributes.merge(inputProps, {class: props.small ? "px-1 min-h-small-input" : "min-h-big-input px-2"})}
       aria-labelledby={labelIdForField(props.name)}
     />
   );
