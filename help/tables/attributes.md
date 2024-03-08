@@ -1,4 +1,5 @@
 # Attributes
+
 Lista konfiguracji kolumn w systemie. W tym informacja o tym, czy dane pole jest wymagane i z jakiego słownika korzysta.
 
 ### facility_id
@@ -54,7 +55,8 @@ Enum, zawierający
 
 ### type / type_model (tylko w api)
 
-Jeżeli kolumna `type` odnosi się do tabeli, to w api jako `type` będzie zwrócona wartość przekształcona analogicznie do pola `model`
+Jeżeli kolumna `type` odnosi się do tabeli, to w api jako `type` będzie zwrócona wartość przekształcona analogicznie do
+pola `model`
 
 Pole type_model - jeżeli kolumna odnosi się do tabeli, wtedy to samo co `type`, w przeciwnym razie null
 
@@ -92,3 +94,14 @@ Czyli jeżeli pole odnosi się do:
 - pola, które niektórzy klienci mają `required`, a niektórzy `empty`, to będzie `empty`.
 - pola, które jest `recommended`, ale w ogóle występuje tylko dla jednej placówki, będzie uzupełnione `facility_id`, a
   w `requirement_level` będzie `recommended`
+
+### is_fixed
+
+Atrybuty, które mogą być używane w kodzie, są oznaczane jako fixed. Takim przykłądem jest atrybut "kategoria"
+i "długość" dla pozycji słownika typów spotkań. Backend uzupełnia na ich podstawie kategorię przy zapisie typu, frontend
+ustawia domyślny czas spotkania.
+
+Jeżeli atrybut jest multi_value=null, to nie musi być fixed. Załóżmy, że płeć klienta w jednej placówce jest wymagana,
+w drugiej zalecana, a w trzeciej używa w ogóle innego słownika. Można zamiast jednego atrybutu facility_id=null, wstawić
+oddzielne atrybuty dla każdej placówki. W przypadku tego typu atrybutów jednak system będzie musiał wymuszać odpowiednie
+api_name, baza danych musi zawierać kolumnę tabeli.

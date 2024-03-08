@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string dictionary_id
  * @property int default_order
  * @property ?bool is_multi_value
+ * @property bool is_fixed
  * @property AttributeRequirementLevel requirement_level
  * @method static AttributeBuilder query()
  */
@@ -38,6 +39,7 @@ class Attribute extends Model
         'dictionary_id',
         'default_order',
         'is_multi_value',
+        'is_fixed',
         'requirement_level',
     ];
 
@@ -47,6 +49,7 @@ class Attribute extends Model
         'table' => AttributeTable::class,
         'type' => AttributeType::class,
         'is_multi_value' => 'boolean',
+        'is_fixed' => 'boolean',
         'requirement_level' => AttributeRequirementLevel::class,
     ];
 
