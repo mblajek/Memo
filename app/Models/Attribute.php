@@ -65,6 +65,7 @@ class Attribute extends Model
             AttributeType::Users, AttributeType::Clients, AttributeType::Attributes => $nullable ?
                 TqDataTypeEnum::uuid_nullable : TqDataTypeEnum::uuid,
             AttributeType::Dict => $nullable ? TqDataTypeEnum::dict_nullable : TqDataTypeEnum::dict,
+            AttributeType::Text =>  $nullable ? TqDataTypeEnum::text : TqDataTypeEnum::text_nullable,
         };
         return $type->isDict() ? (new TqDictDef($type, $this->dictionary_id)) : $type;
     }
