@@ -91,6 +91,7 @@ html {
   }
 
   input[type="checkbox"] {
+    transform: scale(1.2);
     &:checked {
       // Make it similar to the memo-active color on Chrome.
       filter: hue-rotate(-0.11turn);

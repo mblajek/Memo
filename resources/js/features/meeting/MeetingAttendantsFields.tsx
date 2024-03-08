@@ -6,7 +6,7 @@ import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
-import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
+import {ACTION_ICONS, CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -19,8 +19,6 @@ import {
   MeetingResourceForCreate,
   MeetingResourceForPatch,
 } from "data-access/memo-api/resources/meeting.resource";
-import {BiRegularPlus} from "solid-icons/bi";
-import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {Index, Match, Show, Switch, VoidComponent, createEffect} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -222,7 +220,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                           title={t("actions.delete")}
                           onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                         >
-                          <RiSystemDeleteBin6Line class="inlineIcon text-current" />
+                          <ACTION_ICONS.delete class="inlineIcon text-current" />
                         </Button>
                       </div>
                     </Show>
@@ -234,7 +232,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                           title={t(`forms.meeting.add_attendant.${props.name}`)}
                           onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                         >
-                          <BiRegularPlus class="inlineIcon text-current" />
+                          <ACTION_ICONS.add class="inlineIcon text-current" />
                         </Button>
                       </div>
                     </Show>
