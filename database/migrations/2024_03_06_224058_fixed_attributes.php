@@ -67,7 +67,7 @@ return new class extends Migration {
                 ],
                 [
                     'id' => '1d6d5712-1a8a-4600-ab32-e0f3f8f3dbbb',
-                    'name' => '+Data zgłoszenia',
+                    'name' => '+data zgłoszenia',
                     'api_name' => 'data_zgloszenia_1d6d5712',
                     'type' => 'date',
                     'dictionary_id' => null,
@@ -77,7 +77,7 @@ return new class extends Migration {
                 ],
                 [
                     'id' => '1f628171-278b-4579-89e8-a21693e04c77',
-                    'name' => '+Wiek w momencie zgłoszenia',
+                    'name' => '+wiek w momencie zgłoszenia',
                     'api_name' => 'wiek_w_momencie_zgloszenia_1f628171',
                     'type' => 'int',
                     'dictionary_id' => null,
@@ -87,7 +87,7 @@ return new class extends Migration {
                 ],
                 [
                     'id' => 'e887624b-6a0f-421a-a3b8-29a1494c8d77',
-                    'name' => '+Województwo',
+                    'name' => '+województwo',
                     'api_name' => 'wojewodztwo_e887624b',
                     'type' => 'dict',
                     'dictionary_id' => 'd96a602d-c10f-4e9d-a3ad-4c450efa7717',
@@ -97,7 +97,7 @@ return new class extends Migration {
                 ],
                 [
                     'id' => 'bf7329bc-bd7a-4e69-8b3e-18d77247a65a',
-                    'name' => '+Decyzja zespołu klinicznego',
+                    'name' => '+decyzja zespołu klinicznego',
                     'api_name' => 'decyzja_zespolu_klinicznego_bf7329bc',
                     'type' => 'text',
                     'dictionary_id' => null,
