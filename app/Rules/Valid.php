@@ -58,6 +58,15 @@ class Valid extends AbstractDataRule
         return self::base($sometimes, $nullable, ['string', 'min:1', "max:$max", new StringIsTrimmedRule()], $rules);
     }
 
+    public static function text(
+        array $rules = [],
+        bool $sometimes = false,
+        bool $nullable = false,
+        int $max = 4000,
+    ): array {
+        return self::trimmed($rules, $sometimes, $nullable, $max);
+    }
+
     public static function uuid(
         array $rules = [],
         bool $sometimes = false,

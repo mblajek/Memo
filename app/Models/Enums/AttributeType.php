@@ -9,7 +9,8 @@ enum AttributeType: string
     case Date = 'date';
     case Datetime = 'datetime';
     case Int = 'int';
-    case String = 'string';
+    case String = 'string'; // 255
+    case Text = 'text'; // 4096
     // Supported table names.
     case Users = 'users';
     case Clients = 'clients';
