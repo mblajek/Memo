@@ -89,7 +89,13 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             for (const msg of messages) {
               console.warn(`Error toast shown: ${msg}`);
             }
-            toastError(<ToastMessages messages={messages} />);
+            // Don't show multiple "unauthorised" toasts, this is an error that typically occurs on all the active queries,
+            // so use id to display just a single toast.
+            const toastId =
+              errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
+                ? "exception.unauthorised"
+                : undefined;
+            toastError(<ToastMessages messages={messages} />, {id: toastId});
           }
         });
       }
