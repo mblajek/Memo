@@ -95,7 +95,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
               errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
                 ? "exception.unauthorised"
                 : undefined;
-            toastError(<ToastMessages messages={messages} />, {id: toastId});
+            toastError(() => <ToastMessages messages={messages} />, {id: toastId});
           }
         });
       }

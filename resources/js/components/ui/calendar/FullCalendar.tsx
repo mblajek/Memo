@@ -28,11 +28,9 @@ import {
   createComputed,
   createMemo,
   createSignal,
-  getOwner,
   mergeProps,
   on,
   onMount,
-  runWithOwner,
   splitProps,
 } from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -458,43 +456,40 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     );
   }
 
-  const owner = getOwner();
   function meetingChange(message: JSX.Element, meeting: MeetingChangeSuccessData, otherMeetingIds?: string[]) {
     blinkMeeting(meeting.id);
     for (const id of otherMeetingIds || []) {
       blinkMeeting(id);
     }
     const meetingDate = DateTime.fromISO(meeting.date);
-    runWithOwner(owner, () =>
-      toastSuccess(
-        <div class="flex gap-2 items-baseline">
-          <span>{message}</span>
-          <Button
-            class="secondary small"
-            onClick={() => {
-              if (!daysSelection().contains(meetingDate)) {
-                setDaysSelectionAndMonthFromDay(meetingDate);
-              }
-              if (meeting.staff.length) {
-                if (mode() === "day") {
-                  const selectedResources = new Set(selectedResourcesCheckbox());
-                  for (const {userId} of meeting.staff) {
-                    selectedResources.add(userId);
-                  }
-                  setSelectedResourcesCheckbox(selectedResources);
-                } else if (!meeting.staff.some((staff) => staff.userId === selectedResourceRadio())) {
-                  setSelectedResourceRadio(meeting.staff[0]!.userId);
+    toastSuccess(() => (
+      <div class="flex gap-2 items-baseline">
+        <span>{message}</span>
+        <Button
+          class="secondary small"
+          onClick={() => {
+            if (!daysSelection().contains(meetingDate)) {
+              setDaysSelectionAndMonthFromDay(meetingDate);
+            }
+            if (meeting.staff.length) {
+              if (mode() === "day") {
+                const selectedResources = new Set(selectedResourcesCheckbox());
+                for (const {userId} of meeting.staff) {
+                  selectedResources.add(userId);
                 }
+                setSelectedResourcesCheckbox(selectedResources);
+              } else if (!meeting.staff.some((staff) => staff.userId === selectedResourceRadio())) {
+                setSelectedResourceRadio(meeting.staff[0]!.userId);
               }
-              scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
-              blinkMeeting(meeting.id);
-            }}
-          >
-            {t("actions.show")}
-          </Button>
-        </div>,
-      ),
-    );
+            }
+            scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
+            blinkMeeting(meeting.id);
+          }}
+        >
+          {t("actions.show")}
+        </Button>
+      </div>
+    ));
   }
 
   const SCROLL_MARGIN_PIXELS = 20;

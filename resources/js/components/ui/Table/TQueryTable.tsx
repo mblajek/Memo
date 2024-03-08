@@ -395,7 +395,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     const errors = filterErrors()?.values();
     if (errors) {
       // TODO: Consider showing the errors in the table header.
-      toastError(<ToastMessages messages={[...errors]} />);
+      toastError(() => <ToastMessages messages={[...errors]} />);
     }
   });
   const defaultColumnVisibility = createMemo(() => getDefaultColumnVisibility(columnsConfig()));
