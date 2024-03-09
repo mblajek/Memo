@@ -1,6 +1,21 @@
-meetingResource.resource: "$t(models.meeting.resources)"
-dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
+# Attribute name key is attributes.<model>.<attribute>, with "generic" being the fallback model.
+attributes:
+  generic:
+    birthDate: "data urodzenia"
 
-position:
-  # attributes of meetingType dictionary:
-  durationMinutes: "domyślna długość spotkania"
+  meetingResource.resource: "$t(models.meeting.resources)"
+  dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
+
+  position:
+    # attributes of meetingType dictionary:
+    durationMinutes: "domyślna długość spotkania"
+
+requirement_level:
+  empty: "pole nie powinno mieć wartości"
+  optional: "pole jest opcjonalne"
+  recommended: "pole powinno być wypełnione"
+  required: "pole musi być wypełnione"
+
+no_attributes: "Brak atrybutów do pokazania"
+
+show_all: "Pokazuj wszystkie"

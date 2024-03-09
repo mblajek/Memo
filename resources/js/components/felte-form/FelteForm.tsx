@@ -7,12 +7,13 @@ import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
-import {Context, JSX, createContext, onCleanup, onMount, splitProps, useContext} from "solid-js";
+import {Context, JSX, createContext, createMemo, onCleanup, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
 import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
+import {recursiveUnwrapFormValues} from "./wrapped_fields";
 
 type FormContextValue<T extends Obj = Obj> = {
   readonly props: FormProps<T>;
@@ -76,7 +77,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     ],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-  const translationsFormNames = () => props.translationsFormNames || [allProps.id];
+  const translationsFormNames = createMemo(() => [...(props.translationsFormNames || [allProps.id]), "generic"]);
   const translations: FormTranslations = {
     formName: (o) =>
       t(
@@ -112,7 +113,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     extend: [validator({schema: props.schema}), reporter],
     onSubmit: (values, ctx) =>
       // Remove the unknown validation field from values so that it doesn't get submitted.
-      createFormOptions.onSubmit?.({...values, [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined}, ctx),
+      createFormOptions.onSubmit?.(
+        {
+          // Cast the type. It is not true but it is a hack we use to allow the form manipulate the transformed data.
+          ...(recursiveUnwrapFormValues(values) as T),
+          [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined,
+        },
+        ctx,
+      ),
     onError: (errorResp, ctx) => {
       createFormOptions.onError?.(errorResp, ctx);
       if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
