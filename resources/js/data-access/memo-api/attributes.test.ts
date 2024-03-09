@@ -62,7 +62,9 @@ describe("Attributes", () => {
   ]);
 
   test("labels", () => {
-    expect(attributes.byId.get("aa1")?.label).toEqual("t(attributes.blip.aa1_attr,models.blip.aa1)");
+    expect(attributes.byId.get("aa1")?.label).toEqual(
+      "t(attributes.attributes.blip.aa1_attr,attributes.attributes.generic.aa1_attr,models.blip.aa1,models.generic.aa1)",
+    );
     expect(attributes.byId.get("aa2")?.label).toEqual("aa2 attr");
   });
 
