@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Utils\Date\DateHelper;
+use App\Utils\Transformer\ArrayKeyTransformer;
 use Closure;
 use DateTimeInterface;
 use Illuminate\Http\Request;
@@ -21,9 +22,9 @@ abstract class AbstractJsonResource extends JsonResource
         return false;
     }
 
-    public static function makeOrNull($resource): ?JsonResource
+    public static function makeOrNull(mixed $resource): ?JsonResource
     {
-        return $resource ? self::make($resource) : null;
+        return ($resource !== null) ? self::make($resource) : null;
     }
 
     public function toArray(Request $request): array
@@ -53,7 +54,7 @@ abstract class AbstractJsonResource extends JsonResource
         if ($this->withAttrValues()) {
             $resource = $this->resource;
             if (method_exists($resource, 'attrValues')) {
-                $result += $resource->attrValues();
+                $result += ArrayKeyTransformer::toCamel($resource->attrValues());
             } else {
                 FatalExceptionFactory::unexpected()->throw();
             }

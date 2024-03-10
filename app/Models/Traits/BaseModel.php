@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Throwable;
 
 /**
  * @property string id
@@ -22,7 +23,7 @@ trait BaseModel
     use HasFactory;
     use HasUuid;
 
-    private const BASE_CASTS = [
+    private const array BASE_CASTS = [
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
@@ -31,7 +32,7 @@ trait BaseModel
     {
         try {
             return $this->saveOrFail($options);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             FatalExceptionFactory::unexpected()->throw();
         }
     }
@@ -46,7 +47,7 @@ trait BaseModel
         return $user;
     }
 
-    public static function boot()
+    public static function boot(): void
     {
         /** @noinspection PhpMultipleClassDeclarationsInspection */
         parent::boot();
@@ -72,7 +73,7 @@ trait BaseModel
             });
         }
         if ($hasDeletedBy) {
-            static::softDeleted(function (Model $model) {
+            static::softDeleted(/** @throws ApiException */ function (Model $model) {
                 /** @var $model HasDeletedBy */
                 $model->deleted_by = self::getAuthOrFail()->id;
                 $model->save();

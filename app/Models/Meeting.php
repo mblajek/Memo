@@ -64,6 +64,7 @@ class Meeting extends Model
     ];
 
     protected $casts = [
+        'date' => 'string',
         'is_remote' => 'boolean',
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
