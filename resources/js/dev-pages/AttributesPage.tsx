@@ -55,7 +55,7 @@ export default (() => {
     createSolidTable({
       ...getBaseTableOptions<Attribute>({
         features: {
-          sorting: [{id: "Label", desc: false}],
+          sorting: [{id: "Name", desc: false}],
           pagination: {pageIndex: 0, pageSize: 1e6},
         },
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
@@ -64,6 +64,10 @@ export default (() => {
         return [...(attributes() || [])];
       },
       columns: [
+        h.accessor((p) => p.resource.defaultOrder, {
+          id: "Order",
+          sortDescFirst: false,
+        }),
         h.accessor("id", {
           id: "Id",
           cell: tableCells.uuid(),
@@ -79,9 +83,6 @@ export default (() => {
           cell: cellFunc<string, Attribute>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
           ...textSort,
         }),
-        h.accessor("isFixed", {
-          id: "Fixed",
-        }),
         h.accessor("resource.facilityId", {
           id: "Facility",
           cell: cellFunc<string, Attribute>((props) => (
@@ -90,6 +91,9 @@ export default (() => {
             </PaddedCell>
           )),
           ...textSort,
+        }),
+        h.accessor("isFixed", {
+          id: "Fixed",
         }),
         h.accessor("model", {
           id: "Model",
