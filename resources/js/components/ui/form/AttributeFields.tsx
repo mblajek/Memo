@@ -1,5 +1,5 @@
 import {useFormContext} from "components/felte-form/FelteForm";
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
@@ -18,6 +18,7 @@ import {TQuerySelect} from "./TQuerySelect";
 import {TextField} from "./TextField";
 import {SimpleMultiField} from "./multi_fields";
 
+export type AttributesType = Record<string, unknown>;
 export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
 
 interface Props {
@@ -40,6 +41,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
   const AttributeField: VoidComponent<{readonly attribute: Attribute}> = (aProps) => {
     const field = () => {
       const name = () => fieldName(aProps.attribute);
+      const value = () => form.data(name());
       const nullable = compareRequirementLevels(aProps.attribute.requirementLevel, "required") < 0;
 
       function simpleAttributeField(type: SimpleAttributeType, fieldName = name()) {
@@ -57,7 +59,15 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
               </div>
             );
           case "date":
-            return <TextField name={fieldName} type="date" label="" small />;
+            return (
+              <TextField
+                name={fieldName}
+                type="date"
+                label=""
+                class={cx("text-black", value() ? undefined : "text-opacity-50")}
+                small
+              />
+            );
           case "datetime":
             // TODO: Implement. Cannot use datetime-local because this needs to use UTC.
             return undefined;
@@ -168,10 +178,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         <For each={nonFixedAttributes()?.map(({id}) => id)} fallback={t("attributes.no_attributes")}>
           {(attributeId) => {
             const attribute = attributes()!.get(attributeId);
+            const isEmpty = () => {
+              const value = form.data(fieldName(attribute));
+              return value == undefined || value == "";
+            };
             return (
               <HideableSection
                 show={
-                  form.data(attribute.apiName) !== undefined ||
+                  !isEmpty() ||
                   !props.minRequirementLevel ||
                   compareRequirementLevels(attribute.requirementLevel, props.minRequirementLevel) >= 0
                 }

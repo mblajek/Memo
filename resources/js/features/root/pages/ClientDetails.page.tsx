@@ -4,7 +4,7 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {EditButton} from "components/ui/Button";
 import {BigSpinner} from "components/ui/Spinner";
-import {ATTRIBUTES_SCHEMA, AttributeFields} from "components/ui/form/AttributeFields";
+import {ATTRIBUTES_SCHEMA, AttributeFields, AttributesType} from "components/ui/form/AttributeFields";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {isDEV} from "components/utils/dev_mode";
@@ -23,6 +23,11 @@ export default (() => {
   const meetingsStats = useUserMeetingsStats("clients", userId);
   const [editMode, setEditMode] = createSignal(false);
   const [showAllAttributes, setShowAllAttributes] = createSignal(false);
+
+  async function updateAttributes(values: {client: AttributesType}) {
+    console.log(values.client);
+  }
+
   return (
     <div class="m-2">
       <QueryBarrier queries={[dataQuery]} ignoreCachedData {...notFoundError()}>
@@ -53,6 +58,7 @@ export default (() => {
                   class="flex flex-col gap-3"
                   schema={z.object({client: ATTRIBUTES_SCHEMA})}
                   initialValues={user()}
+                  onSubmit={updateAttributes}
                 >
                   {(form) => (
                     <AttributeFields
