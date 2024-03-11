@@ -3,6 +3,7 @@
 namespace App\Tquery\Tables;
 
 use App\Models\Attribute;
+use App\Models\Enums\AttributeTable;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
@@ -24,8 +25,8 @@ readonly class ClientTquery extends FacilityUserTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-        foreach (Attribute::getByFacility($this->facility, 'clients') as $attribute) {
-            $config->addAttribute($attribute->id, 'client');
+        foreach (Attribute::getBy($this->facility, AttributeTable::Client) as $attribute) {
+            $config->addAttribute($attribute, 'client');
         }
         return $config;
     }

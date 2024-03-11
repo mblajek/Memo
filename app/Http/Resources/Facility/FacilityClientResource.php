@@ -9,6 +9,8 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     schema: 'FacilityClientResource',
     properties: [
+        new OA\Property(property: 'createdAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+        new OA\Property(property: 'updatedAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
     ]
 )] /**
  * @method __construct(User $resource)
@@ -24,8 +26,8 @@ class FacilityClientResource extends AbstractJsonResource
     protected static function getMappedFields(): array
     {
         return [
-            // todo: get from attributes
-            'genderDictId' => true,
+            'createdAt' => true,
+            'updatedAt' => true,
         ];
     }
 }

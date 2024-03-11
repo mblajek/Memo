@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use App\Exceptions\FatalExceptionFactory;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\ValueBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCreatedBy;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string attribute_id
@@ -18,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string string_value
  * @property ?int int_value
  * @property ?int datetime_value
- * @property-read Attribute attribute
  * @method static ValueBuilder query()
  */
 class Value extends Model
@@ -42,35 +39,26 @@ class Value extends Model
     protected $casts = [
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
-        'int_value' => 'integer',
-        'datetime_value' => 'immutable_datetime',
     ];
 
-    protected $with = ['attribute'];
-
-    public function attribute(): BelongsTo
+    public function attribute(): Attribute
     {
-        return $this->belongsTo(Attribute::class, 'attribute_id');
+        return Attribute::getById($this->attribute_id);
     }
 
-    public function getScalarValue(): string|int|bool|null
+    public function getTypeColumn(): string
     {
-        $attributeType = $this->attribute->type;
-        $value = $attributeType->tryGetTable() ? $this->ref_object_id : match ($attributeType) {
-            AttributeType::Bool, AttributeType::Int => $this->int_value,
-            AttributeType::Dict => $this->ref_dict_id,
-            // todo: date, datetime
-            default => FatalExceptionFactory::unexpected()->throw(),
+        return match ($this->attribute()->type) {
+            AttributeType::Bool, AttributeType::Int => 'int_value',
+            AttributeType::Date, AttributeType::Datetime => 'datetime_value',
+            AttributeType::String, AttributeType::Text => 'string_value',
+            AttributeType::Dict => 'ref_dict_id',
+            default => 'ref_object_id',
         };
-        if ($value === null) {
-            // at least one column must contain non-null value
-            FatalExceptionFactory::unexpected()->throw();
-        }
-        return match ($attributeType) {
-            AttributeType::Bool => (bool)$value,
-            AttributeType::Int => $value,
-            // todo: date, datetime
-            default => (string)$value,
-        };
+    }
+
+    public function getTypeColumnValue(): int|string|bool|null
+    {
+        return $this->getAttributeFromArray($this->getTypeColumn());
     }
 }

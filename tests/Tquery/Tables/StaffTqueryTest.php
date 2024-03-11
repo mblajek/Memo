@@ -109,7 +109,7 @@ class StaffTqueryTest extends TqueryConfigTest
                 and date > curdate()
                 and date <= date_add(curdate(), interval 1 month))
                 SQL,
-                'staff.hasFacilityAdmin' => "(`members`.`facility_admin_grant_id`) is not null"
+                'staff.hasFacilityAdmin' => "(`members`.`facility_admin_grant_id`) is not null",
             ],
             $this->getSelectQueries()
         );

@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Enums\AttributeRequirementLevel;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\AttributeBuilder;
 use App\Models\Traits\BaseModel;
+use App\Models\UuidEnum\AttributeUuidEnum;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
-use Illuminate\Database\Eloquent\Builder;
+use BackedEnum;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -53,6 +55,8 @@ class Attribute extends Model
         'requirement_level' => AttributeRequirementLevel::class,
     ];
 
+    private static ?array $all = null;
+
     public function getTqueryDataType(): TqDataTypeEnum|TqDictDef
     {
         $nullable = $this->requirement_level->isNullable();
@@ -65,17 +69,30 @@ class Attribute extends Model
             AttributeType::Users, AttributeType::Clients, AttributeType::Attributes => $nullable ?
                 TqDataTypeEnum::uuid_nullable : TqDataTypeEnum::uuid,
             AttributeType::Dict => $nullable ? TqDataTypeEnum::dict_nullable : TqDataTypeEnum::dict,
-            AttributeType::Text =>  $nullable ? TqDataTypeEnum::text : TqDataTypeEnum::text_nullable,
+            AttributeType::Text => $nullable ? TqDataTypeEnum::text : TqDataTypeEnum::text_nullable,
         };
         return $type->isDict() ? (new TqDictDef($type, $this->dictionary_id)) : $type;
     }
 
-    /** @return self[] */
-    public static function getByFacility(Facility $facility, string $table): array
+    public static function getAll(): array
     {
-        // todo: read from cache
-        return self::query()->where(
-            fn(Builder $builder) => $builder->orWhere('facility_id', $facility->id)->orWhereNull('facility_id')
-        )->where('table', $table)->get()->all();
+        return self::$all ?? (self::$all = self::query()->orderBy('default_order')->get()->keyBy('id')->all());
+    }
+
+    /** @return list<string, self> */
+    public static function getBy(
+        null|Facility|string|true $facility = null,
+        null|AttributeTable $table = null,
+    ): array {
+        $facility = ($facility === true) ? PermissionMiddleware::permissions()->facility : $facility;
+        $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
+        return array_filter(self::getAll(), fn(self $attribute) => //
+            ($facilityId === null || $attribute->facility_id === null || $attribute->facility_id === $facilityId)
+            && ($table === null || $attribute->getAttributeValue('table') === $table));
+    }
+
+    public static function getById((AttributeUuidEnum&BackedEnum)|string $id): self
+    {
+        return Attribute::getAll()[is_string($id) ? $id : $id->value];
     }
 }

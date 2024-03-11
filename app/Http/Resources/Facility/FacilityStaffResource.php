@@ -10,6 +10,8 @@ use OpenApi\Attributes as OA;
     schema: 'FacilityStaffResource',
     properties: [
         new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: false),
+        new OA\Property(property: 'createdAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+        new OA\Property(property: 'updatedAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
     ]
 )] /**
  * @method __construct(User $resource)
@@ -21,6 +23,8 @@ class FacilityStaffResource extends AbstractJsonResource
     protected static function getMappedFields(): array
     {
         return [
+            'createdAt' => true,
+            'updatedAt' => true,
             'hasFacilityAdmin' => true,
         ];
     }
