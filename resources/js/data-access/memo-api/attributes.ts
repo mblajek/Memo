@@ -123,8 +123,10 @@ export class Attribute<T = unknown> {
         resource.name,
         (n) =>
           [
-            `attributes.${resource.model}.${n}`,
+            `attributes.attributes.${resource.model}.${n}`,
+            `attributes.attributes.generic.${n}`,
             resource.isFixed ? `models.${resource.model}.${resource.apiName}` : undefined,
+            `models.generic.${resource.apiName}`,
           ].filter(NON_NULLABLE),
         resource.dictionaryId ? {defaultValue: dictionaries.get(resource.dictionaryId).label} : undefined,
       ),

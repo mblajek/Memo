@@ -1,7 +1,7 @@
-import {ParentComponent, createMemo} from "solid-js";
-import {debouncedAccessor} from "../utils";
+import {ParentComponent, createMemo, splitProps} from "solid-js";
+import {debouncedAccessor, htmlAttributes} from "../utils";
 
-interface Props {
+interface Props extends htmlAttributes.div {
   readonly show: unknown;
 }
 
@@ -12,7 +12,8 @@ const TRANSITION_TIME_MS = 200;
  *
  * The section folds and unfolds with a transition.
  */
-export const HideableSection: ParentComponent<Props> = (props) => {
+export const HideableSection: ParentComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["show", "children"]);
   const show = createMemo(() => !!props.show);
   let div: HTMLDivElement | undefined;
   /** Whether the section is fully opened. */
@@ -37,11 +38,13 @@ export const HideableSection: ParentComponent<Props> = (props) => {
   return (
     <div
       ref={div}
-      class="overflow-y-hidden"
-      style={{
-        "transition": `max-height ${TRANSITION_TIME_MS}ms ease-in-out`,
-        "max-height": maxHeight(),
-      }}
+      {...htmlAttributes.merge(divProps, {
+        class: "overflow-y-hidden",
+        style: {
+          "transition": `max-height ${TRANSITION_TIME_MS}ms ease-in-out`,
+          "max-height": maxHeight(),
+        },
+      })}
     >
       {props.children}
     </div>

@@ -7,13 +7,14 @@ import {PopOver} from "./PopOver";
 import {ChildrenOrFunc} from "./children_func";
 
 interface Props extends htmlAttributes.button {
+  readonly divClass?: string;
   readonly popOver: ChildrenOrFunc<[Accessor<popover.Api>]>;
 }
 
 export const SplitButton: ParentComponent<Props> = (allProps) => {
-  const [props, buttonProps] = splitProps(allProps, ["popOver"]);
+  const [props, buttonProps] = splitProps(allProps, ["divClass", "popOver"]);
   return (
-    <div class="flex items-stretch">
+    <div class={cx(props.divClass, "flex items-stretch")}>
       <Button
         {...htmlAttributes.merge(buttonProps, {class: cx("flex-grow", props.popOver ? "!rounded-e-none" : undefined)})}
       >
