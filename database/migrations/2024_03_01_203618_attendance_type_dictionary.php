@@ -18,7 +18,7 @@ return new class extends Migration {
 
         DB::table('dictionaries')->upsert([
             [
-                'id' => '1f68adf4-e0b7-495b-a6ea-305987cf2a33',
+                'id' => $attendanceTypeDictionary,
                 'name' => 'attendanceType',
                 'is_fixed' => true,
                 'is_extendable' => true,
