@@ -23,7 +23,17 @@ export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
 interface TextFieldTextFieldProps
   extends Pick<
     htmlAttributes.input,
-    "type" | "min" | "max" | "step" | "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
+    | "class"
+    | "type"
+    | "min"
+    | "max"
+    | "step"
+    | "autofocus"
+    | "autocomplete"
+    | "readonly"
+    | "onClick"
+    | "onInput"
+    | "onChange"
   > {
   readonly name: string;
   readonly small?: boolean;

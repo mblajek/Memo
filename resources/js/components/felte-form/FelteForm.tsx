@@ -10,6 +10,7 @@ import {TOptions} from "i18next";
 import {Context, JSX, createContext, createMemo, onCleanup, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
+import {createConfirmation} from "../ui/confirmation";
 import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
 import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
@@ -51,7 +52,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     readonly disabled?: boolean;
     readonly onFormCreated?: (form: FormType<T>) => void;
     /** Whether closing the browser tab should display a warning if the form is dirty. Default: true. */
-    readonly preventTabClose?: boolean;
+    readonly preventPageLeave?: boolean;
   };
 
 /**
@@ -64,6 +65,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
  */
 export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Element => {
   const t = useLangFunc();
+  const confirmation = createConfirmation();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
     [
@@ -73,7 +75,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       "translationsModel",
       "disabled",
       "onFormCreated",
-      "preventTabClose",
+      "preventPageLeave",
     ],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
@@ -188,14 +190,30 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const form = createForm<T>(formConfig) as FormType<T>;
 
   onMount(() => {
-    function onBeforeUnload(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
-      if ((props.preventTabClose ?? true) && !e.defaultPrevented && (form.isDirty() || form.isSubmitting())) {
+    function shouldConfirmPageLeave(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
+      return (props.preventPageLeave ?? true) && !e.defaultPrevented && (form.isDirty() || form.isSubmitting());
+    }
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (shouldConfirmPageLeave(e)) {
         e.preventDefault();
       }
     }
     window.addEventListener("beforeunload", onBeforeUnload);
     onCleanup(() => window.removeEventListener("beforeunload", onBeforeUnload));
-    useBeforeLeave(onBeforeUnload);
+    useBeforeLeave(async (e) => {
+      if (shouldConfirmPageLeave(e)) {
+        e.preventDefault();
+        if (
+          await confirmation.confirm({
+            title: t("form_page_leave_confirmation.title"),
+            body: t("form_page_leave_confirmation.body"),
+            cancelText: t("form_page_leave_confirmation.cancel"),
+            confirmText: t("form_page_leave_confirmation.confirm"),
+          })
+        )
+          e.retry(true);
+      }
+    });
   });
 
   const formDisabled = () => props.disabled || form.isSubmitting();

@@ -51,7 +51,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       translationsModel="user"
       initialValues={getInitialValues()}
       class="flex flex-col gap-2"
-      preventTabClose={false}
+      preventPageLeave={false}
     >
       <TextField name="email" type="email" autocomplete="username" {...TRIM_ON_BLUR} autofocus />
       <PasswordField name="password" autocomplete="current-password" />
