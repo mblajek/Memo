@@ -2,7 +2,7 @@ import {FullLogo} from "components/ui/FullLogo";
 import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
-import {BiRegularTable} from "solid-icons/bi";
+import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
@@ -104,6 +104,7 @@ export const Navbar: VoidComponent = () => {
               small
             />
             <NavigationItem icon={SiSwagger} href="/api/documentation" routeKey="API" target="_blank" small />
+            <NavigationItem icon={BiRegularErrorAlt} href="/dev/crash" routeKey="Crash" small />
             <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />
           </NavigationSection>
         </Show>

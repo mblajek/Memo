@@ -14,7 +14,6 @@ import {
 } from "components/ui/Table";
 import {QueryBarrier} from "components/utils";
 import {Attribute} from "data-access/memo-api/attributes";
-import {} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {Show, VoidComponent, createMemo} from "solid-js";
