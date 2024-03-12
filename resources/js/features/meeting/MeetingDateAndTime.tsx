@@ -3,7 +3,6 @@ import {HideableSection} from "components/ui/HideableSection";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
-import {ACTION_ICONS} from "components/ui/icons";
 import {EN_DASH} from "components/ui/symbols";
 import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {
@@ -12,9 +11,11 @@ import {
   dayMinuteToTimeInput,
   timeInputToDayMinute,
 } from "components/utils/day_minute_util";
+import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
+import {MeetingInSeriesInfo} from "./MeetingInSeriesInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
 
 interface Props {
@@ -25,6 +26,8 @@ interface Props {
   readonly suggestedTimes?: SuggestedTimes;
   readonly viewMode: boolean;
   readonly forceEditable?: boolean;
+  /** The meeting resource, for showing some of the readonly information about the meeting. */
+  readonly meeting?: MeetingResource;
 }
 
 interface SuggestedTimes {
@@ -178,11 +181,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
               </Show>
             </div>
-            <Show when={form.data("fromMeetingId")}>
-              <div>
-                <ACTION_ICONS.repeat class="inlineIcon" /> {t("meetings.meeting_is_in_series")}
-              </div>
-            </Show>
+            <Show when={props.meeting}>{(meeting) => <MeetingInSeriesInfo meeting={meeting()} />}</Show>
           </div>
         </Show>
       </FieldBox>

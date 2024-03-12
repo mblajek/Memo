@@ -21,6 +21,7 @@ export interface MeetingResource extends CreatedUpdatedResource {
   readonly clients: readonly MeetingAttendantResource[];
   readonly resources: readonly MeetingResourceResource[];
   readonly fromMeetingId: string | null;
+  readonly interval: string | null;
 }
 
 export interface MeetingAttendantResource {

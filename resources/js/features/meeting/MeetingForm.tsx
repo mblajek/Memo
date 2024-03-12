@@ -114,6 +114,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                 // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
                 viewMode={props.viewMode}
                 forceEditable={props.forceTimeEditable}
+                meeting={props.meeting}
               />
             </div>
             <div class="flex gap-1">

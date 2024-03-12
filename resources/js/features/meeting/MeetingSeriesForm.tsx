@@ -92,7 +92,7 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
               name="interval"
               items={Array.from(INTERVALS, (interval) => ({
                 value: interval,
-                label: () => t(`forms.meeting_series.interval_labels.${interval}`),
+                label: () => t(`meetings.interval_labels.${interval}`),
               }))}
             />
             <RangeField name="seriesLength" min="0" max="1" step="any" />

@@ -1,6 +1,5 @@
 import {createMutation} from "@tanstack/solid-query";
 import {Button, DeleteButton} from "components/ui/Button";
-import {capitalizeString} from "components/ui/Capitalize";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
@@ -23,6 +22,7 @@ import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
 import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
+import {MeetingInSeriesInfo} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
@@ -88,7 +88,27 @@ export function useMeetingTableColumns() {
       },
       duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
       isInSeries: {name: "isClone"},
-      seriesType: {name: "interval", initialVisible: false},
+      seriesType: {
+        name: "interval",
+        initialVisible: false,
+        columnDef: {
+          cell: cellFunc<string, TQMeetingResource>((props) => (
+            <PaddedCell>
+              <ShowCellVal v={props.v}>
+                {(v) => (
+                  <div>
+                    {v()}{" "}
+                    <span class="text-grey-text">
+                      {t("parenthesised", {text: t(`meetings.interval_labels.${v()}`, {defaultValue: v()})})}
+                    </span>
+                  </div>
+                )}
+              </ShowCellVal>
+            </PaddedCell>
+          )),
+          size: 120,
+        },
+      },
       category: {name: "categoryDictId", initialVisible: false},
       type: {name: "typeDictId"},
       status: {
@@ -231,7 +251,7 @@ export function useMeetingTableColumns() {
       },
       dateTimeActions: {
         name: "date",
-        extraDataColumns: ["startDayminute", "durationMinutes", "fromMeetingId", "id"],
+        extraDataColumns: ["startDayminute", "durationMinutes", "fromMeetingId", "interval", "id"],
         columnDef: {
           cell: cellFunc<string, TQMeetingResource>((props) => (
             <PaddedCell>
@@ -246,14 +266,8 @@ export function useMeetingTableColumns() {
                             <MeetingTime
                               startDayMinute={startDayMinute()}
                               durationMinutes={(props.row.durationMinutes as number) ?? 0}
-                            />
-                            <Show when={props.row.fromMeetingId}>
-                              {" "}
-                              <ACTION_ICONS.repeat
-                                class="inlineIcon"
-                                title={capitalizeString(t("meetings.meeting_is_in_series"))}
-                              />
-                            </Show>
+                            />{" "}
+                            <MeetingInSeriesInfo meeting={props.row} compact />
                           </div>
                         )}
                       </Show>

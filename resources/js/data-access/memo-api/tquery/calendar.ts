@@ -25,6 +25,7 @@ const COLUMNS = [
   "notes",
   "isRemote",
   "fromMeetingId",
+  "interval",
 ] satisfies (keyof MeetingResource)[];
 
 /** A meeting resource type fetched from tquery. */
