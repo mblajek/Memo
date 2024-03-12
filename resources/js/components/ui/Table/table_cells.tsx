@@ -27,10 +27,15 @@ export type CellComponent<T = RowDataType> = (ctx: CellContext<T, unknown>) => J
 export function useTableCells() {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
+  const defaultCell = <T,>() =>
+    cellFunc<unknown, T>((props) => (
+      <PaddedCell class="wrapText">
+        <ShowCellVal v={props.v}>{(v) => defaultFormatValue(v())}</ShowCellVal>
+      </PaddedCell>
+    ));
   return {
     defaultHeader: <T,>() => ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent<T>,
-    default: <T,>() =>
-      cellFunc<unknown, T>((props) => <PaddedCell class="wrapText">{defaultFormatValue(props.v)}</PaddedCell>),
+    default: defaultCell,
     bool: <T,>() =>
       cellFunc<boolean, T>((props) => (
         <PaddedCell>
@@ -71,6 +76,10 @@ export function useTableCells() {
           <ShowCellVal v={props.v}>{(v) => NUMBER_FORMAT.format(v())}</ShowCellVal>
         </PaddedCell>
       )),
+    list: defaultCell,
+    object: defaultCell,
+    string: defaultCell,
+    text: defaultCell,
     uuid: <T,>() =>
       cellFunc<string, T>((props) => (
         <PaddedCell>
