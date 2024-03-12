@@ -198,7 +198,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                   >
                     <Capitalize text={attribute.label} />
                   </label>
-                  <div class="flex items-center justify-center">
+                  <div class="flex items-center justify-center text-grey-text">
                     <RequirementLevelMarker level={attribute.requirementLevel} />
                   </div>
                   <div class="flex flex-col justify-center">
@@ -231,7 +231,7 @@ interface RequirementLevelProps {
 export const RequirementLevelMarker: VoidComponent<RequirementLevelProps> = (props) => {
   const t = useLangFunc();
   return (
-    <span class="text-sm text-grey-text" title={t(`attributes.requirement_level.${props.level}`)}>
+    <span class="text-sm" title={t(`attributes.requirement_level.${props.level}`)}>
       <Switch>
         <Match when={props.level === "empty"}>⛌</Match>
         <Match when={props.level === "optional"}>?</Match>
