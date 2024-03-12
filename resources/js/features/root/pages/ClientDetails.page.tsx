@@ -1,14 +1,18 @@
 import {useParams} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {EditButton} from "components/ui/Button";
 import {BigSpinner} from "components/ui/Spinner";
 import {ATTRIBUTES_SCHEMA, AttributeFields, AttributesType} from "components/ui/form/AttributeFields";
+import {createAttributesProcessor} from "components/ui/form/attributes_processor";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {isDEV} from "components/utils/dev_mode";
+import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
+import {useInvalidator} from "data-access/memo-api/invalidator";
+import {ClientResourceForPatch} from "data-access/memo-api/resources/client.resource";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
 import {UserMeetingsTables} from "features/facility-users/UserMeetingsTables";
 import {useUserMeetingsStats} from "features/facility-users/user_meetings_stats";
@@ -18,14 +22,23 @@ import {z} from "zod";
 export default (() => {
   const t = useLangFunc();
   const params = useParams();
+  const invalidate = useInvalidator();
+  const clientAttributesProcessor = createAttributesProcessor("client");
   const userId = () => params.userId!;
   const dataQuery = createQuery(() => FacilityClient.clientQueryOptions(userId()));
   const meetingsStats = useUserMeetingsStats("clients", userId);
   const [editMode, setEditMode] = createSignal(false);
   const [showAllAttributes, setShowAllAttributes] = createSignal(false);
+  const clientMutation = createMutation(() => ({
+    mutationFn: FacilityClient.updateClient,
+    meta: {isFormSubmit: true},
+  }));
 
   async function updateAttributes(values: {client: AttributesType}) {
-    console.log(values.client);
+    const patch: ClientResourceForPatch = {id: userId(), client: clientAttributesProcessor.extract(values.client)};
+    await clientMutation.mutateAsync(patch);
+    toastSuccess(t("forms.client_edit.success"));
+    invalidate.users();
   }
 
   return (

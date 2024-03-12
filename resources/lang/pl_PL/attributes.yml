@@ -11,10 +11,10 @@ attributes:
     durationMinutes: "domyślna długość spotkania"
 
 requirement_level:
-  empty: "pole nie powinno mieć wartości"
-  optional: "pole jest opcjonalne"
-  recommended: "pole powinno być wypełnione"
-  required: "pole musi być wypełnione"
+  empty: "Pole nie powinno mieć wartości"
+  optional: "Pole jest opcjonalne"
+  recommended: "Pole powinno być wypełnione"
+  required: "Pole musi być wypełnione"
 
 no_attributes: "Brak atrybutów do pokazania"
 

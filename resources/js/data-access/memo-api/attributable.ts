@@ -36,3 +36,7 @@ export function readAttribute<T>(object: Attributable, attributeApiName: string)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (object as any)[attributeApiName] as T;
 }
+
+/** An attribute to extend, to mark that an object (e.g. from the API) is attributable as the specified model. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export interface AttributableMarker<Model extends string> {}

@@ -92,3 +92,7 @@ meeting_series_create:
   formName: "Utwórz serię spotkań"
   submit: "Utwórz spotkania"
   success: "Utworzono serię spotkań"
+
+client_edit:
+  formName: "Edycja klienta"
+  success: "Zmieniono dane klienta"
