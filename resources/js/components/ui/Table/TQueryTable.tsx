@@ -396,8 +396,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   createEffect(() => {
     const errors = filterErrors()?.values();
     if (errors) {
+      // Make the messages non-reactive so that they are not changed while the toast is shown.
+      const messages = [...errors];
       // TODO: Consider showing the errors in the table header.
-      toastError(() => <ToastMessages messages={[...errors]} />);
+      toastError(() => <ToastMessages messages={messages} />);
     }
   });
   const defaultColumnVisibility = createMemo(() => getDefaultColumnVisibility(columnsConfig()));
