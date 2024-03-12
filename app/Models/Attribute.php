@@ -74,19 +74,24 @@ class Attribute extends Model
         return $type->isDict() ? (new TqDictDef($type, $this->dictionary_id)) : $type;
     }
 
-    public static function getAll(): array
+    public static function getAll(bool $keyByApiName = false): array
     {
-        return self::$all ?? (self::$all = self::query()->orderBy('default_order')->get()->keyBy('id')->all());
+        if (self::$all === null) {
+            $all = self::query()->orderBy('default_order')->get();
+            self::$all = ['id' => $all->keyBy('id')->all(), 'api_name' => $all->keyBy('api_name')->all()];
+        }
+        return self::$all[$keyByApiName ? 'api_name' : 'id'];
     }
 
     /** @return list<string, self> */
     public static function getBy(
+        bool $keyByApiName = false,
         null|Facility|string|true $facility = null,
         null|AttributeTable $table = null,
     ): array {
         $facility = ($facility === true) ? PermissionMiddleware::permissions()->facility : $facility;
         $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
-        return array_filter(self::getAll(), fn(self $attribute) => //
+        return array_filter(self::getAll($keyByApiName), fn(self $attribute) => //
             ($facilityId === null || $attribute->facility_id === null || $attribute->facility_id === $facilityId)
             && ($table === null || $attribute->getAttributeValue('table') === $table));
     }
@@ -94,5 +99,10 @@ class Attribute extends Model
     public static function getById((AttributeUuidEnum&BackedEnum)|string $id): self
     {
         return Attribute::getAll()[is_string($id) ? $id : $id->value];
+    }
+
+    public static function getByApiName(string $apiName): self
+    {
+        return Attribute::getAll(keyByApiName: true)[$apiName];
     }
 }
