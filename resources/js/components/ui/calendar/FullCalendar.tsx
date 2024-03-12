@@ -645,7 +645,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                           {text}
                         </Button>
                       )}
-                      title={text}
+                      title={`${text}\n${t("calendar.click_for_staff_calendar")}`}
                     />
                   ),
                   ...getCalendarColumnPart(day, id),

@@ -114,7 +114,9 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     </Show>
   );
 
-  const Separator: VoidComponent = () => <hr class="-mx-1 border-black border-opacity-30" />;
+  const Separator: VoidComponent = () => (
+    <hr class="-mx-1 -mb-px" style={coloringToStyle(coloring()!, {part: "separator"})} />
+  );
 
   return (
     <>
