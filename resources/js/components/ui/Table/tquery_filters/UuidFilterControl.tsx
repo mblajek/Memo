@@ -41,8 +41,7 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
           name={filterFieldNames.get(`val_${props.name}`)}
           type="text"
           autocomplete="off"
-          class="h-full w-full border border-input-border rounded"
-          style={{"font-family": "monospace"}}
+          class="h-full w-full border border-input-border rounded monospace"
           value={value()}
           onInput={({target: {value}}) => setValue(value)}
         />

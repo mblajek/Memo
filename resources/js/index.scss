@@ -214,4 +214,8 @@ html {
     @apply wrapText;
     overflow-wrap: anywhere;
   }
+
+  .monospace {
+    font-family: "Roboto Mono", monospace;
+  }
 }
