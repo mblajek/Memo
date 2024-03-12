@@ -60,6 +60,8 @@ select:
 user_settings: "Opcje użytkownika"
 
 created_by: "Utworzono przez:"
+updated_by: "Zmodyfikowano przez:"
+toggle_created_updated_info: "Przełącz: Utworzono/Zmodyfikowano"
 unknown: "nieznany"
 
 open_in_new_tab: "Otwórz w nowej karcie"
@@ -69,3 +71,9 @@ switch_theme: "Motyw aplikacji"
 system_version_update: "Odśwież stronę aby zaktualizować aplikację"
 
 rich_text_field: "Pole tekstowe wspierające tagi. Kliknij aby zobaczyć więcej informacji."
+
+form_page_leave_confirmation:
+  title: "Porzucić zmiany?"
+  body: "Zmiany nie zostaną zapisane. Czy na pewno chcesz opuścić stronę?"
+  confirm: "Opuść stronę"
+  cancel: "Wróć do edycji"

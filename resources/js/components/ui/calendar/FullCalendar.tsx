@@ -93,6 +93,12 @@ type PersistentState = {
 };
 const PERSISTENCE_VERSION = 3;
 
+const BG_CLASSES = {
+  background: "bg-[rgb(226,227,231)]",
+  facilityWorkTime: "bg-[rgb(236,237,241)]",
+  staffWorkTime: "bg-white",
+};
+
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
  * switcher, and a large calendar with either month view, or hours view.
@@ -516,31 +522,34 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     const range = new DaysRange(day.minus({days: 1}), day);
     const workTimeBlocks = () => {
       const workTimes = events().filter(
-        (e) => e.meeting.typeDictId === meetingTypeDict()?.work_time.id && range.contains(e.date),
+        (w) => w.meeting.typeDictId === meetingTypeDict()?.work_time.id && range.contains(w.date),
       );
-      let staffWorkTimes: typeof workTimes | undefined;
-      if (staffId) {
-        staffWorkTimes = workTimes.filter((e) => e.meeting.staff.some((staff) => staff.userId === staffId));
+      const facilityWorkTimes = workTimes.filter((w) => !w.meeting.staff.length);
+      const staffWorkTimes = staffId
+        ? workTimes.filter((w) => w.meeting.staff.some((staff) => staff.userId === staffId))
+        : [];
+      function makeBlocks(workTimes: ReturnType<typeof events>, className: string) {
+        return workTimes.map((w) => ({
+          ...w,
+          content: () => (
+            <WorkTimeBlock
+              class={className}
+              label={w.meeting.notes || undefined}
+              onEditClick={() =>
+                meetingModal.show({
+                  meetingId: w.meeting.id,
+                  initialViewMode: true,
+                  showToast: false,
+                })
+              }
+            />
+          ),
+        }));
       }
-      if (!staffWorkTimes?.length) {
-        staffWorkTimes = workTimes.filter((e) => !e.meeting.staff.length);
-      }
-      return staffWorkTimes.map((e) => ({
-        ...e,
-        content: () => (
-          <WorkTimeBlock
-            class="bg-white"
-            label={e.meeting.notes || undefined}
-            onEditClick={() =>
-              meetingModal.show({
-                meetingId: e.meeting.id,
-                initialViewMode: true,
-                showToast: false,
-              })
-            }
-          />
-        ),
-      }));
+      return [
+        ...makeBlocks(facilityWorkTimes, BG_CLASSES.facilityWorkTime),
+        ...makeBlocks(staffWorkTimes, BG_CLASSES.staffWorkTime),
+      ];
     };
     const selectedEvents = () =>
       staffId
@@ -585,7 +594,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       allDayArea: () => <AllDayArea day={day} blocks={[]} events={[]} />,
       hoursArea: () => (
         <HoursArea
-          class="bg-[rgb(236,237,241)]"
+          class={BG_CLASSES.background}
           day={day}
           blocks={workTimeBlocks()}
           events={selectedEvents()}
@@ -636,7 +645,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                           {text}
                         </Button>
                       )}
-                      title={text}
+                      title={`${text}\n${t("calendar.click_for_staff_calendar")}`}
                     />
                   ),
                   ...getCalendarColumnPart(day, id),

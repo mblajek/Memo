@@ -257,16 +257,18 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       metaParams: {textExportCell: tableTextExportCells.int()},
     })
     .set("list", {
-      columnDef: {enableSorting: false},
+      columnDef: {cell: tableCells.list(), enableSorting: false},
       metaParams: {textExportCell: tableTextExportCells.list()},
     })
     .set("object", {
-      columnDef: {enableSorting: false},
+      columnDef: {cell: tableCells.object(), enableSorting: false},
       metaParams: {textExportCell: tableTextExportCells.object()},
     })
-    .set("string", {})
+    .set("string", {
+      columnDef: {cell: tableCells.string()},
+    })
     .set("text", {
-      columnDef: {enableSorting: false},
+      columnDef: {cell: tableCells.text(), enableSorting: false},
     })
     .set("uuid", {
       columnDef: {cell: tableCells.uuid(), enableSorting: false, size: 80},

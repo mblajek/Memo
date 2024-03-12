@@ -53,9 +53,6 @@ export default (() => {
         cell: cellFunc<string>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
         ...textSort,
       }),
-      helper.accessor("resource.isFixed", {
-        id: "Fixed",
-      }),
       helper.accessor("resource.facilityId", {
         id: "Facility",
         cell: cellFunc<string>((props) => (
@@ -65,6 +62,9 @@ export default (() => {
         )),
         ...textSort,
       }),
+      helper.accessor("resource.isFixed", {
+        id: "Fixed",
+      }),
     ];
   }
 
@@ -72,7 +72,7 @@ export default (() => {
     createSolidTable({
       ...getBaseTableOptions<Dictionary>({
         features: {
-          sorting: [{id: "Label", desc: false}],
+          sorting: [{id: "Name", desc: false}],
           pagination: {pageIndex: 0, pageSize: 1e6},
         },
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
@@ -82,6 +82,9 @@ export default (() => {
       },
       columns: [
         ...getCommonColumns(h),
+        h.accessor("resource.isExtendable", {
+          id: "Extendable",
+        }),
         ...(attributes()
           ?.getForModel("dictionary")
           .map((attr) =>

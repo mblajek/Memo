@@ -39,27 +39,26 @@ export const FelteSubmit: ParentComponent<Props> = (allProps) => {
       <Show when={props.includeUnknownValidationMessages ?? true}>
         <UnknownValidationMessages />
       </Show>
-      <div class="flex gap-1 justify-center items-stretch">
+      <div class="grid auto-cols-fr grid-flow-col gap-1">
         <Show when={props.cancel}>
-          <Button class="flex-grow basis-0 secondary" disabled={form.isSubmitting()} onClick={props.cancel}>
+          <Button class="secondary" disabled={form.isSubmitting()} onClick={props.cancel}>
             {t("actions.cancel")}
           </Button>
         </Show>
-        <div class="flex-grow basis-0">
-          <SplitButton
-            type="submit"
-            form={formProps.id}
-            class="w-full primary"
-            disabled={form.isSubmitting() || buttonProps.disabled}
-            {...buttonProps}
-            popOver={props.splitSubmitPopOver}
-          >
-            <Show when={form.isSubmitting()}>
-              <SmallSpinner />
-            </Show>{" "}
-            {props.children || translations.submit()}
-          </SplitButton>
-        </div>
+        <SplitButton
+          divClass=""
+          type="submit"
+          form={formProps.id}
+          class="primary"
+          disabled={form.isSubmitting() || buttonProps.disabled}
+          {...buttonProps}
+          popOver={props.splitSubmitPopOver}
+        >
+          <Show when={form.isSubmitting()}>
+            <SmallSpinner />
+          </Show>{" "}
+          {props.children || translations.submit()}
+        </SplitButton>
       </div>
     </div>
   );

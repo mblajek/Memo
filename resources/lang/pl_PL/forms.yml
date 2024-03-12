@@ -1,3 +1,6 @@
+generic:
+  submit: "$t(actions.save)"
+
 login:
   formName: "Logowanie"
   submit: "Zaloguj"
@@ -30,7 +33,6 @@ user_edit:
   validation:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
     cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu email jako niezweryfikowany."
-  submit: "$t(actions.save)"
   success: "Zmieniono dane"
 
 user_create:
@@ -45,7 +47,6 @@ facility_create:
 
 facility_edit:
   formName: "Edycja placówki"
-  submit: "$t(actions.save)"
   success: "Zmieniono dane placówki"
 
 meeting:
@@ -67,7 +68,6 @@ meeting_create:
 
 meeting_edit:
   formName: "Edycja spotkania"
-  submit: "$t(actions.save)"
   success: "Zmieniono spotkanie"
 
 meeting_delete:
@@ -83,12 +83,12 @@ meeting_series:
     # Umbrella fields for the meeting dates table:
     meetingDates: "daty spotkań"
   total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
-  interval_labels:
-    1d: "w kolejne dni"
-    7d: "co tydzień"
-    14d: "co dwa tygodnie"
 
 meeting_series_create:
   formName: "Utwórz serię spotkań"
   submit: "Utwórz spotkania"
   success: "Utworzono serię spotkań"
+
+client_edit:
+  formName: "Edycja klienta"
+  success: "Zmieniono dane klienta"

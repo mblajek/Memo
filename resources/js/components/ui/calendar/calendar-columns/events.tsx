@@ -13,6 +13,7 @@ import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-ap
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
+import {MeetingInSeriesInfo} from "features/meeting/MeetingInSeriesInfo";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
 import {MeetingAttendanceStatus} from "features/meeting/attendance_status_info";
 import {DateTime} from "luxon";
@@ -113,7 +114,9 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
     </Show>
   );
 
-  const Separator: VoidComponent = () => <hr class="-mx-1 border-black border-opacity-30" />;
+  const Separator: VoidComponent = () => (
+    <hr class="-mx-1 -mb-px" style={coloringToStyle(coloring()!, {part: "separator"})} />
+  );
 
   return (
     <>
@@ -196,11 +199,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (props) => {
               >
                 <div class="flex flex-col">
                   <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
-                  <Show when={props.meeting.fromMeetingId}>
-                    <div>
-                      <ACTION_ICONS.repeat class="inlineIcon" /> {t("meetings.meeting_is_in_series")}
-                    </div>
-                  </Show>
+                  <MeetingInSeriesInfo meeting={props.meeting} />
                 </div>
                 <MeetingType typeId={props.meeting.typeDictId} />
                 <MeetingStatusTags meeting={props.meeting} />

@@ -53,29 +53,29 @@ render(() => {
         the strings will get updated reactively when the translations are ready. */}
           <MemoLoader />
         </Show>
-        <ErrorBoundary
-          fallback={(error) => {
-            console.error(error);
-            return <FatalError error={error} />;
-          }}
-        >
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              className: "mr-4 !pr-0",
-              duration: TOAST_DURATION_SECS * 1000,
+        <MetaProvider>
+          <ErrorBoundary
+            fallback={(error, reset) => {
+              console.error(error);
+              return <FatalError error={error} reset={reset} />;
             }}
-          />
-          <MetaProvider>
+          >
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className: "mr-4 !pr-0",
+                duration: TOAST_DURATION_SECS * 1000,
+              }}
+            />
             <InitializeTanstackQuery>
               <DictionariesAndAttributesProvider>
                 <App />
               </DictionariesAndAttributesProvider>
             </InitializeTanstackQuery>
-          </MetaProvider>
-          <GlobalPageElements />
-          <LoaderInPortal />
-        </ErrorBoundary>
+            <GlobalPageElements />
+            <LoaderInPortal />
+          </ErrorBoundary>
+        </MetaProvider>
       </LocaleContext.Provider>
     </TransProvider>
   );
