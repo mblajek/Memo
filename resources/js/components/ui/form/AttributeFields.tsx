@@ -11,6 +11,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
+import {SmallSpinner} from "../Spinner";
 import {CheckboxField} from "./CheckboxField";
 import {DictionarySelect} from "./DictionarySelect";
 import {MultilineTextField} from "./MultilineTextField";
@@ -87,25 +88,27 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         switch (attribute.typeModel) {
           case "user/staff":
             return (
-              <TQuerySelect
-                querySpec={{
-                  enabled: false,
-                  entityURL: `facility/${activeFacilityId()}/user/staff`,
-                  prefixQueryKey: [FacilityStaff.keys.staff()],
-                }}
-                {...extraSelectProps}
-              />
+              <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
+                <TQuerySelect
+                  querySpec={{
+                    entityURL: `facility/${activeFacilityId()}/user/staff`,
+                    prefixQueryKey: [FacilityStaff.keys.staff()],
+                  }}
+                  {...extraSelectProps}
+                />
+              </Show>
             );
           case "user/client":
             return (
-              <TQuerySelect
-                querySpec={{
-                  enabled: !!activeFacilityId(),
-                  entityURL: `facility/${activeFacilityId()}/user/client`,
-                  prefixQueryKey: [FacilityClient.keys.client()],
-                }}
-                {...extraSelectProps}
-              />
+              <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
+                <TQuerySelect
+                  querySpec={{
+                    entityURL: `facility/${activeFacilityId()}/user/client`,
+                    prefixQueryKey: [FacilityClient.keys.client()],
+                  }}
+                  {...extraSelectProps}
+                />
+              </Show>
             );
         }
       }

@@ -60,6 +60,8 @@ select:
 user_settings: "Opcje użytkownika"
 
 created_by: "Utworzono przez:"
+updated_by: "Zmodyfikowano przez:"
+toggle_created_updated_info: "Przełącz: Utworzono/Zmodyfikowano"
 unknown: "nieznany"
 
 open_in_new_tab: "Otwórz w nowej karcie"
