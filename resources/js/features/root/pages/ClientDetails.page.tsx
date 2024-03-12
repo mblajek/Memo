@@ -47,7 +47,16 @@ export default (() => {
         <Show when={dataQuery.data} fallback={<BigSpinner />}>
           {(user) => (
             <div class="flex flex-col items-stretch gap-4">
-              <UserDetailsHeader type="clients" user={user()} />
+              <UserDetailsHeader
+                type="clients"
+                user={{
+                  ...user(),
+                  createdAt: user().client.createdAt,
+                  createdBy: user().client.createdBy,
+                  updatedAt: user().client.updatedAt,
+                  updatedBy: user().client.updatedBy,
+                }}
+              />
               <div
                 class="self-start flex flex-col items-stretch border border-gray-300 rounded-md p-1"
                 style={{width: "min(600px,100%)"}}

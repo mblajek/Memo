@@ -16,7 +16,7 @@ interface Props extends Partial<AnchorProps> {
   readonly icon?: boolean;
   /** Whether to linkify the name. Default: true. */
   readonly link?: boolean;
-  readonly userId: Api.Id;
+  readonly userId: Api.Id | undefined;
   /** The user's display name, if known (otherwise it is fetched). */
   readonly name?: string;
 }
@@ -37,16 +37,23 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const userDisplayNames = useUserDisplayNames();
-  const name = () => (props.name ? {displayName: props.name} : userDisplayNames.get(props.type, props.userId));
+  const name = () => (props.name ? {displayName: props.name} : userDisplayNames.get(props.type, props.userId!));
   return (
-    <Show when={props.userId} fallback={EMPTY_VALUE_SYMBOL}>
+    <Show
+      when={props.userId}
+      fallback={
+        <span class="inline-block" style={{"min-height": "1.45em"}}>
+          {EMPTY_VALUE_SYMBOL}
+        </span>
+      }
+    >
       {/* Allow wrapping the client name, but not just after the icon. */}
-      <span class="inline-block" style={{"white-space": "nowrap"}}>
+      <span class="inline-block" style={{"white-space": "nowrap", "min-height": "1.45em"}}>
         <Show when={props.icon}>
           <Dynamic
             component={ICONS[props.type]}
             size="1.3em"
-            class="inline shrink-0 text-current"
+            class="inlineIcon shrink-0 text-current"
             style={{"margin-right": "0.1em", "margin-bottom": "0.1em"}}
           />
         </Show>
