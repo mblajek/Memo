@@ -261,6 +261,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     .set("datetime", {
       columnDef: {cell: tableCells.datetime()},
       metaParams: {textExportCell: tableTextExportCells.datetime()},
+      filterControl: DateTimeFilterControl,
     })
     .set("int", {
       columnDef: {cell: tableCells.int(), size: 150},
@@ -451,13 +452,16 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
               ctx={ctx}
               filter={filter}
               filterControl={
-                <Dynamic
-                  component={schemaCol && filterControl}
-                  column={ctx.column}
-                  schema={schemaCol!}
-                  filter={filter[0]()}
-                  setFilter={filter[1]}
-                />
+                schemaCol &&
+                filterControl && (
+                  <Dynamic
+                    component={filterControl}
+                    column={ctx.column}
+                    schema={schemaCol!}
+                    filter={filter[0]()}
+                    setFilter={filter[1]}
+                  />
+                )
               }
             />
           ),
