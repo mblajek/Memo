@@ -76,6 +76,9 @@ filter:
   click_to_sync_number_range: "Kliknij aby ustawić max = min"
   non_null_value: "niepuste"
   null_value: "puste"
+  symbols:
+    non_null_value: "*"
+    null_value: "‘’"
   set_operation:
     has_all:
       short: "wszystkie"
@@ -91,8 +94,8 @@ filter:
     eq: "równe"
     regexp: "wyr. regularne"
     symbols:
-      non_null_value: "*"
-      null_value: "‘’"
+      non_null_value: "$t(tables.filter.symbols.non_null_value)"
+      null_value: "$t(tables.filter.symbols.null_value)"
       fuzzy: "~"
       eq: "="
       regexp: ".*"

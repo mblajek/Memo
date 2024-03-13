@@ -65,6 +65,7 @@ export default (() => {
       columns: [
         h.accessor((p) => p.resource.defaultOrder, {
           id: "Order",
+          cell: cellFunc<number, Attribute>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
           sortDescFirst: false,
         }),
         h.accessor("id", {

@@ -41,12 +41,12 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
     if (props.schema.nullable) {
       items.push(
         makeSelectItem({
-          symbol: "*",
+          symbol: t("tables.filter.symbols.non_null_value"),
           description: t("tables.filter.non_null_value"),
         }),
         makeSelectItem({
           value: "null",
-          symbol: "",
+          symbol: t("tables.filter.symbols.null_value"),
           description: t("tables.filter.null_value"),
         }),
       );

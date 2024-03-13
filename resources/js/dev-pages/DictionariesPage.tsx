@@ -111,6 +111,7 @@ export default (() => {
               columns: [
                 h.accessor((p) => p.resource.defaultOrder, {
                   id: "Order",
+                  cell: cellFunc<number, Position>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
                 }),
                 ...getCommonColumns(h),
                 h.accessor("disabled", {
