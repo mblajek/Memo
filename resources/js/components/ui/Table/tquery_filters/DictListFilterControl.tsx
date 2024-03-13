@@ -1,21 +1,20 @@
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {VoidComponent, createComputed, createSignal} from "solid-js";
+import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
+import {createComputed, createSignal} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import {FilterControlProps} from "./types";
-
-interface Props extends FilterControlProps {
-  readonly dictionaryId: string;
-}
+import s from "./filters.module.scss";
+import {FilterControl} from "./types";
 
 const MODES = ["has_all", "has_any", "has_only"] as const;
 type Mode = (typeof MODES)[number];
 
-export const DictListFilterControl: VoidComponent<Props> = (props) => {
+export const DictListFilterControl: FilterControl = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
+  const schema = () => props.schema as DictDataColumnSchema;
   const [mode, setMode] = createSignal<Mode>("has_all");
   const [value, setValue] = createSignal<readonly string[]>([]);
   createComputed(() => {
@@ -31,16 +30,16 @@ export const DictListFilterControl: VoidComponent<Props> = (props) => {
     }
     return {
       type: "column",
-      column: props.name,
+      column: schema().name,
       op: mode(),
       val: value(),
     };
   }
   createComputed(() => props.setFilter(buildFilter()));
   return (
-    <div class="min-w-24 flex flex-col items-stretch gap-0.5">
+    <div class={cx(s.filter, "min-w-24 flex flex-col items-stretch gap-0.5")}>
       <SegmentedControl
-        name={filterFieldNames.get(`mode_${props.name}`)}
+        name={filterFieldNames.get(`mode_${schema().name}`)}
         items={MODES.map((m) => ({
           value: m,
           label: () => (
@@ -54,8 +53,8 @@ export const DictListFilterControl: VoidComponent<Props> = (props) => {
         small
       />
       <DictionarySelect
-        name={filterFieldNames.get(`val_${props.name}`)}
-        dictionary={props.dictionaryId}
+        name={filterFieldNames.get(`val_${schema().name}`)}
+        dictionary={schema().dictionaryId}
         value={value()}
         onValueChange={setValue}
         multiple

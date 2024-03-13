@@ -1,20 +1,19 @@
 import {Select, SelectItem} from "components/ui/form/Select";
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
+import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
+import {createComputed, createMemo, createSignal} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
+import s from "./filters.module.scss";
 import {SelectItemLabelOnList, makeSelectItem} from "./select_items";
-import {FilterControlProps} from "./types";
+import {FilterControl} from "./types";
 
-interface Props extends FilterControlProps {
-  readonly dictionaryId: string;
-}
-
-export const DictFilterControl: VoidComponent<Props> = (props) => {
+export const DictFilterControl: FilterControl = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
   const dictionaries = useDictionaries();
+  const schema = () => props.schema as DictDataColumnSchema;
 
   const [value, setValue] = createSignal<readonly string[]>([]);
   createComputed(() => {
@@ -27,22 +26,22 @@ export const DictFilterControl: VoidComponent<Props> = (props) => {
     if (!value().length) {
       return undefined;
     } else if (value().includes("*")) {
-      return {type: "column", column: props.name, op: "null", inv: true};
+      return {type: "column", column: schema().name, op: "null", inv: true};
     } else {
       const hasNull = value().includes("null");
       return {
         type: "op",
         op: "|",
         val: [
-          hasNull ? {type: "column", column: props.name, op: "null"} : "never",
-          {type: "column", column: props.name, op: "in", val: value().filter((v) => v !== "null")},
+          hasNull ? {type: "column", column: schema().name, op: "null"} : "never",
+          {type: "column", column: schema().name, op: "in", val: value().filter((v) => v !== "null")},
         ],
       };
     }
   }
   const items = createMemo(() => {
     const items: SelectItem[] = [];
-    if (props.nullable) {
+    if (schema().nullable) {
       items.push(
         makeSelectItem({
           symbol: "*",
@@ -63,7 +62,7 @@ export const DictFilterControl: VoidComponent<Props> = (props) => {
         }),
       );
     }
-    for (const position of dictionaries()?.get(props.dictionaryId)?.activePositions || []) {
+    for (const position of dictionaries()?.get(schema().dictionaryId)?.activePositions || []) {
       items.push({
         value: position.id,
         text: position.label,
@@ -72,9 +71,9 @@ export const DictFilterControl: VoidComponent<Props> = (props) => {
     return items;
   });
   return (
-    <div class="min-w-24">
+    <div class={cx(s.filter, "min-w-24")}>
       <Select
-        name={filterFieldNames.get(`val_${props.name}`)}
+        name={filterFieldNames.get(`val_${schema().name}`)}
         items={items()}
         value={value()}
         onValueChange={(newValue) => {

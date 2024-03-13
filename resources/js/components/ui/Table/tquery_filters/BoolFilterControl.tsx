@@ -1,9 +1,9 @@
 import {Select, SelectItem} from "components/ui/form/Select";
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {BoolColumnFilter, NullColumnFilter} from "data-access/memo-api/tquery/types";
 import {createComputed, createMemo, createSignal} from "solid-js";
-import s from "./ColumnFilterController.module.scss";
 import {useFilterFieldNames} from "./filter_field_names";
+import s from "./filters.module.scss";
 import {makeSelectItem} from "./select_items";
 import {FilterControl} from "./types";
 
@@ -23,11 +23,11 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
         return undefined;
       case "t":
       case "f":
-        return {type: "column", column: props.name, op: "=", val: value() === "t"};
+        return {type: "column", column: props.schema.name, op: "=", val: value() === "t"};
       case "*":
-        return {type: "column", column: props.name, op: "null", inv: true};
+        return {type: "column", column: props.schema.name, op: "null", inv: true};
       case "null":
-        return {type: "column", column: props.name, op: "null"};
+        return {type: "column", column: props.schema.name, op: "null"};
       default:
         throw new Error(`Invalid value: ${value()}`);
     }
@@ -38,7 +38,7 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
       {value: "t", label: () => t("bool_values.yes")},
       {value: "f", label: () => t("bool_values.no")},
     ];
-    if (props.nullable) {
+    if (props.schema.nullable) {
       items.push(
         makeSelectItem({
           symbol: "*",
@@ -54,10 +54,10 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
     return items;
   });
   return (
-    <div class={s.filterLine}>
+    <div class={cx(s.filter, s.filterLine)}>
       <div class="flex-grow flex flex-col items-stretch">
         <Select
-          name={filterFieldNames.get(`val_${props.name}`)}
+          name={filterFieldNames.get(`val_${props.schema.name}`)}
           items={items()}
           value={value()}
           onValueChange={(value) => {

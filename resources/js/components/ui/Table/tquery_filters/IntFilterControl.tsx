@@ -1,9 +1,9 @@
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
-import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import s from "./ColumnFilterController.module.scss";
+import {Show, createComputed, createSignal} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import {FilterControlProps} from "./types";
+import s from "./filters.module.scss";
+import {FilterControl} from "./types";
 
 type IntRangeFilter =
   | {
@@ -13,13 +13,11 @@ type IntRangeFilter =
     }
   | (IntColumnFilter & {op: "="});
 
-interface Props extends FilterControlProps<IntRangeFilter> {}
-
 /**
  * Filter for int columns.
  * TODO: Add support for nullable columns.
  */
-export const IntFilterControl: VoidComponent<Props> = (props) => {
+export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
   const [lower, setLower] = createSignal("");
@@ -43,7 +41,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
       return props.setFilter(undefined);
     }
     if (l !== undefined && l === u) {
-      return props.setFilter({type: "column", column: props.name, op: "=", val: l});
+      return props.setFilter({type: "column", column: props.schema.name, op: "=", val: l});
     }
     return props.setFilter({
       type: "op",
@@ -52,7 +50,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
         l !== undefined
           ? {
               type: "column",
-              column: props.name,
+              column: props.schema.name,
               op: ">=",
               val: l,
             }
@@ -60,7 +58,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
         u !== undefined
           ? {
               type: "column",
-              column: props.name,
+              column: props.schema.name,
               op: "<=",
               val: u,
             }
@@ -72,7 +70,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
   const syncActive = () => lower() || upper();
   return (
     <div
-      class="grid gap-0.5 items-baseline"
+      class={cx(s.filter, "grid gap-0.5 items-baseline")}
       style={{"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`}}
     >
       <div>{t("range.min")}</div>
@@ -92,7 +90,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
       </Show>
       <div class={s.wideEdit}>
         <input
-          name={filterFieldNames.get(`from_${props.name}`)}
+          name={filterFieldNames.get(`from_${props.schema.name}`)}
           type="number"
           class="w-full min-h-small-input border border-input-border rounded"
           max={upper()}
@@ -103,7 +101,7 @@ export const IntFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.max")}</div>
       <div class={s.wideEdit}>
         <input
-          name={filterFieldNames.get(`to_${props.name}`)}
+          name={filterFieldNames.get(`to_${props.schema.name}`)}
           type="number"
           class="w-full min-h-small-input border border-input-border rounded"
           min={lower()}
