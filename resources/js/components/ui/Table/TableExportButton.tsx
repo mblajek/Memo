@@ -70,13 +70,15 @@ export const TableExportButton: VoidComponent = () => {
       id,
       label,
       async export({saveFilePickerOptions, exportData: {columns, numRows, rows}, onProgress, abort}) {
-        const writer = await pickSaveFile({
+        const options: SaveFilePickerOptions = {
           suggestedName: "table",
           id: `export_${id}`,
           types: [{description: label, accept: {"text/csv": [extension]}}],
           ...defSaveFilePickerOptions,
           ...saveFilePickerOptions,
-        });
+        };
+        options.suggestedName = `${options.suggestedName}${extension}`;
+        const writer = await pickSaveFile(options);
         if (writer === "cancelled") {
           return "cancelled";
         }
