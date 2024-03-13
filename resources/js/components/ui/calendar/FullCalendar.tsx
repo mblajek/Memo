@@ -1,3 +1,4 @@
+import {createQuery} from "@tanstack/solid-query";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
@@ -6,6 +7,7 @@ import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {User} from "data-access/memo-api/groups";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {TQMeetingResource, createCalendarRequestCreator} from "data-access/memo-api/tquery/calendar";
@@ -21,6 +23,7 @@ import {TbInfoTriangle} from "solid-icons/tb";
 import {
   JSX,
   Match,
+  Show,
   Signal,
   Switch,
   VoidComponent,
@@ -119,6 +122,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
 
+  const userStatus = createQuery(() => User.statusWithFacilityPermissionsQueryOptions(activeFacilityId()!));
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
     entityURL: `facility/${activeFacilityId()}/user/staff`,
@@ -691,6 +695,17 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             }}
             onVisibleRangeChange={setTinyCalVisibleRange}
           />
+          <Show when={userStatus.data?.permissions.facilityStaff}>
+            <Button
+              class="minimal mx-1"
+              onClick={() => {
+                setMode("week");
+                setSelectedResourceRadio(userStatus.data!.user.id);
+              }}
+            >
+              {t("calendar.show_my_calendar")}
+            </Button>
+          </Show>
           <ResourcesSelector
             class="overflow-y-auto"
             resourceGroups={resourceGroups()}
