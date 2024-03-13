@@ -46,7 +46,12 @@ export const DictFilterControl: FilterControl = (props) => {
         makeSelectItem({
           symbol: t("tables.filter.symbols.non_null_value"),
           description: t("tables.filter.non_null_value"),
-          label: () => <SelectItemLabelOnList symbol="*" description={t("tables.filter.non_null_value")} />,
+          label: () => (
+            <SelectItemLabelOnList
+              symbol={t("tables.filter.symbols.non_null_value")}
+              description={t("tables.filter.non_null_value")}
+            />
+          ),
         }),
         {
           value: "__separator__",
@@ -58,7 +63,12 @@ export const DictFilterControl: FilterControl = (props) => {
           symbol: t("tables.filter.symbols.null_value"),
           text: `'' ${t("tables.filter.null_value")}`,
           description: t("tables.filter.null_value"),
-          label: () => <SelectItemLabelOnList symbol="‘’" description={t("tables.filter.null_value")} />,
+          label: () => (
+            <SelectItemLabelOnList
+              symbol={t("tables.filter.symbols.null_value")}
+              description={t("tables.filter.null_value")}
+            />
+          ),
         }),
       );
     }
