@@ -98,7 +98,5 @@ meeting:
   clients: "$t(models.client._name_plural)"
   clients.count: "$t(models.meeting.clients) – liczba"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
-  # The name of the attendance status field when treated as "attendance notes".
-  attendanceStatusNotes: "uwagi"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"

@@ -6,12 +6,12 @@ Strona pomocy dla systemu Memo.
 
 ## Informacje o aplikacji
 
-[$t(routes.help_pages.status|cap)](status)
+**[$t(routes.help_pages.status|cap)](status)**
 
 ## Dokumenty
 
 - [Tekst z tagami](rich-text)
-- [$t(models.meeting._name|cap)](meeting)
+- [$t(models.meeting._name_plural|cap)](meetings)
 - [Eksport tabel](table-export)
 
 ## Linki zewnętrzne

@@ -119,7 +119,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         <Show when={props.showAttendanceStatusLabel !== false}>
           <div class="flex gap-1">
             <FieldLabel
-              fieldName="attendanceStatusNotes"
+              fieldName="attendanceStatusDictId"
               umbrella
               label={(origLabel) => (
                 <>
