@@ -12,6 +12,7 @@ Strona pomocy dla systemu Memo.
 
 - [Tekst z tagami](rich-text)
 - [$t(models.meeting._name_plural|cap)](meetings)
+- [Filtrowanie](filtering)
 - [Eksport tabel](table-export)
 
 ## Linki zewnętrzne

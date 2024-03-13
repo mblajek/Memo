@@ -44,18 +44,18 @@ export const TextualFilterControl: FilterControl = (props) => {
     const items: SelectItem[] = [];
     items.push(
       makeSelectItem({
-        symbol: "~",
+        symbol: t("tables.filter.textual.symbols.fuzzy"),
         symbolClass: "w-4",
         description: t("tables.filter.textual.fuzzy"),
         infoIcon: {
-          href: "/pomoc/dopasowanie",
+          href: "/help/filtering#fuzzy",
         },
       }),
     );
     if (props.schema.type === "string") {
       items.push(
         makeSelectItem({
-          symbol: "=",
+          symbol: t("tables.filter.textual.symbols.eq"),
           symbolClass: "w-4",
           description: t("tables.filter.textual.eq"),
         }),
@@ -64,13 +64,13 @@ export const TextualFilterControl: FilterControl = (props) => {
     if (props.schema.nullable) {
       items.push(
         makeSelectItem({
-          symbol: "*",
+          symbol: t("tables.filter.textual.symbols.non_null_value"),
           symbolClass: "w-4",
           description: t("tables.filter.non_null_value"),
         }),
         makeSelectItem({
           value: "null",
-          symbol: "‘’",
+          symbol: t("tables.filter.textual.symbols.null_value"),
           symbolClass: "w-4",
           description: t("tables.filter.null_value"),
         }),
@@ -78,7 +78,7 @@ export const TextualFilterControl: FilterControl = (props) => {
     }
     items.push(
       makeSelectItem({
-        symbol: ".*",
+        symbol: t("tables.filter.textual.symbols.regexp"),
         symbolClass: "w-4",
         description: t("tables.filter.textual.regexp"),
         infoIcon: {

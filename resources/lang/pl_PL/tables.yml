@@ -87,9 +87,15 @@ filter:
       short: "tylko"
       explanation: "Znajdź wiersze, które mają tylko wybrane wartości (niekoniecznie wszystkie)"
   textual:
-    fuzzy: "dopasowane"
+    fuzzy: "dopasowanie"
     eq: "równe"
     regexp: "wyr. regularne"
+    symbols:
+      non_null_value: "*"
+      null_value: "‘’"
+      fuzzy: "~"
+      eq: "="
+      regexp: ".*"
 
 export:
   label: "$t(actions.export)"
