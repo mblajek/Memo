@@ -1,8 +1,8 @@
 import {cx, debouncedAccessor} from "components/utils";
 import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/types";
 import {createComputed, createSignal} from "solid-js";
-import s from "./ColumnFilterController.module.scss";
 import {useFilterFieldNames} from "./filter_field_names";
+import s from "./filters.module.scss";
 import {FilterControl} from "./types";
 
 const UUID_LENGTH = 36;
@@ -21,11 +21,11 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
       case "":
         return undefined;
       case "*":
-        return {type: "column", column: props.name, op: "null", inv: true};
+        return {type: "column", column: props.schema.name, op: "null", inv: true};
       case "''":
-        return {type: "column", column: props.name, op: "null"};
+        return {type: "column", column: props.schema.name, op: "null"};
       default:
-        return {type: "column", column: props.name, op: "=", val: value};
+        return {type: "column", column: props.schema.name, op: "=", val: value};
     }
   }
   // eslint-disable-next-line solid/reactivity
@@ -34,15 +34,14 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
   });
   createComputed(() => props.setFilter(buildFilter(debouncedValue())));
   return (
-    <div class={s.filterLine}>
+    <div class={cx(s.filter, s.filterLine)}>
       <div class={cx(s.wideEdit, "min-h-small-input flex items-baseline")}>
         <span class="w-1.5 text-center font-semibold">=</span>
         <input
-          name={filterFieldNames.get(`val_${props.name}`)}
+          name={filterFieldNames.get(`val_${props.schema.name}`)}
           type="text"
           autocomplete="off"
-          class="h-full w-full border border-input-border rounded"
-          style={{"font-family": "monospace"}}
+          class="h-full w-full border border-input-border rounded monospace"
           value={value()}
           onInput={({target: {value}}) => setValue(value)}
         />

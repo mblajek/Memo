@@ -76,6 +76,9 @@ filter:
   click_to_sync_number_range: "Kliknij aby ustawić max = min"
   non_null_value: "niepuste"
   null_value: "puste"
+  symbols:
+    non_null_value: "*"
+    null_value: "‘’"
   set_operation:
     has_all:
       short: "wszystkie"
@@ -87,9 +90,15 @@ filter:
       short: "tylko"
       explanation: "Znajdź wiersze, które mają tylko wybrane wartości (niekoniecznie wszystkie)"
   textual:
-    fuzzy: "dopasowane"
+    fuzzy: "dopasowanie"
     eq: "równe"
     regexp: "wyr. regularne"
+    symbols:
+      non_null_value: "$t(tables.filter.symbols.non_null_value)"
+      null_value: "$t(tables.filter.symbols.null_value)"
+      fuzzy: "~"
+      eq: "="
+      regexp: ".*"
 
 export:
   label: "$t(actions.export)"

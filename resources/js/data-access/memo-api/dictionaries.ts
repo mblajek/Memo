@@ -187,10 +187,10 @@ export class Position {
     this.id = resource.id;
     this.isTranslatable = isNameTranslatable(resource.name);
     this.label = getNameTranslation(t, resource.name, (n) => {
-      if (!dictionaryTranslatableName)
-        throw new Error(
-          `Translatable position (${resource.id}: ${n}) inside a dictionary with an untranslatable name.`,
-        );
+      if (!dictionaryTranslatableName) {
+        console.error(`Translatable position (${resource.id}: ${n}) inside a dictionary with an untranslatable name.`);
+        return `dictionary.?.${n}`;
+      }
       return `dictionary.${dictionaryTranslatableName}.${n}`;
     });
     this.disabled = resource.isDisabled;

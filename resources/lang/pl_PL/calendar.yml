@@ -56,3 +56,5 @@ relative_time:
   in_one_day: "następnego dnia"
   in_one_week: "tydzień później"
   in_two_weeks: "dwa tygodnie później"
+
+show_my_calendar: "Pokaż mój kalendarz"

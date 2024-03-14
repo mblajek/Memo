@@ -20,7 +20,7 @@ export type ColumnSchema = DataColumnSchema | CountColumnSchema;
 
 interface DataColumnSchemaBase {
   readonly name: ColumnName;
-  readonly nullable?: boolean;
+  readonly nullable: boolean;
   /** The attribute defining this data column. */
   readonly attributeId?: string;
 }
