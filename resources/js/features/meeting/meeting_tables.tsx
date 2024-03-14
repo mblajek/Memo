@@ -22,7 +22,7 @@ import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
 import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
-import {MeetingInSeriesInfo} from "./MeetingInSeriesInfo";
+import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
@@ -87,7 +87,27 @@ export function useMeetingTableColumns() {
         },
       },
       duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
-      isInSeries: {name: "isClone"},
+      isInSeries: {
+        name: "isClone",
+        extraDataColumns: ["interval"],
+        columnDef: {
+          cell: cellFunc<boolean, TQMeetingResource>((props) => (
+            <PaddedCell>
+              <ShowCellVal v={props.v}>
+                {(v) => (
+                  <>
+                    {v() ? t("bool_values.yes") : t("bool_values.no")}{" "}
+                    <span class="text-grey-text">
+                      <MeetingIntervalCommentText interval={props.row.interval || undefined} />
+                    </span>
+                  </>
+                )}
+              </ShowCellVal>
+            </PaddedCell>
+          )),
+          size: 150,
+        },
+      },
       seriesType: {
         name: "interval",
         initialVisible: false,
@@ -97,9 +117,9 @@ export function useMeetingTableColumns() {
               <ShowCellVal v={props.v}>
                 {(v) => (
                   <div>
-                    {v()}{" "}
+                    {v()}
                     <span class="text-grey-text">
-                      {t("parenthesised", {text: t(`meetings.interval_labels.${v()}`, {defaultValue: v()})})}
+                      <MeetingIntervalCommentText interval={v()} />
                     </span>
                   </div>
                 )}

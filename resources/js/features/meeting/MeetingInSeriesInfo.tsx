@@ -1,7 +1,7 @@
 import {ACTION_ICONS} from "components/ui/icons";
-import {useLangFunc} from "components/utils";
+import {LangFunc, useLangFunc} from "components/utils";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
-import {Match, Show, Switch, VoidComponent} from "solid-js";
+import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
 interface Props {
   readonly meeting: Pick<MeetingResource, "fromMeetingId" | "interval">;
@@ -11,10 +11,7 @@ interface Props {
 export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const text = () =>
-    t("meetings.meeting_is_in_series") +
-    (props.meeting.interval
-      ? ` ${t("parenthesised", {text: t(`meetings.interval_labels.${props.meeting.interval}`, {defaultValue: props.meeting.interval})})}`
-      : "");
+    t("meetings.meeting_is_in_series") + meetingIntervalCommentText(t, props.meeting.interval || undefined);
   return (
     <Show when={props.meeting.fromMeetingId}>
       <Switch>
@@ -32,3 +29,30 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
     </Show>
   );
 };
+
+interface MeetingIntervalCommentTextProps {
+  readonly interval: string | undefined;
+  readonly wrapIn?: (text: string) => JSX.Element;
+}
+
+export const MeetingIntervalCommentText: VoidComponent<MeetingIntervalCommentTextProps> = (props) => {
+  const t = useLangFunc();
+  return (
+    <Show when={props.interval}>
+      {(interval) => {
+        const text = () => meetingIntervalCommentText(t, interval());
+        return (
+          <Show when={props.wrapIn} fallback={<>{text()}</>}>
+            {(wrapIn) => wrapIn()(text())}
+          </Show>
+        );
+      }}
+    </Show>
+  );
+};
+
+function meetingIntervalCommentText(t: LangFunc, interval: string | undefined) {
+  return interval
+    ? ` ${t("parenthesised", {text: t(`meetings.interval_labels.${interval}`, {defaultValue: interval})})}`
+    : "";
+}
