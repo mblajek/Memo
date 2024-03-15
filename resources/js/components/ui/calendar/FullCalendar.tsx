@@ -513,7 +513,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     scroll = Math.min(scroll, start - scrollMarginMinutes());
     if (scroll !== currScrollStart) {
       setScrollToDayMinute(undefined);
-      setTimeout(() => setScrollToDayMinute(scroll), 0);
+      setTimeout(() => setScrollToDayMinute(scroll));
     }
   }
   onMount(() => {
@@ -699,9 +699,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <Button
               class="minimal mx-1"
               onClick={() => {
-                setMode("week");
+                if (mode() === "day") {
+                  setMode("week");
+                }
                 setSelectedResourceRadio(userStatus.data!.user.id);
               }}
+              disabled={(mode() === "month" || mode() === "week") && selectedResources().has(userStatus.data!.user.id)}
             >
               {t("calendar.show_my_calendar")}
             </Button>

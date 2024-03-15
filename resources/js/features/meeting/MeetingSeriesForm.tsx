@@ -64,7 +64,9 @@ export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
                 return;
               }
               if (table.scrollTop >= table.scrollHeight - table.clientHeight) {
-                setTimeout(() => (table.scrollTop = table.scrollHeight), 0);
+                setTimeout(() => {
+                  table.scrollTop = table.scrollHeight;
+                });
               }
             },
           ),

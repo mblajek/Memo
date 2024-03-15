@@ -5,11 +5,18 @@ import {createSelectRequestCreator} from "data-access/memo-api/tquery/select";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {ColumnName, Sort} from "data-access/memo-api/tquery/types";
 import {BsScissors} from "solid-icons/bs";
-import {VoidComponent, createMemo, createUniqueId, mergeProps, splitProps} from "solid-js";
-import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSelectPropsPart} from "./Select";
+import {VoidComponent, createMemo, createSignal, mergeProps, splitProps} from "solid-js";
+import {
+  MultipleSelectPropsPart,
+  ReplacementItems,
+  Select,
+  SelectBaseProps,
+  SelectItem,
+  SingleSelectPropsPart,
+} from "./Select";
 import {mergeSelectProps} from "./select_helper";
 
-interface BaseProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
+interface BaseTQuerySelectProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
   /**
    * The configuration of how the items are fetched from tquery.
    *
@@ -29,6 +36,8 @@ interface BaseProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" 
   readonly priorityQuerySpec?: TQueryConfig;
   /** Whether to add a horizontal line between the priority items and the regular items. Default: true. */
   readonly separatePriorityItems?: boolean;
+  /** Additional items to put at the top. */
+  readonly topItems?: readonly SelectItem[];
 }
 
 export interface TQueryConfig {
@@ -72,33 +81,33 @@ class Row {
 
 type DefaultTQuerySelectItem = Required<Pick<SelectItem, "value" | "text">>;
 
-type Props = BaseProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
+export type TQuerySelectProps = BaseTQuerySelectProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
 
-/**
- * The default number of fetched items.
- *
- * TODO: Fix the problem that occurs when the current value is not found among the fetched items due to limit.
- */
-const DEFAULT_LIMIT = 1e6;
+/** The default number of fetched items. */
+const DEFAULT_LIMIT = 100;
 
 const DEFAULT_PROPS = {
   separatePriorityItems: true,
-} satisfies Partial<BaseProps>;
+} satisfies Partial<BaseTQuerySelectProps>;
 
-function makeQuery({
-  prefixQueryKey,
-  entityURL,
-  intrinsicFilter,
-  valueColumn = "id",
-  labelColumns = ["name"],
-  sort = labelColumns.map((column) => ({type: "column", column})),
-  limit = DEFAULT_LIMIT,
-  distinct,
-  itemFunc,
-}: TQueryConfig) {
+function makeQuery(
+  {
+    prefixQueryKey,
+    entityURL,
+    intrinsicFilter,
+    valueColumn = "id",
+    labelColumns = ["name"],
+    sort = labelColumns.map((column) => ({type: "column", column})),
+    limit = DEFAULT_LIMIT,
+    distinct,
+    itemFunc,
+  }: TQueryConfig,
+  {initialExtraFilter}: {initialExtraFilter?: FilterH} = {},
+) {
   const columns = [valueColumn, ...labelColumns];
   const requestCreator = createSelectRequestCreator({
     intrinsicFilter,
+    initialExtraFilter,
     columns,
     sort,
     limit,
@@ -106,7 +115,7 @@ function makeQuery({
   });
   const {
     dataQuery,
-    requestController: {filterText},
+    requestController: {filterText, extraFilter},
   } = createTQuery({
     prefixQueryKey: prefixQueryKey,
     entityURL: entityURL,
@@ -127,24 +136,33 @@ function makeQuery({
       .filter(NON_NULLABLE);
   });
   return {
+    valueColumn,
     dataQuery,
     items,
     filterText,
+    extraFilter,
   };
 }
 
-export const TQuerySelect: VoidComponent<Props> = (allProps) => {
+export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
   const defProps = mergeProps(DEFAULT_PROPS, allProps);
-  const [props, selectProps] = splitProps(defProps, ["querySpec", "priorityQuerySpec", "separatePriorityItems"]);
+  const [props, selectProps] = splitProps(defProps, [
+    "querySpec",
+    "priorityQuerySpec",
+    "separatePriorityItems",
+    "topItems",
+  ]);
   const t = useLangFunc();
   // Extract the static props. They must not change anyway.
   /* eslint-disable solid/reactivity */
   const limit = props.querySpec.limit || DEFAULT_LIMIT;
-  const querySpec = {limit, ...props.querySpec};
-  const priorityQuerySpec = props.priorityQuerySpec && {limit, ...props.priorityQuerySpec};
+  const {dataQuery, items, filterText} = makeQuery({limit, ...props.querySpec});
+  const priorityData =
+    props.priorityQuerySpec &&
+    makeQuery({...props.priorityQuerySpec, limit: Math.min(props.priorityQuerySpec.limit ?? limit, limit)});
+  const replacementData = makeQuery({limit: 1e6, ...props.querySpec}, {initialExtraFilter: "never"});
+  const [replacementEnabled, setReplacementEnabled] = createSignal(false);
   /* eslint-enable solid/reactivity */
-  const priorityData = priorityQuerySpec && makeQuery(priorityQuerySpec);
-  const {dataQuery, items, filterText} = makeQuery(querySpec);
   const isSuccess = () => (priorityData?.dataQuery.isSuccess ?? true) && dataQuery.isSuccess;
   const isFetching = () => priorityData?.dataQuery.isFetching || dataQuery.isFetching;
   /** The items and loading status. They are returned in a single memo to avoid races. */
@@ -154,35 +172,38 @@ export const TQuerySelect: VoidComponent<Props> = (allProps) => {
         // Wait for both queries to finish fetching before processing any results.
         return {...prev, isLoading: true};
       }
-      let array: SelectItem[];
+      let array: SelectItem[] = props.topItems?.slice() || [];
       if (priorityData) {
-        array = priorityData.items().slice(0, limit);
-        const numPriorityItems = array.length;
+        const priorityItems = priorityData.items();
+        const numPriorityItems = priorityItems.length;
+        array = [...array, ...priorityItems];
         if (numPriorityItems < limit) {
           const values = new Set(array.map((i) => i.value));
-          const regularItems = items().filter(({value}) => !values.has(value));
+          const regularItems = items()
+            .filter(({value}) => !values.has(value))
+            .slice(0, limit - numPriorityItems);
           if (regularItems.length) {
             if (numPriorityItems && props.separatePriorityItems) {
               array.push({
-                value: `_prioritySeparator_${createUniqueId()}`,
+                value: `__prioritySeparator__`,
                 label: () => <hr class="border-input-border" />,
                 disabled: true,
               });
             }
-            array = [...array, ...regularItems.slice(0, limit - numPriorityItems)];
+            array = [...array, ...regularItems];
           }
         }
       } else {
-        array = items().slice(0, limit);
+        array = [...array, ...items()];
       }
       if (dataQuery.data!.meta.totalDataSize > limit) {
         array.push({
-          value: `_limitExceeded_${createUniqueId()}`,
+          value: `__limitExceeded__`,
           label: () => (
             <div class="flex flex-col items-center">
               <div class="self-stretch flex items-center">
-                <BsScissors class="rotate-90" />
-                <hr class="w-full border-current border-dashed" />
+                <BsScissors class="rotate-90 text-current" />
+                <hr class="w-full border-grey-text border-dashed" />
               </div>
               <div class="text-sm">{t("select.limit_exceeded")}</div>
             </div>
@@ -192,16 +213,41 @@ export const TQuerySelect: VoidComponent<Props> = (allProps) => {
       }
       return {items: array, isLoading: false};
     },
-    {items: [], isLoading: true},
+    {
+      // eslint-disable-next-line solid/reactivity
+      items: props.topItems || [],
+      isLoading: true,
+    },
   );
   function setFilterText(filter = "") {
     priorityData?.filterText[1](filter);
     filterText[1](filter);
   }
-  const mergedSelectProps = mergeSelectProps<"items" | "onFilterChange" | "isLoading">(selectProps, {
+  const mergedSelectProps = mergeSelectProps<"items" | "isLoading" | "onFilterChange">(selectProps, {
     items: () => joinedItemsAndIsLoading().items,
     isLoading: () => joinedItemsAndIsLoading().isLoading,
     onFilterChange: () => setFilterText,
   });
-  return <Select {...mergedSelectProps} />;
+  return (
+    <Select
+      {...mergedSelectProps}
+      getReplacementItems={(missingValues) => {
+        setReplacementEnabled(false);
+        replacementData.extraFilter[1]({
+          type: "column",
+          column: replacementData.valueColumn,
+          op: "in",
+          val: missingValues,
+        });
+        // Give the query time to change to the new parameters.
+        setTimeout(() => setReplacementEnabled(true));
+        // eslint-disable-next-line solid/reactivity
+        return () =>
+          ({
+            isLoading: replacementData.dataQuery.isFetching || !replacementEnabled(),
+            items: replacementData.items(),
+          }) satisfies ReplacementItems;
+      }}
+    />
+  );
 };

@@ -115,7 +115,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 );
               }
             }
-          }, 0);
+          });
         }
       }}
     />
