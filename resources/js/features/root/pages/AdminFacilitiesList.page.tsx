@@ -1,9 +1,11 @@
 import {Button, EditButton} from "components/ui/Button";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {FACILITY_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
+import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
 import {createFacilityCreateModal} from "features/facility-edit/facility_create_modal";
 import {createFacilityEditModal} from "features/facility-edit/facility_edit_modal";
 import {Component} from "solid-js";
@@ -31,9 +33,11 @@ export default (() => {
               </PaddedCell>
             )),
           },
+          metaParams: {
+            textExportCell: exportCellFunc((v: string) => `/${v}`),
+          },
         },
-        {name: "createdAt", columnDef: {sortDescFirst: true}},
-        {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
+        ...getCreatedUpdatedColumns({includeCreatedBy: false, includeUpdatedBy: false, globalAdmin: true}),
         {
           name: "actions",
           isDataColumn: false,

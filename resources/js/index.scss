@@ -18,6 +18,8 @@ html {
 
   //  A bright blue color used for various active elements on page.
   --tc-memo-active: #06b6d4;
+  // A very light blue color for the background of popups, so that it is easier to see that they are opened.
+  --tc-popup-bg: #f7fcfd;
   // A pale blue-grey color for highlighting hovered areas of active elements by setting their background color.
   // Not necessarily good for hovered buttons etc.
   --tc-hover: #e6f0f7;

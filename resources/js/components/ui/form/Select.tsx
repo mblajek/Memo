@@ -133,7 +133,6 @@ function itemToLabelOnList(item: SelectItem) {
 const DEFAULT_PROPS = {
   isLoading: false,
   small: false,
-  nullable: false,
   showClearButton: true,
 } satisfies Partial<SelectProps>;
 

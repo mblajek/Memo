@@ -1,21 +1,24 @@
 import {Column, RowData, Table} from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
+import {Button} from "components/ui/Button";
+import {Capitalize} from "components/ui/Capitalize";
+import {InfoIcon} from "components/ui/InfoIcon";
+import {Modal} from "components/ui/Modal";
+import {PopOver} from "components/ui/PopOver";
+import {ProgressBar} from "components/ui/ProgressBar";
+import {SimpleMenu} from "components/ui/SimpleMenu";
+import {SegmentedControl} from "components/ui/form/SegmentedControl";
+import {CHECKBOX} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {WriteCSVOptions, writeCSV} from "components/utils/csv_writer";
+import {isDEV} from "components/utils/dev_mode";
 import {pickSaveFile} from "components/utils/files";
 import {toastError, toastSuccess} from "components/utils/toast";
 import {DateTime} from "luxon";
 import {AiOutlineFileExcel} from "solid-icons/ai";
 import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
-import {Button} from "../Button";
-import {Capitalize} from "../Capitalize";
-import {InfoIcon} from "../InfoIcon";
-import {Modal} from "../Modal";
-import {PopOver} from "../PopOver";
-import {ProgressBar} from "../ProgressBar";
-import {SimpleMenu} from "../SimpleMenu";
-import {SegmentedControl} from "../form/SegmentedControl";
+import {CellsPreviewMode} from "./TQueryTable";
 import {useTable} from "./TableContext";
 import {useTableTextExportCells} from "./table_export_cells";
 
@@ -47,6 +50,8 @@ interface ExportParams {
   readonly onProgress?: (progress: ExportProgress) => void;
   readonly abort?: () => boolean;
 }
+
+const PREVIEW_MODE: CellsPreviewMode = "textExport";
 
 export const TableExportButton: VoidComponent = () => {
   const t = useLangFunc();
@@ -234,6 +239,17 @@ export const TableExportButton: VoidComponent = () => {
                     count={currentPageExportData().numRows}
                   />
                 </Button>
+                <Show when={isDEV() && table.options.meta?.tquery?.cellsPreviewMode}>
+                  {(cellsPreviewMode) => (
+                    <Button
+                      onClick={() =>
+                        cellsPreviewMode()[1]((mode) => (mode === PREVIEW_MODE ? undefined : PREVIEW_MODE))
+                      }
+                    >
+                      {CHECKBOX(cellsPreviewMode()[0]() === PREVIEW_MODE)} <span class="text-sm">DEV</span> Preview
+                    </Button>
+                  )}
+                </Show>
               </SimpleMenu>
             </div>
           );
