@@ -4,10 +4,6 @@ Strona pomocy dla systemu Memo.
 
 🚧 Strona w budowie 🚧
 
-## Informacje o aplikacji
-
-**[$t(routes.help_pages.status|cap)](status)**
-
 ## Dokumenty
 
 - [Tekst z tagami](rich-text)

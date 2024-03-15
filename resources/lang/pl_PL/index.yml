@@ -78,7 +78,7 @@ form_page_leave_confirmation:
   confirm: "Opuść stronę"
   cancel: "Wróć do edycji"
 
-status_page:
+about_page:
   commit_date: "Wersja aplikacji (czas):"
   commit_hash: "Wersja aplikacji (commit):"
   backend_hash: "Backend (hash):"

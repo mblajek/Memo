@@ -9,7 +9,7 @@ import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
-import {TbHelp} from "solid-icons/tb";
+import {TbHelp, TbInfoCircle} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -87,7 +87,9 @@ export const Navbar: VoidComponent = () => {
           </NavigationSection>
         </SilentAccessBarrier>
         <NavigationSection title={t("routes.menu_sections.other")}>
-          <NavigationItem icon={TbHelp} href="/help" routeKey="help" />
+          <NavigationItem icon={TbHelp} href="/help" routeKey="help">
+            <NavigationItem icon={TbInfoCircle} href="/help/about" routeKey="help_pages.about" small />
+          </NavigationItem>
         </NavigationSection>
         <Show when={isDEV()}>
           <NavigationSection title="DEV">
