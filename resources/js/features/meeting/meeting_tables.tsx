@@ -10,13 +10,13 @@ import {EMPTY_VALUE_SYMBOL, EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
-import {objectRecursiveMerge} from "components/utils/object_merge";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
+import {TableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
@@ -61,7 +61,7 @@ export function useMeetingTableColumns() {
     v.map((u) => u.name).join(", "),
   );
 
-  const columns = {
+  return new TableColumnsSet({
     ...({
       id: {name: "id", initialVisible: false},
       date: {name: "date", columnDef: {size: 190, sortDescFirst: true}},
@@ -193,7 +193,6 @@ export function useMeetingTableColumns() {
         initialVisible: false,
       },
       staff: {
-        // TODO: Make this column filterable by TQuerySelect.
         name: "staff",
         columnDef: {
           cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((props) => (
@@ -202,6 +201,7 @@ export function useMeetingTableColumns() {
             </Scrollable>
           )),
         },
+        // filterControl: (props) => <UuidModelFilterControl {...props} model="user/staff" />,
         metaParams: {textExportCell: attendantsTextExport},
       },
       staffAttendance: {
@@ -213,7 +213,6 @@ export function useMeetingTableColumns() {
         initialVisible: false,
       },
       clients: {
-        // TODO: Make this column filterable by TQuerySelect.
         name: "clients",
         columnDef: {
           cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((props) => (
@@ -222,6 +221,7 @@ export function useMeetingTableColumns() {
             </Scrollable>
           )),
         },
+        // filterControl: (props) => <UuidModelFilterControl {...props} model="user/client" />,
         metaParams: {textExportCell: attendantsTextExport},
       },
       clientsAttendance: {
@@ -311,7 +311,9 @@ export function useMeetingTableColumns() {
           ),
         },
       },
-    } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingResource>>>),
+    } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingResource>>> as Partial<
+      Record<string, PartialColumnConfig<TQMeetingResource>>
+    >),
     // Attendance tables only:
     attendanceType: {
       name: "attendant.attendanceTypeDictId",
@@ -362,21 +364,7 @@ export function useMeetingTableColumns() {
         size: 200,
       },
     },
-  };
-  type KnownColumns = keyof typeof columns;
-  return {
-    columns,
-    get: (
-      ...cols: (KnownColumns | PartialColumnConfig | [KnownColumns, Partial<PartialColumnConfig>])[]
-    ): PartialColumnConfig[] =>
-      cols.map((c) =>
-        typeof c === "string"
-          ? columns[c]
-          : Array.isArray(c)
-            ? objectRecursiveMerge<(typeof columns)[KnownColumns]>(columns[c[0]], c[1])
-            : c,
-      ),
-  };
+  });
 }
 
 const Scrollable: ParentComponent<htmlAttributes.div> = (props) => (

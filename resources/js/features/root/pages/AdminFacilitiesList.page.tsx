@@ -5,7 +5,7 @@ import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {FACILITY_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups/Admin";
-import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
+import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {createFacilityCreateModal} from "features/facility-edit/facility_create_modal";
 import {createFacilityEditModal} from "features/facility-edit/facility_edit_modal";
 import {Component} from "solid-js";
@@ -14,6 +14,7 @@ export default (() => {
   const t = useLangFunc();
   const facilityCreateModal = createFacilityCreateModal();
   const facilityEditModal = createFacilityEditModal();
+  const {getCreatedUpdatedColumns} = useTableColumns();
   return (
     <TQueryTable
       mode="standalone"

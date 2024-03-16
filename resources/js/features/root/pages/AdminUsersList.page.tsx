@@ -6,7 +6,7 @@ import {USER_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
-import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
+import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {createUserCreateModal} from "features/user-edit/user_create_modal";
 import {createUserEditModal} from "features/user-edit/user_edit_modal";
 import {Show, VoidComponent} from "solid-js";
@@ -15,6 +15,7 @@ export default (() => {
   const t = useLangFunc();
   const userCreateModal = createUserCreateModal();
   const userEditModal = createUserEditModal();
+  const {getCreatedUpdatedColumns} = useTableColumns();
   return (
     <TQueryTable
       mode="standalone"

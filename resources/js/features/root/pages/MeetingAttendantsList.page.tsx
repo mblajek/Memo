@@ -1,7 +1,7 @@
 import {createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
-import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
+import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {useMeetingTableColumns, useMeetingTableFilters} from "features/meeting/meeting_tables";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -9,6 +9,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 export default (() => {
   const meetingTableColumns = useMeetingTableColumns();
   const meetingTableFilters = useMeetingTableFilters();
+  const {getCreatedUpdatedColumns} = useTableColumns();
   return (
     <TQueryTable
       mode="standalone"

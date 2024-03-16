@@ -1,10 +1,9 @@
 import {TQuerySelect, TQuerySelectProps} from "components/ui/form/TQuerySelect";
-import {cx, useLangFunc} from "components/utils";
-import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {cx} from "components/utils";
 import {VoidComponent, createComputed, createMemo, createSignal, splitProps} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
-import {SelectItemLabelOnList, makeSelectItem} from "./select_items";
+import {useSingleSelectFilterHelper} from "./select_filters_helper";
 import {FilterControlProps} from "./types";
 
 interface Props
@@ -13,8 +12,8 @@ interface Props
 
 export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
   const [props, selectProps] = splitProps(allProps, ["column", "schema", "filter", "setFilter"]);
-  const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
+  const {itemsForNullableColumn, buildFilter, updateValue} = useSingleSelectFilterHelper();
 
   const [value, setValue] = createSignal<readonly string[]>([]);
   createComputed(() => {
@@ -23,56 +22,7 @@ export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
     }
     // Ignore other external filter changes.
   });
-  function buildFilter(): FilterH | undefined {
-    if (!value().length) {
-      return undefined;
-    } else if (value().includes("*")) {
-      return {type: "column", column: props.schema.name, op: "null", inv: true};
-    } else {
-      const hasNull = value().includes("null");
-      return {
-        type: "op",
-        op: "|",
-        val: [
-          hasNull ? {type: "column", column: props.schema.name, op: "null"} : "never",
-          {type: "column", column: props.schema.name, op: "in", val: value().filter((v) => v !== "null")},
-        ],
-      };
-    }
-  }
-  const topItems = createMemo(() =>
-    props.schema.nullable
-      ? [
-          makeSelectItem({
-            symbol: t("tables.filter.symbols.non_null_value"),
-            description: t("tables.filter.non_null_value"),
-            label: () => (
-              <SelectItemLabelOnList
-                symbol={t("tables.filter.symbols.non_null_value")}
-                description={t("tables.filter.non_null_value")}
-              />
-            ),
-          }),
-          {
-            value: "__separator__",
-            label: () => <hr />,
-            disabled: true,
-          },
-          makeSelectItem({
-            value: "null",
-            symbol: t("tables.filter.symbols.null_value"),
-            text: `'' ${t("tables.filter.null_value")}`,
-            description: t("tables.filter.null_value"),
-            label: () => (
-              <SelectItemLabelOnList
-                symbol={t("tables.filter.symbols.null_value")}
-                description={t("tables.filter.null_value")}
-              />
-            ),
-          }),
-        ]
-      : [],
-  );
+  const topItems = createMemo(() => (props.schema.nullable ? itemsForNullableColumn() : []));
   return (
     <div class={cx(s.filter, "min-w-24")}>
       <TQuerySelect
@@ -81,17 +31,8 @@ export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
         topItems={topItems()}
         value={value()}
         onValueChange={(newValue) => {
-          if (newValue.includes("*") && newValue.length > 1) {
-            // The * (non-null) is exclusive with all the other options.
-            if (value().includes("*")) {
-              setValue(newValue.filter((v) => v !== "*"));
-            } else {
-              setValue(["*"]);
-            }
-          } else {
-            setValue(newValue);
-          }
-          props.setFilter(buildFilter());
+          setValue(updateValue(value(), newValue));
+          props.setFilter(buildFilter(value(), props.schema.name));
         }}
         multiple
         showClearButton={false}
