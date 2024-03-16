@@ -1,9 +1,8 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {cx, useLangFunc} from "components/utils";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
-import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
-import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {RequirementLevel, SimpleAttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {For, Match, ParentComponent, Show, Switch, VoidComponent, createMemo} from "solid-js";
 import {Dynamic} from "solid-js/web";
@@ -33,6 +32,7 @@ interface Props {
 export const AttributeFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
+  const modelQuerySpecs = useModelQuerySpecs();
   const {form} = useFormContext();
 
   function fieldName(attribute: Attribute) {
@@ -89,25 +89,13 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
           case "user/staff":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect
-                  querySpec={{
-                    entityURL: `facility/${activeFacilityId()}/user/staff`,
-                    prefixQueryKey: [FacilityStaff.keys.staff()],
-                  }}
-                  {...extraSelectProps}
-                />
+                <TQuerySelect {...modelQuerySpecs.userStaff()} {...extraSelectProps} />
               </Show>
             );
           case "user/client":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect
-                  querySpec={{
-                    entityURL: `facility/${activeFacilityId()}/user/client`,
-                    prefixQueryKey: [FacilityClient.keys.client()],
-                  }}
-                  {...extraSelectProps}
-                />
+                <TQuerySelect {...modelQuerySpecs.userClient()} {...extraSelectProps} />
               </Show>
             );
         }

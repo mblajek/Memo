@@ -4,12 +4,14 @@ import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
+import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/UuidListSelectFilterControl";
 import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL, EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -32,6 +34,7 @@ export function useMeetingTableColumns() {
   const {attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
   const confirmation = createConfirmation();
+  const modelQuerySpecs = useModelQuerySpecs();
   const deleteMeetingMutation = createMutation(() => ({
     mutationFn: FacilityMeeting.deleteMeeting,
   }));
@@ -193,15 +196,17 @@ export function useMeetingTableColumns() {
         initialVisible: false,
       },
       staff: {
-        name: "staff",
+        name: "staff.*.userId",
+        extraDataColumns: ["staff"],
         columnDef: {
-          cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((props) => (
+          cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
             <Scrollable>
-              <UserLinks type="staff" users={props.v} />
+              <UserLinks type="staff" users={props.row.staff} />
             </Scrollable>
           )),
+          size: 250,
         },
-        // filterControl: (props) => <UuidModelFilterControl {...props} model="user/staff" />,
+        filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userStaff()} />,
         metaParams: {textExportCell: attendantsTextExport},
       },
       staffAttendance: {
@@ -213,15 +218,17 @@ export function useMeetingTableColumns() {
         initialVisible: false,
       },
       clients: {
-        name: "clients",
+        name: "clients.*.userId",
+        extraDataColumns: ["clients"],
         columnDef: {
-          cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((props) => (
+          cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
             <Scrollable>
-              <UserLinks type="clients" users={props.v} />
+              <UserLinks type="clients" users={props.row.clients} />
             </Scrollable>
           )),
+          size: 250,
         },
-        // filterControl: (props) => <UuidModelFilterControl {...props} model="user/client" />,
+        filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
         metaParams: {textExportCell: attendantsTextExport},
       },
       clientsAttendance: {

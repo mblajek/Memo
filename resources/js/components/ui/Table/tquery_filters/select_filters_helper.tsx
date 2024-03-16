@@ -84,28 +84,32 @@ export function useSingleSelectFilterHelper() {
 export function useMultiSelectFilterHelper() {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
-  const MODES: SetsOp[] = ["has_all", "has_any", "has_only"];
+
+  type Mode = SetsOp | "=";
+  const MODES = ["has_all", "has_any", "=", "has_only"] as const satisfies Mode[];
 
   interface ModeControlProps {
     readonly columnName: string;
-    readonly mode: SetsOp;
-    readonly onModeChange: (mode: SetsOp) => void;
+    readonly mode: Mode;
+    readonly onModeChange: (mode: Mode) => void;
   }
   const ModeControl: VoidComponent<ModeControlProps> = (props) => (
-    <SegmentedControl
-      name={filterFieldNames.get(`mode_${props.columnName}`)}
-      items={MODES.map((m) => ({
-        value: m,
-        label: () => (
-          <span title={t(`tables.filter.set_operation.${m}.explanation`)}>
-            {t(`tables.filter.set_operation.${m}.short`)}
-          </span>
-        ),
-      }))}
-      value={props.mode}
-      onValueChange={(mode) => props.onModeChange(mode as SetsOp)}
-      small
-    />
+    <div class="text-sm">
+      <SegmentedControl
+        name={filterFieldNames.get(`mode_${props.columnName}`)}
+        items={MODES.map((m) => ({
+          value: m,
+          label: () => (
+            <span title={t(`tables.filter.set_operation.${m}.explanation`)}>
+              {t(`tables.filter.set_operation.${m}.short`)}
+            </span>
+          ),
+        }))}
+        value={props.mode}
+        onValueChange={(mode) => props.onModeChange(mode as Mode)}
+        small
+      />
+    </div>
   );
 
   return {

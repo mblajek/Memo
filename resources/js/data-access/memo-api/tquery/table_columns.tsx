@@ -2,8 +2,8 @@ import {PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
-import {useModelQuerySpec} from "components/ui/Table/tquery_filters/model_query_specs";
 import {NON_NULLABLE} from "components/utils";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {objectRecursiveMerge} from "components/utils/object_merge";
 import {Show} from "solid-js";
 
@@ -22,7 +22,7 @@ export class TableColumnsSet<C extends string, D extends Readonly<Record<C, Part
 }
 
 export function useTableColumns() {
-  const modelQuerySpecs = useModelQuerySpec();
+  const modelQuerySpecs = useModelQuerySpecs();
   const columnsSet = new TableColumnsSet({
     createdAt: {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
     createdBy: {name: "createdBy.name", initialVisible: false},
@@ -43,7 +43,7 @@ export function useTableColumns() {
         size: undefined,
       },
       filterControl: (props) => (
-        <Show when={modelQuerySpecs("user")}>
+        <Show when={modelQuerySpecs.user()}>
           {(querySpecs) => <UuidSelectFilterControl {...props} {...querySpecs()} />}
         </Show>
       ),
@@ -62,7 +62,7 @@ export function useTableColumns() {
         size: undefined,
       },
       filterControl: (props) => (
-        <Show when={modelQuerySpecs("user")}>
+        <Show when={modelQuerySpecs.user()}>
           {(querySpecs) => <UuidSelectFilterControl {...props} {...querySpecs()} />}
         </Show>
       ),
