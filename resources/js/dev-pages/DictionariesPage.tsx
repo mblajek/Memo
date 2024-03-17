@@ -121,7 +121,7 @@ export default (() => {
                   id: "Disabled",
                 }),
                 ...((attributes() &&
-                  dict.resource.positionRequiredAttributes
+                  dict.resource.positionRequiredAttributeIds
                     ?.map((attrId) => attributes()!.get(attrId)!)
                     .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
                     .map((attr) =>
