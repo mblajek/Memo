@@ -53,7 +53,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       if (viewMode) {
         setForceEditable(props.forceEditable || false);
       }
-      if (durationDifferentFromSuggestion()) {
+      if (durationDifferentFromSuggestion() || !form.data("date") || !form.data("time.startTime")) {
         setForceEditable(true);
       }
     }),
@@ -75,9 +75,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       options,
     };
   });
-  const showEditable = () =>
-    !props.viewMode &&
-    (isForceEditable() || !form.data("date") || !form.data("time.startTime") || durationDifferentFromSuggestion());
+  const showEditable = () => !props.viewMode && isForceEditable();
 
   const STEP_MINUTES = 5;
   const KEY_DIRS = new Map([
