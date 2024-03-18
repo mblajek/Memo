@@ -56,7 +56,7 @@ import {SegmentedControl} from "../form/SegmentedControl";
 import {EN_DASH} from "../symbols";
 import {coloringToStyle, getRandomEventColors} from "./colors";
 import {MeetingEventBlock} from "./column_events";
-import {MonthDayMeetingEventBlock} from "./month_day_events";
+import {MonthDayMeetingEventBlock, MonthDayWorkTime} from "./month_day_events";
 
 export const MODES = ["month", "week", "day"] as const;
 export type Mode = (typeof MODES)[number];
@@ -642,6 +642,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                           onClick={() => {
                             setMode("week");
                             setDaysSelectionAndMonthFromDay(day);
+                            setSelectedResourceRadio(id);
                           }}
                         >
                           {text}
@@ -672,7 +673,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           .filter(
             (e) =>
               e.meeting.categoryDictId !== meetingCategoryDict()?.system.id &&
-              daysRange.contains(e.date) &&
               e.meeting.staff.some((staff) => staff.userId === staffId),
           )
           .map((e) => {
@@ -690,32 +690,48 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             };
           })
       : [];
-    return Array.from(daysRange, (day) => {
-      return {
-        day,
-        content: () => (
-          <MonthCalendarCell
-            month={daysSelection().start}
-            day={day}
-            events={selectedEvents}
-            onDateClick={() => {
-              setMode("week");
-              setDaysSelectionAndMonthFromDay(day);
-            }}
-            onEmptyClick={() =>
-              meetingCreateModal.show({
-                initialValues: {
-                  date: day.toISODate(),
-                  ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
-                },
-                onSuccess: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
-                showToast: false,
-              })
-            }
-          />
-        ),
-      };
-    });
+    const systemEvents = events().filter((e) => e.meeting.typeDictId === meetingTypeDict()?.work_time.id);
+    const facilityWorkTimes = systemEvents.filter((e) => !e.meeting.staff.length);
+    const staffWorkTimes = staffId
+      ? systemEvents
+          .filter((e) => e.meeting.staff.some((staff) => staff.userId === staffId))
+          .map((e) => ({
+            ...e,
+            content: () => <MonthDayWorkTime meeting={e.meeting} />,
+          }))
+      : [];
+    return Array.from(daysRange, (day) => ({
+      day,
+      content: () => (
+        <MonthCalendarCell
+          class={
+            staffWorkTimes.some((e) => e.date.hasSame(day, "day"))
+              ? BG_CLASSES.staffWorkTime
+              : facilityWorkTimes.some((e) => e.date.hasSame(day, "day"))
+                ? BG_CLASSES.facilityWorkTime
+                : BG_CLASSES.background
+          }
+          month={daysSelection().start}
+          day={day}
+          workTimes={staffWorkTimes}
+          events={selectedEvents}
+          onDateClick={() => {
+            setMode("week");
+            setDaysSelectionAndMonthFromDay(day);
+          }}
+          onEmptyClick={() =>
+            meetingCreateModal.show({
+              initialValues: {
+                date: day.toISODate(),
+                ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
+              },
+              onSuccess: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
+              showToast: false,
+            })
+          }
+        />
+      ),
+    }));
   });
 
   function viewMeeting(meetingId: string) {
@@ -822,19 +838,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             />
           </div>
           <Switch>
-            <Match when={mode() === "month"}>
-              <MonthCalendar
-                class="h-full min-h-0 pr-px pb-px"
-                month={daysSelection().start}
-                days={monthCalendarDays()}
-                isLoading={isCalendarLoading()}
-              />
-            </Match>
             <Match when={!selectedResources().size}>
               <div class="mx-2 my-6 flex justify-center gap-1">
                 <TbInfoTriangle size={20} class="text-memo-active" />
                 {t("calendar.select_resource_to_show_calendar")}
               </div>
+            </Match>
+            <Match when={mode() === "month"}>
+              <MonthCalendar
+                class="h-full min-h-0 pb-1"
+                month={daysSelection().start}
+                days={monthCalendarDays()}
+                isLoading={isCalendarLoading()}
+              />
             </Match>
             <Match when={true}>
               <ColumnsCalendar

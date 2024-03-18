@@ -61,7 +61,7 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
         >
           <For each={[...daysRange()]}>
             {(day, index) => (
-              <div class={cx("bg-white rounded-sm overflow-clip", index() % 7 ? undefined : "col-start-1")}>
+              <div class={cx("rounded-sm overflow-clip", index() % 7 ? undefined : "col-start-1")}>
                 {calendarDaysMap().get(day.toMillis())?.content()}
               </div>
             )}

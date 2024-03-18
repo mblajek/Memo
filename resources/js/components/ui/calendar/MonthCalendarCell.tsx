@@ -9,8 +9,10 @@ import {Event, PartDayEvent} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
 interface Props {
+  readonly class?: string;
   readonly month: DateTime;
   readonly day: DateTime;
+  readonly workTimes: readonly Event[];
   readonly events: readonly Event[];
   readonly onDateClick: () => void;
   readonly onEmptyClick?: () => void;
@@ -26,30 +28,40 @@ export const MonthCalendarCell: VoidComponent<Props> = (props) => {
       .filter((event): event is PartDayEvent => !event.allDay && event.date.hasSame(props.day, "day"))
       .sort((a, b) => a.startDayMinute - b.startDayMinute),
   );
+  const workTimes = createMemo(() =>
+    props.workTimes
+      .filter((event): event is PartDayEvent => !event.allDay && event.date.hasSame(props.day, "day"))
+      .sort((a, b) => a.startDayMinute - b.startDayMinute),
+  );
   return (
     <div
-      class="h-full min-h-20 flex flex-col items-stretch text-xs"
+      class={cx("h-full min-h-20 flex flex-col items-stretch text-xs", props.class)}
       style={{"line-height": "1.1"}}
       onClick={() => props.onEmptyClick?.()}
     >
-      <Button
-        class={cx(
-          "px-0.5 self-end font-semibold flex gap-0.5 items-center text-sm -mb-0.5 hover:underline",
-          weekDaysCalculator.isWeekend(props.day) || holidays.isHoliday(props.day) ? "text-red-800" : "text-black",
-          isThisMonth() ? undefined : "text-opacity-50",
-          holidays.isHoliday(props.day) ? "underline decoration-1 hover:decoration-2" : undefined,
-        )}
-        onClick={(e) => {
-          e.stopPropagation();
-          props.onDateClick?.();
-        }}
-      >
-        <Show when={props.day.hasSame(currentDate(), "day")}>
-          <FaSolidCircleDot class="text-red-700 mb-0.5" size="8" />
-        </Show>
-        {props.day.day}
-      </Button>
-      <div class="px-px flex flex-col items-stretch gap-px mb-3">
+      <div class="bg-inherit pl-0.5 flex items-start gap-1 justify-between">
+        <div class="pt-px min-w-0 flex flex-col">
+          <For each={workTimes()}>{(event) => event.content()}</For>
+        </div>
+        <Button
+          class={cx(
+            "bg-inherit px-0.5 rounded font-semibold flex gap-0.5 items-center text-sm -mb-0.5 hover:underline",
+            weekDaysCalculator.isWeekend(props.day) || holidays.isHoliday(props.day) ? "text-red-800" : "text-black",
+            isThisMonth() ? undefined : "text-opacity-50",
+            holidays.isHoliday(props.day) ? "underline decoration-1 hover:decoration-2" : undefined,
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDateClick?.();
+          }}
+        >
+          <Show when={props.day.hasSame(currentDate(), "day")}>
+            <FaSolidCircleDot class="text-red-700 mb-0.5" size="8" />
+          </Show>
+          {props.day.day}
+        </Button>
+      </div>
+      <div class="p-px pt-0 flex flex-col items-stretch gap-px mb-2 mr-2">
         <For each={partDayEvents()}>{(event) => event.content()}</For>
       </div>
     </div>
