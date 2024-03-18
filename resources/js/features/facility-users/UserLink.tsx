@@ -13,7 +13,7 @@ import {useActiveFacility} from "state/activeFacilityId.state";
 interface Props extends Partial<AnchorProps> {
   readonly type: FacilityUserType;
   /** Whether to display the staff/client icon. Default: true. */
-  readonly icon?: boolean;
+  readonly icon?: boolean | "tiny";
   /** Whether to linkify the name. Default: true. */
   readonly link?: boolean;
   readonly userId: Api.Id | undefined;
@@ -48,11 +48,14 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
       }
     >
       {/* Allow wrapping the client name, but not just after the icon. */}
-      <span class="inline-block" style={{"white-space": "nowrap", "min-height": "1.45em"}}>
+      <span
+        class="inline-block"
+        style={{"white-space": "nowrap", "min-height": props.icon === true ? "1.45em" : undefined}}
+      >
         <Show when={props.icon}>
           <Dynamic
             component={ICONS[props.type]}
-            size="1.3em"
+            size={props.icon === "tiny" ? "1.05em" : "1.3em"}
             class="inlineIcon shrink-0 text-current"
             style={{"margin-right": "0.1em", "margin-bottom": "0.1em"}}
           />
