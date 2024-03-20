@@ -53,9 +53,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
     };
   }
   return (
-    <div>
+    <div class="flex flex-col">
       <Show when={dictionaries()} fallback={<BigSpinner />}>
-        <Capitalize class="font-medium" text={tableTranslations.tableName()} />
+        <h2 class="font-medium">
+          <Capitalize text={tableTranslations.tableName()} />
+        </h2>
         <Tabs
           tabs={[
             {
