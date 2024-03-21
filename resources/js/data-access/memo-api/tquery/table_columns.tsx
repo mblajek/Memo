@@ -24,10 +24,10 @@ export class TableColumnsSet<C extends string, D extends Readonly<Record<C, Part
 export function useTableColumns() {
   const modelQuerySpecs = useModelQuerySpecs();
   const columnsSet = new TableColumnsSet({
-    createdAt: {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false},
-    createdBy: {name: "createdBy.name", initialVisible: false},
-    updatedAt: {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
-    updatedBy: {name: "updatedBy.name", initialVisible: false},
+    createdAt: {name: "createdAt", columnDef: {sortDescFirst: true}, initialVisible: false, globalFilterable: false},
+    createdBy: {name: "createdBy.name", initialVisible: false, globalFilterable: false},
+    updatedAt: {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false, globalFilterable: false},
+    updatedBy: {name: "updatedBy.name", initialVisible: false, globalFilterable: false},
   });
   const globalAdminColumnsSet = new TableColumnsSet({
     ...columnsSet.columns,
@@ -49,6 +49,7 @@ export function useTableColumns() {
       ),
       metaParams: {textExportCell: exportCellFunc((v: string, ctx) => ctx.row["createdBy.name"] as string)},
       initialVisible: false,
+      globalFilterable: false,
     },
     updatedBy: {
       name: "updatedBy.id",
@@ -68,6 +69,7 @@ export function useTableColumns() {
       ),
       metaParams: {textExportCell: exportCellFunc((v: string, ctx) => ctx.row["updatedBy.name"] as string)},
       initialVisible: false,
+      globalFilterable: false,
     },
   });
 

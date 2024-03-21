@@ -171,6 +171,8 @@ export interface PartialColumnConfig<TData = DataItem> {
   readonly metaParams?: ColumnMetaParams<TData>;
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
+  /** Whether the global filter can match this column. Default: depends on the column type. */
+  readonly globalFilterable?: boolean;
 }
 
 interface HeaderParams<TData = DataItem> {
@@ -194,16 +196,18 @@ function columnConfigFromPartial({
   header = Header,
   metaParams,
   initialVisible = true,
+  globalFilterable = true,
 }: PartialColumnConfig): FullColumnConfig {
   return {
     name,
     isDataColumn,
-    dataColumns: isDataColumn ? [name, ...extraDataColumns] : extraDataColumns,
+    extraDataColumns,
     columnDef,
     filterControl,
     header,
     metaParams,
     initialVisible,
+    globalFilterable,
   };
 }
 
@@ -239,6 +243,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           name: col.name,
           metaParams: {devColumn: true},
           initialVisible: false,
+          globalFilterable: false,
         }) satisfies PartialColumnConfig<DataItem>,
     );
   const columnsConfig = createMemo(() =>
@@ -305,11 +310,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       columnDef: {cell: tableCells.dict()},
       metaParams: {textExportCell: tableTextExportCells.dict()},
       filterControl: DictFilterControl,
+      globalFilterable: true,
     })
     .set("dict_list", {
       columnDef: {cell: tableCells.dictList(), enableSorting: false, size: 270},
       metaParams: {textExportCell: tableTextExportCells.dictList()},
       filterControl: DictListFilterControl,
+      globalFilterable: true,
     });
 
   const requestCreator = createTableRequestCreator({
