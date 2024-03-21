@@ -77,7 +77,8 @@ export const Navbar: VoidComponent = () => {
                 </Show>
               </NavigationItem>
             </SilentAccessBarrier>
-            <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" />
+            {/* TODO: Restore the page when there is useful information on it. */}
+            {/* <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" /> */}
           </NavigationSection>
         </Show>
         <SilentAccessBarrier roles={["globalAdmin"]}>
