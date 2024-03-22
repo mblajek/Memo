@@ -1,9 +1,10 @@
 export interface FacilityContents {
-  readonly createDictionaries: readonly Dictionary[];
+  readonly dictionaries: readonly Dictionary[];
   readonly extendDictionaries: readonly DictionaryExtension[];
   readonly attributes: readonly Attribute[];
 
   readonly staff: readonly Staff[];
+  readonly giveStaff: readonly GiveStaff[];
   readonly clients: readonly Client[];
 
   readonly meetings: readonly Meeting[];
@@ -15,7 +16,7 @@ export interface DictionaryExtension {
 }
 
 export interface Dictionary extends DictionaryExtension {
-  readonly nnOrId: string;
+  readonly nn: string;
   readonly isFixed: boolean;
   readonly isExtendable: boolean;
   readonly positionRequiredAttributeIds: readonly string[] | null;
@@ -36,17 +37,23 @@ export interface Attribute {
   readonly name: string;
   readonly apiName: string;
   readonly type: string;
-  readonly dictionaryNnOrName: string | null;
+  readonly dictionaryName: string | null;
   readonly isFixed: boolean;
   readonly defaultOrder: number;
   readonly isMultiValue: boolean | null;
   readonly requirementLevel: "empty" | "optional" | "recommended" | "required";
 }
 
+/** New user with staff member role to create. */
 export interface Staff {
   readonly nn: string;
   readonly name: string;
   readonly email: string;
+}
+
+/** Existing user to give staff in the facility. */
+export interface GiveStaff {
+  readonly id: string;
 }
 
 export interface Client {
@@ -76,7 +83,7 @@ export interface ExistingDictAttributeValue {
 }
 
 export type SingleAttributeValue = ConstAttributeValue | NnAttributeValue | ExistingDictAttributeValue;
-export type AttributeValue = SingleAttributeValue | readonly SingleAttributeValue[];
+export type AttributeValue = SingleAttributeValue | SingleAttributeValue[];
 
 export interface Meeting {
   readonly nn: string;

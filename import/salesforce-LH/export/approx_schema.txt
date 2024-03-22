@@ -1,0 +1,41 @@
+Pracownicy:
+User
+
+Rodziny:
+Account
+RecordTypeId:
+012b0000000M3XXAA0 (Rodzina DR)
+012b0000000M3XZAA0 (Opiekun DR)
+012b0000000M3XYAA0 (Rodzina MAZ)
+012b0000000M3XaAAK (Opiekun MAZ)
+
+Osoby:
+Contact JOIN Account
+RecordTypeId:
+012b0000000M3XgAAK (Rodzic DR)
+0120X000000gKMEQA2 (Dziecko DR)
+012b0000000M3XiAAK (Inna osoba dorosła DR)
+012b0000000M3XhAAK (Rodzic MAZ)
+012b0000000M3XeAAK (Dziecko MAZ)
+012b0000000M3XjAAK (Inna osoba dorosła MAZ)
+
+Sprawy:
+Case
+
+Spotkania:
+Event 
+(WHERE Status_of_contact__c != "")
+WhatId - Case
+WhoId - Contact
+OwnerId - staff (User?)
+
+Uczestnicy:
+EventRelation
+RelationId - klient (Contact)
+
+Ankieta ryzyka:
+Survey_of_risk_factors__c JOIN Case
+Ważne tylko najnowsze.
+
+Powód zgłoszenia:
+Notification_reason__c JOIN Case
