@@ -42,7 +42,7 @@ export default {
       },
     },
     fontFamily: {
-      roboto: "Roboto",
+      main: "Roboto",
       mono: "Roboto Mono",
     },
   },

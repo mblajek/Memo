@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@100..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&family=Roboto+Mono:wght@100..700&display=swap");
 
 // Colour Contrast Checker: https://colourcontrast.cc/
 
@@ -17,7 +16,7 @@ html {
 
   // Theme colors. They need to be linked from tailwind config.
 
-  //  A bright blue color used for various active elements on page.
+  // A bright blue color used for various active elements on page.
   --tc-memo-active: #06b6d4;
   // A very light blue color for the background of popups, so that it is easier to see that they are opened.
   --tc-popup-bg: #f7fcfd;
@@ -56,7 +55,7 @@ html {
   );
 
   html {
-    @apply font-roboto;
+    @apply font-main;
 
     --sb-thumb-color: color-mix(in srgb, theme("colors.memo-active") 80%, white);
     --sb-track-color: color-mix(in srgb, var(--sb-thumb-color) 20%, white);

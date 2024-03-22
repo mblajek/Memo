@@ -152,8 +152,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           text: staff.name,
           coloring,
           label: () => (
-            <div class="w-full flex justify-between gap-1 select-none">
-              <span>{staff.name}</span>
+            <div class="w-full py-1 flex justify-between gap-1 select-none">
+              <span class="line-clamp-2" style={{"font-size": "0.92rem", "line-height": "1.15"}}>
+                {staff.name}
+              </span>
               <span
                 class="shrink-0 self-center border rounded"
                 style={{
@@ -662,7 +664,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                             setSelectedResourceRadio(id);
                           }}
                         >
-                          {text}
+                          <span class="line-clamp-3">{text}</span>
                         </Button>
                       )}
                       title={`${text}\n${t("calendar.click_for_staff_calendar")}`}
