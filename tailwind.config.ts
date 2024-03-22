@@ -43,6 +43,7 @@ export default {
     },
     fontFamily: {
       roboto: "Roboto",
+      mono: "Roboto Mono",
     },
   },
   darkMode: "class",

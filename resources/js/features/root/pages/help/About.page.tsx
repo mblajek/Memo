@@ -34,7 +34,7 @@ export default (() => {
                 <Show when={status().commitHash} fallback={EMPTY_VALUE_SYMBOL}>
                   {(commitHash) => (
                     <>
-                      <A class="monospace" href={`${GITHUB_LINK}/tree/${commitHash()}`} target="_blank">
+                      <A class="font-mono" href={`${GITHUB_LINK}/tree/${commitHash()}`} target="_blank">
                         {commitHash()}
                       </A>{" "}
                       <CopyToClipboard text={status().commitHash} />
@@ -44,11 +44,11 @@ export default (() => {
               </div>
               <label class="font-medium">{t("about_page.backend_hash")}</label>
               <div>
-                <span class="monospace">{status().backendHash}</span> <CopyToClipboard text={status().backendHash} />
+                <span class="font-mono">{status().backendHash}</span> <CopyToClipboard text={status().backendHash} />
               </div>
               <label class="font-medium">{t("about_page.frontend_hash")}</label>
               <div>
-                <span class="monospace">{status().frontendHash}</span> <CopyToClipboard text={status().frontendHash} />
+                <span class="font-mono">{status().frontendHash}</span> <CopyToClipboard text={status().frontendHash} />
               </div>
             </div>
           </div>

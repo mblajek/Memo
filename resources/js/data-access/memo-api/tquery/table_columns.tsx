@@ -4,7 +4,7 @@ import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
 import {NON_NULLABLE} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
-import {objectRecursiveMerge} from "components/utils/object_merge";
+import {objectRecursiveMerge} from "components/utils/object_util";
 import {Show} from "solid-js";
 
 export class TableColumnsSet<C extends string, D extends Readonly<Record<C, PartialColumnConfig>>> {

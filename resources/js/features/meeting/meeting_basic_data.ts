@@ -1,10 +1,9 @@
 import {MeetingAttendantResourceForCreate, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 
-/** Data associated with a successful API call of creating or editing a meeting. */
-export type MeetingChangeSuccessData = Pick<
+/** Partial information about a meeting, helpful for locating it on the calendar. */
+export type MeetingBasicData = Pick<
   MeetingResource,
   "id" | "date" | "startDayminute" | "durationMinutes" | "resources"
 > & {
   readonly staff: readonly MeetingAttendantResourceForCreate[];
-  readonly clients: readonly MeetingAttendantResourceForCreate[];
 };

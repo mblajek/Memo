@@ -54,7 +54,12 @@ export function useMeetingTableColumns() {
   const DetailsButton: ParentComponent<{meetingId: string} & htmlAttributes.button> = (allProps) => {
     const [props, buttonProps] = splitProps(allProps, ["meetingId", "children"]);
     return (
-      <Button {...buttonProps} onClick={() => meetingModal.show({meetingId: props.meetingId, initialViewMode: true})}>
+      <Button
+        {...buttonProps}
+        onClick={() =>
+          meetingModal.show({meetingId: props.meetingId, initialViewMode: true, showGoToMeetingButton: true})
+        }
+      >
         <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
       </Button>
     );

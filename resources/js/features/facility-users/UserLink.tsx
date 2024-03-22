@@ -1,11 +1,11 @@
-import {A, AnchorProps, useLocation} from "@solidjs/router";
+import {AnchorProps} from "@solidjs/router";
+import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SmallSpinner} from "components/ui/Spinner";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
-import {FiExternalLink} from "solid-icons/fi";
 import {Show, VoidComponent, mergeProps, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -27,11 +27,6 @@ const ICONS = {
 };
 
 export const UserLink: VoidComponent<Props> = (allProps) => {
-  const location = useLocation();
-  const href = () => `/${activeFacility()!.url}/${allProps.type}/${allProps.userId}`;
-  const isOnThisUserPage = () => location.pathname === href();
-  /** Whether to include a link opening in the same window. Don't include it if we're already on that user's page. */
-  const includeNormalLink = () => props.link && !isOnThisUserPage();
   const defProps = mergeProps({icon: true, link: true}, allProps);
   const [props, anchorProps] = splitProps(defProps, ["type", "icon", "link", "userId", "name"]);
   const t = useLangFunc();
@@ -66,16 +61,12 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
               <Show when={activeFacility() && name().displayName} fallback={t("parenthesised", {text: t("unknown")})}>
                 {(displayName) => (
                   <Show when={props.link} fallback={<>{displayName()}</>}>
-                    <span>
-                      <Show when={includeNormalLink()} fallback={displayName()}>
-                        <A {...anchorProps} href={href()}>
-                          {displayName()}
-                        </A>
-                      </Show>{" "}
-                      <A {...anchorProps} href={href()} target="_blank" title={t("open_in_new_tab")}>
-                        <FiExternalLink class="inlineIcon strokeIcon text-current" />
-                      </A>
-                    </span>
+                    <LinkWithNewTabLink
+                      {...anchorProps}
+                      href={`/${activeFacility()!.url}/${allProps.type}/${allProps.userId}`}
+                    >
+                      {displayName()}
+                    </LinkWithNewTabLink>
                   </Show>
                 )}
               </Show>

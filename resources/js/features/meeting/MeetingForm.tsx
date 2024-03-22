@@ -20,7 +20,6 @@ import {
 import {Api} from "data-access/memo-api/types";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
-import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {MeetingAttendantsFields, getAttendantsSchemaPart} from "./MeetingAttendantsFields";
 import {MeetingCannedStatusEdits} from "./MeetingCannedStatusEdits";
 import {MeetingDateAndTime} from "./MeetingDateAndTime";
@@ -74,119 +73,114 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
   );
 
   return (
-    <div class="flex flex-col">
-      <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="-mb-4" data={meeting()} />}</Show>
-      <FelteForm
-        id={props.id}
-        translationsFormNames={[props.id, "meeting"]}
-        schema={getSchema()}
-        translationsModel="meeting"
-        class="flex flex-col gap-3"
-        {...formProps}
-        onError={(errorResp, ctx) => {
-          formProps?.onError?.(errorResp, ctx);
-          if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
-            const errors = errorResp.response.data.errors;
-            // If duration is missing, but type is also missing, ignore the missing duration error. Selecting a type
-            // will fill in the duration automatically for many types.
-            const durationRequiredErrorIndex = errors.findIndex(
-              (e) =>
-                Api.isValidationError(e) &&
-                e.field === "durationMinutes" &&
-                (e.code === "validation.required" || e.code === "validation.present"),
-            );
-            if (
-              durationRequiredErrorIndex >= 0 &&
-              errors.some(
-                (e) => Api.isValidationError(e) && e.field === "typeDictId" && e.code === "validation.required",
-              )
-            )
-              errors.splice(durationRequiredErrorIndex, 1);
-          }
-        }}
-        disabled={props.viewMode}
-      >
-        {(form) => (
-          <>
-            <div class="flex flex-col">
-              <MeetingDateAndTime
-                // Does not work very well on Chrome currently.
-                // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
-                viewMode={props.viewMode}
-                forceEditable={props.forceTimeEditable}
-                meeting={props.meeting}
-              />
+    <FelteForm
+      id={props.id}
+      translationsFormNames={[props.id, "meeting"]}
+      schema={getSchema()}
+      translationsModel="meeting"
+      class="flex flex-col gap-3"
+      {...formProps}
+      onError={(errorResp, ctx) => {
+        formProps?.onError?.(errorResp, ctx);
+        if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
+          const errors = errorResp.response.data.errors;
+          // If duration is missing, but type is also missing, ignore the missing duration error. Selecting a type
+          // will fill in the duration automatically for many types.
+          const durationRequiredErrorIndex = errors.findIndex(
+            (e) =>
+              Api.isValidationError(e) &&
+              e.field === "durationMinutes" &&
+              (e.code === "validation.required" || e.code === "validation.present"),
+          );
+          if (
+            durationRequiredErrorIndex >= 0 &&
+            errors.some((e) => Api.isValidationError(e) && e.field === "typeDictId" && e.code === "validation.required")
+          )
+            errors.splice(durationRequiredErrorIndex, 1);
+        }
+      }}
+      disabled={props.viewMode}
+    >
+      {(form) => (
+        <>
+          <div class="flex flex-col">
+            <MeetingDateAndTime
+              // Does not work very well on Chrome currently.
+              // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
+              viewMode={props.viewMode}
+              forceEditable={props.forceTimeEditable}
+              meeting={props.meeting}
+            />
+          </div>
+          <div class="flex gap-1">
+            <div class="basis-0 grow">
+              <MeetingTypeFields />
             </div>
-            <div class="flex gap-1">
-              <div class="basis-0 grow">
-                <MeetingTypeFields />
-              </div>
-              <div class="basis-0 grow">
-                <div class="flex flex-col items-stretch gap-1">
-                  <DictionarySelect
-                    name="statusDictId"
-                    label={(origLabel) => (
-                      <>
-                        {origLabel} <MeetingStatusInfoIcon meetingStatusId={form.data("statusDictId")} />
-                      </>
-                    )}
-                    dictionary="meetingStatus"
-                    nullable={false}
-                  />
-                  <Show
-                    when={
-                      props.viewMode &&
-                      formProps.initialValues?.statusDictId &&
-                      formProps.initialValues.statusDictId === meetingStatusDict()?.planned.id &&
-                      props.onViewModeChange
-                    }
-                  >
-                    <MeetingCannedStatusEdits onViewModeChange={props.onViewModeChange!} />
-                  </Show>
-                </div>
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <MeetingAttendantsFields name="staff" viewMode={props.viewMode} />
-              <MeetingAttendantsFields name="clients" showAttendanceStatusLabel={false} viewMode={props.viewMode} />
-            </div>
-            <CheckboxField name="isRemote" />
-            <ByMode
-              edit={
-                <MultilineTextField
-                  name="notes"
+            <div class="basis-0 grow">
+              <div class="flex flex-col items-stretch gap-1">
+                <DictionarySelect
+                  name="statusDictId"
                   label={(origLabel) => (
                     <>
-                      {origLabel} <InfoIcon href="/help/rich-text" title={t("rich_text_field")} />
+                      {origLabel} <MeetingStatusInfoIcon meetingStatusId={form.data("statusDictId")} />
                     </>
                   )}
-                  data-felte-keep-on-remove
+                  dictionary="meetingStatus"
+                  nullable={false}
                 />
-              }
-              view={
-                <FieldBox name="notes">
-                  <PlaceholderField name="notes" />
-                  <Show when={form.data("notes")} fallback={EMPTY_VALUE_SYMBOL}>
-                    {(notes) => <RichTextView class="max-h-60" text={notes()} />}
-                  </Show>
-                </FieldBox>
-              }
-            />
-            <DictionarySelect name="resources" dictionary="meetingResource" multiple placeholder={EMPTY_VALUE_SYMBOL} />
-            <ByMode
-              edit={
-                <FelteSubmit
-                  cancel={() => {
-                    form.reset();
-                    props.onCancel?.();
-                  }}
-                />
-              }
-            />
-          </>
-        )}
-      </FelteForm>
-    </div>
+                <Show
+                  when={
+                    props.viewMode &&
+                    formProps.initialValues?.statusDictId &&
+                    formProps.initialValues.statusDictId === meetingStatusDict()?.planned.id &&
+                    props.onViewModeChange
+                  }
+                >
+                  <MeetingCannedStatusEdits onViewModeChange={props.onViewModeChange!} />
+                </Show>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <MeetingAttendantsFields name="staff" viewMode={props.viewMode} />
+            <MeetingAttendantsFields name="clients" showAttendanceStatusLabel={false} viewMode={props.viewMode} />
+          </div>
+          <CheckboxField name="isRemote" />
+          <ByMode
+            edit={
+              <MultilineTextField
+                name="notes"
+                label={(origLabel) => (
+                  <>
+                    {origLabel} <InfoIcon href="/help/rich-text" title={t("rich_text_field")} />
+                  </>
+                )}
+                data-felte-keep-on-remove
+              />
+            }
+            view={
+              <FieldBox name="notes">
+                <PlaceholderField name="notes" />
+                <Show when={form.data("notes")} fallback={EMPTY_VALUE_SYMBOL}>
+                  {(notes) => <RichTextView class="max-h-60" text={notes()} />}
+                </Show>
+              </FieldBox>
+            }
+          />
+          <DictionarySelect name="resources" dictionary="meetingResource" multiple placeholder={EMPTY_VALUE_SYMBOL} />
+          <ByMode
+            edit={
+              <FelteSubmit
+                cancel={() => {
+                  form.reset();
+                  props.onCancel?.();
+                }}
+              />
+            }
+          />
+        </>
+      )}
+    </FelteForm>
   );
 };
 

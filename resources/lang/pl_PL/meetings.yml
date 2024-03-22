@@ -31,3 +31,5 @@ interval_labels:
   1d: "kolejne dni"
   7d: "co tydzień"
   14d: "co dwa tygodnie"
+
+show_in_calendar: "Pokaż w kalendarzu"

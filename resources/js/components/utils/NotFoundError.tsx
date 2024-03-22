@@ -66,7 +66,7 @@ export const NotFoundError: VoidComponent<Props> = (props) => {
         <p class="mt-4 text-xs">
           {t("errors.resource_not_found.debug_message_header")}
           <br />
-          <span class="whitespace-pre-wrap wrapTextAnywhere monospace">{debugMessage()}</span>
+          <span class="whitespace-pre-wrap wrapTextAnywhere font-mono">{debugMessage()}</span>
         </p>
       </div>
     </Show>

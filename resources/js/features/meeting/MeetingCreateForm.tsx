@@ -10,12 +10,12 @@ import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.r
 import {Show, VoidComponent} from "solid-js";
 import {getAttendantsValuesForCreate, useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, getResourceValuesForCreate} from "./MeetingForm";
-import {MeetingChangeSuccessData} from "./meeting_change_success_data";
+import {MeetingBasicData} from "./meeting_basic_data";
 import {getTimeValues, meetingTimeInitialValue} from "./meeting_time_controller";
 
 export interface MeetingCreateFormProps {
   readonly initialValues?: Partial<MeetingFormType>;
-  readonly onSuccess?: (meeting: MeetingChangeSuccessData) => void;
+  readonly onSuccess?: (meeting: MeetingBasicData) => void;
   readonly onCancel?: () => void;
   /** Whether the meeting date and time should start as editable, even if provided in the initial values. */
   readonly forceTimeEditable?: boolean;

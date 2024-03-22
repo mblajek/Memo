@@ -12,12 +12,12 @@ import {
   getMeetingSeriesCloneParams,
   numMeetingsToSeriesLength,
 } from "./MeetingSeriesForm";
-import {MeetingChangeSuccessData} from "./meeting_change_success_data";
+import {MeetingBasicData} from "./meeting_basic_data";
 
 export interface MeetingSeriesCreateFormProps {
   readonly startMeeting: MeetingResource;
   readonly initialValues?: Partial<MeetingSeriesFormType>;
-  readonly onSuccess?: (firstMeeting: MeetingChangeSuccessData, otherMeetingIds: string[]) => void;
+  readonly onSuccess?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Default: true. */
   readonly showToast?: boolean;

@@ -1,3 +1,4 @@
+import {useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
@@ -26,7 +27,7 @@ import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {TQMeetingResource, createCalendarRequestCreator} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
-import {MeetingChangeSuccessData} from "features/meeting/meeting_change_success_data";
+import {MeetingBasicData} from "features/meeting/meeting_basic_data";
 import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
 import {createMeetingModal} from "features/meeting/meeting_modal";
 import {meetingTimeInitialValue} from "features/meeting/meeting_time_controller";
@@ -56,6 +57,7 @@ import {SegmentedControl} from "../form/SegmentedControl";
 import {EN_DASH} from "../symbols";
 import {coloringToStyle, getRandomEventColors} from "./colors";
 import {MeetingEventBlock} from "./column_events";
+import {CalendarLocationState, CalendarSearchParams} from "./meeting_link";
 import {MonthDayMeetingEventBlock, MonthDayWorkTime} from "./month_day_events";
 
 export const MODES = ["month", "week", "day"] as const;
@@ -124,6 +126,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
+  const location = useLocation<CalendarLocationState>();
+  const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
 
   const userStatus = createQuery(() => User.statusWithFacilityPermissionsQueryOptions(activeFacilityId()!));
   const {dataQuery: staffDataQuery} = createTQuery({
@@ -475,40 +479,39 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     );
   }
 
-  function meetingChange(message: JSX.Element, meeting: MeetingChangeSuccessData, otherMeetingIds?: string[]) {
+  function meetingChange(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: string[]) {
     blinkMeeting(meeting.id);
     for (const id of otherMeetingIds || []) {
       blinkMeeting(id);
     }
-    const meetingDate = DateTime.fromISO(meeting.date);
     toastSuccess(() => (
       <div class="flex gap-2 items-baseline">
         <span>{message}</span>
-        <Button
-          class="secondary small"
-          onClick={() => {
-            if (!daysSelection().contains(meetingDate)) {
-              setDaysSelectionAndMonthFromDay(meetingDate);
-            }
-            if (meeting.staff.length) {
-              if (mode() === "day") {
-                const selectedResources = new Set(selectedResourcesCheckbox());
-                for (const {userId} of meeting.staff) {
-                  selectedResources.add(userId);
-                }
-                setSelectedResourcesCheckbox(selectedResources);
-              } else if (!meeting.staff.some((staff) => staff.userId === selectedResourceRadio())) {
-                setSelectedResourceRadio(meeting.staff[0]!.userId);
-              }
-            }
-            scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
-            blinkMeeting(meeting.id);
-          }}
-        >
+        <Button class="secondary small" onClick={() => goToMeeting(meeting)}>
           {t("actions.show")}
         </Button>
       </div>
     ));
+  }
+
+  function goToMeeting(meeting: MeetingBasicData) {
+    const meetingDate = DateTime.fromISO(meeting.date);
+    if (!daysSelection().contains(meetingDate)) {
+      setDaysSelectionAndMonthFromDay(meetingDate);
+    }
+    if (meeting.staff.length) {
+      if (mode() === "day") {
+        const selectedResources = new Set(selectedResourcesCheckbox());
+        for (const {userId} of meeting.staff) {
+          selectedResources.add(userId);
+        }
+        setSelectedResourcesCheckbox(selectedResources);
+      } else if (!meeting.staff.some((staff) => staff.userId === selectedResourceRadio())) {
+        setSelectedResourceRadio(meeting.staff[0]!.userId);
+      }
+    }
+    scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
+    blinkMeeting(meeting.id);
   }
 
   const SCROLL_MARGIN_PIXELS = 20;
@@ -527,6 +530,20 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
   onMount(() => {
     scrollIntoView(7 * 60, 1e3);
+  });
+  const meetingToShowFromLocationState = () => location.state?.meetingToShow;
+  const meetingToShowQuery = createQuery(() => ({
+    enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
+    ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
+  }));
+  createOneTimeEffect({
+    input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
+    effect: (meeting) => {
+      setSearchParams({meetingId: undefined});
+      history.replaceState(undefined, "");
+      // Give the calendar time to scroll to the initial position first.
+      setTimeout(() => goToMeeting(meeting), 100);
+    },
   });
 
   const [hoveredMeetingId, setHoveredMeetingId] = createSignal<string>();
