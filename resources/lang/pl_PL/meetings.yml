@@ -20,6 +20,7 @@ click_to_see_details: "Kliknij aby zobaczyć szczegóły spotkania"
 create_series: "Powtarzaj spotkanie"
 meeting_is_in_series: "Seria"
 first_meeting: "pierwsze spotkanie"
+only_one_meeting_in_series_warning: "Wybierz więcej dat aby utworzyć serię spotkań."
 
 create_copy:
   any: "Utwórz i edytuj kopię"
