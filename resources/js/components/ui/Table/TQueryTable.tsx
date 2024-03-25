@@ -356,7 +356,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
                   return undefined;
                 }
                 if (col.attributeId) {
-                  const attribute = attributes()!.get(col.attributeId);
+                  const attribute = attributes()!.getById(col.attributeId);
                   if (!attribute.isFixed) {
                     if (configuredColumns.has(col.name)) {
                       console.warn(

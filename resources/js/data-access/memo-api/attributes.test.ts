@@ -18,11 +18,11 @@ describe("Attributes", () => {
   ]);
   const attributes = Attributes.fromResources(langFunc, dictionaries, [
     {
-      id: "aa1",
+      id: "aa1Id",
       facilityId: null,
       model: "blip",
       name: "aa1_attr",
-      apiName: "aa1",
+      apiName: "aa1ApiName",
       type: "dict",
       typeModel: null,
       dictionaryId: "dd",
@@ -32,11 +32,11 @@ describe("Attributes", () => {
       requirementLevel: "required",
     },
     {
-      id: "aa2",
+      id: "aa2Id",
       facilityId: "fac2",
       model: "blip",
       name: "+aa2 attr",
-      apiName: "aa2",
+      apiName: "aa2ApiName",
       type: "string",
       typeModel: null,
       dictionaryId: null,
@@ -46,11 +46,11 @@ describe("Attributes", () => {
       requirementLevel: "recommended",
     },
     {
-      id: "aa5",
+      id: "aa5Id",
       facilityId: null,
       model: "qqq",
       name: "aa5_attr",
-      apiName: "aa5",
+      apiName: "aa5ApiName",
       type: "int",
       typeModel: null,
       dictionaryId: null,
@@ -62,54 +62,53 @@ describe("Attributes", () => {
   ]);
 
   test("labels", () => {
-    expect(attributes.byId.get("aa1")?.label).toEqual(
-      "t(attributes.attributes.blip.aa1_attr,attributes.attributes.generic.aa1_attr,models.blip.aa1,models.generic.aa1)",
+    expect(attributes.byId.get("aa1Id")?.label).toEqual(
+      "t(attributes.attributes.blip.aa1_attr,attributes.attributes.generic.aa1_attr,models.blip.aa1ApiName,models.generic.aa1ApiName)",
     );
-    expect(attributes.byId.get("aa2")?.label).toEqual("aa2 attr");
+    expect(attributes.byId.get("aa2Id")?.label).toEqual("aa2 attr");
   });
 
   test("get", () => {
-    expect(attributes.get("aa1")).toBeDefined();
-    expect(attributes.get("aa2")).toBeDefined();
-    expect(() => attributes.get("aa3")).toThrow("not found");
-    expect(attributes.get("aa1_attr")).toBeDefined();
-    expect(() => attributes.get("+aa2 attr")).toThrow("not found");
-    expect(() => attributes.get("aa5_attr")).toThrow("not found"); // not fixed
+    expect(attributes.getById("aa1Id")).toBeDefined();
+    expect(attributes.getById("aa2Id")).toBeDefined();
+    expect(() => attributes.getById("aa3Id")).toThrow("not found");
+    expect(attributes.getByName("blip", "aa1ApiName")).toBeDefined();
+    expect(() => attributes.getByName("blip", "aa3ApiName")).toThrow("not found");
   });
 
   test("getForModel", () => {
-    expect(attributes.getForModel("blip").map((a) => a.id)).toEqual(["aa1", "aa2"]);
+    expect(attributes.getForModel("blip").map((a) => a.id)).toEqual(["aa1Id", "aa2Id"]);
     expect(attributes.getForModel("blap")).toEqual([]);
   });
 
   test("subsetFor global", () => {
     const globalAttributes = attributes.subsetFor(NO_FACILITY);
-    expect(globalAttributes.byId.get("aa1")).toBeDefined();
-    expect(globalAttributes.byId.get("aa2")).toBeUndefined();
+    expect(globalAttributes.byId.get("aa1Id")).toBeDefined();
+    expect(globalAttributes.byId.get("aa2Id")).toBeUndefined();
   });
 
   test("subsetFor facility", () => {
     const fac1Attributes = attributes.subsetFor("fac1");
-    expect(fac1Attributes.byId.get("aa1")).toBeDefined();
-    expect(fac1Attributes.byId.get("aa2")).toBeUndefined();
-    expect(fac1Attributes.byModel.get("blip")?.map((a) => a.id)).toEqual(["aa1"]);
+    expect(fac1Attributes.byId.get("aa1Id")).toBeDefined();
+    expect(fac1Attributes.byId.get("aa2Id")).toBeUndefined();
+    expect(fac1Attributes.getForModel("blip").map((a) => a.id)).toEqual(["aa1Id"]);
     const fac2Attributes = attributes.subsetFor("fac2");
-    expect(fac2Attributes.byId.get("aa1")).toBeDefined();
-    expect(fac2Attributes.byId.get("aa2")).toBeDefined();
-    expect(fac2Attributes.byModel.get("blip")?.map((a) => a.id)).toEqual(["aa1", "aa2"]);
+    expect(fac2Attributes.byId.get("aa1Id")).toBeDefined();
+    expect(fac2Attributes.byId.get("aa2Id")).toBeDefined();
+    expect(fac2Attributes.getForModel("blip").map((a) => a.id)).toEqual(["aa1Id", "aa2Id"]);
     const fac3Attributes = attributes.subsetFor("fac3");
-    expect(fac3Attributes.byId.get("aa1")).toBeDefined();
-    expect(fac3Attributes.byId.get("aa2")).toBeUndefined();
+    expect(fac3Attributes.byId.get("aa1Id")).toBeDefined();
+    expect(fac3Attributes.byId.get("aa2Id")).toBeUndefined();
   });
 
   test("readAll", () => {
-    const blip = makeAttributable({id: "blip1", aa1: "dd1", aa2: ["aa2"]}, "blip");
+    const blip = makeAttributable({id: "blip1", aa1ApiName: "dd1", aa2ApiName: ["aa2"]}, "blip");
     expect(attributes.readAll(blip)).toEqual([
-      {model: "blip", attribute: attributes.get("aa1"), value: "dd1"},
-      {model: "blip", attribute: attributes.get("aa2"), value: ["aa2"]},
+      {model: "blip", attribute: attributes.getById("aa1Id"), value: "dd1"},
+      {model: "blip", attribute: attributes.getById("aa2Id"), value: ["aa2"]},
     ]);
     expect(attributes.subsetFor("fac1").readAll(blip)).toEqual([
-      {model: "blip", attribute: attributes.get("aa1"), value: "dd1"},
+      {model: "blip", attribute: attributes.getById("aa1Id"), value: "dd1"},
     ]);
     const blap = makeAttributable({id: "blap1", aa1: "dd1", aa2: ["aa2"]}, "blap");
     expect(attributes.readAll(blap)).toEqual([]);
@@ -117,8 +116,8 @@ describe("Attributes", () => {
 
   test("read from another model", () => {
     const blap = makeAttributable({id: "blap1", aa1: "dd1", aa2: ["aa2"]}, "blap");
-    expect(() => attributes.read(blap, "aa1")).toThrow(
-      "read attribute aa1 for model blip from an object representing models blap",
+    expect(() => attributes.read(blap, "aa1Id")).toThrow(
+      "read attribute aa1Id for model blip from an object representing models blap",
     );
   });
 });

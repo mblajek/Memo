@@ -168,7 +168,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         {/* Loop over ids to keep the identity of items. */}
         <For each={nonFixedAttributes()?.map(({id}) => id)} fallback={t("attributes.no_attributes")}>
           {(attributeId) => {
-            const attribute = attributes()!.get(attributeId);
+            const attribute = attributes()!.getById(attributeId);
             const isEmpty = () => {
               const value = form.data(fieldName(attribute));
               return value == undefined || value == "";

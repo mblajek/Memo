@@ -64,7 +64,7 @@ export function createMeetingTimeController() {
   const dictionaries = useDictionaries();
   const meetingTypesDict = () => dictionaries()?.get("meetingType");
   const attributes = useAttributes();
-  const durationMinutesAttr = () => attributes()?.get<number>("durationMinutes");
+  const durationMinutesAttr = () => attributes()?.getByName<number>("position", "durationMinutes");
   const form = useMeetingTimeForm();
   const durationMinutes = () => getDurationMinutes(form.data("time"));
   function setDurationMinutes(duration: number | undefined) {

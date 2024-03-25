@@ -2,7 +2,7 @@ const ATTRIBUTE_MODEL_SYMBOL = Symbol("ATTRIBUTE_MODEL");
 
 /** A marker interface for types that are attributable, i.e. can have attributes. */
 export interface Attributable {
-  /** The name of the models that this object represents. */
+  /** The apiName of the models that this object represents. */
   readonly [ATTRIBUTE_MODEL_SYMBOL]: readonly string[];
 }
 
@@ -23,7 +23,7 @@ export function isAttributable<O extends object>(object: O): object is O & Attri
   return Object.hasOwn(object, ATTRIBUTE_MODEL_SYMBOL);
 }
 
-/** Returns a list of models as which the specified object is attributable. */
+/** Returns a list of apiName of models as which the specified object is attributable. */
 export function getAttributeModel(object: Attributable) {
   return object[ATTRIBUTE_MODEL_SYMBOL];
 }
