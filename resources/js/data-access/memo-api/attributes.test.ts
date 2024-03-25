@@ -117,7 +117,7 @@ describe("Attributes", () => {
   test("read from another model", () => {
     const blap = makeAttributable({id: "blap1", aa1: "dd1", aa2: ["aa2"]}, "blap");
     expect(() => attributes.read(blap, "aa1Id")).toThrow(
-      "read attribute aa1Id for model blip from an object representing models blap",
+      "read attribute aa1ApiName for model blip from an object representing models blap",
     );
   });
 });
