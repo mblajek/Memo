@@ -49,7 +49,7 @@ class FacilityAdminController extends ApiController
         if (($data['dictionary_id'] === null) === ($data['type'] === AttributeType::Dict->value)) {
             $exception = ExceptionFactory::validation();
             // todo: validation
-            $exception->addValidation('dictionary_id', 'required_for_dict_type');
+            $exception->addValidation('dictionaryId', 'required_for_dict_type');
             throw $exception;
         }
         $data['is_fixed'] = false;
@@ -59,24 +59,39 @@ class FacilityAdminController extends ApiController
 
         $attribute = new Attribute($data);
 
+        if (
+            Attribute::query()->where('table', $attribute->table)
+                ->where('api_name', $attribute->api_name)->exists()
+        ) {
+            $exception = ExceptionFactory::validation();
+            // todo: validation
+            $exception->addValidation('apiName', 'not_unique');
+            throw $exception;
+        }
+
         DB::transaction(function () use ($attribute, $data) {
             if (
-                Attribute::query()->where('table', $attribute->table)
+                $attribute->default_order === null
+                || Attribute::query()->where('table', $attribute->table)
                     ->where('default_order', $attribute->default_order)->exists()
             ) {
                 $last = DB::select(
                     "select min(`a1`.`default_order`) as `last` from `attributes` `a1` left join `attributes` `a2`"
                     . " on `a1`.`table` = `a2`.`table` and `a1`.`default_order` = `a2`.`default_order` - 1"
                     . " where `a1`.`table` = ? and `a2`.`id` is null and `a1`.`default_order` >= ?",
-                    [$attribute->table->value, $attribute->default_order],
+                    [$attribute->table->value, $attribute->default_order ?? 0],
                 )[0]->last;
-                DB::statement(
-                    "update `attributes` set `default_order` = 1 + `default_order`"
-                    . " where `table` = ?"
-                    . " and `default_order` between ? and ?"
-                    . " order by default_order desc",
-                    [$attribute->table->value, $attribute->default_order, $last],
-                );
+                if ($attribute->default_order === null) {
+                    $attribute->default_order = $last + 1;
+                } else {
+                    DB::statement(
+                        "update `attributes` set `default_order` = 1 + `default_order`"
+                        . " where `table` = ?"
+                        . " and `default_order` between ? and ?"
+                        . " order by default_order desc",
+                        [$attribute->table->value, $attribute->default_order, $last],
+                    );
+                }
             }
             $attribute->save();
             // $attribute->attrSave($data);
@@ -113,25 +128,31 @@ class FacilityAdminController extends ApiController
             ], true));
         $data['is_fixed'] = false;
         $position = new Position($data);
+        //todo: validate position_required_attributes
 
         DB::transaction(function () use ($position, $data) {
             if (
-                Position::query()->where('dictionary_id', $position->dictionary_id)
+                $position->default_order === null
+                || Position::query()->where('dictionary_id', $position->dictionary_id)
                     ->where('default_order', $position->default_order)->exists()
             ) {
                 $last = DB::select(
                     "select min(`p1`.`default_order`) as `last` from `positions` `p1` left join `positions` `p2`"
                     . " on `p1`.`dictionary_id` = `p2`.`dictionary_id` and `p1`.`default_order` = `p2`.`default_order` - 1"
                     . " where `p1`.`dictionary_id` = ? and `p2`.`id` is null and `p1`.`default_order` >= ?",
-                    [$position->dictionary_id, $position->default_order],
+                    [$position->dictionary_id, $position->default_order ?? 0],
                 )[0]->last;
-                DB::statement(
-                    "update `positions` set `default_order` = 1 + `default_order`"
-                    . " where `dictionary_id` = ?"
-                    . " and `default_order` between ? and ?"
-                    . " order by default_order desc",
-                    [$position->dictionary_id, $position->default_order, $last],
-                );
+                if ($position->default_order === null) {
+                    $position->default_order = $last + 1;
+                } else {
+                    DB::statement(
+                        "update `positions` set `default_order` = 1 + `default_order`"
+                        . " where `dictionary_id` = ?"
+                        . " and `default_order` between ? and ?"
+                        . " order by default_order desc",
+                        [$position->dictionary_id, $position->default_order, $last],
+                    );
+                }
             }
             $position->save();
             $position->attrSave($data);

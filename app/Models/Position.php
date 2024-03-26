@@ -55,7 +55,7 @@ class Position extends Model
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
             'name' => Valid::trimmed(),
             'is_fixed', 'is_disabled' => Valid::bool(),
-            'default_order' => Valid::int(['min:1']),
+            'default_order' => Valid::int(['min:1'], sometimes: true),
         };
     }
 

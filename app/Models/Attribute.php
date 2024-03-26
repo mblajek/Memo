@@ -72,7 +72,7 @@ class Attribute extends Model
             'type' => Valid::trimmed([Rule::enum(AttributeType::class)]),
             //todo: dictionary exists in facility, required (only) for type "dict"
             'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')], nullable: true),
-            'default_order' => Valid::int(['min:1']),
+            'default_order' => Valid::int(['min:1'], sometimes: true),
             'is_multi_value', 'is_fixed' => Valid::bool(nullable: true),
             'requirement_level' => Valid::trimmed([Rule::enum(AttributeRequirementLevel::class)]),
         };
