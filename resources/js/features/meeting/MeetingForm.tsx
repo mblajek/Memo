@@ -164,8 +164,13 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
             </div>
           </div>
           <div class="flex flex-col gap-1">
-            <MeetingAttendantsFields name="staff" viewMode={props.viewMode} />
-            <MeetingAttendantsFields name="clients" showAttendanceStatusLabel={false} viewMode={props.viewMode} />
+            <MeetingAttendantsFields name="staff" meetingId={props.meeting?.id} viewMode={props.viewMode} />
+            <MeetingAttendantsFields
+              name="clients"
+              meetingId={props.meeting?.id}
+              showAttendanceStatusLabel={false}
+              viewMode={props.viewMode}
+            />
           </div>
           <CheckboxField name="isRemote" />
           <ByMode
@@ -197,8 +202,8 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                   form.reset();
                   props.onCancel?.();
                 }}
-                submitLabel={() =>
-                  t(form.data("createSeries") ? "forms.meeting_series_create.submit" : "forms.meeting_create.submit")
+                submitLabel={(defaultLabel) =>
+                  form.data("createSeries") ? t("forms.meeting_series_create.submit") : defaultLabel
                 }
               />
             }

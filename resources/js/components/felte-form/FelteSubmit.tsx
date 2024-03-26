@@ -14,7 +14,7 @@ interface Props extends htmlAttributes.button {
    * The value is the handler called on cancel click. Default: no cancel.
    */
   readonly cancel?: () => void;
-  readonly submitLabel?: () => JSX.Element;
+  readonly submitLabel?: (defaultLabel: string) => JSX.Element;
   /** Whether to include the unknown validation messages above the button. Default: true. */
   readonly includeUnknownValidationMessages?: boolean;
   /** Pop-over to show under the submit button's arrow. The submit button is a split button if specified. */
@@ -59,7 +59,7 @@ export const FelteSubmit: VoidComponent<Props> = (allProps) => {
           <Show when={form.isSubmitting()}>
             <SmallSpinner />
           </Show>{" "}
-          {props.submitLabel ? props.submitLabel() : translations.submit()}
+          {props.submitLabel ? props.submitLabel(translations.submit()) : translations.submit()}
         </SplitButton>
       </div>
     </div>

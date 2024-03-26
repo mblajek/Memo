@@ -14,7 +14,7 @@ import {MeetingForm, MeetingFormType, getResourceValuesForCreate} from "./Meetin
 import {MeetingSeriesFormType, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
-import {getTimeValues, meetingTimeInitialValue} from "./meeting_time_controller";
+import {getMeetingTimeFullData, meetingTimeInitialValue} from "./meeting_time_controller";
 
 export interface MeetingCreateFormProps {
   readonly initialValues?: Partial<MeetingFormType>;
@@ -99,7 +99,7 @@ export default MeetingCreateForm;
 function transformFormValues(values: MeetingFormType): MeetingResourceForCreate {
   return {
     ...values,
-    ...getTimeValues(values),
+    ...getMeetingTimeFullData(values).timeValues,
     ...getAttendantsValuesForCreate(values),
     ...getResourceValuesForCreate(values),
   };
