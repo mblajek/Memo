@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
 use App\Models\Traits\HasResourceValidator;
+use App\Models\Traits\HasUpdatedBy;
 use App\Rules\DataTypeRule;
 use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
@@ -41,6 +42,7 @@ class User extends Authenticatable
     use HasResourceValidator;
     use SerializeDate;
     use HasCreatedBy;
+    use HasUpdatedBy;
 
     protected $table = 'users';
 
@@ -175,7 +177,8 @@ class User extends Authenticatable
             'password_expire_at' => [
                 // TODO: Figure out how to implement an "implicit" custom validation rule
                 // Password expiration is a valid datetime and if the date defined, the password must not be null.
-                ...Valid::datetime(sometimes: $isPatch, nullable: true),
+                'required_with:password',
+                ...Valid::datetime(sometimes: $isInsert || $isPatch, nullable: true),
             ],
             'has_password' => [
                 // It must be true if the user is a global admin.

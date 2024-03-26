@@ -27,7 +27,7 @@ readonly class CreateUserService
         $user = new User();
 
         $user->name = $data['name'];
-        $user->email = $data['email'];
+        $user->email = array_key_exists('email', $data) ? $data['email'] : null;
         $user->email_verified_at =
             (array_key_exists('has_email_verified', $data) && $data['has_email_verified'] === true)
                 ? CarbonImmutable::now() : null;
