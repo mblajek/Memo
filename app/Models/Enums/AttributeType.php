@@ -2,6 +2,12 @@
 
 namespace App\Models\Enums;
 
+use App\Models\UuidEnum\DictionaryUuidEnum;
+use App\Rules\Valid;
+use App\Tquery\Config\TqDataTypeEnum;
+use App\Tquery\Config\TqDictDef;
+use Illuminate\Validation\Rule;
+
 enum AttributeType: string
 {
     // Standard data types.
@@ -21,5 +27,43 @@ enum AttributeType: string
     public function tryGetTable(): ?AttributeTable
     {
         return AttributeTable::tryFrom($this->value);
+    }
+
+    public function getTqueryDataType(
+        bool $nullable,
+        DictionaryUuidEnum|string|null $dictionaryId,
+    ): TqDictDef|TqDataTypeEnum {
+        $type = match ($this) {
+            self::Bool => $nullable ? TqDataTypeEnum::bool_nullable : TqDataTypeEnum::bool,
+            self::Date => $nullable ? TqDataTypeEnum::date_nullable : TqDataTypeEnum::date,
+            self::Datetime => $nullable ? TqDataTypeEnum::datetime_nullable : TqDataTypeEnum::datetime,
+            self::Int => $nullable ? TqDataTypeEnum::int_nullable : TqDataTypeEnum::int,
+            self::String => $nullable ? TqDataTypeEnum::string_nullable : TqDataTypeEnum::string,
+            self::Users, self::Clients, self::Attributes => $nullable ?
+                TqDataTypeEnum::uuid_nullable : TqDataTypeEnum::uuid,
+            self::Dict => $nullable ? TqDataTypeEnum::dict_nullable : TqDataTypeEnum::dict,
+            self::Text => $nullable ? TqDataTypeEnum::text : TqDataTypeEnum::text_nullable,
+        };
+        return $type->isDict() ? (new TqDictDef($type, $dictionaryId)) : $type;
+    }
+
+    public function getSingleValidator(
+        bool $nullable,
+        DictionaryUuidEnum|string|null $dictionaryId,
+    ): string|array {
+        return match ($this) {
+            self::Bool => Valid::bool(sometimes: $nullable, nullable: $nullable),
+            self::Date => Valid::date(sometimes: $nullable, nullable: $nullable),
+            self::Datetime => Valid::datetime(sometimes: $nullable, nullable: $nullable),
+            self::Int => Valid::int(sometimes: $nullable, nullable: $nullable),
+            self::String => Valid::trimmed(sometimes: $nullable, nullable: $nullable),
+            self::Dict => Valid::dict($dictionaryId, sometimes: $nullable, nullable: $nullable),
+            self::Text => Valid::text(sometimes: $nullable, nullable: $nullable),
+            default => Valid::uuid(
+                [Rule::exists(AttributeTable::from($this->value)->value, 'id')], // assert this is table
+                sometimes: $nullable,
+                nullable: $nullable,
+            ),
+        };
     }
 }

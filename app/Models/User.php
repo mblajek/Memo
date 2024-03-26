@@ -8,7 +8,6 @@ use App\Rules\DataTypeRule;
 use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -40,7 +39,6 @@ class User extends Authenticatable
     use Notifiable;
     use HasResourceValidator;
     use SerializeDate;
-    use HasCreatedBy;
 
     protected $table = 'users';
 

@@ -38,7 +38,7 @@ class DictionaryResource extends AbstractJsonResource
             'name' => true,
             'isFixed' => true,
             'isExtendable' => true,
-            'positions' => fn(self $dictionary) => PositionResource::collection($dictionary->getSortedPositions()),
+            'positions' => fn(self $dictionary) => PositionResource::collection($dictionary->positions),
         ];
     }
 }

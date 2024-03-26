@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\ValueBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -21,7 +20,6 @@ use Illuminate\Database\Eloquent\Model;
 class Value extends Model
 {
     use BaseModel;
-    use HasCreatedBy;
 
     protected $table = 'values';
 
@@ -60,5 +58,10 @@ class Value extends Model
     public function getTypeColumnValue(): int|string|bool|null
     {
         return $this->getAttributeFromArray($this->getTypeColumn());
+    }
+
+    public function setTypeColumnValue(int|string|bool $value): void
+    {
+        $this->setAttribute($this->getTypeColumn(), $value);
     }
 }
