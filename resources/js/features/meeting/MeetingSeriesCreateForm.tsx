@@ -6,18 +6,14 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
-import {
-  MeetingSeriesForm,
-  MeetingSeriesFormType,
-  getMeetingSeriesCloneParams,
-  numMeetingsToSeriesLength,
-} from "./MeetingSeriesForm";
-import {MeetingChangeSuccessData} from "./meeting_change_success_data";
+import {MeetingSeriesForm, MeetingSeriesFormType, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
+import {MeetingBasicData} from "./meeting_basic_data";
+import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
 
 export interface MeetingSeriesCreateFormProps {
   readonly startMeeting: MeetingResource;
   readonly initialValues?: Partial<MeetingSeriesFormType>;
-  readonly onSuccess?: (firstMeeting: MeetingChangeSuccessData, otherMeetingIds: string[]) => void;
+  readonly onSuccess?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Default: true. */
   readonly showToast?: boolean;
@@ -56,9 +52,7 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
 
   const initialValues = () =>
     ({
-      interval: "7d",
-      seriesLength: numMeetingsToSeriesLength(10),
-      includeDate: {},
+      ...defaultMeetingSeriesInitialValues(),
       ...props.initialValues,
     }) satisfies MeetingSeriesFormType;
 

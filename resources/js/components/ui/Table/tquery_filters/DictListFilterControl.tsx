@@ -1,22 +1,18 @@
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
-import {SegmentedControl} from "components/ui/form/SegmentedControl";
-import {useLangFunc} from "components/utils";
+import {cx} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {VoidComponent, createComputed, createSignal} from "solid-js";
+import {DictDataColumnSchema, SetsOp} from "data-access/memo-api/tquery/types";
+import {createComputed, createSignal} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import {FilterControlProps} from "./types";
+import s from "./filters.module.scss";
+import {useMultiSelectFilterHelper} from "./select_filters_helper";
+import {FilterControl} from "./types";
 
-interface Props extends FilterControlProps {
-  readonly dictionaryId: string;
-}
-
-const MODES = ["has_all", "has_any", "has_only"] as const;
-type Mode = (typeof MODES)[number];
-
-export const DictListFilterControl: VoidComponent<Props> = (props) => {
-  const t = useLangFunc();
+export const DictListFilterControl: FilterControl = (props) => {
   const filterFieldNames = useFilterFieldNames();
-  const [mode, setMode] = createSignal<Mode>("has_all");
+  const {ModeControl} = useMultiSelectFilterHelper();
+  const schema = () => props.schema as DictDataColumnSchema;
+  const [mode, setMode] = createSignal<SetsOp>("has_all");
   const [value, setValue] = createSignal<readonly string[]>([]);
   createComputed(() => {
     if (!props.filter) {
@@ -27,38 +23,27 @@ export const DictListFilterControl: VoidComponent<Props> = (props) => {
   });
   function buildFilter(): FilterH | undefined {
     if (mode() === "has_all" && !value().length) {
+      // Necessary to denote no filtering.
       return undefined;
     }
     return {
       type: "column",
-      column: props.name,
+      column: schema().name,
       op: mode(),
       val: value(),
     };
   }
   createComputed(() => props.setFilter(buildFilter()));
   return (
-    <div class="min-w-24 flex flex-col items-stretch gap-0.5">
-      <SegmentedControl
-        name={filterFieldNames.get(`mode_${props.name}`)}
-        items={MODES.map((m) => ({
-          value: m,
-          label: () => (
-            <span title={t(`tables.filter.set_operation.${m}.explanation`)}>
-              {t(`tables.filter.set_operation.${m}.short`)}
-            </span>
-          ),
-        }))}
-        value={mode()}
-        onValueChange={setMode}
-        small
-      />
+    <div class={cx(s.filter, "min-w-24 flex flex-col items-stretch gap-0.5")}>
+      <ModeControl columnName={schema().name} mode={mode()} onModeChange={setMode} />
       <DictionarySelect
-        name={filterFieldNames.get(`val_${props.name}`)}
-        dictionary={props.dictionaryId}
+        name={filterFieldNames.get(`val_${schema().name}`)}
+        dictionary={schema().dictionaryId}
         value={value()}
         onValueChange={setValue}
         multiple
+        showClearButton={false}
         small
       />
     </div>

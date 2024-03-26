@@ -6,6 +6,7 @@ exception:
   configuration:
     translation: "Błędna konfiguracja tłumaczeń"
     tquery: "Błędna konfiguracja tabel"
+    unexpected: "Błąd konfiguracji"
   validation: "Przesłano niepoprawne dane"
   form_submit: "Błąd przetwarzania formularza"
   unauthorised: "Brak autoryzacji"
@@ -16,6 +17,7 @@ exception:
   unexpected: "Nieoczekiwany błąd serwera"
   invalid_json: "Zapytanie nie ma formatu JSON"
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
+  _unknown: "Błąd konfiguracji ({{text}})"
 
 passwords:
   reset: "Hasło zostało zresetowane!"
@@ -77,3 +79,9 @@ form_page_leave_confirmation:
   body: "Zmiany nie zostaną zapisane. Czy na pewno chcesz opuścić stronę?"
   confirm: "Opuść stronę"
   cancel: "Wróć do edycji"
+
+about_page:
+  commit_date: "Wersja aplikacji (czas):"
+  commit_hash: "Wersja aplikacji (commit):"
+  backend_hash: "Backend (hash):"
+  frontend_hash: "Frontend (hash):"

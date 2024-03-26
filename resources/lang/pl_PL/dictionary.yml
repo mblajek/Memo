@@ -17,7 +17,7 @@ meetingType:
   _name: "typ spotkania"
   other: "inne"
   work_time: "godziny pracy"
-  leave_time: "urlop"
+  leave_time: "nieobecność"
 
 meetingStatus:
   _name: "status spotkania"

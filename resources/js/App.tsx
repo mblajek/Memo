@@ -7,7 +7,6 @@ import {System} from "data-access/memo-api/groups";
 import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
 import {DevRoutes} from "dev-pages/DevRoutes";
 import NotFound from "features/not-found/components/NotFound";
-import NotYetImplemented from "features/not-found/components/NotYetImplemented";
 import {PageWithTheme} from "features/root/components/theme_control";
 import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
@@ -20,6 +19,7 @@ const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.
 const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
 const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
 const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHelp.page"));
+const FacilityHomePage = lazyAutoPreload(() => import("features/root/pages/FacilityHome.page"));
 const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
 const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
@@ -28,7 +28,7 @@ const ReportsPage = lazyAutoPreload(() => import("features/root/pages/Reports.pa
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
 const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
-const StatusPage = lazyAutoPreload(() => import("features/root/pages/help/Status.page"));
+const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.page"));
 const SystemMeetingsListPage = lazyAutoPreload(() => import("features/root/pages/SystemMeetingsList.page"));
 
 const App: VoidComponent = () => {
@@ -63,7 +63,7 @@ const App: VoidComponent = () => {
             <Route path="/" component={() => <Navigate href="/help" />} />
             <DevRoutes />
             <Route path="/help">
-              <LeafRoute routeKey="help_pages.status" path="/status" component={StatusPage} />
+              <LeafRoute routeKey="help_pages.about" path="/about" component={AboutPage} />
               <Route path="/" component={() => <Navigate href="index" />} />
               <LeafRoute routeKey="help" path="/*helpPath" component={HelpPage} />
               <Route path="/dev">
@@ -85,7 +85,7 @@ const App: VoidComponent = () => {
           >
             <UnknownNotFound />
             <Route path="/" component={() => <Navigate href="home" />} />
-            <LeafRoute routeKey="facility.home" path="/home" component={NotYetImplemented} />
+            <LeafRoute routeKey="facility.home" path="/home" component={FacilityHomePage} />
             <Route path="/" component={FacilityAdminOrStaffPages}>
               <LeafRoute routeKey="facility.calendar" path="/calendar" component={CalendarPage} />
               <LeafRoute routeKey="facility.meetings" path="/meetings" component={MeetingsListPage} />

@@ -6,6 +6,7 @@ export interface Coloring {
   readonly bg: string;
   readonly bgHover: string;
   readonly headerBg: string;
+  readonly separator: string;
 }
 
 function coloringFromColor(baseColor: string): Coloring {
@@ -14,6 +15,7 @@ function coloringFromColor(baseColor: string): Coloring {
     bg: bleachColor(baseColor, {amount: 0.75}),
     bgHover: bleachColor(baseColor, {amount: 0.52}),
     headerBg: bleachColor(baseColor, {amount: 0.35}),
+    separator: bleachColor(baseColor, {amount: 0.4}),
   };
 }
 
@@ -21,15 +23,23 @@ export function getRandomEventColors(seedString: string): Coloring {
   return coloringFromColor(randomColor({seedString, lightness: [50, 70], chroma: [20, 30]}));
 }
 
-export const COMPLETED_MEETING_COLORING = {...coloringFromColor("#ccc"), bgHover: "#ddd", headerBg: "#ccc"};
+export const COMPLETED_MEETING_COLORING = {
+  ...coloringFromColor("#ccc"),
+  bgHover: "#ddd",
+  headerBg: "#ccc",
+  separator: "#ccc",
+};
 export const CANCELLED_MEETING_COLORING = (() => {
   const coloring = coloringFromColor("black");
-  return {...coloring, headerBg: coloring.bgHover};
+  return {
+    ...coloring,
+    headerBg: coloring.bgHover,
+  };
 })();
 
 export function coloringToStyle(
   coloring: Coloring,
-  {hover = false, part = "main"}: {hover?: boolean; part?: "main" | "header" | "colorMarker"} = {},
+  {hover = false, part = "main"}: {hover?: boolean; part?: "main" | "header" | "separator" | "colorMarker"} = {},
 ): JSX.CSSProperties {
   switch (part) {
     case "main":
@@ -43,9 +53,9 @@ export function coloringToStyle(
             "background-color": coloring.bg,
           };
     case "header":
-      return {
-        "background-color": coloring.headerBg,
-      };
+      return {"background-color": coloring.headerBg};
+    case "separator":
+      return {"border-color": coloring.separator};
     case "colorMarker":
       return {
         "border-color": coloring.border,

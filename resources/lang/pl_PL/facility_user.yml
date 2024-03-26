@@ -9,3 +9,6 @@ meetings_lists:
 is_memo_user_note: "(użytkownik Memo)"
 
 edit_as_global_administrator: "Edytuj jako globalny administrator"
+
+related_user_meetings_count: "Liczba wspólnych spotkań"
+related_users: "Powiązane osoby"

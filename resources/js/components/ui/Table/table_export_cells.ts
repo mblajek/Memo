@@ -32,6 +32,8 @@ export function useTableTextExportCells() {
     int: def,
     list: def,
     object: def,
+    string: def,
+    text: def,
     uuid: def,
     uuidList: def,
     dict: <T>() => exportCellFunc<TextExportedCell, string, T>((v) => dictionaries()?.getPositionById(v).label),

@@ -1,4 +1,5 @@
 import {Component, lazy} from "solid-js";
+import {isDEV} from "./dev_mode";
 
 const componentsToPreload: {preload: () => Promise<unknown>}[] = [];
 
@@ -7,7 +8,7 @@ let preloadTimer: ReturnType<typeof setTimeout> | undefined;
 /** Idle time after which to preload. */
 const PRELOAD_INTERVAL_MILLIS = 1000;
 
-/** Wait the interval, then preload one component, and prepeat. */
+/** Wait the interval, then preload one component, and repeat. */
 function schedulePreload() {
   clearTimeout(preloadTimer);
   preloadTimer = setTimeout(async () => {
@@ -27,6 +28,9 @@ export function lazyAutoPreload<T extends Component<any>>(
 ) {
   const lazyComponent = lazy(fn);
   componentsToPreload.push(lazyComponent);
-  schedulePreload();
+  if (!isDEV()) {
+    // Preload only in non-DEV mode. In DEV mode the ongoing fetches interfere with debugging.
+    schedulePreload();
+  }
   return lazyComponent;
 }

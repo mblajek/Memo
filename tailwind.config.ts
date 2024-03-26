@@ -2,6 +2,7 @@ import type {Config} from "tailwindcss";
 
 const APP_COLORS = {
   "memo-active": "rgb(from var(--tc-memo-active) r g b / <alpha-value>)",
+  "popup-bg": "rgb(from var(--tc-popup-bg) r g b / <alpha-value>)",
   "hover": "rgb(from var(--tc-hover) r g b / <alpha-value>)",
   "select": "rgb(from var(--tc-select) r g b / <alpha-value>)",
   "disabled": "rgb(from var(--tc-disabled) r g b / <alpha-value>)",
@@ -41,7 +42,8 @@ export default {
       },
     },
     fontFamily: {
-      roboto: "Roboto",
+      main: "Roboto",
+      mono: "Roboto Mono",
     },
   },
   darkMode: "class",

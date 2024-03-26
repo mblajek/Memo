@@ -48,7 +48,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     readonly translationsFormNames?: readonly string[];
     /** The name of the model of the object edited by this form. It is used for getting field translations. */
     readonly translationsModel?: string;
-    readonly children: ChildrenOrFunc<[FormType<T>]>;
+    readonly children: ChildrenOrFunc<[FormType<T>, FormContextValue<T>]>;
     readonly disabled?: boolean;
     readonly onFormCreated?: (form: FormType<T>) => void;
     /** Whether closing the browser tab should display a warning if the form is dirty. Default: true. */
@@ -222,16 +222,15 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   props.onFormCreated?.(form);
 
   const TypedFormContext = typedFormContext<T>();
+  const contextValue = {
+    props: allProps,
+    formConfig,
+    form: form as FormType<T>,
+    isFormDisabled: () => formDisabled(),
+    translations,
+  } satisfies FormContextValue<T>;
   return (
-    <TypedFormContext.Provider
-      value={{
-        props: allProps,
-        formConfig,
-        form: form as FormType<T>,
-        isFormDisabled: () => formDisabled(),
-        translations,
-      }}
-    >
+    <TypedFormContext.Provider value={contextValue}>
       <form
         autocomplete="off"
         ref={(formElem) => {
@@ -248,7 +247,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1"})}
       >
         <fieldset class="contents" disabled={formDisabled()} inert={form.isSubmitting() || undefined}>
-          {getChildrenElement(props.children, form)}
+          {getChildrenElement(props.children, form, contextValue)}
         </fieldset>
       </form>
     </TypedFormContext.Provider>

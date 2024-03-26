@@ -59,9 +59,10 @@ meeting:
     durationMinutes: "długość spotkania"
     staff__interval: "(1)[$t(models.staff._name)];(0-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
-    attendanceStatusDictId: "obecność"
 
 meeting_create:
+  fieldNames:
+    createSeries: "Utwórz serię spotkań"
   formName: "Nowe spotkanie"
   submit: "$t(actions.create)"
   success: "Utworzono spotkanie"
@@ -78,15 +79,11 @@ meeting_delete:
 
 meeting_series:
   fieldNames:
-    interval: "powtarzaj"
+    seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
     # Umbrella fields for the meeting dates table:
-    meetingDates: "daty spotkań"
+    seriesMeetingDates: "daty spotkań"
   total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
-  interval_labels:
-    1d: "w kolejne dni"
-    7d: "co tydzień"
-    14d: "co dwa tygodnie"
 
 meeting_series_create:
   formName: "Utwórz serię spotkań"

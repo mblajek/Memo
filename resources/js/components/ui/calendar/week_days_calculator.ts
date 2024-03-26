@@ -4,9 +4,15 @@ import {DaysRange} from "./days_range";
 
 export class WeekDaysCalculator {
   readonly weekInfo;
+  readonly weekdays;
 
   constructor(readonly locale: Intl.Locale) {
     this.weekInfo = getWeekInfo(locale);
+    this.weekdays = Array.from(this.dayToWeek(DateTime.fromMillis(0)), (exampleDay) => ({
+      weekday: exampleDay.weekday,
+      isWeekend: this.isWeekend(exampleDay),
+      exampleDay,
+    }));
   }
 
   /** Returns the calendar week that contains this day. */
@@ -35,6 +41,10 @@ export class WeekDaysCalculator {
 
   startOfWeek(dt: DateTime) {
     return dt.startOf("day").minus({days: (dt.weekday - this.weekInfo.firstDay + 7) % 7});
+  }
+
+  endOfWeek(dt: DateTime) {
+    return dt.endOf("day").minus({days: ((dt.weekday - this.weekInfo.firstDay + 7) % 7) - 6});
   }
 
   isWeekend(day: DateTime) {

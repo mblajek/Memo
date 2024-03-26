@@ -25,4 +25,4 @@ facility:
 
 help: "pomoc"
 help_pages:
-  status: "status aplikacji"
+  about: "$t(app_name)"

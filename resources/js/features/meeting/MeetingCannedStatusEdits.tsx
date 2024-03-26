@@ -11,7 +11,7 @@ import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {Show, VoidComponent} from "solid-js";
 import {MeetingFormType} from "./MeetingForm";
-import {getMeetingTimeInterval} from "./meeting_time_controller";
+import {getMeetingTimeFullData} from "./meeting_time_controller";
 
 interface Props {
   readonly onViewModeChange: (viewMode: boolean) => void;
@@ -65,7 +65,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
   }
 
   const hasBegun = () => {
-    const meetingInterval = getMeetingTimeInterval(form.data());
+    const meetingInterval = getMeetingTimeFullData(form.data()).interval;
     return meetingInterval && meetingInterval.start.toMillis() <= currentTimeMinute().toMillis();
   };
 

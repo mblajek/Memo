@@ -1,9 +1,8 @@
 import {FiDelete} from "solid-icons/fi";
-import {Show, VoidComponent, createEffect, createSignal, on} from "solid-js";
+import {Show, VoidComponent, createEffect, createSignal, on, splitProps} from "solid-js";
 import {cx, htmlAttributes} from "../utils";
 import {Button} from "./Button";
 import {TextInput} from "./TextInput";
-import {splitProps} from "solid-js";
 
 interface Props extends htmlAttributes.input {
   readonly divClass?: string;
@@ -19,7 +18,7 @@ export const SearchInput: VoidComponent<Props> = (allProps) => {
   createEffect(
     on(
       () => inputProps.value,
-      () => setTimeout(setNow, 0),
+      () => setTimeout(setNow),
     ),
   );
   return (
