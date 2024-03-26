@@ -189,8 +189,8 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                   >
                     <Capitalize text={attribute.label} />
                   </label>
-                  <div class="flex items-center justify-center text-grey-text">
-                    <RequirementLevelMarker level={attribute.requirementLevel} />
+                  <div class="flex items-center justify-center">
+                    <RequirementLevelMarker level={attribute.requirementLevel} isEmpty={isEmpty()} />
                   </div>
                   <div class="flex flex-col justify-center">
                     <AttributeField attribute={attribute} />
@@ -217,17 +217,27 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
 
 interface RequirementLevelProps {
   readonly level: RequirementLevel;
+  readonly isEmpty: boolean;
 }
+
+const WARN_COLOR_CLASS = "text-yellow-600";
+const ERR_COLOR_CLASS = "text-red-700";
 
 export const RequirementLevelMarker: VoidComponent<RequirementLevelProps> = (props) => {
   const t = useLangFunc();
   return (
-    <span class="text-sm" title={t(`attributes.requirement_level.${props.level}`)}>
+    <span class="text-sm text-grey-text select-none" title={t(`attributes.requirement_level.${props.level}`)}>
       <Switch>
-        <Match when={props.level === "empty"}>⛌</Match>
+        <Match when={props.level === "empty"}>
+          <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⛌</span>
+        </Match>
         <Match when={props.level === "optional"}>?</Match>
-        <Match when={props.level === "recommended"}>✤</Match>
-        <Match when={props.level === "required"}>🞴</Match>
+        <Match when={props.level === "recommended"}>
+          <span class={props.isEmpty ? WARN_COLOR_CLASS : undefined}>✤</span>
+        </Match>
+        <Match when={props.level === "required"}>
+          <span class={props.isEmpty ? ERR_COLOR_CLASS : undefined}>🞴</span>
+        </Match>
       </Switch>
     </span>
   );

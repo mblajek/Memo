@@ -48,6 +48,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
   return (
     <div ref={setContainer} class="flex flex-col">
       <A
+        role="button"
         {...htmlAttributes.merge(aProps, {
           class: cx(
             props.small ? "py-1 gap-2" : "py-2 gap-3",
