@@ -27,7 +27,7 @@ trait HasValues
 
     public function values(): HasMany
     {
-        return $this->hasMany(Value::class, 'object_id');
+        return $this->hasMany(Value::class, 'object_id')->orderBy('default_order');
     }
 
     private function attrCastValue(int|string|bool $value, AttributeType $type): Carbon|bool|int|string
@@ -132,6 +132,8 @@ trait HasValues
             if (
                 (($currentValue !== null) && ($isMultiValue ?? false) !== is_array($currentValue))
                 || (($dataValue !== null) && ($isMultiValue ?? false) !== is_array($dataValue))
+                || (is_array($currentValue) && !array_is_list($currentValue))
+                || (is_array($dataValue) && !array_is_list($dataValue))
             ) {
                 FatalExceptionFactory::unexpected()->throw();
             }
@@ -147,8 +149,8 @@ trait HasValues
                 }
             }
             if ($dataValue !== null) {
-                foreach ($isMultiValue ? $dataValue : [$dataValue] as $dataSingleValue) {
-                    $value = new Value(['attribute_id' => $attribute->id]);
+                foreach ($isMultiValue ? $dataValue : [$dataValue] as $key => $dataSingleValue) {
+                    $value = new Value(['attribute_id' => $attribute->id, 'default_order' => $key]);
                     $value->setTypeColumnValue($dataSingleValue);
                     $this->values()->save($value);
                 }

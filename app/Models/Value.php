@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string string_value
  * @property ?int int_value
  * @property ?int datetime_value
+ * @property int default_order
  * @method static ValueBuilder query()
  */
 class Value extends Model
@@ -32,6 +33,7 @@ class Value extends Model
         'int_value',
         'datetime_value',
         'created_by',
+        'default_order',
     ];
 
     protected $casts = [
