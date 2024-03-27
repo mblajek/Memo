@@ -19,12 +19,15 @@ import {
   MeetingResourceForCreate,
   MeetingResourceForPatch,
 } from "data-access/memo-api/resources/meeting.resource";
-import {Index, Match, Show, Switch, VoidComponent, createEffect} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
+import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
+import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
+import {getMeetingTimeFullData} from "./meeting_time_controller";
 
 export const getAttendantsSchemaPart = () => ({
   staff: getAttendantsSchema(),
@@ -41,9 +44,13 @@ const getAttendantsSchema = () =>
 
 interface Props {
   readonly name: "staff" | "clients";
+  /** The id of this meeting, if it already exists. */
+  readonly meetingId?: string;
   /** Whether to show the attendance status label. Default: true. */
   readonly showAttendanceStatusLabel?: boolean;
   readonly viewMode: boolean;
+  /** Whether to show conflicts. Supported only for staff. Default: true. */
+  readonly showConflicts?: boolean;
 }
 
 interface FormAttendantsData extends Obj {
@@ -58,9 +65,21 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const {createAttendant} = useAttendantsCreator();
-  const {form, isFormDisabled} = useFormContext<FormAttendantsData>();
+  const {form, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
+  const showConflicts = createMemo(() => props.name === "staff" && (props.showConflicts ?? true));
+  const conflictsFinder = createMemo(
+    on(showConflicts, (showConflicts) =>
+      showConflicts
+        ? useMeetingConflictsFinder(() => ({
+            id: props.meetingId,
+            ...getMeetingTimeFullData(form.data()),
+          }))
+        : undefined,
+    ),
+  );
+
   createEffect<readonly FormAttendantData[]>((prevAttendants) => {
     const attendants = form.data(props.name);
     // When in edit mode, add an empty row at the end in the following situations:
@@ -83,12 +102,12 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     if (props.name === "staff")
       return {
         entityURL: `facility/${activeFacilityId()}/user/staff`,
-        prefixQueryKey: [FacilityStaff.keys.staff()],
+        prefixQueryKey: FacilityStaff.keys.staff(),
       };
     if (props.name === "clients")
       return {
         entityURL: `facility/${activeFacilityId()}/user/client`,
-        prefixQueryKey: [FacilityClient.keys.client()],
+        prefixQueryKey: FacilityClient.keys.client(),
       };
     return props.name satisfies never;
   };
@@ -98,11 +117,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
       <div
         class="grid gap-x-1"
         style={{
-          "grid-template-columns": "auto 1.5fr 1fr",
+          "grid-template-columns": "auto 1.5fr 1.2rem 1fr",
           "row-gap": 0,
         }}
       >
-        <div class="col-span-2">
+        <div class="col-span-3">
           <FieldLabel
             fieldName={props.name}
             umbrella
@@ -129,117 +148,126 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             />
           </div>
         </Show>
-        <div
-          class="grid gap-1"
-          style={{
-            "grid-column": "1 / -1",
-            "grid-template-columns": "subgrid",
-          }}
-        >
+        <div class="col-span-full grid grid-cols-subgrid gap-1 span">
           <Index each={form.data(props.name)} fallback={EMPTY_VALUE_SYMBOL}>
-            {(_attendant, index) => (
-              <Show
-                when={form.data(`${props.name}.${index}.userId`) || !props.viewMode}
-                fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
-              >
-                <Dynamic
-                  component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
-                  class="col-start-1 min-h-small-input"
-                  size="24"
-                />
-                <Switch>
-                  <Match when={props.viewMode}>
-                    <div class="flex items-center">
-                      <PlaceholderField name={`${props.name}.${index}.userId`} />
-                      <UserLink type={props.name} icon={false} userId={form.data(`${props.name}.${index}.userId`)} />
-                    </div>
-                  </Match>
-                  <Match when={!props.viewMode}>
-                    <TQuerySelect
-                      name={`${props.name}.${index}.userId`}
-                      label=""
-                      querySpec={tquerySpec()}
-                      nullable={false}
-                      small
-                    />
-                  </Match>
-                </Switch>
-                <div class="flex gap-1">
-                  <Show
-                    when={form.data(`${props.name}.${index}.userId`)}
-                    fallback={
-                      <>
-                        <PlaceholderField name={`${props.name}.${index}.attendanceStatusDictId`} />
-                        <div
-                          class={cx("w-full h-full rounded border border-input-border", {
-                            "bg-disabled": isFormDisabled(),
-                          })}
+            {(_attendant, index) => {
+              const userId = () => form.data(`${props.name}.${index}.userId`);
+              return (
+                <Show
+                  when={userId() || !props.viewMode}
+                  fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
+                >
+                  <Dynamic
+                    component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
+                    class="col-start-1 min-h-small-input"
+                    size="24"
+                  />
+                  <div class={conflictsFinder() ? undefined : "col-span-2"}>
+                    <Switch>
+                      <Match when={props.viewMode}>
+                        <div class="flex items-center">
+                          <PlaceholderField name={`${props.name}.${index}.userId`} />
+                          <UserLink type={props.name} icon={false} userId={userId()} />
+                        </div>
+                      </Match>
+                      <Match when={!props.viewMode}>
+                        <TQuerySelect
+                          name={`${props.name}.${index}.userId`}
+                          label=""
+                          querySpec={tquerySpec()}
+                          nullable={false}
+                          small
                         />
-                      </>
-                    }
-                  >
-                    <div class="grow">
-                      <DictionarySelect
-                        name={`${props.name}.${index}.attendanceStatusDictId`}
-                        label=""
-                        dictionary="attendanceStatus"
-                        itemFunc={(pos, defItem) => {
-                          const item = defItem();
-                          const label = () => (
-                            <MeetingAttendanceStatus
-                              attendanceStatusId={item.value}
-                              meetingStatusId={meetingStatus()?.id}
-                            />
-                          );
-                          return {
-                            ...item,
-                            label,
-                            labelOnList: () => (
-                              <div class="flex justify-between gap-1">
-                                {label()}
-                                <MeetingAttendanceStatusInfoIcon
-                                  attendanceStatusId={item.value}
-                                  meetingStatusId={meetingStatusId()}
-                                />
-                              </div>
-                            ),
-                          };
-                        }}
-                        nullable={false}
-                        disabled={!form.data(`${props.name}.${index}.userId`)}
-                        small
-                      />
-                    </div>
+                      </Match>
+                    </Switch>
+                  </div>
+                  <Show when={conflictsFinder()}>
+                    {(conflictsFinder) => {
+                      const {ConflictsInfo} = conflictsFinder();
+                      return (
+                        <div class="min-h-small-input self-start flex flex-col items-center justify-center">
+                          <ConflictsInfo userId={userId()} />
+                        </div>
+                      );
+                    }}
                   </Show>
-                  <Show when={!props.viewMode}>
-                    {/* Show delete button for filled in rows, and for the empty row (unless it's the only row). */}
-                    <Show when={form.data(props.name)[index]?.userId || index}>
-                      <div>
-                        <Button
-                          class="secondary small !min-h-small-input"
-                          title={t("actions.delete")}
-                          onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
-                        >
-                          <ACTION_ICONS.delete class="inlineIcon text-current" />
-                        </Button>
+                  <div class="flex gap-1">
+                    <Show
+                      when={userId()}
+                      fallback={
+                        <>
+                          <PlaceholderField name={`${props.name}.${index}.attendanceStatusDictId`} />
+                          <div
+                            class={cx("w-full h-full rounded border border-input-border", {
+                              "bg-disabled": isFormDisabled(),
+                            })}
+                          />
+                        </>
+                      }
+                    >
+                      <div class="grow">
+                        <DictionarySelect
+                          name={`${props.name}.${index}.attendanceStatusDictId`}
+                          label=""
+                          dictionary="attendanceStatus"
+                          itemFunc={(pos, defItem) => {
+                            const item = defItem();
+                            const label = () => (
+                              <MeetingAttendanceStatus
+                                attendanceStatusId={item.value}
+                                meetingStatusId={meetingStatus()?.id}
+                              />
+                            );
+                            return {
+                              ...item,
+                              label,
+                              labelOnList: () => (
+                                <div class="flex justify-between gap-1">
+                                  {label()}
+                                  <MeetingAttendanceStatusInfoIcon
+                                    attendanceStatusId={item.value}
+                                    meetingStatusId={meetingStatusId()}
+                                  />
+                                </div>
+                              ),
+                            };
+                          }}
+                          nullable={false}
+                          disabled={!userId()}
+                          small
+                        />
                       </div>
                     </Show>
-                    {/* Show add button in the last row, unless that row is already empty. */}
-                    <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
-                      <div>
-                        <Button
-                          class="secondary small !min-h-small-input"
-                          title={t(`forms.meeting.add_attendant.${props.name}`)}
-                          onClick={() => form.addField(props.name, createAttendant(), index + 1)}
-                        >
-                          <ACTION_ICONS.add class="inlineIcon text-current" />
-                        </Button>
-                      </div>
+                    <Show when={!props.viewMode}>
+                      {/* Show delete button for filled in rows, and for the empty row (unless it's the only row). */}
+                      <Show when={form.data(props.name)[index]?.userId || index}>
+                        <div>
+                          <Button
+                            class="secondary small !min-h-small-input"
+                            title={t("actions.delete")}
+                            onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
+                          >
+                            <ACTION_ICONS.delete class="inlineIcon text-current" />
+                          </Button>
+                        </div>
+                      </Show>
+                      {/* Show add button in the last row, unless that row is already empty. */}
+                      <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
+                        <div>
+                          <Button
+                            class="secondary small !min-h-small-input"
+                            title={t(`forms.meeting.add_attendant.${props.name}`)}
+                            onClick={() => form.addField(props.name, createAttendant(), index + 1)}
+                          >
+                            <ACTION_ICONS.add class="inlineIcon text-current" />
+                          </Button>
+                        </div>
+                      </Show>
                     </Show>
-                  </Show>
-                </div>
-              </Show>
-            )}
+                  </div>
+                </Show>
+              );
+            }}
           </Index>
         </div>
       </div>

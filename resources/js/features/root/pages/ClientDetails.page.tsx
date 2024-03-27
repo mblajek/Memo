@@ -13,6 +13,7 @@ import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {ClientResourceForPatch} from "data-access/memo-api/resources/client.resource";
+import {PeopleAutoRelatedToClient} from "features/facility-users/PeopleAutoRelatedToClient";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
 import {UserMeetingsTables} from "features/facility-users/UserMeetingsTables";
 import {useUserMeetingsStats} from "features/facility-users/user_meetings_stats";
@@ -58,11 +59,11 @@ export default (() => {
                 }}
               />
               <div
-                class="self-start flex flex-col items-stretch border border-gray-300 rounded-md p-1"
+                class="self-start flex flex-col gap-1 items-stretch border border-gray-300 rounded-md p-1"
                 style={{width: "min(600px,100%)"}}
               >
                 <Show when={isDEV()}>
-                  <label class="font-medium flex items-baseline gap-1">
+                  <label class="flex items-baseline gap-1">
                     <input
                       type="checkbox"
                       name="showAllAttributes"
@@ -112,6 +113,7 @@ export default (() => {
                 </FelteForm>
               </div>
               <Show when={!editMode()}>
+                <PeopleAutoRelatedToClient clientId={userId()} />
                 <UserMeetingsTables
                   userName={user().name}
                   userType="clients"

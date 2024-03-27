@@ -165,9 +165,10 @@ interface HasColumnFilter<T> extends ColumnFilterBase {
   readonly val: T;
 }
 interface SetsOpColumnFilter<T> extends ColumnFilterBase {
-  readonly op: "has_all" | "has_any" | "has_only";
+  readonly op: SetsOp;
   readonly val: readonly T[];
 }
+export type SetsOp = "has_all" | "has_any" | "has_only";
 
 export type BoolColumnFilter = EqColumnFilter<boolean>;
 export type DateColumnFilter = EqColumnFilter<DateString> | InColumnFilter<DateString> | CmpColumnFilter<DateString>;

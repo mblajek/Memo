@@ -18,12 +18,11 @@ export class Attributes {
   constructor(
     /** A map of all the attributes by id. */
     readonly byId: ReadonlyMap<string, Attribute>,
-    readonly byName: ReadonlyMap<string, Attribute>,
-    /** A map from model name to a list of its attributes, ordered. */
-    readonly byModel: ReadonlyMap<string, Attribute[]>,
+    /** A map from model to a map from apiName to the attribute, ordered. */
+    readonly byModelAndApiName: ReadonlyMap<string, ReadonlyMap<string, Attribute>>,
   ) {}
 
-  static readonly EMPTY = new Attributes(new Map(), new Map(), new Map());
+  static readonly EMPTY = new Attributes(new Map(), new Map());
 
   static fromResources(t: LangFunc, dictionaries: Dictionaries, resources: AttributeResource[]) {
     return Attributes.fromAttributes(resources.map((resource) => Attribute.fromResource(t, dictionaries, resource)));
@@ -31,39 +30,45 @@ export class Attributes {
 
   private static fromAttributes(attributes: Attribute[]) {
     const byId = new Map<string, Attribute>();
-    const byName = new Map<string, Attribute>();
-    const byModel = new Map<string, Attribute[]>();
+    const byModelAndApiName = new Map<string, Map<string, Attribute>>();
     for (const attribute of attributes) {
       byId.set(attribute.id, attribute);
-      if (attribute.isFixed && attribute.isTranslatable) {
-        byName.set(attribute.name, attribute);
+      let byApiName = byModelAndApiName.get(attribute.model);
+      if (!byApiName) {
+        byApiName = new Map<string, Attribute>();
+        byModelAndApiName.set(attribute.model, byApiName);
       }
-      const model = attribute.model;
-      let modelAttributes = byModel.get(model);
-      if (!modelAttributes) {
-        modelAttributes = [];
-        byModel.set(model, modelAttributes);
-      }
-      modelAttributes.push(attribute);
+      byApiName.set(attribute.apiName, attribute);
     }
-    return new Attributes(byId, byName, byModel);
+    return new Attributes(byId, byModelAndApiName);
   }
 
   [Symbol.iterator]() {
     return this.byId.values();
   }
 
-  get<T = unknown>(idOrName: string) {
-    const attribute = this.byId.get(idOrName) || this.byName.get(idOrName);
+  getById<T = unknown>(id: string) {
+    const attribute = this.byId.get(id);
     if (!attribute) {
-      throw new Error(`Attribute ${idOrName} not found.`);
+      throw new Error(`Attribute ${id} not found.`);
+    }
+    return attribute as Attribute<T>;
+  }
+
+  getByName<T = unknown>(model: string, apiName: string, {allowNonFixed = false} = {}) {
+    const attribute = this.byModelAndApiName.get(model)?.get(apiName);
+    if (!attribute) {
+      throw new Error(`Attribute ${apiName} for model ${model} not found.`);
+    }
+    if (!allowNonFixed && !attribute.isFixed) {
+      throw new Error(`Attribute ${apiName} for model ${model} is not fixed.`);
     }
     return attribute as Attribute<T>;
   }
 
   /** Returns the attributes for the specified model, or empty array. */
   getForModel(model: string) {
-    return this.byModel.get(model) || [];
+    return [...(this.byModelAndApiName.get(model)?.values() || [])];
   }
 
   /** Returns a subset of the attributes accessible for the specified facility, or for the global scope. */
@@ -74,7 +79,7 @@ export class Attributes {
   }
 
   read<T = unknown>(object: Attributable, attributeId: string) {
-    return this.get<T>(attributeId).readFrom(object);
+    return this.getById<T>(attributeId).readFrom(object);
   }
 
   readAll(object: Attributable) {
@@ -150,7 +155,7 @@ export class Attribute<T = unknown> {
   readFrom(object: Attributable) {
     if (!getAttributeModel(object).includes(this.model)) {
       throw new Error(
-        `Trying to read attribute ${this.id} for model ${this.model} from an object ` +
+        `Trying to read attribute ${this.apiName} for model ${this.model} from an object ` +
           `representing models ${getAttributeModel(object).join(", ")}.`,
       );
     }

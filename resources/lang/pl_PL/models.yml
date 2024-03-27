@@ -1,8 +1,10 @@
 generic:
   createdAt: "utworzono"
   createdBy.name: "utworzono przez"
+  createdBy.id: "$t(models.generic.createdBy.name)"
   updatedAt: "zmodyfikowano"
   updatedBy.name: "zmodyfikowano przez"
+  updatedBy.id: "$t(models.generic.updatedBy.name)"
   name: "nazwa"
   email: "adres e-mail"
   notes: "opis"

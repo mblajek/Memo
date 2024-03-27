@@ -1,4 +1,4 @@
-import {FullCalendar} from "components/ui/calendar/FullCalendar";
+import {FullCalendar} from "components/ui/meetings-calendar/FullCalendar";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 

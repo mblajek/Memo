@@ -61,6 +61,8 @@ export function staticRequestCreator(
 
 type ExtraDataQueryOptions<K extends PrefixQueryKey> = Partial<SolidQueryOpts<DataResponse, DataQueryKey<K>>>;
 
+const EMPTY_RESPONSE: DataResponse = {meta: {totalDataSize: 0}, data: []};
+
 /**
  * Creates a tquery.
  *
@@ -92,8 +94,13 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   const {request, requestController} = requestCreator(schema);
   const dataQuery = createQuery<DataResponse, AxiosError<Api.ErrorResponse>, DataResponse, DataQueryKey<K>>(() => ({
     queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
-    queryFn: (context) =>
-      V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then((res) => res.data),
+    queryFn: (context) => {
+      const request = getRequestFromQueryKey(context.queryKey);
+      if (request.filter === "never") {
+        return EMPTY_RESPONSE;
+      }
+      return V1.post<DataResponse>(`${entityURL}/tquery`, request).then((res) => res.data);
+    },
     placeholderData: keepPreviousData,
     // It is difficult to match the types here because of the defined/undefined initial data types.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

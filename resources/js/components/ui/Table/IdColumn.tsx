@@ -10,7 +10,7 @@ interface Props {
 export const IdColumn: VoidComponent<Props> = (props) => (
   <Show when={props.id} fallback={EMPTY_VALUE_SYMBOL}>
     <div class="w-full flex items-center">
-      <span class="overflow-hidden whitespace-nowrap text-ellipsis monospace" style={{direction: "rtl"}}>
+      <span class="overflow-hidden whitespace-nowrap text-ellipsis font-mono" style={{direction: "rtl"}}>
         {props.id}
       </span>
       <CopyToClipboard text={props.id} textInTitle />

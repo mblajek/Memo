@@ -28,3 +28,29 @@ export function skipUndefinedValues<T extends object>(object: T) {
   }
   return result as T;
 }
+
+/**
+ * Converts recursively an object that might contain getters or be a Proxy to a plain object with the same data.
+ */
+export function toPlainObject<T>(object: T): T;
+/**
+ * Converts recursively an object that might contain getters or be a Proxy to a plain object with the same data.
+ * Only the specified keys in the top level object are present in the result.
+ */
+export function toPlainObject<T extends object, K extends keyof T & string>(object: T, keys: K[]): Pick<T, K>;
+export function toPlainObject<T extends object>(object: T, keys?: (keyof T & string)[]): T {
+  if (object == undefined) {
+    return object;
+  } else if (Array.isArray(object)) {
+    return object.map((o) => toPlainObject(o)) as T;
+  }
+  if (typeof object === "object") {
+    const res = {} as Partial<Record<string, unknown>>;
+    for (const key of keys || Object.keys(object)) {
+      res[key] = toPlainObject(object[key as keyof T]);
+    }
+    return res as T;
+  } else {
+    return object;
+  }
+}

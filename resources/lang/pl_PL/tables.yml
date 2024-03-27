@@ -46,8 +46,11 @@ tables:
     summary__many: "{{count, number}} spotkań"
     columnNames:
       startDayminute: "godzina"
+      attendants.*.userId: "$t(models.meeting.attendants)"
       attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
+      staff.*.userId: "$t(models.meeting.staff)"
       staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
+      clients.*.userId: "$t(models.meeting.clients)"
       clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
       attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
@@ -81,14 +84,17 @@ filter:
     null_value: "‘’"
   set_operation:
     has_all:
-      short: "wszystkie"
+      short: "oraz"
       explanation: "Znajdź wiersze, które mają wszystkie wybrane wartości"
     has_any:
-      short: "którekolwiek"
+      short: "lub"
       explanation: "Znajdź wiersze, które mają którąkolwiek z wybranych wartości"
     has_only:
       short: "tylko"
-      explanation: "Znajdź wiersze, które mają tylko wybrane wartości (niekoniecznie wszystkie)"
+      explanation: "Znajdź wiersze, które mają co najwyżej wybrane wartości (niekoniecznie wszystkie), i żadnej niewybranej"
+    =:
+      short: "dokł."
+      explanation: "Znajdź wiersze, które mają dokładnie wybrane wartości (nie więcej, nie mniej)"
   textual:
     fuzzy: "dopasowanie"
     eq: "równe"

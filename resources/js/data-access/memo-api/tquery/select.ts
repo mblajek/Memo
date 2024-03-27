@@ -7,18 +7,21 @@ import {RequestCreator} from "./tquery";
 import {ColumnName, DataRequest, Sort} from "./types";
 
 interface RequestController {
-  filterText: Signal<string>;
+  readonly filterText: Signal<string>;
+  readonly extraFilter: Signal<FilterH | undefined>;
 }
 
 /** Creates a request creator used by a tquery-based select component. */
 export function createSelectRequestCreator({
   intrinsicFilter,
+  initialExtraFilter,
   columns,
   sort,
   limit,
   distinct,
 }: {
   intrinsicFilter?: FilterH;
+  initialExtraFilter?: FilterH;
   columns: ColumnName[];
   sort: Sort;
   limit: number;
@@ -26,9 +29,10 @@ export function createSelectRequestCreator({
 }): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   return (schema) => {
-    const [filter, setFilter] = createSignal<string>("");
+    const [filterText, setFilterText] = createSignal<string>("");
+    const [extraFilter, setExtraFilter] = createSignal<FilterH | undefined>(initialExtraFilter);
     // eslint-disable-next-line solid/reactivity
-    const debouncedFilter = debouncedFilterTextAccessor(filter);
+    const debouncedFilter = debouncedFilterTextAccessor(filterText);
     const filterReductor = createMemo(on(schema, (schema) => schema && new FilterReductor(schema)));
     const fuzzyFilterConfig = createMemo(() => {
       const sch = schema();
@@ -37,6 +41,7 @@ export function createSelectRequestCreator({
       }
       return {
         schema: sch,
+        columns,
         dictionaries: dictionaries(),
         // TODO: Consider adding columnsByPrefix for some columns, e.g. id= for Versum ids.
         // This would allow selecting e.g. a person by their Versum id.
@@ -51,7 +56,9 @@ export function createSelectRequestCreator({
         filter: filterReductor()?.reduce({
           type: "op",
           op: "&",
-          val: [intrinsicFilter, buildFuzzyGlobalFilter(debouncedFilter(), fuzzyFilterConfig()!)].filter(NON_NULLABLE),
+          val: [intrinsicFilter, extraFilter(), buildFuzzyGlobalFilter(debouncedFilter(), fuzzyFilterConfig()!)].filter(
+            NON_NULLABLE,
+          ),
         }),
         sort,
         paging: {size: limit},
@@ -61,7 +68,8 @@ export function createSelectRequestCreator({
     return {
       request,
       requestController: {
-        filterText: [filter, setFilter],
+        filterText: [filterText, setFilterText],
+        extraFilter: [extraFilter, setExtraFilter],
       },
     };
   };

@@ -58,8 +58,8 @@ export type QueryErrorsProps = Pick<QueryBarrierProps, "queries">;
 
 export const SimpleErrors: VoidComponent<QueryErrorsProps> = (props) => (
   <div class="text-red-700 wrapTextAnywhere">
-    <p>Errors:</p>
-    <ul class="list-disc list-inside">
+    <p class="font-bold">Errors:</p>
+    <ul class="list-disc font-mono ml-6">
       <For each={props.queries}>
         {(query) => (
           <Show when={query.isError}>

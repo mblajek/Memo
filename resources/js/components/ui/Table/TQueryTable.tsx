@@ -13,7 +13,7 @@ import {createLocalStoragePersistence} from "components/persistence/persistence"
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, debouncedAccessor} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
-import {objectRecursiveMerge} from "components/utils/object_merge";
+import {objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {getAllRowsExportIterator} from "data-access/memo-api/tquery/export";
@@ -48,6 +48,7 @@ import {Dynamic} from "solid-js/web";
 import {
   DisplayMode,
   Header,
+  PaddedCell,
   Pagination,
   Table,
   TableColumnVisibilityController,
@@ -85,7 +86,11 @@ declare module "@tanstack/table-core" {
 interface TQueryTableMeta<TData extends RowData> {
   /** Iterator over all the rows, for export purposes. */
   readonly allRowsExportIterable?: AllRowsExportIterable<TData>;
+  readonly cellsPreviewMode?: Signal<CellsPreviewMode | undefined>;
 }
+
+/** The preview mode, changing the contents of all cells in the table to a preview value. */
+export type CellsPreviewMode = "textExport";
 
 export type AllRowsExportIterable<TData extends RowData = RowData> = AsyncIterable<TData> & {readonly length?: number};
 
@@ -166,6 +171,8 @@ export interface PartialColumnConfig<TData = DataItem> {
   readonly metaParams?: ColumnMetaParams<TData>;
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
+  /** Whether the global filter can match this column. Default: depends on the column type. */
+  readonly globalFilterable?: boolean;
 }
 
 interface HeaderParams<TData = DataItem> {
@@ -189,16 +196,18 @@ function columnConfigFromPartial({
   header = Header,
   metaParams,
   initialVisible = true,
+  globalFilterable = true,
 }: PartialColumnConfig): FullColumnConfig {
   return {
     name,
     isDataColumn,
-    dataColumns: isDataColumn ? [name, ...extraDataColumns] : extraDataColumns,
+    extraDataColumns,
     columnDef,
     filterControl,
     header,
     metaParams,
     initialVisible,
+    globalFilterable,
   };
 }
 
@@ -234,6 +243,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           name: col.name,
           metaParams: {devColumn: true},
           initialVisible: false,
+          globalFilterable: false,
         }) satisfies PartialColumnConfig<DataItem>,
     );
   const columnsConfig = createMemo(() =>
@@ -278,10 +288,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     })
     .set("string", {
       columnDef: {cell: tableCells.string()},
+      metaParams: {textExportCell: tableTextExportCells.string()},
       filterControl: TextualFilterControl,
     })
     .set("text", {
       columnDef: {cell: tableCells.text(), enableSorting: false},
+      metaParams: {textExportCell: tableTextExportCells.text()},
       filterControl: TextualFilterControl,
     })
     .set("uuid", {
@@ -298,11 +310,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       columnDef: {cell: tableCells.dict()},
       metaParams: {textExportCell: tableTextExportCells.dict()},
       filterControl: DictFilterControl,
+      globalFilterable: true,
     })
     .set("dict_list", {
       columnDef: {cell: tableCells.dictList(), enableSorting: false, size: 270},
       metaParams: {textExportCell: tableTextExportCells.dictList()},
       filterControl: DictListFilterControl,
+      globalFilterable: true,
     });
 
   const requestCreator = createTableRequestCreator({
@@ -342,7 +356,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
                   return undefined;
                 }
                 if (col.attributeId) {
-                  const attribute = attributes()!.get(col.attributeId);
+                  const attribute = attributes()!.getById(col.attributeId);
                   if (!attribute.isFixed) {
                     if (configuredColumns.has(col.name)) {
                       console.warn(
@@ -422,6 +436,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   });
   const defaultColumnVisibility = createMemo(() => getDefaultColumnVisibility(columnsConfig()));
 
+  const [cellsPreviewMode, setCellsPreviewMode] = createSignal<CellsPreviewMode | undefined>();
   const columns = createMemo(() => {
     const sch = schema();
     if (!sch) {
@@ -442,7 +457,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       const defColumnConfig = (schemaCol && defaultColumnConfigByType.get(schemaCol.type)) || {};
       const filterControl = col.filterControl || defColumnConfig.filterControl;
       const filter = getColumnFilter(col.name);
-      return objectRecursiveMerge<ColumnDef<DataItem, unknown>>(
+      const columnDef = objectRecursiveMerge<ColumnDef<DataItem, unknown>>(
         {
           id: col.name,
           accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
@@ -475,6 +490,23 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         {meta: {tquery: defColumnConfig.metaParams}},
         {meta: {tquery: col.metaParams}},
       ) satisfies ColumnDef<DataItem, unknown>;
+      const previewMode = cellsPreviewMode();
+      if (previewMode) {
+        if (previewMode === "textExport") {
+          columnDef.cell = (ctx) => (
+            <PaddedCell>
+              {columnDef.meta?.tquery?.textExportCell?.({
+                value: ctx.getValue(),
+                row: ctx.row.original,
+                column: ctx.column,
+              })}
+            </PaddedCell>
+          );
+        } else {
+          return previewMode satisfies never;
+        }
+      }
+      return columnDef;
     });
   });
 
@@ -510,6 +542,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
               return rowsCount();
             },
           },
+          cellsPreviewMode: [cellsPreviewMode, setCellsPreviewMode],
         },
       },
     }),

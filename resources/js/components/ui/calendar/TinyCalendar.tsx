@@ -159,10 +159,10 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
       </div>
       <div class={s.days}>
         <Show when={props.showWeekdayNames}>
-          <For each={[...weekDaysCalculator.dayToWeek(DateTime.fromMillis(0))]}>
-            {(day) => (
-              <div class={cx(s.weekday, {[s.weekend!]: weekDaysCalculator.isWeekend(day)})}>
-                {day.toLocaleString({weekday: "narrow"})}
+          <For each={weekDaysCalculator.weekdays}>
+            {({exampleDay, isWeekend}) => (
+              <div class={cx(s.weekday, {[s.weekend!]: isWeekend})}>
+                {exampleDay.toLocaleString({weekday: "narrow"})}
               </div>
             )}
           </For>

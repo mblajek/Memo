@@ -46,9 +46,11 @@ export default (() => {
     }
   }
 
-  const textSort = {
-    sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
-  } satisfies Partial<IdentifiedColumnDef<object>>;
+  function textSort<T>() {
+    return {
+      sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
+    } satisfies Partial<IdentifiedColumnDef<T>>;
+  }
 
   const table = createMemo(() =>
     createSolidTable({
@@ -76,12 +78,12 @@ export default (() => {
         }),
         h.accessor("name", {
           id: "Name",
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("label", {
           id: "Label",
           cell: cellFunc<string, Attribute>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("resource.facilityId", {
           id: "Facility",
@@ -90,14 +92,14 @@ export default (() => {
               <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
             </PaddedCell>
           )),
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("isFixed", {
           id: "Fixed",
         }),
         h.accessor("model", {
           id: "Model",
-          ...textSort,
+          ...textSort(),
           header: (ctx) => (
             <Header
               ctx={ctx}
@@ -118,14 +120,14 @@ export default (() => {
         }),
         h.accessor("apiName", {
           id: "API name",
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("type", {
           id: "Type",
           cell: cellFunc<AttributeType, Attribute>((props) => (
             <PaddedCell>{getAttributeTypeString(props.row)}</PaddedCell>
           )),
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("multiple", {
           id: "Multiple",
@@ -139,7 +141,7 @@ export default (() => {
         }),
         h.accessor("requirementLevel", {
           id: "Req. level",
-          ...textSort,
+          ...textSort(),
         }),
         ...(attributes()
           ?.getForModel("attribute")
