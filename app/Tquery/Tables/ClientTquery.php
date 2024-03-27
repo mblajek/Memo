@@ -26,7 +26,10 @@ readonly class ClientTquery extends FacilityUserTquery
     {
         $config = parent::getConfig();
         foreach (Attribute::getBy(facility: $this->facility, table: AttributeTable::Client) as $attribute) {
-            $config->addAttribute($attribute, 'client');
+            // todo: support fot all attributes
+            if ($attribute->is_multi_value === null) {
+                $config->addAttribute($attribute, 'client');
+            }
         }
         return $config;
     }

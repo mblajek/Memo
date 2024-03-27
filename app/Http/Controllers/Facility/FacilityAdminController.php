@@ -5,19 +5,12 @@ namespace App\Http\Controllers\Facility;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
-use App\Http\Permissions\PermissionDescribe;
-use App\Http\Resources\PositionResource;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
-use App\Models\Facility;
 use App\Models\Position;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Artisan;
-
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
@@ -30,9 +23,10 @@ class FacilityAdminController extends ApiController
         $this->permissionOneOf(Permission::developer);
     }
 
-    public function postAttribute(Facility $facility): JsonResponse
+    // todo: extract into service, openApi
+    public function postAttribute(): JsonResponse
     {
-        $data = ['facility_id' => $facility->id]
+        $data = ['facility_id' => $this->getFacilityOrFail()->id]
             + $this->validate(Attribute::getInsertValidator([
                 'model',
                 'name',
@@ -55,9 +49,9 @@ class FacilityAdminController extends ApiController
         $data['is_fixed'] = false;
         $data['api_name'] = Str::snake($data['api_name']);
         $data['table'] = AttributeTable::{ucfirst($data['model'])}->value;
-        unset($data['model']);
 
-        $attribute = new Attribute($data);
+        $attribute = new Attribute();
+        $attribute->fillOnly($data);
 
         if (
             Attribute::query()->where('table', $attribute->table)
@@ -99,16 +93,19 @@ class FacilityAdminController extends ApiController
         return new JsonResponse(data: ['data' => ['id' => $attribute->id]], status: 201);
     }
 
-    public function postDictionary(Facility $facility): JsonResponse
+    // todo: extract into service, openApi
+    public function postDictionary(): JsonResponse
     {
-        $data = ['facility_id' => $facility->id] + $this->validate(Dictionary::getInsertValidator([
+        $data = ['facility_id' => $this->getFacilityOrFail()->id]
+            + $this->validate(Dictionary::getInsertValidator([
                 'name',
                 //'is_fixed', // always false
                 //'is_extendable', // always true
             ], true));
         $data['is_fixed'] = false;
         $data['is_extendable'] = true;
-        $dictionary = new Dictionary($data);
+        $dictionary = new Dictionary();
+        $dictionary->fillOnly($data);
         DB::transaction(function () use ($dictionary, $data) {
             $dictionary->save();
             $dictionary->attrSave($data);
@@ -116,9 +113,10 @@ class FacilityAdminController extends ApiController
         return new JsonResponse(data: ['data' => ['id' => $dictionary->id]], status: 201);
     }
 
-    public function postPosition(Facility $facility): JsonResponse
+    // todo: extract into service, openApi
+    public function postPosition(): JsonResponse
     {
-        $data = ['facility_id' => $facility->id]
+        $data = ['facility_id' => $this->getFacilityOrFail()->id]
             + $this->validate(Position::getInsertValidator([
                 'dictionary_id',
                 'name',
@@ -127,8 +125,9 @@ class FacilityAdminController extends ApiController
                 'default_order',
             ], true));
         $data['is_fixed'] = false;
-        $position = new Position($data);
-        //todo: validate position_required_attributes
+        $position = new Position();
+        $position->fillOnly($data);
+        //todo: validate for position_required_attributes
 
         DB::transaction(function () use ($position, $data) {
             if (
@@ -159,6 +158,4 @@ class FacilityAdminController extends ApiController
         });
         return new JsonResponse(data: ['data' => ['id' => $position->id]], status: 201);
     }
-
-
 }

@@ -2,6 +2,9 @@
 
 namespace Tests\Helpers;
 
+use App\Http\Permissions\PermissionMiddleware;
+use App\Http\Permissions\PermissionObject;
+use App\Models\Facility;
 use App\Models\Grant;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -9,12 +12,23 @@ use Illuminate\Support\Facades\Auth;
 trait UserTrait
 {
     protected const VALID_PASSWORD = 'VET81Ux3n3ff9U76XktpX3';
-    public function prepareAdminUser(): void
+
+    public function prepareAdminUser(?Facility $facility = null): void
     {
-        /** @var Grant $grant */
-        $grant = Grant::factory()->create();
-        /** @var User $adminUser */
-        $adminUser = User::factory()->create(['global_admin_grant_id' => $grant->id]);
-        Auth::setUser($adminUser);
+        PermissionMiddleware::setPermissions(
+            new PermissionObject(
+                user: User::query()->findOrFail(User::SYSTEM),
+                facility: $facility,
+                unauthorised: false,
+                unverified: true,
+                verified: true,
+                globalAdmin: true,
+                facilityMember: false,
+                facilityClient: false,
+                facilityStaff: false,
+                facilityAdmin: false,
+                developer: false,
+            )
+        );
     }
 }

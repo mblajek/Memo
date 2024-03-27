@@ -7,8 +7,11 @@ use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Facility\FacilityUserClientResource;
 use App\Models\Client;
+use App\Models\Member;
 use App\Models\User;
+use App\Rules\Valid;
 use App\Utils\OpenApi\FacilityParameter;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
@@ -53,5 +56,40 @@ class ClientController extends ApiController
             $user->client = $clients->offsetGet($user->member_id);
         }
         return FacilityUserClientResource::collection($users);
+    }
+
+    // todo: openapi
+    public function post(): JsonResponse
+    {
+        $clientValidator = Client::getInsertValidator([], true);
+        $userData = $this->validate(
+            User::getInsertValidator([
+                'name',
+            ])
+            + ['client' => Valid::array()]
+            + array_combine(
+                array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
+                $clientValidator,
+            )
+        );
+        $clientData = $userData['client'];
+        unset($userData['client']);
+
+        $user = new User();
+        $user->fillOnly($userData, ['name']);
+        $client = new Client();
+        $user->fillOnly($clientData);
+        $member = new Member(['facility_id' => $this->getFacilityOrFail()->id]);
+
+        DB::transaction(function () use ($user, $client, $member, $clientData) {
+            $user->save();
+            $client->save();
+            $member->user_id = $user->id;
+            $member->client_id = $client->id;
+            $member->save();
+            $user->save();
+            $client->attrSave($clientData);
+        });
+        return new JsonResponse(data: ['data' => ['id' => $user->id]], status: 201);
     }
 }

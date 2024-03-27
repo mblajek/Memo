@@ -26,14 +26,14 @@ trait HasResourceValidator
         );
     }
 
-    public static function getInsertValidator(): array
+    public static function getInsertResourceValidator(): array
     {
         return self::processRules(
             static::validationRules(isResource: false, isInsert: true, isPatch: false, original: null)
         );
     }
 
-    public static function getPatchValidator(User $user): array
+    public static function getPatchResourceValidator(User $user): array
     {
         return self::processRules(
             static::validationRules(isResource: false, isInsert: false, isPatch: true, original: $user)

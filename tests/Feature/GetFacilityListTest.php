@@ -5,13 +5,22 @@ namespace Tests\Feature;
 use Database\Factories\FacilityFactory;
 use Database\Factories\TimetableFactory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\Helpers\UserTrait;
 use Tests\TestCase;
 
 class GetFacilityListTest extends TestCase
 {
     use DatabaseTransactions;
+    use UserTrait;
 
     private const URL = '/api/v1/system/facility/list';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->prepareAdminUser();
+    }
 
     public function testWithValidDataReturnSuccess(): void
     {

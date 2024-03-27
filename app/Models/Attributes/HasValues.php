@@ -16,7 +16,6 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
- * @property string id
  * @property-read Collection<Value> values
  * @mixin Model
  */
@@ -72,7 +71,8 @@ trait HasValues
             $attrValues = [];
             foreach ($attributes as $attribute) {
                 $apiName = $attribute->api_name;
-                $attrValues[$apiName] = ($attribute->is_multi_value === null && $modelAttributes[$apiName] !== null)
+                $attrValues[$apiName] =
+                    ($attribute->is_multi_value === null && ($modelAttributes[$apiName] ?? null) !== null)
                     ? new ValueValue(null, $this->attrCastValue($modelAttributes[$apiName], $attribute->type)) : null;
             }
             foreach ($this->values as $value) {
@@ -116,9 +116,10 @@ trait HasValues
             /** @var Attribute $attribute */
             $attribute = $attrMap[$apiName] ?? null;
             if ($attribute === null) {
+                //todo: throw exception/warning
                 continue;
             }
-            /** @var ValueValue|list<ValueValue> $currentValue */
+            /** @var ValueValue|list<ValueValue>|null $currentValue */
             $currentValue = $currentAllValues[$apiName] ?? null;
             $dataValue = in_array($dataValue, [null, []], true) ? null : (is_array($dataValue)
                 ? array_map(fn(mixed $value) => $this->attrCastDb($value, $attribute->type), $dataValue)
@@ -128,7 +129,10 @@ trait HasValues
             }
 
             $isMultiValue = $attribute->is_multi_value;
-            if (($dataValue !== null) && ($isMultiValue ?? false) !== is_array($dataValue)) {
+            if (
+                (($currentValue !== null) && ($isMultiValue ?? false) !== is_array($currentValue))
+                || (($dataValue !== null) && ($isMultiValue ?? false) !== is_array($dataValue))
+            ) {
                 FatalExceptionFactory::unexpected()->throw();
             }
 
@@ -138,20 +142,20 @@ trait HasValues
                 continue;
             }
             if ($currentValue !== null) {
-                foreach ($isMultiValue ? $dataValue : [$dataValue] as $x) {
-                    $x->delete();
+                foreach ($isMultiValue ? $currentValue : [$currentValue] as $currentSingleValue) {
+                    $currentSingleValue->valueObject->delete();
                 }
             }
             if ($dataValue !== null) {
-                foreach ($isMultiValue ? $dataValue : [$dataValue] as $x) {
-                    $value = new Value();
-                    $value->attribute_id = $attribute->id;
-                    $value->setTypeColumnValue($x);
+                foreach ($isMultiValue ? $dataValue : [$dataValue] as $dataSingleValue) {
+                    $value = new Value(['attribute_id' => $attribute->id]);
+                    $value->setTypeColumnValue($dataSingleValue);
                     $this->values()->save($value);
                 }
             }
         }
         if ($changed) {
+            $this->save();
             $this->attrValues = null;
             $this->refresh();
         }

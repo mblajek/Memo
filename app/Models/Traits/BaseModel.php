@@ -3,7 +3,6 @@
 namespace App\Models\Traits;
 
 use App\Exceptions\ApiException;
-use App\Exceptions\ExceptionFactory;
 use App\Exceptions\FatalExceptionFactory;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Models\User;
@@ -57,6 +56,21 @@ trait BaseModel
         };
     }
 
+    public function fillOnly(array $data, ?array $only = null): array
+    {
+        $fill = $other = [];
+        $only = array_flip($only ?? $this->getFillable());
+        foreach ($data as $field => $value) {
+            if (array_key_exists($field, $only)) {
+                $fill[$field] = $value;
+            } else {
+                $other[$field] = $value;
+            }
+        }
+        $this->fill($fill);
+        return $other;
+    }
+
     public function saveOrApiFail(array $options = [])
     {
         try {
@@ -66,16 +80,6 @@ trait BaseModel
         }
     }
 
-    /** @throws ApiException */
-    private static function getAuthOrFail()
-    {
-        $user = PermissionMiddleware::permissions()->user;
-        if (!($user instanceof User)) {
-            ExceptionFactory::unauthorised()->throw();
-        }
-        return $user;
-    }
-
     public static function boot(): void
     {
         /** @noinspection PhpMultipleClassDeclarationsInspection */
@@ -83,20 +87,21 @@ trait BaseModel
         static::creating(function (Model $model) {
             /** @var $model self */
             if (!$model->created_by) {
-                $model->created_by = self::getAuthOrFail()->id;
+                $model->created_by = PermissionMiddleware::user()->id;
             }
             if (!$model->updated_by) {
-                $model->updated_by = self::getAuthOrFail()->id;
+              //  print_r(PermissionMiddleware::permissions());die;
+                $model->updated_by = PermissionMiddleware::user()->id;
             }
         });
         static::updating(function (Model $model) {
             /** @var $model self */
-            $model->updated_by = self::getAuthOrFail()->id;
+            $model->updated_by = PermissionMiddleware::user()->id;
         });
         if (method_exists(static::class, 'deletedBy')) {
             static::softDeleted(/** @throws ApiException */ function (Model $model) {
                 /** @var $model HasDeletedBy */
-                $model->deleted_by = self::getAuthOrFail()->id;
+                $model->deleted_by = PermissionMiddleware::user()->id;
                 $model->save();
             });
         }

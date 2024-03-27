@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
@@ -49,7 +50,7 @@ class UserController extends ApiController
     )]
     public function login(Request $request): JsonResponse
     {
-        if ($this->getPermissionObject()->globalAdmin) {
+        if (PermissionMiddleware::permissions()->globalAdmin) {
             $developer = $this->validate(['developer' => Valid::bool(sometimes: true)])['developer'] ?? null;
             if (is_bool($developer)) {
                 $request->session()->put('developer_mode', $developer);
@@ -136,7 +137,7 @@ class UserController extends ApiController
         return new JsonResponse([
             'data' => [
                 'user' => UserResource::make($this->getUserOrFail()),
-                'permissions' => PermissionResource::make($this->getPermissionObject()),
+                'permissions' => PermissionResource::make(PermissionMiddleware::permissions()),
                 'members' => MemberResource::collection($this->getUserOrFail()->members),
             ],
         ]);

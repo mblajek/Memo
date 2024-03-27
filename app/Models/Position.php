@@ -18,7 +18,7 @@ use Illuminate\Validation\Rule;
  * @property bool is_fixed
  * @property bool is_disabled
  * @property int default_order
- * @property-read Member $member
+ * @property-read Dictionary $dictionary
  * @method static PositionBuilder query()
  */
 class Position extends Model

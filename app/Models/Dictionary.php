@@ -14,6 +14,7 @@ use Illuminate\Validation\Rule;
 
 /**
  * @property string name
+ * @property string facility_id
  * @property bool is_fixed
  * @property bool is_extendable
  * @property-read Collection $positions

@@ -72,6 +72,7 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/facility/{facility}')->group(function () {
         Route::prefix('/user')->group(function () {
             Route::prefix('/client')->group(function () {
+                Route::post('/', [ClientController::class, 'post']);
                 Route::get('/list', [ClientController::class, 'list']);
                 Route::get('/tquery', [ClientTqueryController::class, 'get']);
                 Route::post('/tquery', [ClientTqueryController::class, 'post']);
