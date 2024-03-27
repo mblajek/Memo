@@ -26,7 +26,7 @@ export const ColumnName: VoidComponent<Props> = (props) => {
           </span>
         </Match>
         <Match when={props.def.meta?.tquery?.attributeId}>
-          {(attributeId) => <Capitalize text={attributes()?.get(attributeId()).label} />}
+          {(attributeId) => <Capitalize text={attributes()?.getById(attributeId()).label} />}
         </Match>
         <Match when={true}>
           <TranslatedText

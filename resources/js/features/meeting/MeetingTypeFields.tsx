@@ -16,7 +16,7 @@ import {VoidComponent} from "solid-js";
  */
 export const MeetingTypeFields: VoidComponent = () => {
   const attributes = useAttributes();
-  const categoryAttribute = () => attributes()?.get("category");
+  const categoryAttribute = () => attributes()?.getByName("position", "categoryDictId");
   const {meetingCategoryDict} = useFixedDictionaries();
   function isSystemType(pos: Position) {
     return categoryAttribute()?.readFrom(pos.resource) === meetingCategoryDict()?.system.id;

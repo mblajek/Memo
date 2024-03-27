@@ -625,7 +625,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 ...meetingTimeInitialValue(time),
                 ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
               },
-              onSuccess: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
+              onSuccess: (meeting, cloneIds) =>
+                meetingChange(
+                  t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
+                  meeting,
+                  cloneIds,
+                ),
               showToast: false,
             })
           }

@@ -28,7 +28,7 @@ import {MeetingForm, MeetingFormType, getResourceValuesForEdit} from "./MeetingF
 import {MeetingBasicData} from "./meeting_basic_data";
 import {createMeetingCreateModal} from "./meeting_create_modal";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
-import {getTimeValues} from "./meeting_time_controller";
+import {getMeetingTimeFullData} from "./meeting_time_controller";
 
 export interface MeetingViewEditFormProps {
   readonly meetingId: Api.Id;
@@ -227,7 +227,7 @@ export default MeetingViewEditForm;
 export function transformFormValues(values: Partial<MeetingFormType>): Partial<MeetingResourceForPatch> {
   return {
     ...values,
-    ...getTimeValues(values),
+    ...getMeetingTimeFullData(values).timeValues,
     ...getAttendantsValuesForEdit(values),
     ...getResourceValuesForEdit(values),
   };

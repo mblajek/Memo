@@ -92,7 +92,7 @@ export default (() => {
           ?.getForModel("dictionary")
           .map((attr) =>
             h.accessor((row) => attr.readFrom(row.resource), {
-              id: `@${attr.name}`,
+              id: `@${attr.apiName}`,
               cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
             }),
           ) || []),
@@ -122,11 +122,11 @@ export default (() => {
                 }),
                 ...((attributes() &&
                   dict.resource.positionRequiredAttributeIds
-                    ?.map((attrId) => attributes()!.get(attrId)!)
+                    ?.map((attrId) => attributes()!.getById(attrId)!)
                     .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
                     .map((attr) =>
                       h.accessor((p) => attr.readFrom(p.resource), {
-                        id: `@${attr.name}`,
+                        id: `@${attr.apiName}`,
                         cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
                       }),
                     )) ||

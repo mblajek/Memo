@@ -168,7 +168,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
           </div>
         </div>
         <Show when={!showEditable()}>
-          <div class="flex gap-2 justify-between">
+          <div class="flex gap-x-2 items-baseline justify-between flex-wrap">
             <div class="flex gap-2 items-baseline">
               <DateAndTimeInfo
                 date={DateTime.fromISO(form.data("date"))}
