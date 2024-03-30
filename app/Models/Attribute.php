@@ -70,7 +70,7 @@ class Attribute extends Model
             'name' => Valid::trimmed(),
             'api_name' => Valid::trimmed(['regex:/^[a-z][A-Za-z0-9]+$/']),
             'type' => Valid::trimmed([Rule::enum(AttributeType::class)]),
-            //todo: dictionary exists in facility, required (only) for type "dict"
+            //todo: dictionary exists in facility; required (only) for type "dict"
             'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')], nullable: true),
             'default_order' => Valid::int(['min:1'], sometimes: true),
             'is_multi_value', 'is_fixed' => Valid::bool(nullable: true),
@@ -88,21 +88,19 @@ class Attribute extends Model
     public static function getAll(bool $keyByApiName = false): array
     {
         if (self::$all === null) {
-            $all = self::query()->orderBy('default_order')->get();
-            self::$all = ['id' => $all->keyBy('id')->all(), 'api_name' => $all->keyBy('api_name')->all()];
+            self::$all = self::query()->orderBy('default_order')->get()->keyBy('id')->all();
         }
-        return self::$all[$keyByApiName ? 'api_name' : 'id'];
+        return self::$all;
     }
 
     /** @return array<non-falsy-string, self> */
     public static function getBy(
-        bool $keyByApiName = false,
         null|Facility|string|true $facility = null,
         null|AttributeTable $table = null,
     ): array {
         $facility = ($facility === true) ? PermissionMiddleware::permissions()->facility : $facility;
         $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
-        return array_filter(self::getAll($keyByApiName), fn(self $attribute) => //
+        return array_filter(self::getAll(), fn(self $attribute) => //
             ($facilityId === null || $attribute->facility_id === null || $attribute->facility_id === $facilityId)
             && ($table === null || $attribute->getAttributeValue('table') === $table));
     }

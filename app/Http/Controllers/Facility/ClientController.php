@@ -78,17 +78,15 @@ class ClientController extends ApiController
         $user = new User();
         $user->fillOnly($userData, ['name']);
         $client = new Client();
-        $user->fillOnly($clientData);
+        $client->fillOnly($clientData);
         $member = new Member(['facility_id' => $this->getFacilityOrFail()->id]);
 
         DB::transaction(function () use ($user, $client, $member, $clientData) {
             $user->save();
-            $client->save();
+            $client->attrSave($this->getFacilityOrFail(), $clientData);
             $member->user_id = $user->id;
             $member->client_id = $client->id;
             $member->save();
-            $user->save();
-            $client->attrSave($clientData);
         });
         return new JsonResponse(data: ['data' => ['id' => $user->id]], status: 201);
     }

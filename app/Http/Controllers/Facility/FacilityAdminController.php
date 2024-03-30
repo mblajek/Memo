@@ -107,8 +107,7 @@ class FacilityAdminController extends ApiController
         $dictionary = new Dictionary();
         $dictionary->fillOnly($data);
         DB::transaction(function () use ($dictionary, $data) {
-            $dictionary->save();
-            $dictionary->attrSave($data);
+            $dictionary->attrSave($this->getFacilityOrFail(), $data);
         });
         return new JsonResponse(data: ['data' => ['id' => $dictionary->id]], status: 201);
     }
@@ -128,6 +127,12 @@ class FacilityAdminController extends ApiController
         $position = new Position();
         $position->fillOnly($data);
         //todo: validate for position_required_attributes
+        if (!Dictionary::query()->findOrFail($position->dictionary_id)->is_extendable) {
+            $exception = ExceptionFactory::validation();
+            // todo: validation
+            $exception->addValidation('dictionaryId', 'not_extendable');
+            throw $exception;
+        }
 
         DB::transaction(function () use ($position, $data) {
             if (
@@ -153,8 +158,7 @@ class FacilityAdminController extends ApiController
                     );
                 }
             }
-            $position->save();
-            $position->attrSave($data);
+            $position->attrSave($this->getFacilityOrFail(), $data);
         });
         return new JsonResponse(data: ['data' => ['id' => $position->id]], status: 201);
     }

@@ -53,7 +53,10 @@ return new class extends Migration {
             ],
         ], 'id');
 
-        DB::statement("update `attributes` set `default_order` = `default_order` + 1 where `table` = 'clients'");
+        DB::statement(
+            "update `attributes` set `default_order` = `default_order` + 1 where `table` = 'clients'"
+            ." order by `default_order` desc"
+        );
         DB::table('attributes')->where('id', '1d6d5712-1a8a-4600-ab32-e0f3f8f3dbbb')
             ->update(['api_name' => 'data_zgloszenia_u1d6d5712']);
         DB::table('attributes')->where('id', '1f628171-278b-4579-89e8-a21693e04c77')

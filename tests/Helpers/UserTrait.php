@@ -5,9 +5,7 @@ namespace Tests\Helpers;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObject;
 use App\Models\Facility;
-use App\Models\Grant;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 
 trait UserTrait
 {

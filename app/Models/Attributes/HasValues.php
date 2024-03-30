@@ -51,7 +51,7 @@ trait HasValues
         };
     }
 
-    public static function attrTable(null|Facility|string|true $facility = null): AttributeTable
+    public static function attrTable(): AttributeTable
     {
         return AttributeTable::from(self::getInstanceField('table'));
     }
@@ -59,7 +59,11 @@ trait HasValues
     /** @return array<string, Attribute> */
     public static function attrMap(null|Facility|string|true $facility = null): array
     {
-        return Attribute::getBy(keyByApiName: true, facility: $facility, table: self::attrTable());
+        $attrMap = []; // todo: can be moved to static variable facility_id => list<Attribute>
+        foreach (Attribute::getBy(facility: $facility, table: self::attrTable()) as $attribute) {
+            $attrMap[$attribute->api_name] = $attribute;
+        }
+        return $attrMap;
     }
 
     public function attrValuesObjects(null|Facility|string|true $facility = null): array
@@ -73,7 +77,8 @@ trait HasValues
                 $apiName = $attribute->api_name;
                 $attrValues[$apiName] =
                     ($attribute->is_multi_value === null && ($modelAttributes[$apiName] ?? null) !== null)
-                    ? new ValueValue(null, $this->attrCastValue($modelAttributes[$apiName], $attribute->type)) : null;
+                        ? new ValueValue(null, $this->attrCastValue($modelAttributes[$apiName], $attribute->type))
+                        : null;
             }
             foreach ($this->values as $value) {
                 $attribute = $value->attribute();
@@ -107,57 +112,64 @@ trait HasValues
             : array_map(fn(ValueValue $value) => $value->valueScalar, $value), $this->attrValuesObjects($facility));
     }
 
-    public function attrSave(array $data): void
+    public function attrSave(null|Facility|string|true $facility, array $data): void
     {
-        $attrMap = self::attrMap();
+        $attrMap = self::attrMap($facility);
         $currentAllValues = $this->attrValuesObjects();
         $changed = false;
-        foreach ($data as $apiName => $dataValue) {
-            /** @var Attribute $attribute */
-            $attribute = $attrMap[$apiName] ?? null;
-            if ($attribute === null) {
-                //todo: throw exception/warning
-                continue;
+        foreach ([true, false] as $attributeIsMultiNull) {
+            if (!$attributeIsMultiNull) {
+                $this->save();
             }
-            /** @var ValueValue|list<ValueValue>|null $currentValue */
-            $currentValue = $currentAllValues[$apiName] ?? null;
-            $dataValue = in_array($dataValue, [null, []], true) ? null : (is_array($dataValue)
-                ? array_map(fn(mixed $value) => $this->attrCastDb($value, $attribute->type), $dataValue)
-                : $this->attrCastDb($dataValue, $attribute->type));
-            if (($currentValue === null) && ($dataValue === null)) {
-                continue;
-            }
-
-            $isMultiValue = $attribute->is_multi_value;
-            if (
-                (($currentValue !== null) && ($isMultiValue ?? false) !== is_array($currentValue))
-                || (($dataValue !== null) && ($isMultiValue ?? false) !== is_array($dataValue))
-                || (is_array($currentValue) && !array_is_list($currentValue))
-                || (is_array($dataValue) && !array_is_list($dataValue))
-            ) {
-                FatalExceptionFactory::unexpected()->throw();
-            }
-
-            $changed = true;
-            if ($isMultiValue === null) {
-                $this->setAttribute($apiName, $dataValue);
-                continue;
-            }
-            if ($currentValue !== null) {
-                foreach ($isMultiValue ? $currentValue : [$currentValue] as $currentSingleValue) {
-                    $currentSingleValue->valueObject->delete();
+            foreach ($data as $apiName => $dataValue) {
+                /** @var Attribute $attribute */
+                $attribute = $attrMap[$apiName] ?? null;
+                if ($attribute === null) {
+                    //todo: throw exception/warning
+                    continue;
                 }
-            }
-            if ($dataValue !== null) {
-                foreach ($isMultiValue ? $dataValue : [$dataValue] as $key => $dataSingleValue) {
-                    $value = new Value(['attribute_id' => $attribute->id, 'default_order' => $key]);
-                    $value->setTypeColumnValue($dataSingleValue);
-                    $this->values()->save($value);
+                if (is_null($attribute->is_multi_value) !== $attributeIsMultiNull) {
+                    continue;
+                }
+                /** @var ValueValue|list<ValueValue>|null $currentValue */
+                $currentValue = $currentAllValues[$apiName] ?? null;
+                $dataValue = in_array($dataValue, [null, []], true) ? null : (is_array($dataValue)
+                    ? array_map(fn(mixed $value) => $this->attrCastDb($value, $attribute->type), $dataValue)
+                    : $this->attrCastDb($dataValue, $attribute->type));
+                if (($currentValue === null) && ($dataValue === null)) {
+                    continue;
+                }
+
+                $isMultiValue = $attribute->is_multi_value;
+                if (
+                    (($currentValue !== null) && ($isMultiValue ?? false) !== is_array($currentValue))
+                    || (($dataValue !== null) && ($isMultiValue ?? false) !== is_array($dataValue))
+                    || (is_array($currentValue) && !array_is_list($currentValue))
+                    || (is_array($dataValue) && !array_is_list($dataValue))
+                ) {
+                    FatalExceptionFactory::unexpected()->throw();
+                }
+
+                $changed = true;
+                if ($isMultiValue === null) {
+                    $this->setAttribute($apiName, $dataValue);
+                    continue;
+                }
+                if ($currentValue !== null) {
+                    foreach ($isMultiValue ? $currentValue : [$currentValue] as $currentSingleValue) {
+                        $currentSingleValue->valueObject->delete();
+                    }
+                }
+                if ($dataValue !== null) {
+                    foreach ($isMultiValue ? $dataValue : [$dataValue] as $key => $dataSingleValue) {
+                        $value = new Value(['attribute_id' => $attribute->id, 'default_order' => $key]);
+                        $value->setTypeColumnValue($dataSingleValue);
+                        $this->values()->save($value);
+                    }
                 }
             }
         }
         if ($changed) {
-            $this->save();
             $this->attrValues = null;
             $this->refresh();
         }
