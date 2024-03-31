@@ -15,12 +15,12 @@ use OpenApi\Attributes as OA;
             property: 'lastLoginFacilityId', type: 'string', format: 'uuid', example: 'UUID', nullable: true
         ),
         new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
-    ]
+    ],
 )] /**
  * @method __construct(User $resource)
  * @mixin User
  */
-class UserResource extends AbstractJsonResource
+class UserResource extends AbstractOpenApiResource
 {
     protected static function getMappedFields(): array
     {

@@ -4,8 +4,9 @@ namespace App\Utils\DatabaseMigrationHelper;
 
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+
+// use Illuminate\Support\Facades\DB;
+// use Illuminate\Support\Facades\Schema;
 
 final class DatabaseMigrationHelper
 {

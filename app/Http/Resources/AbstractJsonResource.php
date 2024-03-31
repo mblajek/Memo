@@ -34,12 +34,15 @@ abstract class AbstractJsonResource extends JsonResource
             if (array_is_list($mappedFields)) {
                 $mappedFields = array_fill_keys($mappedFields, true);
             }
+            $mappedFields += array_fill_keys(['createdAt', 'updatedAt', 'createdBy', 'updatedBy'], true);
             self::$classMappedFields[static::class] = $mappedFields;
         }
         $result = [];
         foreach (self::$classMappedFields[static::class] as $propertyName => $mapping) {
             $property = null;
-            if ($mapping === true) {
+            if ($mapping === null) {
+                continue;
+            } elseif ($mapping === true) {
                 $property = $this->{Str::snake($propertyName)};
             } elseif ($mapping === false) {
                 $property = $this->{$propertyName};

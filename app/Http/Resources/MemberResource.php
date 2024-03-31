@@ -15,12 +15,13 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: false),
         new OA\Property(property: 'isFacilityStaff', type: 'bool', example: false),
         new OA\Property(property: 'isFacilityClient', type: 'bool', example: false),
-    ]
+    ],
+    allOf: [new OA\Schema(ref: '#/components/schemas/AbstractJsonResource')],
 )] /**
  * @method __construct(Facility $resource)
  * @mixin Member
  */
-class MemberResource extends AbstractJsonResource
+class MemberResource extends AbstractOpenApiResource
 {
     protected static function getMappedFields(): array
     {

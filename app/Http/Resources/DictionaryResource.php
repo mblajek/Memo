@@ -18,12 +18,13 @@ use OpenApi\Attributes as OA;
             ref: '#/components/schemas/PositionResource'
         )
         ),
-    ]
+    ],
+    allOf: [new OA\Schema(ref: '#/components/schemas/AbstractJsonResource')],
 )] /**
  * @method __construct(Dictionary $resource)
  * @mixin Dictionary
  */
-class DictionaryResource extends AbstractJsonResource
+class DictionaryResource extends AbstractOpenApiResource
 {
     protected function withAttrValues(): bool
     {
