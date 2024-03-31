@@ -35,16 +35,20 @@ return new class extends Migration {
 
         $notificationMethodDictionary = '99e5b807-933d-4fd7-b2d9-3a5350b83cab';
 
+        // rename caregiver to adult
         DB::table('positions')->where('id', $clientTypeAdult)->update(['name' => 'adult']);
+        // extendable gender dictionary
         DB::table('dictionaries')->where('id', 'c21c1557-4617-42ae-ad20-12f8f89fb12b')
             ->update(['is_extendable' => true]);
 
+        // delete global non-fixed attributes values and attributes and move default order of existing
         DB::table('values')->whereIn('attribute_id', $attributesToDelete)->delete();
         DB::table('attributes')->whereIn('id', $attributesToDelete)->delete();
         DB::statement(
             "update `attributes` set `default_order` = `default_order` + 5 where `table` = 'clients'"
             . " and `default_order` > 4 order by `default_order` desc"
         );
+        // notification method dictionary
         DB::table('dictionaries')->upsert([
             [
                 'id' => $notificationMethodDictionary,
@@ -71,6 +75,8 @@ return new class extends Migration {
                 'updated_at' => $date,
             ],
         ], 'id');
+        // fixed attributes: contact_email, contact_phone, address_street_number, address_postal_code, address_city
+        // contact_start_at, contact_end_at, documents_links, notification_methods
         DB::table('attributes')->upsert(
             array_map(fn(array $data) => $data + [
                     'facility_id' => null,
@@ -174,7 +180,6 @@ return new class extends Migration {
             ]),
             'id'
         );
-
         Schema::table('clients', function (Blueprint $table) {
             DMH::uuid($table, 'type_dict_id')->nullable();
             $table->string('contact_email')->nullable();
@@ -187,6 +192,7 @@ return new class extends Migration {
             // missing
             $table->foreign('gender_dict_id')->references('id')->on('positions');
         });
+        // move client.type_dict_id from multi=false to multi=null attribute
         foreach (DB::table('values')->where('attribute_id', $clientTypeAttribute)->get() as $value) {
             DB::table('clients')->where('id', $value->object_id)->update(['type_dict_id' => $value->ref_dict_id]);
         }
@@ -198,7 +204,7 @@ return new class extends Migration {
         DB::table('attributes')->where('id', $clientTypeAttribute)
             ->update(['is_multi_value' => null, 'name' => 'type', 'api_name' => 'type_dict_id']);
         DB::table('values')->where('attribute_id', $clientTypeAttribute)->delete();
-
+        // remove global meeting types and categories other than "other"
         foreach (
             DB::table('positions')->where('dictionary_id', $meetingCategoryDictionary)
                 ->where('is_fixed', 0)->whereNull('facility_id')->get() as $meetingCategory

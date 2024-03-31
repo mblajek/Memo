@@ -10,25 +10,27 @@ return new class extends Migration {
 
     public function up(): void
     {
+        //unique default_order on attributes
         DB::table('attributes')->where('id', '8111626d-130c-454d-b0c0-9fda9ab9917a')->update(['default_order' => 2]);
         DB::table('attributes')->where('id', 'e443e2c2-82fc-41d3-8fda-fe374e5329d3')->update(['default_order' => 3]);
         Schema::table('attributes', function (Blueprint $table) {
             $table->unique(['table', 'api_name']);
             $table->unique(['table', 'default_order']);
         });
-        $this->add('attributes', true);
-        $this->add('clients', true);
-        $this->add('dictionaries', false);
-        $this->add('facilities', true);
-        $this->add('grants', false);
-        $this->add('meeting_attendants', true);
-        $this->add('meeting_resources', true);
-        $this->add('members', true);
-        $this->add('positions', false);
-        $this->add('staff_members', true);
-        $this->add('timetables', true);
-        $this->add('users', false);
-        $this->add('values', false);
+        // missing created_by and updated_by
+        $this->addCratedUpdatedBy('attributes', true);
+        $this->addCratedUpdatedBy('clients', true);
+        $this->addCratedUpdatedBy('dictionaries', false);
+        $this->addCratedUpdatedBy('facilities', true);
+        $this->addCratedUpdatedBy('grants', false);
+        $this->addCratedUpdatedBy('meeting_attendants', true);
+        $this->addCratedUpdatedBy('meeting_resources', true);
+        $this->addCratedUpdatedBy('members', true);
+        $this->addCratedUpdatedBy('positions', false);
+        $this->addCratedUpdatedBy('staff_members', true);
+        $this->addCratedUpdatedBy('timetables', true);
+        $this->addCratedUpdatedBy('users', false);
+        $this->addCratedUpdatedBy('values', false);
     }
 
     /**
@@ -36,19 +38,19 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        $this->drop('values', false);
-        $this->drop('users', false);
-        $this->drop('timetables', true);
-        $this->drop('staff_members', true);
-        $this->drop('positions', false,);
-        $this->drop('members', true);
-        $this->drop('meeting_resources', true);
-        $this->drop('meeting_attendants', true);
-        $this->drop('grants', false);
-        $this->drop('facilities', true);
-        $this->drop('dictionaries', false);
-        $this->drop('clients', true);
-        $this->drop('attributes', true);
+        $this->dropCreatedUpdatedBy('values', false);
+        $this->dropCreatedUpdatedBy('users', false);
+        $this->dropCreatedUpdatedBy('timetables', true);
+        $this->dropCreatedUpdatedBy('staff_members', true);
+        $this->dropCreatedUpdatedBy('positions', false,);
+        $this->dropCreatedUpdatedBy('members', true);
+        $this->dropCreatedUpdatedBy('meeting_resources', true);
+        $this->dropCreatedUpdatedBy('meeting_attendants', true);
+        $this->dropCreatedUpdatedBy('grants', false);
+        $this->dropCreatedUpdatedBy('facilities', true);
+        $this->dropCreatedUpdatedBy('dictionaries', false);
+        $this->dropCreatedUpdatedBy('clients', true);
+        $this->dropCreatedUpdatedBy('attributes', true);
 
         Schema::table('attributes', function (Blueprint $table) {
             $table->dropUnique(['table', 'default_order']);
@@ -56,7 +58,7 @@ return new class extends Migration {
         });
     }
 
-    private function add(string $table, bool $createdBy): void
+    private function addCratedUpdatedBy(string $table, bool $createdBy): void
     {
         if ($createdBy) {
             Schema::table($table, function (Blueprint $table) {
@@ -78,7 +80,7 @@ return new class extends Migration {
         });
     }
 
-    private function drop(string $table, bool $createdBy): void
+    private function dropCreatedUpdatedBy(string $table, bool $createdBy): void
     {
         if ($createdBy) {
             Schema::table($table, function (Blueprint $table) {
