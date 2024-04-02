@@ -189,7 +189,7 @@ export class Position {
     this.label = getNameTranslation(t, resource.name, (n) => {
       if (!resource.isFixed) {
         console.error(`Translatable non-fixed position (${resource.id}: ${n})`);
-        return `???.${n}`;
+        return `???.${dictionaryTranslatableName || "?"}.${n}`;
       }
       if (!dictionaryTranslatableName) {
         console.error(`Translatable position (${resource.id}: ${n}) inside a dictionary with an untranslatable name.`);
