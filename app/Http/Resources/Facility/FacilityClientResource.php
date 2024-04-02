@@ -2,19 +2,19 @@
 
 namespace App\Http\Resources\Facility;
 
-use App\Http\Resources\AbstractJsonResource;
+use App\Http\Resources\AbstractOpenApiResource;
 use App\Models\User;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
     schema: 'FacilityClientResource',
     properties: [
-    ]
+    ],
 )] /**
  * @method __construct(User $resource)
  * @mixin User
  */
-class FacilityClientResource extends AbstractJsonResource
+class FacilityClientResource extends AbstractOpenApiResource
 {
     protected function withAttrValues(): bool
     {
@@ -24,8 +24,6 @@ class FacilityClientResource extends AbstractJsonResource
     protected static function getMappedFields(): array
     {
         return [
-            // todo: get from attributes
-            'genderDictId' => true,
         ];
     }
 }

@@ -4,11 +4,11 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
 use App\Models\Traits\HasResourceValidator;
+use App\Models\Traits\HasValidator;
 use App\Rules\DataTypeRule;
 use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -40,7 +40,7 @@ class User extends Authenticatable
     use Notifiable;
     use HasResourceValidator;
     use SerializeDate;
-    use HasCreatedBy;
+    use HasValidator;
 
     protected $table = 'users';
 
@@ -86,6 +86,13 @@ class User extends Authenticatable
         'has_email_verified',
         'has_global_admin',
     ];
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'name' => Valid::trimmed(),
+        };
+    }
 
     public static function getPasswordRules(): Password
     {

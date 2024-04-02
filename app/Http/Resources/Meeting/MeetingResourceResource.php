@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Meeting;
 
-use App\Http\Resources\AbstractJsonResource;
+use App\Http\Resources\AbstractOpenApiResource;
 use App\Models\MeetingResource;
 use OpenApi\Attributes as OA;
 
@@ -15,7 +15,7 @@ use OpenApi\Attributes as OA;
  * @method __construct(MeetingResource $resource)
  * @mixin MeetingResource
  */
-class MeetingResourceResource extends AbstractJsonResource
+class MeetingResourceResource extends AbstractOpenApiResource
 {
     protected static function getMappedFields(): array
     {
