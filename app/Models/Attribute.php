@@ -120,6 +120,6 @@ class Attribute extends Model
     public function getMultiValidator(): string|array
     {
         $nullable = $this->requirement_level->isNullable();
-        return Valid::list(sometimes: $nullable, nullable: $nullable, min: $nullable ? 1 : 0);
+        return Valid::list(sometimes: $nullable, nullable: $nullable, min: $nullable ? 0 : 1);
     }
 }
