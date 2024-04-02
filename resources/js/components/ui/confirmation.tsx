@@ -1,5 +1,5 @@
 import {JSX} from "solid-js";
-import {useLangFunc} from "../utils";
+import {cx, useLangFunc} from "../utils";
 import {registerGlobalPageElement} from "../utils/GlobalPageElements";
 import {focusThis} from "../utils/focus_this";
 import {Button} from "./Button";
@@ -10,6 +10,8 @@ interface ConfirmParams {
   readonly body?: JSX.Element;
   readonly confirmText?: string;
   readonly cancelText?: string;
+  /** Whether the confirm button is primary. Default: true. */
+  readonly confirmPrimary?: boolean;
 }
 
 interface ConfirmData extends ConfirmParams {
@@ -43,7 +45,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
             </Button>
             <Button
               ref={(el) => focusThis(el)}
-              class="flex-grow basis-0 primary"
+              class={cx("flex-grow basis-0", data().confirmPrimary ?? true ? "primary" : "secondary")}
               onClick={() => {
                 data().resolve(true);
                 args.clearParams();

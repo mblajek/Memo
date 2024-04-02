@@ -31,6 +31,17 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
   }));
   const membersUpdater = useMembersUpdater();
 
+  function invalidateData() {
+    // Invalidate the user even after partial success (e.g. only user edit succeeded), or when there were
+    // no member mutations.
+    invalidate.users();
+    // Invalidate facility admins.
+    invalidate.facilities();
+    if (user()!.id === statusQuery.data?.user.id) {
+      invalidate.userStatusAndFacilityPermissions();
+    }
+  }
+
   async function updateUser(values: UserFormType, ctx: SubmitContext<UserFormType>) {
     const oldUser = user()!;
     if (oldUser.id === statusQuery.data?.user.id) {
@@ -77,21 +88,19 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
     // them fails, otherwise invalidation might happen before the final changes.
     try {
       await Promise.allSettled(membersUpdater.getUpdatePromises(oldUser, values.members));
+    } catch (e) {
+      invalidateData();
+      throw e;
+    }
+    // eslint-disable-next-line solid/reactivity
+    return () => {
       toastSuccess(t("forms.user_edit.success"));
       props.onSuccess?.();
-    } finally {
-      // Invalidate the user even after partial success (e.g. only user edit succeeded), or when there were
-      // no member mutations.
       // Important: Invalidation should happen after calling onSuccess which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
       // but also causes problems apparently.
-      invalidate.users();
-      // Invalidate facility admins.
-      invalidate.facilities();
-      if (oldUser.id === statusQuery.data?.user.id) {
-        invalidate.userStatusAndFacilityPermissions();
-      }
-    }
+      invalidateData();
+    };
   }
 
   const initialValues = () => {

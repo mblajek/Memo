@@ -1,4 +1,12 @@
-import {AssignableErrors, Form, FormConfigWithoutTransformFn, KnownHelpers, Obj, Paths} from "@felte/core";
+import {
+  AssignableErrors,
+  Form,
+  FormConfigWithoutTransformFn,
+  KnownHelpers,
+  Obj,
+  Paths,
+  SubmitContext,
+} from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
 import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
@@ -39,7 +47,7 @@ const FormContext = createContext<FormContextValue>(undefined, {
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
-type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "onError" | "children"> &
+export type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "onError" | "children"> &
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
     readonly id: string;
@@ -50,6 +58,12 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     readonly translationsModel?: string;
     readonly children: ChildrenOrFunc<[FormType<T>, FormContextValue<T>]>;
     readonly disabled?: boolean;
+    /**
+     * The submit handler. It can return the onSuccess function that notifies about a successful submission.
+     * The notification (e.g. navigation, modal close etc) should not be done from the onSubmit directly because
+     * the form is still in submitting state at that time.
+     */
+    readonly onSubmit?: (values: T, context: SubmitContext<T>) => Promise<() => void | Promise<void>> | unknown;
     readonly onFormCreated?: (form: FormType<T>) => void;
     /** Whether closing the browser tab should display a warning if the form is dirty. Default: true. */
     readonly preventPageLeave?: boolean;
@@ -113,16 +127,28 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     ...createFormOptions,
     // eslint-disable-next-line solid/reactivity
     extend: [validator({schema: props.schema}), reporter],
-    onSubmit: (values, ctx) =>
+    onSubmit: async (values, ctx) => {
       // Remove the unknown validation field from values so that it doesn't get submitted.
-      createFormOptions.onSubmit?.(
+      const result = await createFormOptions.onSubmit?.(
         {
           // Cast the type. It is not true but it is a hack we use to allow the form manipulate the transformed data.
           ...(recursiveUnwrapFormValues(values) as T),
           [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined,
         },
         ctx,
-      ),
+      );
+      // Submit success, so make the form pristine.
+      form.setInitialValues(values);
+      form.reset();
+      form.setIsSubmitting(false);
+      return result;
+    },
+    onSuccess: async (response, ctx) => {
+      if (typeof response === "function") {
+        await response();
+      }
+      await createFormOptions.onSuccess?.(response, ctx);
+    },
     onError: (errorResp, ctx) => {
       createFormOptions.onError?.(errorResp, ctx);
       if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
@@ -209,6 +235,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
             body: t("form_page_leave_confirmation.body"),
             cancelText: t("form_page_leave_confirmation.cancel"),
             confirmText: t("form_page_leave_confirmation.confirm"),
+            confirmPrimary: false,
           })
         )
           e.retry(true);
@@ -257,11 +284,13 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
 /**
  * Generic form context getter. When type is passed, context is properly typed.
  *
- * Usefull in forms with deeply nested components and dependant logic
+ * Useful in forms with deeply nested components and dependant logic.
  */
 export const useFormContext = <T extends Obj = Obj>() => {
   const context = useFormContextIfInForm<T>();
-  if (!context) throw new Error("Not in FelteForm");
+  if (!context) {
+    throw new Error("Not in FelteForm");
+  }
   return context;
 };
 

@@ -1,7 +1,7 @@
 import {LangFunc, NON_NULLABLE} from "components/utils";
 import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {Attributable, getAttributeModel, makeAttributable, readAttribute} from "./attributable";
-import {Dictionaries, Dictionary} from "./dictionaries";
+import {Dictionaries, Dictionary, dictionaryNameTranslationKey} from "./dictionaries";
 import {
   AttributeModel,
   AttributeResource,
@@ -123,18 +123,21 @@ export class Attribute<T = unknown> {
       resource.name,
       resource.model,
       isNameTranslatable(resource.name),
-      getNameTranslation(
-        t,
-        resource.name,
-        (n) =>
-          [
-            `attributes.attributes.${resource.model}.${n}`,
-            `attributes.attributes.generic.${n}`,
-            resource.isFixed ? `models.${resource.model}.${resource.apiName}` : undefined,
-            `models.generic.${resource.apiName}`,
-          ].filter(NON_NULLABLE),
-        resource.dictionaryId ? {defaultValue: dictionaries.get(resource.dictionaryId).label} : undefined,
-      ),
+      getNameTranslation(t, resource.name, (n) => {
+        if (!resource.isFixed) {
+          console.error(`Translatable non-fixed attribute ${resource.model}.${n}`);
+          return `???.${n}`;
+        }
+        return [
+          `attributes.attributes.${resource.model}.${n}`,
+          `attributes.attributes.generic.${n}`,
+          `models.${resource.model}.${resource.apiName}`,
+          `models.generic.${resource.apiName}`,
+          resource.dictionaryId
+            ? dictionaryNameTranslationKey(dictionaries.get(resource.dictionaryId).name)
+            : undefined,
+        ].filter(NON_NULLABLE);
+      }),
       resource.apiName,
       resource.type,
       resource.typeModel ? undefined : (resource.type as SimpleAttributeType | DictAttributeType),
