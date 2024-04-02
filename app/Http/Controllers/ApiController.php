@@ -19,7 +19,6 @@ use OpenApi\Attributes as OA;
 #[OA\Info(version: '0.2.0', title: 'Memo API')]
 abstract class ApiController extends Controller
 {
-    private readonly PermissionObject $permissionObject;
     private readonly array $requestIn;
 
     public function __construct(private readonly Request $request)

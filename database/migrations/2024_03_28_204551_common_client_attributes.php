@@ -174,7 +174,7 @@ return new class extends Migration {
                     'type' => 'dict',
                     'dictionary_id' => $notificationMethodDictionary,
                     'default_order' => 13,
-                    'is_multi_value' => false,
+                    'is_multi_value' => true,
                     'requirement_level' => 'optional',
                 ],
             ]),
@@ -212,7 +212,7 @@ return new class extends Migration {
             DB::table('values')->where('object_id', $meetingCategory->id)
                 ->orWhere('ref_dict_id', $meetingCategory->id)->delete();
             DB::statement(
-                "update `meetings` set `notes` = trim(concat(?, char(10), `notes`)),"
+                "update `meetings` set `notes` = trim(concat(?, char(10), coalesce(`notes`, ''))),"
                 . " `category_dict_id` = ? where category_dict_id = ?",
                 [ltrim($meetingCategory->name, '+'), $meetingCategoryOther, $meetingCategory->id],
             );
@@ -224,7 +224,7 @@ return new class extends Migration {
             DB::table('values')->where('object_id', $meetingType->id)
                 ->orWhere('ref_dict_id', $meetingType->id)->delete();
             DB::statement(
-                "update `meetings` set `notes` = trim(concat(?, char(10), `notes`)),"
+                "update `meetings` set `notes` = trim(concat(?, char(10), coalesce(`notes`, ''))),"
                 . " `type_dict_id` = ? where type_dict_id = ?",
                 [ltrim($meetingType->name, '+'), $meetingTypeOther, $meetingType->id],
             );
@@ -234,6 +234,18 @@ return new class extends Migration {
             ->where('is_fixed', 0)->whereNull('facility_id')->delete();
         DB::table('positions')->where('dictionary_id', $meetingTypeDictionary)
             ->where('is_fixed', 0)->whereNull('facility_id')->delete();
+
+        DB::table('attributes')->whereIn('id', [
+            '0e56d086-5bf7-46c0-8359-38e9edf8c627',//client.gender
+            '7a678df3-c9b1-4133-9520-d388c823a186',//client.birth_date
+            'a8f3fc00-cda2-4ce0-8bd4-12c223944191',//client.notes
+            'b9685bc6-ab47-42bd-99e8-68badf0c1291',//client.type
+        ])->update(['is_fixed' => true]);
+
+        Schema::table('users', function (Blueprint $table) {
+            DMH::uuid($table, 'managed_by_facility_id')->nullable();
+            $table->foreign('managed_by_facility_id')->references('id')->on('facilities');
+        });
     }
 
     /**
