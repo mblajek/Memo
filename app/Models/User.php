@@ -25,6 +25,7 @@ use Illuminate\Validation\Rules\Password;
  * @property ?string password
  * @property ?string remember_token
  * @property ?string $last_login_facility_id
+ * @property ?string $managed_by_facility_id
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $password_expire_at
  * @property-read bool $has_password
@@ -56,6 +57,7 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'last_login_facility_id',
+        'managed_by_facility_id',
         'global_admin_grant_id',
         'password_expire_at',
     ];
@@ -196,10 +198,5 @@ class User extends Authenticatable
     public function members(): HasMany
     {
         return $this->hasMany(Member::class);
-    }
-
-    public function lastLoginFacility(): BelongsTo
-    {
-        return $this->belongsTo(Facility::class);
     }
 }

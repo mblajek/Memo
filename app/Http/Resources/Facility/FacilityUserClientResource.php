@@ -16,6 +16,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
         new OA\Property(property: 'hasPassword', type: 'bool', example: 'true'),
         new OA\Property(property: 'hasEmailVerified', type: 'bool', example: 'false'),
+        new OA\Property(property: 'managedByFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'client', ref: '#/components/schemas/FacilityClientResource', type: 'ref'),
     ],
     allOf: [new OA\Schema(ref: '#/components/schemas/AbstractJsonResource')],
@@ -35,6 +36,7 @@ class FacilityUserClientResource extends AbstractOpenApiResource
             'passwordExpireAt' => true,
             'hasPassword' => fn(self $user) => ($user->password !== null),
             'hasEmailVerified' => fn(self $user) => ($user->email_verified_at !== null),
+            'managedByFacilityId' => true,
             'client' => fn(self $user) => FacilityClientResource::make($user->client),
         ];
     }

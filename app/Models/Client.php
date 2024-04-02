@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Models\Attributes\HasValues;
 use App\Models\QueryBuilders\ClientBuilder;
 use App\Models\Traits\BaseModel;
@@ -27,9 +28,8 @@ class Client extends Model
 
     protected static function fieldValidator(string $field): string|array
     {
-        return match ($field) {
-            'notes' => Valid::text(sometimes: true, nullable: true),
-        };
+        // now client has no fields
+        FatalExceptionFactory::unexpected()->throw();
     }
 
     public function member(): HasOne
