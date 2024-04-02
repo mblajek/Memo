@@ -21,6 +21,14 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
   }));
   const membersUpdater = useMembersUpdater();
 
+  function invalidateData() {
+    // Invalidate the user even after partial success (e.g. only user creation succeeded),
+    // or when there were no member mutations.
+    invalidate.users();
+    // Invalidate facility admins.
+    invalidate.facilities();
+  }
+
   async function updateUser(values: UserFormType) {
     // First create the user fields (without the members).
     const {data} = await userMutation.mutateAsync({
@@ -47,15 +55,16 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
     // them fails, otherwise invalidation might happen before the final changes.
     try {
       await Promise.allSettled(membersUpdater.getCreatePromises(data.data.id, values.members));
+    } catch (e) {
+      invalidateData();
+      throw e;
+    }
+    // eslint-disable-next-line solid/reactivity
+    return () => {
       toastSuccess(t("forms.user_create.success"));
       props.onSuccess?.();
-    } finally {
-      // Invalidate the user even after partial success (e.g. only user creation succeeded),
-      // or when there were no member mutations.
-      invalidate.users();
-      // Invalidate facility admins.
-      invalidate.facilities();
-    }
+      invalidateData();
+    };
   }
 
   const initialValues = () =>

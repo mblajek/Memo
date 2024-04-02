@@ -1,4 +1,3 @@
-import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
@@ -37,25 +36,26 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
   const statusQuery = createQuery(User.statusQueryOptions);
   const mutation = createMutation(() => ({
     mutationFn: User.changePassword,
-    onSuccess() {
-      invalidate.userStatusAndFacilityPermissions();
+    meta: {isFormSubmit: true},
+  }));
+
+  async function changePassword(values: Output) {
+    await mutation.mutateAsync(values);
+    // eslint-disable-next-line solid/reactivity
+    return () => {
       // For better integration with password managers.
       // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
       history.replaceState({passwordChanged: true}, "");
       toastSuccess(t("forms.password_change.success"));
       props.onSuccess?.();
-    },
-    meta: {isFormSubmit: true},
-  }));
-
-  const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
-    await mutation.mutateAsync(values);
-  };
+      invalidate.userStatusAndFacilityPermissions();
+    };
+  }
 
   return (
     <FelteForm
       id="password_change"
-      onSubmit={onSubmit}
+      onSubmit={changePassword}
       schema={getSchema()}
       initialValues={getInitialValues()}
       class="flex flex-col gap-2"

@@ -33,21 +33,24 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
       return;
     }
     const ids = (await meetingMutation.mutateAsync({meetingId: props.startMeeting.id, request: params})).data.data.ids;
-    if (props.showToast ?? true) {
-      toastSuccess(t("forms.meeting_series_create.success"));
-    }
-    props.onSuccess?.(
-      {
-        ...props.startMeeting,
-        id: ids[0]!,
-        date: params.dates[0]!,
-      },
-      ids.slice(1),
-    );
-    // Important: Invalidation should happen after calling onSuccess which typically closes the form.
-    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
-    // but also causes problems apparently.
-    invalidate.facility.meetings();
+    // eslint-disable-next-line solid/reactivity
+    return () => {
+      if (props.showToast ?? true) {
+        toastSuccess(t("forms.meeting_series_create.success"));
+      }
+      props.onSuccess?.(
+        {
+          ...props.startMeeting,
+          id: ids[0]!,
+          date: params.dates[0]!,
+        },
+        ids.slice(1),
+      );
+      // Important: Invalidation should happen after calling onSuccess which typically closes the form.
+      // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+      // but also causes problems apparently.
+      invalidate.facility.meetings();
+    };
   }
 
   const initialValues = () =>
