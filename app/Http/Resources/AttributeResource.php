@@ -22,21 +22,22 @@ use Illuminate\Support\Str;
             example: 'int'
         ),
         new OA\Property(property: 'dictionaryId', type: 'string', format: 'uuid', example: 'UUID', nullable: true),
+        new OA\Property(property: 'isFixed', type: 'bool', example: false),
         new OA\Property(property: 'defaultOrder', type: 'int', example: 1),
         new OA\Property(property: 'isMultiValue', type: 'bool', example: false, nullable: true),
-        new OA\Property(property: 'isFixed', type: 'bool', example: false),
         new OA\Property(
             property: 'requirementLevel',
             type: 'string',
             enum: AttributeRequirementLevel::class,
             example: 'required'
         ),
-    ]
+    ],
+    allOf: [new OA\Schema(ref: '#/components/schemas/AbstractJsonResource')],
 )] /**
  * @method __construct(Attribute $resource)
  * @mixin Attribute
  */
-class AttributeResource extends AbstractJsonResource
+class AttributeResource extends AbstractOpenApiResource
 {
     protected static function getMappedFields(): array
     {
@@ -44,7 +45,8 @@ class AttributeResource extends AbstractJsonResource
             'id' => true,
             'facilityId' => true,
             'model' => fn(self $attribute) => lcfirst($attribute->table->name),
-            'name' => fn(self $attribute) => str_starts_with($attribute->name, '+') ? $attribute->name : Str::camel($attribute->name),
+            'name' => fn(self $attribute) => str_starts_with($attribute->name, '+')
+                ? $attribute->name : Str::camel($attribute->name),
             'apiName' => fn(self $attribute) => Str::camel($attribute->api_name),
             'type' => fn(self $attribute) => lcfirst($attribute->type->tryGetTable()?->name ?? $attribute->type->value),
             'typeModel' => fn(self $attribute) => lcfirst($attribute->type->tryGetTable()?->name ?? '') ?: null,

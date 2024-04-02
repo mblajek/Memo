@@ -15,12 +15,12 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'isFixed', type: 'bool', example: true),
         new OA\Property(property: 'isDisabled', type: 'bool', example: false),
         new OA\Property(property: 'defaultOrder', type: 'int', example: 1),
-    ]
+    ],
 )] /**
  * @method __construct(Position $resource)
  * @mixin Position
  */
-class PositionResource extends AbstractJsonResource
+class PositionResource extends AbstractOpenApiResource
 {
     protected function withAttrValues(): bool
     {

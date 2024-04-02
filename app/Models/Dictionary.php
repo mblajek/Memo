@@ -2,15 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Attributes\HasValues;
 use App\Models\QueryBuilders\DictionaryBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasValues;
+use App\Models\Traits\HasValidator;
+use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Validation\Rule;
 
 /**
  * @property string name
+ * @property string facility_id
  * @property bool is_fixed
  * @property bool is_extendable
  * @property-read Collection $positions
@@ -19,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Dictionary extends Model
 {
     use BaseModel;
+    use HasValidator;
     use HasValues;
 
     protected $table = 'dictionaries';
@@ -28,7 +33,6 @@ class Dictionary extends Model
         'name',
         'is_fixed',
         'is_extendable',
-        'created_by',
     ];
 
     protected $casts = [
@@ -38,13 +42,17 @@ class Dictionary extends Model
         'is_extendable' => 'boolean',
     ];
 
-    public function positions(): HasMany
+    protected static function fieldValidator(string $field): string|array
     {
-        return $this->hasMany(Position::class);
+        return match ($field) {
+            'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
+            'name' => Valid::trimmed(),
+            'is_fixed', 'is_extendable' => Valid::bool(),
+        };
     }
 
-    public function getSortedPositions(): Collection
+    public function positions(): HasMany
     {
-        return $this->positions->sort(fn(Position $a, Position $b) => $a->default_order <=> $b->default_order);
+        return $this->hasMany(Position::class)->orderBy('positions.default_order');
     }
 }

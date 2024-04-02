@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\ValueBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -16,12 +15,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string string_value
  * @property ?int int_value
  * @property ?int datetime_value
+ * @property int default_order
  * @method static ValueBuilder query()
  */
 class Value extends Model
 {
     use BaseModel;
-    use HasCreatedBy;
 
     protected $table = 'values';
 
@@ -34,6 +33,7 @@ class Value extends Model
         'int_value',
         'datetime_value',
         'created_by',
+        'default_order',
     ];
 
     protected $casts = [
@@ -60,5 +60,10 @@ class Value extends Model
     public function getTypeColumnValue(): int|string|bool|null
     {
         return $this->getAttributeFromArray($this->getTypeColumn());
+    }
+
+    public function setTypeColumnValue(int|string|bool $value): void
+    {
+        $this->setAttribute($this->getTypeColumn(), $value);
     }
 }

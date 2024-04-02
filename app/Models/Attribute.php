@@ -8,11 +8,14 @@ use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\AttributeBuilder;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\AttributeUuidEnum;
+use App\Rules\Valid;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
 use BackedEnum;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rule;
 
 /**
  * @property ?string facility_id
@@ -30,12 +33,14 @@ use Illuminate\Database\Eloquent\Model;
 class Attribute extends Model
 {
     use BaseModel;
+    use HasValidator;
 
     protected $table = 'attributes';
 
     protected $fillable = [
         'facility_id',
         'table',
+        'name',
         'api_name',
         'type',
         'dictionary_id',
@@ -55,31 +60,40 @@ class Attribute extends Model
         'requirement_level' => AttributeRequirementLevel::class,
     ];
 
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
+            'model' => Valid::trimmed(
+                [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))]
+            ),
+            'name' => Valid::trimmed(),
+            'api_name' => Valid::trimmed(['regex:/^[a-z][A-Za-z0-9]+$/']),
+            'type' => Valid::trimmed([Rule::enum(AttributeType::class)]),
+            //todo: dictionary exists in facility; required (only) for type "dict"
+            'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')], nullable: true),
+            'default_order' => Valid::int(['min:1'], sometimes: true),
+            'is_multi_value', 'is_fixed' => Valid::bool(nullable: true),
+            'requirement_level' => Valid::trimmed([Rule::enum(AttributeRequirementLevel::class)]),
+        };
+    }
+
     private static ?array $all = null;
 
     public function getTqueryDataType(): TqDataTypeEnum|TqDictDef
     {
-        $nullable = $this->requirement_level->isNullable();
-        $type = match ($this->type) {
-            AttributeType::Bool => $nullable ? TqDataTypeEnum::bool_nullable : TqDataTypeEnum::bool,
-            AttributeType::Date => $nullable ? TqDataTypeEnum::date_nullable : TqDataTypeEnum::date,
-            AttributeType::Datetime => $nullable ? TqDataTypeEnum::datetime_nullable : TqDataTypeEnum::datetime,
-            AttributeType::Int => $nullable ? TqDataTypeEnum::int_nullable : TqDataTypeEnum::int,
-            AttributeType::String => $nullable ? TqDataTypeEnum::string_nullable : TqDataTypeEnum::string,
-            AttributeType::Users, AttributeType::Clients, AttributeType::Attributes => $nullable ?
-                TqDataTypeEnum::uuid_nullable : TqDataTypeEnum::uuid,
-            AttributeType::Dict => $nullable ? TqDataTypeEnum::dict_nullable : TqDataTypeEnum::dict,
-            AttributeType::Text => $nullable ? TqDataTypeEnum::text : TqDataTypeEnum::text_nullable,
-        };
-        return $type->isDict() ? (new TqDictDef($type, $this->dictionary_id)) : $type;
+        return $this->type->getTqueryDataType($this->requirement_level->isNullable(), $this->dictionary_id);
     }
 
-    public static function getAll(): array
+    public static function getAll(bool $keyByApiName = false): array
     {
-        return self::$all ?? (self::$all = self::query()->orderBy('default_order')->get()->keyBy('id')->all());
+        if (self::$all === null) {
+            self::$all = self::query()->orderBy('default_order')->get()->keyBy('id')->all();
+        }
+        return self::$all;
     }
 
-    /** @return list<string, self> */
+    /** @return array<non-falsy-string, self> */
     public static function getBy(
         null|Facility|string|true $facility = null,
         null|AttributeTable $table = null,
@@ -94,5 +108,18 @@ class Attribute extends Model
     public static function getById((AttributeUuidEnum&BackedEnum)|string $id): self
     {
         return Attribute::getAll()[is_string($id) ? $id : $id->value];
+    }
+
+    public function getSingleValidator(): string|array
+    {
+        $nullable = $this->requirement_level->isNullable();
+        $notMultiValue = ($this->is_multi_value !== true); // each of multi values is not null
+        return $this->type->getSingleValidator($nullable && $notMultiValue, $this->dictionary_id);
+    }
+
+    public function getMultiValidator(): string|array
+    {
+        $nullable = $this->requirement_level->isNullable();
+        return Valid::list(sometimes: $nullable, nullable: $nullable, min: $nullable ? 1 : 0);
     }
 }
