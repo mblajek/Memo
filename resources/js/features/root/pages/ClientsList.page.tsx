@@ -51,7 +51,7 @@ export default (() => {
           <div class="ml-2 flex gap-1">
             <A
               role="button"
-              class="secondary small flex flex-col justify-center"
+              class="primary small !px-2 flex flex-col justify-center"
               href={`/${activeFacility()!.url}/clients/create`}
             >
               <div>

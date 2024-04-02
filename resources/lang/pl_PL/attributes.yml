@@ -2,9 +2,19 @@
 attributes:
   generic:
     birthDate: "data urodzenia"
+    contactEmail: "adres e-mail"
+    contactPhone: "telefon"
+    addressStreetNumber: "adres: ulica i numer"
+    addressPostalCode: "adres: kod pocztowy"
+    addressCity: "adres: miasto"
+    documentsLinks: "linki do dokumentów"
 
   meetingResource.resource: "$t(models.meeting.resources)"
   dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
+
+  client:
+    contactStartAt: "kontakt rozpoczęty"
+    contactEndAt: "kontakt zakończony"
 
   position:
     # attributes of meetingType dictionary:

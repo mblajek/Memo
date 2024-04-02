@@ -28,7 +28,8 @@ export function recursiveUnwrapFormValues(formValues: unknown): unknown {
 
 /** Returns an array with each element wrapped, unless already done. */
 export function wrapArrayOfPrimitiveValues(values: unknown[]) {
-  return values.every((value) => value && typeof value === "object" && Object.hasOwn(value, WRAPPED_FIELD_KEY))
-    ? values
-    : values.map((value) => ({[WRAPPED_FIELD_KEY]: value}));
+  const needsWrapping = !values.every(
+    (value) => value && typeof value === "object" && Object.hasOwn(value, WRAPPED_FIELD_KEY),
+  );
+  return needsWrapping ? values.map((value) => ({[WRAPPED_FIELD_KEY]: value})) : undefined;
 }
