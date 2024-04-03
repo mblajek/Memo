@@ -230,13 +230,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       if (shouldConfirmPageLeave(e)) {
         e.preventDefault();
         if (
-          await confirmation.confirm({
+          !confirmation.isShown() &&
+          (await confirmation.confirm({
             title: t("form_page_leave_confirmation.title"),
             body: t("form_page_leave_confirmation.body"),
             cancelText: t("form_page_leave_confirmation.cancel"),
             confirmText: t("form_page_leave_confirmation.confirm"),
             confirmPrimary: false,
-          })
+          }))
         )
           e.retry(true);
       }

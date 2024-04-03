@@ -61,11 +61,12 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
 });
 
 export function createConfirmation() {
-  const {show} = createConfirmationInternal();
+  const {show, getValue} = createConfirmationInternal();
   return {
     confirm: (params: ConfirmParams | string) =>
       new Promise<boolean | undefined>((resolve) =>
         show({...(typeof params === "string" ? {title: params} : params), resolve}),
       ),
+    isShown: () => getValue() !== undefined,
   };
 }
