@@ -18,7 +18,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
-import {TableColumnsSet} from "data-access/memo-api/tquery/table_columns";
+import {ScrollableCell, TableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
@@ -155,14 +155,14 @@ export function useMeetingTableColumns() {
         extraDataColumns: ["staff", "clients", "isRemote"],
         columnDef: {
           cell: cellFunc<string, TQMeetingResource>((props) => (
-            <Scrollable>
+            <ScrollableCell>
               <ShowCellVal v={props.v}>
                 <MeetingStatusTags
                   meeting={props.row as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
                   showPlannedTag
                 />
               </ShowCellVal>
-            </Scrollable>
+            </ScrollableCell>
           )),
         },
         // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
@@ -172,7 +172,7 @@ export function useMeetingTableColumns() {
         name: "attendants",
         columnDef: {
           cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((props) => (
-            <Scrollable class="flex flex-col gap-1">
+            <ScrollableCell class="flex flex-col gap-1">
               <ShowCellVal v={props.v}>
                 {(v) => (
                   <>
@@ -187,7 +187,7 @@ export function useMeetingTableColumns() {
                   </>
                 )}
               </ShowCellVal>
-            </Scrollable>
+            </ScrollableCell>
           )),
         },
         metaParams: {textExportCell: attendantsTextExport},
@@ -205,9 +205,9 @@ export function useMeetingTableColumns() {
         extraDataColumns: ["staff"],
         columnDef: {
           cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
-            <Scrollable>
+            <ScrollableCell>
               <UserLinks type="staff" users={props.row.staff} />
-            </Scrollable>
+            </ScrollableCell>
           )),
           size: 250,
         },
@@ -227,9 +227,9 @@ export function useMeetingTableColumns() {
         extraDataColumns: ["clients"],
         columnDef: {
           cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
-            <Scrollable>
+            <ScrollableCell>
               <UserLinks type="clients" users={props.row.clients} />
-            </Scrollable>
+            </ScrollableCell>
           )),
           size: 250,
         },
@@ -249,9 +249,9 @@ export function useMeetingTableColumns() {
         name: "notes",
         columnDef: {
           cell: cellFunc<string, TQMeetingResource>((props) => (
-            <Scrollable>
+            <ScrollableCell>
               <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
-            </Scrollable>
+            </ScrollableCell>
           )),
         },
       },
@@ -378,27 +378,6 @@ export function useMeetingTableColumns() {
     },
   });
 }
-
-const Scrollable: ParentComponent<htmlAttributes.div> = (props) => (
-  <PaddedCell class="overflow-auto">
-    <div
-      {...htmlAttributes.merge(props, {
-        class: "wrapTextAnywhere max-h-20",
-        style: {
-          // Whatever this style means, it seems to work, i.e.:
-          // - when there is little text, the row is allowed to shrink,
-          // - when there is more text, the row grows to accommodate it,
-          // - when there is a lot of text, the cell gets a scrollbar and the row doesn't grow,
-          // - when the row is already higher because of other cells, the scrolling area grows to fit
-          //   (possibly to the point when it no longer scrolls).
-          "min-height": "max-content",
-        },
-      })}
-    >
-      {props.children}
-    </div>
-  </PaddedCell>
-);
 
 interface UserLinksProps {
   readonly type: FacilityUserType;
