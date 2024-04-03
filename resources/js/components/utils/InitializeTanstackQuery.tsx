@@ -8,6 +8,7 @@ import {
   type QueryMeta,
 } from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
+import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config";
 import {translateError} from "data-access/memo-api/error_util";
 import {System, User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -109,13 +110,26 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             refetchOnReconnect: true,
             refetchOnMount: true,
             refetchOnWindowFocus: false,
-            // When opening a page, reload data if it's older than a couple of seconds.
-            staleTime: 15 * 1000,
-            retry: (failureCount, error) =>
-              failureCount <= 2 &&
-              isAxiosError<Api.ErrorResponse>(error) &&
-              error.response?.status === 500 &&
-              error.response.data.errors.some((e) => e.code === "exception.unexpected"),
+            // When opening a page, reload data if it's older than half a minute.
+            staleTime: 30 * 1000,
+            retry: (failureCount, error) => {
+              const isUnexpected =
+                isAxiosError<Api.ErrorResponse>(error) &&
+                error.response?.status === 500 &&
+                error.response.data.errors.some((e) => e.code === "exception.unexpected");
+              if (isUnexpected) {
+                const original = getOriginalResponseForUnexpectedError(error.response!.data);
+                if (original?.contentType?.match(/^text\b/)) {
+                  toastError(() => (
+                    <div class="flex flex-col">
+                      <div class="text-lg font-bold">Internal Server Error</div>
+                      <div>{String(original.data)}</div>
+                    </div>
+                  ));
+                }
+              }
+              return failureCount <= 2 && isUnexpected;
+            },
             retryDelay: 500,
           },
         },
