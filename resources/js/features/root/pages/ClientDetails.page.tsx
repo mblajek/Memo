@@ -60,7 +60,8 @@ export default (() => {
                 }}
               />
               <FelteForm
-                id="attributes"
+                id="client_edit"
+                translationsFormNames={["client_edit", "client", "facility_user"]}
                 class="flex flex-col items-stretch gap-3"
                 style={{width: "min(600px, 100%)"}}
                 schema={z.object({client: ATTRIBUTES_SCHEMA})}
