@@ -62,17 +62,10 @@ class ClientController extends ApiController
     // todo: extract into service, openApi
     public function post(): JsonResponse
     {
-        $clientValidator = Client::getInsertValidator([], true);
-        $userData = $this->validate(
-            User::getInsertValidator([
-                'name',
-            ])
-            + ['client' => Valid::array()]
-            + array_combine(
-                array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
-                $clientValidator,
-            )
-        );
+        $userValidator = User::getInsertValidator(['name']);
+        $clientValidator = Client::getInsertValidator([], attributesFacility: true);
+        $userData = $this->validate($userValidator + $this->wrapClientValidator($clientValidator));
+
         $clientData = $userData['client'];
         $user = new User(['managed_by_facility_id' => $this->getFacilityOrFail()->id]);
         $user->fillOnly($userData, ['name']);
@@ -110,15 +103,8 @@ class ClientController extends ApiController
         $managedByFacility = $userObject->managed_by_facility_id === $this->getFacilityOrFail()->id;
 
         $userValidator = $managedByFacility ? User::getPatchValidator(['name',], $userObject) : [];
-        $clientValidator = Client::getPatchValidator([], $clientObject);
-        $userData = $this->validate(
-            $userValidator
-            + ['client' => Valid::array()]
-            + array_combine(
-                array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
-                $clientValidator,
-            )
-        );
+        $clientValidator = Client::getPatchValidator([], $clientObject, attributesFacility: true);
+        $userData = $this->validate($userValidator + $this->wrapClientValidator($clientValidator));
 
         $clientData = $userData['client'];
         if ($managedByFacility) {
@@ -130,5 +116,16 @@ class ClientController extends ApiController
             $clientObject->attrSave($this->getFacilityOrFail(), $clientData);
         });
         return new JsonResponse();
+    }
+
+    private function wrapClientValidator(array $clientValidator): array
+    {
+        return [
+                'client' => Valid::array(keys: array_filter(array_keys($clientValidator), fn(string $key) => //
+                !str_ends_with($key, '*')))
+            ] + array_combine(
+                array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
+                $clientValidator,
+            );
     }
 }

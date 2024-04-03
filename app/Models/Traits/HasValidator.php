@@ -34,9 +34,12 @@ trait HasValidator
         return $ruleSet;
     }
 
-    public static function getPatchValidator(array $fields, Model|string $ignore): array
-    {
-        $ruleSet = self::getInsertValidator($fields);
+    public static function getPatchValidator(
+        array $fields,
+        Model|string $ignore,
+        array|bool|string|Facility $attributesFacility = false,
+    ): array {
+        $ruleSet = self::getInsertValidator($fields, $attributesFacility);
         foreach ($ruleSet as $field => $rules) {
             if (is_array($rules)) {
                 foreach ($rules as $rule) {
