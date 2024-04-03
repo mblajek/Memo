@@ -5,7 +5,7 @@ import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSe
 import {NON_NULLABLE, htmlAttributes} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {objectRecursiveMerge} from "components/utils/object_util";
-import {ParentComponent, Show} from "solid-js";
+import {ParentComponent, Show, splitProps} from "solid-js";
 
 export class TableColumnsSet<C extends string, D extends Readonly<Record<C, PartialColumnConfig>>> {
   constructor(readonly columns: D) {}
@@ -92,20 +92,28 @@ export function useTableColumns() {
   };
 }
 
-export const ScrollableCell: ParentComponent<htmlAttributes.div> = (props) => (
-  <PaddedCell class="overflow-auto">
-    <div
-      {...htmlAttributes.merge(props, {
-        // Whatever this style means, it seems to work, i.e.:
-        // - when there is little text, the row is allowed to shrink,
-        // - when there is more text, the row grows to accommodate it,
-        // - when there is a lot of text, the cell gets a scrollbar and the row doesn't grow,
-        // - when the row is already higher because of other cells, the scrolling area grows to fit
-        //   (possibly to the point when it no longer scrolls).
-        class: "wrapTextAnywhere max-h-20 min-h-max",
-      })}
-    >
-      {props.children}
-    </div>
-  </PaddedCell>
-);
+interface ScrollableCellProps extends htmlAttributes.div {
+  readonly baseHeight?: string;
+}
+
+const DEFAULT_BASE_HEIGHT = "5rem";
+
+export const ScrollableCell: ParentComponent<ScrollableCellProps> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["baseHeight"]);
+  return (
+    <PaddedCell class="overflow-auto">
+      <div
+        {...htmlAttributes.merge(divProps, {
+          // Whatever this style means, it seems to work, i.e.:
+          // - when there is little text, the row is allowed to shrink,
+          // - when there is more text, the row grows to accommodate it,
+          // - when there is a lot of text, the cell gets a scrollbar and the row doesn't grow,
+          // - when the row is already higher because of other cells, the scrolling area grows to fit
+          //   (possibly to the point when it no longer scrolls).
+          class: "wrapTextAnywhere min-h-max",
+          style: {"max-height": props.baseHeight || DEFAULT_BASE_HEIGHT},
+        })}
+      />
+    </PaddedCell>
+  );
+};

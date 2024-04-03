@@ -29,7 +29,7 @@ import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
 
-export function useMeetingTableColumns() {
+export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {}) {
   const t = useLangFunc();
   const {attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
@@ -155,7 +155,7 @@ export function useMeetingTableColumns() {
         extraDataColumns: ["staff", "clients", "isRemote"],
         columnDef: {
           cell: cellFunc<string, TQMeetingResource>((props) => (
-            <ScrollableCell>
+            <ScrollableCell baseHeight={baseHeight}>
               <ShowCellVal v={props.v}>
                 <MeetingStatusTags
                   meeting={props.row as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
@@ -172,7 +172,7 @@ export function useMeetingTableColumns() {
         name: "attendants",
         columnDef: {
           cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((props) => (
-            <ScrollableCell class="flex flex-col gap-1">
+            <ScrollableCell baseHeight={baseHeight} class="flex flex-col gap-1">
               <ShowCellVal v={props.v}>
                 {(v) => (
                   <>
@@ -205,7 +205,7 @@ export function useMeetingTableColumns() {
         extraDataColumns: ["staff"],
         columnDef: {
           cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
-            <ScrollableCell>
+            <ScrollableCell baseHeight={baseHeight}>
               <UserLinks type="staff" users={props.row.staff} />
             </ScrollableCell>
           )),
@@ -227,7 +227,7 @@ export function useMeetingTableColumns() {
         extraDataColumns: ["clients"],
         columnDef: {
           cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
-            <ScrollableCell>
+            <ScrollableCell baseHeight={baseHeight}>
               <UserLinks type="clients" users={props.row.clients} />
             </ScrollableCell>
           )),
@@ -249,7 +249,7 @@ export function useMeetingTableColumns() {
         name: "notes",
         columnDef: {
           cell: cellFunc<string, TQMeetingResource>((props) => (
-            <ScrollableCell>
+            <ScrollableCell baseHeight={baseHeight}>
               <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
             </ScrollableCell>
           )),

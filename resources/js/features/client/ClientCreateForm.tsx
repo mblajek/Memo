@@ -1,5 +1,5 @@
 import {createMutation} from "@tanstack/solid-query";
-import {useLangFunc} from "components/utils";
+import {currentDate, useLangFunc} from "components/utils";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -36,7 +36,9 @@ export const ClientCreateForm: VoidComponent<ClientCreateFormProps> = (props) =>
   const initialValues = () =>
     ({
       name: "",
-      client: {},
+      client: {
+        contactStartAt: currentDate().toISODate(),
+      },
     }) satisfies ClientFormType;
 
   return (
