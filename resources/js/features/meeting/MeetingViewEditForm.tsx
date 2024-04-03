@@ -155,7 +155,12 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                 }
               }}
             />
-            <LoadingPane isLoading={isBusy()} />
+            <LoadingPane
+              isLoading={
+                // If the edit mutation is pending, the form already shows the pane.
+                deleteMeetingMutation.isPending
+              }
+            />
           </div>
           <Show when={props.viewMode}>
             <div class="flex gap-1 justify-between">

@@ -6,7 +6,8 @@ import {EditButton} from "components/ui/Button";
 import {BigSpinner} from "components/ui/Spinner";
 import {ATTRIBUTES_SCHEMA, AttributesType} from "components/ui/form/AttributeFields";
 import {createAttributesProcessor} from "components/ui/form/attributes_processor";
-import {QueryBarrier, useLangFunc} from "components/utils";
+import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
+import {QueryBarrier, cx, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
@@ -24,6 +25,7 @@ export default (() => {
   const t = useLangFunc();
   const params = useParams();
   const invalidate = useInvalidator();
+  const confirmation = createFormLeaveConfirmation();
   const clientAttributesProcessor = createAttributesProcessor("client");
   const userId = () => params.userId!;
   const dataQuery = createQuery(() => FacilityClient.clientQueryOptions(userId()));
@@ -39,6 +41,7 @@ export default (() => {
     await clientMutation.mutateAsync(patch);
     return () => {
       toastSuccess(t("forms.client_edit.success"));
+      setEditMode(false);
       invalidate.users();
     };
   }
@@ -62,34 +65,37 @@ export default (() => {
               <FelteForm
                 id="client_edit"
                 translationsFormNames={["client_edit", "client", "facility_user"]}
-                class="flex flex-col items-stretch gap-3"
+                class="flex flex-col items-stretch gap-3 relative"
                 style={{width: "min(600px, 100%)"}}
                 schema={z.object({client: ATTRIBUTES_SCHEMA})}
                 initialValues={user()}
                 onSubmit={updateAttributes}
               >
-                {(form) => (
-                  <>
-                    <ClientFields editMode={editMode()} />
-                    <Switch>
-                      <Match when={editMode()}>
-                        <FelteSubmit
-                          cancel={() => {
-                            form.reset();
-                            setEditMode(false);
-                          }}
-                        />
-                      </Match>
-                      <Match when={!editMode()}>
-                        <div class="flex justify-end">
-                          <EditButton class="secondary small" onClick={[setEditMode, true]} />
-                        </div>
-                      </Match>
-                    </Switch>
-                  </>
-                )}
+                {(form) => {
+                  async function formCancel() {
+                    if (!form.isDirty() || (await confirmation.confirm())) {
+                      form.reset();
+                      setEditMode(false);
+                    }
+                  }
+                  return (
+                    <>
+                      <ClientFields editMode={editMode()} />
+                      <Switch>
+                        <Match when={editMode()}>
+                          <FelteSubmit cancel={formCancel} />
+                        </Match>
+                        <Match when={!editMode()}>
+                          <div class="flex justify-end">
+                            <EditButton class="secondary small" onClick={[setEditMode, true]} />
+                          </div>
+                        </Match>
+                      </Switch>
+                    </>
+                  );
+                }}
               </FelteForm>
-              <Show when={!editMode()}>
+              <div class={cx(editMode() ? "hidden" : undefined)}>
                 <PeopleAutoRelatedToClient clientId={userId()} />
                 <UserMeetingsTables
                   userName={user().name}
@@ -103,7 +109,7 @@ export default (() => {
                   staticPersistenceKey="clientMeetings"
                   userMeetingsStats={meetingsStats}
                 />
-              </Show>
+              </div>
             </div>
           )}
         </Show>

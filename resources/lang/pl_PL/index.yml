@@ -76,8 +76,8 @@ rich_text_field: "Pole tekstowe wspierające tagi. Kliknij aby zobaczyć więcej
 
 form_page_leave_confirmation:
   title: "Porzucić zmiany?"
-  body: "Zmiany nie zostaną zapisane. Czy na pewno chcesz opuścić stronę?"
-  confirm: "Tak, opuść stronę"
+  body: "Zmiany nie zostaną zapisane. Czy na pewno chcesz zamknąć formularz?"
+  confirm: "Tak, porzuć zmiany"
   cancel: "Nie, wróć do edycji"
 
 about_page:
