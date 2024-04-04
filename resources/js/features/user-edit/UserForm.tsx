@@ -5,7 +5,6 @@ import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
-import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
 import {Show, VoidComponent, createComputed, on, splitProps} from "solid-js";
 import {z} from "zod";
@@ -67,8 +66,8 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
       {(form) => (
         <>
           <div class="flex flex-col gap-1">
-            <TextField name="name" type="text" {...TRIM_ON_BLUR} autofocus />
-            <TextField name="email" type="email" {...TRIM_ON_BLUR} />
+            <TextField name="name" type="text" autofocus />
+            <TextField name="email" type="email" />
             <CheckboxField name="hasEmailVerified" disabled={!form.data("email")} />
           </div>
           <div class="flex flex-col">

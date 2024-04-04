@@ -6,6 +6,7 @@ import {
   Obj,
   Paths,
   SubmitContext,
+  Touched,
 } from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
@@ -177,9 +178,32 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               });
               field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
             }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            function setTouched(touched: Readonly<Touched<any>>): Touched<any> {
+              if (!touched) {
+                return true;
+              }
+              if (Array.isArray(touched)) {
+                if (touched.length) {
+                  return [setTouched(touched[0]), ...touched.slice(1)];
+                } else {
+                  return [true];
+                }
+              }
+              // The field has sub-fields apparently. Attach the error to one of them.
+              const anySubField = Object.keys(touched)[0];
+              if (!anySubField) {
+                return true;
+              }
+              return {
+                ...touched,
+                [anySubField]: setTouched(touched[anySubField]),
+              };
+            }
             // Mark as touched first because errors are only stored and shown for touched fields.
-            // @ts-expect-error For some reason there are problems with the generic types.
-            ctx.setTouched(field, true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ctx.setTouched(field, (touched: Touched<any>) => setTouched(touched));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             function addError(errors: Readonly<AssignableErrors<any>>, errorMessage: string): AssignableErrors<any> {
               if (!errors) {

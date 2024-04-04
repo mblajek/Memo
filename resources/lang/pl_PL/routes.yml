@@ -19,6 +19,7 @@ facility:
   staff_details: "$t(models.staff._name)"
   clients: "$t(models.client._name_plural)"
   client_details: "$t(models.client._name)"
+  client_create: "$t(forms.client_create.formName)"
 
   facility_admin:
     reports: "raporty"

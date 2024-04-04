@@ -81,6 +81,7 @@ staff:
 client:
   _name: "klient"
   _name_plural: "klienci"
+  name: "$t(models.user.name)"
 
 meeting:
   _name: "spotkanie"

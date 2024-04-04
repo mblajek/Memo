@@ -93,3 +93,8 @@ meeting_series_create:
 client_edit:
   formName: "Edycja klienta"
   success: "Zmieniono dane klienta"
+
+client_create:
+  formName: "Nowy klient"
+  submit: "$t(actions.create)"
+  success: "Utworzono klienta"

@@ -1,6 +1,11 @@
 pl_voivodeship:
   _name: "województwo"
 
+clientType:
+  _name: "typ klienta"
+  child: "dziecko"
+  adult: "dorosły"
+
 gender:
   _name: "płeć"
   female: "kobieta"
@@ -62,3 +67,8 @@ attendanceStatus:
     late_present: "Uczestnik pojawił się na spotkaniu z niewielkim opóźnieniem"
     too_late: "Uczestnik pojawił się z tak dużym opóźnieniem, że nie mógł już wziąć udziału w spotkaniu"
     more_info: "Więcej informacji o statusach obecności"
+
+notificationMethod:
+  _name: "metoda powiadomień"
+  sms: "sms"
+  email: "e-mail"
