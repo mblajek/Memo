@@ -52,7 +52,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
         {...htmlAttributes.merge(aProps, {
           class: cx(
             props.small ? "py-1 gap-2" : "py-2 gap-3",
-            "px-3 rounded-lg flex flex-row items-center no-underline text-black whitespace-nowrap hover:bg-white",
+            "px-3 rounded-lg flex flex-row items-center text-black whitespace-nowrap hover:bg-white",
           ),
         })}
         activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
