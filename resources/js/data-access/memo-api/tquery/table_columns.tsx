@@ -2,10 +2,10 @@ import {PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
-import {NON_NULLABLE} from "components/utils";
+import {NON_NULLABLE, htmlAttributes} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {objectRecursiveMerge} from "components/utils/object_util";
-import {Show} from "solid-js";
+import {ParentComponent, Show} from "solid-js";
 
 export class TableColumnsSet<C extends string, D extends Readonly<Record<C, PartialColumnConfig>>> {
   constructor(readonly columns: D) {}
@@ -91,3 +91,21 @@ export function useTableColumns() {
     getCreatedUpdatedColumns,
   };
 }
+
+export const ScrollableCell: ParentComponent<htmlAttributes.div> = (props) => (
+  <PaddedCell class="overflow-auto">
+    <div
+      {...htmlAttributes.merge(props, {
+        // Whatever this style means, it seems to work, i.e.:
+        // - when there is little text, the row is allowed to shrink,
+        // - when there is more text, the row grows to accommodate it,
+        // - when there is a lot of text, the cell gets a scrollbar and the row doesn't grow,
+        // - when the row is already higher because of other cells, the scrolling area grows to fit
+        //   (possibly to the point when it no longer scrolls).
+        class: "wrapTextAnywhere max-h-20 min-h-max",
+      })}
+    >
+      {props.children}
+    </div>
+  </PaddedCell>
+);

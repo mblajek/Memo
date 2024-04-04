@@ -1,5 +1,11 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {cx, useLangFunc} from "components/utils";
+import {
+  PartialAttributesSelection,
+  attributesSelectionFromPartial,
+  getUnknownFixedAttributes,
+  isAttributeSelected,
+} from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
@@ -24,11 +30,7 @@ export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
 
 interface Props {
   readonly model: string;
-  /**
-   * Whether to include the fixed attributes in the component. Can specify a list of apiName's of the
-   * fixed attributes to include.
-   */
-  readonly includeFixedAttributes?: boolean | readonly string[];
+  readonly selection: PartialAttributesSelection;
   readonly minRequirementLevel?: RequirementLevel;
   readonly nestFieldsUnder?: string;
   readonly editMode: boolean;
@@ -166,14 +168,13 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
     return <>{field()}</>;
   };
 
+  const selection = createMemo(() => attributesSelectionFromPartial(props.selection));
   createEffect(() => {
-    if (!attributes() || !Array.isArray(props.includeFixedAttributes)) {
+    if (!attributes()) {
       return;
     }
-    const unknownFixedAttributes = props.includeFixedAttributes.filter(
-      (apiName) => !attributes()!.getByName(props.model, apiName),
-    );
-    if (unknownFixedAttributes.length) {
+    const unknownFixedAttributes = getUnknownFixedAttributes(selection(), attributes()!.getForModel(props.model));
+    if (unknownFixedAttributes) {
       console.error(
         `Unknown fixed attributes specified for model ${props.model}: ${unknownFixedAttributes.join(", ")}`,
       );
@@ -182,16 +183,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
   const relevantAttributes = createMemo(() =>
     attributes()
       ?.getForModel(props.model)
-      .filter(({isFixed, apiName}) => {
-        if (isFixed) {
-          return (
-            props.includeFixedAttributes === true ||
-            (Array.isArray(props.includeFixedAttributes) && props.includeFixedAttributes.includes(apiName))
-          );
-        } else {
-          return true;
-        }
-      }),
+      .filter((attribute) => isAttributeSelected(selection(), attribute)),
   );
 
   const [showAllAttributes, setShowAllAttributes] = createSignal(false);
