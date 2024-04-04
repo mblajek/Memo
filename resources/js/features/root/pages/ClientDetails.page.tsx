@@ -95,7 +95,7 @@ export default (() => {
                   );
                 }}
               </FelteForm>
-              <div class={cx(editMode() ? "hidden" : undefined)}>
+              <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
                 <PeopleAutoRelatedToClient clientId={userId()} />
                 <UserMeetingsTables
                   userName={user().name}
