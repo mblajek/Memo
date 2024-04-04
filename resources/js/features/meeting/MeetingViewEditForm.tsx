@@ -72,14 +72,17 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
       ...transformFormValues(values),
     };
     await meetingMutation.mutateAsync(meetingPatch);
-    if (props.showToast ?? true) {
-      toastSuccess(t("forms.meeting_edit.success"));
-    }
-    props.onEdited?.({...origMeeting, ...skipUndefinedValues(meetingPatch)});
-    // Important: Invalidation should happen after calling onEdited which typically closes the form.
-    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
-    // but also causes problems apparently.
-    invalidate.facility.meetings();
+    // eslint-disable-next-line solid/reactivity
+    return () => {
+      if (props.showToast ?? true) {
+        toastSuccess(t("forms.meeting_edit.success"));
+      }
+      props.onEdited?.({...origMeeting, ...skipUndefinedValues(meetingPatch)});
+      // Important: Invalidation should happen after calling onEdited which typically closes the form.
+      // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+      // but also causes problems apparently.
+      invalidate.facility.meetings();
+    };
   }
 
   async function deleteMeeting() {

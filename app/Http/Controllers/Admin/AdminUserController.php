@@ -74,7 +74,7 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function post(CreateUserService $service): JsonResponse
     {
-        $data = $this->validate(User::getInsertValidator());
+        $data = $this->validate(User::getInsertResourceValidator());
 
         $result = $service->handle($data);
 
@@ -115,7 +115,7 @@ class AdminUserController extends ApiController
     )] /** @throws ApiException|Throwable */
     public function patch(User $user, UpdateUserService $service): JsonResponse
     {
-        $rules = User::getPatchValidator($user);
+        $rules = User::getPatchResourceValidator($user);
         $requestData = $this->validate($rules);
         $userAttributes = $service->getAttributesAfterPatch($user, $requestData);
 

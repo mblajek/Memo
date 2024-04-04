@@ -4,6 +4,7 @@ namespace App\Http\Permissions;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
+use App\Exceptions\FatalExceptionFactory;
 use App\Models\Facility;
 use App\Models\Member;
 use App\Models\User;
@@ -15,14 +16,25 @@ class PermissionMiddleware
 {
     private static ?PermissionObject $permissionObject = null;
 
-    public static function permissions(): ?PermissionObject
+    public static function permissions(): PermissionObject
     {
-        return self::$permissionObject;
+        return self::$permissionObject ?? FatalExceptionFactory::unexpected()->throw();
     }
 
-    public static function reset(): void
+    public static function setPermissions(?PermissionObject $permissions): void
     {
-        self::$permissionObject = null;
+        self::$permissionObject = $permissions;
+    }
+
+    public static function facility(): Facility
+    {
+        return PermissionMiddleware::permissions()->facility ?? FatalExceptionFactory::unexpected()->throw();
+    }
+
+    /** @throws ApiException */
+    public static function user(): User
+    {
+        return PermissionMiddleware::permissions()->user ?? ExceptionFactory::unauthorised()->throw();
     }
 
     /**
@@ -34,7 +46,7 @@ class PermissionMiddleware
      * @return Response
      * @throws ApiException
      */
-    public function handle(Request $request, Closure $next, string  ...$permissions): Response
+    public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
         if (!self::$permissionObject) {
             self::$permissionObject = $this->requestPermissions($request);
@@ -46,9 +58,9 @@ class PermissionMiddleware
             }
         }
         if (self::$permissionObject->getByPermission(Permission::unauthorised)) {
-            throw ExceptionFactory::unauthorised();
+            ExceptionFactory::unauthorised()->throw();
         }
-        throw ExceptionFactory::forbidden();
+        ExceptionFactory::forbidden()->throw();
     }
 
     private function requestPermissions(Request $request): PermissionObject

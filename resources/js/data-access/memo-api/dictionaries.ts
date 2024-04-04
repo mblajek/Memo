@@ -116,7 +116,7 @@ export class Dictionary {
       resource.id,
       resource.name,
       isTranslatable,
-      getNameTranslation(t, resource.name, (n) => `dictionary.${n}._name`),
+      getNameTranslation(t, resource.name, (n) => dictionaryNameTranslationKey(n)),
       resource.positions.map((position) => new Position(t, position, isTranslatable ? resource.name : undefined)),
     );
   }
@@ -187,6 +187,10 @@ export class Position {
     this.id = resource.id;
     this.isTranslatable = isNameTranslatable(resource.name);
     this.label = getNameTranslation(t, resource.name, (n) => {
+      if (!resource.isFixed) {
+        console.error(`Translatable non-fixed position (${resource.id}: ${n})`);
+        return `???.${dictionaryTranslatableName || "?"}.${n}`;
+      }
       if (!dictionaryTranslatableName) {
         console.error(`Translatable position (${resource.id}: ${n}) inside a dictionary with an untranslatable name.`);
         return `dictionary.?.${n}`;
@@ -195,4 +199,8 @@ export class Position {
     });
     this.disabled = resource.isDisabled;
   }
+}
+
+export function dictionaryNameTranslationKey(dictionaryName: string) {
+  return `dictionary.${dictionaryName}._name`;
 }

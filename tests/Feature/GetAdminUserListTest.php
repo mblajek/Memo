@@ -56,6 +56,7 @@ class GetAdminUserListTest extends TestCase
                     'updatedAt',
                     'hasEmailVerified',
                     'createdBy',
+                    'updatedBy',
                     'hasGlobalAdmin',
                     'members',
                 ],

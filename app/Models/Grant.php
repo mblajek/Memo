@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\QueryBuilders\GrantBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
@@ -17,7 +16,6 @@ use Throwable;
 class Grant extends Model
 {
     use BaseModel;
-    use HasCreatedBy;
 
     protected $table = 'grants';
 

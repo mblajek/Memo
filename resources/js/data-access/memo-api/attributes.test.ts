@@ -63,7 +63,7 @@ describe("Attributes", () => {
 
   test("labels", () => {
     expect(attributes.byId.get("aa1Id")?.label).toEqual(
-      "t(attributes.attributes.blip.aa1_attr,attributes.attributes.generic.aa1_attr,models.blip.aa1ApiName,models.generic.aa1ApiName)",
+      "t(attributes.attributes.blip.aa1_attr,attributes.attributes.generic.aa1_attr,models.blip.aa1ApiName,models.generic.aa1ApiName,dictionary.dict1-global._name)",
     );
     expect(attributes.byId.get("aa2Id")?.label).toEqual("aa2 attr");
   });

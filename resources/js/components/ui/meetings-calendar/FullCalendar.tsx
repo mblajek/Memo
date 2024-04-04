@@ -882,6 +882,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 isLoading={isCalendarLoading()}
                 columns={calendarColumns()}
                 pixelsPerHour={pixelsPerHour()}
+                gridCellMinutes={15}
                 onVisibleRangeChange={setVisibleDayMinuteRange}
                 scrollToDayMinute={scrollToDayMinute()}
                 onWheelWithAlt={(e) =>

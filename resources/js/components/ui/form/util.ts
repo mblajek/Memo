@@ -24,8 +24,11 @@ export const TRIM_ON_BLUR = {
   onFocusOut: (event: Event) => {
     const target = event.currentTarget;
     if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-      target.value = trimInput(target.value);
-      target.dispatchEvent(new Event("input", {bubbles: true}));
+      const trimmedValue = trimInput(target.value);
+      if (trimmedValue !== target.value) {
+        target.value = trimmedValue;
+        target.dispatchEvent(new Event("input", {bubbles: true}));
+      }
     }
   },
 };

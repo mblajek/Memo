@@ -32,15 +32,16 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   const invalidate = useInvalidator();
   const mutation = createMutation(() => ({
     mutationFn: User.login,
-    onSuccess() {
-      invalidate.userStatusAndFacilityPermissions();
-      props.onSuccess?.();
-    },
     meta: {isFormSubmit: true},
   }));
 
   const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
     await mutation.mutateAsync(values);
+    // eslint-disable-next-line solid/reactivity
+    return () => {
+      props.onSuccess?.();
+      invalidate.userStatusAndFacilityPermissions();
+    };
   };
 
   return (

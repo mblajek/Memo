@@ -2,6 +2,7 @@
 
 namespace App\Services\Meeting;
 
+use App\Models\Attribute;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
@@ -75,7 +76,7 @@ class MeetingService
     private function fillMeetingCategory(Meeting $meeting): void
     {
         $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
-            ->attrValues(byId: true)[PositionAttributeUuidEnum::Category->value]);
+            ->attrValues()[Attribute::getById(PositionAttributeUuidEnum::Category)->api_name]);
     }
 
     private function extract(array &$data, string $key)

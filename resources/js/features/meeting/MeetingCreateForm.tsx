@@ -54,14 +54,17 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
         cloneIds = (await meetingCloneMutation.mutateAsync({meetingId: id, request: seriesParams})).data.data.ids;
       }
     }
-    if (props.showToast ?? true) {
-      toastSuccess(t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"));
-    }
-    props.onSuccess?.({...(meeting as Required<MeetingResourceForCreate>), id}, cloneIds);
-    // Important: Invalidation should happen after calling onSuccess which typically closes the form.
-    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
-    // but also causes problems apparently.
-    invalidate.facility.meetings();
+    // eslint-disable-next-line solid/reactivity
+    return () => {
+      if (props.showToast ?? true) {
+        toastSuccess(t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"));
+      }
+      props.onSuccess?.({...(meeting as Required<MeetingResourceForCreate>), id}, cloneIds);
+      // Important: Invalidation should happen after calling onSuccess which typically closes the form.
+      // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+      // but also causes problems apparently.
+      invalidate.facility.meetings();
+    };
   }
 
   const initialValues = () =>
