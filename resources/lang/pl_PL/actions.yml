@@ -26,3 +26,5 @@ user:
   add: "Dodaj osobę"
 facility:
   add: "Dodaj placówkę"
+client:
+  add: "Dodaj klienta"

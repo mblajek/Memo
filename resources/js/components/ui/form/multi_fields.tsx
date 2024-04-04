@@ -3,7 +3,7 @@ import {WRAPPED_FIELD_KEY, wrapArrayOfPrimitiveValues} from "components/felte-fo
 import {cx, htmlAttributes} from "components/utils";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {BsChevronCompactDown, BsChevronCompactUp} from "solid-icons/bs";
-import {Accessor, Index, JSX, Show, VoidComponent, createMemo, on, onMount, splitProps} from "solid-js";
+import {Accessor, Index, JSX, Show, VoidComponent, createEffect, createMemo, on, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {ACTION_ICONS} from "../icons";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
@@ -45,7 +45,13 @@ export function useMultiField(name: string, {primitiveType = false} = {}): Multi
     return value == undefined ? [] : (value as unknown[]);
   };
   if (primitiveType) {
-    onMount(() => form.setFields(name, wrapArrayOfPrimitiveValues(data())));
+    createEffect(() => {
+      // Wrap the values initially, and then e.g. after form reset.
+      const wrappedValues = wrapArrayOfPrimitiveValues(data());
+      if (wrappedValues) {
+        form.setFields(name, wrappedValues);
+      }
+    });
   }
   function formAddField(value: unknown, index?: number) {
     form.addField(name, primitiveType ? {[WRAPPED_FIELD_KEY]: value} : value, index);
@@ -177,7 +183,7 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
             }}
           </Index>
           <Show when={!multiField.length()}>
-            <div class="flex gap-1 justify-between">
+            <div class="flex gap-1 items-center justify-between min-h-small-input">
               {EMPTY_VALUE_SYMBOL}
               <Show when={!isFieldsetDisabled() && props.addAtEndValue}>
                 {(addAtEndValue) => (

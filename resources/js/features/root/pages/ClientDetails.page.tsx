@@ -4,15 +4,16 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {EditButton} from "components/ui/Button";
 import {BigSpinner} from "components/ui/Spinner";
-import {ATTRIBUTES_SCHEMA, AttributeFields, AttributesType} from "components/ui/form/AttributeFields";
+import {ATTRIBUTES_SCHEMA, AttributesType} from "components/ui/form/AttributeFields";
 import {createAttributesProcessor} from "components/ui/form/attributes_processor";
-import {QueryBarrier, useLangFunc} from "components/utils";
+import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
+import {QueryBarrier, cx, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
-import {isDEV} from "components/utils/dev_mode";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {ClientResourceForPatch} from "data-access/memo-api/resources/client.resource";
+import {ClientFields} from "features/client/ClientFields";
 import {PeopleAutoRelatedToClient} from "features/facility-users/PeopleAutoRelatedToClient";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
 import {UserMeetingsTables} from "features/facility-users/UserMeetingsTables";
@@ -24,12 +25,12 @@ export default (() => {
   const t = useLangFunc();
   const params = useParams();
   const invalidate = useInvalidator();
+  const confirmation = createFormLeaveConfirmation();
   const clientAttributesProcessor = createAttributesProcessor("client");
   const userId = () => params.userId!;
   const dataQuery = createQuery(() => FacilityClient.clientQueryOptions(userId()));
   const meetingsStats = useUserMeetingsStats("clients", userId);
   const [editMode, setEditMode] = createSignal(false);
-  const [showAllAttributes, setShowAllAttributes] = createSignal(false);
   const clientMutation = createMutation(() => ({
     mutationFn: FacilityClient.updateClient,
     meta: {isFormSubmit: true},
@@ -38,8 +39,11 @@ export default (() => {
   async function updateAttributes(values: {client: AttributesType}) {
     const patch: ClientResourceForPatch = {id: userId(), client: clientAttributesProcessor.extract(values.client)};
     await clientMutation.mutateAsync(patch);
-    toastSuccess(t("forms.client_edit.success"));
-    invalidate.users();
+    return () => {
+      toastSuccess(t("forms.client_edit.success"));
+      setEditMode(false);
+      invalidate.users();
+    };
   }
 
   return (
@@ -58,61 +62,40 @@ export default (() => {
                   updatedBy: user().client.updatedBy,
                 }}
               />
-              <div
-                class="self-start flex flex-col gap-1 items-stretch border border-gray-300 rounded-md p-1"
-                style={{width: "min(600px,100%)"}}
+              <FelteForm
+                id="client_edit"
+                translationsFormNames={["client_edit", "client", "facility_user"]}
+                class="flex flex-col items-stretch gap-3 relative"
+                style={{width: "min(600px, 100%)"}}
+                schema={z.object({client: ATTRIBUTES_SCHEMA})}
+                initialValues={user()}
+                onSubmit={updateAttributes}
               >
-                <Show when={isDEV()}>
-                  <label class="flex items-baseline gap-1">
-                    <input
-                      type="checkbox"
-                      name="showAllAttributes"
-                      class="m-px outline-1"
-                      checked={showAllAttributes()}
-                      onInput={() => setShowAllAttributes((v) => !v)}
-                    />
-                    <span>
-                      <span class="text-xs">DEV</span> {t("attributes.show_all")}
-                    </span>
-                  </label>
-                </Show>
-                <FelteForm
-                  id="attributes"
-                  class="flex flex-col gap-3"
-                  schema={z.object({client: ATTRIBUTES_SCHEMA})}
-                  initialValues={user()}
-                  onSubmit={updateAttributes}
-                >
-                  {(form) => (
-                    <AttributeFields
-                      model="client"
-                      minRequirementLevel={showAllAttributes() ? undefined : editMode() ? "optional" : "recommended"}
-                      nestFieldsUnder="client"
-                      wrapIn={(props) => (
-                        <>
-                          <fieldset disabled={!editMode()}>{props.children}</fieldset>
-                          <Switch>
-                            <Match when={editMode()}>
-                              <FelteSubmit
-                                cancel={() => {
-                                  form.reset();
-                                  setEditMode(false);
-                                }}
-                              />
-                            </Match>
-                            <Match when={!editMode()}>
-                              <div class="flex justify-end">
-                                <EditButton class="secondary small" onClick={[setEditMode, true]} />
-                              </div>
-                            </Match>
-                          </Switch>
-                        </>
-                      )}
-                    />
-                  )}
-                </FelteForm>
-              </div>
-              <Show when={!editMode()}>
+                {(form) => {
+                  async function formCancel() {
+                    if (!form.isDirty() || (await confirmation.confirm())) {
+                      form.reset();
+                      setEditMode(false);
+                    }
+                  }
+                  return (
+                    <>
+                      <ClientFields editMode={editMode()} />
+                      <Switch>
+                        <Match when={editMode()}>
+                          <FelteSubmit cancel={formCancel} />
+                        </Match>
+                        <Match when={!editMode()}>
+                          <div class="flex justify-end">
+                            <EditButton class="secondary small" onClick={[setEditMode, true]} />
+                          </div>
+                        </Match>
+                      </Switch>
+                    </>
+                  );
+                }}
+              </FelteForm>
+              <div class={cx(editMode() ? "hidden" : undefined)}>
                 <PeopleAutoRelatedToClient clientId={userId()} />
                 <UserMeetingsTables
                   userName={user().name}
@@ -126,7 +109,7 @@ export default (() => {
                   staticPersistenceKey="clientMeetings"
                   userMeetingsStats={meetingsStats}
                 />
-              </Show>
+              </div>
             </div>
           )}
         </Show>

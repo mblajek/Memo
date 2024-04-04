@@ -4,8 +4,9 @@ import {TextInput} from "../TextInput";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
 import {LabelOverride} from "./labels";
+import {TRIM_ON_BLUR} from "./util";
 
-export interface TextFieldProps extends TextFieldTextFieldProps {
+export interface TextFieldProps extends TextFieldTextInputProps {
   readonly label?: LabelOverride;
   readonly small?: boolean;
 }
@@ -15,12 +16,12 @@ export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["name", "label", "small"]);
   return (
     <FieldBox {...props}>
-      <TextFieldTextInput name={props.name} small={props.small} {...inputProps} />
+      <TextFieldTextInput name={props.name} small={props.small} {...TRIM_ON_BLUR} {...inputProps} />
     </FieldBox>
   );
 };
 
-interface TextFieldTextFieldProps
+interface TextFieldTextInputProps
   extends Pick<
     htmlAttributes.input,
     | "class"
@@ -39,7 +40,7 @@ interface TextFieldTextFieldProps
   readonly small?: boolean;
 }
 
-export const TextFieldTextInput: VoidComponent<TextFieldTextFieldProps> = (allProps) => {
+export const TextFieldTextInput: VoidComponent<TextFieldTextInputProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["name", "small"]);
   return (
     <TextInput

@@ -1,7 +1,7 @@
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
-import {ClientResource, ClientResourceForPatch} from "../resources/client.resource";
+import {ClientResource, ClientResourceForCreate, ClientResourceForPatch} from "../resources/client.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
 import {Users} from "./shared";
@@ -11,7 +11,7 @@ import {Users} from "./shared";
  * @see {@link http://localhost:9081/api/documentation#/Facility%20client local docs}
  */
 export namespace FacilityClient {
-  export const createClient = (client: Api.Request.Create<ClientResource>, config?: Api.Config) =>
+  export const createClient = (client: Api.Request.Create<ClientResourceForCreate>, config?: Api.Config) =>
     V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/user/client`, client, config);
   export const updateClient = (client: Api.Request.Patch<ClientResourceForPatch>, config?: Api.Config) =>
     V1.patch(`/facility/${activeFacilityId()}/user/client/${client.id}`, client, config);

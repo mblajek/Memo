@@ -128,10 +128,10 @@ html {
     @apply bg-white;
   }
 
-  a {
-    @apply underline;
+  a:not([role="button"]) {
+    @apply hover:underline;
     // Make sure this color gives enough contrast on a hovered table row, according to the WCAG tests.
-    color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)), blue 45%);
+    color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)), #000080 30%);
   }
 
   button,

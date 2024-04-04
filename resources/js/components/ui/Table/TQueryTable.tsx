@@ -12,6 +12,12 @@ import {
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, debouncedAccessor} from "components/utils";
+import {
+  PartialAttributesSelection,
+  attributesSelectionFromPartial,
+  getUnknownFixedAttributes,
+  isAttributeSelected,
+} from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
 import {objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
@@ -139,6 +145,7 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly intrinsicSort?: Sort;
   /** The definition of the columns in the table, in their correct order. */
   readonly columns: readonly PartialColumnConfigEntry<TData>[];
+  readonly attributeColumnsConfig?: AttributeColumnsConfig<TData>;
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
@@ -181,7 +188,16 @@ interface HeaderParams<TData = DataItem> {
   readonly filterControl?: JSX.Element;
 }
 
-type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "nonFixedAttributes";
+type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "attributeColumns";
+
+/**
+ * The entry denoting a collection of attribute columns. It includes all the non-fixed columns, plus possibly
+ * fixed attribute columns, depending on the configuration.
+ */
+interface AttributeColumnsConfig<TData> {
+  readonly defaultConfig?: Pick<PartialColumnConfig<TData>, "initialVisible" | "globalFilterable">;
+  readonly selection?: PartialAttributesSelection<Partial<PartialColumnConfig<TData>>>;
+}
 
 type FullColumnConfig<TData = DataItem> = ColumnConfig &
   Required<Pick<PartialColumnConfig<TData>, "isDataColumn" | "columnDef" | "header">> &
@@ -230,26 +246,14 @@ const PERSISTENCE_VERSION = 2;
 export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const attributes = useAttributes();
   const entityURL = props.staticEntityURL;
-  const [nonFixedAttributeColumns, setNonFixedAttributeColumns] = createSignal<DataColumnSchema[]>([]);
-  const nonFixedAttributeColumnsConfig = () =>
-    nonFixedAttributeColumns().map(
-      (col) => ({name: col.name, initialVisible: false}) satisfies PartialColumnConfig<DataItem>,
-    );
-  const [devColumns, setDevColumns] = createSignal<DataColumnSchema[]>([]);
-  const devColumnsConfig = () =>
-    devColumns().map(
-      (col) =>
-        ({
-          name: col.name,
-          metaParams: {devColumn: true},
-          initialVisible: false,
-          globalFilterable: false,
-        }) satisfies PartialColumnConfig<DataItem>,
-    );
+  const [attributeColumnsConfig, setAttributeColumnsConfig] = createSignal<readonly PartialColumnConfig<DataItem>[]>(
+    [],
+  );
+  const [devColumnsConfig, setDevColumnsConfig] = createSignal<readonly PartialColumnConfig<DataItem>[]>([]);
   const columnsConfig = createMemo(() =>
     [
       ...props.columns.flatMap<PartialColumnConfig<DataItem>>((colEntry) =>
-        colEntry === "nonFixedAttributes" ? nonFixedAttributeColumnsConfig() : [colEntry],
+        colEntry === "attributeColumns" ? attributeColumnsConfig() : [colEntry],
       ),
       ...devColumnsConfig(),
     ].map((col) => columnConfigFromPartial(col)),
@@ -338,46 +342,89 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       meta: {tquery: {isTable: true}},
     }),
   });
+  const selection = () => attributesSelectionFromPartial(props.attributeColumnsConfig?.selection);
+  createEffect(() => {
+    if (!schema() || !attributes()) {
+      return;
+    }
+    const unknownFixedAttributes = getUnknownFixedAttributes(
+      selection(),
+      schema()!
+        .columns.map((col) =>
+          isDataColumn(col) && col.attributeId ? attributes()!.getById(col.attributeId) : undefined,
+        )
+        .filter(NON_NULLABLE),
+    );
+    if (unknownFixedAttributes) {
+      console.error(`Unknown fixed attributes: ${unknownFixedAttributes.join(", ")}`);
+    }
+  });
   createComputed(() => {
     const sch = schema();
     if (sch) {
       if (attributes()) {
         batch(() => {
           const configuredColumns = new Set();
+          let usesAttributeColumns = false;
           for (const colEntry of props.columns) {
-            if (colEntry !== "nonFixedAttributes") {
+            if (colEntry === "attributeColumns") {
+              usesAttributeColumns = true;
+            } else {
               configuredColumns.add(colEntry.name);
             }
           }
-          setNonFixedAttributeColumns(
-            sch.columns
-              .map((col) => {
-                if (!isDataColumn(col)) {
-                  return undefined;
-                }
-                if (col.attributeId) {
-                  const attribute = attributes()!.getById(col.attributeId);
-                  if (!attribute.isFixed) {
-                    if (configuredColumns.has(col.name)) {
-                      console.warn(
-                        `Column ${col.name} is configured statically, but it is a non-fixed attribute ${attribute.name}.`,
-                      );
+          const selection = attributesSelectionFromPartial(props.attributeColumnsConfig?.selection);
+          setAttributeColumnsConfig(
+            usesAttributeColumns
+              ? sch.columns
+                  .map((col) => {
+                    if (!isDataColumn(col) || !col.attributeId) {
                       return undefined;
                     }
-                    return col;
-                  }
-                }
-                return undefined;
-              })
-              .filter(NON_NULLABLE),
+                    function buildColumnConfig(
+                      config?: Partial<PartialColumnConfig<DataItem>>,
+                    ): PartialColumnConfig<DataItem> {
+                      return {
+                        name: col.name,
+                        ...props.attributeColumnsConfig?.defaultConfig,
+                        ...config,
+                      };
+                    }
+                    const attribute = attributes()!.getById(col.attributeId);
+                    const select = isAttributeSelected(selection, attribute);
+                    if (select) {
+                      if (configuredColumns.has(col.name)) {
+                        if (select.explicit) {
+                          throw new Error(
+                            `Column ${col.name} is configured as a fixed attribute column, but it is configured statically as well.`,
+                          );
+                        }
+                        return undefined;
+                      }
+                      return buildColumnConfig(select.override);
+                    } else {
+                      return undefined;
+                    }
+                  })
+                  .filter(NON_NULLABLE)
+              : [],
           );
           if (isDEV()) {
-            for (const col of nonFixedAttributeColumns()) {
+            for (const col of attributeColumnsConfig()) {
               configuredColumns.add(col.name);
             }
-            setDevColumns(sch.columns.filter(isDataColumn).filter(({name}) => !configuredColumns.has(name)));
+            setDevColumnsConfig(
+              sch.columns
+                .filter((col) => isDataColumn(col) && !configuredColumns.has(col.name))
+                .map((col) => ({
+                  name: col.name,
+                  metaParams: {devColumn: true},
+                  initialVisible: false,
+                  globalFilterable: false,
+                })),
+            );
           } else {
-            setDevColumns([]);
+            setDevColumnsConfig([]);
           }
         });
       }

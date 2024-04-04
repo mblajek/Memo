@@ -6,6 +6,7 @@ import {
   Obj,
   Paths,
   SubmitContext,
+  Touched,
 } from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
@@ -17,8 +18,9 @@ import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
 import {Context, JSX, createContext, createMemo, onCleanup, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
+import {LoadingPane} from "../ui/LoadingPane";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
-import {createConfirmation} from "../ui/confirmation";
+import {createFormLeaveConfirmation} from "../ui/form/form_leave_confirmation";
 import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
 import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
@@ -79,7 +81,7 @@ export type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit
  */
 export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Element => {
   const t = useLangFunc();
-  const confirmation = createConfirmation();
+  const confirmation = createFormLeaveConfirmation();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
     [
@@ -177,9 +179,32 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               });
               field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
             }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            function setTouched(touched: Readonly<Touched<any>>): Touched<any> {
+              if (!touched) {
+                return true;
+              }
+              if (Array.isArray(touched)) {
+                if (touched.length) {
+                  return [setTouched(touched[0]), ...touched.slice(1)];
+                } else {
+                  return [true];
+                }
+              }
+              // The field has sub-fields apparently. Attach the error to one of them.
+              const anySubField = Object.keys(touched)[0];
+              if (!anySubField) {
+                return true;
+              }
+              return {
+                ...touched,
+                [anySubField]: setTouched(touched[anySubField]),
+              };
+            }
             // Mark as touched first because errors are only stored and shown for touched fields.
-            // @ts-expect-error For some reason there are problems with the generic types.
-            ctx.setTouched(field, true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ctx.setTouched(field, (touched: Touched<any>) => setTouched(touched));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             function addError(errors: Readonly<AssignableErrors<any>>, errorMessage: string): AssignableErrors<any> {
               if (!errors) {
@@ -229,17 +254,9 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     useBeforeLeave(async (e) => {
       if (shouldConfirmPageLeave(e)) {
         e.preventDefault();
-        if (
-          !confirmation.isShown() &&
-          (await confirmation.confirm({
-            title: t("form_page_leave_confirmation.title"),
-            body: t("form_page_leave_confirmation.body"),
-            cancelText: t("form_page_leave_confirmation.cancel"),
-            confirmText: t("form_page_leave_confirmation.confirm"),
-            confirmPrimary: false,
-          }))
-        )
+        if (await confirmation.confirm()) {
           e.retry(true);
+        }
       }
     });
   });
@@ -272,11 +289,12 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
             }
           });
         }}
-        {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1"})}
+        {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
       >
         <fieldset class="contents" disabled={formDisabled()} inert={form.isSubmitting() || undefined}>
           {getChildrenElement(props.children, form, contextValue)}
         </fieldset>
+        <LoadingPane isLoading={form.isSubmitting()} />
       </form>
     </TypedFormContext.Provider>
   );

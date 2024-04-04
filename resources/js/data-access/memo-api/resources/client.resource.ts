@@ -8,6 +8,10 @@ export interface ClientResource extends UserResource {
 
 interface ClientSpecificFields extends AttributableMarker<"client"> {}
 
+export type ClientResourceForCreate = Pick<ClientResource, "id" | "name"> & {
+  readonly client: ClientSpecificFields;
+};
+
 export type ClientResourceForPatch = Pick<ClientResource, "id"> & {
   readonly client: ClientSpecificFields;
 };
