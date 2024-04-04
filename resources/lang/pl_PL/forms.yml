@@ -90,6 +90,10 @@ meeting_series_create:
   submit: "Utwórz spotkania"
   success: "Utworzono serię spotkań"
 
+client:
+  fieldNames:
+    client.notes: "$t(models.generic.notes)"
+
 client_edit:
   formName: "Edycja klienta"
   success: "Zmieniono dane klienta"
