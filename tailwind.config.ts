@@ -42,8 +42,8 @@ export default {
       },
     },
     fontFamily: {
-      main: "Roboto",
-      mono: "Roboto Mono",
+      main: "Mulish",
+      mono: "PT Mono",
     },
   },
   darkMode: "class",

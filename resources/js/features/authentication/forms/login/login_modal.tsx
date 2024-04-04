@@ -30,7 +30,7 @@ export const createLoginModal = registerGlobalPageElement<true>((args) => {
             {(commitDate) => (
               <div class="relative">
                 <A
-                  class="absolute top-1 right-0 text-gray-200 no-underline"
+                  class="absolute top-1 right-0 !text-gray-200"
                   style={{"font-size": "0.5rem"}}
                   href={`${V1.defaults.baseURL}/system/status`}
                   target="_blank"
