@@ -10,5 +10,5 @@ export * from "./TableContext";
 export * from "./TableName";
 export * from "./TableSearch";
 export * from "./TableSummary";
-export * from "./headers_iterator";
 export * from "./table_cells";
+export * from "./columns_iterator";

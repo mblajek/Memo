@@ -1,23 +1,23 @@
-import {Title} from "@solidjs/meta";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
-  EmptyValueCell,
   PaddedCell,
   Pagination,
+  ShowCellVal,
   Table,
   cellFunc,
   getBaseTableOptions,
   useTableCells,
 } from "components/ui/Table";
 import {QueryBarrier} from "components/utils";
-import {useAllAttributes} from "data-access/memo-api/attributes";
-import {Dictionary, Position, useAllDictionaries} from "data-access/memo-api/dictionaries";
+import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
 import {Show, VoidComponent, createMemo} from "solid-js";
+import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
+import {MemoTitle} from "../features/root/MemoTitle";
 import {useAttrValueFormatter} from "./util";
 
 export default (() => {
@@ -44,13 +44,13 @@ export default (() => {
         enableSorting: false,
         size: 60,
       }),
-      helper.accessor("name", {
+      helper.accessor("resource.name", {
         id: "Name",
         ...textSort,
       }),
       helper.accessor("label", {
         id: "Label",
-        cell: cellFunc<string>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
+        cell: cellFunc<string>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
         ...textSort,
       }),
       helper.accessor("resource.isFixed", {
@@ -58,10 +58,11 @@ export default (() => {
       }),
       helper.accessor("resource.facilityId", {
         id: "Facility",
-        cell: cellFunc<string>(
-          (v) => <PaddedCell>{getFacility(v)}</PaddedCell>,
-          () => <EmptyValueCell />,
-        ),
+        cell: cellFunc<string>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
+          </PaddedCell>
+        )),
         ...textSort,
       }),
     ];
@@ -148,7 +149,7 @@ export default (() => {
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <Title>Dictionaries</Title>
+      <MemoTitle title="Dictionaries" />
       <div class="contents text-sm">
         <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
           <Table table={table()} mode="standalone" />

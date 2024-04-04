@@ -15,4 +15,14 @@ tags:
   client_late_present: "klient był niepunktualny"
 
 show_details: "Więcej"
-click_to_see_details: "Kliknij, aby zobaczyć szczegóły spotkania"
+click_to_see_details: "Kliknij aby zobaczyć szczegóły spotkania"
+
+create_series: "Powtarzaj spotkanie"
+meeting_is_in_series: "spotkanie w serii"
+first_meeting: "pierwsze spotkanie"
+
+create_copy:
+  any: "Utwórz i edytuj kopię"
+  in_one_day: "– następnego dnia"
+  in_one_week: "– tydzień później"
+  in_two_weeks: "– dwa tygodnie później"

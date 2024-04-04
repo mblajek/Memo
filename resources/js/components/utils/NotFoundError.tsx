@@ -48,7 +48,7 @@ export const NotFoundError: VoidComponent<Props> = (props) => {
   createEffect(() => {
     if (isNotFoundError()) {
       console.error("404 response:", error());
-      invalidate.everythingNoLoop();
+      invalidate.everythingThrottled();
     }
   });
   return (

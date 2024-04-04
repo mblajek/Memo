@@ -28,6 +28,8 @@ use Illuminate\Validation\Rule;
  * @property int start_dayminute
  * @property int duration_minutes
  * @property string status_dict_id
+ * @property ?string from_meeting_id
+ * @property ?string interval
  * @property-read Collection|MeetingAttendant[] $attendants
  * @property-read Collection|MeetingResource[] $resources
  * @method static MeetingBuilder query()
@@ -41,6 +43,10 @@ class Meeting extends Model
     use HasDeletedBy;
     use SoftDeletes;
 
+    public const string STATUS_COMPLETED = 'f6001030-c061-480e-9a5a-7013cee7ff40';
+    public const string STATUS_PLANNED = '86aaead1-bbcc-4af1-a74a-ed2bdff46d0a';
+    public const string CATEGORY_SYSTEM = '2903ea34-6188-4972-b84c-d3dc4047ee3c';
+
     protected $table = 'meetings';
 
     protected $fillable = [
@@ -53,6 +59,8 @@ class Meeting extends Model
         'duration_minutes',
         'status_dict_id',
         'is_remote',
+        'from_meeting_id',
+        'interval',
     ];
 
     protected $casts = [
@@ -97,15 +105,21 @@ class Meeting extends Model
         return $this->hasMany(MeetingAttendant::class);
     }
 
-    public function getAttendants(AttendanceType $attendanceType)
+    /** @return Collection<MeetingAttendant> */
+    public function getAttendants(AttendanceType $attendanceType): Collection
     {
         return $this->attendants->filter(
-            fn(MeetingAttendant $attendant) => $attendant->attendance_type === $attendanceType,
+            fn(MeetingAttendant $attendant) => $attendant->attendance_type_dict_id === $attendanceType->value,
         );
     }
 
     public function resources(): HasMany
     {
         return $this->hasMany(MeetingResource::class);
+    }
+
+    public function resetStatus(): void
+    {
+        $this->status_dict_id = self::STATUS_PLANNED;
     }
 }

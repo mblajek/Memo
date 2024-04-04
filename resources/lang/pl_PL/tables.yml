@@ -1,5 +1,6 @@
 tables:
   generic:
+    tableName: "tabela"
     summary__zero: "Brak wyników"
     summary__one: "{{count, number}} wynik"
     summary__few: "{{count, number}} wyniki"
@@ -19,6 +20,8 @@ tables:
     summary__one: "{{count, number}} pracownik"
     summary__few: "{{count, number}} pracowników"
     summary__many: "{{count, number}} pracowników"
+    columnNames:
+      staff.hasFacilityAdmin: "$t(models.staff.hasFacilityAdmin)"
 
   client:
     summary__zero: "Brak klientów"
@@ -47,8 +50,16 @@ tables:
       staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
       clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
+      attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
       attendant.name: "uczestnik"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
+
+  meetingAttendant:
+    tableName: "$t(models.meeting.attendants)"
+    summary__zero: "Brak uczestników"
+    summary__one: "{{count, number}} uczestnik"
+    summary__few: "{{count, number}} uczestników"
+    summary__many: "{{count, number}} uczestników"
 
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
@@ -79,3 +90,15 @@ filter:
     fuzzy: "dopasowane"
     eq: "równe"
     regexp: "wyr. regularne"
+
+export:
+  label: "$t(actions.export)"
+  format:
+    csv: "CSV"
+    excel_csv: "Excel CSV"
+  all_pages: "cała tabela"
+  current_page: "bieżąca strona"
+  exporting: "Eksportowanie…"
+  success: "Zapisano dane do pliku"
+  error: "Nie udało się wyeksportować danych"
+  aborted: "Anulowano eksport"

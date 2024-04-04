@@ -49,7 +49,7 @@ facility_edit:
   success: "Zmieniono dane placówki"
 
 meeting:
-  default_duration: "Sugerowane: {{text}}"
+  default_duration: "Sugerowane:"
   add_attendant:
     staff: "Dodaj kolejnego pracownika"
     clients: "Dodaj kolejnego klienta"
@@ -75,3 +75,20 @@ meeting_delete:
   confirmationText: "Czy na pewno usunąć to spotkanie?"
   submit: "Usuń spotkanie"
   success: "Usunięto spotkanie"
+
+meeting_series:
+  fieldNames:
+    interval: "powtarzaj"
+    seriesLength: "długość serii"
+    # Umbrella fields for the meeting dates table:
+    meetingDates: "daty spotkań"
+  total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
+  interval_labels:
+    1d: "w kolejne dni"
+    7d: "co tydzień"
+    14d: "co dwa tygodnie"
+
+meeting_series_create:
+  formName: "Utwórz serię spotkań"
+  submit: "Utwórz spotkania"
+  success: "Utworzono serię spotkań"

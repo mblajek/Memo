@@ -1,10 +1,10 @@
 import {Collection} from "@zag-js/collection";
 import * as combobox from "@zag-js/combobox";
-import {trackFormControl} from "@zag-js/form-utils";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {cx, useLangFunc} from "components/utils";
+import {useIsFieldsetDisabled} from "components/utils/fieldset_disabled_tracker";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
 import {ImCross, ImSpinner2} from "solid-icons/im";
@@ -27,14 +27,15 @@ import {
 } from "solid-js";
 import {Portal} from "solid-js/web";
 import {Button} from "../Button";
+import {SmallSpinner} from "../Spinner";
 import {FieldBox} from "./FieldBox";
 import {PlaceholderField} from "./PlaceholderField";
 import s from "./Select.module.scss";
-import {SmallSpinner} from "../Spinner";
+import {LabelOverride} from "./labels";
 
 export interface SelectBaseProps {
   readonly name: string;
-  readonly label?: JSX.Element;
+  readonly label?: LabelOverride;
   /**
    * The items to show in this select. In the external filtering mode, the list should change
    * when the filter changes. In the internal filtering mode, the list should not change, and will
@@ -142,16 +143,12 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   // the filtered items later. It's done like this because filtering needs api() which is not created yet.
   let collection: Accessor<Collection<SelectItem>> = () => combobox.collection.empty();
 
+  const [root, setRoot] = createSignal<HTMLDivElement>();
+  let portalRoot: HTMLDivElement | undefined;
+
   // Track the disabled state of the fieldset. This is a workaround, it should happen automatically in the
   // zag component.
-  const [fieldsetDisabled, setFieldsetDisabled] = createSignal(false);
-  createEffect(() =>
-    trackFormControl(root() || null, {
-      onFieldsetDisabledChange: setFieldsetDisabled,
-      // Ignore form reset.
-      onFormReset: () => {},
-    }),
-  );
+  const fieldsetDisabled = useIsFieldsetDisabled(root);
 
   const [state, send] = useMachine(
     combobox.machine({
@@ -342,9 +339,6 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
   });
 
-  const [root, setRoot] = createSignal<HTMLDivElement>();
-  let portalRoot: HTMLDivElement | undefined;
-
   /** Whether the component is disabled, either directly or via a fieldset. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isDisabled = () => (api().controlProps as any)["data-disabled"] !== undefined;
@@ -408,6 +402,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
               {...api().inputProps}
               // This is just for user entry, and not the actual form value.
               name=""
+              class="bg-inherit"
               placeholder={api().value.length ? undefined : props.placeholder}
               // Without filtering, the input is used just for the placeholder.
               inert={props.onFilterChange ? undefined : true}

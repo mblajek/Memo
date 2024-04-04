@@ -16,11 +16,12 @@ class MeetingService
     public function create(Facility $facility, array $data): string
     {
         $meeting = new Meeting($data);
-        $this->fillMeeting($meeting, $facility);
+        $meeting->facility_id = $facility->id;
+        $this->fillMeetingCategory($meeting);
 
         $staff = $this->extractStaff($data) ?? [];
         $clients = $this->extractClients($data) ?? [];
-        $attendants = array_merge($staff, $clients);
+        $attendants = $staff + $clients;
         $resources = $this->extractResources($data) ?? [];
 
         DB::transaction(function () use ($meeting, $attendants, $resources) {
@@ -35,9 +36,12 @@ class MeetingService
     public function patch(Meeting $meeting, array $data): void
     {
         $meeting->fill($data);
+        if (array_key_exists('type_dict_id', $meeting->getDirty())) {
+            $this->fillMeetingCategory($meeting);
+            $meeting->from_meeting_id = null;
+            $meeting->interval = null;
+        }
 
-        // TODO: Go through those list elements one by one to figure out which ones need to be added,
-        //       updated, or deleted separately.
         $finalAttendants = $this->extractPatchAttendants($data, $meeting);
         $finalResources = $this->extractResources($data);
 
@@ -46,8 +50,18 @@ class MeetingService
                 $meeting->save();
             }
             if (!is_null($finalAttendants)) {
-                $meeting->attendants()->delete();
-                $meeting->attendants()->saveMany($finalAttendants);
+                /** @var array<non-falsy-string, MeetingAttendant> $currentAttendants */
+                $currentAttendants = $meeting->attendants->keyBy('user_id')->all();
+                /** @var array<non-falsy-string, MeetingAttendant> $newAttendants */
+                [$userIdsToRemove, $newAttendants] = $finalAttendants;
+                $meeting->attendants()->whereIn('user_id', $userIdsToRemove)->delete();
+                foreach ($newAttendants as $userId => $newAttendant) {
+                    if (array_key_exists($userId, $currentAttendants)) {
+                        $currentAttendants[$userId]->update($newAttendant->attributesToArray());
+                    } else {
+                        $meeting->attendants()->save($newAttendant);
+                    }
+                }
             }
             if (!is_null($finalResources)) {
                 $meeting->resources()->delete();
@@ -58,9 +72,8 @@ class MeetingService
         });
     }
 
-    private function fillMeeting(Meeting $meeting, Facility $facility): void
+    private function fillMeetingCategory(Meeting $meeting): void
     {
-        $meeting->facility_id = $facility->id;
         $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
             ->attrValues(byId: true)[PositionAttributeUuidEnum::Category->value]);
     }
@@ -75,6 +88,7 @@ class MeetingService
         return $dataKey;
     }
 
+    /** @return ?array<non-falsy-string, MeetingAttendant> */
     private function extractStaff(array &$data): ?array
     {
         $attendants = [];
@@ -84,12 +98,13 @@ class MeetingService
         }
         foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
-            $attendant->attendance_type = AttendanceType::Staff;
+            $attendant->attendance_type_dict_id = AttendanceType::Staff->value;
             $attendants[$attendant->user_id] = $attendant;
         }
-        return array_values($attendants);
+        return $attendants;
     }
 
+    /** @return ?array<non-falsy-string, MeetingAttendant> */
     private function extractClients(array &$data): ?array
     {
         $attendants = [];
@@ -99,12 +114,13 @@ class MeetingService
         }
         foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
-            $attendant->attendance_type = AttendanceType::Client;
+            $attendant->attendance_type_dict_id = AttendanceType::Client->value;
             $attendants[$attendant->user_id] = $attendant;
         }
-        return array_values($attendants);
+        return $attendants;
     }
 
+    /** @return ?array<non-falsy-string, MeetingAttendant> */
     private function extractResources(array &$data): ?array
     {
         $resources = [];
@@ -116,7 +132,7 @@ class MeetingService
             $resource = new MeetingResource($resourceData);
             $resources[$resource->resource_dict_id] = $resource;
         }
-        return array_values($resources);
+        return $resources;
     }
 
     public function extractPatchAttendants(array &$data, Meeting $meeting): ?array
@@ -128,9 +144,30 @@ class MeetingService
             return null;
         }
 
-        $finalStaff = $newStaff ?? $meeting->getAttendants(AttendanceType::Staff);
-        $finalClients = $newClients ?? $meeting->getAttendants(AttendanceType::Client);
+        /** @var array<non-falsy-string, MeetingAttendant> $currentStaff */
+        $currentStaff = $meeting->getAttendants(AttendanceType::Staff)->keyBy('user_id')->all();
+        /** @var array<non-falsy-string, MeetingAttendant> $currentStaff */
+        $currentClients = $meeting->getAttendants(AttendanceType::Client)->keyBy('user_id')->all();
+        /** @var array<non-falsy-string, MeetingAttendant> $newAttendants */
+        $newAttendants = ($newStaff ?? []) + ($newClients ?? []);
 
-        return array_merge($finalStaff, $finalClients);
+        /** @var list<string> $userIdsToRemove */
+        $userIdsToRemove = [];
+        if ($newStaff !== null) {
+            foreach ($currentStaff as $userId => $currentAttendant) {
+                if (!array_key_exists($userId, $newAttendants)) {
+                    $userIdsToRemove[] = $userId;
+                }
+            }
+        }
+        if ($newClients !== null) {
+            foreach ($currentClients as $userId => $currentAttendant) {
+                if (!array_key_exists($userId, $newAttendants)) {
+                    $userIdsToRemove[] = $userId;
+                }
+            }
+        }
+
+        return [$userIdsToRemove, $newAttendants];
     }
 }

@@ -1,5 +1,7 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {Show, VoidComponent} from "solid-js";
+import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {Match, Switch, VoidComponent} from "solid-js";
+import {Capitalize} from "../Capitalize";
 import {TranslatedText} from "../TranslatedText";
 import {useTable} from "./TableContext";
 
@@ -13,12 +15,20 @@ interface Props {
  * otherwise from table meta.translations, or finally from the column id.
  */
 export const ColumnName: VoidComponent<Props> = (props) => {
+  const attributes = useAttributes();
   const table = useTable();
   return (
     <span class="wrapText">
-      <Show
-        when={props.def.meta?.tquery?.devColumn}
-        fallback={
+      <Switch>
+        <Match when={props.def.meta?.tquery?.devColumn}>
+          <span class="wrapTextAnywhere" title="Unconfigured data column shown in DEV mode">
+            <span class="text-xs">DEV</span> {props.def.id}
+          </span>
+        </Match>
+        <Match when={props.def.meta?.tquery?.attributeId}>
+          {(attributeId) => <Capitalize text={attributes()?.get(attributeId()).label} />}
+        </Match>
+        <Match when={true}>
           <TranslatedText
             override={props.def.meta?.columnName}
             langFunc={
@@ -29,12 +39,8 @@ export const ColumnName: VoidComponent<Props> = (props) => {
             capitalize
             fallbackCode={props.def.id}
           />
-        }
-      >
-        <span class="wrapTextAnywhere" title="Unconfigured data column shown in DEV mode">
-          <span class="text-xs">DEV</span> {props.def.id}
-        </span>
-      </Show>
+        </Match>
+      </Switch>
     </span>
   );
 };

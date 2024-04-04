@@ -5,12 +5,12 @@ import {TableTranslations} from "components/ui/Table";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
+import {useDictionaries} from "../dictionaries_and_attributes_context";
 import {translateError} from "../error_util";
 import {Api} from "../types";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
 import {Column, ColumnName, DataRequest, DataResponse, Filter, Sort, SortItem} from "./types";
-import {useDictionaries} from "../dictionaries";
 
 export interface ColumnConfig {
   readonly name: string;
@@ -35,7 +35,7 @@ interface RequestController {
 const DEFAULT_PAGE_SIZE = 50;
 
 /**
- * Creates a requets creator with a collection of helpers to use together with a TanStack Table.
+ * Creates a request creator with a collection of helpers to use together with a TanStack Table.
  *
  * The request itself is a memo combining data from the signals exposed in the RequestController.
  * These signals can be plugged directly into the table state.
@@ -160,7 +160,7 @@ export function createTableRequestCreator({
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
-      if (!allInitialisedInternal() || !allInitialised()) {
+      if (!allInitialisedInternal() || !allInitialised() || !dataColumns().length) {
         return undefined;
       }
       const sort: SortItem[] = sorting().map(({id, desc}) => ({

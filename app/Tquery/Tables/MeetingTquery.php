@@ -10,11 +10,9 @@ use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
-use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 use App\Tquery\Engine\TqService;
-use Illuminate\Support\Facades\App;
 
 readonly class MeetingTquery extends TqService
 {
@@ -39,9 +37,12 @@ readonly class MeetingTquery extends TqService
 
     protected function getConfig(): TqConfig
     {
-        $config = new TqConfig(table: TqTableEnum::meetings);
+        $config = new TqConfig(table: TqTableAliasEnum::meetings);
 
         $config->addSimple(TqDataTypeEnum::uuid, 'id');
+        $config->addSimple(TqDataTypeEnum::uuid_nullable, 'from_meeting_id');
+        $config->addSimple(TqDataTypeEnum::is_not_null, 'from_meeting_id', 'is_clone');
+        $config->addSimple(TqDataTypeEnum::string_nullable, 'interval');
         $config->addSimple(TqDataTypeEnum::date, 'date');
         $config->addSimple(TqDataTypeEnum::int, 'start_dayminute');
         $config->addSimple(TqDataTypeEnum::int, 'duration_minutes');
@@ -74,7 +75,7 @@ readonly class MeetingTquery extends TqService
         ];
         foreach ($attendanceTypes as $attendanceName => $attendanceType) {
             $attendantWhere = 'where `meeting_attendants`.`meeting_id` = `meetings`.`id`' . ($attendanceType
-                    ? " and `meeting_attendants`.`attendance_type` = '{$attendanceType->value}'" : '');
+                    ? " and `meeting_attendants`.`attendance_type_dict_id` = '{$attendanceType->value}'" : '');
             $config->addQuery(
                 TqDataTypeEnum::int,
                 fn(string $tableName) => //
@@ -90,10 +91,7 @@ readonly class MeetingTquery extends TqService
             $config->addQuery(
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
-                    (App::hasDebugModeEnabled()
-                        // todo: remove after updating mariadb to 11.2.3
-                        ? "select concat('[',group_concat(concat('\"',replace(`users`.`name`,'\"','\\\"'),'\"')),']') from `meeting_attendants`"
-                        : "select json_arrayagg(`users`.`name`) from `meeting_attendants`")
+                    "select json_arrayagg(`users`.`name`) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
                 "$attendanceName.*.name",
             );
@@ -107,7 +105,7 @@ readonly class MeetingTquery extends TqService
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
                     "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
-                    . "'attendanceType', `meeting_attendants`.`attendance_type`,"
+                    . "'attendanceTypeDictId', `meeting_attendants`.`attendance_type_dict_id`,"
                     . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
                     . ")) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",

@@ -1,6 +1,6 @@
 import {Select, SelectItem} from "components/ui/form/Select";
 import {useLangFunc} from "components/utils";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";

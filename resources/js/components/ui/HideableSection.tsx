@@ -1,8 +1,8 @@
-import {ParentComponent} from "solid-js";
+import {ParentComponent, createMemo} from "solid-js";
 import {debouncedAccessor} from "../utils";
 
 interface Props {
-  readonly show: boolean;
+  readonly show: unknown;
 }
 
 const TRANSITION_TIME_MS = 200;
@@ -13,16 +13,17 @@ const TRANSITION_TIME_MS = 200;
  * The section folds and unfolds with a transition.
  */
 export const HideableSection: ParentComponent<Props> = (props) => {
+  const show = createMemo(() => !!props.show);
   let div: HTMLDivElement | undefined;
   /** Whether the section is fully opened. */
   // eslint-disable-next-line solid/reactivity
-  const hasFullHeight = debouncedAccessor(() => props.show, {
+  const hasFullHeight = debouncedAccessor(show, {
     timeMs: TRANSITION_TIME_MS,
     outputImmediately: (show) => !show,
   });
   /** The show signal, delayed by epsilon. See doc for maxHeight for description. */
   // eslint-disable-next-line solid/reactivity
-  const showDelayedByEpsilon = debouncedAccessor(() => props.show, {timeMs: 20});
+  const showDelayedByEpsilon = debouncedAccessor(show, {timeMs: 20});
   /**
    * The current max-height. The logic:
    * - If the section is fully opened, it is unset to allow auto height.
@@ -32,7 +33,7 @@ export const HideableSection: ParentComponent<Props> = (props) => {
    *   transition for animation.
    */
   const maxHeight = () =>
-    hasFullHeight() ? undefined : props.show || showDelayedByEpsilon() ? `${div?.scrollHeight}px` : "0";
+    hasFullHeight() ? undefined : show() || showDelayedByEpsilon() ? `${div?.scrollHeight}px` : "0";
   return (
     <div
       ref={div}

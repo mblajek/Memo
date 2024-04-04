@@ -2,10 +2,21 @@ import {NO_FACILITY} from "state/activeFacilityId.state";
 import {describe, expect, test} from "vitest";
 import {makeAttributable} from "./attributable";
 import {Attributes} from "./attributes";
+import {Dictionaries} from "./dictionaries";
 
 describe("Attributes", () => {
   const langFunc = (key: unknown) => `t(${key})`;
-  const attributes = Attributes.fromResources(langFunc, [
+  const dictionaries = Dictionaries.fromResources(langFunc, [
+    {
+      id: "dd",
+      name: "dict1-global",
+      facilityId: null,
+      positions: [],
+      isFixed: false,
+      isExtendable: false,
+    },
+  ]);
+  const attributes = Attributes.fromResources(langFunc, dictionaries, [
     {
       id: "aa1",
       facilityId: null,

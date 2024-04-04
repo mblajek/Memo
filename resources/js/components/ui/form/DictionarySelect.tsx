@@ -1,5 +1,6 @@
 import {NON_NULLABLE} from "components/utils";
-import {Position, useDictionaries} from "data-access/memo-api/dictionaries";
+import {Position} from "data-access/memo-api/dictionaries";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {VoidComponent, createMemo, mergeProps, splitProps} from "solid-js";
 import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSelectPropsPart} from "./Select";
 import {mergeSelectProps} from "./select_helper";
@@ -15,7 +16,7 @@ interface BaseProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" 
   readonly itemFunc?: (pos: Position, defItem: () => DefaultDictionarySelectItem) => SelectItem | undefined;
 }
 
-type DefaultDictionarySelectItem = Required<Pick<SelectItem, "value" | "text" | "disabled">>;
+export type DefaultDictionarySelectItem = Required<Pick<SelectItem, "value" | "text" | "disabled">>;
 
 type Props = BaseProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
 

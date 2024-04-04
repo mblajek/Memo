@@ -3,6 +3,7 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
+import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
 import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {useLangFunc} from "components/utils";
@@ -77,9 +78,8 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
               title={!form.data("email") ? t("forms.user_edit.has_password_requires_email") : undefined}
             />
             <HideableSection show={form.data("hasPassword")}>
-              <TextField
+              <PasswordField
                 name="password"
-                type="password"
                 {...(initialValues()?.hasPassword
                   ? {
                       label: t("forms.user_edit.fieldNames.newPassword"),
@@ -89,6 +89,7 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
                 // Prevent password autocomplete. Just autocomplete="off" does not work.
                 autocomplete="off"
                 readonly
+                allowShow
                 onClick={(e) => {
                   e.currentTarget.readOnly = false;
                 }}

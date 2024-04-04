@@ -1,9 +1,9 @@
-import {QueryMeta, createQuery, keepPreviousData} from "@tanstack/solid-query";
+import {createQuery, keepPreviousData} from "@tanstack/solid-query";
 import {AxiosError} from "axios";
 import {Accessor, createComputed, createSignal} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
 import {V1} from "../config";
-import {CreateQueryOpts} from "../query_utils";
+import {SolidQueryOpts} from "../query_utils";
 import {Api} from "../types";
 import {DataRequest, DataResponse, Schema} from "./types";
 
@@ -74,7 +74,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   prefixQueryKey: K;
   entityURL: EntityURL;
   requestCreator: RequestCreator<C>;
-  dataQueryOptions?: Partial<CreateQueryOpts<DataResponse, DataQueryKey<K>> | {meta: QueryMeta}>;
+  dataQueryOptions?: Partial<SolidQueryOpts<DataResponse, DataQueryKey<K>>>;
 }) {
   const schemaQuery = createQuery(() => ({
     queryKey: ["tquery-schema", entityURL] satisfies SchemaQueryKey,
@@ -90,10 +90,13 @@ export function createTQuery<C, K extends PrefixQueryKey>({
     queryFn: (context) =>
       V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then((res) => res.data),
     placeholderData: keepPreviousData,
-    ...dataQueryOptions,
+    // It is difficult to match the types here because of the defined/undefined initial data types.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(dataQueryOptions as any),
   }));
   return {
     schema,
+    request,
     requestController,
     dataQuery,
   };

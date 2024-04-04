@@ -1,6 +1,6 @@
 import {JSX} from "solid-js";
-import {cx} from "./classnames";
 import {DOMElement} from "solid-js/jsx-runtime";
+import {cx} from "./classnames";
 
 /**
  * A collection of super-interfaces for props for components that accept HTML element attributes,
@@ -40,6 +40,8 @@ export namespace htmlAttributes {
 
   export type pre = JSX.HTMLElementTags["pre"];
 
+  export type progress = JSX.HTMLElementTags["progress"];
+
   /** The events that can be overridden in a merge. Add more elements as needed. */
   const EVENT_HANDLERS = [
     "onInput",
@@ -55,13 +57,16 @@ export namespace htmlAttributes {
   export function merge<A extends object, O extends Pick<div, "class" | "style" | EventType>>(
     attributes: A | undefined,
     overrides: O,
-  ) {
-    const attribs = (attributes || {}) as Partial<Record<string, unknown>>;
+  ): A & O {
+    if (!attributes || !Object.keys(attributes).length) {
+      return overrides as A & O;
+    }
+    const attribs = attributes as Partial<Record<string, unknown>>;
     const result = {...attribs, ...overrides};
-    if (attribs.class !== undefined && overrides.class !== undefined) {
+    if (attribs.class !== undefined && result.class !== attribs.class) {
       result.class = cx(attribs.class as string, overrides.class);
     }
-    if (attribs.style !== undefined && overrides.style !== undefined) {
+    if (attribs.style !== undefined && result.style !== attribs.style) {
       if (typeof attribs.style !== typeof overrides.style)
         throw new Error(
           `Cannot merge style from attributes (${JSON.stringify(

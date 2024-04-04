@@ -1,9 +1,10 @@
 import {CellContext, HeaderContext} from "@tanstack/solid-table";
 import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT, htmlAttributes, useLangFunc} from "components/utils";
 import {FormattedDateTime} from "components/utils/date_formatting";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {DateTime} from "luxon";
-import {Index, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
+import {Accessor, Index, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
+import {ChildrenOrFunc, getChildrenElement} from "../children_func";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
 import {Header} from "./Header";
 import {IdColumn} from "./IdColumn";
@@ -16,7 +17,7 @@ export type HeaderComponent<T = RowDataType> = (ctx: HeaderContext<T, unknown>) 
 /**
  * The component used as cell in column definition.
  *
- * Warning: It function must not return a string directly, it needs to be wrapped in a JSX.Element,
+ * Warning: It must not return a string directly, it needs to be wrapped in a JSX.Element,
  * e.g. `<>{someString}</>`. Otherwise the reactivity is lost and the cell will show stale data.
  * It is not possible to express this requirement in the type.
  */
@@ -28,45 +29,72 @@ export function useTableCells() {
   const dictionaries = useDictionaries();
   return {
     defaultHeader: <T,>() => ((ctx) => <Header ctx={ctx} />) satisfies HeaderComponent<T>,
-    default: <T,>() => cellFunc<unknown, T>((v) => <PaddedCell class="wrapText">{defaultFormatValue(v)}</PaddedCell>),
+    default: <T,>() =>
+      cellFunc<unknown, T>((props) => <PaddedCell class="wrapText">{defaultFormatValue(props.v)}</PaddedCell>),
     bool: <T,>() =>
-      cellFunc<boolean, T>((v) => <PaddedCell>{v ? t("bool_values.yes") : t("bool_values.no")}</PaddedCell>),
-    date: <T,>() =>
-      cellFunc<string, T>((v) => (
+      cellFunc<boolean, T>((props) => (
         <PaddedCell>
-          <FormattedDateTime dateTime={DateTime.fromISO(v)} format={{...DATE_FORMAT, weekday: "short"}} alignWeekday />
+          <ShowCellVal v={props.v}>{(v) => (v() ? t("bool_values.yes") : t("bool_values.no"))}</ShowCellVal>
+        </PaddedCell>
+      )),
+    date: <T,>() =>
+      cellFunc<string, T>((props) => (
+        <PaddedCell>
+          <ShowCellVal v={props.v}>
+            {(v) => (
+              <FormattedDateTime
+                dateTime={DateTime.fromISO(v())}
+                format={{...DATE_FORMAT, weekday: "short"}}
+                alignWeekday
+              />
+            )}
+          </ShowCellVal>
         </PaddedCell>
       )),
     datetime: <T,>() =>
-      cellFunc<string, T>((v) => (
+      cellFunc<string, T>((props) => (
         <PaddedCell>
-          <FormattedDateTime
-            dateTime={DateTime.fromISO(v)}
-            format={{...DATE_TIME_FORMAT, weekday: "short"}}
-            alignWeekday
-          />
+          <ShowCellVal v={props.v}>
+            {(v) => (
+              <FormattedDateTime
+                dateTime={DateTime.fromISO(v())}
+                format={{...DATE_TIME_FORMAT, weekday: "short"}}
+                alignWeekday
+              />
+            )}
+          </ShowCellVal>
         </PaddedCell>
       )),
     int: <T,>() =>
-      cellFunc<number, T>((v) => <PaddedCell class="w-full text-right">{NUMBER_FORMAT.format(v)}</PaddedCell>),
+      cellFunc<number, T>((props) => (
+        <PaddedCell class="w-full text-right">
+          <ShowCellVal v={props.v}>{(v) => NUMBER_FORMAT.format(v())}</ShowCellVal>
+        </PaddedCell>
+      )),
     uuid: <T,>() =>
-      cellFunc<string, T>((v) => (
+      cellFunc<string, T>((props) => (
         <PaddedCell>
-          <IdColumn id={v} />
+          <ShowCellVal v={props.v}>{(v) => <IdColumn id={v()} />}</ShowCellVal>
         </PaddedCell>
       )),
     uuidList: <T,>() =>
-      cellFunc<readonly string[], T>((v) => (
+      cellFunc<readonly string[], T>((props) => (
         <PaddedCell class="w-full flex flex-col">
-          <Index each={v}>{(id) => <IdColumn id={id()} />}</Index>
+          <Index each={props.v} fallback={EMPTY_VALUE_SYMBOL}>
+            {(id) => <IdColumn id={id()} />}
+          </Index>
         </PaddedCell>
       )),
     dict: <T,>() =>
-      cellFunc<string, T>((v) => <PaddedCell>{dictionaries()?.getPositionById(v)?.label || "??"}</PaddedCell>),
-    dictList: <T,>() =>
-      cellFunc<readonly string[], T>((v) => (
+      cellFunc<string, T>((props) => (
         <PaddedCell>
-          <Index each={v} fallback={EMPTY_VALUE_SYMBOL}>
+          <ShowCellVal v={props.v}>{(v) => dictionaries()?.getPositionById(v())?.label || "??"}</ShowCellVal>
+        </PaddedCell>
+      )),
+    dictList: <T,>() =>
+      cellFunc<readonly string[], T>((props) => (
+        <PaddedCell>
+          <Index each={props.v} fallback={EMPTY_VALUE_SYMBOL}>
             {(id, index) => (
               <>
                 <Show when={index}>
@@ -83,7 +111,7 @@ export function useTableCells() {
 
 function defaultFormatValue(value: unknown) {
   if (value == undefined) {
-    return "";
+    return undefined;
   } else if (Array.isArray(value)) {
     return (
       <ul>
@@ -97,20 +125,35 @@ function defaultFormatValue(value: unknown) {
   }
 }
 
-export function cellFunc<V, T = RowDataType>(
-  func: (v: V, ctx: CellContext<T, unknown>) => JSX.Element | undefined,
-  fallback?: () => JSX.Element,
-): CellComponent<T> {
-  return (ctx) => (
-    <Show when={ctx.getValue() != null} fallback={fallback?.()}>
-      {func(ctx.getValue() as V, ctx)}
+/** The cell value, with null meaning empty value and undefined meaning value that is still loading. */
+type NullableCellVal<V> = V | undefined | null;
+
+interface CellFuncProps<V, T = RowDataType> {
+  readonly v: NullableCellVal<V>;
+  readonly row: T;
+  readonly ctx: CellContext<T, unknown>;
+}
+
+export function cellFunc<V, T = RowDataType>(CellComponent: VoidComponent<CellFuncProps<V, T>>): CellComponent<T> {
+  return (ctx) => <CellComponent v={ctx.getValue() as NullableCellVal<V>} row={ctx.row.original} ctx={ctx} />;
+}
+
+interface ShowCellValProps<V> {
+  readonly v: NullableCellVal<V>;
+  /** The value to show when value is missing. Default: empty symbol. */
+  readonly fallback?: JSX.Element;
+  readonly children: ChildrenOrFunc<[Accessor<V>]>;
+}
+
+export const ShowCellVal = <V,>(props: ShowCellValProps<V>) => {
+  return (
+    <Show when={props.v != undefined} fallback={props.fallback ?? (props.v === null ? EMPTY_VALUE_SYMBOL : undefined)}>
+      {getChildrenElement(props.children, () => props.v as V)}
     </Show>
   );
-}
+};
 
 /** Table cell content, with padding. */
 export const PaddedCell: ParentComponent<htmlAttributes.div> = (props) => (
   <div {...htmlAttributes.merge(props, {class: "w-full h-full px-1.5 py-1"})} />
 );
-
-export const EmptyValueCell: VoidComponent = () => <PaddedCell>{EMPTY_VALUE_SYMBOL}</PaddedCell>;

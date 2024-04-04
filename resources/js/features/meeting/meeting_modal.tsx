@@ -2,24 +2,16 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
-import {Api} from "data-access/memo-api/types";
-import {createComputed, createSignal, lazy} from "solid-js";
-import {MeetingChangeSuccessData} from "./meeting_change_success_data";
+import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
+import {doAndClearParams} from "components/utils/modals";
+import {MeetingViewEditFormProps} from "features/meeting/MeetingViewEditForm";
+import {createComputed, createSignal} from "solid-js";
 
-const MeetingViewEditForm = lazy(() => import("features/meeting/MeetingViewEditForm"));
+const MeetingViewEditForm = lazyAutoPreload(() => import("features/meeting/MeetingViewEditForm"));
 
-interface FormParams {
-  readonly meetingId: Api.Id;
-  /** Whether to show the meeting initially in view mode (and not in edit mode). Default: true. */
-  readonly initialViewMode?: boolean;
-  onDeleted?: (meetingId: string) => void;
-  onEdited?: (meeting: MeetingChangeSuccessData) => void;
-  onCopyCreated?: (meeting: MeetingChangeSuccessData) => void;
-  /** Whether to show toast on success. Default: true. */
-  readonly showToast?: boolean;
-}
+type Params = Omit<MeetingViewEditFormProps, "viewMode"> & {readonly initialViewMode?: boolean};
 
-export const createMeetingModal = registerGlobalPageElement<FormParams>((args) => {
+export const createMeetingModal = registerGlobalPageElement<Params>((args) => {
   const t = useLangFunc();
   const [viewMode, setViewMode] = createSignal(true);
   return (
@@ -31,26 +23,21 @@ export const createMeetingModal = registerGlobalPageElement<FormParams>((args) =
       style={MODAL_STYLE_PRESETS.medium}
     >
       {(params) => {
+        // Reinitialise the view mode on a new invocation of the modal.
         createComputed(() => setViewMode(!!params().initialViewMode));
         return (
           <MeetingViewEditForm
-            id={params().meetingId}
+            {...params()}
             viewMode={viewMode()}
-            onViewModeChange={setViewMode}
-            onEdited={(meeting) => {
-              params().onEdited?.(meeting);
-              args.clearParams();
+            onViewModeChange={(viewMode) => {
+              params().onViewModeChange?.(viewMode);
+              setViewMode(viewMode);
             }}
-            onCopyCreated={(meeting) => {
-              params().onCopyCreated?.(meeting);
-              args.clearParams();
-            }}
-            onDeleted={() => {
-              params().onDeleted?.(params().meetingId);
-              args.clearParams();
-            }}
-            onCancel={args.clearParams}
-            showToast={params().showToast}
+            onEdited={doAndClearParams(args, params().onEdited)}
+            onCreated={doAndClearParams(args, params().onCreated)}
+            onCloned={doAndClearParams(args, params().onCloned)}
+            onDeleted={doAndClearParams(args, params().onDeleted)}
+            onCancel={doAndClearParams(args, params().onCancel)}
           />
         );
       }}

@@ -125,7 +125,10 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <input
           name={filterFieldNames.get(`from_${props.name}`)}
           type={inputsType()}
-          class="w-full min-h-small-input border border-input-border rounded"
+          class={cx(
+            "w-full min-h-small-input border border-input-border rounded text-black",
+            lower() ? undefined : "text-opacity-50",
+          )}
           max={upper()}
           value={lower()}
           onInput={({target: {value}}) => setLower(value)}
@@ -136,7 +139,10 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <input
           name={filterFieldNames.get(`to_${props.name}`)}
           type={inputsType()}
-          class="w-full min-h-small-input border border-input-border rounded"
+          class={cx(
+            "w-full min-h-small-input border border-input-border rounded text-black",
+            upper() ? undefined : "text-opacity-50",
+          )}
           min={lower()}
           value={upper()}
           onInput={({target: {value}}) => setUpper(value)}

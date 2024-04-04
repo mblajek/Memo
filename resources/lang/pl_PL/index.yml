@@ -1,3 +1,5 @@
+language: "polski"
+
 app_name: "Memo"
 
 exception:
@@ -5,6 +7,7 @@ exception:
     translation: "Błędna konfiguracja tłumaczeń"
     tquery: "Błędna konfiguracja tabel"
   validation: "Przesłano niepoprawne dane"
+  form_submit: "Błąd przetwarzania formularza"
   unauthorised: "Brak autoryzacji"
   bad_credentials: "Błędne dane logowania"
   forbidden: "Brak dostępu"
@@ -40,7 +43,10 @@ range:
   max: "max:"
 
 quoted: "„{{text}}”"
-parenthesised: "({{text}})"
+parenthesis:
+  open: "("
+  close: ")"
+parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
 with_colon: "{{text}}:"
 ellipsis: "…"
 
@@ -59,3 +65,7 @@ unknown: "nieznany"
 open_in_new_tab: "Otwórz w nowej karcie"
 
 switch_theme: "Motyw aplikacji"
+
+system_version_update: "Odśwież stronę aby zaktualizować aplikację"
+
+rich_text_field: "Pole tekstowe wspierające tagi. Kliknij aby zobaczyć więcej informacji."

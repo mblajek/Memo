@@ -16,10 +16,9 @@ import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
 import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
 import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
-import toast from "solid-toast";
 import {useLangFunc} from ".";
 import {MemoLoader} from "../ui/MemoLoader";
-import {toastMessages} from "./toast";
+import {ToastMessages, toastError} from "./toast";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
@@ -85,11 +84,19 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
           }
         }
         translationsLoadedPromise.then(() => {
-          const messages = errorsToShow.map((e) => translateError(e, t));
-          for (const msg of messages) {
-            console.warn(`Error toast shown: ${msg}`);
+          if (errorsToShow.length) {
+            const messages = errorsToShow.map((e) => translateError(e, t));
+            for (const msg of messages) {
+              console.warn(`Error toast shown: ${msg}`);
+            }
+            // Don't show multiple "unauthorised" toasts, this is an error that typically occurs on all the active queries,
+            // so use id to display just a single toast.
+            const toastId =
+              errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
+                ? "exception.unauthorised"
+                : undefined;
+            toastError(<ToastMessages messages={messages} />, {id: toastId});
           }
-          toastMessages(messages, toast.error);
         });
       }
     }
@@ -100,9 +107,16 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         defaultOptions: {
           queries: {
             refetchOnReconnect: true,
+            refetchOnMount: true,
+            refetchOnWindowFocus: false,
             // When opening a page, reload data if it's older than a couple of seconds.
             staleTime: 15 * 1000,
-            retry: false,
+            retry: (failureCount, error) =>
+              failureCount <= 2 &&
+              isAxiosError<Api.ErrorResponse>(error) &&
+              error.response?.status === 500 &&
+              error.response.data.errors.some((e) => e.code === "exception.unexpected"),
+            retryDelay: 500,
           },
         },
         queryCache: new QueryCache({

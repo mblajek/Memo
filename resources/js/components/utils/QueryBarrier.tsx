@@ -1,5 +1,5 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {For, JSX, Match, ParentProps, Show, Switch, VoidComponent, createEffect, mergeProps, on} from "solid-js";
+import {For, JSX, Match, ParentProps, Show, Switch, VoidComponent, createEffect, mergeProps} from "solid-js";
 import {BigSpinner} from "../ui/Spinner";
 
 export interface QueryBarrierProps {
@@ -29,20 +29,17 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
     },
     allProps,
   );
-  createEffect(
-    // Don't rerun when fields on queries change, just the top level props.
-    on([() => props.queries, () => props.ignoreCachedData], ([queries, ignoreCachedData]) => {
-      if (ignoreCachedData) {
-        // We expect all queries to have fresh (not cached) data, so force fetch on those queries
-        // that didn't start their first fetch yet.
-        for (const query of queries) {
-          if (!query.isFetchedAfterMount && query.fetchStatus === "idle") {
-            query.refetch();
-          }
+  createEffect(() => {
+    if (props.ignoreCachedData) {
+      // We expect all queries to have fresh (not cached) data, so force fetch on those queries
+      // that didn't start their first fetch yet.
+      for (const query of props.queries) {
+        if (!query.isFetchedAfterMount && query.fetchStatus === "idle") {
+          query.refetch();
         }
       }
-    }),
-  );
+    }
+  });
   const isError = () => props.queries.some(({isError}) => isError);
   const isSuccess = () =>
     props.queries.every((query) => query.isSuccess && (!props.ignoreCachedData || query.isFetchedAfterMount));

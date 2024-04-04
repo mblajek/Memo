@@ -1,0 +1,10 @@
+{
+  "no-trailing-punctuation": false,
+  "no-bare-urls": false,
+  "code-fence-style": {"style": "consistent"},
+  "line-length": false,
+  "no-inline-html": false,
+  "first-line-h1": false,
+  "heading-increment": false,
+  "no-multiple-blanks": false
+}

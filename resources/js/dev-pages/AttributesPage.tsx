@@ -1,25 +1,27 @@
-import {Title} from "@solidjs/meta";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
-  EmptyValueCell,
   Header,
   PaddedCell,
+  ShowCellVal,
   Table,
   cellFunc,
   getBaseTableOptions,
   useTableCells,
 } from "components/ui/Table";
 import {QueryBarrier} from "components/utils";
-import {Attribute, useAllAttributes} from "data-access/memo-api/attributes";
-import {useAllDictionaries} from "data-access/memo-api/dictionaries";
+import {Attribute} from "data-access/memo-api/attributes";
+import {} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {Show, VoidComponent, createMemo} from "solid-js";
 import {Select} from "../components/ui/form/Select";
+import {EMPTY_VALUE_SYMBOL} from "../components/ui/symbols";
+import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
+import {MemoTitle} from "../features/root/MemoTitle";
 import {useAttrValueFormatter} from "./util";
 
 export default (() => {
@@ -28,7 +30,6 @@ export default (() => {
     return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
   }
   const attributes = useAllAttributes();
-  const dictionaries = useAllDictionaries();
 
   const models = createMemo(() => [...new Set(Array.from(attributes() || [], (a) => a.model))].sort());
 
@@ -38,7 +39,7 @@ export default (() => {
 
   function getAttributeTypeString(attr: Attribute) {
     if (attr.type === "dict") {
-      return `dict: ${dictionaries()?.get(attr.dictionaryId!).name}`;
+      return `dict: ${attr.dictionary!.name}`;
     } else if (attr.typeModel) {
       return `model: ${attr.typeModel}`;
     } else {
@@ -75,18 +76,19 @@ export default (() => {
         }),
         h.accessor("label", {
           id: "Label",
-          cell: cellFunc<string, Attribute>((l) => <PaddedCell class="italic">{l}</PaddedCell>),
+          cell: cellFunc<string, Attribute>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
           ...textSort,
         }),
-        h.accessor("resource.isFixed", {
+        h.accessor("isFixed", {
           id: "Fixed",
         }),
         h.accessor("resource.facilityId", {
           id: "Facility",
-          cell: cellFunc<string, Attribute>(
-            (v) => <PaddedCell>{getFacility(v)}</PaddedCell>,
-            () => <EmptyValueCell />,
-          ),
+          cell: cellFunc<string, Attribute>((props) => (
+            <PaddedCell>
+              <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
+            </PaddedCell>
+          )),
           ...textSort,
         }),
         h.accessor("model", {
@@ -114,17 +116,20 @@ export default (() => {
         }),
         h.accessor("type", {
           id: "Type",
-          cell: cellFunc<AttributeType, Attribute>((type, ctx) => (
-            <PaddedCell>{getAttributeTypeString(ctx.row.original)}</PaddedCell>
+          cell: cellFunc<AttributeType, Attribute>((props) => (
+            <PaddedCell>{getAttributeTypeString(props.row)}</PaddedCell>
           )),
           ...textSort,
         }),
         h.accessor("multiple", {
           id: "Multiple",
-          cell: cellFunc<boolean, Attribute>(
-            (multiple) => <PaddedCell>{String(multiple)}</PaddedCell>,
-            () => <EmptyValueCell />,
-          ),
+          cell: cellFunc<boolean, Attribute>((props) => (
+            <PaddedCell>
+              <ShowCellVal v={props.v} fallback={EMPTY_VALUE_SYMBOL}>
+                {(v) => String(v())}
+              </ShowCellVal>
+            </PaddedCell>
+          )),
         }),
         h.accessor("requirementLevel", {
           id: "Req. level",
@@ -144,7 +149,7 @@ export default (() => {
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <Title>Attributes</Title>
+      <MemoTitle title="Attributes" />
       <div class="contents text-sm">
         <Show when={attributes()} fallback={<BigSpinner />}>
           <Table table={table()} mode="standalone" />

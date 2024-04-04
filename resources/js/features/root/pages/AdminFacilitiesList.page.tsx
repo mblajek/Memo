@@ -1,5 +1,5 @@
 import {Button, EditButton} from "components/ui/Button";
-import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, cellFunc, createTableTranslations} from "components/ui/Table";
+import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FACILITY_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
@@ -22,7 +22,16 @@ export default (() => {
       columns={[
         {name: "id", initialVisible: false},
         {name: "name", columnDef: {enableHiding: false}},
-        {name: "url", columnDef: {cell: cellFunc<string>((url) => <PaddedCell>/{url}</PaddedCell>)}},
+        {
+          name: "url",
+          columnDef: {
+            cell: cellFunc<string>((props) => (
+              <PaddedCell>
+                <ShowCellVal v={props.v}>/{props.v}</ShowCellVal>
+              </PaddedCell>
+            )),
+          },
+        },
         {name: "createdAt", columnDef: {sortDescFirst: true}},
         {name: "updatedAt", columnDef: {sortDescFirst: true}, initialVisible: false},
         {

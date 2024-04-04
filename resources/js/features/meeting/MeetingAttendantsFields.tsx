@@ -9,11 +9,16 @@ import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
-import {useDictionaries} from "data-access/memo-api/dictionaries";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
-import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
+import {
+  MeetingAttendantResource,
+  MeetingResource,
+  MeetingResourceForCreate,
+  MeetingResourceForPatch,
+} from "data-access/memo-api/resources/meeting.resource";
 import {BiRegularPlus} from "solid-icons/bi";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {Index, Match, Show, Switch, VoidComponent, createEffect} from "solid-js";
@@ -40,7 +45,7 @@ interface Props {
   readonly name: "staff" | "clients";
   /** Whether to show the attendance status label. Default: true. */
   readonly showAttendanceStatusLabel?: boolean;
-  readonly viewMode?: boolean;
+  readonly viewMode: boolean;
 }
 
 interface FormAttendantsData extends Obj {
@@ -95,7 +100,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
       <div
         class="grid gap-x-1"
         style={{
-          "grid-template-columns": "auto 1fr 14rem",
+          "grid-template-columns": "auto 1.5fr 1fr",
           "row-gap": 0,
         }}
       >
@@ -103,7 +108,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           <FieldLabel
             fieldName={props.name}
             umbrella
-            text={
+            label={
               <Capitalize
                 text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
                   postProcess: "interval",
@@ -115,8 +120,15 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         </div>
         <Show when={props.showAttendanceStatusLabel !== false}>
           <div class="flex gap-1">
-            <FieldLabel fieldName="attendanceStatusNotes" umbrella />
-            <MeetingAttendanceStatusInfoIcon />
+            <FieldLabel
+              fieldName="attendanceStatusNotes"
+              umbrella
+              label={(origLabel) => (
+                <>
+                  {origLabel} <MeetingAttendanceStatusInfoIcon />
+                </>
+              )}
+            />
           </div>
         </Show>
         <div
@@ -134,7 +146,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               >
                 <Dynamic
                   component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
-                  class="col-start-1 min-h-big-input"
+                  class="col-start-1 min-h-small-input"
                   size="24"
                 />
                 <Switch>
@@ -150,6 +162,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       label=""
                       querySpec={tquerySpec()}
                       nullable={false}
+                      small
                     />
                   </Match>
                 </Switch>
@@ -196,6 +209,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         }}
                         nullable={false}
                         disabled={!form.data(`${props.name}.${index}.userId`)}
+                        small
                       />
                     </div>
                   </Show>
@@ -204,7 +218,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     <Show when={form.data(props.name)[index]?.userId || index}>
                       <div>
                         <Button
-                          class="secondary small !min-h-big-input"
+                          class="secondary small !min-h-small-input"
                           title={t("actions.delete")}
                           onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                         >
@@ -216,7 +230,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     <Show when={form.data(props.name)[index]?.userId && index === form.data(props.name).length - 1}>
                       <div>
                         <Button
-                          class="secondary small !min-h-big-input"
+                          class="secondary small !min-h-small-input"
                           title={t(`forms.meeting.add_attendant.${props.name}`)}
                           onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                         >
@@ -288,9 +302,14 @@ export function useAttendantsCreator() {
   };
 }
 
-export function getAttendantsValues(values: FormAttendantsData) {
+export function getAttendantsValuesForEdit(values: Partial<FormAttendantsData>) {
   return {
-    staff: values.staff.filter(({userId}) => userId),
-    clients: values.clients.filter(({userId}) => userId),
-  };
+    staff: values.staff?.filter(({userId}) => userId),
+    clients: values.clients?.filter(({userId}) => userId),
+  } satisfies Partial<MeetingResourceForPatch>;
+}
+
+export function getAttendantsValuesForCreate(values: Partial<FormAttendantsData>) {
+  const {staff = [], clients = []} = getAttendantsValuesForEdit(values);
+  return {staff, clients} satisfies Partial<MeetingResourceForCreate>;
 }

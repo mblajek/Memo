@@ -2,6 +2,7 @@ generic:
   createdAt: "utworzono"
   createdBy.name: "utworzono przez"
   updatedAt: "zmodyfikowano"
+  updatedBy.name: "zmodyfikowano przez"
   name: "nazwa"
   email: "adres e-mail"
   notes: "opis"
@@ -60,20 +61,24 @@ user:
   members: "przypisane placówki"
   facilities.count: "liczba placówek"
 
+facility_user:
+  _name: "pracownik/klient"
+  _name_plural: "pracownicy/klienci"
+  firstMeetingDate: "Pierwsza wizyta"
+  lastMeetingDate: "Ostatnia wizyta"
+  completedMeetingsCount: "Liczba odbytych wizyt"
+  completedMeetingsCountLastMonth: "Liczba wizyt w ost. miesiącu"
+  plannedMeetingsCount: "Liczba zaplanowanych wizyt"
+  plannedMeetingsCountNextMonth: "Liczba wizyt w nast. miesiącu"
+
 staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
-  name: "$t(models.user.name)"
-  hasEmailVerified: "$t(models.user.hasEmailVerified)"
-  hasPassword: "$t(models.user.hasPassword)"
-  passwordExpireAt: "$t(models.user.passwordExpireAt)"
-  hasGlobalAdmin: "$t(models.user.hasGlobalAdmin)"
+  hasFacilityAdmin: "$t(models.permissions.facilityAdmin)"
 
 client:
   _name: "klient"
   _name_plural: "klienci"
-  name: "$t(models.user.name)"
-  genderDictId: "$t(dictionary.gender._name)"
 
 meeting:
   _name: "spotkanie"
@@ -81,12 +86,17 @@ meeting:
   date: "data"
   startDayminute: "godzina rozpoczęcia"
   durationMinutes: "długość"
+  isClone: "w serii"
+  interval: "typ serii"
   categoryDictId: "kategoria"
   typeDictId: "typ"
   statusDictId: "$t(dictionary.meetingStatus._name)"
   attendants: "uczestnicy"
+  attendants.count: "$t(models.meeting.attendants) – liczba"
   staff: "$t(models.staff._name_plural)"
+  staff.count: "$t(models.meeting.staff) – liczba"
   clients: "$t(models.client._name_plural)"
+  clients.count: "$t(models.meeting.clients) – liczba"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
   # The name of the attendance status field when treated as "attendance notes".
   attendanceStatusNotes: "uwagi"

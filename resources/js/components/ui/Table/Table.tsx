@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {currentTime, cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
   Accessor,
@@ -30,7 +31,7 @@ import {
   on,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContextProvider, getHeaders, useTableCells} from ".";
+import {TableContext, getColumns, useTableCells} from ".";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
 import {EMPTY_VALUE_SYMBOL} from "../symbols";
@@ -44,21 +45,29 @@ export interface TableTranslations {
   summary(o?: TOptions): string;
 }
 
-export function createTableTranslations(tableName: string): TableTranslations {
+export function createTableTranslations(tableName: string | string[]): TableTranslations {
   const t = useLangFunc();
+  const names = typeof tableName === "string" ? [tableName] : tableName;
+  const tableNameKeys = [
+    ...names.map((n) => `tables.tables.${n}.tableName`),
+    ...names.map((n) => `models.${n}._name_plural`),
+    `tables.tables.generic.tableName`,
+  ];
+  const columnNameKeyPrefixes = [
+    ...names.map((n) => `tables.tables.${n}.columnNames.`),
+    ...names.map((n) => `models.${n}.`),
+    `tables.tables.generic.columnNames.`,
+    `models.generic.`,
+  ];
+  const summaryKeys = [...names.map((n) => `tables.tables.${n}.summary`), `tables.tables.generic.summary`];
   return {
-    tableName: (o) => t([`tables.tables.${tableName}.tableName`, `models.${tableName}._name_plural`], o),
+    tableName: (o) => t(tableNameKeys, o),
     columnName: (column, o) =>
       t(
-        [
-          `tables.tables.${tableName}.columnNames.${column}`,
-          `models.${tableName}.${column}`,
-          `tables.tables.generic.columnNames.${column}`,
-          `models.generic.${column}`,
-        ],
+        columnNameKeyPrefixes.map((p) => p + column),
         o,
       ),
-    summary: (o) => t([`tables.tables.${tableName}.summary`, `tables.tables.generic.summary`], o),
+    summary: (o) => t(summaryKeys, o),
   };
 }
 
@@ -70,6 +79,7 @@ declare module "@tanstack/table-core" {
     /** The translations for the table, used by various table-related components. */
     readonly translations?: TableTranslations;
     readonly defaultColumnVisibility?: Accessor<VisibilityState>;
+    readonly exportConfig?: TableExportConfig;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -80,6 +90,11 @@ declare module "@tanstack/table-core" {
      */
     readonly columnName?: () => JSX.Element;
   }
+}
+
+export interface TableExportConfig {
+  /** A table name override used to create the export file name. */
+  readonly tableName?: string;
 }
 
 /**
@@ -113,6 +128,11 @@ interface Props<T = object> {
    * to the backend, Index might be a better choice.
    */
   readonly rowsIteration?: "For" | "Index";
+  /**
+   * Whether to use the `<NonBlocking>` component for rendering rows, which reduces page freezing.
+   * Default: false.
+   */
+  readonly nonBlocking?: boolean;
   /** The content to put above the table, e.g. the global search bar. It has access to the table context */
   readonly aboveTable?: () => JSX.Element;
   /** The content to put below the table, e.g. the pagination controller. It has access to the table context */
@@ -128,6 +148,7 @@ interface Props<T = object> {
 const DEFAULT_PROPS = {
   mode: "embedded",
   rowsIteration: "For",
+  nonBlocking: false,
   isLoading: false,
   isDimmed: false,
 } satisfies Partial<Props>;
@@ -186,7 +207,8 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
         if (scrWrapper && !isScrolling) {
           // Use the most up-to-date value of desiredScrollX, not the debounced one.
           const desiredX = desiredScrollX();
-          if (desiredX !== undefined && desiredX !== scrWrapper.scrollLeft) {
+          // Use a tolerance when comparing. Some devices count position with fractional pixels.
+          if (desiredX !== undefined && Math.abs(desiredX - scrWrapper.scrollLeft) >= 2) {
             scrWrapper.scrollTo({left: desiredX, behavior: "smooth"});
           } else {
             setDesiredScrollX(undefined);
@@ -195,8 +217,15 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
       },
     ),
   );
+  const columns = createMemo(
+    on(
+      () => props.table.getAllLeafColumns(),
+      () => getColumns(props.table),
+    ),
+  );
   return (
-    <TableContextProvider table={props.table}>
+    // eslint-disable-next-line solid/reactivity
+    <TableContext.Provider value={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
         <div class={cx(s.tableContainer, s[props.mode])}>
           <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
@@ -210,31 +239,35 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
               <div ref={scrollToTopElement} class={s.scrollToTopElement}>
                 <div class={s.tableBg}>
                   <div class={s.table} style={{"grid-template-columns": gridTemplateColumns()}}>
-                    <div class={s.headerRow}>
-                      <For each={getHeaders(props.table)}>
-                        {({header, column}) => (
-                          <Show when={header()}>
-                            {(header) => (
-                              <div
-                                class={s.cell}
-                                onWheel={(e) => {
-                                  const scrWrapper = scrollingWrapper();
-                                  if (scrWrapper && !e.shiftKey && e.deltaY) {
-                                    setDesiredScrollX((l = scrWrapper.scrollLeft) =>
-                                      Math.min(
-                                        Math.max(l + e.deltaY, 0),
-                                        scrWrapper.scrollWidth - scrWrapper.clientWidth,
-                                      ),
-                                    );
-                                    e.preventDefault();
-                                  }
-                                }}
-                              >
-                                <Show when={!header().isPlaceholder}>
-                                  <CellRenderer component={column.columnDef.header} props={header().getContext()} />
-                                </Show>
-                              </div>
-                            )}
+                    <div
+                      ref={(div) =>
+                        div.addEventListener(
+                          "wheel",
+                          (e) => {
+                            if (e.deltaX) {
+                              // With 2d wheels (like a touchpad) avoid too much interference between the axes.
+                              setDesiredScrollX(undefined);
+                              return;
+                            }
+                            const scrWrapper = scrollingWrapper();
+                            if (scrWrapper && !e.shiftKey && e.deltaY) {
+                              setDesiredScrollX((l = scrWrapper.scrollLeft) =>
+                                Math.min(Math.max(l + e.deltaY, 0), scrWrapper.scrollWidth - scrWrapper.clientWidth),
+                              );
+                              e.preventDefault();
+                            }
+                          },
+                          {passive: false},
+                        )
+                      }
+                      class={s.headerRow}
+                    >
+                      <For each={columns()}>
+                        {({column, headerContext}) => (
+                          <Show when={column.getIsVisible()}>
+                            <div class={s.cell}>
+                              <CellRenderer component={column.columnDef.header} props={headerContext} />
+                            </div>
                           </Show>
                         )}
                       </For>
@@ -247,15 +280,19 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                       {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
                         const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
                         return (
-                          <div class={s.dataRow} inert={props.isDimmed || undefined}>
-                            <Index each={row().getVisibleCells()}>
-                              {(cell) => (
-                                <span class={s.cell}>
-                                  <CellRenderer component={cell().column.columnDef.cell} props={cell().getContext()} />
-                                </span>
-                              )}
-                            </Index>
-                          </div>
+                          <NonBlocking nonBlocking={props.nonBlocking}>
+                            <div class={s.dataRow} inert={props.isDimmed || undefined}>
+                              <For each={columns()}>
+                                {({column, cellContext}) => (
+                                  <Show when={column.getIsVisible()}>
+                                    <div class={s.cell}>
+                                      <CellRenderer component={column.columnDef.cell} props={cellContext(row())} />
+                                    </div>
+                                  </Show>
+                                )}
+                              </For>
+                            </div>
+                          </NonBlocking>
                         );
                       }}
                     </Dynamic>
@@ -271,7 +308,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
           <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
         </div>
       </Show>
-    </TableContextProvider>
+    </TableContext.Provider>
   );
 };
 

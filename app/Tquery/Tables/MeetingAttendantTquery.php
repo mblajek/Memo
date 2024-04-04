@@ -7,7 +7,6 @@ use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
-use App\Tquery\Config\TqTableEnum;
 use App\Tquery\Engine\TqBuilder;
 
 readonly class MeetingAttendantTquery extends MeetingTquery
@@ -16,14 +15,14 @@ readonly class MeetingAttendantTquery extends MeetingTquery
     {
         $builder = parent::getBuilder();
         $builder->join(
-            TqTableEnum::meetings,
+            TqTableAliasEnum::meetings,
             TqTableAliasEnum::meeting_attendants,
             'meeting_id',
             left: false,
             inv: true,
         );
         $builder->join(
-            TqTableEnum::meeting_attendants,
+            TqTableAliasEnum::meeting_attendants,
             TqTableAliasEnum::attendant,
             'user_id',
             left: false,
@@ -49,10 +48,10 @@ readonly class MeetingAttendantTquery extends MeetingTquery
             'attendant.name'
         );
         $config->addJoined(
-            TqDataTypeEnum::string,
+            new TqDictDef(TqDataTypeEnum::dict, DictionaryUuidEnum::AttendanceType),
             TqTableAliasEnum::meeting_attendants,
-            'attendance_type',
-            'attendant.attendance_type'
+            'attendance_type_dict_id',
+            'attendant.attendance_type_dict_id'
         );
         $config->addJoined(
             new TqDictDef(TqDataTypeEnum::dict, DictionaryUuidEnum::AttendanceStatus),

@@ -11,10 +11,13 @@ gender:
 meetingCategory:
   _name: "kategoria spotkania"
   other: "inne"
+  system: "systemowe"
 
 meetingType:
   _name: "typ spotkania"
   other: "inne"
+  work_time: "godziny pracy"
+  leave_time: "urlop"
 
 meetingStatus:
   _name: "status spotkania"
@@ -25,10 +28,15 @@ meetingStatus:
     planned: "Spotkanie jest zaplanowane"
     completed: "Spotkanie odbyło się"
     cancelled: "Spotkanie zostało odwołane przez któregoś z uczestników (lub z innych przyczyn)"
-    more_info: "Kliknij żeby zobaczyć więcej informacji o statusach spotkań"
+    more_info: "Kliknij aby zobaczyć więcej informacji o statusach spotkań"
 
 meetingResource:
   _name: "zasób"
+
+attendanceType:
+  _name: "typ uczestnika"
+  staff: "$t(models.staff._name)"
+  client: "$t(models.client._name)"
 
 attendanceStatus:
   _name: "status obecności"
@@ -40,10 +48,10 @@ attendanceStatus:
     cancelled: "ktoś inny odwołał"
   # The gender-neutral form "odwołano" is not good here because it does not convey that
   # it is this particular person who cancelled the meeting.
-  cancelled: "odwołał/a"
-  no_show: "niestawienie się"
   late_present: "niepunktualność"
-  too_late: "spóźnienie - nieobecność"
+  too_late: "spóźnienie-nieobecność"
+  no_show: "niestawienie się"
+  cancelled: "odwołał/a"
   _explanations:
     ok:
       planned: "Uczestnik planuje wziąć udział w spotkaniu"

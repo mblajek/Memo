@@ -2,12 +2,12 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
-import {TextField} from "components/ui/form/TextField";
+import {PasswordField} from "components/ui/form/PasswordField";
 import {useLangFunc} from "components/utils";
+import {toastSuccess} from "components/utils/toast";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent} from "solid-js";
-import toast from "solid-toast";
 import {z} from "zod";
 
 const getSchema = () =>
@@ -42,7 +42,7 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
       // For better integration with password managers.
       // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
       history.replaceState({passwordChanged: true}, "");
-      toast.success(t("forms.password_change.success"));
+      toastSuccess(t("forms.password_change.success"));
       props.onSuccess?.();
     },
     meta: {isFormSubmit: true},
@@ -71,9 +71,9 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
         value={statusQuery.data?.user.email || undefined}
         class="hidden"
       />
-      <TextField name="current" type="password" autocomplete="current-password" autofocus />
-      <TextField name="password" type="password" autocomplete="new-password" />
-      <TextField name="repeat" type="password" autocomplete="new-password" />
+      <PasswordField name="current" autocomplete="current-password" autofocus />
+      <PasswordField name="password" autocomplete="new-password" allowShow="whileHeld" />
+      <PasswordField name="repeat" autocomplete="new-password" />
       <FelteSubmit cancel={props.onCancel} />
     </FelteForm>
   );

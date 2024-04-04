@@ -3,6 +3,7 @@
 
   [data-part="content"][data-state="open"] {
     @apply bg-white border border-gray-700 rounded shadow-xl overflow-clip flex flex-col;
+    max-width: var(--available-width);
     max-height: var(--available-height);
   }
 }

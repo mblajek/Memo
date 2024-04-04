@@ -11,7 +11,31 @@ html {
 
   transition: filter 500ms;
   &.dark {
-    filter: hue-rotate(0.5turn) invert(0.9);
+    filter: hue-rotate(0.5turn) invert(0.93);
+  }
+
+  // Theme colors. They need to be linked from tailwind config.
+
+  //  A bright blue color used for various active elements on page.
+  --tc-memo-active: #06b6d4;
+  // A pale blue-grey color for highlighting hovered areas of active elements by setting their background color.
+  // Not necessarily good for hovered buttons etc.
+  --tc-hover: #e6f0f7;
+  // A light blue color for currently selected areas of active elements.
+  --tc-select: #b7e8f6;
+  // A light grey color for the background of disabled elements.
+  --tc-disabled: #ece8e8;
+  // A grey color for the border of input elements.
+  --tc-input-border: #b0b0b0;
+  // A grey text for displaying additional information.
+  --tc-grey-text: #566272;
+
+  &.dark {
+    --tc-disabled: #d2d2d2;
+    * {
+      // TODO: Figure out a cleaner way to disable shadows.
+      --tw-shadow: transparent !important;
+    }
   }
 }
 
@@ -36,8 +60,12 @@ html {
     --sb-size: 14px;
   }
 
-  * {
-    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  // As of 2024-02-11, chrome ignores the ::-webkit-scrollbar* selectors if any of the standard scrollbar
+  // properties is set, so ensure it is not set.
+  @supports not selector(::-webkit-scrollbar) {
+    * {
+      scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+    }
   }
 
   *::-webkit-scrollbar {
@@ -56,12 +84,39 @@ html {
     border: 4px solid var(--sb-track-color);
   }
 
+  // Style of a grey, disabled-looking scrollbar.
+  .disabledScrollBar {
+    --sb-thumb-color: #bbb;
+    --sb-track-color: #eee;
+  }
+
   input[type="checkbox"] {
+    &:checked {
+      // Make it similar to the memo-active color on Chrome.
+      filter: hue-rotate(-0.11turn);
+    }
     &:disabled {
       filter: brightness(0.8);
       &:checked {
         filter: brightness(0.62) contrast(7);
       }
+    }
+  }
+
+  progress {
+    &::-webkit-progress-bar {
+      @apply bg-gray-100;
+    }
+    &::-webkit-progress-value {
+      @apply bg-memo-active;
+      background-image: -webkit-linear-gradient(
+        -45deg,
+        transparent 30%,
+        rgba(0, 0, 0, 0.2) 30%,
+        rgba(0, 0, 0, 0.2) 70%,
+        transparent 70%
+      );
+      background-size: 40px 100%;
     }
   }
 
@@ -124,7 +179,7 @@ html {
       @apply px-0.5 -my-px border border-gray-300 rounded bg-white hover:bg-hover;
 
       &[aria-disabled="true"] {
-        @apply bg-opacity-50;
+        @apply opacity-50;
       }
     }
   }

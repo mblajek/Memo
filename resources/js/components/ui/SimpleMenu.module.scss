@@ -1,0 +1,16 @@
+.simpleMenu {
+  > button {
+    @apply px-2 py-1 text-left text-black disabled:text-opacity-50;
+    &:disabled * {
+      @apply text-opacity-50;
+    }
+    &:not(:disabled) {
+      &:hover {
+        @apply bg-hover;
+      }
+      &:active {
+        @apply bg-select;
+      }
+    }
+  }
+}

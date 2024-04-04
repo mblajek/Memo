@@ -19,6 +19,8 @@ export namespace User {
 
   export const login = (data: LoginRequest, config?: Api.Config<LoginRequest>) =>
     V1.post<Api.Response.Post>("/user/login", data, config);
+  export const developerLogin = (data: DeveloperLoginRequest, config?: Api.Config<DeveloperLoginRequest>) =>
+    V1.post<Api.Response.Post>("/user/login", data, config);
 
   export const logout = (config?: Api.Config) => V1.post<Api.Response.Post>("/user/logout", {}, config);
 
@@ -28,22 +30,26 @@ export namespace User {
   export const setLastLoginFacilityId = (lastLoginFacilityId: Api.Id, config?: Api.Config) =>
     V1.patch("/user", {lastLoginFacilityId}, config);
 
-  export type GetStatusData = {
-    user: UserResource;
-    permissions: PermissionsResource;
-    members: MemberResource[];
-  };
+  export interface GetStatusData {
+    readonly user: UserResource;
+    readonly permissions: PermissionsResource;
+    readonly members: MemberResource[];
+  }
 
-  export type LoginRequest = {
-    email: string;
-    password: string;
-  };
+  export interface LoginRequest {
+    readonly email: string;
+    readonly password: string;
+  }
 
-  export type ChangePasswordRequest = {
-    current: string;
-    password: string;
-    repeat: string;
-  };
+  export interface DeveloperLoginRequest {
+    readonly developer: boolean;
+  }
+
+  export interface ChangePasswordRequest {
+    readonly current: string;
+    readonly password: string;
+    readonly repeat: string;
+  }
 
   export const keys = {
     all: () => [...Users.keys.user()] as const,
@@ -62,12 +68,12 @@ export namespace User {
   };
 
   const STATUS_QUERY_OPTIONS = {
-    // Prevent refetching on every page.
-    staleTime: 10 * 60 * 1000,
     // Prevent displaying toast when user is not logged in - the login page will be displayed.
     meta: {quietHTTPStatuses: [401]},
     refetchOnMount: false,
-  };
+    refetchOnWindowFocus: true,
+    refetchInterval: 60 * 1000,
+  } satisfies Partial<SolidQueryOptions>;
 
   /** Query options for user status, without facility permissions. */
   export const statusQueryOptions = () =>

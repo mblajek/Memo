@@ -10,6 +10,7 @@ use App\Http\Resources\MemberResource;
 use App\Http\Resources\PermissionResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Rules\Valid;
 use App\Services\User\ChangePasswordService;
 use App\Services\User\StorageService;
 use App\Services\User\UpdateUserService;
@@ -48,11 +49,15 @@ class UserController extends ApiController
     )]
     public function login(Request $request): JsonResponse
     {
-        $loginData = $this->validate([
-            'email' => 'bail|required|string|email',
-            'password' => 'required|string',
-        ]);
-        if (Auth::attempt($loginData)) {
+        if ($this->getPermissionObject()->globalAdmin) {
+            $developer = $this->validate(['developer' => Valid::bool(sometimes: true)])['developer'] ?? null;
+            if (is_bool($developer)) {
+                $request->session()->put('developer_mode', $developer);
+                return new JsonResponse();
+            }
+        }
+        if (Auth::attempt($this->validate(['email' => Valid::string(['email']), 'password' => Valid::string()]))) {
+            $request->session()->forget('developer_mode');
             $request->session()->regenerate();
             return new JsonResponse();
         }

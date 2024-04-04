@@ -10,11 +10,7 @@ import {TextualFilterControl} from "./TextualFilterControl";
 import {UuidFilterControl} from "./UuidFilterControl";
 import {FilterControlProps} from "./types";
 
-interface CommonFilteringParams {
-  readonly enabled?: boolean;
-}
-
-export interface DateTimeFilteringParams extends CommonFilteringParams {
+export interface DateTimeFilteringParams {
   readonly useDateTimeInputs?: boolean;
 }
 
@@ -24,8 +20,9 @@ export type FilteringParams = DateTimeFilteringParams;
 export const ColumnFilterController: VoidComponent<FilterControlProps> = (props) => {
   const table = useTable();
   const filterControl = (): (() => JSX.Element) | undefined => {
-    const meta = table.getColumn(props.name)?.columnDef.meta?.tquery;
-    if (!meta || meta.filtering?.enabled === false) {
+    const column = table.getColumn(props.name);
+    const meta = column?.columnDef.meta?.tquery;
+    if (!column?.getCanFilter() || !meta) {
       return undefined;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

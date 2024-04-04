@@ -1,9 +1,10 @@
 import {useFormContext} from "components/felte-form/FelteForm";
+import {Button} from "components/ui/Button";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
-import {NON_NULLABLE, currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
+import {currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
@@ -19,11 +20,33 @@ interface Props {
 export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
-  const {form} = useFormContext<MeetingFormType>();
+  const {form, formConfig} = useFormContext<MeetingFormType>();
 
   function shouldSubmitCancelImmediately(type: FacilityUserType) {
     const data = form.data(type);
     return data.length === 1 && data[0]?.attendanceStatusDictId === attendanceStatusDict()?.ok.id;
+  }
+
+  /** Submits the form, sending just the specified fields (if specified). */
+  function submitForm(fields?: (keyof MeetingFormType)[]) {
+    form.createSubmitHandler({
+      onSubmit: (values, context) => {
+        let selectedValues: Partial<MeetingFormType>;
+        if (fields) {
+          selectedValues = {};
+          for (const field of fields) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            selectedValues[field] = values[field] as any;
+          }
+        } else {
+          selectedValues = values;
+        }
+        // The cast here is necessary to trick the form into accepting partial data. This might not
+        // be very elegant, but is simplest for patch, if we want to reuse the form for both create
+        // and update.
+        formConfig.onSubmit?.(selectedValues as MeetingFormType, context);
+      },
+    })();
   }
 
   function cancelBy(type: FacilityUserType, attendanceStatus: Position) {
@@ -35,7 +58,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         form.setFields(`${type}.${i}.attendanceStatusDictId`, attendanceStatus.id);
     }
     if (submitImmediately) {
-      form.handleSubmit();
+      submitForm(["statusDictId", type]);
     } else {
       props.onViewModeChange(false);
     }
@@ -54,7 +77,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         trigger={(triggerProps) => (
           <ButtonLike
             {...(triggerProps() as htmlAttributes.div)}
-            class="flex-grow flex items-center justify-center secondary small"
+            class="flex-grow flex items-center justify-center secondary small select-none"
             disabled={form.isSubmitting()}
           >
             {t("meetings.mark_as_cancelled.text")} <AiFillCaretDown class="text-current" />
@@ -62,70 +85,53 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         )}
       >
         {(popOver) => (
-          <SimpleMenu
-            items={[
-              form.data("staff").some(({userId}) => userId)
-                ? {
-                    label: (
-                      <div>
-                        <STAFF_ICONS.staff class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_staff")}
-                        <Show when={!shouldSubmitCancelImmediately("staff")}>{t("ellipsis")}</Show>
-                      </div>
-                    ),
-                    onClick: () => cancelBy("staff", attendanceStatusDict()!.cancelled),
-                  }
-                : undefined,
-              form.data("clients").some(({userId}) => userId)
-                ? {
-                    label: (
-                      <div>
-                        <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client")}
-                        <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
-                      </div>
-                    ),
-                    onClick: () => cancelBy("clients", attendanceStatusDict()!.cancelled),
-                  }
-                : undefined,
-              hasBegun() && form.data("clients").some(({userId}) => userId)
-                ? {
-                    label: (
-                      <div>
-                        <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client_no_show")}
-                        <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
-                      </div>
-                    ),
-                    onClick: () => cancelBy("clients", attendanceStatusDict()!.no_show),
-                  }
-                : undefined,
-              {
-                label: (
-                  <>
-                    {t("meetings.mark_as_cancelled.other")}
-                    {t("ellipsis")}
-                  </>
-                ),
-                onClick: () => {
-                  form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
-                  props.onViewModeChange(false);
-                },
-              },
-              {
-                label: t("meetings.mark_as_cancelled.undetermined"),
-                onClick: () => {
-                  form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
-                  form.handleSubmit();
-                },
-              },
-            ].filter(NON_NULLABLE)}
-            onClick={() => popOver().close()}
-          />
+          <SimpleMenu onClick={() => popOver().close()}>
+            <Show when={form.data("staff").some(({userId}) => userId)}>
+              <Button onClick={() => cancelBy("staff", attendanceStatusDict()!.cancelled)}>
+                <STAFF_ICONS.staff class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_staff")}
+                <Show when={!shouldSubmitCancelImmediately("staff")}>{t("ellipsis")}</Show>
+              </Button>
+            </Show>
+            <Show when={form.data("clients").some(({userId}) => userId)}>
+              <Button onClick={() => cancelBy("clients", attendanceStatusDict()!.cancelled)}>
+                <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client")}
+                <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
+              </Button>
+            </Show>
+            <Show when={hasBegun() && form.data("clients").some(({userId}) => userId)}>
+              <Button onClick={() => cancelBy("clients", attendanceStatusDict()!.no_show)}>
+                <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client_no_show")}
+                <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
+              </Button>
+            </Show>
+            <Button
+              onClick={() => {
+                form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
+                props.onViewModeChange(false);
+              }}
+            >
+              {t("meetings.mark_as_cancelled.other")}
+              {t("ellipsis")}
+            </Button>
+            <Button
+              onClick={() => {
+                form.setFields("statusDictId", meetingStatusDict()!.cancelled.id);
+                submitForm(["statusDictId"]);
+              }}
+            >
+              {t("meetings.mark_as_cancelled.undetermined")}
+            </Button>
+          </SimpleMenu>
         )}
       </PopOver>
       <ButtonLike
-        class={cx("flex-grow-[8] flex items-center justify-center small", hasBegun() ? "primary" : "secondary")}
+        class={cx(
+          "flex-grow-[8] flex items-center justify-center small select-none",
+          hasBegun() ? "primary" : "secondary",
+        )}
         onClick={() => {
           form.setFields("statusDictId", meetingStatusDict()!.completed.id);
-          form.handleSubmit();
+          submitForm(["statusDictId"]);
         }}
         disabled={form.isSubmitting()}
       >

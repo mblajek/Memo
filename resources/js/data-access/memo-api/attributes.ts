@@ -1,12 +1,16 @@
-import {createQuery} from "@tanstack/solid-query";
-import {LangFunc, useLangFunc} from "components/utils";
-import {createCached} from "components/utils/cache";
-import {translationsLoaded} from "i18n_loader";
-import {createMemo} from "solid-js";
-import {FacilityIdOrGlobal, activeFacilityId} from "state/activeFacilityId.state";
+import {LangFunc, NON_NULLABLE} from "components/utils";
+import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {Attributable, getAttributeModel, makeAttributable, readAttribute} from "./attributable";
-import {System} from "./groups";
-import {AttributeModel, AttributeResource, AttributeType, RequirementLevel} from "./resources/attribute.resource";
+import {Dictionaries, Dictionary} from "./dictionaries";
+import {
+  AttributeModel,
+  AttributeResource,
+  AttributeType,
+  DictAttributeType,
+  REQUIREMENT_LEVELS,
+  RequirementLevel,
+  SimpleAttributeType,
+} from "./resources/attribute.resource";
 import {getNameTranslation, isNameTranslatable} from "./resources/name_string";
 import {facilityIdMatches} from "./utils";
 
@@ -19,8 +23,10 @@ export class Attributes {
     readonly byModel: ReadonlyMap<string, Attribute[]>,
   ) {}
 
-  static fromResources(t: LangFunc, resources: AttributeResource[]) {
-    return Attributes.fromAttributes(resources.map((resource) => Attribute.fromResource(t, resource)));
+  static readonly EMPTY = new Attributes(new Map(), new Map(), new Map());
+
+  static fromResources(t: LangFunc, dictionaries: Dictionaries, resources: AttributeResource[]) {
+    return Attributes.fromAttributes(resources.map((resource) => Attribute.fromResource(t, dictionaries, resource)));
   }
 
   private static fromAttributes(attributes: Attribute[]) {
@@ -29,7 +35,7 @@ export class Attributes {
     const byModel = new Map<string, Attribute[]>();
     for (const attribute of attributes) {
       byId.set(attribute.id, attribute);
-      if (attribute.resource.isFixed && attribute.isTranslatable) {
+      if (attribute.isFixed && attribute.isTranslatable) {
         byName.set(attribute.name, attribute);
       }
       const model = attribute.model;
@@ -95,31 +101,41 @@ export class Attribute<T = unknown> {
     readonly label: string,
     readonly apiName: string,
     readonly type: AttributeType,
+    readonly basicType: SimpleAttributeType | DictAttributeType | undefined,
     readonly typeModel: AttributeModel | undefined,
-    readonly dictionaryId: string | undefined,
+    readonly dictionary: Dictionary | undefined,
     readonly multiple: boolean | undefined,
     readonly requirementLevel: RequirementLevel,
+    readonly isFixed: boolean,
   ) {
     this.resource = makeAttributable(resource, "attribute");
   }
 
-  static fromResource(t: LangFunc, resource: AttributeResource) {
+  static fromResource(t: LangFunc, dictionaries: Dictionaries, resource: AttributeResource) {
     return new Attribute(
       resource,
       resource.id,
       resource.name,
       resource.model,
       isNameTranslatable(resource.name),
-      getNameTranslation(t, resource.name, (n) => [
-        `attributes.${resource.model}.${n}`,
-        `models.${resource.model}.${resource.apiName}`,
-      ]),
+      getNameTranslation(
+        t,
+        resource.name,
+        (n) =>
+          [
+            `attributes.${resource.model}.${n}`,
+            resource.isFixed ? `models.${resource.model}.${resource.apiName}` : undefined,
+          ].filter(NON_NULLABLE),
+        resource.dictionaryId ? {defaultValue: dictionaries.get(resource.dictionaryId).label} : undefined,
+      ),
       resource.apiName,
       resource.type,
+      resource.typeModel ? undefined : (resource.type as SimpleAttributeType | DictAttributeType),
       resource.typeModel || undefined,
-      resource.dictionaryId || undefined,
+      resource.dictionaryId ? dictionaries.get(resource.dictionaryId) : undefined,
       resource.isMultiValue ?? undefined,
       resource.requirementLevel,
+      resource.isFixed,
     );
   }
 
@@ -140,30 +156,6 @@ export class Attribute<T = unknown> {
   }
 }
 
-/** Returns an Attributes object containing all the attributes in the system. */
-export const useAllAttributes = createCached(() => {
-  const t = useLangFunc();
-  const query = createQuery(System.attributesQueryOptions);
-  const allAttributes = createMemo(() => {
-    if (!query.isSuccess) {
-      return undefined;
-    }
-    // Make sure the translations are loaded. Here it is critical because the created Attributes objects
-    // are not reactive and will not update later.
-    if (!translationsLoaded()) {
-      return undefined;
-    }
-    return Attributes.fromResources(t, query.data);
-  });
-  return allAttributes;
-});
-
-/**
- * Returns an Attributes object with the dictionaries available in the current facility, or global
- * if there is no current facility.
- */
-export function useAttributes() {
-  const allAttributes = useAllAttributes();
-  const attributes = createMemo(() => allAttributes()?.subsetFor(activeFacilityId()));
-  return attributes;
+export function compareRequirementLevels(a: RequirementLevel, b: RequirementLevel) {
+  return REQUIREMENT_LEVELS.indexOf(a) - REQUIREMENT_LEVELS.indexOf(b);
 }

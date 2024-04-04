@@ -1,4 +1,4 @@
-import {Index, VoidComponent} from "solid-js";
+import {Index, JSX, VoidComponent} from "solid-js";
 import {htmlAttributes} from "../utils";
 import {SimpleTag, TagsLine} from "./Tag";
 
@@ -8,6 +8,10 @@ interface Props extends htmlAttributes.div {
 
 /** Maximum length of a tag in characters. If longer, it's just plain text. */
 const MAX_TAG_LENGTH = 50;
+
+// Based on https://daringfireball.net/2010/07/improved_regex_for_matching_urls
+const URL_REGEXP =
+  /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()[\]{};:'".,<>?«»“”‘’]))/gi;
 
 /**
  * A viewer for rich text.
@@ -27,8 +31,30 @@ export const RichTextView: VoidComponent<Props> = (props) => {
           return <TagsLine class="my-px">{<Index each={tags}>{(tag) => <SimpleTag text={tag()} />}</Index>}</TagsLine>;
         }
       }
-      return line + "\n";
+      const elements: JSX.Element[] = [];
+      let lastMatchEnd = 0;
+      for (;;) {
+        const match = URL_REGEXP.exec(line);
+        if (!match) {
+          elements.push(line.slice(lastMatchEnd));
+          break;
+        }
+        elements.push(line.slice(lastMatchEnd, match.index));
+        const url = match[0];
+        elements.push(
+          <a href={url} target="_blank" rel="noreferrer">
+            {url}
+          </a>,
+        );
+        lastMatchEnd = match.index + url.length;
+      }
+      return (
+        <>
+          {elements}
+          <br />
+        </>
+      );
     });
   };
-  return <div {...htmlAttributes.merge(props, {class: "wrapText"})}>{content()}</div>;
+  return <div {...htmlAttributes.merge(props, {class: "overflow-x-clip overflow-y-auto wrapText"})}>{content()}</div>;
 };

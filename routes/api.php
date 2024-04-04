@@ -1,7 +1,7 @@
 <?php
 
 use App\Exceptions\ExceptionFactory;
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -45,7 +45,9 @@ Route::prefix('/v1')->group(function () {
         Route::get('/storage/{key?}', [UserController::class, 'storageGet']);
     });
     Route::prefix('/admin')->group(function () {
-        Route::get('/migrate/{hash?}', [AdminController::class, 'migrate']);
+        Route::prefix('/developer')->group(function () {
+            Route::get('/migrate/{hash?}', [DeveloperController::class, 'migrate']);
+        });
         Route::prefix('/user')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
             Route::post('/', [AdminUserController::class, 'post']);
@@ -83,6 +85,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [MeetingController::class, 'list']);
             Route::patch('/{meeting}', [MeetingController::class, 'patch']);
             Route::delete('/{meeting}', [MeetingController::class, 'delete']);
+            Route::post('/{meeting}/clone', [MeetingController::class, 'clone']);
             Route::get('/tquery', [MeetingTqueryController::class, 'get']);
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
             Route::get('/attendant/tquery', [MeetingAttendantTqueryController::class, 'get']);

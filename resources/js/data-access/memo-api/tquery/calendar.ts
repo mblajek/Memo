@@ -1,5 +1,3 @@
-import {CreateQueryResult} from "@tanstack/solid-query";
-import {AxiosError} from "axios";
 import {DaysRange} from "components/ui/calendar/days_range";
 import {NON_NULLABLE} from "components/utils";
 import {Accessor, createMemo, on} from "solid-js";
@@ -8,7 +6,7 @@ import {Api} from "../types";
 import {dateToISO} from "../utils";
 import {FilterH, FilterReductor} from "./filter_utils";
 import {RequestCreator} from "./tquery";
-import {DataRequest, DataResponse} from "./types";
+import {DataRequest} from "./types";
 
 const DEFAULT_LIMIT = 1000;
 
@@ -26,6 +24,7 @@ const COLUMNS = [
   "resources",
   "notes",
   "isRemote",
+  "fromMeetingId",
 ] satisfies (keyof MeetingResource)[];
 
 /** A meeting resource type fetched from tquery. */
@@ -36,6 +35,7 @@ export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof COLUMNS)[n
 
 export interface TQMeetingAttendantResource extends MeetingAttendantResource {
   readonly name: string;
+  readonly attendanceTypeDictId: string;
 }
 
 /**
@@ -81,14 +81,18 @@ export function createCalendarRequestCreator({
         return undefined;
       }
       const staffIds = staff?.();
-      return (
-        staffIds && {
-          type: "column",
-          column: "staff.*.userId",
-          op: "has_any",
-          val: staffIds.toSorted(),
-        }
-      );
+      const hasStaffFilter: FilterH | undefined = staffIds && {
+        type: "column",
+        column: "staff.*.userId",
+        op: "has_any",
+        val: staffIds.toSorted(),
+      };
+      const isFacilityWide: FilterH = {type: "column", column: "staff.count", op: "=", val: 0};
+      return {
+        type: "op",
+        op: "|",
+        val: [hasStaffFilter, isFacilityWide].filter(NON_NULLABLE),
+      };
     };
     const request = createMemo((): DataRequest | undefined => {
       if (!schema()) {
@@ -110,8 +114,4 @@ export function createCalendarRequestCreator({
       requestController: undefined,
     };
   };
-}
-
-export function meetingsFromQuery(query: CreateQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>) {
-  return () => query.data?.data as readonly TQMeetingResource[] | undefined;
 }
