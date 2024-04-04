@@ -18,6 +18,6 @@
   - storage (bez logs)
   - vendor
 - usunąć zawartość `x-old`
-- wszystko (oprócz `x-*` i `*env`) przenieść z `/` do `x-old`
+- wszystko (oprócz `x-*` i `.env`) przenieść z `/` do `x-old`
 - wszystko z `x-new` przenieść do `/`
 - sprawdzić, czy nie został zgubiony `.env`

@@ -42,7 +42,7 @@ enum AttributeType: string
             self::Users, self::Clients, self::Attributes => $nullable ?
                 TqDataTypeEnum::uuid_nullable : TqDataTypeEnum::uuid,
             self::Dict => $nullable ? TqDataTypeEnum::dict_nullable : TqDataTypeEnum::dict,
-            self::Text => $nullable ? TqDataTypeEnum::text : TqDataTypeEnum::text_nullable,
+            self::Text => $nullable ? TqDataTypeEnum::text_nullable : TqDataTypeEnum::text,
         };
         return $type->isDict() ? (new TqDictDef($type, $dictionaryId)) : $type;
     }
