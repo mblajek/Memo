@@ -7,6 +7,7 @@ use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Facility\FacilityUserClientResource;
 use App\Models\Client;
+use App\Models\Facility;
 use App\Models\Member;
 use App\Models\User;
 use App\Rules\Valid;
@@ -58,24 +59,15 @@ class ClientController extends ApiController
         return FacilityUserClientResource::collection($users);
     }
 
-    // todo: openapi
+    // todo: extract into service, openApi
     public function post(): JsonResponse
     {
-        $clientValidator = Client::getInsertValidator([], true);
-        $userData = $this->validate(
-            User::getInsertValidator([
-                'name',
-            ])
-            + ['client' => Valid::array()]
-            + array_combine(
-                array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
-                $clientValidator,
-            )
-        );
-        $clientData = $userData['client'];
-        unset($userData['client']);
+        $userValidator = User::getInsertValidator(['name']);
+        $clientValidator = Client::getInsertValidator([], attributesFacility: true);
+        $userData = $this->validate($userValidator + $this->wrapClientValidator($clientValidator));
 
-        $user = new User();
+        $clientData = $userData['client'];
+        $user = new User(['managed_by_facility_id' => $this->getFacilityOrFail()->id]);
         $user->fillOnly($userData, ['name']);
         $client = new Client();
         $client->fillOnly($clientData);
@@ -89,5 +81,51 @@ class ClientController extends ApiController
             $member->save();
         });
         return new JsonResponse(data: ['data' => ['id' => $user->id]], status: 201);
+    }
+
+    // todo: extract into service, openApi
+    public function patch(
+        /** @noinspection PhpUnusedParameterInspection */
+        Facility $facility,
+        string $user,
+    ): JsonResponse {
+        $query = DB::query()->select('members.id as member_id')->from('users')
+            ->join('members', 'members.user_id', 'users.id')
+            ->join('clients', 'clients.id', 'members.client_id')
+            ->where('members.facility_id', $this->getFacilityOrFail()->id)
+            ->where('users.id', $user);
+        /** @var User $userObject */
+        $userObject = User::query()->from($query->clone()->addSelect('users.*'))->firstOrFail();
+        /** @var Client $clientObject */
+        $clientObject = Client::query()->from($query->clone()->addSelect('clients.*'))
+            ->with(['values'])->firstOrFail();
+
+        $managedByFacility = $userObject->managed_by_facility_id === $this->getFacilityOrFail()->id;
+
+        $userValidator = $managedByFacility ? User::getPatchValidator(['name',], $userObject) : [];
+        $clientValidator = Client::getPatchValidator([], $clientObject, attributesFacility: true);
+        $userData = $this->validate($userValidator + $this->wrapClientValidator($clientValidator));
+
+        $clientData = $userData['client'];
+        if ($managedByFacility) {
+            $userObject->fillOnly($userData, ['name']);
+        }
+        $clientObject->fillOnly($clientData);
+        DB::transaction(function () use ($userObject, $clientObject, $clientData, $userData) {
+            $userObject->save();
+            $clientObject->attrSave($this->getFacilityOrFail(), $clientData);
+        });
+        return new JsonResponse();
+    }
+
+    private function wrapClientValidator(array $clientValidator): array
+    {
+        return [
+                'client' => Valid::array(keys: array_filter(array_keys($clientValidator), fn(string $key) => //
+                !str_ends_with($key, '*')))
+            ] + array_combine(
+                array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
+                $clientValidator,
+            );
     }
 }

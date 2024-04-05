@@ -24,7 +24,7 @@ export const Header: VoidComponent<Props> = (props) => {
       <span class="font-bold">
         <Show when={props.ctx.column.getCanSort()} fallback={<ColumnName def={props.ctx.column.columnDef} />}>
           <Button
-            class="flex items-center text-start select-text font-semibold"
+            class="flex items-center text-start select-text"
             onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}
             title={t("tables.sort_tooltip")}
           >

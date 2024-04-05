@@ -87,12 +87,14 @@ class Valid extends AbstractDataRule
     }
 
     public static function array(
+        ?array $keys,
         array $rules = [],
         bool $sometimes = false,
         bool $nullable = false,
-        array $keys = [],
     ): array {
-        return self::base($sometimes, $nullable, ['array' . (count($keys) ? (':' . implode(',', $keys)) : '')], $rules);
+        return ($keys === null)
+            ? self::base($sometimes, $nullable, ['array'], $rules)
+            : self::base($sometimes, $nullable, ['max:' . count($keys), 'array:' . implode(',', $keys)], $rules);
     }
 
     public static function list(

@@ -20,7 +20,7 @@ export const createLoginModal = registerGlobalPageElement<true>((args) => {
       <div class="flex flex-col gap-4">
         <FullLogo class="w-full h-16" />
         <div class="flex flex-col relative">
-          <div class="absolute top-0 right-0">
+          <div class="absolute top-0 right-0 z-10">
             <Button onClick={toggleTheme}>
               <ThemeIcon title={t("switch_theme")} />
             </Button>

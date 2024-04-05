@@ -140,8 +140,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         ctx,
       );
       // Submit success, so make the form pristine.
-      form.setInitialValues(values);
-      form.reset();
+      form.setIsDirty(false);
       form.setIsSubmitting(false);
       return result;
     },
