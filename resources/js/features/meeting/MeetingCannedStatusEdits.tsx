@@ -44,7 +44,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         // The cast here is necessary to trick the form into accepting partial data. This might not
         // be very elegant, but is simplest for patch, if we want to reuse the form for both create
         // and update.
-        formConfig.onSubmit?.(selectedValues as MeetingFormType, context);
+        return formConfig.onSubmit?.(selectedValues as MeetingFormType, context);
       },
     })();
   }
