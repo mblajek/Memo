@@ -14,11 +14,14 @@ import {MeetingHoverCard} from "./MeetingHoverCard";
 import {coloringToStyle} from "./colors";
 
 interface Props extends Pick<HoverableMeetingEventBlockProps, "meeting" | "plannedColoring" | "blink"> {
+  readonly height?: number;
   readonly onClick?: () => void;
 }
 
+const DEFAULT_HEIGHT = 30;
+
 export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
-  const [props, blockProps] = splitProps(allProps, ["onClick"]);
+  const [props, blockProps] = splitProps(allProps, ["height", "onClick"]);
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const meeting = () => blockProps.meeting;
   return (
@@ -31,7 +34,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
             {...htmlAttributes.merge(divProps, {
               class: "border rounded cursor-pointer select-none relative",
               style: {
-                height: "2.3em",
+                height: `${props.height || DEFAULT_HEIGHT}px`,
                 ...coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
               },
             })}

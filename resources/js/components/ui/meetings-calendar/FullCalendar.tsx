@@ -80,7 +80,8 @@ const defaultProps = () =>
     initialDay: currentDate(),
   }) satisfies Partial<Props>;
 
-const PIXELS_PER_HOUR_RANGE = [40, 400] as const;
+const PIXELS_PER_HOUR_RANGE = {min: 40, max: 400, def: 120};
+const MONTH_EVENTS_HEIGHT_RANGE = {min: 15, max: 150, def: 30};
 
 /**
  * The state of the calendar persisted in the local storage.
@@ -98,6 +99,7 @@ type PersistentState = {
     readonly radio: string | null;
   };
   readonly pixelsPerHour: number;
+  readonly monthEventsHeight: number;
 };
 const PERSISTENCE_VERSION = 3;
 
@@ -287,7 +289,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     setDaysSelectionAndMonth(range);
   }
 
-  const [pixelsPerHour, setPixelsPerHour] = createSignal(120);
+  const [pixelsPerHour, setPixelsPerHour] = createSignal(PIXELS_PER_HOUR_RANGE.def);
+  const [monthEventsHeight, setMonthEventsHeight] = createSignal(MONTH_EVENTS_HEIGHT_RANGE.def);
 
   if (props.staticPersistenceKey) {
     createLocalStoragePersistence<PersistentState>({
@@ -301,6 +304,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           radio: selectedResourceRadio() || null,
         },
         pixelsPerHour: pixelsPerHour(),
+        monthEventsHeight: monthEventsHeight(),
       }),
       onLoad: (state) => {
         batch(() => {
@@ -321,7 +325,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setSelectedResourcesCheckbox(state.resourcesSel.checkbox);
           setSelectedResourceRadio(state.resourcesSel.radio || undefined);
           setTinyCalMonth(daysSelection().center());
-          setPixelsPerHour(state.pixelsPerHour);
+          setPixelsPerHour(state.pixelsPerHour || PIXELS_PER_HOUR_RANGE.def);
+          setMonthEventsHeight(state.monthEventsHeight || MONTH_EVENTS_HEIGHT_RANGE.def);
         });
         // Once resources are loaded, make sure there aren't selected resources that don't really exist.
         createOneTimeEffect({
@@ -708,6 +713,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   meeting={meeting}
                   plannedColoring={staffResourcesById().get(staffId)!.coloring}
                   blink={!isCalendarLoading() && blinkingMeetings().has(meeting.id)}
+                  height={monthEventsHeight()}
                   onClick={() => viewMeeting(meeting.id)}
                 />
               ),
@@ -874,6 +880,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 month={daysSelection().start}
                 days={monthCalendarDays()}
                 isLoading={isCalendarLoading()}
+                onWheelWithAlt={(e) =>
+                  setMonthEventsHeight((v) =>
+                    Math.min(
+                      Math.max(v - 0.02 * e.deltaY, MONTH_EVENTS_HEIGHT_RANGE.min),
+                      MONTH_EVENTS_HEIGHT_RANGE.max,
+                    ),
+                  )
+                }
               />
             </Match>
             <Match when={true}>
@@ -888,8 +902,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 onWheelWithAlt={(e) =>
                   setPixelsPerHour((v) =>
                     Math.min(
-                      Math.max(v * (1 - 0.0005) ** e.deltaY, PIXELS_PER_HOUR_RANGE[0]),
-                      PIXELS_PER_HOUR_RANGE[1],
+                      Math.max(v * (1 - 0.0005) ** e.deltaY, PIXELS_PER_HOUR_RANGE.min),
+                      PIXELS_PER_HOUR_RANGE.max,
                     ),
                   )
                 }
