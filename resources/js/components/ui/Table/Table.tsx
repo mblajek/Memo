@@ -263,10 +263,10 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                       class={s.headerRow}
                     >
                       <For each={columns()}>
-                        {({column, headerContext}) => (
-                          <Show when={column.getIsVisible()}>
+                        {({column, getHeaderContext}) => (
+                          <Show when={column.getIsVisible() && getHeaderContext()}>
                             <div class={s.cell}>
-                              <CellRenderer component={column.columnDef.header} props={headerContext} />
+                              <CellRenderer component={column.columnDef.header} props={getHeaderContext()!} />
                             </div>
                           </Show>
                         )}
@@ -283,10 +283,10 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                           <NonBlocking nonBlocking={props.nonBlocking}>
                             <div class={s.dataRow} inert={props.isDimmed || undefined}>
                               <For each={columns()}>
-                                {({column, cellContext}) => (
+                                {({column, getCellContext}) => (
                                   <Show when={column.getIsVisible()}>
                                     <div class={s.cell}>
-                                      <CellRenderer component={column.columnDef.cell} props={cellContext(row())} />
+                                      <CellRenderer component={column.columnDef.cell} props={getCellContext(row())} />
                                     </div>
                                   </Show>
                                 )}

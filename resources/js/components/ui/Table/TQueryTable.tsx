@@ -510,7 +510,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
           header: (ctx) => (
             <Dynamic
-              component={defColumnConfig.header || col.header}
+              component={col.header || defColumnConfig.header}
               ctx={ctx}
               filter={filter}
               filterControl={
