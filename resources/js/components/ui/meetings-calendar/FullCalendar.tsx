@@ -653,7 +653,15 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       case "week": {
         const staff = selectedResourceRadio();
         return Array.from(daysSelection(), (day) => ({
-          header: () => <DayHeader day={day} />,
+          header: () => (
+            <DayHeader
+              day={day}
+              onDateClick={() => {
+                setMode("day");
+                setDaysSelectionAndMonthFromDay(day);
+              }}
+            />
+          ),
           ...getCalendarColumnPart(day, staff),
         }));
       }
