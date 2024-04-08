@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionMiddleware;
-use App\Http\Permissions\PermissionObject;
 use App\Models\Facility;
 use App\Models\User;
 use App\Rules\Valid;

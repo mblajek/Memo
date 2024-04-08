@@ -7,7 +7,6 @@ use App\Models\Attributes\HasValues;
 use App\Models\QueryBuilders\ClientBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
-use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
