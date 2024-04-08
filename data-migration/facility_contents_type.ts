@@ -1,7 +1,5 @@
 export interface FacilityContents {
-  readonly dictionaries: readonly Dictionary[];
-  readonly extendDictionaries: readonly DictionaryExtension[];
-  readonly attributes: readonly Attribute[];
+  readonly dictionariesAndAttributes: DictionaryOrAttributeAction[];
 
   readonly staff: readonly Staff[];
   readonly giveStaff: readonly GiveStaff[];
@@ -10,21 +8,20 @@ export interface FacilityContents {
   readonly meetings: readonly Meeting[];
 }
 
-export interface DictionaryExtension {
+export type DictionaryOrAttributeAction = ExtendDictionaryAction | CreateDictionaryAction | CreateAttributeAction;
+
+export interface ExtendDictionaryAction {
+  readonly kind: "extendDictionary";
   readonly name: string;
   readonly positions: readonly PositionInExtension[];
 }
 
 export interface PositionInExtension extends Position {
-  readonly order: "atStart" | "atEnd" | PositionOrderRelative;
+  readonly order: Order<"positionNnOrName">;
 }
 
-interface PositionOrderRelative {
-  readonly rel: "before" | "after";
-  readonly positionNnOrName: string;
-}
-
-export interface Dictionary {
+export interface CreateDictionaryAction {
+  readonly kind: "createDictionary";
   readonly nn?: string;
   readonly name: string;
   readonly positionRequiredAttributeApiNames?: readonly string[];
@@ -38,22 +35,22 @@ export interface Position {
   readonly attributes?: AttributeValues;
 }
 
-export interface Attribute {
+interface CreateAttributeAction {
+  readonly kind: "createAttribute";
   readonly nn?: string;
-  readonly model: string;
   readonly name: string;
+  readonly model: string;
   readonly apiName: string;
   readonly type: string;
   readonly dictionaryNnOrName?: string;
-  readonly order: "atStart" | "atEnd" | AttributeOrderRelative;
+  readonly order: Order<"attributeApiName">;
   readonly isMultiValue: boolean;
   readonly requirementLevel: "empty" | "optional" | "recommended" | "required";
 }
 
-interface AttributeOrderRelative {
-  readonly rel: "before" | "after";
-  readonly attributeApiName: string;
-}
+export type Order<RelKey extends string> = "atStart" | "atEnd" | RelOrder<RelKey>;
+export type RelOrder<RelKey extends string> = {readonly rel: "before" | "after"} & RelSpec<RelKey>;
+export type RelSpec<RelKey extends string> = Readonly<Record<RelKey, string>>;
 
 /** New user with staff member role to create. */
 export interface Staff {
@@ -120,8 +117,9 @@ export interface Attendant {
 
 export function facilityContentStats(contents: FacilityContents) {
   return `\
-  Dictionaries: ${contents.dictionaries.length} + extend ${contents.extendDictionaries.length}
-  Attributes: ${contents.attributes.length}
+  Dictionaries: ${contents.dictionariesAndAttributes.filter((a) => a.kind === "createDictionary").length} + \
+extend ${contents.dictionariesAndAttributes.filter((a) => a.kind === "extendDictionary").length}
+  Attributes: ${contents.dictionariesAndAttributes.filter((a) => a.kind === "createAttribute").length}
   Staff: ${contents.staff.length} + give ${contents.giveStaff.length}
   Clients: ${contents.clients.length}
   Meetings: ${contents.meetings.length}

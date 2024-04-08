@@ -14,7 +14,7 @@ import {
   facilityContentStats,
 } from "../facility_contents_type.ts";
 import luxon from "../luxon.ts";
-import {LH_MEETING_TYPES, attributes, dictionaries, extendDictionaries} from "./dicts_and_attribs.ts";
+import {DZIELNICE_WARSZAWY, LH_MEETING_TYPES, dictionariesAndAttributes} from "./dicts_and_attribs.ts";
 import {NOTIFICATION_REASONS_MAP} from "./notification_reasons.ts";
 import {SURVEY_FIELDS} from "./surveys.ts";
 
@@ -240,8 +240,7 @@ const CONTACT_IDS = new Set(CONTACTS.map((c) => c.Id));
 EVENTS = EVENTS.filter((e) => CONTACT_IDS.has(e.WhoId));
 
 // _logFreq(
-//   DATA.Case.rows
-//     .map((c) => [c.ClosedDate].join("__")),
+//   DATA.Contact.rows.map((c) => [c.CreatedDate].join("__")),
 //   {limit: 100},
 // );
 // Deno.exit();
@@ -290,12 +289,11 @@ for (const [accountId, contacts] of contactsByAccountId) {
     let known = knownDzielnice.get(val);
     if (known === undefined) {
       const findName = val.replaceAll(/\W/g, " ").toLowerCase();
-      known = dictionaries
-        .find((d) => d.nn === "dict:dzielnica Warszawy")
-        ?.positions.find((p) => p.name.slice(1).replaceAll(/\W/g, " ").toLowerCase() === findName)?.nn;
-      if (!known) {
+      const dzielnica = DZIELNICE_WARSZAWY.find((d) => d.replaceAll(/\W/g, " ").toLowerCase() === findName);
+      if (!dzielnica) {
         throw new Error(`Unknown dzielnica: ${val}`);
       }
+      known = `dzielnica:${dzielnica}`;
       knownDzielnice.set(val, known);
     }
     return known ? {kind: "nn", nn: known} : undefined;
@@ -441,7 +439,7 @@ for (const [accountId, contacts] of contactsByAccountId) {
         },
       },
       createdByNn: STAFF.has(contact.OwnerId) ? contact.OwnerId : undefined,
-      createdAt: contact.CreatedDate,
+      createdAt: DateTime.fromISO(contact.CreatedDate).toUTC().toISO(),
     });
   }
 }
@@ -528,9 +526,7 @@ if (unknownMeetingSubjects.size) {
 }
 
 const facilityContents: FacilityContents = {
-  dictionaries,
-  extendDictionaries,
-  attributes,
+  dictionariesAndAttributes,
   staff,
   giveStaff,
   clients,

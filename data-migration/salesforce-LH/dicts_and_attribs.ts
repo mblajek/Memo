@@ -1,5 +1,7 @@
-import {Attribute, Dictionary, DictionaryExtension} from "../facility_contents_type.ts";
+import {DictionaryOrAttributeAction} from "../facility_contents_type.ts";
 import {SURVEY_FIELDS} from "./surveys.ts";
+
+export const dictionariesAndAttributes: DictionaryOrAttributeAction[] = [];
 
 export const LH_MEETING_TYPES = [
   {
@@ -68,8 +70,9 @@ export const LH_MEETING_TYPES = [
   },
 ];
 
-export const extendDictionaries: DictionaryExtension[] = [
+dictionariesAndAttributes.push(
   {
+    kind: "extendDictionary",
     name: "meetingCategory",
     positions: LH_MEETING_TYPES.map(({category}) => ({
       nn: `meetingCategory:${category}`,
@@ -78,6 +81,7 @@ export const extendDictionaries: DictionaryExtension[] = [
     })),
   },
   {
+    kind: "extendDictionary",
     name: "meetingType",
     positions: LH_MEETING_TYPES.flatMap(({category, types}) =>
       types.map(({name, duration}) => ({
@@ -92,6 +96,7 @@ export const extendDictionaries: DictionaryExtension[] = [
     ),
   },
   {
+    kind: "extendDictionary",
     name: "clientType",
     positions: [
       {
@@ -101,7 +106,7 @@ export const extendDictionaries: DictionaryExtension[] = [
       },
     ],
   },
-];
+);
 
 const POWODY_ZGŁOSZENIA = [
   {
@@ -145,8 +150,31 @@ const POWODY_ZGŁOSZENIA = [
   },
 ];
 
-export const dictionaries: Dictionary[] = [
+export const DZIELNICE_WARSZAWY = [
+  "Bemowo",
+  "Białołęka",
+  "Bielany",
+  "Mokotów",
+  "Ochota",
+  "Praga-Południe",
+  "Praga-Północ",
+  "Rembertów",
+  "Śródmieście",
+  "Targówek",
+  "Ursus",
+  "Ursynów",
+  "Wawer",
+  "Wesoła",
+  "Wilanów",
+  "Włochy",
+  "Wola",
+  "Żoliborz",
+  "spoza Warszawy",
+];
+
+dictionariesAndAttributes.push(
   {
+    kind: "createDictionary",
     nn: "dict:źródło informacji o Poradni",
     name: "+źródło informacji o Poradni",
     positions: [
@@ -165,31 +193,13 @@ export const dictionaries: Dictionary[] = [
     ].map((n) => ({name: `+${n}`})),
   },
   {
+    kind: "createDictionary",
     nn: "dict:dzielnica Warszawy",
     name: "+dzielnica Warszawy",
-    positions: [
-      "Bemowo",
-      "Białołęka",
-      "Bielany",
-      "Mokotów",
-      "Ochota",
-      "Praga-Południe",
-      "Praga-Północ",
-      "Rembertów",
-      "Śródmieście",
-      "Targówek",
-      "Ursus",
-      "Ursynów",
-      "Wawer",
-      "Wesoła",
-      "Wilanów",
-      "Włochy",
-      "Wola",
-      "Żoliborz",
-      "spoza Warszawy",
-    ].map((n) => ({nn: `dzielnica:${n}`, name: `+${n}`})),
+    positions: DZIELNICE_WARSZAWY.map((n) => ({nn: `dzielnica:${n}`, name: `+${n}`})),
   },
   {
+    kind: "createDictionary",
     nn: "dict:powód zgłoszenia",
     name: "+powód zgłoszenia",
     positions: POWODY_ZGŁOSZENIA.flatMap(({items}) =>
@@ -200,6 +210,7 @@ export const dictionaries: Dictionary[] = [
     ),
   },
   {
+    kind: "createDictionary",
     nn: "dict:czynnik ryzyka",
     name: "+czynnik ryzyka",
     positions: SURVEY_FIELDS.flatMap(({items}) =>
@@ -209,10 +220,11 @@ export const dictionaries: Dictionary[] = [
       })),
     ),
   },
-];
+);
 
-export const attributes: Attribute[] = [
+dictionariesAndAttributes.push(
   {
+    kind: "createAttribute",
     name: "+rodzina (konto salesforce)",
     apiName: "rodzinaKontoSalesforceU4d096794",
     order: {rel: "after", attributeApiName: "documentsLinks"},
@@ -222,6 +234,7 @@ export const attributes: Attribute[] = [
     requirementLevel: "optional",
   },
   {
+    kind: "createAttribute",
     name: "+źródło informacji o Poradni",
     apiName: "zrodloInfOPoradniU53e2f750",
     order: "atEnd",
@@ -232,6 +245,7 @@ export const attributes: Attribute[] = [
     requirementLevel: "optional",
   },
   {
+    kind: "createAttribute",
     name: "+wiek w momencie zgłoszenia",
     apiName: "wiekWMomencieZgloszeniaUfdf0fed0",
     order: {rel: "after", attributeApiName: "birthDate"},
@@ -241,6 +255,7 @@ export const attributes: Attribute[] = [
     requirementLevel: "optional",
   },
   {
+    kind: "createAttribute",
     name: "+dzielnica Warszawy",
     apiName: "dzielnicaWarszawyUbb5a0106",
     order: {rel: "after", attributeApiName: "addressCity"},
@@ -251,6 +266,7 @@ export const attributes: Attribute[] = [
     requirementLevel: "recommended",
   },
   {
+    kind: "createAttribute",
     name: "+województwo",
     apiName: "wojewodztwoUa33962d0",
     order: {rel: "after", attributeApiName: "dzielnicaWarszawyUbb5a0106"},
@@ -261,6 +277,7 @@ export const attributes: Attribute[] = [
     requirementLevel: "recommended",
   },
   {
+    kind: "createAttribute",
     name: "+decyzja zespołu klinicznego",
     apiName: "decyzjaZespoluKlinicznegoU577dc53c",
     order: {rel: "after", attributeApiName: "notes"},
@@ -270,6 +287,7 @@ export const attributes: Attribute[] = [
     requirementLevel: "optional",
   },
   {
+    kind: "createAttribute",
     name: "+powód zgłoszenia",
     apiName: "powodZgloszeniaU6ee41728",
     order: {rel: "before", attributeApiName: "documentsLinks"},
@@ -280,6 +298,7 @@ export const attributes: Attribute[] = [
     requirementLevel: "recommended",
   },
   {
+    kind: "createAttribute",
     name: "+czynniki ryzyka",
     apiName: "czynnikiRyzykaU779e16de",
     order: {rel: "after", attributeApiName: "powodZgloszeniaU6ee41728"},
@@ -289,4 +308,4 @@ export const attributes: Attribute[] = [
     dictionaryNnOrName: "dict:czynnik ryzyka",
     requirementLevel: "recommended",
   },
-];
+);
