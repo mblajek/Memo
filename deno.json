@@ -1,6 +1,6 @@
 {
   "lint": {
-    "include": ["import/"],
+    "include": ["data-migration/"],
     "rules": {
       "tags": ["recommended"],
       "exclude": ["no-inner-declarations"]

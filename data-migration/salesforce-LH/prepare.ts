@@ -1,14 +1,30 @@
 import * as fs from "https://deno.land/std@0.190.0/fs/mod.ts";
 import {parseArgs} from "https://deno.land/std@0.220.1/cli/parse_args.ts";
 import * as csv from "https://deno.land/std@0.220.1/csv/mod.ts";
-import {Attendant, Client, FacilityContents, GiveStaff, Meeting, Staff} from "../facility_contents_type.ts";
-import {attributes, dictionaries, extendDictionaries} from "./dicts_and_attribs.ts";
+import {
+  Attendant,
+  AttributeValue,
+  AttributeValues,
+  Client,
+  FacilityContents,
+  GiveStaff,
+  Meeting,
+  SingleAttributeValue,
+  Staff,
+  facilityContentStats,
+} from "../facility_contents_type.ts";
+import luxon from "../luxon.ts";
+import {LH_MEETING_TYPES, attributes, dictionaries, extendDictionaries} from "./dicts_and_attribs.ts";
+import {NOTIFICATION_REASONS_MAP} from "./notification_reasons.ts";
+import {SURVEY_FIELDS} from "./surveys.ts";
+
+const {DateTime, Interval} = luxon;
 
 const params = parseArgs(Deno.args, {
   string: ["exports-dir", "static-data-dir", "out"],
 });
 
-function getParam<N extends keyof typeof params>({
+function getParam<N extends string & keyof typeof params>({
   name,
   desc,
   check,
@@ -25,6 +41,7 @@ function getParam<N extends keyof typeof params>({
   return value;
 }
 
+console.log("Params:", params);
 const exportsDir = getParam({
   name: "exports-dir",
   desc: "path to directory with data exported from salesforce",
@@ -60,7 +77,7 @@ const FILES = [
   "Event",
   "Notification_reason__c",
   "User",
-] as const satisfies (keyof FilesType)[];
+] satisfies (keyof FilesType)[];
 
 interface RowWithId {
   readonly Id: string;
@@ -136,25 +153,98 @@ const MEETING_TYPES = readRawCSV<"Subject" | "Count" | "MeetingType" | "IsRemote
 
 console.log("Analysing data");
 
-function _logFreq(values: unknown[], {sep = "\t"} = {}) {
+function _logFreq(values: unknown[], {sep = "\t", limit}: {sep?: string; limit?: number} = {}) {
   const freq = new Map<unknown, number>();
   for (const v of values) {
     freq.set(v, (freq.get(v) || 0) + 1);
   }
+  let i = 0;
   for (const [v, c] of [...freq].sort((a, b) => b[1] - a[1])) {
     console.debug(`${v}${sep}${c}`);
+    i++;
+    if (limit && i >= limit) {
+      break;
+    }
   }
 }
 
-function isRelevantContact(c: DataRow<"Contact">) {
+const LAST_EVENT_DATE_HORIZON = "2019-01-01";
+const KEEP_CLIENTS_CREATED_AFTER = "2024-01-01";
+
+function isContactRelevant(c: DataRow<"Contact">) {
   return c.AccountId && DATA.Account.has(c.AccountId);
 }
-const CONTACTS = DATA.Contact.rows.filter(isRelevantContact);
 
 function isEventRelevant(e: DataRow<"Event">) {
-  return !e.RecurrenceType && e.StartDateTime && e.AccountId && STAFF.has(e.OwnerId) && DATA.Contact.has(e.WhoId);
+  return (
+    !e.RecurrenceType &&
+    e.StartDateTime &&
+    e.AccountId &&
+    STAFF.has(e.OwnerId) &&
+    DATA.Contact.has(e.WhoId) &&
+    isContactRelevant(DATA.Contact.get(e.WhoId))
+  );
 }
-const EVENTS = DATA.Event.rows.filter(isEventRelevant);
+
+const lastEventDateByAccountId = new Map<string, string>();
+for (const [accountId, events] of Map.groupBy(DATA.Event.rows, (e) => e.AccountId)) {
+  lastEventDateByAccountId.set(
+    accountId,
+    events
+      .map((e) => e.StartDateTime)
+      .sort()
+      .at(-1)!,
+  );
+}
+
+console.log(`\
+Statystyki:
+  Wszystkie wyeksportowane aktywności: ${DATA.Event.rows.length}
+    Aktywności z poprawnymi parametrami: ${
+      DATA.Event.rows.filter((e) => !e.RecurrenceType && e.StartDateTime && e.AccountId && DATA.Contact.has(e.WhoId))
+        .length
+    }
+    Aktywności przypisane do wskazanych pracowników: ${DATA.Event.rows.filter(isEventRelevant).length}
+    Aktywności z poprawnymi danymi, przypisane do wskazanych pracowników i do aktywnych kontaktów: ${
+      DATA.Event.rows.filter(
+        (e) => isEventRelevant(e) && lastEventDateByAccountId.get(e.AccountId)! >= LAST_EVENT_DATE_HORIZON,
+      ).length
+    }
+
+  Wszystkie wyeksportowane konta: ${DATA.Account.rows.length}
+    Konta bez aktywności: ${DATA.Account.rows.filter((a) => !lastEventDateByAccountId.has(a.Id)).length}
+    Konta z ostatnią aktywnością przed ${LAST_EVENT_DATE_HORIZON}: ${DATA.Account.rows.filter((a) => lastEventDateByAccountId.has(a.Id) && lastEventDateByAccountId.get(a.Id)! < LAST_EVENT_DATE_HORIZON).length}
+    Aktywne konta: ${DATA.Account.rows.filter((a) => lastEventDateByAccountId.has(a.Id) && lastEventDateByAccountId.get(a.Id)! >= LAST_EVENT_DATE_HORIZON).length}
+
+  Wszystkie wyeksportowane kontakty: ${DATA.Contact.rows.length}
+  Kontakty z przypisanym poprawnym kontem: ${DATA.Contact.rows.filter(isContactRelevant).length}
+    Kontakty, których konto nie ma aktywności: ${DATA.Contact.rows.filter((c) => isContactRelevant(c) && !lastEventDateByAccountId.has(c.AccountId)).length}
+    Kontakty, których konto ma ostatnią aktywność przed ${LAST_EVENT_DATE_HORIZON}: ${DATA.Contact.rows.filter((c) => isContactRelevant(c) && lastEventDateByAccountId.has(c.AccountId) && lastEventDateByAccountId.get(c.AccountId)! < LAST_EVENT_DATE_HORIZON).length}
+    Aktywne kontakty: ${DATA.Contact.rows.filter((c) => isContactRelevant(c) && lastEventDateByAccountId.has(c.AccountId) && lastEventDateByAccountId.get(c.AccountId)! >= LAST_EVENT_DATE_HORIZON).length}
+`);
+
+let EVENTS = DATA.Event.rows.filter(isEventRelevant);
+
+const CONTACTS = DATA.Contact.rows.filter((c) => {
+  if (!isContactRelevant(c)) {
+    return false;
+  }
+  if (c.CreatedDate >= KEEP_CLIENTS_CREATED_AFTER) {
+    return true;
+  }
+  const lastEventDate = lastEventDateByAccountId.get(c.AccountId);
+  return lastEventDate && lastEventDate >= LAST_EVENT_DATE_HORIZON;
+});
+const CONTACT_IDS = new Set(CONTACTS.map((c) => c.Id));
+
+EVENTS = EVENTS.filter((e) => CONTACT_IDS.has(e.WhoId));
+
+// _logFreq(
+//   DATA.Case.rows
+//     .map((c) => [c.ClosedDate].join("__")),
+//   {limit: 100},
+// );
+// Deno.exit();
 
 const staff: Staff[] = STAFF.rows.map((s) => ({
   nn: s.Id,
@@ -171,15 +261,187 @@ const notificationReasonsByCaseId = Map.groupBy(DATA.Notification_reason__c.rows
 const surveysByCaseId = Map.groupBy(DATA.Survey_of_risk_factors__c.rows, (s) => s.Case__c);
 for (const [accountId, contacts] of contactsByAccountId) {
   const account = DATA.Account.get(accountId);
+  const createdDateSorter = (a: {readonly CreatedDate: string}, b: {readonly CreatedDate: string}) =>
+    DateTime.fromISO(a.CreatedDate).toMillis() - DateTime.fromISO(b.CreatedDate).toMillis();
   const cases = casesByAccountId.get(accountId) || [];
-  const notificationReasons = cases.flatMap((c) => notificationReasonsByCaseId.get(c.Id)) || [];
-  const surveys = cases.flatMap((c) => surveysByCaseId.get(c.Id)) || [];
-
+  const notificationReasons = cases.flatMap((c) => notificationReasonsByCaseId.get(c.Id) || []).sort(createdDateSorter);
+  const lastNotificationReason = notificationReasons.at(-1);
+  const surveys = cases.flatMap((c) => surveysByCaseId.get(c.Id) || []).sort(createdDateSorter);
+  const lastSurvey = surveys.at(-1);
+  const childContactTypes = ["0120X000000gKMEQA2", "012b0000000M3XeAAK"];
+  const knownDzielnice = new Map<string, string>(
+    [
+      "",
+      "?",
+      "INNA",
+      "Piaseczno",
+      "Zielonka",
+      "Raszyn",
+      "Mysiadło",
+      "Legionowo",
+      "gmina Garwolin",
+      "Wołomin",
+      "Halinów",
+      "Zyrardów",
+      "Sereck",
+    ].map((d) => [d, ""]),
+  );
+  const getDzielnica = (val: string): AttributeValue | undefined => {
+    let known = knownDzielnice.get(val);
+    if (known === undefined) {
+      const findName = val.replaceAll(/\W/g, " ").toLowerCase();
+      known = dictionaries
+        .find((d) => d.nn === "dict:dzielnica Warszawy")
+        ?.positions.find((p) => p.name.slice(1).replaceAll(/\W/g, " ").toLowerCase() === findName)?.nn;
+      if (!known) {
+        throw new Error(`Unknown dzielnica: ${val}`);
+      }
+      knownDzielnice.set(val, known);
+    }
+    return known ? {kind: "nn", nn: known} : undefined;
+  };
+  const voivodeships: Partial<Record<string, string | true>> = {
+    "dolnośląskie": true,
+    "kujawsko-pomorskie": true,
+    "lubelskie": true,
+    "lubuskie": true,
+    "łódzkie": true,
+    "małopolskie": true,
+    "mazowieckie": true,
+    "opolskie": true,
+    "podkarpackie": true,
+    "podlaskie": true,
+    "pomorskie": true,
+    "śląskie": true,
+    "świętokrzyskie": true,
+    "warmińsko-mazurskie": true,
+    "wielkopolskie": true,
+    "zachodniopomorskie": true,
+    "Mazowieckie": "mazowieckie",
+    "Praga Południe": "mazowieckie",
+  };
+  const getVoivodeship = (val: string): AttributeValue | undefined => {
+    let known = voivodeships[val];
+    if (known === true) {
+      known = val;
+    }
+    return known ? {kind: "dict", dictName: "pl_voivodeship", positionName: `+${known}`} : undefined;
+  };
+  const depresjaNotificationReasons = new Set([
+    "depresja",
+    "depresja poporodowa",
+    "podejrzenie stanów depresyjnych",
+    "podejrzenie depresji",
+    "epizod depresyjny",
+    "Objawy depresyjne",
+    "stany depresyjne, kryzys w związku",
+    "zdiagnozowana depresja",
+    "objawy depresyjne",
+    "zaburzenia depresyjne",
+    "diagnoza depresji",
+    "Depresja poporodowa",
+    "diagnoza depresji poporodowej",
+    "Cierpi na zaburzenia depresyjne, pod opieką lekarza psychiatry, przyjmuje leki, potrzebuje wsparcia, kontaktu z innymi rodzicami",
+    "zdiagnozowana depresja, trudności w relacji z partnerem,",
+    "zaburzenia depresyjne matki",
+    "zaburzenia depresyjne i lękowe",
+  ]);
   for (const contact of contacts) {
+    const notes = [contact.Description.trim()];
+    if (lastNotificationReason?.Another_notification_reason__c?.trim())
+      notes.push(`Powód zgłoszenia: ${lastNotificationReason?.Another_notification_reason__c?.trim()}`);
+
+    // function cleanUpPhone(...phones: string[]) {
+    //   for (let p of phones) {
+    //     p = p.trim();
+    //     if (!p || p.match(/^[0\- ]+$/)) {
+    //       continue;
+    //     }
+    //     const parts = p.split(/[/,]/).map((p) => p.trim());
+    //     if (parts.length > 1) {
+    //       notes.push(`Telefon: ${p}`);
+    //     }
+    //   }
+    //   // xx;
+    // }
+    const clientFields: AttributeValues = {
+      typeDictId: {
+        kind: "dict",
+        dictName: "clientType",
+        positionName: childContactTypes.includes(contact.RecordTypeId) ? "child" : "adult",
+      },
+      genderDictId: {
+        kind: "dict",
+        dictName: "gender",
+        positionName: contact.Sex__c === "K" ? "female" : contact.Sex__c === "M" ? "male" : "unknown",
+      },
+      birthDate: {kind: "const", value: contact.Birthdate},
+      contactEmail: {kind: "const", value: contact.Email.trim()},
+      // TODO:
+      // contactPhone: {kind: "const", value: cleanUpPhone(contact.Phone, account.Phone)},
+      // addressStreetNumber
+      // addressPostalCode
+      // addressCity
+      contactStartAt: {kind: "const", value: contact.CreatedDate},
+      contactEndAt: undefined,
+      rodzinaKontoSalesforceU4d096794: {kind: "const", value: `${account.Name} (${account.Id})`},
+      wiekWMomencieZgloszeniaUfdf0fed0: contact.Age_at_the_time_of_notification__c
+        ? {
+            kind: "const",
+            value: Number(contact.Age_at_the_time_of_notification__c),
+          }
+        : childContactTypes.includes(contact.RecordTypeId) &&
+            contact.Birthdate &&
+            contact.CreatedDate &&
+            contact.Birthdate > contact.CreatedDate
+          ? {
+              kind: "const",
+              value: Math.floor(
+                Interval.fromDateTimes(
+                  DateTime.fromISO(contact.CreatedDate),
+                  DateTime.fromISO(contact.Birthdate),
+                ).length("year"),
+              ),
+            }
+          : undefined,
+      dzielnicaWarszawyUbb5a0106: getDzielnica(contact.District__c),
+      wojewodztwoUa33962d0: getVoivodeship(contact.MailingState),
+      decyzjaZespoluKlinicznegoU577dc53c: undefined,
+      powodZgloszeniaU6ee41728: lastNotificationReason
+        ? [
+            ...Object.entries(NOTIFICATION_REASONS_MAP).flatMap(([field, name]) =>
+              lastNotificationReason[field as keyof typeof NOTIFICATION_REASONS_MAP] === "true"
+                ? [{kind: "nn", nn: `powód zgłoszenia:${name}`} satisfies SingleAttributeValue]
+                : [],
+            ),
+            ...(depresjaNotificationReasons.has(lastNotificationReason?.Another_notification_reason__c)
+              ? [{kind: "nn", nn: "powód zgłoszenia:depresja"} satisfies SingleAttributeValue]
+              : []),
+          ]
+        : undefined,
+      czynnikiRyzykaU779e16de: lastSurvey
+        ? SURVEY_FIELDS.flatMap(({items}) =>
+            items.flatMap(({field, label}) =>
+              lastSurvey[field] === "true" ? [{kind: "nn", nn: `czynnik ryzyka:${label}`} as SingleAttributeValue] : [],
+            ),
+          )
+        : undefined,
+    };
     clients.push({
       nn: contact.Id,
       name: contact.Name,
-      client: {},
+      client: {
+        ...clientFields,
+        notes: {
+          kind: "const",
+          value: notes
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .join("\n\n"),
+        },
+      },
+      createdByNn: STAFF.has(contact.OwnerId) ? contact.OwnerId : undefined,
+      createdAt: contact.CreatedDate,
     });
   }
 }
@@ -189,12 +451,12 @@ const relationsByMeetingId = Map.groupBy(DATA.EventRelation.rows, (er) => er.Eve
 const unknownMeetingSubjects = new Set<string>();
 for (const [recurrenceActivityId, eventsGroup] of Map.groupBy(EVENTS, (e) => e.RecurrenceActivityId)) {
   eventsGroup.sort((a, b) => a.StartDateTime.localeCompare(b.StartDateTime));
-  let fromMeetingNn = null;
+  let fromMeetingNn = undefined;
   if (recurrenceActivityId && eventsGroup.length > 1) {
     fromMeetingNn = eventsGroup[0].Id;
   }
   for (const event of eventsGroup) {
-    const start = new Date(event.StartDateTime);
+    const start = DateTime.fromISO(event.StartDateTime);
     let status: Meeting["status"];
     let staffStatus: Attendant["attendanceStatus"] = "ok";
     let clientStatus: Attendant["attendanceStatus"] = "ok";
@@ -213,22 +475,23 @@ for (const [recurrenceActivityId, eventsGroup] of Map.groupBy(EVENTS, (e) => e.R
       status = "cancelled";
       staffStatus = "cancelled";
     } else {
-      throw eventStatus satisfies never;
+      throw new Error(`Unknown event status: ${eventStatus}`);
     }
     const clientIds = new Set(
       relationsByMeetingId
         .get(event.Id)
         ?.map((er) => er.RelationId)
-        .filter((id) => DATA.Contact.has(id) && isRelevantContact(DATA.Contact.get(id))),
+        .filter((id) => CONTACT_IDS.has(id)),
     );
     const meetingTypeInfo = MEETING_TYPES.find((mt) => mt.Subject === event.Subject);
     let typeDictNnOrName: string | undefined;
-    if (meetingTypeInfo?.MeetingType === "other") {
+    if (meetingTypeInfo?.MeetingType === "inne") {
       typeDictNnOrName = undefined;
     } else if (meetingTypeInfo?.MeetingType) {
       typeDictNnOrName = `meetingType:${meetingTypeInfo.MeetingType}`;
-      if (!extendDictionaries.find((d) => d.name === "meetingType")?.positions.find((p) => p.nn === typeDictNnOrName))
+      if (!LH_MEETING_TYPES.some(({types}) => types.some(({name}) => meetingTypeInfo.MeetingType === name))) {
         throw new Error(`Unknown meeting type: ${JSON.stringify(meetingTypeInfo.MeetingType)}`);
+      }
     } else {
       unknownMeetingSubjects.add(event.Subject);
       typeDictNnOrName = undefined;
@@ -243,9 +506,10 @@ for (const [recurrenceActivityId, eventsGroup] of Map.groupBy(EVENTS, (e) => e.R
         event.Description,
       ]
         .filter(Boolean)
-        .join("\n"),
-      date: start.toISOString().slice(0, 10),
-      startDayMinute: start.getHours() * 60 + start.getMinutes(),
+        .join("\n")
+        .trim(),
+      date: start.toISODate(),
+      startDayMinute: start.hour * 60 + start.minute,
       durationMinutes: Number(event.DurationInMinutes),
       status,
       staff: [{userNn: event.OwnerId, attendanceStatus: staffStatus}],
@@ -272,6 +536,9 @@ const facilityContents: FacilityContents = {
   clients,
   meetings,
 };
+
+console.log("Prepared data:");
+console.log(facilityContentStats(facilityContents));
 
 console.log(`Writing result to ${outPath}`);
 Deno.writeTextFileSync(outPath, JSON.stringify(facilityContents, undefined, 2));

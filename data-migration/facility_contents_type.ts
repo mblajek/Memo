@@ -12,36 +12,47 @@ export interface FacilityContents {
 
 export interface DictionaryExtension {
   readonly name: string;
+  readonly positions: readonly PositionInExtension[];
+}
+
+export interface PositionInExtension extends Position {
+  readonly order: "atStart" | "atEnd" | PositionOrderRelative;
+}
+
+interface PositionOrderRelative {
+  readonly rel: "before" | "after";
+  readonly positionNnOrName: string;
+}
+
+export interface Dictionary {
+  readonly nn?: string;
+  readonly name: string;
+  readonly positionRequiredAttributeApiNames?: readonly string[];
   readonly positions: readonly Position[];
 }
 
-export interface Dictionary extends DictionaryExtension {
-  readonly nn: string;
-  readonly isFixed: boolean;
-  readonly isExtendable: boolean;
-  readonly positionRequiredAttributeIds: readonly string[] | null;
-}
-
 export interface Position {
-  readonly nn: string;
+  readonly nn?: string;
   readonly name: string;
-  readonly isFixed: boolean;
-  readonly defaultOrder: number;
-  readonly isDisabled: boolean;
+  readonly isDisabled?: boolean;
   readonly attributes?: AttributeValues;
 }
 
 export interface Attribute {
-  readonly nn: string;
+  readonly nn?: string;
   readonly model: string;
   readonly name: string;
   readonly apiName: string;
   readonly type: string;
-  readonly dictionaryName: string | null;
-  readonly isFixed: boolean;
-  readonly defaultOrder: number;
-  readonly isMultiValue: boolean | null;
+  readonly dictionaryNnOrName?: string;
+  readonly order: "atStart" | "atEnd" | AttributeOrderRelative;
+  readonly isMultiValue: boolean;
   readonly requirementLevel: "empty" | "optional" | "recommended" | "required";
+}
+
+interface AttributeOrderRelative {
+  readonly rel: "before" | "after";
+  readonly attributeApiName: string;
 }
 
 /** New user with staff member role to create. */
@@ -53,17 +64,20 @@ export interface Staff {
 
 /** Existing user to give staff in the facility. */
 export interface GiveStaff {
+  readonly nn?: string;
   readonly id: string;
 }
 
 export interface Client {
-  readonly nn: string;
+  readonly nn?: string;
   readonly name: string;
   readonly client: AttributeValues;
+  readonly createdByNn?: string;
+  readonly createdAt: string;
 }
 
 export interface AttributeValues {
-  readonly [attributeNnOrApiName: string]: AttributeValue;
+  readonly [apiName: string]: AttributeValue | undefined;
 }
 
 export interface ConstAttributeValue {
@@ -86,9 +100,9 @@ export type SingleAttributeValue = ConstAttributeValue | NnAttributeValue | Exis
 export type AttributeValue = SingleAttributeValue | SingleAttributeValue[];
 
 export interface Meeting {
-  readonly nn: string;
+  readonly nn?: string;
   readonly typeDictNnOrName: string;
-  readonly notes: string | null;
+  readonly notes?: string;
   readonly date: string;
   readonly startDayMinute: number;
   readonly durationMinutes: number;
@@ -96,10 +110,20 @@ export interface Meeting {
   readonly isRemote: boolean;
   readonly staff: readonly Attendant[];
   readonly clients: readonly Attendant[];
-  readonly fromMeetingNn: string | null;
+  readonly fromMeetingNn?: string;
 }
 
 export interface Attendant {
   readonly userNn: string;
   readonly attendanceStatus: "ok" | "late_present" | "too_late" | "no_show" | "cancelled";
+}
+
+export function facilityContentStats(contents: FacilityContents) {
+  return `\
+  Dictionaries: ${contents.dictionaries.length} + extend ${contents.extendDictionaries.length}
+  Attributes: ${contents.attributes.length}
+  Staff: ${contents.staff.length} + give ${contents.giveStaff.length}
+  Clients: ${contents.clients.length}
+  Meetings: ${contents.meetings.length}
+`;
 }
