@@ -150,19 +150,31 @@ class SystemController extends ApiController
         } catch (Throwable) {
             [$commitHash, $commitDateZulu] = [null, null];
         }
-        [$backendHash, $frontendHash] = Cache::get('codeHash', [null, null]);
-        if (!$backendHash || !$frontendHash) {
+        $cache = Cache::get('system_status');
+        if (is_array($cache) && count($cache) === 3) {
+            [$backendHash, $frontendHash, $cpu15m] = $cache;
+        } else {
             [$backendHash, $frontendHash] = array_map(self::dirMd5(...), [App::path(), App::publicPath()]);
-            Cache::put('codeHash', [$backendHash, $frontendHash], 15 /* 15s */);
+            $cpu15m = null;
+            try {
+                ob_start();
+                system('uptime');
+                $cpu15m = Str::match('/[.0-9]+$/', trim(ob_get_clean() ?? ''));
+                $cpu15m = strlen($cpu15m) ? floatval($cpu15m) : null;
+            } catch (Throwable) {
+            }
+            Cache::put('codeHash', [$backendHash, $frontendHash, $cpu15m], 15 /* 15s */);
         }
         return new JsonResponse([
             'data' => [
+                'version' => self::VERSION,
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'commitHash' => $commitHash,
                 'commitDate' => $commitDateZulu,
                 'backendHash' => $backendHash,
                 'frontendHash' => $frontendHash,
+                'cpu15m' => $cpu15m ?? null,
             ],
         ]);
     }

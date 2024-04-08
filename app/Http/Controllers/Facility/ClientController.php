@@ -80,7 +80,7 @@ class ClientController extends ApiController
             $member->client_id = $client->id;
             $member->save();
         });
-        return new JsonResponse(data: ['data' => ['id' => $user->id]], status: 201);
+        return new JsonResponse(data: ['data' => ['id' => $user->id, 'clientId' => $client->id]], status: 201);
     }
 
     // todo: extract into service, openApi
