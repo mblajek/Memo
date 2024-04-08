@@ -70,5 +70,5 @@ attendanceStatus:
 
 notificationMethod:
   _name: "metoda powiadomień"
-  sms: "sms"
+  sms: "SMS"
   email: "e-mail"
