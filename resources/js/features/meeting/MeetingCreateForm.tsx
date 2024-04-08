@@ -11,7 +11,7 @@ import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
 import {getAttendantsValuesForCreate, useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, getResourceValuesForCreate} from "./MeetingForm";
-import {MeetingSeriesFormType, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
+import {MeetingSeriesFormType, getClearedSeriesValues, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
 import {getMeetingTimeFullData, meetingTimeInitialValue} from "./meeting_time_controller";
@@ -102,6 +102,7 @@ export default MeetingCreateForm;
 function transformFormValues(values: MeetingFormType): MeetingResourceForCreate {
   return {
     ...values,
+    ...getClearedSeriesValues(),
     ...getMeetingTimeFullData(values).timeValues,
     ...getAttendantsValuesForCreate(values),
     ...getResourceValuesForCreate(values),
