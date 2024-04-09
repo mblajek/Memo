@@ -214,3 +214,15 @@ export function getMeetingSeriesCloneParams({
     dates: includeAllDates ? allDates : allDates.filter((date) => values.seriesIncludeDate[date]),
   };
 }
+
+/**
+ * Returns a record that can be applied to values to clear the fields related to series and prevent them
+ * from being submitted when creating a form.
+ */
+export function getClearedSeriesValues() {
+  return {
+    seriesInterval: undefined,
+    seriesLength: undefined,
+    seriesIncludeDate: undefined,
+  };
+}

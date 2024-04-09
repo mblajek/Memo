@@ -35,6 +35,7 @@ class DeveloperController extends ApiController
 
     public function overwriteMetadata(): JsonResponse
     {
+        // todo: access Client as User/Client using user.id, and return only user.id from POST client
         $data = $this->validate([
             'model' => Valid::trimmed(
                 [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))]

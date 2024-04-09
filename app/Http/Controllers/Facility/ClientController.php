@@ -122,7 +122,7 @@ class ClientController extends ApiController
     {
         return [
                 'client' => Valid::array(keys: array_filter(array_keys($clientValidator), fn(string $key) => //
-                !str_ends_with($key, '*')))
+                !str_ends_with($key, '*'))),
             ] + array_combine(
                 array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
                 $clientValidator,

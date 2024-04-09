@@ -94,6 +94,7 @@ class Meeting extends Model
                 DictionaryUuidEnum::MeetingResource,
                 [new UniqueWithMemoryRule('resource')],
             ),
+            'from_meeting_id' => Valid::uuid([Rule::exists('meetings', 'id')], sometimes: true),
         };
     }
 

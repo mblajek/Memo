@@ -22,11 +22,7 @@ export default (() => {
           <div class="flex flex-col gap-2 items-stretch">
             <div class="grid gap-x-3 gap-y-1 self-start" style={{"grid-template-columns": "auto auto"}}>
               <label class="font-semibold">{t("about_page.app_version")}</label>
-              <div>
-                <Show when={status().commitDate} fallback={EMPTY_VALUE_SYMBOL}>
-                  {(commitDate) => <>0.0.{DateTime.fromISO(commitDate()).toFormat("yyyyMMddHHmmss")}</>}
-                </Show>
-              </div>
+              <div>{status().version}</div>
               <label class="font-semibold">{t("about_page.commit_date")}</label>
               <div>
                 <Show when={status().commitDate} fallback={EMPTY_VALUE_SYMBOL}>
@@ -56,6 +52,8 @@ export default (() => {
               <div>
                 <span class="font-mono">{status().frontendHash}</span> <CopyToClipboard text={status().frontendHash} />
               </div>
+              <label class="font-semibold">{t("about_page.cpu_load")}</label>
+              <div>{status().cpu15m.toFixed(2)}</div>
             </div>
           </div>
         )}

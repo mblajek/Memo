@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionMiddleware;
-use App\Http\Permissions\PermissionObject;
 use App\Models\Facility;
 use App\Models\User;
 use App\Rules\Valid;
@@ -19,7 +18,7 @@ use OpenApi\Attributes as OA;
 #[OA\Info(version: ApiController::VERSION, title: 'Memo API')]
 abstract class ApiController extends Controller
 {
-    protected const string VERSION = '0.7.1';
+    protected const string VERSION = '0.7.2';
     private readonly array $requestIn;
 
     public function __construct(private readonly Request $request)

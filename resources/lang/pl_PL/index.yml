@@ -86,3 +86,4 @@ about_page:
   commit_hash: "Commit:"
   backend_hash: "Suma kontrolna backendu:"
   frontend_hash: "Suma kontrolna frontendu:"
+  cpu_load: "Obciążenie CPU:"

@@ -15,7 +15,7 @@ import {WorkTimeBlock} from "components/ui/calendar/calendar-columns/blocks";
 import {DaysRange} from "components/ui/calendar/days_range";
 import {PartDayTimeSpan} from "components/ui/calendar/types";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
-import {NON_NULLABLE, currentDate, htmlAttributes, useLangFunc} from "components/utils";
+import {NON_NULLABLE, currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
@@ -827,7 +827,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           />
           <Show when={userStatus.data?.permissions.facilityStaff}>
             <Button
-              class="minimal mx-1"
+              class={cx("mx-1", selectedResources().size ? "minimal" : "primary small")}
               onClick={() => {
                 if (mode() === "day") {
                   setMode("week");
