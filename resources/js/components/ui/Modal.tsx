@@ -138,8 +138,9 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
     }),
   );
   const api = createMemo(() => dialog.connect(state, send, normalizeProps));
+  const shouldBeOpen = createMemo(() => !!props.open);
   createRenderEffect(() => {
-    if (props.open) {
+    if (shouldBeOpen()) {
       api().open();
     } else {
       api().close();

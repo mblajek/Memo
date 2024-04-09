@@ -256,20 +256,25 @@ export const TableExportButton: VoidComponent = () => {
         }}
       </PopOver>
       <Modal title={t("tables.export.exporting")} open={progress()}>
-        {(progress) => (
-          <div class="flex flex-col gap-2">
-            <ProgressBar value={progress().len === undefined ? undefined : progress().index} max={progress().len} />
-            <Button
-              class="self-end secondary small"
-              onClick={() => {
-                setAbort(true);
-                setProgress(undefined);
-              }}
-            >
-              {t("actions.cancel")}
-            </Button>
-          </div>
-        )}
+        {(progress) => {
+          const progressValuePercent = createMemo(() =>
+            progress().len ? Math.round((100 * progress().index) / progress().len!) : progress().len,
+          );
+          return (
+            <div class="flex flex-col gap-2">
+              <ProgressBar value={progressValuePercent()} max={progress().len && 100} />
+              <Button
+                class="self-end secondary small"
+                onClick={() => {
+                  setAbort(true);
+                  setProgress(undefined);
+                }}
+              >
+                {t("actions.cancel")}
+              </Button>
+            </div>
+          );
+        }}
       </Modal>
     </>
   );
