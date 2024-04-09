@@ -240,18 +240,29 @@ const CONTACT_IDS = new Set(CONTACTS.map((c) => c.Id));
 EVENTS = EVENTS.filter((e) => CONTACT_IDS.has(e.WhoId));
 
 // _logFreq(
-//   DATA.Contact.rows.map((c) => [c.CreatedDate].join("__")),
+//   DATA.Event.rows.map((c) =>
+//     [Number(c.DurationInMinutes) >= 1440 ? [c.Subject, c.DurationInMinutes] : undefined].join("__"),
+//   ),
 //   {limit: 100},
 // );
 // Deno.exit();
 
-const staff: Staff[] = STAFF.rows.map((s) => ({
-  nn: s.Id,
-  name: s.Name,
-  email: s.Email,
+const staff: Staff[] = [...Map.groupBy(STAFF.rows, (r) => r.Email)].map(([email, ss]) => ({
+  nn: ss.map((s) => s.Id),
+  name: ss[0].Name,
+  email: email,
 }));
 
 const giveStaff: GiveStaff[] = [];
+
+let logLineLimit = 100;
+function _logLine(...line: unknown[]) {
+  console.debug(...line);
+  if (logLineLimit-- <= 0) {
+    console.debug("...");
+    Deno.exit();
+  }
+}
 
 const clients: Client[] = [];
 const contactsByAccountId = Map.groupBy(CONTACTS, (c) => c.AccountId);
@@ -348,20 +359,62 @@ for (const [accountId, contacts] of contactsByAccountId) {
     const notes = [contact.Description.trim()];
     if (lastNotificationReason?.Another_notification_reason__c?.trim())
       notes.push(`Powód zgłoszenia: ${lastNotificationReason?.Another_notification_reason__c?.trim()}`);
-
-    // function cleanUpPhone(...phones: string[]) {
-    //   for (let p of phones) {
-    //     p = p.trim();
-    //     if (!p || p.match(/^[0\- ]+$/)) {
-    //       continue;
-    //     }
-    //     const parts = p.split(/[/,]/).map((p) => p.trim());
-    //     if (parts.length > 1) {
-    //       notes.push(`Telefon: ${p}`);
-    //     }
-    //   }
-    //   // xx;
-    // }
+    const contactAddr = [contact.MailingStreet, contact.MailingPostalCode, contact.MailingCity].map((e) => e.trim());
+    const contactAddrStr = contactAddr.join("");
+    const accountAddr = [account.BillingStreet, account.BillingPostalCode, account.BillingCity].map((e) => e.trim());
+    const accountAddrStr = accountAddr.join("");
+    let addr = [];
+    if (contactAddrStr) {
+      addr = contactAddr;
+      if (accountAddrStr && accountAddrStr !== contactAddrStr) {
+        notes.push(`Adres konta: ${accountAddr[0]}, ${accountAddr[1]} ${accountAddr[2]}`);
+      }
+    } else {
+      addr = accountAddr;
+    }
+    const cleanUpName = (name: string) =>
+      name
+        .replaceAll(/\s+/g, " ")
+        .replaceAll(/ -\b|\b- /g, " - ")
+        .replaceAll("( ", "(")
+        .replaceAll(" )", ")")
+        .trim();
+    const cleanUpPhone = (...phones: string[]) => {
+      const parts = new Set(
+        [...new Set(phones)].flatMap((phone) =>
+          phone.split(/[/,]/).flatMap((part) => {
+            const p = part.trim();
+            if (p.match(/^[0\-. ]*$/)) {
+              return [];
+            }
+            return p;
+          }),
+        ),
+      );
+      let res = undefined;
+      const knownNums = new Set<string>();
+      const forNotes: string[] = [];
+      for (const p of parts) {
+        const num = p
+          .match(/((?:\+\d+[\s-]?)?\d(?:[\s-]?\d){8,})/)?.[1]
+          .match(/[+\d]/g)
+          ?.join("");
+        const hasDesc = !!p.match(/\p{L}[\p{L} -]*\p{L}/u);
+        if (!num || hasDesc || (res && !knownNums.has(num))) {
+          forNotes.push(num ? p.replace(/((?:\+\d+[\s-]?)?\d(?:[\s-]?\d){8,})/, num) : p);
+        }
+        if (num) {
+          if (!hasDesc) {
+            res ||= num;
+          }
+          knownNums.add(num);
+        }
+      }
+      if (forNotes.length) {
+        notes.push(`Inne numery telefonu: ${forNotes.join(", ")}`);
+      }
+      return res;
+    };
     const clientFields: AttributeValues = {
       typeDictId: {
         kind: "dict",
@@ -373,14 +426,19 @@ for (const [accountId, contacts] of contactsByAccountId) {
         dictName: "gender",
         positionName: contact.Sex__c === "K" ? "female" : contact.Sex__c === "M" ? "male" : "unknown",
       },
-      birthDate: {kind: "const", value: contact.Birthdate},
+      birthDate:
+        contact.Birthdate >= "1900" && contact.Birthdate <= "2024"
+          ? {kind: "const", value: contact.Birthdate}
+          : undefined,
       contactEmail: {kind: "const", value: contact.Email.trim()},
-      // TODO:
-      // contactPhone: {kind: "const", value: cleanUpPhone(contact.Phone, account.Phone)},
-      // addressStreetNumber
-      // addressPostalCode
-      // addressCity
-      contactStartAt: {kind: "const", value: contact.CreatedDate},
+      contactPhone: {
+        kind: "const",
+        value: cleanUpPhone(contact.Phone, contact.HomePhone, contact.MobilePhone, account.Phone),
+      },
+      addressStreetNumber: {kind: "const", value: addr[0] || ""},
+      addressPostalCode: {kind: "const", value: addr[1] || ""},
+      addressCity: {kind: "const", value: addr[2] || ""},
+      contactStartAt: {kind: "const", value: DateTime.fromISO(contact.CreatedDate).toISODate()},
       contactEndAt: undefined,
       rodzinaKontoSalesforceU4d096794: {kind: "const", value: `${account.Name} (${account.Id})`},
       wiekWMomencieZgloszeniaUfdf0fed0: contact.Age_at_the_time_of_notification__c
@@ -427,7 +485,7 @@ for (const [accountId, contacts] of contactsByAccountId) {
     };
     clients.push({
       nn: contact.Id,
-      name: contact.Name,
+      name: cleanUpName(contact.Name),
       client: {
         ...clientFields,
         notes: {
@@ -439,7 +497,10 @@ for (const [accountId, contacts] of contactsByAccountId) {
         },
       },
       createdByNn: STAFF.has(contact.OwnerId) ? contact.OwnerId : undefined,
-      createdAt: DateTime.fromISO(contact.CreatedDate).toUTC().toISO(),
+      createdAt: DateTime.fromISO(contact.CreatedDate)
+        .toUTC()
+        .set({millisecond: 0})
+        .toISO({suppressMilliseconds: true}),
     });
   }
 }
@@ -502,13 +563,20 @@ for (const [recurrenceActivityId, eventsGroup] of Map.groupBy(EVENTS, (e) => e.R
       notes: [
         !meetingTypeInfo || !typeDictNnOrName || meetingTypeInfo?.RetainSubject === "1" ? event.Subject : undefined,
         event.Description,
+        Number(event.DurationInMinutes) > 1440
+          ? `ZDARZENIE WIELODNIOWE, liczba dni: ${Number(event.DurationInMinutes) / 1440}, do: ${event.EndDateTime}`
+          : undefined,
       ]
         .filter(Boolean)
         .join("\n")
         .trim(),
       date: start.toISODate(),
-      startDayMinute: start.hour * 60 + start.minute,
-      durationMinutes: Number(event.DurationInMinutes),
+      ...(Number(event.DurationInMinutes) >= 1440
+        ? {startDayMinute: 0, durationMinutes: 1440}
+        : {
+            startDayMinute: start.hour * 60 + start.minute,
+            durationMinutes: Math.max(5, Number(event.DurationInMinutes)),
+          }),
       status,
       staff: [{userNn: event.OwnerId, attendanceStatus: staffStatus}],
       clients: [...clientIds].map((clientId) => ({userNn: clientId, attendanceStatus: clientStatus})),

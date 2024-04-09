@@ -9,6 +9,8 @@ export interface ImportConfig {
   readonly memoURL: string;
   readonly facilityId: string;
   readonly importUserMemoSession: string;
+  readonly skipDictionariesAndAttributes: boolean;
+  readonly skipStaff: boolean;
   /** Don't actually send the mutating queries. */
   readonly dryRun: boolean;
 }

@@ -48,6 +48,7 @@ async function api(path: string, params?: CallParams) {
     const resp = await fetch(fullPath, fetchParams);
     if (!resp.ok) {
       console.error("Error response:", await resp.text());
+      console.error("Request:", fullPath, fetchParams);
       throw new Error(`Error fetching ${fullPath}: ${resp.status} ${resp.statusText}`);
     }
     const type = resp.headers.get("content-type");
@@ -77,7 +78,13 @@ async function apiCount(entityURL: string) {
   ).meta.totalDataSize;
 }
 
-const userData = (await api("user/status")).data;
+const facility = (await api("system/facility/list")).data.find((f: any) => f.id === config.facilityId);
+if (!facility) {
+  throw new Error(`The specified facility does not exist`);
+}
+const facilityId = facility.id;
+
+const userData = (await api(`user/status/${facilityId}`)).data;
 console.log(`User: ${userData.user.name} (${userData.user.email}, ${userData.user.id})`);
 console.log(
   `  Permissions: ${["globalAdmin", "developer", "facilityAdmin"].filter((p) => userData.permissions[p]).join(", ") || "-"}`,
@@ -86,11 +93,6 @@ if (!userData.permissions.developer || !userData.permissions.facilityAdmin) {
   throw new Error("Not enough permissions");
 }
 
-const facility = (await api("system/facility/list")).data.find((f: any) => f.id === config.facilityId);
-if (!facility) {
-  throw new Error(`The specified facility does not exist`);
-}
-const facilityId = facility.id;
 console.log(`Facility: ${facility.name} (${facilityId})`);
 console.log(`  Staff: ${await apiCount(`facility/${facility.id}/user/staff`)}`);
 console.log(`  Clients: ${await apiCount(`facility/${facility.id}/user/client`)}`);
@@ -106,19 +108,24 @@ if (!confirm("\nVerify the information above.\nContinue?")) {
 }
 await new Promise((resolve) => setTimeout(resolve, 100));
 
-let dictionaries: any[] = [];
-let attributes: any[] = [];
+const cache: {dictionaries: any[] | undefined; attributes: any[] | undefined} = {
+  dictionaries: undefined,
+  attributes: undefined,
+};
 
-async function loadDictionaries() {
-  dictionaries = (await api("system/dictionary/list")).data;
+async function getDictionaries() {
+  if (!cache.dictionaries) {
+    cache.dictionaries = (await api("system/dictionary/list")).data;
+  }
+  return cache.dictionaries!;
 }
 
-async function loadAttributes() {
-  attributes = (await api("system/attribute/list")).data;
+async function getAttributes() {
+  if (!cache.attributes) {
+    cache.attributes = (await api("system/attribute/list")).data;
+  }
+  return cache.attributes!;
 }
-
-loadDictionaries();
-loadAttributes();
 
 class NnMapper {
   readonly nnToId = new Map<string, string>();
@@ -128,7 +135,7 @@ class NnMapper {
 
   constructor(readonly filePathBase: string) {
     this.file = Deno.openSync(
-      `${filePathBase}_${new Date().toISOString().slice(0, 19).replaceAll(/[-:]/, "").replace("T", "_")}.csv`,
+      `${filePathBase}_${new Date().toISOString().slice(0, 19).replaceAll(/[-:]/g, "").replace("T", "_")}.csv`,
       {
         write: true,
         createNew: true,
@@ -146,12 +153,15 @@ class NnMapper {
     await this.writer.write(this.encoder.encode(line));
   }
 
-  async set({nn, id, type}: {nn: string; id: string; type: string}) {
-    if (this.nnToId.has(nn)) {
-      throw new Error(`Duplicate NN: ${JSON.stringify(nn)}, defined as id ${this.nnToId.get(nn)} and ${id}`);
+  async set({nn, id, type}: {nn: string | readonly string[]; id: string; type: string}) {
+    const nns = Array.isArray(nn) ? nn : [nn];
+    for (const nn of nns) {
+      if (this.nnToId.has(nn)) {
+        throw new Error(`Duplicate NN: ${JSON.stringify(nn)}, defined as id ${this.nnToId.get(nn)} and ${id}`);
+      }
+      this.nnToId.set(nn, id);
+      await this.write([nn, id, type].join(",") + "\n");
     }
-    this.nnToId.set(nn, id);
-    await this.write([nn, id, type].join(",") + "\n");
   }
 
   has(nn: string) {
@@ -175,38 +185,37 @@ async function apiCreate({
   object,
   params,
 }: {
-  nn?: string;
+  nn?: string | readonly string[];
   path: string;
   type: string;
   object: object;
   params?: CallParams;
 }) {
-  const resp = (await api(path, {req: object, method: "POST", ...params})).data;
+  const resp = (await api(path, {req: object, ...params})).data;
   const {id} = resp;
   if (nn && id) {
     nnMapper.set({nn, id, type});
   }
+  if (type === "dictionary" || type === "position") {
+    cache.dictionaries = undefined;
+  } else if (type === "attribute") {
+    cache.attributes = undefined;
+  }
   return resp;
 }
 
-function fixedDict(name: string) {
-  const dict = dictionaries.find((d) => d.isFixed && !d.facilityId && d.name === name);
-  if (!dict) {
-    throw new Error(`Fixed global dictionary not found: name=${name}`);
-  }
-  return dict;
-}
-
-function findDict(nnOrName: string) {
+async function findDict(nnOrName: string) {
+  let dict;
   if (nnMapper.has(nnOrName)) {
     const id = nnMapper.get(nnOrName);
-    const dict = dictionaries.find((d) => d.id === id);
-    if (!dict) {
-      throw new Error(`Dictionary not found: nnOrName=${nnOrName}`);
-    }
-    return dict;
+    dict = (await getDictionaries()).find((d) => d.id === id);
+  } else {
+    dict = (await getDictionaries()).find((d) => d.name === nnOrName);
   }
-  return fixedDict(nnOrName);
+  if (!dict) {
+    throw new Error(`Dictionary not found: nnOrName=${nnOrName}`);
+  }
+  return dict;
 }
 
 function findPos(dictionary: any, posNnOrName: string) {
@@ -223,22 +232,22 @@ function findPos(dictionary: any, posNnOrName: string) {
   return pos;
 }
 
-function findAttrib(apiName: string) {
-  const attrib = attributes.find((a) => a.apiName === apiName);
+async function findAttrib(apiName: string) {
+  const attrib = (await getAttributes()).find((a) => a.apiName === apiName);
   if (!attrib) {
     throw new Error(`Attribute not found: apiName=${apiName}`);
   }
   return attrib;
 }
 
-function attributeValues(attributeValues: AttributeValues | undefined) {
+async function attributeValues(attributeValues: AttributeValues | undefined) {
   if (!attributeValues) {
     return {};
   }
   const res: Partial<Record<string, unknown>> = {};
   for (const [key, value] of Object.entries(attributeValues)) {
     findAttrib(key);
-    const attrVal = (val: SingleAttributeValue) => {
+    const attrVal = async (val: SingleAttributeValue) => {
       const {kind} = val;
       switch (kind) {
         case "const":
@@ -246,7 +255,7 @@ function attributeValues(attributeValues: AttributeValues | undefined) {
         case "nn":
           return nnMapper.get(val.nn);
         case "dict": {
-          const pos = findDict(val.dictName).positions.find((p: any) => p.name === val.positionName);
+          const pos = (await findDict(val.dictName)).positions.find((p: any) => p.name === val.positionName);
           if (!pos) {
             throw new Error(`Position not found: ${val.dictName}.${val.positionName}`);
           }
@@ -257,7 +266,9 @@ function attributeValues(attributeValues: AttributeValues | undefined) {
       }
     };
     if (value) {
-      res[key] = Array.isArray(value) ? value.map((v) => attrVal(v)) : attrVal(value);
+      res[key] = Array.isArray(value)
+        ? await Promise.all(value.map(async (v) => await attrVal(v)))
+        : await attrVal(value);
     }
   }
   return res;
@@ -286,16 +297,16 @@ function* trackProgress<T>(array: readonly T[], type: string) {
   console.log(`Processing ${type} done (${((len / (Date.now() - start)) * 60 * 1000).toFixed(1)} per minute).`);
 }
 
-function getDefaultOrder<RelKey extends string>(
+async function getDefaultOrder<RelKey extends string>(
   order: Order<RelKey>,
-  getItemDefaultOrder: (order: RelSpec<RelKey>) => number,
-): number | undefined {
+  getItemDefaultOrder: (order: RelSpec<RelKey>) => number | Promise<number>,
+): Promise<number | undefined> {
   if (order === "atStart") {
     return 1;
   } else if (order === "atEnd") {
     return undefined;
   } else {
-    const relDefOrder = getItemDefaultOrder(order);
+    const relDefOrder = await getItemDefaultOrder(order);
     return order.rel === "before" ? relDefOrder : relDefOrder + 1;
   }
 }
@@ -309,7 +320,7 @@ async function createPosition({
   dictNnOrName: string;
   pos: Position & Partial<PositionInExtension>;
 }) {
-  await apiCreate({
+  return await apiCreate({
     nn: pos.nn,
     path: `facility/${facilityId}/admin/position`,
     type: "position",
@@ -317,68 +328,71 @@ async function createPosition({
       dictionaryId,
       name: pos.name,
       defaultOrder: pos.order
-        ? getDefaultOrder(pos.order, (o) => {
-            loadDictionaries();
-            return findPos(findDict(dictNnOrName), o.positionNnOrName).defaultOrder;
-          })
-        : null,
-      isDisabled: pos.isDisabled ?? null,
-      ...attributeValues(pos.attributes),
+        ? await getDefaultOrder(
+            pos.order,
+            async (o) => findPos(await findDict(dictNnOrName), o.positionNnOrName).defaultOrder,
+          )
+        : undefined,
+      isDisabled: pos.isDisabled ?? false,
+      ...(await attributeValues(pos.attributes)),
     },
   });
 }
 
 try {
-  for (const action of trackProgress(prepared.dictionariesAndAttributes, "dictionaries and attributes")) {
-    const {kind} = action;
-    if (kind === "createAttribute") {
-      const attr = action;
-      await apiCreate({
-        nn: attr.nn,
-        path: `facility/${facilityId}/admin/attribute`,
-        type: "attribute",
-        object: {
-          model: attr.model,
-          name: attr.name,
-          apiName: attr.apiName,
-          type: attr.type,
-          dictionaryId: attr.dictionaryNnOrName ? findDict(attr.dictionaryNnOrName) : undefined,
-          defaultOrder: getDefaultOrder(attr.order, (o) => {
-            loadAttributes();
-            return findAttrib(o.attributeApiName).defaultOrder;
-          }),
-          isMultiValue: attr.isMultiValue,
-          requirementLevel: attr.requirementLevel,
-        },
-      });
-    } else if (kind === "createDictionary") {
-      const dict = action;
-      const dictionaryId = (
+  if (!config.skipDictionariesAndAttributes)
+    for (const action of trackProgress(prepared.dictionariesAndAttributes, "dictionaries and attributes")) {
+      const {kind} = action;
+      if (kind === "createAttribute") {
+        const attr = action;
         await apiCreate({
-          nn: dict.nn,
-          path: `facility/${facilityId}/admin/dictionary`,
-          type: "dictionary",
+          nn: attr.nn,
+          path: `facility/${facilityId}/admin/attribute`,
+          type: "attribute",
           object: {
-            name: dict.name,
-            positionRequiredAttributeIds: dict.positionRequiredAttributeApiNames?.map(
-              (apiName) => findAttrib(apiName).id,
+            model: attr.model,
+            name: attr.name,
+            apiName: attr.apiName,
+            type: attr.type,
+            dictionaryId: attr.dictionaryNnOrName ? (await findDict(attr.dictionaryNnOrName)).id : null,
+            defaultOrder: await getDefaultOrder(
+              attr.order,
+              async (o) => (await findAttrib(o.attributeApiName)).defaultOrder,
             ),
+            isMultiValue: attr.isMultiValue,
+            requirementLevel: attr.requirementLevel,
           },
-        })
-      ).id;
-      for (const pos of dict.positions) {
-        await createPosition({dictionaryId, dictNnOrName: dict.name, pos});
+        });
+      } else if (kind === "createDictionary") {
+        const dict = action;
+        const dictionaryId = (
+          await apiCreate({
+            nn: dict.nn,
+            path: `facility/${facilityId}/admin/dictionary`,
+            type: "dictionary",
+            object: {
+              name: dict.name,
+              positionRequiredAttributeIds: dict.positionRequiredAttributeApiNames
+                ? await Promise.all(
+                    dict.positionRequiredAttributeApiNames.map(async (apiName) => (await findAttrib(apiName)).id),
+                  )
+                : undefined,
+            },
+          })
+        ).id;
+        for (const pos of dict.positions) {
+          await createPosition({dictionaryId, dictNnOrName: dict.name, pos});
+        }
+      } else if (kind === "extendDictionary") {
+        const dict = action;
+        const dictionary = await findDict(dict.name);
+        for (const pos of dict.positions) {
+          await createPosition({dictionaryId: dictionary.id, dictNnOrName: dict.name, pos});
+        }
+      } else {
+        throw new Error(`Unknown action kind: ${kind}`);
       }
-    } else if (kind === "extendDictionary") {
-      const dict = action;
-      const dictionary = findDict(dict.name);
-      for (const pos of dict.positions) {
-        await createPosition({dictionaryId: dictionary.id, dictNnOrName: dict.name, pos});
-      }
-    } else {
-      throw new Error(`Unknown action kind: ${kind}`);
     }
-  }
 
   const makeStaff = async (userId: string) =>
     await apiCreate({
@@ -388,6 +402,8 @@ try {
         userId,
         facilityId,
         isFacilityStaff: true,
+        hasFacilityAdmin: false,
+        isFacilityClient: false,
       },
     });
   for (const staff of trackProgress(prepared.giveStaff, "staff to give")) {
@@ -404,42 +420,44 @@ try {
         type: "user",
         object: {
           name: staff.name,
-          email: staff.email,
-          hasEmailVerified: true,
+          email: staff.email || null,
+          hasEmailVerified: !!staff.email,
+          password: null,
+          passwordExpireAt: null,
+          hasGlobalAdmin: false,
         },
       })
     ).id;
     await makeStaff(userId);
   }
+
   for (const client of trackProgress(prepared.clients, "clients")) {
     const {clientId} = await apiCreate({
       nn: client.nn,
-      path: `/facility/${facilityId}/user/client`,
+      path: `facility/${facilityId}/user/client`,
       type: "client",
       object: {
         name: client.name,
-        client: attributeValues(client.client),
+        client: await attributeValues(client.client),
       },
     });
-    await api("/admin/developer/overwrite-metadata", {
+    await api("admin/developer/overwrite-metadata", {
       req: {
         model: "client",
         id: clientId,
         createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
         createdAt: client.createdAt,
       },
-      method: "POST",
     });
   }
-  loadDictionaries();
-  const meetingTypeDictionary = fixedDict("meetingType");
-  const meetingStatusDictionary = fixedDict("meetingStatus");
+  const meetingTypeDictionary = await findDict("meetingType");
+  const meetingStatusDictionary = await findDict("meetingStatus");
   const meetingStatuses = {
     planned: meetingStatusDictionary.positions.find((p: any) => p.name === "planned").id,
     completed: meetingStatusDictionary.positions.find((p: any) => p.name === "completed").id,
     cancelled: meetingStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
   };
-  const attendanceStatusDictionary = fixedDict("attendanceStatus");
+  const attendanceStatusDictionary = await findDict("attendanceStatus");
   const attendanceStatuses = {
     ok: attendanceStatusDictionary.positions.find((p: any) => p.name === "ok").id,
     late_present: attendanceStatusDictionary.positions.find((p: any) => p.name === "late_present").id,
@@ -454,12 +472,12 @@ try {
   for (const meeting of trackProgress(prepared.meetings, "meetings")) {
     await apiCreate({
       nn: meeting.nn,
-      path: `/facility/${facilityId}/meeting`,
+      path: `facility/${facilityId}/meeting`,
       type: "meeting",
       object: {
         typeDictId: nnMapper.has(meeting.typeDictNnOrName)
           ? nnMapper.get(meeting.typeDictNnOrName)
-          : meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName),
+          : meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName).id,
         notes: meeting.notes,
         date: meeting.date,
         startDayminute: meeting.startDayMinute,

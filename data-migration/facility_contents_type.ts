@@ -54,19 +54,19 @@ export type RelSpec<RelKey extends string> = Readonly<Record<RelKey, string>>;
 
 /** New user with staff member role to create. */
 export interface Staff {
-  readonly nn: string;
+  readonly nn: string | readonly string[];
   readonly name: string;
   readonly email: string;
 }
 
 /** Existing user to give staff in the facility. */
 export interface GiveStaff {
-  readonly nn?: string;
+  readonly nn?: string | readonly string[];
   readonly id: string;
 }
 
 export interface Client {
-  readonly nn?: string;
+  readonly nn?: string | readonly string[];
   readonly name: string;
   readonly client: AttributeValues;
   readonly createdByNn?: string;
