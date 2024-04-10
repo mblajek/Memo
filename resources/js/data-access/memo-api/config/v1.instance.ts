@@ -4,6 +4,7 @@ import {Api} from "../types";
 export const V1 = axios.create({
   baseURL: "/api/v1",
   withCredentials: true,
+  timeout: 10 * 1000,
 });
 
 type UnknownData = Partial<Record<string, unknown>>;

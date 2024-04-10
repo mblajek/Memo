@@ -1,17 +1,45 @@
-import {AttributeFields} from "components/ui/form/AttributeFields";
+import {A} from "@solidjs/router";
+import {Email} from "components/ui/Email";
+import {Phone} from "components/ui/Phone";
+import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
 import {PartialAttributesSelection} from "components/utils/attributes_selection";
-import {VoidComponent} from "solid-js";
+import {For, VoidComponent} from "solid-js";
 
 interface Props {
   readonly editMode: boolean;
   readonly showAllAttributes?: boolean;
 }
 
-const ATTRIBUTES_SELECTION: PartialAttributesSelection = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ATTRIBUTES_SELECTION: PartialAttributesSelection<AttributeParams<any>> = {
   includeFixed: true,
   fixedOverrides: {
     notes: false,
+    contactEmail: {
+      view: (email) => <Email email={email()} />,
+    } satisfies AttributeParams<string>,
+    contactPhone: {
+      view: (phone) => <Phone class="font-semibold" phone={phone()} />,
+    } satisfies AttributeParams<string>,
+    documentsLinks: {
+      view: (links) => (
+        <div class="flex flex-col gap-1">
+          <For each={links()}>
+            {(link) => (
+              <A
+                href={link}
+                target="_blank"
+                class="inline-block text-sm wrapTextAnywhere"
+                style={{"line-height": "normal"}}
+              >
+                {link}
+              </A>
+            )}
+          </For>
+        </div>
+      ),
+    } satisfies AttributeParams<string[]>,
   },
 };
 
