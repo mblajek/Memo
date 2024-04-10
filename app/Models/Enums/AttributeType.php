@@ -2,6 +2,7 @@
 
 namespace App\Models\Enums;
 
+use App\Exceptions\FatalExceptionFactory;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Rules\Valid;
 use App\Tquery\Config\TqDataTypeEnum;
@@ -10,19 +11,21 @@ use Illuminate\Validation\Rule;
 
 enum AttributeType: string
 {
-    // Standard data types.
+    // Standard data types
     case Bool = 'bool';
     case Date = 'date';
     case Datetime = 'datetime';
     case Int = 'int';
     case String = 'string'; // 255
     case Text = 'text'; // 4096
-    // Supported table names.
+    // Supported table names
     case Users = 'users';
     case Clients = 'clients';
     case Attributes = 'attributes';
-    // Dictionary.
+    // Dictionary
     case Dict = 'dict';
+    // Other
+    case Separator = 'separator';
 
     public function tryGetTable(): ?AttributeTable
     {
@@ -43,6 +46,7 @@ enum AttributeType: string
                 TqDataTypeEnum::uuid_nullable : TqDataTypeEnum::uuid,
             self::Dict => $nullable ? TqDataTypeEnum::dict_nullable : TqDataTypeEnum::dict,
             self::Text => $nullable ? TqDataTypeEnum::text_nullable : TqDataTypeEnum::text,
+            self::Separator => FatalExceptionFactory::unexpected()->throw(),
         };
         return $type->isDict() ? (new TqDictDef($type, $dictionaryId)) : $type;
     }
@@ -59,6 +63,7 @@ enum AttributeType: string
             self::String => Valid::trimmed(sometimes: $nullable, nullable: $nullable),
             self::Dict => Valid::dict($dictionaryId, sometimes: $nullable, nullable: $nullable),
             self::Text => Valid::text(sometimes: $nullable, nullable: $nullable),
+            self::Separator => 'missing',
             default => Valid::uuid(
                 [Rule::exists(AttributeTable::from($this->value)->value, 'id')], // assert this is table
                 sometimes: $nullable,
