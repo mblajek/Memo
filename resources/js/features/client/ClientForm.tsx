@@ -27,7 +27,7 @@ export const ClientForm: VoidComponent<Props> = (allProps) => {
       id={props.id}
       translationsFormNames={[props.id, "client", "facility_user"]}
       schema={getSchema()}
-      translationsModel="client"
+      translationsModel={["client", "facility_user"]}
       class="flex flex-col gap-4 items-stretch"
       {...formProps}
     >

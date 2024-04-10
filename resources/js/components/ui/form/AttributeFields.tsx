@@ -214,7 +214,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       return v !== undefined && v !== "" && !(Array.isArray(v) && !v.length);
     };
     const DefaultViewer: ParentComponent<htmlAttributes.div> = (props) => (
-      <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-20"})} />
+      <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-20 whitespace-pre-wrap"})} />
     );
     const defaultView = () => {
       function simpleAttributeView(type: SimpleAttributeType | DictAttributeType, val = value) {

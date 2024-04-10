@@ -66,6 +66,7 @@ user:
 facility_user:
   _name: "pracownik/klient"
   _name_plural: "pracownicy/klienci"
+  name: "$t(models.user.name)"
   firstMeetingDate: "Pierwsza wizyta"
   lastMeetingDate: "Ostatnia wizyta"
   completedMeetingsCount: "Liczba odbytych wizyt"
@@ -81,7 +82,6 @@ staff:
 client:
   _name: "klient"
   _name_plural: "klienci"
-  name: "$t(models.user.name)"
 
 meeting:
   _name: "spotkanie"
