@@ -11,6 +11,8 @@ export interface PartialAttributesSelection<D = never> {
    * - true or other non-null: enables this fixed attribute, even if includeFixed is false.
    *   The value can also provide an override value for the attribute. The meaning of this value
    *   depends on the context where the selection is used.
+   *
+   * TODO: Ensure somehow no typos in keys.
    */
   readonly fixedOverrides?: Partial<Record<string, boolean | D>>;
 }

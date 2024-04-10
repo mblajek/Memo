@@ -41,7 +41,7 @@ export const Tabs: VoidComponent<Props> = (props) => {
                     aria-selected={isActive()}
                     onClick={() => setActiveId(tab.id)}
                   >
-                    <MarkerTarget id={tab.id} class="w-full h-full -mb-px">
+                    <MarkerTarget id={tab.id} class="w-full h-full mb-px">
                       {tab.label}
                     </MarkerTarget>
                   </Button>
