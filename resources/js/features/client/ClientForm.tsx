@@ -28,7 +28,7 @@ export const ClientForm: VoidComponent<Props> = (allProps) => {
       translationsFormNames={[props.id, "client", "facility_user"]}
       schema={getSchema()}
       translationsModel="client"
-      class="flex flex-col gap-2 items-stretch"
+      class="flex flex-col gap-4 items-stretch"
       {...formProps}
     >
       <TextField name="name" autofocus />

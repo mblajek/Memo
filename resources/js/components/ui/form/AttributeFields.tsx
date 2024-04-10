@@ -36,6 +36,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
+import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
 import {CHECKBOX, EMPTY_VALUE_SYMBOL} from "../symbols";
 import {CheckboxField} from "./CheckboxField";
@@ -142,6 +143,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         }
       }
 
+      if (aProps.attribute.basicType === "separator") {
+        throw new Error(`Unsupported separator attribute ${aProps.attribute.id}`);
+      }
       if (!aProps.attribute.basicType) {
         return modelAttributeField(aProps.attribute);
       }
@@ -242,6 +246,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       }
 
       const {basicType} = aProps.attribute;
+      if (basicType === "separator") {
+        throw new Error(`Unsupported separator attribute ${aProps.attribute.id}`);
+      }
       if (!basicType) {
         return modelAttributeView(aProps.attribute);
       }
@@ -318,12 +325,36 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         attributes()
           ?.getForModel(props.model)
           .map((attribute) => {
-            const selected = isAttributeSelected(selection(), attribute);
+            const selected =
+              attribute.type === "separator"
+                ? {selected: true, override: undefined}
+                : isAttributeSelected(selection(), attribute);
             return selected && ([attribute.id, {attribute, selected}] as const);
           })
           .filter(NON_NULLABLE),
       ),
   );
+  interface AttributesGroup {
+    readonly separatorBeforeId?: string;
+    readonly attributeIds: string[];
+  }
+  const attributeGroups = createMemo(() => {
+    const groups: AttributesGroup[] = [];
+    let group: AttributesGroup | undefined;
+    for (const {attribute} of relevantAttributes().values()) {
+      if (attribute.type === "separator") {
+        group = {separatorBeforeId: attribute.id, attributeIds: []};
+        groups.push(group);
+      } else {
+        if (!group) {
+          group = {attributeIds: []};
+          groups.push(group);
+        }
+        group.attributeIds.push(attribute.id);
+      }
+    }
+    return groups.filter((g) => g.attributeIds.length);
+  });
 
   const [showAllAttributes, setShowAllAttributes] = createSignal(false);
   const minRequirementLevel = () => (showAllAttributes() ? undefined : props.minRequirementLevel);
@@ -337,45 +368,70 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       </Show>
       <fieldset data-felte-keep-on-remove disabled={!props.editMode}>
         <div class="grid gap-x-1" style={{"grid-template-columns": "1fr 2fr auto"}}>
-          {/* Loop over ids to keep the identity of items. */}
-          <For each={[...relevantAttributes().keys()]} fallback={t("attributes.no_attributes")}>
-            {(attributeId) => {
-              const {attribute, selected} = relevantAttributes()!.get(attributeId)!;
-              const isEmpty = () => {
-                const value = form.data(fieldName(attribute));
-                return value == undefined || value == "";
-              };
-              return (
-                <HideableSection
-                  show={
-                    !isEmpty() ||
-                    !minRequirementLevel() ||
-                    compareRequirementLevels(attribute.requirementLevel, minRequirementLevel()!) >= 0
-                  }
-                  class="col-span-full grid grid-cols-subgrid"
-                >
-                  <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
-                    <label
-                      class="font-semibold flex items-center wrapTextAnywhere"
-                      for={attribute.multiple && attribute.basicType !== "dict" ? undefined : fieldName(attribute)}
-                    >
-                      <Capitalize text={attribute.label} />
-                    </label>
-                    <div class="flex flex-col justify-center">
-                      <Show
-                        when={props.editMode}
-                        fallback={<AttributeView attribute={attribute} params={selected.override} />}
+          <For each={attributeGroups()} fallback={t("attributes.no_attributes")}>
+            {(group) => (
+              <SectionWithHeader
+                header={(show) => (
+                  <Show when={group.separatorBeforeId}>
+                    {(separatorBeforeId) => (
+                      <HideableSection
+                        class="col-span-full"
+                        show={show()}
+                        transitionTimeMs={50}
+                        transitionTimingFunction="ease-out"
                       >
-                        <AttributeField attribute={attribute} />
-                      </Show>
-                    </div>
-                    <div class="flex items-center justify-center">
-                      <RequirementLevelMarker level={attribute.requirementLevel} isEmpty={isEmpty()} />
-                    </div>
-                  </div>
-                </HideableSection>
-              );
-            }}
+                        <div class="font-bold pt-4">
+                          <Capitalize text={relevantAttributes().get(separatorBeforeId())?.attribute.label} />
+                        </div>
+                      </HideableSection>
+                    )}
+                  </Show>
+                )}
+                class="col-span-full grid grid-cols-subgrid"
+              >
+                <For each={group.attributeIds}>
+                  {(attributeId) => {
+                    const {attribute, selected} = relevantAttributes()!.get(attributeId)!;
+                    const isEmpty = () => {
+                      const value = form.data(fieldName(attribute));
+                      return value == undefined || value == "";
+                    };
+                    return (
+                      <HideableSection
+                        show={
+                          !isEmpty() ||
+                          !minRequirementLevel() ||
+                          compareRequirementLevels(attribute.requirementLevel, minRequirementLevel()!) >= 0
+                        }
+                        class="col-span-full grid grid-cols-subgrid"
+                      >
+                        <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
+                          <label
+                            class="font-semibold flex items-center wrapTextAnywhere"
+                            for={
+                              attribute.multiple && attribute.basicType !== "dict" ? undefined : fieldName(attribute)
+                            }
+                          >
+                            <Capitalize text={attribute.label} />
+                          </label>
+                          <div class="flex flex-col justify-center">
+                            <Show
+                              when={props.editMode}
+                              fallback={<AttributeView attribute={attribute} params={selected.override} />}
+                            >
+                              <AttributeField attribute={attribute} />
+                            </Show>
+                          </div>
+                          <div class="flex items-center justify-center">
+                            <RequirementLevelMarker level={attribute.requirementLevel} isEmpty={isEmpty()} />
+                          </div>
+                        </div>
+                      </HideableSection>
+                    );
+                  }}
+                </For>
+              </SectionWithHeader>
+            )}
           </For>
         </div>
       </fieldset>
