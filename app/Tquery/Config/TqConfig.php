@@ -70,10 +70,10 @@ final class TqConfig
         ?string $prefix = null,
     ): void {
         $attribute = ($attribute instanceof Attribute) ? $attribute : Attribute::getById($attribute);
-        $type = $attribute->getTqueryDataType();
-        if ($type === AttributeType::Separator) {
+        if ($attribute->type === AttributeType::Separator) {
             return; // todo: maybe tquery separator
         }
+        $type = $attribute->getTqueryDataType();
         if ($attribute->is_multi_value === null) {
             self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
             $this->addColumn(
