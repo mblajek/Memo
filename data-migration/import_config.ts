@@ -10,7 +10,8 @@ export interface ImportConfig {
   readonly facilityId: string;
   readonly importUserMemoSession: string;
   readonly skipDictionariesAndAttributes: boolean;
-  readonly skipStaff: boolean;
+  /** Suffix to add to staff emails, to avoid duplicates when doing test imports. */
+  readonly staffEmailsPrefix: string | undefined;
   /** Don't actually send the mutating queries. */
   readonly dryRun: boolean;
 }

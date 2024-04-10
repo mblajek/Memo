@@ -7,7 +7,6 @@ import {
   AttributeValues,
   Client,
   FacilityContents,
-  GiveStaff,
   Meeting,
   SingleAttributeValue,
   Staff,
@@ -66,6 +65,7 @@ interface FilesType {
   Event: FieldsType<["AccountId","ActivityDate","ActivityDateTime","Case_External_Id__c","CreatedById","CreatedDate","Description","DurationInMinutes","EndDate","EndDateTime","EventSubtype","Event_External_Id__c","Event_start_date_for_SMS_reminder__c","Firma_Niezakwalifikowana__c","GroupEventType","Id","IsAllDayEvent","IsArchived","IsChild","IsDeleted","IsGroupEvent","IsPrivate","IsRecurrence","IsRecurrence2","IsRecurrence2Exception","IsRecurrence2Exclusion","IsReminderSet","IsVisibleInSelfService","LastModifiedById","LastModifiedDate","Location","Notes_of_lawyer__c","Notify_via_SMS_2_days_before_event__c","OwnerId","RecordTypeId","Recurrence2PatternStartDate","Recurrence2PatternText","Recurrence2PatternTimeZone","Recurrence2PatternVersion","RecurrenceActivityId","RecurrenceDayOfMonth","RecurrenceDayOfWeekMask","RecurrenceEndDateOnly","RecurrenceInstance","RecurrenceInterval","RecurrenceMonthOfYear","RecurrenceStartDateTime","RecurrenceTimeZoneSidKey","RecurrenceType","ReminderDateTime","ShowAs","SMS_gate_email__c","SMS_notification_sent__c","StartDateTime","Status_of_contact__c","Subject","SystemModstamp","Type","WhatId","WhoId"]>,
   Notification_reason__c: FieldsType<["Abuser__c","Another_notification_reason__c","Case__c","Chronic_or_sudden_illness__c","Concerns_about_child_s_development__c","CreatedById","CreatedDate","Death_in_the_family__c","Description__c","Disturbing_child_s_behavior__c","Divorce__c","early_parenthood__c","Emotional_coldness__c","Gender__c","Id","Impaired_relationship_with_a_child__c","Inability_to_cope_with_child_s_behavior__c","IsDeleted","Lack_of_consequence__c","Lack_of_interest_in_a_child__c","LastModifiedById","LastModifiedDate","Leave_child_unattended__c","Name","Notification_reason_detail__c","Notification_reason_link__c","Notification_reason__c","No_reaction_to_a_crying_child__c","Other_notification_reason__c","Problems_of_communication_with_child__c","Problems_of_coping_with_child_s_emotions__c","Problems_of_recognizing_child_s_needs__c","Problems_of_separation_with_a_child__c","Problems_of_setting_boundaries__c","Problem_of_coping_with_your_own_emotions__c","Reconstructed_family__c","RecordTypeId","Separation__c","Single_parenthood__c","SystemModstamp","Too_high_expectations_towards_a_child__c","Unplanned_pregnancy__c"]>,
   User: FieldsType<["AboutMe","AccountId","Alias","BadgeText","BannerPhotoUrl","CallCenterId","City","CommunityNickname","CompanyName","ContactId","Country","CreatedById","CreatedDate","DefaultGroupNotificationFrequency","DelegatedApproverId","Department","DigestFrequency","Division","Email","EmailEncodingKey","EmailPreferencesAutoBcc","EmailPreferencesAutoBccStayInTouch","EmailPreferencesStayInTouchReminder","EmployeeNumber","Extension","Fax","FederationIdentifier","FirstName","ForecastEnabled","FullPhotoUrl","GeocodeAccuracy","Id","IndividualId","IsActive","IsExtIndicatorVisible","IsPortalEnabled","IsProfilePhotoActive","LanguageLocaleKey","LastLoginDate","LastModifiedById","LastModifiedDate","LastName","LastPasswordChangeDate","LastReferencedDate","LastViewedDate","Latitude","LocaleSidKey","Longitude","ManagerId","MediumBannerPhotoUrl","MediumPhotoUrl","MobilePhone","Name","NumberOfFailedLogins","OfflinePdaTrialExpirationDate","OfflineTrialExpirationDate","OutOfOfficeMessage","Phone","PortalRole","PostalCode","ProfileId","ReceivesAdminInfoEmails","ReceivesInfoEmails","SenderEmail","SenderName","Signature","SmallBannerPhotoUrl","SmallPhotoUrl","State","StayInTouchNote","StayInTouchSignature","StayInTouchSubject","Street","SystemModstamp","TimeZoneSidKey","Title","Username","UserPermissionsAvantgoUser","UserPermissionsCallCenterAutoLogin","UserPermissionsChatterAnswersUser","UserPermissionsInteractionUser","UserPermissionsMarketingUser","UserPermissionsOfflineUser","UserPermissionsSFContentUser","UserPermissionsSupportUser","UserPreferencesActivityRemindersPopup","UserPreferencesApexPagesDeveloperMode","UserPreferencesCacheDiagnostics","UserPreferencesContentEmailAsAndWhen","UserPreferencesContentNoEmail","UserPreferencesCreateLEXAppsWTShown","UserPreferencesDisableAllFeedsEmail","UserPreferencesDisableBookmarkEmail","UserPreferencesDisableChangeCommentEmail","UserPreferencesDisableEndorsementEmail","UserPreferencesDisableFileShareNotificationsForApi","UserPreferencesDisableFollowersEmail","UserPreferencesDisableLaterCommentEmail","UserPreferencesDisableLikeEmail","UserPreferencesDisableMentionsPostEmail","UserPreferencesDisableMessageEmail","UserPreferencesDisableProfilePostEmail","UserPreferencesDisableSharePostEmail","UserPreferencesDisCommentAfterLikeEmail","UserPreferencesDisMentionsCommentEmail","UserPreferencesDisProfPostCommentEmail","UserPreferencesEnableAutoSubForFeeds","UserPreferencesEventRemindersCheckboxDefault","UserPreferencesExcludeMailAppAttachments","UserPreferencesFavoritesShowTopFavorites","UserPreferencesFavoritesWTShown","UserPreferencesGlobalNavBarWTShown","UserPreferencesGlobalNavGridMenuWTShown","UserPreferencesHasCelebrationBadge","UserPreferencesHasSentWarningEmail","UserPreferencesHasSentWarningEmail238","UserPreferencesHasSentWarningEmail240","UserPreferencesHideBiggerPhotoCallout","UserPreferencesHideBrowseProductRedirectConfirmation","UserPreferencesHideChatterOnboardingSplash","UserPreferencesHideCSNDesktopTask","UserPreferencesHideCSNGetChatterMobileTask","UserPreferencesHideEndUserOnboardingAssistantModal","UserPreferencesHideLightningMigrationModal","UserPreferencesHideOnlineSalesAppWelcomeMat","UserPreferencesHideS1BrowserUI","UserPreferencesHideSecondChatterOnboardingSplash","UserPreferencesHideSfxWelcomeMat","UserPreferencesLightningExperiencePreferred","UserPreferencesNativeEmailClient","UserPreferencesNewLightningReportRunPageEnabled","UserPreferencesPathAssistantCollapsed","UserPreferencesPreviewCustomTheme","UserPreferencesPreviewLightning","UserPreferencesReceiveNoNotificationsAsApprover","UserPreferencesReceiveNotificationsAsDelegatedApprover","UserPreferencesRecordHomeReservedWTShown","UserPreferencesRecordHomeSectionCollapseWTShown","UserPreferencesReminderSoundOff","UserPreferencesReverseOpenActivitiesView","UserPreferencesShowCityToExternalUsers","UserPreferencesShowCityToGuestUsers","UserPreferencesShowCountryToExternalUsers","UserPreferencesShowCountryToGuestUsers","UserPreferencesShowEmailToExternalUsers","UserPreferencesShowEmailToGuestUsers","UserPreferencesShowFaxToExternalUsers","UserPreferencesShowFaxToGuestUsers","UserPreferencesShowForecastingChangeSignals","UserPreferencesShowManagerToExternalUsers","UserPreferencesShowManagerToGuestUsers","UserPreferencesShowMobilePhoneToExternalUsers","UserPreferencesShowMobilePhoneToGuestUsers","UserPreferencesShowPostalCodeToExternalUsers","UserPreferencesShowPostalCodeToGuestUsers","UserPreferencesShowProfilePicToGuestUsers","UserPreferencesShowStateToExternalUsers","UserPreferencesShowStateToGuestUsers","UserPreferencesShowStreetAddressToExternalUsers","UserPreferencesShowStreetAddressToGuestUsers","UserPreferencesShowTitleToExternalUsers","UserPreferencesShowTitleToGuestUsers","UserPreferencesShowWorkPhoneToExternalUsers","UserPreferencesShowWorkPhoneToGuestUsers","UserPreferencesSortFeedByComment","UserPreferencesSRHOverrideActivities","UserPreferencesSuppressEventSFXReminders","UserPreferencesSuppressTaskSFXReminders","UserPreferencesTaskRemindersCheckboxDefault","UserPreferencesUserDebugModePref","UserRoleId","UserType"]>,
+  CaseComment: FieldsType<["CommentBody","CreatedById","CreatedDate","Id","IsDeleted","IsPublished","LastModifiedById","LastModifiedDate","ParentId","SystemModstamp"]>,
 }
 
 const FILES = [
@@ -77,6 +77,7 @@ const FILES = [
   "Event",
   "Notification_reason__c",
   "User",
+  "CaseComment",
 ] satisfies (keyof FilesType)[];
 
 interface RowWithId {
@@ -240,9 +241,7 @@ const CONTACT_IDS = new Set(CONTACTS.map((c) => c.Id));
 EVENTS = EVENTS.filter((e) => CONTACT_IDS.has(e.WhoId));
 
 // _logFreq(
-//   DATA.Event.rows.map((c) =>
-//     [Number(c.DurationInMinutes) >= 1440 ? [c.Subject, c.DurationInMinutes] : undefined].join("__"),
-//   ),
+//   DATA.Case.rows.map((c) => [c.Source_of_information_about_the_offer__c].join("__")),
 //   {limit: 100},
 // );
 // Deno.exit();
@@ -252,8 +251,6 @@ const staff: Staff[] = [...Map.groupBy(STAFF.rows, (r) => r.Email)].map(([email,
   name: ss[0].Name,
   email: email,
 }));
-
-const giveStaff: GiveStaff[] = [];
 
 let logLineLimit = 100;
 function _logLine(...line: unknown[]) {
@@ -267,15 +264,15 @@ function _logLine(...line: unknown[]) {
 const clients: Client[] = [];
 const contactsByAccountId = Map.groupBy(CONTACTS, (c) => c.AccountId);
 const casesByAccountId = Map.groupBy(DATA.Case.rows, (c) => c.AccountId);
+const caseCommentsByCaseId = Map.groupBy(DATA.CaseComment.rows, (c) => c.ParentId);
 const notificationReasonsByCaseId = Map.groupBy(DATA.Notification_reason__c.rows, (nr) => nr.Case__c);
 const surveysByCaseId = Map.groupBy(DATA.Survey_of_risk_factors__c.rows, (s) => s.Case__c);
 for (const [accountId, contacts] of contactsByAccountId) {
   const account = DATA.Account.get(accountId);
   const createdDateSorter = (a: {readonly CreatedDate: string}, b: {readonly CreatedDate: string}) =>
     DateTime.fromISO(a.CreatedDate).toMillis() - DateTime.fromISO(b.CreatedDate).toMillis();
-  const cases = casesByAccountId.get(accountId) || [];
+  const cases = casesByAccountId.get(accountId)?.sort(createdDateSorter) || [];
   const notificationReasons = cases.flatMap((c) => notificationReasonsByCaseId.get(c.Id) || []).sort(createdDateSorter);
-  const lastNotificationReason = notificationReasons.at(-1);
   const surveys = cases.flatMap((c) => surveysByCaseId.get(c.Id) || []).sort(createdDateSorter);
   const lastSurvey = surveys.at(-1);
   const childContactTypes = ["0120X000000gKMEQA2", "012b0000000M3XeAAK"];
@@ -355,10 +352,21 @@ for (const [accountId, contacts] of contactsByAccountId) {
     "zaburzenia depresyjne matki",
     "zaburzenia depresyjne i lękowe",
   ]);
-  for (const contact of contacts) {
-    const notes = [contact.Description.trim()];
-    if (lastNotificationReason?.Another_notification_reason__c?.trim())
-      notes.push(`Powód zgłoszenia: ${lastNotificationReason?.Another_notification_reason__c?.trim()}`);
+  const infoSources: Partial<Record<string, string>> = {
+    "Friends": "znajomi",
+    "Press": "media",
+    "Radio": "media",
+    "TV": "media",
+    "Web page": "internet",
+  };
+  const accountClients: Client[] = contacts.map((contact) => {
+    const notes = [];
+    const otherNotificationReasons = notificationReasons
+      .map((r) => r.Another_notification_reason__c.trim())
+      .filter(Boolean);
+    if (otherNotificationReasons.length) {
+      notes.push(`Inne powody zgłoszenia: ${otherNotificationReasons.join(", ")}`);
+    }
     const contactAddr = [contact.MailingStreet, contact.MailingPostalCode, contact.MailingCity].map((e) => e.trim());
     const contactAddrStr = contactAddr.join("");
     const accountAddr = [account.BillingStreet, account.BillingPostalCode, account.BillingCity].map((e) => e.trim());
@@ -440,8 +448,7 @@ for (const [accountId, contacts] of contactsByAccountId) {
       addressCity: {kind: "const", value: addr[2] || ""},
       contactStartAt: {kind: "const", value: DateTime.fromISO(contact.CreatedDate).toISODate()},
       contactEndAt: undefined,
-      rodzinaKontoSalesforceU4d096794: {kind: "const", value: `${account.Name} (${account.Id})`},
-      wiekWMomencieZgloszeniaUfdf0fed0: contact.Age_at_the_time_of_notification__c
+      wiekWMomencieZgloszeniaU$: contact.Age_at_the_time_of_notification__c
         ? {
             kind: "const",
             value: Number(contact.Age_at_the_time_of_notification__c),
@@ -460,30 +467,57 @@ for (const [accountId, contacts] of contactsByAccountId) {
               ),
             }
           : undefined,
-      dzielnicaWarszawyUbb5a0106: getDzielnica(contact.District__c),
-      wojewodztwoUa33962d0: getVoivodeship(contact.MailingState),
-      decyzjaZespoluKlinicznegoU577dc53c: undefined,
-      powodZgloszeniaU6ee41728: lastNotificationReason
+      dzielnicaWarszawyU$: getDzielnica(contact.District__c),
+      wojewodztwoU$: getVoivodeship(contact.MailingState),
+      decyzjaZespoluKlinicznegoU$: {
+        kind: "const",
+        value:
+          cases
+            .filter((ca) => ca.ContactId === contact.Id)
+            .map((ca) =>
+              [
+                ca.Description,
+                ca.Decision__c,
+                ca.Another_decision__c,
+                ...(caseCommentsByCaseId
+                  .get(ca.Id)
+                  ?.sort(createdDateSorter)
+                  .map((cc) => `${DateTime.fromISO(cc.LastModifiedDate).toISODate()}: ${cc.CommentBody.trim()}`) || []),
+              ]
+                .filter(Boolean)
+                .join("\n"),
+            )
+            .filter(Boolean)
+            .join("\n\n") || null,
+      },
+      powodZgloszeniaU$: notificationReasons.length
         ? [
             ...Object.entries(NOTIFICATION_REASONS_MAP).flatMap(([field, name]) =>
-              lastNotificationReason[field as keyof typeof NOTIFICATION_REASONS_MAP] === "true"
-                ? [{kind: "nn", nn: `powód zgłoszenia:${name}`} satisfies SingleAttributeValue]
+              notificationReasons.some((r) => r[field as keyof typeof NOTIFICATION_REASONS_MAP] === "true")
+                ? ({kind: "nn", nn: `powód zgłoszenia:${name}`} satisfies SingleAttributeValue)
                 : [],
             ),
-            ...(depresjaNotificationReasons.has(lastNotificationReason?.Another_notification_reason__c)
+            ...(notificationReasons.some((r) => depresjaNotificationReasons.has(r.Another_notification_reason__c))
               ? [{kind: "nn", nn: "powód zgłoszenia:depresja"} satisfies SingleAttributeValue]
               : []),
           ]
         : undefined,
-      czynnikiRyzykaU779e16de: lastSurvey
+      czynnikiRyzykaU$: lastSurvey
         ? SURVEY_FIELDS.flatMap(({items}) =>
             items.flatMap(({field, label}) =>
-              lastSurvey[field] === "true" ? [{kind: "nn", nn: `czynnik ryzyka:${label}`} as SingleAttributeValue] : [],
+              lastSurvey[field] === "true" ? ({kind: "nn", nn: `czynnik ryzyka:${label}`} as SingleAttributeValue) : [],
             ),
           )
         : undefined,
+      zrodloInfOPoradniU$: [
+        ...new Set(
+          cases
+            .flatMap((c) => c.Source_of_information_about_the_offer__c.split(";"))
+            .map((s) => infoSources[s] || "inne"),
+        ),
+      ].map((s) => ({kind: "nn", nn: `źródło informacji:${s}`})),
     };
-    clients.push({
+    return {
       nn: contact.Id,
       name: cleanUpName(contact.Name),
       client: {
@@ -501,6 +535,18 @@ for (const [accountId, contacts] of contactsByAccountId) {
         .toUTC()
         .set({millisecond: 0})
         .toISO({suppressMilliseconds: true}),
+    };
+  });
+  for (const accountClient of accountClients) {
+    clients.push({
+      ...accountClient,
+      client: {
+        ...accountClient.client,
+        rodzinaKontoSalesforceU$:
+          accountClients.length > 1
+            ? {kind: "const", value: `${account.Name} (${account.Id})\n${accountClients.map((c) => c.name).join(", ")}`}
+            : undefined,
+      },
     });
   }
 }
@@ -596,7 +642,6 @@ if (unknownMeetingSubjects.size) {
 const facilityContents: FacilityContents = {
   dictionariesAndAttributes,
   staff,
-  giveStaff,
   clients,
   meetings,
 };

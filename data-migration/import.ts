@@ -178,6 +178,16 @@ class NnMapper {
 
 const nnMapper = new NnMapper(config.nnMappingFileBase);
 
+async function apiMutate({path, type, params}: {path: string; type: string; params: CallParams}) {
+  const resp = (await api(path, params)).data;
+  if (type === "dictionary" || type === "position") {
+    cache.dictionaries = undefined;
+  } else if (type === "attribute") {
+    cache.attributes = undefined;
+  }
+  return resp;
+}
+
 async function apiCreate({
   nn,
   path,
@@ -191,15 +201,32 @@ async function apiCreate({
   object: object;
   params?: CallParams;
 }) {
-  const resp = (await api(path, {req: object, ...params})).data;
+  const resp = await apiMutate({path, type, params: {req: object, ...params}});
   const {id} = resp;
   if (nn && id) {
     nnMapper.set({nn, id, type});
   }
-  if (type === "dictionary" || type === "position") {
-    cache.dictionaries = undefined;
-  } else if (type === "attribute") {
-    cache.attributes = undefined;
+  return resp;
+}
+
+async function apiPatch({
+  nn,
+  id,
+  path,
+  type,
+  object,
+  params,
+}: {
+  nn?: string | readonly string[];
+  id: string;
+  path: string;
+  type: string;
+  object: object;
+  params?: CallParams;
+}) {
+  const resp = await apiMutate({path: `${path}/${id}`, type, params: {method: "PATCH", req: object, ...params}});
+  if (nn) {
+    nnMapper.set({nn, id, type});
   }
   return resp;
 }
@@ -233,11 +260,31 @@ function findPos(dictionary: any, posNnOrName: string) {
 }
 
 async function findAttrib(apiName: string) {
-  const attrib = (await getAttributes()).find((a) => a.apiName === apiName);
+  const findApiName = apiName.endsWith(ATTRIBUTE_UUID_SUFFIX) ? GENERATED_API_NAMES.get(apiName) : apiName;
+  const attrib = (await getAttributes()).find((a) => a.apiName === findApiName);
   if (!attrib) {
     throw new Error(`Attribute not found: apiName=${apiName}`);
   }
   return attrib;
+}
+
+const ATTRIBUTE_UUID_SUFFIX = "U$";
+
+function randomAttributeUuidSuffix() {
+  return Math.floor(Math.random() * 0xffffffff)
+    .toString(16)
+    .padStart(8, "0");
+}
+
+const GENERATED_API_NAMES = new Map<string, string>();
+
+function makeAttrApiName(baseApiName: string) {
+  if (baseApiName.endsWith(ATTRIBUTE_UUID_SUFFIX)) {
+    const apiName = baseApiName.slice(0, -1) + randomAttributeUuidSuffix();
+    GENERATED_API_NAMES.set(baseApiName, apiName);
+    return apiName;
+  }
+  return baseApiName;
 }
 
 async function attributeValues(attributeValues: AttributeValues | undefined) {
@@ -246,7 +293,7 @@ async function attributeValues(attributeValues: AttributeValues | undefined) {
   }
   const res: Partial<Record<string, unknown>> = {};
   for (const [key, value] of Object.entries(attributeValues)) {
-    findAttrib(key);
+    const attrib = await findAttrib(key);
     const attrVal = async (val: SingleAttributeValue) => {
       const {kind} = val;
       switch (kind) {
@@ -266,7 +313,7 @@ async function attributeValues(attributeValues: AttributeValues | undefined) {
       }
     };
     if (value) {
-      res[key] = Array.isArray(value)
+      res[attrib.apiName] = Array.isArray(value)
         ? await Promise.all(value.map(async (v) => await attrVal(v)))
         : await attrVal(value);
     }
@@ -275,8 +322,8 @@ async function attributeValues(attributeValues: AttributeValues | undefined) {
 }
 
 const LOG_INTERVAL_SECS = 10;
-function* trackProgress<T>(array: readonly T[], type: string) {
-  const len = array.length;
+function* trackProgress<T>(array: readonly T[] | undefined, type: string) {
+  const len = array?.length;
   if (!len) {
     console.log(`No ${type} to process.`);
     return;
@@ -340,6 +387,10 @@ async function createPosition({
 }
 
 try {
+  for (const defNn of prepared.defNn || []) {
+    nnMapper.set(defNn);
+  }
+
   if (!config.skipDictionariesAndAttributes)
     for (const action of trackProgress(prepared.dictionariesAndAttributes, "dictionaries and attributes")) {
       const {kind} = action;
@@ -352,7 +403,7 @@ try {
           object: {
             model: attr.model,
             name: attr.name,
-            apiName: attr.apiName,
+            apiName: makeAttrApiName(attr.apiName),
             type: attr.type,
             dictionaryId: attr.dictionaryNnOrName ? (await findDict(attr.dictionaryNnOrName)).id : null,
             defaultOrder: await getDefaultOrder(
@@ -420,7 +471,7 @@ try {
         type: "user",
         object: {
           name: staff.name,
-          email: staff.email || null,
+          email: staff.email ? (config.staffEmailsPrefix || "") + staff.email : null,
           hasEmailVerified: !!staff.email,
           password: null,
           passwordExpireAt: null,
@@ -447,6 +498,18 @@ try {
         id: clientId,
         createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
         createdAt: client.createdAt,
+      },
+    });
+  }
+  for (const clientPatch of trackProgress(prepared.patchClients, "clients to patch")) {
+    await apiPatch({
+      nn: clientPatch.nn,
+      id: clientPatch.id,
+      path: `facility/${facilityId}/user/client`,
+      type: "client",
+      object: {
+        name: clientPatch.name,
+        client: await attributeValues(clientPatch.client),
       },
     });
   }

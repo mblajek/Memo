@@ -1,11 +1,20 @@
 export interface FacilityContents {
-  readonly dictionariesAndAttributes: DictionaryOrAttributeAction[];
+  readonly defNn?: readonly DefNN[];
 
-  readonly staff: readonly Staff[];
-  readonly giveStaff: readonly GiveStaff[];
-  readonly clients: readonly Client[];
+  readonly dictionariesAndAttributes?: DictionaryOrAttributeAction[];
 
-  readonly meetings: readonly Meeting[];
+  readonly staff?: readonly Staff[];
+  readonly giveStaff?: readonly GiveStaff[];
+  readonly clients?: readonly Client[];
+  readonly patchClients?: readonly ClientPatch[];
+
+  readonly meetings?: readonly Meeting[];
+}
+
+export interface DefNN {
+  readonly nn: string | readonly string[];
+  readonly id: string;
+  readonly type: string;
 }
 
 export type DictionaryOrAttributeAction = ExtendDictionaryAction | CreateDictionaryAction | CreateAttributeAction;
@@ -73,6 +82,13 @@ export interface Client {
   readonly createdAt: string;
 }
 
+export interface ClientPatch {
+  readonly id: string;
+  readonly nn?: string | readonly string[];
+  readonly name?: string;
+  readonly client: AttributeValues;
+}
+
 export interface AttributeValues {
   readonly [apiName: string]: AttributeValue | undefined;
 }
@@ -117,11 +133,11 @@ export interface Attendant {
 
 export function facilityContentStats(contents: FacilityContents) {
   return `\
-  Dictionaries: ${contents.dictionariesAndAttributes.filter((a) => a.kind === "createDictionary").length} + \
-extend ${contents.dictionariesAndAttributes.filter((a) => a.kind === "extendDictionary").length}
-  Attributes: ${contents.dictionariesAndAttributes.filter((a) => a.kind === "createAttribute").length}
-  Staff: ${contents.staff.length} + give ${contents.giveStaff.length}
-  Clients: ${contents.clients.length}
-  Meetings: ${contents.meetings.length}
+  Dictionaries: ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "createDictionary").length || 0} + \
+extend ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "extendDictionary").length || 0}
+  Attributes: ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "createAttribute").length || 0}
+  Staff: ${contents.staff?.length || 0} + give ${contents.giveStaff?.length || 0}
+  Clients: ${contents.clients?.length || 0} + patch ${contents.patchClients?.length || 0}
+  Meetings: ${contents.meetings?.length || 0}
 `;
 }

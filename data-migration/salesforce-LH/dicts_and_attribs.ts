@@ -74,11 +74,15 @@ dictionariesAndAttributes.push(
   {
     kind: "extendDictionary",
     name: "meetingCategory",
-    positions: LH_MEETING_TYPES.map(({category}) => ({
-      nn: `meetingCategory:${category}`,
-      name: `+${category}`,
-      order: "atEnd",
-    })),
+    positions: LH_MEETING_TYPES.flatMap(({category}) =>
+      category === "other"
+        ? []
+        : {
+            nn: `meetingCategory:${category}`,
+            name: `+${category}`,
+            order: "atEnd",
+          },
+    ),
   },
   {
     kind: "extendDictionary",
@@ -89,7 +93,10 @@ dictionariesAndAttributes.push(
         name: `+${name}`,
         order: "atEnd",
         attributes: {
-          categoryDictId: {kind: "nn", nn: `meetingCategory:${category}`},
+          categoryDictId:
+            category === "other"
+              ? {kind: "dict", dictName: "meetingCategory", positionName: "other"}
+              : {kind: "nn", nn: `meetingCategory:${category}`},
           durationMinutes: {kind: "const", value: duration},
         },
       })),
@@ -190,7 +197,7 @@ dictionariesAndAttributes.push(
       "znajomi",
       "inna instytucja",
       "inne",
-    ].map((n) => ({name: `+${n}`})),
+    ].map((n) => ({nn: `źródło informacji:${n}`, name: `+${n}`})),
   },
   {
     kind: "createDictionary",
@@ -226,17 +233,17 @@ dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+rodzina (konto salesforce)",
-    apiName: "rodzinaKontoSalesforceU4d096794",
+    apiName: "rodzinaKontoSalesforceU$",
     order: {rel: "before", attributeApiName: "documentsLinks"},
     model: "client",
     isMultiValue: false,
-    type: "string",
+    type: "text",
     requirementLevel: "optional",
   },
   {
     kind: "createAttribute",
     name: "+źródło informacji o Poradni",
-    apiName: "zrodloInfOPoradniU53e2f750",
+    apiName: "zrodloInfOPoradniU$",
     order: "atEnd",
     model: "client",
     isMultiValue: true,
@@ -247,7 +254,7 @@ dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+wiek w momencie zgłoszenia",
-    apiName: "wiekWMomencieZgloszeniaUfdf0fed0",
+    apiName: "wiekWMomencieZgloszeniaU$",
     order: {rel: "after", attributeApiName: "birthDate"},
     model: "client",
     isMultiValue: false,
@@ -257,7 +264,7 @@ dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+dzielnica Warszawy",
-    apiName: "dzielnicaWarszawyUbb5a0106",
+    apiName: "dzielnicaWarszawyU$",
     order: {rel: "after", attributeApiName: "addressCity"},
     model: "client",
     isMultiValue: false,
@@ -268,8 +275,8 @@ dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+województwo",
-    apiName: "wojewodztwoUa33962d0",
-    order: {rel: "after", attributeApiName: "dzielnicaWarszawyUbb5a0106"},
+    apiName: "wojewodztwoU$",
+    order: {rel: "after", attributeApiName: "dzielnicaWarszawyU$"},
     model: "client",
     isMultiValue: false,
     type: "dict",
@@ -279,8 +286,8 @@ dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+decyzja zespołu klinicznego",
-    apiName: "decyzjaZespoluKlinicznegoU577dc53c",
-    order: {rel: "before", attributeApiName: "rodzinaKontoSalesforceU4d096794"},
+    apiName: "decyzjaZespoluKlinicznegoU$",
+    order: {rel: "before", attributeApiName: "rodzinaKontoSalesforceU$"},
     model: "client",
     isMultiValue: false,
     type: "text",
@@ -289,7 +296,7 @@ dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+powód zgłoszenia",
-    apiName: "powodZgloszeniaU6ee41728",
+    apiName: "powodZgloszeniaU$",
     order: {rel: "after", attributeApiName: "contactEndAt"},
     model: "client",
     isMultiValue: true,
@@ -300,8 +307,8 @@ dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+czynniki ryzyka",
-    apiName: "czynnikiRyzykaU779e16de",
-    order: {rel: "after", attributeApiName: "powodZgloszeniaU6ee41728"},
+    apiName: "czynnikiRyzykaU$",
+    order: {rel: "after", attributeApiName: "powodZgloszeniaU$"},
     model: "client",
     isMultiValue: true,
     type: "dict",

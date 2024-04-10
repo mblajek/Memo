@@ -23,7 +23,7 @@ Sprawy:
 Case
 
 Spotkania:
-Event 
+Event
 (WHERE Status_of_contact__c != "")
 WhatId - Case
 WhoId - Contact
@@ -39,3 +39,9 @@ Ważne tylko najnowsze.
 
 Powód zgłoszenia:
 Notification_reason__c JOIN Case
+
+Komentarze do sprawy:
+CaseComment JOIN Case (ParentId)
+
+Jakieś dodatkowe dzieci:
+Child__c
