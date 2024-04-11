@@ -120,7 +120,7 @@ export default (() => {
                 h.accessor("disabled", {
                   id: "Disabled",
                 }),
-                h.accessor("resource.positionGroupDictId", {
+                h.accessor((p) => p.resource.positionGroupDictId, {
                   id: "Pos. group",
                   cell: cellFunc<string, Position>((props) => (
                     <PaddedCell>
