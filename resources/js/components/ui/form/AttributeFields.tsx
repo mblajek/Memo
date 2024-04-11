@@ -387,6 +387,11 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                     )}
                   </Show>
                 )}
+                footer={(show) => (
+                  <Show when={show()}>
+                    <div class="col-span-full -mt-px border-b-2 border-select" />
+                  </Show>
+                )}
                 class="col-span-full grid grid-cols-subgrid"
               >
                 <For each={group.attributeIds}>

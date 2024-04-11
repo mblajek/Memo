@@ -1,25 +1,27 @@
-import {Accessor, JSX, ParentComponent, splitProps} from "solid-js";
+import {Accessor, JSX, ParentComponent, Show, createSignal, onCleanup, splitProps} from "solid-js";
 import {htmlAttributes} from "../utils";
-import {SeparatedSections} from "./SeparatedSections";
 
 interface Props extends htmlAttributes.div {
-  readonly header: (show: Accessor<boolean>) => JSX.Element;
+  readonly header?: (show: Accessor<boolean>) => JSX.Element;
+  readonly footer?: (show: Accessor<boolean>) => JSX.Element;
 }
 
 /**
- * A section with a header. The header is displayed only if the section is actually present, i.e.
- * has non-zero height.
+ * A section with a header and/or footer. The header/footer is displayed only if the section is
+ * actually present, i.e. has non-zero height.
  */
 export const SectionWithHeader: ParentComponent<Props> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["header", "children"]);
+  const [props, divProps] = splitProps(allProps, ["header", "footer", "children"]);
+  const [isPresent, setIsPresent] = createSignal<boolean>();
+  const obs = new ResizeObserver((entries) => setIsPresent(entries.at(-1)!.contentBoxSize.some((b) => b.blockSize)));
+  onCleanup(() => obs.disconnect());
   return (
-    <SeparatedSections separator={(show) => <>{props.header(show)}</>}>
-      {
-        ""
-        // This is treated as a present section because it is not a HTML element,
-        // so the separator is shown if only the actual content is also present.
-      }
-      <div {...divProps}>{props.children}</div>
-    </SeparatedSections>
+    <>
+      <Show when={isPresent() !== undefined}>{props.header?.(isPresent as Accessor<boolean>)}</Show>
+      <div ref={(div) => obs.observe(div)} {...divProps}>
+        {props.children}
+      </div>
+      <Show when={isPresent() !== undefined}>{props.footer?.(isPresent as Accessor<boolean>)}</Show>
+    </>
   );
 };
