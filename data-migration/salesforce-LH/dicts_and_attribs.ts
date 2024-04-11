@@ -14,7 +14,7 @@ export const LH_MEETING_TYPES = [
       {name: "Konsultacja indywidualna", duration: 60},
       {name: "Konsultacja z parą", duration: 60},
       {name: "Konsultacja rodzinna", duration: 60},
-      {name: "konsultacja wsparciowa", duration: 60},
+      {name: "Konsultacja wsparciowa", duration: 60},
       {name: "Terapia indywidualna", duration: 60},
       {name: "Terapia pary", duration: 60},
       {name: "Terapia rodzinna", duration: 60},
