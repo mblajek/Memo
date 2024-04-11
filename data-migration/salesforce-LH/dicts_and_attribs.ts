@@ -232,25 +232,27 @@ dictionariesAndAttributes.push(
 dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
-    name: "+rodzina (konto salesforce)",
-    apiName: "rodzinaKontoSalesforceU$",
-    order: {rel: "before", attributeApiName: "documentsLinks"},
+    name: "+",
+    apiName: "globalSeparatorContactInfoU$",
+    order: {rel: "before", attributeApiName: "contactEmail"},
     model: "client",
     isMultiValue: false,
-    type: "text",
-    requirementLevel: "optional",
+    type: "separator",
+    requirementLevel: "empty",
   },
   {
     kind: "createAttribute",
-    name: "+źródło informacji o Poradni",
-    apiName: "zrodloInfOPoradniU$",
-    order: "atEnd",
+    name: "+",
+    apiName: "globalSeparatorOtherU$",
+    order: {rel: "before", attributeApiName: "contactStartAt"},
     model: "client",
-    isMultiValue: true,
-    type: "dict",
-    dictionaryNnOrName: "dict:źródło informacji o Poradni",
-    requirementLevel: "optional",
+    isMultiValue: false,
+    type: "separator",
+    requirementLevel: "empty",
   },
+);
+
+dictionariesAndAttributes.push(
   {
     kind: "createAttribute",
     name: "+wiek w momencie zgłoszenia",
@@ -261,6 +263,7 @@ dictionariesAndAttributes.push(
     type: "int",
     requirementLevel: "optional",
   },
+
   {
     kind: "createAttribute",
     name: "+dzielnica Warszawy",
@@ -283,16 +286,7 @@ dictionariesAndAttributes.push(
     dictionaryNnOrName: "pl_voivodeship",
     requirementLevel: "recommended",
   },
-  {
-    kind: "createAttribute",
-    name: "+decyzja zespołu klinicznego",
-    apiName: "decyzjaZespoluKlinicznegoU$",
-    order: {rel: "before", attributeApiName: "rodzinaKontoSalesforceU$"},
-    model: "client",
-    isMultiValue: false,
-    type: "text",
-    requirementLevel: "optional",
-  },
+
   {
     kind: "createAttribute",
     name: "+powód zgłoszenia",
@@ -314,5 +308,47 @@ dictionariesAndAttributes.push(
     type: "dict",
     dictionaryNnOrName: "dict:czynnik ryzyka",
     requirementLevel: "recommended",
+  },
+  {
+    kind: "createAttribute",
+    name: "+decyzja zespołu klinicznego",
+    apiName: "decyzjaZespoluKlinicznegoU$",
+    order: {rel: "before", attributeApiName: "czynnikiRyzykaU$"},
+    model: "client",
+    isMultiValue: false,
+    type: "text",
+    requirementLevel: "optional",
+  },
+  {
+    kind: "createAttribute",
+    name: "+rodzina (konto salesforce)",
+    apiName: "rodzinaKontoSalesforceU$",
+    order: {rel: "before", attributeApiName: "documentsLinks"},
+    model: "client",
+    isMultiValue: false,
+    type: "text",
+    requirementLevel: "optional",
+  },
+
+  {
+    kind: "createAttribute",
+    name: "+",
+    apiName: "separator1U$",
+    order: {rel: "before", attributeApiName: "notificationMethodDictIds"},
+    model: "client",
+    isMultiValue: false,
+    type: "separator",
+    requirementLevel: "empty",
+  },
+  {
+    kind: "createAttribute",
+    name: "+źródło informacji o Poradni",
+    apiName: "zrodloInfOPoradniU$",
+    order: "atEnd",
+    model: "client",
+    isMultiValue: true,
+    type: "dict",
+    dictionaryNnOrName: "dict:źródło informacji o Poradni",
+    requirementLevel: "optional",
   },
 );
