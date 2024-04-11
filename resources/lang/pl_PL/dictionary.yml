@@ -72,3 +72,6 @@ notificationMethod:
   _name: "metoda powiadomień"
   sms: "SMS"
   email: "e-mail"
+
+positionGroup:
+  _name: "[grupa pozycji]"
