@@ -1,4 +1,5 @@
 import {DefaultDictionarySelectItem, DictionarySelect} from "components/ui/form/DictionarySelect";
+import {IndentSelectItemInGroup} from "components/ui/form/Select";
 import {isDEV} from "components/utils/dev_mode";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -16,7 +17,7 @@ import {VoidComponent} from "solid-js";
  */
 export const MeetingTypeFields: VoidComponent = () => {
   const attributes = useAttributes();
-  const categoryAttribute = () => attributes()?.getByName("position", "categoryDictId");
+  const categoryAttribute = () => attributes()?.getByName<string>("position", "categoryDictId");
   const {meetingCategoryDict} = useFixedDictionaries();
   function isSystemType(pos: Position) {
     return categoryAttribute()?.readFrom(pos.resource) === meetingCategoryDict()?.system.id;
@@ -28,10 +29,10 @@ export const MeetingTypeFields: VoidComponent = () => {
         return {
           ...item,
           labelOnList: () => (
-            <div class="flex gap-2 items-baseline justify-between">
+            <IndentSelectItemInGroup class="flex gap-2 items-baseline justify-between">
               <span>{item.text}</span>
               <span class="text-xs">DEV</span>
-            </div>
+            </IndentSelectItemInGroup>
           ),
         };
       }

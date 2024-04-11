@@ -15,8 +15,8 @@ gender:
 
 meetingCategory:
   _name: "kategoria spotkania"
-  other: "inne"
-  system: "systemowe"
+  other: "Inne"
+  system: "Systemowe"
 
 meetingType:
   _name: "typ spotkania"

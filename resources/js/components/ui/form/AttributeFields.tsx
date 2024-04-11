@@ -380,7 +380,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                         transitionTimeMs={50}
                         transitionTimingFunction="ease-out"
                       >
-                        <div class="font-bold pt-4">
+                        <div class="font-bold pt-6">
                           <Capitalize text={relevantAttributes().get(separatorBeforeId())?.attribute.label} />
                         </div>
                       </HideableSection>
@@ -389,7 +389,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                 )}
                 footer={(show) => (
                   <Show when={show()}>
-                    <div class="col-span-full -mt-px border-b-2 border-select" />
+                    <div class="col-span-full -mt-px border-b border-memo-active" />
                   </Show>
                 )}
                 class="col-span-full grid grid-cols-subgrid"
