@@ -74,6 +74,13 @@ return new class extends Migration {
             ->update(['default_order' => DMH::SYSTEM_ORDER_OFFSET + 2]);
         DB::table('positions')->where('id', '137205e2-e9a1-4f8f-ada2-555319506b28')
             ->update(['default_order' => DMH::SYSTEM_ORDER_OFFSET + 1]);
+
+        DB::table('positions')->where('id', '6e87acd5-70a0-4051-963b-42d439f44e42')
+            ->update(['default_order' => DMH::SYSTEM_ORDER_OFFSET + 5]);
+        DB::table('positions')->where('id', 'c47b1483-cef9-4f5f-bc89-419104cc55d9')
+            ->update(['default_order' => DMH::SYSTEM_ORDER_OFFSET + 3]);
+        DB::table('positions')->where('id', '6e87acd5-70a0-4051-963b-42d439f44e42')
+            ->update(['default_order' => DMH::SYSTEM_ORDER_OFFSET + 1]);
     }
 
     /**
