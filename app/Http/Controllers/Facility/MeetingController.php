@@ -58,7 +58,6 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
-                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
@@ -74,7 +73,6 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
-                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
@@ -109,12 +107,10 @@ class MeetingController extends ApiController
                 'staff.*',
                 'staff.*.user_id',
                 'staff.*.attendance_status_dict_id',
-                'staff.*.info',
                 'clients',
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
-                'clients.*.info',
                 'resources',
                 'resources.*',
                 'resources.*.resource_dict_id',
@@ -176,7 +172,6 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
-                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
@@ -192,7 +187,6 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
-                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
@@ -244,11 +238,9 @@ class MeetingController extends ApiController
                 'staff.*',
                 'staff.*.user_id',
                 'staff.*.attendance_status_dict_id',
-                'staff.*.info',
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
-                'clients.*.info',
                 'resources.*',
                 'resources.*.resource_dict_id',
             ])

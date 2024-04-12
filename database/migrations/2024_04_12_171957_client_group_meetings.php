@@ -12,10 +12,6 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('meeting_attendants', function (Blueprint $table) {
-            $table->string('info')->nullable();
-        });
-
         $typeDictionaryId = '4cc5d6b5-5913-4e07-9fcb-09b6f3d3d2a0';
         $systemUserId = DMH::USER_SYSTEM;
         $systemCategoryId = '2903ea34-6188-4972-b84c-d3dc4047ee3c';
@@ -88,8 +84,5 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('meeting_attendants', function (Blueprint $table) {
-            $table->dropColumn('info');
-        });
     }
 };

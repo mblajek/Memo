@@ -78,7 +78,7 @@ class Meeting extends Model
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
             'is_remote' => Valid::bool(),
             'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
-            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id', 'info']),
+            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
             Valid::dict(DictionaryUuidEnum::AttendanceStatus),
             'staff.*.user_id' => Valid::uuid([
@@ -89,7 +89,6 @@ class Meeting extends Model
                 new UniqueWithMemoryRule('attendant'),
                 new MemberExistsRule(AttendanceType::Client),
             ]),
-            'staff.*.info', 'clients.*.info' => Valid::trimmed(sometimes: true, nullable: true),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,
