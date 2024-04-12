@@ -271,6 +271,8 @@ function dateTime(d: DateTime) {
 }
 
 const clients: Client[] = [];
+const meetings: Meeting[] = [];
+
 const contactsByAccountId = Map.groupBy(CONTACTS, (c) => c.AccountId);
 const casesByContactId = Map.groupBy(DATA.Case.rows, (c) => c.ContactId);
 const caseCommentsByCaseId = Map.groupBy(DATA.CaseComment.rows, (c) => c.ParentId);
@@ -662,9 +664,23 @@ for (const [accountId, contacts] of contactsByAccountId) {
       },
     });
   }
+  meetings.push({
+    nn: `clients_group_temporary:${account.Id}`,
+    typeDictNnOrName: "clients_group_temporary",
+    isRemote: false,
+    notes: `${account.Id}\n${account.Name}`,
+    date: "2024-04-15",
+    startDayMinute: 0,
+    durationMinutes: 1440,
+    status: "completed",
+    staff: [],
+    clients: accountClients.map((client) => ({
+      userNn: Array.isArray(client.nn) ? client.nn[0] : client.nn,
+      attendanceStatus: "ok",
+    })),
+  });
 }
 
-const meetings: Meeting[] = [];
 const relationsByMeetingId = Map.groupBy(DATA.EventRelation.rows, (er) => er.EventId);
 const unknownMeetingSubjects = new Set<string>();
 for (const [recurrenceActivityId, eventsGroup] of Map.groupBy(EVENTS, (e) => e.RecurrenceActivityId)) {
