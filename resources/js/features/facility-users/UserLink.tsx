@@ -6,8 +6,7 @@ import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
-import {Show, VoidComponent, mergeProps, splitProps} from "solid-js";
-import {Dynamic} from "solid-js/web";
+import {Match, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 
 interface Props extends Partial<AnchorProps> {
@@ -21,18 +20,17 @@ interface Props extends Partial<AnchorProps> {
   readonly name?: string;
 }
 
-const ICONS = {
-  staff: STAFF_ICONS.staff,
-  clients: CLIENT_ICONS.client,
-};
-
 export const UserLink: VoidComponent<Props> = (allProps) => {
-  const defProps = mergeProps({icon: true, link: true}, allProps);
-  const [props, anchorProps] = splitProps(defProps, ["type", "icon", "link", "userId", "name"]);
+  const [props, anchorProps] = splitProps(allProps, ["type", "icon", "link", "userId", "name"]);
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const userDisplayNames = useUserDisplayNames();
   const name = () => (props.name ? {displayName: props.name} : userDisplayNames.get(props.type, props.userId!));
+  const icon = () => props.icon ?? true;
+  const ICON_STYLE_PROPS = {
+    class: "inlineIcon shrink-0 text-current",
+    style: {"margin-right": "0.1em", "margin-bottom": "0.1em"},
+  };
   return (
     <Show
       when={props.userId}
@@ -45,22 +43,25 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
       {/* Allow wrapping the client name, but not just after the icon. */}
       <span
         class="inline-block"
-        style={{"white-space": "nowrap", "min-height": props.icon === true ? "1.45em" : undefined}}
+        style={{"white-space": "nowrap", "min-height": icon() === true ? "1.45em" : undefined}}
       >
-        <Show when={props.icon}>
-          <Dynamic
-            component={ICONS[props.type]}
-            size={props.icon === "tiny" ? "1.05em" : "1.3em"}
-            class="inlineIcon shrink-0 text-current"
-            style={{"margin-right": "0.1em", "margin-bottom": "0.1em"}}
-          />
+        <Show when={icon()}>
+          <Switch>
+            {/* Switch is faster than Dynamic, and this component needs to be optinised. */}
+            <Match when={props.type === "staff"}>
+              <STAFF_ICONS.staff size={icon() === "tiny" ? "1.05em" : "1.3em"} {...ICON_STYLE_PROPS} />
+            </Match>
+            <Match when={props.type === "clients"}>
+              <CLIENT_ICONS.client size={icon() === "tiny" ? "1.05em" : "1.3em"} {...ICON_STYLE_PROPS} />
+            </Match>
+          </Switch>
         </Show>
         <Show when={name()} fallback={<SmallSpinner />}>
           {(name) => (
             <span style={{"white-space": "initial"}}>
               <Show when={activeFacility() && name().displayName} fallback={t("parenthesised", {text: t("unknown")})}>
                 {(displayName) => (
-                  <Show when={props.link} fallback={<>{displayName()}</>}>
+                  <Show when={props.link ?? true} fallback={<>{displayName()}</>}>
                     <LinkWithNewTabLink
                       {...anchorProps}
                       href={`/${activeFacility()?.url}/${allProps.type}/${allProps.userId}`}

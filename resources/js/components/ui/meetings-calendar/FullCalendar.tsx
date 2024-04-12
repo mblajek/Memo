@@ -891,7 +891,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 onWheelWithAlt={(e) =>
                   setMonthEventsHeight((v) =>
                     Math.min(
-                      Math.max(v - 0.02 * e.deltaY, MONTH_EVENTS_HEIGHT_RANGE.min),
+                      Math.max(v - 0.015 * e.deltaY, MONTH_EVENTS_HEIGHT_RANGE.min),
                       MONTH_EVENTS_HEIGHT_RANGE.max,
                     ),
                   )
