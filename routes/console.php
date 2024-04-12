@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Permissions\PermissionMiddleware;
+use App\Http\Permissions\PermissionObject;
 use App\Models\Grant;
 use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
@@ -22,6 +24,21 @@ Artisan::command('fz:hash', function () {
 })->purpose('Make password hash');
 
 Artisan::command('fz:user', function () {
+    PermissionMiddleware::setPermissions(
+        new PermissionObject(
+            user: User::query()->findOrFail(User::SYSTEM),
+            facility: null,
+            unauthorised: false,
+            unverified: true,
+            verified: true,
+            globalAdmin: true,
+            facilityMember: false,
+            facilityClient: false,
+            facilityStaff: false,
+            facilityAdmin: false,
+            developer: false,
+        )
+    );
     $user = User::query()->newModelInstance();
     $user->created_by = User::SYSTEM;
     $globalAdminGrant = null;
@@ -52,4 +69,5 @@ Artisan::command('fz:user', function () {
         $user->saveOrFail();
     });
     $this->line("Created user $user->id");
+    PermissionMiddleware::setPermissions(null);
 })->purpose('Create new user');

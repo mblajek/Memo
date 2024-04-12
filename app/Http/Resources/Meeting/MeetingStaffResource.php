@@ -29,6 +29,7 @@ class MeetingStaffResource extends AbstractOpenApiResource
         return [
             'userId' => true,
             'attendanceStatusDictId' => true,
+            'info' => true,
         ];
     }
 }

@@ -48,7 +48,7 @@ class MeetingController extends ApiController
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -58,12 +58,13 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
+                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -73,6 +74,7 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
+                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
@@ -107,10 +109,12 @@ class MeetingController extends ApiController
                 'staff.*',
                 'staff.*.user_id',
                 'staff.*.attendance_status_dict_id',
+                'staff.*.info',
                 'clients',
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
+                'clients.*.info',
                 'resources',
                 'resources.*',
                 'resources.*.resource_dict_id',
@@ -162,7 +166,7 @@ class MeetingController extends ApiController
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -172,12 +176,13 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
+                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -187,6 +192,7 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
+                            new OA\Property(property: 'info', type: 'string', nullable: true),
                         ]
                     )
                     ),
@@ -238,9 +244,11 @@ class MeetingController extends ApiController
                 'staff.*',
                 'staff.*.user_id',
                 'staff.*.attendance_status_dict_id',
+                'staff.*.info',
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
+                'clients.*.info',
                 'resources.*',
                 'resources.*.resource_dict_id',
             ])

@@ -17,6 +17,7 @@ use OpenApi\Attributes as OA;
             example: 'UUID',
             nullable: true,
         ),
+        new OA\Property(property: 'info', type: 'string', nullable: true),
     ]
 )] /**
  * @method __construct(MeetingAttendant $resource)
@@ -29,6 +30,7 @@ class MeetingClientResource extends AbstractOpenApiResource
         return [
             'userId' => true,
             'attendanceStatusDictId' => true,
+            'info' => true,
         ];
     }
 }

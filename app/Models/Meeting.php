@@ -72,13 +72,13 @@ class Meeting extends Model
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')]),
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingType),
             'date' => Valid::date(),
-            'notes' => Valid::trimmed(sometimes: true, nullable: true, max: 4000),
+            'notes' => Valid::text(sometimes: true, nullable: true),
             'start_dayminute' => Valid::int(['min:' . (0), 'max:' . (24 * 60 - 1)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
             'is_remote' => Valid::bool(),
             'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
-            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
+            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id', 'info']),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
             Valid::dict(DictionaryUuidEnum::AttendanceStatus),
             'staff.*.user_id' => Valid::uuid([
@@ -89,6 +89,7 @@ class Meeting extends Model
                 new UniqueWithMemoryRule('attendant'),
                 new MemberExistsRule(AttendanceType::Client),
             ]),
+            'staff.*.info', 'clients.*.info' => Valid::trimmed(sometimes: true, nullable: true),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,
