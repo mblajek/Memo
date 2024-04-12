@@ -23,6 +23,8 @@ meetingType:
   other: "inne"
   work_time: "godziny pracy"
   leave_time: "nieobecność"
+  # Temporary:
+  clients_group_temporary: "[grupa klientów]"
 
 meetingStatus:
   _name: "status spotkania"
