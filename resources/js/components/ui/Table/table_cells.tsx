@@ -56,6 +56,12 @@ export function useTableCells() {
           </ShowCellVal>
         </PaddedCell>
       )),
+    dateNoWeekday: <T,>() =>
+      cellFunc<string, T>((props) => (
+        <PaddedCell>
+          <ShowCellVal v={props.v}>{(v) => DateTime.fromISO(v()).toLocaleString(DATE_FORMAT)}</ShowCellVal>
+        </PaddedCell>
+      )),
     datetime: <T,>() =>
       cellFunc<string, T>((props) => (
         <PaddedCell>

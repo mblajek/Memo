@@ -30,7 +30,10 @@ export default (() => {
           columnDef: {
             cell: cellFunc<string>((props) => (
               <PaddedCell>
-                <ShowCellVal v={props.v}>/{props.v}</ShowCellVal>
+                <ShowCellVal v={props.v}>
+                  <span class="text-gray-400">/</span>
+                  {props.v}
+                </ShowCellVal>
               </PaddedCell>
             )),
           },

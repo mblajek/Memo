@@ -3,7 +3,9 @@ import {Email} from "components/ui/Email";
 import {Phone} from "components/ui/Phone";
 import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
+import {DATE_FORMAT} from "components/utils";
 import {PartialAttributesSelection} from "components/utils/attributes_selection";
+import {DateTime} from "luxon";
 import {For, VoidComponent} from "solid-js";
 
 interface Props {
@@ -16,6 +18,9 @@ const ATTRIBUTES_SELECTION: PartialAttributesSelection<AttributeParams<any>> = {
   includeFixed: true,
   fixedOverrides: {
     notes: false,
+    birthDate: {
+      view: (date) => <span>{DateTime.fromISO(date()).toLocaleString(DATE_FORMAT)}</span>,
+    },
     contactEmail: {
       view: (email) => <Email email={email()} />,
     } satisfies AttributeParams<string>,
