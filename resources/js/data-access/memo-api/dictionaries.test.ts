@@ -19,6 +19,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: true,
             defaultOrder: 0,
+            positionGroupDictId: null,
           },
           {
             id: "d1p2",
@@ -28,6 +29,7 @@ describe("Dictionaries", () => {
             isDisabled: true,
             isFixed: false,
             defaultOrder: 1,
+            positionGroupDictId: null,
           },
           {
             id: "d1p3",
@@ -37,6 +39,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 2,
+            positionGroupDictId: null,
           },
         ],
         isFixed: true,
@@ -55,6 +58,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 0,
+            positionGroupDictId: null,
           },
           {
             id: "d2p2",
@@ -64,6 +68,7 @@ describe("Dictionaries", () => {
             isDisabled: true,
             isFixed: false,
             defaultOrder: 1,
+            positionGroupDictId: null,
           },
           {
             id: "d2p3",
@@ -73,6 +78,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 2,
+            positionGroupDictId: null,
           },
         ],
         isFixed: false,
@@ -91,6 +97,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 0,
+            positionGroupDictId: null,
           },
           {
             id: "d3p2",
@@ -100,6 +107,7 @@ describe("Dictionaries", () => {
             isDisabled: true,
             isFixed: false,
             defaultOrder: 1,
+            positionGroupDictId: null,
           },
           {
             id: "d3p3",
@@ -109,6 +117,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 2,
+            positionGroupDictId: null,
           },
         ],
         isFixed: false,

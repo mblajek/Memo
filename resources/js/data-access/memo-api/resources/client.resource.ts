@@ -12,6 +12,7 @@ export type ClientResourceForCreate = Pick<ClientResource, "id" | "name"> & {
   readonly client: ClientSpecificFields;
 };
 
-export type ClientResourceForPatch = Pick<ClientResource, "id"> & {
-  readonly client: ClientSpecificFields;
-};
+export type ClientResourceForPatch = Pick<ClientResource, "id"> &
+  Partial<Pick<ClientResource, "name">> & {
+    readonly client: ClientSpecificFields;
+  };

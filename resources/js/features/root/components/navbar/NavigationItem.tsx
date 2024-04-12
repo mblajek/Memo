@@ -35,7 +35,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
    * Whether this item or any of its children is active.
    *
    * This value is calculated by examining the applied active class. There doesn't seem to be any simpler and
-   * fully correct of doing this, the link component doesn't expose this value.
+   * fully correct way of doing this, the link component doesn't expose this value.
    *
    * The value is recalculated when activeItemTrigger changes, with a delay so that the active classes have time
    * to settle.
@@ -57,7 +57,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
         })}
         activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
         onClick={(event) => {
-          if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS)) {
+          if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS) && location.pathname === aProps.href) {
             invalidate.everythingThrottled();
           }
         }}

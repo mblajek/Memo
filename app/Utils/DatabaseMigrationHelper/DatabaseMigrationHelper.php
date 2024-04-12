@@ -11,6 +11,7 @@ use Illuminate\Database\Schema\ColumnDefinition;
 final class DatabaseMigrationHelper
 {
     public const string USER_SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
+    public const int SYSTEM_ORDER_OFFSET = 1_000_000;
 
     public static function base(Blueprint $table): void
     {

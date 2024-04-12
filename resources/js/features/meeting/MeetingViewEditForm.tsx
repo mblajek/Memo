@@ -134,7 +134,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
           <div class="relative flex flex-col">
             <div class="flex justify-between">
               <Show when={props.showGoToMeetingButton} fallback={<span />}>
-                <LinkWithNewTabLink {...getMeetingLinkData(`/${activeFacility()!.url}/calendar`, meeting())}>
+                <LinkWithNewTabLink {...getMeetingLinkData(`/${activeFacility()?.url}/calendar`, meeting())}>
                   {t("meetings.show_in_calendar")}
                 </LinkWithNewTabLink>
               </Show>

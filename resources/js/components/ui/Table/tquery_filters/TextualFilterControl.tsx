@@ -44,6 +44,7 @@ export const TextualFilterControl: FilterControl = (props) => {
     const items: SelectItem[] = [];
     items.push(
       makeSelectItem({
+        value: "~",
         symbol: t("tables.filter.textual.symbols.fuzzy"),
         symbolClass: "w-4",
         description: t("tables.filter.textual.fuzzy"),
@@ -55,6 +56,7 @@ export const TextualFilterControl: FilterControl = (props) => {
     if (props.schema.type === "string") {
       items.push(
         makeSelectItem({
+          value: "=",
           symbol: t("tables.filter.textual.symbols.eq"),
           symbolClass: "w-4",
           description: t("tables.filter.textual.eq"),
@@ -64,6 +66,7 @@ export const TextualFilterControl: FilterControl = (props) => {
     if (props.schema.nullable) {
       items.push(
         makeSelectItem({
+          value: "*",
           symbol: t("tables.filter.textual.symbols.non_null_value"),
           symbolClass: "w-4",
           description: t("tables.filter.non_null_value"),
@@ -78,6 +81,7 @@ export const TextualFilterControl: FilterControl = (props) => {
     }
     items.push(
       makeSelectItem({
+        value: ".*",
         symbol: t("tables.filter.textual.symbols.regexp"),
         symbolClass: "w-4",
         description: t("tables.filter.textual.regexp"),

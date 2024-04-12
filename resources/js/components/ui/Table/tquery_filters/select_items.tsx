@@ -25,6 +25,7 @@ export const SelectItemDescription: VoidComponent<SelectItemDescriptionProps> = 
 );
 
 interface SelectItemLabelProps {
+  readonly value: string;
   readonly symbol?: string;
   readonly symbolClass?: string;
   readonly description?: string;
@@ -50,9 +51,8 @@ export const SelectItemLabel: VoidComponent<SelectItemLabelProps> = (props) => (
   </Switch>
 );
 
-export function makeSelectItem(opts: Partial<SelectItem> & SelectItemLabelProps = {}) {
+export function makeSelectItem(opts: Partial<SelectItem> & SelectItemLabelProps) {
   return {
-    value: opts.symbol || "",
     text: `${opts.symbol} ${opts.description}`,
     label: () => <SelectItemLabel {...opts} />,
     labelOnList: () => <SelectItemLabelOnList {...opts} />,

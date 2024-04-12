@@ -69,13 +69,17 @@ export default (() => {
             },
           },
         }}
-        initialSort={[{id: "name", desc: false}]}
+        intrinsicSort={[
+          {type: "column", column: "lastMeetingDate", desc: true},
+          {type: "column", column: "name", desc: false},
+        ]}
+        initialSort={[{id: "lastMeetingDate", desc: true}]}
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">
             <A
               role="button"
               class="primary small !px-2 flex flex-col justify-center"
-              href={`/${activeFacility()!.url}/clients/create`}
+              href={`/${activeFacility()?.url}/clients/create`}
             >
               <div>
                 <ACTION_ICONS.add class="inlineIcon text-current" /> {t("actions.client.add")}

@@ -20,6 +20,7 @@ export function useSingleSelectFilterHelper() {
         description: t("tables.filter.non_null_value"),
         label: () => (
           <SelectItemLabelOnList
+            value={NON_NULL_VALUE}
             symbol={t("tables.filter.symbols.non_null_value")}
             description={t("tables.filter.non_null_value")}
           />
@@ -37,6 +38,7 @@ export function useSingleSelectFilterHelper() {
         description: t("tables.filter.null_value"),
         label: () => (
           <SelectItemLabelOnList
+            value={NULL_VALUE}
             symbol={t("tables.filter.symbols.null_value")}
             description={t("tables.filter.null_value")}
           />

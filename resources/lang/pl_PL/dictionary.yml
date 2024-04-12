@@ -15,8 +15,8 @@ gender:
 
 meetingCategory:
   _name: "kategoria spotkania"
-  other: "inne"
-  system: "systemowe"
+  other: "Inne"
+  system: "Systemowe"
 
 meetingType:
   _name: "typ spotkania"
@@ -72,3 +72,6 @@ notificationMethod:
   _name: "metoda powiadomień"
   sms: "SMS"
   email: "e-mail"
+
+positionGroup:
+  _name: "[grupa pozycji]"

@@ -120,6 +120,14 @@ export default (() => {
                 h.accessor("disabled", {
                   id: "Disabled",
                 }),
+                h.accessor((p) => p.resource.positionGroupDictId, {
+                  id: "Pos. group",
+                  cell: cellFunc<string, Position>((props) => (
+                    <PaddedCell>
+                      <ShowCellVal v={props.v}>{(v) => dictionaries()?.getPositionById(v()).resource.name}</ShowCellVal>
+                    </PaddedCell>
+                  )),
+                }),
                 ...((attributes() &&
                   dict.resource.positionRequiredAttributeIds
                     ?.map((attrId) => attributes()!.getById(attrId)!)

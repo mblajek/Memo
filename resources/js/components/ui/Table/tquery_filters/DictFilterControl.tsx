@@ -7,10 +7,12 @@ import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {useSingleSelectFilterHelper} from "./select_filters_helper";
 import {FilterControl} from "./types";
+import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 
 export const DictFilterControl: FilterControl = (props) => {
   const filterFieldNames = useFilterFieldNames();
   const dictionaries = useDictionaries();
+  const {getGroupName} = usePositionsGrouping();
   const {itemsForNullableColumn, buildFilter, updateValue} = useSingleSelectFilterHelper();
   const schema = () => props.schema as DictDataColumnSchema;
 
@@ -21,13 +23,20 @@ export const DictFilterControl: FilterControl = (props) => {
     }
     // Ignore other external filter changes.
   });
-  const items = createMemo(() => [
-    ...(schema().nullable ? itemsForNullableColumn() : []),
-    ...(dictionaries()?.get(schema().dictionaryId)?.activePositions || []).map((position) => ({
-      value: position.id,
-      text: position.label,
-    })),
-  ]);
+  const items = createMemo(() => {
+    const dict = dictionaries()?.get(schema().dictionaryId);
+    if (!dict) {
+      return [];
+    }
+    return [
+      ...(schema().nullable ? itemsForNullableColumn() : []),
+      ...dict.activePositions.map((pos) => ({
+        value: pos.id,
+        text: pos.label,
+        groupName: getGroupName({dictId: dict.id, pos}),
+      })),
+    ];
+  });
   return (
     <div class={cx(s.filter, "min-w-24")}>
       <Select

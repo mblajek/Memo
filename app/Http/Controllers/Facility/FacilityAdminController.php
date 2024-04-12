@@ -10,6 +10,7 @@ use App\Models\Dictionary;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\Position;
+use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -65,28 +66,17 @@ class FacilityAdminController extends ApiController
         }
 
         DB::transaction(function () use ($attribute, $data) {
-            if (
-                $attribute->default_order === null
-                || Attribute::query()->where('table', $attribute->table)
-                    ->where('default_order', $attribute->default_order)->exists()
-            ) {
-                $last = DB::select(
-                    "select min(`a1`.`default_order`) as `last` from `attributes` `a1` left join `attributes` `a2`"
-                    . " on `a1`.`table` = `a2`.`table` and `a1`.`default_order` = `a2`.`default_order` - 1"
-                    . " where `a1`.`table` = ? and `a2`.`id` is null and `a1`.`default_order` >= ?",
-                    [$attribute->table->value, $attribute->default_order ?? 0],
-                )[0]->last;
-                if ($attribute->default_order === null) {
-                    $attribute->default_order = $last + 1;
-                } else {
-                    DB::statement(
-                        "update `attributes` set `default_order` = 1 + `default_order`"
-                        . " where `table` = ?"
-                        . " and `default_order` between ? and ?"
-                        . " order by default_order desc",
-                        [$attribute->table->value, $attribute->default_order, $last],
-                    );
-                }
+            $last = Attribute::query()->where('table', '=', $attribute->table->value)
+                ->where('default_order', '<', DatabaseMigrationHelper::SYSTEM_ORDER_OFFSET)
+                ->aggregate('max', ['default_order']) ?? 0;  // numericAggregate() returns builder
+            $attribute->default_order = min($attribute->default_order ?? ($last + 1), $last + 1);
+            if ($attribute->default_order <= $last) {
+                DB::statement(
+                    "update `attributes` set `default_order` = 1 + `default_order`"
+                    . " where `table` = ? and `default_order` between ? and ?"
+                    . " order by default_order desc",
+                    [$attribute->table->value, $attribute->default_order, $last],
+                );
             }
             $attribute->save();
             // $attribute->attrSave($data);
@@ -114,7 +104,7 @@ class FacilityAdminController extends ApiController
     }
 
     // todo: extract into service, openApi
-    public function postPosition(): JsonResponse
+    public function postPosition(): mixed
     {
         $data = ['facility_id' => $this->getFacilityOrFail()->id]
             + $this->validate(Position::getInsertValidator([
@@ -136,28 +126,17 @@ class FacilityAdminController extends ApiController
         }
 
         DB::transaction(function () use ($position, $data) {
-            if (
-                $position->default_order === null
-                || Position::query()->where('dictionary_id', $position->dictionary_id)
-                    ->where('default_order', $position->default_order)->exists()
-            ) {
-                $last = DB::select(
-                    "select min(`p1`.`default_order`) as `last` from `positions` `p1` left join `positions` `p2`"
-                    . " on `p1`.`dictionary_id` = `p2`.`dictionary_id` and `p1`.`default_order` = `p2`.`default_order` - 1"
-                    . " where `p1`.`dictionary_id` = ? and `p2`.`id` is null and `p1`.`default_order` >= ?",
-                    [$position->dictionary_id, $position->default_order ?? 0],
-                )[0]->last;
-                if ($position->default_order === null) {
-                    $position->default_order = $last + 1;
-                } else {
-                    DB::statement(
-                        "update `positions` set `default_order` = 1 + `default_order`"
-                        . " where `dictionary_id` = ?"
-                        . " and `default_order` between ? and ?"
-                        . " order by default_order desc",
-                        [$position->dictionary_id, $position->default_order, $last],
-                    );
-                }
+            $last = Position::query()->where('dictionary_id', '=', $position->dictionary_id)
+                ->where('default_order', '<', DatabaseMigrationHelper::SYSTEM_ORDER_OFFSET)
+                ->aggregate('max', ['default_order']) ?? 0;  // numericAggregate() returns builder
+            $position->default_order = min($position->default_order ?? ($last + 1), $last + 1);
+            if ($position->default_order <= $last) {
+                DB::statement(
+                    "update `positions` set `default_order` = `default_order` + 1"
+                    . " where `dictionary_id` = ? and `default_order` between ? and ?"
+                    . " order by default_order desc",
+                    [$position->dictionary_id, $position->default_order, $last],
+                );
             }
             $position->attrSave($this->getFacilityOrFail(), $data);
         });

@@ -9,6 +9,7 @@ import {
   DictAttributeType,
   REQUIREMENT_LEVELS,
   RequirementLevel,
+  SeparatorAttributeType,
   SimpleAttributeType,
 } from "./resources/attribute.resource";
 import {getNameTranslation, isNameTranslatable} from "./resources/name_string";
@@ -106,7 +107,7 @@ export class Attribute<T = unknown> {
     readonly label: string,
     readonly apiName: string,
     readonly type: AttributeType,
-    readonly basicType: SimpleAttributeType | DictAttributeType | undefined,
+    readonly basicType: SimpleAttributeType | DictAttributeType | SeparatorAttributeType | undefined,
     readonly typeModel: AttributeModel | undefined,
     readonly dictionary: Dictionary | undefined,
     readonly multiple: boolean | undefined,
@@ -140,7 +141,9 @@ export class Attribute<T = unknown> {
       }),
       resource.apiName,
       resource.type,
-      resource.typeModel ? undefined : (resource.type as SimpleAttributeType | DictAttributeType),
+      resource.typeModel
+        ? undefined
+        : (resource.type as SimpleAttributeType | DictAttributeType | SeparatorAttributeType),
       resource.typeModel || undefined,
       resource.dictionaryId ? dictionaries.get(resource.dictionaryId) : undefined,
       resource.isMultiValue ?? undefined,

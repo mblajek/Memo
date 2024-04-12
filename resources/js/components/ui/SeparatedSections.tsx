@@ -21,6 +21,8 @@ interface Props {
  * A list of sections, each of which can be present or missing, or have zero height (which is treated the same
  * as missing). The sections are separated by separators, which only appear when it is really needed
  * to separate two present sections.
+ *
+ * If a section is not an HTMLElement, it is treated as present, even if it is e.g. an empty string.
  */
 export const SeparatedSections: ParentComponent<Props> = (props) => {
   const ch = children(() => props.children);
@@ -47,7 +49,7 @@ export const SeparatedSections: ParentComponent<Props> = (props) => {
         if (isPresentSignal) {
           isPresent = isPresentSignal[0];
         } else if (section instanceof HTMLElement) {
-          const [getIsPresent, setIsPresent] = createSignal(true);
+          const [getIsPresent, setIsPresent] = createSignal(section.clientHeight > 0);
           isPresent = getIsPresent;
           elementToIsPresentSignal.set(section, [isPresent, setIsPresent]);
           obs.observe(section);
