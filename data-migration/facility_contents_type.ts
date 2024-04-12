@@ -26,7 +26,7 @@ export interface ExtendDictionaryAction {
 }
 
 export interface PositionInExtension extends Position {
-  readonly order: Order<"positionNnOrName">;
+  readonly order?: Order<"positionNnOrName">;
 }
 
 export interface CreateDictionaryAction {
@@ -52,7 +52,7 @@ interface CreateAttributeAction {
   readonly apiName: string;
   readonly type: string;
   readonly dictionaryNnOrName?: string;
-  readonly order: Order<"attributeApiName">;
+  readonly order?: Order<"attributeApiName">;
   readonly isMultiValue: boolean;
   readonly requirementLevel: "empty" | "optional" | "recommended" | "required";
 }

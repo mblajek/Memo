@@ -80,7 +80,6 @@ dictionariesAndAttributes.push(
         : {
             nn: `meetingCategory:${category}`,
             name: `+${category}`,
-            order: "atEnd",
           },
     ),
   },
@@ -91,7 +90,6 @@ dictionariesAndAttributes.push(
       types.map(({name, duration}) => ({
         nn: `meetingType:${name}`,
         name: `+${name}`,
-        order: "atEnd",
         attributes: {
           categoryDictId:
             category === "other"
@@ -109,7 +107,6 @@ dictionariesAndAttributes.push(
       {
         nn: "clientType:profesjonalista",
         name: "+profesjonalista",
-        order: "atEnd",
       },
     ],
   },
@@ -156,6 +153,34 @@ const POWODY_ZGŁOSZENIA = [
     ],
   },
 ];
+
+dictionariesAndAttributes.push(
+  {
+    kind: "extendDictionary",
+    name: "positionGroup",
+    positions: POWODY_ZGŁOSZENIA.map(({group}) => ({
+      nn: `positionGroup:powód zgłoszenia:${group}`,
+      name: `+${group}`,
+    })),
+  },
+  {
+    kind: "createDictionary",
+    nn: "dict:powód zgłoszenia",
+    name: "+powód zgłoszenia",
+    positions: POWODY_ZGŁOSZENIA.flatMap(({group, items}) =>
+      items.map((n) => ({
+        nn: `powód zgłoszenia:${n}`,
+        name: `+${n}`,
+        attributes: {
+          positionGroupDictId: {
+            kind: "nn",
+            nn: `positionGroup:powód zgłoszenia:${group}`,
+          },
+        },
+      })),
+    ),
+  },
+);
 
 export const DZIELNICE_WARSZAWY = [
   "Bemowo",
@@ -205,25 +230,31 @@ dictionariesAndAttributes.push(
     name: "+dzielnica Warszawy",
     positions: DZIELNICE_WARSZAWY.map((n) => ({nn: `dzielnica:${n}`, name: `+${n}`})),
   },
+);
+
+dictionariesAndAttributes.push(
   {
-    kind: "createDictionary",
-    nn: "dict:powód zgłoszenia",
-    name: "+powód zgłoszenia",
-    positions: POWODY_ZGŁOSZENIA.flatMap(({items}) =>
-      items.map((n) => ({
-        nn: `powód zgłoszenia:${n}`,
-        name: `+${n}`,
-      })),
-    ),
+    kind: "extendDictionary",
+    name: "positionGroup",
+    positions: SURVEY_FIELDS.map(({group}) => ({
+      nn: `positionGroup:czynnik ryzyka:${group}`,
+      name: `+${group}`,
+    })),
   },
   {
     kind: "createDictionary",
     nn: "dict:czynnik ryzyka",
     name: "+czynnik ryzyka",
-    positions: SURVEY_FIELDS.flatMap(({items}) =>
+    positions: SURVEY_FIELDS.flatMap(({group, items}) =>
       items.map(({label}) => ({
         nn: `czynnik ryzyka:${label}`,
         name: `+${label}`,
+        attributes: {
+          positionGroupDictId: {
+            kind: "nn",
+            nn: `positionGroup:czynnik ryzyka:${group}`,
+          },
+        },
       })),
     ),
   },

@@ -345,13 +345,13 @@ function* trackProgress<T>(array: readonly T[] | undefined, type: string) {
 }
 
 async function getDefaultOrder<RelKey extends string>(
-  order: Order<RelKey>,
+  order: Order<RelKey> | undefined,
   getItemDefaultOrder: (order: RelSpec<RelKey>) => number | Promise<number>,
 ): Promise<number | undefined> {
-  if (order === "atStart") {
-    return 1;
-  } else if (order === "atEnd") {
+  if (!order || order === "atEnd") {
     return undefined;
+  } else if (order === "atStart") {
+    return 1;
   } else {
     const relDefOrder = await getItemDefaultOrder(order);
     return order.rel === "before" ? relDefOrder : relDefOrder + 1;
@@ -445,116 +445,118 @@ try {
       }
     }
 
-  const makeStaff = async (userId: string) =>
-    await apiCreate({
-      path: "admin/member",
-      type: "member",
-      object: {
-        userId,
-        facilityId,
-        isFacilityStaff: true,
-        hasFacilityAdmin: false,
-        isFacilityClient: false,
-      },
-    });
-  for (const staff of trackProgress(prepared.giveStaff, "staff to give")) {
-    await makeStaff(staff.id);
-    if (staff.nn) {
-      nnMapper.set({nn: staff.nn, id: staff.id, type: "user"});
-    }
-  }
-  for (const staff of trackProgress(prepared.staff, "staff")) {
-    const userId = (
+  if (!config.onlyDictionariesAndAttributes) {
+    const makeStaff = async (userId: string) =>
       await apiCreate({
-        nn: staff.nn,
-        path: "admin/user",
-        type: "user",
+        path: "admin/member",
+        type: "member",
         object: {
-          name: staff.name,
-          email: staff.email ? (config.staffEmailsPrefix || "") + staff.email : null,
-          hasEmailVerified: !!staff.email,
-          password: null,
-          passwordExpireAt: null,
-          hasGlobalAdmin: false,
+          userId,
+          facilityId,
+          isFacilityStaff: true,
+          hasFacilityAdmin: false,
+          isFacilityClient: false,
         },
-      })
-    ).id;
-    await makeStaff(userId);
-  }
+      });
+    for (const staff of trackProgress(prepared.giveStaff, "staff to give")) {
+      await makeStaff(staff.id);
+      if (staff.nn) {
+        nnMapper.set({nn: staff.nn, id: staff.id, type: "user"});
+      }
+    }
+    for (const staff of trackProgress(prepared.staff, "staff")) {
+      const userId = (
+        await apiCreate({
+          nn: staff.nn,
+          path: "admin/user",
+          type: "user",
+          object: {
+            name: staff.name,
+            email: staff.email ? (config.staffEmailsPrefix || "") + staff.email : null,
+            hasEmailVerified: !!staff.email,
+            password: null,
+            passwordExpireAt: null,
+            hasGlobalAdmin: false,
+          },
+        })
+      ).id;
+      await makeStaff(userId);
+    }
 
-  for (const client of trackProgress(prepared.clients, "clients")) {
-    const {clientId} = await apiCreate({
-      nn: client.nn,
-      path: `facility/${facilityId}/user/client`,
-      type: "client",
-      object: {
-        name: client.name,
-        client: await attributeValues(client.client),
-      },
+    for (const client of trackProgress(prepared.clients, "clients")) {
+      const {clientId} = await apiCreate({
+        nn: client.nn,
+        path: `facility/${facilityId}/user/client`,
+        type: "client",
+        object: {
+          name: client.name,
+          client: await attributeValues(client.client),
+        },
+      });
+      await api("admin/developer/overwrite-metadata", {
+        req: {
+          model: "client",
+          id: clientId,
+          createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
+          createdAt: client.createdAt,
+        },
+      });
+    }
+    for (const clientPatch of trackProgress(prepared.patchClients, "clients to patch")) {
+      await apiPatch({
+        nn: clientPatch.nn,
+        id: clientPatch.id,
+        path: `facility/${facilityId}/user/client`,
+        type: "client",
+        object: {
+          name: clientPatch.name,
+          client: await attributeValues(clientPatch.client),
+        },
+      });
+    }
+    const meetingTypeDictionary = await findDict("meetingType");
+    const meetingStatusDictionary = await findDict("meetingStatus");
+    const meetingStatuses = {
+      planned: meetingStatusDictionary.positions.find((p: any) => p.name === "planned").id,
+      completed: meetingStatusDictionary.positions.find((p: any) => p.name === "completed").id,
+      cancelled: meetingStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
+    };
+    const attendanceStatusDictionary = await findDict("attendanceStatus");
+    const attendanceStatuses = {
+      ok: attendanceStatusDictionary.positions.find((p: any) => p.name === "ok").id,
+      late_present: attendanceStatusDictionary.positions.find((p: any) => p.name === "late_present").id,
+      too_late: attendanceStatusDictionary.positions.find((p: any) => p.name === "too_late").id,
+      no_show: attendanceStatusDictionary.positions.find((p: any) => p.name === "no_show").id,
+      cancelled: attendanceStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
+    };
+    const attendant = (att: Attendant) => ({
+      userId: nnMapper.get(att.userNn),
+      attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
     });
-    await api("admin/developer/overwrite-metadata", {
-      req: {
-        model: "client",
-        id: clientId,
-        createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
-        createdAt: client.createdAt,
-      },
-    });
-  }
-  for (const clientPatch of trackProgress(prepared.patchClients, "clients to patch")) {
-    await apiPatch({
-      nn: clientPatch.nn,
-      id: clientPatch.id,
-      path: `facility/${facilityId}/user/client`,
-      type: "client",
-      object: {
-        name: clientPatch.name,
-        client: await attributeValues(clientPatch.client),
-      },
-    });
-  }
-  const meetingTypeDictionary = await findDict("meetingType");
-  const meetingStatusDictionary = await findDict("meetingStatus");
-  const meetingStatuses = {
-    planned: meetingStatusDictionary.positions.find((p: any) => p.name === "planned").id,
-    completed: meetingStatusDictionary.positions.find((p: any) => p.name === "completed").id,
-    cancelled: meetingStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
-  };
-  const attendanceStatusDictionary = await findDict("attendanceStatus");
-  const attendanceStatuses = {
-    ok: attendanceStatusDictionary.positions.find((p: any) => p.name === "ok").id,
-    late_present: attendanceStatusDictionary.positions.find((p: any) => p.name === "late_present").id,
-    too_late: attendanceStatusDictionary.positions.find((p: any) => p.name === "too_late").id,
-    no_show: attendanceStatusDictionary.positions.find((p: any) => p.name === "no_show").id,
-    cancelled: attendanceStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
-  };
-  const attendant = (att: Attendant) => ({
-    userId: nnMapper.get(att.userNn),
-    attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
-  });
-  for (const meeting of trackProgress(prepared.meetings, "meetings")) {
-    await apiCreate({
-      nn: meeting.nn,
-      path: `facility/${facilityId}/meeting`,
-      type: "meeting",
-      object: {
-        typeDictId: nnMapper.has(meeting.typeDictNnOrName)
-          ? nnMapper.get(meeting.typeDictNnOrName)
-          : meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName).id,
-        notes: meeting.notes,
-        date: meeting.date,
-        startDayminute: meeting.startDayMinute,
-        durationMinutes: meeting.durationMinutes,
-        statusDictId: meetingStatuses[meeting.status],
-        isRemote: meeting.isRemote,
-        staff: meeting.staff.map(attendant),
-        clients: meeting.clients.map(attendant),
-        fromMeetingId:
-          meeting.fromMeetingNn && meeting.fromMeetingNn !== meeting.nn
-            ? nnMapper.get(meeting.fromMeetingNn)
-            : undefined,
-      },
-    });
+    for (const meeting of trackProgress(prepared.meetings, "meetings")) {
+      await apiCreate({
+        nn: meeting.nn,
+        path: `facility/${facilityId}/meeting`,
+        type: "meeting",
+        object: {
+          typeDictId: nnMapper.has(meeting.typeDictNnOrName)
+            ? nnMapper.get(meeting.typeDictNnOrName)
+            : meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName).id,
+          notes: meeting.notes,
+          date: meeting.date,
+          startDayminute: meeting.startDayMinute,
+          durationMinutes: meeting.durationMinutes,
+          statusDictId: meetingStatuses[meeting.status],
+          isRemote: meeting.isRemote,
+          staff: meeting.staff.map(attendant),
+          clients: meeting.clients.map(attendant),
+          fromMeetingId:
+            meeting.fromMeetingNn && meeting.fromMeetingNn !== meeting.nn
+              ? nnMapper.get(meeting.fromMeetingNn)
+              : undefined,
+        },
+      });
+    }
   }
 } finally {
   await nnMapper.close();
