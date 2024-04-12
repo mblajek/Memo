@@ -369,7 +369,6 @@ for (const [accountId, contacts] of contactsByAccountId) {
   const accountChildClients: Client[] = [];
   for (const contact of contacts) {
     const cases = casesByContactId.get(contact.Id)?.sort(createdDateSorter) || [];
-    const lastCase = cases.at(-1);
     const notificationReasons = cases.flatMap((c) => notificationReasonsByCaseId.get(c.Id) || []);
     const lastSurvey = cases
       .flatMap((c) => surveysByCaseId.get(c.Id) || [])
@@ -487,22 +486,31 @@ for (const [accountId, contacts] of contactsByAccountId) {
           : undefined,
       dzielnicaWarszawyU$: getDzielnica(contact.District__c),
       wojewodztwoU$: getVoivodeship(contact.MailingState),
-      decyzjaZespoluKlinicznegoU$: lastCase
-        ? {
-            kind: "const",
-            value: [
-              lastCase.Description,
-              lastCase.Decision__c,
-              lastCase.Another_decision__c,
+      decyzjaZespoluKlinicznegoU$: {
+        kind: "const",
+        value: cases
+          .toReversed()
+          .map((c) =>
+            [
+              c.Description.trim(),
+              c.Decision__c.trim(),
+              c.Another_decision__c.trim(),
               ...(caseCommentsByCaseId
-                .get(lastCase.Id)
+                .get(c.Id)
                 ?.sort(createdDateSorter)
-                .map((cc) => `${DateTime.fromISO(cc.LastModifiedDate).toISODate()}: ${cc.CommentBody.trim()}`) || []),
+                .reverse()
+                .map((cc) =>
+                  cc.CommentBody.trim()
+                    ? `${DateTime.fromISO(cc.LastModifiedDate).toISODate()} ${DATA.User.has(cc.CreatedById) ? DATA.User.get(cc.CreatedById).Name : "(nieznany)"}: ${cc.CommentBody.trim()}`
+                    : undefined,
+                ) || []),
             ]
               .filter(Boolean)
               .join("\n"),
-          }
-        : undefined,
+          )
+          .filter(Boolean)
+          .join("\n\n"),
+      },
       powodZgloszeniaU$: notificationReasons.length
         ? [
             ...Object.entries(NOTIFICATION_REASONS_MAP).flatMap(([field, name]) =>
@@ -589,20 +597,6 @@ for (const [accountId, contacts] of contactsByAccountId) {
                 : undefined,
             dzielnicaWarszawyU$: clientFields.dzielnicaWarszawyU$,
             wojewodztwoU$: clientFields.wojewodztwoU$,
-            decyzjaZespoluKlinicznegoU$: {
-              kind: "const",
-              value: [
-                c.Description,
-                c.Decision__c,
-                c.Another_decision__c,
-                ...(caseCommentsByCaseId
-                  .get(c.Id)
-                  ?.sort(createdDateSorter)
-                  .map((cc) => `${DateTime.fromISO(cc.LastModifiedDate).toISODate()}: ${cc.CommentBody.trim()}`) || []),
-              ]
-                .filter(Boolean)
-                .join("\n"),
-            },
             powodZgloszeniaU$: notificationReasons.length
               ? [
                   ...Object.entries(NOTIFICATION_REASONS_MAP).flatMap(([field, name]) =>
@@ -616,9 +610,6 @@ for (const [accountId, contacts] of contactsByAccountId) {
                 ]
               : undefined,
             czynnikiRyzykaU$: clientFields.czynnikiRyzykaU$,
-            zrodloInfOPoradniU$: [
-              ...new Set(c.Source_of_information_about_the_offer__c.split(";").map((s) => infoSources[s] || "inne")),
-            ].map((s) => ({kind: "nn", nn: `źródło informacji:${s}`})),
           },
           createdByNn: STAFF.has(child.CreatedById) ? child.CreatedById : undefined,
           createdAt: dateTime(DateTime.fromISO(child.CreatedDate)),
