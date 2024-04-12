@@ -49,7 +49,7 @@ export const TextualFilterControl: FilterControl = (props) => {
         symbolClass: "w-4",
         description: t("tables.filter.textual.fuzzy"),
         infoIcon: {
-          href: "/help/filtering#fuzzy",
+          href: "/help/table-filtering#fuzzy",
         },
       }),
     );

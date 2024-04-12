@@ -31,16 +31,10 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
           {type: "column", column: countColumn},
         ],
         filter: {
-          type: "op",
-          op: "&",
-          val: [
-            {
-              type: "column",
-              column: "clients.*.userId",
-              op: "has",
-              val: props.clientId,
-            },
-          ],
+          type: "column",
+          column: "clients.*.userId",
+          op: "has",
+          val: props.clientId,
         },
         sort: [
           {type: "column", column: countColumn, desc: true},

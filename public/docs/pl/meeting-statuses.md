@@ -1,4 +1,6 @@
-# $t(models.meeting._name_plural|cap)
+# Statusy spotkań
+
+W Memo spotkanie ma własny status, a niezależnie do niego każdy z uczestników (gości) ma status swojej obecności na spotkaniu.
 
 ## $t(models.meeting.statusDictId|cap) {#status}
 

@@ -12,7 +12,7 @@ export const MeetingStatusInfoIcon: VoidComponent<MeetingStatusInfoIconProps> = 
   const {meetingStatusDict} = useFixedDictionaries();
   return (
     <InfoIcon
-      href="/help/meetings#status"
+      href="/help/meeting-statuses#status"
       title={[
         props.meetingStatusId &&
           t(
@@ -38,7 +38,7 @@ export const MeetingAttendanceStatusInfoIcon: VoidComponent<MeetingAttendanceSta
   const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   return (
     <InfoIcon
-      href="/help/meetings#attendance-status"
+      href="/help/meeting-statuses#attendance-status"
       title={
         (props.attendanceStatusId &&
           (props.attendanceStatusId === attendanceStatusDict()?.ok.id
