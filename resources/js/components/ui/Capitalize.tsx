@@ -1,4 +1,4 @@
-import {VoidComponent, splitProps} from "solid-js";
+import {Show, VoidComponent, splitProps} from "solid-js";
 import {cx, htmlAttributes} from "../utils";
 
 interface Props extends htmlAttributes.span {
@@ -10,13 +10,15 @@ interface Props extends htmlAttributes.span {
 export const Capitalize: VoidComponent<Props> = (allProps) => {
   const [props, spanProps] = splitProps(allProps, ["text", "capitalize"]);
   return (
-    <span
-      {...htmlAttributes.merge(spanProps, {
-        class: cx("inline-block", {"first-letter:capitalize": props.capitalize ?? true}),
-      })}
-    >
-      {props.text}
-    </span>
+    <Show when={props.text}>
+      <span
+        {...htmlAttributes.merge(spanProps, {
+          class: cx("inline-block", {"first-letter:capitalize": props.capitalize ?? true}),
+        })}
+      >
+        {props.text}
+      </span>
+    </Show>
   );
 };
 

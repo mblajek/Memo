@@ -113,7 +113,7 @@ export const UserInfo: VoidComponent = () => {
                     <div class="flex flex-col">
                       <span>{CHECKBOX(isDEV())} DEV mode</span>
                       <Show when={statusQuery.data?.permissions.developer}>
-                        <span class="text-sm text-grey-text">Has developer permission</span>
+                        <span class="text-sm text-grey-text">Developer permission</span>
                       </Show>
                     </div>
                     <InfoIcon href="/help/dev/developer-modes" />

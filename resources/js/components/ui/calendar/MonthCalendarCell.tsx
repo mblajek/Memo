@@ -45,7 +45,7 @@ export const MonthCalendarCell: VoidComponent<Props> = (props) => {
         </div>
         <Button
           class={cx(
-            "bg-inherit px-0.5 rounded font-semibold flex gap-0.5 items-center text-sm -mb-0.5 hover:underline",
+            "bg-inherit px-0.5 rounded font-semibold flex gap-0.5 items-center text-base -mb-0.5 hover:underline",
             weekDaysCalculator.isWeekend(props.day) || holidays.isHoliday(props.day) ? "text-red-800" : "text-black",
             isThisMonth() ? undefined : "text-opacity-50",
             holidays.isHoliday(props.day) ? "underline decoration-1 hover:decoration-2" : undefined,

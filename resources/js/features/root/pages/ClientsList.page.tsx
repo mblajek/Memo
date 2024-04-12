@@ -1,6 +1,6 @@
 import {A} from "@solidjs/router";
 import {RichTextView} from "components/ui/RichTextView";
-import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
+import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations, useTableCells} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {ACTION_ICONS} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
@@ -13,6 +13,7 @@ import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state"
 export default (() => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
+  const tableCells = useTableCells();
   const {getCreatedUpdatedColumns} = useTableColumns();
   return (
     <>
@@ -54,6 +55,10 @@ export default (() => {
             fixedOverrides: {
               typeDictId: {initialVisible: true, columnDef: {size: 180}},
               genderDictId: {columnDef: {size: 180}},
+              birthDate: {
+                initialVisible: true,
+                columnDef: {cell: tableCells.dateNoWeekday()},
+              },
               addressCity: {initialVisible: true},
               contactEmail: {initialVisible: true},
               contactPhone: {initialVisible: true, columnDef: {size: 180}},
@@ -69,13 +74,17 @@ export default (() => {
             },
           },
         }}
-        initialSort={[{id: "name", desc: false}]}
+        intrinsicSort={[
+          {type: "column", column: "lastMeetingDate", desc: true},
+          {type: "column", column: "name", desc: false},
+        ]}
+        initialSort={[{id: "lastMeetingDate", desc: true}]}
         customSectionBelowTable={
           <div class="ml-2 flex gap-1">
             <A
               role="button"
               class="primary small !px-2 flex flex-col justify-center"
-              href={`/${activeFacility()!.url}/clients/create`}
+              href={`/${activeFacility()?.url}/clients/create`}
             >
               <div>
                 <ACTION_ICONS.add class="inlineIcon text-current" /> {t("actions.client.add")}

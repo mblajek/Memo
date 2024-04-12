@@ -14,8 +14,8 @@ export default (() => {
     <div class="p-2 flex flex-col gap-2" style={{width: "min(600px, 100%)"}}>
       <h2 class="font-bold text-xl">{t("forms.client_create.formName")}</h2>
       <ClientCreateForm
-        onSuccess={(clientId) => navigate(`/${activeFacility()!.url}/clients/${clientId}`)}
-        onCancel={() => historyBackOr(`/${activeFacility()!.url}/clients`)}
+        onSuccess={(clientId) => navigate(`/${activeFacility()?.url}/clients/${clientId}`)}
+        onCancel={() => historyBackOr(`/${activeFacility()?.url}/clients`)}
       />
     </div>
   );

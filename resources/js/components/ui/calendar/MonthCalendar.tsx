@@ -10,6 +10,8 @@ interface Props extends htmlAttributes.div {
   readonly month: DateTime;
   readonly days: readonly MonthCalendarDay[];
   readonly isLoading?: boolean;
+
+  readonly onWheelWithAlt?: (e: WheelEvent) => void;
 }
 
 export interface MonthCalendarDay {
@@ -18,7 +20,7 @@ export interface MonthCalendarDay {
 }
 
 export const MonthCalendar: VoidComponent<Props> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["month", "days", "isLoading"]);
+  const [props, divProps] = splitProps(allProps, ["month", "days", "isLoading", "onWheelWithAlt"]);
   const locale = useLocale();
   const weekDaysCalculator = new WeekDaysCalculator(locale);
   const daysRange = () => getMonthCalendarRange(weekDaysCalculator, props.month);
@@ -56,6 +58,18 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
           </For>
         </div>
         <div
+          ref={(div) =>
+            div.addEventListener(
+              "wheel",
+              (e) => {
+                if (e.altKey) {
+                  props.onWheelWithAlt?.(e);
+                  e.preventDefault();
+                }
+              },
+              {passive: false},
+            )
+          }
           class="col-span-full row-start-2 grid grid-cols-subgrid gap-px overflow-x-clip overflow-y-auto"
           style={{"grid-auto-rows": "1fr"}}
         >

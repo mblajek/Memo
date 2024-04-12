@@ -40,7 +40,7 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
             <label
               id={labelIdForField(props.fieldName)}
               for={props.umbrella ? undefined : props.fieldName}
-              {...htmlAttributes.merge(labelProps, {class: "font-medium"})}
+              {...htmlAttributes.merge(labelProps, {class: "font-bold"})}
             >
               {props.wrapIn?.(overridden) ?? overridden}
             </label>

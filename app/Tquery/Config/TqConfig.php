@@ -4,6 +4,7 @@ namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Attribute;
+use App\Models\Enums\AttributeType;
 use App\Models\UuidEnum\AttributeUuidEnum;
 use BackedEnum;
 use Closure;
@@ -69,6 +70,9 @@ final class TqConfig
         ?string $prefix = null,
     ): void {
         $attribute = ($attribute instanceof Attribute) ? $attribute : Attribute::getById($attribute);
+        if ($attribute->type === AttributeType::Separator) {
+            return; // todo: maybe tquery separator
+        }
         $type = $attribute->getTqueryDataType();
         if ($attribute->is_multi_value === null) {
             self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);

@@ -14,11 +14,15 @@ import {MeetingHoverCard} from "./MeetingHoverCard";
 import {coloringToStyle} from "./colors";
 
 interface Props extends Pick<HoverableMeetingEventBlockProps, "meeting" | "plannedColoring" | "blink"> {
+  readonly height?: number;
   readonly onClick?: () => void;
 }
 
+const DEFAULT_HEIGHT = 30;
+const MAX_NUM_CLIENTS = 3;
+
 export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
-  const [props, blockProps] = splitProps(allProps, ["onClick"]);
+  const [props, blockProps] = splitProps(allProps, ["height", "onClick"]);
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const meeting = () => blockProps.meeting;
   return (
@@ -31,7 +35,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
             {...htmlAttributes.merge(divProps, {
               class: "border rounded cursor-pointer select-none relative",
               style: {
-                height: "2.3em",
+                height: `${props.height || DEFAULT_HEIGHT}px`,
                 ...coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
               },
             })}
@@ -51,9 +55,11 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
                   {formatDayMinuteHM(meeting().startDayminute)}
                 </span>
                 <Show when={dictionaries()}>
-                  <For each={meeting().clients}>
-                    {(client) => (
-                      <UserLink icon="tiny" type="clients" link={false} userId={client.userId} name={client.name} />
+                  <For each={meeting().clients.slice(0, MAX_NUM_CLIENTS + 1)}>
+                    {(client, ind) => (
+                      <Show when={ind() < MAX_NUM_CLIENTS} fallback={"…"}>
+                        <UserLink icon="tiny" type="clients" link={false} userId={client.userId} name={client.name} />
+                      </Show>
                     )}
                   </For>
                 </Show>
@@ -63,7 +69,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
                   <MeetingStatusTags meeting={meeting()} />
                   <Show
                     when={meeting().typeDictId !== meetingTypeDict()?.other.id}
-                    fallback={<RichTextView text={meeting().notes || undefined} />}
+                    fallback={<RichTextView class="overflow-y-clip" text={meeting().notes || undefined} />}
                   >
                     <div>{dictionaries()?.getPositionById(meeting().typeDictId).label}</div>
                   </Show>

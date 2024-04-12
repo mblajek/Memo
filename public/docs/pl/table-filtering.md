@@ -1,4 +1,4 @@
-# Filtrowanie
+# Filtrowanie tabel
 
 Większość tabel w systemie pozwala na filtrowanie danych. Poniżej omówione jest filtrowanie kolumn niektórych typów.
 

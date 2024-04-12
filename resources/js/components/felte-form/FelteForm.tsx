@@ -57,7 +57,7 @@ export type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit
     /** The form names used to resolve translations. Defaults to the id. */
     readonly translationsFormNames?: readonly string[];
     /** The name of the model of the object edited by this form. It is used for getting field translations. */
-    readonly translationsModel?: string;
+    readonly translationsModel?: string | readonly string[];
     readonly children: ChildrenOrFunc<[FormType<T>, FormContextValue<T>]>;
     readonly disabled?: boolean;
     /**
@@ -96,6 +96,9 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
   const translationsFormNames = createMemo(() => [...(props.translationsFormNames || [allProps.id]), "generic"]);
+  const translationsModels = createMemo(() =>
+    Array.isArray(props.translationsModel) ? props.translationsModel || [] : [props.translationsModel],
+  );
   const translations: FormTranslations = {
     formName: (o) =>
       t(
@@ -106,7 +109,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       t(
         [
           ...translationsFormNames().map((f) => `forms.${f}.fieldNames.${field}`),
-          props.translationsModel && `models.${props.translationsModel}.${field}`,
+          ...translationsModels().map((m) => `models.${m}.${field}`),
           `models.generic.${field}`,
         ].filter(NON_NULLABLE),
         o,
@@ -140,8 +143,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         ctx,
       );
       // Submit success, so make the form pristine.
-      form.setInitialValues(values);
-      form.reset();
+      form.setIsDirty(false);
       form.setIsSubmitting(false);
       return result;
     },

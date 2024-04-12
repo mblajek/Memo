@@ -2,7 +2,7 @@ import {Column, RowData, Table} from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {Button} from "components/ui/Button";
-import {Capitalize} from "components/ui/Capitalize";
+import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {Modal} from "components/ui/Modal";
 import {PopOver} from "components/ui/PopOver";
@@ -93,7 +93,10 @@ export const TableExportButton: VoidComponent = () => {
             col,
             exportCell: col.columnDef.meta?.tquery?.textExportCell || tableExportCells.default(),
           }));
-          yield cols.map(({col: {id}}) => table.options.meta?.translations?.columnName(id) || id);
+          yield cols.map(({col: {id}}) => {
+            const name = table.options.meta?.translations?.columnName(id);
+            return name ? capitalizeString(name) : id;
+          });
           let rowIndex = 0;
           for await (const row of rows()) {
             yield cols.map(({col, exportCell}) => {
@@ -256,20 +259,25 @@ export const TableExportButton: VoidComponent = () => {
         }}
       </PopOver>
       <Modal title={t("tables.export.exporting")} open={progress()}>
-        {(progress) => (
-          <div class="flex flex-col gap-2">
-            <ProgressBar value={progress().len === undefined ? undefined : progress().index} max={progress().len} />
-            <Button
-              class="self-end secondary small"
-              onClick={() => {
-                setAbort(true);
-                setProgress(undefined);
-              }}
-            >
-              {t("actions.cancel")}
-            </Button>
-          </div>
-        )}
+        {(progress) => {
+          const progressValuePercent = createMemo(() =>
+            progress().len ? Math.round((100 * progress().index) / progress().len!) : progress().len,
+          );
+          return (
+            <div class="flex flex-col gap-2">
+              <ProgressBar value={progressValuePercent()} max={progress().len && 100} />
+              <Button
+                class="self-end secondary small"
+                onClick={() => {
+                  setAbort(true);
+                  setProgress(undefined);
+                }}
+              >
+                {t("actions.cancel")}
+              </Button>
+            </div>
+          );
+        }}
       </Modal>
     </>
   );

@@ -72,7 +72,7 @@ class Meeting extends Model
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')]),
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingType),
             'date' => Valid::date(),
-            'notes' => Valid::trimmed(sometimes: true, nullable: true, max: 4000),
+            'notes' => Valid::text(sometimes: true, nullable: true),
             'start_dayminute' => Valid::int(['min:' . (0), 'max:' . (24 * 60 - 1)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
@@ -94,6 +94,7 @@ class Meeting extends Model
                 DictionaryUuidEnum::MeetingResource,
                 [new UniqueWithMemoryRule('resource')],
             ),
+            'from_meeting_id' => Valid::uuid([Rule::exists('meetings', 'id')], sometimes: true),
         };
     }
 

@@ -43,4 +43,5 @@ export interface PositionResource {
   readonly defaultOrder: number;
   /** Whether this position is unavailable as a value for new fields. */
   readonly isDisabled: boolean;
+  readonly positionGroupDictId: string | null;
 }

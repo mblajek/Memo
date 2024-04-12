@@ -2,7 +2,7 @@
 attributes:
   generic:
     birthDate: "data urodzenia"
-    contactEmail: "adres e-mail"
+    contactEmail: "e-mail kontaktowy"
     contactPhone: "telefon"
     addressStreetNumber: "adres: ulica i numer"
     addressPostalCode: "adres: kod pocztowy"
@@ -13,10 +13,11 @@ attributes:
   dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
 
   client:
-    contactStartAt: "kontakt rozpoczęty"
-    contactEndAt: "kontakt zakończony"
+    contactStartAt: "data zgłoszenia"
+    contactEndAt: "zakończenie kontaktu"
 
   position:
+    positionGroup: "[grupa]"
     # attributes of meetingType dictionary:
     durationMinutes: "domyślna długość spotkania"
 

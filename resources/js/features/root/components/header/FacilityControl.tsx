@@ -40,12 +40,15 @@ export const FacilityControl: VoidComponent = () => {
       {(userFacilities) => (
         <Switch>
           <Match when={userFacilities().length === 1}>
-            <p>{userFacilities()[0]!.name}</p>
+            <p class="font-semibold">{userFacilities()[0]!.name}</p>
           </Match>
           <Match when={userFacilities().length > 1}>
             <Select
               name="activeFacilityId"
-              items={userFacilities().map(({id, name}) => ({value: id, label: () => name}))}
+              items={userFacilities().map(({id, name}) => ({
+                value: id,
+                label: () => <span class="font-semibold">{name}</span>,
+              }))}
               nullable={false}
               value={activeFacilityId()}
               onValueChange={(facilityId) => {

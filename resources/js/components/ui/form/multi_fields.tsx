@@ -118,91 +118,107 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
   const numButtonCols = () => (props.moveButtons ? 1 : 0) + 1 /* delete button */ + (props.addAtEndValue ? 1 : 0);
   return (
     <FieldsetDisabledTracker {...htmlAttributes.merge(divProps, {class: "flex flex-col items-stretch gap-px"})}>
-      {(isFieldsetDisabled) => (
-        <>
-          <Index each={multiField.items()}>
-            {(params) => {
-              const field = createMemo(
-                on(
-                  () => props.field,
-                  (field) => field(params().name, params()),
-                ),
-              );
-              return (
-                <div class="flex gap-1">
-                  <div class="grow">{field()}</div>
-                  <Show when={!isFieldsetDisabled()}>
-                    <div
-                      class="grid gap-px"
-                      style={{
-                        "grid-template-columns": `repeat(${numButtonCols()}, ${BUTTON_WIDTH})`,
-                      }}
-                    >
-                      <Show when={props.moveButtons}>
-                        <div class="flex flex-col min-h-small-input">
-                          <Button
-                            class="secondary small !rounded-b-none !min-h-0 basis-0 grow flex items-center justify-center"
-                            onClick={() => params().moveUp?.()}
-                            disabled={!params().index}
-                          >
-                            <BsChevronCompactUp class="text-current" />
-                          </Button>
-                          <Button
-                            class="secondary small !rounded-t-none -mt-px !min-h-0 basis-0 grow flex items-center justify-center"
-                            onClick={() => params().moveDown?.()}
-                            disabled={params().isLast()}
-                          >
-                            <BsChevronCompactDown class="text-current" />
-                          </Button>
-                        </div>
-                      </Show>
-                      <Button
-                        class={cx(
-                          "secondary small !min-h-small-input flex items-center justify-center",
-                          props.addAtEndValue && !params().isLast() ? "col-span-2" : undefined,
-                        )}
-                        onClick={() => params().remove()}
+      {(isFieldsetDisabled) => {
+        /** Add an empty value at the end, and try to focus the added field. */
+        function addAtEnd() {
+          if (isFieldsetDisabled() || !props.addAtEndValue) {
+            return;
+          }
+          multiField.addLast(props.addAtEndValue());
+          setTimeout(() => {
+            const addedInputName = multiField.items().at(-1)?.name;
+            if (addedInputName) {
+              const input = document.getElementById(addedInputName);
+              if (input instanceof HTMLElement) {
+                input.focus();
+              }
+            }
+          });
+        }
+        return (
+          <>
+            <Index each={multiField.items()}>
+              {(params) => {
+                const field = createMemo(
+                  on(
+                    () => props.field,
+                    (field) => field(params().name, params()),
+                  ),
+                );
+                return (
+                  <div class="flex gap-1">
+                    <div class="grow">{field()}</div>
+                    <Show when={!isFieldsetDisabled()}>
+                      <div
+                        class="grid gap-px"
+                        style={{
+                          "grid-template-columns": `repeat(${numButtonCols()}, ${BUTTON_WIDTH})`,
+                        }}
                       >
-                        <ACTION_ICONS.delete class="text-current" />
-                      </Button>
-                      <Show when={params().isLast() && props.addAtEndValue}>
-                        {(addAtEndValue) => (
-                          // Add button after the last item.
+                        <Show when={props.moveButtons}>
+                          <div class="flex flex-col min-h-small-input">
+                            <Button
+                              class="secondary small !rounded-b-none !min-h-0 basis-0 grow flex items-center justify-center"
+                              onClick={() => params().moveUp?.()}
+                              disabled={!params().index}
+                            >
+                              <BsChevronCompactUp class="text-current" />
+                            </Button>
+                            <Button
+                              class="secondary small !rounded-t-none -mt-px !min-h-0 basis-0 grow flex items-center justify-center"
+                              onClick={() => params().moveDown?.()}
+                              disabled={params().isLast()}
+                            >
+                              <BsChevronCompactDown class="text-current" />
+                            </Button>
+                          </div>
+                        </Show>
+                        <Button
+                          class={cx(
+                            "secondary small !min-h-small-input flex items-center justify-center",
+                            props.addAtEndValue && !params().isLast() ? "col-span-2" : undefined,
+                          )}
+                          onClick={() => params().remove()}
+                        >
+                          <ACTION_ICONS.delete class="text-current" />
+                        </Button>
+                        <Show when={params().isLast() && props.addAtEndValue}>
+                          {/* Add button after the last item. */}
                           <Button
                             class="secondary small !min-h-small-input flex items-center justify-center"
-                            onClick={() => params().addAfter(addAtEndValue()())}
+                            onClick={addAtEnd}
                           >
                             <ACTION_ICONS.add class="text-current" />
                           </Button>
-                        )}
-                      </Show>
-                    </div>
-                  </Show>
-                </div>
-              );
-            }}
-          </Index>
-          <Show when={!multiField.length()}>
-            <div class="flex gap-1 items-center justify-between min-h-small-input">
-              {EMPTY_VALUE_SYMBOL}
-              <Show when={!isFieldsetDisabled() && props.addAtEndValue}>
-                {(addAtEndValue) => (
-                  // Add button on a line by itself when there are no items.
+                        </Show>
+                      </div>
+                    </Show>
+                  </div>
+                );
+              }}
+            </Index>
+            <Show when={!multiField.length()}>
+              <div class="flex gap-1 items-center justify-between min-h-small-input">
+                <Show when={!isFieldsetDisabled() && props.addAtEndValue} fallback={EMPTY_VALUE_SYMBOL}>
+                  {/* Add button on a line by itself when there are no items. */}
+                  <Button class="flex-grow text-start" onClick={addAtEnd}>
+                    {EMPTY_VALUE_SYMBOL}
+                  </Button>
                   <div class="flex justify-end">
                     <Button
                       class="secondary small !min-h-small-input flex items-center justify-center"
                       style={{width: BUTTON_WIDTH}}
-                      onClick={() => multiField.addLast(addAtEndValue()())}
+                      onClick={addAtEnd}
                     >
                       <ACTION_ICONS.add class="text-current" />
                     </Button>
                   </div>
-                )}
-              </Show>
-            </div>
-          </Show>
-        </>
-      )}
+                </Show>
+              </div>
+            </Show>
+          </>
+        );
+      }}
     </FieldsetDisabledTracker>
   );
 };

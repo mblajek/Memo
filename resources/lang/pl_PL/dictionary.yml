@@ -15,14 +15,16 @@ gender:
 
 meetingCategory:
   _name: "kategoria spotkania"
-  other: "inne"
-  system: "systemowe"
+  other: "Inne"
+  system: "Systemowe"
 
 meetingType:
   _name: "typ spotkania"
   other: "inne"
   work_time: "godziny pracy"
   leave_time: "nieobecność"
+  # Temporary:
+  clients_group_temporary: "[grupa klientów]"
 
 meetingStatus:
   _name: "status spotkania"
@@ -70,5 +72,8 @@ attendanceStatus:
 
 notificationMethod:
   _name: "metoda powiadomień"
-  sms: "sms"
+  sms: "SMS"
   email: "e-mail"
+
+positionGroup:
+  _name: "[grupa pozycji]"

@@ -81,7 +81,9 @@ form_page_leave_confirmation:
   cancel: "Nie, wróć do edycji"
 
 about_page:
-  commit_date: "Wersja aplikacji (czas):"
-  commit_hash: "Wersja aplikacji (commit):"
-  backend_hash: "Backend (hash):"
-  frontend_hash: "Frontend (hash):"
+  app_version: "Wersja aplikacji:"
+  commit_date: "Moment zbudowania:"
+  commit_hash: "Commit:"
+  backend_hash: "Suma kontrolna backendu:"
+  frontend_hash: "Suma kontrolna frontendu:"
+  cpu_load: "Obciążenie CPU:"

@@ -9,6 +9,7 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
 import {DateTime} from "luxon";
 import {For, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
+import {SeparatedSections} from "../SeparatedSections";
 import {useColumnsCalendar} from "../calendar/ColumnsCalendar";
 import {HoverableMeetingEventBlock, HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
 import {MeetingHoverCard} from "./MeetingHoverCard";
@@ -58,9 +59,6 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
       {...blockProps}
       contents={(allContentsProps) => {
         const [contentsProps, divProps] = splitProps(allContentsProps, ["hovered", "coloring"]);
-        const Separator: VoidComponent = () => (
-          <hr class="-mx-1 -mb-px" style={coloringToStyle(contentsProps.coloring, {part: "separator"})} />
-        );
         return (
           <ButtonLike
             {...htmlAttributes.merge(divProps, {
@@ -89,40 +87,43 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
               </span>
             </div>
             <Show when={dictionaries()}>
-              <div class="px-0.5">
-                <Show when={meeting().clients.length}>
+              <div class="px-0.5 pt-px">
+                <SeparatedSections
+                  separator={(show) => (
+                    <Show when={show()}>
+                      <hr class="-mx-1 my-px" style={coloringToStyle(contentsProps.coloring, {part: "separator"})} />
+                    </Show>
+                  )}
+                >
                   <ul>
                     <For each={meeting().clients}>
                       {(client) => <AttendantListItem type="clients" attendant={client} />}
                     </For>
                   </ul>
-                  <Separator />
-                </Show>
-                <Show when={meeting().typeDictId !== meetingTypeDict()?.other.id}>
-                  <div>{dictionaries()?.getPositionById(meeting().typeDictId).label}</div>
-                </Show>
-                <MeetingStatusTags meeting={meeting()} />
-                <Show when={meeting().notes}>
-                  <Separator />
-                  <RichTextView
-                    class={cx(
-                      "overflow-y-clip !overflow-x-visible",
-                      meeting().resources.length ? "max-h-20" : undefined,
-                    )}
-                    text={meeting().notes!}
-                  />
-                </Show>
-                <Show when={meeting().resources.length}>
-                  <Separator />
-                  <div>
-                    {t("parenthesised", {
-                      text: meeting()
-                        .resources.map((r) => dictionaries()?.getPositionById(r.resourceDictId).label)
-                        // Join by comma because Intl.ListFormat doesn't seem to work very well in Polish.
-                        .join(", "),
-                    })}
-                  </div>
-                </Show>
+                  <Show when={meeting().typeDictId !== meetingTypeDict()?.other.id}>
+                    <div>{dictionaries()?.getPositionById(meeting().typeDictId).label}</div>
+                  </Show>
+                  <MeetingStatusTags meeting={meeting()} />
+                  <Show when={meeting().notes}>
+                    <RichTextView
+                      class={cx(
+                        "overflow-y-clip !overflow-x-visible",
+                        meeting().resources.length ? "max-h-20" : undefined,
+                      )}
+                      text={meeting().notes!}
+                    />
+                  </Show>
+                  <Show when={meeting().resources.length}>
+                    <div>
+                      {t("parenthesised", {
+                        text: meeting()
+                          .resources.map((r) => dictionaries()?.getPositionById(r.resourceDictId).label)
+                          // Join by comma because Intl.ListFormat doesn't seem to work very well in Polish.
+                          .join(", "),
+                      })}
+                    </div>
+                  </Show>
+                </SeparatedSections>
               </div>
               <Show when={meeting().fromMeetingId}>
                 <div class="absolute bottom-px right-1 bg-inherit rounded">

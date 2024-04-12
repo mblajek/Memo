@@ -80,7 +80,7 @@ class ClientController extends ApiController
             $member->client_id = $client->id;
             $member->save();
         });
-        return new JsonResponse(data: ['data' => ['id' => $user->id]], status: 201);
+        return new JsonResponse(data: ['data' => ['id' => $user->id, 'clientId' => $client->id]], status: 201);
     }
 
     // todo: extract into service, openApi
@@ -122,7 +122,7 @@ class ClientController extends ApiController
     {
         return [
                 'client' => Valid::array(keys: array_filter(array_keys($clientValidator), fn(string $key) => //
-                !str_ends_with($key, '*')))
+                !str_ends_with($key, '*'))),
             ] + array_combine(
                 array_map(fn(string $key) => "client.$key", array_keys($clientValidator)),
                 $clientValidator,

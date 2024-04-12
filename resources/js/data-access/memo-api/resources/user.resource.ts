@@ -11,4 +11,5 @@ export interface UserResource extends CreatedUpdatedResource {
   readonly hasPassword: boolean;
   readonly passwordExpireAt: string | null;
   readonly lastLoginFacilityId: string | null;
+  readonly managedByFacilityId: string | null;
 }

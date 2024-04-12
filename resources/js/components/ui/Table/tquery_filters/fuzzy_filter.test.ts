@@ -321,6 +321,7 @@ describe("buildFuzzyGlobalFilter", () => {
               isDisabled: false,
               isFixed: false,
               defaultOrder: 0,
+              positionGroupDictId: null,
             },
             {
               id: "dictA2",
@@ -330,6 +331,7 @@ describe("buildFuzzyGlobalFilter", () => {
               isDisabled: false,
               isFixed: false,
               defaultOrder: 0,
+              positionGroupDictId: null,
             },
             {
               id: "dictA3",
@@ -339,6 +341,7 @@ describe("buildFuzzyGlobalFilter", () => {
               isDisabled: false,
               isFixed: false,
               defaultOrder: 0,
+              positionGroupDictId: null,
             },
           ],
         },
@@ -357,6 +360,7 @@ describe("buildFuzzyGlobalFilter", () => {
               isDisabled: false,
               isFixed: false,
               defaultOrder: 0,
+              positionGroupDictId: null,
             },
             {
               id: "dictB2",
@@ -366,6 +370,7 @@ describe("buildFuzzyGlobalFilter", () => {
               isDisabled: false,
               isFixed: false,
               defaultOrder: 0,
+              positionGroupDictId: null,
             },
             {
               id: "dictB3",
@@ -375,6 +380,7 @@ describe("buildFuzzyGlobalFilter", () => {
               isDisabled: false,
               isFixed: false,
               defaultOrder: 0,
+              positionGroupDictId: null,
             },
           ],
         },

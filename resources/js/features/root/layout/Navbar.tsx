@@ -17,11 +17,13 @@ import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
 import {useThemeControl} from "../components/theme_control";
 import s from "./layout.module.scss";
+import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 
 export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
+  const systemStatusMonitor = useSystemStatusMonitor();
   const facilityUrl = () => activeFacility()?.url;
   const CommonFacilityItems: VoidComponent = () => (
     <>
@@ -112,6 +114,10 @@ export const Navbar: VoidComponent = () => {
           </NavigationSection>
         </Show>
       </nav>
+      <div class="grow" />
+      <div class="p-2 text-grey-text">
+        {t("app_name")} {systemStatusMonitor.status()?.version}
+      </div>
     </aside>
   );
 };

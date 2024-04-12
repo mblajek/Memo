@@ -467,10 +467,18 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   }
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
+  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
+  const translations: TableTranslations = {
+    ...baseTranslations,
+    columnName: (column, o) => {
+      const attributeId = table()?.getColumn(column)?.columnDef.meta?.tquery?.attributeId;
+      return attributeId ? attributes()?.getById(attributeId).label || "" : baseTranslations.columnName(column, o);
+    },
+  };
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
-    translations: props.staticTranslations,
+    translations,
   });
   createEffect(() => {
     const errors = filterErrors()?.values();
@@ -510,7 +518,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
           header: (ctx) => (
             <Dynamic
-              component={defColumnConfig.header || col.header}
+              component={col.header || defColumnConfig.header}
               ctx={ctx}
               filter={filter}
               filterControl={
@@ -575,7 +583,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       autoResetPageIndex: false,
       meta: {
         tableId: props.staticTableId,
-        translations: props.staticTranslations || createTableTranslations("generic"),
+        translations,
         defaultColumnVisibility,
         exportConfig: props.exportConfig,
         tquery: {
