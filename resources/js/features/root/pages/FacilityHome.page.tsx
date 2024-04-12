@@ -12,7 +12,7 @@ export default (() => {
   const navigate = useNavigate();
   onMount(() => {
     if (status.data?.permissions.facilityAdmin || status.data?.permissions.facilityStaff) {
-      navigate(`/${activeFacility()!.url}/calendar`);
+      navigate(`/${activeFacility()?.url}/calendar`);
     }
   });
   return <NotYetImplemented />;

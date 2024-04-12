@@ -63,7 +63,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
                   <Show when={props.link} fallback={<>{displayName()}</>}>
                     <LinkWithNewTabLink
                       {...anchorProps}
-                      href={`/${activeFacility()!.url}/${allProps.type}/${allProps.userId}`}
+                      href={`/${activeFacility()?.url}/${allProps.type}/${allProps.userId}`}
                     >
                       {displayName()}
                     </LinkWithNewTabLink>
