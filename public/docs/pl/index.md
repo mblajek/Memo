@@ -10,6 +10,7 @@ Strona pomocy dla systemu Memo.
 - [$t(models.meeting._name_plural|cap)](meetings)
 - [Filtrowanie](filtering)
 - [Eksport tabel](table-export)
+- [Sztuczki usprawniające korzystanie z Memo](tricks)
 
 ## Linki zewnętrzne
 
