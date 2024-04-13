@@ -26,4 +26,4 @@ facility:
 
 help: "pomoc"
 help_pages:
-  about: "$t(app_name)"
+  about: "Informacje o Memo"

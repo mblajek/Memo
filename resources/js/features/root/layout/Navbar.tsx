@@ -1,7 +1,9 @@
+import {A} from "@solidjs/router";
 import {FullLogo} from "components/ui/FullLogo";
 import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
+import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
@@ -9,7 +11,7 @@ import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
-import {TbHelp, TbInfoCircle} from "solid-icons/tb";
+import {TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -17,7 +19,6 @@ import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
 import {useThemeControl} from "../components/theme_control";
 import s from "./layout.module.scss";
-import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 
 export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
@@ -90,9 +91,7 @@ export const Navbar: VoidComponent = () => {
           </NavigationSection>
         </SilentAccessBarrier>
         <NavigationSection title={t("routes.menu_sections.other")}>
-          <NavigationItem icon={TbHelp} href="/help" routeKey="help">
-            <NavigationItem icon={TbInfoCircle} href="/help/about" routeKey="help_pages.about" small />
-          </NavigationItem>
+          <NavigationItem icon={TbHelp} href="/help" routeKey="help" />
         </NavigationSection>
         <Show when={isDEV()}>
           <NavigationSection title="DEV">
@@ -115,9 +114,9 @@ export const Navbar: VoidComponent = () => {
         </Show>
       </nav>
       <div class="grow" />
-      <div class="p-2 text-grey-text">
+      <A href="/help/about" class="p-2 !text-grey-text">
         {t("app_name")} {systemStatusMonitor.status()?.version}
-      </div>
+      </A>
     </aside>
   );
 };

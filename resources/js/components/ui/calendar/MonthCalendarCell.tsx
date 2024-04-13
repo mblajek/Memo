@@ -23,16 +23,13 @@ export const MonthCalendarCell: VoidComponent<Props> = (props) => {
   const holidays = useHolidays();
   const weekDaysCalculator = new WeekDaysCalculator(locale);
   const isThisMonth = createMemo(() => props.day.hasSame(props.month, "month"));
-  const partDayEvents = createMemo(() =>
-    props.events
+  function selectAndSort(events: readonly Event[]) {
+    return events
       .filter((event): event is PartDayEvent => !event.allDay && event.date.hasSame(props.day, "day"))
-      .sort((a, b) => a.startDayMinute - b.startDayMinute),
-  );
-  const workTimes = createMemo(() =>
-    props.workTimes
-      .filter((event): event is PartDayEvent => !event.allDay && event.date.hasSame(props.day, "day"))
-      .sort((a, b) => a.startDayMinute - b.startDayMinute),
-  );
+      .sort((a, b) => a.startDayMinute - b.startDayMinute);
+  }
+  const partDayEvents = createMemo(() => selectAndSort(props.events));
+  const workTimes = createMemo(() => selectAndSort(props.workTimes));
   return (
     <div
       class={cx("h-full min-h-20 flex flex-col items-stretch text-xs", props.class)}
@@ -58,7 +55,7 @@ export const MonthCalendarCell: VoidComponent<Props> = (props) => {
           <Show when={props.day.hasSame(currentDate(), "day")}>
             <FaSolidCircleDot class="text-red-700 mb-0.5" size="8" />
           </Show>
-          {props.day.day}
+          <div class="-mt-1">{props.day.day}</div>
         </Button>
       </div>
       <div class="p-px pt-0 flex flex-col items-stretch gap-px mb-2 mr-2">

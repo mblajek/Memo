@@ -1,4 +1,4 @@
-# Memo
+# Strona główna pomocy
 
 Strona pomocy dla systemu Memo.
 
