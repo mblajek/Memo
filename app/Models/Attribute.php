@@ -82,10 +82,14 @@ class Attribute extends Model
 
     public function getTqueryDataType(): TqDataTypeEnum|TqDictDef
     {
-        return $this->type->getTqueryDataType($this->requirement_level->isNullable(), $this->dictionary_id);
+        return $this->type->getTqueryDataType(
+            nullable: $this->requirement_level->isNullable(),
+            multi: $this->is_multi_value ?? false,
+            dictionaryId: $this->dictionary_id,
+        );
     }
 
-    public static function getAll(bool $keyByApiName = false): array
+    public static function getAll(): array
     {
         if (self::$all === null) {
             self::$all = self::query()->orderBy('default_order')->get()->keyBy('id')->all();
