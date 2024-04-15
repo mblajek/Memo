@@ -6,6 +6,7 @@ Strona pomocy dla systemu Memo.
 
 ## Dokumenty
 
+- [Wspierane przeglądarki](supported-browsers)
 - Spotkania
   - [Statusy](meeting-statuses)
 - Tabele
