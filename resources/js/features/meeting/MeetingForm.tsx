@@ -38,6 +38,7 @@ const getSchema = () =>
       notes: z.string(),
       resources: z.array(z.string()),
       createSeries: z.boolean().optional(),
+      fromMeetingId: z.string().optional(),
     })
     .merge(getMeetingSeriesSchema().partial());
 

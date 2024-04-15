@@ -120,6 +120,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
         statusDictId: meetingStatusDict()!.planned.id,
         ...attendantsInitialValueForCreateCopy(meeting()),
+        fromMeetingId: props.meetingId,
       },
       onSuccess: (meeting) => props.onCreated?.(meeting),
       forceTimeEditable: !days,
