@@ -136,6 +136,9 @@
       @apply bg-gray-200;
       > [data-part="item"] {
         @apply cursor-default text-opacity-40;
+        * {
+          @apply text-opacity-40;
+        }
       }
     }
   }

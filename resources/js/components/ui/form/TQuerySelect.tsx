@@ -5,7 +5,7 @@ import {createSelectRequestCreator} from "data-access/memo-api/tquery/select";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {ColumnName, Sort} from "data-access/memo-api/tquery/types";
 import {BsScissors} from "solid-icons/bs";
-import {VoidComponent, createMemo, createSignal, mergeProps, splitProps} from "solid-js";
+import {VoidComponent, createMemo, createSignal, mergeProps, on, splitProps} from "solid-js";
 import {
   MultipleSelectPropsPart,
   ReplacementItems,
@@ -16,7 +16,8 @@ import {
 } from "./Select";
 import {mergeSelectProps} from "./select_helper";
 
-interface BaseTQuerySelectProps extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
+export interface BaseTQuerySelectProps
+  extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
   /**
    * The configuration of how the items are fetched from tquery.
    *
@@ -30,12 +31,16 @@ interface BaseTQuerySelectProps extends Pick<SelectBaseProps, "name" | "label" |
    *
    * This is useful for example when selecting a resource, where the most often used resources
    * should be displayed on top of the list.
-   *
-   * The query spec and its parts are not reactive and must not change!
    */
   readonly priorityQuerySpec?: TQueryConfig;
   /** Whether to add a horizontal line between the priority items and the regular items. Default: true. */
   readonly separatePriorityItems?: boolean;
+  /**
+   * A function called with a priority item and the corresponding regular item, if it exists.
+   * The result is used instead of the priority item. Default: the priority item is used directly.
+   * This is useful if the regular query returns more information than the priority query.
+   */
+  readonly mergeIntoPriorityItem?: (priorityItem: SelectItem, regularItem: SelectItem) => SelectItem;
   /** Additional items to put at the top. */
   readonly topItems?: readonly SelectItem[];
 }
@@ -59,18 +64,18 @@ export interface TQueryConfig {
    * A function creating the items. It can make use of the default item properties provided.
    * The default includes the value (taken from the value column) and the text (from the label columns).
    */
-  readonly itemFunc?: (row: Row, defItem: () => DefaultTQuerySelectItem) => SelectItem | undefined;
+  readonly itemFunc?: (row: TQuerySelectDataRow, defItem: () => DefaultTQuerySelectItem) => SelectItem | undefined;
 }
 
 /** A fetched row, with the requested columns set. */
-class Row {
+export class TQuerySelectDataRow {
   constructor(readonly data: Readonly<Partial<Record<ColumnName, unknown>>>) {}
 
   get<T = unknown>(column: ColumnName) {
     if (!Object.hasOwn(this.data, column)) {
       throw new Error(`Column '${column}' not present in row.`);
     }
-    return this.data[column] as T;
+    return (this.data[column] ?? undefined) as T | undefined;
   }
 
   getStr(column: ColumnName) {
@@ -79,7 +84,7 @@ class Row {
   }
 }
 
-type DefaultTQuerySelectItem = Required<Pick<SelectItem, "value" | "text">>;
+export type DefaultTQuerySelectItem = Required<Pick<SelectItem, "value" | "text">>;
 
 export type TQuerySelectProps = BaseTQuerySelectProps & (SingleSelectPropsPart | MultipleSelectPropsPart);
 
@@ -131,7 +136,7 @@ function makeQuery(
           value: rowData[valueColumn] as string,
           text: labelColumns.map((column) => rowData[column]).join(" "),
         });
-        return itemFunc ? itemFunc(new Row(rowData), defItem) : defItem();
+        return itemFunc ? itemFunc(new TQuerySelectDataRow(rowData), defItem) : defItem();
       })
       .filter(NON_NULLABLE);
   });
@@ -150,6 +155,7 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
     "querySpec",
     "priorityQuerySpec",
     "separatePriorityItems",
+    "mergeIntoPriorityItem",
     "topItems",
   ]);
   const t = useLangFunc();
@@ -157,25 +163,40 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
   /* eslint-disable solid/reactivity */
   const limit = props.querySpec.limit || DEFAULT_LIMIT;
   const {dataQuery, items, filterText} = makeQuery({limit, ...props.querySpec});
-  const priorityData =
-    props.priorityQuerySpec &&
-    makeQuery({...props.priorityQuerySpec, limit: Math.min(props.priorityQuerySpec.limit ?? limit, limit)});
   const replacementData = makeQuery({limit: 1e6, ...props.querySpec}, {initialExtraFilter: "never"});
-  const [replacementEnabled, setReplacementEnabled] = createSignal(false);
   /* eslint-enable solid/reactivity */
-  const isSuccess = () => (priorityData?.dataQuery.isSuccess ?? true) && dataQuery.isSuccess;
-  const isFetching = () => priorityData?.dataQuery.isFetching || dataQuery.isFetching;
+  const priorityData = createMemo(
+    on(
+      () => props.priorityQuerySpec,
+      (priorityQuerySpec) =>
+        priorityQuerySpec &&
+        makeQuery({...priorityQuerySpec, limit: Math.min(priorityQuerySpec.limit ?? limit, limit)}),
+    ),
+  );
+  const [replacementEnabled, setReplacementEnabled] = createSignal(false);
+  const isSuccess = () => (priorityData()?.dataQuery.isSuccess ?? true) && dataQuery.isSuccess;
+  const isFetching = () => priorityData()?.dataQuery.isFetching || dataQuery.isFetching;
   /** The items and loading status. They are returned in a single memo to avoid races. */
-  const joinedItemsAndIsLoading = createMemo<{items: readonly SelectItem[]; isLoading: boolean}>(
+  const joinedItemsAndIsLoading = createMemo<{readonly items: readonly SelectItem[]; readonly isLoading: boolean}>(
     (prev) => {
       if (!isSuccess() || isFetching()) {
         // Wait for both queries to finish fetching before processing any results.
         return {...prev, isLoading: true};
       }
       let array: SelectItem[] = props.topItems?.slice() || [];
-      if (priorityData) {
-        const priorityItems = priorityData.items();
+      if (priorityData()) {
+        let priorityItems = priorityData()!.items();
         const numPriorityItems = priorityItems.length;
+        if (props.mergeIntoPriorityItem) {
+          const regularItemsMap = new Map<string, SelectItem>();
+          for (const item of items()) {
+            regularItemsMap.set(item.value, item);
+          }
+          priorityItems = priorityItems.map((priorityItem) => {
+            const regularItem = regularItemsMap.get(priorityItem.value);
+            return regularItem ? props.mergeIntoPriorityItem!(priorityItem, regularItem) : priorityItem;
+          });
+        }
         array = [...array, ...priorityItems];
         if (numPriorityItems < limit) {
           const values = new Set(array.map((i) => i.value));
@@ -220,7 +241,7 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
     },
   );
   function setFilterText(filter = "") {
-    priorityData?.filterText[1](filter);
+    priorityData()?.filterText[1](filter);
     filterText[1](filter);
   }
   const mergedSelectProps = mergeSelectProps<"items" | "isLoading" | "onFilterChange">(selectProps, {

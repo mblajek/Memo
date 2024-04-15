@@ -52,7 +52,8 @@ export interface SelectBaseProps {
   readonly getGroupHeader?: (groupName: string) => JSX.Element;
   /**
    * Function called when the current value is unknown, i.e. there was never an item with this value in items, so
-   * the component doesn't know how to display it.
+   * the component doesn't know how to display it. It is also called when the item is known, but it has
+   * requestReplacementWhenSelected set.
    *
    * The return value specifies the missing items, if available. Once the accessor returns data, any items that
    * are still unknown, are considered invalid and are removed from the select.
@@ -127,6 +128,13 @@ export interface SelectItem {
   readonly labelOnList?: () => JSX.Element;
   readonly disabled?: boolean;
   readonly groupName?: string;
+  /**
+   * Whether this item, once selected, should be treated as an unknown item, and a replacement item should be requested.
+   *
+   * This is useful if the item only contains partial data about itself, and more data is needed when the item
+   * is actually selected.
+   */
+  readonly requestReplacementWhenSelected?: boolean;
 }
 
 function itemToString(item: SelectItem) {
@@ -388,7 +396,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       }
       const knownValues = itemsMap();
       return api()
-        .value.filter((value) => !knownValues.has(value))
+        .value.filter((value) => {
+          const known = knownValues.get(value);
+          return !known || known.requestReplacementWhenSelected;
+        })
         .sort();
     },
     [],

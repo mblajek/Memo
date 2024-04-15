@@ -8,7 +8,6 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
-import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {
@@ -17,6 +16,7 @@ import {
   SimpleAttributeType,
 } from "data-access/memo-api/resources/attribute.resource";
 import {UserLink} from "features/facility-users/UserLink";
+import {useFacilityUsersSelectParams} from "features/facility-users/facility_users_select_params";
 import {DateTime} from "luxon";
 import {
   Accessor,
@@ -72,7 +72,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const attributes = useAttributes();
-  const modelQuerySpecs = useModelQuerySpecs();
+  const facilityUsersSelectParams = useFacilityUsersSelectParams();
   const {form} = useFormContext();
 
   function fieldName(attribute: Attribute) {
@@ -129,13 +129,16 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
           case "user/staff":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect {...modelQuerySpecs.userStaff()} {...extraSelectProps} />
+                <TQuerySelect {...facilityUsersSelectParams.staffSelectParams()} {...extraSelectProps} />
               </Show>
             );
           case "user/client":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect {...modelQuerySpecs.userClient()} {...extraSelectProps} />
+                <TQuerySelect
+                  {...facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})}
+                  {...extraSelectProps}
+                />
               </Show>
             );
           default:

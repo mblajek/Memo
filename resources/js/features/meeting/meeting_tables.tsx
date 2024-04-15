@@ -11,7 +11,6 @@ import {EMPTY_VALUE_SYMBOL, EM_DASH, EN_DASH} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
-import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -24,6 +23,7 @@ import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
 import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
+import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
@@ -34,7 +34,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const {attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
   const confirmation = createConfirmation();
-  const modelQuerySpecs = useModelQuerySpecs();
+  const facilityUsersSelectParams = useFacilityUsersSelectParams();
   const deleteMeetingMutation = createMutation(() => ({
     mutationFn: FacilityMeeting.deleteMeeting,
   }));
@@ -211,7 +211,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           )),
           size: 250,
         },
-        filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userStaff()} />,
+        filterControl: (props) => (
+          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
+        ),
         metaParams: {textExportCell: attendantsTextExport},
       },
       staffAttendance: {
@@ -233,7 +235,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           )),
           size: 250,
         },
-        filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
+        filterControl: (props) => (
+          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
+        ),
         metaParams: {textExportCell: attendantsTextExport},
       },
       clientsAttendance: {

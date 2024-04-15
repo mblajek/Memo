@@ -12,3 +12,5 @@ edit_as_global_administrator: "Edytuj jako globalny administrator"
 
 related_user_meetings_count: "Liczba wspólnych spotkań"
 related_users: "Powiązane osoby"
+
+birth_date_short: "ur. {{date}}"
