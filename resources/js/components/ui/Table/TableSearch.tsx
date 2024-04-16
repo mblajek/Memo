@@ -16,7 +16,7 @@ export const TableSearch: VoidComponent<ParentProps<Props>> = (props) => {
     <SearchInput
       divClass={cx("flex items-stretch", props.divClass)}
       name="table_global_search"
-      class="px-1"
+      class={cx("px-1", globalFilter() ? "border-memo-active" : undefined)}
       placeholder={props.placeholder || t("actions.search")}
       value={globalFilter()}
       onInput={({target: {value}}) => table.setGlobalFilter(value)}

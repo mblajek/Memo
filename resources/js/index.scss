@@ -179,7 +179,10 @@ html {
     }
 
     &.minimal {
-      @apply px-0.5 -my-px border border-gray-300 rounded bg-white hover:bg-hover;
+      @apply px-0.5 -my-px border border-gray-300 rounded bg-white;
+      &:not([aria-disabled="true"]) {
+        @apply hover:bg-hover;
+      }
 
       &[aria-disabled="true"] {
         @apply opacity-50;

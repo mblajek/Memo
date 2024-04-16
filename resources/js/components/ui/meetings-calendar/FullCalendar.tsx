@@ -1,4 +1,4 @@
-import {useLocation, useSearchParams} from "@solidjs/router";
+import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
@@ -50,10 +50,11 @@ import {
   onMount,
   splitProps,
 } from "solid-js";
-import {activeFacilityId} from "state/activeFacilityId.state";
+import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {SegmentedControl} from "../form/SegmentedControl";
+import {STAFF_ICONS} from "../icons";
 import {EN_DASH} from "../symbols";
 import {coloringToStyle, getRandomEventColors} from "./colors";
 import {MeetingEventBlock} from "./column_events";
@@ -129,6 +130,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
   const location = useLocation<CalendarLocationState>();
+  const activeFacility = useActiveFacility();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
 
   const userStatus = createQuery(() => User.statusWithFacilityPermissionsQueryOptions(activeFacilityId()!));
@@ -826,18 +828,30 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             onVisibleRangeChange={setTinyCalVisibleRange}
           />
           <Show when={userStatus.data?.permissions.facilityStaff}>
-            <Button
-              class={cx("mx-1", selectedResources().size ? "minimal" : "primary small")}
-              onClick={() => {
-                if (mode() === "day") {
-                  setMode("week");
+            <div class="mx-1 flex gap-1 items-stretch">
+              <Button
+                class={cx("grow", selectedResources().size ? "minimal" : "primary small")}
+                onClick={() => {
+                  if (mode() === "day") {
+                    setMode("week");
+                  }
+                  setSelectedResourceRadio(userStatus.data!.user.id);
+                }}
+                disabled={
+                  (mode() === "month" || mode() === "week") && selectedResources().has(userStatus.data!.user.id)
                 }
-                setSelectedResourceRadio(userStatus.data!.user.id);
-              }}
-              disabled={(mode() === "month" || mode() === "week") && selectedResources().has(userStatus.data!.user.id)}
-            >
-              {t("calendar.show_my_calendar")}
-            </Button>
+              >
+                {t("calendar.show_my_calendar")}
+              </Button>
+              <A
+                href={`/${activeFacility()?.url}/staff/${userStatus.data?.user.id}`}
+                role="button"
+                class="minimal flex items-center"
+                title={t("calendar.show_my_details")}
+              >
+                <STAFF_ICONS.staff class="text-gray-700" />
+              </A>
+            </div>
           </Show>
           <ResourcesSelector
             class="overflow-y-auto"
