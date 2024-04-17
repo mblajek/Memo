@@ -8,7 +8,6 @@ export const SIMPLE_HOLIDAYS = [
   "2023-04-10", // Easter Monday
   "2023-05-01", // Labor Day / May Day
   "2023-05-03", // Constitution Day
-  "2023-05-28", // Whit Sunday
   "2023-06-08", // Corpus Christi
   "2023-08-15", // Assumption of Mary
   "2023-11-01", // All Saints' Day
@@ -21,7 +20,6 @@ export const SIMPLE_HOLIDAYS = [
   "2024-04-01", // Easter Monday
   "2024-05-01", // Labor Day / May Day
   "2024-05-03", // Constitution Day
-  "2024-05-19", // Whit Sunday
   "2024-05-30", // Corpus Christi
   "2024-08-15", // Assumption of Mary
   "2024-11-01", // All Saints' Day
@@ -34,7 +32,6 @@ export const SIMPLE_HOLIDAYS = [
   "2025-04-21", // Easter Monday
   "2025-05-01", // Labor Day / May Day
   "2025-05-03", // Constitution Day
-  "2025-06-08", // Whit Sunday
   "2025-06-19", // Corpus Christi
   "2025-08-15", // Assumption of Mary
   "2025-11-01", // All Saints' Day
@@ -47,7 +44,6 @@ export const SIMPLE_HOLIDAYS = [
   "2026-04-06", // Easter Monday
   "2026-05-01", // Labor Day / May Day
   "2026-05-03", // Constitution Day
-  "2026-05-24", // Whit Sunday
   "2026-06-04", // Corpus Christi
   "2026-08-15", // Assumption of Mary
   "2026-11-01", // All Saints' Day
@@ -60,7 +56,6 @@ export const SIMPLE_HOLIDAYS = [
   "2027-03-29", // Easter Monday
   "2027-05-01", // Labor Day / May Day
   "2027-05-03", // Constitution Day
-  "2027-05-16", // Whit Sunday
   "2027-05-27", // Corpus Christi
   "2027-08-15", // Assumption of Mary
   "2027-11-01", // All Saints' Day
