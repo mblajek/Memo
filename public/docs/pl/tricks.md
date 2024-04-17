@@ -5,7 +5,7 @@
 Niektóre tabele w Memo mają wiele kolumn i nie mieszczą się na ekranie. Sposoby przewijania tabeli w poziomie:
 
 - standardowy: przesuń myszą pasek przewijania na dole tabeli
-- **Shift + ⬍rolka** (przytrzymaj klawisz Shift i użyj rolki myszy) - Shift przełącza działanie rolki na poziome, również w innych programach, np. Excel
+- **Shift + ⬍rolka** (przytrzymaj klawisz Shift i użyj rolki myszy) — Shift przełącza działanie rolki na poziome, również w innych programach, np. Excel
 - umieść kursor myszy **na nagłówku tabeli** (bez klikania) i użyj rolki myszy
 - na ekranie dotykowym przesuń ekran przeciągając jednym palcem
 

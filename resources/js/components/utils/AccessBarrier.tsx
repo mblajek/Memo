@@ -1,6 +1,6 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {System, User} from "data-access/memo-api/groups";
+import {User} from "data-access/memo-api/groups";
 import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
 import {BiRegularErrorAlt} from "solid-icons/bi";
 import {JSX, ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
@@ -25,14 +25,7 @@ interface Props {
    * @default []
    */
   readonly roles?: readonly PermissionKey[];
-  /**
-   * FacilityUrl available in params object (useParams)
-   */
-  readonly facilityUrl?: string;
 }
-
-/** The roles for which querying facility permissions is necessary. */
-const FACILITY_ROLES = new Set<PermissionKey>(["facilityMember", "facilityClient", "facilityStaff", "facilityAdmin"]);
 
 /**
  * Utility component that checks authentication state and user's permissions.
@@ -53,30 +46,7 @@ export const AccessBarrier: ParentComponent<Props> = (allProps) => {
     allProps,
   );
   const [queryBarrierProps, props] = splitProps(defProps, ["error", "pending"]);
-  const needFacilityPermissions = () => props.roles.some((role) => FACILITY_ROLES.has(role));
-  // Create the query even if it's not needed, it is fetched on all pages anyway.
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-  const statusQuery = createQuery(() => {
-    // Only load the facility permissions if they are actually checked.
-    if (!needFacilityPermissions()) {
-      return User.statusQueryOptions();
-    }
-    if (!facilitiesQuery.isSuccess) {
-      // Return a pending query, waiting for the facilities to resolve or appear.
-      // If the status is error, the outer QueryBarrier will show the error.
-      return {enabled: false, queryKey: ["pending"]};
-    }
-    const facilityId = facilitiesQuery.data?.find(({url}) => url === props.facilityUrl)?.id;
-    if (facilityId) {
-      return User.statusWithFacilityPermissionsQueryOptions(facilityId);
-    }
-    return {
-      queryKey: ["error"],
-      queryFn: () => {
-        throw new Error(`Facility with URL ${props.facilityUrl} not found`);
-      },
-    };
-  });
+  const statusQuery = createQuery(User.statusQueryOptions);
   const accessGranted = () => {
     if (!statusQuery.isSuccess) {
       return false;
@@ -85,12 +55,10 @@ export const AccessBarrier: ParentComponent<Props> = (allProps) => {
     return props.roles?.every((role) => permissions[role]);
   };
   return (
-    <QueryBarrier queries={needFacilityPermissions() ? [facilitiesQuery] : []} {...queryBarrierProps}>
-      <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
-        <Show when={accessGranted()} fallback={props.fallback()}>
-          {props.children}
-        </Show>
-      </QueryBarrier>
+    <QueryBarrier queries={[statusQuery]} {...queryBarrierProps}>
+      <Show when={accessGranted()} fallback={props.fallback()}>
+        {props.children}
+      </Show>
     </QueryBarrier>
   );
 };

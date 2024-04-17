@@ -44,10 +44,9 @@ export const Navbar: VoidComponent = () => {
         <Show when={facilityUrl()}>
           <NavigationSection>
             <SilentAccessBarrier
-              facilityUrl={facilityUrl()}
               roles={["facilityAdmin"]}
               fallback={() => (
-                <SilentAccessBarrier facilityUrl={facilityUrl()} roles={["facilityStaff"]}>
+                <SilentAccessBarrier roles={["facilityStaff"]}>
                   <CommonFacilityItems />
                 </SilentAccessBarrier>
               )}

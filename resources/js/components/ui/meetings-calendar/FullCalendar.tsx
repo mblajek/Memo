@@ -133,7 +133,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const activeFacility = useActiveFacility();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
 
-  const userStatus = createQuery(() => User.statusWithFacilityPermissionsQueryOptions(activeFacilityId()!));
+  const userStatus = createQuery(User.statusQueryOptions);
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
     entityURL: `facility/${activeFacilityId()}/user/staff`,

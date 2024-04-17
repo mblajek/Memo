@@ -17,10 +17,10 @@ Strona pomocy dla systemu Memo.
 
 ## Linki zewnętrzne
 
-- [GitHub - Projekt Memo](https://github.com/mblajek/Memo)
+- [GitHub — Projekt Memo](https://github.com/mblajek/Memo)
 
 ## Twórcy
 
-- [Mikołaj Błajek](https://github.com/mblajek) - główny programista backendu
-- [Tomasz Błajek](https://github.com/TPReal) - główny programista frontendu
+- [Mikołaj Błajek](https://github.com/mblajek) — główny programista backendu
+- [Tomasz Błajek](https://github.com/TPReal) — główny programista frontendu
 - [Pozostali programiści](https://github.com/mblajek/Memo/graphs/contributors?type=a)

@@ -7,13 +7,9 @@ import {Header} from "../layout/Header";
 import {Main} from "../layout/Main";
 import {Navbar} from "../layout/Navbar";
 
-interface Props {
-  readonly facilityUrl?: string;
-}
-
 export default ((props) => {
   return (
-    <AccessBarrier facilityUrl={props.facilityUrl}>
+    <AccessBarrier>
       <SystemStatusUpdateNotification />
       <Container>
         <Navbar />
@@ -22,7 +18,7 @@ export default ((props) => {
       </Container>
     </AccessBarrier>
   );
-}) satisfies ParentComponent<Props>;
+}) satisfies ParentComponent;
 
 const SystemStatusUpdateNotification: VoidComponent = () => {
   const t = useLangFunc();
