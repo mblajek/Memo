@@ -296,16 +296,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                   <div class="flex gap-2 justify-between items-start">
                     <div class="flex flex-col overflow-clip">
                       <div>{DateTime.fromISO(v()).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
-                      <Show when={props.row.startDayminute as number | undefined}>
-                        {(startDayMinute) => (
-                          <div>
-                            <MeetingTime
-                              startDayMinute={startDayMinute()}
-                              durationMinutes={(props.row.durationMinutes as number) ?? 0}
-                            />{" "}
-                            <MeetingInSeriesInfo meeting={props.row} compact />
-                          </div>
-                        )}
+                      <Show when={props.row.startDayminute !== undefined}>
+                        <div>
+                          <MeetingTime
+                            startDayMinute={props.row.startDayminute}
+                            durationMinutes={(props.row.durationMinutes as number) ?? 0}
+                          />{" "}
+                          <MeetingInSeriesInfo meeting={props.row} compact />
+                        </div>
                       </Show>
                     </div>
                     <DetailsButton
