@@ -130,12 +130,13 @@ class SystemController extends ApiController
         responses: [
             new OA\Response(response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
                 new OA\Property(property: 'data', type: 'array', items: new OA\Items(properties: [
+                    new OA\Property(property: 'version', type: 'string', example: '1.2.3'),
+                    new OA\Property(property: 'appEnv', type: 'string', example: 'production'),
+                    new OA\Property(property: 'appEnvColor', type: 'string', example: '#AABBCC', nullable: true),
                     new OA\Property(property: 'randomUuid', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'currentDate', type: 'datetime'),
                     new OA\Property(property: 'commitHash', type: 'string', nullable: true),
                     new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
-                    new OA\Property(property: 'backendHash', type: 'string'),
-                    new OA\Property(property: 'frontendHash', type: 'string'),
                 ])),
             ])),
         ]
@@ -165,7 +166,7 @@ class SystemController extends ApiController
             'data' => [
                 'version' => self::VERSION,
                 'appEnv' => env('APP_ENV'),
-                'appEnvColor' => env('APP_ENV_COLOR'),
+                'appEnvColor' => env('APP_ENV_COLOR') ?: null,
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'commitHash' => $commitHash,
