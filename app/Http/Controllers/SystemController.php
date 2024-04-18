@@ -142,47 +142,36 @@ class SystemController extends ApiController
     )]
     public function status(): JsonResponse
     {
-        try {
-            [$commitHash, $commitDate] = file(App::storagePath('app/git-version.txt'), FILE_IGNORE_NEW_LINES);
-            $commitDateZulu = DateHelper::toZuluString(
-                DateTimeImmutable::createFromFormat('Y-m-d H:i:s P', $commitDate)->setTimezone(new DateTimeZone('UTC'))
-            );
-        } catch (Throwable) {
-            [$commitHash, $commitDateZulu] = [null, null];
-        }
         $cache = Cache::get('system_status');
         if (is_array($cache) && count($cache) === 3) {
-            [$backendHash, $frontendHash, $cpu15m] = $cache;
+            [$commitHash, $commitDateZulu, $cpu15m] = $cache;
         } else {
-            [$backendHash, $frontendHash] = array_map(self::dirMd5(...), [App::path(), App::publicPath()]);
-            $cpu15m = null;
             try {
+                [$commitHash, $commitDate] = file(App::storagePath('app/git-version.txt'), FILE_IGNORE_NEW_LINES);
+                $commitDateZulu = DateHelper::toZuluString(
+                    DateTimeImmutable::createFromFormat('Y-m-d H:i:s P', $commitDate)
+                        ->setTimezone(new DateTimeZone('UTC'))
+                );
                 ob_start();
                 system('uptime');
                 $cpu15m = Str::match('/[.0-9]+$/', trim(ob_get_clean() ?? ''));
                 $cpu15m = strlen($cpu15m) ? floatval($cpu15m) : null;
             } catch (Throwable) {
+                [$commitHash, $commitDateZulu, $cpu15m] = [null, null, null];
             }
-            Cache::put('codeHash', [$backendHash, $frontendHash, $cpu15m], 15 /* 15s */);
+            Cache::put('system_status', [$commitHash, $commitDateZulu, $cpu15m], 15 /* 15s */);
         }
         return new JsonResponse([
             'data' => [
                 'version' => self::VERSION,
+                'appEnv' => env('APP_ENV'),
+                'appEnvColor' => env('APP_ENV_COLOR'),
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'commitHash' => $commitHash,
                 'commitDate' => $commitDateZulu,
-                'backendHash' => $backendHash,
-                'frontendHash' => $frontendHash,
-                'cpu15m' => $cpu15m ?? null,
+                'cpu15m' => $cpu15m,
             ],
         ]);
-    }
-
-    private static function dirMd5(string|array $paths): string
-    {
-        return md5(implode(array_map(fn($path) => is_dir($path) ? self::dirMd5(array_map(fn($file) => "$path/$file",
-            array_filter(scandir($path), fn($file) => trim($file, '.') !== ''))) : md5_file($path),
-            array_filter((array)$paths, is_readable(...)))));
     }
 }
