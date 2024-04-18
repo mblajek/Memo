@@ -23,6 +23,12 @@ export default (() => {
             <div class="grid gap-x-3 gap-y-1 self-start" style={{"grid-template-columns": "auto auto"}}>
               <label class="font-semibold">{t("about_page.app_version")}</label>
               <div>{status().version}</div>
+              <label class="font-semibold">{t("about_page.app_env")}</label>
+              <div>
+                <Show when={status().appEnv} fallback={EMPTY_VALUE_SYMBOL}>
+                  {(appEnv) => <>{appEnv()}</>}
+                </Show>
+              </div>
               <label class="font-semibold">{t("about_page.commit_date")}</label>
               <div>
                 <Show when={status().commitDate} fallback={EMPTY_VALUE_SYMBOL}>
@@ -43,14 +49,6 @@ export default (() => {
                     </>
                   )}
                 </Show>
-              </div>
-              <label class="font-semibold">{t("about_page.backend_hash")}</label>
-              <div>
-                <span class="font-mono">{status().backendHash}</span> <CopyToClipboard text={status().backendHash} />
-              </div>
-              <label class="font-semibold">{t("about_page.frontend_hash")}</label>
-              <div>
-                <span class="font-mono">{status().frontendHash}</span> <CopyToClipboard text={status().frontendHash} />
               </div>
               <label class="font-semibold">{t("about_page.cpu_load")}</label>
               <div>{status().cpu15m.toFixed(2)}</div>

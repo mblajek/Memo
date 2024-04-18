@@ -66,7 +66,7 @@ export const UserInfo: VoidComponent = () => {
             await developerLogin.mutateAsync({developer});
             toggleDEV(developer);
             // eslint-disable-next-line no-console
-            console.debug(developer ? "Developer login success." : "Developer logout success.");
+            console.log(developer ? "Developer login success." : "Developer logout success.");
           })();
         };
       }
