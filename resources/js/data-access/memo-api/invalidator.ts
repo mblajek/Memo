@@ -28,7 +28,13 @@ export function useInvalidator(queryClient = useQueryClient()) {
     users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
     facilities: () => queryClient.invalidateQueries({queryKey: Facilities.keys.facility()}),
     // User status:
-    userStatusAndFacilityPermissions: () => queryClient.invalidateQueries({queryKey: User.keys.statusAll()}),
+    userStatusAndFacilityPermissions: ({clearCache = false} = {}) => {
+      if (clearCache) {
+        queryClient.resetQueries({queryKey: User.keys.statusAll()});
+      } else {
+        queryClient.invalidateQueries({queryKey: User.keys.statusAll()});
+      }
+    },
     // Facility resources:
     facility: {
       meetings: () => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),

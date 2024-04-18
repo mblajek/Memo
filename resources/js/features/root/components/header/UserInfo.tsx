@@ -40,7 +40,7 @@ export const UserInfo: VoidComponent = () => {
         resetDEV();
         setActiveFacilityId(undefined);
         // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
-        invalidate.userStatusAndFacilityPermissions();
+        invalidate.userStatusAndFacilityPermissions({clearCache: true});
       });
     },
   }));

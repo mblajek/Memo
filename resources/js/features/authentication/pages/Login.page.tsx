@@ -40,7 +40,7 @@ export default (() => {
       error={() => undefined}
       pending={() => undefined}
     >
-      <Navigate href="/help" state={{fromLoginPage: true}} />
+      <Navigate href="/help" />
     </QueryBarrier>
   );
 }) satisfies VoidComponent;

@@ -29,11 +29,13 @@ export const useUserDisplayNames = createCached(() => {
     entityURL: () => `facility/${activeFacilityId()}/user/staff`,
     prefixQueryKey: FacilityStaff.keys.staffList,
     requestCreator: staticRequestCreator(request),
+    dataQueryOptions: () => ({enabled: !!activeFacilityId()}),
   });
   const clientsQuery = createTQuery({
     entityURL: () => `facility/${activeFacilityId()}/user/client`,
     prefixQueryKey: FacilityClient.keys.clientList,
     requestCreator: staticRequestCreator(request),
+    dataQueryOptions: () => ({enabled: !!activeFacilityId()}),
   });
   function byId(list: SimpleUser[] | undefined) {
     if (!list) {
