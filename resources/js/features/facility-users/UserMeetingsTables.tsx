@@ -13,6 +13,7 @@ import {Sort} from "data-access/memo-api/tquery/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
 import {Accessor, ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
+import {useAttendanceStatusesInfo} from "../meeting/attendance_status_info";
 import {useMeetingTableColumns, useMeetingTableFilters} from "../meeting/meeting_tables";
 import {UserMeetingsStats} from "./user_meetings_stats";
 
@@ -26,7 +27,8 @@ interface Props {
 
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const {dictionaries, meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
+  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
+  const {presenceStatuses} = useAttendanceStatusesInfo();
   const userDisplayNames = useUserDisplayNames();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns({baseHeight: "3rem"});
@@ -112,7 +114,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                             type: "column",
                             column: "attendant.attendanceStatusDictId",
                             op: "in",
-                            val: [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id],
+                            val: presenceStatuses()!,
                           },
                         ],
                       }}
@@ -213,7 +215,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                             type: "column",
                             column: "attendant.attendanceStatusDictId",
                             op: "in",
-                            val: [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id],
+                            val: presenceStatuses()!,
                           },
                         ],
                       }}

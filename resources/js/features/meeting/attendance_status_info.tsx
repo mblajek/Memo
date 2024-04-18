@@ -37,25 +37,27 @@ export const MeetingAttendanceStatusInfoIcon: VoidComponent<MeetingAttendanceSta
   const t = useLangFunc();
   const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   return (
-    <InfoIcon
-      href="/help/meeting-statuses#attendance-status"
-      title={
-        (props.attendanceStatusId &&
-          (props.attendanceStatusId === attendanceStatusDict()?.ok.id
-            ? props.meetingStatusId &&
-              t(
-                `dictionary.attendanceStatus._explanations.ok.${
-                  meetingStatusDict()!.getPosition(props.meetingStatusId).resource.name
-                }`,
-              )
-            : t(
-                `dictionary.attendanceStatus._explanations.${
-                  attendanceStatusDict()!.getPosition(props.attendanceStatusId).resource.name
-                }`,
-              ))) ||
-        t("dictionary.attendanceStatus._explanations.more_info")
-      }
-    />
+    <Show when={props.attendanceStatusId ? attendanceStatusDict()?.getPosition(props.attendanceStatusId) : undefined}>
+      {(attendanceStatus) => (
+        <Show when={attendanceStatus().resource.isFixed}>
+          <InfoIcon
+            href="/help/meeting-statuses#attendance-status"
+            title={
+              (attendanceStatus().id === attendanceStatusDict()?.ok.id
+                ? props.meetingStatusId &&
+                  t(
+                    `dictionary.attendanceStatus._explanations.ok.${
+                      meetingStatusDict()!.getPosition(props.meetingStatusId).resource.name
+                    }`,
+                  )
+                : t(`dictionary.attendanceStatus._explanations.${attendanceStatus().resource.name}`, {
+                    defaultValue: "",
+                  })) || t("dictionary.attendanceStatus._explanations.more_info")
+            }
+          />
+        </Show>
+      )}
+    </Show>
   );
 };
 
@@ -83,3 +85,15 @@ export const MeetingAttendanceStatus: VoidComponent<MeetingAttendanceStatusProps
     </span>
   );
 };
+
+export function useAttendanceStatusesInfo() {
+  const {attendanceStatusDict} = useFixedDictionaries();
+  return {
+    /**
+     * Returns a list of attendance statuses that denote presence on the meeting.
+     * TODO: Consider if some non-fixed statuses can also denote presence.
+     */
+    presenceStatuses: () =>
+      attendanceStatusDict() ? [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id] : undefined,
+  };
+}

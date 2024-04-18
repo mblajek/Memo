@@ -17,6 +17,7 @@ import {
 import {Accessor, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
+import {useAttendanceStatusesInfo} from "./attendance_status_info";
 import {getMeetingTimeInterval} from "./meeting_time_controller";
 
 /**
@@ -47,14 +48,9 @@ interface ConflictInfo {
  */
 export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
   const t = useLangFunc();
-  const {
-    dictionaries,
-    meetingCategoryDict,
-    meetingTypeDict,
-    meetingStatusDict,
-    attendanceTypeDict,
-    attendanceStatusDict,
-  } = useFixedDictionaries();
+  const {dictionaries, meetingCategoryDict, meetingTypeDict, meetingStatusDict, attendanceTypeDict} =
+    useFixedDictionaries();
+  const {presenceStatuses} = useAttendanceStatusesInfo();
   const conflictsQuery = createTQuery({
     entityURL: `facility/${activeFacilityId()}/meeting/attendant`,
     prefixQueryKey: FacilityMeeting.keys.meeting(),
@@ -88,7 +84,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
               type: "column",
               column: "attendant.attendanceStatusDictId",
               op: "in",
-              val: [attendanceStatusDict()!.ok.id, attendanceStatusDict()!.late_present.id],
+              val: presenceStatuses()!,
             },
             {type: "column", column: "statusDictId", op: "=", val: meetingStatusDict()!.cancelled.id, inv: true},
             {type: "column", column: "date", op: ">=", val: dateToISO(date.minus({days: 1}))},
