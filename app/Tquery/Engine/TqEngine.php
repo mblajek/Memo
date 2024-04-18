@@ -81,14 +81,14 @@ readonly class TqEngine
 
     private function getData(): array
     {
-        return $this->builder->getData()->map(function (stdClass $row) {
+        return array_map(function (stdClass $row) {
             $array = [];
             foreach ($this->request->selectColumns as $requestColumn) {
                 $columnAlias = $requestColumn->column->columnAlias;
                 $array[$columnAlias] = $requestColumn->column->render($row->{$columnAlias});
             }
             return $array;
-        })->toArray();
+        }, $this->builder->getData());
     }
 
 
