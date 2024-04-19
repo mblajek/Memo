@@ -3,7 +3,7 @@ import {useLangFunc} from "components/utils";
 import {Show, VoidComponent} from "solid-js";
 import {InfoIcon} from "../InfoIcon";
 import {RichTextView} from "../RichTextView";
-import {EMPTY_VALUE_SYMBOL} from "../symbols";
+import {EmptyValueSymbol} from "../symbols";
 import {FieldBox} from "./FieldBox";
 import {MultilineTextField} from "./MultilineTextField";
 import {PlaceholderField} from "./PlaceholderField";
@@ -33,9 +33,7 @@ export const RichTextViewEdit: VoidComponent<Props> = (props) => {
     >
       <FieldBox name={props.name}>
         <PlaceholderField name={props.name} />
-        <Show when={form.data(props.name) as string} fallback={EMPTY_VALUE_SYMBOL}>
-          {(notes) => <RichTextView class="max-h-60" text={notes()} />}
-        </Show>
+        <RichTextView class="max-h-60" text={form.data(props.name) as string} fallback={<EmptyValueSymbol />} />
       </FieldBox>
     </Show>
   );

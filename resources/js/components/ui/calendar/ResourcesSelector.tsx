@@ -1,6 +1,6 @@
 import {cx, htmlAttributes} from "components/utils";
 import {For, JSX, Show, VoidComponent, createMemo, createRenderEffect, createSignal, splitProps} from "solid-js";
-import {EMPTY_VALUE_SYMBOL} from "../symbols";
+import {EmptyValueSymbol} from "../symbols";
 
 export type ResourcesSelectionMode = "radio" | "checkbox";
 
@@ -82,7 +82,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                 </label>
               </Show>
               <div class="flex flex-col">
-                <For each={resources} fallback={<span class="px-1">{EMPTY_VALUE_SYMBOL}</span>}>
+                <For each={resources} fallback={<EmptyValueSymbol class="px-1" />}>
                   {({id, label}) => {
                     const inputId = `resourceSelected_${id}`;
                     const checked = () => props.selection.has(id);

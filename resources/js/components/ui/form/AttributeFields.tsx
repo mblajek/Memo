@@ -38,7 +38,7 @@ import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
-import {CHECKBOX, EMPTY_VALUE_SYMBOL} from "../symbols";
+import {CHECKBOX, EmptyValueSymbol} from "../symbols";
 import {CheckboxField} from "./CheckboxField";
 import {DictionarySelect} from "./DictionarySelect";
 import {MultilineTextField} from "./MultilineTextField";
@@ -299,7 +299,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       <div class="overflow-clip px-1">
         <Switch>
           <Match when={!hasValue()}>
-            <Show when={aProps.params?.viewEmpty} fallback={EMPTY_VALUE_SYMBOL}>
+            <Show when={aProps.params?.viewEmpty} fallback={<EmptyValueSymbol />}>
               {(viewEmpty) => viewEmpty()()}
             </Show>
           </Match>

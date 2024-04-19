@@ -6,7 +6,7 @@ import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {
@@ -171,7 +171,12 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
           </div>
           <CheckboxField name="isRemote" />
           <RichTextViewEdit name="notes" viewMode={props.viewMode} />
-          <DictionarySelect name="resources" dictionary="meetingResource" multiple placeholder={EMPTY_VALUE_SYMBOL} />
+          <DictionarySelect
+            name="resources"
+            dictionary="meetingResource"
+            multiple
+            placeholder={EMPTY_VALUE_SYMBOL_STRING}
+          />
           <ByMode
             edit={
               <FelteSubmit

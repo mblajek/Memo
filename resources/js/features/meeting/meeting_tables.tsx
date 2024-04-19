@@ -7,7 +7,7 @@ import {exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/t
 import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/UuidListSelectFilterControl";
 import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL, EM_DASH, EN_DASH} from "components/ui/symbols";
+import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
@@ -389,7 +389,7 @@ interface UserLinksProps {
 const UserLinks: VoidComponent<UserLinksProps> = (props) => {
   const {attendanceStatusDict} = useFixedDictionaries();
   return (
-    <Show when={props.users} fallback={EMPTY_VALUE_SYMBOL}>
+    <Show when={props.users} fallback={<EmptyValueSymbol />}>
       <ul>
         <Index each={props.users}>
           {(user) => (

@@ -2,7 +2,7 @@ import {AnchorProps} from "@solidjs/router";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SmallSpinner} from "components/ui/Spinner";
 import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
@@ -32,14 +32,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     style: {"margin-right": "0.1em", "margin-bottom": "0.1em"},
   };
   return (
-    <Show
-      when={props.userId}
-      fallback={
-        <span class="inline-block" style={{"min-height": "1.45em"}}>
-          {EMPTY_VALUE_SYMBOL}
-        </span>
-      }
-    >
+    <Show when={props.userId} fallback={<EmptyValueSymbol class="inline-block" style={{"min-height": "1.45em"}} />}>
       {/* Allow wrapping the client name, but not just after the icon. */}
       <span
         class="inline-block"

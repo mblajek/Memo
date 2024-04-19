@@ -3,7 +3,7 @@ import {Email} from "components/ui/Email";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {USER_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
@@ -55,7 +55,7 @@ export default (() => {
               <PaddedCell>
                 <Show
                   when={!c.row.original.email || (c.row.original.email as string).includes("@")}
-                  fallback={EMPTY_VALUE_SYMBOL}
+                  fallback={<EmptyValueSymbol />}
                 >
                   <EditButton
                     class="minimal"

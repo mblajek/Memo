@@ -7,7 +7,7 @@ import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {ACTION_ICONS, CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -151,7 +151,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           </div>
         </Show>
         <div class="col-span-full grid grid-cols-subgrid gap-1 span">
-          <Index each={form.data(props.name)} fallback={EMPTY_VALUE_SYMBOL}>
+          <Index each={form.data(props.name)} fallback={<EmptyValueSymbol />}>
             {(_attendant, index) => {
               const userId = () => form.data(`${props.name}.${index}.userId`);
               const priorityQueryParams = createMemo(() =>

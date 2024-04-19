@@ -1,6 +1,6 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {SmallSpinner} from "components/ui/Spinner";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/symbols";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -87,7 +87,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
         <Capitalize text={t("facility_user.related_users")} />
       </h2>
       <QueryBarrier queries={[relatedUsersQuery.dataQuery]} pending={() => <SmallSpinner />}>
-        <Show when={relatedPeople()?.staff.length || relatedPeople()?.clients.length} fallback={EMPTY_VALUE_SYMBOL}>
+        <Show when={relatedPeople()?.staff.length || relatedPeople()?.clients.length} fallback={<EmptyValueSymbol />}>
           <div class="flex flex-col gap-1">
             <For each={["staff", "clients"] as const}>
               {(type) => (

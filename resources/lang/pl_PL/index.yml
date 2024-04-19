@@ -86,3 +86,5 @@ about_page:
   commit_date: "Moment zbudowania:"
   commit_hash: "Commit:"
   cpu_load: "Obciążenie CPU:"
+
+preview: "Podgląd"
