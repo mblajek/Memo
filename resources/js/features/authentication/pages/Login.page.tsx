@@ -36,6 +36,7 @@ export default (() => {
   return (
     <QueryBarrier
       queries={[statusQuery]}
+      ignoreCachedData
       // Do not show any errors, instead just show this login form.
       error={() => undefined}
       pending={() => undefined}

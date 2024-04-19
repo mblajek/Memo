@@ -35,18 +35,18 @@ export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => 
   );
 };
 
-interface WorkTimeBlockProps extends PartDayBlockProps {
+interface TimeBlockProps extends PartDayBlockProps {
   readonly onEditClick?: () => void;
 }
 
-export const WorkTimeBlock: VoidComponent<WorkTimeBlockProps> = (allProps) => {
+export const TimeBlock: VoidComponent<TimeBlockProps> = (allProps) => {
   const [props, hProps] = splitProps(allProps, ["onEditClick"]);
   return (
     <HoursAreaBlock {...hProps}>
       <Show when={isDEV() && props.onEditClick}>
         <Button
           class="absolute right-0 bottom-0"
-          title="Edit the work time"
+          title="Edit the time block"
           onClick={(e) => {
             props.onEditClick?.();
             e.stopPropagation();

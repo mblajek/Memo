@@ -1,6 +1,7 @@
 import {JSX} from "solid-js";
 import {DOMElement} from "solid-js/jsx-runtime";
 import {cx} from "./classnames";
+import {skipUndefinedValues} from "./object_util";
 
 /**
  * A collection of super-interfaces for props for components that accept HTML element attributes,
@@ -66,17 +67,21 @@ export namespace htmlAttributes {
     if (attribs.class !== undefined && result.class !== attribs.class) {
       result.class = cx(attribs.class as string, overrides.class);
     }
-    if (attribs.style !== undefined && result.style !== attribs.style) {
-      if (typeof attribs.style !== typeof overrides.style)
-        throw new Error(
-          `Cannot merge style from attributes (${JSON.stringify(
-            attribs.style,
-          )}) and style from overrides (${JSON.stringify(overrides.style)})`,
-        );
-      result.style =
-        typeof attribs.style === "string"
-          ? `${attribs.style} ; ${overrides.style}`
-          : {...attribs.style, ...(overrides.style as JSX.CSSProperties)};
+    if (attribs.style !== undefined && Object.hasOwn(overrides, "style")) {
+      if (overrides.style === undefined) {
+        result.style = attribs.style as JSX.CSSProperties;
+      } else {
+        if (typeof attribs.style !== typeof overrides.style)
+          throw new Error(
+            `Cannot merge style from attributes (${JSON.stringify(
+              attribs.style,
+            )}) and style from overrides (${JSON.stringify(overrides.style)})`,
+          );
+        result.style =
+          typeof attribs.style === "string"
+            ? `${attribs.style} ; ${overrides.style}`
+            : {...attribs.style, ...skipUndefinedValues(overrides.style as JSX.CSSProperties)};
+      }
     }
     for (const eventHandler of EVENT_HANDLERS) {
       if (attribs[eventHandler] && overrides[eventHandler]) {

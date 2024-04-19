@@ -11,7 +11,7 @@ import {AllDayArea} from "components/ui/calendar/calendar-columns/AllDayArea";
 import {DayHeader} from "components/ui/calendar/calendar-columns/DayHeader";
 import {HoursArea} from "components/ui/calendar/calendar-columns/HoursArea";
 import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHeader";
-import {WorkTimeBlock} from "components/ui/calendar/calendar-columns/blocks";
+import {TimeBlock} from "components/ui/calendar/calendar-columns/blocks";
 import {DaysRange} from "components/ui/calendar/days_range";
 import {PartDayTimeSpan} from "components/ui/calendar/types";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
@@ -20,6 +20,7 @@ import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
+import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {User} from "data-access/memo-api/groups";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -104,11 +105,19 @@ type PersistentState = {
 };
 const PERSISTENCE_VERSION = 3;
 
-const BG_CLASSES = {
-  background: "bg-[rgb(226,227,231)]",
-  facilityWorkTime: "bg-[rgb(236,237,241)]",
-  staffWorkTime: "bg-white",
-};
+const BACKGROUNDS = (() => {
+  const main = "#e2e3e7";
+  const facilityWorkTime = "#ecedf1";
+  const staffWorkTime = "white";
+  const leaveTimeLines = "#a4a9b4";
+  return {
+    main,
+    facilityWorkTime,
+    staffWorkTime,
+    facilityLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, transparent 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
+    staffLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, transparent 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
+  };
+})();
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -559,20 +568,42 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
 
   function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
     const range = new DaysRange(day.minus({days: 1}), day);
-    const workTimeBlocks = () => {
-      const workTimes = events().filter(
-        (w) => w.meeting.typeDictId === meetingTypeDict()?.work_time.id && range.contains(w.date),
-      );
-      const facilityWorkTimes = workTimes.filter((w) => !w.meeting.staff.length);
-      const staffWorkTimes = staffId
-        ? workTimes.filter((w) => w.meeting.staff.some((staff) => staff.userId === staffId))
-        : [];
-      function makeBlocks(workTimes: ReturnType<typeof events>, className: string) {
+    const blocks = () => {
+      function getBlockEvents(meetingType: Position | undefined) {
+        const blockEvents = meetingType
+          ? events().filter((w) => w.meeting.typeDictId === meetingType.id && range.contains(w.date))
+          : [];
+        return {
+          facility: blockEvents.filter((w) => !w.meeting.staff.length),
+          staff: staffId ? blockEvents.filter((w) => w.meeting.staff.some((staff) => staff.userId === staffId)) : [],
+        };
+      }
+      const {facility: facilityWorkTimes, staff: staffWorkTimes} = getBlockEvents(meetingTypeDict()?.work_time);
+      function makeWorkTimeBlocks(workTimes: ReturnType<typeof events>, background: string) {
         return workTimes.map((w) => ({
           ...w,
           content: () => (
-            <WorkTimeBlock
-              class={className}
+            <TimeBlock
+              style={{background}}
+              label={w.meeting.notes || undefined}
+              onEditClick={() =>
+                meetingModal.show({
+                  meetingId: w.meeting.id,
+                  initialViewMode: true,
+                  showToast: false,
+                })
+              }
+            />
+          ),
+        }));
+      }
+      const {facility: facilityLeaveTimes, staff: staffLeaveTimes} = getBlockEvents(meetingTypeDict()?.leave_time);
+      function makeLeaveTimeBlocks(leaveTimes: ReturnType<typeof events>, background: string) {
+        return leaveTimes.map((w) => ({
+          ...w,
+          content: () => (
+            <TimeBlock
+              style={{background}}
               label={w.meeting.notes || undefined}
               onEditClick={() =>
                 meetingModal.show({
@@ -586,8 +617,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         }));
       }
       return [
-        ...makeBlocks(facilityWorkTimes, BG_CLASSES.facilityWorkTime),
-        ...makeBlocks(staffWorkTimes, BG_CLASSES.staffWorkTime),
+        ...makeWorkTimeBlocks(facilityWorkTimes, BACKGROUNDS.facilityWorkTime),
+        ...makeWorkTimeBlocks(staffWorkTimes, BACKGROUNDS.staffWorkTime),
+        ...makeLeaveTimeBlocks(facilityLeaveTimes, BACKGROUNDS.facilityLeaveTime),
+        ...makeLeaveTimeBlocks(staffLeaveTimes, BACKGROUNDS.staffLeaveTime),
       ];
     };
     const selectedEvents = () =>
@@ -622,9 +655,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       allDayArea: () => <AllDayArea day={day} blocks={[]} events={[]} />,
       hoursArea: () => (
         <HoursArea
-          class={BG_CLASSES.background}
+          style={{background: BACKGROUNDS.main}}
           day={day}
-          blocks={workTimeBlocks()}
+          blocks={blocks()}
           events={selectedEvents()}
           onTimeClick={(time) =>
             meetingCreateModal.show({
@@ -744,13 +777,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       day,
       content: () => (
         <MonthCalendarCell
-          class={
-            staffWorkTimes.some((e) => e.date.hasSame(day, "day"))
-              ? BG_CLASSES.staffWorkTime
+          style={{
+            background: staffWorkTimes.some((e) => e.date.hasSame(day, "day"))
+              ? BACKGROUNDS.staffWorkTime
               : facilityWorkTimes.some((e) => e.date.hasSame(day, "day"))
-                ? BG_CLASSES.facilityWorkTime
-                : BG_CLASSES.background
-          }
+                ? BACKGROUNDS.facilityWorkTime
+                : BACKGROUNDS.main,
+          }}
           month={daysSelection().start}
           day={day}
           workTimes={staffWorkTimes}

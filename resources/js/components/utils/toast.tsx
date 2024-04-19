@@ -40,7 +40,7 @@ interface ToastMessagesProps {
 export const ToastMessages: VoidComponent<ToastMessagesProps> = (props) => (
   <Show when={props.messages.length}>
     <ul class={cx({"list-disc list-inside": props.messages.length > 1}, "wrapText")}>
-      <For each={props.messages}>{(msg) => <li>{msg}</li>}</For>
+      <For each={props.messages}>{(msg) => <li class="wrapTextAnywhere">{msg}</li>}</For>
     </ul>
   </Show>
 );

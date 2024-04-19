@@ -1,15 +1,14 @@
-import {currentDate, cx} from "components/utils";
+import {currentDate, cx, htmlAttributes} from "components/utils";
 import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
 import {FaSolidCircleDot} from "solid-icons/fa";
-import {For, Show, VoidComponent, createMemo} from "solid-js";
+import {For, Show, VoidComponent, createMemo, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {useHolidays} from "./holidays";
 import {Event, PartDayEvent} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
-interface Props {
-  readonly class?: string;
+interface Props extends htmlAttributes.div {
   readonly month: DateTime;
   readonly day: DateTime;
   readonly workTimes: readonly Event[];
@@ -18,7 +17,15 @@ interface Props {
   readonly onEmptyClick?: () => void;
 }
 
-export const MonthCalendarCell: VoidComponent<Props> = (props) => {
+export const MonthCalendarCell: VoidComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, [
+    "month",
+    "day",
+    "workTimes",
+    "events",
+    "onDateClick",
+    "onEmptyClick",
+  ]);
   const locale = useLocale();
   const holidays = useHolidays();
   const weekDaysCalculator = new WeekDaysCalculator(locale);
@@ -32,8 +39,10 @@ export const MonthCalendarCell: VoidComponent<Props> = (props) => {
   const workTimes = createMemo(() => selectAndSort(props.workTimes));
   return (
     <div
-      class={cx("h-full min-h-20 flex flex-col items-stretch text-xs", props.class)}
-      style={{"line-height": "1.1"}}
+      {...htmlAttributes.merge(divProps, {
+        class: "h-full min-h-20 flex flex-col items-stretch text-xs",
+        style: {"line-height": "1.1"},
+      })}
       onClick={() => props.onEmptyClick?.()}
     >
       <div class="bg-inherit pl-0.5 flex items-start gap-1 justify-between">

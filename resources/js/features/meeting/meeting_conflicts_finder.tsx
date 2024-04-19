@@ -224,7 +224,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
         }
         if (conflict.conflictingLeaveTimes.length) {
           iconType = BiRegularCalendarX;
-          styleClass = "text-red-700";
+          styleClass = "text-orange-600";
           let message = t("meetings.conflicts.with_leave_time");
           const notes = conflict.conflictingLeaveTimes.map(({notes}) => notes).filter(Boolean);
           if (notes.length) {

@@ -16,20 +16,20 @@ export function useModelQuerySpecs() {
       return {
         querySpec: {
           entityURL: "admin/user",
-          prefixQueryKey: [User.keys.all()],
+          prefixQueryKey: User.keys.all(),
         },
       };
     },
     userStaff: () => ({
       querySpec: {
         entityURL: `facility/${activeFacilityId()}/user/staff`,
-        prefixQueryKey: [FacilityStaff.keys.staff()],
+        prefixQueryKey: FacilityStaff.keys.staff(),
       },
     }),
     userClient: () => ({
       querySpec: {
         entityURL: `facility/${activeFacilityId()}/user/client`,
-        prefixQueryKey: [FacilityClient.keys.client()],
+        prefixQueryKey: FacilityClient.keys.client(),
       },
     }),
   } satisfies Partial<Record<string, () => Pick<TQuerySelectProps, "querySpec"> | undefined>>;
