@@ -120,8 +120,9 @@ class TqBuilder
         return $this->builder->getCountForPagination();
     }
 
-    public function getData(): Collection
+    public function getData(): array
     {
-        return $this->builder->get();
+        // based on builder->runSelect
+        return $this->builder->getConnection()->select($this->builder->toSql(), $this->builder->getBindings());
     }
 }
