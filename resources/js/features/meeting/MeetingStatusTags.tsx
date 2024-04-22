@@ -6,7 +6,7 @@ import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/re
 import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
 interface MeetingStatusTagsProps {
-  readonly meeting: Pick<MeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">;
+  readonly meeting: Partial<Pick<MeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">>;
   /** If true, a single "planned" tag is shown for a planned meeting. If false, nothing is shown. */
   readonly showPlannedTag?: boolean;
 }
@@ -24,8 +24,8 @@ export const MeetingStatusTags: VoidComponent<MeetingStatusTagsProps> = (props) 
     ClientLatePresentTag,
     RemoteTag,
   } = useStatusTags();
-  function anyHasStatus(attendants: readonly MeetingAttendantResource[], status: Position) {
-    return attendants.some(({attendanceStatusDictId}) => attendanceStatusDictId === status.id);
+  function anyHasStatus(attendants: readonly MeetingAttendantResource[] | undefined, status: Position) {
+    return attendants?.some(({attendanceStatusDictId}) => attendanceStatusDictId === status.id);
   }
   const tags = () => {
     if (!meetingStatusDict()) {

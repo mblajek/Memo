@@ -4,7 +4,7 @@ import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
 interface Props {
-  readonly meeting: Pick<MeetingResource, "fromMeetingId" | "interval">;
+  readonly meeting: Partial<Pick<MeetingResource, "fromMeetingId" | "interval">>;
   readonly compact?: boolean;
 }
 

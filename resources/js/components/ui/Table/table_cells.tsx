@@ -145,7 +145,7 @@ type NullableCellVal<V> = V | undefined | null;
 
 interface CellFuncProps<V, T = RowDataType> {
   readonly v: NullableCellVal<V>;
-  readonly row: T;
+  readonly row: Partial<T>;
   readonly ctx: CellContext<T, unknown>;
 }
 

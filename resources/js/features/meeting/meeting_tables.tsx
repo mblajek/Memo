@@ -45,23 +45,29 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     invalidate.facility.meetings();
   }
 
-  const MeetingTime: VoidComponent<{startDayMinute: number; durationMinutes: number}> = (props) => (
-    <>
-      {formatDayMinuteHM(props.startDayMinute, {hour: "2-digit"})} {EN_DASH}{" "}
-      {formatDayMinuteHM((props.startDayMinute + props.durationMinutes) % MAX_DAY_MINUTE, {hour: "2-digit"})}
-    </>
+  const MeetingTime: VoidComponent<{startDayMinute: number | undefined; durationMinutes: number | undefined}> = (
+    props,
+  ) => (
+    <Show when={props.startDayMinute !== undefined && props.durationMinutes !== undefined}>
+      {formatDayMinuteHM(props.startDayMinute!, {hour: "2-digit"})} {EN_DASH}{" "}
+      {formatDayMinuteHM((props.startDayMinute! + props.durationMinutes!) % MAX_DAY_MINUTE, {hour: "2-digit"})}
+    </Show>
   );
-  const DetailsButton: ParentComponent<{meetingId: string} & htmlAttributes.button> = (allProps) => {
+  const DetailsButton: ParentComponent<{meetingId: string | undefined} & htmlAttributes.button> = (allProps) => {
     const [props, buttonProps] = splitProps(allProps, ["meetingId", "children"]);
     return (
-      <Button
-        {...buttonProps}
-        onClick={() =>
-          meetingModal.show({meetingId: props.meetingId, initialViewMode: true, showGoToMeetingButton: true})
-        }
-      >
-        <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
-      </Button>
+      <Show when={props.meetingId}>
+        {(meetingId) => (
+          <Button
+            {...buttonProps}
+            onClick={() =>
+              meetingModal.show({meetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true})
+            }
+          >
+            <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
+          </Button>
+        )}
+      </Show>
     );
   };
 
@@ -80,9 +86,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           cell: cellFunc<number, TQMeetingResource>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>
-                {(v) => (
-                  <MeetingTime startDayMinute={v()} durationMinutes={(props.row.durationMinutes as number) ?? 0} />
-                )}
+                {(v) => <MeetingTime startDayMinute={v()} durationMinutes={props.row.durationMinutes} />}
               </ShowCellVal>
             </PaddedCell>
           )),
@@ -157,10 +161,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           cell: cellFunc<string, TQMeetingResource>((props) => (
             <ScrollableCell baseHeight={baseHeight}>
               <ShowCellVal v={props.v}>
-                <MeetingStatusTags
-                  meeting={props.row as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
-                  showPlannedTag
-                />
+                <MeetingStatusTags meeting={props.row} showPlannedTag />
               </ShowCellVal>
             </ScrollableCell>
           )),
@@ -267,7 +268,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         columnDef: {
           cell: (c) => (
             <PaddedCell class="flex gap-1 h-min">
-              <DetailsButton class="minimal" meetingId={c.row.original.id as string} />
+              <DetailsButton class="minimal" meetingId={c.row.original.id} />
               <DeleteButton
                 class="minimal"
                 confirm={() =>
@@ -277,7 +278,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                     confirmText: t("forms.meeting_delete.submit"),
                   })
                 }
-                delete={() => deleteMeeting(c.row.original.id as string)}
+                delete={() => deleteMeeting(c.row.original.id)}
               />
             </PaddedCell>
           ),
@@ -300,14 +301,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                         <div>
                           <MeetingTime
                             startDayMinute={props.row.startDayminute}
-                            durationMinutes={(props.row.durationMinutes as number) ?? 0}
+                            durationMinutes={props.row.durationMinutes}
                           />{" "}
                           <MeetingInSeriesInfo meeting={props.row} compact />
                         </div>
                       </Show>
                     </div>
                     <DetailsButton
-                      meetingId={props.row.id as string}
+                      meetingId={props.row.id}
                       class="shrink-0 secondary small"
                       title={t("meetings.click_to_see_details")}
                     >
@@ -355,7 +356,13 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           return (
             <PaddedCell>
               <Show when={type()}>
-                {(type) => <UserLink type={type()} userId={props.row["attendant.userId"] as string} name={props.v!} />}
+                {(type) => (
+                  <UserLink
+                    type={type()}
+                    userId={props.row["attendant.userId"] as string | undefined}
+                    name={props.v!}
+                  />
+                )}
               </Show>
             </PaddedCell>
           );
@@ -370,7 +377,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           <PaddedCell>
             <ShowCellVal v={props.v}>
               {(v) => (
-                <MeetingAttendanceStatus attendanceStatusId={v()} meetingStatusId={props.row.statusDictId as string} />
+                <MeetingAttendanceStatus
+                  attendanceStatusId={v()}
+                  meetingStatusId={props.row.statusDictId as string | undefined}
+                />
               )}
             </ShowCellVal>
           </PaddedCell>

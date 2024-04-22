@@ -125,7 +125,7 @@ export default (() => {
         h.accessor("type", {
           id: "Type",
           cell: cellFunc<AttributeType, Attribute>((props) => (
-            <PaddedCell>{getAttributeTypeString(props.row)}</PaddedCell>
+            <PaddedCell>{getAttributeTypeString(props.row as Attribute)}</PaddedCell>
           )),
           ...textSort(),
         }),
