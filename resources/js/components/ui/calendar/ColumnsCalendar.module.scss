@@ -61,7 +61,7 @@
     }
 
     .gridRowLines {
-      @apply contents z-10;
+      @apply contents z-10 pointer-events-none;
       .gridRowLine {
         @apply absolute w-full h-0 border-b border-dotted border-gray-300 border-opacity-60;
         &.fullHour {

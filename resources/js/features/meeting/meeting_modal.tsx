@@ -9,9 +9,9 @@ import {createComputed, createSignal} from "solid-js";
 
 const MeetingViewEditForm = lazyAutoPreload(() => import("features/meeting/MeetingViewEditForm"));
 
-type Params = Omit<MeetingViewEditFormProps, "viewMode"> & {readonly initialViewMode?: boolean};
+export type MeetingModalParams = Omit<MeetingViewEditFormProps, "viewMode"> & {readonly initialViewMode: boolean};
 
-export const createMeetingModal = registerGlobalPageElement<Params>((args) => {
+export const createMeetingModal = registerGlobalPageElement<MeetingModalParams>((args) => {
   const t = useLangFunc();
   const [viewMode, setViewMode] = createSignal(true);
   return (

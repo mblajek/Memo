@@ -1,27 +1,30 @@
 import {currentDate, cx, htmlAttributes} from "components/utils";
+import {filterAndSortInDayView} from "components/utils/day_minute_util";
 import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
 import {FaSolidCircleDot} from "solid-icons/fa";
-import {For, Show, VoidComponent, createMemo, splitProps} from "solid-js";
+import {For, JSX, Show, createMemo, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {useHolidays} from "./holidays";
-import {Event, PartDayEvent} from "./types";
+import {Block, Event} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
-interface Props extends htmlAttributes.div {
+interface Props<M> extends htmlAttributes.div {
   readonly month: DateTime;
   readonly day: DateTime;
-  readonly workTimes: readonly Event[];
-  readonly events: readonly Event[];
+  readonly monthViewInfo: M;
+  readonly blocks: readonly Block<never, M>[];
+  readonly events: readonly Event<never, M>[];
   readonly onDateClick: () => void;
   readonly onEmptyClick?: () => void;
 }
 
-export const MonthCalendarCell: VoidComponent<Props> = (allProps) => {
+export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
   const [props, divProps] = splitProps(allProps, [
     "month",
     "day",
-    "workTimes",
+    "monthViewInfo",
+    "blocks",
     "events",
     "onDateClick",
     "onEmptyClick",
@@ -29,25 +32,20 @@ export const MonthCalendarCell: VoidComponent<Props> = (allProps) => {
   const locale = useLocale();
   const holidays = useHolidays();
   const weekDaysCalculator = new WeekDaysCalculator(locale);
-  const isThisMonth = createMemo(() => props.day.hasSame(props.month, "month"));
-  function selectAndSort(events: readonly Event[]) {
-    return events
-      .filter((event): event is PartDayEvent => !event.allDay && event.date.hasSame(props.day, "day"))
-      .sort((a, b) => a.startDayMinute - b.startDayMinute);
-  }
-  const partDayEvents = createMemo(() => selectAndSort(props.events));
-  const workTimes = createMemo(() => selectAndSort(props.workTimes));
+  const isThisMonth = () => props.day.hasSame(props.month, "month");
+  const blocks = createMemo(() => filterAndSortInDayView(props.day, props.blocks));
+  const events = createMemo(() => filterAndSortInDayView(props.day, props.events));
   return (
     <div
       {...htmlAttributes.merge(divProps, {
         class: "h-full min-h-20 flex flex-col items-stretch text-xs",
-        style: {"line-height": "1.1"},
+        style: {"line-height": 1.1},
       })}
       onClick={() => props.onEmptyClick?.()}
     >
       <div class="bg-inherit pl-0.5 flex items-start gap-1 justify-between">
         <div class="pt-px min-w-0 flex flex-col">
-          <For each={workTimes()}>{(event) => event.content()}</For>
+          <For each={blocks()}>{(block) => block.contentInMonthCell?.(props.monthViewInfo)}</For>
         </div>
         <Button
           class={cx(
@@ -68,7 +66,7 @@ export const MonthCalendarCell: VoidComponent<Props> = (allProps) => {
         </Button>
       </div>
       <div class="p-px pt-0 flex flex-col items-stretch gap-px mb-2 mr-2">
-        <For each={partDayEvents()}>{(event) => event.content()}</For>
+        <For each={events()}>{(event) => event.contentInMonthCell?.(props.monthViewInfo)}</For>
       </div>
     </div>
   );

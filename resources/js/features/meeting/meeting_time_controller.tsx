@@ -47,6 +47,21 @@ export function meetingTimeInitialValue(time?: DateTime, durationMinutes?: numbe
   } satisfies FormTimeDataType;
 }
 
+export function meetingTimeFullDayInitialValue(date: DateTime) {
+  return {
+    date: date.toISODate(),
+    time: {
+      startTime: "00:00",
+      endTime: "00:00",
+    },
+    // Initialise the API fields, so that the validation messages for them are allocated correctly.
+    // Without these entries, validation messages are treated as unknown validation messages
+    // (see UnknownValidationMessages.tsx).
+    startDayminute: undefined,
+    durationMinutes: undefined,
+  } satisfies FormTimeDataType;
+}
+
 export function useMeetingTimeForm() {
   return useFormContext<FormTimeDataType>().form;
 }

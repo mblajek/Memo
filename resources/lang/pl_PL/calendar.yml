@@ -57,5 +57,7 @@ relative_time:
   in_one_week: "tydzień później"
   in_two_weeks: "dwa tygodnie później"
 
+all_day: "cały dzień"
+
 show_my_calendar: "Mój kalendarz"
 show_my_details: "Moje dane i spotkania"
