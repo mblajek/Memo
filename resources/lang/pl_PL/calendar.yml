@@ -59,5 +59,9 @@ relative_time:
 
 all_day: "cały dzień"
 
+facility_leave_time:
+  all_day: "dzień wolny"
+  part_day: "godziny wolne"
+
 show_my_calendar: "Mój kalendarz"
 show_my_details: "Moje dane i spotkania"

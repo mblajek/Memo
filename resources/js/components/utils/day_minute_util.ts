@@ -63,7 +63,16 @@ export function getDayMinuteRange(day: DateTime, timeSpan: TimeSpan): DayMinuteR
 
 export function crossesDateBoundaries(day: DateTime, timeSpan: TimeSpan) {
   const res = {fromPrevDay: false, toNextDay: false};
-  if (!timeSpan.allDay && timeSpan.startDayMinute + timeSpan.durationMinutes > MAX_DAY_MINUTE) {
+  if (timeSpan.allDay) {
+    if (timeSpan.range.contains(day)) {
+      if (timeSpan.range.start < day.startOf("day")) {
+        res.fromPrevDay = true;
+      }
+      if (timeSpan.range.end > day.endOf("day")) {
+        res.toNextDay = true;
+      }
+    }
+  } else if (timeSpan.startDayMinute + timeSpan.durationMinutes > MAX_DAY_MINUTE) {
     if (timeSpan.date.hasSame(day.minus({days: 1}), "day")) {
       res.fromPrevDay = true;
     } else if (timeSpan.date.hasSame(day, "day")) {

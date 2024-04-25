@@ -44,12 +44,12 @@ range:
   min: "min:"
   max: "max:"
 
-quoted: "„{{text}}”"
+quoted: "„{{-text}}”"
 parenthesis:
   open: "("
   close: ")"
-parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
-with_colon: "{{text}}:"
+parenthesised: "$t(parenthesis.open){{-text}}$t(parenthesis.close)"
+with_colon: "{{-text}}:"
 ellipsis: "…"
 
 more_info: "Więcej informacji"

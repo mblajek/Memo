@@ -710,6 +710,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           monthViewInfo={{day, staffId}}
           blocks={filterByStaff(blocks(), staffId)}
           events={filterByStaff(events(), staffId)}
+          style={{background: CALENDAR_BACKGROUNDS.main}}
           onDateClick={() => {
             setMode("week");
             setDaysSelectionAndMonthFromDay(day);

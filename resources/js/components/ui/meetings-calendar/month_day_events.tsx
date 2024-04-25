@@ -1,9 +1,8 @@
 import {ButtonLike} from "components/ui/ButtonLike";
 import {ACTION_ICONS} from "components/ui/icons";
 import {htmlAttributes} from "components/utils";
-import {MAX_DAY_MINUTE, crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
+import {crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
 import {DateTime} from "luxon";
@@ -11,7 +10,6 @@ import {FaRegularCalendar} from "solid-icons/fa";
 import {For, Match, Show, Switch, VoidComponent, createMemo, splitProps} from "solid-js";
 import {RichTextView} from "../RichTextView";
 import {TimeSpan} from "../calendar/types";
-import {EN_DASH} from "../symbols";
 import {HoverableMeetingEventBlock, HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
 import {MeetingHoverCard} from "./MeetingHoverCard";
 import {MIDNIGHT_CROSSING_SYMBOL, coloringToStyle} from "./colors";
@@ -112,15 +110,3 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
     />
   );
 };
-
-interface MonthDayWorkTimeProps {
-  readonly meeting: TQMeetingResource;
-}
-
-export const MonthDayWorkTime: VoidComponent<MonthDayWorkTimeProps> = (props) => (
-  <span class="whitespace-nowrap select-none">
-    {formatDayMinuteHM(props.meeting.startDayminute)}
-    {EN_DASH}
-    {formatDayMinuteHM((props.meeting.startDayminute + props.meeting.durationMinutes) % MAX_DAY_MINUTE)}
-  </span>
-);

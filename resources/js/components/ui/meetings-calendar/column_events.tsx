@@ -1,9 +1,8 @@
 import {ButtonLike} from "components/ui/ButtonLike";
 import {RichTextView} from "components/ui/RichTextView";
 import {ACTION_ICONS} from "components/ui/icons";
-import {EN_DASH} from "components/ui/symbols";
 import {cx, htmlAttributes, useLangFunc} from "components/utils";
-import {MAX_DAY_MINUTE, crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
+import {crossesDateBoundaries} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
@@ -14,7 +13,8 @@ import {useColumnsCalendar} from "../calendar/ColumnsCalendar";
 import {AllDayTimeSpan, PartDayTimeSpan, TimeSpan} from "../calendar/types";
 import {HoverableMeetingEventBlock, HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
 import {MeetingHoverCard} from "./MeetingHoverCard";
-import {MIDNIGHT_CROSSING_SYMBOL, coloringToStyle} from "./colors";
+import {TimeSpanSummary} from "./TimeSpanSummary";
+import {coloringToStyle} from "./colors";
 import {AttendantListItem} from "./meeting_details";
 
 interface CommonProps
@@ -137,13 +137,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
             }}
           >
             <div class="px-0.5 whitespace-nowrap" style={coloringToStyle(contentsProps.coloring, {part: "header"})}>
-              {crosses().fromPrevDay ? MIDNIGHT_CROSSING_SYMBOL : undefined}
-              <span class="font-weight-medium">{formatDayMinuteHM(props.timeSpan.startDayMinute)}</span>
-              {EN_DASH}
-              <span class="font-weight-medium">
-                {formatDayMinuteHM((props.timeSpan.startDayMinute + props.timeSpan.durationMinutes) % MAX_DAY_MINUTE)}
-              </span>
-              {crosses().toNextDay ? MIDNIGHT_CROSSING_SYMBOL : undefined}
+              <TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />
             </div>
             <Show when={dictionaries()}>
               <div class="px-0.5 pt-px flex flex-col min-h-0">

@@ -79,7 +79,7 @@ export const CALENDAR_BACKGROUNDS = (() => {
     staffWorkTime,
     facilityLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, ${staffWorkTime}40 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
     staffLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, ${staffWorkTime}40 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
-  };
+  } as const;
 })();
 
 export const MIDNIGHT_CROSSING_SYMBOL = "⋮";
