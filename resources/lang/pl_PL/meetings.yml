@@ -38,6 +38,7 @@ show_in_calendar: "Pokaż w kalendarzu"
 conflicts:
   none: "Brak konfliktów"
   unknown: "Ustaw czas spotkania aby sprawdzić konflikty"
-  with_leave_time: "Pracownik jest w tym czasie nieobecny"
+  with_facility_leave_time: "Placówka w tym czasie nie pracuje"
+  with_staff_leave_time: "Pracownik jest w tym czasie nieobecny"
   outside_of_work_time: "Spotkanie jest poza godzinami pracy pracownika"
   with_other_meetings: "Pracownik ma w tym czasie inne spotkanie"
