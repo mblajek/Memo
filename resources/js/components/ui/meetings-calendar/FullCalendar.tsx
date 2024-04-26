@@ -593,6 +593,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       day,
       allDayArea: () => (
         <AllDayArea
+          style={{background: CALENDAR_BACKGROUNDS.main}}
           day={day}
           columnViewInfo={{day, staffId}}
           blocks={staffBlocks()}
