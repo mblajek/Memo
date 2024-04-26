@@ -36,10 +36,14 @@ interface MeetingData {
 }
 
 interface ConflictInfo {
-  readonly conflictingFacilityLeaveTimes: readonly {readonly notes?: string}[];
-  readonly conflictingStaffLeaveTimes: readonly {readonly notes?: string}[];
+  readonly conflictingFacilityLeaveTimes: readonly ConflictingLeaveTime[];
+  readonly conflictingStaffLeaveTimes: readonly ConflictingLeaveTime[];
   readonly conflictingMeetings: readonly {readonly typeDictId: string}[];
   readonly outsideOfWorkTime: boolean;
+}
+
+interface ConflictingLeaveTime {
+  readonly notes?: string;
 }
 
 /** The list of columns to fetch. */
@@ -269,26 +273,26 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
             })}`,
           );
         }
-        if (conflict.conflictingFacilityLeaveTimes.length) {
-          iconType = BiRegularCalendarX;
-          styleClass = "text-orange-600";
-          let message = t("meetings.conflicts.with_facility_leave_time");
-          const notes = conflict.conflictingFacilityLeaveTimes.map(({notes}) => notes).filter(Boolean);
-          if (notes.length) {
-            message += ` ${t("parenthesised", {text: notes.join(", ")})}`;
+        function addConflictingLeaveTimesNote(
+          conflictingLeaveTimes: readonly ConflictingLeaveTime[],
+          messageKey: string,
+        ) {
+          if (conflictingLeaveTimes.length) {
+            iconType = BiRegularCalendarX;
+            styleClass = "text-orange-600";
+            let message = t(messageKey);
+            const notes = conflictingLeaveTimes.map(({notes}) => notes?.replaceAll("\n", ", ")).filter(Boolean);
+            if (notes.length) {
+              message += ` ${t("parenthesised", {text: notes.join(", ")})}`;
+            }
+            messages.unshift(message);
           }
-          messages.unshift(message);
         }
-        if (conflict.conflictingStaffLeaveTimes.length) {
-          iconType = BiRegularCalendarX;
-          styleClass = "text-orange-600";
-          let message = t("meetings.conflicts.with_staff_leave_time");
-          const notes = conflict.conflictingStaffLeaveTimes.map(({notes}) => notes).filter(Boolean);
-          if (notes.length) {
-            message += ` ${t("parenthesised", {text: notes.join(", ")})}`;
-          }
-          messages.unshift(message);
-        }
+        addConflictingLeaveTimesNote(
+          conflict.conflictingFacilityLeaveTimes,
+          "meetings.conflicts.with_facility_leave_time",
+        );
+        addConflictingLeaveTimesNote(conflict.conflictingStaffLeaveTimes, "meetings.conflicts.with_staff_leave_time");
         if (messages.length) {
           title = messages.join("\n");
         }

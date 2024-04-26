@@ -26,7 +26,7 @@ import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
 import {MeetingBasicData} from "features/meeting/meeting_basic_data";
 import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
 import {MeetingModalParams, createMeetingModal} from "features/meeting/meeting_modal";
-import {meetingTimeFullDayInitialValue, meetingTimeInitialValue} from "features/meeting/meeting_time_controller";
+import {meetingTimeFullDayInitialValue, meetingTimePartDayInitialValue} from "features/meeting/meeting_time_controller";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {TbInfoTriangle} from "solid-icons/tb";
@@ -601,7 +601,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             meetingCreateModal.show({
               initialValues: {
                 ...meetingTimeFullDayInitialValue(day),
-                ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
+                ...attendantsInitialValueForCreate([staffId]),
               },
               onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
               showToast: false,
@@ -619,8 +619,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           onTimeClick={(time) =>
             meetingCreateModal.show({
               initialValues: {
-                ...meetingTimeInitialValue(time),
-                ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
+                ...meetingTimePartDayInitialValue(time),
+                ...attendantsInitialValueForCreate([staffId]),
               },
               onSuccess: (meeting, cloneIds) =>
                 meetingChangeEffects(

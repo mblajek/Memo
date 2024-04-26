@@ -5,7 +5,7 @@ import {createMemo, JSX, splitProps, VoidComponent} from "solid-js";
 import {TimeSpan} from "../calendar/types";
 import {timeSpanSummary, TimeSpanSummary} from "./TimeSpanSummary";
 
-interface TimeBlockSummaryProps extends Omit<htmlAttributes.div, "title"> {
+interface TimeBlockSummaryProps extends Omit<htmlAttributes.span, "title"> {
   readonly day: DateTime;
   readonly timeSpan: TimeSpan;
   readonly label?: (time: JSX.Element) => JSX.Element;
@@ -17,11 +17,11 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
   const t = useLangFunc();
   const crosses = createMemo(() => crossesDateBoundaries(props.day, props.timeSpan));
   return (
-    <div
+    <span
       {...htmlAttributes.merge(divProps, {class: "whitespace-nowrap px-0.5 rounded overflow-clip"})}
       title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}
     >
       {(props.label || ((time) => time))(<TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />)}
-    </div>
+    </span>
   );
 };

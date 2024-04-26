@@ -9,26 +9,26 @@ import {
 } from "components/utils/day_minute_util";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
+import {PartialNullable} from "data-access/memo-api/types";
 import {DateTime, Duration, Interval} from "luxon";
 import {createComputed, on} from "solid-js";
 import {z} from "zod";
 
-export const getMeetingTimeFieldsSchemaPart = () => ({
-  time: z.object({
-    startTime: z.string(),
-    endTime: z.string(),
-  }),
-});
+export const getMeetingTimeFieldsSchemaPart = () =>
+  z.object({
+    time: z.object({
+      allDay: z.boolean(),
+      startTime: z.string(),
+      endTime: z.string(),
+    }),
+  });
 
-export interface FormTimeDataType extends Obj {
-  readonly date?: string;
-  readonly time: {
-    readonly startTime: string;
-    readonly endTime: string;
+export type FormTimeDataType = Obj &
+  z.infer<ReturnType<typeof getMeetingTimeFieldsSchemaPart>> & {
+    readonly date?: string;
   };
-}
 
-export function meetingTimeInitialValue(time?: DateTime, durationMinutes?: number) {
+export function meetingTimePartDayInitialValue(time?: DateTime) {
   const localTime = time?.toLocal().startOf("minute");
   function timeInput(time: DateTime | undefined) {
     return time ? dateTimeToTimeInput(time) : "";
@@ -36,8 +36,9 @@ export function meetingTimeInitialValue(time?: DateTime, durationMinutes?: numbe
   return {
     date: localTime?.toISODate() || "",
     time: {
+      allDay: false,
       startTime: timeInput(localTime),
-      endTime: durationMinutes === undefined ? "" : timeInput(localTime?.plus({minutes: durationMinutes})),
+      endTime: "",
     },
     // Initialise the API fields, so that the validation messages for them are allocated correctly.
     // Without these entries, validation messages are treated as unknown validation messages
@@ -51,8 +52,9 @@ export function meetingTimeFullDayInitialValue(date: DateTime) {
   return {
     date: date.toISODate(),
     time: {
-      startTime: "00:00",
-      endTime: "00:00",
+      allDay: true,
+      startTime: "",
+      endTime: "",
     },
     // Initialise the API fields, so that the validation messages for them are allocated correctly.
     // Without these entries, validation messages are treated as unknown validation messages
@@ -81,13 +83,29 @@ export function createMeetingTimeController() {
   const attributes = useAttributes();
   const durationMinutesAttr = () => attributes()?.getByName<number>("position", "durationMinutes");
   const form = useMeetingTimeForm();
-  const durationMinutes = () => getMeetingTimeDurationData(form.data("time")).durationMinutes;
-  function setDurationMinutes(duration: number | undefined) {
-    const {startTime} = form.data("time") || {};
-    if (startTime && duration) {
-      const start = timeInputToDayMinute(startTime, {assert: true});
-      const end = (start + duration) % MAX_DAY_MINUTE;
-      form.setFields("time", (v) => ({startTime: v?.startTime || "", endTime: dayMinuteToTimeInput(end)}));
+  /** The time part of the form, possibly missing. */
+  const formTime = () => form.data("time") as FormTimeDataType["time"] | undefined;
+  const durationMinutes = () => formTime() && getMeetingTimeDurationData(formTime()!).durationMinutes;
+  function setDurationMinutes(duration: number | undefined, {maxIsAllDay = false} = {}) {
+    if (duration === MAX_DAY_MINUTE && maxIsAllDay) {
+      form.setFields("time", (v) => ({...v, allDay: true}));
+    } else if (duration) {
+      const {startTime} = formTime() || {};
+      if (startTime) {
+        const start = timeInputToDayMinute(startTime, {assert: true});
+        const end = (start + duration) % MAX_DAY_MINUTE;
+        form.setFields("time", {
+          allDay: false,
+          startTime,
+          endTime: dayMinuteToTimeInput(end),
+        });
+      } else {
+        // We cannot really set the duration, but at least switch to part day.
+        form.setFields("time", (v) => ({
+          ...v,
+          allDay: false,
+        }));
+      }
     }
   }
   /** The default duration taken from the type. */
@@ -103,11 +121,13 @@ export function createMeetingTimeController() {
   // Change the end time when the start time changes to preserve duration.
   createComputed(
     on(
-      () => form.data("time")?.startTime,
+      () => formTime()?.startTime,
       (startTime, prevStartTime) => {
-        const endTime = form.data("time")?.endTime;
-        if (prevStartTime && startTime && endTime) {
-          setDurationMinutes(getMeetingTimeDurationData({startTime: prevStartTime, endTime}).durationMinutes);
+        const endTime = formTime()?.endTime;
+        if (prevStartTime && startTime && startTime !== prevStartTime && endTime) {
+          setDurationMinutes(
+            getMeetingTimeDurationData({allDay: false, startTime: prevStartTime, endTime}).durationMinutes,
+          );
         }
       },
     ),
@@ -119,7 +139,8 @@ export function createMeetingTimeController() {
         const prevDuration = durationMinutes();
         const shouldSyncDuration = !prevDuration || prevDuration === prevDefaultDurationMinutes;
         if (shouldSyncDuration) {
-          setDurationMinutes(defaultDurationMinutes || DEFAULT_DURATION_MINUTES);
+          const keepPartDay = prevDefaultDurationMinutes === MAX_DAY_MINUTE && !formTime()?.allDay;
+          setDurationMinutes(defaultDurationMinutes || DEFAULT_DURATION_MINUTES, {maxIsAllDay: !keepPartDay});
         }
       }
     }),
@@ -130,19 +151,33 @@ export function createMeetingTimeController() {
   };
 }
 
-export function getMeetingTimeDurationData({startTime, endTime}: {startTime?: string; endTime?: string}) {
-  const startDayMinute = timeInputToDayMinute(startTime);
-  const endDayMinute = timeInputToDayMinute(endTime);
-  const hasFullTime = startDayMinute !== undefined && endDayMinute !== undefined;
-  const durationMinutes = hasFullTime
-    ? ((endDayMinute - startDayMinute + MAX_DAY_MINUTE - 1) % MAX_DAY_MINUTE) + 1
-    : undefined;
-  return {startDayMinute, endDayMinute, durationMinutes, hasFullTime};
+export function getMeetingTimeDurationData({
+  allDay,
+  startTime,
+  endTime,
+}: {
+  allDay: boolean;
+  startTime?: string;
+  endTime?: string;
+}) {
+  if (allDay) {
+    return {startDayMinute: 0, endDayMinute: 0, durationMinutes: MAX_DAY_MINUTE, hasFullTime: true};
+  } else {
+    const startDayMinute = timeInputToDayMinute(startTime);
+    const endDayMinute = timeInputToDayMinute(endTime);
+    const hasFullTime = startDayMinute !== undefined && endDayMinute !== undefined;
+    const durationMinutes = hasFullTime
+      ? ((endDayMinute - startDayMinute + MAX_DAY_MINUTE - 1) % MAX_DAY_MINUTE) + 1
+      : undefined;
+    return {startDayMinute, endDayMinute, durationMinutes, hasFullTime};
+  }
 }
 
 export function getMeetingTimeFullData(values: Partial<FormTimeDataType>) {
   const date = values.date ? DateTime.fromISO(values.date) : undefined;
-  const {startDayMinute, endDayMinute, durationMinutes, hasFullTime} = getMeetingTimeDurationData(values.time || {});
+  const {startDayMinute, endDayMinute, durationMinutes, hasFullTime} = getMeetingTimeDurationData(
+    values.time || {allDay: false},
+  );
   const hasFullDateTime = !!date && hasFullTime;
   return {
     date,
@@ -155,9 +190,10 @@ export function getMeetingTimeFullData(values: Partial<FormTimeDataType>) {
       // Remove the temporary field.
       time: undefined,
       ...({
-        startDayminute: startDayMinute,
-        durationMinutes,
-      } satisfies Partial<MeetingResource>),
+        // Use nulls in case of missing values to let the backend handle the validation.
+        startDayminute: startDayMinute ?? null,
+        durationMinutes: durationMinutes ?? null,
+      } satisfies PartialNullable<MeetingResource>),
     },
     interval: hasFullDateTime
       ? getMeetingTimeInterval({date, startDayMinute: startDayMinute!, durationMinutes: durationMinutes!})

@@ -30,16 +30,16 @@ const getSchema = () =>
   z
     .object({
       date: z.string(),
-      ...getMeetingTimeFieldsSchemaPart(),
       typeDictId: z.string(),
       statusDictId: z.string(),
       isRemote: z.boolean(),
-      ...getAttendantsSchemaPart(),
       notes: z.string(),
       resources: z.array(z.string()),
       createSeries: z.boolean().optional(),
       fromMeetingId: z.string().optional(),
     })
+    .merge(getMeetingTimeFieldsSchemaPart())
+    .merge(getAttendantsSchemaPart())
     .merge(getMeetingSeriesSchema().partial());
 
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
@@ -108,7 +108,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
     >
       {(form) => (
         <>
-          <div class="flex flex-col">
+          <div class="flex flex-col gap-1">
             <MeetingDateAndTime
               // Does not work very well on Chrome currently.
               // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}

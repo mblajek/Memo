@@ -8,7 +8,9 @@ import {Match, Show, Switch, VoidComponent} from "solid-js";
 
 interface Props {
   readonly date: DateTime;
-  readonly startDayMinute: number;
+  /** Treat as all day time, regardless of the day minutes. */
+  readonly allDay?: boolean;
+  readonly startDayMinute?: number;
   readonly durationMinutes?: number;
   readonly twoLines?: boolean;
 }
@@ -27,26 +29,30 @@ export const DateAndTimeInfo: VoidComponent<Props> = (props) => {
       </div>
       <div class="flex gap-1">
         <Switch>
-          <Match when={props.startDayMinute === 0 && props.durationMinutes === MAX_DAY_MINUTE}>
+          <Match when={props.allDay || (props.startDayMinute === 0 && props.durationMinutes === MAX_DAY_MINUTE)}>
             <span>{t("parenthesised", {text: t("calendar.all_day")})}</span>
           </Match>
-          <Match when={true}>
-            <span class="font-semibold">{formatDayMinuteHM(props.startDayMinute)}</span>
-            <Show when={props.durationMinutes}>
-              {(durationMinutes) => (
-                <>
-                  <span>{EN_DASH}</span>
-                  <span class="font-semibold">
-                    {formatDayMinuteHM((props.startDayMinute + durationMinutes()) % MAX_DAY_MINUTE)}
-                  </span>
-                  <span>
-                    {t("parenthesis.open")}
-                    <TimeDuration minutes={durationMinutes()} />
-                    {t("parenthesis.close")}
-                  </span>
-                </>
-              )}
-            </Show>
+          <Match when={props.startDayMinute}>
+            {(startDayMinute) => (
+              <>
+                <span class="font-semibold">{formatDayMinuteHM(startDayMinute())}</span>
+                <Show when={props.durationMinutes}>
+                  {(durationMinutes) => (
+                    <>
+                      <span>{EN_DASH}</span>
+                      <span class="font-semibold">
+                        {formatDayMinuteHM((startDayMinute() + durationMinutes()) % MAX_DAY_MINUTE)}
+                      </span>
+                      <span>
+                        {t("parenthesis.open")}
+                        <TimeDuration minutes={durationMinutes()} />
+                        {t("parenthesis.close")}
+                      </span>
+                    </>
+                  )}
+                </Show>
+              </>
+            )}
           </Match>
         </Switch>
       </div>

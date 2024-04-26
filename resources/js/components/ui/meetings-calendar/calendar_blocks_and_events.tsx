@@ -1,5 +1,5 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {NON_NULLABLE, useLangFunc} from "components/utils";
+import {cx, NON_NULLABLE, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useLocale} from "components/utils/LocaleContext";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -137,7 +137,7 @@ export function useCalendarBlocksAndEvents({
           strength: BACKGROUND_PREFERENCE_STRENGTHS.workTime[facilityWide ? "facility" : "staff"],
           style,
         };
-        const Summary: VoidComponent<{readonly day: DateTime}> = (props) => (
+        const WorkTimeSummary: VoidComponent<{readonly day: DateTime}> = (props) => (
           <TimeBlockSummary
             day={props.day}
             timeSpan={timeSpan}
@@ -155,9 +155,9 @@ export function useCalendarBlocksAndEvents({
               onEditClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: false})}
             />
           ),
-          contentInAllDayArea: facilityWide ? undefined : (colInfo) => <Summary day={colInfo.day} />,
+          contentInAllDayArea: facilityWide ? undefined : (colInfo) => <WorkTimeSummary day={colInfo.day} />,
           allDayAreaStylingPreference: stylingPreference,
-          contentInMonthCell: facilityWide ? undefined : (monthInfo) => <Summary day={monthInfo.day} />,
+          contentInMonthCell: facilityWide ? undefined : (monthInfo) => <WorkTimeSummary day={monthInfo.day} />,
           monthCellStylingPreference: stylingPreference,
         });
       } else if (meeting.typeDictId === meetingTypeDict()?.leave_time.id) {
@@ -175,16 +175,13 @@ export function useCalendarBlocksAndEvents({
         const genericName = facilityWide
           ? t(timeSpan.allDay ? "calendar.facility_leave_time.all_day" : "calendar.facility_leave_time.part_day")
           : meetingTypeDict()?.leave_time.label;
-        const Summary: VoidComponent<{readonly day: DateTime}> = (props) => (
+        const LeaveTimeSummary: VoidComponent<{readonly day: DateTime}> = (props) => (
           <TimeBlockSummary
             day={props.day}
             timeSpan={timeSpan}
-            style={
-              timeSpan.allDay
-                ? // Skip the background if it's all day leave, which will set the background of the cell anyway.
-                  undefined
-                : style
-            }
+            // Skip the background if it's all day leave, which will set the background of the cell anyway.
+            class={cx(timeSpan.allDay ? undefined : "border border-gray-300", "text-red-900")}
+            style={timeSpan.allDay ? undefined : style}
             label={(time) => (
               <span>
                 <Show when={!timeSpan.allDay}>{time} </Show>
@@ -213,9 +210,9 @@ export function useCalendarBlocksAndEvents({
               onEditClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: false})}
             />
           ),
-          contentInAllDayArea: (colInfo) => <Summary day={colInfo.day} />,
+          contentInAllDayArea: (colInfo) => <LeaveTimeSummary day={colInfo.day} />,
           allDayAreaStylingPreference: stylingPreference,
-          contentInMonthCell: (monthInfo) => <Summary day={monthInfo.day} />,
+          contentInMonthCell: (monthInfo) => <LeaveTimeSummary day={monthInfo.day} />,
           monthCellStylingPreference: stylingPreference,
         });
       } else if (meeting.categoryDictId !== meetingCategoryDict()?.system.id) {

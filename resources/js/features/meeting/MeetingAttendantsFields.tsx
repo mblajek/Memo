@@ -27,10 +27,11 @@ import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attend
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
 import {getMeetingTimeFullData} from "./meeting_time_controller";
 
-export const getAttendantsSchemaPart = () => ({
-  staff: getAttendantsSchema(),
-  clients: getAttendantsSchema(),
-});
+export const getAttendantsSchemaPart = () =>
+  z.object({
+    staff: getAttendantsSchema(),
+    clients: getAttendantsSchema(),
+  });
 
 const getAttendantsSchema = () =>
   z.array(
