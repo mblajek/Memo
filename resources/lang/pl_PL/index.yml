@@ -1,6 +1,7 @@
 language: "polski"
 
 app_name: "Memo"
+app_version_short: "v{{version}}"
 
 exception:
   configuration:
@@ -83,7 +84,7 @@ form_page_leave_confirmation:
 about_page:
   app_version: "Wersja aplikacji:"
   app_env: "Środowisko:"
-  commit_date: "Moment zbudowania:"
+  commit_date: "Commit (data):"
   commit_hash: "Commit:"
   cpu_load: "Obciążenie CPU:"
 
