@@ -50,8 +50,8 @@ export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
       )}
     >
       <div class="flex flex-col items-stretch">
-        <div class="bg-inherit pl-0.5 flex items-start justify-between">
-          <div class="pt-px flex flex-col min-w-0">
+        <div class="bg-inherit flex items-start justify-between">
+          <div class="p-px flex flex-col min-w-0">
             <For each={blocks()}>{(block) => block.contentInMonthCell?.(props.monthViewInfo)}</For>
           </div>
           <Button

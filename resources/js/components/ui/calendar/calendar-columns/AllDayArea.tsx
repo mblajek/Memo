@@ -28,16 +28,10 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
         objs.map((o) => o.monthCellStylingPreference).filter(NON_NULLABLE),
       )}
     >
-      <div class="flex flex-col items-stretch mb-2">
-        <For each={blocks()}>
-          {(block) => (
-            <Show when={block.contentInAllDayArea}>
-              {(content) => <div class="w-full overflow-clip shrink-0">{content()(props.columnViewInfo)}</div>}
-            </Show>
-          )}
-        </For>
+      <div class="flex flex-col items-stretch mb-2 p-px">
+        <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
         <div
-          class="p-px flex flex-col items-stretch gap-px"
+          class="flex flex-col items-stretch gap-px"
           style={{
             // Match the margin of the hours area events.
             "margin-right": "11px",

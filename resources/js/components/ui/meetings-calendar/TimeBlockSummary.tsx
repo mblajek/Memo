@@ -18,7 +18,7 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
   const crosses = createMemo(() => crossesDateBoundaries(props.day, props.timeSpan));
   return (
     <span
-      {...htmlAttributes.merge(divProps, {class: "whitespace-nowrap px-0.5 rounded overflow-clip"})}
+      {...htmlAttributes.merge(divProps, {class: "whitespace-nowrap rounded overflow-clip text-ellipsis"})}
       title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}
     >
       {(props.label || ((time) => time))(<TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />)}
