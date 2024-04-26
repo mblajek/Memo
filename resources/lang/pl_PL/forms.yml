@@ -51,12 +51,14 @@ facility_edit:
 
 meeting:
   default_duration: "Sugerowane:"
+  default_duration_first_set_start_time: "Najpierw wybierz godzinę rozpoczęcia"
   add_attendant:
     staff: "Dodaj kolejnego pracownika"
     clients: "Dodaj kolejnego klienta"
   fieldNames:
     dateAndTime: "data i godzina"
     durationMinutes: "długość spotkania"
+    time.allDay: "$t(calendar.all_day)"
     staff__interval: "(1)[$t(models.staff._name)];(0-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
 

@@ -11,7 +11,7 @@ const OP_END = 0;
 export interface OverlapData {
   /** The number of sub-columns existing in the area where this object is placed. */
   count: number;
-  /** The sub-column index where this obejct should be placed. */
+  /** The sub-column index where this object should be placed. */
   index: number;
 }
 

@@ -26,7 +26,7 @@ const COLUMNS = [
   "isRemote",
   "fromMeetingId",
   "interval",
-] satisfies (keyof MeetingResource)[];
+] as const satisfies (keyof MeetingResource)[];
 
 /** A meeting resource type fetched from tquery. */
 export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof COLUMNS)[number], "staff" | "clients">> & {

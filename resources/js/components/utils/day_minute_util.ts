@@ -1,5 +1,5 @@
 import {DateTime} from "luxon";
-import {PartDayTimeSpan} from "../ui/calendar/types";
+import {TimeSpan} from "../ui/calendar/types";
 
 export type DayMinuteRange = readonly [number, number];
 
@@ -30,25 +30,72 @@ export function formatDayMinuteHM(dayMinute: number, formatOpts?: Intl.DateTimeF
 }
 
 /** Checks whether the time span is at least partially on the given day. */
-export function isOnDay(day: DateTime, timeSpan: PartDayTimeSpan) {
-  return !!getDayMinuteRange(day, timeSpan);
+export function isOnDay(day: DateTime, timeSpan: TimeSpan) {
+  if (timeSpan.allDay) {
+    return timeSpan.range.contains(day);
+  } else {
+    return (
+      timeSpan.date.hasSame(day, "day") ||
+      (timeSpan.date.hasSame(day.minus({days: 1}), "day") &&
+        timeSpan.startDayMinute + timeSpan.durationMinutes > MAX_DAY_MINUTE)
+    );
+  }
 }
 
 /**
  * Returns the day minute range of the specified time span, clamping to the specified day.
  * Returns undefined if the range is empty.
  */
-export function getDayMinuteRange(
-  day: DateTime,
-  {date, startDayMinute, durationMinutes}: PartDayTimeSpan,
-): DayMinuteRange | undefined {
-  if (date.hasSame(day, "day")) {
-    return [startDayMinute, Math.min(startDayMinute + durationMinutes, MAX_DAY_MINUTE)];
-  } else if (date.hasSame(day.minus({days: 1}), "day") && startDayMinute + durationMinutes > MAX_DAY_MINUTE) {
-    return [0, startDayMinute + durationMinutes - MAX_DAY_MINUTE];
+export function getDayMinuteRange(day: DateTime, timeSpan: TimeSpan): DayMinuteRange | undefined {
+  if (timeSpan.allDay) {
+    return timeSpan.range.contains(day) ? FULL_DAY_MINUTE_RANGE : undefined;
   } else {
-    return undefined;
+    const {date, startDayMinute, durationMinutes} = timeSpan;
+    if (date.hasSame(day, "day")) {
+      return [startDayMinute, Math.min(startDayMinute + durationMinutes, MAX_DAY_MINUTE)];
+    } else if (date.hasSame(day.minus({days: 1}), "day") && startDayMinute + durationMinutes > MAX_DAY_MINUTE) {
+      return [0, startDayMinute + durationMinutes - MAX_DAY_MINUTE];
+    } else {
+      return undefined;
+    }
   }
+}
+
+export function crossesDateBoundaries(day: DateTime, timeSpan: TimeSpan) {
+  const res = {fromPrevDay: false, toNextDay: false};
+  if (timeSpan.allDay) {
+    if (timeSpan.range.contains(day)) {
+      if (timeSpan.range.start < day.startOf("day")) {
+        res.fromPrevDay = true;
+      }
+      if (timeSpan.range.end > day.endOf("day")) {
+        res.toNextDay = true;
+      }
+    }
+  } else if (timeSpan.startDayMinute + timeSpan.durationMinutes > MAX_DAY_MINUTE) {
+    if (timeSpan.date.hasSame(day.minus({days: 1}), "day")) {
+      res.fromPrevDay = true;
+    } else if (timeSpan.date.hasSame(day, "day")) {
+      res.toNextDay = true;
+    }
+  }
+  return res;
+}
+
+export function filterAndSortInDayView<T extends TimeSpan>(day: DateTime, spans: readonly T[]) {
+  return spans
+    .filter((span) => isOnDay(day, span))
+    .sort((a, b) =>
+      a.allDay
+        ? b.allDay
+          ? a.range.start.toMillis() - b.range.start.toMillis() || a.range.end.toMillis() - b.range.end.toMillis()
+          : -1
+        : b.allDay
+          ? 1
+          : a.date.hasSame(b.date, "day")
+            ? a.startDayMinute - b.startDayMinute || b.durationMinutes - a.durationMinutes
+            : a.date.toMillis() - b.date.toMillis(),
+    );
 }
 
 export function timeInputToHM(timeInputValue: string) {

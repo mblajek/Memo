@@ -1,4 +1,5 @@
 import {Button} from "components/ui/Button";
+import {capitalizeString} from "components/ui/Capitalize";
 import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
@@ -16,8 +17,8 @@ interface Props extends htmlAttributes.div {
 /** The header for a calendar column representing a date. */
 export const DayHeader: VoidComponent<Props> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["day", "onDateClick"]);
-  const locale = useLocale();
   const t = useLangFunc();
+  const locale = useLocale();
   const holidays = useHolidays();
   const weekDaysCalculator = new WeekDaysCalculator(locale);
   return (
@@ -33,7 +34,10 @@ export const DayHeader: VoidComponent<Props> = (allProps) => {
         class="flex items-center gap-1"
         onClick={() => props.onDateClick?.()}
       >
-        <div class={cx("mb-0.5 ", {invisible: !props.day.hasSame(currentDate(), "day")})} title={t("calendar.today")}>
+        <div
+          class={cx("mb-0.5 ", {invisible: !props.day.hasSame(currentDate(), "day")})}
+          title={capitalizeString(t("calendar.today"))}
+        >
           <FaSolidCircleDot class="text-red-700" size={10} />
         </div>
         <div class={cx("text-2xl", holidays.isHoliday(props.day) ? "underline decoration-1" : undefined)}>

@@ -23,7 +23,7 @@ export function debouncedAccessor<T>(
     timeMs = INPUT_DEBOUNCE_MS,
     outputImmediately = () => false,
   }: {
-    timeMs?: number;
+    timeMs?: number | Accessor<number>;
     outputImmediately?: (t: T) => boolean;
   } = {},
 ): Accessor<T> {
@@ -36,10 +36,13 @@ export function debouncedAccessor<T>(
       timeoutId = undefined;
       setOutput(input);
     } else if (!timeoutId)
-      timeoutId = setTimeout(() => {
-        runWithOwner(owner, () => setOutput(input));
-        timeoutId = undefined;
-      }, timeMs);
+      timeoutId = setTimeout(
+        () => {
+          runWithOwner(owner, () => setOutput(input));
+          timeoutId = undefined;
+        },
+        typeof timeMs === "number" ? timeMs : timeMs(),
+      );
   });
   onCleanup(() => clearTimeout(timeoutId));
   return output;

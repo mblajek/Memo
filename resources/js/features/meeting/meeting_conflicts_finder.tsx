@@ -3,6 +3,7 @@ import {cx, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {dateToISO} from "data-access/memo-api/utils";
@@ -35,10 +36,35 @@ interface MeetingData {
 }
 
 interface ConflictInfo {
-  readonly conflictingLeaveTimes: readonly {readonly notes?: string}[];
+  readonly conflictingFacilityLeaveTimes: readonly ConflictingLeaveTime[];
+  readonly conflictingStaffLeaveTimes: readonly ConflictingLeaveTime[];
   readonly conflictingMeetings: readonly {readonly typeDictId: string}[];
   readonly outsideOfWorkTime: boolean;
 }
+
+interface ConflictingLeaveTime {
+  readonly notes?: string;
+}
+
+/** The list of columns to fetch. */
+const COLUMNS = [
+  "id",
+  "date",
+  "startDayminute",
+  "durationMinutes",
+  "categoryDictId",
+  "typeDictId",
+  "statusDictId",
+  "staff",
+  "clients",
+  "resources",
+  "notes",
+  "isRemote",
+  "fromMeetingId",
+  "interval",
+] as const satisfies (keyof MeetingResource)[];
+
+type Meeting = Pick<MeetingResource, (typeof COLUMNS)[number]>;
 
 /**
  * Creates a meeting conflicts finder for the specified meeting.
@@ -48,11 +74,10 @@ interface ConflictInfo {
  */
 export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
   const t = useLangFunc();
-  const {dictionaries, meetingCategoryDict, meetingTypeDict, meetingStatusDict, attendanceTypeDict} =
-    useFixedDictionaries();
+  const {dictionaries, meetingCategoryDict, meetingTypeDict, meetingStatusDict} = useFixedDictionaries();
   const {presenceStatuses} = useAttendanceStatusesInfo();
   const conflictsQuery = createTQuery({
-    entityURL: `facility/${activeFacilityId()}/meeting/attendant`,
+    entityURL: `facility/${activeFacilityId()}/meeting`,
     prefixQueryKey: FacilityMeeting.keys.meeting(),
     requestCreator: staticRequestCreator(() => {
       const {date} = meetingData();
@@ -62,7 +87,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       return {
         columns: [
           {type: "column", column: "id"},
-          {type: "column", column: "attendant.userId"},
+          {type: "column", column: "staff"},
           {type: "column", column: "date"},
           {type: "column", column: "startDayminute"},
           {type: "column", column: "durationMinutes"},
@@ -74,18 +99,6 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
           type: "op",
           op: "&",
           val: [
-            {
-              type: "column",
-              column: "attendant.attendanceTypeDictId",
-              op: "=",
-              val: attendanceTypeDict()!.staff.id,
-            },
-            {
-              type: "column",
-              column: "attendant.attendanceStatusDictId",
-              op: "in",
-              val: presenceStatuses()!,
-            },
             {type: "column", column: "statusDictId", op: "=", val: meetingStatusDict()!.cancelled.id, inv: true},
             {type: "column", column: "date", op: ">=", val: dateToISO(date.minus({days: 1}))},
             {type: "column", column: "date", op: "<=", val: dateToISO(date.plus({days: 1}))},
@@ -96,18 +109,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       };
     }),
   });
-  interface OtherMeeting {
-    readonly "id": string;
-    readonly "attendant.userId": string;
-    readonly "attendant.attendanceStatusDictId": string;
-    readonly "date": string;
-    readonly "startDayminute": number;
-    readonly "durationMinutes": number;
-    readonly "categoryDictId": string;
-    readonly "typeDictId": string;
-    readonly "notes"?: string;
-  }
-  const otherMeetings = () => conflictsQuery.dataQuery.data?.data as OtherMeeting[] | undefined;
+  const otherMeetings = () => conflictsQuery.dataQuery.data?.data as Meeting[] | undefined;
 
   function getConflictsFor(staffId: string): ConflictInfo | "loading" | "unknown" {
     const {id, date, startDayMinute, durationMinutes} = meetingData();
@@ -118,6 +120,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       return "loading";
     }
     const isStartTimeKnown = startDayMinute !== undefined;
+    const isAllDay = startDayMinute === 0 && durationMinutes === MAX_DAY_MINUTE;
     /**
      * The time of the main meeting, if known.
      * If the duration is not known, it is assumed 1 minute, to check conflicts for just the start time.
@@ -128,28 +131,61 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
         ? {date, startDayMinute, durationMinutes: durationMinutes ?? 1}
         : {date, startDayMinute: 0, durationMinutes: MAX_DAY_MINUTE},
     );
-    const conflictingLeaveTimes: {readonly notes?: string}[] = [];
+    const conflictingFacilityLeaveTimes: {readonly notes?: string}[] = [];
+    const conflictingStaffLeaveTimes: {readonly notes?: string}[] = [];
     const conflictingMeetings: {readonly typeDictId: string}[] = [];
     let outsideOfWorkTime = true;
-    for (const otherMeeting of otherMeetings()!) {
-      if (otherMeeting["attendant.userId"] !== staffId || otherMeeting.id === id) {
-        continue;
+    function isRelevantMeeting(meeting: Meeting) {
+      if (meeting.id === id) {
+        return false;
       }
+      if (meeting.staff.length) {
+        const staffAttendanceStatus = meeting.staff.find(({userId}) => userId === staffId)?.attendanceStatusDictId;
+        return staffAttendanceStatus && presenceStatuses()?.includes(staffAttendanceStatus);
+      } else {
+        // Among the facility-wide meetings, only the leave times are relevant.
+        return meeting.typeDictId === meetingTypeDict()!.leave_time.id;
+      }
+    }
+    for (const otherMeeting of otherMeetings()!.filter(isRelevantMeeting)) {
       const otherInterval = getMeetingTimeInterval({
         date: DateTime.fromISO(otherMeeting.date),
         startDayMinute: otherMeeting.startDayminute,
         durationMinutes: otherMeeting.durationMinutes,
       });
+      const facilityWide = !otherMeeting.staff.length;
       if (isStartTimeKnown) {
-        if (otherMeeting.typeDictId === meetingTypeDict()!.leave_time.id) {
-          if (interval.overlaps(otherInterval)) {
-            conflictingLeaveTimes.push({notes: otherMeeting.notes});
+        if (isAllDay) {
+          const wholeDay = interval;
+          if (otherMeeting.typeDictId === meetingTypeDict()!.leave_time.id) {
+            // Assume a full day meeting conflicts only with a full day leave time.
+            if (otherInterval.engulfs(wholeDay)) {
+              (facilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
+                notes: otherMeeting.notes || undefined,
+              });
+            }
+          } else if (otherMeeting.typeDictId === meetingTypeDict()!.work_time.id) {
+            // Assume any work time is enough to participate in the all day meeting.
+            if (wholeDay.overlaps(otherInterval)) {
+              outsideOfWorkTime = false;
+            }
           }
-        } else if (otherMeeting.typeDictId === meetingTypeDict()!.work_time.id) {
-          if (otherInterval.engulfs(interval)) {
-            outsideOfWorkTime = false;
+        } else {
+          if (otherMeeting.typeDictId === meetingTypeDict()!.leave_time.id) {
+            if (interval.overlaps(otherInterval)) {
+              (facilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
+                notes: otherMeeting.notes || undefined,
+              });
+            }
+          } else if (otherMeeting.typeDictId === meetingTypeDict()!.work_time.id) {
+            if (otherInterval.engulfs(interval)) {
+              outsideOfWorkTime = false;
+            }
           }
-        } else if (otherMeeting.categoryDictId !== meetingCategoryDict()!.system.id) {
+        }
+        if (otherMeeting.categoryDictId !== meetingCategoryDict()!.system.id) {
+          // All day meetings conflict with other meetings normally. This leads to some false positives in case of
+          // very general meetings, but this is good enough.
           if (interval.overlaps(otherInterval)) {
             conflictingMeetings.push({typeDictId: otherMeeting.typeDictId});
           }
@@ -159,22 +195,37 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
         if (otherMeeting.typeDictId === meetingTypeDict()!.leave_time.id) {
           // Conflict only if it is a full day leave time.
           if (otherInterval.engulfs(wholeDay)) {
-            conflictingLeaveTimes.push({notes: otherMeeting.notes});
+            (facilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
+              notes: otherMeeting.notes || undefined,
+            });
           }
         } else if (otherMeeting.typeDictId === meetingTypeDict()!.work_time.id) {
           // Optimistically assume the meeting will fit in the work time if there is any work time in this day.
           if (wholeDay.overlaps(otherInterval)) {
             outsideOfWorkTime = false;
           }
+        } else if (otherMeeting.categoryDictId !== meetingCategoryDict()!.system.id) {
+          // All day meetings conflict with other meetings normally. This leads to some false positives in case of
+          // very general meetings, but this is good enough.
+          if (otherInterval.engulfs(wholeDay)) {
+            conflictingMeetings.push({typeDictId: otherMeeting.typeDictId});
+          }
         }
       }
     }
     // If the start time is not known, don't report "no conflict", but rather "unknown".
-    if (!isStartTimeKnown && !conflictingLeaveTimes.length && !outsideOfWorkTime) {
+    if (
+      !isStartTimeKnown &&
+      !conflictingFacilityLeaveTimes.length &&
+      !conflictingStaffLeaveTimes.length &&
+      !conflictingMeetings &&
+      !outsideOfWorkTime
+    ) {
       return "unknown";
     }
     return {
-      conflictingLeaveTimes,
+      conflictingFacilityLeaveTimes,
+      conflictingStaffLeaveTimes,
       conflictingMeetings,
       outsideOfWorkTime,
     };
@@ -222,16 +273,26 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
             })}`,
           );
         }
-        if (conflict.conflictingLeaveTimes.length) {
-          iconType = BiRegularCalendarX;
-          styleClass = "text-orange-600";
-          let message = t("meetings.conflicts.with_leave_time");
-          const notes = conflict.conflictingLeaveTimes.map(({notes}) => notes).filter(Boolean);
-          if (notes.length) {
-            message += ` ${t("parenthesised", {text: notes.join(", ")})}`;
+        function addConflictingLeaveTimesNote(
+          conflictingLeaveTimes: readonly ConflictingLeaveTime[],
+          messageKey: string,
+        ) {
+          if (conflictingLeaveTimes.length) {
+            iconType = BiRegularCalendarX;
+            styleClass = "text-orange-600";
+            let message = t(messageKey);
+            const notes = conflictingLeaveTimes.map(({notes}) => notes?.replaceAll("\n", ", ")).filter(Boolean);
+            if (notes.length) {
+              message += ` ${t("parenthesised", {text: notes.join(", ")})}`;
+            }
+            messages.unshift(message);
           }
-          messages.unshift(message);
         }
+        addConflictingLeaveTimesNote(
+          conflict.conflictingFacilityLeaveTimes,
+          "meetings.conflicts.with_facility_leave_time",
+        );
+        addConflictingLeaveTimesNote(conflict.conflictingStaffLeaveTimes, "meetings.conflicts.with_staff_leave_time");
         if (messages.length) {
           title = messages.join("\n");
         }

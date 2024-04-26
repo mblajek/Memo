@@ -26,7 +26,10 @@ export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => 
   return (
     <div {...htmlAttributes.merge(divProps, {class: "w-full h-full cursor-default"})}>
       <Show when={props.label}>
-        <div class="text-xs py-0.5 -mx-0.5 float-right" style={{"writing-mode": "vertical-lr"}}>
+        <div
+          class="text-xs py-0.5 -mx-0.5 float-right text-nowrap rounded-se bg-white bg-opacity-50"
+          style={{"writing-mode": "vertical-lr"}}
+        >
           {props.label}
         </div>
       </Show>

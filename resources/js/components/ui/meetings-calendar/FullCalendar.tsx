@@ -11,27 +11,22 @@ import {AllDayArea} from "components/ui/calendar/calendar-columns/AllDayArea";
 import {DayHeader} from "components/ui/calendar/calendar-columns/DayHeader";
 import {HoursArea} from "components/ui/calendar/calendar-columns/HoursArea";
 import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHeader";
-import {TimeBlock} from "components/ui/calendar/calendar-columns/blocks";
 import {DaysRange} from "components/ui/calendar/days_range";
-import {PartDayTimeSpan} from "components/ui/calendar/types";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
 import {NON_NULLABLE, currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
-import {Position} from "data-access/memo-api/dictionaries";
-import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {User} from "data-access/memo-api/groups";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
-import {TQMeetingResource, createCalendarRequestCreator} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
 import {MeetingBasicData} from "features/meeting/meeting_basic_data";
 import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
-import {createMeetingModal} from "features/meeting/meeting_modal";
-import {meetingTimeInitialValue} from "features/meeting/meeting_time_controller";
+import {MeetingModalParams, createMeetingModal} from "features/meeting/meeting_modal";
+import {meetingTimeFullDayInitialValue, meetingTimePartDayInitialValue} from "features/meeting/meeting_time_controller";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {TbInfoTriangle} from "solid-icons/tb";
@@ -57,17 +52,14 @@ import {Capitalize} from "../Capitalize";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {STAFF_ICONS} from "../icons";
 import {EN_DASH} from "../symbols";
-import {coloringToStyle, getRandomEventColors} from "./colors";
-import {MeetingEventBlock} from "./column_events";
+import {WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
+import {CALENDAR_MODES, CalendarMode} from "./calendar_modes";
+import {CALENDAR_BACKGROUNDS, MISSING_MEETING_COLORING, coloringToStyle, getRandomEventColors} from "./colors";
 import {CalendarLocationState, CalendarSearchParams} from "./meeting_link";
-import {MonthDayMeetingEventBlock, MonthDayWorkTime} from "./month_day_events";
-
-export const MODES = ["month", "week", "day"] as const;
-export type Mode = (typeof MODES)[number];
 
 interface Props extends htmlAttributes.div {
-  readonly modes?: readonly Mode[];
-  readonly initialMode?: Mode;
+  readonly modes?: readonly CalendarMode[];
+  readonly initialMode?: CalendarMode;
   readonly initialResourcesSelection?: readonly string[];
   readonly initialDay?: DateTime;
   /** The key to use for persisting the parameters of the displayed page. If not present, nothing is persisted. */
@@ -76,13 +68,14 @@ interface Props extends htmlAttributes.div {
 
 const defaultProps = () =>
   ({
-    modes: MODES,
+    modes: CALENDAR_MODES,
     initialMode: "week",
     initialResourcesSelection: [],
     initialDay: currentDate(),
   }) satisfies Partial<Props>;
 
 const PIXELS_PER_HOUR_RANGE = {min: 40, max: 400, def: 120};
+const ALL_DAY_EVENTS_HEIGHT_RANGE = {min: 15, max: 150, def: 30};
 const MONTH_EVENTS_HEIGHT_RANGE = {min: 15, max: 150, def: 30};
 
 /**
@@ -94,30 +87,17 @@ const MONTH_EVENTS_HEIGHT_RANGE = {min: 15, max: 150, def: 30};
  */
 type PersistentState = {
   readonly today: string;
-  readonly mode: Mode;
-  readonly daysSel: readonly (readonly [Mode, DaysRange])[];
+  readonly mode: CalendarMode;
+  readonly daysSel: readonly (readonly [CalendarMode, DaysRange])[];
   readonly resourcesSel: {
     readonly checkbox: ReadonlySet<string>;
     readonly radio: string | null;
   };
   readonly pixelsPerHour: number;
+  readonly allDayEventsHeight: number;
   readonly monthEventsHeight: number;
 };
 const PERSISTENCE_VERSION = 3;
-
-const BACKGROUNDS = (() => {
-  const main = "#e2e3e7";
-  const facilityWorkTime = "#ecedf1";
-  const staffWorkTime = "white";
-  const leaveTimeLines = "#a4a9b4";
-  return {
-    main,
-    facilityWorkTime,
-    staffWorkTime,
-    facilityLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, transparent 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
-    staffLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, transparent 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
-  };
-})();
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -134,7 +114,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   ]);
   const t = useLangFunc();
   const locale = useLocale();
-  const {meetingCategoryDict, meetingTypeDict} = useFixedDictionaries();
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
@@ -258,8 +237,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   /** The last days selection in each of the modes. */
-  const daysSelectionByMode = new Map<Mode, Signal<DaysRange>>();
-  for (const mode of MODES) {
+  const daysSelectionByMode = new Map<CalendarMode, Signal<DaysRange>>();
+  for (const mode of CALENDAR_MODES) {
     // eslint-disable-next-line solid/reactivity
     const [daysRange, setDaysRange] = createSignal(getRange(props.initialDay, mode));
     // eslint-disable-next-line solid/reactivity
@@ -303,7 +282,25 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [hoveredResource, setHoveredResource] = createSignal<string>();
 
   const [pixelsPerHour, setPixelsPerHour] = createSignal(PIXELS_PER_HOUR_RANGE.def);
+  const [allDayEventsHeight, setAllDayEventsHeight] = createSignal(ALL_DAY_EVENTS_HEIGHT_RANGE.def);
   const [monthEventsHeight, setMonthEventsHeight] = createSignal(MONTH_EVENTS_HEIGHT_RANGE.def);
+  function wheelWithAlt(e: WheelEvent, area: "allDay" | "hours" | "month") {
+    if (area === "allDay") {
+      setAllDayEventsHeight((v) =>
+        Math.min(Math.max(v - 0.015 * e.deltaY, ALL_DAY_EVENTS_HEIGHT_RANGE.min), ALL_DAY_EVENTS_HEIGHT_RANGE.max),
+      );
+    } else if (area === "hours") {
+      setPixelsPerHour((v) =>
+        Math.min(Math.max(v * (1 - 0.0005) ** e.deltaY, PIXELS_PER_HOUR_RANGE.min), PIXELS_PER_HOUR_RANGE.max),
+      );
+    } else if (area === "month") {
+      setMonthEventsHeight((v) =>
+        Math.min(Math.max(v - 0.015 * e.deltaY, MONTH_EVENTS_HEIGHT_RANGE.min), MONTH_EVENTS_HEIGHT_RANGE.max),
+      );
+    } else {
+      return area satisfies never;
+    }
+  }
 
   if (props.staticPersistenceKey) {
     createLocalStoragePersistence<PersistentState>({
@@ -317,6 +314,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           radio: selectedResourceRadio() || null,
         },
         pixelsPerHour: pixelsPerHour(),
+        allDayEventsHeight: allDayEventsHeight(),
         monthEventsHeight: monthEventsHeight(),
       }),
       onLoad: (state) => {
@@ -339,6 +337,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setSelectedResourceRadio(state.resourcesSel.radio || undefined);
           setTinyCalMonth(daysSelection().center());
           setPixelsPerHour(state.pixelsPerHour || PIXELS_PER_HOUR_RANGE.def);
+          setAllDayEventsHeight(state.allDayEventsHeight || ALL_DAY_EVENTS_HEIGHT_RANGE.def);
           setMonthEventsHeight(state.monthEventsHeight || MONTH_EVENTS_HEIGHT_RANGE.def);
         });
         // Once resources are loaded, make sure there aren't selected resources that don't really exist.
@@ -451,35 +450,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   }
 
-  const {dataQuery: meetingsDataQuery} = createTQuery({
-    prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
-    requestCreator: createCalendarRequestCreator({
-      daysRange: () =>
-        mode() === "month"
-          ? new DaysRange(
-              weekDaysCalculator.startOfWeek(daysSelection().start).minus({days: 1}),
-              weekDaysCalculator.endOfWeek(daysSelection().end),
-            )
-          : daysSelection(),
-      staff: () => [...selectedResources()],
-    }),
-    dataQueryOptions: {refetchOnWindowFocus: true},
-  });
-  const events = () =>
-    (meetingsDataQuery.data?.data as TQMeetingResource[] | undefined)?.map((meeting) => {
-      const timeSpan: PartDayTimeSpan = {
-        allDay: false,
-        date: DateTime.fromISO(meeting.date),
-        startDayMinute: meeting.startDayminute,
-        durationMinutes: meeting.durationMinutes,
-      };
-      return {
-        meeting,
-        ...timeSpan,
-      };
-    }) || [];
-
   const [blinkingMeetings, setBlinkingMeetings] = createSignal<ReadonlyMap<string, ReturnType<typeof setTimeout>>>(
     new Map(),
   );
@@ -488,18 +458,39 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     setBlinkingMeetings((map) =>
       new Map(map).set(
         meetingId,
-        setTimeout(() => {
-          setBlinkingMeetings((map) => {
-            const modified = new Map(map);
-            modified.delete(meetingId);
-            return modified;
-          });
-        }, 3000),
+        setTimeout(
+          () => {
+            setBlinkingMeetings((map) => {
+              const modified = new Map(map);
+              modified.delete(meetingId);
+              return modified;
+            });
+          },
+          // Give enough time for the calendar to fetch the event if it is new.
+          3000,
+        ),
       ),
     );
   }
+  const [hoveredMeeting, setHoveredMeeting] = createSignal<string>();
 
-  function meetingChange(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: string[]) {
+  const {meetingsDataQuery, blocks, events} = useCalendarBlocksAndEvents({
+    mode,
+    daysRange: daysSelection,
+    staff: () =>
+      // eslint-disable-next-line solid/reactivity
+      Array.from(selectedResources(), (id) => ({
+        id,
+        plannedMeetingColoring: staffResourcesById().get(id)?.coloring || MISSING_MEETING_COLORING,
+      })),
+    blink: (meetingId) => (isCalendarLoading() ? false : blinkingMeetings().get(meetingId)),
+    hoveredMeeting: [hoveredMeeting, setHoveredMeeting],
+    allDayEventsHeight,
+    monthEventsHeight,
+    viewMeeting,
+  });
+
+  function meetingChangeEffects(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: string[]) {
     blinkMeeting(meeting.id);
     for (const id of otherMeetingIds || []) {
       blinkMeeting(id);
@@ -530,8 +521,33 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         setSelectedResourceRadio(meeting.staff[0]!.userId);
       }
     }
-    scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
+    if (
+      mode() === "month" ||
+      // This condition is not ideal as we are not sure the meeting produces a block in the all day area,
+      // but we cannot check this at this point.
+      (meeting.startDayminute === 0 && meeting.durationMinutes === MAX_DAY_MINUTE)
+    ) {
+      nativeScrollIntoView(meeting.id);
+    } else {
+      scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
+    }
     blinkMeeting(meeting.id);
+  }
+  /** Scroll to the element representing the specified meeting or block. Find the element using the data-entity-id attribute. */
+  function nativeScrollIntoView(entityId: string) {
+    let attemptsLeft = 5;
+    function attempt() {
+      const elements = document.querySelectorAll(`[data-entity-id="${entityId}"]`);
+      if (elements.length)
+        for (const elem of elements) {
+          elem.scrollIntoView({behavior: "smooth", block: "nearest"});
+        }
+      else if (--attemptsLeft) {
+        // If the element doesn't exist yet, try again after a moment.
+        setTimeout(attempt, 300);
+      }
+    }
+    attempt();
   }
 
   const SCROLL_MARGIN_PIXELS = 20;
@@ -566,109 +582,48 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     },
   });
 
-  const [hoveredMeetingId, setHoveredMeetingId] = createSignal<string>();
+  function filterByStaff<T extends WithOrigMeetingInfo>(items: readonly T[], staffId: string) {
+    return items.filter((item) => !item.meeting.staff.length || item.meeting.staff.some((s) => s.userId === staffId));
+  }
 
-  function getCalendarColumnPart(day: DateTime, staffId: string | undefined) {
-    const range = new DaysRange(day.minus({days: 1}), day);
-    const blocks = () => {
-      function getBlockEvents(meetingType: Position | undefined) {
-        const blockEvents = meetingType
-          ? events().filter((w) => w.meeting.typeDictId === meetingType.id && range.contains(w.date))
-          : [];
-        return {
-          facility: blockEvents.filter((w) => !w.meeting.staff.length),
-          staff: staffId ? blockEvents.filter((w) => w.meeting.staff.some((staff) => staff.userId === staffId)) : [],
-        };
-      }
-      const {facility: facilityWorkTimes, staff: staffWorkTimes} = getBlockEvents(meetingTypeDict()?.work_time);
-      function makeWorkTimeBlocks(workTimes: ReturnType<typeof events>, background: string) {
-        return workTimes.map((w) => ({
-          ...w,
-          content: () => (
-            <TimeBlock
-              style={{background}}
-              label={w.meeting.notes || undefined}
-              onEditClick={() =>
-                meetingModal.show({
-                  meetingId: w.meeting.id,
-                  initialViewMode: true,
-                  showToast: false,
-                })
-              }
-            />
-          ),
-        }));
-      }
-      const {facility: facilityLeaveTimes, staff: staffLeaveTimes} = getBlockEvents(meetingTypeDict()?.leave_time);
-      function makeLeaveTimeBlocks(leaveTimes: ReturnType<typeof events>, background: string) {
-        return leaveTimes.map((w) => ({
-          ...w,
-          content: () => (
-            <TimeBlock
-              style={{background}}
-              label={w.meeting.notes || undefined}
-              onEditClick={() =>
-                meetingModal.show({
-                  meetingId: w.meeting.id,
-                  initialViewMode: true,
-                  showToast: false,
-                })
-              }
-            />
-          ),
-        }));
-      }
-      return [
-        ...makeWorkTimeBlocks(facilityWorkTimes, BACKGROUNDS.facilityWorkTime),
-        ...makeWorkTimeBlocks(staffWorkTimes, BACKGROUNDS.staffWorkTime),
-        ...makeLeaveTimeBlocks(facilityLeaveTimes, BACKGROUNDS.facilityLeaveTime),
-        ...makeLeaveTimeBlocks(staffLeaveTimes, BACKGROUNDS.staffLeaveTime),
-      ];
-    };
-    const selectedEvents = () =>
-      staffId
-        ? events()
-            .filter(
-              (e) =>
-                e.meeting.categoryDictId !== meetingCategoryDict()?.system.id &&
-                range.contains(e.date) &&
-                e.meeting.staff.some((staff) => staff.userId === staffId),
-            )
-            .map((e) => {
-              const {meeting} = e;
-              return {
-                ...e,
-                content: () => (
-                  <MeetingEventBlock
-                    day={day}
-                    meeting={meeting}
-                    plannedColoring={staffResourcesById().get(staffId)!.coloring}
-                    blink={!isCalendarLoading() && blinkingMeetings().has(meeting.id)}
-                    onHoverChange={(hovered) => setHoveredMeetingId(hovered ? meeting.id : undefined)}
-                    hovered={hoveredMeetingId() === meeting.id}
-                    onClick={() => viewMeeting(meeting.id)}
-                  />
-                ),
-              };
-            })
-        : [];
+  function getCalendarColumnPart(day: DateTime, staffId: string) {
+    const staffBlocks = createMemo(() => filterByStaff(blocks(), staffId));
+    const staffEvents = createMemo(() => filterByStaff(events(), staffId));
     return {
       day,
-      allDayArea: () => <AllDayArea day={day} blocks={[]} events={[]} />,
+      allDayArea: () => (
+        <AllDayArea
+          day={day}
+          columnViewInfo={{day, staffId}}
+          blocks={staffBlocks()}
+          events={staffEvents()}
+          onEmptyClick={() => {
+            meetingCreateModal.show({
+              initialValues: {
+                ...meetingTimeFullDayInitialValue(day),
+                ...attendantsInitialValueForCreate([staffId]),
+              },
+              onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+              showToast: false,
+            });
+          }}
+        />
+      ),
       hoursArea: () => (
         <HoursArea
-          style={{background: BACKGROUNDS.main}}
+          style={{background: CALENDAR_BACKGROUNDS.main}}
           day={day}
-          blocks={blocks()}
-          events={selectedEvents()}
+          columnViewInfo={{day, staffId}}
+          blocks={staffBlocks()}
+          events={staffEvents()}
           onTimeClick={(time) =>
             meetingCreateModal.show({
               initialValues: {
-                ...meetingTimeInitialValue(time),
-                ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
+                ...meetingTimePartDayInitialValue(time),
+                ...attendantsInitialValueForCreate([staffId]),
               },
               onSuccess: (meeting, cloneIds) =>
-                meetingChange(
+                meetingChangeEffects(
                   t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
                   meeting,
                   cloneIds,
@@ -689,6 +644,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return [];
       case "week": {
         const staff = selectedResourceRadio();
+        if (!staff) {
+          return [];
+        }
         return Array.from(daysSelection(), (day) => ({
           header: () => (
             <DayHeader
@@ -741,55 +699,20 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       return [];
     }
     const staffId = staffResources().find(({id}) => selectedResources().has(id))?.id;
+    if (!staffId) {
+      return [];
+    }
     const daysRange = getMonthCalendarRange(weekDaysCalculator, daysSelection().start);
-    const selectedEvents = staffId
-      ? events()
-          .filter(
-            (e) =>
-              e.meeting.categoryDictId !== meetingCategoryDict()?.system.id &&
-              e.meeting.staff.some((staff) => staff.userId === staffId),
-          )
-          .map((e) => {
-            const {meeting} = e;
-            return {
-              ...e,
-              content: () => (
-                <MonthDayMeetingEventBlock
-                  meeting={meeting}
-                  plannedColoring={staffResourcesById().get(staffId)!.coloring}
-                  blink={!isCalendarLoading() && blinkingMeetings().has(meeting.id)}
-                  height={monthEventsHeight()}
-                  onClick={() => viewMeeting(meeting.id)}
-                />
-              ),
-            };
-          })
-      : [];
-    const systemEvents = events().filter((e) => e.meeting.typeDictId === meetingTypeDict()?.work_time.id);
-    const facilityWorkTimes = systemEvents.filter((e) => !e.meeting.staff.length);
-    const staffWorkTimes = staffId
-      ? systemEvents
-          .filter((e) => e.meeting.staff.some((staff) => staff.userId === staffId))
-          .map((e) => ({
-            ...e,
-            content: () => <MonthDayWorkTime meeting={e.meeting} />,
-          }))
-      : [];
     return Array.from(daysRange, (day) => ({
       day,
       content: () => (
         <MonthCalendarCell
-          style={{
-            background: staffWorkTimes.some((e) => e.date.hasSame(day, "day"))
-              ? BACKGROUNDS.staffWorkTime
-              : facilityWorkTimes.some((e) => e.date.hasSame(day, "day"))
-                ? BACKGROUNDS.facilityWorkTime
-                : BACKGROUNDS.main,
-          }}
           month={daysSelection().start}
           day={day}
-          workTimes={staffWorkTimes}
-          events={selectedEvents}
+          monthViewInfo={{day, staffId}}
+          blocks={filterByStaff(blocks(), staffId)}
+          events={filterByStaff(events(), staffId)}
+          style={{background: CALENDAR_BACKGROUNDS.main}}
           onDateClick={() => {
             setMode("week");
             setDaysSelectionAndMonthFromDay(day);
@@ -800,7 +723,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 date: day.toISODate(),
                 ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
               },
-              onSuccess: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
+              onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
               showToast: false,
             })
           }
@@ -809,16 +732,15 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }));
   });
 
-  function viewMeeting(meetingId: string) {
+  function viewMeeting(params: MeetingModalParams) {
     meetingModal.show({
-      meetingId: meetingId,
-      initialViewMode: true,
-      onEdited: (meeting) => meetingChange(t("forms.meeting_edit.success"), meeting),
-      onCreated: (meeting) => meetingChange(t("forms.meeting_create.success"), meeting),
-      onCloned: (meeting, otherMeetingIds) =>
-        meetingChange(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
-      onDeleted: () => toastSuccess(t("forms.meeting_delete.success")),
+      ...params,
       showToast: false,
+      onEdited: (meeting) => meetingChangeEffects(t("forms.meeting_edit.success"), meeting),
+      onCreated: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+      onCloned: (meeting, otherMeetingIds) =>
+        meetingChangeEffects(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
+      onDeleted: () => toastSuccess(t("forms.meeting_delete.success")),
     });
   }
 
@@ -938,14 +860,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 month={daysSelection().start}
                 days={monthCalendarDays()}
                 isLoading={isCalendarLoading()}
-                onWheelWithAlt={(e) =>
-                  setMonthEventsHeight((v) =>
-                    Math.min(
-                      Math.max(v - 0.015 * e.deltaY, MONTH_EVENTS_HEIGHT_RANGE.min),
-                      MONTH_EVENTS_HEIGHT_RANGE.max,
-                    ),
-                  )
-                }
+                onWheelWithAlt={(e) => wheelWithAlt(e, "month")}
               />
             </Match>
             <Match when={true}>
@@ -957,14 +872,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 gridCellMinutes={15}
                 onVisibleRangeChange={setVisibleDayMinuteRange}
                 scrollToDayMinute={scrollToDayMinute()}
-                onWheelWithAlt={(e) =>
-                  setPixelsPerHour((v) =>
-                    Math.min(
-                      Math.max(v * (1 - 0.0005) ** e.deltaY, PIXELS_PER_HOUR_RANGE.min),
-                      PIXELS_PER_HOUR_RANGE.max,
-                    ),
-                  )
-                }
+                onWheelWithAlt={wheelWithAlt}
               />
             </Match>
           </Switch>

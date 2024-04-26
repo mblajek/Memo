@@ -57,5 +57,11 @@ relative_time:
   in_one_week: "tydzień później"
   in_two_weeks: "dwa tygodnie później"
 
+all_day: "cały dzień"
+
+facility_leave_time:
+  all_day: "dzień wolny"
+  part_day: "godziny wolne"
+
 show_my_calendar: "Mój kalendarz"
 show_my_details: "Moje dane i spotkania"

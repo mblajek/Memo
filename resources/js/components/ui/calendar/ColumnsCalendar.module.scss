@@ -61,11 +61,11 @@
     }
 
     .gridRowLines {
-      @apply contents z-10;
+      @apply contents z-10 pointer-events-none;
       .gridRowLine {
-        @apply absolute w-full h-0 border-b border-dotted border-gray-300 border-opacity-60;
+        @apply absolute w-full h-0 border-b border-dotted border-gray-600 border-opacity-20;
         &.fullHour {
-          @apply border-solid border-opacity-100;
+          @apply border-solid border-opacity-30;
         }
       }
     }

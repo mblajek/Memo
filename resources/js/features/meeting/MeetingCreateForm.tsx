@@ -7,6 +7,7 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
+import {RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
 import {getAttendantsValuesForCreate, useAttendantsCreator} from "./MeetingAttendantsFields";
@@ -14,7 +15,7 @@ import {MeetingForm, MeetingFormType, getResourceValuesForCreate} from "./Meetin
 import {MeetingSeriesFormType, getClearedSeriesValues, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
-import {getMeetingTimeFullData, meetingTimeInitialValue} from "./meeting_time_controller";
+import {getMeetingTimeFullData, meetingTimePartDayInitialValue} from "./meeting_time_controller";
 
 export interface MeetingCreateFormProps {
   readonly initialValues?: Partial<MeetingFormType>;
@@ -59,7 +60,7 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
       if (props.showToast ?? true) {
         toastSuccess(t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"));
       }
-      props.onSuccess?.({...(meeting as Required<MeetingResourceForCreate>), id}, cloneIds);
+      props.onSuccess?.({...(meeting as RequiredNonNullable<MeetingResourceForCreate>), id}, cloneIds);
       // Important: Invalidation should happen after calling onSuccess which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
       // but also causes problems apparently.
@@ -69,7 +70,7 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
 
   const initialValues = () =>
     ({
-      ...meetingTimeInitialValue(),
+      ...meetingTimePartDayInitialValue(),
       typeDictId: "",
       statusDictId: meetingStatusDict()!.planned.id,
       ...attendantsInitialValueForCreate(),
