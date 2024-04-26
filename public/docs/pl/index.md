@@ -6,7 +6,6 @@ Strona pomocy dla systemu Memo.
 
 ## Dokumenty
 
-- [Wspierane przeglądarki](supported-browsers)
 - Spotkania
   - [Statusy](meeting-statuses)
 - Tabele
@@ -14,6 +13,7 @@ Strona pomocy dla systemu Memo.
   - [Eksport danych](table-export)
 - [Tekst z tagami](rich-text)
 - [Sztuczki usprawniające korzystanie z Memo ✨](tricks)
+- [Wspierane przeglądarki](supported-browsers)
 
 ## Linki zewnętrzne
 

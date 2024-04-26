@@ -279,6 +279,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     setDaysSelectionAndMonth(range);
   }
 
+  const [hoveredResource, setHoveredResource] = createSignal<string>();
+
   const [pixelsPerHour, setPixelsPerHour] = createSignal(PIXELS_PER_HOUR_RANGE.def);
   const [allDayEventsHeight, setAllDayEventsHeight] = createSignal(ALL_DAY_EVENTS_HEIGHT_RANGE.def);
   const [monthEventsHeight, setMonthEventsHeight] = createSignal(MONTH_EVENTS_HEIGHT_RANGE.def);
@@ -668,7 +670,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                     <ResourceHeader
                       label={() => (
                         <Button
-                          class="hover:underline"
+                          class={cx("rounded hover:underline", id === hoveredResource() ? "bg-hover" : undefined)}
                           onClick={() => {
                             setMode("week");
                             setDaysSelectionAndMonthFromDay(day);
@@ -813,7 +815,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             resourceGroups={resourceGroups()}
             mode={resourcesSelectionMode()}
             selection={selectedResources()}
-            setSelection={setSelectedResources}
+            onSelectionChange={setSelectedResources}
+            onHover={setHoveredResource}
           />
         </div>
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
