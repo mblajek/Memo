@@ -13,6 +13,7 @@ import {Dynamic} from "solid-js/web";
 import {MemoRouteTitle} from "./features/root/MemoRouteTitle";
 import {activeFacilityId} from "./state/activeFacilityId.state";
 
+const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.page"));
 const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazyAutoPreload(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.page"));
@@ -29,8 +30,8 @@ const ReportsPage = lazyAutoPreload(() => import("features/root/pages/Reports.pa
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
 const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
-const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.page"));
 const SystemMeetingsListPage = lazyAutoPreload(() => import("features/root/pages/SystemMeetingsList.page"));
+const TimeTables = lazyAutoPreload(() => import("features/root/pages/TimeTables.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -100,7 +101,7 @@ const App: VoidComponent = () => {
                 <LeafRoute routeKey="System meetings" path="/system_meetings" component={SystemMeetingsListPage} />
                 <Route path="/staff">
                   <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
-                  <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />S
+                  <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
                 </Route>
                 <Route path="/clients">
                   <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
@@ -113,6 +114,7 @@ const App: VoidComponent = () => {
                 component={(props) => <AccessBarrier roles={["facilityAdmin"]}>{props.children}</AccessBarrier>}
               >
                 <UnknownNotFound />
+                <LeafRoute routeKey="facility.facility_admin.time_tables" path="/time-tables" component={TimeTables} />
                 <LeafRoute routeKey="facility.facility_admin.reports" path="/reports" component={ReportsPage} />
               </Route>
             </Route>

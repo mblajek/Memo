@@ -22,6 +22,7 @@ facility:
   client_create: "$t(forms.client_create.formName)"
 
   facility_admin:
+    time_tables: "Grafiki pracy"
     reports: "raporty"
 
 help: "pomoc"

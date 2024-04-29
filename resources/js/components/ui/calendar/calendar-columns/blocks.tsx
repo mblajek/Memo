@@ -1,30 +1,27 @@
-import {Button} from "components/ui/Button";
-import {ACTION_ICONS} from "components/ui/icons";
-import {htmlAttributes} from "components/utils";
-import {isDEV} from "components/utils/dev_mode";
-import {JSX, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
-
-interface AllDayBlockProps extends htmlAttributes.div {
-  readonly label: string | (() => JSX.Element);
-}
-
-export const AllDayAreaBlock: VoidComponent<AllDayBlockProps> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["label"]);
-  const label = () => {
-    const propsLabel = props.label;
-    return typeof propsLabel === "function" ? propsLabel() : propsLabel;
-  };
-  return <div {...htmlAttributes.merge(divProps, {class: "w-full h-full cursor-default p-0.5"})}>{label()}</div>;
-};
+import {cx, htmlAttributes} from "components/utils";
+import {ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 
 interface PartDayBlockProps extends htmlAttributes.div {
   readonly label?: string;
+  readonly hovered?: boolean;
+  readonly onHoverChange?: (hovered: boolean) => void;
 }
 
 export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["label", "children"]);
+  const [props, divProps] = splitProps(allProps, ["label", "hovered", "onHoverChange", "children"]);
+
   return (
-    <div {...htmlAttributes.merge(divProps, {class: "w-full h-full cursor-default"})}>
+    <div
+      {...htmlAttributes.merge(divProps, {
+        class: cx(
+          "w-full h-full cursor-default",
+          props.hovered ? "outline outline-2 outline-memo-active relative z-10 cursor-pointer" : undefined,
+        ),
+        style: {"outline-offset": "-2px"},
+      })}
+      onMouseEnter={() => props.onHoverChange?.(true)}
+      onMouseLeave={() => props.onHoverChange?.(false)}
+    >
       <Show when={props.label}>
         <div
           class="text-xs py-0.5 -mx-0.5 float-right text-nowrap rounded-se bg-white bg-opacity-50"
@@ -45,19 +42,19 @@ interface TimeBlockProps extends PartDayBlockProps {
 export const TimeBlock: VoidComponent<TimeBlockProps> = (allProps) => {
   const [props, hProps] = splitProps(allProps, ["onEditClick"]);
   return (
-    <HoursAreaBlock {...hProps}>
-      <Show when={isDEV() && props.onEditClick}>
-        <Button
-          class="absolute right-0 bottom-0"
-          title="Edit the time block"
-          onClick={(e) => {
-            props.onEditClick?.();
-            e.stopPropagation();
-          }}
-        >
-          <ACTION_ICONS.edit class="text-gray-200" size="12" />
-        </Button>
-      </Show>
-    </HoursAreaBlock>
+    <HoursAreaBlock
+      {...{
+        ...hProps,
+        ...(props.onEditClick
+          ? {
+              tabindex: 0,
+              onClick: (e) => {
+                e.stopPropagation();
+                props.onEditClick?.();
+              },
+            }
+          : undefined),
+      }}
+    />
   );
 };

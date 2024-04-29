@@ -53,17 +53,20 @@ import {SegmentedControl} from "../form/SegmentedControl";
 import {STAFF_ICONS} from "../icons";
 import {EN_DASH} from "../symbols";
 import {WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
-import {CALENDAR_MODES, CalendarMode} from "./calendar_modes";
+import {CALENDAR_MODES, CalendarFunction, CalendarFunctionContext, CalendarMode} from "./calendar_modes";
 import {CALENDAR_BACKGROUNDS, MISSING_MEETING_COLORING, coloringToStyle, getRandomEventColors} from "./colors";
 import {CalendarLocationState, CalendarSearchParams} from "./meeting_link";
 
 interface Props extends htmlAttributes.div {
+  readonly staticCalendarFunction: CalendarFunction;
   readonly modes?: readonly CalendarMode[];
   readonly initialMode?: CalendarMode;
   readonly initialResourcesSelection?: readonly string[];
   readonly initialDay?: DateTime;
-  /** The key to use for persisting the parameters of the displayed page. If not present, nothing is persisted. */
-  readonly staticPersistenceKey?: string;
+  /** The key to use for persisting the resources and days of the displayed page. If not present, selection is not persisted. */
+  readonly staticSelectionPersistenceKey?: string;
+  /** The key to use for persisting the presentation (view) settings. If not present, presentation settings are not persisted. */
+  readonly staticPresentationPersistenceKey?: string;
 }
 
 const defaultProps = () =>
@@ -74,7 +77,8 @@ const defaultProps = () =>
     initialDay: currentDate(),
   }) satisfies Partial<Props>;
 
-const PIXELS_PER_HOUR_RANGE = {min: 40, max: 400, def: 120};
+const PIXELS_PER_HOUR_RANGE_WORK = {min: 40, max: 400, def: 120};
+const PIXELS_PER_HOUR_RANGE_TIME_TABLES = {min: 20, max: 100, def: 40};
 const ALL_DAY_EVENTS_HEIGHT_RANGE = {min: 15, max: 150, def: 30};
 const MONTH_EVENTS_HEIGHT_RANGE = {min: 15, max: 150, def: 30};
 
@@ -85,7 +89,7 @@ const MONTH_EVENTS_HEIGHT_RANGE = {min: 15, max: 150, def: 30};
  * Either make sure the change is backwards compatible (allows reading earlier data),
  * or bump the version of the persistence.
  */
-type PersistentState = {
+type PersistentSelectionState = {
   readonly today: string;
   readonly mode: CalendarMode;
   readonly daysSel: readonly (readonly [CalendarMode, DaysRange])[];
@@ -93,11 +97,22 @@ type PersistentState = {
     readonly checkbox: ReadonlySet<string>;
     readonly radio: string | null;
   };
+};
+const PERSISTENCE_SELECTION_VERSION = 3;
+
+/**
+ * The state of the calendar persisted in the local storage.
+ *
+ * Warning: Changing this type may break the persistence and the whole application in a browser.
+ * Either make sure the change is backwards compatible (allows reading earlier data),
+ * or bump the version of the persistence.
+ */
+type PersistentPresentationState = {
   readonly pixelsPerHour: number;
   readonly allDayEventsHeight: number;
   readonly monthEventsHeight: number;
 };
-const PERSISTENCE_VERSION = 3;
+const PERSISTENCE_PRESENTATION_VERSION = 3;
 
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
@@ -106,11 +121,13 @@ const PERSISTENCE_VERSION = 3;
 export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const mProps = mergeProps(defaultProps(), propsArg);
   const [props, divProps] = splitProps(mProps, [
+    "staticCalendarFunction",
     "modes",
     "initialMode",
     "initialResourcesSelection",
     "initialDay",
-    "staticPersistenceKey",
+    "staticSelectionPersistenceKey",
+    "staticPresentationPersistenceKey",
   ]);
   const t = useLangFunc();
   const locale = useLocale();
@@ -120,6 +137,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const location = useLocation<CalendarLocationState>();
   const activeFacility = useActiveFacility();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
+
+  const PIXELS_PER_HOUR_RANGE = {
+    work: PIXELS_PER_HOUR_RANGE_WORK,
+    timeTables: PIXELS_PER_HOUR_RANGE_TIME_TABLES,
+  }[props.staticCalendarFunction];
 
   const userStatus = createQuery(User.statusQueryOptions);
   const {dataQuery: staffDataQuery} = createTQuery({
@@ -148,14 +170,16 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               <span class="line-clamp-2" style={{"font-size": "0.92rem", "line-height": "1.15"}}>
                 {staff.name}
               </span>
-              <span
-                class="shrink-0 self-center border rounded"
-                style={{
-                  width: "14px",
-                  height: "14px",
-                  ...coloringToStyle(coloring, {part: "colorMarker"}),
-                }}
-              />
+              <Show when={props.staticCalendarFunction === "work"}>
+                <span
+                  class="shrink-0 self-center border rounded"
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    ...coloringToStyle(coloring, {part: "colorMarker"}),
+                  }}
+                />
+              </Show>
             </div>
           ),
         } satisfies ResourceItem & Record<string, unknown>;
@@ -302,9 +326,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   }
 
-  if (props.staticPersistenceKey) {
-    createLocalStoragePersistence<PersistentState>({
-      key: `FullCalendar:${props.staticPersistenceKey}`,
+  if (props.staticSelectionPersistenceKey) {
+    createLocalStoragePersistence<PersistentSelectionState>({
+      key: `FullCalendar:${props.staticSelectionPersistenceKey}`,
       value: () => ({
         today: currentDate().toISODate(),
         mode: mode(),
@@ -313,9 +337,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           checkbox: selectedResourcesCheckbox(),
           radio: selectedResourceRadio() || null,
         },
-        pixelsPerHour: pixelsPerHour(),
-        allDayEventsHeight: allDayEventsHeight(),
-        monthEventsHeight: monthEventsHeight(),
       }),
       onLoad: (state) => {
         batch(() => {
@@ -336,11 +357,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setSelectedResourcesCheckbox(state.resourcesSel.checkbox);
           setSelectedResourceRadio(state.resourcesSel.radio || undefined);
           setTinyCalMonth(daysSelection().center());
-          setPixelsPerHour(state.pixelsPerHour || PIXELS_PER_HOUR_RANGE.def);
-          setAllDayEventsHeight(state.allDayEventsHeight || ALL_DAY_EVENTS_HEIGHT_RANGE.def);
-          setMonthEventsHeight(state.monthEventsHeight || MONTH_EVENTS_HEIGHT_RANGE.def);
         });
-        // Once resources are loaded, make sure there aren't selected resources that don't really exist.
+        // Once resources are loaded, make sure there aren't any selected resources that don't really exist.
         createOneTimeEffect({
           input: staff,
           effect: () => {
@@ -363,8 +381,27 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           },
         });
       },
-      serialiser: richJSONSerialiser<PersistentState>(),
-      version: [PERSISTENCE_VERSION],
+      serialiser: richJSONSerialiser<PersistentSelectionState>(),
+      version: [PERSISTENCE_SELECTION_VERSION],
+    });
+  }
+  if (props.staticPresentationPersistenceKey) {
+    createLocalStoragePersistence<PersistentPresentationState>({
+      key: `FullCalendar:${props.staticPresentationPersistenceKey}`,
+      value: () => ({
+        pixelsPerHour: pixelsPerHour(),
+        allDayEventsHeight: allDayEventsHeight(),
+        monthEventsHeight: monthEventsHeight(),
+      }),
+      onLoad: (state) => {
+        batch(() => {
+          setPixelsPerHour(state.pixelsPerHour || PIXELS_PER_HOUR_RANGE.def);
+          setAllDayEventsHeight(state.allDayEventsHeight || ALL_DAY_EVENTS_HEIGHT_RANGE.def);
+          setMonthEventsHeight(state.monthEventsHeight || MONTH_EVENTS_HEIGHT_RANGE.def);
+        });
+      },
+      serialiser: richJSONSerialiser<PersistentPresentationState>(),
+      version: [PERSISTENCE_PRESENTATION_VERSION],
     });
   }
 
@@ -475,6 +512,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [hoveredMeeting, setHoveredMeeting] = createSignal<string>();
 
   const {meetingsDataQuery, blocks, events} = useCalendarBlocksAndEvents({
+    calendarFunction: props.staticCalendarFunction,
     mode,
     daysRange: daysSelection,
     staff: () =>
@@ -488,6 +526,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     allDayEventsHeight,
     monthEventsHeight,
     viewMeeting,
+    viewSystemMeeting,
   });
 
   function meetingChangeEffects(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: string[]) {
@@ -745,6 +784,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     });
   }
 
+  function viewSystemMeeting(params: MeetingModalParams) {
+    viewMeeting(params);
+  }
+
   // TODO: Don't show the loading pane when refetching in the background.
   const isCalendarLoading = () => {
     if (meetingsDataQuery.isFetching) {
@@ -757,7 +800,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   };
 
   return (
-    <>
+    <CalendarFunctionContext.Provider value={props.staticCalendarFunction}>
       <div {...htmlAttributes.merge(divProps, {class: "flex items-stretch gap-1"})}>
         <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
           <TinyCalendar
@@ -785,7 +828,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             }}
             onVisibleRangeChange={setTinyCalVisibleRange}
           />
-          <Show when={userStatus.data?.permissions.facilityStaff}>
+          <Show when={props.staticCalendarFunction === "work" && userStatus.data?.permissions.facilityStaff}>
             <div class="mx-1 flex gap-1 items-stretch">
               <Button
                 class={cx("grow", selectedResources().size ? "minimal" : "primary small")}
@@ -870,7 +913,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 isLoading={isCalendarLoading()}
                 columns={calendarColumns()}
                 pixelsPerHour={pixelsPerHour()}
-                gridCellMinutes={15}
+                gridCellMinutes={{work: 15, timeTables: 60}[props.staticCalendarFunction]}
                 onVisibleRangeChange={setVisibleDayMinuteRange}
                 scrollToDayMinute={scrollToDayMinute()}
                 onWheelWithAlt={wheelWithAlt}
@@ -879,6 +922,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           </Switch>
         </div>
       </div>
-    </>
+    </CalendarFunctionContext.Provider>
   );
 };

@@ -25,7 +25,15 @@ export function getMeetingLinkData(calendarHref: string, meeting: string | Meeti
     state: {
       meetingToShow:
         meetingBasicData &&
-        toPlainObject(meetingBasicData, ["id", "date", "startDayminute", "durationMinutes", "staff", "resources"]),
+        toPlainObject(meetingBasicData, [
+          "id",
+          "typeDictId",
+          "date",
+          "startDayminute",
+          "durationMinutes",
+          "staff",
+          "resources",
+        ]),
     } satisfies CalendarLocationState,
   } satisfies Partial<AnchorProps>;
 }
