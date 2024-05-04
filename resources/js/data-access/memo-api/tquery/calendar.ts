@@ -1,6 +1,8 @@
 import {DaysRange} from "components/ui/calendar/days_range";
+import {CalendarFunction} from "components/ui/meetings-calendar/calendar_modes";
 import {NON_NULLABLE} from "components/utils";
 import {Accessor, createMemo, on} from "solid-js";
+import {useFixedDictionaries} from "../fixed_dictionaries";
 import {MeetingAttendantResource, MeetingResource} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {dateToISO} from "../utils";
@@ -46,16 +48,19 @@ export interface TQMeetingAttendantResource extends MeetingAttendantResource {
  * only one staff member is selected etc.
  */
 export function createCalendarRequestCreator({
+  calendarFunction,
   intrinsicFilter,
   daysRange,
   staff,
   limit = DEFAULT_LIMIT,
 }: {
+  calendarFunction: CalendarFunction;
   intrinsicFilter?: FilterH;
   daysRange: Accessor<DaysRange>;
   staff?: Accessor<readonly Api.Id[] | undefined>;
   limit?: number;
 }): RequestCreator<undefined> {
+  const {meetingTypeDict} = useFixedDictionaries();
   return (schema) => {
     const filterReductor = createMemo(on(schema, (schema) => schema && new FilterReductor(schema)));
     const dateFilter = (): FilterH => ({
@@ -74,6 +79,20 @@ export function createCalendarRequestCreator({
           op: "<=",
           val: dateToISO(daysRange().end),
         },
+        ...(calendarFunction === "work"
+          ? []
+          : calendarFunction === "timeTables"
+            ? meetingTypeDict()
+              ? ([
+                  {
+                    type: "column",
+                    column: "typeDictId",
+                    op: "in",
+                    val: [meetingTypeDict()!.work_time.id, meetingTypeDict()!.leave_time.id],
+                  },
+                ] as const)
+              : []
+            : (calendarFunction satisfies never)),
       ],
     });
     const staffFilter = (): FilterH | undefined => {
@@ -96,7 +115,7 @@ export function createCalendarRequestCreator({
       };
     };
     const request = createMemo((): DataRequest | undefined => {
-      if (!schema()) {
+      if (!schema() || !meetingTypeDict()) {
         return undefined;
       }
       return {

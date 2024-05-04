@@ -6,9 +6,9 @@ export default (() => {
   return (
     <FullCalendar
       class="w-full h-full"
-      staticCalendarFunction="work"
+      staticCalendarFunction="timeTables"
       staticSelectionPersistenceKey={`facility.${activeFacilityId()}.calendar`}
-      staticPresentationPersistenceKey="calendar.presentation"
+      staticPresentationPersistenceKey="timeTables.calendar.presentation"
     />
   );
 }) satisfies VoidComponent;

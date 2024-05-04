@@ -1,5 +1,5 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {cx, NON_NULLABLE, useLangFunc} from "components/utils";
+import {cx, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useLocale} from "components/utils/LocaleContext";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -8,14 +8,15 @@ import {createCalendarRequestCreator, TQMeetingResource} from "data-access/memo-
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {MeetingModalParams} from "features/meeting/meeting_modal";
 import {DateTime} from "luxon";
-import {Accessor, createMemo, JSX, Show, Signal, VoidComponent} from "solid-js";
+import {Accessor, createMemo, JSX, Show, Signal, untrack, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {TimeBlock} from "../calendar/calendar-columns/blocks";
 import {DaysRange} from "../calendar/days_range";
 import {AllDayTimeSpan, Block, CellStylingPreference, Event, PartDayTimeSpan} from "../calendar/types";
 import {WeekDaysCalculator} from "../calendar/week_days_calculator";
 import {capitalizeString} from "../Capitalize";
-import {CalendarMode} from "./calendar_modes";
+import {FACILITY_ICONS} from "../icons";
+import {CalendarFunction, CalendarMode} from "./calendar_modes";
 import {CALENDAR_BACKGROUNDS, Coloring, MISSING_MEETING_COLORING} from "./colors";
 import {AllDayEventBlock, MeetingEventBlock} from "./column_events";
 import {HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
@@ -56,6 +57,7 @@ const BACKGROUND_PREFERENCE_STRENGTHS = {
 } as const;
 
 export function useCalendarBlocksAndEvents({
+  calendarFunction,
   mode,
   daysRange,
   staff,
@@ -64,7 +66,9 @@ export function useCalendarBlocksAndEvents({
   allDayEventsHeight,
   monthEventsHeight,
   viewMeeting,
+  viewSystemMeeting,
 }: {
+  calendarFunction: CalendarFunction;
   mode: Accessor<CalendarMode>;
   daysRange: Accessor<DaysRange>;
   staff: Accessor<readonly StaffInfo[]>;
@@ -73,6 +77,7 @@ export function useCalendarBlocksAndEvents({
   allDayEventsHeight?: Accessor<number>;
   monthEventsHeight?: Accessor<number>;
   viewMeeting: (params: MeetingModalParams) => void;
+  viewSystemMeeting: (params: MeetingModalParams) => void;
 }): {
   meetingsDataQuery: CreateQueryResult;
   blocks: () => readonly Bl[];
@@ -93,6 +98,7 @@ export function useCalendarBlocksAndEvents({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
     entityURL: `facility/${activeFacilityId()}/meeting`,
     requestCreator: createCalendarRequestCreator({
+      calendarFunction,
       daysRange: () =>
         mode() === "month"
           ? new DaysRange(
@@ -127,6 +133,32 @@ export function useCalendarBlocksAndEvents({
         durationMinutes: meeting.durationMinutes,
       });
       const matchingTimeSpan = () => (isAllDay ? allDayTimeSpan() : partDayTimeSpan());
+      /**
+       * Returns an object defining props that are common for different block components, e.g. hover.
+       * Properties are defined as getters to allow using the object as props.
+       */
+      function commonBlockProps() {
+        return untrack(() =>
+          Object.assign(
+            calendarFunction === "timeTables"
+              ? ({
+                  onHoverChange(hovered: boolean) {
+                    hoveredMeeting?.[1](hovered ? meeting.id : undefined);
+                  },
+                  get hovered() {
+                    return meeting.id === hoveredMeeting?.[0]();
+                  },
+                } as const)
+              : {},
+            {
+              onEditClick:
+                calendarFunction === "timeTables"
+                  ? () => viewSystemMeeting({meetingId: meeting.id, initialViewMode: true})
+                  : undefined,
+            } as const,
+          ),
+        );
+      }
       if (meeting.typeDictId === meetingTypeDict()?.work_time.id) {
         const facilityWide = !meeting.staff.length;
         const style: JSX.CSSProperties = {
@@ -137,27 +169,47 @@ export function useCalendarBlocksAndEvents({
           strength: BACKGROUND_PREFERENCE_STRENGTHS.workTime[facilityWide ? "facility" : "staff"],
           style,
         };
-        const WorkTimeSummary: VoidComponent<{readonly day: DateTime}> = (props) => (
+        const WorkTimeSummary: VoidComponent<htmlAttributes.span & {readonly day: DateTime}> = (props) => (
           <TimeBlockSummary
-            day={props.day}
+            {...props}
             timeSpan={timeSpan}
             style={style}
-            title={(time) => `${t("with_colon", {text: capitalizeString(meetingTypeDict()?.work_time.label)})} ${time}`}
+            label={(time) =>
+              facilityWide ? (
+                <span>
+                  {time} <FACILITY_ICONS.facility class="inlineIcon text-current" size="12" />
+                </span>
+              ) : (
+                time
+              )
+            }
+            title={(time) =>
+              `${t("with_colon", {
+                text: capitalizeString(
+                  facilityWide ? t("calendar.facility_work_time") : meetingTypeDict()?.work_time.label,
+                ),
+              })} ${time}`
+            }
+            {...commonBlockProps()}
           />
         );
         (facilityWide ? facilityWorkTimeBlocks : staffWorkTimeBlocks).push({
           meeting,
           ...timeSpan,
           contentInHoursArea: () => (
-            <TimeBlock
-              style={style}
-              label={meeting.notes || undefined}
-              onEditClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: false})}
-            />
+            <TimeBlock style={style} label={meeting.notes || undefined} {...commonBlockProps()} />
           ),
-          contentInAllDayArea: facilityWide ? undefined : (colInfo) => <WorkTimeSummary day={colInfo.day} />,
+          contentInAllDayArea: facilityWide
+            ? calendarFunction === "timeTables"
+              ? (colInfo) => <WorkTimeSummary day={colInfo.day} class="text-grey-text" />
+              : undefined
+            : (colInfo) => <WorkTimeSummary day={colInfo.day} />,
           allDayAreaStylingPreference: stylingPreference,
-          contentInMonthCell: facilityWide ? undefined : (monthInfo) => <WorkTimeSummary day={monthInfo.day} />,
+          contentInMonthCell: facilityWide
+            ? calendarFunction === "timeTables"
+              ? (monthInfo) => <WorkTimeSummary day={monthInfo.day} class="text-grey-text" />
+              : undefined
+            : (monthInfo) => <WorkTimeSummary day={monthInfo.day} />,
           monthCellStylingPreference: stylingPreference,
         });
       } else if (meeting.typeDictId === meetingTypeDict()?.leave_time.id) {
@@ -198,6 +250,7 @@ export function useCalendarBlocksAndEvents({
                 .filter(NON_NULLABLE)
                 .join("\n")
             }
+            {...commonBlockProps()}
           />
         );
         (facilityWide ? facilityLeaveTimeBlocks : staffLeaveTimeBlocks).push({
@@ -205,9 +258,10 @@ export function useCalendarBlocksAndEvents({
           ...timeSpan,
           contentInHoursArea: () => (
             <TimeBlock
+              class="text-red-900"
               style={style}
               label={meeting.notes || genericName}
-              onEditClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: false})}
+              {...commonBlockProps()}
             />
           ),
           contentInAllDayArea: (colInfo) => <LeaveTimeSummary day={colInfo.day} />,
@@ -221,7 +275,7 @@ export function useCalendarBlocksAndEvents({
          * Properties are defined as getters to allow using the object as props.
          */
         function commonEventProps(staffId: string) {
-          return {
+          return untrack(() => ({
             get meeting() {
               return meeting;
             },
@@ -238,7 +292,8 @@ export function useCalendarBlocksAndEvents({
               return meeting.id === hoveredMeeting?.[0]();
             },
             entityId: meeting.id,
-          };
+            onClick: () => viewMeeting({meetingId: meeting.id, initialViewMode: true}),
+          }));
         }
         if (isAllDay) {
           const timeSpan = allDayTimeSpan();
@@ -251,7 +306,6 @@ export function useCalendarBlocksAndEvents({
                 timeSpan={timeSpan}
                 {...commonEventProps(colInfo.staffId)}
                 height={allDayEventsHeight?.()}
-                onClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: true})}
               />
             ),
             contentInMonthCell: (monthInfo) => (
@@ -260,7 +314,6 @@ export function useCalendarBlocksAndEvents({
                 timeSpan={timeSpan}
                 {...commonEventProps(monthInfo.staffId)}
                 height={monthEventsHeight?.()}
-                onClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: true})}
               />
             ),
           });
@@ -270,12 +323,7 @@ export function useCalendarBlocksAndEvents({
             meeting,
             ...timeSpan,
             contentInHoursArea: (colInfo) => (
-              <MeetingEventBlock
-                day={colInfo.day}
-                timeSpan={timeSpan}
-                {...commonEventProps(colInfo.staffId)}
-                onClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: true})}
-              />
+              <MeetingEventBlock day={colInfo.day} timeSpan={timeSpan} {...commonEventProps(colInfo.staffId)} />
             ),
             contentInMonthCell: (monthInfo) => (
               <MonthDayMeetingEventBlock
@@ -283,7 +331,6 @@ export function useCalendarBlocksAndEvents({
                 timeSpan={timeSpan}
                 {...commonEventProps(monthInfo.staffId)}
                 height={monthEventsHeight?.()}
-                onClick={() => viewMeeting({meetingId: meeting.id, initialViewMode: true})}
               />
             ),
           });
@@ -294,7 +341,6 @@ export function useCalendarBlocksAndEvents({
       blocks: [...facilityWorkTimeBlocks, ...staffWorkTimeBlocks, ...facilityLeaveTimeBlocks, ...staffLeaveTimeBlocks],
       events: meetingEvents,
     };
-    // TODO: sort
   });
 
   return {meetingsDataQuery, blocks: () => blocksAndEvents().blocks, events: () => blocksAndEvents().events};

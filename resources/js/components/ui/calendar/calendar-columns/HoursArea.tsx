@@ -73,7 +73,7 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
         )}
       </For>
       <div
-        class="h-full ml-px relative z-10"
+        class="h-full ml-px relative z-10 pointer-events-none"
         // Leave enough room on the right for labeled blocks.
         style={{"margin-right": "11px"}}
       >
@@ -90,7 +90,7 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
             };
             return (
               <div
-                class="absolute overflow-clip pt-px"
+                class="absolute overflow-clip pt-px pointer-events-auto"
                 style={{
                   ...styleXSize(),
                   ...getStyleYSize(dayMinuteRange),
