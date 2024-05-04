@@ -4,6 +4,7 @@ use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObject;
 use App\Models\Grant;
 use App\Models\User;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -71,3 +72,27 @@ Artisan::command('fz:user', function () {
     $this->line("Created user $user->id");
     PermissionMiddleware::setPermissions(null);
 })->purpose('Create new user');
+
+Artisan::command('fz:db-dump {chown} {password?}', function (string $chown, string $password = null) {
+    $dbName = DB::getDatabaseName();
+    ob_start();
+    system("mariadb-dump $dbName");
+    $sql = ob_get_clean();
+
+    $nameBase = $dbName . '-' . (new DateTimeImmutable())->format('Ymd-His');
+    $innerFile = "$nameBase.sql";
+    $zipPath = App::databasePath('dumps') . "/$nameBase.zip";
+    $zip = new ZipArchive();
+    $zip->open($zipPath, ZipArchive::CREATE);
+    $zip->addFromString($innerFile, $sql);
+    if ($password !== null) {
+        $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
+        $zip->setPassword($password);
+    }
+    $zip->setCompressionName($innerFile, ZipArchive::CM_DEFLATE, 9);
+    $zip->close();
+    chown($zipPath, $chown);
+    chgrp($zipPath, $chown);
+    chmod($zipPath, 0400);
+    $this->line($zip->getStatusString());
+})->purpose('Make zipped database dump with password');
