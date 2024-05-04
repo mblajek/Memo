@@ -125,6 +125,17 @@ final class TqConfig
         );
     }
 
+    public function addBase(): void
+    {
+        $this->addSimple(TqDataTypeEnum::uuid, 'id');
+        $this->addSimple(TqDataTypeEnum::datetime, 'created_at');
+        $this->addSimple(TqDataTypeEnum::datetime, 'updated_at');
+        $this->addSimple(TqDataTypeEnum::uuid, 'created_by', 'created_by.id');
+        $this->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::created_by, 'name', 'created_by.name');
+        $this->addSimple(TqDataTypeEnum::uuid, 'updated_by', 'updated_by.id');
+        $this->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::updated_by, 'name', 'updated_by.name');
+    }
+
     public function removeColumns(string ...$columnAliases): void
     {
         foreach ($columnAliases as $columnAlias) {

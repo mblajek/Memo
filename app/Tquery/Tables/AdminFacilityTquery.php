@@ -12,12 +12,9 @@ readonly class AdminFacilityTquery extends TqService
     protected function getConfig(): TqConfig
     {
         $config = new TqConfig(table: TqTableAliasEnum::facilities);
-
-        $config->addSimple(TqDataTypeEnum::uuid, 'id');
+        $config->addBase();
         $config->addSimple(TqDataTypeEnum::string, 'name');
         $config->addSimple(TqDataTypeEnum::string, 'url');
-        $config->addSimple(TqDataTypeEnum::datetime, 'created_at');
-        $config->addSimple(TqDataTypeEnum::datetime, 'updated_at');
         $config->addQuery(
             TqDataTypeEnum::int,
             fn(string $tableName) => //
