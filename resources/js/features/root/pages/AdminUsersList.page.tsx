@@ -44,7 +44,7 @@ export default (() => {
           name: "hasGlobalAdmin",
           columnDef: {size: 130},
         },
-        ...getCreatedUpdatedColumns({includeUpdatedBy: false, globalAdmin: true}),
+        ...getCreatedUpdatedColumns({globalAdmin: true}),
         {
           name: "actions",
           isDataColumn: false,

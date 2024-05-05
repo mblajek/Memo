@@ -53,7 +53,7 @@ export default (() => {
         {name: "completedMeetingsCountLastMonth"},
         {name: "plannedMeetingsCount", initialVisible: false},
         {name: "plannedMeetingsCountNextMonth"},
-        ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
+        ...getCreatedUpdatedColumns(),
       ]}
       initialSort={[{id: "name", desc: false}]}
     />

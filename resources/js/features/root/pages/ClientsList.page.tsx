@@ -45,7 +45,7 @@ export default (() => {
         {name: "completedMeetingsCountLastMonth", initialVisible: false},
         {name: "plannedMeetingsCount", initialVisible: false},
         {name: "plannedMeetingsCountNextMonth"},
-        ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
+        ...getCreatedUpdatedColumns(),
       ]}
       attributeColumnsConfig={{
         defaultConfig: {initialVisible: false},

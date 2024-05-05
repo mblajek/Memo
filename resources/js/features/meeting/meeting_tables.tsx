@@ -21,7 +21,7 @@ import {ScrollableCell, TableColumnsSet} from "data-access/memo-api/tquery/table
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
-import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
+import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeriesInfo";
@@ -45,13 +45,19 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     invalidate.facility.meetings();
   }
 
-  const MeetingTime: VoidComponent<{startDayMinute: number | undefined; durationMinutes: number | undefined}> = (
-    props,
-  ) => (
-    <Show when={props.startDayMinute !== undefined && props.durationMinutes !== undefined}>
-      {formatDayMinuteHM(props.startDayMinute!, {hour: "2-digit"})} {EN_DASH}{" "}
-      {formatDayMinuteHM((props.startDayMinute! + props.durationMinutes!) % MAX_DAY_MINUTE, {hour: "2-digit"})}
-    </Show>
+  const MeetingTime: VoidComponent<{
+    readonly startDayMinute: number | undefined;
+    readonly durationMinutes: number | undefined;
+  }> = (props) => (
+    <Switch>
+      <Match when={props.startDayMinute === 0 && props.durationMinutes === MAX_DAY_MINUTE}>
+        {t("calendar.all_day")}
+      </Match>
+      <Match when={props.startDayMinute !== undefined && props.durationMinutes !== undefined}>
+        {formatDayMinuteHM(props.startDayMinute!, {hour: "2-digit"})} {EN_DASH}{" "}
+        {formatDayMinuteHM((props.startDayMinute! + props.durationMinutes!) % MAX_DAY_MINUTE, {hour: "2-digit"})}
+      </Match>
+    </Switch>
   );
   const DetailsButton: ParentComponent<{meetingId: string | undefined} & htmlAttributes.button> = (allProps) => {
     const [props, buttonProps] = splitProps(allProps, ["meetingId", "children"]);
