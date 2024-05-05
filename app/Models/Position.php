@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Attributes\HasValues;
 use App\Models\QueryBuilders\PositionBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
-use App\Models\Traits\HasValues;
+use App\Models\Traits\HasValidator;
+use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\Rule;
 
 /**
  * @property string dictionary_id
@@ -16,14 +18,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool is_fixed
  * @property bool is_disabled
  * @property int default_order
- * @property-read Member $member
+ * @property-read Dictionary $dictionary
  * @method static PositionBuilder query()
  */
 class Position extends Model
 {
     use BaseModel;
     use HasValues;
-    use HasCreatedBy;
+    use HasValidator;
 
     protected $table = 'positions';
 
@@ -44,6 +46,18 @@ class Position extends Model
     ];
 
     protected $with = ['dictionary'];
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            //todo: dictionary exists in facility
+            'dictionary_id' => Valid::uuid([Rule::exists('dictionaries', 'id')]),
+            'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
+            'name' => Valid::trimmed(),
+            'is_fixed', 'is_disabled' => Valid::bool(),
+            'default_order' => Valid::int(['min:1'], sometimes: true),
+        };
+    }
 
     public function dictionary(): BelongsTo
     {

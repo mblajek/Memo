@@ -1,7 +1,7 @@
 import {LangFunc, NON_NULLABLE} from "components/utils";
 import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {Attributable, getAttributeModel, makeAttributable, readAttribute} from "./attributable";
-import {Dictionaries, Dictionary} from "./dictionaries";
+import {Dictionaries, Dictionary, dictionaryNameTranslationKey} from "./dictionaries";
 import {
   AttributeModel,
   AttributeResource,
@@ -9,6 +9,7 @@ import {
   DictAttributeType,
   REQUIREMENT_LEVELS,
   RequirementLevel,
+  SeparatorAttributeType,
   SimpleAttributeType,
 } from "./resources/attribute.resource";
 import {getNameTranslation, isNameTranslatable} from "./resources/name_string";
@@ -18,12 +19,11 @@ export class Attributes {
   constructor(
     /** A map of all the attributes by id. */
     readonly byId: ReadonlyMap<string, Attribute>,
-    readonly byName: ReadonlyMap<string, Attribute>,
-    /** A map from model name to a list of its attributes, ordered. */
-    readonly byModel: ReadonlyMap<string, Attribute[]>,
+    /** A map from model to a map from apiName to the attribute, ordered. */
+    readonly byModelAndApiName: ReadonlyMap<string, ReadonlyMap<string, Attribute>>,
   ) {}
 
-  static readonly EMPTY = new Attributes(new Map(), new Map(), new Map());
+  static readonly EMPTY = new Attributes(new Map(), new Map());
 
   static fromResources(t: LangFunc, dictionaries: Dictionaries, resources: AttributeResource[]) {
     return Attributes.fromAttributes(resources.map((resource) => Attribute.fromResource(t, dictionaries, resource)));
@@ -31,39 +31,45 @@ export class Attributes {
 
   private static fromAttributes(attributes: Attribute[]) {
     const byId = new Map<string, Attribute>();
-    const byName = new Map<string, Attribute>();
-    const byModel = new Map<string, Attribute[]>();
+    const byModelAndApiName = new Map<string, Map<string, Attribute>>();
     for (const attribute of attributes) {
       byId.set(attribute.id, attribute);
-      if (attribute.isFixed && attribute.isTranslatable) {
-        byName.set(attribute.name, attribute);
+      let byApiName = byModelAndApiName.get(attribute.model);
+      if (!byApiName) {
+        byApiName = new Map<string, Attribute>();
+        byModelAndApiName.set(attribute.model, byApiName);
       }
-      const model = attribute.model;
-      let modelAttributes = byModel.get(model);
-      if (!modelAttributes) {
-        modelAttributes = [];
-        byModel.set(model, modelAttributes);
-      }
-      modelAttributes.push(attribute);
+      byApiName.set(attribute.apiName, attribute);
     }
-    return new Attributes(byId, byName, byModel);
+    return new Attributes(byId, byModelAndApiName);
   }
 
   [Symbol.iterator]() {
     return this.byId.values();
   }
 
-  get<T = unknown>(idOrName: string) {
-    const attribute = this.byId.get(idOrName) || this.byName.get(idOrName);
+  getById<T = unknown>(id: string) {
+    const attribute = this.byId.get(id);
     if (!attribute) {
-      throw new Error(`Attribute ${idOrName} not found.`);
+      throw new Error(`Attribute ${id} not found.`);
+    }
+    return attribute as Attribute<T>;
+  }
+
+  getByName<T = unknown>(model: string, apiName: string, {allowNonFixed = false} = {}) {
+    const attribute = this.byModelAndApiName.get(model)?.get(apiName);
+    if (!attribute) {
+      throw new Error(`Attribute ${apiName} for model ${model} not found.`);
+    }
+    if (!allowNonFixed && !attribute.isFixed) {
+      throw new Error(`Attribute ${apiName} for model ${model} is not fixed.`);
     }
     return attribute as Attribute<T>;
   }
 
   /** Returns the attributes for the specified model, or empty array. */
   getForModel(model: string) {
-    return this.byModel.get(model) || [];
+    return [...(this.byModelAndApiName.get(model)?.values() || [])];
   }
 
   /** Returns a subset of the attributes accessible for the specified facility, or for the global scope. */
@@ -74,7 +80,7 @@ export class Attributes {
   }
 
   read<T = unknown>(object: Attributable, attributeId: string) {
-    return this.get<T>(attributeId).readFrom(object);
+    return this.getById<T>(attributeId).readFrom(object);
   }
 
   readAll(object: Attributable) {
@@ -101,7 +107,7 @@ export class Attribute<T = unknown> {
     readonly label: string,
     readonly apiName: string,
     readonly type: AttributeType,
-    readonly basicType: SimpleAttributeType | DictAttributeType | undefined,
+    readonly basicType: SimpleAttributeType | DictAttributeType | SeparatorAttributeType | undefined,
     readonly typeModel: AttributeModel | undefined,
     readonly dictionary: Dictionary | undefined,
     readonly multiple: boolean | undefined,
@@ -118,19 +124,26 @@ export class Attribute<T = unknown> {
       resource.name,
       resource.model,
       isNameTranslatable(resource.name),
-      getNameTranslation(
-        t,
-        resource.name,
-        (n) =>
-          [
-            `attributes.${resource.model}.${n}`,
-            resource.isFixed ? `models.${resource.model}.${resource.apiName}` : undefined,
-          ].filter(NON_NULLABLE),
-        resource.dictionaryId ? {defaultValue: dictionaries.get(resource.dictionaryId).label} : undefined,
-      ),
+      getNameTranslation(t, resource.name, (n) => {
+        if (!resource.isFixed) {
+          console.error(`Translatable non-fixed attribute ${resource.model}.${n}`);
+          return `???.${n}`;
+        }
+        return [
+          `attributes.attributes.${resource.model}.${n}`,
+          `attributes.attributes.generic.${n}`,
+          `models.${resource.model}.${resource.apiName}`,
+          `models.generic.${resource.apiName}`,
+          resource.dictionaryId
+            ? dictionaryNameTranslationKey(dictionaries.get(resource.dictionaryId).name)
+            : undefined,
+        ].filter(NON_NULLABLE);
+      }),
       resource.apiName,
       resource.type,
-      resource.typeModel ? undefined : (resource.type as SimpleAttributeType | DictAttributeType),
+      resource.typeModel
+        ? undefined
+        : (resource.type as SimpleAttributeType | DictAttributeType | SeparatorAttributeType),
       resource.typeModel || undefined,
       resource.dictionaryId ? dictionaries.get(resource.dictionaryId) : undefined,
       resource.isMultiValue ?? undefined,
@@ -148,7 +161,7 @@ export class Attribute<T = unknown> {
   readFrom(object: Attributable) {
     if (!getAttributeModel(object).includes(this.model)) {
       throw new Error(
-        `Trying to read attribute ${this.id} for model ${this.model} from an object ` +
+        `Trying to read attribute ${this.apiName} for model ${this.model} from an object ` +
           `representing models ${getAttributeModel(object).join(", ")}.`,
       );
     }

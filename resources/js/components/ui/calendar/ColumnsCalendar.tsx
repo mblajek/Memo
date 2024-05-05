@@ -63,6 +63,8 @@ export function useColumnsCalendar() {
   return context;
 }
 
+const TIME_TRACK_LABEL_HEIGHT = 40;
+
 export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
   const defProps = mergeProps(DEFAULT_PARAMETERS, allProps);
   const [props, divProps] = splitProps(defProps, [
@@ -77,6 +79,16 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
   const dayMinutes = createMemo(() => {
     const gridCellMinutes = props.gridCellMinutes;
     return Array.from({length: Math.floor(MAX_DAY_MINUTE / gridCellMinutes)}, (_, i) => i * gridCellMinutes);
+  });
+  const timeTrackLabelDayMinutes = createMemo(() => {
+    const maxLabelsPerHour = Math.floor(props.pixelsPerHour / TIME_TRACK_LABEL_HEIGHT);
+    const cellsPerHour = 60 / props.gridCellMinutes;
+    let labelsPerHour = Math.max(1, Math.min(cellsPerHour, maxLabelsPerHour));
+    while (cellsPerHour % labelsPerHour) {
+      labelsPerHour--;
+    }
+    const cellsPerLabel = cellsPerHour / labelsPerHour;
+    return dayMinutes().filter((m, i) => i % cellsPerLabel === 0);
   });
   function dayMinuteToPixelY(dayMinute: number) {
     return (dayMinute / 60) * props.pixelsPerHour;
@@ -166,9 +178,12 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}
         >
           <div class={s.timeTrack}>
-            <Index each={dayMinutes()}>
+            <Index each={timeTrackLabelDayMinutes()}>
               {(dayMinute) => (
-                <div class={s.label} style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}>
+                <div
+                  class={cx(s.label, dayMinute() % 60 ? undefined : s.fullHour)}
+                  style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
+                >
                   {formatDayMinuteHM(dayMinute())}
                 </div>
               )}
@@ -193,7 +208,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
             <Index each={[...dayMinutes(), MAX_DAY_MINUTE]}>
               {(dayMinute) => (
                 <div
-                  class={cx(s.gridRowLine, {[s.fullHour!]: dayMinute() % 60 === 0})}
+                  class={cx(s.gridRowLine, dayMinute() % 60 ? undefined : s.fullHour)}
                   style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
                 />
               )}

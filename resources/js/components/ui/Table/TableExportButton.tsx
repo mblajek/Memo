@@ -1,21 +1,24 @@
 import {Column, RowData, Table} from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
+import {Button} from "components/ui/Button";
+import {Capitalize, capitalizeString} from "components/ui/Capitalize";
+import {InfoIcon} from "components/ui/InfoIcon";
+import {Modal} from "components/ui/Modal";
+import {PopOver} from "components/ui/PopOver";
+import {ProgressBar} from "components/ui/ProgressBar";
+import {SimpleMenu} from "components/ui/SimpleMenu";
+import {SegmentedControl} from "components/ui/form/SegmentedControl";
+import {CHECKBOX} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {WriteCSVOptions, writeCSV} from "components/utils/csv_writer";
+import {isDEV} from "components/utils/dev_mode";
 import {pickSaveFile} from "components/utils/files";
 import {toastError, toastSuccess} from "components/utils/toast";
 import {DateTime} from "luxon";
 import {AiOutlineFileExcel} from "solid-icons/ai";
 import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
-import {Button} from "../Button";
-import {Capitalize} from "../Capitalize";
-import {InfoIcon} from "../InfoIcon";
-import {Modal} from "../Modal";
-import {PopOver} from "../PopOver";
-import {ProgressBar} from "../ProgressBar";
-import {SimpleMenu} from "../SimpleMenu";
-import {SegmentedControl} from "../form/SegmentedControl";
+import {CellsPreviewMode} from "./TQueryTable";
 import {useTable} from "./TableContext";
 import {useTableTextExportCells} from "./table_export_cells";
 
@@ -48,6 +51,8 @@ interface ExportParams {
   readonly abort?: () => boolean;
 }
 
+const PREVIEW_MODE: CellsPreviewMode = "textExport";
+
 export const TableExportButton: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
@@ -70,13 +75,15 @@ export const TableExportButton: VoidComponent = () => {
       id,
       label,
       async export({saveFilePickerOptions, exportData: {columns, numRows, rows}, onProgress, abort}) {
-        const writer = await pickSaveFile({
+        const options: SaveFilePickerOptions = {
           suggestedName: "table",
           id: `export_${id}`,
           types: [{description: label, accept: {"text/csv": [extension]}}],
           ...defSaveFilePickerOptions,
           ...saveFilePickerOptions,
-        });
+        };
+        options.suggestedName = `${options.suggestedName}${extension}`;
+        const writer = await pickSaveFile(options);
         if (writer === "cancelled") {
           return "cancelled";
         }
@@ -86,7 +93,10 @@ export const TableExportButton: VoidComponent = () => {
             col,
             exportCell: col.columnDef.meta?.tquery?.textExportCell || tableExportCells.default(),
           }));
-          yield cols.map(({col: {id}}) => table.options.meta?.translations?.columnName(id) || id);
+          yield cols.map(({col: {id}}) => {
+            const name = table.options.meta?.translations?.columnName(id);
+            return name ? capitalizeString(name) : id;
+          });
           let rowIndex = 0;
           for await (const row of rows()) {
             yield cols.map(({col, exportCell}) => {
@@ -232,26 +242,42 @@ export const TableExportButton: VoidComponent = () => {
                     count={currentPageExportData().numRows}
                   />
                 </Button>
+                <Show when={isDEV() && table.options.meta?.tquery?.cellsPreviewMode}>
+                  {(cellsPreviewMode) => (
+                    <Button
+                      onClick={() =>
+                        cellsPreviewMode()[1]((mode) => (mode === PREVIEW_MODE ? undefined : PREVIEW_MODE))
+                      }
+                    >
+                      {CHECKBOX(cellsPreviewMode()[0]() === PREVIEW_MODE)} <span class="text-sm">DEV</span> Preview
+                    </Button>
+                  )}
+                </Show>
               </SimpleMenu>
             </div>
           );
         }}
       </PopOver>
       <Modal title={t("tables.export.exporting")} open={progress()}>
-        {(progress) => (
-          <div class="flex flex-col gap-2">
-            <ProgressBar value={progress().len === undefined ? undefined : progress().index} max={progress().len} />
-            <Button
-              class="self-end secondary small"
-              onClick={() => {
-                setAbort(true);
-                setProgress(undefined);
-              }}
-            >
-              {t("actions.cancel")}
-            </Button>
-          </div>
-        )}
+        {(progress) => {
+          const progressValuePercent = createMemo(() =>
+            progress().len ? Math.round((100 * progress().index) / progress().len!) : progress().len,
+          );
+          return (
+            <div class="flex flex-col gap-2">
+              <ProgressBar value={progressValuePercent()} max={progress().len && 100} />
+              <Button
+                class="self-end secondary small"
+                onClick={() => {
+                  setAbort(true);
+                  setProgress(undefined);
+                }}
+              >
+                {t("actions.cancel")}
+              </Button>
+            </div>
+          );
+        }}
       </Modal>
     </>
   );

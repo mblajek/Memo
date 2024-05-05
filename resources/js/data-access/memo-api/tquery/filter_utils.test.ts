@@ -4,7 +4,7 @@ import {FilterH, FilterReductor, invertFilter} from "./filter_utils";
 describe("filter_utils", () => {
   const reductor = new FilterReductor({
     columns: [
-      {name: "c-str", type: "string"},
+      {name: "c-str", type: "string", nullable: false},
       {name: "c-nullable-str", type: "string", nullable: true},
       {name: "c-uuid-list", type: "uuid_list", nullable: true},
     ],

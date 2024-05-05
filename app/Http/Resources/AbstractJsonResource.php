@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Utils\Date\DateHelper;
+use App\Utils\Transformer\ArrayKeyTransformer;
 use Closure;
 use DateTimeInterface;
 use Illuminate\Http\Request;
@@ -21,9 +22,9 @@ abstract class AbstractJsonResource extends JsonResource
         return false;
     }
 
-    public static function makeOrNull($resource): ?JsonResource
+    public static function makeOrNull(mixed $resource): ?JsonResource
     {
-        return $resource ? self::make($resource) : null;
+        return ($resource !== null) ? self::make($resource) : null;
     }
 
     public function toArray(Request $request): array
@@ -33,12 +34,15 @@ abstract class AbstractJsonResource extends JsonResource
             if (array_is_list($mappedFields)) {
                 $mappedFields = array_fill_keys($mappedFields, true);
             }
+            $mappedFields += array_fill_keys(['createdAt', 'updatedAt', 'createdBy', 'updatedBy'], true);
             self::$classMappedFields[static::class] = $mappedFields;
         }
         $result = [];
         foreach (self::$classMappedFields[static::class] as $propertyName => $mapping) {
             $property = null;
-            if ($mapping === true) {
+            if ($mapping === null) {
+                continue;
+            } elseif ($mapping === true) {
                 $property = $this->{Str::snake($propertyName)};
             } elseif ($mapping === false) {
                 $property = $this->{$propertyName};
@@ -53,7 +57,7 @@ abstract class AbstractJsonResource extends JsonResource
         if ($this->withAttrValues()) {
             $resource = $this->resource;
             if (method_exists($resource, 'attrValues')) {
-                $result += $resource->attrValues();
+                $result += ArrayKeyTransformer::toCamel($resource->attrValues());
             } else {
                 FatalExceptionFactory::unexpected()->throw();
             }

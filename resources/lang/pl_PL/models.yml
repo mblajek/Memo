@@ -1,8 +1,10 @@
 generic:
   createdAt: "utworzono"
   createdBy.name: "utworzono przez"
+  createdBy.id: "$t(models.generic.createdBy.name)"
   updatedAt: "zmodyfikowano"
   updatedBy.name: "zmodyfikowano przez"
+  updatedBy.id: "$t(models.generic.updatedBy.name)"
   name: "nazwa"
   email: "adres e-mail"
   notes: "opis"
@@ -64,12 +66,13 @@ user:
 facility_user:
   _name: "pracownik/klient"
   _name_plural: "pracownicy/klienci"
-  firstMeetingDate: "Pierwsza wizyta"
-  lastMeetingDate: "Ostatnia wizyta"
-  completedMeetingsCount: "Liczba odbytych wizyt"
-  completedMeetingsCountLastMonth: "Liczba wizyt w ost. miesiącu"
-  plannedMeetingsCount: "Liczba zaplanowanych wizyt"
-  plannedMeetingsCountNextMonth: "Liczba wizyt w nast. miesiącu"
+  name: "$t(models.user.name)"
+  firstMeetingDate: "pierwsza wizyta"
+  lastMeetingDate: "ostatnia wizyta"
+  completedMeetingsCount: "liczba odbytych wizyt"
+  completedMeetingsCountLastMonth: "liczba wizyt w ost. miesiącu"
+  plannedMeetingsCount: "liczba zaplanowanych wizyt"
+  plannedMeetingsCountNextMonth: "liczba wizyt w nast. miesiącu"
 
 staff:
   _name: "pracownik"
@@ -98,7 +101,5 @@ meeting:
   clients: "$t(models.client._name_plural)"
   clients.count: "$t(models.meeting.clients) – liczba"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
-  # The name of the attendance status field when treated as "attendance notes".
-  attendanceStatusNotes: "uwagi"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"

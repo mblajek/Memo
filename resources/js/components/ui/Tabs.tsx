@@ -1,5 +1,5 @@
 import {Accessor, For, JSX, VoidComponent, createSignal} from "solid-js";
-import {cx} from "../utils";
+import {cx, debouncedAccessor} from "../utils";
 import {TrackingMarker} from "../utils/TrackingMarker";
 import {Button} from "./Button";
 
@@ -41,7 +41,7 @@ export const Tabs: VoidComponent<Props> = (props) => {
                     aria-selected={isActive()}
                     onClick={() => setActiveId(tab.id)}
                   >
-                    <MarkerTarget id={tab.id} class="w-full h-full -mb-px">
+                    <MarkerTarget id={tab.id} class="w-full h-full mb-px">
                       {tab.label}
                     </MarkerTarget>
                   </Button>
@@ -55,7 +55,13 @@ export const Tabs: VoidComponent<Props> = (props) => {
       <div>
         <For each={props.tabs}>
           {(tab) => {
-            const isActive = () => tab.id === activeId();
+            // Delay hiding the contents by 0ms to avoid showing neither of the tabs for a moment,
+            // as this might cause the page to jump up because the contents is suddenly much shorter.
+            // eslint-disable-next-line solid/reactivity
+            const isActive = debouncedAccessor(() => tab.id === activeId(), {
+              timeMs: 0,
+              outputImmediately: (active) => active,
+            });
             return <div class={cx(isActive() ? undefined : "hidden")}>{tab.contents(isActive)}</div>;
           }}
         </For>

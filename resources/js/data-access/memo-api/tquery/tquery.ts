@@ -59,6 +59,10 @@ export function staticRequestCreator(
   });
 }
 
+type ExtraDataQueryOptions<K extends PrefixQueryKey> = Partial<SolidQueryOpts<DataResponse, DataQueryKey<K>>>;
+
+const EMPTY_RESPONSE: DataResponse = {meta: {totalDataSize: 0}, data: []};
+
 /**
  * Creates a tquery.
  *
@@ -74,25 +78,34 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   prefixQueryKey: K;
   entityURL: EntityURL;
   requestCreator: RequestCreator<C>;
-  dataQueryOptions?: Partial<SolidQueryOpts<DataResponse, DataQueryKey<K>>>;
+  dataQueryOptions?: ExtraDataQueryOptions<K> | Accessor<ExtraDataQueryOptions<K>>;
 }) {
+  const extraDataQueryOptions: Accessor<ExtraDataQueryOptions<K>> =
+    typeof dataQueryOptions === "function" ? dataQueryOptions : () => dataQueryOptions || {};
+  const disabledByExtraDataQueryOptions = () => extraDataQueryOptions().enabled === false;
   const schemaQuery = createQuery(() => ({
     queryKey: ["tquery-schema", entityURL] satisfies SchemaQueryKey,
     queryFn: () => V1.get<Schema>(`${entityURL}/tquery`).then((res) => res.data),
     staleTime: 3600 * 1000,
     refetchOnMount: false,
+    enabled: !disabledByExtraDataQueryOptions(),
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
   const dataQuery = createQuery<DataResponse, AxiosError<Api.ErrorResponse>, DataResponse, DataQueryKey<K>>(() => ({
-    enabled: !!request(),
     queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
-    queryFn: (context) =>
-      V1.post<DataResponse>(`${entityURL}/tquery`, getRequestFromQueryKey(context.queryKey)).then((res) => res.data),
+    queryFn: (context) => {
+      const request = getRequestFromQueryKey(context.queryKey);
+      if (request.filter === "never") {
+        return EMPTY_RESPONSE;
+      }
+      return V1.post<DataResponse>(`${entityURL}/tquery`, request).then((res) => res.data);
+    },
     placeholderData: keepPreviousData,
     // It is difficult to match the types here because of the defined/undefined initial data types.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...(dataQueryOptions as any),
+    ...(extraDataQueryOptions?.() as any),
+    enabled: !!request() && !disabledByExtraDataQueryOptions(),
   }));
   return {
     schema,

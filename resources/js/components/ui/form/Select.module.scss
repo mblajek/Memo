@@ -106,7 +106,7 @@
 
 .selectPortal {
   > [data-part="content"] {
-    @apply bg-white border rounded shadow-xl;
+    @apply bg-popup-bg border rounded shadow-xl;
     @apply overflow-x-clip overflow-y-auto z-dropdown;
     max-height: var(--available-height);
     min-width: var(--reference-width);

@@ -1,4 +1,13 @@
-import {AssignableErrors, Form, FormConfigWithoutTransformFn, KnownHelpers, Obj, Paths} from "@felte/core";
+import {
+  AssignableErrors,
+  Form,
+  FormConfigWithoutTransformFn,
+  KnownHelpers,
+  Obj,
+  Paths,
+  SubmitContext,
+  Touched,
+} from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
 import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
@@ -7,12 +16,15 @@ import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
-import {Context, JSX, createContext, onCleanup, onMount, splitProps, useContext} from "solid-js";
+import {Context, JSX, createContext, createMemo, onCleanup, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
+import {LoadingPane} from "../ui/LoadingPane";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
+import {createFormLeaveConfirmation} from "../ui/form/form_leave_confirmation";
 import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
 import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
+import {recursiveUnwrapFormValues} from "./wrapped_fields";
 
 type FormContextValue<T extends Obj = Obj> = {
   readonly props: FormProps<T>;
@@ -37,7 +49,7 @@ const FormContext = createContext<FormContextValue>(undefined, {
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
-type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "onError" | "children"> &
+export type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "onError" | "children"> &
   FormConfigWithoutTransformFn<T> & {
     /** The id of the form element. It is also used as a translation key prefix. */
     readonly id: string;
@@ -45,12 +57,18 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
     /** The form names used to resolve translations. Defaults to the id. */
     readonly translationsFormNames?: readonly string[];
     /** The name of the model of the object edited by this form. It is used for getting field translations. */
-    readonly translationsModel?: string;
-    readonly children: ChildrenOrFunc<[FormType<T>]>;
+    readonly translationsModel?: string | readonly string[];
+    readonly children: ChildrenOrFunc<[FormType<T>, FormContextValue<T>]>;
     readonly disabled?: boolean;
+    /**
+     * The submit handler. It can return the onSuccess function that notifies about a successful submission.
+     * The notification (e.g. navigation, modal close etc) should not be done from the onSubmit directly because
+     * the form is still in submitting state at that time.
+     */
+    readonly onSubmit?: (values: T, context: SubmitContext<T>) => Promise<() => void | Promise<void>> | unknown;
     readonly onFormCreated?: (form: FormType<T>) => void;
     /** Whether closing the browser tab should display a warning if the form is dirty. Default: true. */
-    readonly preventTabClose?: boolean;
+    readonly preventPageLeave?: boolean;
   };
 
 /**
@@ -63,6 +81,7 @@ type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit" | "on
  */
 export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Element => {
   const t = useLangFunc();
+  const confirmation = createFormLeaveConfirmation();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
     [
@@ -72,11 +91,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       "translationsModel",
       "disabled",
       "onFormCreated",
-      "preventTabClose",
+      "preventPageLeave",
     ],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
-  const translationsFormNames = () => props.translationsFormNames || [allProps.id];
+  const translationsFormNames = createMemo(() => [...(props.translationsFormNames || [allProps.id]), "generic"]);
+  const translationsModels = createMemo(() =>
+    Array.isArray(props.translationsModel) ? props.translationsModel || [] : [props.translationsModel],
+  );
   const translations: FormTranslations = {
     formName: (o) =>
       t(
@@ -87,7 +109,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       t(
         [
           ...translationsFormNames().map((f) => `forms.${f}.fieldNames.${field}`),
-          props.translationsModel && `models.${props.translationsModel}.${field}`,
+          ...translationsModels().map((m) => `models.${m}.${field}`),
           `models.generic.${field}`,
         ].filter(NON_NULLABLE),
         o,
@@ -110,9 +132,27 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     ...createFormOptions,
     // eslint-disable-next-line solid/reactivity
     extend: [validator({schema: props.schema}), reporter],
-    onSubmit: (values, ctx) =>
+    onSubmit: async (values, ctx) => {
       // Remove the unknown validation field from values so that it doesn't get submitted.
-      createFormOptions.onSubmit?.({...values, [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined}, ctx),
+      const result = await createFormOptions.onSubmit?.(
+        {
+          // Cast the type. It is not true but it is a hack we use to allow the form manipulate the transformed data.
+          ...(recursiveUnwrapFormValues(values) as T),
+          [UNKNOWN_VALIDATION_MESSAGES_FIELD]: undefined,
+        },
+        ctx,
+      );
+      // Submit success, so make the form pristine.
+      form.setIsDirty(false);
+      form.setIsSubmitting(false);
+      return result;
+    },
+    onSuccess: async (response, ctx) => {
+      if (typeof response === "function") {
+        await response();
+      }
+      await createFormOptions.onSuccess?.(response, ctx);
+    },
     onError: (errorResp, ctx) => {
       createFormOptions.onError?.(errorResp, ctx);
       if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
@@ -141,9 +181,32 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               });
               field = UNKNOWN_VALIDATION_MESSAGES_FIELD;
             }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            function setTouched(touched: Readonly<Touched<any>>): Touched<any> {
+              if (!touched) {
+                return true;
+              }
+              if (Array.isArray(touched)) {
+                if (touched.length) {
+                  return [setTouched(touched[0]), ...touched.slice(1)];
+                } else {
+                  return [true];
+                }
+              }
+              // The field has sub-fields apparently. Attach the error to one of them.
+              const anySubField = Object.keys(touched)[0];
+              if (!anySubField) {
+                return true;
+              }
+              return {
+                ...touched,
+                [anySubField]: setTouched(touched[anySubField]),
+              };
+            }
             // Mark as touched first because errors are only stored and shown for touched fields.
-            // @ts-expect-error For some reason there are problems with the generic types.
-            ctx.setTouched(field, true);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ctx.setTouched(field, (touched: Touched<any>) => setTouched(touched));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             function addError(errors: Readonly<AssignableErrors<any>>, errorMessage: string): AssignableErrors<any> {
               if (!errors) {
@@ -180,14 +243,24 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const form = createForm<T>(formConfig) as FormType<T>;
 
   onMount(() => {
-    function onBeforeUnload(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
-      if ((props.preventTabClose ?? true) && !e.defaultPrevented && (form.isDirty() || form.isSubmitting())) {
+    function shouldConfirmPageLeave(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
+      return (props.preventPageLeave ?? true) && !e.defaultPrevented && (form.isDirty() || form.isSubmitting());
+    }
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      if (shouldConfirmPageLeave(e)) {
         e.preventDefault();
       }
     }
     window.addEventListener("beforeunload", onBeforeUnload);
     onCleanup(() => window.removeEventListener("beforeunload", onBeforeUnload));
-    useBeforeLeave(onBeforeUnload);
+    useBeforeLeave(async (e) => {
+      if (shouldConfirmPageLeave(e)) {
+        e.preventDefault();
+        if (await confirmation.confirm()) {
+          e.retry(true);
+        }
+      }
+    });
   });
 
   const formDisabled = () => props.disabled || form.isSubmitting();
@@ -196,16 +269,15 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   props.onFormCreated?.(form);
 
   const TypedFormContext = typedFormContext<T>();
+  const contextValue = {
+    props: allProps,
+    formConfig,
+    form: form as FormType<T>,
+    isFormDisabled: () => formDisabled(),
+    translations,
+  } satisfies FormContextValue<T>;
   return (
-    <TypedFormContext.Provider
-      value={{
-        props: allProps,
-        formConfig,
-        form: form as FormType<T>,
-        isFormDisabled: () => formDisabled(),
-        translations,
-      }}
-    >
+    <TypedFormContext.Provider value={contextValue}>
       <form
         autocomplete="off"
         ref={(formElem) => {
@@ -219,11 +291,12 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
             }
           });
         }}
-        {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1"})}
+        {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
       >
         <fieldset class="contents" disabled={formDisabled()} inert={form.isSubmitting() || undefined}>
-          {getChildrenElement(props.children, form)}
+          {getChildrenElement(props.children, form, contextValue)}
         </fieldset>
+        <LoadingPane isLoading={form.isSubmitting()} />
       </form>
     </TypedFormContext.Provider>
   );
@@ -232,11 +305,13 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
 /**
  * Generic form context getter. When type is passed, context is properly typed.
  *
- * Usefull in forms with deeply nested components and dependant logic
+ * Useful in forms with deeply nested components and dependant logic.
  */
 export const useFormContext = <T extends Obj = Obj>() => {
   const context = useFormContextIfInForm<T>();
-  if (!context) throw new Error("Not in FelteForm");
+  if (!context) {
+    throw new Error("Not in FelteForm");
+  }
   return context;
 };
 

@@ -5,9 +5,7 @@ namespace App\Models;
 use App\Models\Enums\AttendanceType;
 use App\Models\QueryBuilders\MeetingBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
 use App\Models\Traits\HasDeletedBy;
-use App\Models\Traits\HasUpdatedBy;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Rules\MemberExistsRule;
@@ -38,8 +36,6 @@ class Meeting extends Model
 {
     use HasValidator;
     use BaseModel;
-    use HasCreatedBy;
-    use HasUpdatedBy;
     use HasDeletedBy;
     use SoftDeletes;
 
@@ -64,6 +60,7 @@ class Meeting extends Model
     ];
 
     protected $casts = [
+        'date' => 'string',
         'is_remote' => 'boolean',
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
@@ -72,10 +69,10 @@ class Meeting extends Model
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
-            'facility_id' => Valid::uuid([Rule::exists('facilities')]),
+            'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')]),
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingType),
             'date' => Valid::date(),
-            'notes' => Valid::trimmed(sometimes: true, nullable: true, max: 4000),
+            'notes' => Valid::text(sometimes: true, nullable: true),
             'start_dayminute' => Valid::int(['min:' . (0), 'max:' . (24 * 60 - 1)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
@@ -97,6 +94,7 @@ class Meeting extends Model
                 DictionaryUuidEnum::MeetingResource,
                 [new UniqueWithMemoryRule('resource')],
             ),
+            'from_meeting_id' => Valid::uuid([Rule::exists('meetings', 'id')], sometimes: true),
         };
     }
 

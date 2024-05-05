@@ -4,15 +4,14 @@ namespace App\Models;
 
 use App\Models\QueryBuilders\UserBuilder;
 use App\Models\Traits\HasResourceValidator;
+use App\Models\Traits\HasValidator;
 use App\Rules\DataTypeRule;
 use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasCreatedBy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -25,6 +24,7 @@ use Illuminate\Validation\Rules\Password;
  * @property ?string password
  * @property ?string remember_token
  * @property ?string $last_login_facility_id
+ * @property ?string $managed_by_facility_id
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $password_expire_at
  * @property-read bool $has_password
@@ -40,7 +40,7 @@ class User extends Authenticatable
     use Notifiable;
     use HasResourceValidator;
     use SerializeDate;
-    use HasCreatedBy;
+    use HasValidator;
 
     protected $table = 'users';
 
@@ -56,6 +56,7 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'last_login_facility_id',
+        'managed_by_facility_id',
         'global_admin_grant_id',
         'password_expire_at',
     ];
@@ -86,6 +87,13 @@ class User extends Authenticatable
         'has_email_verified',
         'has_global_admin',
     ];
+
+    protected static function fieldValidator(string $field): string|array
+    {
+        return match ($field) {
+            'name' => Valid::trimmed(),
+        };
+    }
 
     public static function getPasswordRules(): Password
     {
@@ -189,10 +197,5 @@ class User extends Authenticatable
     public function members(): HasMany
     {
         return $this->hasMany(Member::class);
-    }
-
-    public function lastLoginFacility(): BelongsTo
-    {
-        return $this->belongsTo(Facility::class);
     }
 }

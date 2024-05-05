@@ -49,6 +49,6 @@ class AppServiceProvider extends ServiceProvider
             DB::enableQueryLog();
         }
 
-        PermissionMiddleware::reset();
+        PermissionMiddleware::setPermissions(null);
     }
 }

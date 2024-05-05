@@ -1,24 +1,32 @@
-import {ParentComponent, createMemo} from "solid-js";
-import {debouncedAccessor} from "../utils";
+import {ParentComponent, createMemo, mergeProps, splitProps} from "solid-js";
+import {debouncedAccessor, htmlAttributes} from "../utils";
 
-interface Props {
+interface Props extends htmlAttributes.div {
   readonly show: unknown;
+  readonly transitionTimeMs?: number;
+  readonly transitionTimingFunction?: string;
 }
 
-const TRANSITION_TIME_MS = 200;
+const DEFAULT_PROPS = {
+  transitionTimeMs: 200,
+  transitionTimingFunction: "ease-in-out",
+} satisfies Partial<Props>;
 
 /**
  * A section of the page, with visibility controlled by the show prop.
  *
  * The section folds and unfolds with a transition.
  */
-export const HideableSection: ParentComponent<Props> = (props) => {
+export const HideableSection: ParentComponent<Props> = (allProps) => {
+  const defProps = mergeProps(DEFAULT_PROPS, allProps);
+  const [props, divProps] = splitProps(defProps, ["show", "transitionTimeMs", "transitionTimingFunction", "children"]);
   const show = createMemo(() => !!props.show);
   let div: HTMLDivElement | undefined;
   /** Whether the section is fully opened. */
   // eslint-disable-next-line solid/reactivity
   const hasFullHeight = debouncedAccessor(show, {
-    timeMs: TRANSITION_TIME_MS,
+    // eslint-disable-next-line solid/reactivity
+    timeMs: props.transitionTimeMs,
     outputImmediately: (show) => !show,
   });
   /** The show signal, delayed by epsilon. See doc for maxHeight for description. */
@@ -37,11 +45,13 @@ export const HideableSection: ParentComponent<Props> = (props) => {
   return (
     <div
       ref={div}
-      class="overflow-y-hidden"
-      style={{
-        "transition": `max-height ${TRANSITION_TIME_MS}ms ease-in-out`,
-        "max-height": maxHeight(),
-      }}
+      {...htmlAttributes.merge(divProps, {
+        class: "overflow-y-hidden",
+        style: {
+          "transition": `max-height ${props.transitionTimeMs}ms ${props.transitionTimingFunction}`,
+          "max-height": maxHeight(),
+        },
+      })}
     >
       {props.children}
     </div>

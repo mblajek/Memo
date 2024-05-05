@@ -1,4 +1,5 @@
 import {HeaderContext, Row, Table} from "@tanstack/solid-table";
+import {createMemo} from "solid-js";
 
 /**
  * Returns an array of columns of a table, with functions for returning header and row cell.
@@ -12,16 +13,19 @@ import {HeaderContext, Row, Table} from "@tanstack/solid-table";
  */
 export function getColumns<T>(table: Table<T>) {
   return table.getAllLeafColumns().map((column, i) => {
+    const header = createMemo(() => table.getLeafHeaders().find((h) => h.id === column.id));
+    // Keep the identity of this object stable.
+    const headerContext = {
+      table,
+      column,
+      get header() {
+        return header()!;
+      },
+    } satisfies HeaderContext<T, unknown>;
     return {
       column,
-      headerContext: {
-        table,
-        column,
-        get header() {
-          return table.getLeafHeaders().find((h) => h.id === column.id)!;
-        },
-      } satisfies HeaderContext<T, unknown>,
-      cellContext: (row: Row<T>) => row.getAllCells()[i]!.getContext(),
+      getHeaderContext: () => header() && headerContext,
+      getCellContext: (row: Row<T>) => row.getAllCells()[i]!.getContext(),
     };
   });
 }

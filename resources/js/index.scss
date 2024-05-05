@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&family=PT+Mono&display=swap");
 
 // Colour Contrast Checker: https://colourcontrast.cc/
 
@@ -16,8 +16,10 @@ html {
 
   // Theme colors. They need to be linked from tailwind config.
 
-  //  A bright blue color used for various active elements on page.
+  // A bright blue color used for various active elements on page.
   --tc-memo-active: #06b6d4;
+  // A very light blue color for the background of popups, so that it is easier to see that they are opened.
+  --tc-popup-bg: #f7fcfd;
   // A pale blue-grey color for highlighting hovered areas of active elements by setting their background color.
   // Not necessarily good for hovered buttons etc.
   --tc-hover: #e6f0f7;
@@ -53,7 +55,7 @@ html {
   );
 
   html {
-    @apply font-roboto;
+    @apply font-main;
 
     --sb-thumb-color: color-mix(in srgb, theme("colors.memo-active") 80%, white);
     --sb-track-color: color-mix(in srgb, var(--sb-thumb-color) 20%, white);
@@ -91,6 +93,7 @@ html {
   }
 
   input[type="checkbox"] {
+    transform: scale(1.2);
     &:checked {
       // Make it similar to the memo-active color on Chrome.
       filter: hue-rotate(-0.11turn);
@@ -125,10 +128,10 @@ html {
     @apply bg-white;
   }
 
-  a {
-    @apply underline;
+  a:not([role="button"]) {
+    @apply hover:underline;
     // Make sure this color gives enough contrast on a hovered table row, according to the WCAG tests.
-    color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)), blue 45%);
+    color: color-mix(in srgb, rgb(from theme("colors.memo-active") r g b / var(--tw-text-opacity, 1)), #000080 30%);
   }
 
   button,

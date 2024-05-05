@@ -8,7 +8,7 @@ import {DATE_FORMAT, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
+import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {Sort} from "data-access/memo-api/tquery/types";
 import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
 import {Accessor, ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
@@ -29,8 +29,9 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const {dictionaries, meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   const userDisplayNames = useUserDisplayNames();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
-  const meetingTableColumns = useMeetingTableColumns();
+  const meetingTableColumns = useMeetingTableColumns({baseHeight: "3rem"});
   const meetingTableFilters = useMeetingTableFilters();
+  const {getCreatedUpdatedColumns} = useTableColumns();
   const intrinsicFilter = (): FilterH => ({
     type: "op",
     op: "&",
@@ -52,9 +53,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
     };
   }
   return (
-    <div>
+    <div class="flex flex-col">
       <Show when={dictionaries()} fallback={<BigSpinner />}>
-        <Capitalize class="font-medium" text={tableTranslations.tableName()} />
+        <h2 class="font-medium">
+          <Capitalize text={tableTranslations.tableName()} />
+        </h2>
         <Tabs
           tabs={[
             {

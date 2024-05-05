@@ -48,7 +48,7 @@ class MeetingController extends ApiController
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -63,7 +63,7 @@ class MeetingController extends ApiController
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -114,6 +114,7 @@ class MeetingController extends ApiController
                 'resources',
                 'resources.*',
                 'resources.*.resource_dict_id',
+                'from_meeting_id',
             ])
         );
         $result = $meetingService->create($this->getFacilityOrFail(), $data);
@@ -161,7 +162,7 @@ class MeetingController extends ApiController
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -176,7 +177,7 @@ class MeetingController extends ApiController
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId', 'attendanceType'],
+                        required: ['userId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(

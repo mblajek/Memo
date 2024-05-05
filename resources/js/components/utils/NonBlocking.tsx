@@ -21,6 +21,6 @@ export const NonBlocking: ParentComponent<Props> = (props) => {
   const [children, setChildren] = createSignal<JSX.Element>();
   const owner = getOwner();
   // eslint-disable-next-line solid/reactivity
-  setTimeout(() => setChildren(runWithOwner(owner, () => props.children)), 0);
+  setTimeout(() => setChildren(runWithOwner(owner, () => props.children)));
   return <>{children()}</>;
 };

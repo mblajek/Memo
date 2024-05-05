@@ -7,6 +7,8 @@
 }
 
 .markdown {
+  @apply text-justify;
+
   h1 {
     @apply text-3xl font-bold marg;
   }
@@ -39,7 +41,22 @@
   h6 {
     a {
       color: initial;
-      @apply no-underline hover:underline;
+    }
+
+    @apply -mx-0.5 px-0.5 rounded;
+    &.activeHeader {
+      animation-duration: 230ms;
+      animation-name: blink;
+      animation-iteration-count: 6;
+      animation-direction: alternate;
+      animation-timing-function: ease-in-out;
+      @apply bg-hover;
+    }
+
+    @keyframes blink {
+      to {
+        @apply bg-memo-active;
+      }
     }
   }
 

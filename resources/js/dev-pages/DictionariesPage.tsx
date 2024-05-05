@@ -31,9 +31,12 @@ export default (() => {
   const tableCells = useTableCells();
   const h = createColumnHelper<Dictionary>();
 
-  const textSort = {
-    sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
-  } satisfies Partial<IdentifiedColumnDef<object>>;
+  function textSort<T>() {
+    return {
+      sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
+    } satisfies Partial<IdentifiedColumnDef<T>>;
+  }
+
   function getCommonColumns<E extends Dictionary | Position>(h: ColumnHelper<E>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const helper = h as ColumnHelper<any>;
@@ -46,15 +49,12 @@ export default (() => {
       }),
       helper.accessor("resource.name", {
         id: "Name",
-        ...textSort,
+        ...textSort(),
       }),
       helper.accessor("label", {
         id: "Label",
         cell: cellFunc<string>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
-        ...textSort,
-      }),
-      helper.accessor("resource.isFixed", {
-        id: "Fixed",
+        ...textSort(),
       }),
       helper.accessor("resource.facilityId", {
         id: "Facility",
@@ -63,7 +63,10 @@ export default (() => {
             <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
           </PaddedCell>
         )),
-        ...textSort,
+        ...textSort(),
+      }),
+      helper.accessor("resource.isFixed", {
+        id: "Fixed",
       }),
     ];
   }
@@ -72,7 +75,7 @@ export default (() => {
     createSolidTable({
       ...getBaseTableOptions<Dictionary>({
         features: {
-          sorting: [{id: "Label", desc: false}],
+          sorting: [{id: "Name", desc: false}],
           pagination: {pageIndex: 0, pageSize: 1e6},
         },
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
@@ -82,11 +85,14 @@ export default (() => {
       },
       columns: [
         ...getCommonColumns(h),
+        h.accessor("resource.isExtendable", {
+          id: "Extendable",
+        }),
         ...(attributes()
           ?.getForModel("dictionary")
           .map((attr) =>
             h.accessor((row) => attr.readFrom(row.resource), {
-              id: `@${attr.name}`,
+              id: `@${attr.apiName}`,
               cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
             }),
           ) || []),
@@ -108,18 +114,27 @@ export default (() => {
               columns: [
                 h.accessor((p) => p.resource.defaultOrder, {
                   id: "Order",
+                  cell: cellFunc<number, Position>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
                 }),
                 ...getCommonColumns(h),
                 h.accessor("disabled", {
                   id: "Disabled",
                 }),
+                h.accessor((p) => p.resource.positionGroupDictId, {
+                  id: "Pos. group",
+                  cell: cellFunc<string, Position>((props) => (
+                    <PaddedCell>
+                      <ShowCellVal v={props.v}>{(v) => dictionaries()?.getPositionById(v()).resource.name}</ShowCellVal>
+                    </PaddedCell>
+                  )),
+                }),
                 ...((attributes() &&
-                  dict.resource.positionRequiredAttributes
-                    ?.map((attrId) => attributes()!.get(attrId)!)
+                  dict.resource.positionRequiredAttributeIds
+                    ?.map((attrId) => attributes()!.getById(attrId)!)
                     .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
                     .map((attr) =>
                       h.accessor((p) => attr.readFrom(p.resource), {
-                        id: `@${attr.name}`,
+                        id: `@${attr.apiName}`,
                         cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
                       }),
                     )) ||

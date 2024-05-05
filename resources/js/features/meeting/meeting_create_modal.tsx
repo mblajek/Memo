@@ -2,6 +2,7 @@ import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
+import {doAndClearParams} from "components/utils/modals";
 import {MeetingCreateFormProps} from "features/meeting/MeetingCreateForm";
 
 const MeetingCreateForm = lazyAutoPreload(() => import("features/meeting/MeetingCreateForm"));
@@ -19,10 +20,7 @@ export const createMeetingCreateModal = registerGlobalPageElement<MeetingCreateF
       {(params) => (
         <MeetingCreateForm
           {...params()}
-          onSuccess={(meeting) => {
-            params().onSuccess?.(meeting);
-            args.clearParams();
-          }}
+          onSuccess={doAndClearParams(args, params().onSuccess)}
           onCancel={args.clearParams}
         />
       )}

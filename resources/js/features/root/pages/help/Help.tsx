@@ -38,8 +38,13 @@ export const Help: VoidComponent<Props> = (props) => {
       return cap ? capitalizeString(text) : text;
     });
   }
+  onMount(() => {
+    if (location.hash) {
+      setTimeout(() => document.querySelector(`a[href="${location.hash}"]`)?.scrollIntoView(), 100);
+    }
+  });
   return (
-    <div class="overflow-y-auto p-2">
+    <div class="overflow-y-auto p-2 max-w-5xl">
       <QueryBarrier
         queries={[query]}
         error={(queries) => (

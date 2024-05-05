@@ -18,7 +18,16 @@ export default (() => {
         <Show when={dataQuery.data} fallback={<BigSpinner />}>
           {(user) => (
             <div class="flex flex-col items-stretch gap-2">
-              <UserDetailsHeader type="staff" user={user()} />
+              <UserDetailsHeader
+                type="staff"
+                user={{
+                  ...user(),
+                  createdAt: user().staff.createdAt,
+                  createdBy: user().staff.createdBy,
+                  updatedAt: user().staff.updatedAt,
+                  updatedBy: user().staff.updatedBy,
+                }}
+              />
               <UserMeetingsTables
                 userName={user().name}
                 userType="staff"

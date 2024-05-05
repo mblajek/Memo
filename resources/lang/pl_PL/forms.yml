@@ -1,3 +1,6 @@
+generic:
+  submit: "$t(actions.save)"
+
 login:
   formName: "Logowanie"
   submit: "Zaloguj"
@@ -30,7 +33,6 @@ user_edit:
   validation:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
     cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu email jako niezweryfikowany."
-  submit: "$t(actions.save)"
   success: "Zmieniono dane"
 
 user_create:
@@ -45,7 +47,6 @@ facility_create:
 
 facility_edit:
   formName: "Edycja placówki"
-  submit: "$t(actions.save)"
   success: "Zmieniono dane placówki"
 
 meeting:
@@ -58,16 +59,16 @@ meeting:
     durationMinutes: "długość spotkania"
     staff__interval: "(1)[$t(models.staff._name)];(0-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
-    attendanceStatusDictId: "obecność"
 
 meeting_create:
+  fieldNames:
+    createSeries: "Utwórz serię spotkań"
   formName: "Nowe spotkanie"
   submit: "$t(actions.create)"
   success: "Utworzono spotkanie"
 
 meeting_edit:
   formName: "Edycja spotkania"
-  submit: "$t(actions.save)"
   success: "Zmieniono spotkanie"
 
 meeting_delete:
@@ -78,17 +79,26 @@ meeting_delete:
 
 meeting_series:
   fieldNames:
-    interval: "powtarzaj"
+    seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
     # Umbrella fields for the meeting dates table:
-    meetingDates: "daty spotkań"
+    seriesMeetingDates: "daty spotkań"
   total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
-  interval_labels:
-    1d: "w kolejne dni"
-    7d: "co tydzień"
-    14d: "co dwa tygodnie"
 
 meeting_series_create:
   formName: "Utwórz serię spotkań"
   submit: "Utwórz spotkania"
   success: "Utworzono serię spotkań"
+
+client:
+  fieldNames:
+    client.notes: "$t(models.generic.notes)"
+
+client_edit:
+  formName: "Edycja klienta"
+  success: "Zmieniono dane klienta"
+
+client_create:
+  formName: "Nowy klient"
+  submit: "$t(actions.create)"
+  success: "Utworzono klienta"

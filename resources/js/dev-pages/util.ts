@@ -9,7 +9,7 @@ export function useAttrValueFormatter() {
       if (attr.type === "dict" && typeof v === "string") {
         return attr.dictionary!.get(v).resource.name;
       } else if (attr.type === "attribute" && typeof v === "string") {
-        return `@${attributes()?.get(v).name}`;
+        return `@${attributes()?.getById(v).apiName}`;
       } else {
         return JSON.stringify(v);
       }

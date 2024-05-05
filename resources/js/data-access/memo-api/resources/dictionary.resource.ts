@@ -27,7 +27,7 @@ export interface DictionaryResource {
   /** Whether the admins can add positions to the dictionary. */
   readonly isExtendable: boolean;
   /** The ids of attributes that are applied to every position in the dictionary. This is an attribute. */
-  readonly positionRequiredAttributes?: readonly string[];
+  readonly positionRequiredAttributeIds?: readonly string[];
 }
 
 /**
@@ -43,4 +43,5 @@ export interface PositionResource {
   readonly defaultOrder: number;
   /** Whether this position is unavailable as a value for new fields. */
   readonly isDisabled: boolean;
+  readonly positionGroupDictId: string | null;
 }

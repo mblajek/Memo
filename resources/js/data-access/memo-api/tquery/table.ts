@@ -14,9 +14,13 @@ import {Column, ColumnName, DataRequest, DataResponse, Filter, Sort, SortItem} f
 
 export interface ColumnConfig {
   readonly name: string;
-  /** A list of tquery columns needed to construct this column. */
-  readonly dataColumns: readonly ColumnName[];
+  /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
+  readonly isDataColumn: boolean;
+  /** A list of additional tquery columns needed to construct this table column. */
+  readonly extraDataColumns: readonly ColumnName[];
   readonly initialVisible: boolean;
+  /** Whether the global filter can match this column. Default: depends on the column type. */
+  readonly globalFilterable: boolean;
 }
 
 /** A collection of column filters, keyed by column name. The undefined value denotes a disabled filter. */
@@ -49,14 +53,12 @@ export function createTableRequestCreator({
   intrinsicSort = () => undefined,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
-  allInitialised = () => true,
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
   intrinsicSort?: Accessor<Sort | undefined>;
   initialSort?: SortingState;
   initialPageSize?: number;
-  allInitialised?: Accessor<boolean>;
 }): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   return (schema) => {
@@ -142,7 +144,9 @@ export function createTableRequestCreator({
         ...new Set(
           columnsConfig()
             .filter(({name}) => columnVisibility()[name] !== false)
-            .flatMap(({dataColumns}) => dataColumns),
+            .flatMap(({name, isDataColumn, extraDataColumns}) =>
+              isDataColumn ? [name, ...extraDataColumns] : extraDataColumns,
+            ),
         ),
       ]
         .sort()
@@ -156,11 +160,14 @@ export function createTableRequestCreator({
       return {
         schema: sch,
         dictionaries: dictionaries(),
+        columns: columnsConfig()
+          .filter(({isDataColumn, globalFilterable}) => isDataColumn && globalFilterable)
+          .map(({name}) => name),
         // TODO: Add columnsByPrefix for some columns, e.g. tel:, id= (for Versum ids).
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
-      if (!allInitialisedInternal() || !allInitialised() || !dataColumns().length) {
+      if (!allInitialisedInternal() || !dataColumns().length) {
         return undefined;
       }
       const sort: SortItem[] = sorting().map(({id, desc}) => ({

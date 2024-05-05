@@ -12,8 +12,14 @@ import {
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, debouncedAccessor} from "components/utils";
+import {
+  PartialAttributesSelection,
+  attributesSelectionFromPartial,
+  getUnknownFixedAttributes,
+  isAttributeSelected,
+} from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
-import {objectRecursiveMerge} from "components/utils/object_merge";
+import {objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {getAllRowsExportIterator} from "data-access/memo-api/tquery/export";
@@ -44,9 +50,11 @@ import {
   createSignal,
   onMount,
 } from "solid-js";
+import {Dynamic} from "solid-js/web";
 import {
   DisplayMode,
   Header,
+  PaddedCell,
   Pagination,
   Table,
   TableColumnVisibilityController,
@@ -61,7 +69,14 @@ import {
 import {TableExportButton} from "./TableExportButton";
 import {TableFiltersClearButton} from "./TableFiltersClearButton";
 import {ExportCellFunc, useTableTextExportCells} from "./table_export_cells";
-import {ColumnFilterController, FilteringParams} from "./tquery_filters/ColumnFilterController";
+import {BoolFilterControl} from "./tquery_filters/BoolFilterControl";
+import {DateTimeFilterControl} from "./tquery_filters/DateTimeFilterControl";
+import {DictFilterControl} from "./tquery_filters/DictFilterControl";
+import {DictListFilterControl} from "./tquery_filters/DictListFilterControl";
+import {IntFilterControl} from "./tquery_filters/IntFilterControl";
+import {TextualFilterControl} from "./tquery_filters/TextualFilterControl";
+import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
+import {FilterControl} from "./tquery_filters/types";
 
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
@@ -77,12 +92,15 @@ declare module "@tanstack/table-core" {
 interface TQueryTableMeta<TData extends RowData> {
   /** Iterator over all the rows, for export purposes. */
   readonly allRowsExportIterable?: AllRowsExportIterable<TData>;
+  readonly cellsPreviewMode?: Signal<CellsPreviewMode | undefined>;
 }
+
+/** The preview mode, changing the contents of all cells in the table to a preview value. */
+export type CellsPreviewMode = "textExport";
 
 export type AllRowsExportIterable<TData extends RowData = RowData> = AsyncIterable<TData> & {readonly length?: number};
 
 export interface ColumnMetaParams<TData = DataItem> {
-  readonly filtering?: FilteringParams;
   /**
    * Whether this column is a DEV column, i.e. an unconfigured column taken directly from tquery schema,
    * displayed only in DEV mode.
@@ -120,13 +138,14 @@ export interface TQueryTableProps<TData = DataItem> {
   /**
    * The filter that is always applied to the data, regardless of other filtering.
    * This is used to create e.g. a table of entities A on the details page of a particular
-   * entity B, so only entities A related direclty to that particular entity B should be shown.
+   * entity B, so only entities A related directly to that particular entity B should be shown.
    */
   readonly intrinsicFilter?: FilterH;
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
   /** The definition of the columns in the table, in their correct order. */
   readonly columns: readonly PartialColumnConfigEntry<TData>[];
+  readonly attributeColumnsConfig?: AttributeColumnsConfig<TData>;
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
@@ -150,47 +169,61 @@ export interface PartialColumnConfig<TData = DataItem> {
    * All additional data columns used in columnDef.cell needs to be specified in extraDataColumns.
    */
   readonly columnDef?: IdentifiedColumnDef<TData>;
+  /** The component that represents the column filter. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly filterControl?: FilterControl<any>;
   /** Override for the column header. */
-  readonly header?: (params: HeaderParams<TData>) => JSX.Element;
+  readonly header?: VoidComponent<HeaderParams<TData>>;
   /** Some meta params for the column. They are merged into columnDef.meta.tquery (this is a shorthand). */
   readonly metaParams?: ColumnMetaParams<TData>;
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
+  /** Whether the global filter can match this column. Default: depends on the column type. */
+  readonly globalFilterable?: boolean;
 }
 
 interface HeaderParams<TData = DataItem> {
   readonly ctx: HeaderContext<TData, unknown>;
-  readonly filter: Signal<FilterH | undefined>;
-  readonly defFilterControl: () => JSX.Element;
+  readonly filter?: Signal<FilterH | undefined>;
+  readonly filterControl?: JSX.Element;
 }
 
-type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "nonFixedAttributes";
+type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "attributeColumns";
 
-interface FullColumnConfig<TData = DataItem> extends ColumnConfig {
-  /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
-  readonly isDataColumn: boolean;
-  readonly columnDef: IdentifiedColumnDef<TData>;
-  readonly header?: (params: HeaderParams<TData>) => JSX.Element;
-  readonly metaParams?: ColumnMetaParams;
+/**
+ * The entry denoting a collection of attribute columns. It includes all the non-fixed columns, plus possibly
+ * fixed attribute columns, depending on the configuration.
+ */
+interface AttributeColumnsConfig<TData> {
+  readonly defaultConfig?: Pick<PartialColumnConfig<TData>, "initialVisible" | "globalFilterable">;
+  readonly selection?: PartialAttributesSelection<Partial<PartialColumnConfig<TData>>>;
 }
+
+type FullColumnConfig<TData = DataItem> = ColumnConfig &
+  Required<Pick<PartialColumnConfig<TData>, "isDataColumn" | "columnDef" | "header">> &
+  Pick<PartialColumnConfig<TData>, "filterControl" | "metaParams">;
 
 function columnConfigFromPartial({
   name,
   isDataColumn = true,
   extraDataColumns = [],
   columnDef = {},
-  header,
+  filterControl,
+  header = Header,
   metaParams,
   initialVisible = true,
+  globalFilterable = true,
 }: PartialColumnConfig): FullColumnConfig {
   return {
     name,
     isDataColumn,
-    dataColumns: isDataColumn ? [name, ...extraDataColumns] : extraDataColumns,
+    extraDataColumns,
     columnDef,
+    filterControl,
     header,
     metaParams,
     initialVisible,
+    globalFilterable,
   };
 }
 
@@ -213,25 +246,14 @@ const PERSISTENCE_VERSION = 2;
 export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const attributes = useAttributes();
   const entityURL = props.staticEntityURL;
-  const [nonFixedAttributeColumns, setNonFixedAttributeColumns] = createSignal<DataColumnSchema[]>([]);
-  const nonFixedAttributeColumnsConfig = () =>
-    nonFixedAttributeColumns().map(
-      (col) => ({name: col.name, initialVisible: false}) satisfies PartialColumnConfig<DataItem>,
-    );
-  const [devColumns, setDevColumns] = createSignal<DataColumnSchema[]>([]);
-  const devColumnsConfig = () =>
-    devColumns().map(
-      (col) =>
-        ({
-          name: col.name,
-          metaParams: {devColumn: true},
-          initialVisible: false,
-        }) satisfies PartialColumnConfig<DataItem>,
-    );
+  const [attributeColumnsConfig, setAttributeColumnsConfig] = createSignal<readonly PartialColumnConfig<DataItem>[]>(
+    [],
+  );
+  const [devColumnsConfig, setDevColumnsConfig] = createSignal<readonly PartialColumnConfig<DataItem>[]>([]);
   const columnsConfig = createMemo(() =>
     [
       ...props.columns.flatMap<PartialColumnConfig<DataItem>>((colEntry) =>
-        colEntry === "nonFixedAttributes" ? nonFixedAttributeColumnsConfig() : [colEntry],
+        colEntry === "attributeColumns" ? attributeColumnsConfig() : [colEntry],
       ),
       ...devColumnsConfig(),
     ].map((col) => columnConfigFromPartial(col)),
@@ -243,49 +265,64 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     .set("bool", {
       columnDef: {cell: tableCells.bool(), size: 100},
       metaParams: {textExportCell: tableTextExportCells.bool()},
+      filterControl: BoolFilterControl,
     })
     .set("date", {
       columnDef: {cell: tableCells.date()},
       metaParams: {textExportCell: tableTextExportCells.date()},
+      filterControl: DateTimeFilterControl,
     })
     .set("datetime", {
       columnDef: {cell: tableCells.datetime()},
       metaParams: {textExportCell: tableTextExportCells.datetime()},
+      filterControl: DateTimeFilterControl,
     })
     .set("int", {
       columnDef: {cell: tableCells.int(), size: 150},
       metaParams: {textExportCell: tableTextExportCells.int()},
+      filterControl: IntFilterControl,
     })
     .set("list", {
-      columnDef: {enableSorting: false},
+      columnDef: {cell: tableCells.list(), enableSorting: false},
       metaParams: {textExportCell: tableTextExportCells.list()},
     })
     .set("object", {
-      columnDef: {enableSorting: false},
+      columnDef: {cell: tableCells.object(), enableSorting: false},
       metaParams: {textExportCell: tableTextExportCells.object()},
     })
-    .set("string", {})
+    .set("string", {
+      columnDef: {cell: tableCells.string()},
+      metaParams: {textExportCell: tableTextExportCells.string()},
+      filterControl: TextualFilterControl,
+    })
     .set("text", {
-      columnDef: {enableSorting: false},
+      columnDef: {cell: tableCells.text(), enableSorting: false},
+      metaParams: {textExportCell: tableTextExportCells.text()},
+      filterControl: TextualFilterControl,
     })
     .set("uuid", {
       columnDef: {cell: tableCells.uuid(), enableSorting: false, size: 80},
       metaParams: {textExportCell: tableTextExportCells.uuid()},
+      filterControl: UuidFilterControl,
     })
     .set("uuid_list", {
       columnDef: {cell: tableCells.uuidList(), enableSorting: false, size: 80},
       metaParams: {textExportCell: tableTextExportCells.uuidList()},
+      // TODO: Implement filter control.
     })
     .set("dict", {
       columnDef: {cell: tableCells.dict()},
       metaParams: {textExportCell: tableTextExportCells.dict()},
+      filterControl: DictFilterControl,
+      globalFilterable: true,
     })
     .set("dict_list", {
       columnDef: {cell: tableCells.dictList(), enableSorting: false, size: 270},
       metaParams: {textExportCell: tableTextExportCells.dictList()},
+      filterControl: DictListFilterControl,
+      globalFilterable: true,
     });
 
-  const [allInitialised, setAllInitialised] = createSignal(false);
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     intrinsicFilter: () => props.intrinsicFilter,
@@ -294,13 +331,33 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     initialPageSize:
       props.initialPageSize ||
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
-    allInitialised,
   });
+  const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
     entityURL,
     prefixQueryKey: props.staticPrefixQueryKey,
     requestCreator,
-    dataQueryOptions: {meta: {tquery: {isTable: true}}},
+    dataQueryOptions: () => ({
+      enabled: allInitialised(),
+      meta: {tquery: {isTable: true}},
+    }),
+  });
+  const selection = () => attributesSelectionFromPartial(props.attributeColumnsConfig?.selection);
+  createEffect(() => {
+    if (!schema() || !attributes()) {
+      return;
+    }
+    const unknownFixedAttributes = getUnknownFixedAttributes(
+      selection(),
+      schema()!
+        .columns.map((col) =>
+          isDataColumn(col) && col.attributeId ? attributes()!.getById(col.attributeId) : undefined,
+        )
+        .filter(NON_NULLABLE),
+    );
+    if (unknownFixedAttributes) {
+      console.error(`Unknown fixed attributes: ${unknownFixedAttributes.join(", ")}`);
+    }
   });
   createComputed(() => {
     const sch = schema();
@@ -308,40 +365,66 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       if (attributes()) {
         batch(() => {
           const configuredColumns = new Set();
+          let usesAttributeColumns = false;
           for (const colEntry of props.columns) {
-            if (colEntry !== "nonFixedAttributes") {
+            if (colEntry === "attributeColumns") {
+              usesAttributeColumns = true;
+            } else {
               configuredColumns.add(colEntry.name);
             }
           }
-          setNonFixedAttributeColumns(
-            sch.columns
-              .map((col) => {
-                if (!isDataColumn(col)) {
-                  return undefined;
-                }
-                if (col.attributeId) {
-                  const attribute = attributes()!.get(col.attributeId);
-                  if (!attribute.isFixed) {
-                    if (configuredColumns.has(col.name)) {
-                      console.warn(
-                        `Column ${col.name} is configured statically, but it is a non-fixed attribute ${attribute.name}.`,
-                      );
+          const selection = attributesSelectionFromPartial(props.attributeColumnsConfig?.selection);
+          setAttributeColumnsConfig(
+            usesAttributeColumns
+              ? sch.columns
+                  .map((col) => {
+                    if (!isDataColumn(col) || !col.attributeId) {
                       return undefined;
                     }
-                    return col;
-                  }
-                }
-                return undefined;
-              })
-              .filter(NON_NULLABLE),
+                    function buildColumnConfig(
+                      config?: Partial<PartialColumnConfig<DataItem>>,
+                    ): PartialColumnConfig<DataItem> {
+                      return {
+                        name: col.name,
+                        ...props.attributeColumnsConfig?.defaultConfig,
+                        ...config,
+                      };
+                    }
+                    const attribute = attributes()!.getById(col.attributeId);
+                    const select = isAttributeSelected(selection, attribute);
+                    if (select) {
+                      if (configuredColumns.has(col.name)) {
+                        if (select.explicit) {
+                          throw new Error(
+                            `Column ${col.name} is configured as a fixed attribute column, but it is configured statically as well.`,
+                          );
+                        }
+                        return undefined;
+                      }
+                      return buildColumnConfig(select.override);
+                    } else {
+                      return undefined;
+                    }
+                  })
+                  .filter(NON_NULLABLE)
+              : [],
           );
           if (isDEV()) {
-            for (const col of nonFixedAttributeColumns()) {
+            for (const col of attributeColumnsConfig()) {
               configuredColumns.add(col.name);
             }
-            setDevColumns(sch.columns.filter(isDataColumn).filter(({name}) => !configuredColumns.has(name)));
+            setDevColumnsConfig(
+              sch.columns
+                .filter((col) => isDataColumn(col) && !configuredColumns.has(col.name))
+                .map((col) => ({
+                  name: col.name,
+                  metaParams: {devColumn: true},
+                  initialVisible: false,
+                  globalFilterable: false,
+                })),
+            );
           } else {
-            setDevColumns([]);
+            setDevColumnsConfig([]);
           }
         });
       }
@@ -367,7 +450,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         colSize: columnSizing() || {},
       }),
       onLoad: (value) => {
-        // Ensure a bad (e.g. outdated) entry won't affect visibility of a columnn that cannot have
+        // Ensure a bad (e.g. outdated) entry won't affect visibility of a column that cannot have
         // the visibility controlled by the user.
         const colVis = {...value.colVis};
         for (const col of columnsConfig()) {
@@ -384,59 +467,101 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   }
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
+  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
+  const translations: TableTranslations = {
+    ...baseTranslations,
+    columnName: (column, o) => {
+      const attributeId = table()?.getColumn(column)?.columnDef.meta?.tquery?.attributeId;
+      return attributeId ? attributes()?.getById(attributeId).label || "" : baseTranslations.columnName(column, o);
+    },
+  };
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
-    translations: props.staticTranslations,
+    translations,
   });
   createEffect(() => {
     const errors = filterErrors()?.values();
     if (errors) {
+      // Make the messages non-reactive so that they are not changed while the toast is shown.
+      const messages = [...errors];
       // TODO: Consider showing the errors in the table header.
-      toastError(<ToastMessages messages={[...errors]} />);
+      toastError(() => <ToastMessages messages={messages} />);
     }
   });
   const defaultColumnVisibility = createMemo(() => getDefaultColumnVisibility(columnsConfig()));
 
+  const [cellsPreviewMode, setCellsPreviewMode] = createSignal<CellsPreviewMode | undefined>();
   const columns = createMemo(() => {
     const sch = schema();
     if (!sch) {
       return [];
     }
     return columnsConfig().map((col) => {
-      let schemaCol = undefined;
+      let schemaCol: DataColumnSchema | undefined = undefined;
       if (col.isDataColumn) {
-        schemaCol = sch.columns.find(({name}) => name === col.name);
-        if (!schemaCol) {
+        const schemaColumn = sch.columns.find(({name}) => name === col.name);
+        if (!schemaColumn) {
           throw new Error(`Column ${col.name} not found in schema`);
         }
-        if (schemaCol.type === "count") {
+        if (schemaColumn.type === "count") {
           throw new Error(`Column ${col.name} is a count column`);
         }
+        schemaCol = schemaColumn;
       }
       const defColumnConfig = (schemaCol && defaultColumnConfigByType.get(schemaCol.type)) || {};
+      const filterControl = col.filterControl || defColumnConfig.filterControl;
       const filter = getColumnFilter(col.name);
-      const defFilterControl = (ctx: HeaderContext<DataItem, unknown>) => (
-        <ColumnFilterController name={ctx.column.id} filter={filter[0]()} setFilter={filter[1]} />
-      );
-      return objectRecursiveMerge<ColumnDef<DataItem, unknown>>(
+      const columnDef = objectRecursiveMerge<ColumnDef<DataItem, unknown>>(
         {
           id: col.name,
           accessorFn: col.isDataColumn ? (originalRow) => originalRow[col.name] : undefined,
-          header: (ctx) => <Header ctx={ctx} filter={defFilterControl(ctx)} />,
+          header: (ctx) => (
+            <Dynamic
+              component={col.header || defColumnConfig.header}
+              ctx={ctx}
+              filter={filter}
+              filterControl={
+                schemaCol &&
+                filterControl && (
+                  <Dynamic
+                    component={filterControl}
+                    column={ctx.column}
+                    schema={schemaCol!}
+                    filter={filter[0]()}
+                    setFilter={filter[1]}
+                  />
+                )
+              }
+            />
+          ),
         },
         // It would be ideal to restrict the cell function to only accessing the data columns declared
         // by the column config, but there is no easy way to do this. The whole row is a store and cannot
         // be mutated, and wrapping it would be complicated.
         defColumnConfig.columnDef,
-        col.header && {
-          header: (ctx) => col.header!({ctx, filter, defFilterControl: () => defFilterControl(ctx)}),
-        },
         col.columnDef,
         {meta: {tquery: schemaCol}},
         {meta: {tquery: defColumnConfig.metaParams}},
         {meta: {tquery: col.metaParams}},
       ) satisfies ColumnDef<DataItem, unknown>;
+      const previewMode = cellsPreviewMode();
+      if (previewMode) {
+        if (previewMode === "textExport") {
+          columnDef.cell = (ctx) => (
+            <PaddedCell>
+              {columnDef.meta?.tquery?.textExportCell?.({
+                value: ctx.getValue(),
+                row: ctx.row.original,
+                column: ctx.column,
+              })}
+            </PaddedCell>
+          );
+        } else {
+          return previewMode satisfies never;
+        }
+      }
+      return columnDef;
     });
   });
 
@@ -458,7 +583,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       autoResetPageIndex: false,
       meta: {
         tableId: props.staticTableId,
-        translations: props.staticTranslations || createTableTranslations("generic"),
+        translations,
         defaultColumnVisibility,
         exportConfig: props.exportConfig,
         tquery: {
@@ -472,6 +597,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
               return rowsCount();
             },
           },
+          cellsPreviewMode: [cellsPreviewMode, setCellsPreviewMode],
         },
       },
     }),

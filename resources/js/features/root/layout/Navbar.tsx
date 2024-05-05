@@ -2,14 +2,14 @@ import {FullLogo} from "components/ui/FullLogo";
 import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
-import {BiRegularTable} from "solid-icons/bi";
+import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
-import {TbHelp} from "solid-icons/tb";
+import {TbHelp, TbInfoCircle} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -17,11 +17,13 @@ import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
 import {useThemeControl} from "../components/theme_control";
 import s from "./layout.module.scss";
+import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 
 export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
+  const systemStatusMonitor = useSystemStatusMonitor();
   const facilityUrl = () => activeFacility()?.url;
   const CommonFacilityItems: VoidComponent = () => (
     <>
@@ -77,7 +79,8 @@ export const Navbar: VoidComponent = () => {
                 </Show>
               </NavigationItem>
             </SilentAccessBarrier>
-            <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" />
+            {/* TODO: Restore the page when there is useful information on it. */}
+            {/* <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" /> */}
           </NavigationSection>
         </Show>
         <SilentAccessBarrier roles={["globalAdmin"]}>
@@ -87,7 +90,9 @@ export const Navbar: VoidComponent = () => {
           </NavigationSection>
         </SilentAccessBarrier>
         <NavigationSection title={t("routes.menu_sections.other")}>
-          <NavigationItem icon={TbHelp} href="/help" routeKey="help" />
+          <NavigationItem icon={TbHelp} href="/help" routeKey="help">
+            <NavigationItem icon={TbInfoCircle} href="/help/about" routeKey="help_pages.about" small />
+          </NavigationItem>
         </NavigationSection>
         <Show when={isDEV()}>
           <NavigationSection title="DEV">
@@ -104,10 +109,15 @@ export const Navbar: VoidComponent = () => {
               small
             />
             <NavigationItem icon={SiSwagger} href="/api/documentation" routeKey="API" target="_blank" small />
+            <NavigationItem icon={BiRegularErrorAlt} href="/dev/crash" routeKey="Crash" small />
             <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />
           </NavigationSection>
         </Show>
       </nav>
+      <div class="grow" />
+      <div class="p-2 text-grey-text">
+        {t("app_name")} {systemStatusMonitor.status()?.version}
+      </div>
     </aside>
   );
 };

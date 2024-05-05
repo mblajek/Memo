@@ -14,10 +14,9 @@ import {
 } from "components/ui/Table";
 import {QueryBarrier} from "components/utils";
 import {Attribute} from "data-access/memo-api/attributes";
-import {} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
-import {Show, VoidComponent, createMemo} from "solid-js";
+import {Setter, Show, VoidComponent, createMemo} from "solid-js";
 import {Select} from "../components/ui/form/Select";
 import {EMPTY_VALUE_SYMBOL} from "../components/ui/symbols";
 import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
@@ -47,15 +46,17 @@ export default (() => {
     }
   }
 
-  const textSort = {
-    sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
-  } satisfies Partial<IdentifiedColumnDef<object>>;
+  function textSort<T>() {
+    return {
+      sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
+    } satisfies Partial<IdentifiedColumnDef<T>>;
+  }
 
   const table = createMemo(() =>
     createSolidTable({
       ...getBaseTableOptions<Attribute>({
         features: {
-          sorting: [{id: "Label", desc: false}],
+          sorting: [{id: "Name", desc: false}],
           pagination: {pageIndex: 0, pageSize: 1e6},
         },
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
@@ -64,6 +65,11 @@ export default (() => {
         return [...(attributes() || [])];
       },
       columns: [
+        h.accessor((p) => p.resource.defaultOrder, {
+          id: "Order",
+          cell: cellFunc<number, Attribute>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
+          sortDescFirst: false,
+        }),
         h.accessor("id", {
           id: "Id",
           cell: tableCells.uuid(),
@@ -72,15 +78,12 @@ export default (() => {
         }),
         h.accessor("name", {
           id: "Name",
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("label", {
           id: "Label",
           cell: cellFunc<string, Attribute>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
-          ...textSort,
-        }),
-        h.accessor("isFixed", {
-          id: "Fixed",
+          ...textSort(),
         }),
         h.accessor("resource.facilityId", {
           id: "Facility",
@@ -89,19 +92,24 @@ export default (() => {
               <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
             </PaddedCell>
           )),
-          ...textSort,
+          ...textSort(),
+        }),
+        h.accessor("isFixed", {
+          id: "Fixed",
         }),
         h.accessor("model", {
           id: "Model",
-          ...textSort,
+          ...textSort(),
           header: (ctx) => (
             <Header
               ctx={ctx}
-              filter={
+              filter={[ctx.column.getFilterValue, ctx.column.setFilterValue as Setter<unknown>]}
+              filterControl={
                 <Select
                   name="modelFilter"
                   items={models().map((model) => ({value: model}))}
-                  nullable
+                  // Clearable by the "reset filter" button in the header.
+                  nullable={false}
                   onValueChange={ctx.column.setFilterValue}
                   small
                 />
@@ -112,14 +120,14 @@ export default (() => {
         }),
         h.accessor("apiName", {
           id: "API name",
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("type", {
           id: "Type",
           cell: cellFunc<AttributeType, Attribute>((props) => (
             <PaddedCell>{getAttributeTypeString(props.row)}</PaddedCell>
           )),
-          ...textSort,
+          ...textSort(),
         }),
         h.accessor("multiple", {
           id: "Multiple",
@@ -133,7 +141,7 @@ export default (() => {
         }),
         h.accessor("requirementLevel", {
           id: "Req. level",
-          ...textSort,
+          ...textSort(),
         }),
         ...(attributes()
           ?.getForModel("attribute")

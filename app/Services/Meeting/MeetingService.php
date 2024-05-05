@@ -2,6 +2,7 @@
 
 namespace App\Services\Meeting;
 
+use App\Models\Attribute;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
@@ -16,6 +17,7 @@ class MeetingService
     public function create(Facility $facility, array $data): string
     {
         $meeting = new Meeting($data);
+        $fromMeeting = $this->handleFromMeetingId($meeting);
         $meeting->facility_id = $facility->id;
         $this->fillMeetingCategory($meeting);
 
@@ -24,7 +26,8 @@ class MeetingService
         $attendants = $staff + $clients;
         $resources = $this->extractResources($data) ?? [];
 
-        DB::transaction(function () use ($meeting, $attendants, $resources) {
+        DB::transaction(function () use ($meeting, $fromMeeting, $attendants, $resources) {
+            $fromMeeting?->save();
             $meeting->save();
             $meeting->attendants()->saveMany($attendants);
             $meeting->resources()->saveMany($resources);
@@ -72,10 +75,26 @@ class MeetingService
         });
     }
 
+    private function handleFromMeetingId(Meeting $meeting): ?Meeting
+    {
+        if ($meeting->from_meeting_id) {
+            $fromMeeting = Meeting::query()->findOrFail($meeting->from_meeting_id);
+            if ($meeting->from_meeting_id !== $fromMeeting->from_meeting_id) {
+                if ($fromMeeting->from_meeting_id) {
+                    $meeting->from_meeting_id = $fromMeeting->from_meeting_id;
+                } else {
+                    $fromMeeting->from_meeting_id = $meeting->from_meeting_id;
+                    return $fromMeeting;
+                }
+            }
+        }
+        return null;
+    }
+
     private function fillMeetingCategory(Meeting $meeting): void
     {
         $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
-            ->attrValues(byId: true)[PositionAttributeUuidEnum::Category->value]);
+            ->attrValues()[Attribute::getById(PositionAttributeUuidEnum::Category)->api_name]);
     }
 
     private function extract(array &$data, string $key)

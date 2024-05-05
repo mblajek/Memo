@@ -1,15 +1,25 @@
-# Informacje o systemie
+# Memo
 
 Strona pomocy dla systemu Memo.
 
-🚧 Strona w budowie 🚧
+🚧 Strona nadal w budowie 🚧
 
 ## Dokumenty
 
+- Spotkania
+  - [Statusy](meeting-statuses)
+- Tabele
+  - [Filtrowanie](table-filtering)
+  - [Eksport danych](table-export)
 - [Tekst z tagami](rich-text)
-- [$t(models.meeting._name|cap)](meeting)
-- [Eksport tabel](table-export)
+- [Sztuczki usprawniające korzystanie z Memo ✨](tricks)
 
 ## Linki zewnętrzne
 
-- [GitHub](https://github.com/mblajek/Memo)
+- [GitHub - Projekt Memo](https://github.com/mblajek/Memo)
+
+## Twórcy
+
+- [Mikołaj Błajek](https://github.com/mblajek) - główny programista backendu
+- [Tomasz Błajek](https://github.com/TPReal) - główny programista frontendu
+- [Pozostali programiści](https://github.com/mblajek/Memo/graphs/contributors?type=a)

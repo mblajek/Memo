@@ -4,6 +4,7 @@ namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Attribute;
+use App\Models\Enums\AttributeType;
 use App\Models\UuidEnum\AttributeUuidEnum;
 use BackedEnum;
 use Closure;
@@ -64,18 +65,34 @@ final class TqConfig
         );
     }
 
-    public function addAttribute(string|(AttributeUuidEnum&BackedEnum) $attribute, ?string $prefix = null): void
-    {
-        $attributeModel = Attribute::query()->findOrFail(is_string($attribute) ? $attribute : $attribute->value);
-        $type = $attributeModel->getTqueryDataType();
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
-        $this->addColumn(
-            type: $type,
-            columnOrQuery: $attributeModel->api_name,
-            table: TqTableAliasEnum::fromTableName($attributeModel->table->value),
-            columnAlias: Str::camel((($prefix !== null) ? "$prefix." : '') . $attributeModel->api_name),
-            attribute: $attributeModel,
-        );
+    public function addAttribute(
+        Attribute|(AttributeUuidEnum&BackedEnum) $attribute,
+        ?string $prefix = null,
+    ): void {
+        $attribute = ($attribute instanceof Attribute) ? $attribute : Attribute::getById($attribute);
+        if ($attribute->type === AttributeType::Separator) {
+            return; // todo: maybe tquery separator
+        }
+        $type = $attribute->getTqueryDataType();
+        if ($attribute->is_multi_value === null) {
+            self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+            $this->addColumn(
+                type: $type,
+                columnOrQuery: $attribute->api_name,
+                table: TqTableAliasEnum::fromTableName($attribute->table->value),
+                columnAlias: Str::camel((($prefix !== null) ? "$prefix." : '') . $attribute->api_name),
+                attribute: $attribute,
+            );
+        } else {
+            $this->addColumn(
+                type: $type,
+                columnOrQuery: fn(string $tableName) => //
+                FatalExceptionFactory::tquery(['message' => 'not implemented'])->throw(),
+                table: TqTableAliasEnum::fromTableName($attribute->table->value),
+                columnAlias: Str::camel((($prefix !== null) ? "$prefix." : '') . $attribute->api_name),
+                attribute: $attribute,
+            );
+        }
     }
 
     public function addJoined(

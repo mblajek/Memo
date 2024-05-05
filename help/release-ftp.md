@@ -7,7 +7,7 @@
   - `php artisan l5-swagger:generate`
   - `php artisan cache:clear`
   - bez: `artisan config/event/route:cache`
-- do `x-new` skopiować foldery:
+- do `x-new` skopiować plik `artisan` i 9 folderów:
   - app
   - bootstrap
   - config
@@ -18,7 +18,6 @@
   - storage (bez logs)
   - vendor
 - usunąć zawartość `x-old`
-- wszystko (oprócz `x-*` i `*env`) przenieść z `/` do `x-old`
+- wszystko (oprócz `x-*` i `.env`) przenieść z `/` do `x-old`
 - wszystko z `x-new` przenieść do `/`
 - sprawdzić, czy nie został zgubiony `.env`
-  - w razie czego przywrócić z `x-env`

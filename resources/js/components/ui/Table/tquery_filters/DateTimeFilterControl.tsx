@@ -3,8 +3,8 @@ import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquer
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
-import s from "./ColumnFilterController.module.scss";
 import {useFilterFieldNames} from "./filter_field_names";
+import s from "./filters.module.scss";
 import {FilterControlProps} from "./types";
 
 type DateTimeRangeFilter =
@@ -18,17 +18,10 @@ type DateTimeRangeFilter =
     }
   | (DateColumnFilter & {op: "="});
 
-interface DateTimeColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  readonly columnType?: "datetime";
-  /** Whether the inputs should set date and time. Default is only date. */
+interface Props extends FilterControlProps<DateTimeRangeFilter> {
+  /** Whether to use datetime-local inputs for datetime columns. Default: false (use date inputs). */
   readonly useDateTimeInputs?: boolean;
 }
-
-interface DateColumnProps extends FilterControlProps<DateTimeRangeFilter> {
-  readonly columnType: "date";
-}
-
-type Props = DateColumnProps | DateTimeColumnProps;
 
 /**
  * Filter for a date and datetime columns.
@@ -37,8 +30,8 @@ type Props = DateColumnProps | DateTimeColumnProps;
 export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
-  const columnType = () => props.columnType || "datetime";
-  const inputsType = () => (props.columnType === "datetime" && props.useDateTimeInputs ? "datetime-local" : "date");
+  const columnType = () => props.schema.type as "date" | "datetime";
+  const inputsType = () => (columnType() === "datetime" && props.useDateTimeInputs ? "datetime-local" : "date");
   const [lower, setLower] = createSignal("");
   const [upper, setUpper] = createSignal("");
   createComputed(() => {
@@ -74,7 +67,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       uISO = u && dateTimeToISO(u);
     }
     if (columnType() === "date" && lISO && lISO === uISO) {
-      return props.setFilter({type: "column", column: props.name, op: "=", val: lISO});
+      return props.setFilter({type: "column", column: props.schema.name, op: "=", val: lISO});
     }
     return props.setFilter({
       type: "op",
@@ -83,7 +76,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         lISO
           ? {
               type: "column",
-              column: props.name,
+              column: props.schema.name,
               op: ">=",
               val: lISO,
             }
@@ -91,7 +84,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         uISO
           ? {
               type: "column",
-              column: props.name,
+              column: props.schema.name,
               op: "<=",
               val: uISO,
             }
@@ -103,7 +96,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const syncActive = () => !!lower() || !!upper();
   return (
     <div
-      class="grid gap-0.5 items-baseline"
+      class={cx(s.filter, "grid gap-0.5 items-baseline")}
       style={{"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`}}
     >
       <div>{t("range.from")}</div>
@@ -123,7 +116,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       </Show>
       <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
-          name={filterFieldNames.get(`from_${props.name}`)}
+          name={filterFieldNames.get(`from_${props.schema.name}`)}
           type={inputsType()}
           class={cx(
             "w-full min-h-small-input border border-input-border rounded text-black",
@@ -137,7 +130,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.to")}</div>
       <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
         <input
-          name={filterFieldNames.get(`to_${props.name}`)}
+          name={filterFieldNames.get(`to_${props.schema.name}`)}
           type={inputsType()}
           class={cx(
             "w-full min-h-small-input border border-input-border rounded text-black",

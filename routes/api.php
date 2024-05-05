@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Facility\ClientController;
 use App\Http\Controllers\Facility\ClientTqueryController;
+use App\Http\Controllers\Facility\FacilityAdminController;
 use App\Http\Controllers\Facility\MeetingAttendantTqueryController;
 use App\Http\Controllers\Facility\MeetingController;
 use App\Http\Controllers\Facility\MeetingTqueryController;
@@ -47,6 +48,7 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/admin')->group(function () {
         Route::prefix('/developer')->group(function () {
             Route::get('/migrate/{hash?}', [DeveloperController::class, 'migrate']);
+            Route::post('/overwrite-metadata', [DeveloperController::class, 'overwriteMetadata']);
         });
         Route::prefix('/user')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
@@ -70,6 +72,8 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/facility/{facility}')->group(function () {
         Route::prefix('/user')->group(function () {
             Route::prefix('/client')->group(function () {
+                Route::post('/', [ClientController::class, 'post']);
+                Route::patch('/{user}', [ClientController::class, 'patch']);
                 Route::get('/list', [ClientController::class, 'list']);
                 Route::get('/tquery', [ClientTqueryController::class, 'get']);
                 Route::post('/tquery', [ClientTqueryController::class, 'post']);
@@ -90,6 +94,17 @@ Route::prefix('/v1')->group(function () {
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
             Route::get('/attendant/tquery', [MeetingAttendantTqueryController::class, 'get']);
             Route::post('/attendant/tquery', [MeetingAttendantTqueryController::class, 'post']);
+        });
+        Route::prefix('/admin')->group(function () {
+            Route::prefix('/attribute')->group(function () {
+                Route::post('/', [FacilityAdminController::class, 'postAttribute']);
+            });
+            Route::prefix('/dictionary')->group(function () {
+                Route::post('/', [FacilityAdminController::class, 'postDictionary']);
+            });
+            Route::prefix('/position')->group(function () {
+                Route::post('/', [FacilityAdminController::class, 'postPosition']);
+            });
         });
     });
     Route::prefix('/mail')->group(function () {

@@ -3,7 +3,7 @@ import * as combobox from "@zag-js/combobox";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
-import {cx, useLangFunc} from "components/utils";
+import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {useIsFieldsetDisabled} from "components/utils/fieldset_disabled_tracker";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
@@ -14,9 +14,11 @@ import {
   For,
   JSX,
   Match,
+  ParentComponent,
   Show,
   Switch,
   VoidComponent,
+  batch,
   createComputed,
   createEffect,
   createMemo,
@@ -24,6 +26,7 @@ import {
   createUniqueId,
   mergeProps,
   on,
+  splitProps,
 } from "solid-js";
 import {Portal} from "solid-js/web";
 import {Button} from "../Button";
@@ -42,6 +45,23 @@ export interface SelectBaseProps {
    * be filtered internally.
    */
   readonly items: readonly SelectItem[];
+  /**
+   * Creates a group header on the list for the specified group id. If not specified and items use grouping,
+   * the group name string is used directly.
+   */
+  readonly getGroupHeader?: (groupName: string) => JSX.Element;
+  /**
+   * Function called when the current value is unknown, i.e. there was never an item with this value in items, so
+   * the component doesn't know how to display it.
+   *
+   * The return value specifies the missing items, if available. Once the accessor returns data, any items that
+   * are still unknown, are considered invalid and are removed from the select.
+   *
+   * Every time this function is called, the accessors returned from any previous invocations are no longer needed, so
+   * the parent can actually return the same accessor every time, just with content updated based on the most recent
+   * missing values. In a typical usage, there will be at most one call to this function.
+   */
+  readonly getReplacementItems?: (missingValues: readonly string[]) => Accessor<ReplacementItems>;
   /**
    * Filtering:
    * - If missing, filtering is disabled (the default).
@@ -82,6 +102,17 @@ export type SingleSelectProps = SelectBaseProps & SingleSelectPropsPart;
 export type MultipleSelectProps = SelectBaseProps & MultipleSelectPropsPart;
 export type SelectProps = SingleSelectProps | MultipleSelectProps;
 
+interface ReplacementItemsLoading {
+  readonly isLoading: true;
+}
+interface ReplacementItemsReady {
+  readonly isLoading: false;
+  readonly items: readonly SelectItem[];
+}
+
+/** The replacement items provided for the values that are selected, but missing in the items. */
+export type ReplacementItems = ReplacementItemsLoading | ReplacementItemsReady;
+
 export interface SelectItem {
   /** The internal value of the item. Must be unique among the items. Must not be empty. */
   readonly value: string;
@@ -95,6 +126,7 @@ export interface SelectItem {
   /** The item, as displayed on the expanded list. If not specified, label is used. */
   readonly labelOnList?: () => JSX.Element;
   readonly disabled?: boolean;
+  readonly groupName?: string;
 }
 
 function itemToString(item: SelectItem) {
@@ -104,13 +136,16 @@ function itemToLabel(item: SelectItem) {
   return item.label ? item.label() : <>{itemToString(item)}</>;
 }
 function itemToLabelOnList(item: SelectItem) {
-  return item.labelOnList ? item.labelOnList() : itemToLabel(item);
+  return item.labelOnList ? (
+    item.labelOnList()
+  ) : (
+    <IndentSelectItemInGroup indent={!!item.groupName}>{itemToLabel(item)}</IndentSelectItemInGroup>
+  );
 }
 
 const DEFAULT_PROPS = {
   isLoading: false,
   small: false,
-  nullable: false,
   showClearButton: true,
 } satisfies Partial<SelectProps>;
 
@@ -260,7 +295,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
     return props.items;
   });
-  const itemsToShow = createMemo((): readonly SelectItem[] => {
+  const itemsToShow = createMemo<readonly SelectItem[]>(() => {
     const filtered = filteredItems();
     if (filtered.length) {
       return filtered;
@@ -286,9 +321,40 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       },
     ];
   });
+  const itemsToShowWithHeaders = createMemo<readonly SelectItem[]>(() => {
+    const res: SelectItem[] = [];
+    let groupName: string | undefined = undefined;
+    for (const item of itemsToShow()) {
+      if (item.groupName !== groupName) {
+        groupName = item.groupName;
+        if (groupName) {
+          const grName = groupName;
+          function labelOnList() {
+            if (props.getGroupHeader) {
+              const groupHeader = props.getGroupHeader(grName);
+              return typeof groupHeader === "string" ? (
+                <DefaultSelectItemsGroupHeader groupName={groupHeader} />
+              ) : (
+                groupHeader
+              );
+            } else {
+              return <DefaultSelectItemsGroupHeader groupName={grName} />;
+            }
+          }
+          res.push({
+            value: `_group_${grName}_${createUniqueId()}`,
+            labelOnList,
+            disabled: true,
+          });
+        }
+      }
+      res.push(item);
+    }
+    return res;
+  });
   const collectionMemo = createMemo(() =>
     combobox.collection<SelectItem>({
-      items: itemsToShow(),
+      items: itemsToShowWithHeaders(),
       itemToValue: (item) => item.value,
       // All the items present themselves as empty string because there is at least one bug
       // in the zag component that causes the string representation of the selected item to
@@ -314,20 +380,65 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       return newMap;
     });
   });
+  const unknownValues = createMemo<readonly string[]>(
+    () => {
+      if (props.isLoading) {
+        // If still loading, just assume optimistically all the values will become known.
+        return [];
+      }
+      const knownValues = itemsMap();
+      return api()
+        .value.filter((value) => !knownValues.has(value))
+        .sort();
+    },
+    [],
+    {equals: (a, b) => a.length === b.length && a.every((v, i) => v === b[i])},
+  );
+  const replacementItemsAccessor = createMemo(() =>
+    unknownValues().length ? props.getReplacementItems?.(unknownValues()) : undefined,
+  );
+  // Add items fetched via getMissingCurrentItems to items map, or clear them from the value if missing.
+  createComputed(() => {
+    if (unknownValues().length) {
+      const replacementAccessor = replacementItemsAccessor();
+      /**
+       * The provided replacement items, or undefined if still loading. If defined, but does not contain all the
+       * unknown values, the missing values are considered invalid and are removed from the select.
+       */
+      let replacementItems: readonly SelectItem[] | undefined;
+      if (replacementAccessor) {
+        const replacement = replacementAccessor();
+        replacementItems = replacement.isLoading ? undefined : replacement.items;
+      } else {
+        // Are unknown items are invalid because the parent does not provide replacement items.
+        replacementItems = [];
+      }
+      if (replacementItems) {
+        if (replacementItems.length) {
+          const knownValues = new Map(itemsMap());
+          for (const item of replacementItems) {
+            knownValues.set(item.value, item);
+          }
+          // Delay the change so that the component has time to recalculate values.
+          setTimeout(() =>
+            batch(() => {
+              setItemsMap(knownValues);
+              api().setValue(api().value.filter((value) => knownValues.has(value)));
+            }),
+          );
+        } else {
+          setTimeout(() => api().clearValue());
+        }
+      }
+    }
+  });
   /**
    * Returns the label for the specified value. If the value is unknown (not present in itemsMap),
-   * the value is removed from the selected values in api() (unless still loading), and undefined is returned.
+   * small spinner is returned.
    */
   function getValueLabel(value: string) {
     const item = itemsMap().get(value);
-    if (item) {
-      return itemToLabel(item);
-    }
-    if (props.isLoading) {
-      return <SmallSpinner />;
-    }
-    api().clearValue(value);
-    return undefined;
+    return item ? itemToLabel(item) : <SmallSpinner />;
   }
 
   // Sometimes api().inputValue is correctly empty, but the input still contains some text, which is probably
@@ -368,23 +479,21 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             <Switch>
               <Match when={props.multiple}>
                 <For each={api().value}>
-                  {(value) => {
-                    return (
-                      <div class={s.value}>
-                        <div class={s.label}>{getValueLabel(value)}</div>
-                        <Button
-                          class={s.delete}
-                          onClick={(e) => {
-                            // Avoid opening the select.
-                            e.stopPropagation();
-                            api().clearValue(value);
-                          }}
-                        >
-                          <ImCross size="8" />
-                        </Button>
-                      </div>
-                    );
-                  }}
+                  {(value) => (
+                    <div class={s.value}>
+                      <div class={s.label}>{getValueLabel(value)}</div>
+                      <Button
+                        class={s.delete}
+                        onClick={(e) => {
+                          // Avoid opening the select.
+                          e.stopPropagation();
+                          api().clearValue(value);
+                        }}
+                      >
+                        <ImCross size="8" />
+                      </Button>
+                    </div>
+                  )}
                 </For>
               </Match>
               <Match when={!props.multiple}>
@@ -472,7 +581,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           })}
         >
           <ul {...api().contentProps}>
-            <For each={itemsToShow()}>
+            <For each={itemsToShowWithHeaders()}>
               {(item) => <li {...api().getItemProps({item})}>{itemToLabelOnList(item)}</li>}
             </For>
           </ul>
@@ -481,3 +590,16 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     </>
   );
 };
+
+interface IndentSelectItemInGroupProps extends htmlAttributes.div {
+  readonly indent?: boolean;
+}
+
+export const IndentSelectItemInGroup: ParentComponent<IndentSelectItemInGroupProps> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["indent"]);
+  return <div {...htmlAttributes.merge(divProps, {class: props.indent ?? true ? "pl-3" : undefined})} />;
+};
+
+export const DefaultSelectItemsGroupHeader: VoidComponent<{readonly groupName: string}> = (props) => (
+  <div class="font-semibold text-gray-700 mt-1">{props.groupName}</div>
+);

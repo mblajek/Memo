@@ -106,7 +106,7 @@ export class FilterReductor {
     const reducedIgnoredInv = ((): ReducedFilterH | undefined => {
       const {column, op} = filter;
       const columnSchema = this.columnsData.get(column)!;
-      const nullable = (isDataColumn(columnSchema) && columnSchema.nullable) || false;
+      const nullable = isDataColumn(columnSchema) && columnSchema.nullable;
       if (op === "null") {
         if (!nullable) {
           // For non-nullable columns selecting null matches nothing.

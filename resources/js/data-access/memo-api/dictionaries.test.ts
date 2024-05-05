@@ -19,6 +19,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: true,
             defaultOrder: 0,
+            positionGroupDictId: null,
           },
           {
             id: "d1p2",
@@ -28,6 +29,7 @@ describe("Dictionaries", () => {
             isDisabled: true,
             isFixed: false,
             defaultOrder: 1,
+            positionGroupDictId: null,
           },
           {
             id: "d1p3",
@@ -37,6 +39,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 2,
+            positionGroupDictId: null,
           },
         ],
         isFixed: true,
@@ -55,6 +58,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 0,
+            positionGroupDictId: null,
           },
           {
             id: "d2p2",
@@ -64,6 +68,7 @@ describe("Dictionaries", () => {
             isDisabled: true,
             isFixed: false,
             defaultOrder: 1,
+            positionGroupDictId: null,
           },
           {
             id: "d2p3",
@@ -73,6 +78,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 2,
+            positionGroupDictId: null,
           },
         ],
         isFixed: false,
@@ -91,6 +97,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 0,
+            positionGroupDictId: null,
           },
           {
             id: "d3p2",
@@ -100,6 +107,7 @@ describe("Dictionaries", () => {
             isDisabled: true,
             isFixed: false,
             defaultOrder: 1,
+            positionGroupDictId: null,
           },
           {
             id: "d3p3",
@@ -109,6 +117,7 @@ describe("Dictionaries", () => {
             isDisabled: false,
             isFixed: false,
             defaultOrder: 2,
+            positionGroupDictId: null,
           },
         ],
         isFixed: false,
@@ -135,11 +144,11 @@ describe("Dictionaries", () => {
     expect(dictsToLabels(dictionaries)).toEqual([
       {
         label: "t(dictionary.dict1-global._name)",
-        allPositions: ["t(dictionary.dict1-global.dict1item1)", "t(dictionary.dict1-global.dict1item2)", "dict1item3"],
+        allPositions: ["t(dictionary.dict1-global.dict1item1)", "t(???.dict1-global.dict1item2)", "dict1item3"],
       },
       {
         label: "t(dictionary.dict2-fac1._name)",
-        allPositions: ["t(dictionary.dict2-fac1.dict2item1)", "t(dictionary.dict2-fac1.dict2item2)", "dict2item3"],
+        allPositions: ["t(???.dict2-fac1.dict2item1)", "t(???.dict2-fac1.dict2item2)", "dict2item3"],
       },
       {
         label: "dict3-mixed",
@@ -166,11 +175,11 @@ describe("Dictionaries", () => {
   test("positions", () => {
     expect(dictionaries.get("d1")?.allPositions.map(({label}) => label)).toEqual([
       "t(dictionary.dict1-global.dict1item1)",
-      "t(dictionary.dict1-global.dict1item2)",
+      "t(???.dict1-global.dict1item2)",
       "dict1item3",
     ]);
     expect(dictionaries.get("d2")?.activePositions.map(({label}) => label)).toEqual([
-      "t(dictionary.dict2-fac1.dict2item1)",
+      "t(???.dict2-fac1.dict2item1)",
       "dict2item3",
     ]);
   });

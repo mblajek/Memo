@@ -35,7 +35,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
    * Whether this item or any of its children is active.
    *
    * This value is calculated by examining the applied active class. There doesn't seem to be any simpler and
-   * fully correct of doing this, the link component doesn't expose this value.
+   * fully correct way of doing this, the link component doesn't expose this value.
    *
    * The value is recalculated when activeItemTrigger changes, with a delay so that the active classes have time
    * to settle.
@@ -48,15 +48,16 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
   return (
     <div ref={setContainer} class="flex flex-col">
       <A
+        role="button"
         {...htmlAttributes.merge(aProps, {
           class: cx(
             props.small ? "py-1 gap-2" : "py-2 gap-3",
-            "px-3 rounded-lg flex flex-row items-center no-underline text-black whitespace-nowrap hover:bg-white",
+            "px-3 rounded-lg flex flex-row items-center text-black whitespace-nowrap hover:bg-white",
           ),
         })}
         activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
         onClick={(event) => {
-          if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS)) {
+          if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS) && location.pathname === aProps.href) {
             invalidate.everythingThrottled();
           }
         }}

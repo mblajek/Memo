@@ -1,12 +1,20 @@
-import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
+import {A} from "@solidjs/router";
+import {RichTextView} from "components/ui/RichTextView";
+import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations, useTableCells} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {ACTION_ICONS} from "components/ui/icons";
+import {useLangFunc} from "components/utils";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
-import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
+import {ScrollableCell, useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {UserLink} from "features/facility-users/UserLink";
 import {VoidComponent} from "solid-js";
-import {activeFacilityId} from "state/activeFacilityId.state";
+import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 
 export default (() => {
+  const t = useLangFunc();
+  const activeFacility = useActiveFacility();
+  const tableCells = useTableCells();
+  const {getCreatedUpdatedColumns} = useTableColumns();
   return (
     <>
       <TQueryTable
@@ -31,7 +39,7 @@ export default (() => {
               enableHiding: false,
             },
           },
-          {name: "client.genderDictId"},
+          "attributeColumns",
           {name: "firstMeetingDate", initialVisible: false},
           {name: "lastMeetingDate"},
           {name: "completedMeetingsCount"},
@@ -40,7 +48,50 @@ export default (() => {
           {name: "plannedMeetingsCountNextMonth"},
           ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
         ]}
-        initialSort={[{id: "name", desc: false}]}
+        attributeColumnsConfig={{
+          defaultConfig: {initialVisible: false},
+          selection: {
+            includeFixed: true,
+            fixedOverrides: {
+              typeDictId: {initialVisible: true, columnDef: {size: 180}},
+              genderDictId: {columnDef: {size: 180}},
+              birthDate: {
+                initialVisible: true,
+                columnDef: {cell: tableCells.dateNoWeekday()},
+              },
+              addressCity: {initialVisible: true},
+              contactEmail: {initialVisible: true},
+              contactPhone: {initialVisible: true, columnDef: {size: 180}},
+              notes: {
+                columnDef: {
+                  cell: cellFunc<string>((props) => (
+                    <ScrollableCell>
+                      <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
+                    </ScrollableCell>
+                  )),
+                },
+              },
+            },
+          },
+        }}
+        intrinsicSort={[
+          {type: "column", column: "lastMeetingDate", desc: true},
+          {type: "column", column: "name", desc: false},
+        ]}
+        initialSort={[{id: "lastMeetingDate", desc: true}]}
+        customSectionBelowTable={
+          <div class="ml-2 flex gap-1">
+            <A
+              role="button"
+              class="primary small !px-2 flex flex-col justify-center"
+              href={`/${activeFacility()?.url}/clients/create`}
+            >
+              <div>
+                <ACTION_ICONS.add class="inlineIcon text-current" /> {t("actions.client.add")}
+              </div>
+            </A>
+          </div>
+        }
       />
     </>
   );

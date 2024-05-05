@@ -6,6 +6,7 @@ exception:
   configuration:
     translation: "Błędna konfiguracja tłumaczeń"
     tquery: "Błędna konfiguracja tabel"
+    unexpected: "Błąd konfiguracji"
   validation: "Przesłano niepoprawne dane"
   form_submit: "Błąd przetwarzania formularza"
   unauthorised: "Brak autoryzacji"
@@ -16,6 +17,7 @@ exception:
   unexpected: "Nieoczekiwany błąd serwera"
   invalid_json: "Zapytanie nie ma formatu JSON"
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
+  _unknown: "Błąd konfiguracji ({{text}})"
 
 passwords:
   reset: "Hasło zostało zresetowane!"
@@ -60,6 +62,8 @@ select:
 user_settings: "Opcje użytkownika"
 
 created_by: "Utworzono przez:"
+updated_by: "Zmodyfikowano przez:"
+toggle_created_updated_info: "Przełącz: Utworzono/Zmodyfikowano"
 unknown: "nieznany"
 
 open_in_new_tab: "Otwórz w nowej karcie"
@@ -69,3 +73,17 @@ switch_theme: "Motyw aplikacji"
 system_version_update: "Odśwież stronę aby zaktualizować aplikację"
 
 rich_text_field: "Pole tekstowe wspierające tagi. Kliknij aby zobaczyć więcej informacji."
+
+form_page_leave_confirmation:
+  title: "Porzucić zmiany?"
+  body: "Zmiany nie zostaną zapisane. Czy na pewno chcesz zamknąć formularz?"
+  confirm: "Tak, porzuć zmiany"
+  cancel: "Nie, wróć do edycji"
+
+about_page:
+  app_version: "Wersja aplikacji:"
+  commit_date: "Moment zbudowania:"
+  commit_hash: "Commit:"
+  backend_hash: "Suma kontrolna backendu:"
+  frontend_hash: "Suma kontrolna frontendu:"
+  cpu_load: "Obciążenie CPU:"

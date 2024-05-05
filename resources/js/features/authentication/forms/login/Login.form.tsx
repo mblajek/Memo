@@ -4,7 +4,6 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
-import {TRIM_ON_BLUR} from "components/ui/form/util";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {VoidComponent} from "solid-js";
@@ -32,15 +31,16 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   const invalidate = useInvalidator();
   const mutation = createMutation(() => ({
     mutationFn: User.login,
-    onSuccess() {
-      invalidate.userStatusAndFacilityPermissions();
-      props.onSuccess?.();
-    },
     meta: {isFormSubmit: true},
   }));
 
   const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
     await mutation.mutateAsync(values);
+    // eslint-disable-next-line solid/reactivity
+    return () => {
+      props.onSuccess?.();
+      invalidate.userStatusAndFacilityPermissions();
+    };
   };
 
   return (
@@ -51,9 +51,9 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       translationsModel="user"
       initialValues={getInitialValues()}
       class="flex flex-col gap-2"
-      preventTabClose={false}
+      preventPageLeave={false}
     >
-      <TextField name="email" type="email" autocomplete="username" {...TRIM_ON_BLUR} autofocus />
+      <TextField name="email" type="email" autocomplete="username" autofocus />
       <PasswordField name="password" autocomplete="current-password" />
       <FelteSubmit />
     </FelteForm>

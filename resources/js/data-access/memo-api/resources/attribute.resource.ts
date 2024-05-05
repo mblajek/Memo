@@ -9,9 +9,11 @@ export type AttributeName = NameString;
 /** A model name which is a value of an attribute. */
 export type AttributeModel = string;
 
-export type SimpleAttributeType = "string" | "int" | "bool" | "date" | "datetime";
+export type SimpleAttributeType = "string" | "text" | "int" | "bool" | "date" | "datetime";
 export type DictAttributeType = "dict";
-export type AttributeType = SimpleAttributeType | DictAttributeType | AttributeModel;
+export type DataAttributeType = SimpleAttributeType | DictAttributeType | AttributeModel;
+export type SeparatorAttributeType = "separator";
+export type AttributeType = DataAttributeType | SeparatorAttributeType;
 
 export const REQUIREMENT_LEVELS = ["empty", "optional", "recommended", "required"] as const;
 export type RequirementLevel = (typeof REQUIREMENT_LEVELS)[number];

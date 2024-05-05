@@ -10,7 +10,7 @@ With this permission, the backend allows the user to execute some of the develop
 The developer permission is obtained by executing `developerLogin(true)` in the browser console, and revoked
 by `developerLogin(false)`.
 
-The permission is visible in the user menu (⋯ next to the user name) as the text _Has developer permission_.
+The permission is visible in the user menu (⋯ next to the user name) as the text _Developer permission_.
 
 This mode can be enabled on any environment, including production.
 

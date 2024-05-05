@@ -1,5 +1,5 @@
 import * as popover from "@zag-js/popover";
-import {Accessor, ParentComponent, Show, splitProps} from "solid-js";
+import {Accessor, JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {Button} from "../ui/Button";
 import {SmallSpinner} from "../ui/Spinner";
 import {SplitButton} from "../ui/SplitButton";
@@ -14,6 +14,7 @@ interface Props extends htmlAttributes.button {
    * The value is the handler called on cancel click. Default: no cancel.
    */
   readonly cancel?: () => void;
+  readonly submitLabel?: (defaultLabel: string) => JSX.Element;
   /** Whether to include the unknown validation messages above the button. Default: true. */
   readonly includeUnknownValidationMessages?: boolean;
   /** Pop-over to show under the submit button's arrow. The submit button is a split button if specified. */
@@ -25,10 +26,11 @@ interface Props extends htmlAttributes.button {
  *
  * Must be used inside of FelteForm
  */
-export const FelteSubmit: ParentComponent<Props> = (allProps) => {
+export const FelteSubmit: VoidComponent<Props> = (allProps) => {
   const {props: formProps, form, translations} = useFormContext();
   const [props, buttonProps] = splitProps(allProps, [
     "cancel",
+    "submitLabel",
     "includeUnknownValidationMessages",
     "splitSubmitPopOver",
     "children",
@@ -39,27 +41,26 @@ export const FelteSubmit: ParentComponent<Props> = (allProps) => {
       <Show when={props.includeUnknownValidationMessages ?? true}>
         <UnknownValidationMessages />
       </Show>
-      <div class="flex gap-1 justify-center items-stretch">
+      <div class="grid auto-cols-fr grid-flow-col gap-1">
         <Show when={props.cancel}>
-          <Button class="flex-grow basis-0 secondary" disabled={form.isSubmitting()} onClick={props.cancel}>
+          <Button class="secondary" disabled={form.isSubmitting()} onClick={props.cancel}>
             {t("actions.cancel")}
           </Button>
         </Show>
-        <div class="flex-grow basis-0">
-          <SplitButton
-            type="submit"
-            form={formProps.id}
-            class="w-full primary"
-            disabled={form.isSubmitting() || buttonProps.disabled}
-            {...buttonProps}
-            popOver={props.splitSubmitPopOver}
-          >
-            <Show when={form.isSubmitting()}>
-              <SmallSpinner />
-            </Show>{" "}
-            {props.children || translations.submit()}
-          </SplitButton>
-        </div>
+        <SplitButton
+          divClass=""
+          type="submit"
+          form={formProps.id}
+          class="primary"
+          disabled={form.isSubmitting() || buttonProps.disabled}
+          {...buttonProps}
+          popOver={props.splitSubmitPopOver}
+        >
+          <Show when={form.isSubmitting()}>
+            <SmallSpinner />
+          </Show>{" "}
+          {props.submitLabel ? props.submitLabel(translations.submit()) : translations.submit()}
+        </SplitButton>
       </div>
     </div>
   );

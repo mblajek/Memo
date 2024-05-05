@@ -2,12 +2,13 @@ import {Email} from "components/ui/Email";
 import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
-import {getCreatedUpdatedColumns} from "data-access/memo-api/tquery/table_columns";
+import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {UserLink} from "features/facility-users/UserLink";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
 export default (() => {
+  const {getCreatedUpdatedColumns} = useTableColumns();
   return (
     <>
       <TQueryTable

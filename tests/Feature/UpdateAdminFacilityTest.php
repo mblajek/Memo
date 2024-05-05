@@ -29,6 +29,7 @@ class UpdateAdminFacilityTest extends TestCase
             'url' => 'test-123',
             'timetable_id' => null,
         ]);
+        $this->prepareAdminUser($facility);
 
         $data = [
             'name' => 'Test1',
@@ -52,6 +53,7 @@ class UpdateAdminFacilityTest extends TestCase
             'url' => 'test-456',
             'timetable_id' => null,
         ]);
+        $this->prepareAdminUser($facility);
 
         $data = [
             'name' => 'Test1',
@@ -75,6 +77,7 @@ class UpdateAdminFacilityTest extends TestCase
             'timetable_id' => null,
         ]);
 
+        $this->prepareAdminUser($facility);
         $result = $this->patch(sprintf(static::URL, $facility->id));
 
         $facility->refresh();

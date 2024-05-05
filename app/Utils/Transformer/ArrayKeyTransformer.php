@@ -10,25 +10,27 @@ class ArrayKeyTransformer
 {
     public static function toSnake(array $data): array
     {
-        $keys = array_map(static fn($key) => Str::snake($key), array_keys($data));
+        return array_combine(
+            array_map(Str::snake(...), array_keys($data)),
+            array_map(fn($value) => is_array($value) ? self::toSnake($value) : $value, $data),
+        );
+    }
 
-        $data = array_map(static fn($value) => is_array($value) ? static::toSnake($value) : $value, $data);
-
-        return array_combine($keys, array_values($data));
+    public static function toCamel(array $data): array
+    {
+        return array_combine(
+            array_map(Str::camel(...), array_keys($data)),
+            array_map(fn($value) => is_array($value) ? self::toCamel($value) : $value, $data),
+        );
     }
 
     public static function hasSnake(array $data): bool
     {
         foreach ($data as $key => $value) {
-            if (is_string($key) && str_contains($key, '_')) {
-                return true;
-            }
-
-            if (is_array($value) && static::hasSnake($value)) {
+            if ((is_string($key) && str_contains($key, '_')) || (is_array($value) && static::hasSnake($value))) {
                 return true;
             }
         }
-
         return false;
     }
 }

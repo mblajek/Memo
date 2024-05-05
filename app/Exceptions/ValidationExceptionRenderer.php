@@ -28,7 +28,7 @@ readonly class ValidationExceptionRenderer
             //@formatter:off
             'accepted_if', 'declined_if', 'different', 'in_array', 'missing_if', 'missing_unless', 'prohibited_if',
             'prohibited_unless', 'prohibits', 'required_if', 'required_with', 'required_if_accepted', 'required_unless',
-            'same',
+            'same', 'array',
             //@formatter:on
         ], fn($interpolationData) => array_map(Str::camel(...), $interpolationData));
     }
@@ -36,8 +36,11 @@ readonly class ValidationExceptionRenderer
     private function matchType(array $fieldRules): string
     {
         foreach ($fieldRules as $fieldRule) {
-            if (is_string($fieldRule) && array_key_exists($fieldRule, $this->multiTypeTypes)) {
-                return $fieldRule;
+            if (is_string($fieldRule)) {
+                $fieldRuleBase = Str::before($fieldRule, ':');
+                if (array_key_exists($fieldRuleBase, $this->multiTypeTypes)) {
+                    return $fieldRuleBase;
+                }
             }
         }
         return 'string';
@@ -92,7 +95,8 @@ readonly class ValidationExceptionRenderer
         } else {
             $interpolationDataAssoc = [];
             foreach ($interpolationFields as $fieldPosition => $fieldName) {
-                if (($fieldData = $interpolationData[$fieldName] ?? $interpolationData[$fieldPosition] ?? null)) {
+                $fieldData = $interpolationData[$fieldName] ?? $interpolationData[$fieldPosition] ?? null;
+                if ($fieldData !== null) {
                     $interpolationDataAssoc[$fieldName] = $fieldData;
                 }
             }

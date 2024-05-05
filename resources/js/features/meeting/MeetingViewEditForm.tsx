@@ -1,15 +1,17 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button, DeleteButton, EditButton} from "components/ui/Button";
+import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {LoadingPane} from "components/ui/LoadingPane";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
+import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {MAX_DAY_MINUTE, dayMinuteToTimeInput} from "components/utils/day_minute_util";
-import {skipUndefinedValues} from "components/utils/object_merge";
+import {skipUndefinedValues} from "components/utils/object_util";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -19,20 +21,23 @@ import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.re
 import {Api} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
+import {useActiveFacility} from "state/activeFacilityId.state";
+import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {getAttendantsValuesForEdit, useAttendantsCreator} from "./MeetingAttendantsFields";
 import {MeetingForm, MeetingFormType, getResourceValuesForEdit} from "./MeetingForm";
-import {MeetingChangeSuccessData} from "./meeting_change_success_data";
+import {MeetingBasicData} from "./meeting_basic_data";
 import {createMeetingCreateModal} from "./meeting_create_modal";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
-import {getTimeValues} from "./meeting_time_controller";
+import {getMeetingTimeFullData} from "./meeting_time_controller";
 
 export interface MeetingViewEditFormProps {
   readonly meetingId: Api.Id;
   readonly viewMode: boolean;
+  readonly showGoToMeetingButton?: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
-  readonly onEdited?: (meeting: MeetingChangeSuccessData) => void;
-  readonly onCreated?: (meeting: MeetingChangeSuccessData) => void;
-  readonly onCloned?: (firstMeeting: MeetingChangeSuccessData, otherMeetingIds: string[]) => void;
+  readonly onEdited?: (meeting: MeetingBasicData) => void;
+  readonly onCreated?: (meeting: MeetingBasicData) => void;
+  readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
   readonly onDeleted?: (meetingId: string) => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Default: true. */
@@ -41,6 +46,7 @@ export interface MeetingViewEditFormProps {
 
 export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (props) => {
   const t = useLangFunc();
+  const activeFacility = useActiveFacility();
   const attributes = useAttributes();
   const {meetingStatusDict} = useFixedDictionaries();
   const {attendantsInitialValueForEdit, attendantsInitialValueForCreateCopy} = useAttendantsCreator();
@@ -66,14 +72,17 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
       ...transformFormValues(values),
     };
     await meetingMutation.mutateAsync(meetingPatch);
-    if (props.showToast ?? true) {
-      toastSuccess(t("forms.meeting_edit.success"));
-    }
-    props.onEdited?.({...origMeeting, ...skipUndefinedValues(meetingPatch)});
-    // Important: Invalidation should happen after calling onEdited which typically closes the form.
-    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
-    // but also causes problems apparently.
-    invalidate.facility.meetings();
+    // eslint-disable-next-line solid/reactivity
+    return () => {
+      if (props.showToast ?? true) {
+        toastSuccess(t("forms.meeting_edit.success"));
+      }
+      props.onEdited?.({...origMeeting, ...skipUndefinedValues(meetingPatch)});
+      // Important: Invalidation should happen after calling onEdited which typically closes the form.
+      // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+      // but also causes problems apparently.
+      invalidate.facility.meetings();
+    };
   }
 
   async function deleteMeeting() {
@@ -101,7 +110,6 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
       isRemote: meeting().isRemote,
       notes: meeting().notes || "",
       resources: meeting().resources.map(({resourceDictId}) => resourceDictId),
-      fromMeetingId: meeting().fromMeetingId || "",
     } satisfies MeetingFormType;
   };
 
@@ -112,7 +120,6 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
         statusDictId: meetingStatusDict()!.planned.id,
         ...attendantsInitialValueForCreateCopy(meeting()),
-        fromMeetingId: props.meetingId,
       },
       onSuccess: (meeting) => props.onCreated?.(meeting),
       forceTimeEditable: !days,
@@ -124,7 +131,15 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     <QueryBarrier queries={[meetingQuery]} ignoreCachedData {...notFoundError()}>
       <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
         <div class="flex flex-col gap-3">
-          <div class="relative">
+          <div class="relative flex flex-col">
+            <div class="flex justify-between">
+              <Show when={props.showGoToMeetingButton} fallback={<span />}>
+                <LinkWithNewTabLink {...getMeetingLinkData(`/${activeFacility()?.url}/calendar`, meeting())}>
+                  {t("meetings.show_in_calendar")}
+                </LinkWithNewTabLink>
+              </Show>
+              <CreatedByInfo class="-mb-2" data={meeting()} />
+            </div>
             <MeetingForm
               id="meeting_edit"
               initialValues={initialValues()}
@@ -140,7 +155,12 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                 }
               }}
             />
-            <LoadingPane isLoading={isBusy()} />
+            <LoadingPane
+              isLoading={
+                // If the edit mutation is pending, the form already shows the pane.
+                deleteMeetingMutation.isPending
+              }
+            />
           </div>
           <Show when={props.viewMode}>
             <div class="flex gap-1 justify-between">
@@ -215,7 +235,7 @@ export default MeetingViewEditForm;
 export function transformFormValues(values: Partial<MeetingFormType>): Partial<MeetingResourceForPatch> {
   return {
     ...values,
-    ...getTimeValues(values),
+    ...getMeetingTimeFullData(values).timeValues,
     ...getAttendantsValuesForEdit(values),
     ...getResourceValuesForEdit(values),
   };

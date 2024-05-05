@@ -2,13 +2,10 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {isAxiosError} from "axios";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
-import {InfoIcon} from "components/ui/InfoIcon";
-import {RichTextView} from "components/ui/RichTextView";
+import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
-import {FieldBox} from "components/ui/form/FieldBox";
-import {MultilineTextField} from "components/ui/form/MultilineTextField";
-import {PlaceholderField} from "components/ui/form/PlaceholderField";
+import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
 import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -18,28 +15,31 @@ import {
   MeetingResourceForPatch,
 } from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
+import {DateTime} from "luxon";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
-import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {MeetingAttendantsFields, getAttendantsSchemaPart} from "./MeetingAttendantsFields";
 import {MeetingCannedStatusEdits} from "./MeetingCannedStatusEdits";
 import {MeetingDateAndTime} from "./MeetingDateAndTime";
+import {MeetingSeriesControls, getMeetingSeriesSchema} from "./MeetingSeriesForm";
 import {MeetingTypeFields} from "./MeetingTypeFields";
 import {MeetingStatusInfoIcon} from "./attendance_status_info";
 import {getMeetingTimeFieldsSchemaPart} from "./meeting_time_controller";
 
 const getSchema = () =>
-  z.object({
-    date: z.string(),
-    ...getMeetingTimeFieldsSchemaPart(),
-    typeDictId: z.string(),
-    statusDictId: z.string(),
-    isRemote: z.boolean(),
-    ...getAttendantsSchemaPart(),
-    notes: z.string(),
-    resources: z.array(z.string()),
-    fromMeetingId: z.string(),
-  });
+  z
+    .object({
+      date: z.string(),
+      ...getMeetingTimeFieldsSchemaPart(),
+      typeDictId: z.string(),
+      statusDictId: z.string(),
+      isRemote: z.boolean(),
+      ...getAttendantsSchemaPart(),
+      notes: z.string(),
+      resources: z.array(z.string()),
+      createSeries: z.boolean().optional(),
+    })
+    .merge(getMeetingSeriesSchema().partial());
 
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 
@@ -50,6 +50,7 @@ interface Props extends FormConfigWithoutTransformFn<MeetingFormType> {
   readonly meeting?: MeetingResource;
   /** Whether the meeting date and time should start as editable, even if provided in the initial values. */
   readonly forceTimeEditable?: boolean;
+  readonly allowCreateSeries?: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
   readonly onCancel?: () => void;
 }
@@ -60,6 +61,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
     "viewMode",
     "meeting",
     "forceTimeEditable",
+    "allowCreateSeries",
     "onViewModeChange",
     "onCancel",
   ]);
@@ -77,7 +79,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
   return (
     <FelteForm
       id={props.id}
-      translationsFormNames={[props.id, "meeting"]}
+      translationsFormNames={[props.id, "meeting", "meeting_series"]}
       schema={getSchema()}
       translationsModel="meeting"
       class="flex flex-col gap-3"
@@ -105,15 +107,28 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
     >
       {(form) => (
         <>
-          <PlaceholderField name="fromMeetingId" />
           <div class="flex flex-col">
-            <Show when={props.meeting}>{(meeting) => <CreatedByInfo class="-mb-4" data={meeting()} />}</Show>
             <MeetingDateAndTime
               // Does not work very well on Chrome currently.
               // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
               viewMode={props.viewMode}
               forceEditable={props.forceTimeEditable}
+              meeting={props.meeting}
             />
+            <Show when={props.allowCreateSeries}>
+              <CheckboxField name="createSeries" />
+              <Show when={form.data("date")}>
+                {(formData) => (
+                  <fieldset data-felte-keep-on-remove>
+                    <HideableSection show={form.data("createSeries")}>
+                      <div class="pl-2 border-l-4 border-gray-400">
+                        <MeetingSeriesControls startDate={DateTime.fromISO(formData())} compact />
+                      </div>
+                    </HideableSection>
+                  </fieldset>
+                )}
+              </Show>
+            </Show>
           </div>
           <div class="flex gap-1">
             <div class="basis-0 grow">
@@ -145,31 +160,16 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
             </div>
           </div>
           <div class="flex flex-col gap-1">
-            <MeetingAttendantsFields name="staff" viewMode={props.viewMode} />
-            <MeetingAttendantsFields name="clients" showAttendanceStatusLabel={false} viewMode={props.viewMode} />
+            <MeetingAttendantsFields name="staff" meetingId={props.meeting?.id} viewMode={props.viewMode} />
+            <MeetingAttendantsFields
+              name="clients"
+              meetingId={props.meeting?.id}
+              showAttendanceStatusLabel={false}
+              viewMode={props.viewMode}
+            />
           </div>
           <CheckboxField name="isRemote" />
-          <ByMode
-            edit={
-              <MultilineTextField
-                name="notes"
-                label={(origLabel) => (
-                  <>
-                    {origLabel} <InfoIcon href="/help/rich-text" title={t("rich_text_field")} />
-                  </>
-                )}
-                data-felte-keep-on-remove
-              />
-            }
-            view={
-              <FieldBox name="notes">
-                <PlaceholderField name="notes" />
-                <Show when={form.data("notes")} fallback={EMPTY_VALUE_SYMBOL}>
-                  {(notes) => <RichTextView class="max-h-60" text={notes()} />}
-                </Show>
-              </FieldBox>
-            }
-          />
+          <RichTextViewEdit name="notes" viewMode={props.viewMode} />
           <DictionarySelect name="resources" dictionary="meetingResource" multiple placeholder={EMPTY_VALUE_SYMBOL} />
           <ByMode
             edit={
@@ -178,6 +178,9 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                   form.reset();
                   props.onCancel?.();
                 }}
+                submitLabel={(defaultLabel) =>
+                  form.data("createSeries") ? t("forms.meeting_series_create.submit") : defaultLabel
+                }
               />
             }
           />
