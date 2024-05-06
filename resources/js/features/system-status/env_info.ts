@@ -27,7 +27,7 @@ export function useEnvInfo() {
       if (st.appEnv === PROD_ENV_NAME && !isDEV()) {
         return undefined;
       }
-      return [`APP_ENV=${st.appEnv}`, isDEV() ? "DEV" : undefined].filter(NON_NULLABLE).join(", ");
+      return [st.appEnv, isDEV() ? "DEV" : undefined].filter(NON_NULLABLE).join(", ");
     },
   };
 }
