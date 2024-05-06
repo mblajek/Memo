@@ -186,15 +186,18 @@ export function getMeetingTimeFullData(values: Partial<FormTimeDataType>) {
     durationMinutes,
     hasFullDateTime,
     hasFullTime,
-    timeValues: {
-      // Remove the temporary field.
-      time: undefined,
-      ...({
-        // Use nulls in case of missing values to let the backend handle the validation.
-        startDayminute: startDayMinute ?? null,
-        durationMinutes: durationMinutes ?? null,
-      } satisfies PartialNullable<MeetingResource>),
-    },
+    timeValues: values.time
+      ? {
+          // Remove the temporary field.
+          time: undefined,
+          ...({
+            // Use nulls in case of missing values to let the backend handle the validation.
+            startDayminute: startDayMinute ?? null,
+            durationMinutes: durationMinutes ?? null,
+          } satisfies PartialNullable<MeetingResource>),
+        }
+      : // Time was not specified, so do not try to set any time-related fields (this might be a partial patch).
+        {},
     interval: hasFullDateTime
       ? getMeetingTimeInterval({date, startDayMinute: startDayMinute!, durationMinutes: durationMinutes!})
       : undefined,
