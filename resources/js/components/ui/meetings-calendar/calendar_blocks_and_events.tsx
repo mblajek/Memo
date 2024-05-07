@@ -45,6 +45,18 @@ export interface WithOrigMeetingInfo {
 type Bl = Block<ColumnViewInfo, MonthViewInfo> & WithOrigMeetingInfo;
 type Ev = Event<ColumnViewInfo, MonthViewInfo> & WithOrigMeetingInfo;
 
+/** The order in which blocks should appear in the all-day area and on month calendar. */
+const ORDERS = {
+  workTime: {
+    facility: 22,
+    staff: 21,
+  },
+  leaveTime: {
+    facility: 12,
+    staff: 11,
+  },
+} as const;
+
 const BACKGROUND_PREFERENCE_STRENGTHS = {
   workTime: {
     facility: 11,
@@ -211,6 +223,7 @@ export function useCalendarBlocksAndEvents({
               : undefined
             : (monthInfo) => <WorkTimeSummary day={monthInfo.day} />,
           monthCellStylingPreference: stylingPreference,
+          order: ORDERS.workTime[facilityWide ? "facility" : "staff"],
         });
       } else if (meeting.typeDictId === meetingTypeDict()?.leave_time.id) {
         const facilityWide = !meeting.staff.length;
@@ -268,6 +281,7 @@ export function useCalendarBlocksAndEvents({
           allDayAreaStylingPreference: stylingPreference,
           contentInMonthCell: (monthInfo) => <LeaveTimeSummary day={monthInfo.day} />,
           monthCellStylingPreference: stylingPreference,
+          order: ORDERS.leaveTime[facilityWide ? "facility" : "staff"],
         });
       } else if (meeting.categoryDictId !== meetingCategoryDict()?.system.id) {
         /**

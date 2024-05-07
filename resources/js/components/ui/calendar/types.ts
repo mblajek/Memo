@@ -42,12 +42,14 @@ export interface AllDayBlock<C, M>
   extends AllDayTimeSpan,
     Partial<ContentInHoursArea<C>>,
     ContentInAllDayArea<C>,
-    ContentInMonthCell<M> {}
+    ContentInMonthCell<M>,
+    Ordered {}
 export interface PartDayBlock<C, M>
   extends PartDayTimeSpan,
     ContentInHoursArea<C>,
     Partial<ContentInAllDayArea<C>>,
-    Partial<ContentInMonthCell<M>> {}
+    Partial<ContentInMonthCell<M>>,
+    Ordered {}
 
 /**
  * A block represents a time in the calendar that is usually marked with a different background color,
@@ -59,11 +61,21 @@ export interface AllDayEvent<C, M>
   extends AllDayTimeSpan,
     Partial<ContentInHoursArea<C>>,
     ContentInAllDayArea<C>,
-    ContentInMonthCell<M> {}
+    ContentInMonthCell<M>,
+    Ordered {}
 export interface PartDayEvent<C, M>
   extends PartDayTimeSpan,
     ContentInHoursArea<C>,
     Partial<ContentInAllDayArea<C>>,
-    ContentInMonthCell<M> {}
+    ContentInMonthCell<M>,
+    Ordered {}
 
 export type Event<C, M> = AllDayEvent<C, M> | PartDayEvent<C, M>;
+
+export interface Ordered {
+  /**
+   * The order in which the item should appear in a list where multiple items are shown.
+   * Missing value is treated as 0, values can also be negative.
+   */
+  readonly order?: number;
+}

@@ -1,5 +1,5 @@
 import {DateTime} from "luxon";
-import {TimeSpan} from "../ui/calendar/types";
+import {Ordered, TimeSpan} from "../ui/calendar/types";
 
 export type DayMinuteRange = readonly [number, number];
 
@@ -82,20 +82,30 @@ export function crossesDateBoundaries(day: DateTime, timeSpan: TimeSpan) {
   return res;
 }
 
-export function filterAndSortInDayView<T extends TimeSpan>(day: DateTime, spans: readonly T[]) {
+/**
+ * Returns only the spans matching the day, sorted in the following way:
+ * - First all-day spans, then part-day spans.
+ * - In both groups, sort by the specified order first.
+ * - If equal, sort by start time, then duration (in both groups).
+ */
+export function filterAndSortInDayView<T extends TimeSpan & Ordered>(day: DateTime, spans: readonly T[]) {
   return spans
     .filter((span) => isOnDay(day, span))
-    .sort((a, b) =>
-      a.allDay
+    .sort((a, b) => {
+      const byOrder = (a.order ?? 0) - (b.order ?? 0);
+      return a.allDay
         ? b.allDay
-          ? a.range.start.toMillis() - b.range.start.toMillis() || a.range.end.toMillis() - b.range.end.toMillis()
+          ? byOrder ||
+            a.range.start.toMillis() - b.range.start.toMillis() ||
+            a.range.end.toMillis() - b.range.end.toMillis()
           : -1
         : b.allDay
           ? 1
-          : a.date.hasSame(b.date, "day")
-            ? a.startDayMinute - b.startDayMinute || b.durationMinutes - a.durationMinutes
-            : a.date.toMillis() - b.date.toMillis(),
-    );
+          : byOrder ||
+            (a.date.hasSame(b.date, "day")
+              ? a.startDayMinute - b.startDayMinute || b.durationMinutes - a.durationMinutes
+              : a.date.toMillis() - b.date.toMillis());
+    });
 }
 
 export function timeInputToHM(timeInputValue: string) {
