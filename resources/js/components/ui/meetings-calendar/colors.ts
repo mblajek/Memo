@@ -72,13 +72,13 @@ export const CALENDAR_BACKGROUNDS = (() => {
   const main = "#e2e3e7";
   const facilityWorkTime = "#ecedf1";
   const staffWorkTime = "#ffffff";
-  const leaveTimeLines = "#a4a9b4";
+  const leaveTimeLines = "#cdcfd1";
   return {
     main,
     facilityWorkTime,
     staffWorkTime,
-    facilityLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, ${staffWorkTime}40 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
-    staffLeaveTime: `repeating-linear-gradient(-30deg, ${main}a0, ${staffWorkTime}40 5px, ${main}a0 10px, ${leaveTimeLines} 11px, ${main}a0 12px)`,
+    facilityLeaveTime: `repeating-linear-gradient(-30deg, ${main}c0, ${staffWorkTime}40 5px, ${main}c0 10px, ${leaveTimeLines} 11px, ${main}c0 12px)`,
+    staffLeaveTime: `repeating-linear-gradient(-30deg, ${main}c0, ${staffWorkTime}40 5px, ${main}c0 10px, ${leaveTimeLines} 11px, ${main}c0 12px)`,
   } as const;
 })();
 
