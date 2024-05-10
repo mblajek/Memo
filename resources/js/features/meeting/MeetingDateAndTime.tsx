@@ -36,6 +36,9 @@ interface SuggestedTimes {
   readonly step: number;
 }
 
+// Faster transition looks better here.
+const HIDEABLE_SECTIONS_TRANSITION_TIME_MS = 50;
+
 export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const form = useMeetingTimeForm();
@@ -133,28 +136,29 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
         <PlaceholderField name="durationMinutes" />
         <div class={cx(showEditable() ? undefined : "hidden", "flex flex-col items-stretch")}>
           <fieldset data-felte-keep-on-remove>
-            <div class="flex items-start gap-1">
-              <div class="basis-0 grow flex flex-col gap-1">
-                <div class="flex items-center gap-0.5">
-                  <input
-                    id="date"
-                    name="date"
-                    type="date"
-                    class="basis-32 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
-                  />
-                  <Show when={!allDay()}>
-                    <TimeInput id="time.startTime" name="time.startTime" />
-                  </Show>
-                </div>
-                <CheckboxField name="time.allDay" />
+            <div
+              // This is a grid mainly to set the correct tab order: the all day checkbox should go after the end time.
+              class="grid gap-1"
+              style={{"grid-template-rows": "auto auto", "grid-template-columns": `1fr ${allDay() ? "" : "auto"} 1fr`}}
+            >
+              <div class="flex items-center gap-0.5">
+                <input
+                  id="date"
+                  name="date"
+                  type="date"
+                  class="basis-32 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
+                />
+                <Show when={!allDay()}>
+                  <TimeInput id="time.startTime" name="time.startTime" />
+                </Show>
               </div>
               <Show when={!allDay()}>
                 <div class="min-h-big-input flex items-center">{EN_DASH}</div>
               </Show>
-              <div class="basis-0 grow flex flex-col items-stretch">
-                <HideableSection show={!allDay()}>
+              <div class="row-span-2 flex flex-col items-stretch">
+                <HideableSection show={!allDay()} transitionTimeMs={HIDEABLE_SECTIONS_TRANSITION_TIME_MS}>
                   <div class="flex items-center gap-0.5">
-                    <TimeInput id="time.endTime" name="time.endTime" />
+                    <TimeInput id="time.endTime" name="time.endTime" disabled={allDay()} />
                     <div class="basis-32 grow">
                       <Show when={!delayedAllDay() && durationMinutes()}>
                         {t("parenthesis.open")}
@@ -171,11 +175,12 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                       (defaultDurationMinutes() === MAX_DAY_MINUTE && !allDay()))
                   }
                   // In the all day mode this does not change the height of the page, so no transition is needed.
-                  transitionTimeMs={delayedAllDay() ? 0 : undefined}
+                  transitionTimeMs={delayedAllDay() ? 0 : HIDEABLE_SECTIONS_TRANSITION_TIME_MS}
                 >
-                  {(() => {
+                  {(show) => {
                     const canApplySuggestion = () =>
-                      defaultDurationMinutes() === MAX_DAY_MINUTE || allDay() || form.data("time.startTime");
+                      show() &&
+                      (defaultDurationMinutes() === MAX_DAY_MINUTE || allDay() || form.data("time.startTime"));
                     return (
                       <Button
                         class={cx(allDay() ? undefined : "mt-0.5", "w-full secondary small")}
@@ -189,9 +194,10 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                         <TimeDuration minutes={defaultDurationMinutes()!} maxIsAllDay />
                       </Button>
                     );
-                  })()}
+                  }}
                 </HideableSection>
               </div>
+              <CheckboxField name="time.allDay" />
             </div>
           </fieldset>
         </div>
