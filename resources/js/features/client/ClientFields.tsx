@@ -59,7 +59,7 @@ export const ClientFields: VoidComponent<Props> = (props) => {
         selection={ATTRIBUTES_SELECTION}
         editMode={props.editMode}
       />
-      <RichTextViewEdit name="client.notes" viewMode={!props.editMode} />
+      <RichTextViewEdit name="client.notes" viewMode={!props.editMode} persistenceKey="client.notes" />
     </>
   );
 };

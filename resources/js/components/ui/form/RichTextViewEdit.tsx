@@ -1,19 +1,20 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {useLangFunc} from "components/utils";
-import {Show, VoidComponent} from "solid-js";
+import {Show, splitProps, VoidComponent} from "solid-js";
 import {InfoIcon} from "../InfoIcon";
 import {RichTextView} from "../RichTextView";
 import {EmptyValueSymbol} from "../symbols";
 import {FieldBox} from "./FieldBox";
-import {MultilineTextField} from "./MultilineTextField";
+import {MultilineTextField, MultilineTextFieldProps} from "./MultilineTextField";
 import {PlaceholderField} from "./PlaceholderField";
 
-interface Props {
+interface Props extends Pick<MultilineTextFieldProps, "persistenceKey" | "initialShowPreview"> {
   readonly name: string;
   readonly viewMode: boolean;
 }
 
-export const RichTextViewEdit: VoidComponent<Props> = (props) => {
+export const RichTextViewEdit: VoidComponent<Props> = (allProps) => {
+  const [props, multilineTextFieldProps] = splitProps(allProps, ["name", "viewMode"]);
   const t = useLangFunc();
   const {form} = useFormContext();
   return (
@@ -27,6 +28,8 @@ export const RichTextViewEdit: VoidComponent<Props> = (props) => {
               {origLabel} <InfoIcon href="/help/rich-text" title={t("rich_text_field")} />
             </>
           )}
+          richTextPreview
+          {...multilineTextFieldProps}
           data-felte-keep-on-remove
         />
       }

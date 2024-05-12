@@ -21,6 +21,8 @@ export interface MultilineTextFieldProps
   readonly label?: LabelOverride;
   readonly small?: boolean;
   readonly richTextPreview?: boolean;
+  readonly persistenceKey?: string;
+  readonly initialShowPreview?: boolean;
 }
 
 type PersistentState = {
@@ -29,15 +31,20 @@ type PersistentState = {
 
 /** Wrapper of native HTML's `<textarea>`. Intended for use with FelteForm (handles validation messages). */
 export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allProps) => {
-  const [props, inputProps] = splitProps(allProps, ["name", "label", "small", "richTextPreview"]);
+  const [props, inputProps] = splitProps(allProps, [
+    "name",
+    "label",
+    "small",
+    "richTextPreview",
+    "persistenceKey",
+    "initialShowPreview",
+  ]);
   const t = useLangFunc();
-  const [showPreview, setShowPreview] = createSignal(true);
+  const [showPreview, setShowPreview] = createSignal(props.initialShowPreview ?? true);
   const {form} = useFormContext();
   createLocalStoragePersistence<PersistentState>({
-    key: "richTextFieldPreview",
-    onLoad: (value) => {
-      setShowPreview(value.preview);
-    },
+    key: `RichTextFieldPreview:${props.persistenceKey || "_"}`,
+    onLoad: (value) => setShowPreview(value.preview),
     value: () => ({preview: showPreview()}),
     serialiser: richJSONSerialiser<PersistentState>(),
     version: [1],
@@ -51,7 +58,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
       <div
         class="grid"
         style={{
-          "grid-template-columns": `1fr auto ${showPreview() ? "1fr" : "0fr"}`,
+          "grid-template-columns": `1fr auto ${props.richTextPreview && showPreview() ? "1fr" : "0fr"}`,
           "transition": "grid-template-columns 200ms",
         }}
       >
@@ -62,37 +69,39 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
           {...htmlAttributes.merge(inputProps, {
             class: cx(
               "border border-input-border rounded aria-invalid:border-red-400 disabled:bg-disabled",
-              props.small ? "h-12 min-h-small-input px-1" : "h-24 min-h-big-input px-2",
+              props.small ? "h-16 min-h-small-input px-1" : "h-24 min-h-big-input px-2",
             ),
           })}
           aria-labelledby={labelIdForField(props.name)}
         />
-        <Button
-          class="w-2 flex flex-col items-center rounded hover:bg-hover"
-          onClick={() => setShowPreview((v) => !v)}
-          title={t("preview")}
-        >
-          <Show
-            when={showPreview()}
-            fallback={
-              <>
-                <RiArrowsArrowLeftSLine />
-                <RiArrowsArrowLeftSLine />
-                <RiArrowsArrowLeftSLine />
-              </>
-            }
+        <Show when={props.richTextPreview}>
+          <Button
+            class="w-2 flex flex-col items-center rounded hover:bg-hover"
+            onClick={() => setShowPreview((v) => !v)}
+            title={t("preview")}
           >
-            <RiArrowsArrowRightSLine />
-            <RiArrowsArrowRightSLine />
-            <RiArrowsArrowRightSLine />
-          </Show>
-        </Button>
-        <Show when={showPreview()}>
-          <div class="w-full h-full px-1 overflow-auto" title={t("preview")}>
-            <div class="max-h-0 min-h-max">
-              <RichTextView text={text()} fallback={<EmptyValueSymbol />} />
+            <Show
+              when={showPreview()}
+              fallback={
+                <>
+                  <RiArrowsArrowLeftSLine />
+                  <RiArrowsArrowLeftSLine />
+                  <RiArrowsArrowLeftSLine />
+                </>
+              }
+            >
+              <RiArrowsArrowRightSLine />
+              <RiArrowsArrowRightSLine />
+              <RiArrowsArrowRightSLine />
+            </Show>
+          </Button>
+          <Show when={showPreview()}>
+            <div class="w-full h-full px-1 overflow-auto" title={t("preview")}>
+              <div class="max-h-0 min-h-max">
+                <RichTextView text={text()} fallback={<EmptyValueSymbol />} />
+              </div>
             </div>
-          </div>
+          </Show>
         </Show>
       </div>
     </FieldBox>
