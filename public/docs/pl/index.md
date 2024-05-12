@@ -1,4 +1,4 @@
-# Memo
+# Strona główna pomocy
 
 Strona pomocy dla systemu Memo.
 
@@ -13,13 +13,14 @@ Strona pomocy dla systemu Memo.
   - [Eksport danych](table-export)
 - [Tekst z tagami](rich-text)
 - [Sztuczki usprawniające korzystanie z Memo ✨](tricks)
+- [Wspierane przeglądarki](supported-browsers)
 
 ## Linki zewnętrzne
 
-- [GitHub - Projekt Memo](https://github.com/mblajek/Memo)
+- [GitHub — Projekt Memo](https://github.com/mblajek/Memo)
 
 ## Twórcy
 
-- [Mikołaj Błajek](https://github.com/mblajek) - główny programista backendu
-- [Tomasz Błajek](https://github.com/TPReal) - główny programista frontendu
+- [Mikołaj Błajek](https://github.com/mblajek) — główny programista backendu
+- [Tomasz Błajek](https://github.com/TPReal) — główny programista frontendu
 - [Pozostali programiści](https://github.com/mblajek/Memo/graphs/contributors?type=a)

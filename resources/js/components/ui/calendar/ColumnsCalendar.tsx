@@ -31,8 +31,7 @@ interface Props extends GlobalParameters, htmlAttributes.div {
   readonly onVisibleRangeChange?: (range: DayMinuteRange) => void;
   readonly scrollToDayMinute?: number;
   readonly isLoading?: boolean;
-
-  readonly onWheelWithAlt?: (e: WheelEvent) => void;
+  readonly onWheelWithAlt?: (e: WheelEvent, area: "allDay" | "hours") => void;
 }
 
 export interface CalendarColumn {
@@ -157,7 +156,21 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
         <div class={s.columnsHeader}>
           <For each={props.columns}>{(col) => <div class={s.cell}>{col.header()}</div>}</For>
         </div>
-        <div class={s.columnsAllDayArea}>
+        <div
+          ref={(div) => {
+            div.addEventListener(
+              "wheel",
+              (e) => {
+                if (e.altKey) {
+                  props.onWheelWithAlt?.(e, "allDay");
+                  e.preventDefault();
+                }
+              },
+              {passive: false},
+            );
+          }}
+          class={s.columnsAllDayArea}
+        >
           <For each={props.columns}>{(col) => <div class={s.cell}>{col.allDayArea()}</div>}</For>
         </div>
         <div
@@ -167,7 +180,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
               "wheel",
               (e) => {
                 if (e.altKey) {
-                  props.onWheelWithAlt?.(e);
+                  props.onWheelWithAlt?.(e, "hours");
                   e.preventDefault();
                 }
               },

@@ -19,15 +19,11 @@ export const useSystemStatusMonitor = createCached(() => {
     if (!status) {
       return;
     }
-    if (needsRefresh(lastStatus()!, status)) {
-      console.info("System version changed. Last status:", {...lastStatus()}, "Current status:", {...status});
+    if (status.commitHash !== lastStatus()!.commitHash) {
+      console.info(`System version changed. Commit hash: ${lastStatus()?.commitHash} -> ${status.commitHash}`);
       setNeedsReload(true);
     }
     setLastStatus(status);
   });
   return {baseStatus, status: lastStatus, needsReload};
 });
-
-function needsRefresh(prevStatus: SystemStatusResource, newStatus: SystemStatusResource) {
-  return (["commitHash", "backendHash", "frontendHash"] as const).some((key) => prevStatus[key] !== newStatus[key]);
-}

@@ -3,7 +3,6 @@ import {createQuery} from "@tanstack/solid-query";
 import {Select} from "components/ui/form/Select";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {System, User} from "data-access/memo-api/groups";
-import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Match, Show, Switch, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 
@@ -12,7 +11,6 @@ export const FacilityControl: VoidComponent = () => {
   const params = useParams();
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const statusQuery = createQuery(User.statusQueryOptions);
-  const invalidate = useInvalidator();
   const userFacilities = createMemo(() =>
     facilitiesQuery.data
       ?.filter((facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id))
@@ -54,16 +52,19 @@ export const FacilityControl: VoidComponent = () => {
               onValueChange={(facilityId) => {
                 if (facilityId) {
                   if (facilityId !== activeFacilityId()) {
-                    setActiveFacilityId(facilityId);
                     const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
                     if (url) {
                       // Facility pages might assume that the active facility id never changes, because changing the facility
                       // always recreates the whole page by performing this navigation.
-                      navigate(`/${url}`);
+                      navigate("/");
+                      setTimeout(() => {
+                        setActiveFacilityId(facilityId);
+                        navigate(`/${url}`);
+                      });
                     }
                   }
                   if (facilityId !== statusQuery.data!.user.lastLoginFacilityId)
-                    User.setLastLoginFacilityId(facilityId).then(() => invalidate.userStatusAndFacilityPermissions());
+                    User.setLastLoginFacilityId(facilityId);
                 }
               }}
             />

@@ -18,7 +18,7 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
-import {Api} from "data-access/memo-api/types";
+import {Api, RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -77,7 +77,10 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
       if (props.showToast ?? true) {
         toastSuccess(t("forms.meeting_edit.success"));
       }
-      props.onEdited?.({...origMeeting, ...skipUndefinedValues(meetingPatch)});
+      props.onEdited?.({
+        ...origMeeting,
+        ...skipUndefinedValues(meetingPatch as RequiredNonNullable<MeetingResourceForPatch>),
+      });
       // Important: Invalidation should happen after calling onEdited which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
       // but also causes problems apparently.
@@ -100,10 +103,18 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   const initialValues = () => {
     return {
       date: meeting().date,
-      time: {
-        startTime: dayMinuteToTimeInput(meeting().startDayminute),
-        endTime: dayMinuteToTimeInput((meeting().startDayminute + meeting().durationMinutes) % MAX_DAY_MINUTE),
-      },
+      time:
+        meeting().startDayminute === 0 && meeting().durationMinutes === MAX_DAY_MINUTE
+          ? {
+              allDay: true,
+              startTime: "",
+              endTime: "",
+            }
+          : {
+              allDay: false,
+              startTime: dayMinuteToTimeInput(meeting().startDayminute),
+              endTime: dayMinuteToTimeInput((meeting().startDayminute + meeting().durationMinutes) % MAX_DAY_MINUTE),
+            },
       typeDictId: meeting().typeDictId,
       statusDictId: meeting().statusDictId,
       ...attendantsInitialValueForEdit(meeting()),
@@ -120,6 +131,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
         statusDictId: meetingStatusDict()!.planned.id,
         ...attendantsInitialValueForCreateCopy(meeting()),
+        fromMeetingId: props.meetingId,
       },
       onSuccess: (meeting) => props.onCreated?.(meeting),
       forceTimeEditable: !days,

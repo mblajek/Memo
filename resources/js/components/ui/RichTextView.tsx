@@ -4,6 +4,7 @@ import {SimpleTag, TagsLine} from "./Tag";
 
 interface Props extends htmlAttributes.div {
   readonly text: string | undefined;
+  readonly fallback?: JSX.Element;
 }
 
 /** Maximum length of a tag in characters. If longer, it's just plain text. */
@@ -21,40 +22,44 @@ const URL_REGEXP =
  */
 export const RichTextView: VoidComponent<Props> = (props) => {
   const content = () => {
-    return props.text?.split("\n").map((line) => {
-      if (line.match(/^#\w/)) {
-        const tags = line
-          .split(/(^|\s+)#(?=\w)/)
-          .map((tag) => tag.trim())
-          .filter(Boolean);
-        if (tags.every((tag) => tag.length <= MAX_TAG_LENGTH)) {
-          return <TagsLine class="my-px">{<Index each={tags}>{(tag) => <SimpleTag text={tag()} />}</Index>}</TagsLine>;
-        }
-      }
-      const elements: JSX.Element[] = [];
-      let lastMatchEnd = 0;
-      for (;;) {
-        const match = URL_REGEXP.exec(line);
-        if (!match) {
-          elements.push(line.slice(lastMatchEnd));
-          break;
-        }
-        elements.push(line.slice(lastMatchEnd, match.index));
-        const url = match[0];
-        elements.push(
-          <a href={url} target="_blank" rel="noreferrer">
-            {url}
-          </a>,
-        );
-        lastMatchEnd = match.index + url.length;
-      }
-      return (
-        <>
-          {elements}
-          <br />
-        </>
-      );
-    });
+    return props.text
+      ? props.text.split("\n").map((line) => {
+          if (line.match(/^#\w/)) {
+            const tags = line
+              .split(/(^|\s+)#(?=\w)/)
+              .map((tag) => tag.trim())
+              .filter(Boolean);
+            if (tags.every((tag) => tag.length <= MAX_TAG_LENGTH)) {
+              return (
+                <TagsLine class="my-px">{<Index each={tags}>{(tag) => <SimpleTag text={tag()} />}</Index>}</TagsLine>
+              );
+            }
+          }
+          const elements: JSX.Element[] = [];
+          let lastMatchEnd = 0;
+          for (;;) {
+            const match = URL_REGEXP.exec(line);
+            if (!match) {
+              elements.push(line.slice(lastMatchEnd));
+              break;
+            }
+            elements.push(line.slice(lastMatchEnd, match.index));
+            const url = match[0];
+            elements.push(
+              <a href={url} target="_blank" rel="noreferrer">
+                {url}
+              </a>,
+            );
+            lastMatchEnd = match.index + url.length;
+          }
+          return (
+            <>
+              {elements}
+              <br />
+            </>
+          );
+        })
+      : props.fallback;
   };
   return <div {...htmlAttributes.merge(props, {class: "overflow-x-clip overflow-y-auto wrapText"})}>{content()}</div>;
 };

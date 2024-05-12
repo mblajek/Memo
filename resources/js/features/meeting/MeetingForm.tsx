@@ -6,7 +6,7 @@ import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {
@@ -30,15 +30,16 @@ const getSchema = () =>
   z
     .object({
       date: z.string(),
-      ...getMeetingTimeFieldsSchemaPart(),
       typeDictId: z.string(),
       statusDictId: z.string(),
       isRemote: z.boolean(),
-      ...getAttendantsSchemaPart(),
       notes: z.string(),
       resources: z.array(z.string()),
       createSeries: z.boolean().optional(),
+      fromMeetingId: z.string().optional(),
     })
+    .merge(getMeetingTimeFieldsSchemaPart())
+    .merge(getAttendantsSchemaPart())
     .merge(getMeetingSeriesSchema().partial());
 
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
@@ -107,7 +108,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
     >
       {(form) => (
         <>
-          <div class="flex flex-col">
+          <div class="flex flex-col gap-1">
             <MeetingDateAndTime
               // Does not work very well on Chrome currently.
               // suggestedTimes={{range: [8 * 60, 18 * 60], step: 30}}
@@ -169,8 +170,13 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
             />
           </div>
           <CheckboxField name="isRemote" />
-          <RichTextViewEdit name="notes" viewMode={props.viewMode} />
-          <DictionarySelect name="resources" dictionary="meetingResource" multiple placeholder={EMPTY_VALUE_SYMBOL} />
+          <RichTextViewEdit name="notes" viewMode={props.viewMode} persistenceKey="meeting.notes" />
+          <DictionarySelect
+            name="resources"
+            dictionary="meetingResource"
+            multiple
+            placeholder={EMPTY_VALUE_SYMBOL_STRING}
+          />
           <ByMode
             edit={
               <FelteSubmit

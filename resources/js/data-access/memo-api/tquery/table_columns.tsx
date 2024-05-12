@@ -2,7 +2,7 @@ import {PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
-import {NON_NULLABLE, htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {objectRecursiveMerge} from "components/utils/object_util";
 import {ParentComponent, Show, splitProps} from "solid-js";
@@ -73,16 +73,9 @@ export function useTableColumns() {
     },
   });
 
-  function getCreatedUpdatedColumns({includeCreatedBy = true, includeUpdatedBy = true, globalAdmin = false} = {}) {
+  function getCreatedUpdatedColumns({globalAdmin = false} = {}) {
     const set = globalAdmin ? globalAdminColumnsSet : columnsSet;
-    return set.get(
-      ...[
-        "createdAt",
-        includeCreatedBy ? "createdBy" : undefined,
-        "updatedAt",
-        includeUpdatedBy ? "updatedBy" : undefined,
-      ].filter(NON_NULLABLE),
-    );
+    return set.get("createdAt", "createdBy", "updatedAt", "updatedBy");
   }
 
   return {

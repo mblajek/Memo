@@ -1,6 +1,7 @@
 import {Button, EditButton} from "components/ui/Button";
 import {HideableSection} from "components/ui/HideableSection";
 import {TimeDuration} from "components/ui/TimeDuration";
+import {CheckboxField} from "components/ui/form/CheckboxField";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
@@ -34,6 +35,9 @@ interface SuggestedTimes {
   readonly range: DayMinuteRange;
   readonly step: number;
 }
+
+// Faster transition looks better here.
+const HIDEABLE_SECTIONS_TRANSITION_TIME_MS = 50;
 
 export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -121,58 +125,89 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
 
   // Delay the duration minutes displayed on the page by a fraction of a second to avoid blinking of the wrong value
   // while the hour wrapping correct is applied.
-  const delayedDurationMinutes = debouncedAccessor(durationMinutes, {timeMs: 10});
+  const delayedDurationMinutes = debouncedAccessor(durationMinutes, {timeMs: 1});
+  const allDay = () => form.data("time").allDay;
+  const delayedAllDay = debouncedAccessor(allDay, {timeMs: 100});
 
   return (
     <>
       <FieldBox name="dateAndTime" umbrella validationMessagesForFields={["date", "startDayminute", "durationMinutes"]}>
         <PlaceholderField name="startDayminute" />
         <PlaceholderField name="durationMinutes" />
-        <div class={cx("flex items-start gap-1", {hidden: !showEditable()})}>
-          <div class="basis-0 grow flex items-center gap-0.5">
-            <input
-              id="date"
-              name="date"
-              type="date"
-              class="basis-32 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
-            />
-            <TimeInput id="time.startTime" name="time.startTime" />
-          </div>
-          <div class="min-h-big-input flex items-center">{EN_DASH}</div>
-          <div class="basis-0 grow flex flex-col items-stretch gap-0.5">
-            <div class="flex items-center gap-0.5">
-              <TimeInput id="time.endTime" name="time.endTime" />
-              <div class="basis-32 grow">
-                <Show when={durationMinutes()}>
-                  {t("parenthesis.open")}
-                  <TimeDuration minutes={delayedDurationMinutes()!} />
-                  {t("parenthesis.close")}
+        <div class={cx(showEditable() ? undefined : "hidden", "flex flex-col items-stretch")}>
+          <fieldset data-felte-keep-on-remove>
+            <div
+              // This is a grid mainly to set the correct tab order: the all day checkbox should go after the end time.
+              class="grid gap-1"
+              style={{"grid-template-rows": "auto auto", "grid-template-columns": `1fr ${allDay() ? "" : "auto"} 1fr`}}
+            >
+              <div class="flex items-center gap-0.5">
+                <input
+                  id="date"
+                  name="date"
+                  type="date"
+                  class="basis-32 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
+                />
+                <Show when={!allDay()}>
+                  <TimeInput id="time.startTime" name="time.startTime" />
                 </Show>
               </div>
+              <Show when={!allDay()}>
+                <div class="min-h-big-input flex items-center">{EN_DASH}</div>
+              </Show>
+              <div class="row-span-2 flex flex-col items-stretch">
+                <HideableSection show={!allDay()} transitionTimeMs={HIDEABLE_SECTIONS_TRANSITION_TIME_MS}>
+                  <div class="flex items-center gap-0.5">
+                    <TimeInput id="time.endTime" name="time.endTime" disabled={allDay()} />
+                    <div class="basis-32 grow">
+                      <Show when={!delayedAllDay() && durationMinutes()}>
+                        {t("parenthesis.open")}
+                        <TimeDuration minutes={delayedDurationMinutes()!} />
+                        {t("parenthesis.close")}
+                      </Show>
+                    </div>
+                  </div>
+                </HideableSection>
+                <HideableSection
+                  show={
+                    defaultDurationMinutes() &&
+                    (defaultDurationMinutes() !== durationMinutes() ||
+                      (defaultDurationMinutes() === MAX_DAY_MINUTE && !allDay()))
+                  }
+                  // In the all day mode this does not change the height of the page, so no transition is needed.
+                  transitionTimeMs={delayedAllDay() ? 0 : HIDEABLE_SECTIONS_TRANSITION_TIME_MS}
+                >
+                  {(show) => {
+                    const canApplySuggestion = () =>
+                      show() &&
+                      (defaultDurationMinutes() === MAX_DAY_MINUTE || allDay() || form.data("time.startTime"));
+                    return (
+                      <Button
+                        class={cx(allDay() ? undefined : "mt-0.5", "w-full secondary small")}
+                        onClick={() => setDurationMinutes(defaultDurationMinutes(), {maxIsAllDay: true})}
+                        disabled={!canApplySuggestion()}
+                        title={t(
+                          canApplySuggestion() ? "actions.set" : "forms.meeting.default_duration_first_set_start_time",
+                        )}
+                      >
+                        {t("forms.meeting.default_duration")}{" "}
+                        <TimeDuration minutes={defaultDurationMinutes()!} maxIsAllDay />
+                      </Button>
+                    );
+                  }}
+                </HideableSection>
+              </div>
+              <CheckboxField name="time.allDay" />
             </div>
-            <HideableSection
-              show={
-                defaultDurationMinutes() &&
-                defaultDurationMinutes() !== durationMinutes() &&
-                form.data("time").startTime
-              }
-            >
-              <Button
-                class="w-full secondary small"
-                onClick={() => setDurationMinutes(defaultDurationMinutes())}
-                title={t("actions.set")}
-              >
-                {t("forms.meeting.default_duration")} <TimeDuration minutes={defaultDurationMinutes()!} />
-              </Button>
-            </HideableSection>
-          </div>
+          </fieldset>
         </div>
         <Show when={!showEditable()}>
           <div class="flex gap-x-2 items-baseline justify-between flex-wrap">
             <div class="flex gap-2 items-baseline">
               <DateAndTimeInfo
                 date={DateTime.fromISO(form.data("date"))}
-                startDayMinute={timeInputToDayMinute(form.data("time").startTime, {assert: true})}
+                allDay={allDay()}
+                startDayMinute={timeInputToDayMinute(form.data("time").startTime)}
                 durationMinutes={durationMinutes()}
               />
               <Show when={!props.viewMode}>

@@ -7,7 +7,7 @@ interface Props {
 export const NavigationSection: ParentComponent<Props> = (props) => (
   <section class="flex flex-col gap-1">
     <Show when={props.title}>
-      <h3 class="py-2 font-medium">{props.title}</h3>
+      <h3 class="pt-2 font-medium">{props.title}</h3>
     </Show>
     {props.children}
   </section>

@@ -10,54 +10,52 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 export default (() => {
   const {getCreatedUpdatedColumns} = useTableColumns();
   return (
-    <>
-      <TQueryTable
-        mode="standalone"
-        staticPrefixQueryKey={FacilityStaff.keys.staff()}
-        staticEntityURL={`facility/${activeFacilityId()}/user/staff`}
-        staticTranslations={createTableTranslations(["staff", "facility_user", "user"])}
-        staticPersistenceKey="facilityStaff"
-        columns={[
-          {name: "id", initialVisible: false},
-          {
-            name: "name",
-            extraDataColumns: ["id"],
-            columnDef: {
-              cell: cellFunc<string>((props) => (
-                <PaddedCell>
-                  <ShowCellVal v={props.v}>
-                    {(v) => <UserLink type="staff" userId={props.row.id as string} name={v()} />}
-                  </ShowCellVal>
-                </PaddedCell>
-              )),
-              enableHiding: false,
-            },
+    <TQueryTable
+      mode="standalone"
+      staticPrefixQueryKey={FacilityStaff.keys.staff()}
+      staticEntityURL={`facility/${activeFacilityId()}/user/staff`}
+      staticTranslations={createTableTranslations(["staff", "facility_user", "user"])}
+      staticPersistenceKey="facilityStaff"
+      columns={[
+        {name: "id", initialVisible: false},
+        {
+          name: "name",
+          extraDataColumns: ["id"],
+          columnDef: {
+            cell: cellFunc<string>((props) => (
+              <PaddedCell>
+                <ShowCellVal v={props.v}>
+                  {(v) => <UserLink type="staff" userId={props.row.id as string} name={v()} />}
+                </ShowCellVal>
+              </PaddedCell>
+            )),
+            enableHiding: false,
           },
-          {
-            name: "email",
-            columnDef: {
-              cell: cellFunc<string>((props) => (
-                <PaddedCell>
-                  <ShowCellVal v={props.v}>{(v) => <Email class="w-full" email={v()} />}</ShowCellVal>
-                </PaddedCell>
-              )),
-            },
+        },
+        {
+          name: "email",
+          columnDef: {
+            cell: cellFunc<string>((props) => (
+              <PaddedCell>
+                <ShowCellVal v={props.v}>{(v) => <Email class="w-full" email={v()} />}</ShowCellVal>
+              </PaddedCell>
+            )),
           },
-          {name: "hasEmailVerified", initialVisible: false},
-          {name: "hasPassword"},
-          {name: "passwordExpireAt", initialVisible: false},
-          {name: "staff.hasFacilityAdmin", columnDef: {size: 130}},
-          {name: "hasGlobalAdmin", columnDef: {size: 130}, initialVisible: false},
-          {name: "firstMeetingDate", initialVisible: false},
-          {name: "lastMeetingDate", initialVisible: false},
-          {name: "completedMeetingsCount", initialVisible: false},
-          {name: "completedMeetingsCountLastMonth"},
-          {name: "plannedMeetingsCount", initialVisible: false},
-          {name: "plannedMeetingsCountNextMonth"},
-          ...getCreatedUpdatedColumns({includeUpdatedBy: false}),
-        ]}
-        initialSort={[{id: "name", desc: false}]}
-      />
-    </>
+        },
+        {name: "hasEmailVerified", initialVisible: false},
+        {name: "hasPassword"},
+        {name: "passwordExpireAt", initialVisible: false},
+        {name: "staff.hasFacilityAdmin", columnDef: {size: 130}},
+        {name: "hasGlobalAdmin", columnDef: {size: 130}, initialVisible: false},
+        {name: "firstMeetingDate", initialVisible: false},
+        {name: "lastMeetingDate", initialVisible: false},
+        {name: "completedMeetingsCount", initialVisible: false},
+        {name: "completedMeetingsCountLastMonth"},
+        {name: "plannedMeetingsCount", initialVisible: false},
+        {name: "plannedMeetingsCountNextMonth"},
+        ...getCreatedUpdatedColumns(),
+      ]}
+      initialSort={[{id: "name", desc: false}]}
+    />
   );
 }) satisfies VoidComponent;

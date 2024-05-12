@@ -1,6 +1,6 @@
 import {cx, htmlAttributes} from "components/utils";
 import {For, JSX, Show, VoidComponent, createMemo, createRenderEffect, createSignal, splitProps} from "solid-js";
-import {EMPTY_VALUE_SYMBOL} from "../symbols";
+import {EmptyValueSymbol} from "../symbols";
 
 export type ResourcesSelectionMode = "radio" | "checkbox";
 
@@ -8,7 +8,8 @@ interface Props extends htmlAttributes.div {
   readonly resourceGroups?: readonly ResourceGroup[];
   readonly mode: ResourcesSelectionMode;
   readonly selection: ReadonlySet<string>;
-  readonly setSelection: (ids: ReadonlySet<string>) => void;
+  readonly onSelectionChange: (ids: ReadonlySet<string>) => void;
+  readonly onHover?: (id: string | undefined) => void;
 }
 
 export interface ResourceGroup {
@@ -23,7 +24,13 @@ export interface ResourceItem {
 
 /** A vertical list of people and resources, with checkboxes or radio buttons, depending on mode. */
 export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["resourceGroups", "mode", "selection", "setSelection"]);
+  const [props, divProps] = splitProps(allProps, [
+    "resourceGroups",
+    "mode",
+    "selection",
+    "onSelectionChange",
+    "onHover",
+  ]);
   return (
     <div {...htmlAttributes.merge(divProps, {class: "flex flex-col gap-2"})}>
       <For each={props.resourceGroups}>
@@ -70,11 +77,11 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                           sel.add(res.id);
                         }
                       }
-                      props.setSelection(sel);
+                      props.onSelectionChange(sel);
                     }}
                     onDblClick={() => {
                       if (resources.length) {
-                        props.setSelection(new Set(resources.map((r) => r.id)));
+                        props.onSelectionChange(new Set(resources.map((r) => r.id)));
                       }
                     }}
                   />
@@ -82,7 +89,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                 </label>
               </Show>
               <div class="flex flex-col">
-                <For each={resources} fallback={<span class="px-1">{EMPTY_VALUE_SYMBOL}</span>}>
+                <For each={resources} fallback={<EmptyValueSymbol class="px-1" />}>
                   {({id, label}) => {
                     const inputId = `resourceSelected_${id}`;
                     const checked = () => props.selection.has(id);
@@ -92,6 +99,8 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                         class={cx("px-1 flex gap-1 items-center hover:bg-hover", {
                           "bg-select hover:bg-select": checked(),
                         })}
+                        onPointerEnter={() => props.onHover?.(id)}
+                        onPointerLeave={() => props.onHover?.(undefined)}
                       >
                         <Show
                           when={props.mode === "checkbox"}
@@ -103,7 +112,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                               id={inputId}
                               name="selectedResources"
                               checked={checked()}
-                              onClick={() => props.setSelection(new Set([id]))}
+                              onClick={() => props.onSelectionChange(new Set([id]))}
                             />
                           }
                         >
@@ -119,10 +128,10 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                               } else {
                                 sel.add(id);
                               }
-                              props.setSelection(sel);
+                              props.onSelectionChange(sel);
                             }}
                             // TODO: Consider a different way to select a solo resource.
-                            onDblClick={() => props.setSelection(new Set([id]))}
+                            onDblClick={() => props.onSelectionChange(new Set([id]))}
                           />
                         </Show>
                         {label()}

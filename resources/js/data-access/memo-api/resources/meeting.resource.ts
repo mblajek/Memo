@@ -1,4 +1,4 @@
-import {Api} from "../types";
+import {Api, PartialNullable} from "../types";
 import {CreatedUpdatedResource} from "./resource";
 
 /**
@@ -48,7 +48,7 @@ export type MeetingResourceForCreate = Pick<
 > & {
   readonly staff: readonly MeetingAttendantResourceForCreate[];
   readonly clients: readonly MeetingAttendantResourceForCreate[];
-} & Partial<Pick<MeetingResource, "date" | "startDayminute" | "durationMinutes">>;
+} & PartialNullable<Pick<MeetingResource, "date" | "startDayminute" | "durationMinutes">>;
 
 export type MeetingAttendantResourceForCreate = Pick<MeetingAttendantResource, "userId" | "attendanceStatusDictId">;
 

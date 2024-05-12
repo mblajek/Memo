@@ -77,22 +77,25 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
               title={!form.data("email") ? t("forms.user_edit.has_password_requires_email") : undefined}
             />
             <HideableSection show={form.data("hasPassword")}>
-              <PasswordField
-                name="password"
-                {...(initialValues()?.hasPassword
-                  ? {
-                      label: t("forms.user_edit.fieldNames.newPassword"),
-                      placeholder: t("forms.user_edit.password_empty_to_leave_unchanged"),
-                    }
-                  : {})}
-                // Prevent password autocomplete. Just autocomplete="off" does not work.
-                autocomplete="off"
-                readonly
-                allowShow
-                onClick={(e) => {
-                  e.currentTarget.readOnly = false;
-                }}
-              />
+              {(show) => (
+                <PasswordField
+                  name="password"
+                  {...(initialValues()?.hasPassword
+                    ? {
+                        label: t("forms.user_edit.fieldNames.newPassword"),
+                        placeholder: t("forms.user_edit.password_empty_to_leave_unchanged"),
+                      }
+                    : {})}
+                  // Prevent password autocomplete. Just autocomplete="off" does not work.
+                  autocomplete="off"
+                  readonly
+                  disabled={!show()}
+                  allowShow
+                  onClick={(e) => {
+                    e.currentTarget.readOnly = false;
+                  }}
+                />
+              )}
             </HideableSection>
           </div>
           <userMembersFormPart.UserMembersFormPart membersPath="members" />

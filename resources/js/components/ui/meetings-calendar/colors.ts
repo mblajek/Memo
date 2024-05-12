@@ -23,19 +23,21 @@ export function getRandomEventColors(seedString: string): Coloring {
   return coloringFromColor(randomColor({seedString, lightness: [50, 70], chroma: [20, 30]}));
 }
 
-export const COMPLETED_MEETING_COLORING = {
+export const COMPLETED_MEETING_COLORING: Coloring = {
   ...coloringFromColor("#ccc"),
   bgHover: "#ddd",
   headerBg: "#ccc",
   separator: "#ccc",
 };
-export const CANCELLED_MEETING_COLORING = (() => {
+export const CANCELLED_MEETING_COLORING: Coloring = (() => {
   const coloring = coloringFromColor("black");
   return {
     ...coloring,
     headerBg: coloring.bgHover,
   };
 })();
+
+export const MISSING_MEETING_COLORING = COMPLETED_MEETING_COLORING;
 
 export function coloringToStyle(
   coloring: Coloring,
@@ -65,3 +67,19 @@ export function coloringToStyle(
       return part satisfies never;
   }
 }
+
+export const CALENDAR_BACKGROUNDS = (() => {
+  const main = "#e2e3e7";
+  const facilityWorkTime = "#ecedf1";
+  const staffWorkTime = "#ffffff";
+  const leaveTimeLines = "#cdcfd1";
+  return {
+    main,
+    facilityWorkTime,
+    staffWorkTime,
+    facilityLeaveTime: `repeating-linear-gradient(-30deg, ${main}c0, ${staffWorkTime}40 5px, ${main}c0 10px, ${leaveTimeLines} 11px, ${main}c0 12px)`,
+    staffLeaveTime: `repeating-linear-gradient(-30deg, ${main}c0, ${staffWorkTime}40 5px, ${main}c0 10px, ${leaveTimeLines} 11px, ${main}c0 12px)`,
+  } as const;
+})();
+
+export const MIDNIGHT_CROSSING_SYMBOL = "⋮";

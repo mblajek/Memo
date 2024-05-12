@@ -5,7 +5,7 @@ import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_
 import {DateTime} from "luxon";
 import {Accessor, Index, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
 import {ChildrenOrFunc, getChildrenElement} from "../children_func";
-import {EMPTY_VALUE_SYMBOL} from "../symbols";
+import {EmptyValueSymbol} from "../symbols";
 import {Header} from "./Header";
 import {IdColumn} from "./IdColumn";
 
@@ -95,7 +95,7 @@ export function useTableCells() {
     uuidList: <T,>() =>
       cellFunc<readonly string[], T>((props) => (
         <PaddedCell class="w-full flex flex-col">
-          <Index each={props.v} fallback={EMPTY_VALUE_SYMBOL}>
+          <Index each={props.v} fallback={<EmptyValueSymbol />}>
             {(id) => <IdColumn id={id()} />}
           </Index>
         </PaddedCell>
@@ -109,7 +109,7 @@ export function useTableCells() {
     dictList: <T,>() =>
       cellFunc<readonly string[], T>((props) => (
         <PaddedCell>
-          <Index each={props.v} fallback={EMPTY_VALUE_SYMBOL}>
+          <Index each={props.v} fallback={<EmptyValueSymbol />}>
             {(id, index) => (
               <>
                 <Show when={index}>
@@ -145,7 +145,7 @@ type NullableCellVal<V> = V | undefined | null;
 
 interface CellFuncProps<V, T = RowDataType> {
   readonly v: NullableCellVal<V>;
-  readonly row: T;
+  readonly row: Partial<T>;
   readonly ctx: CellContext<T, unknown>;
 }
 
@@ -162,7 +162,10 @@ interface ShowCellValProps<V> {
 
 export const ShowCellVal = <V,>(props: ShowCellValProps<V>) => {
   return (
-    <Show when={props.v != undefined} fallback={props.fallback ?? (props.v === null ? EMPTY_VALUE_SYMBOL : undefined)}>
+    <Show
+      when={props.v != undefined}
+      fallback={<>{props.fallback ?? (props.v === null ? <EmptyValueSymbol /> : undefined)}</>}
+    >
       {getChildrenElement(props.children, () => props.v as V)}
     </Show>
   );

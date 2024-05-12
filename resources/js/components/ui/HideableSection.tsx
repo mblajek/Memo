@@ -1,10 +1,12 @@
-import {ParentComponent, createMemo, mergeProps, splitProps} from "solid-js";
+import {Accessor, Component, createMemo, mergeProps, splitProps} from "solid-js";
 import {debouncedAccessor, htmlAttributes} from "../utils";
+import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
-interface Props extends htmlAttributes.div {
+interface Props extends Omit<htmlAttributes.div, "children"> {
   readonly show: unknown;
   readonly transitionTimeMs?: number;
   readonly transitionTimingFunction?: string;
+  readonly children: ChildrenOrFunc<[Accessor<boolean>]>;
 }
 
 const DEFAULT_PROPS = {
@@ -17,7 +19,7 @@ const DEFAULT_PROPS = {
  *
  * The section folds and unfolds with a transition.
  */
-export const HideableSection: ParentComponent<Props> = (allProps) => {
+export const HideableSection: Component<Props> = (allProps) => {
   const defProps = mergeProps(DEFAULT_PROPS, allProps);
   const [props, divProps] = splitProps(defProps, ["show", "transitionTimeMs", "transitionTimingFunction", "children"]);
   const show = createMemo(() => !!props.show);
@@ -25,8 +27,7 @@ export const HideableSection: ParentComponent<Props> = (allProps) => {
   /** Whether the section is fully opened. */
   // eslint-disable-next-line solid/reactivity
   const hasFullHeight = debouncedAccessor(show, {
-    // eslint-disable-next-line solid/reactivity
-    timeMs: props.transitionTimeMs,
+    timeMs: () => props.transitionTimeMs,
     outputImmediately: (show) => !show,
   });
   /** The show signal, delayed by epsilon. See doc for maxHeight for description. */
@@ -53,7 +54,7 @@ export const HideableSection: ParentComponent<Props> = (allProps) => {
         },
       })}
     >
-      {props.children}
+      {getChildrenElement(props.children, show)}
     </div>
   );
 };

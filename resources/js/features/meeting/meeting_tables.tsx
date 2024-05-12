@@ -7,11 +7,10 @@ import {exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/t
 import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/UuidListSelectFilterControl";
 import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL, EM_DASH, EN_DASH} from "components/ui/symbols";
+import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
-import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -22,8 +21,9 @@ import {ScrollableCell, TableColumnsSet} from "data-access/memo-api/tquery/table
 import {Api} from "data-access/memo-api/types";
 import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
-import {Index, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
+import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
+import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
@@ -34,7 +34,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const {attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
   const confirmation = createConfirmation();
-  const modelQuerySpecs = useModelQuerySpecs();
+  const facilityUsersSelectParams = useFacilityUsersSelectParams();
   const deleteMeetingMutation = createMutation(() => ({
     mutationFn: FacilityMeeting.deleteMeeting,
   }));
@@ -45,23 +45,35 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     invalidate.facility.meetings();
   }
 
-  const MeetingTime: VoidComponent<{startDayMinute: number; durationMinutes: number}> = (props) => (
-    <>
-      {formatDayMinuteHM(props.startDayMinute, {hour: "2-digit"})} {EN_DASH}{" "}
-      {formatDayMinuteHM((props.startDayMinute + props.durationMinutes) % MAX_DAY_MINUTE, {hour: "2-digit"})}
-    </>
+  const MeetingTime: VoidComponent<{
+    readonly startDayMinute: number | undefined;
+    readonly durationMinutes: number | undefined;
+  }> = (props) => (
+    <Switch>
+      <Match when={props.startDayMinute === 0 && props.durationMinutes === MAX_DAY_MINUTE}>
+        {t("calendar.all_day")}
+      </Match>
+      <Match when={props.startDayMinute !== undefined && props.durationMinutes !== undefined}>
+        {formatDayMinuteHM(props.startDayMinute!, {hour: "2-digit"})} {EN_DASH}{" "}
+        {formatDayMinuteHM((props.startDayMinute! + props.durationMinutes!) % MAX_DAY_MINUTE, {hour: "2-digit"})}
+      </Match>
+    </Switch>
   );
-  const DetailsButton: ParentComponent<{meetingId: string} & htmlAttributes.button> = (allProps) => {
+  const DetailsButton: ParentComponent<{meetingId: string | undefined} & htmlAttributes.button> = (allProps) => {
     const [props, buttonProps] = splitProps(allProps, ["meetingId", "children"]);
     return (
-      <Button
-        {...buttonProps}
-        onClick={() =>
-          meetingModal.show({meetingId: props.meetingId, initialViewMode: true, showGoToMeetingButton: true})
-        }
-      >
-        <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
-      </Button>
+      <Show when={props.meetingId}>
+        {(meetingId) => (
+          <Button
+            {...buttonProps}
+            onClick={() =>
+              meetingModal.show({meetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true})
+            }
+          >
+            <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
+          </Button>
+        )}
+      </Show>
     );
   };
 
@@ -80,9 +92,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           cell: cellFunc<number, TQMeetingResource>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>
-                {(v) => (
-                  <MeetingTime startDayMinute={v()} durationMinutes={(props.row.durationMinutes as number) ?? 0} />
-                )}
+                {(v) => <MeetingTime startDayMinute={v()} durationMinutes={props.row.durationMinutes} />}
               </ShowCellVal>
             </PaddedCell>
           )),
@@ -157,10 +167,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           cell: cellFunc<string, TQMeetingResource>((props) => (
             <ScrollableCell baseHeight={baseHeight}>
               <ShowCellVal v={props.v}>
-                <MeetingStatusTags
-                  meeting={props.row as Pick<TQMeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">}
-                  showPlannedTag
-                />
+                <MeetingStatusTags meeting={props.row} showPlannedTag />
               </ShowCellVal>
             </ScrollableCell>
           )),
@@ -211,7 +218,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           )),
           size: 250,
         },
-        filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userStaff()} />,
+        filterControl: (props) => (
+          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
+        ),
         metaParams: {textExportCell: attendantsTextExport},
       },
       staffAttendance: {
@@ -233,7 +242,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           )),
           size: 250,
         },
-        filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
+        filterControl: (props) => (
+          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
+        ),
         metaParams: {textExportCell: attendantsTextExport},
       },
       clientsAttendance: {
@@ -263,7 +274,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         columnDef: {
           cell: (c) => (
             <PaddedCell class="flex gap-1 h-min">
-              <DetailsButton class="minimal" meetingId={c.row.original.id as string} />
+              <DetailsButton class="minimal" meetingId={c.row.original.id} />
               <DeleteButton
                 class="minimal"
                 confirm={() =>
@@ -273,7 +284,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                     confirmText: t("forms.meeting_delete.submit"),
                   })
                 }
-                delete={() => deleteMeeting(c.row.original.id as string)}
+                delete={() => deleteMeeting(c.row.original.id)}
               />
             </PaddedCell>
           ),
@@ -292,20 +303,18 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                   <div class="flex gap-2 justify-between items-start">
                     <div class="flex flex-col overflow-clip">
                       <div>{DateTime.fromISO(v()).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
-                      <Show when={props.row.startDayminute as number | undefined}>
-                        {(startDayMinute) => (
-                          <div>
-                            <MeetingTime
-                              startDayMinute={startDayMinute()}
-                              durationMinutes={(props.row.durationMinutes as number) ?? 0}
-                            />{" "}
-                            <MeetingInSeriesInfo meeting={props.row} compact />
-                          </div>
-                        )}
+                      <Show when={props.row.startDayminute !== undefined}>
+                        <div>
+                          <MeetingTime
+                            startDayMinute={props.row.startDayminute}
+                            durationMinutes={props.row.durationMinutes}
+                          />{" "}
+                          <MeetingInSeriesInfo meeting={props.row} compact />
+                        </div>
                       </Show>
                     </div>
                     <DetailsButton
-                      meetingId={props.row.id as string}
+                      meetingId={props.row.id}
                       class="shrink-0 secondary small"
                       title={t("meetings.click_to_see_details")}
                     >
@@ -353,7 +362,13 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           return (
             <PaddedCell>
               <Show when={type()}>
-                {(type) => <UserLink type={type()} userId={props.row["attendant.userId"] as string} name={props.v!} />}
+                {(type) => (
+                  <UserLink
+                    type={type()}
+                    userId={props.row["attendant.userId"] as string | undefined}
+                    name={props.v!}
+                  />
+                )}
               </Show>
             </PaddedCell>
           );
@@ -368,7 +383,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           <PaddedCell>
             <ShowCellVal v={props.v}>
               {(v) => (
-                <MeetingAttendanceStatus attendanceStatusId={v()} meetingStatusId={props.row.statusDictId as string} />
+                <MeetingAttendanceStatus
+                  attendanceStatusId={v()}
+                  meetingStatusId={props.row.statusDictId as string | undefined}
+                />
               )}
             </ShowCellVal>
           </PaddedCell>
@@ -387,7 +405,7 @@ interface UserLinksProps {
 const UserLinks: VoidComponent<UserLinksProps> = (props) => {
   const {attendanceStatusDict} = useFixedDictionaries();
   return (
-    <Show when={props.users} fallback={EMPTY_VALUE_SYMBOL}>
+    <Show when={props.users} fallback={<EmptyValueSymbol />}>
       <ul>
         <Index each={props.users}>
           {(user) => (

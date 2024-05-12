@@ -1,7 +1,6 @@
 import {Title} from "@solidjs/meta";
 import {EM_DASH} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
-import {isDEV} from "components/utils/dev_mode";
 import {translationsLoaded} from "i18n_loader";
 import {VoidComponent} from "solid-js";
 
@@ -18,7 +17,7 @@ export const MemoTitle: VoidComponent<Props> = (props) => {
     if (!translationsLoaded()) {
       return "Memo";
     }
-    return `${props.title ? `${props.title} ${EM_DASH} ` : ""}${t("app_name")}${isDEV() ? " (DEV mode)" : ""}`;
+    return `${props.title ? `${props.title} ${EM_DASH} ` : ""}${t("app_name")}`;
   };
   return <Title>{fullTitle()}</Title>;
 };

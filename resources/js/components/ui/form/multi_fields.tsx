@@ -6,7 +6,7 @@ import {BsChevronCompactDown, BsChevronCompactUp} from "solid-icons/bs";
 import {Accessor, Index, JSX, Show, VoidComponent, createEffect, createMemo, on, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {ACTION_ICONS} from "../icons";
-import {EMPTY_VALUE_SYMBOL} from "../symbols";
+import {EmptyValueSymbol} from "../symbols";
 
 export interface MultiFieldData {
   readonly name: string;
@@ -199,10 +199,10 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
             </Index>
             <Show when={!multiField.length()}>
               <div class="flex gap-1 items-center justify-between min-h-small-input">
-                <Show when={!isFieldsetDisabled() && props.addAtEndValue} fallback={EMPTY_VALUE_SYMBOL}>
+                <Show when={!isFieldsetDisabled() && props.addAtEndValue} fallback={<EmptyValueSymbol />}>
                   {/* Add button on a line by itself when there are no items. */}
                   <Button class="flex-grow text-start" onClick={addAtEnd}>
-                    {EMPTY_VALUE_SYMBOL}
+                    <EmptyValueSymbol />
                   </Button>
                   <div class="flex justify-end">
                     <Button

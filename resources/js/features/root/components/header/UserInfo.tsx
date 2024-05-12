@@ -1,3 +1,4 @@
+import {useNavigate} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -22,6 +23,7 @@ interface WindowWithDeveloperLogin {
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
+  const navigate = useNavigate();
   const statusQuery = createQuery(User.statusQueryOptions);
   const passwordChangeModal = createPasswordChangeModal();
   const {toggleTheme} = useThemeControl();
@@ -33,10 +35,13 @@ export const UserInfo: VoidComponent = () => {
       isFormSubmit: true,
     },
     onSuccess() {
-      setActiveFacilityId(undefined);
-      resetDEV();
-      // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
-      invalidate.userStatusAndFacilityPermissions();
+      navigate("/");
+      setTimeout(() => {
+        resetDEV();
+        setActiveFacilityId(undefined);
+        // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
+        invalidate.userStatusAndFacilityPermissions({clearCache: true});
+      });
     },
   }));
   const developerLogin = createMutation(() => ({
@@ -61,7 +66,7 @@ export const UserInfo: VoidComponent = () => {
             await developerLogin.mutateAsync({developer});
             toggleDEV(developer);
             // eslint-disable-next-line no-console
-            console.debug(developer ? "Developer login success." : "Developer logout success.");
+            console.log(developer ? "Developer login success." : "Developer logout success.");
           })();
         };
       }

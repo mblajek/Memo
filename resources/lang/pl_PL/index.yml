@@ -1,6 +1,7 @@
 language: "polski"
 
 app_name: "Memo"
+app_version_short: "v{{version}}"
 
 exception:
   configuration:
@@ -44,12 +45,12 @@ range:
   min: "min:"
   max: "max:"
 
-quoted: "„{{text}}”"
+quoted: "„{{-text}}”"
 parenthesis:
   open: "("
   close: ")"
-parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
-with_colon: "{{text}}:"
+parenthesised: "$t(parenthesis.open){{-text}}$t(parenthesis.close)"
+with_colon: "{{-text}}:"
 ellipsis: "…"
 
 more_info: "Więcej informacji"
@@ -82,8 +83,9 @@ form_page_leave_confirmation:
 
 about_page:
   app_version: "Wersja aplikacji:"
-  commit_date: "Moment zbudowania:"
+  app_env: "Środowisko:"
+  commit_date: "Commit (data):"
   commit_hash: "Commit:"
-  backend_hash: "Suma kontrolna backendu:"
-  frontend_hash: "Suma kontrolna frontendu:"
   cpu_load: "Obciążenie CPU:"
+
+preview: "Podgląd"

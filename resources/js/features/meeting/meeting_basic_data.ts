@@ -3,7 +3,7 @@ import {MeetingAttendantResourceForCreate, MeetingResource} from "data-access/me
 /** Partial information about a meeting, helpful for locating it on the calendar. */
 export type MeetingBasicData = Pick<
   MeetingResource,
-  "id" | "date" | "startDayminute" | "durationMinutes" | "resources"
+  "id" | "typeDictId" | "date" | "startDayminute" | "durationMinutes" | "resources"
 > & {
   readonly staff: readonly MeetingAttendantResourceForCreate[];
 };

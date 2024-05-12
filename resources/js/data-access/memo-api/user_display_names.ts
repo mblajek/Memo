@@ -1,3 +1,4 @@
+import {useLangFunc} from "components/utils";
 import {createCached} from "components/utils/cache";
 import {createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -5,7 +6,6 @@ import {FacilityClient} from "./groups/FacilityClient";
 import {FacilityStaff} from "./groups/FacilityStaff";
 import {createTQuery, staticRequestCreator} from "./tquery/tquery";
 import {DataRequest} from "./tquery/types";
-import {useLangFunc} from "components/utils";
 
 export type FacilityUserType = "staff" | "clients";
 
@@ -26,14 +26,16 @@ export const useUserDisplayNames = createCached(() => {
     paging: {size: 1e6},
   };
   const staffQuery = createTQuery({
-    entityURL: `facility/${activeFacilityId()}/user/staff`,
-    prefixQueryKey: [FacilityStaff.keys.staffList()],
+    entityURL: () => `facility/${activeFacilityId()}/user/staff`,
+    prefixQueryKey: FacilityStaff.keys.staffList,
     requestCreator: staticRequestCreator(request),
+    dataQueryOptions: () => ({enabled: !!activeFacilityId()}),
   });
   const clientsQuery = createTQuery({
-    entityURL: `facility/${activeFacilityId()}/user/client`,
-    prefixQueryKey: [FacilityClient.keys.clientList()],
+    entityURL: () => `facility/${activeFacilityId()}/user/client`,
+    prefixQueryKey: FacilityClient.keys.clientList,
     requestCreator: staticRequestCreator(request),
+    dataQueryOptions: () => ({enabled: !!activeFacilityId()}),
   });
   function byId(list: SimpleUser[] | undefined) {
     if (!list) {

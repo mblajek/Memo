@@ -34,7 +34,7 @@ import {Dynamic} from "solid-js/web";
 import {TableContext, getColumns, useTableCells} from ".";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
-import {EMPTY_VALUE_SYMBOL} from "../symbols";
+import {EmptyValueSymbol} from "../symbols";
 import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
 
@@ -275,7 +275,11 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                     <Dynamic
                       component={{For, Index}[props.rowsIteration]}
                       each={props.table.getRowModel().rows}
-                      fallback={<div class={s.wideRow}>{EMPTY_VALUE_SYMBOL}</div>}
+                      fallback={
+                        <div class={s.wideRow}>
+                          <EmptyValueSymbol />
+                        </div>
+                      }
                     >
                       {(rowMaybeAccessor: Row<T> | Accessor<Row<T>>) => {
                         const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;

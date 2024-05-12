@@ -98,7 +98,7 @@ export default (() => {
                     return (
                       <>
                         <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
-                          <TextField name="name" />
+                          {(show) => <TextField name="name" disabled={!show()} />}
                         </HideableSection>
                         <ClientFields editMode={editMode()} />
                         <Switch>

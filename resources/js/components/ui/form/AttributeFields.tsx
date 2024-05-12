@@ -8,7 +8,6 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
-import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {
@@ -17,6 +16,7 @@ import {
   SimpleAttributeType,
 } from "data-access/memo-api/resources/attribute.resource";
 import {UserLink} from "features/facility-users/UserLink";
+import {useFacilityUsersSelectParams} from "features/facility-users/facility_users_select_params";
 import {DateTime} from "luxon";
 import {
   Accessor,
@@ -38,7 +38,7 @@ import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
-import {CHECKBOX, EMPTY_VALUE_SYMBOL} from "../symbols";
+import {CHECKBOX, EmptyValueSymbol} from "../symbols";
 import {CheckboxField} from "./CheckboxField";
 import {DictionarySelect} from "./DictionarySelect";
 import {MultilineTextField} from "./MultilineTextField";
@@ -72,7 +72,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const attributes = useAttributes();
-  const modelQuerySpecs = useModelQuerySpecs();
+  const facilityUsersSelectParams = useFacilityUsersSelectParams();
   const {form} = useFormContext();
 
   function fieldName(attribute: Attribute) {
@@ -129,13 +129,16 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
           case "user/staff":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect {...modelQuerySpecs.userStaff()} {...extraSelectProps} />
+                <TQuerySelect {...facilityUsersSelectParams.staffSelectParams()} {...extraSelectProps} />
               </Show>
             );
           case "user/client":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect {...modelQuerySpecs.userClient()} {...extraSelectProps} />
+                <TQuerySelect
+                  {...facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})}
+                  {...extraSelectProps}
+                />
               </Show>
             );
           default:
@@ -214,7 +217,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       return v !== undefined && v !== "" && !(Array.isArray(v) && !v.length);
     };
     const DefaultViewer: ParentComponent<htmlAttributes.div> = (props) => (
-      <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-20 whitespace-pre-wrap"})} />
+      <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-32 whitespace-pre-wrap"})} />
     );
     const defaultView = () => {
       function simpleAttributeView(type: SimpleAttributeType | DictAttributeType, val = value) {
@@ -296,7 +299,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       <div class="overflow-clip px-1">
         <Switch>
           <Match when={!hasValue()}>
-            <Show when={aProps.params?.viewEmpty} fallback={EMPTY_VALUE_SYMBOL}>
+            <Show when={aProps.params?.viewEmpty} fallback={<EmptyValueSymbol />}>
               {(viewEmpty) => viewEmpty()()}
             </Show>
           </Match>

@@ -1,4 +1,4 @@
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {VoidComponent} from "solid-js";
 import {FilterIconButton} from "./FilterIconButton";
 import {useTable} from "./TableContext";
@@ -13,7 +13,10 @@ export const TableFiltersClearButton: VoidComponent<Props> = (props) => {
   const table = useTable();
   return (
     <FilterIconButton
-      class="border border-input-border rounded px-1"
+      class={cx(
+        "border border-input-border rounded px-1",
+        props.columnsWithActiveFilters.length ? "border-memo-active" : undefined,
+      )}
       isFiltering={props.columnsWithActiveFilters.length > 0}
       onClear={props.clearColumnFilters}
       title={

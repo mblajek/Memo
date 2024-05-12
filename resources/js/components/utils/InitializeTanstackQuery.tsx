@@ -58,7 +58,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       if (respErrors) {
         // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
         if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {
-          invalidate.userStatusAndFacilityPermissions();
+          invalidate.userStatusAndFacilityPermissions({clearCache: true});
         }
         if (meta?.isFormSubmit) {
           // Validation errors will be handled by the form.

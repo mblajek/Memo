@@ -5,34 +5,33 @@ import {Capitalize} from "components/ui/Capitalize";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
-import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
+import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {ACTION_ICONS, CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
-import {cx, useLangFunc} from "components/utils";
+import {EmptyValueSymbol} from "components/ui/symbols";
+import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
-import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {
   MeetingAttendantResource,
   MeetingResource,
   MeetingResourceForCreate,
   MeetingResourceForPatch,
 } from "data-access/memo-api/resources/meeting.resource";
-import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, createMemo, on} from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
+import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
 import {getMeetingTimeFullData} from "./meeting_time_controller";
 
-export const getAttendantsSchemaPart = () => ({
-  staff: getAttendantsSchema(),
-  clients: getAttendantsSchema(),
-});
+export const getAttendantsSchemaPart = () =>
+  z.object({
+    staff: getAttendantsSchema(),
+    clients: getAttendantsSchema(),
+  });
 
 const getAttendantsSchema = () =>
   z.array(
@@ -65,6 +64,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const {createAttendant} = useAttendantsCreator();
+  const facilityUsersSelectParams = useFacilityUsersSelectParams();
   const {form, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
@@ -80,8 +80,24 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     ),
   );
 
+  // For some reason the form sometimes fails to propagate events from the selects. Nudge the data just in case.
+  createComputed(
+    on(
+      // eslint-disable-next-line solid/reactivity
+      createMemo(() =>
+        form
+          .data(props.name)
+          .map(({userId}) => userId)
+          .join(""),
+      ),
+      () => form.setData((d) => d),
+    ),
+  );
+  const attendantsMemo = createMemo(() => form.data(props.name), [], {
+    equals: (a, b) => a.length === b.length && a.every((v, i) => v.userId === b[i]!.userId),
+  });
   createEffect<readonly FormAttendantData[]>((prevAttendants) => {
-    const attendants = form.data(props.name);
+    const attendants = attendantsMemo();
     // When in edit mode, add an empty row at the end in the following situations:
     if (
       !props.viewMode &&
@@ -98,19 +114,6 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
       form.addField(props.name, createAttendant());
     return attendants;
   });
-  const tquerySpec = (): TQueryConfig => {
-    if (props.name === "staff")
-      return {
-        entityURL: `facility/${activeFacilityId()}/user/staff`,
-        prefixQueryKey: FacilityStaff.keys.staff(),
-      };
-    if (props.name === "clients")
-      return {
-        entityURL: `facility/${activeFacilityId()}/user/client`,
-        prefixQueryKey: FacilityClient.keys.client(),
-      };
-    return props.name satisfies never;
-  };
 
   return (
     <div class="flex flex-col items-stretch">
@@ -149,9 +152,21 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           </div>
         </Show>
         <div class="col-span-full grid grid-cols-subgrid gap-1 span">
-          <Index each={form.data(props.name)} fallback={EMPTY_VALUE_SYMBOL}>
+          <Index each={form.data(props.name)} fallback={<EmptyValueSymbol />}>
             {(_attendant, index) => {
               const userId = () => form.data(`${props.name}.${index}.userId`);
+              const priorityQueryParams = createMemo(() =>
+                props.name === "clients"
+                  ? // eslint-disable-next-line solid/reactivity
+                    facilityUsersSelectParams.autoRelatedClients(() =>
+                      form
+                        .data(props.name)
+                        .slice(0, index)
+                        .map(({userId}) => userId)
+                        .filter(NON_NULLABLE),
+                    )
+                  : undefined,
+              );
               return (
                 <Show
                   when={userId() || !props.viewMode}
@@ -174,7 +189,12 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         <TQuerySelect
                           name={`${props.name}.${index}.userId`}
                           label=""
-                          querySpec={tquerySpec()}
+                          {...(props.name === "staff"
+                            ? facilityUsersSelectParams.staffSelectParams()
+                            : props.name === "clients"
+                              ? facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})
+                              : (props.name satisfies never))}
+                          {...priorityQueryParams()?.()}
                           nullable={false}
                           small
                         />
