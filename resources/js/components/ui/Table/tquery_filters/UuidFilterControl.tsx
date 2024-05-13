@@ -1,6 +1,7 @@
 import {cx, debouncedAccessor} from "components/utils";
 import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/types";
-import {createComputed, createSignal} from "solid-js";
+import {createComputed} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControl} from "./types";
@@ -9,12 +10,13 @@ const UUID_LENGTH = 36;
 
 export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilter> = (props) => {
   const filterFieldNames = useFilterFieldNames();
-  const [value, setValue] = createSignal("");
-  createComputed(() => {
-    if (!props.filter) {
-      setValue("");
-    }
-    // Ignore other external filter changes.
+  const {
+    value: [value, setValue],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {value: ""},
+    filter: () => props.filter,
   });
   function buildFilter(value: string): NullColumnFilter | UuidColumnFilter | undefined {
     switch (value) {
@@ -28,7 +30,6 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
         return {type: "column", column: props.schema.name, op: "=", val: value};
     }
   }
-  // eslint-disable-next-line solid/reactivity
   const debouncedValue = debouncedAccessor(value, {
     outputImmediately: (v) => !v || v === "*" || v === "''" || v.length === UUID_LENGTH,
   });

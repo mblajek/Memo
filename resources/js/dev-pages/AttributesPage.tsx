@@ -104,7 +104,7 @@ export default (() => {
             <Header
               ctx={ctx}
               filter={[ctx.column.getFilterValue, ctx.column.setFilterValue as Setter<unknown>]}
-              filterControl={
+              filterControl={() => (
                 <Select
                   name="modelFilter"
                   items={models().map((model) => ({value: model}))}
@@ -113,7 +113,7 @@ export default (() => {
                   onValueChange={ctx.column.setFilterValue}
                   small
                 />
-              }
+              )}
             />
           ),
           filterFn: (row, columnId, filter: string) => row.getValue(columnId) === filter,

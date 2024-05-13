@@ -1,4 +1,4 @@
-import {Accessor, For, JSX, VoidComponent, createSignal} from "solid-js";
+import {Accessor, For, JSX, VoidComponent, createComputed, createSignal, on} from "solid-js";
 import {cx, debouncedAccessor} from "../utils";
 import {TrackingMarker} from "../utils/TrackingMarker";
 import {Button} from "./Button";
@@ -6,6 +6,8 @@ import {Button} from "./Button";
 interface Props {
   readonly tabs: readonly Tab[];
   readonly initialActiveTab?: string;
+  readonly activeTab?: string;
+  readonly onActiveTabChange?: (activeTab: string) => void;
 }
 
 interface Tab {
@@ -17,7 +19,24 @@ interface Tab {
 
 export const Tabs: VoidComponent<Props> = (props) => {
   // eslint-disable-next-line solid/reactivity
-  const [activeId, setActiveId] = createSignal(props.initialActiveTab || props.tabs[0]?.id);
+  const [activeId, setActiveId] = createSignal(props.initialActiveTab || props.activeTab || props.tabs[0]?.id);
+  createComputed(
+    on(
+      () => props.activeTab,
+      (activeTab) => {
+        if (activeTab) {
+          setActiveId(activeTab);
+        }
+      },
+    ),
+  );
+  createComputed(
+    on(activeId, (activeId) => {
+      if (activeId) {
+        props.onActiveTabChange?.(activeId);
+      }
+    }),
+  );
   return (
     <div class="flex flex-col items-stretch gap-1">
       <TrackingMarker

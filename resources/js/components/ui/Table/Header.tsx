@@ -9,7 +9,7 @@ interface Props {
   readonly ctx: HeaderContext<any, unknown>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly filter?: Signal<any | undefined>;
-  readonly filterControl?: JSX.Element;
+  readonly filterControl?: () => JSX.Element;
 }
 
 /**
@@ -36,7 +36,7 @@ export const Header: VoidComponent<Props> = (props) => {
       <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
         {(filterControl) => (
           <div class="flex flex-wrap items-end gap-0.5">
-            <div class="flex-grow basis-0">{filterControl()}</div>
+            <div class="flex-grow basis-0">{filterControl()()}</div>
             <div>
               <FilterIconButton isFiltering={!!props.filter![0]()} onClear={() => props.filter![1](undefined)} />
             </div>

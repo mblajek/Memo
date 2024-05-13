@@ -9,6 +9,7 @@ import {
   VisibilityState,
   createSolidTable,
 } from "@tanstack/solid-table";
+import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {NON_NULLABLE, debouncedAccessor} from "components/utils";
@@ -76,11 +77,14 @@ import {DictListFilterControl} from "./tquery_filters/DictListFilterControl";
 import {IntFilterControl} from "./tquery_filters/IntFilterControl";
 import {TextualFilterControl} from "./tquery_filters/TextualFilterControl";
 import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
+import {ColumnFilterStates} from "./tquery_filters/column_filter_states";
 import {FilterControl} from "./tquery_filters/types";
 
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
     readonly tquery?: TQueryTableMeta<TData>;
+    readonly historyPersistenceKey?: string;
+    readonly columnFilterStates?: ColumnFilterStates;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -116,9 +120,9 @@ export interface TQueryTableProps<TData = DataItem> {
   /**
    * Mode in which the table is displayed:
    * - standalone - the table is the main element on the page, typically displays many rows,
-   * header and footer are sticky.
+   *   header and footer are sticky.
    * - embedded - the table is displayed along with other elements in a page, typically with not
-   * many rows, without sticky elements.
+   *   many rows, without sticky elements.
    */
   readonly mode: DisplayMode;
   /** The prefix used for the data query (this allows invalidating the tquery data). */
@@ -185,7 +189,7 @@ export interface PartialColumnConfig<TData = DataItem> {
 interface HeaderParams<TData = DataItem> {
   readonly ctx: HeaderContext<TData, unknown>;
   readonly filter?: Signal<FilterH | undefined>;
-  readonly filterControl?: JSX.Element;
+  readonly filterControl?: () => JSX.Element;
 }
 
 type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "attributeColumns";
@@ -438,8 +442,11 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     clearColumnFilters,
     sorting,
     pagination,
+    miniState,
   } = requestController;
   const [table, setTable] = createSignal<SolidTable<DataItem>>();
+  const historyPersistenceKey = `TQueryTable:${props.staticPersistenceKey || "main"}`;
+  const columnFilterStates = new ColumnFilterStates();
   if (props.staticPersistenceKey) {
     // eslint-disable-next-line solid/reactivity
     const columnSizing = debouncedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
@@ -465,6 +472,17 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       version: [PERSISTENCE_VERSION],
     });
   }
+  createHistoryPersistence({
+    key: historyPersistenceKey,
+    value: () => ({
+      tquery: miniState[0](),
+      columnFilters: columnFilterStates.getAll(),
+    }),
+    onLoad: (state) => {
+      miniState[1](state.tquery);
+      columnFilterStates.setAll(state.columnFilters);
+    },
+  });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
   const baseTranslations = props.staticTranslations || createTableTranslations("generic");
@@ -479,6 +497,16 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     requestController,
     dataQuery,
     translations,
+  });
+  createEffect(() => {
+    // Return to the first page if the current page is empty but the table is probably not.
+    if (
+      !dataQuery.isFetching &&
+      !dataQuery.data?.data.length &&
+      dataQuery.data?.meta.totalDataSize &&
+      pagination[0]().pageIndex
+    )
+      pagination[1]((v) => ({...v, pageIndex: 0}));
   });
   createEffect(() => {
     const errors = filterErrors()?.values();
@@ -521,18 +549,15 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
               component={col.header || defColumnConfig.header}
               ctx={ctx}
               filter={filter}
-              filterControl={
-                schemaCol &&
-                filterControl && (
-                  <Dynamic
-                    component={filterControl}
-                    column={ctx.column}
-                    schema={schemaCol!}
-                    filter={filter[0]()}
-                    setFilter={filter[1]}
-                  />
-                )
-              }
+              filterControl={() => (
+                <Dynamic
+                  component={schemaCol && filterControl}
+                  column={ctx.column}
+                  schema={schemaCol!}
+                  filter={filter[0]()}
+                  setFilter={filter[1]}
+                />
+              )}
             />
           ),
         },
@@ -599,6 +624,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           },
           cellsPreviewMode: [cellsPreviewMode, setCellsPreviewMode],
         },
+        historyPersistenceKey,
+        columnFilterStates,
       },
     }),
   );

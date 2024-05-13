@@ -1,10 +1,12 @@
 # Strona główna pomocy
 
-Strona pomocy dla systemu Memo.
+**$t(app_name)** to system do zarządzania:
 
-🚧 Strona nadal w budowie 🚧
+- bazą klientów fundacji
+- kalendarzem wizyt klientów
+- grafikami pracy pracowników fundacji
 
-## Dokumenty
+## Dokumenty pomocy
 
 - Spotkania
   - [Statusy](meeting-statuses)

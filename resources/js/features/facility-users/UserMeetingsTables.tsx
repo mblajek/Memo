@@ -1,3 +1,4 @@
+import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {Capitalize} from "components/ui/Capitalize";
 import {BigSpinner} from "components/ui/Spinner";
 import {TableExportConfig, createTableTranslations} from "components/ui/Table";
@@ -54,6 +55,14 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
       tableName: `${baseName}__${userName}`,
     };
   }
+  const [activeTab, setActiveTab] = createSignal<string>();
+  createHistoryPersistence({
+    key: "userMeetingsTables",
+    value: () => ({activeTab: activeTab()}),
+    onLoad: (state) => {
+      setActiveTab(state.activeTab);
+    },
+  });
   return (
     <div class="flex flex-col">
       <Show when={dictionaries()} fallback={<BigSpinner />}>
@@ -308,6 +317,8 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
               ),
             },
           ]}
+          activeTab={activeTab()}
+          onActiveTabChange={setActiveTab}
         />
       </Show>
     </div>

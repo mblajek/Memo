@@ -3,7 +3,7 @@ import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-ta
 import {AxiosError} from "axios";
 import {TableTranslations} from "components/ui/Table";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
-import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
+import {NON_NULLABLE, useLangFunc} from "components/utils";
 import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
 import {useDictionaries} from "../dictionaries_and_attributes_context";
 import {translateError} from "../error_util";
@@ -24,7 +24,7 @@ export interface ColumnConfig {
 }
 
 /** A collection of column filters, keyed by column name. The undefined value denotes a disabled filter. */
-export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;
+export type ColumnFilters = Readonly<Record<ColumnName, Signal<FilterH | undefined>>>;
 
 interface RequestController {
   readonly columnVisibility: Signal<VisibilityState>;
@@ -34,6 +34,18 @@ interface RequestController {
   readonly clearColumnFilters: () => void;
   readonly sorting: Signal<SortingState>;
   readonly pagination: Signal<PaginationState>;
+  readonly miniState: [Accessor<MiniState>, (state: MiniState) => void];
+}
+
+/**
+ * The state of the table, related to the filtering, sorting and pagination. It is typically not persisted across sessions.
+ * The column filters are stored separately for technical reasons.
+ */
+export interface MiniState {
+  readonly globalFilter: string;
+  readonly columnFilters: Map<string, FilterH | undefined>;
+  readonly sorting: SortingState;
+  readonly pagination: PaginationState;
 }
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -68,8 +80,6 @@ export function createTableRequestCreator({
     const [columnFilters, setColumnFilters] = createSignal<ColumnFilters>({});
     const [sorting, setSorting] = createSignal<SortingState>(initialSort);
     const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
-    // eslint-disable-next-line solid/reactivity
-    const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
     function getColumnFilter(column: ColumnName) {
       let signal = columnFilters()[column];
       if (!signal) {
@@ -133,10 +143,16 @@ export function createTableRequestCreator({
         .map(([get]) => get())
         .filter(NON_NULLABLE),
     }));
-    // Go back to the first page on significant data changes.
+    /**
+     * Whether to go back to the first page on significant data changes. This is normally set, but is
+     * disabled when restoring the state from the history.
+     */
+    let goToFirstPageOnChanges = true;
     createComputed(
-      on([debouncedGlobalFilter, columnFiltersJoined, mainSort], () => {
-        setPagination((prev) => ({...prev, pageIndex: 0}));
+      on([globalFilter, columnFiltersJoined, mainSort], () => {
+        if (goToFirstPageOnChanges) {
+          setPagination((prev) => ({...prev, pageIndex: 0}));
+        }
       }),
     );
     const dataColumns = createMemo(() =>
@@ -196,7 +212,7 @@ export function createTableRequestCreator({
             op: "&",
             val: [
               intrinsicFilter(),
-              buildFuzzyGlobalFilter(debouncedGlobalFilter(), fuzzyGlobalFilterConfig()!),
+              buildFuzzyGlobalFilter(globalFilter(), fuzzyGlobalFilterConfig()!),
               columnFiltersJoined(),
             ].filter(NON_NULLABLE),
           }) || "always",
@@ -207,6 +223,26 @@ export function createTableRequestCreator({
         },
       };
     });
+    const miniState = () => ({
+      globalFilter: globalFilter(),
+      columnFilters: new Map(Object.entries(columnFilters()).map(([k, v]) => [k, v[0]()])),
+      sorting: sorting(),
+      pagination: pagination(),
+    });
+    function setMiniState(state: MiniState) {
+      goToFirstPageOnChanges = false;
+      batch(() => {
+        setGlobalFilter(state.globalFilter);
+        for (const [column, filter] of state.columnFilters) {
+          getColumnFilter(column)[1](filter);
+        }
+        setSorting(state.sorting);
+        setPagination(state.pagination);
+      });
+      setTimeout(() => {
+        goToFirstPageOnChanges = true;
+      });
+    }
     return {
       request,
       requestController: {
@@ -217,6 +253,7 @@ export function createTableRequestCreator({
         clearColumnFilters,
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],
+        miniState: [miniState, setMiniState],
       },
     };
   };

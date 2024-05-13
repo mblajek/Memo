@@ -3,6 +3,7 @@ import {Select, SelectItem} from "components/ui/form/Select";
 import {cx, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {createComputed, createMemo, createSignal} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
@@ -12,15 +13,20 @@ import {FilterControl} from "./types";
 export const TextualFilterControl: FilterControl = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
-  const [mode, setMode] = createSignal("~");
-  const [text, setText] = createSignal("");
-  createComputed(() => {
-    if (!props.filter) {
-      setMode("~");
-      setText("");
-    }
-    // Ignore other external filter changes.
+  const {
+    mode: [mode, setMode],
+    text: [text, setText],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {mode: "~", text: ""},
+    filter: () => props.filter,
   });
+  const [inputText, setInputText] = createSignal(text());
+  // eslint-disable-next-line solid/reactivity
+  const debouncedInputText = debouncedFilterTextAccessor(inputText);
+  createComputed(() => setText(debouncedInputText()));
+  createComputed(() => setInputText(text()));
   function buildFilter(mode: string, value: string): FilterH | undefined {
     switch (mode) {
       case "~":
@@ -37,9 +43,7 @@ export const TextualFilterControl: FilterControl = (props) => {
         throw new Error(`Invalid value: ${value}`);
     }
   }
-  // eslint-disable-next-line solid/reactivity
-  const debouncedText = debouncedFilterTextAccessor(text);
-  createComputed(() => props.setFilter(buildFilter(mode(), debouncedText())));
+  createComputed(() => props.setFilter(buildFilter(mode(), text())));
   const items = createMemo(() => {
     const items: SelectItem[] = [];
     items.push(
@@ -110,10 +114,10 @@ export const TextualFilterControl: FilterControl = (props) => {
           name={filterFieldNames.get(`val_${props.schema.name}`)}
           autocomplete="off"
           class="h-full w-full min-h-small-input"
-          value={inputUsed() ? text() : ""}
+          value={inputUsed() ? inputText() : ""}
           maxlength={inputUsed() ? undefined : 0}
           disabled={!inputUsed()}
-          onInput={({target: {value}}) => setText(value)}
+          onInput={({target: {value}}) => setInputText(value)}
         />
       </div>
     </div>

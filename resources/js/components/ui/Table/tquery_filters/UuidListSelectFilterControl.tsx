@@ -1,11 +1,12 @@
 import {TQuerySelect, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {cx} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {DictDataColumnSchema, SetsOp} from "data-access/memo-api/tquery/types";
-import {VoidComponent, createComputed, createSignal, splitProps} from "solid-js";
+import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
+import {VoidComponent, createComputed, splitProps} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
-import {useMultiSelectFilterHelper} from "./select_filters_helper";
+import {SelectFilterMode, SelectFilterModeControl} from "./select_filters_helper";
 import {FilterControlProps} from "./types";
 
 interface Props
@@ -15,16 +16,15 @@ interface Props
 export const UuidListSelectFilterControl: VoidComponent<Props> = (allProps) => {
   const [props, selectProps] = splitProps(allProps, ["column", "schema", "filter", "setFilter"]);
   const filterFieldNames = useFilterFieldNames();
-  const {ModeControl} = useMultiSelectFilterHelper();
   const schema = () => props.schema as DictDataColumnSchema;
-  const [mode, setMode] = createSignal<SetsOp>("has_all");
-  const [value, setValue] = createSignal<readonly string[]>([]);
-  createComputed(() => {
-    if (!props.filter) {
-      setMode("has_all");
-      setValue([]);
-    }
-    // Ignore other external filter changes.
+  const {
+    mode: [mode, setMode],
+    value: [value, setValue],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {mode: "has_all" as SelectFilterMode, value: [] as readonly string[]},
+    filter: () => props.filter,
   });
   function buildFilter(): FilterH | undefined {
     if (mode() === "has_all" && !value().length) {
@@ -41,7 +41,7 @@ export const UuidListSelectFilterControl: VoidComponent<Props> = (allProps) => {
   createComputed(() => props.setFilter(buildFilter()));
   return (
     <div class={cx(s.filter, "min-w-24 flex flex-col items-stretch gap-0.5")}>
-      <ModeControl columnName={schema().name} mode={mode()} onModeChange={setMode} />
+      <SelectFilterModeControl columnName={schema().name} mode={mode()} onModeChange={setMode} />
       <TQuerySelect
         name={filterFieldNames.get(`val_${schema().name}`)}
         {...selectProps}

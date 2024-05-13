@@ -10,6 +10,7 @@ import NotFound from "features/not-found/components/NotFound";
 import {PageWithTheme} from "features/root/components/theme_control";
 import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {clearAllHistoryState} from "./components/persistence/history_persistence";
 import {MemoRouteTitle} from "./features/root/MemoRouteTitle";
 import {activeFacilityId} from "./state/activeFacilityId.state";
 
@@ -145,6 +146,12 @@ const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => 
           <Dynamic component={props.component} {...innerProps} />
         </>
       )}
+      load={(args) => {
+        // Clear history state on browser refresh. Some browsers keep the state after a refresh which seems wrong.
+        if (args.intent === "initial") {
+          clearAllHistoryState();
+        }
+      }}
     />
   );
 };
