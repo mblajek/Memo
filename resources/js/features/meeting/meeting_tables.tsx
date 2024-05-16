@@ -339,6 +339,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     attendanceType: {
       name: "attendant.attendanceTypeDictId",
     },
+    attendantId: {
+      name: "attendant.userId",
+      initialVisible: false,
+    },
     attendant: {
       // TODO: Make this a user column filterable by TQuerySelect.
       name: "attendant.name",
