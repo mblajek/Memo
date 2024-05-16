@@ -26,6 +26,7 @@ export default (() => {
       ]}
       columns={meetingTableColumns.get(
         "attendanceType",
+        "attendantId",
         "attendant",
         "attendanceStatus",
         "id",
