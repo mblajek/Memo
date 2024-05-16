@@ -211,6 +211,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         overflowPadding: 10,
         flip: true,
         sameWidth: false,
+        overlap: true,
       },
       onInputValueChange: ({value}) => {
         if (typeof props.onFilterChange === "function") {
