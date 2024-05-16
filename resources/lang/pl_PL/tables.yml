@@ -53,15 +53,15 @@ tables:
       clients.*.userId: "$t(models.meeting.clients)"
       clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
-      attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
-      attendant.name: "uczestnik"
-      attendant.userId: "id uczestnika"
-      attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
 
   meetingAttendant:
     tableName: "$t(models.meeting.attendants)"
     columnNames:
       id: "id spotkania"
+      attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
+      attendant.name: "uczestnik"
+      attendant.userId: "id uczestnika"
+      attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
     summary__zero: "Brak uczestników"
     summary__one: "{{count, number}} uczestnik"
     summary__few: "{{count, number}} uczestników"
