@@ -22,7 +22,7 @@
             @apply grid p-px gap-px;
 
             > .headerRow {
-              @apply col-span-full grid grid-flow-col grid-cols-subgrid;
+              @apply max-h-60 col-span-full grid grid-flow-col grid-cols-subgrid;
               @apply outline outline-1 outline-gray-400 bg-gray-400;
 
               > .cell {

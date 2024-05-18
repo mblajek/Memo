@@ -77,10 +77,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     );
   };
 
-  const attendantsTextExport = exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v) =>
-    v.map((u) => u.name).join(", "),
-  );
-
   return new TableColumnsSet({
     ...({
       id: {name: "id", initialVisible: false},
@@ -197,7 +193,11 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
             </ScrollableCell>
           )),
         },
-        metaParams: {textExportCell: attendantsTextExport},
+        metaParams: {
+          textExportCell: exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v) =>
+            v.map((u) => u.name).join(", "),
+          ),
+        },
       },
       attendantsAttendance: {
         name: "attendants.*.attendanceStatusDictId",
@@ -221,7 +221,11 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         filterControl: (props) => (
           <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
         ),
-        metaParams: {textExportCell: attendantsTextExport},
+        metaParams: {
+          textExportCell: exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v, ctx) =>
+            ctx.row.staff.map((u) => u.name).join(", "),
+          ),
+        },
       },
       staffAttendance: {
         name: "staff.*.attendanceStatusDictId",
@@ -245,7 +249,11 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         filterControl: (props) => (
           <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
         ),
-        metaParams: {textExportCell: attendantsTextExport},
+        metaParams: {
+          textExportCell: exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v, ctx) =>
+            ctx.row.clients.map((u) => u.name).join(", "),
+          ),
+        },
       },
       clientsAttendance: {
         name: "clients.*.attendanceStatusDictId",

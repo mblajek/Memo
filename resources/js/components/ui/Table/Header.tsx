@@ -35,7 +35,7 @@ export const Header: VoidComponent<Props> = (props) => {
       </span>
       <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
         {(filterControl) => (
-          <div class="flex flex-wrap items-end gap-0.5">
+          <div class="flex flex-wrap items-end gap-0.5 overflow-y-auto">
             <div class="flex-grow basis-0">{filterControl()()}</div>
             <div>
               <FilterIconButton isFiltering={!!props.filter![0]()} onClear={() => props.filter![1](undefined)} />
