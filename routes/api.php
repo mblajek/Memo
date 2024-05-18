@@ -9,6 +9,7 @@ use App\Http\Controllers\Facility\ClientController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\FacilityAdminController;
 use App\Http\Controllers\Facility\MeetingAttendantTqueryController;
+use App\Http\Controllers\Facility\MeetingClientTqueryController;
 use App\Http\Controllers\Facility\MeetingController;
 use App\Http\Controllers\Facility\MeetingTqueryController;
 use App\Http\Controllers\Facility\StaffController;
@@ -94,6 +95,8 @@ Route::prefix('/v1')->group(function () {
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
             Route::get('/attendant/tquery', [MeetingAttendantTqueryController::class, 'get']);
             Route::post('/attendant/tquery', [MeetingAttendantTqueryController::class, 'post']);
+            Route::get('/client/tquery', [MeetingClientTqueryController::class, 'get']);
+            Route::post('/client/tquery', [MeetingClientTqueryController::class, 'post']);
         });
         Route::prefix('/admin')->group(function () {
             Route::prefix('/attribute')->group(function () {

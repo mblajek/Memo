@@ -3,7 +3,9 @@
 namespace App\Tquery\Tables;
 
 use App\Models\Client;
+use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
@@ -21,12 +23,25 @@ readonly class ClientTquery extends FacilityUserTquery
         return $builder;
     }
 
+    final public static function addClientFields(Facility $facility, TqConfig $config): void
+    {
+        $config->addJoined(TqDataTypeEnum::datetime, TqTableAliasEnum::clients, 'created_at', 'client.created_at');
+        $config->addJoined(TqDataTypeEnum::datetime, TqTableAliasEnum::clients, 'updated_at', 'client.updated_at');
+        $config->addJoined(TqDataTypeEnum::uuid, TqTableAliasEnum::clients, 'created_by', 'client.created_by.id');
+        $config->addQuery(TqDataTypeEnum::string, fn(string $tableName) => //
+        'select `users`.`name` from `users` where `users`.`id` = `clients`.`created_by`', 'client.created_by.name');
+        $config->addJoined(TqDataTypeEnum::uuid, TqTableAliasEnum::clients, 'updated_by', 'client.updated_by.id');
+        $config->addQuery(TqDataTypeEnum::string, fn(string $tableName) => //
+        'select `users`.`name` from `users` where `users`.`id` = `clients`.`updated_by`', 'client.updated_by.name');
+        foreach (Client::attrMap($facility) as $attribute) {
+            $config->addAttribute($attribute, 'client');
+        }
+    }
+
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-        foreach (Client::attrMap($this->facility) as $attribute) {
-            $config->addAttribute($attribute, 'client');
-        }
+        self::addClientFields($this->facility, $config);
         return $config;
     }
 }
