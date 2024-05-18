@@ -29,7 +29,7 @@ class MeetingClientTqueryController extends ApiController
     #[OpenApiGet(
         path: '/api/v1/facility/{facility}/meeting/client/tquery',
         permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Facility meetings tquery',
+        summary: 'Facility meeting clients tquery',
         tag: 'Facility meeting',
         parameters: [new FacilityParameter()],
     )]
@@ -41,7 +41,7 @@ class MeetingClientTqueryController extends ApiController
     #[OpenApiPost(
         path: '/api/v1/facility/{facility}/meeting/client/tquery',
         permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Facility meetings tquery',
+        summary: 'Facility meeting clients tquery',
         tag: 'Facility meeting',
         parameters: [new FacilityParameter()],
     )]
