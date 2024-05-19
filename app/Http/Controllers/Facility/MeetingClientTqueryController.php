@@ -8,13 +8,13 @@ use App\Http\Permissions\PermissionDescribe;
 use App\Tquery\Engine\TqService;
 use App\Tquery\OpenApi\OpenApiGet;
 use App\Tquery\OpenApi\OpenApiPost;
-use App\Tquery\Tables\ClientTquery;
+use App\Tquery\Tables\MeetingClientTquery;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 
-class ClientTqueryController extends ApiController
+class MeetingClientTqueryController extends ApiController
 {
     protected function initPermissions(): void
     {
@@ -23,14 +23,14 @@ class ClientTqueryController extends ApiController
 
     private function getTqService(): TqService
     {
-        return App::make(ClientTquery::class, ['facility' => $this->getFacilityOrFail()]);
+        return App::make(MeetingClientTquery::class, ['facility' => $this->getFacilityOrFail()]);
     }
 
     #[OpenApiGet(
-        path: '/api/v1/facility/{facility}/user/client/tquery',
+        path: '/api/v1/facility/{facility}/meeting/client/tquery',
         permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Facility clients tquery',
-        tag: 'Facility member',
+        summary: 'Facility meeting clients tquery',
+        tag: 'Facility meeting',
         parameters: [new FacilityParameter()],
     )]
     public function get(): JsonResponse
@@ -39,10 +39,10 @@ class ClientTqueryController extends ApiController
     }
 
     #[OpenApiPost(
-        path: '/api/v1/facility/{facility}/user/client/tquery',
+        path: '/api/v1/facility/{facility}/meeting/client/tquery',
         permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Facility clients tquery',
-        tag: 'Facility member',
+        summary: 'Facility meeting clients tquery',
+        tag: 'Facility meeting',
         parameters: [new FacilityParameter()],
     )]
     public function post(

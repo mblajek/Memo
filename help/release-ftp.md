@@ -13,11 +13,11 @@
   - config
   - database
   - public
-  - resources (bez js)
+  - resources
   - routes
   - storage (bez logs)
   - vendor
-- usunąć zawartość `x-old`
+- zawartość `x-old` przenieść do `x-old/xxx`
 - wszystko (oprócz `x-*` i `.env`) przenieść z `/` do `x-old`
 - wszystko z `x-new` przenieść do `/`
 - sprawdzić, czy nie został zgubiony `.env`
