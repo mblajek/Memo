@@ -22,6 +22,7 @@ const ClientCreatePage = lazyAutoPreload(() => import("features/root/pages/Clien
 const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
 const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
 const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHelp.page"));
+const FacilityAdminsListPage = lazyAutoPreload(() => import("features/root/pages/FacilityAdminsList.page"));
 const FacilityHomePage = lazyAutoPreload(() => import("features/root/pages/FacilityHome.page"));
 const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
@@ -105,9 +106,12 @@ const App: VoidComponent = () => {
                   <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
                 </Route>
                 <Route path="/clients">
-                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
                   <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
+                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
                   <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+                </Route>
+                <Route path="/admins">
+                  <LeafRoute routeKey="facility.admins" path="/" component={FacilityAdminsListPage} />
                 </Route>
               </Route>
               <Route

@@ -1,5 +1,6 @@
 import {BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
+  BsFileEarmarkPerson,
   BsHouse,
   BsHouseAdd,
   BsHouseDash,
@@ -32,6 +33,11 @@ export const CLIENT_ICONS = {
   menu: IoPeopleCircleOutline,
   client: IoPersonCircleOutline,
   clients: IoPeopleCircleOutline,
+};
+
+export const ADMIN_ICONS = {
+  menu: BsFileEarmarkPerson,
+  admin: BsFileEarmarkPerson,
 };
 
 export const FACILITY_ICONS = {

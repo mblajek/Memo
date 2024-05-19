@@ -1,6 +1,6 @@
 import {A} from "@solidjs/router";
 import {FullLogo} from "components/ui/FullLogo";
-import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
+import {ADMIN_ICONS, CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
@@ -31,6 +31,7 @@ export const Navbar: VoidComponent = () => {
       <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar" />
       <NavigationItem icon={STAFF_ICONS.menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
       <NavigationItem icon={CLIENT_ICONS.menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
+      <NavigationItem icon={ADMIN_ICONS.menu} href={`/${facilityUrl()}/admins`} routeKey="facility.admins" />
     </>
   );
   const themeStyle = () => {

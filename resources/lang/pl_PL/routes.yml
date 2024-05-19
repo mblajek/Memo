@@ -20,6 +20,7 @@ facility:
   clients: "$t(models.client._name_plural)"
   client_details: "$t(models.client._name)"
   client_create: "$t(forms.client_create.formName)"
+  admins: "administratorzy"
 
   facility_admin:
     time_tables: "Grafiki pracy"

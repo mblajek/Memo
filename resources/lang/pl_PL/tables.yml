@@ -16,6 +16,7 @@ tables:
     summary__many: "{{count, number}} osób"
 
   staff:
+    tableName: "$t(models.staff._name_plural)"
     summary__zero: "Brak pracowników"
     summary__one: "{{count, number}} pracownik"
     summary__few: "{{count, number}} pracowników"
@@ -24,10 +25,20 @@ tables:
       staff.hasFacilityAdmin: "$t(models.staff.hasFacilityAdmin)"
 
   client:
+    tableName: "$t(models.client._name_plural)"
     summary__zero: "Brak klientów"
     summary__one: "{{count, number}} klient"
     summary__few: "{{count, number}} klientów"
     summary__many: "{{count, number}} klientów"
+
+  facility_admin:
+    tableName: "administratorzy"
+    summary__zero: "Brak administratorów"
+    summary__one: "{{count, number}} administrator"
+    summary__few: "{{count, number}} administratorów"
+    summary__many: "{{count, number}} administratorów"
+    columnNames:
+      member.isStaff: "$t(models.userFacilityMember.isFacilityStaff) (posiada kalendarz)"
 
   userFacilityMember:
     tableName: "$t(models.user.members)"
