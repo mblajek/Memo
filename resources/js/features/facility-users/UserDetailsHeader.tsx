@@ -4,7 +4,7 @@ import {Email} from "components/ui/Email";
 import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {UserResource} from "data-access/memo-api/resources/user.resource";
-import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
+import {FacilityUserType, getFacilityUserTypeName} from "features/facility-users/user_types";
 import {Show, VoidComponent} from "solid-js";
 import {createUserEditModal} from "../user-edit/user_edit_modal";
 import {CreatedByInfo} from "./CreatedByInfo";
@@ -19,7 +19,6 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const status = createQuery(User.statusQueryOptions);
   const userEditModal = createUserEditModal();
-  const userDisplayNames = useUserDisplayNames();
   return (
     <div class="flex justify-between flex-wrap gap-2">
       <div class="flex flex-col gap-0.5">
@@ -27,7 +26,7 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
           <h2 class="flex gap-1 items-center font-medium text-xl">
             <UserLink type={props.type} link={false} userId={props.user.id} name={props.user.name} />
           </h2>
-          <div class="text-xs">{t("parenthesised", {text: userDisplayNames.getTypeName(props.type)})}</div>
+          <div class="text-xs">{t("parenthesised", {text: getFacilityUserTypeName(t, props.type)})}</div>
         </div>
         <Show when={props.user.email}>
           <div class="text-sm">

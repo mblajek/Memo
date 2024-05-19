@@ -48,7 +48,7 @@ export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
                 {/* Anchor links don't work very well on the A component. */}
                 <a {...aProps} />
               </Match>
-              <Match when={true}>
+              <Match when="fallback">
                 <A
                   {...{
                     href: "",

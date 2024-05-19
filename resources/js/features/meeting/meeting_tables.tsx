@@ -3,8 +3,9 @@ import {Button, DeleteButton} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
-import {exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
+import {TextExportedCell, exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
 import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/UuidListSelectFilterControl";
+import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
 import {createConfirmation} from "components/ui/confirmation";
 import {ACTION_ICONS} from "components/ui/icons";
 import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
@@ -19,7 +20,7 @@ import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-ap
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, TableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {Api} from "data-access/memo-api/types";
-import {FacilityUserType} from "data-access/memo-api/user_display_names";
+import {FacilityUserType} from "features/facility-users/user_types";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
@@ -28,6 +29,17 @@ import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeries
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
+
+type TQFullMeetingResource = TQMeetingResource & {
+  readonly attendants: readonly TQMeetingAttendantResource[];
+};
+
+type TQMeetingAttendanceResource = TQFullMeetingResource & {
+  readonly "attendant.attendanceTypeDictId": string;
+  readonly "attendant.id": string;
+  readonly "attendant.name": string;
+  readonly "attendant.attendanceStatusDictId": string;
+};
 
 export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {}) {
   const t = useLangFunc();
@@ -85,7 +97,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         name: "startDayminute",
         extraDataColumns: ["durationMinutes"],
         columnDef: {
-          cell: cellFunc<number, TQMeetingResource>((props) => (
+          cell: cellFunc<number, TQFullMeetingResource>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>
                 {(v) => <MeetingTime startDayMinute={v()} durationMinutes={props.row.durationMinutes} />}
@@ -97,7 +109,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           size: 120,
         },
         metaParams: {
-          textExportCell: exportCellFunc<string, number, TQMeetingResource>((v) => formatDayMinuteHM(v)),
+          textExportCell: exportCellFunc<TextExportedCell, number, TQFullMeetingResource>(
+            (v, ctx) =>
+              `${formatDayMinuteHM(v)}-${formatDayMinuteHM((v + ctx.row.durationMinutes ?? 0) % MAX_DAY_MINUTE)}`,
+          ),
         },
       },
       duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
@@ -105,7 +120,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         name: "isClone",
         extraDataColumns: ["interval"],
         columnDef: {
-          cell: cellFunc<boolean, TQMeetingResource>((props) => (
+          cell: cellFunc<boolean, TQFullMeetingResource>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>
                 {(v) => (
@@ -126,7 +141,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         name: "interval",
         initialVisible: false,
         columnDef: {
-          cell: cellFunc<string, TQMeetingResource>((props) => (
+          cell: cellFunc<string, TQFullMeetingResource>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>
                 {(v) => (
@@ -148,7 +163,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       status: {
         name: "statusDictId",
         columnDef: {
-          cell: cellFunc<Api.Id, TQMeetingResource>((props) => (
+          cell: cellFunc<Api.Id, TQFullMeetingResource>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>{(v) => <SimpleMeetingStatusTag status={v()} />}</ShowCellVal>
             </PaddedCell>
@@ -160,7 +175,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         name: "statusDictId",
         extraDataColumns: ["staff", "clients", "isRemote"],
         columnDef: {
-          cell: cellFunc<string, TQMeetingResource>((props) => (
+          cell: cellFunc<string, TQFullMeetingResource>((props) => (
             <ScrollableCell baseHeight={baseHeight}>
               <ShowCellVal v={props.v}>
                 <MeetingStatusTags meeting={props.row} showPlannedTag />
@@ -171,12 +186,12 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
       },
       attendants: {
-        // TODO: Make this column filterable by TQuerySelect.
-        name: "attendants",
+        name: "attendants.*.userId",
+        extraDataColumns: ["attendants"],
         columnDef: {
-          cell: cellFunc<TQMeetingAttendantResource[], TQMeetingResource>((props) => (
+          cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
             <ScrollableCell baseHeight={baseHeight} class="flex flex-col gap-1">
-              <ShowCellVal v={props.v}>
+              <ShowCellVal v={props.row.attendants}>
                 {(v) => (
                   <>
                     <UserLinks
@@ -192,10 +207,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
               </ShowCellVal>
             </ScrollableCell>
           )),
+          size: 250,
         },
+        filterControl: (props) => (
+          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientsSelectParams()} />
+        ),
         metaParams: {
-          textExportCell: exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v) =>
-            v.map((u) => u.name).join(", "),
+          textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
+            (v, ctx) => ctx.row.attendants?.map((u) => u.name).join(", "),
           ),
         },
       },
@@ -211,7 +230,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         name: "staff.*.userId",
         extraDataColumns: ["staff"],
         columnDef: {
-          cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
+          cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
             <ScrollableCell baseHeight={baseHeight}>
               <UserLinks type="staff" users={props.row.staff} />
             </ScrollableCell>
@@ -222,8 +241,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
         ),
         metaParams: {
-          textExportCell: exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v, ctx) =>
-            ctx.row.staff.map((u) => u.name).join(", "),
+          textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
+            (v, ctx) => ctx.row.staff.map((u) => u.name).join(", "),
           ),
         },
       },
@@ -239,7 +258,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         name: "clients.*.userId",
         extraDataColumns: ["clients"],
         columnDef: {
-          cell: cellFunc<readonly string[], TQMeetingResource>((props) => (
+          cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
             <ScrollableCell baseHeight={baseHeight}>
               <UserLinks type="clients" users={props.row.clients} />
             </ScrollableCell>
@@ -250,8 +269,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
         ),
         metaParams: {
-          textExportCell: exportCellFunc<string, TQMeetingAttendantResource[], TQMeetingResource>((v, ctx) =>
-            ctx.row.clients.map((u) => u.name).join(", "),
+          textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
+            (v, ctx) => ctx.row.clients.map((u) => u.name).join(", "),
           ),
         },
       },
@@ -267,7 +286,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       notes: {
         name: "notes",
         columnDef: {
-          cell: cellFunc<string, TQMeetingResource>((props) => (
+          cell: cellFunc<string, TQFullMeetingResource>((props) => (
             <ScrollableCell baseHeight={baseHeight}>
               <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
             </ScrollableCell>
@@ -304,7 +323,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         name: "date",
         extraDataColumns: ["startDayminute", "durationMinutes", "fromMeetingId", "interval", "id"],
         columnDef: {
-          cell: cellFunc<string, TQMeetingResource>((props) => (
+          cell: cellFunc<string, TQFullMeetingResource>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>
                 {(v) => (
@@ -335,56 +354,39 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           )),
         },
         metaParams: {
-          textExportCell: exportCellFunc<string, string, TQMeetingResource>((v, ctx) =>
+          textExportCell: exportCellFunc<TextExportedCell, string, TQFullMeetingResource>((v, ctx) =>
             formatDateTimeForTextExport(DateTime.fromISO(v).set(dayMinuteToHM(ctx.row.startDayminute))),
           ),
         },
       },
-    } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingResource>>> as Partial<
-      Record<string, PartialColumnConfig<TQMeetingResource>>
+    } satisfies Partial<Record<string, PartialColumnConfig<TQFullMeetingResource>>> as Partial<
+      Record<string, PartialColumnConfig<TQFullMeetingResource>>
     >),
     // Attendance tables only:
     attendanceType: {
       name: "attendant.attendanceTypeDictId",
     },
-    attendantId: {
-      name: "attendant.userId",
-      initialVisible: false,
-    },
     attendant: {
-      // TODO: Make this a user column filterable by TQuerySelect.
-      name: "attendant.name",
-      extraDataColumns: ["attendant.userId", "attendant.attendanceTypeDictId"],
+      name: "attendant.userId",
+      extraDataColumns: ["attendant.name"],
       columnDef: {
-        cell: cellFunc<string>((props) => {
-          const type = (): FacilityUserType | undefined => {
-            const attendanceType = props.row["attendant.attendanceTypeDictId"];
-            if (!attendanceType) {
-              return undefined;
-            }
-            switch (attendanceType) {
-              case attendanceTypeDict()?.staff.id:
-                return "staff";
-              case attendanceTypeDict()?.client.id:
-                return "clients";
-              default:
-                throw new Error("Invalid attendance type");
-            }
-          };
-          return (
-            <PaddedCell>
-              <Show when={type()}>
-                {(type) => (
-                  <UserLink
-                    type={type()}
-                    userId={props.row["attendant.userId"] as string | undefined}
-                    name={props.v!}
-                  />
-                )}
-              </Show>
-            </PaddedCell>
-          );
-        }),
+        cell: cellFunc<string>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>
+              {(v) => <UserLink userId={v()} name={props.row["attendant.name"] as string | undefined} />}
+            </ShowCellVal>
+          </PaddedCell>
+        )),
+        size: 250,
+      },
+      filterControl: (props) => (
+        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientsSelectParams()} />
+      ),
+      metaParams: {
+        // TODO: Fix the typings.
+        textExportCell: exportCellFunc<TextExportedCell, string, any /*TQMeetingAttendanceResource*/>(
+          (v, ctx) => ctx.row["attendant.name"],
+        ),
       },
     },
     attendanceStatus: {

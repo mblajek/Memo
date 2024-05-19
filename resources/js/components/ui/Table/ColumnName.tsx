@@ -22,7 +22,7 @@ export const ColumnName: VoidComponent<Props> = (props) => {
             <span class="text-xs">DEV</span> {props.def.id}
           </span>
         </Match>
-        <Match when={true}>
+        <Match when="fallback">
           <TranslatedText
             override={props.def.meta?.columnName}
             langFunc={

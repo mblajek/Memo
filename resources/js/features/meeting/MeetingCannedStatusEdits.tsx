@@ -7,7 +7,7 @@ import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {FacilityUserType} from "data-access/memo-api/user_display_names";
+import {FacilityUserType} from "features/facility-users/user_types";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {Show, VoidComponent} from "solid-js";
 import {MeetingFormType} from "./MeetingForm";

@@ -70,8 +70,7 @@ tables:
     columnNames:
       id: "id spotkania"
       attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
-      attendant.name: "uczestnik"
-      attendant.userId: "id uczestnika"
+      attendant.userId: "uczestnik"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
     summary__zero: "Brak uczestników"
     summary__one: "{{count, number}} uczestnik"

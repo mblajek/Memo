@@ -23,7 +23,7 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
             <ACTION_ICONS.repeat class="inlineIcon" />
           </span>
         </Match>
-        <Match when={true}>
+        <Match when="fallback">
           <span>
             <ACTION_ICONS.repeat class="inlineIcon" /> {text()}
           </span>

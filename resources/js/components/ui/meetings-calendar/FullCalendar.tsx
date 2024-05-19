@@ -911,7 +911,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 onWheelWithAlt={(e) => wheelWithAlt(e, "month")}
               />
             </Match>
-            <Match when={true}>
+            <Match when="fallback">
               <ColumnsCalendar
                 class="h-full min-h-0"
                 isLoading={isCalendarLoading()}

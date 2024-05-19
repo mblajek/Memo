@@ -11,12 +11,12 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {Sort} from "data-access/memo-api/tquery/types";
-import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
 import {Accessor, ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "../meeting/attendance_status_info";
 import {useMeetingTableColumns, useMeetingTableFilters} from "../meeting/meeting_tables";
 import {UserMeetingsStats} from "./user_meetings_stats";
+import {FacilityUserType, getFacilityUserTypeName} from "./user_types";
 
 interface Props {
   readonly userName: string;
@@ -30,7 +30,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {dictionaries, meetingStatusDict} = useFixedDictionaries();
   const {presenceStatuses} = useAttendanceStatusesInfo();
-  const userDisplayNames = useUserDisplayNames();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns({baseHeight: "3rem"});
   const meetingTableFilters = useMeetingTableFilters();
@@ -50,7 +49,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   function exportConfig(tableType: "planned" | "completed" | "all"): TableExportConfig {
     const baseName =
       tableType === "all" ? tableTranslations.tableName() : t(`facility_user.meetings_lists.${tableType}`);
-    const userName = `${props.userName.replaceAll(" ", "_")}_(${userDisplayNames.getTypeName(props.userType)})`;
+    const userName = `${props.userName.replaceAll(" ", "_")}_(${getFacilityUserTypeName(t, props.userType)})`;
     return {
       tableName: `${baseName}__${userName}`,
     };

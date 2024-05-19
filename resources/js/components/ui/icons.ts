@@ -27,6 +27,8 @@ export const USER_ICONS = {
 export const STAFF_ICONS = {
   menu: BsPersonBadge,
   staff: BsPersonBadge,
+  // TODO: Differentiate the icons.
+  staffAndFacilityAdmin: BsPersonBadge,
 };
 
 export const CLIENT_ICONS = {

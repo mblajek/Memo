@@ -307,7 +307,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
             </Show>
           </Match>
           <Match when={aProps.params?.view}>{(view) => view()(value)}</Match>
-          <Match when={true}>{defaultView()}</Match>
+          <Match when="fallback">{defaultView()}</Match>
         </Switch>
       </div>
     );
