@@ -1,4 +1,5 @@
 import {A} from "@solidjs/router";
+import {Email} from "components/ui/Email";
 import {RichTextView} from "components/ui/RichTextView";
 import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations, useTableCells} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
@@ -59,7 +60,16 @@ export default (() => {
               columnDef: {cell: tableCells.dateNoWeekday()},
             },
             addressCity: {initialVisible: true},
-            contactEmail: {initialVisible: true},
+            contactEmail: {
+              initialVisible: true,
+              columnDef: {
+                cell: cellFunc<string>((props) => (
+                  <PaddedCell>
+                    <ShowCellVal v={props.v}>{(v) => <Email class="w-full" email={v()} />}</ShowCellVal>
+                  </PaddedCell>
+                )),
+              },
+            },
             contactPhone: {initialVisible: true, columnDef: {size: 180}},
             notes: {
               columnDef: {

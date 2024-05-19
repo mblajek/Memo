@@ -76,7 +76,7 @@ filter:
   filter_cleared: "Brak filtra"
   filter_set: "Filtr aktywny"
   column_filters_cleared: "Brak filtrów w kolumnach"
-  column_filters_set: "Filtry w kolumnach aktywne:"
+  column_filters_set: "Aktywne filtry w kolumnach:"
   click_to_clear: "Kliknij aby wyczyścić"
   click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
   click_to_sync_number_range: "Kliknij aby ustawić max = min"

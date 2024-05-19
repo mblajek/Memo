@@ -1,6 +1,7 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {SmallSpinner} from "components/ui/Spinner";
 import {EmptyValueSymbol} from "components/ui/symbols";
+import {title} from "components/ui/title";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -8,6 +9,8 @@ import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tq
 import {For, Show, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {UserLink} from "./UserLink";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props {
   readonly clientId: string;
@@ -97,7 +100,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
                       {(user) => (
                         <span>
                           <UserLink type={type} userId={user.id} name={user.name} />{" "}
-                          <span class="text-grey-text" title={t("facility_user.related_user_meetings_count")}>
+                          <span class="text-grey-text" use:title={t("facility_user.related_user_meetings_count")}>
                             {t("parenthesised", {text: user.meetingsCount})}
                           </span>
                         </span>

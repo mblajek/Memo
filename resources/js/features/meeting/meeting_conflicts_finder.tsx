@@ -1,4 +1,5 @@
 import {SmallSpinner} from "components/ui/Spinner";
+import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -15,11 +16,13 @@ import {
   BiRegularCalendarExclamation,
   BiRegularCalendarX,
 } from "solid-icons/bi";
-import {Accessor, VoidComponent} from "solid-js";
+import {Accessor, For, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "./attendance_status_info";
 import {getMeetingTimeInterval} from "./meeting_time_controller";
+
+const _DIRECTIVES_ = null && title;
 
 /**
  * The information about the currently created/edited meeting to calculate conflicts for.
@@ -247,15 +250,15 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       }
       let iconType;
       let styleClass;
-      let title;
+      let titleLines: string[];
       if (conflict === "unknown") {
         iconType = BiRegularCalendarAlt;
         styleClass = "text-black text-opacity-50";
-        title = t("meetings.conflicts.unknown");
+        titleLines = [t("meetings.conflicts.unknown")];
       } else {
         iconType = BiRegularCalendarCheck;
         styleClass = "text-memo-active";
-        title = t("meetings.conflicts.none");
+        titleLines = [t("meetings.conflicts.none")];
         const messages: string[] = [];
         if (conflict.outsideOfWorkTime) {
           iconType = BiRegularCalendarExclamation;
@@ -294,10 +297,20 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
         );
         addConflictingLeaveTimesNote(conflict.conflictingStaffLeaveTimes, "meetings.conflicts.with_staff_leave_time");
         if (messages.length) {
-          title = messages.join("\n");
+          titleLines = messages;
         }
       }
-      return <Dynamic component={iconType} class={cx(styleClass, "mb-1")} size="20" title={title} />;
+      return (
+        <div
+          use:title={
+            <ul class="list-disc ms-2">
+              <For each={titleLines}>{(line) => <li>{line}</li>}</For>
+            </ul>
+          }
+        >
+          <Dynamic component={iconType} class={cx(styleClass, "mb-1")} size="20" />
+        </div>
+      );
     };
     return <>{content()}</>;
   };

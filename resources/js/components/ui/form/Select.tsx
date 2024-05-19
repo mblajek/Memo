@@ -610,9 +610,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                 </Match>
               </Switch>
               <Button
-                // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
-                // The control will handle clicks.
-                title={t("actions.expand")}
+              // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
+              // The control will handle clicks.
               >
                 <AiFillCaretDown />
               </Button>

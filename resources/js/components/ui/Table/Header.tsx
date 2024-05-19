@@ -1,5 +1,5 @@
 import {HeaderContext} from "@tanstack/solid-table";
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils";
 import {JSX, Show, Signal, VoidComponent, createMemo} from "solid-js";
 import {ColumnName, FilterIconButton, SortMarker} from ".";
 import {Button} from "../Button";
@@ -17,7 +17,6 @@ interface Props {
  * as well as filtering if filter element is provided.
  */
 export const Header: VoidComponent<Props> = (props) => {
-  const t = useLangFunc();
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
   return (
     <div class="h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1 relative">
@@ -26,7 +25,6 @@ export const Header: VoidComponent<Props> = (props) => {
           <Button
             class="flex items-center text-start select-text"
             onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}
-            title={t("tables.sort_tooltip")}
           >
             <ColumnName def={props.ctx.column.columnDef} />
             <SortMarker column={props.ctx.column} />

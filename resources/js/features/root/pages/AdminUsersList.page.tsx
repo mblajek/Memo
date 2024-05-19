@@ -58,7 +58,7 @@ export default (() => {
                   fallback={<EmptyValueSymbol />}
                 >
                   <EditButton
-                    class="minimal"
+                    class="minimal -my-px"
                     onClick={() => userEditModal.show({userId: c.row.original.id as string})}
                   />
                 </Show>

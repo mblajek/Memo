@@ -6,10 +6,13 @@ import {FaSolidCircleDot} from "solid-icons/fa";
 import {createMemo, For, JSX, Show, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {capitalizeString} from "../Capitalize";
+import {title} from "../title";
 import {CellWithPreferredStyling} from "./CellWithPreferredStyling";
 import {useHolidays} from "./holidays";
 import {Block, Event} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props<M> extends htmlAttributes.div {
   readonly month: DateTime;
@@ -67,7 +70,9 @@ export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
             }}
           >
             <Show when={props.day.hasSame(currentDate(), "day")}>
-              <FaSolidCircleDot class="text-red-700 mb-0.5" size="8" title={capitalizeString(t("calendar.today"))} />
+              <div use:title={capitalizeString(t("calendar.today"))}>
+                <FaSolidCircleDot class="text-red-700 mb-0.5" size="8" />
+              </div>
             </Show>
             <div class="-mt-1">{props.day.day}</div>
           </Button>

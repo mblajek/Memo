@@ -1,5 +1,5 @@
 import {cx, useLangFunc} from "components/utils";
-import {VoidComponent} from "solid-js";
+import {For, VoidComponent} from "solid-js";
 import {FilterIconButton} from "./FilterIconButton";
 import {useTable} from "./TableContext";
 
@@ -20,11 +20,19 @@ export const TableFiltersClearButton: VoidComponent<Props> = (props) => {
       isFiltering={props.columnsWithActiveFilters.length > 0}
       onClear={props.clearColumnFilters}
       title={
-        props.columnsWithActiveFilters.length
-          ? `${t("tables.filter.column_filters_set")}\n${props.columnsWithActiveFilters
-              .map((column) => `- ${table.options.meta?.translations?.columnName(column)}`)
-              .join("\n")}\n${t("tables.filter.click_to_clear")}`
-          : t("tables.filter.column_filters_cleared")
+        props.columnsWithActiveFilters.length ? (
+          <>
+            <p>{t("tables.filter.column_filters_set")}</p>
+            <ul class="list-disc list-inside">
+              <For each={props.columnsWithActiveFilters}>
+                {(column) => <li>{table.options.meta?.translations?.columnName(column)}</li>}
+              </For>
+            </ul>
+            <p>{t("tables.filter.click_to_clear")}</p>
+          </>
+        ) : (
+          t("tables.filter.column_filters_cleared")
+        )
       }
     />
   );

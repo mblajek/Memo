@@ -1,10 +1,13 @@
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
+import {title} from "components/ui/title";
 import {useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {SetsOp} from "data-access/memo-api/tquery/types";
 import {VoidComponent} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
 import {SelectItemLabelOnList, makeSelectItem} from "./select_items";
+
+const _DIRECTIVES_ = null && title;
 
 export function useSingleSelectFilterHelper() {
   const t = useLangFunc();
@@ -102,7 +105,7 @@ export const SelectFilterModeControl: VoidComponent<ModeControlProps> = (props) 
         items={SELECT_FILTER_MODES.map((m) => ({
           value: m,
           label: () => (
-            <span title={t(`tables.filter.set_operation.${m}.explanation`)}>
+            <span use:title={t(`tables.filter.set_operation.${m}.explanation`)}>
               {t(`tables.filter.set_operation.${m}.short`)}
             </span>
           ),

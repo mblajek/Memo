@@ -2,6 +2,9 @@ import {A, AnchorProps, useLocation} from "@solidjs/router";
 import {FiExternalLink} from "solid-icons/fi";
 import {ParentComponent, Show} from "solid-js";
 import {useLangFunc} from "../utils";
+import {title} from "./title";
+
+const _DIRECTIVES_ = null && title;
 
 /**
  * A link, with an additional link opening in new tab.
@@ -17,9 +20,11 @@ export const LinkWithNewTabLink: ParentComponent<AnchorProps> = (props) => {
       <Show when={isOnThisUserPage()} fallback={<A {...props}>{props.children}</A>}>
         {props.children}
       </Show>{" "}
-      <A {...props} target="_blank" title={t("open_in_new_tab")}>
-        <FiExternalLink class="inlineIcon strokeIcon text-current" />
-      </A>
+      <span use:title={t("open_in_new_tab")}>
+        <A {...props} target="_blank">
+          <FiExternalLink class="inlineIcon strokeIcon text-current" />
+        </A>
+      </span>
     </span>
   );
 };

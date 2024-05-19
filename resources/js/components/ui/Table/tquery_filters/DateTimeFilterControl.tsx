@@ -1,3 +1,4 @@
+import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
@@ -7,6 +8,8 @@ import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControlProps} from "./types";
+
+const _DIRECTIVES_ = null && title;
 
 type DateTimeRangeFilter =
   | {
@@ -105,7 +108,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <div
           class={s.valuesSyncer}
           classList={{[s.inactive!]: !syncActive()}}
-          title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
+          use:title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());

@@ -1,0 +1,10 @@
+.tippy-box[data-theme~="memo"] {
+  @apply text-black bg-select border-solid border-memo-active;
+
+  &[data-placement^="top"] > .tippy-arrow::before {
+    @apply border-t-select;
+  }
+  &[data-placement^="bottom"] > .tippy-arrow::before {
+    @apply border-b-select;
+  }
+}

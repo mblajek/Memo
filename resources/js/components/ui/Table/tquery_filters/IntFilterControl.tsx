@@ -1,3 +1,4 @@
+import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
 import {Show, createComputed} from "solid-js";
@@ -5,6 +6,8 @@ import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControl} from "./types";
+
+const _DIRECTIVES_ = null && title;
 
 type IntRangeFilter =
   | {
@@ -79,7 +82,7 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
         <div
           class={s.valuesSyncer}
           classList={{[s.inactive!]: !syncActive()}}
-          title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
+          use:title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());

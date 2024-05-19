@@ -6,6 +6,7 @@ import {MemoLoader} from "components/ui/MemoLoader";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CHECKBOX} from "components/ui/symbols";
+import {title} from "components/ui/title";
 import {DATE_TIME_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {isDEV, resetDEV, toggleDEV} from "components/utils/dev_mode";
 import {User} from "data-access/memo-api/groups";
@@ -16,6 +17,8 @@ import {TbPassword} from "solid-icons/tb";
 import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, createMemo} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {ThemeIcon, useThemeControl} from "../theme_control";
+
+const _DIRECTIVES_ = null && title;
 
 interface WindowWithDeveloperLogin {
   developerLogin(developer: boolean): void;
@@ -79,12 +82,12 @@ export const UserInfo: VoidComponent = () => {
         <div>
           <Switch>
             <Match when={statusQuery.data?.permissions.verified}>
-              <div title={t("verified_user")}>
+              <div use:title={t("verified_user")}>
                 <HiOutlineCheckCircle class="text-memo-active" size="30" />
               </div>
             </Match>
             <Match when={statusQuery.data?.permissions.unverified}>
-              <div title={t("unverified_user")}>
+              <div use:title={t("unverified_user")}>
                 <HiOutlineXCircle class="text-red-500" size="30" />
               </div>
             </Match>
@@ -102,8 +105,8 @@ export const UserInfo: VoidComponent = () => {
           <div class="flex gap-1">
             {statusQuery.data?.user.name}
             <PopOver
-              trigger={(triggerProps) => (
-                <Button title={t("user_settings")} {...triggerProps()}>
+              trigger={(triggerProps, api) => (
+                <Button title={api().isOpen ? undefined : t("user_settings")} {...triggerProps()}>
                   <TbPassword class="inlineIcon" />
                 </Button>
               )}

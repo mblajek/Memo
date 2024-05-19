@@ -3,6 +3,9 @@ import {ImInfo} from "solid-icons/im";
 import {Match, Switch, VoidComponent, VoidProps} from "solid-js";
 import {htmlAttributes, useLangFunc} from "../utils";
 import {Button} from "./Button";
+import {title} from "./title";
+
+const _DIRECTIVES_ = null && title;
 
 interface ButtonProps extends htmlAttributes.button {
   readonly href?: undefined;
@@ -25,18 +28,20 @@ export const InfoIcon: VoidComponent<InfoIconProps> = (props) => {
     <Switch>
       <Match when={props.href && props}>
         {(linkProps) => (
-          <A
-            title={t("more_info")}
-            target="_blank"
-            {...(linkProps() as AnchorProps)}
-            onClick={(e) => {
-              // If the info icon is on an active element, we generally don't want to pass the click.
-              // TODO: Investigate why this doesn't work.
-              e.stopPropagation();
-            }}
-          >
-            {icon}
-          </A>
+          <span use:title={props.title || t("more_info")}>
+            <A
+              target="_blank"
+              {...(linkProps() as AnchorProps)}
+              onClick={(e) => {
+                // If the info icon is on an active element, we generally don't want to pass the click.
+                // TODO: Investigate why this doesn't work.
+                e.stopPropagation();
+              }}
+              title=""
+            >
+              {icon}
+            </A>
+          </span>
         )}
       </Match>
       <Match when={!props.href && props}>
