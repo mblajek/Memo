@@ -77,6 +77,12 @@ export const Navbar: VoidComponent = () => {
                   routeKey="facility.meeting_attendants"
                   small
                 />
+                <NavigationItem
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/meeting_clients`}
+                  routeKey="facility.meeting_clients"
+                  small
+                />
                 <Show when={isDEV()}>
                   <NavigationItem
                     icon={OcTable3}

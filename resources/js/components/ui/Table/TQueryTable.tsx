@@ -192,7 +192,7 @@ interface HeaderParams<TData = DataItem> {
   readonly filterControl?: () => JSX.Element;
 }
 
-type PartialColumnConfigEntry<TData> = PartialColumnConfig<TData> | "attributeColumns";
+export type PartialColumnConfigEntry<TData = DataItem> = PartialColumnConfig<TData> | "#attributeColumns";
 
 /**
  * The entry denoting a collection of attribute columns. It includes all the non-fixed columns, plus possibly
@@ -257,7 +257,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const columnsConfig = createMemo(() =>
     [
       ...props.columns.flatMap<PartialColumnConfig<DataItem>>((colEntry) =>
-        colEntry === "attributeColumns" ? attributeColumnsConfig() : [colEntry],
+        colEntry === "#attributeColumns" ? attributeColumnsConfig() : [colEntry],
       ),
       ...devColumnsConfig(),
     ].map((col) => columnConfigFromPartial(col)),
@@ -371,7 +371,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           const configuredColumns = new Set();
           let usesAttributeColumns = false;
           for (const colEntry of props.columns) {
-            if (colEntry === "attributeColumns") {
+            if (colEntry === "#attributeColumns") {
               usesAttributeColumns = true;
             } else {
               configuredColumns.add(colEntry.name);

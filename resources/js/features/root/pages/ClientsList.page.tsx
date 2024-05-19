@@ -39,7 +39,7 @@ export default (() => {
             enableHiding: false,
           },
         },
-        "attributeColumns",
+        "#attributeColumns",
         {name: "firstMeetingDate", initialVisible: false},
         {name: "lastMeetingDate"},
         {name: "completedMeetingsCount"},

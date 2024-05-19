@@ -28,6 +28,7 @@ const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.pag
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
 const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const MeetingAttendantsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingAttendantsList.page"));
+const MeetingClientsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingClientsList.page"));
 const ReportsPage = lazyAutoPreload(() => import("features/root/pages/Reports.page"));
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
@@ -99,6 +100,11 @@ const App: VoidComponent = () => {
                   routeKey="facility.meeting_attendants"
                   path="/meeting_attendants"
                   component={MeetingAttendantsListPage}
+                />
+                <LeafRoute
+                  routeKey="facility.meeting_clients"
+                  path="/meeting_clients"
+                  component={MeetingClientsListPage}
                 />
                 <LeafRoute routeKey="System meetings" path="/system_meetings" component={SystemMeetingsListPage} />
                 <Route path="/staff">

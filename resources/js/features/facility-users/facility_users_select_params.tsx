@@ -111,7 +111,7 @@ export function useFacilityUsersSelectParams() {
         },
       } satisfies Partial<BaseTQuerySelectProps>;
     },
-    staffAndClientsSelectParams: () => {
+    staffAndClientSelectParams: () => {
       return {
         querySpec: {
           ...modelQuerySpecs.userStaffOrClient().querySpec,

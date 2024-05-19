@@ -20,11 +20,11 @@ import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-ap
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, TableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {Api} from "data-access/memo-api/types";
-import {FacilityUserType} from "features/facility-users/user_types";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
+import {FacilityUserType} from "../facility-users/user_types";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
@@ -89,311 +89,315 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     );
   };
 
-  return new TableColumnsSet({
-    ...({
-      id: {name: "id", initialVisible: false},
-      date: {name: "date", columnDef: {size: 190, sortDescFirst: true}},
-      time: {
-        name: "startDayminute",
-        extraDataColumns: ["durationMinutes"],
-        columnDef: {
-          cell: cellFunc<number, TQFullMeetingResource>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>
-                {(v) => <MeetingTime startDayMinute={v()} durationMinutes={props.row.durationMinutes} />}
-              </ShowCellVal>
-            </PaddedCell>
-          )),
-          sortDescFirst: false,
-          enableColumnFilter: false,
-          size: 120,
-        },
-        metaParams: {
-          textExportCell: exportCellFunc<TextExportedCell, number, TQFullMeetingResource>(
-            (v, ctx) =>
-              `${formatDayMinuteHM(v)}-${formatDayMinuteHM((v + ctx.row.durationMinutes ?? 0) % MAX_DAY_MINUTE)}`,
-          ),
-        },
-      },
-      duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
-      isInSeries: {
-        name: "isClone",
-        extraDataColumns: ["interval"],
-        columnDef: {
-          cell: cellFunc<boolean, TQFullMeetingResource>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>
-                {(v) => (
-                  <>
-                    {v() ? t("bool_values.yes") : t("bool_values.no")}{" "}
-                    <span class="text-grey-text">
-                      <MeetingIntervalCommentText interval={props.row.interval || undefined} />
-                    </span>
-                  </>
-                )}
-              </ShowCellVal>
-            </PaddedCell>
-          )),
-          size: 150,
-        },
-      },
-      seriesType: {
-        name: "interval",
-        initialVisible: false,
-        columnDef: {
-          cell: cellFunc<string, TQFullMeetingResource>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>
-                {(v) => (
-                  <div>
-                    {v()}
-                    <span class="text-grey-text">
-                      <MeetingIntervalCommentText interval={v()} />
-                    </span>
-                  </div>
-                )}
-              </ShowCellVal>
-            </PaddedCell>
-          )),
-          size: 120,
-        },
-      },
-      category: {name: "categoryDictId", initialVisible: false},
-      type: {name: "typeDictId"},
-      status: {
-        name: "statusDictId",
-        columnDef: {
-          cell: cellFunc<Api.Id, TQFullMeetingResource>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>{(v) => <SimpleMeetingStatusTag status={v()} />}</ShowCellVal>
-            </PaddedCell>
-          )),
-          size: 200,
-        },
-      },
-      statusTags: {
-        name: "statusDictId",
-        extraDataColumns: ["staff", "clients", "isRemote"],
-        columnDef: {
-          cell: cellFunc<string, TQFullMeetingResource>((props) => (
-            <ScrollableCell baseHeight={baseHeight}>
-              <ShowCellVal v={props.v}>
-                <MeetingStatusTags meeting={props.row} showPlannedTag />
-              </ShowCellVal>
-            </ScrollableCell>
-          )),
-        },
-        // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
-      },
-      attendants: {
-        name: "attendants.*.userId",
-        extraDataColumns: ["attendants"],
-        columnDef: {
-          cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
-            <ScrollableCell baseHeight={baseHeight} class="flex flex-col gap-1">
-              <ShowCellVal v={props.row.attendants}>
-                {(v) => (
-                  <>
-                    <UserLinks
-                      type="staff"
-                      users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.staff.id)}
-                    />
-                    <UserLinks
-                      type="clients"
-                      users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.client.id)}
-                    />
-                  </>
-                )}
-              </ShowCellVal>
-            </ScrollableCell>
-          )),
-          size: 250,
-        },
-        filterControl: (props) => (
-          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientsSelectParams()} />
-        ),
-        metaParams: {
-          textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
-            (v, ctx) => ctx.row.attendants?.map((u) => u.name).join(", "),
-          ),
-        },
-      },
-      attendantsAttendance: {
-        name: "attendants.*.attendanceStatusDictId",
-        initialVisible: false,
-      },
-      attendantsCount: {
-        name: "attendants.count",
-        initialVisible: false,
-      },
-      staff: {
-        name: "staff.*.userId",
-        extraDataColumns: ["staff"],
-        columnDef: {
-          cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
-            <ScrollableCell baseHeight={baseHeight}>
-              <UserLinks type="staff" users={props.row.staff} />
-            </ScrollableCell>
-          )),
-          size: 250,
-        },
-        filterControl: (props) => (
-          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
-        ),
-        metaParams: {
-          textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
-            (v, ctx) => ctx.row.staff.map((u) => u.name).join(", "),
-          ),
-        },
-      },
-      staffAttendance: {
-        name: "staff.*.attendanceStatusDictId",
-        initialVisible: false,
-      },
-      staffCount: {
-        name: "staff.count",
-        initialVisible: false,
-      },
-      clients: {
-        name: "clients.*.userId",
-        extraDataColumns: ["clients"],
-        columnDef: {
-          cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
-            <ScrollableCell baseHeight={baseHeight}>
-              <UserLinks type="clients" users={props.row.clients} />
-            </ScrollableCell>
-          )),
-          size: 250,
-        },
-        filterControl: (props) => (
-          <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
-        ),
-        metaParams: {
-          textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
-            (v, ctx) => ctx.row.clients.map((u) => u.name).join(", "),
-          ),
-        },
-      },
-      clientsAttendance: {
-        name: "clients.*.attendanceStatusDictId",
-        initialVisible: false,
-      },
-      clientsCount: {
-        name: "clients.count",
-        initialVisible: false,
-      },
-      isRemote: {name: "isRemote"},
-      notes: {
-        name: "notes",
-        columnDef: {
-          cell: cellFunc<string, TQFullMeetingResource>((props) => (
-            <ScrollableCell baseHeight={baseHeight}>
-              <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
-            </ScrollableCell>
-          )),
-        },
-      },
-      resources: {name: "resources.*.dictId"},
-      actions: {
-        name: "actions",
-        isDataColumn: false,
-        extraDataColumns: ["id"],
-        columnDef: {
-          cell: (c) => (
-            <PaddedCell class="flex gap-1 h-min">
-              <DetailsButton class="minimal" meetingId={c.row.original.id} />
-              <DeleteButton
-                class="minimal"
-                confirm={() =>
-                  confirmation.confirm({
-                    title: t("forms.meeting_delete.formName"),
-                    body: t("forms.meeting_delete.confirmationText"),
-                    confirmText: t("forms.meeting_delete.submit"),
-                  })
-                }
-                delete={() => deleteMeeting(c.row.original.id)}
-              />
-            </PaddedCell>
-          ),
-          enableSorting: false,
-          ...AUTO_SIZE_COLUMN_DEFS,
-        },
-      },
-      dateTimeActions: {
-        name: "date",
-        extraDataColumns: ["startDayminute", "durationMinutes", "fromMeetingId", "interval", "id"],
-        columnDef: {
-          cell: cellFunc<string, TQFullMeetingResource>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>
-                {(v) => (
-                  <div class="flex gap-2 justify-between items-start">
-                    <div class="flex flex-col overflow-clip">
-                      <div>{DateTime.fromISO(v()).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
-                      <Show when={props.row.startDayminute !== undefined}>
-                        <div>
-                          <MeetingTime
-                            startDayMinute={props.row.startDayminute}
-                            durationMinutes={props.row.durationMinutes}
-                          />{" "}
-                          <MeetingInSeriesInfo meeting={props.row} compact />
-                        </div>
-                      </Show>
-                    </div>
-                    <DetailsButton
-                      meetingId={props.row.id}
-                      class="shrink-0 secondary small"
-                      title={t("meetings.click_to_see_details")}
-                    >
-                      {t("meetings.show_details")}
-                    </DetailsButton>
-                  </div>
-                )}
-              </ShowCellVal>
-            </PaddedCell>
-          )),
-        },
-        metaParams: {
-          textExportCell: exportCellFunc<TextExportedCell, string, TQFullMeetingResource>((v, ctx) =>
-            formatDateTimeForTextExport(DateTime.fromISO(v).set(dayMinuteToHM(ctx.row.startDayminute))),
-          ),
-        },
-      },
-    } satisfies Partial<Record<string, PartialColumnConfig<TQFullMeetingResource>>> as Partial<
-      Record<string, PartialColumnConfig<TQFullMeetingResource>>
-    >),
-    // Attendance tables only:
-    attendanceType: {
-      name: "attendant.attendanceTypeDictId",
-    },
-    attendant: {
-      name: "attendant.userId",
-      extraDataColumns: ["attendant.name"],
+  const meetingColumns = {
+    id: {name: "id", initialVisible: false},
+    date: {name: "date", columnDef: {size: 190, sortDescFirst: true}},
+    time: {
+      name: "startDayminute",
+      extraDataColumns: ["durationMinutes"],
       columnDef: {
-        cell: cellFunc<string>((props) => (
+        cell: cellFunc<number, TQFullMeetingResource>((props) => (
           <PaddedCell>
             <ShowCellVal v={props.v}>
-              {(v) => <UserLink userId={v()} name={props.row["attendant.name"] as string | undefined} />}
+              {(v) => <MeetingTime startDayMinute={v()} durationMinutes={props.row.durationMinutes} />}
             </ShowCellVal>
           </PaddedCell>
+        )),
+        sortDescFirst: false,
+        enableColumnFilter: false,
+        size: 120,
+      },
+      metaParams: {
+        textExportCell: exportCellFunc<TextExportedCell, number, TQFullMeetingResource>(
+          (v, ctx) =>
+            `${formatDayMinuteHM(v)}-${formatDayMinuteHM((v + ctx.row.durationMinutes ?? 0) % MAX_DAY_MINUTE)}`,
+        ),
+      },
+    },
+    duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
+    isInSeries: {
+      name: "isClone",
+      extraDataColumns: ["interval"],
+      columnDef: {
+        cell: cellFunc<boolean, TQFullMeetingResource>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>
+              {(v) => (
+                <>
+                  {v() ? t("bool_values.yes") : t("bool_values.no")}{" "}
+                  <span class="text-grey-text">
+                    <MeetingIntervalCommentText interval={props.row.interval || undefined} />
+                  </span>
+                </>
+              )}
+            </ShowCellVal>
+          </PaddedCell>
+        )),
+        size: 150,
+      },
+    },
+    seriesType: {
+      name: "interval",
+      initialVisible: false,
+      columnDef: {
+        cell: cellFunc<string, TQFullMeetingResource>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>
+              {(v) => (
+                <div>
+                  {v()}
+                  <span class="text-grey-text">
+                    <MeetingIntervalCommentText interval={v()} />
+                  </span>
+                </div>
+              )}
+            </ShowCellVal>
+          </PaddedCell>
+        )),
+        size: 120,
+      },
+    },
+    category: {name: "categoryDictId", initialVisible: false},
+    type: {name: "typeDictId"},
+    status: {
+      name: "statusDictId",
+      columnDef: {
+        cell: cellFunc<Api.Id, TQFullMeetingResource>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>{(v) => <SimpleMeetingStatusTag status={v()} />}</ShowCellVal>
+          </PaddedCell>
+        )),
+        size: 200,
+      },
+    },
+    statusTags: {
+      name: "statusDictId",
+      extraDataColumns: ["staff", "clients", "isRemote"],
+      columnDef: {
+        cell: cellFunc<string, TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <ShowCellVal v={props.v}>
+              <MeetingStatusTags meeting={props.row} showPlannedTag />
+            </ShowCellVal>
+          </ScrollableCell>
+        )),
+      },
+      // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
+    },
+    attendants: {
+      name: "attendants.*.userId",
+      extraDataColumns: ["attendants"],
+      columnDef: {
+        cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight} class="flex flex-col gap-1">
+            <ShowCellVal v={props.row.attendants}>
+              {(v) => (
+                <>
+                  <UserLinks
+                    type="staff"
+                    users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.staff.id)}
+                  />
+                  <UserLinks
+                    type="clients"
+                    users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.client.id)}
+                  />
+                </>
+              )}
+            </ShowCellVal>
+          </ScrollableCell>
         )),
         size: 250,
       },
       filterControl: (props) => (
-        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientsSelectParams()} />
+        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientSelectParams()} />
       ),
       metaParams: {
-        // TODO: Fix the typings.
-        textExportCell: exportCellFunc<TextExportedCell, string, any /*TQMeetingAttendanceResource*/>(
-          (v, ctx) => ctx.row["attendant.name"],
+        textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
+          (v, ctx) => ctx.row.attendants?.map((u) => u.name).join(", "),
         ),
       },
+    },
+    attendantsAttendance: {
+      name: "attendants.*.attendanceStatusDictId",
+      initialVisible: false,
+    },
+    attendantsCount: {
+      name: "attendants.count",
+      initialVisible: false,
+    },
+    staff: {
+      name: "staff.*.userId",
+      extraDataColumns: ["staff"],
+      columnDef: {
+        cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <UserLinks type="staff" users={props.row.staff} />
+          </ScrollableCell>
+        )),
+        size: 250,
+      },
+      filterControl: (props) => (
+        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
+      ),
+      metaParams: {
+        textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
+          (v, ctx) => ctx.row.staff.map((u) => u.name).join(", "),
+        ),
+      },
+    },
+    staffAttendance: {
+      name: "staff.*.attendanceStatusDictId",
+      initialVisible: false,
+    },
+    staffCount: {
+      name: "staff.count",
+      initialVisible: false,
+    },
+    clients: {
+      name: "clients.*.userId",
+      extraDataColumns: ["clients"],
+      columnDef: {
+        cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <UserLinks type="clients" users={props.row.clients} />
+          </ScrollableCell>
+        )),
+        size: 250,
+      },
+      filterControl: (props) => (
+        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
+      ),
+      metaParams: {
+        textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
+          (v, ctx) => ctx.row.clients.map((u) => u.name).join(", "),
+        ),
+      },
+    },
+    clientsAttendance: {
+      name: "clients.*.attendanceStatusDictId",
+      initialVisible: false,
+    },
+    clientsCount: {
+      name: "clients.count",
+      initialVisible: false,
+    },
+    isRemote: {name: "isRemote"},
+    notes: {
+      name: "notes",
+      columnDef: {
+        cell: cellFunc<string, TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
+          </ScrollableCell>
+        )),
+      },
+    },
+    resources: {name: "resources.*.dictId"},
+    actions: {
+      name: "actions",
+      isDataColumn: false,
+      extraDataColumns: ["id"],
+      columnDef: {
+        cell: (c) => (
+          <PaddedCell class="flex gap-1 h-min">
+            <DetailsButton class="minimal" meetingId={c.row.original.id} />
+            <DeleteButton
+              class="minimal"
+              confirm={() =>
+                confirmation.confirm({
+                  title: t("forms.meeting_delete.formName"),
+                  body: t("forms.meeting_delete.confirmationText"),
+                  confirmText: t("forms.meeting_delete.submit"),
+                })
+              }
+              delete={() => deleteMeeting(c.row.original.id)}
+            />
+          </PaddedCell>
+        ),
+        enableSorting: false,
+        ...AUTO_SIZE_COLUMN_DEFS,
+      },
+    },
+    dateTimeActions: {
+      name: "date",
+      extraDataColumns: ["startDayminute", "durationMinutes", "fromMeetingId", "interval", "id"],
+      columnDef: {
+        cell: cellFunc<string, TQFullMeetingResource>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>
+              {(v) => (
+                <div class="flex gap-2 justify-between items-start">
+                  <div class="flex flex-col overflow-clip">
+                    <div>{DateTime.fromISO(v()).toLocaleString({...DATE_FORMAT, weekday: "long"})}</div>
+                    <Show when={props.row.startDayminute !== undefined}>
+                      <div>
+                        <MeetingTime
+                          startDayMinute={props.row.startDayminute}
+                          durationMinutes={props.row.durationMinutes}
+                        />{" "}
+                        <MeetingInSeriesInfo meeting={props.row} compact />
+                      </div>
+                    </Show>
+                  </div>
+                  <DetailsButton
+                    meetingId={props.row.id}
+                    class="shrink-0 secondary small"
+                    title={t("meetings.click_to_see_details")}
+                  >
+                    {t("meetings.show_details")}
+                  </DetailsButton>
+                </div>
+              )}
+            </ShowCellVal>
+          </PaddedCell>
+        )),
+      },
+      metaParams: {
+        textExportCell: exportCellFunc<TextExportedCell, string, TQFullMeetingResource>((v, ctx) =>
+          formatDateTimeForTextExport(DateTime.fromISO(v).set(dayMinuteToHM(ctx.row.startDayminute))),
+        ),
+      },
+    },
+  } satisfies Partial<Record<string, PartialColumnConfig<TQFullMeetingResource>>>;
+  const attendantColumn = {
+    name: "attendant.userId",
+    extraDataColumns: ["attendant.name"],
+    columnDef: {
+      cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
+        <PaddedCell>
+          <ShowCellVal v={props.v}>
+            {(v) => <UserLink userId={v()} name={props.row["attendant.name"] as string | undefined} />}
+          </ShowCellVal>
+        </PaddedCell>
+      )),
+      size: 250,
+      enableHiding: false,
+    },
+    filterControl: (props) => (
+      <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientSelectParams()} />
+    ),
+    metaParams: {
+      textExportCell: exportCellFunc<TextExportedCell, string, TQMeetingAttendanceResource>(
+        (v, ctx) => ctx.row["attendant.name"],
+      ),
+    },
+  } satisfies PartialColumnConfig<TQMeetingAttendanceResource>;
+  const attendantsColumns = {
+    attendanceType: {
+      name: "attendant.attendanceTypeDictId",
+    },
+    attendant: attendantColumn,
+    attendantClient: {
+      ...attendantColumn,
+      filterControl: (props) => (
+        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
+      ),
     },
     attendanceStatus: {
       name: "attendant.attendanceStatusDictId",
       extraDataColumns: ["statusDictId"],
       columnDef: {
-        cell: cellFunc<string>((props) => (
+        cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
             <ShowCellVal v={props.v}>
               {(v) => (
@@ -408,6 +412,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         size: 200,
       },
     },
+  } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingAttendanceResource>>>;
+  return new TableColumnsSet({
+    ...meetingColumns,
+    ...attendantsColumns,
   });
 }
 

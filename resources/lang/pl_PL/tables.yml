@@ -77,6 +77,11 @@ tables:
     summary__few: "{{count, number}} uczestników"
     summary__many: "{{count, number}} uczestników"
 
+  meetingClient:
+    tableName: "uczestnicy – klienci"
+    columnNames:
+      attendant.userId: "$t(models.client._name)"
+
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"
