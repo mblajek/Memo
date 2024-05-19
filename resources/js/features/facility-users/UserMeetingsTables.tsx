@@ -46,7 +46,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
       {type: "column", column: "startDayminute", desc},
     ] satisfies Sort;
   }
-  const tableTranslations = createTableTranslations("meeting");
+  const tableTranslations = createTableTranslations(["meetingAttendant", "meeting"]);
   function exportConfig(tableType: "planned" | "completed" | "all"): TableExportConfig {
     const baseName =
       tableType === "all" ? tableTranslations.tableName() : t(`facility_user.meetings_lists.${tableType}`);
