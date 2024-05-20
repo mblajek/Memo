@@ -81,6 +81,8 @@ tables:
     tableName: "uczestnicy – klienci"
     columnNames:
       attendant.userId: "$t(models.client._name)"
+      client.notes: "opis klienta"
+      notes: "opis spotkania"
 
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"

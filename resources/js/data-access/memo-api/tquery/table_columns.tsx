@@ -13,13 +13,11 @@ export class TableColumnsSet<C extends string> {
 
   get(...cols: (C | PartialColumnConfigEntry | [C, Partial<PartialColumnConfigEntry>])[]): PartialColumnConfigEntry[] {
     return cols.map((c) =>
-      c === "#attributeColumns"
-        ? (c as "#attributeColumns")
-        : typeof c === "string"
-          ? this.columns[c]
-          : Array.isArray(c)
-            ? objectRecursiveMerge<PartialColumnConfigEntry>(this.columns[c[0]], c[1])
-            : c,
+      typeof c === "string"
+        ? this.columns[c]
+        : Array.isArray(c)
+          ? objectRecursiveMerge<PartialColumnConfigEntry>(this.columns[c[0]], c[1])
+          : c,
     );
   }
 }

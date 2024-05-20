@@ -41,6 +41,8 @@ import s from "./Table.module.scss";
 export interface TableTranslations {
   tableName(o?: TOptions): string;
   columnName(column: string, o?: TOptions): string;
+  /** The column name that would override even an attribute label in case of an attribute column. */
+  columnNameOverride?(column: string, o?: TOptions): string;
   /** Summary of the table, taking the number of rows as count. */
   summary(o?: TOptions): string;
 }
@@ -53,8 +55,9 @@ export function createTableTranslations(tableName: string | string[]): TableTran
     ...names.map((n) => `models.${n}._name_plural`),
     `tables.tables.generic.tableName`,
   ];
+  const priorityColumnNameKeyPrefixes = names.map((n) => `tables.tables.${n}.columnNames.`);
   const columnNameKeyPrefixes = [
-    ...names.map((n) => `tables.tables.${n}.columnNames.`),
+    ...priorityColumnNameKeyPrefixes,
     ...names.map((n) => `models.${n}.`),
     `tables.tables.generic.columnNames.`,
     `models.generic.`,
@@ -65,6 +68,11 @@ export function createTableTranslations(tableName: string | string[]): TableTran
     columnName: (column, o) =>
       t(
         columnNameKeyPrefixes.map((p) => p + column),
+        o,
+      ),
+    columnNameOverride: (column, o) =>
+      t(
+        priorityColumnNameKeyPrefixes.map((p) => p + column),
         o,
       ),
     summary: (o) => t(summaryKeys, o),

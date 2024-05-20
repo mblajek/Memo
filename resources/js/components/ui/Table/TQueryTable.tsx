@@ -42,6 +42,7 @@ import {
 } from "data-access/memo-api/tquery/types";
 import {
   JSX,
+  Show,
   Signal,
   VoidComponent,
   batch,
@@ -149,7 +150,6 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly intrinsicSort?: Sort;
   /** The definition of the columns in the table, in their correct order. */
   readonly columns: readonly PartialColumnConfigEntry<TData>[];
-  readonly attributeColumnsConfig?: AttributeColumnsConfig<TData>;
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
@@ -184,6 +184,7 @@ export interface PartialColumnConfig<TData = DataItem> {
   readonly initialVisible?: boolean;
   /** Whether the global filter can match this column. Default: depends on the column type. */
   readonly globalFilterable?: boolean;
+  readonly attributeColumns?: undefined;
 }
 
 interface HeaderParams<TData = DataItem> {
@@ -192,16 +193,17 @@ interface HeaderParams<TData = DataItem> {
   readonly filterControl?: () => JSX.Element;
 }
 
-export type PartialColumnConfigEntry<TData = DataItem> = PartialColumnConfig<TData> | "#attributeColumns";
-
 /**
  * The entry denoting a collection of attribute columns. It includes all the non-fixed columns, plus possibly
  * fixed attribute columns, depending on the configuration.
  */
-interface AttributeColumnsConfig<TData> {
+export interface AttributeColumnsConfig<TData = DataItem> {
+  readonly attributeColumns: true;
   readonly defaultConfig?: Pick<PartialColumnConfig<TData>, "initialVisible" | "globalFilterable">;
-  readonly selection?: PartialAttributesSelection<Partial<PartialColumnConfig<TData>>>;
+  readonly selection: PartialAttributesSelection<Partial<PartialColumnConfig<TData>>>;
 }
+
+export type PartialColumnConfigEntry<TData = DataItem> = PartialColumnConfig<TData> | AttributeColumnsConfig<TData>;
 
 type FullColumnConfig<TData = DataItem> = ColumnConfig &
   Required<Pick<PartialColumnConfig<TData>, "isDataColumn" | "columnDef" | "header">> &
@@ -250,14 +252,15 @@ const PERSISTENCE_VERSION = 2;
 export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   const attributes = useAttributes();
   const entityURL = props.staticEntityURL;
-  const [attributeColumnsConfig, setAttributeColumnsConfig] = createSignal<readonly PartialColumnConfig<DataItem>[]>(
-    [],
-  );
+  // The attribute columns configs, mapped by the index in props.columns where they were defined.
+  const [attributeColumnsConfigsMap, setAttributeColumnsConfigsMap] = createSignal<
+    ReadonlyMap<number, readonly PartialColumnConfig<DataItem>[]>
+  >(new Map());
   const [devColumnsConfig, setDevColumnsConfig] = createSignal<readonly PartialColumnConfig<DataItem>[]>([]);
   const columnsConfig = createMemo(() =>
     [
-      ...props.columns.flatMap<PartialColumnConfig<DataItem>>((colEntry) =>
-        colEntry === "#attributeColumns" ? attributeColumnsConfig() : [colEntry],
+      ...props.columns.flatMap<PartialColumnConfig<DataItem>>((colEntry, index) =>
+        colEntry.attributeColumns ? attributeColumnsConfigsMap().get(index) || [] : [colEntry],
       ),
       ...devColumnsConfig(),
     ].map((col) => columnConfigFromPartial(col)),
@@ -346,93 +349,84 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       meta: {tquery: {isTable: true}},
     }),
   });
-  const selection = () => attributesSelectionFromPartial(props.attributeColumnsConfig?.selection);
-  createEffect(() => {
-    if (!schema() || !attributes()) {
-      return;
-    }
-    const unknownFixedAttributes = getUnknownFixedAttributes(
-      selection(),
-      schema()!
-        .columns.map((col) =>
-          isDataColumn(col) && col.attributeId ? attributes()!.getById(col.attributeId) : undefined,
-        )
-        .filter(NON_NULLABLE),
-    );
-    if (unknownFixedAttributes) {
-      console.error(`Unknown fixed attributes: ${unknownFixedAttributes.join(", ")}`);
-    }
-  });
   createComputed(() => {
     const sch = schema();
-    if (sch) {
-      if (attributes()) {
-        batch(() => {
-          const configuredColumns = new Set();
-          let usesAttributeColumns = false;
-          for (const colEntry of props.columns) {
-            if (colEntry === "#attributeColumns") {
-              usesAttributeColumns = true;
+    if (sch && attributes())
+      batch(() => {
+        const configuredColumns = new Set();
+        const foundAttributeColumnsConfigs = props.columns
+          .map((colEntry, index) => {
+            if (colEntry.attributeColumns) {
+              return [index, colEntry] as const;
             } else {
               configuredColumns.add(colEntry.name);
+              return undefined;
             }
-          }
-          const selection = attributesSelectionFromPartial(props.attributeColumnsConfig?.selection);
-          setAttributeColumnsConfig(
-            usesAttributeColumns
-              ? sch.columns
-                  .map((col) => {
-                    if (!isDataColumn(col) || !col.attributeId) {
-                      return undefined;
-                    }
-                    function buildColumnConfig(
-                      config?: Partial<PartialColumnConfig<DataItem>>,
-                    ): PartialColumnConfig<DataItem> {
-                      return {
-                        name: col.name,
-                        ...props.attributeColumnsConfig?.defaultConfig,
-                        ...config,
-                      };
-                    }
-                    const attribute = attributes()!.getById(col.attributeId);
-                    const select = isAttributeSelected(selection, attribute);
-                    if (select) {
-                      if (configuredColumns.has(col.name)) {
-                        if (select.explicit) {
-                          throw new Error(
-                            `Column ${col.name} is configured as a fixed attribute column, but it is configured statically as well.`,
-                          );
-                        }
-                        return undefined;
-                      }
-                      return buildColumnConfig(select.override);
-                    } else {
-                      return undefined;
-                    }
-                  })
-                  .filter(NON_NULLABLE)
-              : [],
+          })
+          .filter(NON_NULLABLE);
+        const attributeColumnsConfigsMap = new Map<number, readonly PartialColumnConfig<DataItem>[]>();
+        for (const [index, foundAttributeColumnsConfig] of foundAttributeColumnsConfigs) {
+          const selection = attributesSelectionFromPartial(foundAttributeColumnsConfig.selection);
+          const unknownFixedAttributes = getUnknownFixedAttributes(
+            selection,
+            sch.columns
+              .map((col) => (isDataColumn(col) && col.attributeId ? attributes()!.getById(col.attributeId) : undefined))
+              .filter(NON_NULLABLE),
           );
-          if (isDEV()) {
-            for (const col of attributeColumnsConfig()) {
+          if (unknownFixedAttributes) {
+            console.error(`Unknown fixed attributes: ${unknownFixedAttributes.join(", ")}`);
+          }
+          attributeColumnsConfigsMap.set(
+            index,
+            sch.columns
+              .map((col) => {
+                if (!isDataColumn(col) || !col.attributeId) {
+                  return undefined;
+                }
+                const attribute = attributes()!.getById(col.attributeId);
+                const select = isAttributeSelected(selection, attribute);
+                if (select) {
+                  if (configuredColumns.has(col.name)) {
+                    if (select.explicit) {
+                      throw new Error(
+                        `Column ${col.name} is configured as a fixed attribute column, but it is configured statically as well.`,
+                      );
+                    }
+                    return undefined;
+                  }
+                  return {
+                    name: col.name,
+                    ...foundAttributeColumnsConfig?.defaultConfig,
+                    ...select.override,
+                  };
+                } else {
+                  return undefined;
+                }
+              })
+              .filter(NON_NULLABLE),
+          );
+        }
+        setAttributeColumnsConfigsMap(attributeColumnsConfigsMap);
+        if (isDEV()) {
+          for (const attributeColumnsConfig of attributeColumnsConfigsMap.values()) {
+            for (const col of attributeColumnsConfig) {
               configuredColumns.add(col.name);
             }
-            setDevColumnsConfig(
-              sch.columns
-                .filter((col) => isDataColumn(col) && !configuredColumns.has(col.name))
-                .map((col) => ({
-                  name: col.name,
-                  metaParams: {devColumn: true},
-                  initialVisible: false,
-                  globalFilterable: false,
-                })),
-            );
-          } else {
-            setDevColumnsConfig([]);
           }
-        });
-      }
-    }
+          setDevColumnsConfig(
+            sch.columns
+              .filter((col) => isDataColumn(col) && !configuredColumns.has(col.name))
+              .map((col) => ({
+                name: col.name,
+                metaParams: {devColumn: true},
+                initialVisible: false,
+                globalFilterable: false,
+              })),
+          );
+        } else {
+          setDevColumnsConfig([]);
+        }
+      });
   });
   const {
     columnVisibility,
@@ -490,7 +484,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     ...baseTranslations,
     columnName: (column, o) => {
       const attributeId = table()?.getColumn(column)?.columnDef.meta?.tquery?.attributeId;
-      return attributeId ? attributes()?.getById(attributeId).label || "" : baseTranslations.columnName(column, o);
+      if (attributeId) {
+        const attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
+        return baseTranslations.columnNameOverride
+          ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
+          : attributeLabel || "";
+      }
+      return baseTranslations.columnName(column, o);
     },
   };
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
@@ -650,10 +650,14 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         <div class="min-h-small-input flex items-stretch justify-between gap-2 text-base">
           <div class="flex items-stretch gap-2">
             <Pagination />
-            <TableSummary rowsCount={rowsCount()} />
-            {props.customSectionBelowTable}
+            <Show when={!dataQuery.isFetching}>
+              <TableSummary rowsCount={rowsCount()} />
+              {props.customSectionBelowTable}
+            </Show>
           </div>
-          <TableExportButton />
+          <Show when={!dataQuery.isFetching}>
+            <TableExportButton />
+          </Show>
         </div>
       )}
       isLoading={!schema()}

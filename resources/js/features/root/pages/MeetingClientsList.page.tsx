@@ -2,6 +2,7 @@ import {createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
+import {useTableAttributeColumnConfigs} from "features/client/ClientFields";
 import {useMeetingTableColumns, useMeetingTableFilters} from "features/meeting/meeting_tables";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -10,6 +11,7 @@ export default (() => {
   const meetingTableColumns = useMeetingTableColumns();
   const meetingTableFilters = useMeetingTableFilters();
   const {getCreatedUpdatedColumns} = useTableColumns();
+  const tableAttributeColumnConfigs = useTableAttributeColumnConfigs();
   return (
     <TQueryTable
       mode="standalone"
@@ -26,7 +28,7 @@ export default (() => {
       ]}
       columns={meetingTableColumns.get(
         "attendantClient",
-        "#attributeColumns",
+        tableAttributeColumnConfigs.client(),
         "attendanceStatus",
         "id",
         "date",
