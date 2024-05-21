@@ -1,4 +1,6 @@
 .select {
+  @apply grow;
+
   > [data-part="control"] {
     --bg-color: white;
     &[data-disabled] {

@@ -7,4 +7,10 @@
   &[data-placement^="bottom"] > .tippy-arrow::before {
     @apply border-b-select;
   }
+  &[data-placement^="left"] > .tippy-arrow::before {
+    @apply border-l-select;
+  }
+  &[data-placement^="right"] > .tippy-arrow::before {
+    @apply border-r-select;
+  }
 }

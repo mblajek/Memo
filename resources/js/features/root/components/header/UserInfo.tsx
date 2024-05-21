@@ -105,8 +105,8 @@ export const UserInfo: VoidComponent = () => {
           <div class="flex gap-1">
             {statusQuery.data?.user.name}
             <PopOver
-              trigger={(triggerProps, api) => (
-                <Button title={api().isOpen ? undefined : t("user_settings")} {...triggerProps()}>
+              trigger={(triggerProps) => (
+                <Button title={[t("user_settings"), {hideOnClick: true}]} {...triggerProps()}>
                   <TbPassword class="inlineIcon" />
                 </Button>
               )}

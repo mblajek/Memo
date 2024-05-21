@@ -15,7 +15,7 @@ export const TableSummary: VoidComponent<Props> = (props) => {
   const table = useTable();
   const count = () => props.rowsCount ?? table.getCoreRowModel().rows.length;
   return (
-    <div class="w-auto flex items-center">
+    <div class="flex items-center text-nowrap">
       <Show
         when={table.options.meta?.translations?.summary?.({count: count(), defaultValue: ""})}
         fallback={t("tables.tables.generic.summary", {count: count()})}

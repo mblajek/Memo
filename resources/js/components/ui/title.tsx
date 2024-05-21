@@ -15,6 +15,15 @@ declare module "solid-js" {
   }
 }
 
+/** The tippy props that can be overridden in the individual instances. */
+const DEFAULT_TIPPY_PROPS = {
+  placement: "top",
+  delay: [300, 300],
+  hideOnClick: false,
+  offset: [0, 8],
+  maxWidth: "500px",
+} satisfies Partial<TippyProps>;
+
 /** An object that manages the current app-wide singleton tippy. */
 class TippySingletonManager {
   /** The individual tippys for the elements that should show title. */
@@ -51,15 +60,13 @@ class TippySingletonManager {
   getTippySingleton() {
     if (!this.tippySingleton)
       this.tippySingleton = createSingleton([...this.tippys], {
-        delay: [300, 300],
+        ...DEFAULT_TIPPY_PROPS,
         duration: 200,
         animation: "shift-toward-subtle",
         moveTransition: "transform 150ms ease",
-        hideOnClick: false,
         theme: "memo",
         touch: "hold",
-        offset: [0, 8],
-        maxWidth: "500px",
+        overrides: ["placement", "delay", "hideOnClick", "offset", "maxWidth"],
       });
     return this.tippySingleton;
   }
@@ -120,6 +127,7 @@ export function title(element: Element, accessor: Accessor<TitleDirectiveType>) 
         } else {
           thisTippy = tippy(element, {
             content,
+            ...DEFAULT_TIPPY_PROPS,
             ...tippyProps,
           });
           tippySingletonManager.add(thisTippy);

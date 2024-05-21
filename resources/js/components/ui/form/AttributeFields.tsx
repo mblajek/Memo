@@ -461,7 +461,10 @@ const ERR_COLOR_CLASS = "text-red-700";
 export const RequirementLevelMarker: VoidComponent<RequirementLevelProps> = (props) => {
   const t = useLangFunc();
   return (
-    <div class="w-full flex flex-col items-center" use:title={t(`attributes.requirement_level.${props.level}`)}>
+    <div
+      class="w-full flex flex-col items-center"
+      use:title={[t(`attributes.requirement_level.${props.level}`), {placement: "right"}]}
+    >
       <span class="text-sm text-grey-text select-none">
         <Switch>
           <Match when={props.level === "empty"}>
