@@ -17,7 +17,11 @@ export const TableSummary: VoidComponent<Props> = (props) => {
   return (
     <div class="flex items-center text-nowrap">
       <Show
-        when={table.options.meta?.translations?.summary?.({count: count(), defaultValue: ""})}
+        when={table.options.meta?.translations?.summary?.(
+          count(),
+          table.options.meta.tquery?.activeColumnGroups?.[0](),
+          {defaultValue: ""},
+        )}
         fallback={t("tables.tables.generic.summary", {count: count()})}
       >
         {(summary) => <>{summary()}</>}

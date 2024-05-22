@@ -32,7 +32,7 @@ facility:
   userCount: "liczba osób"
   admins: "administratorzy"
 
-userFacilityMember:
+user_facility_member:
   _name: "powiązanie osoby i placówki"
   _name_plural: "powiązania osób i placówek"
   user: "osoba"
@@ -94,6 +94,7 @@ meeting:
   categoryDictId: "kategoria"
   typeDictId: "typ"
   statusDictId: "$t(dictionary.meetingStatus._name)"
+  attendant: "uczestnik"
   attendants: "uczestnicy"
   attendants.count: "$t(models.meeting.attendants) – liczba"
   staff: "$t(models.staff._name_plural)"

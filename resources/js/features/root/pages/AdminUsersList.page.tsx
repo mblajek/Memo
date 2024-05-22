@@ -65,6 +65,7 @@ export default (() => {
               </PaddedCell>
             ),
             enableSorting: false,
+            enableHiding: false,
             ...AUTO_SIZE_COLUMN_DEFS,
           },
         },

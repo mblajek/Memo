@@ -5,7 +5,12 @@ import "tippy.js/dist/border.css";
 import "tippy.js/dist/tippy.css";
 import "./title.scss";
 
-export type TitleDirectiveType = JSX.Element | readonly [JSX.Element, Partial<TippyProps>];
+export type TitleDirectiveType = JSX.Element | readonly [JSX.Element, Partial<ExtraTippyProps>];
+
+interface ExtraTippyProps extends Omit<TippyProps, "delay"> {
+  /** The appear/disappear delay. Undefined means the default. */
+  readonly delay?: number | readonly [number | null | undefined, number | null | undefined];
+}
 
 declare module "solid-js" {
   namespace JSX {
@@ -15,10 +20,12 @@ declare module "solid-js" {
   }
 }
 
+export const DEFAULT_TITLE_DELAY: [number, number] = [300, 300];
+
 /** The tippy props that can be overridden in the individual instances. */
 const DEFAULT_TIPPY_PROPS = {
   placement: "top",
-  delay: [300, 300],
+  delay: DEFAULT_TITLE_DELAY,
   hideOnClick: false,
   offset: [0, 8],
   maxWidth: "500px",
@@ -129,6 +136,9 @@ export function title(element: Element, accessor: Accessor<TitleDirectiveType>) 
             content,
             ...DEFAULT_TIPPY_PROPS,
             ...tippyProps,
+            delay: (Array.isArray(tippyProps?.delay)
+              ? tippyProps.delay.map((d, i) => (d === undefined ? DEFAULT_TITLE_DELAY[i] : d))
+              : tippyProps?.delay) as TippyProps["delay"],
           });
           tippySingletonManager.add(thisTippy);
         }
@@ -147,7 +157,7 @@ export function title(element: Element, accessor: Accessor<TitleDirectiveType>) 
   });
 }
 
-function isArrayForm(value: TitleDirectiveType): value is readonly [JSX.Element, Partial<TippyProps>] {
+function isArrayForm(value: TitleDirectiveType): value is readonly [JSX.Element, Partial<ExtraTippyProps>] {
   return Array.isArray(value) && value.length === 2 && typeof value[1] === "object";
 }
 

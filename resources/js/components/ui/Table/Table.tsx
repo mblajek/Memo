@@ -43,26 +43,36 @@ export interface TableTranslations {
   columnName(column: string, o?: TOptions): string;
   /** The column name that would override even an attribute label in case of an attribute column. */
   columnNameOverride?(column: string, o?: TOptions): string;
-  /** Summary of the table, taking the number of rows as count. */
-  summary(o?: TOptions): string;
+  /** Summary of the table. */
+  summary(count: number, activeColumnGroups?: readonly string[], o?: TOptions): string;
+  columnGroup(group: string, o?: TOptions): string;
 }
 
 export function createTableTranslations(tableName: string | string[]): TableTranslations {
   const t = useLangFunc();
   const names = typeof tableName === "string" ? [tableName] : tableName;
   const tableNameKeys = [
-    ...names.map((n) => `tables.tables.${n}.tableName`),
+    ...names.map((n) => `tables.tables.${n}.table_name`),
     ...names.map((n) => `models.${n}._name_plural`),
-    `tables.tables.generic.tableName`,
+    `tables.tables.generic.table_name`,
   ];
-  const priorityColumnNameKeyPrefixes = names.map((n) => `tables.tables.${n}.columnNames.`);
+  const priorityColumnNameKeyPrefixes = names.map((n) => `tables.tables.${n}.column_names.`);
   const columnNameKeyPrefixes = [
     ...priorityColumnNameKeyPrefixes,
     ...names.map((n) => `models.${n}.`),
-    `tables.tables.generic.columnNames.`,
+    `tables.tables.generic.column_names.`,
     `models.generic.`,
   ];
-  const summaryKeys = [...names.map((n) => `tables.tables.${n}.summary`), `tables.tables.generic.summary`];
+  const summaryKeys = [...names.map((n) => `tables.tables.${n}.summary`), "tables.tables.generic.summary"];
+  const summaryWithColumnGroup = (columnGroup: string) => [
+    ...names.map((n) => `tables.tables.${n}.with_column_group.${columnGroup}.summary`),
+    `tables.tables.generic.with_column_group.${columnGroup}.summary`,
+  ];
+  const columnGroupsKeyPrefixes = [
+    ...names.map((n) => `tables.tables.${n}.column_groups.`),
+    `tables.tables.generic.column_groups.`,
+    ...columnNameKeyPrefixes,
+  ];
   return {
     tableName: (o) => t(tableNameKeys, o),
     columnName: (column, o) =>
@@ -75,7 +85,20 @@ export function createTableTranslations(tableName: string | string[]): TableTran
         priorityColumnNameKeyPrefixes.map((p) => p + column),
         o,
       ),
-    summary: (o) => t(summaryKeys, o),
+    summary: (count, activeColumnGroups, o) =>
+      t(
+        activeColumnGroups?.length === 1
+          ? summaryWithColumnGroup(activeColumnGroups[0]!)
+          : activeColumnGroups?.length
+            ? summaryKeys.at(-1)!
+            : summaryKeys,
+        {...o, count},
+      ),
+    columnGroup: (group, o) =>
+      t(
+        columnGroupsKeyPrefixes.map((p) => p + group),
+        o,
+      ),
   };
 }
 

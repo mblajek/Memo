@@ -15,7 +15,7 @@ export default (() => {
       mode="standalone"
       staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
       staticEntityURL={`facility/${activeFacilityId()}/meeting/attendant`}
-      staticTranslations={createTableTranslations(["meetingAttendant", "meeting"])}
+      staticTranslations={createTableTranslations(["meeting_attendant", "meeting"])}
       staticPersistenceKey="facilityMeetingAttendants"
       // This table has multiple heavy to render columns.
       nonBlocking

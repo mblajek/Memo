@@ -19,14 +19,13 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, TableColumnsSet} from "data-access/memo-api/tquery/table_columns";
-import {Api} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {FacilityUserType} from "../facility-users/user_types";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeriesInfo";
-import {MeetingStatusTags, SimpleMeetingStatusTag} from "./MeetingStatusTags";
+import {MeetingStatusTags} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
 
@@ -90,8 +89,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   };
 
   const meetingColumns = {
-    id: {name: "id", initialVisible: false},
-    date: {name: "date", columnDef: {size: 190, sortDescFirst: true}},
+    id: {name: "id", initialVisible: false, columnGroups: ":meeting"},
+    date: {name: "date", columnDef: {size: 190, sortDescFirst: true}, columnGroups: ["meeting", true]},
     time: {
       name: "startDayminute",
       extraDataColumns: ["durationMinutes"],
@@ -109,12 +108,12 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       },
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, number, TQFullMeetingResource>(
-          (v, ctx) =>
-            `${formatDayMinuteHM(v)}-${formatDayMinuteHM((v + ctx.row.durationMinutes ?? 0) % MAX_DAY_MINUTE)}`,
+          (v, ctx) => `${formatDayMinuteHM(v)}-${formatDayMinuteHM((v + ctx.row.durationMinutes) % MAX_DAY_MINUTE)}`,
         ),
       },
+      columnGroups: "meeting",
     },
-    duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}},
+    duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}, columnGroups: "meeting"},
     isInSeries: {
       name: "isClone",
       extraDataColumns: ["interval"],
@@ -135,6 +134,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 150,
       },
+      columnGroups: "meeting",
     },
     seriesType: {
       name: "interval",
@@ -156,23 +156,13 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 120,
       },
+      columnGroups: "meeting",
     },
-    category: {name: "categoryDictId", initialVisible: false},
-    type: {name: "typeDictId"},
-    status: {
-      name: "statusDictId",
-      columnDef: {
-        cell: cellFunc<Api.Id, TQFullMeetingResource>((props) => (
-          <PaddedCell>
-            <ShowCellVal v={props.v}>{(v) => <SimpleMeetingStatusTag status={v()} />}</ShowCellVal>
-          </PaddedCell>
-        )),
-        size: 200,
-      },
-    },
+    category: {name: "categoryDictId", initialVisible: false, columnGroups: ["meeting", true, "typeDictId"]},
+    type: {name: "typeDictId", columnGroups: ["meeting", true]},
     statusTags: {
       name: "statusDictId",
-      extraDataColumns: ["staff", "clients", "isRemote"],
+      extraDataColumns: {standard: ["staff", "clients", "isRemote"], whenGrouping: []},
       columnDef: {
         cell: cellFunc<string, TQFullMeetingResource>((props) => (
           <ScrollableCell baseHeight={baseHeight}>
@@ -182,6 +172,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </ScrollableCell>
         )),
       },
+      columnGroups: ["meeting", true],
       // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
     },
     attendants: {
@@ -216,15 +207,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           (v, ctx) => ctx.row.attendants?.map((u) => u.name).join(", "),
         ),
       },
+      columnGroups: "meeting",
     },
-    attendantsAttendance: {
-      name: "attendants.*.attendanceStatusDictId",
-      initialVisible: false,
-    },
-    attendantsCount: {
-      name: "attendants.count",
-      initialVisible: false,
-    },
+    attendantsAttendance: {name: "attendants.*.attendanceStatusDictId", initialVisible: false, columnGroups: "meeting"},
+    attendantsCount: {name: "attendants.count", initialVisible: false, columnGroups: "meeting"},
     staff: {
       name: "staff.*.userId",
       extraDataColumns: ["staff"],
@@ -244,15 +230,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           (v, ctx) => ctx.row.staff.map((u) => u.name).join(", "),
         ),
       },
+      columnGroups: "meeting",
     },
-    staffAttendance: {
-      name: "staff.*.attendanceStatusDictId",
-      initialVisible: false,
-    },
-    staffCount: {
-      name: "staff.count",
-      initialVisible: false,
-    },
+    staffAttendance: {name: "staff.*.attendanceStatusDictId", initialVisible: false, columnGroups: "meeting"},
+    staffCount: {name: "staff.count", initialVisible: false, columnGroups: "meeting"},
     clients: {
       name: "clients.*.userId",
       extraDataColumns: ["clients"],
@@ -272,16 +253,11 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           (v, ctx) => ctx.row.clients.map((u) => u.name).join(", "),
         ),
       },
+      columnGroups: "meeting",
     },
-    clientsAttendance: {
-      name: "clients.*.attendanceStatusDictId",
-      initialVisible: false,
-    },
-    clientsCount: {
-      name: "clients.count",
-      initialVisible: false,
-    },
-    isRemote: {name: "isRemote"},
+    clientsAttendance: {name: "clients.*.attendanceStatusDictId", initialVisible: false, columnGroups: "meeting"},
+    clientsCount: {name: "clients.count", initialVisible: false, columnGroups: "meeting"},
+    isRemote: {name: "isRemote", columnGroups: "meeting"},
     notes: {
       name: "notes",
       columnDef: {
@@ -291,8 +267,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </ScrollableCell>
         )),
       },
+      columnGroups: "meeting",
     },
-    resources: {name: "resources.*.dictId"},
+    resources: {name: "resources.*.dictId", columnGroups: "meeting"},
     actions: {
       name: "actions",
       isDataColumn: false,
@@ -315,8 +292,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </PaddedCell>
         ),
         enableSorting: false,
+        enableHiding: false,
         ...AUTO_SIZE_COLUMN_DEFS,
       },
+      columnGroups: "meeting",
     },
     dateTimeActions: {
       name: "date",
@@ -357,6 +336,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           formatDateTimeForTextExport(DateTime.fromISO(v).set(dayMinuteToHM(ctx.row.startDayminute))),
         ),
       },
+      columnGroups: "meeting",
     },
   } satisfies Partial<Record<string, PartialColumnConfig<TQFullMeetingResource>>>;
   const attendantColumn = {
@@ -381,11 +361,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         (v, ctx) => ctx.row["attendant.name"],
       ),
     },
+    columnGroups: "::attendant",
   } satisfies PartialColumnConfig<TQMeetingAttendanceResource>;
   const attendantsColumns = {
-    attendanceType: {
-      name: "attendant.attendanceTypeDictId",
-    },
+    attendanceType: {name: "attendant.attendanceTypeDictId", columnGroups: "attendant"},
     attendant: attendantColumn,
     attendantClient: {
       ...attendantColumn,
@@ -395,7 +374,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     },
     attendanceStatus: {
       name: "attendant.attendanceStatusDictId",
-      extraDataColumns: ["statusDictId"],
+      extraDataColumns: {standard: ["statusDictId"], whenGrouping: []},
       columnDef: {
         cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
@@ -411,6 +390,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 200,
       },
+      columnGroups: true,
     },
   } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingAttendanceResource>>>;
   return new TableColumnsSet({

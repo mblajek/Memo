@@ -75,7 +75,7 @@ export function useTableAttributeColumnConfigs() {
     client: () =>
       ({
         attributeColumns: true,
-        defaultConfig: {initialVisible: false},
+        defaultConfig: {initialVisible: false, columnGroups: "attendant"},
         selection: {
           model: "client",
           includeFixed: true,

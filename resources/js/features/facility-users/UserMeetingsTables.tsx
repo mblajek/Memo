@@ -45,7 +45,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
       {type: "column", column: "startDayminute", desc},
     ] satisfies Sort;
   }
-  const tableTranslations = createTableTranslations(["meetingAttendant", "meeting"]);
+  const tableTranslations = createTableTranslations(["meeting_attendant", "meeting"]);
   function exportConfig(tableType: "planned" | "completed" | "all"): TableExportConfig {
     const baseName =
       tableType === "all" ? tableTranslations.tableName() : t(`facility_user.meetings_lists.${tableType}`);
@@ -154,6 +154,13 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ),
                         ...getCreatedUpdatedColumns(),
                       ]}
+                      columnGroups={{
+                        overrides: {
+                          "meeting": false,
+                          "statusDictId": false,
+                          "attendant.attendanceStatusDictId": false,
+                        },
+                      }}
                       initialSort={[{id: "date", desc: false}]}
                       exportConfig={exportConfig("planned")}
                     />
@@ -255,6 +262,13 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ),
                         ...getCreatedUpdatedColumns(),
                       ]}
+                      columnGroups={{
+                        overrides: {
+                          "meeting": false,
+                          "statusDictId": false,
+                          "attendant.attendanceStatusDictId": false,
+                        },
+                      }}
                       initialSort={[{id: "date", desc: true}]}
                       exportConfig={exportConfig("completed")}
                     />
@@ -308,6 +322,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ),
                         ...getCreatedUpdatedColumns(),
                       ]}
+                      columnGroups={{overrides: {meeting: false}}}
                       initialSort={[{id: "date", desc: true}]}
                       exportConfig={exportConfig("all")}
                     />

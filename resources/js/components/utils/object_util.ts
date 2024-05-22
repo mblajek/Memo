@@ -54,3 +54,30 @@ export function toPlainObject<T extends object>(object: T, keys?: (keyof T & str
     return object;
   }
 }
+
+export function intersects<T>(a: readonly T[] | undefined, b: readonly T[] | undefined) {
+  return a && b && a.some((a) => b.includes(a));
+}
+
+export function arraysEqual<T>(
+  a: readonly T[],
+  b: readonly T[],
+  equals: (ai: T, bi: T) => boolean = (ai, bi) => ai === bi,
+) {
+  return a.length === b.length && a.every((v, i) => equals(v, b[i]!));
+}
+
+export function objectsEqual(
+  a: object,
+  b: object,
+  equals: (av: unknown, bv: unknown) => boolean = (av, bv) => av === bv,
+) {
+  const aKeys = Object.keys(a);
+  return (
+    Object.keys(b).length === aKeys.length &&
+    aKeys.every(
+      (key) =>
+        key in b && equals((a as Partial<Record<string, unknown>>)[key], (b as Partial<Record<string, unknown>>)[key]),
+    )
+  );
+}

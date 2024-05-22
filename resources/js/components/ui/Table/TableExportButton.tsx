@@ -201,10 +201,7 @@ export const TableExportButton: VoidComponent = () => {
               <Capitalize text={t(`tables.export.${props.labelKey}`)} />
               <Show when={props.count}>
                 {(count) => (
-                  <span class="text-grey-text">
-                    {" "}
-                    {t("parenthesised", {text: table.options.meta?.translations?.summary({count: count()})})}
-                  </span>
+                  <span class="text-grey-text"> {t("parenthesised", {text: t("tables.rows", {count: count()})})}</span>
                 )}
               </Show>
             </span>

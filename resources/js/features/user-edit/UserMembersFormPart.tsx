@@ -55,7 +55,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
   // A trick: we assume the form has only the key specified by membersPath, and it's of type Input.
   const {form} = useFormContext<Record<typeof membersPath, Input>>();
   const t = useLangFunc();
-  const translations = createTableTranslations("userFacilityMember");
+  const translations = createTableTranslations("user_facility_member");
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const facilitiesById = createMemo(() => byId(facilitiesQuery.data));
   /** A list of facilities that are not yet present in any row. Only those can be added. */
@@ -107,7 +107,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                 name="__addedFacility"
                 label=""
                 placeholder={t("actions.add")}
-                aria-label={t("models.userFacilityMember.facility")}
+                aria-label={t("models.user_facility_member.facility")}
                 items={[...freeFacilities().map(({id, name}) => ({value: id, text: name}))]}
                 onFilterChange="internal"
                 nullable

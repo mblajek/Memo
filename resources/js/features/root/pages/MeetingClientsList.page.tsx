@@ -17,7 +17,13 @@ export default (() => {
       mode="standalone"
       staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
       staticEntityURL={`facility/${activeFacilityId()}/meeting/client`}
-      staticTranslations={createTableTranslations(["meetingClient", "meetingAttendant", "meeting"])}
+      staticTranslations={createTableTranslations([
+        "meeting_client",
+        "meeting_attendant",
+        "client",
+        "facility_user",
+        "meeting",
+      ])}
       staticPersistenceKey="facilityMeetingClients"
       // This table has multiple heavy to render columns.
       nonBlocking
@@ -29,6 +35,12 @@ export default (() => {
       columns={meetingTableColumns.get(
         "attendantClient",
         tableAttributeColumnConfigs.client(),
+        {name: "firstMeetingDate", initialVisible: false, columnGroups: "attendant"},
+        {name: "lastMeetingDate", initialVisible: false, columnGroups: "attendant"},
+        {name: "completedMeetingsCount", initialVisible: false, columnGroups: "attendant"},
+        {name: "completedMeetingsCountLastMonth", initialVisible: false, columnGroups: "attendant"},
+        {name: "plannedMeetingsCount", initialVisible: false, columnGroups: "attendant"},
+        {name: "plannedMeetingsCountNextMonth", initialVisible: false, columnGroups: "attendant"},
         "attendanceStatus",
         "id",
         "date",
