@@ -2,7 +2,6 @@
 
 namespace App\Tquery\Tables;
 
-use App\Models\Client;
 use App\Models\Enums\AttendanceType;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Tquery\Config\TqConfig;
@@ -26,12 +25,12 @@ readonly class MeetingClientTquery extends MeetingTquery
         );
         $builder->join(
             TqTableAliasEnum::meeting_attendants,
-            TqTableAliasEnum::attendant,
+            TqTableAliasEnum::users,
             'user_id',
             left: false,
             inv: false,
         );
-        $builder->join(TqTableAliasEnum::attendant, TqTableAliasEnum::members, 'user_id', left: false, inv: true);
+        $builder->join(TqTableAliasEnum::users, TqTableAliasEnum::members, 'user_id', left: false, inv: true);
         $builder->join(TqTableAliasEnum::members, TqTableAliasEnum::clients, 'client_id', left: false, inv: false);
         $builder->where(fn(TqSingleBind $bind) => //
         "members.facility_id = {$bind->use()}", false, $this->facility->id, false, false);
@@ -63,7 +62,7 @@ readonly class MeetingClientTquery extends MeetingTquery
         );
         $config->addJoined(
             TqDataTypeEnum::string,
-            TqTableAliasEnum::attendant,
+            TqTableAliasEnum::users,
             'name',
             'attendant.name'
         );

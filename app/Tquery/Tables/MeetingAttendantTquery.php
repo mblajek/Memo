@@ -23,7 +23,7 @@ readonly class MeetingAttendantTquery extends MeetingTquery
         );
         $builder->join(
             TqTableAliasEnum::meeting_attendants,
-            TqTableAliasEnum::attendant,
+            TqTableAliasEnum::users,
             'user_id',
             left: false,
             inv: false,
@@ -37,25 +37,25 @@ readonly class MeetingAttendantTquery extends MeetingTquery
 
         $config->addJoined(
             TqDataTypeEnum::uuid,
-            TqTableAliasEnum::meeting_attendants,
+            TqTableAliasEnum::users,
             'user_id',
             'attendant.user_id'
         );
         $config->addJoined(
             TqDataTypeEnum::string,
-            TqTableAliasEnum::attendant,
+            TqTableAliasEnum::users,
             'name',
             'attendant.name'
         );
         $config->addJoined(
             new TqDictDef(TqDataTypeEnum::dict, DictionaryUuidEnum::AttendanceType),
-            TqTableAliasEnum::meeting_attendants,
+            TqTableAliasEnum::users,
             'attendance_type_dict_id',
             'attendant.attendance_type_dict_id'
         );
         $config->addJoined(
             new TqDictDef(TqDataTypeEnum::dict, DictionaryUuidEnum::AttendanceStatus),
-            TqTableAliasEnum::meeting_attendants,
+            TqTableAliasEnum::users,
             'attendance_status_dict_id',
             'attendant.attendance_status_dict_id',
         );
