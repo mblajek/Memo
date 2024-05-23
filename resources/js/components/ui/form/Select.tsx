@@ -197,6 +197,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   // zag component.
   const fieldsetDisabled = useIsFieldsetDisabled(root);
 
+  const [filterValue, setFilterValue] = createSignal("");
   const [state, send] = useMachine(
     combobox.machine({
       id: createUniqueId(),
@@ -204,15 +205,6 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       name: props.name,
       // Needed but never used, the actual collection comes from the context below.
       collection: combobox.collection.empty(),
-      positioning: {
-        gutter: 0,
-        strategy: "absolute",
-        placement: "bottom-end",
-        overflowPadding: 10,
-        flip: true,
-        sameWidth: false,
-        overlap: true,
-      },
       onInputValueChange: ({value}) => {
         if (typeof props.onFilterChange === "function") {
           props.onFilterChange(value);
@@ -267,6 +259,15 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }),
     {
       context: () => ({
+        positioning: {
+          gutter: 0,
+          strategy: "absolute",
+          placement: "bottom-end",
+          overflowPadding: 10,
+          flip: true,
+          sameWidth: false,
+          overlap: !filterValue(),
+        } as const,
         collection: collection(),
         multiple: props.multiple,
         disabled: props.disabled || fieldsetDisabled(),
@@ -275,6 +276,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     },
   );
   const api = createMemo(() => combobox.connect<PropTypes, SelectItem>(state, send, normalizeProps));
+  createComputed(() => setFilterValue(api().inputValue));
 
   if (formContext)
     createComputed(
@@ -294,13 +296,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     );
 
   const isInternalFilteringMode = () => props.onFilterChange === "internal";
-  // Wrap the input value in a memo to avoid an infinite loop of updates, where updating the filter changes the items,
-  // which updates the collection, and in consequence the api object, which unnecessarily triggers the filtering again.
-  const filterValue = createMemo(() => api().inputValue.toLocaleLowerCase());
   /** The items after filtering, regardless of the filtering mode. */
   const filteredItems = createMemo(() => {
     if (isInternalFilteringMode()) {
-      const filter = filterValue();
+      const filter = filterValue().toLocaleLowerCase();
       if (!filter) {
         return props.items;
       }

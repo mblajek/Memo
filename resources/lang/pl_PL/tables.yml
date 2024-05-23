@@ -168,15 +168,16 @@ export:
   aborted: "Anulowano eksport"
 
 column_groups:
-  grouping_prefix: "Grupowanie:"
+  grouping_symbol: "✦"
+  feature_name: "Grupowanie wierszy tabeli"
+  no_grouping: "Brak grupowania"
   grouped_column_tooltip:
     unknown_count: "Zgrupowane wiersze"
     known_count: "Zgrupowane wiersze ({{count}})"
-  grouped_symbol: "✦"
-  count_column_label: "$t(tables.column_groups.grouped_symbol) Liczba zgrupowanych wierszy"
-  explicit_group: "Grupa złożona z wielu kolumn"
+  count_column_label: "$t(tables.column_groups.grouping_symbol) Liczba zgrupowanych wierszy"
+  explicit_group: "Grupowanie bazujące na wielu kolumnach"
   column_status:
-    force_shown: "Kolumna musi być widoczna z powodu grupowania"
+    force_shown: "Kolumna grupująca musi być widoczna"
 
 rows__zero: "Brak wierszy"
 rows__one: "{{count, number}} wiersz"

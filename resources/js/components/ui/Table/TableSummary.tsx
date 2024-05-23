@@ -19,7 +19,7 @@ export const TableSummary: VoidComponent<Props> = (props) => {
       <Show
         when={table.options.meta?.translations?.summary?.(
           count(),
-          table.options.meta.tquery?.activeColumnGroups?.[0](),
+          table.options.meta.tquery?.effectiveActiveColumnGroups?.(),
           {defaultValue: ""},
         )}
         fallback={t("tables.tables.generic.summary", {count: count()})}

@@ -150,20 +150,17 @@ export function createTableRequestCreator({
     const countColumn = createMemo(() => schema()?.columns.find((c) => c.type === "count")?.name);
     const groupingActive = () => activeColumnGroups().length > 0;
     createComputed(() => {
-      setColumnVisibility((vis) => {
-        vis = {...vis};
-        // Show the count column only when grouping.
-        if (countColumn()) {
-          vis[countColumn()!] = groupingActive();
-        }
-        // If grouping is enabled, show the force-show columns.
-        for (const group of activeColumnGroups()) {
-          for (const forceShowCol of columnGroupsByName().get(group)?.forceShowColumns || []) {
-            vis[forceShowCol] = true;
+      if (groupingActive())
+        // Show the force-show columns.
+        setColumnVisibility((vis) => {
+          vis = {...vis};
+          for (const group of activeColumnGroups()) {
+            for (const forceShowCol of columnGroupsByName().get(group)?.forceShowColumns || []) {
+              vis[forceShowCol] = true;
+            }
           }
-        }
-        return vis;
-      });
+          return vis;
+        });
       // Remove column filters for hidden columns.
       for (const {name} of columnsConfig()) {
         if (columnVisibility()[name] === false) {

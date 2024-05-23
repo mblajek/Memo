@@ -15,7 +15,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
     table.getAllLeafColumns().every((c) => c.getIsVisible() === (defaultColumnVisibility?.()[c.id] ?? true));
   const columnStatuses = createMemo(() => {
     const columnGroups = table.options.meta?.tquery?.columnGroups?.();
-    const activeGroups = table.options.meta?.tquery?.activeColumnGroups?.[0]();
+    const activeGroups = table.options.meta?.tquery?.effectiveActiveColumnGroups?.();
     if (!columnGroups?.length || !activeGroups?.length) {
       return undefined;
     }

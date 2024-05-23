@@ -12,7 +12,7 @@ import {
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
-import {NON_NULLABLE, debouncedAccessor, useLangFunc} from "components/utils";
+import {NON_NULLABLE, NUMBER_FORMAT, debouncedAccessor, useLangFunc} from "components/utils";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
@@ -54,12 +54,14 @@ import {
   Header,
   PaddedCell,
   Pagination,
+  ShowCellVal,
   Table,
   TableColumnVisibilityController,
   TableExportConfig,
   TableSearch,
   TableSummary,
   TableTranslations,
+  cellFunc,
   createTableTranslations,
   getBaseTableOptions,
   useTableCells,
@@ -101,6 +103,11 @@ interface TQueryTableMeta<TData extends RowData> {
   readonly cellsPreviewMode?: Signal<CellsPreviewMode | undefined>;
   readonly columnGroups?: Accessor<readonly ColumnGroup[]>;
   readonly activeColumnGroups?: Signal<readonly string[]>;
+  /**
+   * The active column groups appropriate for the data currently shown in the table.
+   * This is not updated with the changed active column groups until the new data is fetched.
+   */
+  readonly effectiveActiveColumnGroups?: Accessor<readonly string[]>;
 }
 
 /** The preview mode, changing the contents of all cells in the table to a preview value. */
@@ -457,6 +464,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     countColumn,
     miniState,
   } = requestController;
+  const [effectiveActiveColumnGroups, setEffectiveActiveColumnGroups] = createSignal<readonly string[]>([]);
+  createEffect(() => {
+    if (dataQuery.isSuccess && !dataQuery.isPlaceholderData) {
+      setEffectiveActiveColumnGroups(activeColumnGroups[0]());
+    }
+  });
   const [table, setTable] = createSignal<SolidTable<DataItem>>();
   const historyPersistenceKey = `TQueryTable:${props.staticPersistenceKey || "main"}`;
   const columnFilterStates = new ColumnFilterStates();
@@ -592,9 +605,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         {meta: {tquery: defColumnConfig.metaParams}},
         {meta: {tquery: col.metaParams}},
       ) satisfies ColumnDef<DataItem, unknown>;
-      const groups = activeColumnGroups[0];
       const origCell = columnDef.cell as CellComponent;
-      const isGroupedMultipleValues = createMemo(() => groups().length && !intersects(groups(), col.columnGroups));
+      const isGroupedMultipleValues = createMemo(
+        () => effectiveActiveColumnGroups().length && !intersects(effectiveActiveColumnGroups(), col.columnGroups),
+      );
       columnDef.cell = (ctx) => (
         <Show when={isGroupedMultipleValues()} fallback={origCell(ctx)}>
           <MultipleValuesCell
@@ -632,10 +646,31 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
             enableHiding: false,
           },
           defaultColumnConfigByType.get("int")!.columnDef,
+          {
+            cell: cellFunc<number>((props) => (
+              <PaddedCell class="w-full text-right">
+                <ShowCellVal v={props.v}>
+                  {(v) => (
+                    <span class="flex justify-between gap-1">
+                      <span>{t("tables.column_groups.grouping_symbol")}</span>
+                      <span>{NUMBER_FORMAT.format(v())}</span>
+                    </span>
+                  )}
+                </ShowCellVal>
+              </PaddedCell>
+            )),
+          },
         ),
       );
     }
     return columns;
+  });
+  createComputed(() => {
+    const countCol = countColumn();
+    if (countCol) {
+      // eslint-disable-next-line solid/reactivity
+      columnVisibility[1]((vis) => ({...vis, [countCol]: effectiveActiveColumnGroups().length > 0}));
+    }
   });
 
   const MultipleValuesCell: VoidComponent<{readonly count?: number}> = (props) => {
@@ -652,7 +687,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
             {delay: [800, undefined]},
           ]}
         >
-          {t("tables.column_groups.grouped_symbol")}
+          {t("tables.column_groups.grouping_symbol")}
         </div>
       </div>
     );
@@ -693,6 +728,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           cellsPreviewMode: [cellsPreviewMode, setCellsPreviewMode],
           columnGroups,
           activeColumnGroups,
+          effectiveActiveColumnGroups,
         },
         historyPersistenceKey,
         columnFilterStates,
@@ -713,6 +749,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
             columnsWithActiveFilters={columnsWithActiveFilters()}
             clearColumnFilters={clearColumnFilters}
           />
+          <TableColumnGroupSelect />
           <TableColumnVisibilityController />
         </div>
       )}
@@ -725,8 +762,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
               {props.customSectionBelowTable}
             </Show>
           </div>
-          <div class="ml-auto min-h-small-input flex items-stretch gap-1">
-            <TableColumnGroupSelect />
+          <div class="ml-auto">
             <TableExportButton />
           </div>
         </div>
