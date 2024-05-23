@@ -13,6 +13,7 @@
 - Tabele
   - [Filtrowanie](table-filtering)
   - [Eksport danych](table-export)
+  - [Grupowanie wierszy](table-grouping)
 - [Raporty](reports)
 - [Tekst z tagami](rich-text)
 - [Sztuczki usprawniające korzystanie z Memo ✨](tricks)

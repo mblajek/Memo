@@ -5,6 +5,7 @@ import {Capitalize} from "../Capitalize";
 import {Select} from "../form/Select";
 import {title} from "../title";
 import {useTable} from "./TableContext";
+import {InfoIcon} from "../InfoIcon";
 
 const _DIRECTIVES_ = null && title;
 
@@ -51,6 +52,16 @@ export const TableColumnGroupSelect: VoidComponent = () => {
                   </span>
                 ),
               })),
+              {value: createUniqueId(), label: () => <hr class="border-input-border" />, disabled: true},
+              {
+                value: createUniqueId(),
+                label: () => (
+                  <span>
+                    {t("more_info")} <InfoIcon href="/help/table-grouping" title="" />
+                  </span>
+                ),
+                disabled: true,
+              },
             ]}
             value={activeColumnGroups![0]()[0] || NO_GROUPING_VALUE}
             onValueChange={(v) => activeColumnGroups![1](v && v !== NO_GROUPING_VALUE ? [v] : [])}

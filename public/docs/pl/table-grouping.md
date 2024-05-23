@@ -1,0 +1,1 @@
+# Grupowanie wierszy tabeli

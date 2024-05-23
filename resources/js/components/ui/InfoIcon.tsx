@@ -28,7 +28,7 @@ export const InfoIcon: VoidComponent<InfoIconProps> = (props) => {
     <Switch>
       <Match when={props.href && props}>
         {(linkProps) => (
-          <span use:title={props.title || t("more_info")}>
+          <span use:title={props.title ?? t("more_info")}>
             <A
               target="_blank"
               {...(linkProps() as AnchorProps)}
