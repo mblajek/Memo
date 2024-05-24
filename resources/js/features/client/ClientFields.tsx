@@ -97,7 +97,17 @@ export function useTableAttributeColumnConfigs() {
                 )),
               },
             },
-            contactPhone: {initialVisible: true, columnDef: {size: 180}},
+            contactPhone: {
+              initialVisible: true,
+              columnDef: {
+                cell: cellFunc<string>((props) => (
+                  <PaddedCell>
+                    <ShowCellVal v={props.v}>{(v) => <Phone phone={v()} />}</ShowCellVal>
+                  </PaddedCell>
+                )),
+                size: 180,
+              },
+            },
             notes: {
               columnDef: {
                 cell: cellFunc<string>((props) => (

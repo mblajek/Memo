@@ -35,7 +35,7 @@ export const Header: VoidComponent<Props> = (props) => {
         {(filterControl) => (
           <div class="flex flex-wrap items-end gap-0.5 overflow-y-auto">
             <div class="flex-grow basis-0">{filterControl()()}</div>
-            <div>
+            <div class="ml-auto">
               <FilterIconButton isFiltering={!!props.filter![0]()} onClear={() => props.filter![1](undefined)} />
             </div>
           </div>

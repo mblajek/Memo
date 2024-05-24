@@ -92,7 +92,7 @@ meeting:
   isClone: "w serii"
   interval: "typ serii"
   categoryDictId: "kategoria"
-  typeDictId: "typ"
+  typeDictId: "typ spotkania"
   statusDictId: "$t(dictionary.meetingStatus._name)"
   attendant: "uczestnik"
   attendants: "uczestnicy"
