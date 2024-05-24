@@ -31,11 +31,11 @@ tabeli ma dany typ spotkania.
 
 Wynikowa tabela pogrupowana po typie:
 
-| $t(tables.column_groups.count_column_label) | Data                                     | Godzina                                  | Kategoria   | Typ                      | Klienci                                  |
-| ------------------------------------------- | ---------------------------------------- | ---------------------------------------- | ----------- | ------------------------ | ---------------------------------------- |
-| 2                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Konsultacje | Konsultacja z parą       | $t(tables.column_groups.grouping_symbol) |
-| 3                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Konsultacje | Konsultacja indywidualna | $t(tables.column_groups.grouping_symbol) |
-| 1                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Szkolenia   | Spotkanie edukacyjne     | $t(tables.column_groups.grouping_symbol) |
+| $t(tables.column_groups.count_column_label) | Data $t(tables.column_groups.grouping_symbol) | Godzina $t(tables.column_groups.grouping_symbol) | Kategoria   | Typ                      | Klienci $t(tables.column_groups.grouping_symbol) |
+| ------------------------------------------- | --------------------------------------------- | ------------------------------------------------ | ----------- | ------------------------ | ------------------------------------------------ |
+| $t(tables.column_groups.grouping_symbol) 2  | $t(tables.column_groups.grouping_symbol)      | $t(tables.column_groups.grouping_symbol)         | Konsultacje | Konsultacja z parą       | $t(tables.column_groups.grouping_symbol)         |
+| $t(tables.column_groups.grouping_symbol) 3  | $t(tables.column_groups.grouping_symbol)      | $t(tables.column_groups.grouping_symbol)         | Konsultacje | Konsultacja indywidualna | $t(tables.column_groups.grouping_symbol)         |
+| $t(tables.column_groups.grouping_symbol) 1  | $t(tables.column_groups.grouping_symbol)      | $t(tables.column_groups.grouping_symbol)         | Szkolenia   | Spotkanie edukacyjne     | $t(tables.column_groups.grouping_symbol)         |
 
 (Z przyczyn technicznych również ostatni wiersz nie wyświetla konkretnych wartości w kolumnach daty, godziny itp.,
 mimo iż teoretycznie mógłby, ponieważ jest tylko jedno spotkanie typu "Spotkanie edukacyjne".)
@@ -44,18 +44,18 @@ mimo iż teoretycznie mógłby, ponieważ jest tylko jedno spotkanie typu "Spotk
 
 Tabelę można też pogrupować po kategorii. Wtedy również kolumna typu nie będzie wyświetlała konkretnych wartości:
 
-| $t(tables.column_groups.count_column_label) | Data                                     | Godzina                                  | Kategoria   | Typ                                      | Klienci                                  |
-| ------------------------------------------- | ---------------------------------------- | ---------------------------------------- | ----------- | ---------------------------------------- | ---------------------------------------- |
-| 5                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Konsultacje | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) |
-| 1                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Szkolenia   | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) |
+| $t(tables.column_groups.count_column_label) | Data $t(tables.column_groups.grouping_symbol) | Godzina $t(tables.column_groups.grouping_symbol) | Kategoria   | Typ $t(tables.column_groups.grouping_symbol) | Klienci $t(tables.column_groups.grouping_symbol) |
+| ------------------------------------------- | --------------------------------------------- | ------------------------------------------------ | ----------- | -------------------------------------------- | ------------------------------------------------ |
+| $t(tables.column_groups.grouping_symbol) 5  | $t(tables.column_groups.grouping_symbol)      | $t(tables.column_groups.grouping_symbol)         | Konsultacje | $t(tables.column_groups.grouping_symbol)     | $t(tables.column_groups.grouping_symbol)         |
+| $t(tables.column_groups.grouping_symbol) 1  | $t(tables.column_groups.grouping_symbol)      | $t(tables.column_groups.grouping_symbol)         | Szkolenia   | $t(tables.column_groups.grouping_symbol)     | $t(tables.column_groups.grouping_symbol)         |
 
 Spotkania można też pogrupować po dacie:
 
-| $t(tables.column_groups.count_column_label) | Data       | Godzina                                  | Kategoria                                | Typ                                      | Klienci                                  |
-| ------------------------------------------- | ---------- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------- | ---------------------------------------- |
-| 1                                           | 2020-01-31 | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) |
-| 2                                           | 2020-02-01 | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) |
-| 3                                           | 2020-02-02 | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) |
+| $t(tables.column_groups.count_column_label) | Data       | Godzina $t(tables.column_groups.grouping_symbol) | Kategoria $t(tables.column_groups.grouping_symbol) | Typ $t(tables.column_groups.grouping_symbol) | Klienci $t(tables.column_groups.grouping_symbol) |
+| ------------------------------------------- | ---------- | ------------------------------------------------ | -------------------------------------------------- | -------------------------------------------- | ------------------------------------------------ |
+| $t(tables.column_groups.grouping_symbol) 1  | 2020-01-31 | $t(tables.column_groups.grouping_symbol)         | $t(tables.column_groups.grouping_symbol)           | $t(tables.column_groups.grouping_symbol)     | $t(tables.column_groups.grouping_symbol)         |
+| $t(tables.column_groups.grouping_symbol) 2  | 2020-02-01 | $t(tables.column_groups.grouping_symbol)         | $t(tables.column_groups.grouping_symbol)           | $t(tables.column_groups.grouping_symbol)     | $t(tables.column_groups.grouping_symbol)         |
+| $t(tables.column_groups.grouping_symbol) 3  | 2020-02-02 | $t(tables.column_groups.grouping_symbol)         | $t(tables.column_groups.grouping_symbol)           | $t(tables.column_groups.grouping_symbol)     | $t(tables.column_groups.grouping_symbol)         |
 
 ### Filtrowanie pogrupowanej tabeli
 
@@ -63,8 +63,8 @@ Kolumny, które wyświetlają jako wartość $t(tables.column_groups.grouping_sy
 wrócimy do grupowania po typie, ale ustawimy w kolumnie daty filtr "od 2020-02-01", pierwsze spotkanie nie zostanie wzięte pod uwagę.
 Dlatego w wynikowej tabeli wiersz dla typu "Konsultacja z parą" będzie miał liczbę 1 zamiast 2:
 
-| $t(tables.column_groups.count_column_label) | Data (filtrowana)                        | Godzina                                  | Kategoria   | Typ                      | Klienci                                  |
-| ------------------------------------------- | ---------------------------------------- | ---------------------------------------- | ----------- | ------------------------ | ---------------------------------------- |
-| 1                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Konsultacje | Konsultacja z parą       | $t(tables.column_groups.grouping_symbol) |
-| 3                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Konsultacje | Konsultacja indywidualna | $t(tables.column_groups.grouping_symbol) |
-| 1                                           | $t(tables.column_groups.grouping_symbol) | $t(tables.column_groups.grouping_symbol) | Szkolenia   | Spotkanie edukacyjne     | $t(tables.column_groups.grouping_symbol) |
+| $t(tables.column_groups.count_column_label) | Data $t(tables.column_groups.grouping_symbol) (filtrowana) | Godzina $t(tables.column_groups.grouping_symbol) | Kategoria   | Typ                      | Klienci $t(tables.column_groups.grouping_symbol) |
+| ------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------ | ----------- | ------------------------ | ------------------------------------------------ |
+| $t(tables.column_groups.grouping_symbol) 1  | $t(tables.column_groups.grouping_symbol)                   | $t(tables.column_groups.grouping_symbol)         | Konsultacje | Konsultacja z parą       | $t(tables.column_groups.grouping_symbol)         |
+| $t(tables.column_groups.grouping_symbol) 3  | $t(tables.column_groups.grouping_symbol)                   | $t(tables.column_groups.grouping_symbol)         | Konsultacje | Konsultacja indywidualna | $t(tables.column_groups.grouping_symbol)         |
+| $t(tables.column_groups.grouping_symbol) 1  | $t(tables.column_groups.grouping_symbol)                   | $t(tables.column_groups.grouping_symbol)         | Szkolenia   | Spotkanie edukacyjne     | $t(tables.column_groups.grouping_symbol)         |

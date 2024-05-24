@@ -178,6 +178,7 @@ column_groups:
   explicit_group: "Grupowanie bazujące na wielu kolumnach"
   column_status:
     force_shown: "Kolumna grupująca musi być widoczna"
+    grouped: "Wartości w kolumnie są zgrupowane"
 
 rows__zero: "Brak wierszy"
 rows__one: "{{count, number}} wiersz"
