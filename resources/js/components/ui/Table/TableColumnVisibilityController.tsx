@@ -1,5 +1,5 @@
 import {cx, useLangFunc} from "components/utils";
-import {For, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {For, Show, VoidComponent, createSignal} from "solid-js";
 import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
 import {PopOver} from "../PopOver";
@@ -13,23 +13,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
   const isDefaultVisibility = () =>
     table.getAllLeafColumns().every((c) => c.getIsVisible() === (defaultColumnVisibility?.()[c.id] ?? true));
-  const columnStatuses = createMemo(() => {
-    const columnGroups = table.options.meta?.tquery?.columnGroups?.();
-    const activeGroups = table.options.meta?.tquery?.effectiveActiveColumnGroups?.();
-    if (!columnGroups?.length || !activeGroups?.length) {
-      return undefined;
-    }
-    const forceShow = new Set<string>();
-    for (const {name, forceShowColumns} of columnGroups) {
-      if (activeGroups.includes(name)) {
-        for (const col of forceShowColumns) {
-          forceShow.add(col);
-        }
-      }
-    }
-    // TODO: Consider marking columns that have multiple values.
-    return {forceShow};
-  });
+  const columnGroupingInfo = table.options.meta?.tquery?.columnGroupingInfo;
   const [resetHovered, setResetHovered] = createSignal(false);
   return (
     <PopOver
@@ -47,23 +31,30 @@ export const TableColumnVisibilityController: VoidComponent = () => {
         <div class="flex flex-col">
           <For each={table.getAllLeafColumns()}>
             {(column) => {
-              const forceShown = () => columnStatuses()?.forceShow.has(column.id);
+              const groupingInfo = () => columnGroupingInfo?.(column.id);
               return (
                 <Show when={column.getCanHide()}>
                   <label
                     class={cx("px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline select-none", {
                       "!bg-select": resetHovered() ? defaultColumnVisibility?.()[column.id] : column.getIsVisible(),
                     })}
-                    use:title={forceShown() ? t("tables.column_groups.column_status.force_shown") : undefined}
                   >
                     <input
                       name={`column_visibility_${column.id}`}
                       checked={column.getIsVisible()}
                       onChange={column.getToggleVisibilityHandler()}
                       type="checkbox"
-                      disabled={forceShown()}
+                      disabled={groupingInfo()?.isForceShown}
+                      use:title={
+                        groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
+                      }
                     />{" "}
                     <ColumnName def={column.columnDef} />
+                    <Show when={groupingInfo()?.isGrouped}>
+                      <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
+                        {t("tables.column_groups.grouping_symbol")}
+                      </span>
+                    </Show>
                   </label>
                 </Show>
               );

@@ -1,5 +1,7 @@
 export interface ColumnGroup {
   readonly name: string;
+  /** All the columns belonging to the group. */
+  readonly columns: readonly string[];
   readonly forceShowColumns: readonly string[];
   readonly forceGroupByColumns: readonly string[];
   readonly isFromColumn: boolean;
@@ -63,7 +65,8 @@ export class ColumnGroupsCollector {
       const existingGroup = this.columnGroups.get(groupName);
       const group = existingGroup
         ? {...existingGroup}
-        : {name: groupName, forceShowColumns: [], forceGroupByColumns: [], isFromColumn: false};
+        : {name: groupName, columns: [], forceShowColumns: [], forceGroupByColumns: [], isFromColumn: false};
+      group.columns = [...group.columns, columnName];
       if (forceShowColumn) {
         group.forceShowColumns = [...group.forceShowColumns, columnName];
       } else if (forceGroupByColumn) {

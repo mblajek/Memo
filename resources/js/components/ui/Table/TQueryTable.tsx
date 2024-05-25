@@ -108,6 +108,14 @@ interface TQueryTableMeta<TData extends RowData> {
    * This is not updated with the changed active column groups until the new data is fetched.
    */
   readonly effectiveActiveColumnGroups?: Accessor<readonly string[]>;
+  readonly columnGroupingInfo?: (column: string) => ColumnGroupingInfo;
+}
+
+interface ColumnGroupingInfo {
+  readonly isCount: boolean;
+  readonly isGrouping: boolean;
+  readonly isGrouped: boolean;
+  readonly isForceShown: boolean;
 }
 
 /** The preview mode, changing the contents of all cells in the table to a preview value. */
@@ -606,12 +614,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
         {meta: {tquery: col.metaParams}},
       ) satisfies ColumnDef<DataItem, unknown>;
       const origCell = columnDef.cell as CellComponent;
-      const isGroupedMultipleValues = createMemo(
+      const isGrouped = createMemo(
         () => effectiveActiveColumnGroups().length && !intersects(effectiveActiveColumnGroups(), col.columnGroups),
       );
       columnDef.cell = (ctx) => (
-        <Show when={isGroupedMultipleValues()} fallback={origCell(ctx)}>
-          <MultipleValuesCell
+        <Show when={isGrouped()} fallback={origCell(ctx)}>
+          <GroupedColumnCell
             count={countColumn() ? (ctx.row.original[countColumn()!] as number | undefined) : undefined}
           />
         </Show>
@@ -673,7 +681,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
     }
   });
 
-  const MultipleValuesCell: VoidComponent<{readonly count?: number}> = (props) => {
+  const GroupedColumnCell: VoidComponent<{readonly count?: number}> = (props) => {
     return (
       <div class="w-full h-full p-1">
         <div
@@ -692,6 +700,37 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
       </div>
     );
   };
+
+  const columnGroupingInfos = createMemo<ReadonlyMap<string, ColumnGroupingInfo>>(() => {
+    const infos = new Map<string, {-readonly [K in keyof ColumnGroupingInfo]: ColumnGroupingInfo[K]}>();
+    for (const col of columnsConfig()) {
+      infos.set(col.name, {
+        isCount: col.name === countColumn(),
+        isGrouping: false,
+        isGrouped: false,
+        isForceShown: false,
+      });
+    }
+    const activeColumnGroups = effectiveActiveColumnGroups();
+    if (!activeColumnGroups.length) {
+      return infos;
+    }
+    for (const group of columnGroups()) {
+      if (activeColumnGroups.includes(group.name)) {
+        for (const col of group.columns) {
+          infos.get(col)!.isGrouping = true;
+        }
+        for (const col of group.forceShowColumns) {
+          infos.get(col)!.isForceShown = true;
+        }
+      }
+    }
+    for (const info of infos.values()) {
+      info.isGrouped = !info.isGrouping && !info.isCount;
+    }
+    return infos;
+  });
+  const columnGroupingInfo = (column: string) => columnGroupingInfos().get(column)!;
 
   setTable(
     createSolidTable<DataItem>({
@@ -729,6 +768,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
           columnGroups,
           activeColumnGroups,
           effectiveActiveColumnGroups,
+          columnGroupingInfo,
         },
         historyPersistenceKey,
         columnFilterStates,

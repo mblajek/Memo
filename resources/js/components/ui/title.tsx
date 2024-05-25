@@ -29,6 +29,10 @@ const DEFAULT_TIPPY_PROPS = {
   hideOnClick: false,
   offset: [0, 8],
   maxWidth: "500px",
+  ignoreAttributes: true,
+  popperOptions: {
+    modifiers: [{name: "eventListeners", options: {scroll: false}}],
+  },
 } satisfies Partial<TippyProps>;
 
 /** An object that manages the current app-wide singleton tippy. */
