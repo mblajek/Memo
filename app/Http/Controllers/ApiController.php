@@ -18,7 +18,7 @@ use OpenApi\Attributes as OA;
 #[OA\Info(version: ApiController::VERSION, title: 'Memo API')]
 abstract class ApiController extends Controller
 {
-    protected const string VERSION = '0.9.0';
+    protected const string VERSION = '0.9.1';
     private readonly array $requestIn;
 
     public function __construct(private readonly Request $request)
