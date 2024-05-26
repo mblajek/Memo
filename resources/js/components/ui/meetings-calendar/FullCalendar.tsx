@@ -618,7 +618,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
     effect: (meeting) => {
       setSearchParams({meetingId: undefined});
-      history.replaceState(undefined, "");
+      history.replaceState({...history.state, meetingToShow: undefined}, "");
       // Give the calendar time to scroll to the initial position first.
       setTimeout(() => goToMeeting(meeting), 100);
     },
