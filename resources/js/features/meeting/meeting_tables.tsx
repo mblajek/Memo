@@ -18,7 +18,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
-import {ScrollableCell, TableColumnsSet} from "data-access/memo-api/tquery/table_columns";
+import {ScrollableCell, createTableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
@@ -393,10 +393,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnGroups: true,
     },
   } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingAttendanceResource>>>;
-  return new TableColumnsSet({
-    ...meetingColumns,
-    ...attendantsColumns,
-  });
+  return {
+    meeting: createTableColumnsSet(meetingColumns),
+    attendant: createTableColumnsSet(attendantsColumns),
+  };
 }
 
 interface UserLinksProps {

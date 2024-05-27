@@ -245,7 +245,8 @@ type PersistentState = {
 };
 const PERSISTENCE_VERSION = 2;
 
-export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
   const entityURL = props.staticEntityURL;

@@ -8,7 +8,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 
 // List page for meetings from category system. It is not accessible from the menu (only for DEV).
 export default (() => {
-  const meetingTableColumns = useMeetingTableColumns();
+  const cols = useMeetingTableColumns();
   const meetingTableFilters = useMeetingTableFilters();
   const {getCreatedUpdatedColumns} = useTableColumns();
   return (
@@ -23,19 +23,19 @@ export default (() => {
         {type: "column", column: "date", desc: false},
         {type: "column", column: "startDayminute", desc: false},
       ]}
-      columns={meetingTableColumns.get(
-        "id",
-        "date",
-        "time",
-        "duration",
-        "isInSeries",
-        "seriesType",
-        "category",
-        "type",
-        "staff",
+      columns={[
+        cols.meeting.id,
+        cols.meeting.date,
+        cols.meeting.time,
+        cols.meeting.duration,
+        cols.meeting.isInSeries,
+        cols.meeting.seriesType,
+        cols.meeting.category,
+        cols.meeting.type,
+        cols.meeting.staff,
         ...getCreatedUpdatedColumns(),
-        "actions",
-      )}
+        cols.meeting.actions,
+      ]}
       columnGroups={{overrides: {meeting: false}}}
       initialSort={[{id: "date", desc: false}]}
     />

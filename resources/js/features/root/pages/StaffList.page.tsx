@@ -53,6 +53,7 @@ export default (() => {
         {name: "completedMeetingsCountLastMonth"},
         {name: "plannedMeetingsCount", initialVisible: false},
         {name: "plannedMeetingsCountNextMonth"},
+        // TODO: Switch to entity: "staff" when the backend supports it.
         ...getCreatedUpdatedColumns(),
       ]}
       initialSort={[{id: "name", desc: false}]}

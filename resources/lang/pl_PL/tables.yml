@@ -91,6 +91,15 @@ tables:
     summary__few: "{{count, number}} uczestnictwa"
     summary__many: "{{count, number}} uczestnictw"
 
+  meeting_multi_attendant:
+    column_names:
+      createdAt: "utworzono (spotkanie)"
+      createdBy.name: "utworzono przez (spotkanie)"
+      createdBy.id: "$t(tables.tables.meeting_attendant.column_names.createdBy.id)"
+      updatedAt: "zmodyfikowano (spotkanie)"
+      updatedBy.name: "zmodyfikowano przez (spotkanie)"
+      updatedBy.id: "$t(tables.tables.meeting_attendant.column_names.updatedBy.id)"
+
   meeting_single_attendant:
     table_name: "$t(models.meeting._name_plural)"
     summary__zero: "$t(tables.tables.meeting.summary__zero)"
@@ -104,6 +113,12 @@ tables:
       attendant.userId: "$t(models.client._name)"
       client.notes: "opis klienta"
       notes: "opis spotkania"
+      client.createdAt: "utworzono (klient)"
+      client.createdBy.name: "utworzono przez (klient)"
+      client.createdBy.id: "$t(tables.tables.meeting_client.column_names.client.createdBy.id)"
+      client.updatedAt: "zmodyfikowano (klient)"
+      client.updatedBy.name: "zmodyfikowano przez (klient)"
+      client.updatedBy.id: "$t(tables.tables.meeting_client.column_names.client.updatedBy.id)"
     column_groups:
       attendant: "$t(models.client._name)"
     with_column_group:
