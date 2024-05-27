@@ -26,7 +26,7 @@ export default (() => {
       // If on the login screen, just reload without asking.
       location.reload();
     }
-    if (statusQuery.isError && !loginModal.getValue()) {
+    if (statusQuery.isError && !loginModal.isShown()) {
       loginModal.show();
     }
     if (statusQuery.isSuccess) {

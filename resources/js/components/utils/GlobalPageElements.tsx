@@ -47,6 +47,7 @@ export function registerGlobalPageElement<T = true>(
     });
     return {
       getValue: params,
+      isShown: () => params() !== undefined,
       show: (...args: T extends true ? [(T | undefined)?] : [T | undefined]) => {
         const [newValue = true as T] = args;
         if (params() !== undefined) {
