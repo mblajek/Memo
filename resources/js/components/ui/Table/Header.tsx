@@ -18,16 +18,20 @@ interface Props {
  */
 export const Header: VoidComponent<Props> = (props) => {
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
+
+  const ColNameAndIcon: VoidComponent = () => (
+    <div class="flex items-center">
+      <ColumnName def={props.ctx.column.columnDef} />
+      <SortMarker column={props.ctx.column} />
+    </div>
+  );
+
   return (
     <div class="h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1 relative">
       <span class="font-bold">
-        <Show when={props.ctx.column.getCanSort()} fallback={<ColumnName def={props.ctx.column.columnDef} />}>
-          <Button
-            class="flex items-center text-start select-text"
-            onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}
-          >
-            <ColumnName def={props.ctx.column.columnDef} />
-            <SortMarker column={props.ctx.column} />
+        <Show when={props.ctx.column.getCanSort()} fallback={<ColNameAndIcon />}>
+          <Button class="text-start select-text" onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}>
+            <ColNameAndIcon />
           </Button>
         </Show>
       </span>
