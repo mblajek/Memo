@@ -140,9 +140,11 @@ export function title(element: Element, accessor: Accessor<TitleDirectiveType>) 
             content,
             ...DEFAULT_TIPPY_PROPS,
             ...tippyProps,
-            delay: (Array.isArray(tippyProps?.delay)
-              ? tippyProps.delay.map((d, i) => (d === undefined ? DEFAULT_TITLE_DELAY[i] : d))
-              : tippyProps?.delay) as TippyProps["delay"],
+            delay: (tippyProps?.delay === undefined
+              ? DEFAULT_TITLE_DELAY
+              : Array.isArray(tippyProps?.delay)
+                ? tippyProps.delay.map((d, i) => (d === undefined ? DEFAULT_TITLE_DELAY[i] : d))
+                : tippyProps?.delay) as TippyProps["delay"],
           });
           tippySingletonManager.add(thisTippy);
         }
