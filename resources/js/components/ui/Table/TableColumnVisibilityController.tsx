@@ -33,18 +33,19 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             {(column) => {
               const groupingInfo = () => columnGroupingInfo?.(column.id);
               return (
-                <Show when={column.getCanHide()}>
+                <Show when={groupingInfo() && !groupingInfo()?.isCount}>
                   <label
                     class={cx("px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline select-none", {
                       "!bg-select": resetHovered() ? defaultColumnVisibility?.()[column.id] : column.getIsVisible(),
                     })}
                   >
                     <input
+                      class={column.getCanHide() ? undefined : "invisible"}
                       name={`column_visibility_${column.id}`}
                       checked={column.getIsVisible()}
                       onChange={column.getToggleVisibilityHandler()}
                       type="checkbox"
-                      disabled={groupingInfo()?.isForceShown}
+                      disabled={!column.getCanHide() || groupingInfo()?.isForceShown}
                       use:title={
                         groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
                       }
