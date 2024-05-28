@@ -2,12 +2,12 @@ generic:
   submit: "$t(actions.save)"
 
 login:
-  formName: "Logowanie"
+  form_name: "Logowanie"
   submit: "Zaloguj"
 
 password_change:
-  formName: "Zmiana hasła"
-  fieldNames:
+  form_name: "Zmiana hasła"
+  field_names:
     current: "aktualne hasło"
     password: "nowe hasło"
     repeat: "powtórz nowe hasło"
@@ -15,7 +15,7 @@ password_change:
   success: "Hasło zostało zmienione"
 
 user:
-  fieldNames:
+  field_names:
     hasPassword: "posiada hasło logowania do Memo"
   members_destructive_update_warning:
     header: "UWAGA!"
@@ -23,8 +23,8 @@ user:
     line2: "Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
 
 user_edit:
-  formName: "Zmiana danych"
-  fieldNames:
+  form_name: "Zmiana danych"
+  field_names:
     # Alternative to "password", if the password is changed:
     newPassword: "Nowe hasło"
   password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
@@ -36,17 +36,17 @@ user_edit:
   success: "Zmieniono dane"
 
 user_create:
-  formName: "Nowa osoba"
+  form_name: "Nowa osoba"
   submit: "$t(actions.create)"
   success: "Utworzono osobę"
 
 facility_create:
-  formName: "Nowa placówka"
+  form_name: "Nowa placówka"
   submit: "$t(actions.create)"
   success: "Utworzono placówkę"
 
 facility_edit:
-  formName: "Edycja placówki"
+  form_name: "Edycja placówki"
   success: "Zmieniono dane placówki"
 
 meeting:
@@ -55,7 +55,7 @@ meeting:
   add_attendant:
     staff: "Dodaj kolejnego pracownika"
     clients: "Dodaj kolejnego klienta"
-  fieldNames:
+  field_names:
     dateAndTime: "data i godzina"
     durationMinutes: "długość spotkania"
     time.allDay: "$t(calendar.all_day)"
@@ -63,64 +63,64 @@ meeting:
     clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
 
 meeting_create:
-  fieldNames:
+  field_names:
     createSeries: "Utwórz serię spotkań"
-  formName: "Nowe spotkanie"
+  form_name: "Nowe spotkanie"
   submit: "$t(actions.create)"
   success: "Utworzono spotkanie"
 
 meeting_edit:
-  formName: "Edycja spotkania"
+  form_name: "Edycja spotkania"
   success: "Zmieniono spotkanie"
 
 meeting_delete:
-  formName: "Usunięcie spotkania"
-  confirmationText: "Czy na pewno usunąć to spotkanie?"
+  form_name: "Usunięcie spotkania"
+  confirmation_text: "Czy na pewno usunąć to spotkanie?"
   submit: "Usuń spotkanie"
   success: "Usunięto spotkanie"
 
 meeting_series:
-  fieldNames:
+  field_names:
     seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
     seriesMeetingDates: "daty"
   total_number_of_meetings: "Łączna liczba dni: {{count}}"
 
 meeting_series_create:
-  formName: "Utwórz serię"
+  form_name: "Utwórz serię"
   submit: "Utwórz serię"
   success: "Utworzono serię spotkań"
 
 work_time:
-  fieldNames:
+  field_names:
     typeDictId: "Typ"
     staff: "$t(models.staff._name)"
 
 work_time_create:
-  formName: "Nowy czas pracy / nieobecność"
-  fieldNames:
+  form_name: "Nowy czas pracy / nieobecność"
+  field_names:
     createSeries: "Utwórz serię"
   success: "Utworzono czas pracy / nieobecność"
 
 work_time_edit:
-  formName: "Edycja czasu pracy / nieobecności"
+  form_name: "Edycja czasu pracy / nieobecności"
   success: "Zmieniono czas pracy / nieobecność"
 
 work_time_delete:
-  formName: "Usunięcie czasu pracy / nieobecności"
-  confirmationText: "Czy na pewno usunąć ten element?"
+  form_name: "Usunięcie czasu pracy / nieobecności"
+  confirmation_text: "Czy na pewno usunąć ten element?"
   submit: "$t(actions.delete)"
   success: "Usunięto czas pracy / nieobecność"
 
 client:
-  fieldNames:
+  field_names:
     client.notes: "$t(models.generic.notes)"
 
 client_edit:
-  formName: "Edycja klienta"
+  form_name: "Edycja klienta"
   success: "Zmieniono dane klienta"
 
 client_create:
-  formName: "Nowy klient"
+  form_name: "Nowy klient"
   submit: "$t(actions.create)"
   success: "Utworzono klienta"

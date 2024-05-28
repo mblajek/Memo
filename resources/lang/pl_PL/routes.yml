@@ -20,7 +20,7 @@ facility:
   staff_details: "$t(models.staff._name)"
   clients: "$t(models.client._name_plural)"
   client_details: "$t(models.client._name)"
-  client_create: "$t(forms.client_create.formName)"
+  client_create: "$t(forms.client_create.form_name)"
   admins: "administratorzy"
 
   facility_admin:

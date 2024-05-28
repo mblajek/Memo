@@ -11,7 +11,7 @@ export const createMeetingCreateModal = registerGlobalPageElement<MeetingCreateF
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.meeting_create.formName")}
+      title={t("forms.meeting_create.form_name")}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}

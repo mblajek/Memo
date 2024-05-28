@@ -16,7 +16,7 @@ export const createWorkTimeModal = registerGlobalPageElement<WorkTimeModalParams
   const [viewMode, setViewMode] = createSignal(true);
   return (
     <Modal
-      title={viewMode() ? capitalizeString(t("meetings.work_time_or_leave_time")) : t("forms.work_time_edit.formName")}
+      title={viewMode() ? capitalizeString(t("meetings.work_time_or_leave_time")) : t("forms.work_time_edit.form_name")}
       open={args.params()}
       closeOn={viewMode() ? ["escapeKey", "closeButton", "clickOutside"] : ["escapeKey", "closeButton"]}
       onClose={args.clearParams}

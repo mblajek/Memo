@@ -223,8 +223,8 @@ export default WorkTimeViewEditForm;
 
 export function workTimeDeleteConfirmParams(t: LangFunc) {
   return {
-    title: t("forms.work_time_delete.formName"),
-    body: t("forms.work_time_delete.confirmationText"),
+    title: t("forms.work_time_delete.form_name"),
+    body: t("forms.work_time_delete.confirmation_text"),
     confirmText: t("forms.work_time_delete.submit"),
   };
 }

@@ -16,7 +16,7 @@ export const createMeetingModal = registerGlobalPageElement<MeetingModalParams>(
   const [viewMode, setViewMode] = createSignal(true);
   return (
     <Modal
-      title={viewMode() ? capitalizeString(t("models.meeting._name")) : t("forms.meeting_edit.formName")}
+      title={viewMode() ? capitalizeString(t("models.meeting._name")) : t("forms.meeting_edit.form_name")}
       open={args.params()}
       closeOn={viewMode() ? ["escapeKey", "closeButton", "clickOutside"] : ["escapeKey", "closeButton"]}
       onClose={args.clearParams}

@@ -102,13 +102,13 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const translations: FormTranslations = {
     formName: (o) =>
       t(
-        translationsFormNames().map((f) => `forms.${f}.formName`),
+        translationsFormNames().map((f) => `forms.${f}.form_name`),
         o,
       ),
     fieldName: (field, o) =>
       t(
         [
-          ...translationsFormNames().map((f) => `forms.${f}.fieldNames.${field}`),
+          ...translationsFormNames().map((f) => `forms.${f}.field_names.${field}`),
           ...translationsModels().map((m) => `models.${m}.${field}`),
           `models.generic.${field}`,
         ].filter(NON_NULLABLE),

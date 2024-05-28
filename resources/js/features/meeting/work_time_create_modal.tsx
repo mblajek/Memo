@@ -11,7 +11,7 @@ export const createWorkTimeCreateModal = registerGlobalPageElement<WorkTimeCreat
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.work_time_create.formName")}
+      title={t("forms.work_time_create.form_name")}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}

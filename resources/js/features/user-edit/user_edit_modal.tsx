@@ -14,7 +14,7 @@ export const createUserEditModal = registerGlobalPageElement<FormParams>((args) 
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.user_edit.formName")}
+      title={t("forms.user_edit.form_name")}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}

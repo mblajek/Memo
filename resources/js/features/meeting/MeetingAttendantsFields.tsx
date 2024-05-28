@@ -130,7 +130,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             umbrella
             label={
               <Capitalize
-                text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
+                text={t(`forms.meeting.field_names.${props.name}__interval`, {
                   postProcess: "interval",
                   count: form.data(props.name).filter(Boolean).length,
                 })}

@@ -237,8 +237,8 @@ export function transformFormValues(values: Partial<MeetingFormType>): Partial<M
 
 export function meetingDeleteConfirmParams(t: LangFunc) {
   return {
-    title: t("forms.meeting_delete.formName"),
-    body: t("forms.meeting_delete.confirmationText"),
+    title: t("forms.meeting_delete.form_name"),
+    body: t("forms.meeting_delete.confirmation_text"),
     confirmText: t("forms.meeting_delete.submit"),
   };
 }
