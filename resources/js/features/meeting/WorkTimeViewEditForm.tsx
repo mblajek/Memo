@@ -167,6 +167,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                     onClick={() => {
                       seriesCreateModal.show({
                         startMeeting: workTime(),
+                        initialValues: {seriesInterval: "1d"},
                         onSuccess: props.onCloned,
                       });
                     }}

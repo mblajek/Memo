@@ -69,6 +69,7 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
       notes: "",
       createSeries: false,
       ...defaultMeetingSeriesInitialValues(),
+      seriesInterval: "1d",
       ...props.initialValues,
     }) satisfies WorkTimeFormType;
 
