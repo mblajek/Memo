@@ -141,101 +141,110 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
 
   return (
     <QueryBarrier queries={[meetingQuery]} ignoreCachedData {...notFoundError()}>
-      <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
-        <div class="flex flex-col gap-3">
-          <div class="relative flex flex-col">
-            <div class="flex justify-between">
-              <Show when={props.showGoToMeetingButton} fallback={<span />}>
-                <LinkWithNewTabLink {...getMeetingLinkData(`/${activeFacility()?.url}/calendar`, meeting())}>
-                  {t("meetings.show_in_calendar")}
-                </LinkWithNewTabLink>
-              </Show>
-              <CreatedByInfo class="-mb-2" data={meeting()} />
-            </div>
-            <MeetingForm
-              id="meeting_edit"
-              initialValues={initialValues()}
-              viewMode={props.viewMode}
-              onViewModeChange={props.onViewModeChange}
-              meeting={meeting()}
-              onSubmit={updateMeeting}
-              onCancel={() => {
-                if (props.onViewModeChange) {
-                  props.onViewModeChange(true);
-                } else {
-                  props.onCancel?.();
-                }
-              }}
-            />
-            <LoadingPane
-              isLoading={
-                // If the edit mutation is pending, the form already shows the pane.
-                deleteMeetingMutation.isPending
-              }
-            />
-          </div>
-          <Show when={props.viewMode}>
-            <div class="flex gap-1 justify-between">
-              <DeleteButton
-                class="secondary small"
-                confirm={() =>
-                  confirmation.confirm({
-                    title: t("forms.meeting_delete.formName"),
-                    body: t("forms.meeting_delete.confirmationText"),
-                    confirmText: t("forms.meeting_delete.submit"),
-                  })
-                }
-                delete={deleteMeeting}
-                disabled={isBusy()}
-              />
-              <div class="flex gap-1">
-                <SplitButton
-                  class="secondary small"
-                  onClick={() => {
-                    meetingSeriesCreateModal.show({
-                      startMeeting: meeting(),
-                      onSuccess: props.onCloned,
-                      showToast: props.showToast,
-                    });
-                  }}
-                  popOver={(popOver) => (
-                    <SimpleMenu onClick={() => popOver().close()}>
-                      <Button onClick={[createCopyInDays, 0]}>{t("meetings.create_copy.any")}</Button>
-                      <For
-                        each={
-                          [
-                            ["in_one_day", 1],
-                            ["in_one_week", 7],
-                            ["in_two_weeks", 14],
-                          ] as const
-                        }
-                      >
-                        {([labelKey, days]) => (
-                          <Button class="flex justify-between gap-2" onClick={[createCopyInDays, days]}>
-                            <span>{t(`meetings.create_copy.${labelKey}`)}</span>
-                            <span class="text-grey-text">
-                              {t("parenthesised", {
-                                text: DateTime.fromISO(meeting().date)
-                                  .plus({days})
-                                  .toLocaleString({day: "numeric", month: "long"}),
-                              })}
-                            </span>
-                          </Button>
-                        )}
-                      </For>
-                    </SimpleMenu>
-                  )}
-                  disabled={isBusy()}
-                >
-                  <ACTION_ICONS.repeat class="inlineIcon text-current" /> {t("meetings.create_series")}
-                </SplitButton>
-                <Show when={props.onViewModeChange}>
-                  <EditButton class="secondary small" onClick={[props.onViewModeChange!, false]} disabled={isBusy()} />
+      <Show
+        // Hide the form when another form is opened on top, to avoid duplicate element ids.
+        when={!meetingCreateModal.isShown()}
+      >
+        <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
+          <div class="flex flex-col gap-3">
+            <div class="relative flex flex-col">
+              <div class="flex justify-between">
+                <Show when={props.showGoToMeetingButton} fallback={<span />}>
+                  <LinkWithNewTabLink {...getMeetingLinkData(`/${activeFacility()?.url}/calendar`, meeting())}>
+                    {t("meetings.show_in_calendar")}
+                  </LinkWithNewTabLink>
                 </Show>
+                <CreatedByInfo class="-mb-2" data={meeting()} />
               </div>
+              <MeetingForm
+                id="meeting_edit"
+                initialValues={initialValues()}
+                viewMode={props.viewMode}
+                onViewModeChange={props.onViewModeChange}
+                meeting={meeting()}
+                onSubmit={updateMeeting}
+                onCancel={() => {
+                  if (props.onViewModeChange) {
+                    props.onViewModeChange(true);
+                  } else {
+                    props.onCancel?.();
+                  }
+                }}
+              />
+              <LoadingPane
+                isLoading={
+                  // If the edit mutation is pending, the form already shows the pane.
+                  deleteMeetingMutation.isPending
+                }
+              />
             </div>
-          </Show>
-        </div>
+            <Show when={props.viewMode}>
+              <div class="flex gap-1 justify-between">
+                <DeleteButton
+                  class="secondary small"
+                  confirm={() =>
+                    confirmation.confirm({
+                      title: t("forms.meeting_delete.formName"),
+                      body: t("forms.meeting_delete.confirmationText"),
+                      confirmText: t("forms.meeting_delete.submit"),
+                    })
+                  }
+                  delete={deleteMeeting}
+                  disabled={isBusy()}
+                />
+                <div class="flex gap-1">
+                  <SplitButton
+                    class="secondary small"
+                    onClick={() => {
+                      meetingSeriesCreateModal.show({
+                        startMeeting: meeting(),
+                        onSuccess: props.onCloned,
+                        showToast: props.showToast,
+                      });
+                    }}
+                    popOver={(popOver) => (
+                      <SimpleMenu onClick={() => popOver().close()}>
+                        <Button onClick={[createCopyInDays, 0]}>{t("meetings.create_copy.any")}</Button>
+                        <For
+                          each={
+                            [
+                              ["in_one_day", 1],
+                              ["in_one_week", 7],
+                              ["in_two_weeks", 14],
+                            ] as const
+                          }
+                        >
+                          {([labelKey, days]) => (
+                            <Button class="flex justify-between gap-2" onClick={[createCopyInDays, days]}>
+                              <span>{t(`meetings.create_copy.${labelKey}`)}</span>
+                              <span class="text-grey-text">
+                                {t("parenthesised", {
+                                  text: DateTime.fromISO(meeting().date)
+                                    .plus({days})
+                                    .toLocaleString({day: "numeric", month: "long"}),
+                                })}
+                              </span>
+                            </Button>
+                          )}
+                        </For>
+                      </SimpleMenu>
+                    )}
+                    disabled={isBusy()}
+                  >
+                    <ACTION_ICONS.repeat class="inlineIcon text-current" /> {t("meetings.create_series")}
+                  </SplitButton>
+                  <Show when={props.onViewModeChange}>
+                    <EditButton
+                      class="secondary small"
+                      onClick={[props.onViewModeChange!, false]}
+                      disabled={isBusy()}
+                    />
+                  </Show>
+                </div>
+              </div>
+            </Show>
+          </div>
+        </Show>
       </Show>
     </QueryBarrier>
   );
