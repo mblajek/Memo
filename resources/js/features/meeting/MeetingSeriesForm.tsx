@@ -137,7 +137,7 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
         >
           <span>
             <MeetingDate date={startDate()} class="px-1" />{" "}
-            <span class="text-sm">{t("parenthesised", {text: t("meetings.first_meeting")})}</span>
+            <span class="text-sm">{t("parenthesised", {text: t("meetings.series_first_date")})}</span>
           </span>
           <For
             each={

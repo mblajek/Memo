@@ -26,13 +26,13 @@ import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 import {recursiveUnwrapFormValues} from "./wrapped_fields";
 
-type FormContextValue<T extends Obj = Obj> = {
+export interface FormContextValue<T extends Obj = Obj> {
   readonly props: FormProps<T>;
   readonly formConfig: FormConfigWithoutTransformFn<T>;
   readonly form: FormType<T>;
   isFormDisabled(): boolean;
   readonly translations: FormTranslations;
-};
+}
 
 export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
 

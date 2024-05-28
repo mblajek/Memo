@@ -6,6 +6,7 @@ import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {ColumnName, Sort} from "data-access/memo-api/tquery/types";
 import {BsScissors} from "solid-icons/bs";
 import {VoidComponent, createMemo, createSignal, mergeProps, on, splitProps} from "solid-js";
+import {Hr} from "../Hr";
 import {
   MultipleSelectPropsPart,
   ReplacementItems,
@@ -207,7 +208,7 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
             if (numPriorityItems && props.separatePriorityItems) {
               array.push({
                 value: `__prioritySeparator__`,
-                label: () => <hr class="border-input-border" />,
+                label: () => <Hr />,
                 disabled: true,
               });
             }

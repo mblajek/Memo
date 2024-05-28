@@ -7,6 +7,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createCalendarRequestCreator, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {MeetingModalParams} from "features/meeting/meeting_modal";
+import {WorkTimeModalParams} from "features/meeting/work_time_modal";
 import {DateTime} from "luxon";
 import {Accessor, createMemo, JSX, Show, Signal, untrack, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -78,7 +79,7 @@ export function useCalendarBlocksAndEvents({
   allDayEventsHeight,
   monthEventsHeight,
   viewMeeting,
-  viewSystemMeeting,
+  viewWorkTime,
 }: {
   calendarFunction: CalendarFunction;
   mode: Accessor<CalendarMode>;
@@ -89,7 +90,7 @@ export function useCalendarBlocksAndEvents({
   allDayEventsHeight?: Accessor<number>;
   monthEventsHeight?: Accessor<number>;
   viewMeeting: (params: MeetingModalParams) => void;
-  viewSystemMeeting: (params: MeetingModalParams) => void;
+  viewWorkTime: (params: WorkTimeModalParams) => void;
 }): {
   meetingsDataQuery: CreateQueryResult;
   blocks: () => readonly Bl[];
@@ -165,7 +166,7 @@ export function useCalendarBlocksAndEvents({
             {
               onEditClick:
                 calendarFunction === "timeTables"
-                  ? () => viewSystemMeeting({meetingId: meeting.id, initialViewMode: true})
+                  ? () => viewWorkTime({meetingId: meeting.id, initialViewMode: true})
                   : undefined,
             } as const,
           ),
@@ -239,7 +240,7 @@ export function useCalendarBlocksAndEvents({
           : undefined;
         const genericName = facilityWide
           ? t(timeSpan.allDay ? "calendar.facility_leave_time.all_day" : "calendar.facility_leave_time.part_day")
-          : meetingTypeDict()?.leave_time.label;
+          : t("calendar.staff_leave_time");
         const LeaveTimeSummary: VoidComponent<{readonly day: DateTime}> = (props) => (
           <TimeBlockSummary
             day={props.day}

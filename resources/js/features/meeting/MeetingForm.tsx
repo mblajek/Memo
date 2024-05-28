@@ -1,6 +1,3 @@
-import {FormConfigWithoutTransformFn} from "@felte/core";
-import {isAxiosError} from "axios";
-import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
@@ -9,15 +6,11 @@ import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {
-  MeetingResource,
-  MeetingResourceForCreate,
-  MeetingResourceForPatch,
-} from "data-access/memo-api/resources/meeting.resource";
-import {Api} from "data-access/memo-api/types";
+import {MeetingResourceForCreate, MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
-import {JSX, Show, VoidComponent, splitProps} from "solid-js";
+import {JSX, Show, VoidComponent} from "solid-js";
 import {z} from "zod";
+import {AbstractMeetingForm, AbstractMeetingFormProps} from "./AbstractMeetingForm";
 import {MeetingAttendantsFields, getAttendantsSchemaPart} from "./MeetingAttendantsFields";
 import {MeetingCannedStatusEdits} from "./MeetingCannedStatusEdits";
 import {MeetingDateAndTime} from "./MeetingDateAndTime";
@@ -44,30 +37,7 @@ const getSchema = () =>
 
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 
-interface Props extends FormConfigWithoutTransformFn<MeetingFormType> {
-  readonly id: string;
-  readonly viewMode: boolean;
-  /** The meeting resource, for showing some of the readonly information about the meeting. */
-  readonly meeting?: MeetingResource;
-  /** Whether the meeting date and time should start as editable, even if provided in the initial values. */
-  readonly forceTimeEditable?: boolean;
-  readonly allowCreateSeries?: boolean;
-  readonly onViewModeChange?: (viewMode: boolean) => void;
-  readonly onCancel?: () => void;
-}
-
-export const MeetingForm: VoidComponent<Props> = (allProps) => {
-  const [props, formPropsObj] = splitProps(allProps, [
-    "id",
-    "viewMode",
-    "meeting",
-    "forceTimeEditable",
-    "allowCreateSeries",
-    "onViewModeChange",
-    "onCancel",
-  ]);
-  // eslint-disable-next-line solid/reactivity
-  const formProps: FormConfigWithoutTransformFn<MeetingFormType> = formPropsObj;
+export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType>> = (props) => {
   const t = useLangFunc();
   const {meetingStatusDict} = useFixedDictionaries();
 
@@ -78,34 +48,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
   );
 
   return (
-    <FelteForm
-      id={props.id}
-      translationsFormNames={[props.id, "meeting", "meeting_series"]}
-      schema={getSchema()}
-      translationsModel="meeting"
-      class="flex flex-col gap-3"
-      {...formProps}
-      onError={(errorResp, ctx) => {
-        formProps?.onError?.(errorResp, ctx);
-        if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
-          const errors = errorResp.response.data.errors;
-          // If duration is missing, but type is also missing, ignore the missing duration error. Selecting a type
-          // will fill in the duration automatically for many types.
-          const durationRequiredErrorIndex = errors.findIndex(
-            (e) =>
-              Api.isValidationError(e) &&
-              e.field === "durationMinutes" &&
-              (e.code === "validation.required" || e.code === "validation.present"),
-          );
-          if (
-            durationRequiredErrorIndex >= 0 &&
-            errors.some((e) => Api.isValidationError(e) && e.field === "typeDictId" && e.code === "validation.required")
-          )
-            errors.splice(durationRequiredErrorIndex, 1);
-        }
-      }}
-      disabled={props.viewMode}
-    >
+    <AbstractMeetingForm {...props} schema={getSchema()}>
       {(form) => (
         <>
           <div class="flex flex-col gap-1">
@@ -150,8 +93,8 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
                 <Show
                   when={
                     props.viewMode &&
-                    formProps.initialValues?.statusDictId &&
-                    formProps.initialValues.statusDictId === meetingStatusDict()?.planned.id &&
+                    props.initialValues?.statusDictId &&
+                    props.initialValues.statusDictId === meetingStatusDict()?.planned.id &&
                     props.onViewModeChange
                   }
                 >
@@ -192,7 +135,7 @@ export const MeetingForm: VoidComponent<Props> = (allProps) => {
           />
         </>
       )}
-    </FelteForm>
+    </AbstractMeetingForm>
   );
 };
 

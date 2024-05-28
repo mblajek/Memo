@@ -53,13 +53,25 @@ export const Navbar: VoidComponent = () => {
               )}
             >
               <CommonFacilityItems />
-              <Show when={isDEV()}>
+              <NavigationItem
+                icon={TbCalendarTime}
+                href={`/${facilityUrl()}/admin/time-tables`}
+                routeKey="facility.facility_admin.time_tables"
+                end
+              >
                 <NavigationItem
-                  icon={TbCalendarTime}
-                  href={`/${facilityUrl()}/admin/time-tables`}
-                  routeKey="facility.facility_admin.time_tables"
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/admin/time-tables/staff`}
+                  routeKey="facility.facility_admin.time_tables_staff"
+                  small
                 />
-              </Show>
+                <NavigationItem
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/admin/time-tables/facility`}
+                  routeKey="facility.facility_admin.time_tables_facility"
+                  small
+                />
+              </NavigationItem>
               <NavigationItem
                 icon={HiOutlineClipboardDocumentList}
                 href={`/${facilityUrl()}/admin/reports`}

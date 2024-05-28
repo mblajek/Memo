@@ -1,3 +1,4 @@
+import {Hr} from "components/ui/Hr";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {title} from "components/ui/title";
 import {useLangFunc} from "components/utils";
@@ -31,7 +32,7 @@ export function useSingleSelectFilterHelper() {
       }),
       {
         value: "__separator__",
-        label: () => <hr />,
+        label: () => <Hr />,
         disabled: true,
       },
       makeSelectItem({

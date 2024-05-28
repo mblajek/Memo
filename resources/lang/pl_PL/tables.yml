@@ -72,11 +72,11 @@ tables:
     column_names:
       startDayminute: "godzina"
       attendants.*.userId: "$t(models.meeting.attendants)"
-      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
+      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
       staff.*.userId: "$t(models.meeting.staff)"
-      staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
+      staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
       clients.*.userId: "$t(models.meeting.clients)"
-      clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
+      clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
 
   meeting_attendant:
@@ -127,6 +127,17 @@ tables:
         summary__one: "{{count, number}} klient"
         summary__few: "{{count, number}} klientów"
         summary__many: "{{count, number}} klientów"
+
+  time_table:
+    table_name: "Grafiki pracy"
+    column_names:
+      attendant.userId: "$t(models.staff._name)"
+      id: "$t(tables.tables.generic.column_names.id)"
+      typeDictId: "typ"
+    summary__zero: "$t(tables.tables.generic.summary__zero)"
+    summary__one: "$t(tables.tables.generic.summary__one)"
+    summary__few: "$t(tables.tables.generic.summary__few)"
+    summary__many: "$t(tables.tables.generic.summary__many)"
 
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"

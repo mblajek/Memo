@@ -24,9 +24,11 @@ facility:
   admins: "administratorzy"
 
   facility_admin:
-    time_tables: "Grafiki pracy"
+    time_tables: "grafiki pracy"
+    time_tables_staff: "pracownicy"
+    time_tables_facility: "placówka"
     reports: "raporty"
 
 help: "pomoc"
 help_pages:
-  about: "Informacje o Memo"
+  about: "informacje o Memo"

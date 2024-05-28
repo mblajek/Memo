@@ -27,6 +27,8 @@ import {MeetingBasicData} from "features/meeting/meeting_basic_data";
 import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
 import {MeetingModalParams, createMeetingModal} from "features/meeting/meeting_modal";
 import {meetingTimeFullDayInitialValue, meetingTimePartDayInitialValue} from "features/meeting/meeting_time_controller";
+import {createWorkTimeCreateModal} from "features/meeting/work_time_create_modal";
+import {createWorkTimeModal} from "features/meeting/work_time_modal";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
 import {TbInfoTriangle} from "solid-icons/tb";
@@ -137,6 +139,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
+  const workTimeCreateModal = createWorkTimeCreateModal();
+  const workTimeModal = createWorkTimeModal();
   const location = useLocation<CalendarLocationState>();
   const activeFacility = useActiveFacility();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
@@ -529,7 +533,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     allDayEventsHeight,
     monthEventsHeight,
     viewMeeting,
-    viewSystemMeeting,
+    viewWorkTime: (params) => workTimeModal.show(params),
   });
 
   function meetingChangeEffects(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: string[]) {
@@ -641,14 +645,25 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           blocks={staffBlocks()}
           events={staffEvents()}
           onEmptyClick={() => {
-            meetingCreateModal.show({
-              initialValues: {
-                ...meetingTimeFullDayInitialValue(day),
-                ...attendantsInitialValueForCreate([staffId]),
-              },
-              onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
-              showToast: false,
-            });
+            if (props.staticCalendarFunction === "work") {
+              meetingCreateModal.show({
+                initialValues: {
+                  ...meetingTimeFullDayInitialValue(day),
+                  ...attendantsInitialValueForCreate([staffId]),
+                },
+                onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+                showToast: false,
+              });
+            } else if (props.staticCalendarFunction === "timeTables") {
+              workTimeCreateModal.show({
+                initialValues: {
+                  ...meetingTimeFullDayInitialValue(day),
+                  staff: staffId,
+                },
+              });
+            } else {
+              return props.staticCalendarFunction satisfies never;
+            }
           }}
         />
       ),
@@ -659,21 +674,32 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           columnViewInfo={{day, staffId}}
           blocks={staffBlocks()}
           events={staffEvents()}
-          onTimeClick={(time) =>
-            meetingCreateModal.show({
-              initialValues: {
-                ...meetingTimePartDayInitialValue(time),
-                ...attendantsInitialValueForCreate([staffId]),
-              },
-              onSuccess: (meeting, cloneIds) =>
-                meetingChangeEffects(
-                  t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
-                  meeting,
-                  cloneIds,
-                ),
-              showToast: false,
-            })
-          }
+          onTimeClick={(time) => {
+            if (props.staticCalendarFunction === "work") {
+              meetingCreateModal.show({
+                initialValues: {
+                  ...meetingTimePartDayInitialValue(time),
+                  ...attendantsInitialValueForCreate([staffId]),
+                },
+                onSuccess: (meeting, cloneIds) =>
+                  meetingChangeEffects(
+                    t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
+                    meeting,
+                    cloneIds,
+                  ),
+                showToast: false,
+              });
+            } else if (props.staticCalendarFunction === "timeTables") {
+              workTimeCreateModal.show({
+                initialValues: {
+                  ...meetingTimePartDayInitialValue(time),
+                  staff: staffId,
+                },
+              });
+            } else {
+              return props.staticCalendarFunction satisfies never;
+            }
+          }}
         />
       ),
     } satisfies Partial<CalendarColumn>;
@@ -760,16 +786,27 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             setMode("week");
             setDaysSelectionAndMonthFromDay(day);
           }}
-          onEmptyClick={() =>
-            meetingCreateModal.show({
-              initialValues: {
-                date: day.toISODate(),
-                ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
-              },
-              onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
-              showToast: false,
-            })
-          }
+          onEmptyClick={() => {
+            if (props.staticCalendarFunction === "work") {
+              meetingCreateModal.show({
+                initialValues: {
+                  date: day.toISODate(),
+                  ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
+                },
+                onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+                showToast: false,
+              });
+            } else if (props.staticCalendarFunction === "timeTables") {
+              workTimeCreateModal.show({
+                initialValues: {
+                  ...meetingTimeFullDayInitialValue(day),
+                  staff: staffId,
+                },
+              });
+            } else {
+              return props.staticCalendarFunction satisfies never;
+            }
+          }}
         />
       ),
     }));
@@ -785,10 +822,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         meetingChangeEffects(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
       onDeleted: () => toastSuccess(t("forms.meeting_delete.success")),
     });
-  }
-
-  function viewSystemMeeting(params: MeetingModalParams) {
-    viewMeeting(params);
   }
 
   // TODO: Don't show the loading pane when refetching in the background.

@@ -17,9 +17,9 @@ tags:
 show_details: "Więcej"
 click_to_see_details: "Kliknij aby zobaczyć szczegóły spotkania"
 
-create_series: "Powtarzaj spotkanie"
+create_series: "Utwórz serię"
 meeting_is_in_series: "Seria"
-first_meeting: "pierwsze spotkanie"
+series_first_date: "data początkowa"
 only_one_meeting_in_series_warning: "Wybierz więcej dat aby utworzyć serię spotkań."
 
 create_copy:
@@ -42,3 +42,7 @@ conflicts:
   with_staff_leave_time: "Pracownik jest w tym czasie nieobecny"
   outside_of_work_time: "Spotkanie jest poza godzinami pracy pracownika"
   with_other_meetings: "Pracownik ma w tym czasie inne spotkanie"
+
+facility_wide: "Cała placówka"
+
+work_time_or_leave_time: "Czas pracy / nieobecność"

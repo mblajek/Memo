@@ -83,14 +83,34 @@ meeting_series:
   fieldNames:
     seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
-    # Umbrella fields for the meeting dates table:
-    seriesMeetingDates: "daty spotkań"
-  total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
+    seriesMeetingDates: "daty"
+  total_number_of_meetings: "Łączna liczba dni: {{count}}"
 
 meeting_series_create:
-  formName: "Utwórz serię spotkań"
-  submit: "Utwórz serię spotkań"
+  formName: "Utwórz serię"
+  submit: "Utwórz serię"
   success: "Utworzono serię spotkań"
+
+work_time:
+  fieldNames:
+    typeDictId: "Typ"
+    staff: "$t(models.staff._name)"
+
+work_time_create:
+  formName: "Nowy czas pracy / nieobecność"
+  fieldNames:
+    createSeries: "Utwórz serię"
+  success: "Utworzono czas pracy / nieobecność"
+
+work_time_edit:
+  formName: "Edycja czasu pracy / nieobecności"
+  success: "Zmieniono czas pracy / nieobecność"
+
+work_time_delete:
+  formName: "Usunięcie czasu pracy / nieobecności"
+  confirmationText: "Czy na pewno usunąć ten element?"
+  submit: "$t(actions.delete)"
+  success: "Usunięto czas pracy / nieobecność"
 
 client:
   fieldNames:

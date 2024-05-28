@@ -35,6 +35,8 @@ const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/Staff
 const StaffListPage = lazyAutoPreload(() => import("features/root/pages/StaffList.page"));
 const SystemMeetingsListPage = lazyAutoPreload(() => import("features/root/pages/SystemMeetingsList.page"));
 const TimeTables = lazyAutoPreload(() => import("features/root/pages/TimeTables.page"));
+const TimeTablesFacilityTable = lazyAutoPreload(() => import("features/root/pages/TimeTablesFacilityTable.page"));
+const TimeTablesStaffTable = lazyAutoPreload(() => import("features/root/pages/TimeTablesStaffTable.page"));
 
 const App: VoidComponent = () => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -125,7 +127,19 @@ const App: VoidComponent = () => {
                 component={(props) => <AccessBarrier roles={["facilityAdmin"]}>{props.children}</AccessBarrier>}
               >
                 <UnknownNotFound />
-                <LeafRoute routeKey="facility.facility_admin.time_tables" path="/time-tables" component={TimeTables} />
+                <Route path="/time-tables">
+                  <LeafRoute routeKey="facility.facility_admin.time_tables" path="/" component={TimeTables} />
+                  <LeafRoute
+                    routeKey="facility.facility_admin.time_tables_staff"
+                    path="/staff"
+                    component={TimeTablesStaffTable}
+                  />
+                  <LeafRoute
+                    routeKey="facility.facility_admin.time_tables_facility"
+                    path="/facility"
+                    component={TimeTablesFacilityTable}
+                  />
+                </Route>
                 <LeafRoute routeKey="facility.facility_admin.reports" path="/reports" component={ReportsPage} />
               </Route>
             </Route>
