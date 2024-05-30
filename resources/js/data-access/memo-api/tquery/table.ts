@@ -2,8 +2,10 @@ import {CreateQueryResult} from "@tanstack/solid-query";
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
 import {AxiosError} from "axios";
 import {TableTranslations} from "components/ui/Table";
+import {ColumnGroup} from "components/ui/Table/column_groups";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
-import {NON_NULLABLE, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
+import {NON_NULLABLE, useLangFunc} from "components/utils";
+import {arraysEqual, intersects, objectsEqual} from "components/utils/object_util";
 import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
 import {useDictionaries} from "../dictionaries_and_attributes_context";
 import {translateError} from "../error_util";
@@ -16,24 +18,51 @@ export interface ColumnConfig {
   readonly name: string;
   /** Whether this column has a corresponding tquery column (with the same name) that it shows. */
   readonly isDataColumn: boolean;
-  /** A list of additional tquery columns needed to construct this table column. */
-  readonly extraDataColumns: readonly ColumnName[];
+  readonly extraDataColumns: ExtraDataColumns | undefined;
   readonly initialVisible: boolean;
   /** Whether the global filter can match this column. Default: depends on the column type. */
   readonly globalFilterable: boolean;
+  readonly columnGroups: readonly string[] | undefined;
+}
+
+/** The additional tquery data columns needed to construct this table column. */
+export interface ExtraDataColumns {
+  readonly standard: readonly ColumnName[];
+  /**
+   * The alternative list of extra columns, to be used instead of the standard list, if grouping by a
+   * column group created from this column group (i.e. same name and isFromColumn set).
+   * This should typically be a subset of the standard list.
+   * Default: same as standard.
+   */
+  readonly whenGrouping: readonly ColumnName[] | undefined;
 }
 
 /** A collection of column filters, keyed by column name. The undefined value denotes a disabled filter. */
-export type ColumnFilters = Record<ColumnName, Signal<FilterH | undefined>>;
+export type ColumnFilters = Readonly<Record<ColumnName, Signal<FilterH | undefined>>>;
 
 interface RequestController {
   readonly columnVisibility: Signal<VisibilityState>;
   readonly globalFilter: Signal<string>;
   readonly getColumnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
-  readonly columnsWithActiveFilters: Accessor<string[]>;
+  readonly columnsWithActiveFilters: Accessor<readonly string[]>;
   readonly clearColumnFilters: () => void;
   readonly sorting: Signal<SortingState>;
   readonly pagination: Signal<PaginationState>;
+  readonly activeColumnGroups: Signal<readonly string[]>;
+  readonly countColumn: Accessor<ColumnName | undefined>;
+  readonly miniState: [Accessor<MiniState>, (state: MiniState) => void];
+}
+
+/**
+ * The state of the table, related to the filtering, sorting and pagination. It is typically not persisted across sessions.
+ * The column filters are stored separately for technical reasons.
+ */
+export interface MiniState {
+  readonly globalFilter: string;
+  readonly columnFilters: ReadonlyMap<string, FilterH | undefined>;
+  readonly sorting: SortingState;
+  readonly pagination: PaginationState;
+  readonly activeColumnGroups: readonly string[];
 }
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -49,27 +78,47 @@ const DEFAULT_PAGE_SIZE = 50;
  */
 export function createTableRequestCreator({
   columnsConfig,
+  columnGroups,
   intrinsicFilter = () => undefined,
   intrinsicSort = () => undefined,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
+  columnGroups?: Accessor<readonly ColumnGroup[] | undefined>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
   intrinsicSort?: Accessor<Sort | undefined>;
   initialSort?: SortingState;
   initialPageSize?: number;
 }): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
+  const columnsConfigByName = createMemo(() => {
+    const map = new Map<string, ColumnConfig>();
+    for (const col of columnsConfig()) {
+      map.set(col.name, col);
+    }
+    return map;
+  });
+  const columnGroupsByName = createMemo(() => {
+    const map = new Map<string, ColumnGroup>();
+    for (const group of columnGroups?.() || []) {
+      map.set(group.name, group);
+    }
+    return map;
+  });
   return (schema) => {
     const [allInitialisedInternal, setAllInitialisedInternal] = createSignal(false);
-    const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>({});
+    const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>(
+      {},
+      {equals: (a, b) => objectsEqual(a, b)},
+    );
     const [globalFilter, setGlobalFilter] = createSignal<string>("");
     const [columnFilters, setColumnFilters] = createSignal<ColumnFilters>({});
-    const [sorting, setSorting] = createSignal<SortingState>(initialSort);
+    const [sorting, setSorting] = createSignal<SortingState>(initialSort, {
+      equals: (a, b) => arraysEqual(a, b, (ai, bi) => ai.id === bi.id && ai.desc === bi.desc),
+    });
     const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
-    // eslint-disable-next-line solid/reactivity
-    const debouncedGlobalFilter = debouncedFilterTextAccessor(globalFilter);
+    const [activeColumnGroups, setActiveColumnGroups] = createSignal<readonly string[]>([]);
     function getColumnFilter(column: ColumnName) {
       let signal = columnFilters()[column];
       if (!signal) {
@@ -95,33 +144,41 @@ export function createTableRequestCreator({
     createComputed(() => {
       setColumnVisibility((vis) => ({...defaultColumnVisibility(), ...vis}));
       // Don't try sorting by non-existent columns.
-      setSorting((sorting) => sorting.filter((sort) => columnsConfig().some(({name}) => name === sort.id)));
+      setSorting((sorting) => sorting.filter((sort) => columnsConfigByName().has(sort.id)));
       setAllInitialisedInternal(true);
     });
-    createComputed<VisibilityState>((prevColumnVisibility) => {
-      // Don't allow hiding all the columns.
-      if (!Object.values(columnVisibility()).some((v) => v)) {
-        let restoredColumnVisibility = prevColumnVisibility;
-        // Revert to the previous visibility state if possible, otherwise show all columns.
-        if (!restoredColumnVisibility || !Object.values(restoredColumnVisibility).some((v) => v)) {
-          if (!columnsConfig().length) {
-            return {};
+    const countColumn = createMemo(() => schema()?.columns.find((c) => c.type === "count")?.name);
+    const groupingActive = () => activeColumnGroups().length > 0;
+    createComputed(() => {
+      if (groupingActive())
+        // Show the force-show columns.
+        setColumnVisibility((vis) => {
+          vis = {...vis};
+          for (const group of activeColumnGroups()) {
+            for (const forceShowCol of columnGroupsByName().get(group)?.forceShowColumns || []) {
+              vis[forceShowCol] = true;
+            }
           }
-          restoredColumnVisibility = {};
-          for (const {name} of columnsConfig()) {
-            restoredColumnVisibility[name] = true;
-          }
-        }
-        setColumnVisibility(restoredColumnVisibility);
-      }
+          return vis;
+        });
       // Remove column filters for hidden columns.
       for (const {name} of columnsConfig()) {
         if (columnVisibility()[name] === false) {
           columnFilters()[name]?.[1](undefined);
         }
       }
-      return columnVisibility();
     });
+    /**
+     * Returns whether the data column is valid in the context of the current grouping.
+     * The count column is only valid when grouping, and when grouping, only columns belonging to any group are valid).
+     */
+    function isDataColumnValid(sortColumn: ColumnName) {
+      const activeGroups = activeColumnGroups();
+      return activeGroups.length
+        ? intersects(columnsConfigByName().get(sortColumn)?.columnGroups, activeGroups) || sortColumn === countColumn()
+        : sortColumn !== countColumn();
+    }
+    createComputed(() => setSorting(sorting().filter(({id}) => isDataColumnValid(id))));
     const filterReductor = createMemo(on(schema, (schema) => schema && new FilterReductor(schema)));
     /** The primary sort column, wrapped in memo to detect actual changes. */
     const mainSort = createMemo(() => sorting()[0]);
@@ -133,25 +190,59 @@ export function createTableRequestCreator({
         .map(([get]) => get())
         .filter(NON_NULLABLE),
     }));
-    // Go back to the first page on significant data changes.
+    /**
+     * Whether to go back to the first page on significant data changes. This is normally set, but is
+     * disabled when restoring the state from the history.
+     */
+    let goToFirstPageOnChanges = true;
     createComputed(
-      on([debouncedGlobalFilter, columnFiltersJoined, mainSort], () => {
-        setPagination((prev) => ({...prev, pageIndex: 0}));
+      on([globalFilter, columnFiltersJoined, mainSort], () => {
+        if (goToFirstPageOnChanges) {
+          setPagination((prev) => ({...prev, pageIndex: 0}));
+        }
       }),
     );
-    const dataColumns = createMemo(() =>
-      [
-        ...new Set(
-          columnsConfig()
-            .filter(({name}) => columnVisibility()[name] !== false)
-            .flatMap(({name, isDataColumn, extraDataColumns}) =>
-              isDataColumn ? [name, ...extraDataColumns] : extraDataColumns,
-            ),
-        ),
-      ]
-        .sort()
-        .map<Column>((column) => ({type: "column", column})),
-    );
+    const dataColumns = createMemo(() => {
+      const activeGroups = activeColumnGroups();
+      const tableColumns = new Set<string>();
+      for (const col of columnsConfig())
+        if (
+          columnVisibility()[col.name] !== false &&
+          (!activeGroups.length || intersects(col.columnGroups, activeGroups))
+        )
+          tableColumns.add(col.name);
+      for (const group of activeGroups) {
+        const groupConfig = columnGroupsByName().get(group);
+        if (groupConfig) {
+          for (const column of groupConfig.forceShowColumns) {
+            tableColumns.add(column);
+          }
+          for (const column of groupConfig.forceGroupByColumns) {
+            tableColumns.add(column);
+          }
+        }
+      }
+      const dataColumns = new Set<string>();
+      for (const tableColumn of tableColumns) {
+        const {name, isDataColumn, extraDataColumns} = columnsConfigByName().get(tableColumn)!;
+        if (isDataColumn) {
+          dataColumns.add(name);
+        }
+        if (extraDataColumns) {
+          const extraDataCols =
+            extraDataColumns.whenGrouping && columnGroupsByName().get(name)?.isFromColumn && activeGroups.includes(name)
+              ? extraDataColumns.whenGrouping
+              : extraDataColumns.standard;
+          for (const col of extraDataCols) {
+            dataColumns.add(col);
+          }
+        }
+      }
+      if (activeGroups.length && countColumn()) {
+        dataColumns.add(countColumn()!);
+      }
+      return [...dataColumns].sort().map<Column>((column) => ({type: "column", column}));
+    });
     const fuzzyGlobalFilterConfig = createMemo(() => {
       const sch = schema();
       if (!sch) {
@@ -170,24 +261,27 @@ export function createTableRequestCreator({
       if (!allInitialisedInternal() || !dataColumns().length) {
         return undefined;
       }
-      const sort: SortItem[] = sorting().map(({id, desc}) => ({
+      const allSort: SortItem[] = sorting().map(({id, desc}) => ({
         type: "column",
         column: id,
         desc,
       }));
       const intrinsicSortToApply = intrinsicSort()?.filter((sortItem) => {
-        if (sortItem.type === "column" && sort.some((s) => s.type === "column" && s.column === sortItem.column)) {
+        if (sortItem.type === "column" && allSort.some((s) => s.type === "column" && s.column === sortItem.column)) {
           // Skip repeated columns.
           return false;
         }
         return true;
       });
       for (const sortItem of intrinsicSortToApply || []) {
-        if (sortItem.type === "column" && sort.some((s) => s.type === "column" && s.column === sortItem.column)) {
+        if (sortItem.type === "column" && allSort.some((s) => s.type === "column" && s.column === sortItem.column)) {
           continue;
         }
-        sort.push(sortItem);
+        allSort.push(sortItem);
       }
+      // Filter out the possible occurrences of invalid sort. It can occur in the sort if it was not yet removed by
+      // createComputed, or in the intrinsic sort.
+      const sort = allSort.filter((sort) => (sort.type === "column" ? isDataColumnValid(sort.column) : true));
       return {
         columns: dataColumns(),
         filter:
@@ -196,10 +290,11 @@ export function createTableRequestCreator({
             op: "&",
             val: [
               intrinsicFilter(),
-              buildFuzzyGlobalFilter(debouncedGlobalFilter(), fuzzyGlobalFilterConfig()!),
+              buildFuzzyGlobalFilter(globalFilter(), fuzzyGlobalFilterConfig()!),
               columnFiltersJoined(),
             ].filter(NON_NULLABLE),
           }) || "always",
+        distinct: groupingActive(),
         sort,
         paging: {
           number: pagination().pageIndex + 1,
@@ -207,6 +302,29 @@ export function createTableRequestCreator({
         },
       };
     });
+    const miniState = () =>
+      ({
+        globalFilter: globalFilter(),
+        columnFilters: new Map(Object.entries(columnFilters()).map(([k, v]) => [k, v[0]()])),
+        sorting: sorting(),
+        pagination: pagination(),
+        activeColumnGroups: activeColumnGroups(),
+      }) satisfies MiniState;
+    function setMiniState(state: MiniState) {
+      goToFirstPageOnChanges = false;
+      batch(() => {
+        setGlobalFilter(state.globalFilter);
+        for (const [column, filter] of state.columnFilters) {
+          getColumnFilter(column)[1](filter);
+        }
+        setSorting(state.sorting);
+        setPagination(state.pagination);
+        setActiveColumnGroups(state.activeColumnGroups);
+      });
+      setTimeout(() => {
+        goToFirstPageOnChanges = true;
+      });
+    }
     return {
       request,
       requestController: {
@@ -217,6 +335,9 @@ export function createTableRequestCreator({
         clearColumnFilters,
         sorting: [sorting, setSorting],
         pagination: [pagination, setPagination],
+        activeColumnGroups: [activeColumnGroups, setActiveColumnGroups],
+        countColumn,
+        miniState: [miniState, setMiniState],
       },
     };
   };

@@ -6,6 +6,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {DateTime} from "luxon";
 import {Accessor, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
+import {UserLink} from "./UserLink";
 
 export function useFacilityUsersSelectParams() {
   const t = useLangFunc();
@@ -106,6 +107,27 @@ export function useFacilityUsersSelectParams() {
             ...defItem(),
             label: () => label(row),
             labelOnList: () => labelOnList(row),
+          }),
+        },
+      } satisfies Partial<BaseTQuerySelectProps>;
+    },
+    staffAndClientSelectParams: () => {
+      return {
+        querySpec: {
+          ...modelQuerySpecs.userStaffOrClient().querySpec,
+          valueColumn: "id",
+          intrinsicFilter: {
+            type: "op",
+            op: "|",
+            val: [
+              {type: "column", column: "member.isStaff", op: "=", val: true},
+              {type: "column", column: "member.isClient", op: "=", val: true},
+            ],
+          },
+          sort: [{type: "column", column: "name", desc: false}],
+          itemFunc: (row, defItem) => ({
+            ...defItem(),
+            label: () => <UserLink userId={row.get<string>("id")} link={false} />,
           }),
         },
       } satisfies Partial<BaseTQuerySelectProps>;

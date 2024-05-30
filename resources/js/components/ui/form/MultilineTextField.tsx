@@ -7,10 +7,13 @@ import {Show, VoidComponent, createSignal, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {RichTextView} from "../RichTextView";
 import {EmptyValueSymbol} from "../symbols";
+import {title} from "../title";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
 import {LabelOverride} from "./labels";
 import {TRIM_ON_BLUR, trimInput} from "./util";
+
+const _DIRECTIVES_ = null && title;
 
 export interface MultilineTextFieldProps
   extends Pick<
@@ -96,7 +99,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
             </Show>
           </Button>
           <Show when={showPreview()}>
-            <div class="w-full h-full px-1 overflow-auto" title={t("preview")}>
+            <div class="w-full h-full px-1 overflow-auto" use:title={t("preview")}>
               <div class="max-h-0 min-h-max">
                 <RichTextView text={text()} fallback={<EmptyValueSymbol />} />
               </div>

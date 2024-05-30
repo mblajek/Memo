@@ -1,9 +1,9 @@
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
-import {FacilityUserType} from "data-access/memo-api/user_display_names";
 import {DateTime} from "luxon";
 import {Accessor, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
+import {FacilityUserType} from "./user_types";
 
 export interface UserMeetingsStats {
   readonly firstMeetingDate: DateTime | undefined;

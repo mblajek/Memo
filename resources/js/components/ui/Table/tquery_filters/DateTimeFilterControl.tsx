@@ -1,11 +1,15 @@
+import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
-import {Show, VoidComponent, createComputed, createSignal} from "solid-js";
+import {Show, VoidComponent, createComputed} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControlProps} from "./types";
+
+const _DIRECTIVES_ = null && title;
 
 type DateTimeRangeFilter =
   | {
@@ -32,14 +36,14 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const filterFieldNames = useFilterFieldNames();
   const columnType = () => props.schema.type as "date" | "datetime";
   const inputsType = () => (columnType() === "datetime" && props.useDateTimeInputs ? "datetime-local" : "date");
-  const [lower, setLower] = createSignal("");
-  const [upper, setUpper] = createSignal("");
-  createComputed(() => {
-    if (!props.filter) {
-      setLower("");
-      setUpper("");
-    }
-    // Ignore other external filter changes.
+  const {
+    lower: [lower, setLower],
+    upper: [upper, setUpper],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {lower: "", upper: ""},
+    filter: () => props.filter,
   });
   createComputed(() => {
     let l = lower() ? DateTime.fromISO(lower()) : undefined;
@@ -104,7 +108,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         <div
           class={s.valuesSyncer}
           classList={{[s.inactive!]: !syncActive()}}
-          title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
+          use:title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());

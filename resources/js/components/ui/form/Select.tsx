@@ -137,6 +137,10 @@ export interface SelectItem {
   readonly requestReplacementWhenSelected?: boolean;
 }
 
+interface SelectItemInternal extends SelectItem {
+  readonly groupHeader?: boolean;
+}
+
 function itemToString(item: SelectItem) {
   return item.text || item.value;
 }
@@ -193,6 +197,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   // zag component.
   const fieldsetDisabled = useIsFieldsetDisabled(root);
 
+  const [filterValue, setFilterValue] = createSignal("");
   const [state, send] = useMachine(
     combobox.machine({
       id: createUniqueId(),
@@ -200,14 +205,6 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       name: props.name,
       // Needed but never used, the actual collection comes from the context below.
       collection: combobox.collection.empty(),
-      positioning: {
-        gutter: 0,
-        strategy: "absolute",
-        placement: "bottom-end",
-        overflowPadding: 10,
-        flip: true,
-        sameWidth: false,
-      },
       onInputValueChange: ({value}) => {
         if (typeof props.onFilterChange === "function") {
           props.onFilterChange(value);
@@ -262,6 +259,15 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }),
     {
       context: () => ({
+        positioning: {
+          gutter: 0,
+          strategy: "absolute",
+          placement: "bottom-end",
+          overflowPadding: 10,
+          flip: true,
+          sameWidth: false,
+          overlap: !filterValue(),
+        } as const,
         collection: collection(),
         multiple: props.multiple,
         disabled: props.disabled || fieldsetDisabled(),
@@ -270,6 +276,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     },
   );
   const api = createMemo(() => combobox.connect<PropTypes, SelectItem>(state, send, normalizeProps));
+  createComputed(() => setFilterValue(api().inputValue));
 
   if (formContext)
     createComputed(
@@ -289,13 +296,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     );
 
   const isInternalFilteringMode = () => props.onFilterChange === "internal";
-  // Wrap the input value in a memo to avoid an infinite loop of updates, where updating the filter changes the items,
-  // which updates the collection, and in consequence the api object, which unnecessarily triggers the filtering again.
-  const filterValue = createMemo(() => api().inputValue.toLocaleLowerCase());
   /** The items after filtering, regardless of the filtering mode. */
   const filteredItems = createMemo(() => {
     if (isInternalFilteringMode()) {
-      const filter = filterValue();
+      const filter = filterValue().toLocaleLowerCase();
       if (!filter) {
         return props.items;
       }
@@ -329,8 +333,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       },
     ];
   });
-  const itemsToShowWithHeaders = createMemo<readonly SelectItem[]>(() => {
-    const res: SelectItem[] = [];
+  const itemsToShowWithHeaders = createMemo<readonly SelectItemInternal[]>(() => {
+    const res: SelectItemInternal[] = [];
     let groupName: string | undefined = undefined;
     for (const item of itemsToShow()) {
       if (item.groupName !== groupName) {
@@ -352,7 +356,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           res.push({
             value: `_group_${grName}_${createUniqueId()}`,
             labelOnList,
-            disabled: true,
+            groupName,
+            groupHeader: true,
+            disabled: !props.multiple,
           });
         }
       }
@@ -465,6 +471,37 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isDisabled = () => (api().controlProps as any)["data-disabled"] !== undefined;
 
+  /** Toggles the selection of all the items in the group. Call with the index of the header inside itemsToShowWithHeaders(). */
+  function toggleGroupSelection(groupHeaderIndex: number) {
+    if (!props.multiple) {
+      return;
+    }
+    const header = itemsToShowWithHeaders()[groupHeaderIndex];
+    if (!header?.groupHeader) {
+      throw new Error(`Expected group header at index ${groupHeaderIndex}, got: ${JSON.stringify(header)}`);
+    }
+    const startIndex = groupHeaderIndex + 1;
+    let endIndex = startIndex;
+    while (
+      itemsToShowWithHeaders()[endIndex]?.groupName === header.groupName &&
+      !itemsToShowWithHeaders()[endIndex]?.groupHeader
+    )
+      endIndex++;
+    const groupItems = itemsToShowWithHeaders().slice(startIndex, endIndex);
+    const selected = new Set(api().value);
+    const hasUnselected = groupItems.some(({value}) => !selected.has(value));
+    if (hasUnselected) {
+      for (const {value} of groupItems) {
+        selected.add(value);
+      }
+    } else {
+      for (const {value} of groupItems) {
+        selected.delete(value);
+      }
+    }
+    api().setValue([...selected]);
+  }
+
   return (
     <>
       <FieldBox {...props}>
@@ -572,9 +609,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                 </Match>
               </Switch>
               <Button
-                // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
-                // The control will handle clicks.
-                title={t("actions.expand")}
+              // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
+              // The control will handle clicks.
               >
                 <AiFillCaretDown />
               </Button>
@@ -593,7 +629,16 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         >
           <ul {...api().contentProps}>
             <For each={itemsToShowWithHeaders()}>
-              {(item) => <li {...api().getItemProps({item})}>{itemToLabelOnList(item)}</li>}
+              {(item, index) => (
+                <li
+                  {...{
+                    ...api().getItemProps({item}),
+                    ...(item.groupHeader && !item.disabled ? {onPointerUp: () => toggleGroupSelection(index())} : {}),
+                  }}
+                >
+                  {itemToLabelOnList(item)}
+                </li>
+              )}
             </For>
           </ul>
         </div>

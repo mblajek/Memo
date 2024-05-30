@@ -15,19 +15,17 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
         parent::__construct();
     }
 
-    protected function getConfig(): TqConfig
+    final public static function addAttendantFields(Facility $facility, TqConfig $config): void
     {
         $c = fn(string $x) => "'$x'";
 
         $present = "({$c(MeetingAttendant::ATTENDANCE_STATUS_OK)},
                      {$c(MeetingAttendant::ATTENDANCE_STATUS_LATE_PRESENT)})";
 
-        $config = parent::getConfig();
-
         $commonQueryPart = <<<"SQL"
             from `meetings`
             inner join `meeting_attendants` on `meetings`.`id` = `meeting_attendants`.`meeting_id`
-            where `meetings`.`facility_id` = '{$this->facility->id}'
+            where `meetings`.`facility_id` = '{$facility->id}'
             and `meeting_attendants`.`user_id` = `users`.`id`
             and `meeting_attendants`.`attendance_status_dict_id` in $present
             and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
@@ -102,7 +100,12 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
             SQL,
             'planned_meetings_count_next_month'
         );
+    }
 
+    protected function getConfig(): TqConfig
+    {
+        $config = parent::getConfig();
+        self::addAttendantFields($this->facility, $config);
         return $config;
     }
 }

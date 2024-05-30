@@ -10,6 +10,7 @@ import NotFound from "features/not-found/components/NotFound";
 import {PageWithTheme} from "features/root/components/theme_control";
 import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {clearAllHistoryState} from "./components/persistence/history_persistence";
 import {MemoRouteTitle} from "./features/root/MemoRouteTitle";
 import {activeFacilityId} from "./state/activeFacilityId.state";
 
@@ -21,11 +22,13 @@ const ClientCreatePage = lazyAutoPreload(() => import("features/root/pages/Clien
 const ClientDetailsPage = lazyAutoPreload(() => import("features/root/pages/ClientDetails.page"));
 const ClientsListPage = lazyAutoPreload(() => import("features/root/pages/ClientsList.page"));
 const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHelp.page"));
+const FacilityAdminsListPage = lazyAutoPreload(() => import("features/root/pages/FacilityAdminsList.page"));
 const FacilityHomePage = lazyAutoPreload(() => import("features/root/pages/FacilityHome.page"));
 const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
 const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const MeetingAttendantsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingAttendantsList.page"));
+const MeetingClientsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingClientsList.page"));
 const ReportsPage = lazyAutoPreload(() => import("features/root/pages/Reports.page"));
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
@@ -98,15 +101,23 @@ const App: VoidComponent = () => {
                   path="/meeting_attendants"
                   component={MeetingAttendantsListPage}
                 />
+                <LeafRoute
+                  routeKey="facility.meeting_clients"
+                  path="/meeting_clients"
+                  component={MeetingClientsListPage}
+                />
                 <LeafRoute routeKey="System meetings" path="/system_meetings" component={SystemMeetingsListPage} />
                 <Route path="/staff">
                   <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
                   <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
                 </Route>
                 <Route path="/clients">
-                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
                   <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
+                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
                   <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+                </Route>
+                <Route path="/admins">
+                  <LeafRoute routeKey="facility.admins" path="/" component={FacilityAdminsListPage} />
                 </Route>
               </Route>
               <Route
@@ -145,6 +156,12 @@ const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => 
           <Dynamic component={props.component} {...innerProps} />
         </>
       )}
+      load={(args) => {
+        // Clear history state on browser refresh. Some browsers keep the state after a refresh which seems wrong.
+        if (args.intent === "initial") {
+          clearAllHistoryState();
+        }
+      }}
     />
   );
 };

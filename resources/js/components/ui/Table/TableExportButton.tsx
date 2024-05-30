@@ -125,8 +125,11 @@ export const TableExportButton: VoidComponent = () => {
   const [abort, setAbort] = createSignal(false);
 
   async function exportRows(exportData: TableExportData) {
-    const tableName =
-      table.options.meta?.exportConfig?.tableName || table.options.meta?.translations?.tableName() || "table";
+    const tableName = (
+      table.options.meta?.exportConfig?.tableName ||
+      table.options.meta?.translations?.tableName() ||
+      "table"
+    ).replaceAll(/\s/g, " ");
     const fileName = `${tableName}__${DateTime.now().toFormat("yyyy-MM-dd_HHmm")}`;
     const format = FORMATS.find((f) => f.id === formatId())!;
     setAbort(false);
@@ -187,7 +190,7 @@ export const TableExportButton: VoidComponent = () => {
     <>
       <PopOver
         trigger={(triggerProps) => (
-          <Button {...triggerProps()} class="secondary small">
+          <Button {...triggerProps()} class="secondary small text-nowrap">
             <AiOutlineFileExcel class="inlineIcon text-current" /> {t("tables.export.label")}
           </Button>
         )}
@@ -198,10 +201,7 @@ export const TableExportButton: VoidComponent = () => {
               <Capitalize text={t(`tables.export.${props.labelKey}`)} />
               <Show when={props.count}>
                 {(count) => (
-                  <span class="text-grey-text">
-                    {" "}
-                    {t("parenthesised", {text: table.options.meta?.translations?.summary({count: count()})})}
-                  </span>
+                  <span class="text-grey-text"> {t("parenthesised", {text: t("tables.rows", {count: count()})})}</span>
                 )}
               </Show>
             </span>

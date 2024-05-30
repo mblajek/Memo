@@ -3,7 +3,7 @@ import {EM_DASH} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource} from "data-access/memo-api/tquery/calendar";
-import {FacilityUserType} from "data-access/memo-api/user_display_names";
+import {FacilityUserType} from "features/facility-users/user_types";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingAttendanceStatus} from "features/meeting/attendance_status_info";
 import {ParentComponent, Show, VoidComponent} from "solid-js";

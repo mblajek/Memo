@@ -58,13 +58,14 @@ export default (() => {
                   fallback={<EmptyValueSymbol />}
                 >
                   <EditButton
-                    class="minimal"
+                    class="minimal -my-px"
                     onClick={() => userEditModal.show({userId: c.row.original.id as string})}
                   />
                 </Show>
               </PaddedCell>
             ),
             enableSorting: false,
+            enableHiding: false,
             ...AUTO_SIZE_COLUMN_DEFS,
           },
         },

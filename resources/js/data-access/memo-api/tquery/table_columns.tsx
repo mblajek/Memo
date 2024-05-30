@@ -1,5 +1,5 @@
 import {PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
-import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
+import {PartialColumnConfigEntry} from "components/ui/Table/TQueryTable";
 import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
 import {htmlAttributes} from "components/utils";
@@ -7,15 +7,16 @@ import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {objectRecursiveMerge} from "components/utils/object_util";
 import {ParentComponent, Show, splitProps} from "solid-js";
 
-export class TableColumnsSet<C extends string, D extends Readonly<Record<C, PartialColumnConfig>>> {
-  constructor(readonly columns: D) {}
+export class TableColumnsSet<C extends string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  constructor(readonly columns: Readonly<Record<C, PartialColumnConfigEntry<any>>>) {}
 
-  get(...cols: (C | PartialColumnConfig | [C, Partial<PartialColumnConfig>])[]): PartialColumnConfig[] {
+  get(...cols: (C | PartialColumnConfigEntry | [C, Partial<PartialColumnConfigEntry>])[]): PartialColumnConfigEntry[] {
     return cols.map((c) =>
       typeof c === "string"
         ? this.columns[c]
         : Array.isArray(c)
-          ? objectRecursiveMerge<(typeof this.columns)[C]>(this.columns[c[0]], c[1] as Partial<D[C]>)
+          ? objectRecursiveMerge<PartialColumnConfigEntry>(this.columns[c[0]], c[1])
           : c,
     );
   }

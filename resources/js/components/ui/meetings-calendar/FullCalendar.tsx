@@ -52,10 +52,13 @@ import {Capitalize} from "../Capitalize";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {STAFF_ICONS} from "../icons";
 import {EN_DASH} from "../symbols";
+import {title} from "../title";
 import {WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
 import {CALENDAR_MODES, CalendarFunction, CalendarFunctionContext, CalendarMode} from "./calendar_modes";
 import {CALENDAR_BACKGROUNDS, MISSING_MEETING_COLORING, coloringToStyle, getRandomEventColors} from "./colors";
 import {CalendarLocationState, CalendarSearchParams} from "./meeting_link";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props extends htmlAttributes.div {
   readonly staticCalendarFunction: CalendarFunction;
@@ -615,7 +618,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
     effect: (meeting) => {
       setSearchParams({meetingId: undefined});
-      history.replaceState(undefined, "");
+      history.replaceState({...history.state, meetingToShow: undefined}, "");
       // Give the calendar time to scroll to the initial position first.
       setTimeout(() => goToMeeting(meeting), 100);
     },
@@ -716,11 +719,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                             setDaysSelectionAndMonthFromDay(day);
                             setSelectedResourceRadio(id);
                           }}
+                          title={`${text}\n${t("calendar.click_for_staff_calendar")}`}
                         >
                           <span class="line-clamp-3">{text}</span>
                         </Button>
                       )}
-                      title={`${text}\n${t("calendar.click_for_staff_calendar")}`}
                     />
                   ),
                   ...getCalendarColumnPart(day, id),
@@ -844,14 +847,15 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               >
                 {t("calendar.show_my_calendar")}
               </Button>
-              <A
-                href={`/${activeFacility()?.url}/staff/${userStatus.data?.user.id}`}
-                role="button"
-                class="minimal flex items-center"
-                title={t("calendar.show_my_details")}
-              >
-                <STAFF_ICONS.staff class="text-gray-700" />
-              </A>
+              <div use:title={t("calendar.show_my_details")}>
+                <A
+                  href={`/${activeFacility()?.url}/staff/${userStatus.data?.user.id}`}
+                  role="button"
+                  class="w-full h-full minimal flex items-center"
+                >
+                  <STAFF_ICONS.staff class="text-gray-700" />
+                </A>
+              </div>
             </div>
           </Show>
           <ResourcesSelector
@@ -907,7 +911,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 onWheelWithAlt={(e) => wheelWithAlt(e, "month")}
               />
             </Match>
-            <Match when={true}>
+            <Match when="fallback">
               <ColumnsCalendar
                 class="h-full min-h-0"
                 isLoading={isCalendarLoading()}

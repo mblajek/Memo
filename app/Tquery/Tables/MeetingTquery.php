@@ -16,7 +16,7 @@ use App\Tquery\Engine\TqService;
 
 readonly class MeetingTquery extends TqService
 {
-    public function __construct(private Facility $facility)
+    public function __construct(protected Facility $facility)
     {
         parent::__construct();
     }

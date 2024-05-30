@@ -46,12 +46,13 @@ export default (() => {
             cell: (c) => (
               <PaddedCell>
                 <EditButton
-                  class="minimal"
+                  class="minimal -my-px"
                   onClick={() => facilityEditModal.show({facilityId: c.row.original.id as string})}
                 />
               </PaddedCell>
             ),
             enableSorting: false,
+            enableHiding: false,
             ...AUTO_SIZE_COLUMN_DEFS,
           },
         },

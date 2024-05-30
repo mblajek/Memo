@@ -9,7 +9,6 @@ enum TqTableAliasEnum
     case users;
     case created_by;
     case updated_by;
-    case attendant;
 
     case facilities;
     case last_login_facility;
@@ -27,7 +26,7 @@ enum TqTableAliasEnum
     public function baseTable(): string
     {
         return match ($this) {
-            self::created_by, self::updated_by, self::attendant => 'users',
+            self::created_by, self::updated_by => 'users',
             self::last_login_facility => 'facilities',
             default => $this->name,
             /* self::members => TqTableEnum::members,

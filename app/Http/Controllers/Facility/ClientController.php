@@ -28,7 +28,7 @@ class ClientController extends ApiController
         path: '/api/v1/facility/{facility}/user/client/list',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'All clients',
-        tags: ['Facility client'],
+        tags: ['Facility member'],
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(

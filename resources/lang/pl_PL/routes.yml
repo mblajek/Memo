@@ -15,11 +15,13 @@ facility:
   calendar: "$t(calendar.calendar)"
   meetings: "$t(models.meeting._name_plural)"
   meeting_attendants: "$t(models.meeting.attendants)"
+  meeting_clients: "$t(tables.tables.meeting_client.table_name)"
   staff: "$t(models.staff._name_plural)"
   staff_details: "$t(models.staff._name)"
   clients: "$t(models.client._name_plural)"
   client_details: "$t(models.client._name)"
   client_create: "$t(forms.client_create.formName)"
+  admins: "administratorzy"
 
   facility_admin:
     time_tables: "Grafiki pracy"

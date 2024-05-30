@@ -3,7 +3,10 @@ import {crossesDateBoundaries} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {createMemo, JSX, splitProps, VoidComponent} from "solid-js";
 import {TimeSpan} from "../calendar/types";
+import {title} from "../title";
 import {timeSpanSummary, TimeSpanSummary} from "./TimeSpanSummary";
+
+const _DIRECTIVES_ = null && title;
 
 interface TimeBlockSummaryProps extends Omit<htmlAttributes.span, "title"> {
   readonly day: DateTime;
@@ -45,7 +48,7 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
             }
           : undefined),
       })}
-      title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}
+      use:title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}
       onMouseEnter={() => props.onHoverChange?.(true)}
       onMouseLeave={() => props.onHoverChange?.(false)}
     >

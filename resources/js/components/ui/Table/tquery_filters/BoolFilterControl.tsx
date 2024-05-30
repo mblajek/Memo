@@ -1,7 +1,8 @@
 import {Select, SelectItem} from "components/ui/form/Select";
 import {cx, useLangFunc} from "components/utils";
 import {BoolColumnFilter, NullColumnFilter} from "data-access/memo-api/tquery/types";
-import {createComputed, createMemo, createSignal} from "solid-js";
+import {createMemo} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {makeSelectItem} from "./select_items";
@@ -10,12 +11,13 @@ import {FilterControl} from "./types";
 export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilter> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
-  const [value, setValue] = createSignal("-");
-  createComputed(() => {
-    if (!props.filter) {
-      setValue("-");
-    }
-    // Ignore other external filter changes.
+  const {
+    value: [value, setValue],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {value: "-"},
+    filter: () => props.filter,
   });
   function buildFilter(): NullColumnFilter | BoolColumnFilter | undefined {
     switch (value()) {

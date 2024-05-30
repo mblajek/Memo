@@ -1,7 +1,10 @@
 import {ACTION_ICONS} from "components/ui/icons";
+import {title} from "components/ui/title";
 import {LangFunc, useLangFunc} from "components/utils";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props {
   readonly meeting: Partial<Pick<MeetingResource, "fromMeetingId" | "interval">>;
@@ -16,11 +19,11 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
     <Show when={props.meeting.fromMeetingId}>
       <Switch>
         <Match when={props.compact}>
-          <span title={text()}>
+          <span use:title={text()}>
             <ACTION_ICONS.repeat class="inlineIcon" />
           </span>
         </Match>
-        <Match when={true}>
+        <Match when="fallback">
           <span>
             <ACTION_ICONS.repeat class="inlineIcon" /> {text()}
           </span>

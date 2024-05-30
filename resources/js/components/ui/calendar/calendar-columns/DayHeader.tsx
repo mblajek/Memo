@@ -1,5 +1,6 @@
 import {Button} from "components/ui/Button";
 import {capitalizeString} from "components/ui/Capitalize";
+import {title} from "components/ui/title";
 import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
@@ -8,6 +9,8 @@ import {VoidComponent, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {useHolidays} from "../holidays";
 import {WeekDaysCalculator} from "../week_days_calculator";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props extends htmlAttributes.div {
   readonly day: DateTime;
@@ -36,7 +39,7 @@ export const DayHeader: VoidComponent<Props> = (allProps) => {
       >
         <div
           class={cx("mb-0.5 ", {invisible: !props.day.hasSame(currentDate(), "day")})}
-          title={capitalizeString(t("calendar.today"))}
+          use:title={capitalizeString(t("calendar.today"))}
         >
           <FaSolidCircleDot class="text-red-700" size={10} />
         </div>

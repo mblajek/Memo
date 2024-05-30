@@ -9,8 +9,10 @@ use App\Http\Controllers\Facility\ClientController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\FacilityAdminController;
 use App\Http\Controllers\Facility\MeetingAttendantTqueryController;
+use App\Http\Controllers\Facility\MeetingClientTqueryController;
 use App\Http\Controllers\Facility\MeetingController;
 use App\Http\Controllers\Facility\MeetingTqueryController;
+use App\Http\Controllers\Facility\MemberTqueryController;
 use App\Http\Controllers\Facility\StaffController;
 use App\Http\Controllers\Facility\StaffTqueryController;
 use App\Http\Controllers\MailController;
@@ -83,6 +85,8 @@ Route::prefix('/v1')->group(function () {
                 Route::get('/tquery', [StaffTqueryController::class, 'get']);
                 Route::post('/tquery', [StaffTqueryController::class, 'post']);
             });
+            Route::get('/tquery', [MemberTqueryController::class, 'get']);
+            Route::post('/tquery', [MemberTqueryController::class, 'post']);
         });
         Route::prefix('/meeting')->group(function () {
             Route::post('/', [MeetingController::class, 'post']);
@@ -94,6 +98,8 @@ Route::prefix('/v1')->group(function () {
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
             Route::get('/attendant/tquery', [MeetingAttendantTqueryController::class, 'get']);
             Route::post('/attendant/tquery', [MeetingAttendantTqueryController::class, 'post']);
+            Route::get('/client/tquery', [MeetingClientTqueryController::class, 'get']);
+            Route::post('/client/tquery', [MeetingClientTqueryController::class, 'post']);
         });
         Route::prefix('/admin')->group(function () {
             Route::prefix('/attribute')->group(function () {

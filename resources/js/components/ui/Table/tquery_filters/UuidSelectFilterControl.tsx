@@ -1,6 +1,7 @@
 import {TQuerySelect, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {cx} from "components/utils";
-import {VoidComponent, createComputed, createMemo, createSignal, splitProps} from "solid-js";
+import {VoidComponent, createMemo, splitProps} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {useSingleSelectFilterHelper} from "./select_filters_helper";
@@ -14,13 +15,13 @@ export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
   const [props, selectProps] = splitProps(allProps, ["column", "schema", "filter", "setFilter"]);
   const filterFieldNames = useFilterFieldNames();
   const {itemsForNullableColumn, buildFilter, updateValue} = useSingleSelectFilterHelper();
-
-  const [value, setValue] = createSignal<readonly string[]>([]);
-  createComputed(() => {
-    if (!props.filter) {
-      setValue([]);
-    }
-    // Ignore other external filter changes.
+  const {
+    value: [value, setValue],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {value: [] as readonly string[]},
+    filter: () => props.filter,
   });
   const topItems = createMemo(() => (props.schema.nullable ? itemsForNullableColumn() : []));
   return (

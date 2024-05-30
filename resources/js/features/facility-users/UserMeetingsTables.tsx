@@ -1,3 +1,4 @@
+import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {Capitalize} from "components/ui/Capitalize";
 import {BigSpinner} from "components/ui/Spinner";
 import {TableExportConfig, createTableTranslations} from "components/ui/Table";
@@ -10,12 +11,12 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {Sort} from "data-access/memo-api/tquery/types";
-import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
 import {Accessor, ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "../meeting/attendance_status_info";
 import {useMeetingTableColumns, useMeetingTableFilters} from "../meeting/meeting_tables";
 import {UserMeetingsStats} from "./user_meetings_stats";
+import {FacilityUserType, getFacilityUserTypeName} from "./user_types";
 
 interface Props {
   readonly userName: string;
@@ -29,7 +30,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {dictionaries, meetingStatusDict} = useFixedDictionaries();
   const {presenceStatuses} = useAttendanceStatusesInfo();
-  const userDisplayNames = useUserDisplayNames();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
   const meetingTableColumns = useMeetingTableColumns({baseHeight: "3rem"});
   const meetingTableFilters = useMeetingTableFilters();
@@ -45,15 +45,23 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
       {type: "column", column: "startDayminute", desc},
     ] satisfies Sort;
   }
-  const tableTranslations = createTableTranslations("meeting");
+  const tableTranslations = createTableTranslations(["meeting_single_attendant", "meeting_attendant", "meeting"]);
   function exportConfig(tableType: "planned" | "completed" | "all"): TableExportConfig {
     const baseName =
       tableType === "all" ? tableTranslations.tableName() : t(`facility_user.meetings_lists.${tableType}`);
-    const userName = `${props.userName.replaceAll(" ", "_")}_(${userDisplayNames.getTypeName(props.userType)})`;
+    const userName = `${props.userName.replaceAll(" ", "_")}_(${getFacilityUserTypeName(t, props.userType)})`;
     return {
       tableName: `${baseName}__${userName}`,
     };
   }
+  const [activeTab, setActiveTab] = createSignal<string>();
+  createHistoryPersistence({
+    key: "userMeetingsTables",
+    value: () => ({activeTab: activeTab()}),
+    onLoad: (state) => {
+      setActiveTab(state.activeTab);
+    },
+  });
   return (
     <div class="flex flex-col">
       <Show when={dictionaries()} fallback={<BigSpinner />}>
@@ -146,6 +154,13 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ),
                         ...getCreatedUpdatedColumns(),
                       ]}
+                      columnGroups={{
+                        overrides: {
+                          "meeting": false,
+                          "statusDictId": false,
+                          "attendant.attendanceStatusDictId": false,
+                        },
+                      }}
                       initialSort={[{id: "date", desc: false}]}
                       exportConfig={exportConfig("planned")}
                     />
@@ -247,6 +262,13 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ),
                         ...getCreatedUpdatedColumns(),
                       ]}
+                      columnGroups={{
+                        overrides: {
+                          "meeting": false,
+                          "statusDictId": false,
+                          "attendant.attendanceStatusDictId": false,
+                        },
+                      }}
                       initialSort={[{id: "date", desc: true}]}
                       exportConfig={exportConfig("completed")}
                     />
@@ -300,6 +322,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ),
                         ...getCreatedUpdatedColumns(),
                       ]}
+                      columnGroups={{overrides: {meeting: false}}}
                       initialSort={[{id: "date", desc: true}]}
                       exportConfig={exportConfig("all")}
                     />
@@ -308,6 +331,8 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
               ),
             },
           ]}
+          activeTab={activeTab()}
+          onActiveTabChange={setActiveTab}
         />
       </Show>
     </div>

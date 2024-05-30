@@ -1,10 +1,14 @@
 import {A} from "@solidjs/router";
 import {Email} from "components/ui/Email";
 import {Phone} from "components/ui/Phone";
+import {RichTextView} from "components/ui/RichTextView";
+import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table";
+import {AttributeColumnsConfig} from "components/ui/Table/TQueryTable";
 import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
 import {DATE_FORMAT} from "components/utils";
 import {PartialAttributesSelection} from "components/utils/attributes_selection";
+import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {For, VoidComponent} from "solid-js";
 
@@ -14,7 +18,8 @@ interface Props {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ATTRIBUTES_SELECTION: PartialAttributesSelection<AttributeParams<any>> = {
+const DETAILS_ATTRIBUTES_SELECTION: PartialAttributesSelection<AttributeParams<any>> = {
+  model: "client",
   includeFixed: true,
   fixedOverrides: {
     notes: false,
@@ -56,10 +61,64 @@ export const ClientFields: VoidComponent<Props> = (props) => {
         model="client"
         minRequirementLevel={props.showAllAttributes ? undefined : props.editMode ? "optional" : "recommended"}
         nestFieldsUnder="client"
-        selection={ATTRIBUTES_SELECTION}
+        selection={DETAILS_ATTRIBUTES_SELECTION}
         editMode={props.editMode}
       />
       <RichTextViewEdit name="client.notes" viewMode={!props.editMode} persistenceKey="client.notes" />
     </>
   );
 };
+
+export function useTableAttributeColumnConfigs() {
+  const tableCells = useTableCells();
+  return {
+    client: () =>
+      ({
+        attributeColumns: true,
+        defaultConfig: {initialVisible: false, columnGroups: "attendant"},
+        selection: {
+          model: "client",
+          includeFixed: true,
+          fixedOverrides: {
+            typeDictId: {initialVisible: true, columnDef: {size: 180}},
+            genderDictId: {columnDef: {size: 180}},
+            birthDate: {
+              initialVisible: true,
+              columnDef: {cell: tableCells.dateNoWeekday()},
+            },
+            addressCity: {initialVisible: true},
+            contactEmail: {
+              initialVisible: true,
+              columnDef: {
+                cell: cellFunc<string>((props) => (
+                  <PaddedCell>
+                    <ShowCellVal v={props.v}>{(v) => <Email class="w-full" email={v()} />}</ShowCellVal>
+                  </PaddedCell>
+                )),
+              },
+            },
+            contactPhone: {
+              initialVisible: true,
+              columnDef: {
+                cell: cellFunc<string>((props) => (
+                  <PaddedCell>
+                    <ShowCellVal v={props.v}>{(v) => <Phone phone={v()} />}</ShowCellVal>
+                  </PaddedCell>
+                )),
+                size: 180,
+              },
+            },
+            notes: {
+              columnDef: {
+                cell: cellFunc<string>((props) => (
+                  <ScrollableCell>
+                    <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
+                  </ScrollableCell>
+                )),
+              },
+            },
+          },
+        },
+      }) satisfies AttributeColumnsConfig,
+  };
+}

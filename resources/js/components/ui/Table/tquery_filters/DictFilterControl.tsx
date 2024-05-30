@@ -1,13 +1,14 @@
+import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {Select} from "components/ui/form/Select";
 import {cx} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
-import {createComputed, createMemo, createSignal} from "solid-js";
+import {createMemo} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {useSingleSelectFilterHelper} from "./select_filters_helper";
 import {FilterControl} from "./types";
-import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 
 export const DictFilterControl: FilterControl = (props) => {
   const filterFieldNames = useFilterFieldNames();
@@ -15,13 +16,13 @@ export const DictFilterControl: FilterControl = (props) => {
   const {getGroupName} = usePositionsGrouping();
   const {itemsForNullableColumn, buildFilter, updateValue} = useSingleSelectFilterHelper();
   const schema = () => props.schema as DictDataColumnSchema;
-
-  const [value, setValue] = createSignal<readonly string[]>([]);
-  createComputed(() => {
-    if (!props.filter) {
-      setValue([]);
-    }
-    // Ignore other external filter changes.
+  const {
+    value: [value, setValue],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {value: [] as readonly string[]},
+    filter: () => props.filter,
   });
   const items = createMemo(() => {
     const dict = dictionaries()?.get(schema().dictionaryId);

@@ -39,12 +39,15 @@ import {HideableSection} from "../HideableSection";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
 import {CHECKBOX, EmptyValueSymbol} from "../symbols";
+import {title} from "../title";
 import {CheckboxField} from "./CheckboxField";
 import {DictionarySelect} from "./DictionarySelect";
 import {MultilineTextField} from "./MultilineTextField";
 import {TQuerySelect} from "./TQuerySelect";
 import {TextField} from "./TextField";
 import {SimpleMultiField} from "./multi_fields";
+
+const _DIRECTIVES_ = null && title;
 
 export type AttributesType = Record<string, unknown>;
 export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
@@ -304,7 +307,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
             </Show>
           </Match>
           <Match when={aProps.params?.view}>{(view) => view()(value)}</Match>
-          <Match when={true}>{defaultView()}</Match>
+          <Match when="fallback">{defaultView()}</Match>
         </Switch>
       </div>
     );
@@ -458,19 +461,24 @@ const ERR_COLOR_CLASS = "text-red-700";
 export const RequirementLevelMarker: VoidComponent<RequirementLevelProps> = (props) => {
   const t = useLangFunc();
   return (
-    <span class="text-sm text-grey-text select-none" title={t(`attributes.requirement_level.${props.level}`)}>
-      <Switch>
-        <Match when={props.level === "empty"}>
-          <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⛌</span>
-        </Match>
-        <Match when={props.level === "optional"}>?</Match>
-        <Match when={props.level === "recommended"}>
-          <span class={props.isEmpty ? WARN_COLOR_CLASS : undefined}>✤</span>
-        </Match>
-        <Match when={props.level === "required"}>
-          <span class={props.isEmpty ? ERR_COLOR_CLASS : undefined}>🞴</span>
-        </Match>
-      </Switch>
-    </span>
+    <div
+      class="w-full flex flex-col items-center"
+      use:title={[t(`attributes.requirement_level.${props.level}`), {placement: "right"}]}
+    >
+      <span class="text-sm text-grey-text select-none">
+        <Switch>
+          <Match when={props.level === "empty"}>
+            <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⛌</span>
+          </Match>
+          <Match when={props.level === "optional"}>?</Match>
+          <Match when={props.level === "recommended"}>
+            <span class={props.isEmpty ? WARN_COLOR_CLASS : undefined}>✤</span>
+          </Match>
+          <Match when={props.level === "required"}>
+            <span class={props.isEmpty ? ERR_COLOR_CLASS : undefined}>🞴</span>
+          </Match>
+        </Switch>
+      </span>
+    </div>
   );
 };

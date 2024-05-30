@@ -1,7 +1,10 @@
 import {InfoIcon, InfoIconProps} from "components/ui/InfoIcon";
 import {SelectItem} from "components/ui/form/Select";
+import {title} from "components/ui/title";
 import {cx} from "components/utils";
 import {Match, Show, Switch, VoidComponent} from "solid-js";
+
+const _DIRECTIVES_ = null && title;
 
 interface SelectItemSymbolProps {
   readonly symbol: string;
@@ -10,7 +13,7 @@ interface SelectItemSymbolProps {
 }
 
 export const SelectItemSymbol: VoidComponent<SelectItemSymbolProps> = (props) => (
-  <span class={cx("font-semibold", props.class)} title={props.title}>
+  <span class={cx("font-semibold", props.class)} use:title={props.title}>
     {props.symbol}
   </span>
 );
