@@ -29,7 +29,7 @@ readonly class AdminUserTquery extends TqService
         $config->addQuery(
             TqDataTypeEnum::int,
             fn(string $tableName) => //
-            "select count(1) from `members` where `members`.`user_id` = `users`.`id`",
+            "select count(1) from `members` where `members`.`user_id` = `$tableName`.`id`",
             'facilities.count',
         );
         $config->addCount();

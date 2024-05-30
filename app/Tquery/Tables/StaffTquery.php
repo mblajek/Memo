@@ -14,6 +14,13 @@ readonly class StaffTquery extends FacilityUserTquery
     {
         $builder = TqBuilder::fromTable(TqTableAliasEnum::users);
         $builder->join(TqTableAliasEnum::users, TqTableAliasEnum::members, 'user_id', left: false, inv: true);
+        $builder->join(
+            TqTableAliasEnum::members,
+            TqTableAliasEnum::staff_members,
+            'staff_member_id',
+            left: false,
+            inv: false,
+        );
         $builder->where(fn(TqSingleBind $bind) => //
         "members.facility_id = {$bind->use()}", false, $this->facility->id, false, false);
         $builder->where(fn(null $bind) => 'members.staff_member_id is not null', false, null, false, false);
@@ -23,6 +30,7 @@ readonly class StaffTquery extends FacilityUserTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
+        $config->addBaseOnTable(TqTableAliasEnum::staff_members, 'staff');
         $config->addJoined(
             TqDataTypeEnum::is_not_null,
             TqTableAliasEnum::members,
