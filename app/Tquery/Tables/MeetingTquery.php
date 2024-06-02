@@ -116,6 +116,26 @@ readonly class MeetingTquery extends TqService
             'resources',
         );
 
+        /** @noinspection SqlResolve */
+        $seriesSql = 'select nullif(count(1), 0) from `meetings` as `other`'
+            . ' where `other`.`from_meeting_id` = `meetings`.from_meeting_id'
+            . ' and `other`.`deleted_at` is null';
+        $config->addQuery(
+            TqDataTypeEnum::int_nullable,
+            fn(string $tableName) => $seriesSql,
+            'series_count',
+        );
+        $config->addQuery(
+            TqDataTypeEnum::int_nullable,
+            fn(string $tableName) => $seriesSql
+                . ' and (`other`.`date` < `meetings`.`date`'
+                . ' or (`other`.`date` = `meetings`.`date`'
+                . ' and (`other`.`start_dayminute` < `meetings`.`start_dayminute`'
+                . ' or (`other`.`start_dayminute` = `meetings`.`start_dayminute`'
+                . ' and `other`.`id` <= `meetings`.`id`))))',
+            'series_number',
+        );
+
         $config->addCount();
         return $config;
     }
