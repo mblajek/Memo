@@ -11,9 +11,13 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
-  const isDefaultVisibility = () =>
-    table.getAllLeafColumns().every((c) => c.getIsVisible() === (defaultColumnVisibility?.()[c.id] ?? true));
   const columnGroupingInfo = table.options.meta?.tquery?.columnGroupingInfo;
+  const isDefaultVisibility = () =>
+    table
+      .getAllLeafColumns()
+      .every(
+        (c) => columnGroupingInfo?.(c.id).isCount || c.getIsVisible() === (defaultColumnVisibility?.()[c.id] ?? true),
+      );
   const [resetHovered, setResetHovered] = createSignal(false);
   return (
     <PopOver
