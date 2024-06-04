@@ -303,7 +303,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       return (
         <div
           use:title={
-            <ul class="list-disc ms-2">
+            <ul class={titleLines.length > 1 ? "list-disc ms-2" : undefined}>
               <For each={titleLines}>{(line) => <li>{line}</li>}</For>
             </ul>
           }
