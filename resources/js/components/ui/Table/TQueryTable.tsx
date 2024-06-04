@@ -676,8 +676,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
   createComputed(() => {
     const countCol = countColumn();
     if (countCol) {
-      // eslint-disable-next-line solid/reactivity
-      columnVisibility[1]((vis) => ({...vis, [countCol]: effectiveActiveColumnGroups().length > 0}));
+      columnVisibility[1]({...columnVisibility[0](), [countCol]: effectiveActiveColumnGroups().length > 0});
     }
   });
 
@@ -703,9 +702,9 @@ export const TQueryTable: VoidComponent<TQueryTableProps> = (props) => {
 
   const columnGroupingInfos = createMemo<ReadonlyMap<string, ColumnGroupingInfo>>(() => {
     const infos = new Map<string, {-readonly [K in keyof ColumnGroupingInfo]: ColumnGroupingInfo[K]}>();
-    for (const col of columnsConfig()) {
-      infos.set(col.name, {
-        isCount: col.name === countColumn(),
+    for (const col of columns()) {
+      infos.set(col.id!, {
+        isCount: col.id === countColumn(),
         isGrouping: false,
         isGrouped: false,
         isForceShown: false,
