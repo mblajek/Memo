@@ -10,6 +10,7 @@ import {createConfirmation} from "components/ui/confirmation";
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {ACTION_ICONS} from "components/ui/icons";
 import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
+import {title} from "components/ui/title";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
@@ -24,7 +25,7 @@ import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} 
 import {UserLink} from "../facility-users/UserLink";
 import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {FacilityUserType} from "../facility-users/user_types";
-import {MeetingInSeriesInfo, MeetingIntervalCommentText} from "./MeetingInSeriesInfo";
+import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags} from "./MeetingStatusTags";
 import {meetingDeleteConfirmParams} from "./MeetingViewEditForm";
 import {workTimeDeleteConfirmParams} from "./WorkTimeViewEditForm";
@@ -32,6 +33,8 @@ import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {useMeetingAPI} from "./meeting_api";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
+
+const _DIRECTIVES_ = null && title;
 
 type TQFullMeetingResource = TQMeetingResource & {
   readonly attendants: readonly TQMeetingAttendantResource[];
@@ -154,20 +157,25 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnGroups: "meeting",
     },
     duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}, columnGroups: "meeting"},
-    isInSeries: {
+    seriesInfo: {
       name: "isClone",
-      extraDataColumns: ["interval"],
+      extraDataColumns: ["interval", "seriesNumber", "seriesCount"],
       columnDef: {
         cell: cellFunc<boolean, TQFullMeetingResource>((props) => (
           <PaddedCell>
             <ShowCellVal v={props.v}>
               {(v) => (
-                <>
-                  {v() ? t("bool_values.yes") : t("bool_values.no")}{" "}
-                  <span class="text-grey-text">
-                    <MeetingIntervalCommentText interval={props.row.interval || undefined} />
-                  </span>
-                </>
+                <Show when={v()} fallback={<EmptyValueSymbol />}>
+                  <div class="flex flex-col items-end">
+                    <SeriesNumberInfo
+                      seriesNumber={props.ctx.row.original.seriesNumber}
+                      seriesCount={props.ctx.row.original.seriesCount}
+                    />
+                    <div class="text-grey-text">
+                      <MeetingIntervalCommentText interval={props.row.interval || undefined} />
+                    </div>
+                  </div>
+                </Show>
               )}
             </ShowCellVal>
           </PaddedCell>
@@ -187,6 +195,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                 <div>
                   {v()}
                   <span class="text-grey-text">
+                    {" "}
                     <MeetingIntervalCommentText interval={v()} />
                   </span>
                 </div>
@@ -198,6 +207,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       },
       columnGroups: "meeting",
     },
+    seriesNumber: {name: "seriesNumber", initialVisible: false, columnGroups: "meeting"},
+    seriesCount: {name: "seriesCount", initialVisible: false, columnGroups: "meeting"},
     category: {name: "categoryDictId", initialVisible: false, columnGroups: ["meeting", true, "typeDictId"]},
     type: {
       name: "typeDictId",
@@ -361,7 +372,15 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     },
     dateTimeActions: {
       name: "date",
-      extraDataColumns: ["startDayminute", "durationMinutes", "fromMeetingId", "interval", "id"],
+      extraDataColumns: [
+        "startDayminute",
+        "durationMinutes",
+        "fromMeetingId",
+        "interval",
+        "seriesNumber",
+        "seriesCount",
+        "id",
+      ],
       columnDef: {
         cell: cellFunc<string, TQFullMeetingResource>((props) => (
           <PaddedCell>

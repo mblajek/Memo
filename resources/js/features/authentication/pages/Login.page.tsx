@@ -1,4 +1,4 @@
-import {Navigate} from "@solidjs/router";
+import {useNavigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api/groups";
@@ -16,6 +16,7 @@ import {createLoginModal} from "../forms/login/login_modal";
  * otherwise.
  */
 export default (() => {
+  const navigate = useNavigate();
   const statusQuery = createQuery(User.statusQueryOptions);
   const systemStatusMonitor = useSystemStatusMonitor();
   const invalidate = useInvalidator();
@@ -25,12 +26,13 @@ export default (() => {
     if (systemStatusMonitor.needsReload()) {
       // If on the login screen, just reload without asking.
       location.reload();
-    }
-    if (statusQuery.isError && !loginModal.isShown()) {
+    } else if (statusQuery.isError && !loginModal.isShown()) {
       loginModal.show();
-    }
-    if (statusQuery.isSuccess) {
-      invalidate.everythingThrottled();
+    } else if (statusQuery.isSuccess) {
+      if (!invalidate.everythingThrottled()) {
+        invalidate.userStatusAndFacilityPermissions();
+      }
+      navigate("/help");
     }
   });
   return (
@@ -40,8 +42,6 @@ export default (() => {
       // Do not show any errors, instead just show this login form.
       error={() => undefined}
       pending={() => undefined}
-    >
-      <Navigate href="/help" />
-    </QueryBarrier>
+    />
   );
 }) satisfies VoidComponent;

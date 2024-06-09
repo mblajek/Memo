@@ -12,8 +12,7 @@ import {DataRequest} from "./types";
 
 const DEFAULT_LIMIT = 1000;
 
-/** The list of columns to fetch. */
-const COLUMNS = [
+const RESOURCE_COLUMNS = [
   "id",
   "date",
   "startDayminute",
@@ -30,11 +29,20 @@ const COLUMNS = [
   "interval",
 ] as const satisfies (keyof MeetingResource)[];
 
-/** A meeting resource type fetched from tquery. */
-export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof COLUMNS)[number], "staff" | "clients">> & {
-  readonly staff: readonly TQMeetingAttendantResource[];
-  readonly clients: readonly TQMeetingAttendantResource[];
+/** The list of columns to fetch. */
+const COLUMNS = [...RESOURCE_COLUMNS, "seriesNumber", "seriesCount"] as const;
+
+export type SeriesNumberAndCount = {
+  readonly seriesNumber: number | null;
+  readonly seriesCount: number | null;
 };
+
+/** A meeting resource type fetched from tquery. */
+export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_COLUMNS)[number], "staff" | "clients">> &
+  SeriesNumberAndCount & {
+    readonly staff: readonly TQMeetingAttendantResource[];
+    readonly clients: readonly TQMeetingAttendantResource[];
+  };
 
 export interface TQMeetingAttendantResource extends MeetingAttendantResource {
   readonly name: string;

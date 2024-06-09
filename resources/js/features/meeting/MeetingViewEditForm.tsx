@@ -17,6 +17,7 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
+import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {Api, RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
@@ -56,7 +57,21 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const confirmation = createConfirmation();
   const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.meetingId));
-  const meeting = () => meetingQuery.data!;
+  const {dataQuery: meetingTQuery} = createTQuery({
+    prefixQueryKey: FacilityMeeting.keys.meeting(),
+    entityURL: `facility/${activeFacility()?.id}/meeting`,
+    requestCreator: staticRequestCreator({
+      columns: [
+        {type: "column", column: "seriesNumber"},
+        {type: "column", column: "seriesCount"},
+      ],
+      filter: {type: "column", column: "id", op: "=", val: props.meetingId},
+      sort: [],
+      paging: {size: 1},
+    }),
+    dataQueryOptions: () => ({enabled: !!meetingQuery.data?.fromMeetingId}),
+  });
+  const meeting = () => ({...meetingQuery.data!, ...meetingTQuery.data?.data[0]});
   const isBusy = () => !!meetingAPI.isPending();
 
   async function updateMeeting(values: Partial<MeetingFormType>) {

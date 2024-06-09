@@ -21,8 +21,11 @@ export function useInvalidator(queryClient = useQueryClient()) {
       if (
         !lastInvalidateEverythingTime ||
         Date.now() - lastInvalidateEverythingTime.toMillis() > INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS
-      )
+      ) {
         everything();
+        return true;
+      }
+      return false;
     },
     // Shared:
     users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
@@ -35,6 +38,8 @@ export function useInvalidator(queryClient = useQueryClient()) {
         queryClient.invalidateQueries({queryKey: User.keys.statusAll()});
       }
     },
+    // System status:
+    systemStatus: () => queryClient.invalidateQueries({queryKey: System.keys.status()}),
     // Facility resources:
     facility: {
       meetings: () => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
