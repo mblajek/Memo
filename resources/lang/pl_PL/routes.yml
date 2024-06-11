@@ -25,6 +25,7 @@ facility:
 
   facility_admin:
     time_tables: "grafiki pracy"
+    time_tables_calendar: "kalendarz"
     time_tables_staff: "pracownicy"
     time_tables_facility: "placówka"
     reports: "raporty"

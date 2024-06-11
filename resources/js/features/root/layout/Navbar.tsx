@@ -57,8 +57,14 @@ export const Navbar: VoidComponent = () => {
                 icon={TbCalendarTime}
                 href={`/${facilityUrl()}/admin/time-tables`}
                 routeKey="facility.facility_admin.time_tables"
-                end
               >
+                <NavigationItem
+                  icon={TbCalendarTime}
+                  href={`/${facilityUrl()}/admin/time-tables`}
+                  routeKey="facility.facility_admin.time_tables_calendar"
+                  small
+                  end
+                />
                 <NavigationItem
                   icon={OcTable3}
                   href={`/${facilityUrl()}/admin/time-tables/staff`}
