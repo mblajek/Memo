@@ -29,5 +29,7 @@ Route::any('/docs/{any}', fn() => ExceptionFactory::notFound()->render())->where
 */
 
 Route::get('{any}', function () {
+    // throw error on missing database
+    App\Models\Facility::query()->count();
     return view('app');
 })->where('any', '.*');
