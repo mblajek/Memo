@@ -8,33 +8,38 @@ import {MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.r
 import {RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
-import {getAttendantsValuesForCreate, useAttendantsCreator} from "./MeetingAttendantsFields";
-import {MeetingForm, MeetingFormType, getResourceValuesForCreate} from "./MeetingForm";
-import {MeetingSeriesFormType, getClearedSeriesValues, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
 import {useMeetingAPI} from "./meeting_api";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
 import {getMeetingTimeFullData, meetingTimePartDayInitialValue} from "./meeting_time_controller";
+import {getClearedSeriesValues, getMeetingSeriesCloneParams, MeetingSeriesFormType} from "./MeetingSeriesForm";
+import {getUnusedMeetingFields, WorkTimeForm, WorkTimeFormType} from "./WorkTimeForm";
+import {getStaffValueForCreate} from "./WorkTimeStaffSelectField";
 
-export interface MeetingCreateFormProps {
-  readonly initialValues?: Partial<MeetingFormType>;
+export interface WorkTimeCreateFormProps {
+  readonly initialValues?: Partial<WorkTimeFormType>;
   readonly onSuccess?: (meeting: MeetingBasicData, cloneIds?: string[]) => void;
   readonly onCancel?: () => void;
-  /** Whether the meeting date and time should start as editable, even if provided in the initial values. */
-  readonly forceTimeEditable?: boolean;
-  /** Whether to show toast on success. Default: true. */
-  readonly showToast?: boolean;
 }
 
-export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) => {
+export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
-  const {meetingStatusDict} = useFixedDictionaries();
-  const {attendantsInitialValueForCreate} = useAttendantsCreator();
+  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
   const meetingAPI = useMeetingAPI();
   const invalidate = useInvalidator();
 
-  async function createMeetings(values: MeetingFormType) {
+  function transformFormValues(values: WorkTimeFormType): MeetingResourceForCreate {
+    return {
+      ...values,
+      ...getClearedSeriesValues(),
+      ...getMeetingTimeFullData(values).timeValues,
+      ...getStaffValueForCreate(dictionaries()!, values),
+      ...getUnusedMeetingFields(dictionaries()!),
+    };
+  }
+
+  async function createWorkTimes(values: WorkTimeFormType) {
     const meeting = transformFormValues(values);
     const {id, cloneIds} = await meetingAPI.create(
       meeting,
@@ -47,9 +52,7 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
     );
     // eslint-disable-next-line solid/reactivity
     return () => {
-      if (props.showToast ?? true) {
-        toastSuccess(t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"));
-      }
+      toastSuccess(t("forms.work_time_create.success"));
       props.onSuccess?.({...(meeting as RequiredNonNullable<MeetingResourceForCreate>), id}, cloneIds);
       // Important: Invalidation should happen after calling onSuccess which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
@@ -62,25 +65,23 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
     ({
       ...meetingTimePartDayInitialValue(),
       typeDictId: "",
-      statusDictId: meetingStatusDict()!.planned.id,
-      ...attendantsInitialValueForCreate(),
-      isRemote: false,
+      staff: "",
       notes: "",
-      resources: [],
       createSeries: false,
       ...defaultMeetingSeriesInitialValues(),
+      seriesInterval: "1d",
       ...props.initialValues,
-    }) satisfies MeetingFormType;
+    }) satisfies WorkTimeFormType;
 
   return (
     <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
-      <MeetingForm
-        id="meeting_create"
+      <WorkTimeForm
+        id="work_time_create"
         initialValues={initialValues()}
-        forceTimeEditable={props.forceTimeEditable}
+        forceTimeEditable
         viewMode={false}
         allowCreateSeries
-        onSubmit={createMeetings}
+        onSubmit={createWorkTimes}
         onCancel={props.onCancel}
       />
     </Show>
@@ -88,14 +89,4 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
 };
 
 // For lazy loading
-export default MeetingCreateForm;
-
-function transformFormValues(values: MeetingFormType): MeetingResourceForCreate {
-  return {
-    ...values,
-    ...getClearedSeriesValues(),
-    ...getMeetingTimeFullData(values).timeValues,
-    ...getAttendantsValuesForCreate(values),
-    ...getResourceValuesForCreate(values),
-  };
-}
+export default WorkTimeCreateForm;

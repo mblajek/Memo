@@ -4,19 +4,19 @@ import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {doAndClearParams} from "components/utils/modals";
-import {MeetingViewEditFormProps} from "features/meeting/MeetingViewEditForm";
+import {WorkTimeViewEditFormProps} from "features/meeting/WorkTimeViewEditForm";
 import {createComputed, createSignal} from "solid-js";
 
-const MeetingViewEditForm = lazyAutoPreload(() => import("features/meeting/MeetingViewEditForm"));
+const WorkTimeViewEditForm = lazyAutoPreload(() => import("features/meeting/WorkTimeViewEditForm"));
 
-export type MeetingModalParams = Omit<MeetingViewEditFormProps, "viewMode"> & {readonly initialViewMode: boolean};
+export type WorkTimeModalParams = Omit<WorkTimeViewEditFormProps, "viewMode"> & {readonly initialViewMode: boolean};
 
-export const createMeetingModal = registerGlobalPageElement<MeetingModalParams>((args) => {
+export const createWorkTimeModal = registerGlobalPageElement<WorkTimeModalParams>((args) => {
   const t = useLangFunc();
   const [viewMode, setViewMode] = createSignal(true);
   return (
     <Modal
-      title={viewMode() ? capitalizeString(t("models.meeting._name")) : t("forms.meeting_edit.form_name")}
+      title={viewMode() ? capitalizeString(t("meetings.work_time_or_leave_time")) : t("forms.work_time_edit.form_name")}
       open={args.params()}
       closeOn={viewMode() ? ["escapeKey", "closeButton", "clickOutside"] : ["escapeKey", "closeButton"]}
       onClose={args.clearParams}
@@ -26,7 +26,7 @@ export const createMeetingModal = registerGlobalPageElement<MeetingModalParams>(
         // Reinitialise the view mode on a new invocation of the modal.
         createComputed(() => setViewMode(!!params().initialViewMode));
         return (
-          <MeetingViewEditForm
+          <WorkTimeViewEditForm
             {...params()}
             viewMode={viewMode()}
             onViewModeChange={(viewMode) => {

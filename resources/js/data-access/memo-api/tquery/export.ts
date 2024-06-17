@@ -5,13 +5,13 @@ import {DataItem, DataRequest, DataResponse} from "./types";
 const NUM_CELLS_PER_PAGE = 50000;
 
 /** Fetches all the rows from tquery and returns them asynchronously. */
-export async function* getAllRowsExportIterator({
+export async function* getAllRowsExportIterator<TData = DataItem>({
   entityURL,
   baseRequest,
 }: {
   entityURL: string;
   baseRequest: DataRequest;
-}): AsyncIterator<DataItem> {
+}): AsyncIterator<TData> {
   if (!baseRequest.columns.length) {
     return;
   }
@@ -30,7 +30,7 @@ export async function* getAllRowsExportIterator({
     offset += resp.data.length;
     // Start fetching the next page before processing the results.
     const nextFetch = offset < resp.meta.totalDataSize ? fetchPage(offset) : undefined;
-    yield* resp.data;
+    yield* resp.data as TData[];
     if (!nextFetch) {
       break;
     }

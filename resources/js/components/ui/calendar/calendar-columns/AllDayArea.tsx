@@ -1,4 +1,7 @@
-import {htmlAttributes, NON_NULLABLE} from "components/utils";
+import {Button} from "components/ui/Button";
+import {ACTION_ICONS} from "components/ui/icons";
+import {useCalendarFunctionContext} from "components/ui/meetings-calendar/calendar_modes";
+import {cx, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
 import {filterAndSortInDayView} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {createMemo, For, JSX, Show, splitProps} from "solid-js";
@@ -16,8 +19,11 @@ interface Props<C> extends htmlAttributes.div {
 /** The all-day events area of a calendar column. */
 export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
   const [props, divProps] = splitProps(allProps, ["day", "columnViewInfo", "blocks", "events", "onEmptyClick"]);
+  const t = useLangFunc();
+  const calendarFunction = useCalendarFunctionContext();
   const blocks = createMemo(() => filterAndSortInDayView(props.day, props.blocks));
   const events = createMemo(() => filterAndSortInDayView(props.day, props.events));
+  const showAddButton = () => calendarFunction === "timeTables";
   return (
     <CellWithPreferredStyling
       {...htmlAttributes.merge(divProps, {
@@ -28,8 +34,16 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
         objs.map((o) => o.monthCellStylingPreference).filter(NON_NULLABLE),
       )}
     >
-      <div class="flex flex-col items-stretch mb-2 p-px">
+      <div class={cx("flex flex-col items-stretch p-px", showAddButton() ? undefined : "mb-2")}>
         <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
+        <Show when={showAddButton()}>
+          <Button
+            class="bg-white hover:bg-hover text-grey-text border border-input-border rounded flex justify-center"
+            title={t(calendarFunction === "timeTables" ? "forms.work_time_create.form_name" : "actions.add")}
+          >
+            <ACTION_ICONS.add class="text-current" />
+          </Button>
+        </Show>
         <div
           class="flex flex-col items-stretch gap-px"
           style={{

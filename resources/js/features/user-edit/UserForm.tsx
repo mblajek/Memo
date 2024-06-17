@@ -82,7 +82,7 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
                   name="password"
                   {...(initialValues()?.hasPassword
                     ? {
-                        label: t("forms.user_edit.fieldNames.newPassword"),
+                        label: t("forms.user_edit.field_names.newPassword"),
                         placeholder: t("forms.user_edit.password_empty_to_leave_unchanged"),
                       }
                     : {})}

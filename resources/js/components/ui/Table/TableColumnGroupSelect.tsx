@@ -3,9 +3,10 @@ import {TbColumns3} from "solid-icons/tb";
 import {createUniqueId, Show, VoidComponent} from "solid-js";
 import {Capitalize} from "../Capitalize";
 import {Select} from "../form/Select";
+import {Hr} from "../Hr";
+import {InfoIcon} from "../InfoIcon";
 import {title} from "../title";
 import {useTable} from "./TableContext";
-import {InfoIcon} from "../InfoIcon";
 
 const _DIRECTIVES_ = null && title;
 
@@ -38,7 +39,7 @@ export const TableColumnGroupSelect: VoidComponent = () => {
                 label: () => <span class="text-grey-text">{t("tables.column_groups.no_grouping")}</span>,
                 labelOnList: () => <span>{t("tables.column_groups.no_grouping")}</span>,
               },
-              {value: createUniqueId(), label: () => <hr class="border-input-border" />, disabled: true},
+              {value: createUniqueId(), label: () => <Hr />, disabled: true},
               ...columnGroups()!.map(({name, isFromColumn}) => ({
                 value: name,
                 label: () => (
@@ -52,7 +53,7 @@ export const TableColumnGroupSelect: VoidComponent = () => {
                   </span>
                 ),
               })),
-              {value: createUniqueId(), label: () => <hr class="border-input-border" />, disabled: true},
+              {value: createUniqueId(), label: () => <Hr />, disabled: true},
               {
                 value: createUniqueId(),
                 label: () => (

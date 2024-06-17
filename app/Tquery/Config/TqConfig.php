@@ -99,6 +99,27 @@ final class TqConfig
         );
     }
 
+    public function addJoinedQuery(
+        TqDataTypeEnum|TqDictDef $type,
+        TqTableAliasEnum $table,
+        Closure $columnOrQuery,
+        string $columnAlias,
+        ?Closure $filter = null,
+        ?Closure $order = null,
+        ?Closure $renderer = null,
+    ): void {
+        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        $this->addColumn(
+            type: $type,
+            columnOrQuery: $columnOrQuery,
+            table: $table,
+            columnAlias: Str::camel($columnAlias),
+            filter: $filter,
+            sorter: $order,
+            renderer: $renderer,
+        );
+    }
+
     public function addUuidListQuery(
         TqDataTypeEnum|TqDictDef $type,
         string $select,
@@ -134,6 +155,18 @@ final class TqConfig
         $this->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::created_by, 'name', 'created_by.name');
         $this->addSimple(TqDataTypeEnum::uuid, 'updated_by', 'updated_by.id');
         $this->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::updated_by, 'name', 'updated_by.name');
+    }
+
+    public function addBaseOnTable(TqTableAliasEnum $table, string $prefix): void
+    {
+        $this->addJoined(TqDataTypeEnum::datetime, $table, 'created_at', "$prefix.created_at");
+        $this->addJoined(TqDataTypeEnum::datetime, $table, 'updated_at', "$prefix.updated_at");
+        $this->addJoined(TqDataTypeEnum::uuid, $table, 'created_by', "$prefix.created_by.id");
+        $this->addJoinedQuery(TqDataTypeEnum::string, $table, fn(string $tableName) => //
+        "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`created_by`", "$prefix.created_by.name");
+        $this->addJoined(TqDataTypeEnum::uuid, $table, 'updated_by', "$prefix.updated_by.id");
+        $this->addJoinedQuery(TqDataTypeEnum::string, $table, fn(string $tableName) => //
+        "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`updated_by`", "$prefix.updated_by.name");
     }
 
     public function removeColumns(string ...$columnAliases): void

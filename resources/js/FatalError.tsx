@@ -1,4 +1,4 @@
-import {Show, VoidComponent} from "solid-js";
+import {Show, VoidComponent, createEffect} from "solid-js";
 import {Button} from "./components/ui/Button";
 import {FullScreenPre} from "./components/ui/FullScreenPre";
 import {isDEV} from "./components/utils/dev_mode";
@@ -9,11 +9,18 @@ interface Props {
   readonly reset: () => void;
 }
 
+const RELOAD_MESSAGE_PATTERN = /^TypeError: Failed to fetch dynamically imported module: /;
+
 /** An information about an uncaught exception in the app frontend. */
 export const FatalError: VoidComponent<Props> = (props) => {
   const message = () => (props.error instanceof Error && props.error.stack) || String(props.error);
   // eslint-disable-next-line solid/reactivity
   import.meta.hot?.on("vite:afterUpdate", () => props.reset());
+  createEffect(() => {
+    if (RELOAD_MESSAGE_PATTERN.test(message())) {
+      location.reload();
+    }
+  });
   return (
     <>
       <MemoTitle title="Fatal Error" />

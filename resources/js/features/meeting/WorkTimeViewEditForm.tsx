@@ -17,21 +17,20 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
-import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {Api, RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {CreatedByInfo} from "../facility-users/CreatedByInfo";
-import {getAttendantsValuesForEdit, useAttendantsCreator} from "./MeetingAttendantsFields";
-import {MeetingForm, MeetingFormType, getResourceValuesForEdit} from "./MeetingForm";
+import {WorkTimeForm, WorkTimeFormType} from "./WorkTimeForm";
+import {getStaffValueForPatch, staffInitialValue} from "./WorkTimeStaffSelectField";
 import {useMeetingAPI} from "./meeting_api";
 import {MeetingBasicData} from "./meeting_basic_data";
-import {createMeetingCreateModal} from "./meeting_create_modal";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_time_controller";
+import {createWorkTimeCreateModal} from "./work_time_create_modal";
 
-export interface MeetingViewEditFormProps {
+export interface WorkTimeViewEditFormProps {
   readonly meetingId: Api.Id;
   readonly viewMode: boolean;
   readonly showGoToMeetingButton?: boolean;
@@ -41,48 +40,37 @@ export interface MeetingViewEditFormProps {
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
   readonly onDeleted?: (meetingId: string) => void;
   readonly onCancel?: () => void;
-  /** Whether to show toast on success. Default: true. */
-  readonly showToast?: boolean;
 }
 
-export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (props) => {
+export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (props) => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const attributes = useAttributes();
-  const {meetingStatusDict} = useFixedDictionaries();
-  const {attendantsInitialValueForEdit, attendantsInitialValueForCreateCopy} = useAttendantsCreator();
+  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
   const meetingAPI = useMeetingAPI();
   const invalidate = useInvalidator();
-  const meetingCreateModal = createMeetingCreateModal();
+  const workTimeCreateModal = createWorkTimeCreateModal();
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const confirmation = createConfirmation();
   const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.meetingId));
-  const {dataQuery: meetingTQuery} = createTQuery({
-    prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacility()?.id}/meeting`,
-    requestCreator: staticRequestCreator({
-      columns: [
-        {type: "column", column: "seriesNumber"},
-        {type: "column", column: "seriesCount"},
-      ],
-      filter: {type: "column", column: "id", op: "=", val: props.meetingId},
-      sort: [],
-      paging: {size: 1},
-    }),
-    dataQueryOptions: () => ({enabled: !!meetingQuery.data?.fromMeetingId}),
-  });
-  const meeting = () => ({...meetingQuery.data!, ...meetingTQuery.data?.data[0]});
+  const workTime = () => meetingQuery.data!;
   const isBusy = () => !!meetingAPI.isPending();
 
-  async function updateMeeting(values: Partial<MeetingFormType>) {
-    const origMeeting = meeting();
+  function transformFormValues(values: Partial<WorkTimeFormType>): Partial<MeetingResourceForPatch> {
+    return {
+      ...values,
+      ...getMeetingTimeFullData(values).timeValues,
+      ...getStaffValueForPatch(dictionaries()!, values),
+    };
+  }
+
+  async function updateWorkTime(values: Partial<WorkTimeFormType>) {
+    const origMeeting = workTime();
     const meetingPatch = transformFormValues(values);
     await meetingAPI.update(props.meetingId, meetingPatch);
     // eslint-disable-next-line solid/reactivity
     return () => {
-      if (props.showToast ?? true) {
-        toastSuccess(t("forms.meeting_edit.success"));
-      }
+      toastSuccess(t("forms.work_time_edit.success"));
       props.onEdited?.({
         ...origMeeting,
         ...skipUndefinedValues(meetingPatch as RequiredNonNullable<MeetingResourceForPatch>),
@@ -94,11 +82,9 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     };
   }
 
-  async function deleteMeeting() {
+  async function deleteWorkTime() {
     await meetingAPI.delete(props.meetingId);
-    if (props.showToast ?? true) {
-      toastSuccess(t("forms.meeting_delete.success"));
-    }
+    toastSuccess(t("forms.work_time_delete.success"));
     props.onDeleted?.(props.meetingId);
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
@@ -108,28 +94,21 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
 
   const initialValues = () => {
     return {
-      ...meetingTimeInitialValueForEdit(meeting()),
-      typeDictId: meeting().typeDictId,
-      statusDictId: meeting().statusDictId,
-      ...attendantsInitialValueForEdit(meeting()),
-      isRemote: meeting().isRemote,
-      notes: meeting().notes || "",
-      resources: meeting().resources.map(({resourceDictId}) => resourceDictId),
-    } satisfies MeetingFormType;
+      ...meetingTimeInitialValueForEdit(workTime()),
+      typeDictId: workTime().typeDictId,
+      ...staffInitialValue(workTime()),
+      notes: workTime().notes || "",
+    } satisfies WorkTimeFormType;
   };
 
   function createCopyInDays(days: number) {
-    meetingCreateModal.show({
+    workTimeCreateModal.show({
       initialValues: {
         ...initialValues(),
-        date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
-        statusDictId: meetingStatusDict()!.planned.id,
-        ...attendantsInitialValueForCreateCopy(meeting()),
+        date: DateTime.fromISO(workTime().date).plus({days}).toISODate(),
         fromMeetingId: props.meetingId,
       },
       onSuccess: (meeting) => props.onCreated?.(meeting),
-      forceTimeEditable: !days,
-      showToast: props.showToast,
     });
   }
 
@@ -137,26 +116,28 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     <QueryBarrier queries={[meetingQuery]} ignoreCachedData {...notFoundError()}>
       <Show
         // Hide the form when another form is opened on top, to avoid duplicate element ids.
-        when={!meetingCreateModal.isShown()}
+        when={!workTimeCreateModal.isShown()}
       >
         <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
           <div class="flex flex-col gap-3">
             <div class="relative flex flex-col">
               <div class="flex justify-between">
                 <Show when={props.showGoToMeetingButton} fallback={<span />}>
-                  <LinkWithNewTabLink {...getMeetingLinkData(`/${activeFacility()?.url}/calendar`, meeting())}>
+                  <LinkWithNewTabLink
+                    {...getMeetingLinkData(`/${activeFacility()?.url}/admin/time-tables`, workTime())}
+                  >
                     {t("meetings.show_in_calendar")}
                   </LinkWithNewTabLink>
                 </Show>
-                <CreatedByInfo class="-mb-2" data={meeting()} />
+                <CreatedByInfo class="-mb-2" data={workTime()} />
               </div>
-              <MeetingForm
-                id="meeting_edit"
+              <WorkTimeForm
+                id="work_time_edit"
                 initialValues={initialValues()}
                 viewMode={props.viewMode}
                 onViewModeChange={props.onViewModeChange}
-                meeting={meeting()}
-                onSubmit={updateMeeting}
+                meeting={workTime()}
+                onSubmit={updateWorkTime}
                 onCancel={() => {
                   if (props.onViewModeChange) {
                     props.onViewModeChange(true);
@@ -176,8 +157,8 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
               <div class="flex gap-1 justify-between">
                 <DeleteButton
                   class="secondary small"
-                  confirm={() => confirmation.confirm(meetingDeleteConfirmParams(t))}
-                  delete={deleteMeeting}
+                  confirm={() => confirmation.confirm(workTimeDeleteConfirmParams(t))}
+                  delete={deleteWorkTime}
                   disabled={isBusy()}
                 />
                 <div class="flex gap-1">
@@ -185,9 +166,9 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                     class="secondary small"
                     onClick={() => {
                       seriesCreateModal.show({
-                        startMeeting: meeting(),
+                        startMeeting: workTime(),
+                        initialValues: {seriesInterval: "1d"},
                         onSuccess: props.onCloned,
-                        showToast: props.showToast,
                       });
                     }}
                     popOver={(popOver) => (
@@ -207,7 +188,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                               <span>{t(`meetings.create_copy.${labelKey}`)}</span>
                               <span class="text-grey-text">
                                 {t("parenthesised", {
-                                  text: DateTime.fromISO(meeting().date)
+                                  text: DateTime.fromISO(workTime().date)
                                     .plus({days})
                                     .toLocaleString({day: "numeric", month: "long"}),
                                 })}
@@ -239,21 +220,12 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
 };
 
 // For lazy loading
-export default MeetingViewEditForm;
+export default WorkTimeViewEditForm;
 
-export function transformFormValues(values: Partial<MeetingFormType>): Partial<MeetingResourceForPatch> {
+export function workTimeDeleteConfirmParams(t: LangFunc) {
   return {
-    ...values,
-    ...getMeetingTimeFullData(values).timeValues,
-    ...getAttendantsValuesForEdit(values),
-    ...getResourceValuesForEdit(values),
-  };
-}
-
-export function meetingDeleteConfirmParams(t: LangFunc) {
-  return {
-    title: t("forms.meeting_delete.form_name"),
-    body: t("forms.meeting_delete.confirmation_text"),
-    confirmText: t("forms.meeting_delete.submit"),
+    title: t("forms.work_time_delete.form_name"),
+    body: t("forms.work_time_delete.confirmation_text"),
+    confirmText: t("forms.work_time_delete.submit"),
   };
 }

@@ -1,31 +1,43 @@
 import {ACTION_ICONS} from "components/ui/icons";
 import {title} from "components/ui/title";
 import {LangFunc, useLangFunc} from "components/utils";
-import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
-import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
+import {SeriesNumberAndCount, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
+import {Match, Show, Switch, VoidComponent} from "solid-js";
 
 const _DIRECTIVES_ = null && title;
 
 interface Props {
-  readonly meeting: Partial<Pick<MeetingResource, "fromMeetingId" | "interval">>;
+  readonly meeting: Partial<Pick<TQMeetingResource, "fromMeetingId" | "interval" | "seriesNumber" | "seriesCount">>;
   readonly compact?: boolean;
 }
 
 export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const text = () =>
-    t("meetings.meeting_is_in_series") + meetingIntervalCommentText(t, props.meeting.interval || undefined);
   return (
     <Show when={props.meeting.fromMeetingId}>
       <Switch>
         <Match when={props.compact}>
-          <span use:title={text()}>
+          <span
+            use:title={[
+              t("with_colon", {text: t("meetings.meeting_is_in_series")}),
+              seriesNumberInfoText(t, props.meeting),
+              meetingIntervalCommentText(t, props.meeting.interval || undefined),
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             <ACTION_ICONS.repeat class="inlineIcon" />
           </span>
         </Match>
-        <Match when="fallback">
-          <span>
-            <ACTION_ICONS.repeat class="inlineIcon" /> {text()}
+        <Match when="not compact">
+          <span class="flex gap-x-1">
+            <span use:title={t("meetings.meeting_is_in_series")}>
+              <ACTION_ICONS.repeat class="inlineIcon" />
+            </span>
+            <SeriesNumberInfo {...props.meeting} />
+            <span class="text-grey-text">
+              <MeetingIntervalCommentText {...props.meeting} />
+            </span>
           </span>
         </Match>
       </Switch>
@@ -33,29 +45,40 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
   );
 };
 
-interface MeetingIntervalCommentTextProps {
-  readonly interval: string | undefined;
-  readonly wrapIn?: (text: string) => JSX.Element;
-}
+interface SeriesNumberInfoProps extends Partial<SeriesNumberAndCount> {}
 
-export const MeetingIntervalCommentText: VoidComponent<MeetingIntervalCommentTextProps> = (props) => {
+export const SeriesNumberInfo: VoidComponent<SeriesNumberInfoProps> = (props) => {
   const t = useLangFunc();
   return (
-    <Show when={props.interval}>
-      {(interval) => {
-        const text = () => meetingIntervalCommentText(t, interval());
-        return (
-          <Show when={props.wrapIn} fallback={<>{text()}</>}>
-            {(wrapIn) => wrapIn()(text())}
-          </Show>
-        );
-      }}
+    <Show when={props.seriesNumber != undefined && props.seriesCount != undefined}>
+      <span class="flex">
+        <span use:title={t("models.meeting.seriesNumber")}>{props.seriesNumber}</span>
+        <span class="text-grey-text whitespace-pre">{t("meetings.meeting_series_number_and_count_separator")}</span>
+        <span class="text-grey-text" use:title={t("models.meeting.seriesCount")}>
+          {props.seriesCount}
+        </span>
+      </span>
     </Show>
   );
 };
 
+function seriesNumberInfoText(t: LangFunc, {seriesNumber, seriesCount}: Partial<SeriesNumberAndCount>) {
+  return seriesNumber == undefined || seriesCount == undefined
+    ? undefined
+    : `${seriesNumber}${t("meetings.meeting_series_number_and_count_separator")}${seriesCount}`;
+}
+
+interface MeetingIntervalCommentTextProps {
+  readonly interval?: string | null;
+}
+
+export const MeetingIntervalCommentText: VoidComponent<MeetingIntervalCommentTextProps> = (props) => {
+  const t = useLangFunc();
+  return <Show when={props.interval}>{(interval) => <>{meetingIntervalCommentText(t, interval())}</>}</Show>;
+};
+
 function meetingIntervalCommentText(t: LangFunc, interval: string | undefined) {
   return interval
-    ? ` ${t("parenthesised", {text: t(`meetings.interval_labels.${interval}`, {defaultValue: interval})})}`
+    ? `${t("parenthesised", {text: t(`meetings.interval_labels.${interval}`, {defaultValue: interval})})}`
     : "";
 }

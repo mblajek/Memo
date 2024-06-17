@@ -2,26 +2,26 @@ import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
-import {MeetingSeriesCreateFormProps} from "features/meeting/MeetingSeriesCreateForm";
 import {doAndClearParams} from "components/utils/modals";
+import {WorkTimeCreateFormProps} from "features/meeting/WorkTimeCreateForm";
 
-const MeetingSeriesCreateForm = lazyAutoPreload(() => import("features/meeting/MeetingSeriesCreateForm"));
+const WorkTimeCreateForm = lazyAutoPreload(() => import("features/meeting/WorkTimeCreateForm"));
 
-export const createMeetingSeriesCreateModal = registerGlobalPageElement<MeetingSeriesCreateFormProps>((args) => {
+export const createWorkTimeCreateModal = registerGlobalPageElement<WorkTimeCreateFormProps>((args) => {
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.meeting_series_create.form_name")}
+      title={t("forms.work_time_create.form_name")}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}
-      style={MODAL_STYLE_PRESETS.narrow}
+      style={MODAL_STYLE_PRESETS.medium}
     >
       {(params) => (
-        <MeetingSeriesCreateForm
+        <WorkTimeCreateForm
           {...params()}
           onSuccess={doAndClearParams(args, params().onSuccess)}
-          onCancel={doAndClearParams(args, params().onCancel)}
+          onCancel={args.clearParams}
         />
       )}
     </Modal>

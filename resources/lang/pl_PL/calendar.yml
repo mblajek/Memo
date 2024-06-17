@@ -63,6 +63,7 @@ facility_work_time: "godziny pracy placówki"
 facility_leave_time:
   all_day: "dzień wolny"
   part_day: "godziny wolne"
+staff_leave_time: "nieobecność"
 
 show_my_calendar: "Mój kalendarz"
 show_my_details: "Moje dane i spotkania"

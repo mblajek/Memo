@@ -27,8 +27,11 @@ interface Props {
   readonly suggestedTimes?: SuggestedTimes;
   readonly viewMode: boolean;
   readonly forceEditable?: boolean;
+  readonly allowAllDay?: boolean;
   /** The meeting resource, for showing some of the readonly information about the meeting. */
   readonly meeting?: MeetingResource;
+  /** Whether to show information about the meeting series in the view mode. Default: true. */
+  readonly showSeriesInfo?: boolean;
 }
 
 interface SuggestedTimes {
@@ -62,6 +65,11 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       }
     }),
   );
+  createComputed(() => {
+    if (!props.allowAllDay) {
+      form.setFields("time.allDay", false);
+    }
+  });
   const hoursList = createMemo(() => {
     if (!props.suggestedTimes) {
       return undefined;
@@ -197,7 +205,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                   }}
                 </HideableSection>
               </div>
-              <CheckboxField name="time.allDay" />
+              <CheckboxField name="time.allDay" disabled={props.allowAllDay === false} />
             </div>
           </fieldset>
         </div>
@@ -214,7 +222,9 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
               </Show>
             </div>
-            <Show when={props.meeting}>{(meeting) => <MeetingInSeriesInfo meeting={meeting()} />}</Show>
+            <Show when={(props.showSeriesInfo ?? true) && props.meeting}>
+              {(meeting) => <MeetingInSeriesInfo meeting={meeting()} />}
+            </Show>
           </div>
         </Show>
       </FieldBox>

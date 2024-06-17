@@ -14,7 +14,7 @@ export const createFacilityEditModal = registerGlobalPageElement<FormParams>((ar
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.facility_edit.formName")}
+      title={t("forms.facility_edit.form_name")}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}

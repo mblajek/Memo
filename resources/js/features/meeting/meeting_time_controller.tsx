@@ -28,7 +28,7 @@ export type FormTimeDataType = Obj &
     readonly date?: string;
   };
 
-export function meetingTimePartDayInitialValue(time?: DateTime) {
+export function meetingTimePartDayInitialValue(time?: DateTime, durationMinutes?: number) {
   const localTime = time?.toLocal().startOf("minute");
   function timeInput(time: DateTime | undefined) {
     return time ? dateTimeToTimeInput(time) : "";
@@ -38,13 +38,9 @@ export function meetingTimePartDayInitialValue(time?: DateTime) {
     time: {
       allDay: false,
       startTime: timeInput(localTime),
-      endTime: "",
+      endTime: localTime && durationMinutes ? timeInput(localTime.plus({minutes: durationMinutes})) : "",
     },
-    // Initialise the API fields, so that the validation messages for them are allocated correctly.
-    // Without these entries, validation messages are treated as unknown validation messages
-    // (see UnknownValidationMessages.tsx).
-    startDayminute: undefined,
-    durationMinutes: undefined,
+    ...PLACEHOLDER_FIELDS,
   } satisfies FormTimeDataType;
 }
 
@@ -56,13 +52,32 @@ export function meetingTimeFullDayInitialValue(date: DateTime) {
       startTime: "",
       endTime: "",
     },
-    // Initialise the API fields, so that the validation messages for them are allocated correctly.
-    // Without these entries, validation messages are treated as unknown validation messages
-    // (see UnknownValidationMessages.tsx).
-    startDayminute: undefined,
-    durationMinutes: undefined,
+    ...PLACEHOLDER_FIELDS,
   } satisfies FormTimeDataType;
 }
+
+export function meetingTimeInitialValueForEdit({date, startDayminute, durationMinutes}: MeetingResource) {
+  return {
+    date,
+    time:
+      startDayminute === 0 && durationMinutes === MAX_DAY_MINUTE
+        ? {allDay: true, startTime: "", endTime: ""}
+        : {
+            allDay: false,
+            startTime: dayMinuteToTimeInput(startDayminute),
+            endTime: dayMinuteToTimeInput((startDayminute + durationMinutes) % MAX_DAY_MINUTE),
+          },
+    ...PLACEHOLDER_FIELDS,
+  } satisfies FormTimeDataType;
+}
+
+const PLACEHOLDER_FIELDS = {
+  // Initialise the API fields, so that the validation messages for them are allocated correctly.
+  // Without these entries, validation messages are treated as unknown validation messages
+  // (see UnknownValidationMessages.tsx).
+  startDayminute: undefined,
+  durationMinutes: undefined,
+};
 
 export function useMeetingTimeForm() {
   return useFormContext<FormTimeDataType>().form;

@@ -9,7 +9,6 @@ use App\Models\Value;
 use BackedEnum;
 use Illuminate\Support\Str;
 
-/** @mixin TqConfig */
 trait TqAttribute
 {
     public function addAttribute(

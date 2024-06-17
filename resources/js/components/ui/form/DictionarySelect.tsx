@@ -80,6 +80,11 @@ export function usePositionsGrouping() {
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const attributes = useAttributes();
   const categoryAttribute = () => attributes()?.getByName<string>("position", "categoryDictId");
+  function getMeetingTypeCategory(meetingType: string | Position) {
+    return categoryAttribute()?.readFrom(
+      (typeof meetingType === "string" ? meetingTypeDict()!.getPosition(meetingType) : meetingType).resource,
+    );
+  }
   return {
     /**
      * Returns the group name for a position-based item.
@@ -88,9 +93,10 @@ export function usePositionsGrouping() {
     getGroupName({dictId, pos, mode = "label"}: {dictId: string; pos: Position; mode?: "id" | "label"}) {
       const groupId =
         dictId === meetingTypeDict()?.getDictionary().id
-          ? categoryAttribute()?.readFrom(pos.resource)
+          ? getMeetingTypeCategory(pos)
           : pos.resource.positionGroupDictId || undefined;
       return groupId ? (mode === "id" ? groupId : dictionaries()?.getPositionById(groupId)?.label) : undefined;
     },
+    getMeetingTypeCategory,
   };
 }
