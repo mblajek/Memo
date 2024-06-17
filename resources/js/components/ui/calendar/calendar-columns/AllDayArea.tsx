@@ -38,7 +38,7 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
         <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
         <Show when={showAddButton()}>
           <Button
-            class="bg-white text-grey-text border border-input-border rounded flex justify-center"
+            class="bg-white hover:bg-hover text-grey-text border border-input-border rounded flex justify-center"
             title={t(calendarFunction === "timeTables" ? "forms.work_time_create.form_name" : "actions.add")}
           >
             <ACTION_ICONS.add class="text-current" />
