@@ -18,8 +18,8 @@ export const getMeetingTimeFieldsSchemaPart = () =>
   z.object({
     time: z.object({
       allDay: z.boolean(),
-      startTime: z.string(),
-      endTime: z.string(),
+      startTime: z.string().optional(),
+      endTime: z.string().optional(),
     }),
   });
 
