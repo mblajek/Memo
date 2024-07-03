@@ -5,7 +5,7 @@ import {ADMIN_ICONS, CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Api} from "data-access/memo-api/types";
-import {Show, VoidComponent, createMemo, splitProps} from "solid-js";
+import {Match, Show, Switch, VoidComponent, createMemo, splitProps} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {useMembersData} from "./members_data";
 import {FacilityUserType} from "./user_types";
@@ -75,9 +75,9 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
       {/* Allow wrapping the name, but not just after the icon. */}
       <span class="inline-block whitespace-nowrap" style={{"min-height": icon() === true ? "1.45em" : undefined}}>
         {typeIcon()}
-        <Show when={!membersData.isPending()} fallback={<SmallSpinner />}>
-          <span style={{"white-space": "initial"}}>
-            <Show when={activeFacility() && memberData()?.name} fallback={t("parenthesised", {text: t("unknown")})}>
+        <span style={{"white-space": "initial"}}>
+          <Switch>
+            <Match when={activeFacility() && memberData()?.name}>
               {(name) => (
                 <Show when={linkHref()} fallback={<>{name()}</>}>
                   {(href) => (
@@ -87,9 +87,15 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
                   )}
                 </Show>
               )}
-            </Show>
-          </span>
-        </Show>
+            </Match>
+            <Match when={membersData.isPending()}>
+              <SmallSpinner />
+            </Match>
+            <Match when="fallback">
+              <>{t("parenthesised", {text: t("unknown")})}</>
+            </Match>
+          </Switch>
+        </span>
       </span>
     </Show>
   );
