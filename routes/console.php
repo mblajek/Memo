@@ -75,7 +75,7 @@ Artisan::command('fz:user', function () {
     PermissionMiddleware::setPermissions(null);
 })->purpose('Create new user');
 
-Artisan::command('fz:db-dump {chown} {password?}', function (string $chown, string $password = null) {
+Artisan::command('fz:db-dump {chown} {password?}', function (string $chown, ?string $password = null) {
     $dbName = DB::getDatabaseName();
     $dumpsPath = App::databasePath('dumps');
 
@@ -102,7 +102,11 @@ Artisan::command('fz:db-dump {chown} {password?}', function (string $chown, stri
     $this->line($zip->getStatusString());
 })->purpose('Make zipped database dump with password');
 
-Artisan::command('fz:db-dump-echo {password?}', function (string $password = null) {
+Artisan::command('fz:db-echo {mode} {password?}', function (string $mode, ?string $password = null) {
+    if ($mode !== 'path' && $mode !== 'sql') {
+        Log::error("Invalid mode '$mode', options: 'path', 'sql'");
+        return;
+    }
     $dbName = DB::getDatabaseName();
     $dumpsPath = App::databasePath('dumps');
 
@@ -115,6 +119,10 @@ Artisan::command('fz:db-dump-echo {password?}', function (string $password = nul
     $nameBase = preg_replace('/\\.zip$/', '', current($dumpFiles));
     $innerFile = "$nameBase.sql";
     $zipPath = "$dumpsPath/$nameBase.zip";
+    if ($mode === 'path') {
+        $this->line($zipPath);
+        return;
+    }
     $zip = new ZipArchive();
     $zip->open($zipPath);
 
@@ -127,8 +135,9 @@ Artisan::command('fz:db-dump-echo {password?}', function (string $password = nul
         $zip->close();
         if (is_string($sql)) {
             $this->output->write($sql, false, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
+        } else {
+            Log::error("Cannot read item, maybe invalid password");
         }
-        throw new Exception("Cannot read item, maybe invalid password");
     } catch (Throwable $e) {
         Log::error("Cannot read file '{$innerFile}' inside '{$zipPath}': {$e->getMessage()}");
     }
