@@ -181,6 +181,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </PaddedCell>
         )),
         size: 150,
+        enableSorting: false,
       },
       columnGroups: "meeting",
     },
@@ -204,11 +205,22 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </PaddedCell>
         )),
         size: 120,
+        sortDescFirst: false,
       },
       columnGroups: "meeting",
     },
-    seriesNumber: {name: "seriesNumber", initialVisible: false, columnGroups: "meeting"},
-    seriesCount: {name: "seriesCount", initialVisible: false, columnGroups: "meeting"},
+    seriesNumber: {
+      name: "seriesNumber",
+      columnDef: {sortDescFirst: false},
+      initialVisible: false,
+      columnGroups: "meeting",
+    },
+    seriesCount: {
+      name: "seriesCount",
+      columnDef: {sortDescFirst: false},
+      initialVisible: false,
+      columnGroups: "meeting",
+    },
     category: {name: "categoryDictId", initialVisible: false, columnGroups: ["meeting", true, "typeDictId"]},
     type: {
       name: "typeDictId",

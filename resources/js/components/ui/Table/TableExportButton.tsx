@@ -249,7 +249,7 @@ export const TableExportButton: VoidComponent = () => {
                         cellsPreviewMode()[1]((mode) => (mode === PREVIEW_MODE ? undefined : PREVIEW_MODE))
                       }
                     >
-                      {CHECKBOX(cellsPreviewMode()[0]() === PREVIEW_MODE)} <span class="text-sm">DEV</span> Preview
+                      {CHECKBOX(cellsPreviewMode()[0]() === PREVIEW_MODE)} <span class="text-xs">DEV</span> Preview
                     </Button>
                   )}
                 </Show>

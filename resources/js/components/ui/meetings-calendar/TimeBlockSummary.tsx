@@ -48,11 +48,12 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
             }
           : undefined),
       })}
-      use:title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}
       onMouseEnter={() => props.onHoverChange?.(true)}
       onMouseLeave={() => props.onHoverChange?.(false)}
     >
-      {(props.label || ((time) => time))(<TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />)}
+      <span use:title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}>
+        {(props.label || ((time) => time))(<TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />)}
+      </span>
     </span>
   );
 };
