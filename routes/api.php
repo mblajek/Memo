@@ -76,6 +76,7 @@ Route::prefix('/v1')->group(function () {
             Route::prefix('/client')->group(function () {
                 Route::post('/', [ClientController::class, 'post']);
                 Route::patch('/{user}', [ClientController::class, 'patch']);
+                Route::delete('/{user}', [ClientController::class, 'delete']);
                 Route::get('/list', [ClientController::class, 'list']);
                 Route::get('/tquery', [ClientTqueryController::class, 'get']);
                 Route::post('/tquery', [ClientTqueryController::class, 'post']);

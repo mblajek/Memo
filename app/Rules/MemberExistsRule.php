@@ -14,6 +14,7 @@ final class MemberExistsRule extends AbstractRule
     private readonly ?Facility $facility;
 
     public function __construct(
+        // todo: another enum or bool
         private readonly ?AttendanceType $attendanceType = null,
         ?Facility $facility = null,
     ) {

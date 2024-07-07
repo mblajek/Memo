@@ -53,4 +53,9 @@ class ExceptionFactory
     {
         return new ApiException(429, 'exception.too_many_requests');
     }
+
+    public static function userNotManagedByFacility(): ApiException
+    {
+        return new ApiException(409, 'exception.user_not_managed_by_facility');
+    }
 }

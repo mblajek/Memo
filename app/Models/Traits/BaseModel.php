@@ -59,7 +59,7 @@ trait BaseModel
     public function fillOnly(array $data, ?array $only = null): array
     {
         $fill = $other = [];
-        $only = array_flip($only ?? $this->getFillable());
+        $only = array_fill_keys($only ?? $this->getFillable(), true);
         foreach ($data as $field => $value) {
             if (array_key_exists($field, $only)) {
                 $fill[$field] = $value;
