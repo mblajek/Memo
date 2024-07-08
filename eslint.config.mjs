@@ -11,7 +11,7 @@ export default [
   ...typescript.configs.recommended,
   prettierConfig,
   {
-    files: ["**/*.ts", "**/*.tsx", "**.*.mts", "**/*.js", "**/*.mjs"],
+    files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.js", "**/*.mjs"],
     languageOptions: {
       parser: typescriptParser,
       ecmaVersion: "latest",
