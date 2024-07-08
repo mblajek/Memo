@@ -113,7 +113,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
             />
           </div>
           <CheckboxField name="isRemote" />
-          <RichTextViewEdit name="notes" viewMode={props.viewMode} persistenceKey="meeting.notes" />
+          <RichTextViewEdit name="notes" viewMode={props.viewMode} staticPersistenceKey="meeting.notes" />
           <DictionarySelect
             name="resources"
             dictionary="meetingResource"

@@ -32,14 +32,14 @@ import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_time_controller";
 
 export interface MeetingViewEditFormProps {
-  readonly meetingId: Api.Id;
+  readonly staticMeetingId: Api.Id;
   readonly viewMode: boolean;
   readonly showGoToMeetingButton?: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
   readonly onEdited?: (meeting: MeetingBasicData) => void;
   readonly onCreated?: (meeting: MeetingBasicData) => void;
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
-  readonly onDeleted?: (meetingId: string) => void;
+  readonly onDeleted?: () => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Default: true. */
   readonly showToast?: boolean;
@@ -56,7 +56,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   const meetingCreateModal = createMeetingCreateModal();
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const confirmation = createConfirmation();
-  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.meetingId));
+  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.staticMeetingId));
   const {dataQuery: meetingTQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
     entityURL: `facility/${activeFacility()?.id}/meeting`,
@@ -65,7 +65,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         {type: "column", column: "seriesNumber"},
         {type: "column", column: "seriesCount"},
       ],
-      filter: {type: "column", column: "id", op: "=", val: props.meetingId},
+      filter: {type: "column", column: "id", op: "=", val: props.staticMeetingId},
       sort: [],
       paging: {size: 1},
     }),
@@ -77,7 +77,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   async function updateMeeting(values: Partial<MeetingFormType>) {
     const origMeeting = meeting();
     const meetingPatch = transformFormValues(values);
-    await meetingAPI.update(props.meetingId, meetingPatch);
+    await meetingAPI.update(props.staticMeetingId, meetingPatch);
     // eslint-disable-next-line solid/reactivity
     return () => {
       if (props.showToast ?? true) {
@@ -95,11 +95,11 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   }
 
   async function deleteMeeting() {
-    await meetingAPI.delete(props.meetingId);
+    await meetingAPI.delete(props.staticMeetingId);
     if (props.showToast ?? true) {
       toastSuccess(t("forms.meeting_delete.success"));
     }
-    props.onDeleted?.(props.meetingId);
+    props.onDeleted?.();
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
@@ -125,7 +125,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
         date: DateTime.fromISO(meeting().date).plus({days}).toISODate(),
         statusDictId: meetingStatusDict()!.planned.id,
         ...attendantsInitialValueForCreateCopy(meeting()),
-        fromMeetingId: props.meetingId,
+        fromMeetingId: props.staticMeetingId,
       },
       onSuccess: (meeting) => props.onCreated?.(meeting),
       forceTimeEditable: !days,

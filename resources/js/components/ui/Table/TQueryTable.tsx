@@ -173,7 +173,7 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
-  readonly exportConfig?: TableExportConfig;
+  readonly staticExportConfig?: TableExportConfig;
 }
 
 export interface PartialColumnConfig<TData = DataItem> {
@@ -370,6 +370,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     initialSort: props.initialSort,
     initialPageSize:
       props.initialPageSize ||
+      // eslint-disable-next-line solid/reactivity
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
   });
   const [allInitialised, setAllInitialised] = createSignal(false);
@@ -752,7 +753,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         tableId: props.staticTableId,
         translations,
         defaultColumnVisibility,
-        exportConfig: props.exportConfig,
+        exportConfig: props.staticExportConfig,
         tquery: {
           allRowsExportIterable: {
             [Symbol.asyncIterator]: () =>

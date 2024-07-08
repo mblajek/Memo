@@ -162,7 +162,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         },
                       }}
                       initialSort={[{id: "date", desc: false}]}
-                      exportConfig={exportConfig("planned")}
+                      staticExportConfig={exportConfig("planned")}
                     />
                   </div>
                 </ShowOnceShown>
@@ -270,7 +270,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         },
                       }}
                       initialSort={[{id: "date", desc: true}]}
-                      exportConfig={exportConfig("completed")}
+                      staticExportConfig={exportConfig("completed")}
                     />
                   </div>
                 </ShowOnceShown>
@@ -324,7 +324,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       ]}
                       columnGroups={{overrides: {meeting: false}}}
                       initialSort={[{id: "date", desc: true}]}
-                      exportConfig={exportConfig("all")}
+                      staticExportConfig={exportConfig("all")}
                     />
                   </div>
                 </ShowOnceShown>

@@ -93,9 +93,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
             {...buttonProps}
             onClick={() => {
               if (isWorkTimeLeaveTime(props.meetingType)) {
-                workTimeModal.show({meetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
+                workTimeModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
               } else {
-                meetingModal.show({meetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
+                meetingModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
               }
             }}
           >

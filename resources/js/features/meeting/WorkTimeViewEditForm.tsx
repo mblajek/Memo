@@ -31,14 +31,14 @@ import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_
 import {createWorkTimeCreateModal} from "./work_time_create_modal";
 
 export interface WorkTimeViewEditFormProps {
-  readonly meetingId: Api.Id;
+  readonly staticMeetingId: Api.Id;
   readonly viewMode: boolean;
   readonly showGoToMeetingButton?: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
   readonly onEdited?: (meeting: MeetingBasicData) => void;
   readonly onCreated?: (meeting: MeetingBasicData) => void;
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
-  readonly onDeleted?: (meetingId: string) => void;
+  readonly onDeleted?: () => void;
   readonly onCancel?: () => void;
 }
 
@@ -52,7 +52,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   const workTimeCreateModal = createWorkTimeCreateModal();
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const confirmation = createConfirmation();
-  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.meetingId));
+  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.staticMeetingId));
   const workTime = () => meetingQuery.data!;
   const isBusy = () => !!meetingAPI.isPending();
 
@@ -67,7 +67,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   async function updateWorkTime(values: Partial<WorkTimeFormType>) {
     const origMeeting = workTime();
     const meetingPatch = transformFormValues(values);
-    await meetingAPI.update(props.meetingId, meetingPatch);
+    await meetingAPI.update(props.staticMeetingId, meetingPatch);
     // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.work_time_edit.success"));
@@ -83,9 +83,9 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   }
 
   async function deleteWorkTime() {
-    await meetingAPI.delete(props.meetingId);
+    await meetingAPI.delete(props.staticMeetingId);
     toastSuccess(t("forms.work_time_delete.success"));
-    props.onDeleted?.(props.meetingId);
+    props.onDeleted?.();
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
@@ -106,7 +106,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
       initialValues: {
         ...initialValues(),
         date: DateTime.fromISO(workTime().date).plus({days}).toISODate(),
-        fromMeetingId: props.meetingId,
+        fromMeetingId: props.staticMeetingId,
       },
       onSuccess: (meeting) => props.onCreated?.(meeting),
     });

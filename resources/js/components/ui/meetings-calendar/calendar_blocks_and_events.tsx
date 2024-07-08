@@ -166,7 +166,7 @@ export function useCalendarBlocksAndEvents({
             {
               onEditClick:
                 calendarFunction === "timeTables"
-                  ? () => viewWorkTime({meetingId: meeting.id, initialViewMode: true})
+                  ? () => viewWorkTime({staticMeetingId: meeting.id, initialViewMode: true})
                   : undefined,
             } as const,
           ),
@@ -307,7 +307,7 @@ export function useCalendarBlocksAndEvents({
               return meeting.id === hoveredMeeting?.[0]();
             },
             entityId: meeting.id,
-            onClick: () => viewMeeting({meetingId: meeting.id, initialViewMode: true}),
+            onClick: () => viewMeeting({staticMeetingId: meeting.id, initialViewMode: true}),
           }));
         }
         if (isAllDay) {

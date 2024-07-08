@@ -270,7 +270,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   /** The last days selection in each of the modes. */
   const daysSelectionByMode = new Map<CalendarMode, Signal<DaysRange>>();
   for (const mode of CALENDAR_MODES) {
-    // eslint-disable-next-line solid/reactivity
     const [daysRange, setDaysRange] = createSignal(getRange(props.initialDay, mode));
     // eslint-disable-next-line solid/reactivity
     daysSelectionByMode.set(mode, [daysRange, setDaysRange]);
