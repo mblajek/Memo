@@ -188,7 +188,15 @@ class ClientController extends ApiController
             ),
         ],
         responses: [
-            new OA\Response(response: 200, description: 'Deleted'),
+            new OA\Response(
+                response: 200, description: 'Deleted', content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'clientDeleted', type: 'bool'),
+                    new OA\Property(property: 'memberDeleted', type: 'bool'),
+                    new OA\Property(property: 'userDeleted', type: 'bool'),
+                ]
+            )
+            ),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
             new OA\Response(response: 409, description: 'Conflict'),
@@ -200,7 +208,7 @@ class ClientController extends ApiController
         Facility $facility,
         User $user,
     ): JsonResponse {
-        $member = $user->belongsToFacilityOrFail(isClient: true, isManagedByFacility: true);
+        $member = $user->belongsToFacilityOrFail(isClient: true);
         if (MeetingAttendant::query()->where('meeting_attendants.user_id', '=', $user->id)->exists()) {
             $duplicateOf = $this->validate([
                 'duplicateOf' => [
@@ -213,11 +221,11 @@ class ClientController extends ApiController
                         ->whereNotNull('client_id'),
                 ],
             ])['duplicateOf'];
-            $deleteClientService->deduplicate($facility, $member, $duplicateOf);
+            $deleted = $deleteClientService->deduplicate($facility, $member, $duplicateOf);
         } else {
-            $deleteClientService->delete($member);
+            $deleted = $deleteClientService->delete($member);
         }
-        return new JsonResponse();
+        return new JsonResponse($deleted);
     }
 
     private function wrapClientValidator(array $clientValidator): array
