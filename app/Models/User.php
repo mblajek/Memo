@@ -227,7 +227,8 @@ class User extends Authenticatable
                 'members.facility_admin_grant_id'
             );
         }
-        /** @var Member */
-        return $builder->firstOrFail();
+        /** @var ?Member $member */
+        $member = $builder->first();
+        return $member ?? ExceptionFactory::notFound()->throw();
     }
 }

@@ -90,7 +90,6 @@ trait BaseModel
                 $model->created_by = PermissionMiddleware::user()->id;
             }
             if (!$model->updated_by) {
-              //  print_r(PermissionMiddleware::permissions());die;
                 $model->updated_by = PermissionMiddleware::user()->id;
             }
         });

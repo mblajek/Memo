@@ -25,6 +25,9 @@ class Client extends Model
 
     protected $casts = self::BASE_CASTS;
 
+    // todo: assigning codes
+    protected $attributes = ['short_code' => '-'];
+
     protected static function fieldValidator(string $field): string|array
     {
         // now client has no fields
