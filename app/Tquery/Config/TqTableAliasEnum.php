@@ -18,6 +18,7 @@ enum TqTableAliasEnum
     case meeting_attendants;
     case clients;
     case staff_members;
+    case managed_by_facility;
 
     public static function fromTableName(string $table): self
     {
@@ -28,7 +29,7 @@ enum TqTableAliasEnum
     {
         return match ($this) {
             self::created_by, self::updated_by => 'users',
-            self::last_login_facility => 'facilities',
+            self::last_login_facility, self::managed_by_facility => 'facilities',
             default => $this->name,
             /* self::members => TqTableEnum::members,
             self::meetings => TqTableEnum::meetings,

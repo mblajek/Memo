@@ -49,6 +49,7 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
             password: null,
             passwordExpireAt: null,
           }),
+      managedByFacilityId: values.managedByFacilityId,
       hasGlobalAdmin: values.hasGlobalAdmin,
     });
     // If the user mutation succeeded, await all the members mutations. Await all even if any of
@@ -77,6 +78,7 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
       // At least the members array is required, otherwise the members form part fails to realise
       // that it should be an array.
       members: [],
+      managedByFacilityId: "",
       hasGlobalAdmin: false,
     }) satisfies UserFormType;
 

@@ -44,6 +44,8 @@ export default (() => {
           name: "hasGlobalAdmin",
           columnDef: {size: 130},
         },
+        {name: "managedByFacility.name", initialVisible: false},
+        {name: "lastLoginFacility.name", initialVisible: false},
         ...getCreatedUpdatedColumns({globalAdmin: true}),
         {
           name: "actions",

@@ -4,8 +4,10 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {PasswordField} from "components/ui/form/PasswordField";
+import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {TextField} from "components/ui/form/TextField";
 import {useLangFunc} from "components/utils";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Show, VoidComponent, createComputed, on, splitProps} from "solid-js";
 import {z} from "zod";
 import * as userMembersFormPart from "./UserMembersFormPart";
@@ -18,6 +20,7 @@ const getSchema = () =>
     hasPassword: z.boolean(),
     password: z.string(),
     members: userMembersFormPart.getSchema(),
+    managedByFacilityId: z.string(),
     hasGlobalAdmin: z.boolean(),
   });
 
@@ -31,6 +34,7 @@ interface Props extends FormConfigWithoutTransformFn<UserFormType> {
 export const UserForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "onCancel"]);
   const t = useLangFunc();
+  const modelQuerySpecs = useModelQuerySpecs();
   // Cast because otherwise type info is lost for some reason.
   const initialValues = () => (formProps as Props).initialValues as UserFormType;
   return (
@@ -99,6 +103,7 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
             </HideableSection>
           </div>
           <userMembersFormPart.UserMembersFormPart membersPath="members" />
+          <TQuerySelect name="managedByFacilityId" {...modelQuerySpecs.facility()!} nullable />
           <CheckboxField
             name="hasGlobalAdmin"
             disabled={!form.data("hasPassword")}

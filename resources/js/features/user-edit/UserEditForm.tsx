@@ -82,6 +82,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
             password: null,
             passwordExpireAt: null,
           }),
+      managedByFacilityId: values.managedByFacilityId,
       hasGlobalAdmin: values.hasGlobalAdmin,
     });
     // If the user mutation succeeded, await all the members mutations. Await all even if any of
@@ -117,6 +118,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
         isFacilityStaff,
         isFacilityClient,
       })),
+      managedByFacilityId: u.managedByFacilityId || "",
       hasGlobalAdmin: u.hasGlobalAdmin,
     } satisfies UserFormType;
   };
