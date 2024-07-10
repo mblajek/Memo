@@ -255,7 +255,7 @@ class MeetingController extends ApiController
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'series', type: 'string', enum: ['one', 'next', 'all']),
+                    new OA\Property(property: 'series', type: 'string', enum: ['one', 'from_this', 'all']),
                 ]
             )
         ),
@@ -289,9 +289,9 @@ class MeetingController extends ApiController
         $meeting->belongsToFacilityOrFail();
         $ids = [$meeting->id];
         if ($meeting->from_meeting_id) {
-            /** @var 'one'|'next'|'all' $series */
+            /** @var 'one'|'from_this'|'all' $series */
             $series = $this->validate([
-                'series' => ['sometimes', 'required', Rule::in(['one', 'next', 'all'])],
+                'series' => Valid::string([Rule::in(['one', 'from_this', 'all'])], sometimes: true),
             ])['series'] ?? 'one';
             if ($series !== 'one') {
                 $query = DB::query()

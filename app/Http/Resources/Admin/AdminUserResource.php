@@ -18,6 +18,7 @@ use OpenApi\Attributes as OA;
             ref: '#/components/schemas/MemberResource'
         )
         ),
+        new OA\Property(property: 'managedByFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
     ],
 )] /**
  * @method __construct(User $resource)
@@ -32,6 +33,7 @@ class AdminUserResource extends UserResource
             'hasEmailVerified' => fn(self $user) => ($user->email_verified_at !== null),
             'hasGlobalAdmin' => fn(self $user) => ($user->global_admin_grant_id !== null),
             'members' => fn(self $user) => (MemberResource::collection($user->members)),
+            'managedByFacilityId' => true,
         ]);
     }
 }

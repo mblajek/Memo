@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -194,6 +195,11 @@ class User extends Authenticatable
             ],
             // A valid boolean
             'has_global_admin' => Valid::bool(sometimes: $isInsert || $isPatch, nullable: true),
+            'managed_by_facility_id' => Valid::uuid(
+                [Rule::exists('facilities', 'id')],
+                sometimes: $isInsert || $isPatch,
+                nullable: true,
+            ),
         ];
     }
 
