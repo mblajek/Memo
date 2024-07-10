@@ -25,7 +25,7 @@ class StaffController extends ApiController
         path: '/api/v1/facility/{facility}/user/staff/list',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'All staff',
-        tags: ['Facility member'],
+        tags: ['Facility staff'],
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(

@@ -28,4 +28,9 @@ final class DatabaseMigrationHelper
     {
         return $table->char($name, 36)->collation('ascii_bin');
     }
+
+    public static function ascii(Blueprint $table, string $name, int $length = 36): ColumnDefinition
+    {
+        return $table->string($name, $length)->collation('ascii_bin');
+    }
 }

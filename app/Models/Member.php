@@ -10,12 +10,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string user_id
- * @property string facility_id
- * @property ?string staff_member_id
- * @property ?string client_id
- * @property ?string facility_admin_grant_id
- * @property-read Timetable $timetable
+ * @property string $user_id
+ * @property string $facility_id
+ * @property ?string $staff_member_id
+ * @property ?string $client_id
+ * @property ?string $facility_admin_grant_id
+ * @property-read Facility $facility
+ * @property-read User $user
+ * @property-read StaffMember staffMember
+ * @property-read Client $client
  * @method static MemberBuilder query()
  */
 class Member extends Model

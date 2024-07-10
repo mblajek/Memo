@@ -29,7 +29,6 @@ abstract readonly class FacilityUserTquery extends AdminUserTquery
             and `meeting_attendants`.`user_id` = `users`.`id`
             and `meeting_attendants`.`attendance_status_dict_id` in $present
             and `meetings`.`category_dict_id` != {$c(Meeting::CATEGORY_SYSTEM)}
-            and `meetings`.`deleted_at` is null
             SQL;
 
         $andMeetingStatusIs = fn(string $meetingStatusDictId

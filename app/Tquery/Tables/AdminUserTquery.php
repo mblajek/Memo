@@ -32,6 +32,7 @@ readonly class AdminUserTquery extends TqService
             "select count(1) from `members` where `members`.`user_id` = `$tableName`.`id`",
             'facilities.count',
         );
+        $config->addSimple(TqDataTypeEnum::uuid, 'managed_by_facility_id');
         $config->addCount();
         return $config;
     }

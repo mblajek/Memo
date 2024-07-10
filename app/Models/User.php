@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
+use App\Exceptions\ExceptionFactory;
+use App\Http\Permissions\PermissionMiddleware;
 use App\Models\QueryBuilders\UserBuilder;
 use App\Models\Traits\HasResourceValidator;
 use App\Models\Traits\HasValidator;
@@ -15,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -191,11 +195,46 @@ class User extends Authenticatable
             ],
             // A valid boolean
             'has_global_admin' => Valid::bool(sometimes: $isInsert || $isPatch, nullable: true),
+            'managed_by_facility_id' => Valid::uuid(
+                [Rule::exists('facilities', 'id')],
+                sometimes: $isInsert || $isPatch,
+                nullable: true,
+            ),
         ];
     }
 
     public function members(): HasMany
     {
         return $this->hasMany(Member::class);
+    }
+
+    /** @throws ApiException */
+    public function belongsToFacilityOrFail(
+        Facility|null $facility = null,
+        ?bool $isClient = null,
+        ?bool $isStaff = null,
+        ?bool $isFacilityAdmin = null,
+        ?true $isManagedByFacility = null,
+    ): Member {
+        $facility ??= PermissionMiddleware::facility();
+        if ($isManagedByFacility && ($facility->id !== $this->managed_by_facility_id)) {
+            ExceptionFactory::userNotManagedByFacility()->throw();
+        }
+        $builder = Member::query()->select(['members.*'])->join('users', 'users.id', 'members.user_id')
+            ->where('members.facility_id', $facility->id)->where('users.id', $this->id);
+        if ($isClient !== null) {
+            ($isClient ? $builder->whereNotNull(...) : $builder->whereNull(...))('members.client_id');
+        }
+        if ($isStaff !== null) {
+            ($isStaff ? $builder->whereNotNull(...) : $builder->whereNull(...))('members.staff_member_id');
+        }
+        if ($isFacilityAdmin !== null) {
+            ($isFacilityAdmin ? $builder->whereNotNull(...) : $builder->whereNull(...))(
+                'members.facility_admin_grant_id'
+            );
+        }
+        /** @var ?Member $member */
+        $member = $builder->first();
+        return $member ?? ExceptionFactory::notFound()->throw();
     }
 }
