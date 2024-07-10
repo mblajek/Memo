@@ -211,15 +211,12 @@ class ClientController extends ApiController
         $member = $user->belongsToFacilityOrFail(isClient: true);
         if (MeetingAttendant::query()->where('meeting_attendants.user_id', '=', $user->id)->exists()) {
             $duplicateOf = $this->validate([
-                'duplicateOf' => Valid::uuid([
+                'duplicate_of' => Valid::uuid([
                     new MemberExistsRule(AttendanceType::Client),
-                    Rule::exists('members', 'user_id')
-                        ->where('facility_id', $this->getFacilityOrFail()->id)
-                        ->whereNot('user_id', $user->id)
-                        ->whereNotNull('client_id'),
+                    Rule::notIn($user->id),
                 ]),
-            ])['duplicateOf'];
-            $deleted = $deleteClientService->deduplicate($facility, $member, $duplicateOf);
+            ])['duplicate_of'];
+            $deleted = $deleteClientService->deduplicate($member, $duplicateOf);
         } else {
             $deleted = $deleteClientService->delete($member);
         }

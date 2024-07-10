@@ -2,19 +2,47 @@
 
 namespace App\Services\Client;
 
-use App\Models\Facility;
+use App\Models\MeetingAttendant;
 use App\Models\Member;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 class DeleteClientService
 {
     public function deduplicate(
-        Facility $facility,
         Member $member,
         string $duplicateOf,
     ): array {
-        // todo: replace in groups and meetings
-        return [];
+        // todo: replace in groups
+        $attendances = MeetingAttendant::query()
+            ->select(['meeting_attendants.id as current_id', 'dest_meeting_attendants.id as dest_id'])
+            ->leftJoin(
+                'meeting_attendants as dest_meeting_attendants',
+                function (JoinClause $join) use ($duplicateOf) {
+                    $join->on('dest_meeting_attendants.meeting_id', 'meeting_attendants.meeting_id');
+                    $join->where('dest_meeting_attendants.user_id', $duplicateOf);
+                }
+            )
+            ->where('meeting_attendants.user_id', $member->user_id)
+            ->get()->pluck('dest_id', 'current_id')->toArray();
+        // duplicateOf isn't attendant of meeting, old attendance should be updated to duplicateOf
+        $attendancesToUpdate = [];
+        // duplicateOf is attendant of meeting, old attendance should be deleted
+        $attendancesToDelete = [];
+        foreach ($attendances as $currentId => $destId) {
+            if ($destId) {
+                $attendancesToDelete [] = $currentId;
+            } else {
+                $attendancesToUpdate [] = $currentId;
+            }
+        }
+        return DB::transaction(
+            function () use ($attendancesToDelete, $attendancesToUpdate, $duplicateOf, $member): array {
+                MeetingAttendant::query()->whereIn('id', $attendancesToDelete)->delete();
+                MeetingAttendant::query()->whereIn('id', $attendancesToUpdate)->update(['user_id' => $duplicateOf]);
+                return $this->delete($member);
+            }
+        );
     }
 
     /**
@@ -32,7 +60,7 @@ class DeleteClientService
             && !$user->members()->whereNot('id', $member->id)->exists();
 
         DB::transaction(function () use ($member, $client, $user, $deleteMember, $deleteUser) {
-            // todo: delete from groups or existence of groups block deleting
+            // todo: delete from groups or existence of groups blocks deleting
             if ($deleteMember) {
                 $member->delete();
             } else {
