@@ -62,6 +62,9 @@ user:
   hasEmailVerified: "e-mail zweryfikowany"
   members: "przypisane placówki"
   facilities.count: "liczba placówek"
+  managedByFacilityId: "placówka zarządzająca"
+  managedByFacility.name: "$t(models.user.managedByFacilityId)"
+  lastLoginFacility.name: "ostatnia placówka logowania"
 
 facility_user:
   _name: "pracownik/klient"
