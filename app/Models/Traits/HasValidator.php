@@ -55,4 +55,11 @@ trait HasValidator
         }
         return $ruleSet;
     }
+
+    public static function getProhibitedValidator(
+        array $fields,
+        array|bool|string|Facility $attributesFacility = false,
+    ): array {
+        return array_map(fn() => 'missing',self::getInsertValidator($fields, $attributesFacility));
+    }
 }

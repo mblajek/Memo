@@ -31,7 +31,6 @@ readonly class MeetingTquery extends TqService
             inverse: false,
             nullable: false,
         );
-        $builder->whereNotDeleted($this->config->table);
         return $builder;
     }
 
@@ -118,8 +117,7 @@ readonly class MeetingTquery extends TqService
 
         /** @noinspection SqlResolve */
         $seriesSql = 'select nullif(count(1), 0) from `meetings` as `other`'
-            . ' where `other`.`from_meeting_id` = `meetings`.from_meeting_id'
-            . ' and `other`.`deleted_at` is null';
+            . ' where `other`.`from_meeting_id` = `meetings`.from_meeting_id';
         $config->addQuery(
             TqDataTypeEnum::int_nullable,
             fn(string $tableName) => $seriesSql,

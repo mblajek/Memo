@@ -7,8 +7,10 @@ use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Meeting\MeetingResource;
+use App\Models\MeetingResource as MeetingResourceModel;
 use App\Models\Facility;
 use App\Models\Meeting;
+use App\Models\MeetingAttendant;
 use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
 use App\Services\Meeting\MeetingCloneService;
@@ -16,6 +18,8 @@ use App\Services\Meeting\MeetingService;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -24,11 +28,6 @@ class MeetingController extends ApiController
     protected function initPermissions(): void
     {
         $this->permissionOneOf(Permission::facilityAdmin, Permission::facilityStaff);
-    }
-
-    private function getFacilityMeeting(string $id): Meeting
-    {
-        return Meeting::query()->where('facility_id', $this->getFacilityOrFail()->id)->findOrFail($id);
     }
 
     #[OA\Post(
@@ -214,14 +213,14 @@ class MeetingController extends ApiController
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
-    )]
+    )] /** @throws ApiException */
     public function patch(
         MeetingService $meetingService,
         /** @noinspection PhpUnusedParameterInspection */
         Facility $facility,
-        string $meeting,
+        Meeting $meeting,
     ): JsonResponse {
-        $meetingObject = $this->getFacilityMeeting($meeting);
+        $meeting->belongsToFacilityOrFail();
         $data = $this->validate(
             Meeting::getPatchValidator([
                 'type_dict_id',
@@ -234,7 +233,7 @@ class MeetingController extends ApiController
                 'staff',
                 'clients',
                 'resources',
-            ], $meetingObject) + Meeting::getInsertValidator([
+            ], $meeting) + Meeting::getInsertValidator([
                 'staff.*',
                 'staff.*.user_id',
                 'staff.*.attendance_status_dict_id',
@@ -245,7 +244,7 @@ class MeetingController extends ApiController
                 'resources.*.resource_dict_id',
             ])
         );
-        $meetingService->patch($meetingObject, $data);
+        $meetingService->patch($meeting, $data);
         return new JsonResponse();
     }
 
@@ -253,6 +252,13 @@ class MeetingController extends ApiController
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Delete facility meeting',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'series', type: 'string', enum: ['one', 'from_this', 'all']),
+                ]
+            )
+        ),
         tags: ['Facility meeting'],
         parameters: [
             new FacilityParameter(),
@@ -266,22 +272,51 @@ class MeetingController extends ApiController
         ],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/MeetingResource'),
-                ),
-            ])
+                response: 200, description: 'OK', content: new  OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'count', type: 'int'),
+                ]
+            )
             ),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
-    )]
+    )] /** @throws ApiException */
     public function delete(
         /** @noinspection PhpUnusedParameterInspection */
         Facility $facility,
-        string $meeting,
+        Meeting $meeting,
     ): JsonResponse {
-        $this->getFacilityMeeting($meeting)->delete();
-        return new JsonResponse();
+        $meeting->belongsToFacilityOrFail();
+        $ids = [$meeting->id];
+        if ($meeting->from_meeting_id) {
+            /** @var 'one'|'from_this'|'all' $series */
+            $series = $this->validate([
+                'series' => Valid::string([Rule::in(['one', 'from_this', 'all'])], sometimes: true),
+            ])['series'] ?? 'one';
+            if ($series !== 'one') {
+                $query = DB::query()
+                    ->select('meetings.id')
+                    ->where('base_meeting.id', $meeting->id)
+                    ->from('meetings as base_meeting')
+                    ->join('meetings', 'meetings.from_meeting_id', 'base_meeting.from_meeting_id');
+                if ($series !== 'all') {
+                    $query->whereRaw(
+                        '(`base_meeting`.`date` < `meetings`.`date`'
+                        . ' or (`base_meeting`.`date` = `meetings`.`date`'
+                        . ' and (`base_meeting`.`start_dayminute` < `meetings`.`start_dayminute`'
+                        . ' or (`base_meeting`.`start_dayminute` = `meetings`.`start_dayminute`'
+                        . ' and `base_meeting`.`id` <= `meetings`.`id`))))',
+                    );
+                }
+                $ids = $query->get()->pluck('id')->toArray();
+            }
+        }
+        DB::transaction(function () use ($ids) {
+            MeetingAttendant::query()->whereIn('meeting_id', $ids)->delete();
+            MeetingResourceModel::query()->whereIn('meeting_id', $ids)->delete();
+            Meeting::query()->whereIn('id', $ids)->delete();
+        });
+        return new JsonResponse(['count' => count($ids)]);
     }
 
     #[OA\Post(
@@ -320,18 +355,17 @@ class MeetingController extends ApiController
     public function clone(
         /** @noinspection PhpUnusedParameterInspection */
         Facility $facility,
-        string $meeting,
+        Meeting $meeting,
         MeetingCloneService $meetingCloneService,
     ): JsonResponse {
-        $meetingObject = $this->getFacilityMeeting($meeting);
-
+        $meeting->belongsToFacilityOrFail();
         ['dates' => $dates, 'interval' => $interval] = $this->validate([
             'dates' => Valid::list(['max:100']),
             'dates.*' => Valid::date([new UniqueWithMemoryRule('dates')]),
             'interval' => Valid::trimmed(['ascii'], max: 32),
         ]);
 
-        $ids = $meetingCloneService->clone($meetingObject, $dates, $interval);
+        $ids = $meetingCloneService->clone($meeting, $dates, $interval);
 
         return new JsonResponse(data: ['data' => ['ids' => $ids]], status: 201);
     }

@@ -30,7 +30,7 @@ class ClientTqueryController extends ApiController
         path: '/api/v1/facility/{facility}/user/client/tquery',
         permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Facility clients tquery',
-        tag: 'Facility member',
+        tag: 'Facility client',
         parameters: [new FacilityParameter()],
     )]
     public function get(): JsonResponse
@@ -42,7 +42,7 @@ class ClientTqueryController extends ApiController
         path: '/api/v1/facility/{facility}/user/client/tquery',
         permissions: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Facility clients tquery',
-        tag: 'Facility member',
+        tag: 'Facility client',
         parameters: [new FacilityParameter()],
     )]
     public function post(
