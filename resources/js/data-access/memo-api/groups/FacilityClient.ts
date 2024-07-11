@@ -15,6 +15,22 @@ export namespace FacilityClient {
     V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/user/client`, client, config);
   export const updateClient = (client: Api.Request.Patch<ClientResourceForPatch>, config?: Api.Config) =>
     V1.patch(`/facility/${activeFacilityId()}/user/client/${client.id}`, client, config);
+  export const deleteClient = (data: DeleteParams, config?: Api.Config) =>
+    V1.delete<DeleteResponse>(`/facility/${activeFacilityId()}/user/client/${data.id}`, {
+      data: data.duplicateOf ? {duplicateOf: data.duplicateOf} : undefined,
+      ...config,
+    });
+
+  interface DeleteParams {
+    readonly id: Api.Id;
+    readonly duplicateOf?: Api.Id;
+  }
+
+  export interface DeleteResponse {
+    readonly clientDeleted: boolean;
+    readonly memberDeleted: boolean;
+    readonly userDeleted: boolean;
+  }
 
   const getClientsListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<ClientResource>>(`/facility/${activeFacilityId()}/user/client/list`, {

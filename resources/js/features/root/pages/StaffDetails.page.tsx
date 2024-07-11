@@ -39,7 +39,7 @@ export default (() => {
   const params = useParams();
   const status = createQuery(User.statusQueryOptions);
   const invalidate = useInvalidator();
-  const confirmation = createFormLeaveConfirmation();
+  const formLeaveConfirmation = createFormLeaveConfirmation();
   const userId = () => params.userId!;
   const dataQuery = createQuery(() => FacilityStaff.staffMemberQueryOptions(userId()));
   const [editMode, setEditMode] = createSignal(false);
@@ -109,7 +109,7 @@ export default (() => {
                       form.reset();
                     });
                     async function formCancel() {
-                      if (!form.isDirty() || (await confirmation.confirm())) {
+                      if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
                         form.reset();
                         setEditMode(false);
                       }

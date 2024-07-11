@@ -8,6 +8,8 @@
 
 ## Dokumenty pomocy
 
+- Klienci
+  - [Usuwanie klientów](client-delete)
 - Spotkania
   - [Statusy](meeting-statuses)
 - Tabele

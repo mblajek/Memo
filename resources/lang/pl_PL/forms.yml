@@ -124,3 +124,24 @@ client_create:
   form_name: "Nowy klient"
   submit: "$t(actions.create)"
   success: "Utworzono klienta"
+
+client_delete:
+  form_name: "Usuwanie klienta"
+  field_names:
+    duplicateOf: "właściwy wpis tego klienta"
+  activate_button: "$t(actions.client.delete)$t(ellipsis)"
+  form_info:
+    more_info: "Zapoznaj się ze szczegółową instrukcją na temat usuwania klientów."
+    warn: "Uwaga: wszystkie dane zapisane na bieżącym kliencie zostaną usunięte. Upewnij się, że żadne istotne informacje nie zostaną utracone. Ta operacja jest nieodwracalna."
+    deleted_client: "Klient do usunięcia (bieżący):"
+    duplicate_of_info:
+      common: "Jeżeli usuwany klient jest duplikatem innego klienta, wybierz go w polu $t(quotes.open)$t(forms.client_delete.field_names.duplicateOf)$t(quotes.close) poniżej."
+      optional: "$t(forms.client_delete.form_info.duplicate_of_info.common) Wypełnienie tego pola jest w pewnych sytuacjach wymagane."
+      required: "$t(forms.client_delete.form_info.duplicate_of_info.common) W przeciwnym razie tego klienta nie można usunąć w ten sposób $t(em_dash) skontaktuj się z administratorem globalnym."
+    client_id_hint: "Systemowy identyfikator klienta, widoczny w pasku adresu"
+    duplicate_of_is_same: "Wybrano tego samego klienta! Zapoznaj się z instrukcją na temat usuwania klientów."
+    disabled_submit_hint: "Przeczytaj uważnie informacje powyżej"
+  submit: "$t(actions.client.delete)"
+  success:
+    remove: "Usunięto klienta"
+    deduplicate: "Usunięto duplikat"

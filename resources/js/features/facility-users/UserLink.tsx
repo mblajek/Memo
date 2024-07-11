@@ -20,10 +20,12 @@ interface Props extends Partial<AnchorProps> {
   readonly icon?: boolean | "tiny";
   /** Whether to linkify the name. Default: true. */
   readonly link?: boolean;
+  /** Whether to show the link for opening in a new tab. Default: same as link. */
+  readonly newTabLink?: boolean;
 }
 
 export const UserLink: VoidComponent<Props> = (allProps) => {
-  const [props, anchorProps] = splitProps(allProps, ["type", "icon", "link", "userId", "name"]);
+  const [props, anchorProps] = splitProps(allProps, ["type", "icon", "link", "newTabLink", "userId", "name"]);
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const membersData = useMembersData();
@@ -61,7 +63,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     }
   };
   const linkHref = () => {
-    if (props.link ?? true) {
+    if (props.newTabLink || (props.link ?? true)) {
       const mData = memberData()!;
       if (mData.isStaff) {
         return `/${activeFacility()?.url}/staff/${allProps.userId}`;
@@ -81,7 +83,12 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
               {(name) => (
                 <Show when={linkHref()} fallback={<>{name()}</>}>
                   {(href) => (
-                    <LinkWithNewTabLink {...anchorProps} href={href()}>
+                    <LinkWithNewTabLink
+                      {...anchorProps}
+                      href={href()}
+                      sameTabLink={props.link}
+                      newTabLink={props.newTabLink}
+                    >
                       {name()}
                     </LinkWithNewTabLink>
                   )}
