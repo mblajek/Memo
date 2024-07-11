@@ -1,7 +1,7 @@
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
-import {StaffResource} from "../resources/staff.resource";
+import {StaffResource, StaffResourceForCreate, StaffResourceForPatch} from "../resources/staff.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
 import {Users} from "./shared";
@@ -11,6 +11,11 @@ import {Users} from "./shared";
  * @see {@link http://localhost:9081/api/documentation#/Facility%20staff local docs}
  */
 export namespace FacilityStaff {
+  export const createStaff = (staff: Api.Request.Create<StaffResourceForCreate>, config?: Api.Config) =>
+    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/user/staff`, staff, config);
+  export const updateStaff = (staff: Api.Request.Patch<StaffResourceForPatch>, config?: Api.Config) =>
+    V1.patch(`/facility/${activeFacilityId()}/user/staff/${staff.id}`, staff, config);
+
   const getStaffListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<StaffResource>>(`/facility/${activeFacilityId()}/user/staff/list`, {
       ...config,

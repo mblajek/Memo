@@ -1,7 +1,7 @@
 menu_sections:
   global_admin: "Globalny administrator"
   facility: "Placówka"
-  facility_admin: "Administrator placówki"
+  facility_admin: "Administrator"
   other: "Inne"
 
 login: "logowanie"

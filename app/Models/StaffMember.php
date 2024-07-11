@@ -26,7 +26,11 @@ class StaffMember extends Model
         'deactivated_at',
     ];
 
-    protected $casts = self::BASE_CASTS;
+    protected $casts = [
+        'created_at' => 'immutable_datetime',
+        'updated_at' => 'immutable_datetime',
+        'deactivated_at' => 'immutable_datetime',
+    ];
 
     public function timetable(): BelongsTo
     {

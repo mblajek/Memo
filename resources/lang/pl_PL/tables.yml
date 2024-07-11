@@ -35,8 +35,6 @@ tables:
     summary__one: "{{count, number}} pracownik"
     summary__few: "{{count, number}} pracowników"
     summary__many: "{{count, number}} pracowników"
-    column_names:
-      staff.hasFacilityAdmin: "$t(models.staff.hasFacilityAdmin)"
 
   client:
     table_name: "$t(models.client._name_plural)"

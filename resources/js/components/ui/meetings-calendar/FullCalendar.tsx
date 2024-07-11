@@ -159,6 +159,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         {type: "column", column: "id"},
         {type: "column", column: "name"},
       ],
+      filter: {type: "column", column: "staff.isActive", op: "=", val: true},
       sort: [{type: "column", column: "name", desc: false}],
       paging: {size: 1000},
     }),

@@ -266,7 +266,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           overflowPadding: 10,
           flip: true,
           sameWidth: false,
-          overlap: !filterValue(),
+          overlap: props.multiple && !filterValue(),
         } as const,
         collection: collection(),
         multiple: props.multiple,

@@ -17,7 +17,8 @@ export const FatalError: VoidComponent<Props> = (props) => {
   // eslint-disable-next-line solid/reactivity
   import.meta.hot?.on("vite:afterUpdate", () => props.reset());
   createEffect(() => {
-    if (RELOAD_MESSAGE_PATTERN.test(message())) {
+    if (RELOAD_MESSAGE_PATTERN.test(message()) && !isDEV()) {
+      // It should be a transient issue, caused e.g. by a backend restart.
       location.reload();
     }
   });

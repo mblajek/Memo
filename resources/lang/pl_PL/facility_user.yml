@@ -15,3 +15,9 @@ related_user_meetings_count: "Liczba wspólnych spotkań"
 related_users: "Powiązane osoby"
 
 birth_date_short: "ur. {{date}}"
+
+staff:
+  list_show_inactive: "pokaż nieaktywnych"
+  is_inactive:
+    label: "Pracownik jest nieaktywny"
+    since: "(zarchiwizowano: {{date}})"

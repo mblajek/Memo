@@ -52,7 +52,7 @@ export default (() => {
       <QueryBarrier queries={[dataQuery]} ignoreCachedData {...notFoundError()}>
         <Show when={dataQuery.data} fallback={<BigSpinner />}>
           {(user) => {
-            async function updateAttributes(values: FormType) {
+            async function updateClient(values: FormType) {
               const patch: ClientResourceForPatch = {
                 id: userId(),
                 name: user().managedByFacilityId === activeFacilityId() ? values.name : undefined,
@@ -85,7 +85,7 @@ export default (() => {
                   style={{width: "min(600px, 100%)"}}
                   schema={getSchema()}
                   initialValues={user()}
-                  onSubmit={updateAttributes}
+                  onSubmit={updateClient}
                 >
                   {(form) => {
                     createEffect(() => form.setInitialValues(user() as unknown as FormType));
