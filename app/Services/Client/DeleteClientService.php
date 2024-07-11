@@ -57,7 +57,8 @@ class DeleteClientService
         $deleteMember = $member->staff_member_id === null && $member->facility_admin_grant_id === null;
         $deleteUser = $deleteMember
             && $user->managed_by_facility_id === $member->facility_id
-            && !$user->members()->whereNot('id', $member->id)->exists();
+            && !$user->members()->whereNot('id', $member->id)->exists()
+            && !$user->isUsedInTables(omit: ['members.user_id']);
 
         DB::transaction(function () use ($member, $client, $user, $deleteMember, $deleteUser) {
             // todo: delete from groups or existence of groups blocks deleting

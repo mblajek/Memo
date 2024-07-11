@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -236,5 +238,29 @@ class User extends Authenticatable
         /** @var ?Member $member */
         $member = $builder->first();
         return $member ?? ExceptionFactory::notFound()->throw();
+    }
+
+    public function isUsedInTables(array $omit = []): bool
+    {
+        // todo: maybe do not use Schema in this way
+        $omit = array_fill_keys($omit, true);
+        $id = $this->id;
+        foreach (Schema::getTableListing() as $table) {
+            $query = DB::table($table);
+            $ready = false;
+            foreach (Schema::getColumns($table) as ['name' => $name, 'type' => $type]) {
+                if (
+                    $name !== 'id' && $type === 'char(36)'
+                    && !array_key_exists("$table.$name", $omit)
+                ) {
+                    $query->orWhere($name, $id);
+                    $ready = true;
+                }
+            }
+            if ($ready && $query->exists()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
