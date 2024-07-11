@@ -1,5 +1,5 @@
 import {createCached} from "components/utils/cache";
-import {Users} from "data-access/memo-api/groups/shared";
+import {FacilityUsers} from "data-access/memo-api/groups/FacilityUsers";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {DataRequest} from "data-access/memo-api/tquery/types";
 import {createMemo} from "solid-js";
@@ -41,7 +41,7 @@ export const useMembersData = createCached(() => {
   };
   const {dataQuery} = createTQuery({
     entityURL: () => `facility/${activeFacilityId()}/user`,
-    prefixQueryKey: Users.keys.user(),
+    prefixQueryKey: FacilityUsers.keys.user(),
     requestCreator: staticRequestCreator(request),
     dataQueryOptions: () => ({
       enabled: !!activeFacilityId(),

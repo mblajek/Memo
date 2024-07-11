@@ -25,9 +25,9 @@ only_one_meeting_in_series_warning: "Wybierz więcej dat aby utworzyć serię sp
 
 create_copy:
   any: "Utwórz i edytuj kopię"
-  in_one_day: "– następnego dnia"
-  in_one_week: "– tydzień później"
-  in_two_weeks: "– dwa tygodnie później"
+  in_one_day: "$t(en_dash)$t(thin_space)następnego dnia"
+  in_one_week: "$t(en_dash)$t(thin_space)tydzień później"
+  in_two_weeks: "$t(en_dash)$t(thin_space)dwa tygodnie później"
 
 interval_labels:
   1d: "kolejne dni"

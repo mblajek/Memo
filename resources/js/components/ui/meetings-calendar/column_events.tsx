@@ -38,6 +38,7 @@ const MAX_NUM_CLIENTS = 3;
 /** A block representing an all day meeting in the all day area of the calendar (above the hours area). */
 export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
   const [props, blockProps] = splitProps(allProps, ["day", "timeSpan", "height", "onClick"]);
+  const t = useLangFunc();
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const meeting = () => blockProps.meeting;
   return (
@@ -65,7 +66,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
               <div class="w-max flex gap-0.5">
                 <For each={meeting().clients.slice(0, MAX_NUM_CLIENTS + 1)}>
                   {(client, ind) => (
-                    <Show when={ind() < MAX_NUM_CLIENTS} fallback={"…"}>
+                    <Show when={ind() < MAX_NUM_CLIENTS} fallback={t("ellipsis")}>
                       <UserLink icon="tiny" type="clients" link={false} userId={client.userId} name={client.name} />
                     </Show>
                   )}

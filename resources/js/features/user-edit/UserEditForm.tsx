@@ -11,7 +11,7 @@ import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
 
 interface FormParams {
-  userId: Api.Id;
+  readonly userId: Api.Id;
 }
 
 interface Props extends FormParams {

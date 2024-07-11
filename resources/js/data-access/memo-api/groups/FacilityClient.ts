@@ -4,7 +4,7 @@ import {SolidQueryOpts} from "../query_utils";
 import {ClientResource, ClientResourceForCreate, ClientResourceForPatch} from "../resources/client.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
-import {Users} from "./shared";
+import {FacilityUsers} from "./FacilityUsers";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/Facility%20client production docs}
@@ -26,7 +26,7 @@ export namespace FacilityClient {
   const getClient = createGetFromList(getClientsListBase);
 
   export const keys = {
-    client: () => [...Users.keys.user(), "client"] as const,
+    client: () => [...FacilityUsers.keys.user(), "client"] as const,
     clientList: (request?: Api.Request.GetListParams) =>
       [...keys.client(), "list", request, activeFacilityId()] as const,
     clientGet: (id: Api.Id) => [...keys.client(), "list", createListRequest(id), activeFacilityId()] as const,

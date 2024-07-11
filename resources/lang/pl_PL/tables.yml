@@ -70,11 +70,11 @@ tables:
     column_names:
       startDayminute: "godzina"
       attendants.*.userId: "$t(models.meeting.attendants)"
-      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
+      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants)$t(thin_space)$t(en_dash)$t(thin_space)statusy"
       staff.*.userId: "$t(models.meeting.staff)"
-      staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
+      staff.*.attendanceStatusDictId: "$t(models.meeting.staff)$t(thin_space)$t(en_dash)$t(thin_space)statusy"
       clients.*.userId: "$t(models.meeting.clients)"
-      clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
+      clients.*.attendanceStatusDictId: "$t(models.meeting.clients)$t(thin_space)$t(en_dash)$t(thin_space)statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
 
   meeting_attendant:
@@ -106,7 +106,7 @@ tables:
     summary__many: "$t(tables.tables.meeting.summary__many)"
 
   meeting_client:
-    table_name: "$t(models.meeting.attendants) – klienci"
+    table_name: "$t(models.meeting.attendants)$t(thin_space)$t(en_dash)$t(thin_space)klienci"
     column_names:
       attendant.userId: "$t(models.client._name)"
       client.notes: "opis klienta"
@@ -186,7 +186,7 @@ export:
     excel_csv: "Excel CSV"
   all_pages: "cała tabela"
   current_page: "bieżąca strona"
-  exporting: "Eksportowanie…"
+  exporting: "Eksportowanie$t(ellipsis)"
   success: "Zapisano dane do pliku"
   error: "Nie udało się wyeksportować danych"
   aborted: "Anulowano eksport"

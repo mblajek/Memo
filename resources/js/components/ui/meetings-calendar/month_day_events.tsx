@@ -1,6 +1,6 @@
 import {ButtonLike} from "components/ui/ButtonLike";
 import {ACTION_ICONS} from "components/ui/icons";
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes, useLangFunc} from "components/utils";
 import {crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {UserLink} from "features/facility-users/UserLink";
@@ -31,6 +31,7 @@ const MAX_NUM_CLIENTS = 3;
 /** Event block in a month calendar. Suitable both for all day and part day events. */
 export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
   const [props, blockProps] = splitProps(allProps, ["day", "timeSpan", "height", "onClick"]);
+  const t = useLangFunc();
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const meeting = () => blockProps.meeting;
   const crosses = createMemo(() => crossesDateBoundaries(props.day, props.timeSpan));
@@ -79,7 +80,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
                 <Show when={dictionaries()}>
                   <For each={meeting().clients.slice(0, MAX_NUM_CLIENTS + 1)}>
                     {(client, ind) => (
-                      <Show when={ind() < MAX_NUM_CLIENTS} fallback={"…"}>
+                      <Show when={ind() < MAX_NUM_CLIENTS} fallback={t("ellipsis")}>
                         <UserLink icon="tiny" type="clients" link={false} userId={client.userId} name={client.name} />
                       </Show>
                     )}

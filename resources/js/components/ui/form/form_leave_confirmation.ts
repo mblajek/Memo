@@ -12,7 +12,7 @@ export function createFormLeaveConfirmation() {
         body: t("form_page_leave_confirmation.body"),
         cancelText: t("form_page_leave_confirmation.cancel"),
         confirmText: t("form_page_leave_confirmation.confirm"),
-        confirmPrimary: false,
+        mode: "warning",
       })),
   };
 }

@@ -4,7 +4,7 @@ import {SolidQueryOpts} from "../query_utils";
 import {StaffResource, StaffResourceForCreate, StaffResourceForPatch} from "../resources/staff.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
-import {Users} from "./shared";
+import {FacilityUsers} from "./FacilityUsers";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/Facility%20staff production docs}
@@ -26,7 +26,7 @@ export namespace FacilityStaff {
   const getStaffMember = createGetFromList(getStaffListBase);
 
   export const keys = {
-    staff: () => [...Users.keys.user(), "staff"] as const,
+    staff: () => [...FacilityUsers.keys.user(), "staff"] as const,
     staffList: (request?: Api.Request.GetListParams) => [...keys.staff(), "list", request, activeFacilityId()] as const,
     staffGet: (id: Api.Id) => [...keys.staff(), "list", createListRequest(id), activeFacilityId()] as const,
   };
