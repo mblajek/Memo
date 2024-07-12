@@ -56,13 +56,13 @@ export function useFacilityUsersSelectParams() {
               distinct: true,
               limit: 5,
               valueColumn: "attendant.userId",
-              labelColumns: ["attendant.name"],
+              textColumn: "attendant.name",
               sort: [
                 {type: "column", column: "_count", desc: true},
                 {type: "column", column: "attendant.name", desc: false},
               ],
               itemFunc: (row, defItem) => ({
-                ...defItem(),
+                ...defItem,
                 requestReplacementWhenSelected: true,
               }),
             },
@@ -75,7 +75,7 @@ export function useFacilityUsersSelectParams() {
 
   return {
     /** The basis of a staff select, providing the query spec. */
-    staffSelectParams: () => modelQuerySpecs.userStaff(),
+    staffSelectParams: ({includeInactive = false} = {}) => modelQuerySpecs.userStaff({includeInactive}),
     /** The basis of a client select, providing the query spec. */
     clientSelectParams: ({showBirthDateWhenSelected = false} = {}) => {
       const labelOnList = (row: TQuerySelectDataRow) => {
@@ -98,13 +98,13 @@ export function useFacilityUsersSelectParams() {
         querySpec: {
           ...modelQuerySpecs.userClient().querySpec,
           valueColumn: "id",
-          labelColumns: ["name", "client.typeDictId", "client.birthDate"],
+          extraColumns: ["client.typeDictId", "client.birthDate"],
           sort: [
             {type: "column", column: "name", desc: false},
             {type: "column", column: "client.birthDate", desc: true},
           ],
           itemFunc: (row, defItem) => ({
-            ...defItem(),
+            ...defItem,
             label: () => label(row),
             labelOnList: () => labelOnList(row),
           }),
@@ -126,7 +126,7 @@ export function useFacilityUsersSelectParams() {
           },
           sort: [{type: "column", column: "name", desc: false}],
           itemFunc: (row, defItem) => ({
-            ...defItem(),
+            ...defItem,
             label: () => <UserLink userId={row.get<string>("id")} link={false} />,
           }),
         },

@@ -190,7 +190,12 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                           name={`${props.name}.${index}.userId`}
                           label=""
                           {...(props.name === "staff"
-                            ? facilityUsersSelectParams.staffSelectParams()
+                            ? {
+                                ...facilityUsersSelectParams.staffSelectParams(),
+                                replacementQuerySpec: facilityUsersSelectParams.staffSelectParams({
+                                  includeInactive: true,
+                                }).querySpec,
+                              }
                             : props.name === "clients"
                               ? facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})
                               : (props.name satisfies never))}

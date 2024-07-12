@@ -462,7 +462,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     attendantStaff: {
       ...attendantColumn,
       filterControl: (props) => (
-        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
+        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams({includeInactive: true})} />
       ),
     },
     attendantClient: {

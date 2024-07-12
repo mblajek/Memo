@@ -33,10 +33,20 @@ export function useModelQuerySpecs() {
         },
       };
     },
-    userStaff: () => ({
+    userStaff: ({includeInactive = false} = {}) => ({
       querySpec: {
         entityURL: `facility/${activeFacilityId()}/user/staff`,
         prefixQueryKey: FacilityStaff.keys.staff(),
+        intrinsicFilter: includeInactive ? undefined : {type: "column", column: "staff.isActive", op: "=", val: true},
+        ...(includeInactive
+          ? {
+              extraColumns: ["staff.isActive"],
+              itemFunc: (row, defItem) => ({
+                ...defItem,
+                label: () => <div class={row.get("staff.isActive") ? undefined : "text-grey-text"}>{defItem.text}</div>,
+              }),
+            }
+          : {}),
       },
     }),
     userClient: () => ({

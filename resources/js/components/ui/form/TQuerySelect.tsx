@@ -42,6 +42,8 @@ export interface BaseTQuerySelectProps
    * This is useful if the regular query returns more information than the priority query.
    */
   readonly mergeIntoPriorityItem?: (priorityItem: SelectItem, regularItem: SelectItem) => SelectItem;
+  /** A query spec used when fetching replacement items. Default: same as querySpec (just with no limit). */
+  readonly replacementQuerySpec?: TQueryConfig;
   /** Additional items to put at the top. */
   readonly topItems?: readonly SelectItem[];
 }
@@ -54,8 +56,13 @@ export interface TQueryConfig {
   readonly intrinsicFilter?: FilterH;
   /** The column used as the value of items. It must be unique among the results. Default: `"id"`. */
   readonly valueColumn?: ColumnName;
-  /** The list of columns to fetch (other than the value column). Default: `["name"]`. */
-  readonly labelColumns?: ColumnName[];
+  /**
+   * The column to fetch and use as the text of items. If multiple columns are specified, the values
+   * are joined by space, which is mostly useful for filtering to work. Default: `"name"`.
+   */
+  readonly textColumn?: ColumnName | readonly ColumnName[];
+  /** Additional columns to fetch and make available in the row object. */
+  readonly extraColumns?: readonly ColumnName[];
   /** Sorting of the items. By default sorts by the label columns. */
   readonly sort?: Sort;
   readonly limit?: number;
@@ -65,7 +72,7 @@ export interface TQueryConfig {
    * A function creating the items. It can make use of the default item properties provided.
    * The default includes the value (taken from the value column) and the text (from the label columns).
    */
-  readonly itemFunc?: (row: TQuerySelectDataRow, defItem: () => DefaultTQuerySelectItem) => SelectItem | undefined;
+  readonly itemFunc?: (row: TQuerySelectDataRow, defItem: DefaultTQuerySelectItem) => SelectItem | undefined;
 }
 
 /** A fetched row, with the requested columns set. */
@@ -102,15 +109,18 @@ function makeQuery(
     entityURL,
     intrinsicFilter,
     valueColumn = "id",
-    labelColumns = ["name"],
-    sort = labelColumns.map((column) => ({type: "column", column})),
+    textColumn = "name",
+    extraColumns = [],
+    sort,
     limit = DEFAULT_LIMIT,
     distinct,
     itemFunc,
   }: TQueryConfig,
   {initialExtraFilter}: {initialExtraFilter?: FilterH} = {},
 ) {
-  const columns = [valueColumn, ...labelColumns];
+  const textColumns = Array.isArray(textColumn) ? textColumn : [textColumn];
+  sort ||= textColumns.map((column) => ({type: "column", column}));
+  const columns = [valueColumn, ...textColumns, ...extraColumns];
   const requestCreator = createSelectRequestCreator({
     intrinsicFilter,
     initialExtraFilter,
@@ -133,11 +143,11 @@ function makeQuery(
     }
     return dataQuery
       .data!.data.map((rowData) => {
-        const defItem = (): DefaultTQuerySelectItem => ({
+        const defItem: DefaultTQuerySelectItem = {
           value: rowData[valueColumn] as string,
-          text: labelColumns.map((column) => rowData[column]).join(" "),
-        });
-        return itemFunc ? itemFunc(new TQuerySelectDataRow(rowData), defItem) : defItem();
+          text: textColumns.map((column) => rowData[column]).join(" "),
+        };
+        return itemFunc ? itemFunc(new TQuerySelectDataRow(rowData), defItem) : defItem;
       })
       .filter(NON_NULLABLE);
   });
@@ -157,6 +167,7 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
     "priorityQuerySpec",
     "separatePriorityItems",
     "mergeIntoPriorityItem",
+    "replacementQuerySpec",
     "topItems",
   ]);
   const t = useLangFunc();
@@ -164,7 +175,10 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
   /* eslint-disable solid/reactivity */
   const limit = props.querySpec.limit || DEFAULT_LIMIT;
   const {dataQuery, items, filterText} = makeQuery({limit, ...props.querySpec});
-  const replacementData = makeQuery({limit: 1e6, ...props.querySpec}, {initialExtraFilter: "never"});
+  const replacementData = makeQuery(
+    {limit: 1e6, ...(props.replacementQuerySpec || props.querySpec)},
+    {initialExtraFilter: "never"},
+  );
   /* eslint-enable solid/reactivity */
   const priorityData = createMemo(
     on(
