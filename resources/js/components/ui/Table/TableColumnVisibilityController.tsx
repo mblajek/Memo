@@ -13,14 +13,24 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const table = useTable();
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
   const columnGroupingInfo = table.options.meta?.tquery?.columnGroupingInfo;
-  const [visibility, setVisibility] = createSignal<Readonly<VisibilityState>>({});
-  const isDefaultVisibility = () =>
-    Object.entries(visibility()).every(
-      ([id, visible]) => columnGroupingInfo?.(id).isCount || visible === (defaultColumnVisibility?.()[id] ?? true),
+  const [visibility, setVisibility] = createSignal<Readonly<VisibilityState>>();
+  const isDefaultVisibility = () => {
+    const vis = visibility();
+    return (
+      !!vis &&
+      Object.entries(vis).every(
+        ([id, visible]) => columnGroupingInfo?.(id).isCount || visible === (defaultColumnVisibility?.()[id] ?? true),
+      )
     );
+  };
   // eslint-disable-next-line solid/reactivity
   const debouncedVisibility = debouncedAccessor(visibility, {outputImmediately: () => isDefaultVisibility()});
-  createComputed(() => table.setColumnVisibility(debouncedVisibility()));
+  createComputed(() => {
+    const vis = debouncedVisibility();
+    if (vis) {
+      table.setColumnVisibility(vis);
+    }
+  });
   const [resetHovered, setResetHovered] = createSignal(false);
   return (
     <PopOver
@@ -53,13 +63,13 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                           class={cx("px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline select-none", {
                             "!bg-select": resetHovered()
                               ? defaultColumnVisibility?.()[column.id]
-                              : visibility()[column.id],
+                              : visibility()?.[column.id],
                           })}
                         >
                           <input
                             class={column.getCanHide() ? undefined : "invisible"}
                             name={`column_visibility_${column.id}`}
-                            checked={visibility()[column.id]}
+                            checked={visibility()?.[column.id]}
                             onChange={({target}) => setVisibility((v) => ({...v, [column.id]: target.checked}))}
                             type="checkbox"
                             disabled={!column.getCanHide() || groupingInfo()?.isForceShown}
