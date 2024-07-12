@@ -36,8 +36,11 @@ export const CANCELLED_MEETING_COLORING: Coloring = (() => {
     headerBg: coloring.bgHover,
   };
 })();
-
-export const MISSING_MEETING_COLORING = COMPLETED_MEETING_COLORING;
+export const NON_STAFF_PLANNED_MEETING_COLORING: Coloring = {
+  ...coloringFromColor("#aaa"),
+  border: "#222",
+  headerBg: "#aa8",
+};
 
 export function coloringToStyle(
   coloring: Coloring,
