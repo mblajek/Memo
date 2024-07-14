@@ -75,7 +75,7 @@ export function useFacilityUsersSelectParams() {
 
   return {
     /** The basis of a staff select, providing the query spec. */
-    staffSelectParams: ({includeInactive = false} = {}) => modelQuerySpecs.userStaff({includeInactive}),
+    staffSelectParams: () => modelQuerySpecs.userStaff(),
     /** The basis of a client select, providing the query spec. */
     clientSelectParams: ({showBirthDateWhenSelected = false} = {}) => {
       const labelOnList = (row: TQuerySelectDataRow) => {
