@@ -166,7 +166,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       paging: {size: 1000},
     }),
   });
-  const staff = () => staffDataQuery.data?.data as readonly {id: string; name: string}[];
+  const staff = () => staffDataQuery.data?.data as readonly {id: string; name: string}[] | undefined;
   const staffResources = createMemo(
     () =>
       staff()?.map((staff) => {
@@ -562,15 +562,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const staffMapAndMeetingResources = createMemo(() => {
     const staffMap = new Map<string, StaffInfo>();
     const meetingResources: string[] = [];
-    for (const resourceId of selectedResources()) {
-      const staff = staffResourcesById().get(resourceId);
-      if (staff) {
-        staffMap.set(resourceId, {
-          id: resourceId,
-          plannedMeetingColoring: staff.coloring,
-        });
-      } else {
-        meetingResources.push(resourceId);
+    if (staff()) {
+      // If staff is not loaded yet, we cannot distinguish between staff and meeting resources.
+      // This might happen if selected resources are loaded from the persistence.
+      for (const resourceId of selectedResources()) {
+        const staff = staffResourcesById().get(resourceId);
+        if (staff) {
+          staffMap.set(resourceId, {
+            id: resourceId,
+            plannedMeetingColoring: staff.coloring,
+          });
+        } else {
+          meetingResources.push(resourceId);
+        }
       }
     }
     return {staffMap, meetingResources};
