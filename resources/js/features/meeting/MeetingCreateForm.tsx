@@ -1,4 +1,5 @@
 import {BigSpinner} from "components/ui/Spinner";
+import {createConfirmation} from "components/ui/confirmation";
 import {useLangFunc} from "components/utils";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -33,9 +34,21 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingAPI = useMeetingAPI();
   const invalidate = useInvalidator();
+  const confirmation = createConfirmation();
 
   async function createMeetings(values: MeetingFormType) {
     const meeting = transformFormValues(values);
+    if (!meeting.staff.length) {
+      if (
+        !(await confirmation.confirm({
+          title: t("meetings.meeting_without_staff.title"),
+          body: t("meetings.meeting_without_staff.body"),
+          confirmText: t("forms.meeting_create.submit"),
+        }))
+      ) {
+        return;
+      }
+    }
     const {id, cloneIds} = await meetingAPI.create(
       meeting,
       values.createSeries
