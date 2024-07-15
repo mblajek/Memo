@@ -160,9 +160,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 props.name === "clients"
                   ? // eslint-disable-next-line solid/reactivity
                     autoRelatedClients.selectParamsExtension(() =>
+                      // Make sure this is the same for all the client selects if there are multiple clients,
+                      // to avoid sending multiple additional requests.
                       form
                         .data(props.name)
-                        .slice(0, index)
                         .map(({userId}) => userId)
                         .filter(NON_NULLABLE),
                     )
