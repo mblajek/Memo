@@ -3,7 +3,7 @@ import {Button} from "components/ui/Button";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
+import {clientIcons, staffIcons} from "components/ui/icons";
 import {currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -88,19 +88,19 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
           <SimpleMenu onClick={() => popOver().close()}>
             <Show when={form.data("staff").some(({userId}) => userId)}>
               <Button onClick={() => cancelBy("staff", attendanceStatusDict()!.cancelled)}>
-                <STAFF_ICONS.staff class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_staff")}
+                <staffIcons.Staff class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_staff")}
                 <Show when={!shouldSubmitCancelImmediately("staff")}>{t("ellipsis")}</Show>
               </Button>
             </Show>
             <Show when={form.data("clients").some(({userId}) => userId)}>
               <Button onClick={() => cancelBy("clients", attendanceStatusDict()!.cancelled)}>
-                <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client")}
+                <clientIcons.Client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client")}
                 <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
               </Button>
             </Show>
             <Show when={hasBegun() && form.data("clients").some(({userId}) => userId)}>
               <Button onClick={() => cancelBy("clients", attendanceStatusDict()!.no_show)}>
-                <CLIENT_ICONS.client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client_no_show")}
+                <clientIcons.Client class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_client_no_show")}
                 <Show when={!shouldSubmitCancelImmediately("clients")}>{t("ellipsis")}</Show>
               </Button>
             </Show>

@@ -1,4 +1,4 @@
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {title} from "components/ui/title";
 import {LangFunc, useLangFunc} from "components/utils";
 import {SeriesNumberAndCount, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
@@ -26,13 +26,13 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
               .filter(Boolean)
               .join(" ")}
           >
-            <ACTION_ICONS.repeat class="inlineIcon" />
+            <actionIcons.Repeat class="inlineIcon" />
           </span>
         </Match>
         <Match when="not compact">
           <span class="flex gap-x-1">
             <span use:title={t("meetings.meeting_is_in_series")}>
-              <ACTION_ICONS.repeat class="inlineIcon" />
+              <actionIcons.Repeat class="inlineIcon" />
             </span>
             <SeriesNumberInfo {...props.meeting} />
             <span class="text-grey-text">

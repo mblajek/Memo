@@ -71,6 +71,7 @@ export default (() => {
         cols.meeting.actions,
       ]}
       initialSort={[{id: "date", desc: true}]}
+      helpHref="/help/reports#meeting-clients"
     />
   );
 }) satisfies VoidComponent;

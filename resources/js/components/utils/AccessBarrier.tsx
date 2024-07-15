@@ -6,6 +6,7 @@ import {BiRegularErrorAlt} from "solid-icons/bi";
 import {JSX, ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
 import {MemoLoader} from "../ui/MemoLoader";
 import {QueryBarrier} from "./QueryBarrier";
+import {useLangFunc} from "./lang";
 
 export type PermissionKey = Exclude<keyof PermissionsResource, "userId" | "facilityId">;
 
@@ -63,11 +64,14 @@ export const AccessBarrier: ParentComponent<Props> = (allProps) => {
   );
 };
 
-const DefaultFallback: VoidComponent = () => (
-  <p class="m-2">
-    <BiRegularErrorAlt class="inlineIcon text-red-600" /> Nie masz uprawnień do tego zasobu
-  </p>
-);
+const DefaultFallback: VoidComponent = () => {
+  const t = useLangFunc();
+  return (
+    <p class="m-2">
+      <BiRegularErrorAlt class="inlineIcon text-red-600" /> {t("no_permissions_to_view")}
+    </p>
+  );
+};
 
 /** An access barrier not showing any pending, error or fallback. */
 export const SilentAccessBarrier: ParentComponent<Props> = (props) => (

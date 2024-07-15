@@ -8,13 +8,13 @@ import {HideableSection} from "components/ui/HideableSection";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {title} from "components/ui/title";
 import {useLangFunc} from "components/utils";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {createSignal, Show, splitProps, VoidComponent} from "solid-js";
 import {z} from "zod";
-import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {UserLink} from "../facility-users/UserLink";
 
 const _DIRECTIVES_ = null && title;
@@ -38,7 +38,7 @@ export interface ClientDeleteFormProps extends Omit<FormConfigWithoutTransformFn
 export const ClientDeleteForm: VoidComponent<ClientDeleteFormProps> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "initialRequiresDuplicateOf", "onSuccess", "onCancel"]);
   const t = useLangFunc();
-  const facilityUsersSelectParams = useFacilityUsersSelectParams();
+  const modelQuerySpecs = useModelQuerySpecs();
   const invalidate = useInvalidator();
   const [requiresDuplicateOf, setRequiresDuplicateOf] = createSignal(props.initialRequiresDuplicateOf);
   const [readBeforeConfirm, setReadBeforeConfirm] = createSignal(true);
@@ -130,7 +130,7 @@ export const ClientDeleteForm: VoidComponent<ClientDeleteFormProps> = (allProps)
               <div class="flex flex-col">
                 <TQuerySelect
                   name="duplicateOf"
-                  {...facilityUsersSelectParams.clientSelectParams()}
+                  {...modelQuerySpecs.userClient()}
                   nullable={!requiresDuplicateOf()}
                   small
                 />

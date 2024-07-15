@@ -208,3 +208,5 @@ rows__zero: "Brak wierszy"
 rows__one: "{{count, number}} wiersz"
 rows__few: "{{count, number}} wiersze"
 rows__many: "{{count, number}} wierszy"
+
+more_info: "Kliknij aby dowiedzieć się więcej o tej tabeli"

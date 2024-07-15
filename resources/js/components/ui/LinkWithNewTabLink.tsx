@@ -24,7 +24,7 @@ export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
   const location = useLocation();
   const isOnThisUserPage = () => location.pathname === anchorProps.href;
   return (
-    <span>
+    <span class="text-current">
       <Show
         when={isOnThisUserPage() || props.sameTabLink === false}
         fallback={<A {...anchorProps}>{props.children}</A>}
@@ -35,7 +35,7 @@ export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
         {" "}
         <span use:title={t("open_in_new_tab")}>
           <A {...anchorProps} target="_blank">
-            <FiExternalLink class="inlineIcon strokeIcon text-current" />
+            <FiExternalLink class="inlineIcon strokeIcon" />
           </A>
         </span>
       </Show>

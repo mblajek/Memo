@@ -1,7 +1,7 @@
 import {A} from "@solidjs/router";
 import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
@@ -61,7 +61,7 @@ export default (() => {
             href={`/${activeFacility()?.url}/clients/create`}
           >
             <div>
-              <ACTION_ICONS.add class="inlineIcon text-current" /> {t("actions.client.add")}
+              <actionIcons.Add class="inlineIcon" /> {t("actions.client.add")}
             </div>
           </A>
         </div>

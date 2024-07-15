@@ -61,7 +61,12 @@ export default (() => {
         {name: "hasEmailVerified", initialVisible: false},
         {name: "hasPassword"},
         {name: "passwordExpireAt", initialVisible: false},
-        ...(isFacilityAdmin() ? [{name: "staff.isActive", initialVisible: false}] : []),
+        ...(isFacilityAdmin()
+          ? [
+              {name: "staff.isActive", initialVisible: false},
+              {name: "staff.deactivatedAt", initialVisible: false},
+            ]
+          : []),
         {name: "staff.hasFacilityAdmin", columnDef: {size: 130}},
         {name: "hasGlobalAdmin", columnDef: {size: 130}, initialVisible: false},
         {name: "firstMeetingDate", initialVisible: false},

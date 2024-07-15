@@ -2,7 +2,7 @@ import {Button, EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {USER_ICONS} from "components/ui/icons";
+import {userIcons} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
@@ -76,7 +76,7 @@ export default (() => {
       customSectionBelowTable={
         <div class="ml-2 flex gap-1">
           <Button class="secondary small" onClick={() => userCreateModal.show()}>
-            <USER_ICONS.add class="inlineIcon text-current" /> {t("actions.user.add")}
+            <userIcons.Add class="inlineIcon" /> {t("actions.user.add")}
           </Button>
         </div>
       }

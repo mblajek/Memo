@@ -1,7 +1,7 @@
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {createSignal, JSX, ParentComponent, Show, splitProps, VoidComponent} from "solid-js";
 import {SmallSpinner} from "./Spinner";
-import {ACTION_ICONS} from "./icons";
+import {actionIcons} from "./icons";
 import {mergeTitleDirectiveProps, title, TitleDirectiveType} from "./title";
 
 const _DIRECTIVES_ = null && title;
@@ -49,8 +49,7 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
   const t = useLangFunc();
   return (
     <Button {...buttonProps}>
-      <ACTION_ICONS.edit class="inlineIcon strokeIcon text-current" />{" "}
-      {props.label === undefined ? t("actions.edit") : props.label}
+      <actionIcons.Edit class="inlineIcon" /> {props.label === undefined ? t("actions.edit") : props.label}
     </Button>
   );
 };
@@ -85,8 +84,7 @@ export const DeleteButton: VoidComponent<DeleteButtonProps> = (allProps) => {
       <Show when={isDeleting()}>
         <SmallSpinner />
       </Show>{" "}
-      <ACTION_ICONS.delete class="inlineIcon text-current" />{" "}
-      {props.label === undefined ? t("actions.delete") : props.label}
+      <actionIcons.Delete class="inlineIcon" /> {props.label === undefined ? t("actions.delete") : props.label}
     </Button>
   );
 };

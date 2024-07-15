@@ -20,4 +20,4 @@ staff:
   list_show_inactive: "pokaż nieaktywnych"
   is_inactive:
     label: "Pracownik jest nieaktywny"
-    since: "(zarchiwizowano: {{date}})"
+    since: "(od {{date}})"

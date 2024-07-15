@@ -4,7 +4,6 @@ import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingResourceForCreate, MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
@@ -38,7 +37,6 @@ const getSchema = () =>
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 
 export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType>> = (props) => {
-  const t = useLangFunc();
   const {meetingStatusDict} = useFixedDictionaries();
 
   const ByMode: VoidComponent<{view?: JSX.Element; edit?: JSX.Element}> = (byModeProps) => (
@@ -127,9 +125,6 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
                   form.reset();
                   props.onCancel?.();
                 }}
-                submitLabel={(defaultLabel) =>
-                  form.data("createSeries") ? t("forms.meeting_series_create.submit") : defaultLabel
-                }
               />
             }
           />

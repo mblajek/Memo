@@ -85,7 +85,6 @@ export default (() => {
                     updatedAt: user().staff.updatedAt,
                     updatedBy: user().staff.updatedBy,
                   }}
-                  isInactive={!!user().staff.deactivatedAt}
                 />
                 <FelteForm
                   id="staff_edit"

@@ -23,6 +23,10 @@ meeting_series_number_and_count_separator: " / "
 series_first_date: "data początkowa"
 only_one_meeting_in_series_warning: "Wybierz więcej dat aby utworzyć serię spotkań."
 
+meeting_without_staff:
+  title: "Spotkanie bez pracowników"
+  body: "Spotkanie bez żadnego pracownika to spotkanie globalne $t(em_dash) jest widoczne w kalendarzu wszystkich pracowników placówki. Czy chcesz utworzyć takie spotkanie?"
+
 create_copy:
   any: "Utwórz i edytuj kopię"
   in_one_day: "$t(en_dash)$t(thin_space)następnego dnia"

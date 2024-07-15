@@ -8,12 +8,13 @@ import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/Uu
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
 import {createConfirmation} from "components/ui/confirmation";
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -23,7 +24,6 @@ import {ScrollableCell, createTableColumnsSet} from "data-access/memo-api/tquery
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
-import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {FacilityUserType} from "../facility-users/user_types";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags} from "./MeetingStatusTags";
@@ -53,7 +53,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const meetingModal = createMeetingModal();
   const workTimeModal = createWorkTimeModal();
   const confirmation = createConfirmation();
-  const facilityUsersSelectParams = useFacilityUsersSelectParams();
+  const modelQuerySpecs = useModelQuerySpecs();
   const {getMeetingTypeCategory} = usePositionsGrouping();
   const meetingAPI = useMeetingAPI();
   const invalidate = useInvalidator();
@@ -99,7 +99,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
               }
             }}
           >
-            <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
+            <actionIcons.Details class="inlineIcon !mb-[2px]" /> {props.children || t("actions.details")}
           </Button>
         )}
       </Show>
@@ -289,9 +289,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 250,
       },
-      filterControl: (props) => (
-        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientSelectParams()} />
-      ),
+      filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userStaffOrClient()} />,
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
           (v, ctx) => ctx.row.attendants?.map((u) => u.name).join(", "),
@@ -312,9 +310,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 250,
       },
-      filterControl: (props) => (
-        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
-      ),
+      filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userStaff()} />,
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
           (v, ctx) => ctx.row.staff.map((u) => u.name).join(", "),
@@ -335,9 +331,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 250,
       },
-      filterControl: (props) => (
-        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
-      ),
+      filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
           (v, ctx) => ctx.row.clients.map((u) => u.name).join(", "),
@@ -446,9 +440,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       size: 250,
       enableHiding: false,
     },
-    filterControl: (props) => (
-      <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientSelectParams()} />
-    ),
+    filterControl: (props) => <UuidSelectFilterControl {...props} {...modelQuerySpecs.userStaffOrClient()} />,
     metaParams: {
       textExportCell: exportCellFunc<TextExportedCell, string, TQMeetingAttendanceResource>(
         (v, ctx) => ctx.row["attendant.name"],
@@ -461,15 +453,11 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     attendant: attendantColumn,
     attendantStaff: {
       ...attendantColumn,
-      filterControl: (props) => (
-        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams({includeInactive: true})} />
-      ),
+      filterControl: (props) => <UuidSelectFilterControl {...props} {...modelQuerySpecs.userStaff()} />,
     },
     attendantClient: {
       ...attendantColumn,
-      filterControl: (props) => (
-        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
-      ),
+      filterControl: (props) => <UuidSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
     },
     attendanceStatus: {
       name: "attendant.attendanceStatusDictId",

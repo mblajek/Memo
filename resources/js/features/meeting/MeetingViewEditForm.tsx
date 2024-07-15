@@ -6,7 +6,7 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
 import {LangFunc, QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -77,6 +77,17 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   async function updateMeeting(values: Partial<MeetingFormType>) {
     const origMeeting = meeting();
     const meetingPatch = transformFormValues(values);
+    if (origMeeting.staff.length && meetingPatch.staff?.length === 0) {
+      if (
+        !(await confirmation.confirm({
+          title: t("meetings.meeting_without_staff.title"),
+          body: t("meetings.meeting_without_staff.body"),
+          confirmText: t("forms.meeting_create.submit"),
+        }))
+      ) {
+        return;
+      }
+    }
     await meetingAPI.update(props.staticMeetingId, meetingPatch);
     // eslint-disable-next-line solid/reactivity
     return () => {
@@ -219,7 +230,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                     )}
                     disabled={isBusy()}
                   >
-                    <ACTION_ICONS.repeat class="inlineIcon text-current" /> {t("meetings.create_series")}
+                    <actionIcons.Repeat class="inlineIcon" /> {t("meetings.create_series")}
                   </SplitButton>
                   <Show when={props.onViewModeChange}>
                     <EditButton

@@ -1,9 +1,9 @@
 import {createQuery} from "@tanstack/solid-query";
 import {EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
-import {FACILITY_ICONS} from "components/ui/icons";
+import {facilityIcons} from "components/ui/icons";
 import {title} from "components/ui/title";
-import {cx, useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {UserResource} from "data-access/memo-api/resources/user.resource";
 import {FacilityUserType, getFacilityUserTypeName} from "features/facility-users/user_types";
@@ -18,7 +18,6 @@ const _DIRECTIVES_ = null && title;
 interface Props {
   readonly type: FacilityUserType;
   readonly user: UserResource;
-  readonly isInactive?: boolean;
 }
 
 export const UserDetailsHeader: VoidComponent<Props> = (props) => {
@@ -29,9 +28,7 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
     <div class="flex justify-between flex-wrap gap-2">
       <div class="flex flex-col gap-0.5">
         <div class="flex items-baseline gap-1.5">
-          <h2
-            class={cx("flex gap-1 items-center font-medium text-xl", props.isInactive ? "text-grey-text" : undefined)}
-          >
+          <h2 class="flex gap-1 items-center font-medium text-xl">
             <UserLink type={props.type} link={false} userId={props.user.id} name={props.user.name} />
           </h2>
           <div class="text-xs">
@@ -39,7 +36,7 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
             <Show when={props.user.managedByFacilityId === activeFacilityId()}>
               {" "}
               <span use:title={t("facility_user.managed_by_current_facility")}>
-                <FACILITY_ICONS.facility class="inlineIcon text-current" />
+                <facilityIcons.Facility class="inlineIcon" />
               </span>
             </Show>
           </div>

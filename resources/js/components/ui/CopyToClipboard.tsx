@@ -1,6 +1,6 @@
 import {BiRegularCopy} from "solid-icons/bi";
 import {Show, VoidComponent, createSignal} from "solid-js";
-import {useLangFunc} from "../utils";
+import {cx, useLangFunc} from "../utils";
 import {Button} from "./Button";
 
 interface Props {
@@ -22,8 +22,7 @@ export const CopyToClipboard: VoidComponent<Props> = (props) => {
           }
         >
           <BiRegularCopy
-            class="inlineIcon"
-            classList={{dimmed: !copied()}}
+            class={cx("inlineIcon", copied() ? undefined : "dimmed")}
             onClick={() => {
               navigator.clipboard.writeText(text());
               setCopied(true);
