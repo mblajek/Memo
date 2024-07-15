@@ -1,5 +1,5 @@
 import {ButtonLike} from "components/ui/ButtonLike";
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -99,7 +99,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
                 </div>
                 <Show when={meeting().fromMeetingId}>
                   <div class="absolute bottom-0 right-0 bg-inherit rounded">
-                    <ACTION_ICONS.repeat />
+                    <actionIcons.Repeat />
                   </div>
                 </Show>
               </Show>

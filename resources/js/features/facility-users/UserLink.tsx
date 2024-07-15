@@ -1,7 +1,7 @@
 import {AnchorProps} from "@solidjs/router";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SmallSpinner} from "components/ui/Spinner";
-import {ADMIN_ICONS, CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
+import {adminIcons, clientIcons, staffIcons} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
 import {Api} from "data-access/memo-api/types";
@@ -12,7 +12,7 @@ import {FacilityUserType} from "./user_types";
 
 interface Props extends Partial<AnchorProps> {
   /** The user id, or `"any"` to show the icon without text. */
-  readonly userId: Api.Id | typeof USER_ID_ANY | undefined;
+  readonly userId: Api.Id | undefined;
   /** The user's type, if known (otherwise it is fetched). */
   readonly type?: FacilityUserType;
   /** The user's display name, if known (otherwise it is fetched). */
@@ -27,8 +27,6 @@ interface Props extends Partial<AnchorProps> {
   readonly newTabLink?: boolean;
 }
 
-export const USER_ID_ANY = "any";
-
 export const UserLink: VoidComponent<Props> = (allProps) => {
   const [props, anchorProps] = splitProps(allProps, [
     "type",
@@ -42,21 +40,23 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const membersData = useMembersData();
-  const memberData = createMemo(() => {
-    const def = {
-      name: props.name,
-      isStaff: props.type === "staff",
-      // Initially assume staff is active.
-      isActiveStaff: props.type === "staff",
-      isClient: props.type === "clients",
-      hasFacilityAdmin: false,
-      hasGlobalAdmin: false,
-    };
-    return props.userId === USER_ID_ANY ? def : props.userId ? membersData.getById(props.userId) || def : undefined;
-  });
+  const memberData = createMemo(() =>
+    props.userId
+      ? membersData.getById(props.userId) || {
+          name: props.name,
+          isStaff: props.type === "staff",
+          // Initially assume staff is active.
+          isActiveStaff: props.type === "staff",
+          isClient: props.type === "clients",
+          hasFacilityAdmin: false,
+          hasGlobalAdmin: false,
+        }
+      : undefined,
+  );
+  const isInactive = () => memberData()?.isStaff && !memberData()?.isActiveStaff;
   const icon = () => props.icon ?? true;
-  const iconStyleProps = (extraClass?: string) => ({
-    class: cx("inlineIcon shrink-0", extraClass),
+  const iconStyleProps = () => ({
+    class: cx("inlineIcon", isInactive() ? "text-black dimmed" : undefined),
     style: {"margin-right": "0.1em", "margin-bottom": "0.1em"},
     size: props.icon === "tiny" ? "1.05em" : "1.3em",
   });
@@ -65,18 +65,14 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
       const mData = memberData()!;
       if (mData.isStaff) {
         if (mData.hasFacilityAdmin) {
-          return (
-            <STAFF_ICONS.staffAndFacilityAdmin
-              {...iconStyleProps(mData.isActiveStaff ? undefined : "text-opacity-40")}
-            />
-          );
+          return <staffIcons.StaffAndFacilityAdmin {...iconStyleProps()} />;
         } else {
-          return <STAFF_ICONS.staff {...iconStyleProps(mData.isActiveStaff ? undefined : "text-opacity-40")} />;
+          return <staffIcons.Staff {...iconStyleProps()} />;
         }
       } else if (mData.isClient) {
-        return <CLIENT_ICONS.client {...iconStyleProps()} />;
+        return <clientIcons.Client {...iconStyleProps()} />;
       } else if (mData.hasFacilityAdmin) {
-        return <ADMIN_ICONS.admin {...iconStyleProps()} />;
+        return <adminIcons.Admin {...iconStyleProps()} />;
       }
     }
   };
@@ -93,10 +89,13 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
   return (
     <Show when={props.userId} fallback={<EmptyValueSymbol class="inline-block" style={{"min-height": "1.45em"}} />}>
       {/* Allow wrapping the name, but not just after the icon. */}
-      <span class="inline-block whitespace-nowrap" style={{"min-height": icon() === true ? "1.45em" : undefined}}>
+      <span
+        class="inline-block whitespace-nowrap text-black"
+        style={{"min-height": icon() === true ? "1.45em" : undefined}}
+      >
         {typeIcon()}
         <Show when={props.showName ?? true}>
-          <span style={{"white-space": "initial"}}>
+          <span class={isInactive() ? "text-grey-text" : undefined} style={{"white-space": "initial"}}>
             <Switch>
               <Match when={activeFacility() && memberData()?.name}>
                 {(name) => (

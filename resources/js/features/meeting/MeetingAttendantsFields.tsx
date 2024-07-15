@@ -6,9 +6,10 @@ import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {
@@ -19,8 +20,8 @@ import {
 } from "data-access/memo-api/resources/meeting.resource";
 import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, createMemo, on} from "solid-js";
 import {z} from "zod";
-import {USER_ID_ANY, UserLink} from "../facility-users/UserLink";
-import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
+import {UserLink} from "../facility-users/UserLink";
+import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
@@ -63,7 +64,8 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const {createAttendant} = useAttendantsCreator();
-  const facilityUsersSelectParams = useFacilityUsersSelectParams();
+  const modelQuerySpecs = useModelQuerySpecs();
+  const autoRelatedClients = useAutoRelatedClients();
   const {form, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
@@ -157,7 +159,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               const priorityQueryParams = createMemo(() =>
                 props.name === "clients"
                   ? // eslint-disable-next-line solid/reactivity
-                    facilityUsersSelectParams.autoRelatedClients(() =>
+                    autoRelatedClients.selectParamsExtension(() =>
                       form
                         .data(props.name)
                         .slice(0, index)
@@ -180,15 +182,14 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         </div>
                       </Match>
                       <Match when={!props.viewMode}>
-                        <UserLink type={props.name} userId={userId() || USER_ID_ANY} showName={false} />
                         <div class="flex-grow">
                           <TQuerySelect
                             name={`${props.name}.${index}.userId`}
                             label=""
                             {...(props.name === "staff"
-                              ? facilityUsersSelectParams.staffSelectParams()
+                              ? modelQuerySpecs.userStaff()
                               : props.name === "clients"
-                                ? facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})
+                                ? modelQuerySpecs.userClient({showBirthDateWhenSelected: true})
                                 : (props.name satisfies never))}
                             {...priorityQueryParams()?.()}
                             nullable={false}
@@ -264,7 +265,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             title={t("actions.delete")}
                             onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                           >
-                            <ACTION_ICONS.delete class="inlineIcon text-current" />
+                            <actionIcons.Delete class="inlineIcon" />
                           </Button>
                         </div>
                       </Show>
@@ -276,7 +277,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             title={t(`forms.meeting.add_attendant.${props.name}`)}
                             onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                           >
-                            <ACTION_ICONS.add class="inlineIcon text-current" />
+                            <actionIcons.Add class="inlineIcon" />
                           </Button>
                         </div>
                       </Show>

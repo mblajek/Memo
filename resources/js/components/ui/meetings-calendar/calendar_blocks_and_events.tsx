@@ -16,7 +16,7 @@ import {DaysRange} from "../calendar/days_range";
 import {AllDayTimeSpan, Block, CellStylingPreference, Event, PartDayTimeSpan} from "../calendar/types";
 import {WeekDaysCalculator} from "../calendar/week_days_calculator";
 import {capitalizeString} from "../Capitalize";
-import {FACILITY_ICONS} from "../icons";
+import {facilityIcons} from "../icons";
 import {CalendarFunction, CalendarMode} from "./calendar_modes";
 import {CALENDAR_BACKGROUNDS, Coloring, NON_STAFF_PLANNED_MEETING_COLORING} from "./colors";
 import {AllDayEventBlock, MeetingEventBlock} from "./column_events";
@@ -186,7 +186,7 @@ export function useCalendarBlocksAndEvents({
             label={(time) =>
               facilityWide ? (
                 <span>
-                  {time} <FACILITY_ICONS.facility class="inlineIcon text-current" size="12" />
+                  {time} <facilityIcons.Facility class="inlineIcon" size="12" />
                 </span>
               ) : (
                 time

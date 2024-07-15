@@ -36,6 +36,8 @@ auth:
 verified_user: "Użytkownik zweryfikowany"
 unverified_user: "Użytkownik niezweryfikowany"
 
+no_permissions_to_view: "Brak uprawnień do wyświetlenia tego zasobu"
+
 bool_values:
   yes: "tak"
   no: "nie"

@@ -35,7 +35,7 @@ export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
         {" "}
         <span use:title={t("open_in_new_tab")}>
           <A {...anchorProps} target="_blank">
-            <FiExternalLink class="inlineIcon strokeIcon text-current" />
+            <FiExternalLink class="inlineIcon strokeIcon" />
           </A>
         </span>
       </Show>

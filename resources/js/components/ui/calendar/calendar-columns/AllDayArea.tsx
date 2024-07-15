@@ -1,5 +1,5 @@
 import {Button} from "components/ui/Button";
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {useCalendarFunctionContext} from "components/ui/meetings-calendar/calendar_modes";
 import {cx, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
 import {filterAndSortInDayView} from "components/utils/day_minute_util";
@@ -41,7 +41,7 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
             class="bg-white hover:bg-hover text-grey-text border border-input-border rounded flex justify-center"
             title={t(calendarFunction === "timeTables" ? "forms.work_time_create.form_name" : "actions.add")}
           >
-            <ACTION_ICONS.add class="text-current" />
+            <actionIcons.Add />
           </Button>
         </Show>
         <div

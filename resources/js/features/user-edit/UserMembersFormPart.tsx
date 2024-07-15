@@ -13,7 +13,7 @@ import {
   useTableCells,
 } from "components/ui/Table";
 import {Select} from "components/ui/form/Select";
-import {FACILITY_ICONS} from "components/ui/icons";
+import {facilityIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
@@ -156,7 +156,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                   form.setFields(membersPath, form.data(membersPath).toSpliced(index, 1));
                 }}
               >
-                <FACILITY_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
+                <facilityIcons.Remove class="inlineIcon" /> {t("actions.delete")}
               </Button>
             </Show>
           </PaddedCell>
@@ -168,7 +168,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
   });
   return (
     <div>
-      <Capitalize class="font-medium" text={translations.tableName()} />
+      <Capitalize class="font-bold" text={translations.tableName()} />
       <Table table={table} />
     </div>
   );

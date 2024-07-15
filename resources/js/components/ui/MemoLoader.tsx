@@ -18,7 +18,7 @@ export const MemoLoader: VoidComponent = () => {
 };
 
 /**
- * The full-screen pulsating loader. It is initially invisble, and becomes visible only when
+ * The full-screen pulsating loader. It is initially invisible, and becomes visible only when
  * there is at least one MemoLoader element rendered.
  */
 export const LoaderInPortal: VoidComponent = () => {

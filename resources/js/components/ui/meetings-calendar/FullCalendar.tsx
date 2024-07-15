@@ -53,7 +53,7 @@ import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state"
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {SegmentedControl} from "../form/SegmentedControl";
-import {STAFF_ICONS} from "../icons";
+import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
 import {title} from "../title";
 import {StaffInfo, WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
@@ -960,7 +960,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   role="button"
                   class="w-full h-full minimal flex items-center"
                 >
-                  <STAFF_ICONS.staff class="text-gray-700" />
+                  <staffIcons.Staff class="text-gray-700" />
                 </A>
               </div>
             </div>

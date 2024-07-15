@@ -48,7 +48,7 @@ export const WorkTimeForm: VoidComponent<AbstractMeetingFormProps<WorkTimeFormTy
                 forceEditable={props.forceTimeEditable}
                 meeting={props.meeting}
                 allowAllDay={!isWorkTime()}
-                showSeriesInfo={false}
+                showSeriesInfo={!isWorkTime()}
               />
               <Show when={props.allowCreateSeries}>
                 <CheckboxField name="createSeries" />

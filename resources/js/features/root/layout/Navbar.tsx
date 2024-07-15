@@ -1,6 +1,6 @@
 import {A} from "@solidjs/router";
 import {FullLogo} from "components/ui/FullLogo";
-import {ADMIN_ICONS, CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
+import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
@@ -48,12 +48,12 @@ export const Navbar: VoidComponent = () => {
           <NavigationSection>
             <FacilityAdminOrStaffBarrier>
               <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar" />
-              <NavigationItem icon={STAFF_ICONS.menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
-              <NavigationItem icon={CLIENT_ICONS.menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
-              <NavigationItem icon={ADMIN_ICONS.menu} href={`/${facilityUrl()}/admins`} routeKey="facility.admins" />
+              <NavigationItem icon={staffIcons.Menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
+              <NavigationItem icon={clientIcons.Menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
+              <NavigationItem icon={adminIcons.Menu} href={`/${facilityUrl()}/admins`} routeKey="facility.admins" />
             </FacilityAdminOrStaffBarrier>
             {/* TODO: Create the facility page when there is useful information on it. */}
-            {/* <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" /> */}
+            {/* <NavigationItem icon={facilityIcons.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" /> */}
           </NavigationSection>
           <SilentAccessBarrier roles={["facilityAdmin"]}>
             <NavigationSection name={t("routes.menu_sections.facility_admin")}>
@@ -119,8 +119,8 @@ export const Navbar: VoidComponent = () => {
         </Show>
         <SilentAccessBarrier roles={["globalAdmin"]}>
           <NavigationSection name={t("routes.menu_sections.global_admin")}>
-            <NavigationItem icon={FACILITY_ICONS.adminMenu} href="/admin/facilities" routeKey="admin.facilities" />
-            <NavigationItem icon={USER_ICONS.adminMenu} href="/admin/users" routeKey="admin.users" />
+            <NavigationItem icon={facilityIcons.AdminMenu} href="/admin/facilities" routeKey="admin.facilities" />
+            <NavigationItem icon={userIcons.AdminMenu} href="/admin/users" routeKey="admin.users" />
           </NavigationSection>
         </SilentAccessBarrier>
         <NavigationSection name={t("routes.menu_sections.other")}>
