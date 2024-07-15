@@ -27,11 +27,12 @@ export type InfoIconProps = ButtonProps | LinkProps;
 export const InfoIcon: Component<InfoIconProps> = (props) => {
   const t = useLangFunc();
   const icon = <ImInfo class="inlineIcon !mb-0.5 text-blue-500" size="16" />;
+  const titleContent = () => props.title ?? t("more_info");
   return (
     <Switch>
       <Match when={props.href && props}>
         {(linkProps) => (
-          <span use:title={props.title ?? t("more_info")}>
+          <span use:title={titleContent()}>
             <A
               target="_blank"
               {...(linkProps() as AnchorProps)}
@@ -49,7 +50,7 @@ export const InfoIcon: Component<InfoIconProps> = (props) => {
       </Match>
       <Match when={!props.href && props}>
         {(buttonProps) => (
-          <Button title={t("more_info")} {...buttonProps}>
+          <Button title={titleContent()} {...buttonProps}>
             {getChildrenElement(props.children, icon) || icon}
           </Button>
         )}

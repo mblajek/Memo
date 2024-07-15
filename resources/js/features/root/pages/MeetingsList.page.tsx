@@ -53,6 +53,7 @@ export default (() => {
       ]}
       columnGroups={{overrides: {meeting: false}}}
       initialSort={[{id: "date", desc: true}]}
+      helpHref="/help/reports#meetings"
     />
   );
 }) satisfies VoidComponent;
