@@ -24,7 +24,7 @@ export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
   const location = useLocation();
   const isOnThisUserPage = () => location.pathname === anchorProps.href;
   return (
-    <span>
+    <span class="text-current">
       <Show
         when={isOnThisUserPage() || props.sameTabLink === false}
         fallback={<A {...anchorProps}>{props.children}</A>}

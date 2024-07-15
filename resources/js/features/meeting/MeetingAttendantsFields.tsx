@@ -6,7 +6,7 @@ import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {ACTION_ICONS, CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
+import {ACTION_ICONS} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -18,9 +18,8 @@ import {
   MeetingResourceForPatch,
 } from "data-access/memo-api/resources/meeting.resource";
 import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, createMemo, on} from "solid-js";
-import {Dynamic} from "solid-js/web";
 import {z} from "zod";
-import {UserLink} from "../facility-users/UserLink";
+import {USER_ID_ANY, UserLink} from "../facility-users/UserLink";
 import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
@@ -120,7 +119,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
       <div
         class="grid gap-x-1"
         style={{
-          "grid-template-columns": "auto 1.5fr 1.2rem 1fr",
+          "grid-template-columns": "1.5fr 1.2rem 1fr",
           "row-gap": 0,
         }}
       >
@@ -172,32 +171,30 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   when={userId() || !props.viewMode}
                   fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
                 >
-                  <Dynamic
-                    component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
-                    class="col-start-1 min-h-small-input"
-                    size="24"
-                  />
-                  <div class={conflictsFinder() ? undefined : "col-span-2"}>
+                  <div class={cx("col-start-1 flex items-center gap-1", conflictsFinder() ? undefined : "col-span-2")}>
                     <Switch>
                       <Match when={props.viewMode}>
                         <div class="flex items-center">
                           <PlaceholderField name={`${props.name}.${index}.userId`} />
-                          <UserLink type={props.name} icon={false} userId={userId()} />
+                          <UserLink type={props.name} userId={userId()} />
                         </div>
                       </Match>
                       <Match when={!props.viewMode}>
-                        <TQuerySelect
-                          name={`${props.name}.${index}.userId`}
-                          label=""
-                          {...(props.name === "staff"
-                            ? facilityUsersSelectParams.staffSelectParams()
-                            : props.name === "clients"
-                              ? facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})
-                              : (props.name satisfies never))}
-                          {...priorityQueryParams()?.()}
-                          nullable={false}
-                          small
-                        />
+                        <UserLink type={props.name} userId={userId() || USER_ID_ANY} showName={false} />
+                        <div class="flex-grow">
+                          <TQuerySelect
+                            name={`${props.name}.${index}.userId`}
+                            label=""
+                            {...(props.name === "staff"
+                              ? facilityUsersSelectParams.staffSelectParams()
+                              : props.name === "clients"
+                                ? facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})
+                                : (props.name satisfies never))}
+                            {...priorityQueryParams()?.()}
+                            nullable={false}
+                            small
+                          />
+                        </div>
                       </Match>
                     </Switch>
                   </div>
