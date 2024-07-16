@@ -42,11 +42,12 @@ class TippySingletonManager {
 
   private tippySingleton: CreateSingletonInstance | undefined;
 
+  private tippySingletonSetInstancesTimer: ReturnType<typeof setTimeout> | undefined;
   private tippySingletonRecreationTimer: ReturnType<typeof setTimeout> | undefined;
 
   add(newTippy: Instance) {
     this.tippys = [...this.tippys, newTippy];
-    this.getTippySingleton().setInstances([...this.tippys]);
+    this.setInstances();
     return () => this.delete(newTippy);
   }
 
@@ -82,8 +83,16 @@ class TippySingletonManager {
     return this.tippySingleton;
   }
 
+  private setInstances() {
+    clearTimeout(this.tippySingletonSetInstancesTimer);
+    this.tippySingletonSetInstancesTimer = setTimeout(() => {
+      this.getTippySingleton().setInstances([...this.tippys]);
+    }, 100);
+  }
+
   /** Recreate the tippy singleton. Debounce to avoid multiple recreations in succession. */
   private recreateTippySingleton() {
+    clearTimeout(this.tippySingletonSetInstancesTimer);
     clearTimeout(this.tippySingletonRecreationTimer);
     this.tippySingletonRecreationTimer = setTimeout(() => this.getTippySingleton(), 100);
   }
