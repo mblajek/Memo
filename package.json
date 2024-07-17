@@ -53,7 +53,7 @@
     "@mbarzda/solid-i18next": "^1.4.1",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.13.6",
-    "@tanstack/solid-query": "^5.50.2",
+    "@tanstack/solid-query": "^5.51.6",
     "@tanstack/solid-table": "^8.19.2",
     "@zag-js/combobox": "0.26.0",
     "@zag-js/dialog": "0.26.0",

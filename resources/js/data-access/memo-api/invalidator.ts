@@ -10,20 +10,13 @@ let lastInvalidateEverythingTime: DateTime | undefined;
 const INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS = 3000;
 
 export function useInvalidator(queryClient = useQueryClient()) {
-  function delayed<P extends unknown[]>(invalidationFn: (...params: P) => void) {
-    // Use setTimeout to delay invalidations to avoid the bug causing queries to keep fetching
-    // when they shouldn't in some situations. See https://github.com/TanStack/query/issues/7711
-    return (...params: P) => setTimeout(() => invalidationFn(...params));
-  }
-
   function everything() {
     lastInvalidateEverythingTime = DateTime.now();
     queryClient.invalidateQueries();
   }
-
   return {
-    everything: delayed(everything),
-    everythingThrottled: delayed(() => {
+    everything: everything,
+    everythingThrottled: () => {
       if (
         !lastInvalidateEverythingTime ||
         Date.now() - lastInvalidateEverythingTime.toMillis() > INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS
@@ -32,27 +25,27 @@ export function useInvalidator(queryClient = useQueryClient()) {
         return true;
       }
       return false;
-    }),
+    },
     // Shared:
-    users: delayed(() => queryClient.invalidateQueries({queryKey: Users.keys.user()})),
-    facilities: delayed(() => queryClient.invalidateQueries({queryKey: Facilities.keys.facility()})),
+    users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
+    facilities: () => queryClient.invalidateQueries({queryKey: Facilities.keys.facility()}),
     // User status:
-    userStatusAndFacilityPermissions: delayed(({clearCache = false} = {}) => {
+    userStatusAndFacilityPermissions: ({clearCache = false} = {}) => {
       if (clearCache) {
         queryClient.resetQueries({queryKey: User.keys.statusAll()});
       } else {
         queryClient.invalidateQueries({queryKey: User.keys.statusAll()});
       }
-    }),
+    },
     // System status:
-    systemStatus: delayed(() => queryClient.invalidateQueries({queryKey: System.keys.status()})),
+    systemStatus: () => queryClient.invalidateQueries({queryKey: System.keys.status()}),
     // Facility resources:
     facility: {
-      meetings: delayed(() => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()})),
-      users: delayed(() => queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()})),
+      meetings: () => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
+      users: () => queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()}),
     },
     // Global:
-    dictionaries: delayed(() => queryClient.invalidateQueries({queryKey: System.keys.dictionary()})),
-    attributes: delayed(() => queryClient.invalidateQueries({queryKey: System.keys.attribute()})),
+    dictionaries: () => queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),
+    attributes: () => queryClient.invalidateQueries({queryKey: System.keys.attribute()}),
   };
 }
