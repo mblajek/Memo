@@ -1,6 +1,10 @@
 import {createMutation} from "@tanstack/solid-query";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
-import {MeetingResourceForCreate, MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
+import {
+  SeriesDeleteOption,
+  MeetingResourceForCreate,
+  MeetingResourceForPatch,
+} from "data-access/memo-api/resources/meeting.resource";
 
 export function useMeetingAPI() {
   const meetingCreateMutation = createMutation(() => ({
@@ -30,8 +34,9 @@ export function useMeetingAPI() {
     async update(id: string, meeting: Partial<MeetingResourceForPatch>) {
       await meetingUpdateMutation.mutateAsync({id, ...meeting});
     },
-    async delete(id: string) {
-      await meetingDeleteMutation.mutateAsync(id);
+    async delete(id: string, deleteOption: SeriesDeleteOption) {
+      const response = await meetingDeleteMutation.mutateAsync({meetingId: id, deleteOption});
+      return {count: response.data.count};
     },
     isPending() {
       if (

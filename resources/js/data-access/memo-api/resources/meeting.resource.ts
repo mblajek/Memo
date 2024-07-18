@@ -53,3 +53,9 @@ export type MeetingResourceForCreate = Pick<
 export type MeetingAttendantResourceForCreate = Pick<MeetingAttendantResource, "userId" | "attendanceStatusDictId">;
 
 export type MeetingResourceForPatch = Api.Entity & MeetingResourceForCreate;
+
+export enum SeriesDeleteOption {
+  ONE = "one",
+  FROM_THIS = "from_this",
+  ALL = "all",
+}

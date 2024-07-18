@@ -76,8 +76,19 @@ meeting_edit:
 meeting_delete:
   form_name: "Usunięcie spotkania"
   confirmation_text: "Czy na pewno usunąć to spotkanie?"
-  submit: "Usuń spotkanie"
-  success: "Usunięto spotkanie"
+  series_info: "To spotkanie jest częścią serii"
+  one: "Usuń tylko to spotkanie"
+  from_this__one: "Usuń to spotkanie i kolejne {{count,number}} w serii"
+  from_this__few: "Usuń to spotkanie i kolejne {{count,number}} w serii"
+  from_this__many: "Usuń to spotkanie i kolejnych {{count,number}} w serii"
+  all__few: "Usuń wszystkie {{count, number}} spotkania w serii"
+  all__many: "Usuń wszystkie {{count, number}} spotkań w serii"
+  submit__one: "Usuń spotkanie"
+  submit__few: "Usuń {{count, number}} spotkania"
+  submit__many: "Usuń {{count, number}} spotkań"
+  success__one: "Usunięto spotkanie"
+  success__few: "Usunięto {{count, number}} spotkania"
+  success__many: "Usunięto {{count, number}} spotkań"
 
 meeting_series:
   field_names:

@@ -54,13 +54,13 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
   );
 };
 
-interface DeleteButtonProps extends ButtonProps {
+interface DeleteButtonProps<ConfirmResult> extends ButtonProps {
   readonly label?: JSX.Element;
-  readonly confirm?: () => Promise<boolean | undefined> | boolean | undefined;
-  readonly delete?: () => Promise<void> | void;
+  readonly confirm?: () => Promise<ConfirmResult | undefined> | ConfirmResult | undefined;
+  readonly delete?: (confirmResult: ConfirmResult | undefined) => Promise<void> | void;
 }
 
-export const DeleteButton: VoidComponent<DeleteButtonProps> = (allProps) => {
+export const DeleteButton = <ConfirmResult,>(allProps: DeleteButtonProps<ConfirmResult>) => {
   const [props, buttonProps] = splitProps(allProps, ["label", "confirm", "delete"]);
   const t = useLangFunc();
   const [isDeleting, setIsDeleting] = createSignal(false);
@@ -68,13 +68,19 @@ export const DeleteButton: VoidComponent<DeleteButtonProps> = (allProps) => {
     if (!props.delete) {
       return;
     }
+    let confirmResult: ConfirmResult | undefined;
     const skipConfirmation = !props.confirm || (e.ctrlKey && e.altKey);
-    if (!skipConfirmation && !(await props.confirm())) {
-      return;
+    if (skipConfirmation) {
+      confirmResult = undefined;
+    } else {
+      confirmResult = await props.confirm();
+      if (!confirmResult) {
+        return;
+      }
     }
     setIsDeleting(true);
     try {
-      await props.delete();
+      await props.delete(confirmResult);
     } finally {
       setIsDeleting(false);
     }
