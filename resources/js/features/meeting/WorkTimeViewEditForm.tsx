@@ -16,7 +16,7 @@ import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_co
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
+import {MeetingResourceForPatch, SeriesDeleteOption} from "data-access/memo-api/resources/meeting.resource";
 import {Api, RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
@@ -83,7 +83,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   }
 
   async function deleteWorkTime() {
-    await meetingAPI.delete(props.staticMeetingId);
+    await meetingAPI.delete(props.staticMeetingId, SeriesDeleteOption.ONE);
     toastSuccess(t("forms.work_time_delete.success"));
     props.onDeleted?.();
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
