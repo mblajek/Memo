@@ -1,9 +1,9 @@
 import {createConfirmation} from "components/ui/confirmation";
 import {LangFunc} from "components/utils/lang";
-import {SeriesDeleteOption} from "data-access/memo-api/resources/meeting.resource";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {createSelector, createSignal, Show} from "solid-js";
 import {MeetingInSeriesInfo} from "./MeetingInSeriesInfo";
+import {SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 
 export type MeetingForDelete = Partial<Pick<TQMeetingResource, "interval" | "seriesNumber" | "seriesCount">>;
 
@@ -12,17 +12,17 @@ export async function confirmDelete(
   t: LangFunc,
   meeting: MeetingForDelete,
 ): Promise<SeriesDeleteOption | undefined> {
-  const [deleteOption, setDeleteOption] = createSignal(SeriesDeleteOption.ONE);
+  const [deleteOption, setDeleteOption] = createSignal<SeriesDeleteOption>("one");
   const isSelected = createSelector(deleteOption);
   const seriesCount = meeting.seriesCount || 0;
   const seriesNumber = meeting.seriesNumber || 0;
   const countToDelete = () => {
     switch (deleteOption()) {
-      case SeriesDeleteOption.ONE:
+      case "one":
         return 1;
-      case SeriesDeleteOption.FROM_THIS:
+      case "from_this":
         return seriesCount - seriesNumber + 1;
-      case SeriesDeleteOption.ALL:
+      case "all":
         return seriesCount;
     }
   };
@@ -44,28 +44,26 @@ export async function confirmDelete(
                 <input
                   type="radio"
                   name="delete_option"
-                  value={SeriesDeleteOption.ONE}
-                  checked={isSelected(SeriesDeleteOption.ONE)}
-                  onChange={() => setDeleteOption(SeriesDeleteOption.ONE)}
+                  value={"one"}
+                  checked={isSelected("one")}
+                  onChange={() => setDeleteOption("one")}
                 />
                 <span class="ml-1">{t("forms.meeting_delete.one")}</span>
               </label>
             </div>
             {/* 
-                We only show functionally distinct options:
-                - if the meeting is last in the series, we show ONE & ALL (FROM_THIS would be equivalent to ONE)
-                - if the meeting is first in the series, we show ONE & FROM_THIS (ALL would be equivalent to FROM_THIS)
-                - if the meeting is in the middle, we show all three options 
+                We only show functionally distinct options. If the meeting is first or last in the series, FROM_THIS is 
+                not needed -- it would be equivalent to either ALL (if first) or ONE (if last).
               */}
-            <Show when={seriesNumber < seriesCount}>
+            <Show when={seriesNumber > 1 && seriesNumber < seriesCount}>
               <div>
                 <label>
                   <input
                     type="radio"
                     name="delete_option"
-                    value={SeriesDeleteOption.FROM_THIS}
-                    checked={isSelected(SeriesDeleteOption.FROM_THIS)}
-                    onChange={() => setDeleteOption(SeriesDeleteOption.FROM_THIS)}
+                    value={"from_this"}
+                    checked={isSelected("from_this")}
+                    onChange={() => setDeleteOption("from_this")}
                   />
                   <span class="ml-1">
                     {t("forms.meeting_delete.from_this", {
@@ -76,24 +74,22 @@ export async function confirmDelete(
                 </label>
               </div>
             </Show>
-            <Show when={seriesNumber > 1}>
-              <div>
-                <label>
-                  <input
-                    type="radio"
-                    name="delete_option"
-                    value={SeriesDeleteOption.ALL}
-                    checked={isSelected(SeriesDeleteOption.ALL)}
-                    onChange={() => setDeleteOption(SeriesDeleteOption.ALL)}
-                  />
-                  <span class="ml-1">
-                    {t("forms.meeting_delete.all", {
-                      count: seriesCount,
-                    })}
-                  </span>
-                </label>
-              </div>
-            </Show>
+            <div>
+              <label>
+                <input
+                  type="radio"
+                  name="delete_option"
+                  value={"all"}
+                  checked={isSelected("all")}
+                  onChange={() => setDeleteOption("all")}
+                />
+                <span class="ml-1">
+                  {t("forms.meeting_delete.all", {
+                    count: seriesCount,
+                  })}
+                </span>
+              </label>
+            </div>
           </div>
         </Show>
       </>

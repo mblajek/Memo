@@ -1,10 +1,6 @@
 import {createMutation} from "@tanstack/solid-query";
-import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
-import {
-  SeriesDeleteOption,
-  MeetingResourceForCreate,
-  MeetingResourceForPatch,
-} from "data-access/memo-api/resources/meeting.resource";
+import {FacilityMeeting, SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
+import {MeetingResourceForCreate, MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 
 export function useMeetingAPI() {
   const meetingCreateMutation = createMutation(() => ({

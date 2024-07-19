@@ -33,7 +33,7 @@ import {useMeetingAPI} from "./meeting_api";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
 import {confirmDelete, MeetingForDelete} from "./DeleteMeeting";
-import {SeriesDeleteOption} from "data-access/memo-api/resources/meeting.resource";
+import {SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 
 const _DIRECTIVES_ = null && title;
 
@@ -114,8 +114,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       // TODO: This function is very similar to deleteMeeting in MeetingViewEditForm.tsx - perhaps it could be shared?
 
       if (!deleteOption) {
-        // deleteOption is undefined if confirmation was skipped with ctrl/alt - in this case we default to ONE
-        deleteOption = SeriesDeleteOption.ONE;
+        // deleteOption is undefined if confirmation was skipped with ctrl/alt - in this case we default to "one"
+        deleteOption = "one";
       }
       const {count} = await meetingAPI.delete(meetingId, deleteOption);
       toastSuccess(t("forms.meeting_delete.success", {count}));
@@ -127,7 +127,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           return undefined;
         }
         // TODO: Handle SeriesDeleteOption for work times
-        return SeriesDeleteOption.ONE;
+        return "one";
       } else {
         return confirmDelete(confirmation, t, props.meeting);
       }

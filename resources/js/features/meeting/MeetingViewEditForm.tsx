@@ -14,9 +14,9 @@ import {skipUndefinedValues} from "components/utils/object_util";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {FacilityMeeting, SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {MeetingResourceForPatch, SeriesDeleteOption} from "data-access/memo-api/resources/meeting.resource";
+import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {Api, RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
@@ -111,7 +111,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     if (!deleteOption) {
       // deleteOption is undefined if confirmation was skipped with ctrl/alt
       // we go with the default ONE then
-      deleteOption = SeriesDeleteOption.ONE;
+      deleteOption = "one";
     }
     const {count} = await meetingAPI.delete(props.staticMeetingId, deleteOption);
     if (props.showToast ?? true) {
