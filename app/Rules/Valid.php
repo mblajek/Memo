@@ -22,7 +22,7 @@ use App\Utils\ConditionalArrayRule;
  * nullable:
  * - if value is null, other validations are skipped, [] and " " are not null in opposite to Laravel validation
  */
-class Valid extends AbstractDataRule
+class Valid extends AbstractDataRule implements IgnoreIdRule
 {
     /** reset all rules having state */
     public static function reset(): void
@@ -133,11 +133,11 @@ class Valid extends AbstractDataRule
         );
     }
 
-    /** forward ignore to inner Unique rules */
+    /** forward ignore to inner Unique|IgnoreIdRule rules */
     public function ignore(Model|string $id): void
     {
         foreach ($this->rules as $rule) {
-            if ($rule instanceof Unique) {
+            if ($rule instanceof Unique || $rule instanceof IgnoreIdRule) {
                 $rule->ignore($id);
             }
         }
