@@ -73,7 +73,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
               >
                 <Button
                   ref={(el) => focusThis(el)}
-                  class={cx("w-full", (data().mode || "default") === "default" ? "primary" : "secondary")}
+                  class={cx("w-full h-full", (data().mode || "default") === "default" ? "primary" : "secondary")}
                   onClick={() => {
                     data().resolve(true);
                     args.clearParams();
