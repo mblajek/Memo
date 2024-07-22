@@ -894,7 +894,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       onCreated: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
       onCloned: (meeting, otherMeetingIds) =>
         meetingChangeEffects(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
-      onDeleted: () => toastSuccess(t("forms.meeting_delete.success")),
+      onDeleted: (count) => toastSuccess(t("forms.meeting_delete.success", {count})),
     });
   }
 

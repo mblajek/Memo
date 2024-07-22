@@ -54,13 +54,25 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
   );
 };
 
-interface DeleteButtonProps extends ButtonProps {
+interface DeleteButtonProps<ConfirmResult> extends ButtonProps {
   readonly label?: JSX.Element;
-  readonly confirm?: () => Promise<boolean | undefined> | boolean | undefined;
-  readonly delete?: () => Promise<void> | void;
+  /**
+   * The method to confirm delete with the user, typically via a dialog from confirmation.tsx.
+   * If not provided, the delete function is called without confirmation.
+   * The delete is considered confirmed, i.e. delete() is called, if confirm() resolves to a truthy value. That value is
+   * just 'true' in a simple yes/no confirmation, but it can also be an object passing additional user choices from the
+   * confirmation (e.g. how to delete associated resources).
+   */
+  readonly confirm?: () => Promise<ConfirmResult | undefined>;
+  /**
+   * The method to apply the delete, after it was confirmed by the user (if confirmation was requested).
+   * @param confirmResult The truthy value returned by confirm(), or undefined if there was no confirm method or if
+   *    the user skipped the confirmation with ctrl/alt
+   */
+  readonly delete?: (confirmResult: ConfirmResult | undefined) => Promise<void> | void;
 }
 
-export const DeleteButton: VoidComponent<DeleteButtonProps> = (allProps) => {
+export const DeleteButton = <ConfirmResult,>(allProps: DeleteButtonProps<ConfirmResult>) => {
   const [props, buttonProps] = splitProps(allProps, ["label", "confirm", "delete"]);
   const t = useLangFunc();
   const [isDeleting, setIsDeleting] = createSignal(false);
@@ -68,13 +80,19 @@ export const DeleteButton: VoidComponent<DeleteButtonProps> = (allProps) => {
     if (!props.delete) {
       return;
     }
+    let confirmResult: ConfirmResult | undefined;
     const skipConfirmation = !props.confirm || (e.ctrlKey && e.altKey);
-    if (!skipConfirmation && !(await props.confirm())) {
-      return;
+    if (skipConfirmation) {
+      confirmResult = undefined;
+    } else {
+      confirmResult = await props.confirm();
+      if (!confirmResult) {
+        return;
+      }
     }
     setIsDeleting(true);
     try {
-      await props.delete();
+      await props.delete(confirmResult);
     } finally {
       setIsDeleting(false);
     }

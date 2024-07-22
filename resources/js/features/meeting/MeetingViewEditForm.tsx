@@ -8,13 +8,13 @@ import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
 import {actionIcons} from "components/ui/icons";
 import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
-import {LangFunc, QueryBarrier, useLangFunc} from "components/utils";
+import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {skipUndefinedValues} from "components/utils/object_util";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {FacilityMeeting, SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
@@ -30,6 +30,7 @@ import {MeetingBasicData} from "./meeting_basic_data";
 import {createMeetingCreateModal} from "./meeting_create_modal";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_time_controller";
+import {confirmDelete} from "./DeleteMeeting";
 
 export interface MeetingViewEditFormProps {
   readonly staticMeetingId: Api.Id;
@@ -39,7 +40,7 @@ export interface MeetingViewEditFormProps {
   readonly onEdited?: (meeting: MeetingBasicData) => void;
   readonly onCreated?: (meeting: MeetingBasicData) => void;
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
-  readonly onDeleted?: () => void;
+  readonly onDeleted?: (count: number) => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Default: true. */
   readonly showToast?: boolean;
@@ -71,7 +72,8 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     }),
     dataQueryOptions: () => ({enabled: !!meetingQuery.data?.fromMeetingId}),
   });
-  const meeting = () => ({...meetingQuery.data!, ...meetingTQuery.data?.data[0]});
+  const seriesInfo = (): {seriesCount?: number; seriesNumber?: number} => meetingTQuery.data?.data[0] || {};
+  const meeting = () => ({...meetingQuery.data!, ...seriesInfo()});
   const isBusy = () => !!meetingAPI.isPending();
 
   async function updateMeeting(values: Partial<MeetingFormType>) {
@@ -105,12 +107,17 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
     };
   }
 
-  async function deleteMeeting() {
-    await meetingAPI.delete(props.staticMeetingId);
-    if (props.showToast ?? true) {
-      toastSuccess(t("forms.meeting_delete.success"));
+  async function deleteMeeting(deleteOption: SeriesDeleteOption | undefined) {
+    if (!deleteOption) {
+      // deleteOption is undefined if confirmation was skipped with ctrl/alt
+      // we go with the default ONE then
+      deleteOption = "one";
     }
-    props.onDeleted?.();
+    const {count} = await meetingAPI.delete(props.staticMeetingId, deleteOption);
+    if (props.showToast ?? true) {
+      toastSuccess(t("forms.meeting_delete.success", {count}));
+    }
+    props.onDeleted?.(count);
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
@@ -187,7 +194,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
               <div class="flex gap-1 justify-between">
                 <DeleteButton
                   class="secondary small"
-                  confirm={() => confirmation.confirm(meetingDeleteConfirmParams(t))}
+                  confirm={() => confirmDelete(confirmation, t, meeting())}
                   delete={deleteMeeting}
                   disabled={isBusy()}
                 />
@@ -258,13 +265,5 @@ export function transformFormValues(values: Partial<MeetingFormType>): Partial<M
     ...getMeetingTimeFullData(values).timeValues,
     ...getAttendantsValuesForEdit(values),
     ...getResourceValuesForEdit(values),
-  };
-}
-
-export function meetingDeleteConfirmParams(t: LangFunc) {
-  return {
-    title: t("forms.meeting_delete.form_name"),
-    body: t("forms.meeting_delete.confirmation_text"),
-    confirmText: t("forms.meeting_delete.submit"),
   };
 }

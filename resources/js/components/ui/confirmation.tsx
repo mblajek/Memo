@@ -11,7 +11,7 @@ const _DIRECTIVES_ = null && title;
 interface ConfirmParams {
   readonly title: string;
   readonly body?: JSX.Element | Accessor<JSX.Element>;
-  readonly confirmText?: string;
+  readonly confirmText?: JSX.Element;
   readonly cancelText?: string;
   readonly mode?: ConfirmationMode;
   readonly confirmDisabled?: Accessor<boolean>;

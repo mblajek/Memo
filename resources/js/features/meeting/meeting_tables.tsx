@@ -27,12 +27,13 @@ import {UserLink} from "../facility-users/UserLink";
 import {FacilityUserType} from "../facility-users/user_types";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags} from "./MeetingStatusTags";
-import {meetingDeleteConfirmParams} from "./MeetingViewEditForm";
 import {workTimeDeleteConfirmParams} from "./WorkTimeViewEditForm";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {useMeetingAPI} from "./meeting_api";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
+import {confirmDelete, MeetingForDelete} from "./DeleteMeeting";
+import {SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 
 const _DIRECTIVES_ = null && title;
 
@@ -57,11 +58,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const {getMeetingTypeCategory} = usePositionsGrouping();
   const meetingAPI = useMeetingAPI();
   const invalidate = useInvalidator();
-  async function deleteMeeting(meetingId: string) {
-    await meetingAPI.delete(meetingId);
-    toastSuccess(t("forms.meeting_delete.success"));
-    invalidate.facility.meetings();
-  }
 
   const MeetingTime: VoidComponent<{
     readonly startDayMinute: number | undefined;
@@ -107,20 +103,42 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   };
 
   const MeetingDeleteButton: ParentComponent<
-    {readonly meetingId: string | undefined; readonly meetingType?: string | undefined} & htmlAttributes.button
+    {
+      readonly meetingId: string | undefined;
+      readonly meetingType?: string | undefined;
+      readonly meeting: MeetingForDelete;
+    } & htmlAttributes.button
   > = (allProps) => {
-    const [props, buttonProps] = splitProps(allProps, ["meetingId", "meetingType", "children"]);
+    const [props, buttonProps] = splitProps(allProps, ["meetingId", "meetingType", "children", "meeting"]);
+    async function deleteMeeting(meetingId: string, deleteOption: SeriesDeleteOption | undefined) {
+      // TODO: This function is very similar to deleteMeeting in MeetingViewEditForm.tsx - perhaps it could be shared?
+
+      if (!deleteOption) {
+        // deleteOption is undefined if confirmation was skipped with ctrl/alt - in this case we default to "one"
+        deleteOption = "one";
+      }
+      const {count} = await meetingAPI.delete(meetingId, deleteOption);
+      toastSuccess(t("forms.meeting_delete.success", {count}));
+      invalidate.facility.meetings();
+    }
+    async function confirmDeleteLocal(): Promise<SeriesDeleteOption | undefined> {
+      if (isWorkTimeLeaveTime(props.meetingType)) {
+        if (!(await confirmation.confirm(workTimeDeleteConfirmParams(t)))) {
+          return undefined;
+        }
+        // TODO: Handle SeriesDeleteOption for work times
+        return "one";
+      } else {
+        return confirmDelete(confirmation, t, props.meeting);
+      }
+    }
     return (
       <Show when={props.meetingId}>
         {(meetingId) => (
           <DeleteButton
             {...buttonProps}
-            confirm={() =>
-              confirmation.confirm(
-                isWorkTimeLeaveTime(props.meetingType) ? workTimeDeleteConfirmParams(t) : meetingDeleteConfirmParams(t),
-              )
-            }
-            delete={() => deleteMeeting(meetingId())}
+            confirm={confirmDeleteLocal}
+            delete={(deleteOption: SeriesDeleteOption | undefined) => deleteMeeting(meetingId(), deleteOption)}
           />
         )}
       </Show>
@@ -358,7 +376,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     actions: {
       name: "actions",
       isDataColumn: false,
-      extraDataColumns: ["id", "typeDictId"],
+      // seriesCount, seriesNumber, interval are needed for delete confirmation. Alternatively, they could be fetched
+      // when delete is clicked, but this would complicate the confirmation with query barriers
+      extraDataColumns: ["id", "typeDictId", "seriesCount", "seriesNumber", "interval"],
       columnDef: {
         cell: (c) => (
           <PaddedCell class="flex gap-1 h-min">
@@ -367,6 +387,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
               class="minimal"
               meetingId={c.row.original.id}
               meetingType={c.row.original.typeDictId}
+              meeting={c.row.original}
             />
           </PaddedCell>
         ),

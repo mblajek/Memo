@@ -83,7 +83,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   }
 
   async function deleteWorkTime() {
-    await meetingAPI.delete(props.staticMeetingId);
+    await meetingAPI.delete(props.staticMeetingId, "one");
     toastSuccess(t("forms.work_time_delete.success"));
     props.onDeleted?.();
     // Important: Invalidation should happen after calling onDeleted which typically closes the form.
