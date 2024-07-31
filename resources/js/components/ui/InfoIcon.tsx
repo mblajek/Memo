@@ -8,17 +8,38 @@ import {title} from "./title";
 
 const _DIRECTIVES_ = null && title;
 
-interface ButtonProps extends Omit<htmlAttributes.button, "children"> {
-  readonly href?: undefined;
-  readonly children?: ChildrenOrFunc<[JSX.Element]>;
-}
-
 interface LinkProps extends Omit<AnchorProps, "children"> {
   readonly href: string;
   readonly children?: ChildrenOrFunc<[JSX.Element]>;
 }
 
-export type InfoIconProps = ButtonProps | LinkProps;
+interface ButtonProps
+  extends Omit<htmlAttributes.button, "children" | "onClick">,
+    Required<Pick<htmlAttributes.button, "onClick">> {
+  readonly href?: undefined;
+  readonly children?: ChildrenOrFunc<[JSX.Element]>;
+}
+
+interface TitleProps extends Omit<htmlAttributes.div, "children"> {
+  readonly href?: undefined;
+  readonly onClick?: undefined;
+  readonly title: string;
+  readonly children?: ChildrenOrFunc<[JSX.Element]>;
+}
+
+export type InfoIconProps = LinkProps | ButtonProps | TitleProps;
+
+function isLinkProps(pr: InfoIconProps): pr is LinkProps {
+  return !!pr.href;
+}
+
+function isButtonProps(pr: InfoIconProps): pr is ButtonProps {
+  return !pr.href && !!pr.onClick;
+}
+
+function isTitleProps(pr: InfoIconProps): pr is TitleProps {
+  return !pr.href && !pr.onClick;
+}
 
 /**
  * A tiny blue (i) icon providing more information to a control it is next to.
@@ -30,7 +51,7 @@ export const InfoIcon: Component<InfoIconProps> = (props) => {
   const titleContent = () => props.title ?? t("more_info");
   return (
     <Switch>
-      <Match when={props.href && props}>
+      <Match when={isLinkProps(props) && props}>
         {(linkProps) => (
           <span use:title={titleContent()}>
             <A
@@ -48,11 +69,18 @@ export const InfoIcon: Component<InfoIconProps> = (props) => {
           </span>
         )}
       </Match>
-      <Match when={!props.href && props}>
+      <Match when={isButtonProps(props) && props}>
         {(buttonProps) => (
           <Button title={titleContent()} {...buttonProps}>
             {getChildrenElement(props.children, icon) || icon}
           </Button>
+        )}
+      </Match>
+      <Match when={isTitleProps(props) && props}>
+        {(titleProps) => (
+          <div tabindex="0" use:title={titleContent()} {...titleProps()} title="">
+            {getChildrenElement(titleProps().children, icon) || icon}
+          </div>
         )}
       </Match>
     </Switch>

@@ -101,6 +101,7 @@ export class Attribute<T = unknown> {
     resource: AttributeResource,
     readonly id: string,
     readonly name: string,
+    readonly description: string | undefined,
     readonly model: string,
     readonly isTranslatable: boolean,
     /** The translated name of the attribute. */
@@ -122,6 +123,16 @@ export class Attribute<T = unknown> {
       resource,
       resource.id,
       resource.name,
+      resource.description ||
+        (isNameTranslatable(resource.name)
+          ? t(
+              [
+                `attributes.attributes.${resource.model}.${resource.name}.desc`,
+                `attributes.attributes.generic.${resource.name}.desc`,
+              ],
+              {defaultValue: ""},
+            ) || undefined
+          : undefined),
       resource.model,
       isNameTranslatable(resource.name),
       getNameTranslation(t, resource.name, (n) => {
@@ -130,8 +141,8 @@ export class Attribute<T = unknown> {
           return `???.${n}`;
         }
         return [
-          `attributes.attributes.${resource.model}.${n}`,
-          `attributes.attributes.generic.${n}`,
+          `attributes.attributes.${resource.model}.${n}.name`,
+          `attributes.attributes.generic.${n}.name`,
           `models.${resource.model}.${resource.apiName}`,
           `models.generic.${resource.apiName}`,
           resource.dictionaryId

@@ -80,6 +80,16 @@ export function useTableAttributeColumnConfigs() {
           model: "client",
           includeFixed: true,
           fixedOverrides: {
+            shortCode: {
+              columnDef: {
+                cell: cellFunc<string>((props) => (
+                  <PaddedCell>
+                    <ShowCellVal v={props.v}>{(v) => <div class="text-right">{v()}</div>}</ShowCellVal>
+                  </PaddedCell>
+                )),
+                size: 150,
+              },
+            },
             typeDictId: {initialVisible: true, columnDef: {size: 180}},
             genderDictId: {columnDef: {size: 180}},
             birthDate: {

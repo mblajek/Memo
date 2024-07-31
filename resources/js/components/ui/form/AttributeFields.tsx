@@ -36,6 +36,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
+import {InfoIcon} from "../InfoIcon";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
 import {CHECKBOX, EmptyValueSymbol} from "../symbols";
@@ -418,12 +419,17 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                       >
                         <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
                           <label
-                            class="font-semibold flex items-center wrapTextAnywhere"
+                            class="font-semibold flex items-center gap-1"
                             for={
                               attribute.multiple && attribute.basicType !== "dict" ? undefined : fieldName(attribute)
                             }
                           >
-                            <Capitalize text={attribute.label} />
+                            <div class="wrapTextAnywhere">
+                              <Capitalize text={attribute.label} />
+                            </div>
+                            <Show when={attribute.description}>
+                              {(description) => <InfoIcon title={description()} />}
+                            </Show>
                           </label>
                           <div class="flex flex-col justify-center">
                             <Show
