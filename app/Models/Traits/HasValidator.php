@@ -23,6 +23,9 @@ trait HasValidator
             $attributes = is_array($attributesFacility)
                 ? $attributesFacility : self::attrMap(facility: $attributesFacility);
             foreach ($attributes as $attribute) {
+                if (array_key_exists($attribute->api_name, $ruleSet)) {
+                    continue;
+                }
                 if ($attribute->is_multi_value) {
                     $ruleSet[$attribute->api_name] = $attribute->getMultiValidator();
                     $ruleSet["$attribute->api_name.*"] = $attribute->getSingleValidator();

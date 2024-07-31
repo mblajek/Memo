@@ -97,7 +97,7 @@ class ClientController extends ApiController
         $user = new User(['managed_by_facility_id' => $this->getFacilityOrFail()->id]);
         $user->fillOnly($userData, ['name']);
         $client = new Client();
-        $client->fillOnly($clientData);
+        $clientData = $client->fillOnly($clientData);
         $client->fillShortCode();
         $member = new Member(['facility_id' => $this->getFacilityOrFail()->id]);
 
@@ -160,7 +160,7 @@ class ClientController extends ApiController
         if ($managedByFacility) {
             $user->fillOnly($userData, ['name']);
         }
-        $client->fillOnly($clientData);
+        $clientData = $client->fillOnly($clientData);
         $client->fillShortCode();
         DB::transaction(function () use ($user, $client, $clientData, $userData) {
             $user->save();

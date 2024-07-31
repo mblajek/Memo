@@ -13,6 +13,7 @@ attributes:
   dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
 
   client:
+    shortCode: "numer"
     contactStartAt: "data zgłoszenia"
     contactEndAt: "zakończenie kontaktu"
 
