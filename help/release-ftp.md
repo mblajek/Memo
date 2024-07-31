@@ -2,10 +2,11 @@
 
 - przebudować kontener: `docker compose up --build`
 - wykonać komendy:
-  - `composer install --no-dev`
+  - `composer install --no-dev` do sprawdzenia: `--apcu-autoloader`
   - `npm run build`
   - `php artisan l5-swagger:generate`
   - `php artisan cache:clear`
+  - `rm -r storage/logs/`
   - bez: `artisan config/event/route:cache`
 - do `x-new` skopiować plik `artisan` i 9 folderów:
   - app

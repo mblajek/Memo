@@ -69,7 +69,8 @@ class PermissionMiddleware
         $unverified = false;
         $globalAdmin = false;
         /** @var User|null $user */
-        $user = $request->user();
+        $user = $request->user(); // can be GenericUser
+        $user = ($user === null || $user instanceof User) ? $user : User::query()->findOrFail($user->id);
         $authorised = ($user !== null);
         if ($authorised) {
             $verified = ($user->email_verified_at !== null);

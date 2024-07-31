@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
+use App\Exceptions\FatalExceptionFactory;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Permissions\PermissionMiddleware;
@@ -18,6 +19,7 @@ use App\Services\User\UpdateUserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -57,6 +59,16 @@ class UserController extends ApiController
                 return new JsonResponse();
             }
         }
+
+        // on password rehash, event listener cannot use PermissionMiddleware::user() to fill updated_by
+        User::updating(function (User $user) {
+            if (array_keys($user->getDirty()) !== ['password']) {
+                FatalExceptionFactory::unexpected()->throw();
+            }
+        });
+
+        User::updating(fn(User $user) => // rehash password cannot fill updated_by with PermissionMiddleware::user()
+            (array_keys($user->getDirty()) === ['password']) || FatalExceptionFactory::unexpected()->throw());
         if (Auth::attempt($this->validate(['email' => Valid::string(['email']), 'password' => Valid::string()]))) {
             $request->session()->forget('developer_mode');
             $request->session()->regenerate();
@@ -134,6 +146,7 @@ class UserController extends ApiController
     )]
     public function status(): JsonResponse
     {
+        DB::withoutPretending();
         return new JsonResponse([
             'data' => [
                 'user' => UserResource::make($this->getUserOrFail()),

@@ -11,6 +11,91 @@
 |
 */
 
+
+use App\Exceptions\ExceptionFactory;
+use App\Exceptions\ValidationExceptionRenderer;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+
+return (function (string $basePath) {
+    if(!defined('LARAVEL_START')) {
+        define('LARAVEL_START', microtime(true));
+        require_once "$basePath/vendor/autoload.php";
+    }
+
+    return Illuminate\Foundation\Application::configure(basePath: $basePath)
+        ->withRouting(
+            web: "$basePath/routes/web.php",
+            api: "$basePath/routes/api.php",
+            commands: "$basePath/routes/console.php",
+        )
+        ->withMiddleware(function (Middleware $middleware) {
+            /* $middleware->group('web', [
+                \Illuminate\Cookie\Middleware\EncryptCookies::class, // default
+                \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class, // default
+                \Illuminate\Session\Middleware\StartSession::class, // default
+                \Illuminate\View\Middleware\ShareErrorsFromSession::class, // default
+                \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class, // default
+                \Illuminate\Routing\Middleware\SubstituteBindings::class, // default
+            ]); */
+            $middleware->group('api', [
+                \App\Http\Middleware\TransformKeysValidate::class,
+                \App\Http\Middleware\QueryInfo::class,
+
+                // \Illuminate\Foundation\Http\Middleware\TrimStrings::class,
+                \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+                // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+                \Illuminate\Routing\Middleware\ThrottleRequests::class . ':500,1,api',
+                \Illuminate\Routing\Middleware\SubstituteBindings::class, // default
+
+                // from web:
+                \Illuminate\Cookie\Middleware\EncryptCookies::class,
+                \Illuminate\Session\Middleware\StartSession::class,
+
+                // todo: check if it should be used
+                // \App\Http\Middleware\VerifyCsrfToken::class,
+            ]);
+            // $middleware->alias([]);
+        })
+        ->withExceptions(function (Exceptions $exceptions) {
+            $exceptions->render(function (ValidationException|HttpExceptionInterface $e): ?JsonResponse {
+                if ($e instanceof ThrottleRequestsException) {
+                    return ExceptionFactory::tooManyRequests()->render();
+                }
+                if ($e instanceof NotFoundHttpException) {
+                    return ExceptionFactory::notFound()->render();
+                }
+                if ($e instanceof UnauthorizedHttpException) {
+                    return ExceptionFactory::unauthorised()->render();
+                }
+                if ($e instanceof AccessDeniedHttpException) {
+                    return ExceptionFactory::forbidden()->render();
+                }
+                if ($e instanceof BadRequestHttpException) {
+                    return ExceptionFactory::validation()->render();
+                }
+                if ($e instanceof ValidationException) {
+                    return (new ValidationExceptionRenderer($e))->render();
+                }
+
+                return null;
+            });
+            //$exceptions->
+            //
+        })->create();
+})(
+    basePath: dirname(__DIR__)
+);
+
+
 $app = new Illuminate\Foundation\Application(
     $_ENV['APP_BASE_PATH'] ?? dirname(__DIR__)
 );
