@@ -97,7 +97,14 @@ export default (() => {
                     onSubmit={updateClient}
                   >
                     {(form) => {
-                      createEffect(() => form.setInitialValues(user() as unknown as FormType));
+                      createEffect(() => {
+                        form.setInitialValues(user() as unknown as FormType);
+                        setTimeout(() => {
+                          if (!editMode() && !dataQuery.isPending) {
+                            form.reset();
+                          }
+                        });
+                      });
                       async function formCancel() {
                         if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
                           form.reset();

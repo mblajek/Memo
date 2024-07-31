@@ -12,9 +12,13 @@ import {FacilityUsers} from "./FacilityUsers";
  */
 export namespace FacilityClient {
   export const createClient = (client: Api.Request.Create<ClientResourceForCreate>, config?: Api.Config) =>
-    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/user/client`, client, config);
+    V1.post<Api.Response.Post<UpdateResponse>>(`/facility/${activeFacilityId()}/user/client`, client, config);
   export const updateClient = (client: Api.Request.Patch<ClientResourceForPatch>, config?: Api.Config) =>
-    V1.patch(`/facility/${activeFacilityId()}/user/client/${client.id}`, client, config);
+    V1.patch<Api.Response.Post<UpdateResponse>>(
+      `/facility/${activeFacilityId()}/user/client/${client.id}`,
+      client,
+      config,
+    );
   export const deleteClient = (data: DeleteParams, config?: Api.Config) =>
     V1.delete<DeleteResponse>(`/facility/${activeFacilityId()}/user/client/${data.id}`, {
       data: data.duplicateOf ? {duplicateOf: data.duplicateOf} : undefined,
@@ -30,6 +34,11 @@ export namespace FacilityClient {
     readonly clientDeleted: boolean;
     readonly memberDeleted: boolean;
     readonly userDeleted: boolean;
+  }
+
+  export interface UpdateResponse {
+    readonly id: Api.Id;
+    readonly shortCode: string | null;
   }
 
   const getClientsListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
