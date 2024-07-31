@@ -96,6 +96,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        DB::statement("update `attributes` set `default_order` = `default_order` - 1 where `table` = 'clients'");
+        DB::statement("update `attributes` set `default_order` = `default_order` - 1 where `table` = 'clients'"
+            ." order by `default_order`");
     }
 };

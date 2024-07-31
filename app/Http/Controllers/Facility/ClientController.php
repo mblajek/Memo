@@ -90,14 +90,15 @@ class ClientController extends ApiController
     public function post(): JsonResponse
     {
         $userValidator = User::getInsertValidator(['name']);
-        $clientValidator = Client::getInsertValidator([], attributesFacility: true);
+        $clientValidator = Client::getInsertValidator(['short_code'], attributesFacility: true);
         $userData = $this->validate($userValidator + $this->wrapClientValidator($clientValidator));
 
         $clientData = $userData['client'];
         $user = new User(['managed_by_facility_id' => $this->getFacilityOrFail()->id]);
         $user->fillOnly($userData, ['name']);
         $client = new Client();
-        $client->fillOnly($clientData);
+        $clientData = $client->fillOnly($clientData);
+        $client->fillShortCode();
         $member = new Member(['facility_id' => $this->getFacilityOrFail()->id]);
 
         DB::transaction(function () use ($user, $client, $member, $clientData) {
@@ -107,7 +108,9 @@ class ClientController extends ApiController
             $member->client_id = $client->id;
             $member->save();
         });
-        return new JsonResponse(data: ['data' => ['id' => $user->id, 'clientId' => $client->id]], status: 201);
+        return new JsonResponse(data: [
+            'data' => ['id' => $user->id, 'clientId' => $client->id, 'shortCode' => $client->short_code],
+        ], status: 201);
     }
 
     #[OA\Patch(
@@ -150,19 +153,20 @@ class ClientController extends ApiController
 
         $userValidator = $managedByFacility
             ? User::getPatchValidator(['name'], $user) : User::getProhibitedValidator(['name']);
-        $clientValidator = Client::getPatchValidator([], $client, attributesFacility: true);
+        $clientValidator = Client::getPatchValidator(['short_code'], $client, attributesFacility: true);
         $userData = $this->validate($userValidator + $this->wrapClientValidator($clientValidator));
         $clientData = $userData['client'];
 
         if ($managedByFacility) {
             $user->fillOnly($userData, ['name']);
         }
-        $client->fillOnly($clientData);
+        $clientData = $client->fillOnly($clientData);
+        $client->fillShortCode();
         DB::transaction(function () use ($user, $client, $clientData, $userData) {
             $user->save();
             $client->attrSave($this->getFacilityOrFail(), $clientData);
         });
-        return new JsonResponse();
+        return new JsonResponse(data: ['data' => ['shortCode' => $client->short_code]]);
     }
 
     #[OA\Delete(

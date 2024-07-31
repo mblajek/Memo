@@ -9,6 +9,7 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     schema: 'FacilityClientResource',
     properties: [
+        new OA\Property(property: 'shortCode', type: 'string', example: '00123'),
     ],
 )] /**
  * @method __construct(User $resource)
@@ -24,6 +25,7 @@ class FacilityClientResource extends AbstractOpenApiResource
     protected static function getMappedFields(): array
     {
         return [
+            'shortCode',
         ];
     }
 }
