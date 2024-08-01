@@ -20,7 +20,7 @@ interface ButtonProps
   readonly children?: ChildrenOrFunc<[JSX.Element]>;
 }
 
-interface TitleProps extends Omit<htmlAttributes.div, "children"> {
+interface TitleProps extends Omit<htmlAttributes.span, "children"> {
   readonly href?: undefined;
   readonly onClick?: undefined;
   readonly title: string;
@@ -78,9 +78,9 @@ export const InfoIcon: Component<InfoIconProps> = (props) => {
       </Match>
       <Match when={isTitleProps(props) && props}>
         {(titleProps) => (
-          <div tabindex="0" use:title={titleContent()} {...titleProps()} title="">
+          <span tabindex="0" use:title={titleContent()} {...titleProps()} title="">
             {getChildrenElement(titleProps().children, icon) || icon}
-          </div>
+          </span>
         )}
       </Match>
     </Switch>
