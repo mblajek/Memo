@@ -125,7 +125,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           "row-gap": 0,
         }}
       >
-        <div class="col-span-3">
+        <div class="col-span-2">
           <FieldLabel
             fieldName={props.name}
             umbrella
