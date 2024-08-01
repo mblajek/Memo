@@ -2,15 +2,19 @@ import {A} from "@solidjs/router";
 import {Email} from "components/ui/Email";
 import {Phone} from "components/ui/Phone";
 import {RichTextView} from "components/ui/RichTextView";
+import {SmallSpinner} from "components/ui/Spinner";
 import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table";
 import {AttributeColumnsConfig} from "components/ui/Table/TQueryTable";
+import {TextualFilterControl} from "components/ui/Table/tquery_filters/TextualFilterControl";
 import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
+import {EmptyValueSymbol} from "components/ui/symbols";
 import {DATE_FORMAT} from "components/utils";
 import {PartialAttributesSelection} from "components/utils/attributes_selection";
+import {SHORT_CODE_EMPTY} from "data-access/memo-api/resources/client.resource";
 import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
-import {For, VoidComponent} from "solid-js";
+import {For, Show, VoidComponent} from "solid-js";
 
 interface Props {
   readonly editMode: boolean;
@@ -22,10 +26,24 @@ const DETAILS_ATTRIBUTES_SELECTION: PartialAttributesSelection<AttributeParams<a
   model: "client",
   includeFixed: true,
   fixedOverrides: {
+    shortCode: {
+      isEmpty: (shortCode) => shortCode === SHORT_CODE_EMPTY,
+      view: (shortCode) => (
+        <Show
+          when={shortCode()}
+          fallback={
+            // Empty value is only temporary, it will be loaded with the next invalidation.
+            <SmallSpinner />
+          }
+        >
+          {shortCode()}
+        </Show>
+      ),
+    } satisfies AttributeParams<string>,
     notes: false,
     birthDate: {
       view: (date) => <span>{DateTime.fromISO(date()).toLocaleString(DATE_FORMAT)}</span>,
-    },
+    } satisfies AttributeParams<string>,
     contactEmail: {
       view: (email) => <Email email={email()} />,
     } satisfies AttributeParams<string>,
@@ -83,12 +101,30 @@ export function useTableAttributeColumnConfigs() {
             shortCode: {
               columnDef: {
                 cell: cellFunc<string>((props) => (
-                  <PaddedCell>
-                    <ShowCellVal v={props.v}>{(v) => <div class="text-right">{v()}</div>}</ShowCellVal>
+                  <PaddedCell class="text-right">
+                    <ShowCellVal
+                      v={props.v === SHORT_CODE_EMPTY ? undefined : props.v}
+                      fallback={<EmptyValueSymbol />}
+                    />
                   </PaddedCell>
                 )),
                 size: 150,
               },
+              filterControl: (props) => (
+                <TextualFilterControl
+                  {...props}
+                  buildFilter={(mode, value, defaultBuildFilter) => {
+                    switch (mode) {
+                      case "*":
+                        return {type: "column", column: props.schema.name, op: "=", val: SHORT_CODE_EMPTY, inv: true};
+                      case "null":
+                        return {type: "column", column: props.schema.name, op: "=", val: SHORT_CODE_EMPTY};
+                      default:
+                        return defaultBuildFilter(mode, value);
+                    }
+                  }}
+                />
+              ),
             },
             typeDictId: {initialVisible: true, columnDef: {size: 180}},
             genderDictId: {columnDef: {size: 180}},

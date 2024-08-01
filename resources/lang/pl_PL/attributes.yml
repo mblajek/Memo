@@ -25,7 +25,7 @@ attributes:
     documentsLinks:
       desc: "Tutaj możesz zapisać linki do zewnętrznych dokumentów powiązanych z tym klientem."
     shortCode:
-      desc: "Numer klienta. Pozostaw pusty aby nadać numer automatycznie."
+      desc: "Numer klienta. Pozostaw pusty aby nadać numer automatycznie. Wstaw znak minus aby nie nadawać numeru."
     contactStartAt:
       name: "data zgłoszenia"
     contactEndAt:

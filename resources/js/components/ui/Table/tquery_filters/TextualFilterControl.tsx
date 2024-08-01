@@ -2,15 +2,25 @@ import {SearchInput} from "components/ui/SearchInput";
 import {Select, SelectItem} from "components/ui/form/Select";
 import {cx, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {createComputed, createMemo, createSignal} from "solid-js";
+import {createComputed, createMemo, createSignal, VoidComponent} from "solid-js";
 import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
 import {makeSelectItem} from "./select_items";
-import {FilterControl} from "./types";
+import {FilterControlProps} from "./types";
 
-export const TextualFilterControl: FilterControl = (props) => {
+interface Props extends FilterControlProps {
+  readonly buildFilter?: (
+    mode: Mode,
+    value: string,
+    defaultBuildFilter: (mode: Mode, value: string) => FilterH | undefined,
+  ) => FilterH | undefined;
+}
+
+type Mode = "~" | "=" | "*" | "null" | ".*";
+
+export const TextualFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
   const {
@@ -19,7 +29,7 @@ export const TextualFilterControl: FilterControl = (props) => {
   } = getFilterStateSignal({
     // eslint-disable-next-line solid/reactivity
     column: props.column.id,
-    initial: {mode: "~", text: ""},
+    initial: {mode: "~" as Mode, text: ""},
     filter: () => props.filter,
   });
   const [inputText, setInputText] = createSignal(text());
@@ -27,7 +37,7 @@ export const TextualFilterControl: FilterControl = (props) => {
   const debouncedInputText = debouncedFilterTextAccessor(inputText);
   createComputed(() => setText(debouncedInputText()));
   createComputed(() => setInputText(text()));
-  function buildFilter(mode: string, value: string): FilterH | undefined {
+  function defaultBuildFilter(mode: Mode, value: string): FilterH | undefined {
     switch (mode) {
       case "~":
         return value ? buildFuzzyTextualColumnFilter(value, {column: props.schema.name}) : undefined;
@@ -42,6 +52,9 @@ export const TextualFilterControl: FilterControl = (props) => {
       default:
         throw new Error(`Invalid value: ${value}`);
     }
+  }
+  function buildFilter(mode: Mode, value: string): FilterH | undefined {
+    return props.buildFilter ? props.buildFilter(mode, value, defaultBuildFilter) : defaultBuildFilter(mode, value);
   }
   createComputed(() => props.setFilter(buildFilter(mode(), text())));
   const items = createMemo(() => {
@@ -104,7 +117,7 @@ export const TextualFilterControl: FilterControl = (props) => {
           name={filterFieldNames.get(`op_${props.schema.name}`)}
           items={items()}
           value={mode()}
-          onValueChange={(value) => setMode(value!)}
+          onValueChange={(value) => setMode(value! as Mode)}
           nullable={false}
           small
         />

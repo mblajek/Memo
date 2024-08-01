@@ -78,7 +78,7 @@ export function useTableCells() {
       )),
     int: <T,>() =>
       cellFunc<number, T>((props) => (
-        <PaddedCell class="w-full text-right">
+        <PaddedCell class="text-right">
           <ShowCellVal v={props.v}>{(v) => NUMBER_FORMAT.format(v())}</ShowCellVal>
         </PaddedCell>
       )),
@@ -94,7 +94,7 @@ export function useTableCells() {
       )),
     uuidList: <T,>() =>
       cellFunc<readonly string[], T>((props) => (
-        <PaddedCell class="w-full flex flex-col">
+        <PaddedCell class="flex flex-col">
           <Index each={props.v} fallback={<EmptyValueSymbol />}>
             {(id) => <IdColumn id={id()} />}
           </Index>
@@ -157,7 +157,7 @@ interface ShowCellValProps<V> {
   readonly v: NullableCellVal<V>;
   /** The value to show when value is missing. Default: empty symbol. */
   readonly fallback?: JSX.Element;
-  readonly children: ChildrenOrFunc<[Accessor<V>]>;
+  readonly children?: ChildrenOrFunc<[Accessor<V>]>;
 }
 
 export const ShowCellVal = <V,>(props: ShowCellValProps<V>) => {
@@ -166,7 +166,7 @@ export const ShowCellVal = <V,>(props: ShowCellValProps<V>) => {
       when={props.v != undefined}
       fallback={<>{props.fallback ?? (props.v === null ? <EmptyValueSymbol /> : undefined)}</>}
     >
-      {getChildrenElement(props.children, () => props.v as V)}
+      {getChildrenElement(props.children || ((v) => <>{String(v())}</>), () => props.v as V)}
     </Show>
   );
 };

@@ -17,6 +17,7 @@ import {DATE_FORMAT} from "components/utils/formatting";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
@@ -25,6 +26,7 @@ import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {FacilityUserType} from "../facility-users/user_types";
+import {MeetingForDelete, confirmDelete} from "./DeleteMeeting";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags} from "./MeetingStatusTags";
 import {workTimeDeleteConfirmParams} from "./WorkTimeViewEditForm";
@@ -32,8 +34,6 @@ import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {useMeetingAPI} from "./meeting_api";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
-import {confirmDelete, MeetingForDelete} from "./DeleteMeeting";
-import {SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 
 const _DIRECTIVES_ = null && title;
 
@@ -180,17 +180,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       extraDataColumns: ["interval", "seriesNumber", "seriesCount"],
       columnDef: {
         cell: cellFunc<boolean, TQFullMeetingResource>((props) => (
-          <PaddedCell>
+          <PaddedCell class="text-right">
             <ShowCellVal v={props.v}>
               {(v) => (
-                <Show
-                  when={v()}
-                  fallback={
-                    <div class="text-right">
-                      <EmptyValueSymbol />
-                    </div>
-                  }
-                >
+                <Show when={v()} fallback={<EmptyValueSymbol />}>
                   <div class="flex flex-col items-end">
                     <SeriesNumberInfo
                       seriesNumber={props.ctx.row.original.seriesNumber}

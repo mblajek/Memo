@@ -63,6 +63,7 @@ interface Props {
 }
 
 export interface AttributeParams<V> {
+  readonly isEmpty?: (formValue: V) => boolean;
   readonly view?: (formValue: Accessor<V>) => JSX.Element;
   readonly viewEmpty?: () => JSX.Element;
 }
@@ -218,6 +219,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
     const value = createMemo(() => recursiveUnwrapFormValues(form.data(name())));
     const hasValue = () => {
       const v = value();
+      if (aProps.params?.isEmpty) {
+        return !aProps.params.isEmpty(v);
+      }
       return v !== undefined && v !== "" && !(Array.isArray(v) && !v.length);
     };
     const DefaultViewer: ParentComponent<htmlAttributes.div> = (props) => (
@@ -406,7 +410,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                     const {attribute, selected} = relevantAttributes()!.get(attributeId)!;
                     const isEmpty = () => {
                       const value = form.data(fieldName(attribute));
-                      return value == undefined || value == "";
+                      return selected.override?.isEmpty
+                        ? selected.override.isEmpty(value)
+                        : value == undefined || value == "";
                     };
                     return (
                       <HideableSection
