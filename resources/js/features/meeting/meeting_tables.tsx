@@ -183,13 +183,20 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           <PaddedCell>
             <ShowCellVal v={props.v}>
               {(v) => (
-                <Show when={v()} fallback={<EmptyValueSymbol />}>
+                <Show
+                  when={v()}
+                  fallback={
+                    <div class="text-right">
+                      <EmptyValueSymbol />
+                    </div>
+                  }
+                >
                   <div class="flex flex-col items-end">
                     <SeriesNumberInfo
                       seriesNumber={props.ctx.row.original.seriesNumber}
                       seriesCount={props.ctx.row.original.seriesCount}
                     />
-                    <div class="text-grey-text">
+                    <div class="text-grey-text -mt-1">
                       <MeetingIntervalCommentText interval={props.row.interval || undefined} />
                     </div>
                   </div>
