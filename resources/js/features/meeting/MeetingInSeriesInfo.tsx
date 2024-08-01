@@ -1,3 +1,4 @@
+import {capitalizeString} from "components/ui/Capitalize";
 import {actionIcons} from "components/ui/icons";
 import {title} from "components/ui/title";
 import {LangFunc, useLangFunc} from "components/utils";
@@ -52,9 +53,9 @@ export const SeriesNumberInfo: VoidComponent<SeriesNumberInfoProps> = (props) =>
   return (
     <Show when={props.seriesNumber != undefined && props.seriesCount != undefined}>
       <span class="flex">
-        <span use:title={t("models.meeting.seriesNumber")}>{props.seriesNumber}</span>
+        <span use:title={capitalizeString(t("models.meeting.seriesNumber"))}>{props.seriesNumber}</span>
         <span class="text-grey-text whitespace-pre">{t("meetings.meeting_series_number_and_count_separator")}</span>
-        <span class="text-grey-text" use:title={t("models.meeting.seriesCount")}>
+        <span class="text-grey-text" use:title={capitalizeString(t("models.meeting.seriesCount"))}>
           {props.seriesCount}
         </span>
       </span>
