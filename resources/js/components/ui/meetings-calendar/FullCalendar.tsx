@@ -601,14 +601,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     toastSuccess(() => (
       <div class="flex gap-2 items-baseline">
         <span>{message}</span>
-        <Button class="secondary small" onClick={() => goToMeeting(meeting)}>
+        <Button class="secondary small" onClick={() => goToMeeting(meeting, otherMeetingIds)}>
           {t("actions.show")}
         </Button>
       </div>
     ));
   }
 
-  function goToMeeting(meeting: MeetingBasicData) {
+  function goToMeeting(meeting: MeetingBasicData, otherMeetingIds?: string[]) {
     const meetingDate = DateTime.fromISO(meeting.date);
     if (!daysSelection().contains(meetingDate)) {
       setDaysSelectionAndMonthFromDay(meetingDate);
@@ -635,6 +635,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
     }
     blinkMeeting(meeting.id);
+    for (const id of otherMeetingIds || []) {
+      blinkMeeting(id);
+    }
   }
   /** Scroll to the element representing the specified meeting or block. Find the element using the data-entity-id attribute. */
   function nativeScrollIntoView(entityId: string) {
