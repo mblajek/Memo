@@ -15,18 +15,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: DeathSy/GHA-LoC-Badge@1.0.3
         with:
-          directory: ./resources/js/
-          badge: ./badges/badge-ts.svg
-          badge_label: TypeScript
-          badge_style: flat
-          patterns: "**/*.ts|**/*.tsx|**/*.js"
-      - uses: DeathSy/GHA-LoC-Badge@1.0.3
-        with:
           directory: ./
+          patterns: "**/*.php"
           badge: ./badges/badge-php.svg
           badge_label: PHP
-          badge_style: flat
-          patterns: "**/*.php"
+          badge_color: 777bb3
+      - uses: DeathSy/GHA-LoC-Badge@1.0.3
+        with:
+          directory: ./resources/js/
+          patterns: "**/*.ts|**/*.tsx|**/*.js"
+          badge: ./badges/badge-ts.svg
+          badge_label: TypeScript
+          badge_color: 3178c6
       - uses: peaceiris/actions-gh-pages@v3
         with:
           publish_dir: ./badges
