@@ -1,0 +1,13 @@
+<svg width="80.5" height="20" viewBox="0 0 805 200" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <rect fill="#555" width="315" height="200"/>
+    <rect fill="#08C" x="315" width="490" height="200"/>
+  </g>
+  <g fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
+    <text x="60" y="148" textLength="215" fill="#000" opacity="0.1">PHP</text>
+    <text x="50" y="138" textLength="215">PHP</text>
+    <text x="370" y="148" textLength="390" fill="#000" opacity="0.1">16,586</text>
+    <text x="360" y="138" textLength="390">16,586</text>
+  </g>
+  
+</svg>
