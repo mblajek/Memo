@@ -6,7 +6,7 @@
   <mask id="m"><rect width="805" height="200" rx="30" fill="#FFF"/></mask>
   <g mask="url(#m)">
     <rect width="315" height="200" fill="#555"/>
-    <rect width="490" height="200" fill="##aeb2d5" x="315"/>
+    <rect width="490" height="200" fill="#aeb2d5" x="315"/>
     <rect width="805" height="200" fill="url(#a)"/>
   </g>
   <g fill="#fff" text-anchor="start" font-family="Verdana,DejaVu Sans,sans-serif" font-size="110">
