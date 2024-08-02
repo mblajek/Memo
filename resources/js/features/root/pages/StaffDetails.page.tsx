@@ -2,7 +2,6 @@ import {useParams} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
-import {EditButton} from "components/ui/Button";
 import {HideableSection} from "components/ui/HideableSection";
 import {BigSpinner} from "components/ui/Spinner";
 import {CheckboxField} from "components/ui/form/CheckboxField";
@@ -141,7 +140,8 @@ export default (() => {
                           </Match>
                           <Match when={status.data?.permissions.facilityAdmin}>
                             <div class="flex">
-                              <EditButton class="secondary small" onClick={[setEditMode, true]} />
+                              {/* TODO: Restore the Edit button when the backend is implemented. */}
+                              {/* <EditButton class="secondary small" onClick={[setEditMode, true]} /> */}
                             </div>
                           </Match>
                         </Switch>
