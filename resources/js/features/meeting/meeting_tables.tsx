@@ -1,4 +1,4 @@
-import {Button, DeleteButton} from "components/ui/Button";
+import {Button} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
@@ -6,7 +6,6 @@ import {TextExportedCell, exportCellFunc, formatDateTimeForTextExport} from "com
 import {DictFilterControl} from "components/ui/Table/tquery_filters/DictFilterControl";
 import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/UuidListSelectFilterControl";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
-import {createConfirmation} from "components/ui/confirmation";
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {actionIcons} from "components/ui/icons";
 import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
@@ -15,10 +14,7 @@ import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
-import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
-import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, createTableColumnsSet} from "data-access/memo-api/tquery/table_columns";
@@ -26,12 +22,10 @@ import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {FacilityUserType} from "../facility-users/user_types";
-import {MeetingForDelete, confirmDelete} from "./DeleteMeeting";
+import {MeetingDeleteButton} from "./MeetingDeleteButton";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags} from "./MeetingStatusTags";
-import {workTimeDeleteConfirmParams} from "./WorkTimeViewEditForm";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
-import {useMeetingAPI} from "./meeting_api";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
 
@@ -53,11 +47,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const {meetingTypeDict, meetingCategoryDict, attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
   const workTimeModal = createWorkTimeModal();
-  const confirmation = createConfirmation();
   const modelQuerySpecs = useModelQuerySpecs();
   const {getMeetingTypeCategory} = usePositionsGrouping();
-  const meetingAPI = useMeetingAPI();
-  const invalidate = useInvalidator();
 
   const MeetingTime: VoidComponent<{
     readonly startDayMinute: number | undefined;
@@ -97,49 +88,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           >
             <actionIcons.Details class="inlineIcon !mb-[2px]" /> {props.children || t("actions.details")}
           </Button>
-        )}
-      </Show>
-    );
-  };
-
-  const MeetingDeleteButton: ParentComponent<
-    {
-      readonly meetingId: string | undefined;
-      readonly meetingType?: string | undefined;
-      readonly meeting: MeetingForDelete;
-    } & htmlAttributes.button
-  > = (allProps) => {
-    const [props, buttonProps] = splitProps(allProps, ["meetingId", "meetingType", "children", "meeting"]);
-    async function deleteMeeting(meetingId: string, deleteOption: SeriesDeleteOption | undefined) {
-      // TODO: This function is very similar to deleteMeeting in MeetingViewEditForm.tsx - perhaps it could be shared?
-
-      if (!deleteOption) {
-        // deleteOption is undefined if confirmation was skipped with ctrl/alt - in this case we default to "one"
-        deleteOption = "one";
-      }
-      const {count} = await meetingAPI.delete(meetingId, deleteOption);
-      toastSuccess(t("forms.meeting_delete.success", {count}));
-      invalidate.facility.meetings();
-    }
-    async function confirmDeleteLocal(): Promise<SeriesDeleteOption | undefined> {
-      if (isWorkTimeLeaveTime(props.meetingType)) {
-        if (!(await confirmation.confirm(workTimeDeleteConfirmParams(t)))) {
-          return undefined;
-        }
-        // TODO: Handle SeriesDeleteOption for work times
-        return "one";
-      } else {
-        return confirmDelete(confirmation, t, props.meeting);
-      }
-    }
-    return (
-      <Show when={props.meetingId}>
-        {(meetingId) => (
-          <DeleteButton
-            {...buttonProps}
-            confirm={confirmDeleteLocal}
-            delete={(deleteOption: SeriesDeleteOption | undefined) => deleteMeeting(meetingId(), deleteOption)}
-          />
         )}
       </Show>
     );
@@ -378,17 +326,12 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       isDataColumn: false,
       // seriesCount, seriesNumber, interval are needed for delete confirmation. Alternatively, they could be fetched
       // when delete is clicked, but this would complicate the confirmation with query barriers
-      extraDataColumns: ["id", "typeDictId", "seriesCount", "seriesNumber", "interval"],
+      extraDataColumns: ["id", "categoryDictId", "typeDictId", "seriesCount", "seriesNumber", "interval"],
       columnDef: {
         cell: (c) => (
           <PaddedCell class="flex gap-1 h-min">
             <DetailsButton class="minimal" meetingId={c.row.original.id} meetingType={c.row.original.typeDictId} />
-            <MeetingDeleteButton
-              class="minimal"
-              meetingId={c.row.original.id}
-              meetingType={c.row.original.typeDictId}
-              meeting={c.row.original}
-            />
+            <MeetingDeleteButton class="minimal" meeting={c.row.original} />
           </PaddedCell>
         ),
         enableSorting: false,

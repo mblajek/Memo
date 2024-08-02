@@ -1,5 +1,5 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {FelteForm, useFormContext} from "components/felte-form/FelteForm";
+import {FelteForm, FormProps, useFormContext} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
@@ -12,9 +12,10 @@ import {useLocale} from "components/utils/LocaleContext";
 import {FormattedDateTime} from "components/utils/date_formatting";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {DateTime} from "luxon";
-import {For, VoidComponent, createComputed, createMemo, createSignal, on, onMount, splitProps} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on, onMount, splitProps} from "solid-js";
 import {z} from "zod";
 import s from "./MeetingSeriesForm.module.scss";
+import {MeetingWithExtraInfo} from "./meeting_api";
 
 export const getMeetingSeriesSchema = () =>
   z.object({
@@ -28,9 +29,10 @@ export const getMeetingSeriesSchema = () =>
 
 export type MeetingSeriesFormType = z.infer<ReturnType<typeof getMeetingSeriesSchema>>;
 
-interface Props extends FormConfigWithoutTransformFn<MeetingSeriesFormType> {
-  readonly id: string;
-  readonly startDate: DateTime;
+interface Props
+  extends FormConfigWithoutTransformFn<MeetingSeriesFormType>,
+    Pick<FormProps, "id" | "translationsFormNames"> {
+  readonly startMeeting: MeetingWithExtraInfo;
   readonly onCancel?: () => void;
 }
 
@@ -39,32 +41,47 @@ const INTERVALS: FacilityMeeting.CloneInterval[] = ["1d", "7d", "14d"];
 const MAX_NUM_MEETINGS = 100;
 
 export const MeetingSeriesForm: VoidComponent<Props> = (allProps) => {
-  const [props, formProps] = splitProps(allProps, ["locale", "id", "startDate", "onCancel"]);
+  const [props, formProps] = splitProps(allProps, ["locale", "startMeeting", "onCancel"]);
   return (
-    <FelteForm
-      id={props.id}
-      translationsFormNames={["meeting_series_create", "meeting_series"]}
-      schema={getMeetingSeriesSchema()}
-      {...formProps}
-    >
-      {(form) => (
-        <div class="flex flex-col gap-2">
-          <MeetingSeriesControls startDate={props.startDate} />
-          <FelteSubmit cancel={props.onCancel} disabled={!!form.warnings("seriesLength")} />
-        </div>
-      )}
+    <FelteForm schema={getMeetingSeriesSchema()} {...formProps}>
+      {(form) => {
+        const {translations} = useFormContext();
+        return (
+          <div class="flex flex-col gap-2">
+            <Show
+              when={
+                props.startMeeting.seriesNumber &&
+                props.startMeeting.seriesCount &&
+                props.startMeeting.seriesNumber !== props.startMeeting.seriesCount
+              }
+            >
+              <div class="font-semibold text-yellow-600">{translations.fieldName("extend_not_from_last_warning")}</div>
+            </Show>
+            <MeetingSeriesControls
+              startDate={DateTime.fromISO(props.startMeeting.date)}
+              existingMeetingsInSeries={props.startMeeting.seriesCount}
+            />
+            <FelteSubmit cancel={props.onCancel} disabled={!!form.warnings("seriesLength")} />
+          </div>
+        );
+      }}
     </FelteForm>
   );
 };
 
 interface MeetingSeriseControlsProps {
   readonly startDate: DateTime;
+  /**
+   * The number of meetings that already exist in the series that is being extended,
+   * or undefined if not extending a series.
+   */
+  readonly existingMeetingsInSeries?: number;
   readonly compact?: boolean;
 }
 
 export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = (props) => {
   const t = useLangFunc();
-  const {form} = useFormContext<MeetingSeriesFormType>();
+  const {form, translations} = useFormContext<MeetingSeriesFormType>();
   const locale = useLocale();
   const weekDaysCalculator = new WeekDaysCalculator(locale);
   const holidays = useHolidays();
@@ -130,7 +147,7 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
         />
       </div>
       <RangeField name="seriesLength" min="0" max="1" step="any" />
-      <FieldBox name="seriesMeetingDates" umbrella>
+      <FieldBox name="seriesDates" umbrella>
         <div
           ref={setMeetingDatesTable}
           class={cx("self-start pr-1 flex flex-col overflow-y-auto", props.compact ? "h-24" : "h-72")}
@@ -176,9 +193,15 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
         </div>
       </FieldBox>
       <div>
-        {t("forms.meeting_series.total_number_of_meetings", {
-          count: meetingSeriesCloneParams().dates.length + 1,
+        {translations.fieldName("number_of_meetings.total", {
+          count: meetingSeriesCloneParams().dates.length + (props.existingMeetingsInSeries ?? 1),
         })}
+        <Show when={props.existingMeetingsInSeries}>
+          {" "}
+          <span class="text-grey-text">
+            {translations.fieldName("number_of_meetings.including_existing", {count: props.existingMeetingsInSeries})}
+          </span>
+        </Show>
       </div>
     </div>
   );

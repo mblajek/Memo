@@ -2,7 +2,6 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {TextField} from "components/ui/form/TextField";
-import {useLangFunc} from "components/utils";
 import {Dictionaries} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
@@ -32,10 +31,13 @@ const getSchema = () =>
 export type WorkTimeFormType = z.infer<ReturnType<typeof getSchema>>;
 
 export const WorkTimeForm: VoidComponent<AbstractMeetingFormProps<WorkTimeFormType>> = (props) => {
-  const t = useLangFunc();
   const {meetingTypeDict} = useFixedDictionaries();
   return (
-    <AbstractMeetingForm {...props} schema={getSchema()} extraTranslationsFormNames={["work_time"]}>
+    <AbstractMeetingForm
+      {...props}
+      schema={getSchema()}
+      extraTranslationsFormNames={["work_time", "work_time_series", ...(props.extraTranslationsFormNames || [])]}
+    >
       {(form) => {
         const isWorkTime = () => form.data("typeDictId") === meetingTypeDict()?.work_time.id;
         return (
@@ -80,9 +82,6 @@ export const WorkTimeForm: VoidComponent<AbstractMeetingFormProps<WorkTimeFormTy
                   form.reset();
                   props.onCancel?.();
                 }}
-                submitLabel={(defaultLabel) =>
-                  form.data("createSeries") ? t("forms.meeting_series_create.submit") : defaultLabel
-                }
               />
             </Show>
           </>

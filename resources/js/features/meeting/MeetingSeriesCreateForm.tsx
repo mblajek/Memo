@@ -1,17 +1,18 @@
 import {createMutation} from "@tanstack/solid-query";
+import {FormProps} from "components/felte-form/FelteForm";
 import {useLangFunc} from "components/utils";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
 import {MeetingSeriesForm, MeetingSeriesFormType, getMeetingSeriesCloneParams} from "./MeetingSeriesForm";
+import {MeetingWithExtraInfo} from "./meeting_api";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
 
-export interface MeetingSeriesCreateFormProps {
-  readonly startMeeting: MeetingResource;
+export interface MeetingSeriesCreateFormProps extends Pick<FormProps, "id" | "translationsFormNames"> {
+  readonly startMeeting: MeetingWithExtraInfo;
   readonly initialValues?: Partial<MeetingSeriesFormType>;
   readonly onSuccess?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
   readonly onCancel?: () => void;
@@ -36,7 +37,7 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
     // eslint-disable-next-line solid/reactivity
     return () => {
       if (props.showToast ?? true) {
-        toastSuccess(t("forms.meeting_series_create.success"));
+        toastSuccess(t(`forms.${props.id}.success`));
       }
       props.onSuccess?.(
         {
@@ -57,12 +58,14 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
     ({
       ...defaultMeetingSeriesInitialValues(),
       ...props.initialValues,
+      ...(props.startMeeting.interval ? {seriesInterval: props.startMeeting.interval} : {}),
     }) satisfies MeetingSeriesFormType;
 
   return (
     <MeetingSeriesForm
-      id="meeting_series_create"
-      startDate={DateTime.fromISO(props.startMeeting.date)}
+      id={props.id}
+      translationsFormNames={props.translationsFormNames}
+      startMeeting={props.startMeeting}
       initialValues={initialValues()}
       onSubmit={createMeetings}
       onCancel={props.onCancel}

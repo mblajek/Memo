@@ -8,11 +8,11 @@ import {title} from "./title";
 
 const _DIRECTIVES_ = null && title;
 
-interface ConfirmParams {
+export interface ConfirmParams {
   readonly title: string;
   readonly body?: JSX.Element | Accessor<JSX.Element>;
-  readonly confirmText?: JSX.Element;
-  readonly cancelText?: string;
+  readonly confirmText?: JSX.Element | Accessor<JSX.Element>;
+  readonly cancelText?: JSX.Element | Accessor<JSX.Element>;
   readonly mode?: ConfirmationMode;
   readonly confirmDisabled?: Accessor<boolean>;
 }
@@ -33,6 +33,9 @@ const READ_BEFORE_CONFIRM_MILLIS = 5000;
 
 const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args) => {
   const t = useLangFunc();
+  function jsx(element: JSX.Element | Accessor<JSX.Element> | undefined, defaultValue?: JSX.Element) {
+    return element === undefined ? defaultValue : typeof element === "function" ? element() : element;
+  }
   return (
     <Modal
       title={args.params()?.title}
@@ -47,10 +50,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
       {(data) => {
         const [readBeforeConfirm, setReadBeforeConfirm] = createSignal(data().mode === "danger");
         setTimeout(() => setReadBeforeConfirm(false), READ_BEFORE_CONFIRM_MILLIS);
-        const body = () => {
-          const body = data().body;
-          return typeof body === "function" ? body() : body;
-        };
+        const body = () => jsx(data().body);
         return (
           <div class="flex flex-col gap-1 items-stretch">
             <div>{body()}</div>
@@ -62,7 +62,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
                   args.clearParams();
                 }}
               >
-                {data().cancelText || t("actions.cancel")}
+                {jsx(data().cancelText, t("actions.cancel"))}
               </Button>
               <div
                 class="flex-grow basis-0"
@@ -80,7 +80,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
                   }}
                   disabled={data().confirmDisabled?.() || readBeforeConfirm()}
                 >
-                  {data().confirmText || t("actions.confirm")}
+                  {jsx(data().confirmText, t("actions.confirm"))}
                 </Button>
               </div>
             </div>

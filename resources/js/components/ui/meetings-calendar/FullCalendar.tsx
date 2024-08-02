@@ -697,6 +697,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     );
   }
 
+  function onMeetingsCreated(firstMeeting: MeetingBasicData, otherMeetingIds?: string[]) {
+    meetingChangeEffects(
+      t(otherMeetingIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
+      firstMeeting,
+      otherMeetingIds,
+    );
+  }
+
   function getCalendarColumnPart(day: DateTime, resourceId: string) {
     const isStaff = staffResourcesById().has(resourceId);
     const relevantBlocks = createMemo(() => filterByStaffOrResource(blocks(), resourceId, isStaff));
@@ -717,7 +725,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   ...meetingTimeFullDayInitialValue(day),
                   ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
-                onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+                onSuccess: onMeetingsCreated,
                 showToast: false,
               });
             } else if (props.staticCalendarFunction === "timeTables") {
@@ -747,12 +755,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   ...meetingTimePartDayInitialValue(time),
                   ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
-                onSuccess: (meeting, cloneIds) =>
-                  meetingChangeEffects(
-                    t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
-                    meeting,
-                    cloneIds,
-                  ),
+                onSuccess: onMeetingsCreated,
                 showToast: false,
               });
             } else if (props.staticCalendarFunction === "timeTables") {
@@ -867,7 +870,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   date: day.toISODate(),
                   ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
-                onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+                onSuccess: onMeetingsCreated,
                 showToast: false,
               });
             } else if (props.staticCalendarFunction === "timeTables") {
@@ -894,7 +897,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       onCreated: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
       onCloned: (meeting, otherMeetingIds) =>
         meetingChangeEffects(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
-      onDeleted: (count) => toastSuccess(t("forms.meeting_delete.success", {count})),
     });
   }
 

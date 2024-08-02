@@ -1,5 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
-import {Button, DeleteButton, EditButton} from "components/ui/Button";
+import {Button, EditButton} from "components/ui/Button";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {LoadingPane} from "components/ui/LoadingPane";
 import {SimpleMenu} from "components/ui/SimpleMenu";
@@ -14,23 +13,21 @@ import {skipUndefinedValues} from "components/utils/object_util";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {FacilityMeeting, SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
-import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {Api, RequiredNonNullable} from "data-access/memo-api/types";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {getAttendantsValuesForEdit, useAttendantsCreator} from "./MeetingAttendantsFields";
+import {MeetingDeleteButton} from "./MeetingDeleteButton";
 import {MeetingForm, MeetingFormType, getResourceValuesForEdit} from "./MeetingForm";
-import {useMeetingAPI} from "./meeting_api";
+import {useMeetingAPI, useMeetingWithExtraInfo} from "./meeting_api";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {createMeetingCreateModal} from "./meeting_create_modal";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_time_controller";
-import {confirmDelete} from "./DeleteMeeting";
 
 export interface MeetingViewEditFormProps {
   readonly staticMeetingId: Api.Id;
@@ -42,7 +39,7 @@ export interface MeetingViewEditFormProps {
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
   readonly onDeleted?: (count: number) => void;
   readonly onCancel?: () => void;
-  /** Whether to show toast on success. Default: true. */
+  /** Whether to show toast on success. Does not affect delete toast (it is always shown). Default: true. */
   readonly showToast?: boolean;
 }
 
@@ -57,23 +54,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   const meetingCreateModal = createMeetingCreateModal();
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const confirmation = createConfirmation();
-  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(props.staticMeetingId));
-  const {dataQuery: meetingTQuery} = createTQuery({
-    prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacility()?.id}/meeting`,
-    requestCreator: staticRequestCreator({
-      columns: [
-        {type: "column", column: "seriesNumber"},
-        {type: "column", column: "seriesCount"},
-      ],
-      filter: {type: "column", column: "id", op: "=", val: props.staticMeetingId},
-      sort: [],
-      paging: {size: 1},
-    }),
-    dataQueryOptions: () => ({enabled: !!meetingQuery.data?.fromMeetingId}),
-  });
-  const seriesInfo = (): {seriesCount?: number; seriesNumber?: number} => meetingTQuery.data?.data[0] || {};
-  const meeting = () => ({...meetingQuery.data!, ...seriesInfo()});
+  const {meetingQuery, meeting} = useMeetingWithExtraInfo(props.staticMeetingId);
   const isBusy = () => !!meetingAPI.isPending();
 
   async function updateMeeting(values: Partial<MeetingFormType>) {
@@ -105,23 +86,6 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
       // but also causes problems apparently.
       invalidate.facility.meetings();
     };
-  }
-
-  async function deleteMeeting(deleteOption: SeriesDeleteOption | undefined) {
-    if (!deleteOption) {
-      // deleteOption is undefined if confirmation was skipped with ctrl/alt
-      // we go with the default ONE then
-      deleteOption = "one";
-    }
-    const {count} = await meetingAPI.delete(props.staticMeetingId, deleteOption);
-    if (props.showToast ?? true) {
-      toastSuccess(t("forms.meeting_delete.success", {count}));
-    }
-    props.onDeleted?.(count);
-    // Important: Invalidation should happen after calling onDeleted which typically closes the form.
-    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
-    // but also causes problems apparently.
-    invalidate.facility.meetings();
   }
 
   const initialValues = () => {
@@ -192,17 +156,19 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
             </div>
             <Show when={props.viewMode}>
               <div class="flex gap-1 justify-between">
-                <DeleteButton
+                <MeetingDeleteButton
                   class="secondary small"
-                  confirm={() => confirmDelete(confirmation, t, meeting())}
-                  delete={deleteMeeting}
+                  meeting={meeting()}
                   disabled={isBusy()}
+                  onDeleted={props.onDeleted}
                 />
                 <div class="flex gap-1">
                   <SplitButton
                     class="secondary small"
                     onClick={() => {
                       seriesCreateModal.show({
+                        id: "meeting_series_create",
+                        translationsFormNames: ["meeting_series_create", "meeting_series"],
                         startMeeting: meeting(),
                         onSuccess: props.onCloned,
                         showToast: props.showToast,
@@ -237,7 +203,8 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                     )}
                     disabled={isBusy()}
                   >
-                    <actionIcons.Repeat class="inlineIcon" /> {t("meetings.create_series")}
+                    <actionIcons.Repeat class="inlineIcon" />{" "}
+                    {t(meeting().fromMeetingId ? "meetings.extend_series" : "meetings.create_series")}
                   </SplitButton>
                   <Show when={props.onViewModeChange}>
                     <EditButton

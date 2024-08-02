@@ -15,7 +15,7 @@ interface Props {
 export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   return (
-    <Show when={props.meeting.seriesCount}>
+    <Show when={props.meeting.fromMeetingId || props.meeting.seriesCount}>
       <Switch>
         <Match when={props.compact}>
           <span

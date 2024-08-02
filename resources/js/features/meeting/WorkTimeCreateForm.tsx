@@ -52,7 +52,7 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
     );
     // eslint-disable-next-line solid/reactivity
     return () => {
-      toastSuccess(t("forms.work_time_create.success"));
+      toastSuccess(t(cloneIds?.length ? "forms.work_time_series_create.success" : "forms.work_time_create.success"));
       props.onSuccess?.({...(meeting as RequiredNonNullable<MeetingResourceForCreate>), id}, cloneIds);
       // Important: Invalidation should happen after calling onSuccess which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
@@ -77,6 +77,7 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
     <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
       <WorkTimeForm
         id="work_time_create"
+        extraTranslationsFormNames={["meeting_create", "work_time_series_create"]}
         initialValues={initialValues()}
         forceTimeEditable
         viewMode={false}

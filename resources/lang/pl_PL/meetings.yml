@@ -18,10 +18,11 @@ show_details: "Więcej"
 click_to_see_details: "Kliknij aby zobaczyć szczegóły spotkania"
 
 create_series: "Utwórz serię"
+extend_series: "Przedłuż serię"
 meeting_is_in_series: "Seria"
 meeting_series_number_and_count_separator: " / "
 series_first_date: "data początkowa"
-only_one_meeting_in_series_warning: "Wybierz więcej dat aby utworzyć serię spotkań."
+only_one_meeting_in_series_warning: "Wybierz więcej dat."
 
 meeting_without_staff:
   title: "Spotkanie bez pracowników"
@@ -29,9 +30,9 @@ meeting_without_staff:
 
 create_copy:
   any: "Utwórz i edytuj kopię"
-  in_one_day: "$t(en_dash)$t(thin_space)następnego dnia"
-  in_one_week: "$t(en_dash)$t(thin_space)tydzień później"
-  in_two_weeks: "$t(en_dash)$t(thin_space)dwa tygodnie później"
+  in_one_day: "$t(en_dash) następnego dnia"
+  in_one_week: "$t(en_dash) tydzień później"
+  in_two_weeks: "$t(en_dash) dwa tygodnie później"
 
 interval_labels:
   1d: "kolejne dni"

@@ -19,7 +19,7 @@ import {getMeetingTimeFullData, meetingTimePartDayInitialValue} from "./meeting_
 
 export interface MeetingCreateFormProps {
   readonly initialValues?: Partial<MeetingFormType>;
-  readonly onSuccess?: (meeting: MeetingBasicData, cloneIds?: string[]) => void;
+  readonly onSuccess?: (firstMeeting: MeetingBasicData, otherMeetingIds?: string[]) => void;
   readonly onCancel?: () => void;
   /** Whether the meeting date and time should start as editable, even if provided in the initial values. */
   readonly forceTimeEditable?: boolean;
@@ -89,6 +89,7 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
     <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
       <MeetingForm
         id="meeting_create"
+        extraTranslationsFormNames={["meeting_series_create"]}
         initialValues={initialValues()}
         forceTimeEditable={props.forceTimeEditable}
         viewMode={false}

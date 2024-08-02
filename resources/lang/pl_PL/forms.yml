@@ -94,8 +94,12 @@ meeting_series:
   field_names:
     seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
-    seriesMeetingDates: "daty"
-  total_number_of_meetings: "Łączna liczba dni: {{count}}"
+    seriesDates: "daty"
+    # Not real fields, but placed in field_names to allow overriding in work time series forms.
+    number_of_meetings:
+      total: "Łączna liczba spotkań: {{count}}"
+      including_existing: "(w tym już istniejące: {{count}})"
+    extend_not_from_last_warning: "Uwaga: Przedłużenie serii powinno być zwykle wykonane startując od ostatniego spotkania w serii."
 
 meeting_series_create:
   form_name: "Utwórz serię"
@@ -119,9 +123,33 @@ work_time_edit:
 
 work_time_delete:
   form_name: "Usunięcie czasu pracy / nieobecności"
-  confirmation_text: "Czy na pewno usunąć ten element?"
-  submit: "$t(actions.delete)"
-  success: "Usunięto czas pracy / nieobecność"
+  confirmation_text: "Czy na pewno usunąć ten wpis?"
+  series_info: "Ten wpis jest częścią serii"
+  one: "Usuń tylko ten wpis"
+  from_this__one: "Usuń ten wpis i kolejny {{count,number}} w serii"
+  from_this__few: "Usuń ten wpis i kolejne {{count,number}} w serii"
+  from_this__many: "Usuń ten wpis i kolejnych {{count,number}} w serii"
+  all__few: "Usuń wszystkie {{count, number}} wpisy w serii"
+  all__many: "Usuń wszystkich {{count, number}} wpisów w serii"
+  submit__one: "Usuń wpis"
+  submit__few: "Usuń {{count, number}} wpisy"
+  submit__many: "Usuń {{count, number}} wpisów"
+  success__one: "Usunięto wpis"
+  success__few: "Usunięto {{count, number}} wpisy"
+  success__many: "Usunięto {{count, number}} wpisów"
+
+work_time_series:
+  field_names:
+    # Overrides:
+    number_of_meetings:
+      total: "Łączna liczba wpisów: {{count}}"
+      including_existing: "(w tym już istniejące: {{count}})"
+    extend_not_from_last_warning: "Uwaga: Przedłużenie serii powinno być zwykle wykonane startując od ostatniego wpisu w serii."
+
+work_time_series_create:
+  form_name: "Utwórz serię"
+  submit: "Utwórz serię"
+  success: "Utworzono serię"
 
 client:
   field_names:
