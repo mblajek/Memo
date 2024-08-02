@@ -95,20 +95,20 @@ export const Navbar: VoidComponent = () => {
                 />
                 <NavigationItem
                   icon={OcTable3}
-                  href={`/${facilityUrl()}/meeting_attendants`}
+                  href={`/${facilityUrl()}/meeting-attendants`}
                   routeKey="facility.meeting_attendants"
                   small
                 />
                 <NavigationItem
                   icon={OcTable3}
-                  href={`/${facilityUrl()}/meeting_clients`}
+                  href={`/${facilityUrl()}/meeting-clients`}
                   routeKey="facility.meeting_clients"
                   small
                 />
                 <Show when={isDEV()}>
                   <NavigationItem
                     icon={OcTable3}
-                    href={`/${facilityUrl()}/system_meetings`}
+                    href={`/${facilityUrl()}/system-meetings`}
                     routeKey="DEV System"
                     small
                   />

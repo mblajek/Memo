@@ -32,6 +32,7 @@ interface Props {
   readonly meeting?: MeetingResource;
   /** Whether to show information about the meeting series in the view mode. Default: true. */
   readonly showSeriesInfo?: boolean;
+  readonly showSeriesLink?: boolean;
 }
 
 interface SuggestedTimes {
@@ -223,7 +224,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               </Show>
             </div>
             <Show when={(props.showSeriesInfo ?? true) && props.meeting}>
-              {(meeting) => <MeetingInSeriesInfo meeting={meeting()} />}
+              {(meeting) => <MeetingInSeriesInfo meeting={meeting()} showLink={props.showSeriesLink} />}
             </Show>
           </div>
         </Show>

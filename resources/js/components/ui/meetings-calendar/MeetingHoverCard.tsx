@@ -17,7 +17,7 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
     <div class="max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm">
       <div class="flex flex-col">
         <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
-        <MeetingInSeriesInfo meeting={props.meeting} />
+        <MeetingInSeriesInfo meeting={props.meeting} showLink={false} />
       </div>
       <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
       <MeetingStatusTags meeting={props.meeting} />

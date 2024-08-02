@@ -11,6 +11,7 @@ interface Props extends AnchorProps {
   readonly sameTabLink?: boolean;
   /** Whether the link icon to open in the new tab should be displayed. Default: same as sameTabLink. */
   readonly newTabLink?: boolean;
+  readonly newTabLinkTitle?: string;
 }
 
 /**
@@ -19,7 +20,7 @@ interface Props extends AnchorProps {
  * The primary link is just a text instead if it would go to the current page.
  */
 export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
-  const [props, anchorProps] = splitProps(allProps, ["sameTabLink", "newTabLink", "children"]);
+  const [props, anchorProps] = splitProps(allProps, ["sameTabLink", "newTabLink", "newTabLinkTitle", "children"]);
   const t = useLangFunc();
   const location = useLocation();
   const isOnThisUserPage = () => location.pathname === anchorProps.href;
@@ -33,7 +34,7 @@ export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
       </Show>
       <Show when={(props.newTabLink ?? props.sameTabLink) !== false}>
         {" "}
-        <span use:title={t("open_in_new_tab")}>
+        <span use:title={props.newTabLinkTitle || t("open_in_new_tab")}>
           <A {...anchorProps} target="_blank">
             <FiExternalLink class="inlineIcon strokeIcon" />
           </A>

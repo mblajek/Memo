@@ -23,6 +23,7 @@ meeting_is_in_series: "Seria"
 meeting_series_number_and_count_separator: " / "
 series_first_date: "data początkowa"
 only_one_meeting_in_series_warning: "Wybierz więcej dat."
+show_meetings_in_series_list_in_new_tab: "Otwórz serię w nowej karcie"
 
 meeting_without_staff:
   title: "Spotkanie bez pracowników"
