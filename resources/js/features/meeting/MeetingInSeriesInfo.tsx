@@ -1,19 +1,24 @@
 import {capitalizeString} from "components/ui/Capitalize";
 import {actionIcons} from "components/ui/icons";
+import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {title} from "components/ui/title";
 import {LangFunc, useLangFunc} from "components/utils";
 import {SeriesNumberAndCount, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {Match, Show, Switch, VoidComponent} from "solid-js";
+import {useActiveFacility} from "state/activeFacilityId.state";
 
 const _DIRECTIVES_ = null && title;
 
 interface Props {
   readonly meeting: Partial<Pick<TQMeetingResource, "fromMeetingId" | "interval" | "seriesNumber" | "seriesCount">>;
   readonly compact?: boolean;
+  /** Whether to show the link to the series page. Only relevant in non-compact mode. Default: true. */
+  readonly showLink?: boolean;
 }
 
 export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const activeFacility = useActiveFacility();
   return (
     <Show when={props.meeting.fromMeetingId || props.meeting.seriesCount}>
       <Switch>
@@ -31,7 +36,7 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
           </span>
         </Match>
         <Match when="not compact">
-          <span class="flex gap-x-1">
+          <span class="flex gap-x-1 whitespace-nowrap">
             <span use:title={t("meetings.meeting_is_in_series")}>
               <actionIcons.Repeat class="inlineIcon" />
             </span>
@@ -39,6 +44,14 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
             <span class="text-grey-text">
               <MeetingIntervalCommentText {...props.meeting} />
             </span>
+            <Show when={props.showLink ?? true}>
+              <LinkWithNewTabLink
+                href={`/${activeFacility()?.url}/meeting-series/${props.meeting.fromMeetingId}`}
+                sameTabLink={false}
+                newTabLink
+                newTabLinkTitle={t("meetings.show_meetings_in_series_list_in_new_tab")}
+              />
+            </Show>
           </span>
         </Match>
       </Switch>

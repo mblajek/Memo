@@ -29,6 +29,7 @@ const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Lo
 const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const MeetingAttendantsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingAttendantsList.page"));
 const MeetingClientsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingClientsList.page"));
+const MeetingSeriesPage = lazyAutoPreload(() => import("features/root/pages/MeetingSeries.page"));
 const ReportsPage = lazyAutoPreload(() => import("features/root/pages/Reports.page"));
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
@@ -99,16 +100,21 @@ const App: VoidComponent = () => {
                 <LeafRoute routeKey="facility.calendar" path="/calendar" component={CalendarPage} />
                 <LeafRoute routeKey="facility.meetings" path="/meetings" component={MeetingsListPage} />
                 <LeafRoute
+                  routeKey="facility.meeting_series"
+                  path="/meeting-series/:fromMeetingId"
+                  component={MeetingSeriesPage}
+                />
+                <LeafRoute
                   routeKey="facility.meeting_attendants"
-                  path="/meeting_attendants"
+                  path="/meeting-attendants"
                   component={MeetingAttendantsListPage}
                 />
                 <LeafRoute
                   routeKey="facility.meeting_clients"
-                  path="/meeting_clients"
+                  path="/meeting-clients"
                   component={MeetingClientsListPage}
                 />
-                <LeafRoute routeKey="System meetings" path="/system_meetings" component={SystemMeetingsListPage} />
+                <LeafRoute routeKey="System meetings" path="/system-meetings" component={SystemMeetingsListPage} />
                 <Route path="/staff">
                   <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
                   <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />

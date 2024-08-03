@@ -16,7 +16,7 @@ import {DATE_FORMAT} from "components/utils/formatting";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
-import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, createTableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
@@ -492,7 +492,7 @@ export function useMeetingTableFilters() {
     isSystemMeeting,
     isRegularMeeting: () => {
       const system = isSystemMeeting();
-      return system && invertFilter(system);
+      return system && ({...system, inv: true} satisfies FilterH);
     },
   };
 }

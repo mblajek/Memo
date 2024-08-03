@@ -11,6 +11,7 @@ Aktualnie system jest używany przez jedną z placówek [Fundacji Dajemy Dziecio
 <img height="60" src="./public/img/memo_joint_logo.png">
 
 Rozmiar projektu (linie kodu):\
-[![Lines of code](https://tokei.rs/b1/github/mblajek/Memo?style=flat&type=php&label=PHP)]()
-[![Lines of code](https://tokei.rs/b1/github/mblajek/Memo?style=flat&type=TypeScript,TSX&label=TypeScript)](https://github.com/mblajek/Memo/tree/develop/resources/js)\
+[![Lines of backend code](https://raw.githubusercontent.com/mblajek/Memo/badges/badge-php.svg)](#)
+[![Lines of frontend code](https://raw.githubusercontent.com/mblajek/Memo/badges/badge-ts.svg)](#)
+
 [![Tests status](https://github.com/mblajek/Memo/actions/workflows/tests.yml/badge.svg?event=push)](https://github.com/mblajek/Memo/actions)

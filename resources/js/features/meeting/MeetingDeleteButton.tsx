@@ -70,8 +70,8 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
       body: () => (
         <Show when={seriesCount() > 1} fallback={tt("confirmation_text")}>
           <div class="mb-4">
-            <div class="flex">
-              <span class="mr-4">{tt("series_info")}:</span>
+            <div class="flex flex-col">
+              <span>{tt("series_info")}:</span>
               <MeetingInSeriesInfo meeting={meeting()} />
             </div>
             <div class="mt-4">
