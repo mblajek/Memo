@@ -15,7 +15,7 @@ return new class extends Migration
     {
         $date = '2024-07-31 00:00:00';
         Schema::table('attributes', function (Blueprint $table) {
-            $table->string('notes', 4096)->nullable();
+            $table->string('description', 4096)->nullable();
         });
         DB::statement(
             "update `attributes` set `default_order` = `default_order` + 1 where `table` = 'clients'"
@@ -54,7 +54,7 @@ return new class extends Migration
         DB::statement("update `attributes` set `default_order` = `default_order` - 1 where `table` = 'clients'"
             ." order by `default_order`");
         Schema::table('attributes', function (Blueprint $table) {
-            $table->dropColumn('notes');
+            $table->dropColumn('description');
         });
     }
 };

@@ -31,7 +31,7 @@ use Illuminate\Support\Str;
             enum: AttributeRequirementLevel::class,
             example: 'required'
         ),
-        new OA\Property(property: 'notes', type: 'string', nullable: true),
+        new OA\Property(property: 'description', type: 'string', nullable: true),
     ],
     allOf: [new OA\Schema(ref: '#/components/schemas/AbstractJsonResource')],
 )] /**
@@ -56,7 +56,7 @@ class AttributeResource extends AbstractOpenApiResource
             'defaultOrder' => true,
             'isMultiValue' => true,
             'requirementLevel' => true,
-            'notes' => true,
+            'description' => true,
         ];
     }
 }
