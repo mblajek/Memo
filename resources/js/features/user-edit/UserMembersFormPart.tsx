@@ -13,7 +13,7 @@ import {
   useTableCells,
 } from "components/ui/Table";
 import {Select} from "components/ui/form/Select";
-import {FACILITY_ICONS} from "components/ui/icons";
+import {facilityIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
@@ -55,7 +55,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
   // A trick: we assume the form has only the key specified by membersPath, and it's of type Input.
   const {form} = useFormContext<Record<typeof membersPath, Input>>();
   const t = useLangFunc();
-  const translations = createTableTranslations("userFacilityMember");
+  const translations = createTableTranslations("user_facility_member");
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   const facilitiesById = createMemo(() => byId(facilitiesQuery.data));
   /** A list of facilities that are not yet present in any row. Only those can be added. */
@@ -107,7 +107,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                 name="__addedFacility"
                 label=""
                 placeholder={t("actions.add")}
-                aria-label={t("models.userFacilityMember.facility")}
+                aria-label={t("models.user_facility_member.facility")}
                 items={[...freeFacilities().map(({id, name}) => ({value: id, text: name}))]}
                 onFilterChange="internal"
                 nullable
@@ -156,7 +156,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                   form.setFields(membersPath, form.data(membersPath).toSpliced(index, 1));
                 }}
               >
-                <FACILITY_ICONS.remove class="inlineIcon" /> {t("actions.delete")}
+                <facilityIcons.Remove class="inlineIcon" /> {t("actions.delete")}
               </Button>
             </Show>
           </PaddedCell>
@@ -168,7 +168,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
   });
   return (
     <div>
-      <Capitalize class="font-medium" text={translations.tableName()} />
+      <Capitalize class="font-bold" text={translations.tableName()} />
       <Table table={table} />
     </div>
   );

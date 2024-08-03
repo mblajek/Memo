@@ -9,7 +9,7 @@ export const createUserCreateModal = registerGlobalPageElement<true>((args) => {
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.user_create.formName")}
+      title={t("forms.user_create.form_name")}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}

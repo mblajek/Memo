@@ -1,17 +1,17 @@
 # Memo
 
-System do zarządzania:
+**Memo** to system do zarządzania:
 
-- harmonogramami pracy pracowników fundacji,
-- bazą klientów,
-- kalendarzem wizyt klientów.
+- bazą klientów fundacji
+- kalendarzem wizyt klientów
+- grafikami pracy pracowników fundacji
 
-🚧 System jest w trakcie budowy. 🚧
+Aktualnie system jest używany przez jedną z placówek [Fundacji Dajemy Dzieciom Siłę](fdds.pl), w planie jest wdrożenie go w większej liczbie placówek.
 
 <img height="60" src="./public/img/memo_joint_logo.png">
 
-Total lines:\
-[![Lines of code](https://tokei.rs/b1/github/mblajek/Memo?style=flat&type=php&label=PHP)]()
-[![Lines of code](https://tokei.rs/b1/github/mblajek/Memo?style=flat&type=TypeScript,TSX&label=TypeScript)](https://github.com/mblajek/Memo/tree/develop/resources/js)
+Rozmiar projektu (linie kodu):\
+[![Lines of backend code](https://raw.githubusercontent.com/mblajek/Memo/badges/badge-php.svg)](#)
+[![Lines of frontend code](https://raw.githubusercontent.com/mblajek/Memo/badges/badge-ts.svg)](#)
 
 [![Tests status](https://github.com/mblajek/Memo/actions/workflows/tests.yml/badge.svg?event=push)](https://github.com/mblajek/Memo/actions)

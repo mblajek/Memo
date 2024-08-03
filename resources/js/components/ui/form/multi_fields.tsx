@@ -5,8 +5,8 @@ import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracke
 import {BsChevronCompactDown, BsChevronCompactUp} from "solid-icons/bs";
 import {Accessor, Index, JSX, Show, VoidComponent, createEffect, createMemo, on, splitProps} from "solid-js";
 import {Button} from "../Button";
-import {ACTION_ICONS} from "../icons";
-import {EMPTY_VALUE_SYMBOL} from "../symbols";
+import {actionIcons} from "../icons";
+import {EmptyValueSymbol} from "../symbols";
 
 export interface MultiFieldData {
   readonly name: string;
@@ -180,7 +180,7 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
                           )}
                           onClick={() => params().remove()}
                         >
-                          <ACTION_ICONS.delete class="text-current" />
+                          <actionIcons.Delete class="text-current" />
                         </Button>
                         <Show when={params().isLast() && props.addAtEndValue}>
                           {/* Add button after the last item. */}
@@ -188,7 +188,7 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
                             class="secondary small !min-h-small-input flex items-center justify-center"
                             onClick={addAtEnd}
                           >
-                            <ACTION_ICONS.add class="text-current" />
+                            <actionIcons.Add class="text-current" />
                           </Button>
                         </Show>
                       </div>
@@ -199,10 +199,10 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
             </Index>
             <Show when={!multiField.length()}>
               <div class="flex gap-1 items-center justify-between min-h-small-input">
-                <Show when={!isFieldsetDisabled() && props.addAtEndValue} fallback={EMPTY_VALUE_SYMBOL}>
+                <Show when={!isFieldsetDisabled() && props.addAtEndValue} fallback={<EmptyValueSymbol />}>
                   {/* Add button on a line by itself when there are no items. */}
                   <Button class="flex-grow text-start" onClick={addAtEnd}>
-                    {EMPTY_VALUE_SYMBOL}
+                    <EmptyValueSymbol />
                   </Button>
                   <div class="flex justify-end">
                     <Button
@@ -210,7 +210,7 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
                       style={{width: BUTTON_WIDTH}}
                       onClick={addAtEnd}
                     >
-                      <ACTION_ICONS.add class="text-current" />
+                      <actionIcons.Add class="text-current" />
                     </Button>
                   </div>
                 </Show>

@@ -38,9 +38,11 @@ duration:
 
 today: "dzisiaj"
 
-select_resource_to_show_calendar: "Wybierz terapeutę lub zasób aby wyświetlić kalendarz"
+select_resource_to_show_calendar: "Wybierz pracownika lub zasób aby wyświetlić kalendarz"
 
-click_for_staff_calendar: "Kliknij aby wyświetlić kalendarz pracownika"
+click_for_resource_calendar:
+  staff: "Kliknij aby wyświetlić kalendarz pracownika"
+  meeting_resource: "Kliknij aby wyświetlić kalendarz tego zasobu"
 
 # Override for the weekday names as formatted by the browser. This is useful especially for the "short" format.
 weekday_overrides:
@@ -57,4 +59,13 @@ relative_time:
   in_one_week: "tydzień później"
   in_two_weeks: "dwa tygodnie później"
 
-show_my_calendar: "Pokaż mój kalendarz"
+all_day: "cały dzień"
+
+facility_work_time: "godziny pracy placówki"
+facility_leave_time:
+  all_day: "dzień wolny"
+  part_day: "godziny wolne"
+staff_leave_time: "nieobecność"
+
+show_my_calendar: "Mój kalendarz"
+show_my_details: "Moje dane i spotkania"

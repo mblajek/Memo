@@ -29,7 +29,7 @@ export const ClientCreateForm: VoidComponent<ClientCreateFormProps> = (props) =>
       // Important: Invalidation should happen after calling onSuccess which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
       // but also causes problems apparently.
-      invalidate.facility.clients();
+      invalidate.facility.users();
     };
   }
 

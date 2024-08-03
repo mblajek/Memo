@@ -18,11 +18,11 @@ export const ColumnName: VoidComponent<Props> = (props) => {
     <span class="wrapText">
       <Switch>
         <Match when={props.def.meta?.tquery?.devColumn}>
-          <span class="wrapTextAnywhere" title="Unconfigured data column shown in DEV mode">
+          <span class="wrapTextAnywhere">
             <span class="text-xs">DEV</span> {props.def.id}
           </span>
         </Match>
-        <Match when={true}>
+        <Match when="fallback">
           <TranslatedText
             override={props.def.meta?.columnName}
             langFunc={

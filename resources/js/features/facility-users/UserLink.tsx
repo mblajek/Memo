@@ -1,77 +1,126 @@
 import {AnchorProps} from "@solidjs/router";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SmallSpinner} from "components/ui/Spinner";
-import {CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {adminIcons, clientIcons, staffIcons} from "components/ui/icons";
+import {EmptyValueSymbol} from "components/ui/symbols";
+import {cx, useLangFunc} from "components/utils";
 import {Api} from "data-access/memo-api/types";
-import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
-import {Show, VoidComponent, mergeProps, splitProps} from "solid-js";
-import {Dynamic} from "solid-js/web";
+import {Match, Show, Switch, VoidComponent, createMemo, splitProps} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
+import {useMembersData} from "./members_data";
+import {FacilityUserType} from "./user_types";
 
 interface Props extends Partial<AnchorProps> {
-  readonly type: FacilityUserType;
-  /** Whether to display the staff/client icon. Default: true. */
-  readonly icon?: boolean | "tiny";
-  /** Whether to linkify the name. Default: true. */
-  readonly link?: boolean;
+  /** The user id, or `"any"` to show the icon without text. */
   readonly userId: Api.Id | undefined;
+  /** The user's type, if known (otherwise it is fetched). */
+  readonly type?: FacilityUserType;
   /** The user's display name, if known (otherwise it is fetched). */
   readonly name?: string;
+  /** Whether to display the staff/client icon. Default: true. */
+  readonly icon?: boolean | "tiny";
+  /** Whether to show the name as text or link (if false, just the icon is shown). Default: true. */
+  readonly showName?: boolean;
+  /** Whether to linkify the name. Default: true. */
+  readonly link?: boolean;
+  /** Whether to show the link for opening in a new tab. Default: same as link. */
+  readonly newTabLink?: boolean;
 }
 
-const ICONS = {
-  staff: STAFF_ICONS.staff,
-  clients: CLIENT_ICONS.client,
-};
-
 export const UserLink: VoidComponent<Props> = (allProps) => {
-  const defProps = mergeProps({icon: true, link: true}, allProps);
-  const [props, anchorProps] = splitProps(defProps, ["type", "icon", "link", "userId", "name"]);
+  const [props, anchorProps] = splitProps(allProps, [
+    "type",
+    "icon",
+    "showName",
+    "link",
+    "newTabLink",
+    "userId",
+    "name",
+  ]);
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
-  const userDisplayNames = useUserDisplayNames();
-  const name = () => (props.name ? {displayName: props.name} : userDisplayNames.get(props.type, props.userId!));
-  return (
-    <Show
-      when={props.userId}
-      fallback={
-        <span class="inline-block" style={{"min-height": "1.45em"}}>
-          {EMPTY_VALUE_SYMBOL}
-        </span>
+  const membersData = useMembersData();
+  const memberData = createMemo(() =>
+    props.userId
+      ? membersData.getById(props.userId) || {
+          name: props.name,
+          isStaff: props.type === "staff",
+          // Initially assume staff is active.
+          isActiveStaff: props.type === "staff",
+          isClient: props.type === "clients",
+          hasFacilityAdmin: false,
+          hasGlobalAdmin: false,
+        }
+      : undefined,
+  );
+  const isInactive = () => memberData()?.isStaff && !memberData()?.isActiveStaff;
+  const icon = () => props.icon ?? true;
+  const iconStyleProps = () => ({
+    class: cx("inlineIcon", isInactive() ? "text-black dimmed" : undefined),
+    style: {"margin-right": "0.1em", "margin-bottom": "0.1em"},
+    size: props.icon === "tiny" ? "1.05em" : "1.3em",
+  });
+  const typeIcon = () => {
+    if (icon()) {
+      const mData = memberData()!;
+      if (mData.isStaff) {
+        if (mData.hasFacilityAdmin) {
+          return <staffIcons.StaffAndFacilityAdmin {...iconStyleProps()} />;
+        } else {
+          return <staffIcons.Staff {...iconStyleProps()} />;
+        }
+      } else if (mData.isClient) {
+        return <clientIcons.Client {...iconStyleProps()} />;
+      } else if (mData.hasFacilityAdmin) {
+        return <adminIcons.Admin {...iconStyleProps()} />;
       }
-    >
-      {/* Allow wrapping the client name, but not just after the icon. */}
+    }
+  };
+  const linkHref = () => {
+    if (props.newTabLink || (props.link ?? true)) {
+      const mData = memberData()!;
+      if (mData.isStaff) {
+        return `/${activeFacility()?.url}/staff/${allProps.userId}`;
+      } else if (mData.isClient) {
+        return `/${activeFacility()?.url}/clients/${allProps.userId}`;
+      }
+    }
+  };
+  return (
+    <Show when={props.userId} fallback={<EmptyValueSymbol class="inline-block" style={{"min-height": "1.45em"}} />}>
+      {/* Allow wrapping the name, but not just after the icon. */}
       <span
-        class="inline-block"
-        style={{"white-space": "nowrap", "min-height": props.icon === true ? "1.45em" : undefined}}
+        class="inline-block whitespace-nowrap text-black"
+        style={{"min-height": icon() === true ? "1.45em" : undefined}}
       >
-        <Show when={props.icon}>
-          <Dynamic
-            component={ICONS[props.type]}
-            size={props.icon === "tiny" ? "1.05em" : "1.3em"}
-            class="inlineIcon shrink-0 text-current"
-            style={{"margin-right": "0.1em", "margin-bottom": "0.1em"}}
-          />
-        </Show>
-        <Show when={name()} fallback={<SmallSpinner />}>
-          {(name) => (
-            <span style={{"white-space": "initial"}}>
-              <Show when={activeFacility() && name().displayName} fallback={t("parenthesised", {text: t("unknown")})}>
-                {(displayName) => (
-                  <Show when={props.link} fallback={<>{displayName()}</>}>
-                    <LinkWithNewTabLink
-                      {...anchorProps}
-                      href={`/${activeFacility()?.url}/${allProps.type}/${allProps.userId}`}
-                    >
-                      {displayName()}
-                    </LinkWithNewTabLink>
+        {typeIcon()}
+        <Show when={props.showName ?? true}>
+          <span class={isInactive() ? "text-grey-text" : undefined} style={{"white-space": "initial"}}>
+            <Switch>
+              <Match when={activeFacility() && memberData()?.name}>
+                {(name) => (
+                  <Show when={linkHref()} fallback={<>{name()}</>}>
+                    {(href) => (
+                      <LinkWithNewTabLink
+                        {...anchorProps}
+                        href={href()}
+                        sameTabLink={props.link}
+                        newTabLink={props.newTabLink}
+                      >
+                        {name()}
+                      </LinkWithNewTabLink>
+                    )}
                   </Show>
                 )}
-              </Show>
-            </span>
-          )}
+              </Match>
+              <Match when={membersData.isPending()}>
+                <SmallSpinner />
+              </Match>
+              <Match when="fallback">
+                <>{t("parenthesised", {text: t("unknown")})}</>
+              </Match>
+            </Switch>
+          </span>
         </Show>
       </span>
     </Show>

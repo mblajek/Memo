@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string ref_object_id
  * @property ?string string_value
  * @property ?int int_value
- * @property ?int datetime_value
+ * @property ?string datetime_value // no cast
  * @property int default_order
  * @method static ValueBuilder query()
  */
@@ -46,9 +46,9 @@ class Value extends Model
         return Attribute::getById($this->attribute_id);
     }
 
-    public function getTypeColumn(): string
+    public static function getTypeColumn(AttributeType $type): string
     {
-        return match ($this->attribute()->type) {
+        return match ($type) {
             AttributeType::Bool, AttributeType::Int => 'int_value',
             AttributeType::Date, AttributeType::Datetime => 'datetime_value',
             AttributeType::String, AttributeType::Text => 'string_value',
@@ -57,13 +57,18 @@ class Value extends Model
         };
     }
 
+    public function getAttributeColumn(): string
+    {
+        return self::getTypeColumn($this->attribute()->type);
+    }
+
     public function getTypeColumnValue(): int|string|bool|null
     {
-        return $this->getAttributeFromArray($this->getTypeColumn());
+        return $this->getAttributeFromArray($this->getAttributeColumn());
     }
 
     public function setTypeColumnValue(int|string|bool $value): void
     {
-        $this->setAttribute($this->getTypeColumn(), $value);
+        $this->setAttribute($this->getAttributeColumn(), $value);
     }
 }

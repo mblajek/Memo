@@ -1,6 +1,6 @@
 import {FiDelete} from "solid-icons/fi";
 import {Show, VoidComponent, createEffect, createSignal, on, splitProps} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
+import {cx, htmlAttributes, useLangFunc} from "../utils";
 import {Button} from "./Button";
 import {TextInput} from "./TextInput";
 
@@ -10,6 +10,7 @@ interface Props extends htmlAttributes.input {
 
 export const SearchInput: VoidComponent<Props> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["divClass"]);
+  const t = useLangFunc();
   let ref: HTMLInputElement | undefined;
   const [value, setValue] = createSignal("");
   function setNow() {
@@ -45,6 +46,7 @@ export const SearchInput: VoidComponent<Props> = (allProps) => {
               ref.focus();
             }
           }}
+          title={t("actions.clear")}
         >
           <FiDelete />
         </Button>

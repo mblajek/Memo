@@ -7,7 +7,7 @@ export const createPasswordChangeModal = registerGlobalPageElement<true>((args) 
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.password_change.formName")}
+      title={t("forms.password_change.form_name")}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}

@@ -16,7 +16,7 @@ use App\Tquery\Engine\TqService;
 
 readonly class MeetingTquery extends TqService
 {
-    public function __construct(private Facility $facility)
+    public function __construct(protected Facility $facility)
     {
         parent::__construct();
     }
@@ -31,15 +31,13 @@ readonly class MeetingTquery extends TqService
             inverse: false,
             nullable: false,
         );
-        $builder->whereNotDeleted($this->config->table);
         return $builder;
     }
 
     protected function getConfig(): TqConfig
     {
         $config = new TqConfig(table: TqTableAliasEnum::meetings);
-
-        $config->addSimple(TqDataTypeEnum::uuid, 'id');
+        $config->addBase();
         $config->addSimple(TqDataTypeEnum::uuid_nullable, 'from_meeting_id');
         $config->addSimple(TqDataTypeEnum::is_not_null, 'from_meeting_id', 'is_clone');
         $config->addSimple(TqDataTypeEnum::string_nullable, 'interval');
@@ -51,22 +49,6 @@ readonly class MeetingTquery extends TqService
         $config->addAttribute(MeetingAttributeUuidEnum::Category);
         $config->addAttribute(MeetingAttributeUuidEnum::Type);
         $config->addAttribute(MeetingAttributeUuidEnum::Status);
-        $config->addSimple(TqDataTypeEnum::datetime, 'created_at');
-        $config->addSimple(TqDataTypeEnum::datetime, 'updated_at');
-        $config->addSimple(TqDataTypeEnum::uuid, 'created_by', 'created_by.id');
-        $config->addJoined(
-            TqDataTypeEnum::string,
-            TqTableAliasEnum::created_by,
-            'name',
-            'created_by.name',
-        );
-        $config->addSimple(TqDataTypeEnum::uuid, 'updated_by', 'updated_by.id');
-        $config->addJoined(
-            TqDataTypeEnum::string,
-            TqTableAliasEnum::updated_by,
-            'name',
-            'updated_by.name',
-        );
         /** @var array<string, ?AttendanceType> $attendanceTypes */
         $attendanceTypes = [
             'attendants' => null,
@@ -131,6 +113,25 @@ readonly class MeetingTquery extends TqService
             fn(string $tableName) => //
             "select json_arrayagg(json_object('resourceDictId', `meeting_resources`.`resource_dict_id`)) from $resourceFromWhere",
             'resources',
+        );
+
+        /** @noinspection SqlResolve */
+        $seriesSql = 'select nullif(count(1), 0) from `meetings` as `other`'
+            . ' where `other`.`from_meeting_id` = `meetings`.from_meeting_id';
+        $config->addQuery(
+            TqDataTypeEnum::int_nullable,
+            fn(string $tableName) => $seriesSql,
+            'series_count',
+        );
+        $config->addQuery(
+            TqDataTypeEnum::int_nullable,
+            fn(string $tableName) => $seriesSql
+                . ' and (`other`.`date` < `meetings`.`date`'
+                . ' or (`other`.`date` = `meetings`.`date`'
+                . ' and (`other`.`start_dayminute` < `meetings`.`start_dayminute`'
+                . ' or (`other`.`start_dayminute` = `meetings`.`start_dayminute`'
+                . ' and `other`.`id` <= `meetings`.`id`))))',
+            'series_number',
         );
 
         $config->addCount();

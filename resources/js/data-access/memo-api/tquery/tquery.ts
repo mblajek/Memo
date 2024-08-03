@@ -75,17 +75,18 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   requestCreator,
   dataQueryOptions,
 }: {
-  prefixQueryKey: K;
-  entityURL: EntityURL;
+  prefixQueryKey: K | Accessor<K>;
+  entityURL: EntityURL | Accessor<EntityURL>;
   requestCreator: RequestCreator<C>;
   dataQueryOptions?: ExtraDataQueryOptions<K> | Accessor<ExtraDataQueryOptions<K>>;
 }) {
   const extraDataQueryOptions: Accessor<ExtraDataQueryOptions<K>> =
     typeof dataQueryOptions === "function" ? dataQueryOptions : () => dataQueryOptions || {};
   const disabledByExtraDataQueryOptions = () => extraDataQueryOptions().enabled === false;
+  const entityURLFunc = typeof entityURL === "function" ? entityURL : () => entityURL;
   const schemaQuery = createQuery(() => ({
-    queryKey: ["tquery-schema", entityURL] satisfies SchemaQueryKey,
-    queryFn: () => V1.get<Schema>(`${entityURL}/tquery`).then((res) => res.data),
+    queryKey: ["tquery-schema", entityURLFunc()] satisfies SchemaQueryKey,
+    queryFn: () => V1.get<Schema>(`${entityURLFunc()}/tquery`).then((res) => res.data),
     staleTime: 3600 * 1000,
     refetchOnMount: false,
     enabled: !disabledByExtraDataQueryOptions(),
@@ -93,13 +94,18 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
   const dataQuery = createQuery<DataResponse, AxiosError<Api.ErrorResponse>, DataResponse, DataQueryKey<K>>(() => ({
-    queryKey: [...prefixQueryKey, "tquery", entityURL, request()!] satisfies DataQueryKey<K>,
+    queryKey: [
+      ...(typeof prefixQueryKey === "function" ? prefixQueryKey() : prefixQueryKey),
+      "tquery",
+      entityURLFunc(),
+      request()!,
+    ] satisfies DataQueryKey<K>,
     queryFn: (context) => {
       const request = getRequestFromQueryKey(context.queryKey);
       if (request.filter === "never") {
         return EMPTY_RESPONSE;
       }
-      return V1.post<DataResponse>(`${entityURL}/tquery`, request).then((res) => res.data);
+      return V1.post<DataResponse>(`${entityURLFunc()}/tquery`, request).then((res) => res.data);
     },
     placeholderData: keepPreviousData,
     // It is difficult to match the types here because of the defined/undefined initial data types.

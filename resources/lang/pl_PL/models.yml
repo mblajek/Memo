@@ -32,7 +32,7 @@ facility:
   userCount: "liczba osób"
   admins: "administratorzy"
 
-userFacilityMember:
+user_facility_member:
   _name: "powiązanie osoby i placówki"
   _name_plural: "powiązania osób i placówek"
   user: "osoba"
@@ -62,6 +62,9 @@ user:
   hasEmailVerified: "e-mail zweryfikowany"
   members: "przypisane placówki"
   facilities.count: "liczba placówek"
+  managedByFacilityId: "placówka zarządzająca"
+  managedByFacility.name: "$t(models.user.managedByFacilityId)"
+  lastLoginFacility.name: "ostatnia placówka logowania"
 
 facility_user:
   _name: "pracownik/klient"
@@ -77,11 +80,29 @@ facility_user:
 staff:
   _name: "pracownik"
   _name_plural: "pracownicy"
-  hasFacilityAdmin: "$t(models.permissions.facilityAdmin)"
+  staff:
+    hasFacilityAdmin: "$t(models.permissions.facilityAdmin)"
+    isActive: "aktywny"
+    deactivatedAt: "nieaktywny od"
+    createdAt: "$t(models.generic.createdAt)"
+    createdBy.name: "$t(models.generic.createdBy.name)"
+    createdBy.id: "$t(models.generic.createdBy.id)"
+    updatedAt: "$t(models.generic.updatedAt)"
+    updatedBy.name: "$t(models.generic.updatedBy.name)"
+    updatedBy.id: "$t(models.generic.updatedBy.id)"
 
 client:
   _name: "klient"
   _name_plural: "klienci"
+  shortCode: "numer"
+  client:
+    shortCode: "$t(models.client.shortCode)"
+    createdAt: "$t(models.generic.createdAt)"
+    createdBy.name: "$t(models.generic.createdBy.name)"
+    createdBy.id: "$t(models.generic.createdBy.id)"
+    updatedAt: "$t(models.generic.updatedAt)"
+    updatedBy.name: "$t(models.generic.updatedBy.name)"
+    updatedBy.id: "$t(models.generic.updatedBy.id)"
 
 meeting:
   _name: "spotkanie"
@@ -89,17 +110,20 @@ meeting:
   date: "data"
   startDayminute: "godzina rozpoczęcia"
   durationMinutes: "długość"
-  isClone: "w serii"
+  isClone: "seria"
   interval: "typ serii"
+  seriesNumber: "numer w serii"
+  seriesCount: "długość serii"
   categoryDictId: "kategoria"
-  typeDictId: "typ"
+  typeDictId: "typ spotkania"
   statusDictId: "$t(dictionary.meetingStatus._name)"
+  attendant: "uczestnik"
   attendants: "uczestnicy"
-  attendants.count: "$t(models.meeting.attendants) – liczba"
+  attendants.count: "$t(models.meeting.attendants)$t(thin_space)$t(en_dash)$t(thin_space)liczba"
   staff: "$t(models.staff._name_plural)"
-  staff.count: "$t(models.meeting.staff) – liczba"
+  staff.count: "$t(models.meeting.staff)$t(thin_space)$t(en_dash)$t(thin_space)liczba"
   clients: "$t(models.client._name_plural)"
-  clients.count: "$t(models.meeting.clients) – liczba"
+  clients.count: "$t(models.meeting.clients)$t(thin_space)$t(en_dash)$t(thin_space)liczba"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"

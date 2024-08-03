@@ -1,13 +1,27 @@
 tables:
   generic:
-    tableName: "tabela"
+    table_name: "tabela"
     summary__zero: "Brak wyników"
     summary__one: "{{count, number}} wynik"
     summary__few: "{{count, number}} wyniki"
     summary__many: "{{count, number}} wyników"
-    columnNames:
+    column_names:
       id: "id"
       actions: "akcje"
+    column_groups:
+      meeting: "$t(models.meeting._name)"
+      attendant: "$t(models.meeting.attendant)"
+    with_column_group:
+      meeting:
+        summary__zero: "Brak spotkań"
+        summary__one: "{{count, number}} spotkanie"
+        summary__few: "{{count, number}} spotkania"
+        summary__many: "{{count, number}} spotkań"
+      attendant:
+        summary__zero: "Brak uczestników"
+        summary__one: "{{count, number}} uczestnik"
+        summary__few: "{{count, number}} uczestników"
+        summary__many: "{{count, number}} uczestników"
 
   user:
     summary__zero: "Brak osób"
@@ -16,21 +30,30 @@ tables:
     summary__many: "{{count, number}} osób"
 
   staff:
+    table_name: "$t(models.staff._name_plural)"
     summary__zero: "Brak pracowników"
     summary__one: "{{count, number}} pracownik"
     summary__few: "{{count, number}} pracowników"
     summary__many: "{{count, number}} pracowników"
-    columnNames:
-      staff.hasFacilityAdmin: "$t(models.staff.hasFacilityAdmin)"
 
   client:
+    table_name: "$t(models.client._name_plural)"
     summary__zero: "Brak klientów"
     summary__one: "{{count, number}} klient"
     summary__few: "{{count, number}} klientów"
     summary__many: "{{count, number}} klientów"
 
-  userFacilityMember:
-    tableName: "$t(models.user.members)"
+  facility_admin:
+    table_name: "administratorzy"
+    summary__zero: "Brak administratorów"
+    summary__one: "{{count, number}} administrator"
+    summary__few: "{{count, number}} administratorów"
+    summary__many: "{{count, number}} administratorów"
+    column_names:
+      member.isStaff: "$t(models.user_facility_member.isFacilityStaff) (posiada kalendarz)"
+
+  user_facility_member:
+    table_name: "$t(models.user.members)"
 
   facility:
     summary__zero: "Brak placówek"
@@ -39,30 +62,80 @@ tables:
     summary__many: "{{count, number}} placówek"
 
   meeting:
-    tableName: "$t(models.meeting._name_plural)"
+    table_name: "$t(models.meeting._name_plural)"
     summary__zero: "Brak spotkań"
     summary__one: "{{count, number}} spotkanie"
     summary__few: "{{count, number}} spotkania"
     summary__many: "{{count, number}} spotkań"
-    columnNames:
+    column_names:
       startDayminute: "godzina"
       attendants.*.userId: "$t(models.meeting.attendants)"
-      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants) – statusy"
+      attendants.*.attendanceStatusDictId: "$t(models.meeting.attendants)$t(thin_space)$t(en_dash)$t(thin_space)statusy"
       staff.*.userId: "$t(models.meeting.staff)"
-      staff.*.attendanceStatusDictId: "$t(models.meeting.staff) – statusy"
+      staff.*.attendanceStatusDictId: "$t(models.meeting.staff)$t(thin_space)$t(en_dash)$t(thin_space)statusy"
       clients.*.userId: "$t(models.meeting.clients)"
-      clients.*.attendanceStatusDictId: "$t(models.meeting.clients) – statusy"
+      clients.*.attendanceStatusDictId: "$t(models.meeting.clients)$t(thin_space)$t(en_dash)$t(thin_space)statusy"
       resources.*.dictId: "$t(models.meeting.resources)"
-      attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
-      attendant.name: "uczestnik"
-      attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
 
-  meetingAttendant:
-    tableName: "$t(models.meeting.attendants)"
-    summary__zero: "Brak uczestników"
-    summary__one: "{{count, number}} uczestnik"
-    summary__few: "{{count, number}} uczestników"
-    summary__many: "{{count, number}} uczestników"
+  meeting_attendant:
+    table_name: "$t(models.meeting.attendants)"
+    column_names:
+      id: "id spotkania"
+      attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
+      attendant.userId: "$t(models.meeting.attendant)"
+      attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
+    summary__zero: "Brak uczestnictw"
+    summary__one: "{{count, number}} uczestnictwo"
+    summary__few: "{{count, number}} uczestnictwa"
+    summary__many: "{{count, number}} uczestnictw"
+
+  meeting_multi_attendant:
+    column_names:
+      createdAt: "utworzono (spotkanie)"
+      createdBy.name: "utworzono przez (spotkanie)"
+      createdBy.id: "$t(tables.tables.meeting_attendant.column_names.createdBy.id)"
+      updatedAt: "zmodyfikowano (spotkanie)"
+      updatedBy.name: "zmodyfikowano przez (spotkanie)"
+      updatedBy.id: "$t(tables.tables.meeting_attendant.column_names.updatedBy.id)"
+
+  meeting_single_attendant:
+    table_name: "$t(models.meeting._name_plural)"
+    summary__zero: "$t(tables.tables.meeting.summary__zero)"
+    summary__one: "$t(tables.tables.meeting.summary__one)"
+    summary__few: "$t(tables.tables.meeting.summary__few)"
+    summary__many: "$t(tables.tables.meeting.summary__many)"
+
+  meeting_client:
+    table_name: "$t(models.meeting.attendants)$t(thin_space)$t(en_dash)$t(thin_space)klienci"
+    column_names:
+      attendant.userId: "$t(models.client._name)"
+      client.notes: "opis klienta"
+      notes: "opis spotkania"
+      client.createdAt: "utworzono (klient)"
+      client.createdBy.name: "utworzono przez (klient)"
+      client.createdBy.id: "$t(tables.tables.meeting_client.column_names.client.createdBy.id)"
+      client.updatedAt: "zmodyfikowano (klient)"
+      client.updatedBy.name: "zmodyfikowano przez (klient)"
+      client.updatedBy.id: "$t(tables.tables.meeting_client.column_names.client.updatedBy.id)"
+    column_groups:
+      attendant: "$t(models.client._name)"
+    with_column_group:
+      attendant:
+        summary__zero: "Brak klientów"
+        summary__one: "{{count, number}} klient"
+        summary__few: "{{count, number}} klientów"
+        summary__many: "{{count, number}} klientów"
+
+  time_table:
+    table_name: "Grafiki pracy"
+    column_names:
+      attendant.userId: "$t(models.staff._name)"
+      id: "$t(tables.tables.generic.column_names.id)"
+      typeDictId: "typ"
+    summary__zero: "$t(tables.tables.generic.summary__zero)"
+    summary__one: "$t(tables.tables.generic.summary__one)"
+    summary__few: "$t(tables.tables.generic.summary__few)"
+    summary__many: "$t(tables.tables.generic.summary__many)"
 
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
@@ -73,7 +146,7 @@ filter:
   filter_cleared: "Brak filtra"
   filter_set: "Filtr aktywny"
   column_filters_cleared: "Brak filtrów w kolumnach"
-  column_filters_set: "Filtry w kolumnach aktywne:"
+  column_filters_set: "Aktywne filtry w kolumnach:"
   click_to_clear: "Kliknij aby wyczyścić"
   click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
   click_to_sync_number_range: "Kliknij aby ustawić max = min"
@@ -113,7 +186,27 @@ export:
     excel_csv: "Excel CSV"
   all_pages: "cała tabela"
   current_page: "bieżąca strona"
-  exporting: "Eksportowanie…"
+  exporting: "Eksportowanie$t(ellipsis)"
   success: "Zapisano dane do pliku"
   error: "Nie udało się wyeksportować danych"
   aborted: "Anulowano eksport"
+
+column_groups:
+  grouping_symbol: "✦"
+  feature_name: "Grupowanie wierszy tabeli"
+  no_grouping: "Brak grupowania"
+  grouped_column_tooltip:
+    unknown_count: "Zgrupowane wiersze"
+    known_count: "Zgrupowane wiersze ({{count}})"
+  count_column_label: "$t(tables.column_groups.grouping_symbol) Liczba zgrupowanych wierszy"
+  explicit_group: "Grupowanie bazujące na wielu kolumnach"
+  column_status:
+    force_shown: "Kolumna grupująca musi być widoczna"
+    grouped: "Wartości w kolumnie są zgrupowane"
+
+rows__zero: "Brak wierszy"
+rows__one: "{{count, number}} wiersz"
+rows__few: "{{count, number}} wiersze"
+rows__many: "{{count, number}} wierszy"
+
+more_info: "Kliknij aby dowiedzieć się więcej o tej tabeli"

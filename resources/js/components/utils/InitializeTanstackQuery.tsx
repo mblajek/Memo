@@ -1,12 +1,4 @@
-import {
-  MutationCache,
-  QueryCache,
-  QueryClient,
-  QueryClientProvider,
-  useQueryClient,
-  type MutationMeta,
-  type QueryMeta,
-} from "@tanstack/solid-query";
+import {MutationCache, QueryCache, QueryClient, QueryClientProvider, useQueryClient} from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
 import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config";
 import {translateError} from "data-access/memo-api/error_util";
@@ -25,18 +17,24 @@ import {ToastMessages, toastError} from "./toast";
 type QuietHTTPStatuses = number[];
 
 declare module "@tanstack/query-core" {
-  interface QueryMeta {
-    quietHTTPStatuses?: QuietHTTPStatuses;
-    tquery?: TQueryMeta;
-  }
-  interface MutationMeta {
-    quietHTTPStatuses?: QuietHTTPStatuses;
-    isFormSubmit?: boolean;
+  interface Register {
+    readonly queryMeta: QueryMeta;
+    readonly mutationMeta: MutationMeta;
   }
 }
 
+interface QueryMeta {
+  readonly quietHTTPStatuses?: QuietHTTPStatuses;
+  readonly tquery?: TQueryMeta;
+}
+
 export interface TQueryMeta {
-  isTable?: boolean;
+  readonly isTable?: boolean;
+}
+
+interface MutationMeta {
+  readonly quietHTTPStatuses?: QuietHTTPStatuses;
+  readonly isFormSubmit?: boolean;
 }
 
 /**
@@ -58,7 +56,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       if (respErrors) {
         // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
         if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {
-          invalidate.userStatusAndFacilityPermissions();
+          invalidate.userStatusAndFacilityPermissions({clearCache: true});
         }
         if (meta?.isFormSubmit) {
           // Validation errors will be handled by the form.

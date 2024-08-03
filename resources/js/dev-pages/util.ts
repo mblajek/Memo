@@ -1,4 +1,4 @@
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {Attribute} from "data-access/memo-api/attributes";
 import {useAllAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 
@@ -15,7 +15,7 @@ export function useAttrValueFormatter() {
       }
     }
     if (val === undefined) {
-      return EMPTY_VALUE_SYMBOL;
+      return EMPTY_VALUE_SYMBOL_STRING;
     } else if (attr.multiple && Array.isArray(val)) {
       return val.map(formatV).join(", ");
     } else {

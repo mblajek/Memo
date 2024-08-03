@@ -1,6 +1,6 @@
 import {cx, useLangFunc} from "components/utils";
 import {TbFilter, TbFilterOff} from "solid-icons/tb";
-import {VoidComponent, createSignal} from "solid-js";
+import {JSX, VoidComponent, createSignal} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 
@@ -8,7 +8,7 @@ interface Props {
   readonly class?: string;
   readonly isFiltering: boolean;
   readonly onClear: () => void;
-  readonly title?: string;
+  readonly title?: JSX.Element;
 }
 
 export const FilterIconButton: VoidComponent<Props> = (props) => {

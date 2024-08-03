@@ -3,7 +3,9 @@
 namespace App\Tquery\Tables;
 
 use App\Models\Client;
+use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
@@ -21,15 +23,19 @@ readonly class ClientTquery extends FacilityUserTquery
         return $builder;
     }
 
+    final public static function addClientFields(Facility $facility, TqConfig $config): void
+    {
+        $config->addBaseOnTable(TqTableAliasEnum::clients, 'client');
+        $config->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::clients, 'short_code');
+        foreach (Client::attrMap($facility) as $attribute) {
+            $config->addAttribute($attribute, 'client');
+        }
+    }
+
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-        foreach (Client::attrMap($this->facility) as $attribute) {
-            // todo: support fot all attributes
-            if ($attribute->is_multi_value === null) {
-                $config->addAttribute($attribute, 'client');
-            }
-        }
+        self::addClientFields($this->facility, $config);
         return $config;
     }
 }

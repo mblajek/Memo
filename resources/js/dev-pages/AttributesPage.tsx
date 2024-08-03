@@ -18,7 +18,7 @@ import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {Setter, Show, VoidComponent, createMemo} from "solid-js";
 import {Select} from "../components/ui/form/Select";
-import {EMPTY_VALUE_SYMBOL} from "../components/ui/symbols";
+import {EmptyValueSymbol} from "../components/ui/symbols";
 import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
 import {MemoTitle} from "../features/root/MemoTitle";
 import {useAttrValueFormatter} from "./util";
@@ -104,7 +104,7 @@ export default (() => {
             <Header
               ctx={ctx}
               filter={[ctx.column.getFilterValue, ctx.column.setFilterValue as Setter<unknown>]}
-              filterControl={
+              filterControl={() => (
                 <Select
                   name="modelFilter"
                   items={models().map((model) => ({value: model}))}
@@ -113,7 +113,7 @@ export default (() => {
                   onValueChange={ctx.column.setFilterValue}
                   small
                 />
-              }
+              )}
             />
           ),
           filterFn: (row, columnId, filter: string) => row.getValue(columnId) === filter,
@@ -125,7 +125,7 @@ export default (() => {
         h.accessor("type", {
           id: "Type",
           cell: cellFunc<AttributeType, Attribute>((props) => (
-            <PaddedCell>{getAttributeTypeString(props.row)}</PaddedCell>
+            <PaddedCell>{getAttributeTypeString(props.row as Attribute)}</PaddedCell>
           )),
           ...textSort(),
         }),
@@ -133,7 +133,7 @@ export default (() => {
           id: "Multiple",
           cell: cellFunc<boolean, Attribute>((props) => (
             <PaddedCell>
-              <ShowCellVal v={props.v} fallback={EMPTY_VALUE_SYMBOL}>
+              <ShowCellVal v={props.v} fallback={<EmptyValueSymbol />}>
                 {(v) => String(v())}
               </ShowCellVal>
             </PaddedCell>

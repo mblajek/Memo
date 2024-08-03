@@ -1,6 +1,7 @@
 language: "polski"
 
 app_name: "Memo"
+app_version_short: "v{{version}}"
 
 exception:
   configuration:
@@ -17,6 +18,7 @@ exception:
   unexpected: "Nieoczekiwany błąd serwera"
   invalid_json: "Zapytanie nie ma formatu JSON"
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
+  user_not_managed_by_facility: "Osoba nie jest zarządzana przez tę placówkę"
   _unknown: "Błąd konfiguracji ({{text}})"
 
 passwords:
@@ -34,6 +36,8 @@ auth:
 verified_user: "Użytkownik zweryfikowany"
 unverified_user: "Użytkownik niezweryfikowany"
 
+no_permissions_to_view: "Brak uprawnień do wyświetlenia tego zasobu"
+
 bool_values:
   yes: "tak"
   no: "nie"
@@ -44,13 +48,21 @@ range:
   min: "min:"
   max: "max:"
 
-quoted: "„{{text}}”"
+quotes:
+  open: "„"
+  close: "”"
+quoted: "$t(quotes.open){{-text}}$t(quotes.close)"
 parenthesis:
   open: "("
   close: ")"
-parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
-with_colon: "{{text}}:"
+parenthesised: "$t(parenthesis.open){{-text}}$t(parenthesis.close)"
+with_colon: "{{-text}}:"
 ellipsis: "…"
+with_ellipsis: "{{-text}}$t(ellipsis)"
+
+em_dash: "—"
+en_dash: "–"
+thin_space: " "
 
 more_info: "Więcej informacji"
 
@@ -82,8 +94,12 @@ form_page_leave_confirmation:
 
 about_page:
   app_version: "Wersja aplikacji:"
-  commit_date: "Moment zbudowania:"
-  commit_hash: "Commit:"
-  backend_hash: "Suma kontrolna backendu:"
-  frontend_hash: "Suma kontrolna frontendu:"
+  app_env: "Środowisko:"
+  commit_date: "Data wersji:"
+  commit_hash: "Identyfikator wersji:"
   cpu_load: "Obciążenie CPU:"
+
+preview: "Podgląd"
+
+confirmation:
+  read_before_confirm: "Przeczytaj uważnie czego dotyczy pytanie"

@@ -24,7 +24,7 @@ export const CreatedByInfo: VoidComponent<Props> = (allProps) => {
         >
           {t(mode() === "created" ? "created_by" : "updated_by")}
         </Button>{" "}
-        <UserLink type="staff" userId={mode() === "created" ? props.data.createdBy : props.data.updatedBy} />
+        <UserLink userId={mode() === "created" ? props.data.createdBy : props.data.updatedBy} />
       </div>
       <Show when={mode() === "created" ? props.data.createdAt : props.data.updatedAt}>
         {(dateTime) => (

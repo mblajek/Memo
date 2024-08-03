@@ -1,25 +1,45 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
 import {FiExternalLink} from "solid-icons/fi";
-import {ParentComponent, Show} from "solid-js";
+import {ParentComponent, Show, splitProps} from "solid-js";
 import {useLangFunc} from "../utils";
+import {title} from "./title";
+
+const _DIRECTIVES_ = null && title;
+
+interface Props extends AnchorProps {
+  /** Whether the content should be a link to open in the same tab. Default: true. */
+  readonly sameTabLink?: boolean;
+  /** Whether the link icon to open in the new tab should be displayed. Default: same as sameTabLink. */
+  readonly newTabLink?: boolean;
+  readonly newTabLinkTitle?: string;
+}
 
 /**
  * A link, with an additional link opening in new tab.
  *
  * The primary link is just a text instead if it would go to the current page.
  */
-export const LinkWithNewTabLink: ParentComponent<AnchorProps> = (props) => {
+export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
+  const [props, anchorProps] = splitProps(allProps, ["sameTabLink", "newTabLink", "newTabLinkTitle", "children"]);
   const t = useLangFunc();
   const location = useLocation();
-  const isOnThisUserPage = () => location.pathname === props.href;
+  const isOnThisUserPage = () => location.pathname === anchorProps.href;
   return (
-    <span>
-      <Show when={isOnThisUserPage()} fallback={<A {...props}>{props.children}</A>}>
+    <span class="text-current">
+      <Show
+        when={isOnThisUserPage() || props.sameTabLink === false}
+        fallback={<A {...anchorProps}>{props.children}</A>}
+      >
         {props.children}
-      </Show>{" "}
-      <A {...props} target="_blank" title={t("open_in_new_tab")}>
-        <FiExternalLink class="inlineIcon strokeIcon text-current" />
-      </A>
+      </Show>
+      <Show when={(props.newTabLink ?? props.sameTabLink) !== false}>
+        {" "}
+        <span use:title={props.newTabLinkTitle || t("open_in_new_tab")}>
+          <A {...anchorProps} target="_blank">
+            <FiExternalLink class="inlineIcon strokeIcon" />
+          </A>
+        </span>
+      </Show>
     </span>
   );
 };

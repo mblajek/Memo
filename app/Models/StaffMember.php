@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
+ * @property string $timetable_id
+ * @property string $deactivated_at // no cast // todo
  * @property-read Timetable $timetable
  * @property-read Member $member
  * @method static StaffMemberBuilder query()
@@ -21,9 +23,14 @@ class StaffMember extends Model
 
     protected $fillable = [
         'timetable_id',
+        'deactivated_at',
     ];
 
-    protected $casts = self::BASE_CASTS;
+    protected $casts = [
+        'created_at' => 'immutable_datetime',
+        'updated_at' => 'immutable_datetime',
+        'deactivated_at' => 'immutable_datetime',
+    ];
 
     public function timetable(): BelongsTo
     {

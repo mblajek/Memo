@@ -1,6 +1,7 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {SmallSpinner} from "components/ui/Spinner";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/symbols";
+import {title} from "components/ui/title";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -8,6 +9,8 @@ import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tq
 import {For, Show, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {UserLink} from "./UserLink";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props {
   readonly clientId: string;
@@ -31,16 +34,10 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
           {type: "column", column: countColumn},
         ],
         filter: {
-          type: "op",
-          op: "&",
-          val: [
-            {
-              type: "column",
-              column: "clients.*.userId",
-              op: "has",
-              val: props.clientId,
-            },
-          ],
+          type: "column",
+          column: "clients.*.userId",
+          op: "has",
+          val: props.clientId,
         },
         sort: [
           {type: "column", column: countColumn, desc: true},
@@ -93,7 +90,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
         <Capitalize text={t("facility_user.related_users")} />
       </h2>
       <QueryBarrier queries={[relatedUsersQuery.dataQuery]} pending={() => <SmallSpinner />}>
-        <Show when={relatedPeople()?.staff.length || relatedPeople()?.clients.length} fallback={EMPTY_VALUE_SYMBOL}>
+        <Show when={relatedPeople()?.staff.length || relatedPeople()?.clients.length} fallback={<EmptyValueSymbol />}>
           <div class="flex flex-col gap-1">
             <For each={["staff", "clients"] as const}>
               {(type) => (
@@ -103,7 +100,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
                       {(user) => (
                         <span>
                           <UserLink type={type} userId={user.id} name={user.name} />{" "}
-                          <span class="text-grey-text" title={t("facility_user.related_user_meetings_count")}>
+                          <span class="text-grey-text" use:title={t("facility_user.related_user_meetings_count")}>
                             {t("parenthesised", {text: user.meetingsCount})}
                           </span>
                         </span>

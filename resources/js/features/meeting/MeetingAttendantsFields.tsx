@@ -5,34 +5,33 @@ import {Capitalize} from "components/ui/Capitalize";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
-import {TQueryConfig, TQuerySelect} from "components/ui/form/TQuerySelect";
-import {ACTION_ICONS, CLIENT_ICONS, STAFF_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
-import {cx, useLangFunc} from "components/utils";
+import {TQuerySelect} from "components/ui/form/TQuerySelect";
+import {actionIcons} from "components/ui/icons";
+import {EmptyValueSymbol} from "components/ui/symbols";
+import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
-import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {
   MeetingAttendantResource,
   MeetingResource,
   MeetingResourceForCreate,
   MeetingResourceForPatch,
 } from "data-access/memo-api/resources/meeting.resource";
-import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
-import {Dynamic} from "solid-js/web";
-import {activeFacilityId} from "state/activeFacilityId.state";
+import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, createMemo, on} from "solid-js";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
+import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
 import {getMeetingTimeFullData} from "./meeting_time_controller";
 
-export const getAttendantsSchemaPart = () => ({
-  staff: getAttendantsSchema(),
-  clients: getAttendantsSchema(),
-});
+export const getAttendantsSchemaPart = () =>
+  z.object({
+    staff: getAttendantsSchema(),
+    clients: getAttendantsSchema(),
+  });
 
 const getAttendantsSchema = () =>
   z.array(
@@ -65,6 +64,8 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const {createAttendant} = useAttendantsCreator();
+  const modelQuerySpecs = useModelQuerySpecs();
+  const autoRelatedClients = useAutoRelatedClients();
   const {form, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
@@ -80,8 +81,24 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     ),
   );
 
+  // For some reason the form sometimes fails to propagate events from the selects. Nudge the data just in case.
+  createComputed(
+    on(
+      // eslint-disable-next-line solid/reactivity
+      createMemo(() =>
+        form
+          .data(props.name)
+          .map(({userId}) => userId)
+          .join(""),
+      ),
+      () => form.setData((d) => d),
+    ),
+  );
+  const attendantsMemo = createMemo(() => form.data(props.name), [], {
+    equals: (a, b) => a.length === b.length && a.every((v, i) => v.userId === b[i]!.userId),
+  });
   createEffect<readonly FormAttendantData[]>((prevAttendants) => {
-    const attendants = form.data(props.name);
+    const attendants = attendantsMemo();
     // When in edit mode, add an empty row at the end in the following situations:
     if (
       !props.viewMode &&
@@ -98,36 +115,23 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
       form.addField(props.name, createAttendant());
     return attendants;
   });
-  const tquerySpec = (): TQueryConfig => {
-    if (props.name === "staff")
-      return {
-        entityURL: `facility/${activeFacilityId()}/user/staff`,
-        prefixQueryKey: FacilityStaff.keys.staff(),
-      };
-    if (props.name === "clients")
-      return {
-        entityURL: `facility/${activeFacilityId()}/user/client`,
-        prefixQueryKey: FacilityClient.keys.client(),
-      };
-    return props.name satisfies never;
-  };
 
   return (
     <div class="flex flex-col items-stretch">
       <div
         class="grid gap-x-1"
         style={{
-          "grid-template-columns": "auto 1.5fr 1.2rem 1fr",
+          "grid-template-columns": "1.5fr 1.2rem 1fr",
           "row-gap": 0,
         }}
       >
-        <div class="col-span-3">
+        <div class="col-span-2">
           <FieldLabel
             fieldName={props.name}
             umbrella
             label={
               <Capitalize
-                text={t(`forms.meeting.fieldNames.${props.name}__interval`, {
+                text={t(`forms.meeting.field_names.${props.name}__interval`, {
                   postProcess: "interval",
                   count: form.data(props.name).filter(Boolean).length,
                 })}
@@ -149,35 +153,50 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           </div>
         </Show>
         <div class="col-span-full grid grid-cols-subgrid gap-1 span">
-          <Index each={form.data(props.name)} fallback={EMPTY_VALUE_SYMBOL}>
+          <Index each={form.data(props.name)} fallback={<EmptyValueSymbol />}>
             {(_attendant, index) => {
               const userId = () => form.data(`${props.name}.${index}.userId`);
+              const priorityQueryParams = createMemo(() =>
+                props.name === "clients"
+                  ? // eslint-disable-next-line solid/reactivity
+                    autoRelatedClients.selectParamsExtension(() =>
+                      // Make sure this is the same for all the client selects if there are multiple clients,
+                      // to avoid sending multiple additional requests.
+                      form
+                        .data(props.name)
+                        .map(({userId}) => userId)
+                        .filter(NON_NULLABLE),
+                    )
+                  : undefined,
+              );
               return (
                 <Show
                   when={userId() || !props.viewMode}
                   fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
                 >
-                  <Dynamic
-                    component={props.name === "staff" ? STAFF_ICONS.staff : CLIENT_ICONS.client}
-                    class="col-start-1 min-h-small-input"
-                    size="24"
-                  />
-                  <div class={conflictsFinder() ? undefined : "col-span-2"}>
+                  <div class={cx("col-start-1 flex items-center gap-1", conflictsFinder() ? undefined : "col-span-2")}>
                     <Switch>
                       <Match when={props.viewMode}>
                         <div class="flex items-center">
                           <PlaceholderField name={`${props.name}.${index}.userId`} />
-                          <UserLink type={props.name} icon={false} userId={userId()} />
+                          <UserLink type={props.name} userId={userId()} />
                         </div>
                       </Match>
                       <Match when={!props.viewMode}>
-                        <TQuerySelect
-                          name={`${props.name}.${index}.userId`}
-                          label=""
-                          querySpec={tquerySpec()}
-                          nullable={false}
-                          small
-                        />
+                        <div class="flex-grow">
+                          <TQuerySelect
+                            name={`${props.name}.${index}.userId`}
+                            label=""
+                            {...(props.name === "staff"
+                              ? modelQuerySpecs.userStaff()
+                              : props.name === "clients"
+                                ? modelQuerySpecs.userClient({showBirthDateWhenSelected: true})
+                                : (props.name satisfies never))}
+                            {...priorityQueryParams()?.()}
+                            nullable={false}
+                            small
+                          />
+                        </div>
                       </Match>
                     </Switch>
                   </div>
@@ -247,7 +266,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             title={t("actions.delete")}
                             onClick={() => form.setFields(props.name, form.data(props.name).toSpliced(index, 1))}
                           >
-                            <ACTION_ICONS.delete class="inlineIcon text-current" />
+                            <actionIcons.Delete class="inlineIcon" />
                           </Button>
                         </div>
                       </Show>
@@ -259,7 +278,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             title={t(`forms.meeting.add_attendant.${props.name}`)}
                             onClick={() => form.addField(props.name, createAttendant(), index + 1)}
                           >
-                            <ACTION_ICONS.add class="inlineIcon text-current" />
+                            <actionIcons.Add class="inlineIcon" />
                           </Button>
                         </div>
                       </Show>

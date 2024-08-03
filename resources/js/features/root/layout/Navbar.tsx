@@ -1,7 +1,9 @@
+import {A} from "@solidjs/router";
 import {FullLogo} from "components/ui/FullLogo";
-import {CLIENT_ICONS, FACILITY_ICONS, STAFF_ICONS, USER_ICONS} from "components/ui/icons";
+import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
+import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
@@ -9,15 +11,14 @@ import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
-import {TbHelp, TbInfoCircle} from "solid-icons/tb";
+import {TbCalendarTime, TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
-import {DEV, Show, VoidComponent} from "solid-js";
+import {DEV, ParentComponent, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
 import {useThemeControl} from "../components/theme_control";
 import s from "./layout.module.scss";
-import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 
 export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
@@ -25,13 +26,16 @@ export const Navbar: VoidComponent = () => {
   const {theme} = useThemeControl();
   const systemStatusMonitor = useSystemStatusMonitor();
   const facilityUrl = () => activeFacility()?.url;
-  const CommonFacilityItems: VoidComponent = () => (
-    <>
-      <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar" />
-      <NavigationItem icon={STAFF_ICONS.menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
-      <NavigationItem icon={CLIENT_ICONS.menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
-    </>
+
+  const FacilityAdminOrStaffBarrier: ParentComponent = (props) => (
+    <SilentAccessBarrier
+      roles={["facilityAdmin"]}
+      fallback={() => <SilentAccessBarrier roles={["facilityStaff"]}>{props.children}</SilentAccessBarrier>}
+    >
+      {props.children}
+    </SilentAccessBarrier>
   );
+
   const themeStyle = () => {
     const t = theme();
     return {"--navbar-color": t === "light" ? "#f3f0e0" : t === "dark" ? "#e3e0d0" : (t satisfies never)};
@@ -42,16 +46,42 @@ export const Navbar: VoidComponent = () => {
       <nav class={cx("p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}>
         <Show when={facilityUrl()}>
           <NavigationSection>
-            <SilentAccessBarrier
-              facilityUrl={facilityUrl()}
-              roles={["facilityAdmin"]}
-              fallback={() => (
-                <SilentAccessBarrier facilityUrl={facilityUrl()} roles={["facilityStaff"]}>
-                  <CommonFacilityItems />
-                </SilentAccessBarrier>
-              )}
-            >
-              <CommonFacilityItems />
+            <FacilityAdminOrStaffBarrier>
+              <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar" />
+              <NavigationItem icon={staffIcons.Menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
+              <NavigationItem icon={clientIcons.Menu} href={`/${facilityUrl()}/clients`} routeKey="facility.clients" />
+              <NavigationItem icon={adminIcons.Menu} href={`/${facilityUrl()}/admins`} routeKey="facility.admins" />
+            </FacilityAdminOrStaffBarrier>
+            {/* TODO: Create the facility page when there is useful information on it. */}
+            {/* <NavigationItem icon={facilityIcons.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" /> */}
+          </NavigationSection>
+          <SilentAccessBarrier roles={["facilityAdmin"]}>
+            <NavigationSection name={t("routes.menu_sections.facility_admin")}>
+              <NavigationItem
+                icon={TbCalendarTime}
+                href={`/${facilityUrl()}/admin/time-tables`}
+                routeKey="facility.facility_admin.time_tables"
+              >
+                <NavigationItem
+                  icon={TbCalendarTime}
+                  href={`/${facilityUrl()}/admin/time-tables`}
+                  routeKey="facility.facility_admin.time_tables_calendar"
+                  small
+                  end
+                />
+                <NavigationItem
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/admin/time-tables/staff`}
+                  routeKey="facility.facility_admin.time_tables_staff"
+                  small
+                />
+                <NavigationItem
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/admin/time-tables/facility`}
+                  routeKey="facility.facility_admin.time_tables_facility"
+                  small
+                />
+              </NavigationItem>
               <NavigationItem
                 icon={HiOutlineClipboardDocumentList}
                 href={`/${facilityUrl()}/admin/reports`}
@@ -65,37 +95,39 @@ export const Navbar: VoidComponent = () => {
                 />
                 <NavigationItem
                   icon={OcTable3}
-                  href={`/${facilityUrl()}/meeting_attendants`}
+                  href={`/${facilityUrl()}/meeting-attendants`}
                   routeKey="facility.meeting_attendants"
+                  small
+                />
+                <NavigationItem
+                  icon={OcTable3}
+                  href={`/${facilityUrl()}/meeting-clients`}
+                  routeKey="facility.meeting_clients"
                   small
                 />
                 <Show when={isDEV()}>
                   <NavigationItem
                     icon={OcTable3}
-                    href={`/${facilityUrl()}/system_meetings`}
+                    href={`/${facilityUrl()}/system-meetings`}
                     routeKey="DEV System"
                     small
                   />
                 </Show>
               </NavigationItem>
-            </SilentAccessBarrier>
-            {/* TODO: Restore the page when there is useful information on it. */}
-            {/* <NavigationItem icon={FACILITY_ICONS.facility} href={`/${facilityUrl()}/home`} routeKey="facility.home" /> */}
-          </NavigationSection>
+            </NavigationSection>
+          </SilentAccessBarrier>
         </Show>
         <SilentAccessBarrier roles={["globalAdmin"]}>
-          <NavigationSection title={t("routes.menu_sections.global_admin")}>
-            <NavigationItem icon={FACILITY_ICONS.adminMenu} href="/admin/facilities" routeKey="admin.facilities" />
-            <NavigationItem icon={USER_ICONS.adminMenu} href="/admin/users" routeKey="admin.users" />
+          <NavigationSection name={t("routes.menu_sections.global_admin")}>
+            <NavigationItem icon={facilityIcons.AdminMenu} href="/admin/facilities" routeKey="admin.facilities" />
+            <NavigationItem icon={userIcons.AdminMenu} href="/admin/users" routeKey="admin.users" />
           </NavigationSection>
         </SilentAccessBarrier>
-        <NavigationSection title={t("routes.menu_sections.other")}>
-          <NavigationItem icon={TbHelp} href="/help" routeKey="help">
-            <NavigationItem icon={TbInfoCircle} href="/help/about" routeKey="help_pages.about" small />
-          </NavigationItem>
+        <NavigationSection name={t("routes.menu_sections.other")}>
+          <NavigationItem icon={TbHelp} href="/help" routeKey="help" />
         </NavigationSection>
         <Show when={isDEV()}>
-          <NavigationSection title="DEV">
+          <NavigationSection name="DEV">
             <NavigationItem icon={FaSolidList} href="/dev/attributes" routeKey="Attributes" small />
             <NavigationItem icon={TiSortAlphabetically} href="/dev/dictionaries" routeKey="Dictionaries" small />
             <Show when={DEV}>
@@ -115,9 +147,9 @@ export const Navbar: VoidComponent = () => {
         </Show>
       </nav>
       <div class="grow" />
-      <div class="p-2 text-grey-text">
+      <A href="/help/about" class="p-2 !text-grey-text">
         {t("app_name")} {systemStatusMonitor.status()?.version}
-      </div>
+      </A>
     </aside>
   );
 };

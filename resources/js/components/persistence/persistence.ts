@@ -25,7 +25,7 @@ export function createPersistence<T, S = string>({
     return;
   }
   const stored = deserialise(serialiser, storage.load(fullVersion));
-  if (stored) {
+  if (stored !== undefined) {
     try {
       onLoad(stored.value);
     } catch (e) {

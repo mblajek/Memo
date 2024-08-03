@@ -2,6 +2,7 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {ATTRIBUTES_SCHEMA} from "components/ui/form/AttributeFields";
+import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
 import {TextField} from "components/ui/form/TextField";
 import {VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
@@ -22,6 +23,7 @@ interface Props extends FormConfigWithoutTransformFn<ClientFormType> {
 
 export const ClientForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "onCancel"]);
+  const confirmation = createFormLeaveConfirmation();
   return (
     <FelteForm
       id={props.id}
@@ -31,9 +33,20 @@ export const ClientForm: VoidComponent<Props> = (allProps) => {
       class="flex flex-col gap-4 items-stretch"
       {...formProps}
     >
-      <TextField name="name" autofocus />
-      <ClientFields editMode />
-      <FelteSubmit cancel={props.onCancel} />
+      {(form) => {
+        async function cancel() {
+          if (!form.isDirty() || (await confirmation.confirm())) {
+            props.onCancel?.();
+          }
+        }
+        return (
+          <>
+            <TextField name="name" autofocus />
+            <ClientFields editMode />
+            <FelteSubmit cancel={props.onCancel ? cancel : undefined} />
+          </>
+        );
+      }}
     </FelteForm>
   );
 };

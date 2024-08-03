@@ -28,3 +28,4 @@ facility:
   add: "Dodaj placówkę"
 client:
   add: "Dodaj klienta"
+  delete: "Usuń klienta"

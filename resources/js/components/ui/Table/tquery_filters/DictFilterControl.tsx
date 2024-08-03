@@ -1,28 +1,38 @@
-import {Select} from "components/ui/form/Select";
+import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
+import {Select, SelectItem} from "components/ui/form/Select";
 import {cx} from "components/utils";
+import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
-import {createComputed, createMemo, createSignal} from "solid-js";
+import {createMemo, VoidComponent} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {useSingleSelectFilterHelper} from "./select_filters_helper";
-import {FilterControl} from "./types";
-import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
+import {FilterControlProps} from "./types";
 
-export const DictFilterControl: FilterControl = (props) => {
+interface DictFilterControlProps extends FilterControlProps {
+  readonly positionItemsFunc?: (
+    dictionary: Dictionary,
+    defItem: (pos: Position) => SelectItem,
+  ) => readonly SelectItem[];
+}
+
+export const DictFilterControl: VoidComponent<DictFilterControlProps> = (props) => {
   const filterFieldNames = useFilterFieldNames();
   const dictionaries = useDictionaries();
   const {getGroupName} = usePositionsGrouping();
   const {itemsForNullableColumn, buildFilter, updateValue} = useSingleSelectFilterHelper();
   const schema = () => props.schema as DictDataColumnSchema;
-
-  const [value, setValue] = createSignal<readonly string[]>([]);
-  createComputed(() => {
-    if (!props.filter) {
-      setValue([]);
-    }
-    // Ignore other external filter changes.
+  const {
+    value: [value, setValue],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {value: [] as readonly string[]},
+    filter: () => props.filter,
   });
+  const positionItemsFunc = () => props.positionItemsFunc || ((dict, defItem) => dict.activePositions.map(defItem));
   const items = createMemo(() => {
     const dict = dictionaries()?.get(schema().dictionaryId);
     if (!dict) {
@@ -30,7 +40,7 @@ export const DictFilterControl: FilterControl = (props) => {
     }
     return [
       ...(schema().nullable ? itemsForNullableColumn() : []),
-      ...dict.activePositions.map((pos) => ({
+      ...positionItemsFunc()(dict, (pos) => ({
         value: pos.id,
         text: pos.label,
         groupName: getGroupName({dictId: dict.id, pos}),

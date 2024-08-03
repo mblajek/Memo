@@ -1,6 +1,7 @@
 import {Attribute} from "data-access/memo-api/attributes";
 
 export interface PartialAttributesSelection<D = never> {
+  readonly model: string;
   /** Whether to include the non-fixed attributes. Default: true. */
   readonly includeNonFixed?: boolean;
   /** Whether to include the fixed attributes. Default: false. */
@@ -20,30 +21,35 @@ export interface PartialAttributesSelection<D = never> {
 export interface AttributesSelection<D = true> extends Required<PartialAttributesSelection<D>> {}
 
 export function attributesSelectionFromPartial<D>({
+  model,
   includeNonFixed = true,
   includeFixed = false,
   fixedOverrides = {},
-}: PartialAttributesSelection<D> = {}): AttributesSelection<D> {
-  return {includeNonFixed, includeFixed, fixedOverrides};
+}: PartialAttributesSelection<D>): AttributesSelection<D> {
+  return {model, includeNonFixed, includeFixed, fixedOverrides};
 }
 
+/** Returns the list of fixed attributes specified in the selection that do not exist. */
 export function getUnknownFixedAttributes<D>(
   selection: AttributesSelection<D>,
   attributes: Attribute[],
 ): string[] | undefined {
   const unknownFixedAttributes = new Set(Object.keys(selection.fixedOverrides));
-  for (const attribute of attributes) {
-    if (attribute.isFixed) {
-      unknownFixedAttributes.delete(attribute.apiName);
-    }
-  }
+  for (const attribute of attributes)
+    if (attribute.model === selection.model)
+      if (attribute.isFixed) {
+        unknownFixedAttributes.delete(attribute.apiName);
+      }
   return unknownFixedAttributes.size ? [...unknownFixedAttributes] : undefined;
 }
 
 export function isAttributeSelected<D>(
   selection: AttributesSelection<D>,
-  {isFixed, apiName}: Pick<Attribute, "isFixed" | "apiName">,
+  {model, isFixed, apiName}: Pick<Attribute, "model" | "isFixed" | "apiName">,
 ): {selected: true; explicit: boolean; override?: D} | undefined {
+  if (model !== selection.model) {
+    return undefined;
+  }
   if (isFixed) {
     const override = selection.fixedOverrides[apiName];
     return override === undefined

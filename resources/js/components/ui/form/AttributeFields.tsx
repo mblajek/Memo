@@ -36,15 +36,19 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
+import {InfoIcon} from "../InfoIcon";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
-import {CHECKBOX, EMPTY_VALUE_SYMBOL} from "../symbols";
+import {CHECKBOX, EmptyValueSymbol} from "../symbols";
+import {title} from "../title";
 import {CheckboxField} from "./CheckboxField";
 import {DictionarySelect} from "./DictionarySelect";
 import {MultilineTextField} from "./MultilineTextField";
 import {TQuerySelect} from "./TQuerySelect";
 import {TextField} from "./TextField";
 import {SimpleMultiField} from "./multi_fields";
+
+const _DIRECTIVES_ = null && title;
 
 export type AttributesType = Record<string, unknown>;
 export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
@@ -59,6 +63,7 @@ interface Props {
 }
 
 export interface AttributeParams<V> {
+  readonly isEmpty?: (formValue: V) => boolean;
   readonly view?: (formValue: Accessor<V>) => JSX.Element;
   readonly viewEmpty?: () => JSX.Element;
 }
@@ -135,7 +140,10 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
           case "user/client":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect {...modelQuerySpecs.userClient()} {...extraSelectProps} />
+                <TQuerySelect
+                  {...modelQuerySpecs.userClient({showBirthDateWhenSelected: true})}
+                  {...extraSelectProps}
+                />
               </Show>
             );
           default:
@@ -211,10 +219,13 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
     const value = createMemo(() => recursiveUnwrapFormValues(form.data(name())));
     const hasValue = () => {
       const v = value();
+      if (aProps.params?.isEmpty) {
+        return !aProps.params.isEmpty(v);
+      }
       return v !== undefined && v !== "" && !(Array.isArray(v) && !v.length);
     };
     const DefaultViewer: ParentComponent<htmlAttributes.div> = (props) => (
-      <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-20 whitespace-pre-wrap"})} />
+      <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-32 whitespace-pre-wrap"})} />
     );
     const defaultView = () => {
       function simpleAttributeView(type: SimpleAttributeType | DictAttributeType, val = value) {
@@ -296,12 +307,12 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       <div class="overflow-clip px-1">
         <Switch>
           <Match when={!hasValue()}>
-            <Show when={aProps.params?.viewEmpty} fallback={EMPTY_VALUE_SYMBOL}>
+            <Show when={aProps.params?.viewEmpty} fallback={<EmptyValueSymbol />}>
               {(viewEmpty) => viewEmpty()()}
             </Show>
           </Match>
           <Match when={aProps.params?.view}>{(view) => view()(value)}</Match>
-          <Match when={true}>{defaultView()}</Match>
+          <Match when="fallback">{defaultView()}</Match>
         </Switch>
       </div>
     );
@@ -399,7 +410,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                     const {attribute, selected} = relevantAttributes()!.get(attributeId)!;
                     const isEmpty = () => {
                       const value = form.data(fieldName(attribute));
-                      return value == undefined || value == "";
+                      return selected.override?.isEmpty
+                        ? selected.override.isEmpty(value)
+                        : value == undefined || value == "";
                     };
                     return (
                       <HideableSection
@@ -412,12 +425,17 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                       >
                         <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
                           <label
-                            class="font-semibold flex items-center wrapTextAnywhere"
+                            class="font-semibold flex items-center gap-1"
                             for={
                               attribute.multiple && attribute.basicType !== "dict" ? undefined : fieldName(attribute)
                             }
                           >
-                            <Capitalize text={attribute.label} />
+                            <div class="wrapTextAnywhere">
+                              <Capitalize text={attribute.label} />
+                            </div>
+                            <Show when={attribute.description}>
+                              {(description) => <InfoIcon title={description()} />}
+                            </Show>
                           </label>
                           <div class="flex flex-col justify-center">
                             <Show
@@ -455,19 +473,24 @@ const ERR_COLOR_CLASS = "text-red-700";
 export const RequirementLevelMarker: VoidComponent<RequirementLevelProps> = (props) => {
   const t = useLangFunc();
   return (
-    <span class="text-sm text-grey-text select-none" title={t(`attributes.requirement_level.${props.level}`)}>
-      <Switch>
-        <Match when={props.level === "empty"}>
-          <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⛌</span>
-        </Match>
-        <Match when={props.level === "optional"}>?</Match>
-        <Match when={props.level === "recommended"}>
-          <span class={props.isEmpty ? WARN_COLOR_CLASS : undefined}>✤</span>
-        </Match>
-        <Match when={props.level === "required"}>
-          <span class={props.isEmpty ? ERR_COLOR_CLASS : undefined}>🞴</span>
-        </Match>
-      </Switch>
-    </span>
+    <div
+      class="w-full flex flex-col items-center"
+      use:title={[t(`attributes.requirement_level.${props.level}`), {placement: "right"}]}
+    >
+      <span class="text-sm text-grey-text select-none">
+        <Switch>
+          <Match when={props.level === "empty"}>
+            <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⛌</span>
+          </Match>
+          <Match when={props.level === "optional"}>?</Match>
+          <Match when={props.level === "recommended"}>
+            <span class={props.isEmpty ? WARN_COLOR_CLASS : undefined}>✤</span>
+          </Match>
+          <Match when={props.level === "required"}>
+            <span class={props.isEmpty ? ERR_COLOR_CLASS : undefined}>🞴</span>
+          </Match>
+        </Switch>
+      </span>
+    </div>
   );
 };

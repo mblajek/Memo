@@ -1,7 +1,7 @@
 import {Show, VoidComponent, splitProps} from "solid-js";
 import {htmlAttributes} from "../utils";
 import {CopyToClipboard} from "./CopyToClipboard";
-import {EMPTY_VALUE_SYMBOL} from "./symbols";
+import {EmptyValueSymbol} from "./symbols";
 
 interface Props extends htmlAttributes.span {
   readonly email: string | undefined;
@@ -12,8 +12,8 @@ export const Email: VoidComponent<Props> = (allProps) => {
   const [props, spanProps] = splitProps(allProps, ["email"]);
   return (
     <span {...htmlAttributes.merge(spanProps, {class: "inline-flex"})}>
-      <Show when={props.email} fallback={EMPTY_VALUE_SYMBOL}>
-        <span class="overflow-hidden">{props.email}&nbsp;</span>
+      <Show when={props.email} fallback={<EmptyValueSymbol />}>
+        <span class="whitespace-nowrap overflow-hidden">{props.email}&nbsp;</span>
         <CopyToClipboard text={props.email} />
       </Show>
     </span>

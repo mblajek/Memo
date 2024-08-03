@@ -1,3 +1,4 @@
+import {useNavigate} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -5,6 +6,7 @@ import {MemoLoader} from "components/ui/MemoLoader";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CHECKBOX} from "components/ui/symbols";
+import {title} from "components/ui/title";
 import {DATE_TIME_FORMAT, currentTime, useLangFunc} from "components/utils";
 import {isDEV, resetDEV, toggleDEV} from "components/utils/dev_mode";
 import {User} from "data-access/memo-api/groups";
@@ -16,12 +18,15 @@ import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, createMemo
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {ThemeIcon, useThemeControl} from "../theme_control";
 
+const _DIRECTIVES_ = null && title;
+
 interface WindowWithDeveloperLogin {
   developerLogin(developer: boolean): void;
 }
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
+  const navigate = useNavigate();
   const statusQuery = createQuery(User.statusQueryOptions);
   const passwordChangeModal = createPasswordChangeModal();
   const {toggleTheme} = useThemeControl();
@@ -33,10 +38,13 @@ export const UserInfo: VoidComponent = () => {
       isFormSubmit: true,
     },
     onSuccess() {
-      setActiveFacilityId(undefined);
-      resetDEV();
-      // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
-      invalidate.userStatusAndFacilityPermissions();
+      navigate("/");
+      setTimeout(() => {
+        resetDEV();
+        setActiveFacilityId(undefined);
+        // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
+        invalidate.userStatusAndFacilityPermissions({clearCache: true});
+      });
     },
   }));
   const developerLogin = createMutation(() => ({
@@ -61,7 +69,7 @@ export const UserInfo: VoidComponent = () => {
             await developerLogin.mutateAsync({developer});
             toggleDEV(developer);
             // eslint-disable-next-line no-console
-            console.debug(developer ? "Developer login success." : "Developer logout success.");
+            console.log(developer ? "Developer login success." : "Developer logout success.");
           })();
         };
       }
@@ -74,12 +82,12 @@ export const UserInfo: VoidComponent = () => {
         <div>
           <Switch>
             <Match when={statusQuery.data?.permissions.verified}>
-              <div title={t("verified_user")}>
+              <div use:title={t("verified_user")}>
                 <HiOutlineCheckCircle class="text-memo-active" size="30" />
               </div>
             </Match>
             <Match when={statusQuery.data?.permissions.unverified}>
-              <div title={t("unverified_user")}>
+              <div use:title={t("unverified_user")}>
                 <HiOutlineXCircle class="text-red-500" size="30" />
               </div>
             </Match>
@@ -98,7 +106,7 @@ export const UserInfo: VoidComponent = () => {
             {statusQuery.data?.user.name}
             <PopOver
               trigger={(triggerProps) => (
-                <Button title={t("user_settings")} {...triggerProps()}>
+                <Button title={[t("user_settings"), {hideOnClick: true}]} {...triggerProps()}>
                   <TbPassword class="inlineIcon" />
                 </Button>
               )}

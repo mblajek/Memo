@@ -1,9 +1,13 @@
+import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
-import {Show, createComputed, createSignal} from "solid-js";
+import {Show, createComputed} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControl} from "./types";
+
+const _DIRECTIVES_ = null && title;
 
 type IntRangeFilter =
   | {
@@ -20,14 +24,14 @@ type IntRangeFilter =
 export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
-  const [lower, setLower] = createSignal("");
-  const [upper, setUpper] = createSignal("");
-  createComputed(() => {
-    if (!props.filter) {
-      setLower("");
-      setUpper("");
-    }
-    // Ignore other external filter changes.
+  const {
+    lower: [lower, setLower],
+    upper: [upper, setUpper],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {lower: "", upper: ""},
+    filter: () => props.filter,
   });
   createComputed(() => {
     const l = lower() ? Number(lower()) : undefined;
@@ -78,7 +82,7 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
         <div
           class={s.valuesSyncer}
           classList={{[s.inactive!]: !syncActive()}}
-          title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
+          use:title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());

@@ -32,6 +32,7 @@ interface TextFieldTextInputProps
     | "autofocus"
     | "autocomplete"
     | "readonly"
+    | "disabled"
     | "onClick"
     | "onInput"
     | "onChange"

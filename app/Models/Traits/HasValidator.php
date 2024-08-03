@@ -3,7 +3,7 @@
 namespace App\Models\Traits;
 
 use App\Models\Facility;
-use App\Rules\Valid;
+use App\Rules\IgnoreIdRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 
@@ -23,6 +23,9 @@ trait HasValidator
             $attributes = is_array($attributesFacility)
                 ? $attributesFacility : self::attrMap(facility: $attributesFacility);
             foreach ($attributes as $attribute) {
+                if (array_key_exists($attribute->api_name, $ruleSet)) {
+                    continue;
+                }
                 if ($attribute->is_multi_value) {
                     $ruleSet[$attribute->api_name] = $attribute->getMultiValidator();
                     $ruleSet["$attribute->api_name.*"] = $attribute->getSingleValidator();
@@ -43,7 +46,7 @@ trait HasValidator
         foreach ($ruleSet as $field => $rules) {
             if (is_array($rules)) {
                 foreach ($rules as $rule) {
-                    if ($rule instanceof Unique || $rule instanceof Valid) {
+                    if ($rule instanceof Unique || $rule instanceof IgnoreIdRule) {
                         $rule->ignore($ignore);
                     }
                 }
@@ -54,5 +57,12 @@ trait HasValidator
             $ruleSet[$field] = $rules;
         }
         return $ruleSet;
+    }
+
+    public static function getProhibitedValidator(
+        array $fields,
+        array|bool|string|Facility $attributesFacility = false,
+    ): array {
+        return array_map(fn() => 'missing', self::getInsertValidator($fields, $attributesFacility));
     }
 }

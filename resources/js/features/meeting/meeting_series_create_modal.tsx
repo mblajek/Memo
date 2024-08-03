@@ -11,7 +11,7 @@ export const createMeetingSeriesCreateModal = registerGlobalPageElement<MeetingS
   const t = useLangFunc();
   return (
     <Modal
-      title={t("forms.meeting_series_create.formName")}
+      title={args.params() ? t(`forms.${args.params()?.id}.form_name`) : undefined}
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}

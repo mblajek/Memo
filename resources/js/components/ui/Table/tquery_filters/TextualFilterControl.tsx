@@ -2,26 +2,42 @@ import {SearchInput} from "components/ui/SearchInput";
 import {Select, SelectItem} from "components/ui/form/Select";
 import {cx, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {createComputed, createMemo, createSignal} from "solid-js";
+import {createComputed, createMemo, createSignal, VoidComponent} from "solid-js";
+import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
 import {makeSelectItem} from "./select_items";
-import {FilterControl} from "./types";
+import {FilterControlProps} from "./types";
 
-export const TextualFilterControl: FilterControl = (props) => {
+interface Props extends FilterControlProps {
+  readonly buildFilter?: (
+    mode: Mode,
+    value: string,
+    defaultBuildFilter: (mode: Mode, value: string) => FilterH | undefined,
+  ) => FilterH | undefined;
+}
+
+type Mode = "~" | "=" | "*" | "null" | ".*";
+
+export const TextualFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
-  const [mode, setMode] = createSignal("~");
-  const [text, setText] = createSignal("");
-  createComputed(() => {
-    if (!props.filter) {
-      setMode("~");
-      setText("");
-    }
-    // Ignore other external filter changes.
+  const {
+    mode: [mode, setMode],
+    text: [text, setText],
+  } = getFilterStateSignal({
+    // eslint-disable-next-line solid/reactivity
+    column: props.column.id,
+    initial: {mode: "~" as Mode, text: ""},
+    filter: () => props.filter,
   });
-  function buildFilter(mode: string, value: string): FilterH | undefined {
+  const [inputText, setInputText] = createSignal(text());
+  // eslint-disable-next-line solid/reactivity
+  const debouncedInputText = debouncedFilterTextAccessor(inputText);
+  createComputed(() => setText(debouncedInputText()));
+  createComputed(() => setInputText(text()));
+  function defaultBuildFilter(mode: Mode, value: string): FilterH | undefined {
     switch (mode) {
       case "~":
         return value ? buildFuzzyTextualColumnFilter(value, {column: props.schema.name}) : undefined;
@@ -37,9 +53,10 @@ export const TextualFilterControl: FilterControl = (props) => {
         throw new Error(`Invalid value: ${value}`);
     }
   }
-  // eslint-disable-next-line solid/reactivity
-  const debouncedText = debouncedFilterTextAccessor(text);
-  createComputed(() => props.setFilter(buildFilter(mode(), debouncedText())));
+  function buildFilter(mode: Mode, value: string): FilterH | undefined {
+    return props.buildFilter ? props.buildFilter(mode, value, defaultBuildFilter) : defaultBuildFilter(mode, value);
+  }
+  createComputed(() => props.setFilter(buildFilter(mode(), text())));
   const items = createMemo(() => {
     const items: SelectItem[] = [];
     items.push(
@@ -49,7 +66,7 @@ export const TextualFilterControl: FilterControl = (props) => {
         symbolClass: "w-4",
         description: t("tables.filter.textual.fuzzy"),
         infoIcon: {
-          href: "/help/filtering#fuzzy",
+          href: "/help/table-filtering#fuzzy",
         },
       }),
     );
@@ -100,7 +117,7 @@ export const TextualFilterControl: FilterControl = (props) => {
           name={filterFieldNames.get(`op_${props.schema.name}`)}
           items={items()}
           value={mode()}
-          onValueChange={(value) => setMode(value!)}
+          onValueChange={(value) => setMode(value! as Mode)}
           nullable={false}
           small
         />
@@ -110,10 +127,10 @@ export const TextualFilterControl: FilterControl = (props) => {
           name={filterFieldNames.get(`val_${props.schema.name}`)}
           autocomplete="off"
           class="h-full w-full min-h-small-input"
-          value={inputUsed() ? text() : ""}
+          value={inputUsed() ? inputText() : ""}
           maxlength={inputUsed() ? undefined : 0}
           disabled={!inputUsed()}
-          onInput={({target: {value}}) => setText(value)}
+          onInput={({target: {value}}) => setInputText(value)}
         />
       </div>
     </div>

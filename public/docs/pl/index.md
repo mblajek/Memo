@@ -1,16 +1,32 @@
-# Informacje o systemie
+# Strona główna pomocy
 
-Strona pomocy dla systemu Memo.
+**$t(app_name)** to system do zarządzania:
 
-🚧 Strona w budowie 🚧
+- bazą klientów fundacji
+- kalendarzem wizyt klientów
+- grafikami pracy pracowników fundacji
 
-## Dokumenty
+## Dokumenty pomocy
 
+- Klienci
+  - [Usuwanie klientów](client-delete)
+- Spotkania
+  - [Statusy](meeting-statuses)
+- Tabele
+  - [Filtrowanie](table-filtering)
+  - [Eksport danych](table-export)
+  - [Grupowanie wierszy](table-grouping)
+- [Raporty](reports)
 - [Tekst z tagami](rich-text)
-- [$t(models.meeting._name_plural|cap)](meetings)
-- [Filtrowanie](filtering)
-- [Eksport tabel](table-export)
+- [Sztuczki usprawniające korzystanie z Memo ✨](tricks)
+- [Wspierane przeglądarki](supported-browsers)
 
 ## Linki zewnętrzne
 
-- [GitHub](https://github.com/mblajek/Memo)
+- [GitHub — Projekt Memo](https://github.com/mblajek/Memo)
+
+## Twórcy
+
+- [Mikołaj Błajek](https://github.com/mblajek) — główny programista backendu
+- [Tomasz Błajek](https://github.com/TPReal) — główny programista frontendu
+- [Pozostali programiści](https://github.com/mblajek/Memo/graphs/contributors?type=a)

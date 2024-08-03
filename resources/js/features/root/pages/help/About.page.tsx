@@ -1,7 +1,7 @@
 import {A} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/symbols";
 import {DATE_TIME_FORMAT, useLangFunc} from "components/utils";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
@@ -23,9 +23,15 @@ export default (() => {
             <div class="grid gap-x-3 gap-y-1 self-start" style={{"grid-template-columns": "auto auto"}}>
               <label class="font-semibold">{t("about_page.app_version")}</label>
               <div>{status().version}</div>
+              <label class="font-semibold">{t("about_page.app_env")}</label>
+              <div>
+                <Show when={status().appEnv} fallback={<EmptyValueSymbol />}>
+                  {(appEnv) => <>{appEnv()}</>}
+                </Show>
+              </div>
               <label class="font-semibold">{t("about_page.commit_date")}</label>
               <div>
-                <Show when={status().commitDate} fallback={EMPTY_VALUE_SYMBOL}>
+                <Show when={status().commitDate} fallback={<EmptyValueSymbol />}>
                   {(commitDate) =>
                     DateTime.fromISO(commitDate()).toLocaleString({...DATE_TIME_FORMAT, weekday: "long"})
                   }
@@ -33,7 +39,7 @@ export default (() => {
               </div>
               <label class="font-semibold">{t("about_page.commit_hash")}</label>
               <div>
-                <Show when={status().commitHash} fallback={EMPTY_VALUE_SYMBOL}>
+                <Show when={status().commitHash} fallback={<EmptyValueSymbol />}>
                   {(commitHash) => (
                     <>
                       <A class="font-mono" href={`${GITHUB_LINK}/tree/${commitHash()}`} target="_blank">
@@ -43,14 +49,6 @@ export default (() => {
                     </>
                   )}
                 </Show>
-              </div>
-              <label class="font-semibold">{t("about_page.backend_hash")}</label>
-              <div>
-                <span class="font-mono">{status().backendHash}</span> <CopyToClipboard text={status().backendHash} />
-              </div>
-              <label class="font-semibold">{t("about_page.frontend_hash")}</label>
-              <div>
-                <span class="font-mono">{status().frontendHash}</span> <CopyToClipboard text={status().frontendHash} />
               </div>
               <label class="font-semibold">{t("about_page.cpu_load")}</label>
               <div>{status().cpu15m.toFixed(2)}</div>

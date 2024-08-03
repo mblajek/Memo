@@ -45,3 +45,17 @@ export namespace Api {
 
   export const isValidationError = (error: Error): error is ValidationError => "field" in error;
 }
+
+/**
+ * A type with all fields converted to optional and nullable. This might be useful to construct
+ * form types from resource types, as in a form it is valid to have an empty value even if it is
+ * required in the type, and rely on the backend validation.
+ */
+export type PartialNullable<T> = {
+  [K in keyof T]?: T[K] | null;
+};
+
+/** A type with the effect of PartialNullable undone. */
+export type RequiredNonNullable<T> = {
+  [K in keyof T]-?: NonNullable<T[K]>;
+};

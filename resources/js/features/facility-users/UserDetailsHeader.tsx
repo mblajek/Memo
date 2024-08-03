@@ -1,14 +1,19 @@
 import {createQuery} from "@tanstack/solid-query";
 import {EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
+import {facilityIcons} from "components/ui/icons";
+import {title} from "components/ui/title";
 import {useLangFunc} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {UserResource} from "data-access/memo-api/resources/user.resource";
-import {FacilityUserType, useUserDisplayNames} from "data-access/memo-api/user_display_names";
+import {FacilityUserType, getFacilityUserTypeName} from "features/facility-users/user_types";
 import {Show, VoidComponent} from "solid-js";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {createUserEditModal} from "../user-edit/user_edit_modal";
 import {CreatedByInfo} from "./CreatedByInfo";
 import {UserLink} from "./UserLink";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props {
   readonly type: FacilityUserType;
@@ -19,7 +24,6 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const status = createQuery(User.statusQueryOptions);
   const userEditModal = createUserEditModal();
-  const userDisplayNames = useUserDisplayNames();
   return (
     <div class="flex justify-between flex-wrap gap-2">
       <div class="flex flex-col gap-0.5">
@@ -27,7 +31,15 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
           <h2 class="flex gap-1 items-center font-medium text-xl">
             <UserLink type={props.type} link={false} userId={props.user.id} name={props.user.name} />
           </h2>
-          <div class="text-xs">{t("parenthesised", {text: userDisplayNames.getTypeName(props.type)})}</div>
+          <div class="text-xs">
+            {getFacilityUserTypeName(t, props.type)}
+            <Show when={props.user.managedByFacilityId === activeFacilityId()}>
+              {" "}
+              <span use:title={t("facility_user.managed_by_current_facility")}>
+                <facilityIcons.Facility class="inlineIcon" />
+              </span>
+            </Show>
+          </div>
         </div>
         <Show when={props.user.email}>
           <div class="text-sm">

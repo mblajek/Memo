@@ -1,8 +1,11 @@
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {htmlAttributes} from "components/utils";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
+import {title} from "../title";
 import {TranslatedText} from "../TranslatedText";
 import {LabelOverride, applyLabelOverride, getDirectLabelOverride} from "./labels";
+
+const _DIRECTIVES_ = null && title;
 
 interface Props extends htmlAttributes.label {
   readonly fieldName: string;
@@ -26,7 +29,7 @@ interface Props extends htmlAttributes.label {
  * Otherwise, the label is not present.
  */
 export const FieldLabel: VoidComponent<Props> = (allProps) => {
-  const [props, labelProps] = splitProps(allProps, ["fieldName", "umbrella", "label", "wrapIn"]);
+  const [props, labelProps] = splitProps(allProps, ["fieldName", "umbrella", "label", "wrapIn", "title"]);
   const form = useFormContextIfInForm();
   return (
     <TranslatedText
@@ -41,6 +44,7 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
               id={labelIdForField(props.fieldName)}
               for={props.umbrella ? undefined : props.fieldName}
               {...htmlAttributes.merge(labelProps, {class: "font-bold"})}
+              use:title={props.title}
             >
               {props.wrapIn?.(overridden) ?? overridden}
             </label>

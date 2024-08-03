@@ -22,7 +22,9 @@ meetingType:
   _name: "typ spotkania"
   other: "inne"
   work_time: "godziny pracy"
-  leave_time: "nieobecność"
+  leave_time: "nieobecność$t(thin_space)/$t(thin_space)wolne"
+  # Temporary:
+  clients_group_temporary: "[grupa klientów]"
 
 meetingStatus:
   _name: "status spotkania"
@@ -63,7 +65,7 @@ attendanceStatus:
       completed: "Uczestnik wziął udział w spotkaniu"
       cancelled: "Uczestnik planował wziąć udział w spotkaniu, ale zostało odwołane przez innego uczestnika (lub z innych przyczyn)"
     cancelled: "Uczestnik zgłosił z wyprzedzeniem, że nie weźmie udziału w spotkaniu"
-    no_show: "Uczestnik nie pojawił się na spotkaniu bez wcześniejszego odwołania obecności"
+    no_show: "Uczestnik nie pojawił się na spotkaniu, bez wcześniejszego odwołania obecności"
     late_present: "Uczestnik pojawił się na spotkaniu z niewielkim opóźnieniem"
     too_late: "Uczestnik pojawił się z tak dużym opóźnieniem, że nie mógł już wziąć udziału w spotkaniu"
     more_info: "Więcej informacji o statusach obecności"

@@ -49,6 +49,7 @@ export const PasswordField: VoidComponent<PasswordFieldProps> = (allProps) => {
         <Show when={props.allowShow}>
           <Button
             class="absolute right-0 top-0 bottom-0 px-2"
+            disabled={inputProps.disabled}
             onPointerDown={() => setShowing(!showing())}
             onClick={() => setShowing(!showing())}
             onPointerUp={released}

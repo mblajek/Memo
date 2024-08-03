@@ -4,14 +4,13 @@ namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Attribute;
-use App\Models\Enums\AttributeType;
-use App\Models\UuidEnum\AttributeUuidEnum;
-use BackedEnum;
 use Closure;
 use Illuminate\Support\Str;
 
 final class TqConfig
 {
+    use TqAttribute;
+
     /** @var array<string, TqColumnConfig> */
     public array $columns = [];
     private const string COUNT_COLUMN = '_count';
@@ -65,36 +64,6 @@ final class TqConfig
         );
     }
 
-    public function addAttribute(
-        Attribute|(AttributeUuidEnum&BackedEnum) $attribute,
-        ?string $prefix = null,
-    ): void {
-        $attribute = ($attribute instanceof Attribute) ? $attribute : Attribute::getById($attribute);
-        if ($attribute->type === AttributeType::Separator) {
-            return; // todo: maybe tquery separator
-        }
-        $type = $attribute->getTqueryDataType();
-        if ($attribute->is_multi_value === null) {
-            self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
-            $this->addColumn(
-                type: $type,
-                columnOrQuery: $attribute->api_name,
-                table: TqTableAliasEnum::fromTableName($attribute->table->value),
-                columnAlias: Str::camel((($prefix !== null) ? "$prefix." : '') . $attribute->api_name),
-                attribute: $attribute,
-            );
-        } else {
-            $this->addColumn(
-                type: $type,
-                columnOrQuery: fn(string $tableName) => //
-                FatalExceptionFactory::tquery(['message' => 'not implemented'])->throw(),
-                table: TqTableAliasEnum::fromTableName($attribute->table->value),
-                columnAlias: Str::camel((($prefix !== null) ? "$prefix." : '') . $attribute->api_name),
-                attribute: $attribute,
-            );
-        }
-    }
-
     public function addJoined(
         TqDataTypeEnum|TqDictDef $type,
         TqTableAliasEnum $table,
@@ -130,6 +99,27 @@ final class TqConfig
         );
     }
 
+    public function addJoinedQuery(
+        TqDataTypeEnum|TqDictDef $type,
+        TqTableAliasEnum $table,
+        Closure $columnOrQuery,
+        string $columnAlias,
+        ?Closure $filter = null,
+        ?Closure $order = null,
+        ?Closure $renderer = null,
+    ): void {
+        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        $this->addColumn(
+            type: $type,
+            columnOrQuery: $columnOrQuery,
+            table: $table,
+            columnAlias: Str::camel($columnAlias),
+            filter: $filter,
+            sorter: $order,
+            renderer: $renderer,
+        );
+    }
+
     public function addUuidListQuery(
         TqDataTypeEnum|TqDictDef $type,
         string $select,
@@ -154,6 +144,29 @@ final class TqConfig
             table: null,
             columnAlias: self::COUNT_COLUMN,
         );
+    }
+
+    public function addBase(): void
+    {
+        $this->addSimple(TqDataTypeEnum::uuid, 'id');
+        $this->addSimple(TqDataTypeEnum::datetime, 'created_at');
+        $this->addSimple(TqDataTypeEnum::datetime, 'updated_at');
+        $this->addSimple(TqDataTypeEnum::uuid, 'created_by', 'created_by.id');
+        $this->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::created_by, 'name', 'created_by.name');
+        $this->addSimple(TqDataTypeEnum::uuid, 'updated_by', 'updated_by.id');
+        $this->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::updated_by, 'name', 'updated_by.name');
+    }
+
+    public function addBaseOnTable(TqTableAliasEnum $table, string $prefix): void
+    {
+        $this->addJoined(TqDataTypeEnum::datetime, $table, 'created_at', "$prefix.created_at");
+        $this->addJoined(TqDataTypeEnum::datetime, $table, 'updated_at', "$prefix.updated_at");
+        $this->addJoined(TqDataTypeEnum::uuid, $table, 'created_by', "$prefix.created_by.id");
+        $this->addJoinedQuery(TqDataTypeEnum::string, $table, fn(string $tableName) => //
+        "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`created_by`", "$prefix.created_by.name");
+        $this->addJoined(TqDataTypeEnum::uuid, $table, 'updated_by', "$prefix.updated_by.id");
+        $this->addJoinedQuery(TqDataTypeEnum::string, $table, fn(string $tableName) => //
+        "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`updated_by`", "$prefix.updated_by.name");
     }
 
     public function removeColumns(string ...$columnAliases): void

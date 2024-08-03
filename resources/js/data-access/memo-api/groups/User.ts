@@ -1,4 +1,5 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {MemberResource} from "../resources/member.resource";
 import {PermissionsResource} from "../resources/permissions.resource";
@@ -12,10 +13,11 @@ import {Users} from "./shared";
  * @see {@link http://localhost:9081/api/documentation#/User local docs}
  */
 export namespace User {
-  const getStatus = (facilityId?: Api.Id, config?: Api.Config) =>
-    V1.get<Api.Response.Get<GetStatusData>>(facilityId ? `/user/status/${facilityId}` : "/user/status", config).then(
-      parseGetResponse,
-    );
+  const getStatus = (config?: Api.Config) =>
+    V1.get<Api.Response.Get<GetStatusData>>(
+      activeFacilityId() ? `/user/status/${activeFacilityId()}` : "/user/status",
+      config,
+    ).then(parseGetResponse);
 
   export const login = (data: LoginRequest, config?: Api.Config<LoginRequest>) =>
     V1.post<Api.Response.Post>("/user/login", data, config);
@@ -30,9 +32,13 @@ export namespace User {
   export const setLastLoginFacilityId = (lastLoginFacilityId: Api.Id, config?: Api.Config) =>
     V1.patch("/user", {lastLoginFacilityId}, config);
 
+  type PermissionsFacilityKeys = "facilityId" | "facilityMember" | "facilityClient" | "facilityStaff" | "facilityAdmin";
+  // Ensure these are really keys.
+  type _FacilityPermissions = Pick<PermissionsResource, PermissionsFacilityKeys>;
+
   export interface GetStatusData {
     readonly user: UserResource;
-    readonly permissions: PermissionsResource;
+    readonly permissions: Partial<PermissionsResource> & Omit<PermissionsResource, PermissionsFacilityKeys>;
     readonly members: MemberResource[];
   }
 
@@ -54,42 +60,19 @@ export namespace User {
   export const keys = {
     all: () => [...Users.keys.user()] as const,
     statusAll: () => [...keys.all(), "status"] as const,
-    status: (facilityId?: Api.Id) => [...keys.statusAll(), facilityId] as const,
+    status: () => [...keys.statusAll(), activeFacilityId()] as const,
   };
 
-  type PermissionsFacilityKeys = "facilityId" | "facilityMember" | "facilityClient" | "facilityStaff" | "facilityAdmin";
-  // Ensure these are really keys.
-  type _FacilityPermissions = Pick<PermissionsResource, PermissionsFacilityKeys>;
-
-  export type GetStatusWithoutFacilityData = {
-    user: UserResource;
-    permissions: Omit<PermissionsResource, PermissionsFacilityKeys>;
-    members: MemberResource[];
-  };
-
-  const STATUS_QUERY_OPTIONS = {
-    // Prevent displaying toast when user is not logged in - the login page will be displayed.
-    meta: {quietHTTPStatuses: [401]},
-    refetchOnMount: false,
-    refetchOnWindowFocus: true,
-    refetchInterval: 60 * 1000,
-  } satisfies Partial<SolidQueryOptions>;
-
-  /** Query options for user status, without facility permissions. */
   export const statusQueryOptions = () =>
     ({
-      // As a possible optimisation, this query could try to reuse any query with facility permissions,
-      // that happens to be active.
-      queryFn: ({signal}): Promise<GetStatusWithoutFacilityData> => getStatus(undefined, {signal}),
+      // Do not allow aborting the request as the non-facility parts of the response are useful in all contexts,
+      // and aborting might invalidate the cache.
+      queryFn: (): Promise<GetStatusData> => getStatus(),
       queryKey: keys.status(),
-      ...STATUS_QUERY_OPTIONS,
-    }) satisfies SolidQueryOptions<GetStatusWithoutFacilityData>;
-
-  /** Query options for user status with facility permissions. */
-  export const statusWithFacilityPermissionsQueryOptions = (facilityId: Api.Id) =>
-    ({
-      queryFn: ({signal}) => getStatus(facilityId, {signal}),
-      queryKey: keys.status(facilityId),
-      ...STATUS_QUERY_OPTIONS,
+      // Prevent displaying toast when user is not logged in - the login page will be displayed.
+      meta: {quietHTTPStatuses: [401]},
+      refetchOnMount: false,
+      refetchOnWindowFocus: true,
+      refetchInterval: 60 * 1000,
     }) satisfies SolidQueryOptions<GetStatusData>;
 }

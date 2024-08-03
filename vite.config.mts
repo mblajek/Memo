@@ -1,9 +1,9 @@
 import laravel from "laravel-vite-plugin";
-import {defineConfig} from "vitest/config";
 import eslint from "vite-plugin-eslint";
 import solidPlugin from "vite-plugin-solid";
 import solidSvg from "vite-plugin-solid-svg";
 import tsConfigPaths from "vite-tsconfig-paths";
+import {defineConfig} from "vitest/config";
 
 export default defineConfig({
   build: {
@@ -26,6 +26,23 @@ export default defineConfig({
     eslint(),
     solidSvg({defaultAsComponent: true}),
   ],
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // Suppress the mixed-decls deprecation warnings. They are not relevant for us, and they cannot
+        // be easily suppressed as vite calls scss using the old JS api.
+        // See https://sass-lang.com/d/mixed-decls
+        logger: {
+          warn: (message, options) => {
+            if (options.deprecation && options.deprecationType.id === "mixed-decls") {
+              return;
+            }
+            console.warn(message);
+          },
+        },
+      },
+    },
+  },
   resolve: {
     alias: [
       {

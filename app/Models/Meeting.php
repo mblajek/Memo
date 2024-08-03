@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Exceptions\ApiException;
+use App\Exceptions\ExceptionFactory;
+use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Enums\AttendanceType;
 use App\Models\QueryBuilders\MeetingBuilder;
 use App\Models\Traits\BaseModel;
-use App\Models\Traits\HasDeletedBy;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Rules\MemberExistsRule;
@@ -14,7 +16,6 @@ use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Validation\Rule;
 
 /**
@@ -36,8 +37,6 @@ class Meeting extends Model
 {
     use HasValidator;
     use BaseModel;
-    use HasDeletedBy;
-    use SoftDeletes;
 
     public const string STATUS_COMPLETED = 'f6001030-c061-480e-9a5a-7013cee7ff40';
     public const string STATUS_PLANNED = '86aaead1-bbcc-4af1-a74a-ed2bdff46d0a';
@@ -72,7 +71,7 @@ class Meeting extends Model
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')]),
             'type_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingType),
             'date' => Valid::date(),
-            'notes' => Valid::trimmed(sometimes: true, nullable: true, max: 4000),
+            'notes' => Valid::text(sometimes: true, nullable: true),
             'start_dayminute' => Valid::int(['min:' . (0), 'max:' . (24 * 60 - 1)]),
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
@@ -119,5 +118,15 @@ class Meeting extends Model
     public function resetStatus(): void
     {
         $this->status_dict_id = self::STATUS_PLANNED;
+    }
+
+    /** @throws ApiException */
+    public function belongsToFacilityOrFail(
+        Facility|null $facility = null,
+    ): void {
+        $facility ??= PermissionMiddleware::facility();
+        if ($this->facility_id !== $facility->id) {
+            ExceptionFactory::notFound()->throw();
+        }
     }
 }

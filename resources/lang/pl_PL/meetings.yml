@@ -4,12 +4,12 @@ mark_as_cancelled:
   by_staff: "pracownik odwołuje"
   by_client: "klient odwołuje"
   by_client_no_show: "klient nie przyszedł"
-  other: "inny powód"
+  other: "inny powód anulowania"
   undetermined: "bez określenia przyczyny"
 
 tags:
-  cancelled_by_staff: "odwołane przez pracownika"
-  cancelled_by_client: "odwołane przez klienta"
+  cancelled_by_staff: "pracownik odwołał"
+  cancelled_by_client: "klient odwołał"
   client_no_show: "klient nie przyszedł"
   client_too_late: "klient przyszedł za późno"
   client_late_present: "klient był niepunktualny"
@@ -17,16 +17,23 @@ tags:
 show_details: "Więcej"
 click_to_see_details: "Kliknij aby zobaczyć szczegóły spotkania"
 
-create_series: "Powtarzaj spotkanie"
+create_series: "Utwórz serię"
+extend_series: "Przedłuż serię"
 meeting_is_in_series: "Seria"
-first_meeting: "pierwsze spotkanie"
-only_one_meeting_in_series_warning: "Wybierz więcej dat aby utworzyć serię spotkań."
+meeting_series_number_and_count_separator: " / "
+series_first_date: "data początkowa"
+only_one_meeting_in_series_warning: "Wybierz więcej dat."
+show_meetings_in_series_list_in_new_tab: "Otwórz serię w nowej karcie"
+
+meeting_without_staff:
+  title: "Spotkanie bez pracowników"
+  body: "Spotkanie bez żadnego pracownika to spotkanie globalne $t(em_dash) jest widoczne w kalendarzu wszystkich pracowników placówki. Czy chcesz utworzyć takie spotkanie?"
 
 create_copy:
   any: "Utwórz i edytuj kopię"
-  in_one_day: "– następnego dnia"
-  in_one_week: "– tydzień później"
-  in_two_weeks: "– dwa tygodnie później"
+  in_one_day: "$t(en_dash) następnego dnia"
+  in_one_week: "$t(en_dash) tydzień później"
+  in_two_weeks: "$t(en_dash) dwa tygodnie później"
 
 interval_labels:
   1d: "kolejne dni"
@@ -38,6 +45,11 @@ show_in_calendar: "Pokaż w kalendarzu"
 conflicts:
   none: "Brak konfliktów"
   unknown: "Ustaw czas spotkania aby sprawdzić konflikty"
-  with_leave_time: "Pracownik jest w tym czasie nieobecny"
+  with_facility_leave_time: "Placówka w tym czasie nie pracuje"
+  with_staff_leave_time: "Pracownik jest w tym czasie nieobecny"
   outside_of_work_time: "Spotkanie jest poza godzinami pracy pracownika"
   with_other_meetings: "Pracownik ma w tym czasie inne spotkanie"
+
+facility_wide: "Cała placówka"
+
+work_time_or_leave_time: "Czas pracy / nieobecność"

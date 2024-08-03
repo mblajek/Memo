@@ -2,8 +2,8 @@ import {Button, EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {USER_ICONS} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL} from "components/ui/symbols";
+import {userIcons} from "components/ui/icons";
+import {EmptyValueSymbol} from "components/ui/symbols";
 import {useLangFunc} from "components/utils";
 import {Admin} from "data-access/memo-api/groups";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
@@ -44,7 +44,9 @@ export default (() => {
           name: "hasGlobalAdmin",
           columnDef: {size: 130},
         },
-        ...getCreatedUpdatedColumns({includeUpdatedBy: false, globalAdmin: true}),
+        {name: "managedByFacility.name", initialVisible: false},
+        {name: "lastLoginFacility.name", initialVisible: false},
+        ...getCreatedUpdatedColumns({globalAdmin: true}),
         {
           name: "actions",
           isDataColumn: false,
@@ -55,16 +57,17 @@ export default (() => {
               <PaddedCell>
                 <Show
                   when={!c.row.original.email || (c.row.original.email as string).includes("@")}
-                  fallback={EMPTY_VALUE_SYMBOL}
+                  fallback={<EmptyValueSymbol />}
                 >
                   <EditButton
-                    class="minimal"
+                    class="minimal -my-px"
                     onClick={() => userEditModal.show({userId: c.row.original.id as string})}
                   />
                 </Show>
               </PaddedCell>
             ),
             enableSorting: false,
+            enableHiding: false,
             ...AUTO_SIZE_COLUMN_DEFS,
           },
         },
@@ -73,7 +76,7 @@ export default (() => {
       customSectionBelowTable={
         <div class="ml-2 flex gap-1">
           <Button class="secondary small" onClick={() => userCreateModal.show()}>
-            <USER_ICONS.add class="inlineIcon text-current" /> {t("actions.user.add")}
+            <userIcons.Add class="inlineIcon" /> {t("actions.user.add")}
           </Button>
         </div>
       }

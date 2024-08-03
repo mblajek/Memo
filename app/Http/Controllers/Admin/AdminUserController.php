@@ -62,6 +62,7 @@ class AdminUserController extends ApiController
                     new OA\Property(property: 'password', type: 'string', example: 'password'),
                     new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
                     new OA\Property(property: 'hasGlobalAdmin', type: 'bool', example: false),
+                    new OA\Property(property: 'managedByFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
                 ]
             )
         ),
@@ -94,6 +95,7 @@ class AdminUserController extends ApiController
                     new OA\Property(property: 'password', type: 'string', example: 'password'),
                     new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
                     new OA\Property(property: 'hasGlobalAdmin', type: 'bool', example: false),
+                    new OA\Property(property: 'managedByFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
                 ]
             )
         ),

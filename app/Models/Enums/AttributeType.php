@@ -34,9 +34,15 @@ enum AttributeType: string
 
     public function getTqueryDataType(
         bool $nullable,
+        bool $multi,
         DictionaryUuidEnum|string|null $dictionaryId,
     ): TqDictDef|TqDataTypeEnum {
-        $type = match ($this) {
+        $type = $multi ? match ($this) {
+            self::Bool, self::Date, self::Datetime, self::Int, self::String, self::Text => TqDataTypeEnum::list,
+            self::Users, self::Clients, self::Attributes => TqDataTypeEnum::uuid_list,
+            self::Dict => TqDataTypeEnum::dict_list,
+            self::Separator => FatalExceptionFactory::unexpected()->throw(),
+        } : match ($this) {
             self::Bool => $nullable ? TqDataTypeEnum::bool_nullable : TqDataTypeEnum::bool,
             self::Date => $nullable ? TqDataTypeEnum::date_nullable : TqDataTypeEnum::date,
             self::Datetime => $nullable ? TqDataTypeEnum::datetime_nullable : TqDataTypeEnum::datetime,

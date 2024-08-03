@@ -7,7 +7,8 @@ import s from "./PopOver.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
 interface Props {
-  readonly trigger: (triggerProps: Accessor<htmlAttributes.button>) => JSX.Element;
+  readonly trigger: (triggerProps: Accessor<htmlAttributes.button>, api: Accessor<popover.Api>) => JSX.Element;
+  readonly placement?: popover.Placement;
   readonly children: ChildrenOrFunc<[Accessor<popover.Api>]>;
 }
 
@@ -15,14 +16,18 @@ export const PopOver: Component<Props> = (props) => {
   const [state, send, machine] = useMachine(
     popover.machine({
       portalled: true,
-      positioning: {
-        gutter: 1,
-        strategy: "absolute",
-        placement: "bottom-end",
-        overflowPadding: 10,
-      },
       id: createUniqueId(),
     }),
+    {
+      context: () => ({
+        positioning: {
+          gutter: 1,
+          strategy: "absolute",
+          placement: props.placement || "bottom-end",
+          overflowPadding: 10,
+        } satisfies popover.PositioningOptions,
+      }),
+    },
   );
   const api = createMemo(() => popover.connect(state, send, normalizeProps));
   /**
@@ -42,7 +47,7 @@ export const PopOver: Component<Props> = (props) => {
   });
   return (
     <>
-      {props.trigger(() => api().triggerProps)}
+      {props.trigger(() => api().triggerProps, api)}
       <Portal>
         <div class={s.popOverPortal}>
           <div {...api().positionerProps}>

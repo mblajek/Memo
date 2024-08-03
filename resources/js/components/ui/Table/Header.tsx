@@ -1,5 +1,5 @@
 import {HeaderContext} from "@tanstack/solid-table";
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils";
 import {JSX, Show, Signal, VoidComponent, createMemo} from "solid-js";
 import {ColumnName, FilterIconButton, SortMarker} from ".";
 import {Button} from "../Button";
@@ -9,7 +9,7 @@ interface Props {
   readonly ctx: HeaderContext<any, unknown>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly filter?: Signal<any | undefined>;
-  readonly filterControl?: JSX.Element;
+  readonly filterControl?: () => JSX.Element;
 }
 
 /**
@@ -17,27 +17,29 @@ interface Props {
  * as well as filtering if filter element is provided.
  */
 export const Header: VoidComponent<Props> = (props) => {
-  const t = useLangFunc();
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
+
+  const ColNameAndIcon: VoidComponent = () => (
+    <div class="flex items-center">
+      <ColumnName def={props.ctx.column.columnDef} />
+      <SortMarker column={props.ctx.column} />
+    </div>
+  );
+
   return (
     <div class="h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1 relative">
       <span class="font-bold">
-        <Show when={props.ctx.column.getCanSort()} fallback={<ColumnName def={props.ctx.column.columnDef} />}>
-          <Button
-            class="flex items-center text-start select-text"
-            onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}
-            title={t("tables.sort_tooltip")}
-          >
-            <ColumnName def={props.ctx.column.columnDef} />
-            <SortMarker column={props.ctx.column} />
+        <Show when={props.ctx.column.getCanSort()} fallback={<ColNameAndIcon />}>
+          <Button class="text-start select-text" onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}>
+            <ColNameAndIcon />
           </Button>
         </Show>
       </span>
       <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
         {(filterControl) => (
-          <div class="flex flex-wrap items-end gap-0.5">
-            <div class="flex-grow basis-0">{filterControl()}</div>
-            <div>
+          <div class="flex flex-wrap items-end gap-0.5 overflow-y-auto">
+            <div class="flex-grow basis-0">{filterControl()()}</div>
+            <div class="ml-auto">
               <FilterIconButton isFiltering={!!props.filter![0]()} onClear={() => props.filter![1](undefined)} />
             </div>
           </div>

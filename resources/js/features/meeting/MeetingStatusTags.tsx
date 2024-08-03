@@ -1,11 +1,12 @@
 import {Tag, TagsLine} from "components/ui/Tag";
 import {useLangFunc} from "components/utils";
+import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
 interface MeetingStatusTagsProps {
-  readonly meeting: Pick<MeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">;
+  readonly meeting: Partial<Pick<MeetingResource, "statusDictId" | "staff" | "clients" | "isRemote">>;
   /** If true, a single "planned" tag is shown for a planned meeting. If false, nothing is shown. */
   readonly showPlannedTag?: boolean;
 }
@@ -23,12 +24,13 @@ export const MeetingStatusTags: VoidComponent<MeetingStatusTagsProps> = (props) 
     ClientLatePresentTag,
     RemoteTag,
   } = useStatusTags();
-  function anyHasStatus(attendants: readonly MeetingAttendantResource[], statusName: string) {
-    return attendants.some(
-      ({attendanceStatusDictId}) => attendanceStatusDictId === attendanceStatusDict()?.getPosition(statusName).id,
-    );
+  function anyHasStatus(attendants: readonly MeetingAttendantResource[] | undefined, status: Position) {
+    return attendants?.some(({attendanceStatusDictId}) => attendanceStatusDictId === status.id);
   }
   const tags = () => {
+    if (!meetingStatusDict()) {
+      return [];
+    }
     // This logic is subject to change based on feedback.
     const tags: JSX.Element[] = [];
     if (props.meeting.statusDictId === meetingStatusDict()?.planned.id) {
@@ -39,22 +41,22 @@ export const MeetingStatusTags: VoidComponent<MeetingStatusTagsProps> = (props) 
       if (props.meeting.statusDictId === meetingStatusDict()?.completed.id) {
         tags.push(<CompletedTag />);
       }
-      if (anyHasStatus(props.meeting.clients, "no_show")) {
+      if (anyHasStatus(props.meeting.clients, attendanceStatusDict()!.no_show)) {
         tags.push(<ClientNoShowTag />);
       }
-      if (anyHasStatus(props.meeting.clients, "too_late")) {
+      if (anyHasStatus(props.meeting.clients, attendanceStatusDict()!.too_late)) {
         tags.push(<ClientTooLateTag />);
       }
-      if (anyHasStatus(props.meeting.staff, "cancelled")) {
+      if (anyHasStatus(props.meeting.staff, attendanceStatusDict()!.cancelled)) {
         tags.push(<CancelledByStaffTag />);
       }
-      if (anyHasStatus(props.meeting.clients, "cancelled")) {
+      if (anyHasStatus(props.meeting.clients, attendanceStatusDict()!.cancelled)) {
         tags.push(<CancelledByClientTag />);
       }
       if (props.meeting.statusDictId === meetingStatusDict()?.cancelled.id) {
         tags.push(<CancelledTag />);
       }
-      if (anyHasStatus(props.meeting.clients, "late_present")) {
+      if (anyHasStatus(props.meeting.clients, attendanceStatusDict()!.late_present)) {
         tags.push(<ClientLatePresentTag />);
       }
     }

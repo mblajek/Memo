@@ -23,7 +23,7 @@ readonly class MeetingAttendantTquery extends MeetingTquery
         );
         $builder->join(
             TqTableAliasEnum::meeting_attendants,
-            TqTableAliasEnum::attendant,
+            TqTableAliasEnum::users,
             'user_id',
             left: false,
             inv: false,
@@ -43,7 +43,7 @@ readonly class MeetingAttendantTquery extends MeetingTquery
         );
         $config->addJoined(
             TqDataTypeEnum::string,
-            TqTableAliasEnum::attendant,
+            TqTableAliasEnum::users,
             'name',
             'attendant.name'
         );

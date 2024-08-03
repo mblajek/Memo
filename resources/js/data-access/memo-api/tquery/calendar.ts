@@ -1,6 +1,7 @@
 import {DaysRange} from "components/ui/calendar/days_range";
-import {NON_NULLABLE} from "components/utils";
+import {CalendarFunction} from "components/ui/meetings-calendar/calendar_modes";
 import {Accessor, createMemo, on} from "solid-js";
+import {useFixedDictionaries} from "../fixed_dictionaries";
 import {MeetingAttendantResource, MeetingResource} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {dateToISO} from "../utils";
@@ -10,8 +11,7 @@ import {DataRequest} from "./types";
 
 const DEFAULT_LIMIT = 1000;
 
-/** The list of columns to fetch. */
-const COLUMNS = [
+const RESOURCE_COLUMNS = [
   "id",
   "date",
   "startDayminute",
@@ -26,13 +26,22 @@ const COLUMNS = [
   "isRemote",
   "fromMeetingId",
   "interval",
-] satisfies (keyof MeetingResource)[];
+] as const satisfies (keyof MeetingResource)[];
+
+/** The list of columns to fetch. */
+const COLUMNS = [...RESOURCE_COLUMNS, "seriesNumber", "seriesCount"] as const;
+
+export type SeriesNumberAndCount = {
+  readonly seriesNumber: number | null;
+  readonly seriesCount: number | null;
+};
 
 /** A meeting resource type fetched from tquery. */
-export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof COLUMNS)[number], "staff" | "clients">> & {
-  readonly staff: readonly TQMeetingAttendantResource[];
-  readonly clients: readonly TQMeetingAttendantResource[];
-};
+export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_COLUMNS)[number], "staff" | "clients">> &
+  SeriesNumberAndCount & {
+    readonly staff: readonly TQMeetingAttendantResource[];
+    readonly clients: readonly TQMeetingAttendantResource[];
+  };
 
 export interface TQMeetingAttendantResource extends MeetingAttendantResource {
   readonly name: string;
@@ -46,66 +55,97 @@ export interface TQMeetingAttendantResource extends MeetingAttendantResource {
  * only one staff member is selected etc.
  */
 export function createCalendarRequestCreator({
-  intrinsicFilter,
+  calendarFunction,
+  intrinsicFilter = "always",
   daysRange,
   staff,
+  meetingResources,
   limit = DEFAULT_LIMIT,
 }: {
+  calendarFunction: CalendarFunction;
   intrinsicFilter?: FilterH;
   daysRange: Accessor<DaysRange>;
-  staff?: Accessor<readonly Api.Id[] | undefined>;
+  staff: Accessor<readonly Api.Id[]>;
+  meetingResources: Accessor<readonly Api.Id[]>;
   limit?: number;
 }): RequestCreator<undefined> {
+  const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   return (schema) => {
     const filterReductor = createMemo(on(schema, (schema) => schema && new FilterReductor(schema)));
-    const dateFilter = (): FilterH => ({
-      type: "op",
-      op: "&",
-      val: [
-        {
-          type: "column",
-          column: "date",
-          op: ">=",
-          val: dateToISO(daysRange().start.minus({days: 1})),
-        },
-        {
-          type: "column",
-          column: "date",
-          op: "<=",
-          val: dateToISO(daysRange().end),
-        },
-      ],
-    });
-    const staffFilter = (): FilterH | undefined => {
-      // Fetch for all staff if showing a single day.
-      if (daysRange().length() <= 1) {
-        return undefined;
+    const filter = () => {
+      if (!dictionaries() || !filterReductor()) {
+        return "never";
       }
-      const staffIds = staff?.();
-      const hasStaffFilter: FilterH | undefined = staffIds && {
-        type: "column",
-        column: "staff.*.userId",
-        op: "has_any",
-        val: staffIds.toSorted(),
-      };
-      const isFacilityWide: FilterH = {type: "column", column: "staff.count", op: "=", val: 0};
-      return {
+      const dateFilter: FilterH = {
         type: "op",
-        op: "|",
-        val: [hasStaffFilter, isFacilityWide].filter(NON_NULLABLE),
+        op: "&",
+        val: [
+          {
+            type: "column",
+            column: "date",
+            op: ">=",
+            val: dateToISO(daysRange().start.minus({days: 1})),
+          },
+          {
+            type: "column",
+            column: "date",
+            op: "<=",
+            val: dateToISO(daysRange().end),
+          },
+        ],
       };
+      const typeFilter: FilterH =
+        calendarFunction === "work"
+          ? "always"
+          : calendarFunction === "timeTables"
+            ? {
+                type: "column",
+                column: "typeDictId",
+                op: "in",
+                val: [meetingTypeDict()!.work_time.id, meetingTypeDict()!.leave_time.id],
+              }
+            : (calendarFunction satisfies never);
+      let staffFilter: FilterH;
+      let meetingResourcesFilter: FilterH;
+      // Fetch for all staff and resources if showing a single day.
+      if (daysRange().length() <= 1) {
+        staffFilter = "always";
+        meetingResourcesFilter = "always";
+      } else {
+        const hasStaffFilter: FilterH = {
+          type: "column",
+          column: "staff.*.userId",
+          op: "has_any",
+          val: staff().toSorted(),
+        };
+        const isFacilityWide: FilterH = staff().length
+          ? {type: "column", column: "staff.count", op: "=", val: 0}
+          : "never";
+        staffFilter = {
+          type: "op",
+          op: "|",
+          val: [hasStaffFilter, isFacilityWide],
+        };
+        meetingResourcesFilter = {type: "column", column: "resources.*.dictId", op: "has_any", val: meetingResources()};
+      }
+      return filterReductor()!.reduce({
+        type: "op",
+        op: "&",
+        val: [
+          intrinsicFilter,
+          dateFilter,
+          typeFilter,
+          {type: "op", op: "|", val: [staffFilter, meetingResourcesFilter]},
+        ],
+      });
     };
     const request = createMemo((): DataRequest | undefined => {
-      if (!schema()) {
+      if (!schema() || !meetingTypeDict()) {
         return undefined;
       }
       return {
         columns: COLUMNS.map((column) => ({type: "column", column})),
-        filter: filterReductor()?.reduce({
-          type: "op",
-          op: "&",
-          val: [intrinsicFilter, dateFilter(), staffFilter()].filter(NON_NULLABLE),
-        }),
+        filter: filter(),
         sort: [],
         paging: {size: limit},
       };

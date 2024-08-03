@@ -9,7 +9,6 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqBind;
 use Closure;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class TqBuilder
@@ -120,8 +119,9 @@ class TqBuilder
         return $this->builder->getCountForPagination();
     }
 
-    public function getData(): Collection
+    public function getData(): array
     {
-        return $this->builder->get();
+        // based on builder->runSelect
+        return $this->builder->getConnection()->select($this->builder->toSql(), $this->builder->getBindings());
     }
 }

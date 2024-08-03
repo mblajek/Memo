@@ -2,12 +2,12 @@ generic:
   submit: "$t(actions.save)"
 
 login:
-  formName: "Logowanie"
+  form_name: "Logowanie"
   submit: "Zaloguj"
 
 password_change:
-  formName: "Zmiana hasła"
-  fieldNames:
+  form_name: "Zmiana hasła"
+  field_names:
     current: "aktualne hasło"
     password: "nowe hasło"
     repeat: "powtórz nowe hasło"
@@ -15,7 +15,7 @@ password_change:
   success: "Hasło zostało zmienione"
 
 user:
-  fieldNames:
+  field_names:
     hasPassword: "posiada hasło logowania do Memo"
   members_destructive_update_warning:
     header: "UWAGA!"
@@ -23,11 +23,11 @@ user:
     line2: "Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
 
 user_edit:
-  formName: "Zmiana danych"
-  fieldNames:
+  form_name: "Zmiana danych"
+  field_names:
     # Alternative to "password", if the password is changed:
     newPassword: "Nowe hasło"
-  password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
+  password_empty_to_leave_unchanged: "Puste $t(em_dash) brak zmiany hasła"
   global_admin_requires_password: "Globalny administrator musi posiadać hasło (być użytkownikiem Memo)"
   has_password_requires_email: "Użytkownik Memo musi posiadać adres e-mail"
   validation:
@@ -36,69 +36,151 @@ user_edit:
   success: "Zmieniono dane"
 
 user_create:
-  formName: "Nowa osoba"
+  form_name: "Nowa osoba"
   submit: "$t(actions.create)"
   success: "Utworzono osobę"
 
 facility_create:
-  formName: "Nowa placówka"
+  form_name: "Nowa placówka"
   submit: "$t(actions.create)"
   success: "Utworzono placówkę"
 
 facility_edit:
-  formName: "Edycja placówki"
+  form_name: "Edycja placówki"
   success: "Zmieniono dane placówki"
 
 meeting:
   default_duration: "Sugerowane:"
+  default_duration_first_set_start_time: "Najpierw wybierz godzinę rozpoczęcia"
   add_attendant:
     staff: "Dodaj kolejnego pracownika"
     clients: "Dodaj kolejnego klienta"
-  fieldNames:
+  field_names:
     dateAndTime: "data i godzina"
     durationMinutes: "długość spotkania"
+    time.allDay: "$t(calendar.all_day)"
     staff__interval: "(1)[$t(models.staff._name)];(0-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
 
 meeting_create:
-  fieldNames:
+  field_names:
     createSeries: "Utwórz serię spotkań"
-  formName: "Nowe spotkanie"
+  form_name: "Nowe spotkanie"
   submit: "$t(actions.create)"
   success: "Utworzono spotkanie"
 
 meeting_edit:
-  formName: "Edycja spotkania"
+  form_name: "Edycja spotkania"
   success: "Zmieniono spotkanie"
 
 meeting_delete:
-  formName: "Usunięcie spotkania"
-  confirmationText: "Czy na pewno usunąć to spotkanie?"
-  submit: "Usuń spotkanie"
-  success: "Usunięto spotkanie"
+  form_name: "Usunięcie spotkania"
+  confirmation_text: "Czy na pewno usunąć to spotkanie?"
+  series_info: "To spotkanie jest częścią serii"
+  one: "Usuń tylko to spotkanie"
+  from_this__one: "Usuń to spotkanie i kolejne {{count,number}} w serii"
+  from_this__few: "Usuń to spotkanie i kolejne {{count,number}} w serii"
+  from_this__many: "Usuń to spotkanie i kolejnych {{count,number}} w serii"
+  all__few: "Usuń wszystkie {{count, number}} spotkania w serii"
+  all__many: "Usuń wszystkie {{count, number}} spotkań w serii"
+  submit__one: "Usuń spotkanie"
+  submit__few: "Usuń {{count, number}} spotkania"
+  submit__many: "Usuń {{count, number}} spotkań"
+  success__one: "Usunięto spotkanie"
+  success__few: "Usunięto {{count, number}} spotkania"
+  success__many: "Usunięto {{count, number}} spotkań"
 
 meeting_series:
-  fieldNames:
+  field_names:
     seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
-    # Umbrella fields for the meeting dates table:
-    seriesMeetingDates: "daty spotkań"
-  total_number_of_meetings: "Łączna liczba spotkań: {{count}}"
+    seriesDates: "daty"
+    # Not real fields, but placed in field_names to allow overriding in work time series forms.
+    number_of_meetings:
+      total: "Łączna liczba spotkań: {{count}}"
+      including_existing: "(w tym już istniejące: {{count}})"
+    extend_not_from_last_warning: "Uwaga: Przedłużenie serii powinno być zwykle wykonane startując od ostatniego spotkania w serii."
 
 meeting_series_create:
-  formName: "Utwórz serię spotkań"
-  submit: "Utwórz spotkania"
+  form_name: "Utwórz serię"
+  submit: "Utwórz serię"
   success: "Utworzono serię spotkań"
 
+work_time:
+  field_names:
+    typeDictId: "Typ"
+    staff: "$t(models.staff._name)"
+
+work_time_create:
+  form_name: "Nowy czas pracy / nieobecność"
+  field_names:
+    createSeries: "Utwórz serię"
+  success: "Utworzono czas pracy / nieobecność"
+
+work_time_edit:
+  form_name: "Edycja czasu pracy / nieobecności"
+  success: "Zmieniono czas pracy / nieobecność"
+
+work_time_delete:
+  form_name: "Usunięcie czasu pracy / nieobecności"
+  confirmation_text: "Czy na pewno usunąć ten wpis?"
+  series_info: "Ten wpis jest częścią serii"
+  one: "Usuń tylko ten wpis"
+  from_this__one: "Usuń ten wpis i kolejny {{count,number}} w serii"
+  from_this__few: "Usuń ten wpis i kolejne {{count,number}} w serii"
+  from_this__many: "Usuń ten wpis i kolejnych {{count,number}} w serii"
+  all__few: "Usuń wszystkie {{count, number}} wpisy w serii"
+  all__many: "Usuń wszystkich {{count, number}} wpisów w serii"
+  submit__one: "Usuń wpis"
+  submit__few: "Usuń {{count, number}} wpisy"
+  submit__many: "Usuń {{count, number}} wpisów"
+  success__one: "Usunięto wpis"
+  success__few: "Usunięto {{count, number}} wpisy"
+  success__many: "Usunięto {{count, number}} wpisów"
+
+work_time_series:
+  field_names:
+    # Overrides:
+    number_of_meetings:
+      total: "Łączna liczba wpisów: {{count}}"
+      including_existing: "(w tym już istniejące: {{count}})"
+    extend_not_from_last_warning: "Uwaga: Przedłużenie serii powinno być zwykle wykonane startując od ostatniego wpisu w serii."
+
+work_time_series_create:
+  form_name: "Utwórz serię"
+  submit: "Utwórz serię"
+  success: "Utworzono serię"
+
 client:
-  fieldNames:
+  field_names:
     client.notes: "$t(models.generic.notes)"
 
 client_edit:
-  formName: "Edycja klienta"
+  form_name: "Edycja klienta"
   success: "Zmieniono dane klienta"
 
 client_create:
-  formName: "Nowy klient"
+  form_name: "Nowy klient"
   submit: "$t(actions.create)"
   success: "Utworzono klienta"
+
+client_delete:
+  form_name: "Usuwanie klienta"
+  field_names:
+    duplicateOf: "właściwy wpis tego klienta"
+  activate_button: "$t(actions.client.delete)$t(ellipsis)"
+  form_info:
+    more_info: "Zapoznaj się ze szczegółową instrukcją na temat usuwania klientów."
+    warn: "Uwaga: wszystkie dane zapisane na bieżącym kliencie zostaną usunięte. Upewnij się, że żadne istotne informacje nie zostaną utracone. Ta operacja jest nieodwracalna."
+    deleted_client: "Klient do usunięcia (bieżący):"
+    duplicate_of_info:
+      common: "Jeżeli usuwany klient jest duplikatem innego klienta, wybierz go w polu $t(quotes.open)$t(forms.client_delete.field_names.duplicateOf)$t(quotes.close) poniżej."
+      optional: "$t(forms.client_delete.form_info.duplicate_of_info.common) Wypełnienie tego pola jest w pewnych sytuacjach wymagane."
+      required: "$t(forms.client_delete.form_info.duplicate_of_info.common) W przeciwnym razie tego klienta nie można usunąć w ten sposób $t(em_dash) skontaktuj się z administratorem globalnym."
+    client_id_hint: "Systemowy identyfikator klienta, widoczny w pasku adresu"
+    duplicate_of_is_same: "Wybrano tego samego klienta! Zapoznaj się z instrukcją na temat usuwania klientów."
+    disabled_submit_hint: "Przeczytaj uważnie informacje powyżej"
+  submit: "$t(actions.client.delete)"
+  success:
+    remove: "Usunięto klienta"
+    deduplicate: "Usunięto duplikat"
