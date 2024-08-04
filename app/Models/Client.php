@@ -54,14 +54,17 @@ class Client extends Model
         if ($this->short_code !== null) {
             return;
         }
-        $this->short_code = Client::query()
+        $builder = Client::query()
             ->selectRaw(
                 "lpad(cast(`clients`.`short_code` as int)+1, length(`clients`.`short_code`), '0') as `new_short_code`"
             )
             ->join('members', 'members.client_id', 'clients.id')
             ->where('members.facility_id', PermissionMiddleware::facility()->id)
             ->whereRaw("clients.short_code REGEXP '^[0-9]+$'")
-            ->orderByRaw('cast(clients.short_code as int) desc')
-            ->first(['new_short_code'])?->new_short_code ?? '1';
+            ->orderByRaw('cast(clients.short_code as int) desc');
+        if ($this->id) {
+            $builder->where('clients.id', '!=', $this->id);
+        }
+        $this->short_code = $builder->first(['new_short_code'])?->new_short_code ?? '1';
     }
 }
