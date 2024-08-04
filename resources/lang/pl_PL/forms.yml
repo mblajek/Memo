@@ -94,7 +94,7 @@ meeting_series:
   field_names:
     seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
-    seriesDates: "daty"
+    seriesDates: "daty spotkań do utworzenia"
     # Not real fields, but placed in field_names to allow overriding in work time series forms.
     number_of_meetings:
       total: "Łączna liczba spotkań: {{count}}"
@@ -140,6 +140,7 @@ work_time_delete:
 
 work_time_series:
   field_names:
+    seriesDates: "daty wpisów do utworzenia"
     # Overrides:
     number_of_meetings:
       total: "Łączna liczba wpisów: {{count}}"
@@ -167,7 +168,7 @@ client_create:
 client_delete:
   form_name: "Usuwanie klienta"
   field_names:
-    duplicateOf: "właściwy wpis tego klienta"
+    duplicateOf: "właściwy profil tego klienta"
   activate_button: "$t(actions.client.delete)$t(ellipsis)"
   form_info:
     more_info: "Zapoznaj się ze szczegółową instrukcją na temat usuwania klientów."
