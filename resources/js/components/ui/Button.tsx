@@ -67,7 +67,7 @@ interface DeleteButtonProps<ConfirmResult> extends ButtonProps {
   /**
    * The method to apply the delete, after it was confirmed by the user (if confirmation was requested).
    * @param confirmResult The truthy value returned by confirm(), or undefined if there was no confirm method or if
-   *    the user skipped the confirmation with ctrl/alt
+   *    the user skipped the confirmation with Ctrl+Alt or Ctrl+Shift.
    */
   readonly delete?: (confirmResult: ConfirmResult | undefined) => Promise<void> | void;
 }
@@ -81,7 +81,7 @@ export const DeleteButton = <ConfirmResult,>(allProps: DeleteButtonProps<Confirm
       return;
     }
     let confirmResult: ConfirmResult | undefined;
-    const skipConfirmation = !props.confirm || (e.ctrlKey && e.altKey);
+    const skipConfirmation = !props.confirm || (e.ctrlKey && (e.altKey || e.shiftKey));
     if (skipConfirmation) {
       confirmResult = undefined;
     } else {
