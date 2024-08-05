@@ -4,7 +4,7 @@ import {LoadingPane} from "components/ui/LoadingPane";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
-import {actionIcons} from "components/ui/icons";
+import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
 import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -193,7 +193,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                     )}
                     disabled={isBusy()}
                   >
-                    <actionIcons.Repeat class="inlineIcon" />{" "}
+                    <MeetingRepeatIcon class="inlineIcon" />{" "}
                     {t(workTime().fromMeetingId ? "meetings.extend_series" : "meetings.create_series")}
                   </SplitButton>
                   <Show when={props.onViewModeChange}>

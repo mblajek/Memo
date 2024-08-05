@@ -5,7 +5,7 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
-import {actionIcons} from "components/ui/icons";
+import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
 import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -203,7 +203,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                     )}
                     disabled={isBusy()}
                   >
-                    <actionIcons.Repeat class="inlineIcon" />{" "}
+                    <MeetingRepeatIcon class="inlineIcon" />{" "}
                     {t(meeting().fromMeetingId ? "meetings.extend_series" : "meetings.create_series")}
                   </SplitButton>
                   <Show when={props.onViewModeChange}>

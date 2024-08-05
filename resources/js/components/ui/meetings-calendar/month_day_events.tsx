@@ -1,5 +1,4 @@
 import {ButtonLike} from "components/ui/ButtonLike";
-import {actionIcons} from "components/ui/icons";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -12,6 +11,7 @@ import {RichTextView} from "../RichTextView";
 import {TimeSpan} from "../calendar/types";
 import {HoverableMeetingEventBlock, HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
 import {MeetingHoverCard} from "./MeetingHoverCard";
+import {MeetingRepeatIcon} from "./MeetingRepeatIcon";
 import {MIDNIGHT_CROSSING_SYMBOL, coloringToStyle} from "./colors";
 
 interface Props
@@ -99,7 +99,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
                 </div>
                 <Show when={meeting().fromMeetingId}>
                   <div class="absolute bottom-0 right-0 bg-inherit rounded">
-                    <actionIcons.Repeat />
+                    <MeetingRepeatIcon seriesData={meeting()} />
                   </div>
                 </Show>
               </Show>
