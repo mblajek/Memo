@@ -11,7 +11,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class MeetingClientTquery extends MeetingTquery
+final readonly class MeetingClientTquery extends MeetingTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -46,6 +46,7 @@ readonly class MeetingClientTquery extends MeetingTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
+        $config->uniqueTable = TqTableAliasEnum::users;
 
         $config->addJoined(
             TqDataTypeEnum::uuid,

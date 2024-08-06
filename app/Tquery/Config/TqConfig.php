@@ -16,10 +16,13 @@ final class TqConfig
     private const string COUNT_COLUMN = '_count';
 
     private ?array $filterableColumns = null;
+    // may be needed to be set manually if TqService::getBuilder contains inv:true joins
+    public TqTableAliasEnum $uniqueTable;
 
     public function __construct(
         public readonly TqTableAliasEnum $table,
     ) {
+        $this->uniqueTable = $this->table;
     }
 
     public function getSelectableColumns(bool $distinct): array

@@ -8,7 +8,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class MemberTquery extends FacilityUserTquery
+final readonly class MemberTquery extends FacilityUserTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -28,7 +28,8 @@ readonly class MemberTquery extends FacilityUserTquery
 
     protected function getConfig(): TqConfig
     {
-        $config = parent::getConfig();
+        $config = parent::getConfig(); // keep $config->uniqueTable - users.id is still unique
+
         $config->addJoined(
             TqDataTypeEnum::is_not_null,
             TqTableAliasEnum::members,

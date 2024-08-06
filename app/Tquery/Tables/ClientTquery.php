@@ -9,7 +9,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class ClientTquery extends FacilityUserTquery
+final readonly class ClientTquery extends FacilityUserTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -32,7 +32,8 @@ readonly class ClientTquery extends FacilityUserTquery
 
     protected function getConfig(): TqConfig
     {
-        $config = parent::getConfig();
+        $config = parent::getConfig(); // keep $config->uniqueTable - users.id is still unique
+
         self::addClientFields($this->facility, $config);
         return $config;
     }

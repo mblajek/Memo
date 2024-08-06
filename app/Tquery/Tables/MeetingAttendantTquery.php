@@ -9,7 +9,7 @@ use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class MeetingAttendantTquery extends MeetingTquery
+final readonly class MeetingAttendantTquery extends MeetingTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -34,6 +34,7 @@ readonly class MeetingAttendantTquery extends MeetingTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
+        $config->uniqueTable = TqTableAliasEnum::users;
 
         $config->addJoined(
             TqDataTypeEnum::uuid,
