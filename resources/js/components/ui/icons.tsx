@@ -1,4 +1,4 @@
-import {IconTypes} from "solid-icons";
+import {IconTemplate, IconTypes} from "solid-icons";
 import {BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
   BsFileEarmarkPerson,
@@ -54,4 +54,25 @@ export namespace actionIcons {
   export const Delete: IconTypes = (props) => <RiSystemDeleteBin6Line {...props} />;
   export const Details: IconTypes = (props) => <ImCircleRight {...props} />;
   export const Repeat: IconTypes = (props) => <BiRegularRepeat {...props} />;
+  export const RepeatFirst: IconTypes = (props) => <customIcons.RepeatFirst {...props} />;
+  export const RepeatLast: IconTypes = (props) => <customIcons.RepeatLast {...props} />;
+}
+
+namespace customIcons {
+  export const RepeatFirst: IconTypes = (props) =>
+    IconTemplate(
+      {
+        a: {viewBox: "0 0 24 24"},
+        c: `<path d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><rect x="3" y="13" width="5" height="5" rx="1"/>`,
+      },
+      props,
+    );
+  export const RepeatLast: IconTypes = (props) =>
+    IconTemplate(
+      {
+        a: {viewBox: "0 0 24 24"},
+        c: `<path d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><rect x="16" y="13" width="5" height="5" rx="1"/>`,
+      },
+      props,
+    );
 }

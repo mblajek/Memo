@@ -99,7 +99,7 @@ meeting_series:
     number_of_meetings:
       total: "Łączna liczba spotkań: {{count}}"
       including_existing: "(w tym już istniejące: {{count}})"
-    extend_not_from_last_warning: "Uwaga: Przedłużenie serii powinno być zwykle wykonane startując od ostatniego spotkania w serii."
+    extend_not_from_last_warning: "Uwaga: To nie jest ostatnie spotkanie tej serii. Tworzenie kolejnych spotkań może powodować powstanie duplikatów."
 
 meeting_series_create:
   form_name: "Utwórz serię"
@@ -145,7 +145,7 @@ work_time_series:
     number_of_meetings:
       total: "Łączna liczba wpisów: {{count}}"
       including_existing: "(w tym już istniejące: {{count}})"
-    extend_not_from_last_warning: "Uwaga: Przedłużenie serii powinno być zwykle wykonane startując od ostatniego wpisu w serii."
+    extend_not_from_last_warning: "Uwaga: To nie jest ostatni wpis tej serii. Tworzenie kolejnych wpisów może powodować powstanie duplikatów."
 
 work_time_series_create:
   form_name: "Utwórz serię"

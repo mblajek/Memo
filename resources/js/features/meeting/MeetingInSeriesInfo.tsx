@@ -1,6 +1,6 @@
 import {capitalizeString} from "components/ui/Capitalize";
-import {actionIcons} from "components/ui/icons";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
+import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
 import {title} from "components/ui/title";
 import {LangFunc, useLangFunc} from "components/utils";
 import {SeriesNumberAndCount, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
@@ -32,13 +32,13 @@ export const MeetingInSeriesInfo: VoidComponent<Props> = (props) => {
               .filter(Boolean)
               .join(" ")}
           >
-            <actionIcons.Repeat class="inlineIcon" />
+            <MeetingRepeatIcon seriesData={props.meeting} class="inlineIcon" />
           </span>
         </Match>
         <Match when="not compact">
           <span class="flex gap-x-1 whitespace-nowrap">
             <span use:title={t("meetings.meeting_is_in_series")}>
-              <actionIcons.Repeat class="inlineIcon" />
+              <MeetingRepeatIcon seriesData={props.meeting} class="inlineIcon" />
             </span>
             <SeriesNumberInfo {...props.meeting} />
             <span class="text-grey-text">
