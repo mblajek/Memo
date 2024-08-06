@@ -255,7 +255,11 @@ class MeetingController extends ApiController
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'series', type: 'string', enum: ['one', 'from_this', 'all']),
+                    new OA\Property(
+                        property: 'series',
+                        type: 'string',
+                        enum: ['one', 'from_this', 'from_next', 'all'],
+                    ),
                 ]
             )
         ),
@@ -287,30 +291,39 @@ class MeetingController extends ApiController
         Meeting $meeting,
     ): JsonResponse {
         $meeting->belongsToFacilityOrFail();
-        $ids = [$meeting->id];
+        /** @var 'one'|'from_this'|'from_next'|'all' $series */
         if ($meeting->from_meeting_id) {
-            /** @var 'one'|'from_this'|'all' $series */
             $series = $this->validate([
-                'series' => Valid::string([Rule::in(['one', 'from_this', 'all'])], sometimes: true),
+                'series' => Valid::string([Rule::in(['one', 'from_this', 'from_next', 'all'])], sometimes: true),
             ])['series'] ?? 'one';
-            if ($series !== 'one') {
-                $query = DB::query()
-                    ->select('meetings.id')
-                    ->where('base_meeting.id', $meeting->id)
-                    ->from('meetings as base_meeting')
-                    ->join('meetings', 'meetings.from_meeting_id', 'base_meeting.from_meeting_id');
-                if ($series !== 'all') {
-                    $query->whereRaw(
-                        '(`base_meeting`.`date` < `meetings`.`date`'
-                        . ' or (`base_meeting`.`date` = `meetings`.`date`'
-                        . ' and (`base_meeting`.`start_dayminute` < `meetings`.`start_dayminute`'
-                        . ' or (`base_meeting`.`start_dayminute` = `meetings`.`start_dayminute`'
-                        . ' and `base_meeting`.`id` <= `meetings`.`id`))))',
-                    );
-                }
-                $ids = $query->get()->pluck('id')->toArray();
-            }
+        } else {
+            $series = $this->validate([
+                'series' => Valid::string([Rule::in(['one'])], sometimes: true),
+            ])['series'] ?? 'one';
         }
+        if ($series === 'one') {
+            $ids = [$meeting->id];
+        } else {
+            $query = DB::query()
+                ->select('meetings.id')
+                ->where('base_meeting.id', $meeting->id)
+                ->from('meetings as base_meeting')
+                ->join('meetings', 'meetings.from_meeting_id', 'base_meeting.from_meeting_id');
+            if ($series === 'from_this' || $series === 'from_next') {
+                $query->whereRaw(
+                    '(`base_meeting`.`date` < `meetings`.`date`'
+                    . ' or (`base_meeting`.`date` = `meetings`.`date`'
+                    . ' and (`base_meeting`.`start_dayminute` < `meetings`.`start_dayminute`'
+                    . ' or (`base_meeting`.`start_dayminute` = `meetings`.`start_dayminute`'
+                    . ' and `base_meeting`.`id` <= `meetings`.`id`))))',
+                );
+            }
+            if ($series === 'from_next') {
+                $query->whereRaw('`base_meeting`.`id` != `meetings`.`id`');
+            }
+            $ids = $query->get()->pluck('id')->toArray();
+        }
+
         DB::transaction(function () use ($ids) {
             MeetingAttendant::query()->whereIn('meeting_id', $ids)->delete();
             MeetingResourceModel::query()->whereIn('meeting_id', $ids)->delete();
