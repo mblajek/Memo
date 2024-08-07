@@ -22,7 +22,7 @@ export default (() => {
         type: "op",
         op: "&",
         val: [
-          {type: "column", column: "staff.count", op: "=", val: 0},
+          {type: "column", column: "isFacilityWide", op: "=", val: true},
           {
             type: "column",
             column: "typeDictId",

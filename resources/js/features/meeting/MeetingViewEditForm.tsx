@@ -60,16 +60,18 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
   async function updateMeeting(values: Partial<MeetingFormType>) {
     const origMeeting = meeting();
     const meetingPatch = transformFormValues(values);
-    if (origMeeting.staff.length && meetingPatch.staff?.length === 0) {
+    const origFacilityWide = !origMeeting.staff.length && !origMeeting.resources.length;
+    const modifiedFacilityWide =
+      !(meetingPatch.staff || origMeeting.staff).length && !(meetingPatch.resources || origMeeting.resources).length;
+    if (modifiedFacilityWide && !origFacilityWide) {
       if (
         !(await confirmation.confirm({
-          title: t("meetings.meeting_without_staff.title"),
-          body: t("meetings.meeting_without_staff.body"),
+          title: t("meetings.facility_wide_meeting.title"),
+          body: t("meetings.facility_wide_meeting.body"),
           confirmText: t("forms.meeting_create.submit"),
         }))
-      ) {
+      )
         return;
-      }
     }
     await meetingAPI.update(props.staticMeetingId, meetingPatch);
     // eslint-disable-next-line solid/reactivity

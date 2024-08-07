@@ -39,6 +39,7 @@ export default (() => {
         cols.meeting.category,
         cols.meeting.type,
         cols.meeting.statusTags,
+        cols.meeting.isFacilityWide,
         cols.meeting.get("attendants", {initialVisible: false}),
         cols.meeting.attendantsAttendance,
         cols.meeting.attendantsCount,

@@ -38,16 +38,15 @@ export const MeetingCreateForm: VoidComponent<MeetingCreateFormProps> = (props) 
 
   async function createMeetings(values: MeetingFormType) {
     const meeting = transformFormValues(values);
-    if (!meeting.staff.length) {
+    if (!meeting.staff.length && !meeting.resources.length) {
       if (
         !(await confirmation.confirm({
-          title: t("meetings.meeting_without_staff.title"),
-          body: t("meetings.meeting_without_staff.body"),
+          title: t("meetings.facility_wide_meeting.title"),
+          body: t("meetings.facility_wide_meeting.body"),
           confirmText: t("forms.meeting_create.submit"),
         }))
-      ) {
+      )
         return;
-      }
     }
     const {id, cloneIds} = await meetingAPI.create(
       meeting,
