@@ -55,6 +55,17 @@ readonly class MeetingTquery extends TqService
             'clients' => AttendanceType::Client,
             'staff' => AttendanceType::Staff,
         ];
+
+        $config->addQuery(
+            TqDataTypeEnum::bool,
+            fn(string $tableName) => "select not (exists(select 1 from `meeting_attendants`"
+                . " where `meeting_attendants`.`meeting_id` = `$tableName`.`id`"
+                . " and `meeting_attendants`.`attendance_type_dict_id` = '{$attendanceTypes['staff']->value}'"
+                . ") or exists(select 1 from `meeting_resources`"
+                . " where `meeting_resources`.`meeting_id` = `meetings`.`id`))",
+            'isFacilityWide',
+        );
+
         foreach ($attendanceTypes as $attendanceName => $attendanceType) {
             $attendantWhere = 'where `meeting_attendants`.`meeting_id` = `meetings`.`id`' . ($attendanceType
                     ? " and `meeting_attendants`.`attendance_type_dict_id` = '{$attendanceType->value}'" : '');
