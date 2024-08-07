@@ -1,11 +1,7 @@
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
-import {
-  MeetingResource,
-  MeetingResourceForCreate,
-  MeetingResourceForPatch,
-} from "../resources/meeting.resource";
+import {MeetingResource, MeetingResourceForCreate, MeetingResourceForPatch} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
 
@@ -74,4 +70,4 @@ export namespace FacilityMeeting {
     }) satisfies SolidQueryOpts<MeetingResource>;
 }
 
-export type SeriesDeleteOption = "one" | "from_this" | "all";
+export type SeriesDeleteOption = "one" | "from_this" | "from_next" | "all";

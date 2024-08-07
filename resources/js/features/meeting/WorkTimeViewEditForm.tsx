@@ -36,7 +36,7 @@ export interface WorkTimeViewEditFormProps {
   readonly onEdited?: (meeting: MeetingBasicData) => void;
   readonly onCreated?: (meeting: MeetingBasicData) => void;
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
-  readonly onDeleted?: () => void;
+  readonly onDeleted?: (count: number, deletedThisWorkTime: boolean) => void;
   readonly onCancel?: () => void;
 }
 

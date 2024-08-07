@@ -18,7 +18,7 @@ export type MeetingForDelete = Partial<
 
 interface Props extends htmlAttributes.button {
   readonly meeting: MeetingForDelete;
-  readonly onDeleted?: (count: number) => void;
+  readonly onDeleted?: (count: number, thisMeetingDeleted: boolean) => void;
 }
 
 export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
@@ -41,12 +41,10 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
     return t(`forms.${formId()}.${subkey}`, options);
   }
 
-  async function deleteMeeting(deleteOption: SeriesDeleteOption | undefined) {
-    // deleteOption is undefined if confirmation was skipped with ctrl+alt - in this case we default to "one"
-    deleteOption ||= "one";
+  async function deleteMeeting(deleteOption: SeriesDeleteOption) {
     const {count} = await meetingAPI.delete(props.meeting.id!, deleteOption);
     toastSuccess(tt("success", {count}));
-    props.onDeleted?.(count);
+    props.onDeleted?.(count, deleteOption !== "from_next");
     invalidate.facility.meetings();
   }
 
@@ -55,71 +53,59 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
     const seriesCount = () => meeting().seriesCount || 0;
     const seriesNumber = () => meeting().seriesNumber || 0;
     const countToDelete = () => {
-      switch (deleteOption()) {
+      const opt = deleteOption();
+      switch (opt) {
         case "one":
           return 1;
         case "from_this":
           return seriesCount() - seriesNumber() + 1;
+        case "from_next":
+          return seriesCount() - seriesNumber();
         case "all":
           return seriesCount();
+        default:
+          return opt satisfies never;
       }
     };
+
+    const Option: VoidComponent<{readonly option: SeriesDeleteOption}> = (props) => (
+      <label class="flex gap-2">
+        <input
+          type="radio"
+          name="delete_option"
+          value={props.option}
+          checked={deleteOption() === props.option}
+          onChange={() => setDeleteOption(props.option)}
+        />
+        <span style={{"line-height": "1.2"}}>{tt(props.option)}</span>
+      </label>
+    );
+
     const params = {
       title: tt("form_name"),
-      confirmText: () => <span>{tt("submit", {count: countToDelete()})}</span>,
+      confirmText: () => (
+        <span>{seriesCount() > 1 ? tt("submit_series", {count: countToDelete()}) : tt("submit")}</span>
+      ),
       body: () => (
         <Show when={seriesCount() > 1} fallback={tt("confirmation_text")}>
-          <div class="mb-4">
+          <div class="flex flex-col gap-2 mb-1">
             <div class="flex flex-col">
-              <span>{tt("series_info")}:</span>
+              <span>{t("with_colon", {text: tt("series_info")})}</span>
               <MeetingInSeriesInfo meeting={meeting()} />
             </div>
-            <div class="mt-4">
-              <label>
-                <input
-                  type="radio"
-                  name="delete_option"
-                  value="one"
-                  checked={deleteOption() === "one"}
-                  onChange={[setDeleteOption, "one"]}
-                />
-                <span class="ml-1">{tt("one")}</span>
-              </label>
-            </div>
-            {
-              // We only show functionally distinct options. If the meeting is first or last in the series, FROM_THIS is
-              // not needed - it would be equivalent to either ALL (if first) or ONE (if last).
-            }
-            <Show when={seriesNumber() > 1 && seriesNumber() < seriesCount()}>
-              <div>
-                <label>
-                  <input
-                    type="radio"
-                    name="delete_option"
-                    value="from_this"
-                    checked={deleteOption() === "from_this"}
-                    onChange={[setDeleteOption, "from_this"]}
-                  />
-                  <span class="ml-1">
-                    {tt("from_this", {
-                      // The message expects count of the following meetings, excluding the current one.
-                      count: seriesCount() - seriesNumber(),
-                    })}
-                  </span>
-                </label>
-              </div>
-            </Show>
-            <div>
-              <label>
-                <input
-                  type="radio"
-                  name="delete_option"
-                  value="all"
-                  checked={deleteOption() === "all"}
-                  onChange={[setDeleteOption, "all"]}
-                />
-                <span class="ml-1">{tt("all", {count: seriesCount()})}</span>
-              </label>
+            <div class="flex flex-col gap-1">
+              <Option option="one" />
+              {
+                // We only show functionally distinct options. If the meeting is first or last in the series, FROM_THIS is
+                // not needed - it would be equivalent to either ALL (if first) or ONE (if last).
+              }
+              <Show when={seriesNumber() > 1 && seriesNumber() < seriesCount()}>
+                <Option option="from_this" />
+              </Show>
+              <Show when={seriesNumber() < seriesCount()}>
+                <Option option="from_next" />
+              </Show>
+              <Option option="all" />
             </div>
           </div>
         </Show>
@@ -145,7 +131,8 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
       <DeleteButton
         {...buttonProps}
         confirm={() => confirmDelete(meetingForDelete)}
-        delete={(deleteOption) => deleteMeeting(deleteOption)}
+        ctrlAltOverride="one"
+        delete={(deleteOption: SeriesDeleteOption) => deleteMeeting(deleteOption)}
       />
     </Show>
   );

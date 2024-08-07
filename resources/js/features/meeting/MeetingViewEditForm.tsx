@@ -37,7 +37,7 @@ export interface MeetingViewEditFormProps {
   readonly onEdited?: (meeting: MeetingBasicData) => void;
   readonly onCreated?: (meeting: MeetingBasicData) => void;
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
-  readonly onDeleted?: (count: number) => void;
+  readonly onDeleted?: (count: number, deletedThisMeeting: boolean) => void;
   readonly onCancel?: () => void;
   /** Whether to show toast on success. Does not affect delete toast (it is always shown). Default: true. */
   readonly showToast?: boolean;

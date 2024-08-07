@@ -54,8 +54,21 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
   );
 };
 
-interface DeleteButtonProps<ConfirmResult> extends ButtonProps {
+interface BaseProps<ConfirmResult> extends ButtonProps {
   readonly label?: JSX.Element;
+  /**
+   * The method to apply the delete, after it was confirmed by the user (if confirmation was requested and not overridden).
+   * The confirmResult is the truthy value returned by confirm() or ctrlAltOverride if clicked with Ctrl+Alt (or Ctrl+Shift).
+   */
+  readonly delete?: (confirmResult: ConfirmResult) => Promise<void> | void;
+}
+
+interface NoConfirmProps extends BaseProps<boolean> {
+  readonly confirm?: undefined;
+  readonly ctrlAltOverride?: undefined;
+}
+
+interface ConfirmProps<ConfirmResult> extends BaseProps<ConfirmResult> {
   /**
    * The method to confirm delete with the user, typically via a dialog from confirmation.tsx.
    * If not provided, the delete function is called without confirmation.
@@ -65,15 +78,17 @@ interface DeleteButtonProps<ConfirmResult> extends ButtonProps {
    */
   readonly confirm?: () => Promise<ConfirmResult | undefined>;
   /**
-   * The method to apply the delete, after it was confirmed by the user (if confirmation was requested).
-   * @param confirmResult The truthy value returned by confirm(), or undefined if there was no confirm method or if
-   *    the user skipped the confirmation with Ctrl+Alt or Ctrl+Shift.
+   * If clicked with Ctrl+Alt (or Ctrl+Shift), this is the value to pass to delete() instead of calling confirm.
+   * Must be truthy to allow overriding.
+   * Default: falsy (no confirmation overriding possible).
    */
-  readonly delete?: (confirmResult: ConfirmResult | undefined) => Promise<void> | void;
+  readonly ctrlAltOverride?: ConfirmResult;
 }
 
-export const DeleteButton = <ConfirmResult,>(allProps: DeleteButtonProps<ConfirmResult>) => {
-  const [props, buttonProps] = splitProps(allProps, ["label", "confirm", "delete"]);
+type Props<ConfirmResult> = NoConfirmProps | ConfirmProps<ConfirmResult>;
+
+export const DeleteButton = <ConfirmResult,>(allProps: Props<ConfirmResult>) => {
+  const [props, buttonProps] = splitProps(allProps, ["label", "confirm", "ctrlAltOverride", "delete"]);
   const t = useLangFunc();
   const [isDeleting, setIsDeleting] = createSignal(false);
   async function onClick(e: MouseEvent) {
@@ -81,20 +96,20 @@ export const DeleteButton = <ConfirmResult,>(allProps: DeleteButtonProps<Confirm
       return;
     }
     let confirmResult: ConfirmResult | undefined;
-    const skipConfirmation = !props.confirm || (e.ctrlKey && (e.altKey || e.shiftKey));
-    if (skipConfirmation) {
-      confirmResult = undefined;
+    if (!props.confirm) {
+      confirmResult = true as ConfirmResult;
+    } else if (e.ctrlKey && (e.altKey || e.shiftKey)) {
+      confirmResult = props.ctrlAltOverride;
     } else {
       confirmResult = await props.confirm();
-      if (!confirmResult) {
-        return;
-      }
     }
-    setIsDeleting(true);
-    try {
-      await props.delete(confirmResult);
-    } finally {
-      setIsDeleting(false);
+    if (confirmResult) {
+      setIsDeleting(true);
+      try {
+        await (props as ConfirmProps<ConfirmResult>).delete!(confirmResult);
+      } finally {
+        setIsDeleting(false);
+      }
     }
   }
   return (
