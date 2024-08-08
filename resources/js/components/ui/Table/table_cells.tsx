@@ -160,11 +160,15 @@ interface ShowCellValProps<V> {
   readonly children?: ChildrenOrFunc<[Accessor<V>]>;
 }
 
+function isEmptyArray(value: unknown): value is readonly [] {
+  return Array.isArray(value) && !value.length;
+}
+
 export const ShowCellVal = <V,>(props: ShowCellValProps<V>) => {
   return (
     <Show
-      when={props.v != undefined}
-      fallback={<>{props.fallback ?? (props.v === null ? <EmptyValueSymbol /> : undefined)}</>}
+      when={props.v != undefined && !isEmptyArray(props.v)}
+      fallback={<>{props.fallback ?? (props.v === null || isEmptyArray(props.v) ? <EmptyValueSymbol /> : undefined)}</>}
     >
       {getChildrenElement(props.children || ((v) => <>{String(v())}</>), () => props.v as V)}
     </Show>
