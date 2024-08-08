@@ -48,6 +48,7 @@ interface CreateAttributeAction {
   readonly kind: "createAttribute";
   readonly nn?: string;
   readonly name: string;
+  readonly description?: string;
   readonly model: string;
   readonly apiName: string;
   readonly type: string;
@@ -79,7 +80,7 @@ export interface Client {
   readonly name: string;
   readonly client: AttributeValues;
   readonly createdByNn?: string;
-  readonly createdAt: string;
+  readonly createdAt?: string;
 }
 
 export interface ClientPatch {
@@ -124,6 +125,11 @@ export interface Meeting {
   readonly staff: readonly Attendant[];
   readonly clients: readonly Attendant[];
   readonly fromMeetingNn?: string;
+  readonly interval?: string;
+  readonly createdAt?: string;
+  readonly createdByNn?: string;
+  readonly updatedAt?: string;
+  readonly updatedByNn?: string;
 }
 
 export interface Attendant {

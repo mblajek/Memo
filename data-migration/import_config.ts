@@ -8,7 +8,7 @@ export interface ImportConfig {
   /** The URL to the Memo app, in the form `https://memo.host/`. */
   readonly memoURL: string;
   readonly facilityId: string;
-  readonly importUserMemoSession: string;
+  readonly importUserMemoSessionCookie: string;
   readonly skipDictionariesAndAttributes: boolean;
   readonly onlyDictionariesAndAttributes: boolean;
   /** Suffix to add to staff emails, to avoid duplicates when doing test imports. */

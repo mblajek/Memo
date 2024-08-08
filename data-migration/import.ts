@@ -23,7 +23,7 @@ if (!params.config) {
 }
 const config = readConfig(params.config);
 
-console.log("Config:", {...config, importUserMemoSession: "***"});
+console.log("Config:", {...config, importUserMemoSessionCookie: "***"});
 
 interface CallParams extends RequestInit {
   readonly req?: object;
@@ -38,7 +38,7 @@ async function api(path: string, params?: CallParams) {
     ...params,
     headers: {
       ...(body ? {"Content-Type": "application/json"} : undefined),
-      Cookie: `memo_session=${config.importUserMemoSession}`,
+      Cookie: config.importUserMemoSessionCookie,
       ...params?.headers,
     },
     body,
@@ -403,6 +403,7 @@ try {
           object: {
             model: attr.model,
             name: attr.name,
+            description: attr.description || null,
             apiName: makeAttrApiName(attr.apiName),
             type: attr.type,
             dictionaryId: attr.dictionaryNnOrName ? (await findDict(attr.dictionaryNnOrName)).id : null,
@@ -493,14 +494,15 @@ try {
           client: await attributeValues(client.client),
         },
       });
-      await api("admin/developer/overwrite-metadata", {
-        req: {
-          model: "client",
-          id: clientId,
-          createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
-          createdAt: client.createdAt,
-        },
-      });
+      if (client.createdByNn || client.createdAt)
+        await api("admin/developer/overwrite-metadata", {
+          req: {
+            model: "client",
+            id: clientId,
+            createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
+            createdAt: client.createdAt,
+          },
+        });
     }
     for (const clientPatch of trackProgress(prepared.patchClients, "clients to patch")) {
       await apiPatch({
@@ -534,7 +536,7 @@ try {
       attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
     });
     for (const meeting of trackProgress(prepared.meetings, "meetings")) {
-      await apiCreate({
+      const {id: meetingId} = await apiCreate({
         nn: meeting.nn,
         path: `facility/${facilityId}/meeting`,
         type: "meeting",
@@ -554,8 +556,20 @@ try {
             meeting.fromMeetingNn && meeting.fromMeetingNn !== meeting.nn
               ? nnMapper.get(meeting.fromMeetingNn)
               : undefined,
+          interval: meeting.interval,
         },
       });
+      if (meeting.createdAt || meeting.createdByNn || meeting.updatedAt || meeting.updatedByNn)
+        await api("admin/developer/overwrite-metadata", {
+          req: {
+            model: "meeting",
+            id: meetingId,
+            createdAt: meeting.createdAt,
+            createdBy: meeting.createdByNn ? nnMapper.get(meeting.createdByNn) : undefined,
+            updatedAt: meeting.updatedAt,
+            updatedBy: meeting.updatedByNn ? nnMapper.get(meeting.updatedByNn) : undefined,
+          },
+        });
     }
   }
 } finally {
