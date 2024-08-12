@@ -5,7 +5,6 @@ namespace App\Tquery\Tables;
 use App\Models\Client;
 use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
-use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;

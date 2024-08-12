@@ -28,6 +28,7 @@ use Illuminate\Validation\Rule;
  * @property ?bool is_multi_value
  * @property bool is_fixed
  * @property AttributeRequirementLevel requirement_level
+ * @property string description
  * @method static AttributeBuilder query()
  */
 class Attribute extends Model
@@ -48,6 +49,7 @@ class Attribute extends Model
         'is_multi_value',
         'is_fixed',
         'requirement_level',
+        'description',
     ];
 
     protected $casts = [
@@ -75,6 +77,7 @@ class Attribute extends Model
             'default_order' => Valid::int(['min:1'], sometimes: true),
             'is_multi_value', 'is_fixed' => Valid::bool(nullable: true),
             'requirement_level' => Valid::trimmed([Rule::enum(AttributeRequirementLevel::class)]),
+            'description' => Valid::text(nullable: true),
         };
     }
 

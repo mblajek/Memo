@@ -1,5 +1,6 @@
-import {useNavigate} from "@solidjs/router";
+import {useIsRouting, useNavigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
+import {MemoLoader} from "components/ui/MemoLoader";
 import {QueryBarrier} from "components/utils";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -17,6 +18,7 @@ import {createLoginModal} from "../forms/login/login_modal";
  */
 export default (() => {
   const navigate = useNavigate();
+  const isRouting = useIsRouting();
   const statusQuery = createQuery(User.statusQueryOptions);
   const systemStatusMonitor = useSystemStatusMonitor();
   const invalidate = useInvalidator();
@@ -29,10 +31,13 @@ export default (() => {
     } else if (statusQuery.isError && !loginModal.isShown()) {
       loginModal.show();
     } else if (statusQuery.isSuccess) {
-      if (!invalidate.everythingThrottled()) {
-        invalidate.userStatusAndFacilityPermissions();
+      loginModal.hide();
+      if (!isRouting()) {
+        if (!invalidate.everythingThrottled()) {
+          invalidate.userStatusAndFacilityPermissions();
+        }
+        navigate("/help");
       }
-      navigate("/help");
     }
   });
   return (
@@ -42,6 +47,8 @@ export default (() => {
       // Do not show any errors, instead just show this login form.
       error={() => undefined}
       pending={() => undefined}
-    />
+    >
+      <MemoLoader />
+    </QueryBarrier>
   );
 }) satisfies VoidComponent;

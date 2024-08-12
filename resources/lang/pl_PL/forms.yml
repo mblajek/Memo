@@ -27,7 +27,7 @@ user_edit:
   field_names:
     # Alternative to "password", if the password is changed:
     newPassword: "Nowe hasło"
-  password_empty_to_leave_unchanged: "Puste — brak zmiany hasła"
+  password_empty_to_leave_unchanged: "Puste $t(em_dash) brak zmiany hasła"
   global_admin_requires_password: "Globalny administrator musi posiadać hasło (być użytkownikiem Memo)"
   has_password_requires_email: "Użytkownik Memo musi posiadać adres e-mail"
   validation:
@@ -76,15 +76,30 @@ meeting_edit:
 meeting_delete:
   form_name: "Usunięcie spotkania"
   confirmation_text: "Czy na pewno usunąć to spotkanie?"
-  submit: "Usuń spotkanie"
-  success: "Usunięto spotkanie"
+  series_info: "To spotkanie jest częścią serii"
+  one: "Usuń tylko to spotkanie"
+  from_this__one: "Usuń to spotkanie i kolejne {{count,number}} w serii"
+  from_this__few: "Usuń to spotkanie i kolejne {{count,number}} w serii"
+  from_this__many: "Usuń to spotkanie i kolejnych {{count,number}} w serii"
+  all__few: "Usuń wszystkie {{count, number}} spotkania w serii"
+  all__many: "Usuń wszystkie {{count, number}} spotkań w serii"
+  submit__one: "Usuń spotkanie"
+  submit__few: "Usuń {{count, number}} spotkania"
+  submit__many: "Usuń {{count, number}} spotkań"
+  success__one: "Usunięto spotkanie"
+  success__few: "Usunięto {{count, number}} spotkania"
+  success__many: "Usunięto {{count, number}} spotkań"
 
 meeting_series:
   field_names:
     seriesInterval: "powtarzaj"
     seriesLength: "długość serii"
-    seriesMeetingDates: "daty"
-  total_number_of_meetings: "Łączna liczba dni: {{count}}"
+    seriesDates: "daty spotkań do utworzenia"
+    # Not real fields, but placed in field_names to allow overriding in work time series forms.
+    number_of_meetings:
+      total: "Łączna liczba spotkań: {{count}}"
+      including_existing: "(w tym już istniejące: {{count}})"
+    extend_not_from_last_warning: "Uwaga: To nie jest ostatnie spotkanie tej serii. Tworzenie kolejnych spotkań może powodować powstanie duplikatów."
 
 meeting_series_create:
   form_name: "Utwórz serię"
@@ -108,9 +123,34 @@ work_time_edit:
 
 work_time_delete:
   form_name: "Usunięcie czasu pracy / nieobecności"
-  confirmation_text: "Czy na pewno usunąć ten element?"
-  submit: "$t(actions.delete)"
-  success: "Usunięto czas pracy / nieobecność"
+  confirmation_text: "Czy na pewno usunąć ten wpis?"
+  series_info: "Ten wpis jest częścią serii"
+  one: "Usuń tylko ten wpis"
+  from_this__one: "Usuń ten wpis i kolejny {{count,number}} w serii"
+  from_this__few: "Usuń ten wpis i kolejne {{count,number}} w serii"
+  from_this__many: "Usuń ten wpis i kolejnych {{count,number}} w serii"
+  all__few: "Usuń wszystkie {{count, number}} wpisy w serii"
+  all__many: "Usuń wszystkich {{count, number}} wpisów w serii"
+  submit__one: "Usuń wpis"
+  submit__few: "Usuń {{count, number}} wpisy"
+  submit__many: "Usuń {{count, number}} wpisów"
+  success__one: "Usunięto wpis"
+  success__few: "Usunięto {{count, number}} wpisy"
+  success__many: "Usunięto {{count, number}} wpisów"
+
+work_time_series:
+  field_names:
+    seriesDates: "daty wpisów do utworzenia"
+    # Overrides:
+    number_of_meetings:
+      total: "Łączna liczba wpisów: {{count}}"
+      including_existing: "(w tym już istniejące: {{count}})"
+    extend_not_from_last_warning: "Uwaga: To nie jest ostatni wpis tej serii. Tworzenie kolejnych wpisów może powodować powstanie duplikatów."
+
+work_time_series_create:
+  form_name: "Utwórz serię"
+  submit: "Utwórz serię"
+  success: "Utworzono serię"
 
 client:
   field_names:
@@ -124,3 +164,24 @@ client_create:
   form_name: "Nowy klient"
   submit: "$t(actions.create)"
   success: "Utworzono klienta"
+
+client_delete:
+  form_name: "Usuwanie klienta"
+  field_names:
+    duplicateOf: "właściwy profil tego klienta"
+  activate_button: "$t(actions.client.delete)$t(ellipsis)"
+  form_info:
+    more_info: "Zapoznaj się ze szczegółową instrukcją na temat usuwania klientów."
+    warn: "Uwaga: wszystkie dane zapisane na bieżącym kliencie zostaną usunięte. Upewnij się, że żadne istotne informacje nie zostaną utracone. Ta operacja jest nieodwracalna."
+    deleted_client: "Klient do usunięcia (bieżący):"
+    duplicate_of_info:
+      common: "Jeżeli usuwany klient jest duplikatem innego klienta, wybierz go w polu $t(quotes.open)$t(forms.client_delete.field_names.duplicateOf)$t(quotes.close) poniżej."
+      optional: "$t(forms.client_delete.form_info.duplicate_of_info.common) Wypełnienie tego pola jest w pewnych sytuacjach wymagane."
+      required: "$t(forms.client_delete.form_info.duplicate_of_info.common) W przeciwnym razie tego klienta nie można usunąć w ten sposób $t(em_dash) skontaktuj się z administratorem globalnym."
+    client_id_hint: "Systemowy identyfikator klienta, widoczny w pasku adresu"
+    duplicate_of_is_same: "Wybrano tego samego klienta! Zapoznaj się z instrukcją na temat usuwania klientów."
+    disabled_submit_hint: "Przeczytaj uważnie informacje powyżej"
+  submit: "$t(actions.client.delete)"
+  success:
+    remove: "Usunięto klienta"
+    deduplicate: "Usunięto duplikat"

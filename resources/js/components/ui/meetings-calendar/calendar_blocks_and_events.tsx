@@ -16,9 +16,9 @@ import {DaysRange} from "../calendar/days_range";
 import {AllDayTimeSpan, Block, CellStylingPreference, Event, PartDayTimeSpan} from "../calendar/types";
 import {WeekDaysCalculator} from "../calendar/week_days_calculator";
 import {capitalizeString} from "../Capitalize";
-import {FACILITY_ICONS} from "../icons";
+import {facilityIcons} from "../icons";
 import {CalendarFunction, CalendarMode} from "./calendar_modes";
-import {CALENDAR_BACKGROUNDS, Coloring, MISSING_MEETING_COLORING} from "./colors";
+import {CALENDAR_BACKGROUNDS, Coloring, NON_STAFF_PLANNED_MEETING_COLORING} from "./colors";
 import {AllDayEventBlock, MeetingEventBlock} from "./column_events";
 import {HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
 import {MonthDayMeetingEventBlock} from "./month_day_events";
@@ -26,15 +26,15 @@ import {TimeBlockSummary} from "./TimeBlockSummary";
 
 export interface ColumnViewInfo {
   readonly day: DateTime;
-  readonly staffId: string;
+  readonly resourceId: string;
 }
 
 export interface MonthViewInfo {
   readonly day: DateTime;
-  readonly staffId: string;
+  readonly resourceId: string;
 }
 
-interface StaffInfo {
+export interface StaffInfo {
   readonly id: string;
   readonly plannedMeetingColoring: Coloring;
 }
@@ -73,7 +73,8 @@ export function useCalendarBlocksAndEvents({
   calendarFunction,
   mode,
   daysRange,
-  staff,
+  staffMap,
+  meetingResources,
   blink,
   hoveredMeeting,
   allDayEventsHeight,
@@ -84,7 +85,8 @@ export function useCalendarBlocksAndEvents({
   calendarFunction: CalendarFunction;
   mode: Accessor<CalendarMode>;
   daysRange: Accessor<DaysRange>;
-  staff: Accessor<readonly StaffInfo[]>;
+  staffMap: Accessor<ReadonlyMap<string, StaffInfo>>;
+  meetingResources: Accessor<readonly string[]>;
   blink?: (meetingId: string) => HoverableMeetingEventBlockProps["blink"];
   hoveredMeeting?: Signal<string | undefined>;
   allDayEventsHeight?: Accessor<number>;
@@ -99,13 +101,6 @@ export function useCalendarBlocksAndEvents({
   const t = useLangFunc();
   const {meetingCategoryDict, meetingTypeDict} = useFixedDictionaries();
   const locale = useLocale();
-  const staffMap = createMemo((): ReadonlyMap<string, StaffInfo> => {
-    const res = new Map();
-    for (const s of staff()) {
-      res.set(s.id, s);
-    }
-    return res;
-  });
   const weekDaysCalculator = new WeekDaysCalculator(locale);
   const {dataQuery: meetingsDataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
@@ -120,6 +115,7 @@ export function useCalendarBlocksAndEvents({
             )
           : daysRange(),
       staff: () => [...staffMap().keys()],
+      meetingResources,
     }),
     dataQueryOptions: {refetchOnWindowFocus: true},
   });
@@ -166,7 +162,7 @@ export function useCalendarBlocksAndEvents({
             {
               onEditClick:
                 calendarFunction === "timeTables"
-                  ? () => viewWorkTime({meetingId: meeting.id, initialViewMode: true})
+                  ? () => viewWorkTime({staticMeetingId: meeting.id, initialViewMode: true})
                   : undefined,
             } as const,
           ),
@@ -190,7 +186,7 @@ export function useCalendarBlocksAndEvents({
             label={(time) =>
               facilityWide ? (
                 <span>
-                  {time} <FACILITY_ICONS.facility class="inlineIcon text-current" size="12" />
+                  {time} <facilityIcons.Facility class="inlineIcon" size="12" />
                 </span>
               ) : (
                 time
@@ -289,13 +285,13 @@ export function useCalendarBlocksAndEvents({
          * Returns an object defining props that are common for different event components, e.g. colors, hover, blink.
          * Properties are defined as getters to allow using the object as props.
          */
-        function commonEventProps(staffId: string) {
+        function commonEventProps(resourceId: string) {
           return untrack(() => ({
             get meeting() {
               return meeting;
             },
             get plannedColoring() {
-              return staffMap().get(staffId)?.plannedMeetingColoring || MISSING_MEETING_COLORING;
+              return staffMap().get(resourceId)?.plannedMeetingColoring || NON_STAFF_PLANNED_MEETING_COLORING;
             },
             get blink() {
               return blink?.(meeting.id);
@@ -307,7 +303,7 @@ export function useCalendarBlocksAndEvents({
               return meeting.id === hoveredMeeting?.[0]();
             },
             entityId: meeting.id,
-            onClick: () => viewMeeting({meetingId: meeting.id, initialViewMode: true}),
+            onClick: () => viewMeeting({staticMeetingId: meeting.id, initialViewMode: true}),
           }));
         }
         if (isAllDay) {
@@ -319,7 +315,7 @@ export function useCalendarBlocksAndEvents({
               <AllDayEventBlock
                 day={colInfo.day}
                 timeSpan={timeSpan}
-                {...commonEventProps(colInfo.staffId)}
+                {...commonEventProps(colInfo.resourceId)}
                 height={allDayEventsHeight?.()}
               />
             ),
@@ -327,7 +323,7 @@ export function useCalendarBlocksAndEvents({
               <MonthDayMeetingEventBlock
                 day={monthInfo.day}
                 timeSpan={timeSpan}
-                {...commonEventProps(monthInfo.staffId)}
+                {...commonEventProps(monthInfo.resourceId)}
                 height={monthEventsHeight?.()}
               />
             ),
@@ -338,13 +334,13 @@ export function useCalendarBlocksAndEvents({
             meeting,
             ...timeSpan,
             contentInHoursArea: (colInfo) => (
-              <MeetingEventBlock day={colInfo.day} timeSpan={timeSpan} {...commonEventProps(colInfo.staffId)} />
+              <MeetingEventBlock day={colInfo.day} timeSpan={timeSpan} {...commonEventProps(colInfo.resourceId)} />
             ),
             contentInMonthCell: (monthInfo) => (
               <MonthDayMeetingEventBlock
                 day={monthInfo.day}
                 timeSpan={timeSpan}
-                {...commonEventProps(monthInfo.staffId)}
+                {...commonEventProps(monthInfo.resourceId)}
                 height={monthEventsHeight?.()}
               />
             ),

@@ -1,5 +1,5 @@
 import {createCached} from "components/utils/cache";
-import {Users} from "data-access/memo-api/groups/shared";
+import {FacilityUsers} from "data-access/memo-api/groups/FacilityUsers";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {DataRequest} from "data-access/memo-api/tquery/types";
 import {createMemo} from "solid-js";
@@ -9,6 +9,7 @@ interface UserMemberData {
   readonly id: string;
   readonly name: string;
   readonly isStaff: boolean;
+  readonly isActiveStaff: boolean;
   readonly isClient: boolean;
   readonly hasFacilityAdmin: boolean;
   readonly hasGlobalAdmin: boolean;
@@ -18,6 +19,7 @@ interface MemberRow {
   readonly "id": string;
   readonly "name": string;
   readonly "member.isStaff": boolean;
+  readonly "member.isActiveStaff": boolean;
   readonly "member.isClient": boolean;
   readonly "member.hasFacilityAdmin": boolean;
   readonly "hasGlobalAdmin": boolean;
@@ -31,6 +33,7 @@ export const useMembersData = createCached(() => {
         "id",
         "name",
         "member.isStaff",
+        "member.isActiveStaff",
         "member.isClient",
         "member.hasFacilityAdmin",
         "hasGlobalAdmin",
@@ -41,7 +44,7 @@ export const useMembersData = createCached(() => {
   };
   const {dataQuery} = createTQuery({
     entityURL: () => `facility/${activeFacilityId()}/user`,
-    prefixQueryKey: Users.keys.user(),
+    prefixQueryKey: FacilityUsers.keys.user(),
     requestCreator: staticRequestCreator(request),
     dataQueryOptions: () => ({
       enabled: !!activeFacilityId(),
@@ -72,6 +75,7 @@ export const useMembersData = createCached(() => {
         id: row.id,
         name: row.name,
         isStaff: row["member.isStaff"],
+        isActiveStaff: row["member.isActiveStaff"],
         isClient: row["member.isClient"],
         hasFacilityAdmin: row["member.hasFacilityAdmin"],
         hasGlobalAdmin: row.hasGlobalAdmin,

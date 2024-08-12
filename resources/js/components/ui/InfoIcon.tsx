@@ -1,34 +1,59 @@
 import {A, AnchorProps} from "@solidjs/router";
 import {ImInfo} from "solid-icons/im";
-import {Match, Switch, VoidComponent, VoidProps} from "solid-js";
+import {Component, JSX, Match, Switch} from "solid-js";
 import {htmlAttributes, useLangFunc} from "../utils";
 import {Button} from "./Button";
+import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 import {title} from "./title";
 
 const _DIRECTIVES_ = null && title;
 
-interface ButtonProps extends htmlAttributes.button {
-  readonly href?: undefined;
-}
-
-interface LinkProps extends AnchorProps {
+interface LinkProps extends Omit<AnchorProps, "children"> {
   readonly href: string;
+  readonly children?: ChildrenOrFunc<[JSX.Element]>;
 }
 
-export type InfoIconProps = VoidProps<ButtonProps | LinkProps>;
+interface ButtonProps
+  extends Omit<htmlAttributes.button, "children" | "onClick">,
+    Required<Pick<htmlAttributes.button, "onClick">> {
+  readonly href?: undefined;
+  readonly children?: ChildrenOrFunc<[JSX.Element]>;
+}
+
+interface TitleProps extends Omit<htmlAttributes.span, "children"> {
+  readonly href?: undefined;
+  readonly onClick?: undefined;
+  readonly title: string;
+  readonly children?: ChildrenOrFunc<[JSX.Element]>;
+}
+
+export type InfoIconProps = LinkProps | ButtonProps | TitleProps;
+
+function isLinkProps(pr: InfoIconProps): pr is LinkProps {
+  return !!pr.href;
+}
+
+function isButtonProps(pr: InfoIconProps): pr is ButtonProps {
+  return !pr.href && !!pr.onClick;
+}
+
+function isTitleProps(pr: InfoIconProps): pr is TitleProps {
+  return !pr.href && !pr.onClick;
+}
 
 /**
  * A tiny blue (i) icon providing more information to a control it is next to.
  * It can be a button, or an internal or external link. The link opens in a new tab by default.
  */
-export const InfoIcon: VoidComponent<InfoIconProps> = (props) => {
+export const InfoIcon: Component<InfoIconProps> = (props) => {
   const t = useLangFunc();
   const icon = <ImInfo class="inlineIcon !mb-0.5 text-blue-500" size="16" />;
+  const titleContent = () => props.title ?? t("more_info");
   return (
     <Switch>
-      <Match when={props.href && props}>
+      <Match when={isLinkProps(props) && props}>
         {(linkProps) => (
-          <span use:title={props.title ?? t("more_info")}>
+          <span use:title={titleContent()}>
             <A
               target="_blank"
               {...(linkProps() as AnchorProps)}
@@ -39,16 +64,23 @@ export const InfoIcon: VoidComponent<InfoIconProps> = (props) => {
               }}
               title=""
             >
-              {icon}
+              {getChildrenElement(props.children, icon) || icon}
             </A>
           </span>
         )}
       </Match>
-      <Match when={!props.href && props}>
+      <Match when={isButtonProps(props) && props}>
         {(buttonProps) => (
-          <Button title={t("more_info")} {...buttonProps}>
-            {icon}
+          <Button title={titleContent()} {...buttonProps}>
+            {getChildrenElement(props.children, icon) || icon}
           </Button>
+        )}
+      </Match>
+      <Match when={isTitleProps(props) && props}>
+        {(titleProps) => (
+          <span tabindex="0" use:title={titleContent()} {...titleProps()} title="">
+            {getChildrenElement(titleProps().children, icon) || icon}
+          </span>
         )}
       </Match>
     </Switch>

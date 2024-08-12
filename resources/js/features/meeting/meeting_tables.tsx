@@ -1,4 +1,4 @@
-import {Button, DeleteButton} from "components/ui/Button";
+import {Button} from "components/ui/Button";
 import {RichTextView} from "components/ui/RichTextView";
 import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
@@ -6,31 +6,26 @@ import {TextExportedCell, exportCellFunc, formatDateTimeForTextExport} from "com
 import {DictFilterControl} from "components/ui/Table/tquery_filters/DictFilterControl";
 import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/UuidListSelectFilterControl";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
-import {createConfirmation} from "components/ui/confirmation";
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
-import {ACTION_ICONS} from "components/ui/icons";
+import {actionIcons} from "components/ui/icons";
 import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
-import {toastSuccess} from "components/utils/toast";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
-import {FilterH, invertFilter} from "data-access/memo-api/tquery/filter_utils";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, createTableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
-import {useFacilityUsersSelectParams} from "../facility-users/facility_users_select_params";
 import {FacilityUserType} from "../facility-users/user_types";
+import {MeetingDeleteButton} from "./MeetingDeleteButton";
 import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from "./MeetingInSeriesInfo";
 import {MeetingStatusTags} from "./MeetingStatusTags";
-import {meetingDeleteConfirmParams} from "./MeetingViewEditForm";
-import {workTimeDeleteConfirmParams} from "./WorkTimeViewEditForm";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
-import {useMeetingAPI} from "./meeting_api";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
 
@@ -52,16 +47,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const {meetingTypeDict, meetingCategoryDict, attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
   const workTimeModal = createWorkTimeModal();
-  const confirmation = createConfirmation();
-  const facilityUsersSelectParams = useFacilityUsersSelectParams();
+  const modelQuerySpecs = useModelQuerySpecs();
   const {getMeetingTypeCategory} = usePositionsGrouping();
-  const meetingAPI = useMeetingAPI();
-  const invalidate = useInvalidator();
-  async function deleteMeeting(meetingId: string) {
-    await meetingAPI.delete(meetingId);
-    toastSuccess(t("forms.meeting_delete.success"));
-    invalidate.facility.meetings();
-  }
 
   const MeetingTime: VoidComponent<{
     readonly startDayMinute: number | undefined;
@@ -93,35 +80,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
             {...buttonProps}
             onClick={() => {
               if (isWorkTimeLeaveTime(props.meetingType)) {
-                workTimeModal.show({meetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
+                workTimeModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
               } else {
-                meetingModal.show({meetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
+                meetingModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
               }
             }}
           >
-            <ACTION_ICONS.details class="inlineIcon text-current !mb-[2px]" /> {props.children || t("actions.details")}
+            <actionIcons.Details class="inlineIcon !mb-[2px]" /> {props.children || t("actions.details")}
           </Button>
-        )}
-      </Show>
-    );
-  };
-
-  const MeetingDeleteButton: ParentComponent<
-    {readonly meetingId: string | undefined; readonly meetingType?: string | undefined} & htmlAttributes.button
-  > = (allProps) => {
-    const [props, buttonProps] = splitProps(allProps, ["meetingId", "meetingType", "children"]);
-    return (
-      <Show when={props.meetingId}>
-        {(meetingId) => (
-          <DeleteButton
-            {...buttonProps}
-            confirm={() =>
-              confirmation.confirm(
-                isWorkTimeLeaveTime(props.meetingType) ? workTimeDeleteConfirmParams(t) : meetingDeleteConfirmParams(t),
-              )
-            }
-            delete={() => deleteMeeting(meetingId())}
-          />
         )}
       </Show>
     );
@@ -162,7 +128,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       extraDataColumns: ["interval", "seriesNumber", "seriesCount"],
       columnDef: {
         cell: cellFunc<boolean, TQFullMeetingResource>((props) => (
-          <PaddedCell>
+          <PaddedCell class="text-right">
             <ShowCellVal v={props.v}>
               {(v) => (
                 <Show when={v()} fallback={<EmptyValueSymbol />}>
@@ -171,7 +137,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                       seriesNumber={props.ctx.row.original.seriesNumber}
                       seriesCount={props.ctx.row.original.seriesCount}
                     />
-                    <div class="text-grey-text">
+                    <div class="text-grey-text -mt-1">
                       <MeetingIntervalCommentText interval={props.row.interval || undefined} />
                     </div>
                   </div>
@@ -181,6 +147,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </PaddedCell>
         )),
         size: 150,
+        enableSorting: false,
       },
       columnGroups: "meeting",
     },
@@ -204,11 +171,22 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </PaddedCell>
         )),
         size: 120,
+        sortDescFirst: false,
       },
       columnGroups: "meeting",
     },
-    seriesNumber: {name: "seriesNumber", initialVisible: false, columnGroups: "meeting"},
-    seriesCount: {name: "seriesCount", initialVisible: false, columnGroups: "meeting"},
+    seriesNumber: {
+      name: "seriesNumber",
+      columnDef: {sortDescFirst: false},
+      initialVisible: false,
+      columnGroups: "meeting",
+    },
+    seriesCount: {
+      name: "seriesCount",
+      columnDef: {sortDescFirst: false},
+      initialVisible: false,
+      columnGroups: "meeting",
+    },
     category: {name: "categoryDictId", initialVisible: false, columnGroups: ["meeting", true, "typeDictId"]},
     type: {
       name: "typeDictId",
@@ -277,9 +255,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 250,
       },
-      filterControl: (props) => (
-        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientSelectParams()} />
-      ),
+      filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userStaffOrClient()} />,
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
           (v, ctx) => ctx.row.attendants?.map((u) => u.name).join(", "),
@@ -300,9 +276,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 250,
       },
-      filterControl: (props) => (
-        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
-      ),
+      filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userStaff()} />,
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
           (v, ctx) => ctx.row.staff.map((u) => u.name).join(", "),
@@ -323,9 +297,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
         size: 250,
       },
-      filterControl: (props) => (
-        <UuidListSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
-      ),
+      filterControl: (props) => <UuidListSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, TQMeetingAttendantResource[], TQFullMeetingResource>(
           (v, ctx) => ctx.row.clients.map((u) => u.name).join(", "),
@@ -352,16 +324,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     actions: {
       name: "actions",
       isDataColumn: false,
-      extraDataColumns: ["id", "typeDictId"],
+      // seriesCount, seriesNumber, interval are needed for delete confirmation. Alternatively, they could be fetched
+      // when delete is clicked, but this would complicate the confirmation with query barriers
+      extraDataColumns: ["id", "categoryDictId", "typeDictId", "seriesCount", "seriesNumber", "interval"],
       columnDef: {
         cell: (c) => (
           <PaddedCell class="flex gap-1 h-min">
             <DetailsButton class="minimal" meetingId={c.row.original.id} meetingType={c.row.original.typeDictId} />
-            <MeetingDeleteButton
-              class="minimal"
-              meetingId={c.row.original.id}
-              meetingType={c.row.original.typeDictId}
-            />
+            <MeetingDeleteButton class="minimal" meeting={c.row.original} />
           </PaddedCell>
         ),
         enableSorting: false,
@@ -434,9 +404,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       size: 250,
       enableHiding: false,
     },
-    filterControl: (props) => (
-      <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffAndClientSelectParams()} />
-    ),
+    filterControl: (props) => <UuidSelectFilterControl {...props} {...modelQuerySpecs.userStaffOrClient()} />,
     metaParams: {
       textExportCell: exportCellFunc<TextExportedCell, string, TQMeetingAttendanceResource>(
         (v, ctx) => ctx.row["attendant.name"],
@@ -449,15 +417,11 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     attendant: attendantColumn,
     attendantStaff: {
       ...attendantColumn,
-      filterControl: (props) => (
-        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.staffSelectParams()} />
-      ),
+      filterControl: (props) => <UuidSelectFilterControl {...props} {...modelQuerySpecs.userStaff()} />,
     },
     attendantClient: {
       ...attendantColumn,
-      filterControl: (props) => (
-        <UuidSelectFilterControl {...props} {...facilityUsersSelectParams.clientSelectParams()} />
-      ),
+      filterControl: (props) => <UuidSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
     },
     attendanceStatus: {
       name: "attendant.attendanceStatusDictId",
@@ -528,7 +492,7 @@ export function useMeetingTableFilters() {
     isSystemMeeting,
     isRegularMeeting: () => {
       const system = isSystemMeeting();
-      return system && invertFilter(system);
+      return system && ({...system, inv: true} satisfies FilterH);
     },
   };
 }

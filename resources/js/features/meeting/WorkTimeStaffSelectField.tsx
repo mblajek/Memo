@@ -1,6 +1,6 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {Select} from "components/ui/form/Select";
-import {FACILITY_ICONS} from "components/ui/icons";
+import {facilityIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {Dictionaries} from "data-access/memo-api/dictionaries";
 import {MeetingResource, MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
@@ -32,7 +32,7 @@ export const WorkTimeStaffSelectField: VoidComponent<Props> = (props) => {
           value: WORK_TIME_STAFF_FACILITY_WIDE,
           label: () => (
             <span>
-              <FACILITY_ICONS.facility class="inlineIcon" size="18" /> <Capitalize text={t("meetings.facility_wide")} />
+              <facilityIcons.Facility class="inlineIcon" size="18" /> <Capitalize text={t("meetings.facility_wide")} />
             </span>
           ),
         },

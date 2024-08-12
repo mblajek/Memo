@@ -51,9 +51,10 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
         role="button"
         {...htmlAttributes.merge(aProps, {
           class: cx(
-            props.small ? "py-1 gap-2" : "py-2 gap-3",
-            "px-3 rounded-lg flex flex-row items-center text-black hover:bg-white",
+            props.small ? "gap-2" : "gap-3 min-h-10",
+            "px-3 py-1 rounded-lg flex flex-row items-center text-black hover:bg-white",
           ),
+          style: {"line-height": "1.3"},
         })}
         activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
         onClick={(event) => {

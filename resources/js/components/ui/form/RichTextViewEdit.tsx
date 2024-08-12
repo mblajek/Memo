@@ -8,7 +8,7 @@ import {FieldBox} from "./FieldBox";
 import {MultilineTextField, MultilineTextFieldProps} from "./MultilineTextField";
 import {PlaceholderField} from "./PlaceholderField";
 
-interface Props extends Pick<MultilineTextFieldProps, "persistenceKey" | "initialShowPreview"> {
+interface Props extends Pick<MultilineTextFieldProps, "staticPersistenceKey" | "initialShowPreview"> {
   readonly name: string;
   readonly viewMode: boolean;
 }

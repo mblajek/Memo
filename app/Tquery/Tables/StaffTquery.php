@@ -37,6 +37,18 @@ readonly class StaffTquery extends FacilityUserTquery
             'facility_admin_grant_id',
             'staff.has_facility_admin',
         );
+        $config->addJoined(
+            TqDataTypeEnum::datetime_nullable,
+            TqTableAliasEnum::staff_members,
+            'deactivated_at',
+            'staff.deactivated_at',
+        );
+        $config->addJoined(
+            TqDataTypeEnum::is_null,
+            TqTableAliasEnum::staff_members,
+            'deactivated_at',
+            'staff.is_active',
+        );
 
         return $config;
     }

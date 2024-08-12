@@ -90,8 +90,8 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
   );
   const [isBlinking, setIsBlinking] = createSignal(false);
   let blinkTimer: ReturnType<typeof setTimeout> | undefined;
-  createEffect(() => {
-    if (props.blink) {
+  createEffect((prevBlink) => {
+    if (props.blink && props.blink !== prevBlink) {
       setIsBlinking(false);
       clearTimeout(blinkTimer);
       setTimeout(() => {
@@ -102,6 +102,7 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
       setIsBlinking(false);
       clearTimeout(blinkTimer);
     }
+    return props.blink;
   });
 
   return (

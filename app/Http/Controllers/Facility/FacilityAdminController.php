@@ -39,6 +39,7 @@ class FacilityAdminController extends ApiController
                 'is_multi_value',
                 //'is_fixed', // always false
                 'requirement_level',
+                'description',
             ]/*, false*/));
 
 

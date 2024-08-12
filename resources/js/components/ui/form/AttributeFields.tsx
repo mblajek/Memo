@@ -8,6 +8,7 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {
@@ -16,7 +17,6 @@ import {
   SimpleAttributeType,
 } from "data-access/memo-api/resources/attribute.resource";
 import {UserLink} from "features/facility-users/UserLink";
-import {useFacilityUsersSelectParams} from "features/facility-users/facility_users_select_params";
 import {DateTime} from "luxon";
 import {
   Accessor,
@@ -36,6 +36,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
+import {InfoIcon} from "../InfoIcon";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
 import {CHECKBOX, EmptyValueSymbol} from "../symbols";
@@ -62,6 +63,7 @@ interface Props {
 }
 
 export interface AttributeParams<V> {
+  readonly isEmpty?: (formValue: V) => boolean;
   readonly view?: (formValue: Accessor<V>) => JSX.Element;
   readonly viewEmpty?: () => JSX.Element;
 }
@@ -75,7 +77,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const dictionaries = useDictionaries();
   const attributes = useAttributes();
-  const facilityUsersSelectParams = useFacilityUsersSelectParams();
+  const modelQuerySpecs = useModelQuerySpecs();
   const {form} = useFormContext();
 
   function fieldName(attribute: Attribute) {
@@ -132,14 +134,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
           case "user/staff":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
-                <TQuerySelect {...facilityUsersSelectParams.staffSelectParams()} {...extraSelectProps} />
+                <TQuerySelect {...modelQuerySpecs.userStaff()} {...extraSelectProps} />
               </Show>
             );
           case "user/client":
             return (
               <Show when={activeFacilityId()} fallback={<SmallSpinner />}>
                 <TQuerySelect
-                  {...facilityUsersSelectParams.clientSelectParams({showBirthDateWhenSelected: true})}
+                  {...modelQuerySpecs.userClient({showBirthDateWhenSelected: true})}
                   {...extraSelectProps}
                 />
               </Show>
@@ -217,6 +219,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
     const value = createMemo(() => recursiveUnwrapFormValues(form.data(name())));
     const hasValue = () => {
       const v = value();
+      if (aProps.params?.isEmpty) {
+        return !aProps.params.isEmpty(v);
+      }
       return v !== undefined && v !== "" && !(Array.isArray(v) && !v.length);
     };
     const DefaultViewer: ParentComponent<htmlAttributes.div> = (props) => (
@@ -405,7 +410,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                     const {attribute, selected} = relevantAttributes()!.get(attributeId)!;
                     const isEmpty = () => {
                       const value = form.data(fieldName(attribute));
-                      return value == undefined || value == "";
+                      return selected.override?.isEmpty
+                        ? selected.override.isEmpty(value)
+                        : value == undefined || value == "";
                     };
                     return (
                       <HideableSection
@@ -418,12 +425,17 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                       >
                         <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
                           <label
-                            class="font-semibold flex items-center wrapTextAnywhere"
+                            class="font-semibold flex items-center gap-1"
                             for={
                               attribute.multiple && attribute.basicType !== "dict" ? undefined : fieldName(attribute)
                             }
                           >
-                            <Capitalize text={attribute.label} />
+                            <div class="wrapTextAnywhere">
+                              <Capitalize text={attribute.label} />
+                            </div>
+                            <Show when={attribute.description}>
+                              {(description) => <InfoIcon title={description()} />}
+                            </Show>
                           </label>
                           <div class="flex flex-col justify-center">
                             <Show

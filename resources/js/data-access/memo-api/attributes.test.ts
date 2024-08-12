@@ -22,6 +22,7 @@ describe("Attributes", () => {
       facilityId: null,
       model: "blip",
       name: "aa1_attr",
+      description: null,
       apiName: "aa1ApiName",
       type: "dict",
       typeModel: null,
@@ -36,6 +37,7 @@ describe("Attributes", () => {
       facilityId: "fac2",
       model: "blip",
       name: "+aa2 attr",
+      description: null,
       apiName: "aa2ApiName",
       type: "string",
       typeModel: null,
@@ -50,6 +52,7 @@ describe("Attributes", () => {
       facilityId: null,
       model: "qqq",
       name: "aa5_attr",
+      description: null,
       apiName: "aa5ApiName",
       type: "int",
       typeModel: null,
@@ -63,7 +66,7 @@ describe("Attributes", () => {
 
   test("labels", () => {
     expect(attributes.byId.get("aa1Id")?.label).toEqual(
-      "t(attributes.attributes.blip.aa1_attr,attributes.attributes.generic.aa1_attr,models.blip.aa1ApiName,models.generic.aa1ApiName,dictionary.dict1-global._name)",
+      "t(attributes.attributes.blip.aa1_attr.name,attributes.attributes.generic.aa1_attr.name,models.blip.aa1ApiName,models.generic.aa1ApiName,dictionary.dict1-global._name)",
     );
     expect(attributes.byId.get("aa2Id")?.label).toEqual("aa2 attr");
   });

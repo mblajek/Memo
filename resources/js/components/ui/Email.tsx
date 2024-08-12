@@ -13,7 +13,7 @@ export const Email: VoidComponent<Props> = (allProps) => {
   return (
     <span {...htmlAttributes.merge(spanProps, {class: "inline-flex"})}>
       <Show when={props.email} fallback={<EmptyValueSymbol />}>
-        <span class="overflow-hidden">{props.email}&nbsp;</span>
+        <span class="whitespace-nowrap overflow-hidden">{props.email}&nbsp;</span>
         <CopyToClipboard text={props.email} />
       </Show>
     </span>

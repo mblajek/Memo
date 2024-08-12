@@ -135,6 +135,7 @@ custom:
   regexp_is_valid: "Pole {{attribute}} musi być poprawnym wyrażeniem regularnym."
   position_in_dictionary: "Pole {{attribute}} musi należeć do słownika „{{dictionary}}”."
   member_exists: "Osoba {{attribute}} musi mieć w placówce rolę „{{member_type}}”."
+  client_short_code: "Taka wartość pola {{attribute}} już występuje."
 
 special_fields:
   member_type:

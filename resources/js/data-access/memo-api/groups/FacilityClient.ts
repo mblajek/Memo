@@ -4,7 +4,7 @@ import {SolidQueryOpts} from "../query_utils";
 import {ClientResource, ClientResourceForCreate, ClientResourceForPatch} from "../resources/client.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
-import {Users} from "./shared";
+import {FacilityUsers} from "./FacilityUsers";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/Facility%20client production docs}
@@ -12,9 +12,34 @@ import {Users} from "./shared";
  */
 export namespace FacilityClient {
   export const createClient = (client: Api.Request.Create<ClientResourceForCreate>, config?: Api.Config) =>
-    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/user/client`, client, config);
+    V1.post<Api.Response.Post<UpdateResponse>>(`/facility/${activeFacilityId()}/user/client`, client, config);
   export const updateClient = (client: Api.Request.Patch<ClientResourceForPatch>, config?: Api.Config) =>
-    V1.patch(`/facility/${activeFacilityId()}/user/client/${client.id}`, client, config);
+    V1.patch<Api.Response.Post<UpdateResponse>>(
+      `/facility/${activeFacilityId()}/user/client/${client.id}`,
+      client,
+      config,
+    );
+  export const deleteClient = (data: DeleteParams, config?: Api.Config) =>
+    V1.delete<DeleteResponse>(`/facility/${activeFacilityId()}/user/client/${data.id}`, {
+      data: data.duplicateOf ? {duplicateOf: data.duplicateOf} : undefined,
+      ...config,
+    });
+
+  interface DeleteParams {
+    readonly id: Api.Id;
+    readonly duplicateOf?: Api.Id;
+  }
+
+  export interface DeleteResponse {
+    readonly clientDeleted: boolean;
+    readonly memberDeleted: boolean;
+    readonly userDeleted: boolean;
+  }
+
+  export interface UpdateResponse {
+    readonly id: Api.Id;
+    readonly shortCode: string | null;
+  }
 
   const getClientsListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<ClientResource>>(`/facility/${activeFacilityId()}/user/client/list`, {
@@ -26,7 +51,7 @@ export namespace FacilityClient {
   const getClient = createGetFromList(getClientsListBase);
 
   export const keys = {
-    client: () => [...Users.keys.user(), "client"] as const,
+    client: () => [...FacilityUsers.keys.user(), "client"] as const,
     clientList: (request?: Api.Request.GetListParams) =>
       [...keys.client(), "list", request, activeFacilityId()] as const,
     clientGet: (id: Api.Id) => [...keys.client(), "list", createListRequest(id), activeFacilityId()] as const,

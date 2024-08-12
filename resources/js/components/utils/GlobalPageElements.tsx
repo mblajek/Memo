@@ -42,7 +42,8 @@ export function registerGlobalPageElement<T = true>(
       });
       setGlobalPageElements((old) => [...old, element]);
       onCleanup(() => {
-        setGlobalPageElements((old) => old.filter((e) => e !== element));
+        setParams(undefined);
+        setTimeout(() => setGlobalPageElements((old) => old.filter((e) => e !== element)));
       });
     });
     return {

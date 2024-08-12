@@ -18,6 +18,7 @@ import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {User} from "data-access/memo-api/groups";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
@@ -52,12 +53,12 @@ import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state"
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {SegmentedControl} from "../form/SegmentedControl";
-import {STAFF_ICONS} from "../icons";
+import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
 import {title} from "../title";
-import {WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
+import {StaffInfo, WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
 import {CALENDAR_MODES, CalendarFunction, CalendarFunctionContext, CalendarMode} from "./calendar_modes";
-import {CALENDAR_BACKGROUNDS, MISSING_MEETING_COLORING, coloringToStyle, getRandomEventColors} from "./colors";
+import {CALENDAR_BACKGROUNDS, coloringToStyle, getRandomEventColors} from "./colors";
 import {CalendarLocationState, CalendarSearchParams} from "./meeting_link";
 
 const _DIRECTIVES_ = null && title;
@@ -120,8 +121,8 @@ type PersistentPresentationState = {
 const PERSISTENCE_PRESENTATION_VERSION = 3;
 
 /**
- * A full-page calendar, consisting of a tiny calendar, a list of resources (people), calendar mode
- * switcher, and a large calendar with either month view, or hours view.
+ * A full-page calendar, consisting of a tiny calendar, a list of resources (people and meeting resources),
+ * calendar mode switcher, and a large calendar with either month view, or hours view.
  */
 export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const mProps = mergeProps(defaultProps(), propsArg);
@@ -136,6 +137,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   ]);
   const t = useLangFunc();
   const locale = useLocale();
+  const dictionaries = useDictionaries();
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
   const meetingModal = createMeetingModal();
@@ -159,11 +161,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         {type: "column", column: "id"},
         {type: "column", column: "name"},
       ],
+      filter: {type: "column", column: "staff.isActive", op: "=", val: true},
       sort: [{type: "column", column: "name", desc: false}],
       paging: {size: 1000},
     }),
   });
-  const staff = () => staffDataQuery.data?.data as readonly {id: string; name: string}[];
+  const staff = () => staffDataQuery.data?.data as readonly {id: string; name: string}[] | undefined;
   const staffResources = createMemo(
     () =>
       staff()?.map((staff) => {
@@ -199,16 +202,53 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
     return byId;
   });
-  const resourceGroups = createMemo((): ResourceGroup[] => [
-    {
+  const meetingResourceResources = createMemo(() =>
+    props.staticCalendarFunction === "work"
+      ? dictionaries()
+          ?.get("meetingResource")
+          .activePositions.map(
+            (pos) =>
+              ({
+                id: pos.id,
+                text: pos.label,
+                label: () => (
+                  <div class="w-full py-1 select-none">
+                    <span
+                      class="line-clamp-2 text-teal-700 font-semibold"
+                      style={{"font-size": "0.92rem", "line-height": "1.15"}}
+                    >
+                      {pos.label}
+                    </span>
+                  </div>
+                ),
+              }) satisfies ResourceItem & Record<string, unknown>,
+          ) || []
+      : [],
+  );
+  const allResources = () => [...staffResources(), ...meetingResourceResources()];
+  const resourceGroups = createMemo((): ResourceGroup[] => {
+    const res: ResourceGroup[] = [];
+    res.push({
       label: () => (
         <span class="font-bold select-none">
           <Capitalize text={t("models.staff._name_plural")} />
         </span>
       ),
       resources: staffResources(),
-    },
-  ]);
+    });
+    const meetingResources = meetingResourceResources();
+    if (meetingResources.length) {
+      res.push({
+        label: () => (
+          <span class="font-bold select-none">
+            <Capitalize text={t("models.meeting.resources")} />
+          </span>
+        ),
+        resources: meetingResources,
+      });
+    }
+    return res;
+  });
 
   const [mode, setMode] = createSignal(props.initialMode);
   const weekDaysCalculator = new WeekDaysCalculator(locale);
@@ -270,7 +310,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   /** The last days selection in each of the modes. */
   const daysSelectionByMode = new Map<CalendarMode, Signal<DaysRange>>();
   for (const mode of CALENDAR_MODES) {
-    // eslint-disable-next-line solid/reactivity
     const [daysRange, setDaysRange] = createSignal(getRange(props.initialDay, mode));
     // eslint-disable-next-line solid/reactivity
     daysSelectionByMode.set(mode, [daysRange, setDaysRange]);
@@ -370,8 +409,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           input: staff,
           effect: () => {
             const validResourceIds = new Set<string>();
-            for (const {id} of staff()) {
-              validResourceIds.add(id);
+            for (const group of resourceGroups()) {
+              for (const {id} of group.resources) {
+                validResourceIds.add(id);
+              }
             }
             if (selectedResourceRadio() && !validResourceIds.has(selectedResourceRadio()!)) {
               setSelectedResourceRadio(undefined);
@@ -518,16 +559,32 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
   const [hoveredMeeting, setHoveredMeeting] = createSignal<string>();
 
+  const staffMapAndMeetingResources = createMemo(() => {
+    const staffMap = new Map<string, StaffInfo>();
+    const meetingResources: string[] = [];
+    if (staff()) {
+      // If staff is not loaded yet, we cannot distinguish between staff and meeting resources.
+      // This might happen if selected resources are loaded from the persistence.
+      for (const resourceId of selectedResources()) {
+        const staff = staffResourcesById().get(resourceId);
+        if (staff) {
+          staffMap.set(resourceId, {
+            id: resourceId,
+            plannedMeetingColoring: staff.coloring,
+          });
+        } else {
+          meetingResources.push(resourceId);
+        }
+      }
+    }
+    return {staffMap, meetingResources};
+  });
   const {meetingsDataQuery, blocks, events} = useCalendarBlocksAndEvents({
     calendarFunction: props.staticCalendarFunction,
     mode,
     daysRange: daysSelection,
-    staff: () =>
-      // eslint-disable-next-line solid/reactivity
-      Array.from(selectedResources(), (id) => ({
-        id,
-        plannedMeetingColoring: staffResourcesById().get(id)?.coloring || MISSING_MEETING_COLORING,
-      })),
+    staffMap: () => staffMapAndMeetingResources().staffMap,
+    meetingResources: () => staffMapAndMeetingResources().meetingResources,
     blink: (meetingId) => (isCalendarLoading() ? false : blinkingMeetings().get(meetingId)),
     hoveredMeeting: [hoveredMeeting, setHoveredMeeting],
     allDayEventsHeight,
@@ -544,14 +601,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     toastSuccess(() => (
       <div class="flex gap-2 items-baseline">
         <span>{message}</span>
-        <Button class="secondary small" onClick={() => goToMeeting(meeting)}>
+        <Button class="secondary small" onClick={() => goToMeeting(meeting, otherMeetingIds)}>
           {t("actions.show")}
         </Button>
       </div>
     ));
   }
 
-  function goToMeeting(meeting: MeetingBasicData) {
+  function goToMeeting(meeting: MeetingBasicData, otherMeetingIds?: string[]) {
     const meetingDate = DateTime.fromISO(meeting.date);
     if (!daysSelection().contains(meetingDate)) {
       setDaysSelectionAndMonthFromDay(meetingDate);
@@ -578,6 +635,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       scrollIntoView(meeting.startDayminute, meeting.durationMinutes);
     }
     blinkMeeting(meeting.id);
+    for (const id of otherMeetingIds || []) {
+      blinkMeeting(id);
+    }
   }
   /** Scroll to the element representing the specified meeting or block. Find the element using the data-entity-id attribute. */
   function nativeScrollIntoView(entityId: string) {
@@ -628,37 +688,54 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     },
   });
 
-  function filterByStaff<T extends WithOrigMeetingInfo>(items: readonly T[], staffId: string) {
-    return items.filter((item) => !item.meeting.staff.length || item.meeting.staff.some((s) => s.userId === staffId));
+  function filterByStaffOrResource<T extends WithOrigMeetingInfo>(
+    items: readonly T[],
+    resourceId: string,
+    isStaff: boolean,
+  ) {
+    return items.filter((item) =>
+      isStaff
+        ? !item.meeting.staff.length || item.meeting.staff.some((s) => s.userId === resourceId)
+        : item.meeting.resources.some((r) => r.resourceDictId === resourceId),
+    );
   }
 
-  function getCalendarColumnPart(day: DateTime, staffId: string) {
-    const staffBlocks = createMemo(() => filterByStaff(blocks(), staffId));
-    const staffEvents = createMemo(() => filterByStaff(events(), staffId));
+  function onMeetingsCreated(firstMeeting: MeetingBasicData, otherMeetingIds?: string[]) {
+    meetingChangeEffects(
+      t(otherMeetingIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
+      firstMeeting,
+      otherMeetingIds,
+    );
+  }
+
+  function getCalendarColumnPart(day: DateTime, resourceId: string) {
+    const isStaff = staffResourcesById().has(resourceId);
+    const relevantBlocks = createMemo(() => filterByStaffOrResource(blocks(), resourceId, isStaff));
+    const relevantEvents = createMemo(() => filterByStaffOrResource(events(), resourceId, isStaff));
     return {
       day,
       allDayArea: () => (
         <AllDayArea
           style={{background: CALENDAR_BACKGROUNDS.main}}
           day={day}
-          columnViewInfo={{day, staffId}}
-          blocks={staffBlocks()}
-          events={staffEvents()}
+          columnViewInfo={{day, resourceId}}
+          blocks={relevantBlocks()}
+          events={relevantEvents()}
           onEmptyClick={() => {
             if (props.staticCalendarFunction === "work") {
               meetingCreateModal.show({
                 initialValues: {
                   ...meetingTimeFullDayInitialValue(day),
-                  ...attendantsInitialValueForCreate([staffId]),
+                  ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
-                onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+                onSuccess: onMeetingsCreated,
                 showToast: false,
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
                 initialValues: {
                   ...meetingTimeFullDayInitialValue(day),
-                  staff: staffId,
+                  staff: resourceId,
                 },
               });
             } else {
@@ -671,29 +748,24 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         <HoursArea
           style={{background: CALENDAR_BACKGROUNDS.main}}
           day={day}
-          columnViewInfo={{day, staffId}}
-          blocks={staffBlocks()}
-          events={staffEvents()}
+          columnViewInfo={{day, resourceId}}
+          blocks={relevantBlocks()}
+          events={relevantEvents()}
           onTimeClick={(time) => {
             if (props.staticCalendarFunction === "work") {
               meetingCreateModal.show({
                 initialValues: {
                   ...meetingTimePartDayInitialValue(time),
-                  ...attendantsInitialValueForCreate([staffId]),
+                  ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
-                onSuccess: (meeting, cloneIds) =>
-                  meetingChangeEffects(
-                    t(cloneIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
-                    meeting,
-                    cloneIds,
-                  ),
+                onSuccess: onMeetingsCreated,
                 showToast: false,
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
                 initialValues: {
                   ...meetingTimePartDayInitialValue(time),
-                  staff: staffId,
+                  staff: resourceId,
                 },
               });
             } else {
@@ -712,10 +784,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         // The columns calendar is not displayed in this mode anyway.
         return [];
       case "week": {
-        const staff = selectedResourceRadio();
-        if (!staff) {
+        const resource = selectedResourceRadio();
+        if (!resource) {
           return [];
         }
+        // eslint-disable-next-line solid/reactivity
         return Array.from(daysSelection(), (day) => ({
           header: () => (
             <DayHeader
@@ -726,36 +799,42 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               }}
             />
           ),
-          ...getCalendarColumnPart(day, staff),
+          ...getCalendarColumnPart(day, resource),
         }));
       }
       case "day": {
         const day = daysSelection().start;
-        return staffResources()
-          .map(({id, text}) =>
-            selectedResources().has(id)
-              ? {
-                  header: () => (
-                    <ResourceHeader
-                      label={() => (
-                        <Button
-                          class={cx("rounded hover:underline", id === hoveredResource() ? "bg-hover" : undefined)}
-                          onClick={() => {
-                            setMode("week");
-                            setDaysSelectionAndMonthFromDay(day);
-                            setSelectedResourceRadio(id);
-                          }}
-                          title={`${text}\n${t("calendar.click_for_staff_calendar")}`}
-                        >
-                          <span class="line-clamp-3">{text}</span>
-                        </Button>
+        return allResources()
+          .map(({id, text}) => {
+            if (!selectedResources().has(id)) {
+              return undefined;
+            }
+            const isStaff = staffResourcesById().has(id);
+            return {
+              header: () => (
+                <ResourceHeader
+                  label={() => (
+                    <Button
+                      class={cx(
+                        "rounded hover:underline",
+                        id === hoveredResource() ? "bg-hover" : undefined,
+                        isStaff ? undefined : "text-teal-700 font-semibold",
                       )}
-                    />
-                  ),
-                  ...getCalendarColumnPart(day, id),
-                }
-              : undefined,
-          )
+                      onClick={() => {
+                        setMode("week");
+                        setDaysSelectionAndMonthFromDay(day);
+                        setSelectedResourceRadio(id);
+                      }}
+                      title={`${text}\n${t(`calendar.click_for_resource_calendar.${isStaff ? "staff" : "meeting_resource"}`)}`}
+                    >
+                      <span class="line-clamp-3">{text}</span>
+                    </Button>
+                  )}
+                />
+              ),
+              ...getCalendarColumnPart(day, id),
+            };
+          })
           .filter(NON_NULLABLE);
       }
       default:
@@ -767,10 +846,11 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     if (mode() !== "month") {
       return [];
     }
-    const staffId = staffResources().find(({id}) => selectedResources().has(id))?.id;
-    if (!staffId) {
+    const resourceId = allResources().find(({id}) => selectedResources().has(id))?.id;
+    if (!resourceId) {
       return [];
     }
+    const isStaff = staffResourcesById().has(resourceId);
     const daysRange = getMonthCalendarRange(weekDaysCalculator, daysSelection().start);
     return Array.from(daysRange, (day) => ({
       day,
@@ -778,9 +858,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         <MonthCalendarCell
           month={daysSelection().start}
           day={day}
-          monthViewInfo={{day, staffId}}
-          blocks={filterByStaff(blocks(), staffId)}
-          events={filterByStaff(events(), staffId)}
+          monthViewInfo={{day, resourceId}}
+          blocks={filterByStaffOrResource(blocks(), resourceId, isStaff)}
+          events={filterByStaffOrResource(events(), resourceId, isStaff)}
           style={{background: CALENDAR_BACKGROUNDS.main}}
           onDateClick={() => {
             setMode("week");
@@ -791,16 +871,16 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               meetingCreateModal.show({
                 initialValues: {
                   date: day.toISODate(),
-                  ...attendantsInitialValueForCreate(staffId ? [staffId] : undefined),
+                  ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
                 },
-                onSuccess: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
+                onSuccess: onMeetingsCreated,
                 showToast: false,
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
                 initialValues: {
                   ...meetingTimeFullDayInitialValue(day),
-                  staff: staffId,
+                  staff: resourceId,
                 },
               });
             } else {
@@ -820,7 +900,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       onCreated: (meeting) => meetingChangeEffects(t("forms.meeting_create.success"), meeting),
       onCloned: (meeting, otherMeetingIds) =>
         meetingChangeEffects(t("forms.meeting_series_create.success"), meeting, otherMeetingIds),
-      onDeleted: () => toastSuccess(t("forms.meeting_delete.success")),
     });
   }
 
@@ -886,7 +965,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   role="button"
                   class="w-full h-full minimal flex items-center"
                 >
-                  <STAFF_ICONS.staff class="text-gray-700" />
+                  <staffIcons.Staff class="text-gray-700" />
                 </A>
               </div>
             </div>

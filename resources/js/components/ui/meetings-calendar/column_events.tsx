@@ -1,6 +1,5 @@
 import {ButtonLike} from "components/ui/ButtonLike";
 import {RichTextView} from "components/ui/RichTextView";
-import {ACTION_ICONS} from "components/ui/icons";
 import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {crossesDateBoundaries} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -13,6 +12,7 @@ import {useColumnsCalendar} from "../calendar/ColumnsCalendar";
 import {AllDayTimeSpan, PartDayTimeSpan, TimeSpan} from "../calendar/types";
 import {HoverableMeetingEventBlock, HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
 import {MeetingHoverCard} from "./MeetingHoverCard";
+import {MeetingRepeatIcon} from "./MeetingRepeatIcon";
 import {TimeSpanSummary} from "./TimeSpanSummary";
 import {coloringToStyle} from "./colors";
 import {AttendantListItem} from "./meeting_details";
@@ -38,6 +38,7 @@ const MAX_NUM_CLIENTS = 3;
 /** A block representing an all day meeting in the all day area of the calendar (above the hours area). */
 export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
   const [props, blockProps] = splitProps(allProps, ["day", "timeSpan", "height", "onClick"]);
+  const t = useLangFunc();
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const meeting = () => blockProps.meeting;
   return (
@@ -65,7 +66,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
               <div class="w-max flex gap-0.5">
                 <For each={meeting().clients.slice(0, MAX_NUM_CLIENTS + 1)}>
                   {(client, ind) => (
-                    <Show when={ind() < MAX_NUM_CLIENTS} fallback={"…"}>
+                    <Show when={ind() < MAX_NUM_CLIENTS} fallback={t("ellipsis")}>
                       <UserLink icon="tiny" type="clients" link={false} userId={client.userId} name={client.name} />
                     </Show>
                   )}
@@ -80,7 +81,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
               </Show>
               <Show when={meeting().fromMeetingId}>
                 <div class="absolute bottom-px right-1 bg-inherit rounded">
-                  <ACTION_ICONS.repeat />
+                  <MeetingRepeatIcon seriesData={meeting()} />
                 </div>
               </Show>
             </Show>
@@ -180,7 +181,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
               </div>
               <Show when={meeting().fromMeetingId}>
                 <div class="absolute bottom-px right-1 bg-inherit rounded">
-                  <ACTION_ICONS.repeat />
+                  <MeetingRepeatIcon seriesData={meeting()} />
                 </div>
               </Show>
             </Show>

@@ -2,9 +2,21 @@ import {NameString} from "./name_string";
 
 /**
  * An attribute name. In the translatable variant, the translation key
- * is `models.${model}.$`.
+ * is the first present of:
+ * - `attributes.attributes.${model}.$.name`
+ * - `attributes.attributes.generic.$.name`
+ * - `models.${model}.${apiName}`
+ * - `models.generic.${apiName}`
+ * - the dictionary name, if the attribute value is from a dictionary
  */
 export type AttributeName = NameString;
+
+/**
+ * Either a string, which is a non-translatable description of the attribute, displayed directly in the UI,
+ * or null for getting the description from `attributes.attributes.${model}.${name}.desc`
+ * (or `attributes.attributes.generic.${name}.desc`).
+ */
+export type AttributeDescription = string | null;
 
 /** A model name which is a value of an attribute. */
 export type AttributeModel = string;
@@ -29,6 +41,7 @@ export interface AttributeResource {
   readonly facilityId: string | null;
   readonly model: string;
   readonly name: AttributeName;
+  readonly description: AttributeDescription;
   /** The field name in API communication. */
   readonly apiName: string;
   readonly type: AttributeType;

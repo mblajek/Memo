@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string ref_object_id
  * @property ?string string_value
  * @property ?int int_value
- * @property ?int datetime_value
+ * @property ?string datetime_value // no cast
  * @property int default_order
  * @method static ValueBuilder query()
  */

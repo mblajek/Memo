@@ -1,9 +1,8 @@
 import {useQueryClient} from "@tanstack/solid-query";
 import {DateTime} from "luxon";
 import {System, User} from "./groups";
-import {FacilityClient} from "./groups/FacilityClient";
 import {FacilityMeeting} from "./groups/FacilityMeeting";
-import {FacilityStaff} from "./groups/FacilityStaff";
+import {FacilityUsers} from "./groups/FacilityUsers";
 import {Facilities, Users} from "./groups/shared";
 
 let lastInvalidateEverythingTime: DateTime | undefined;
@@ -16,7 +15,7 @@ export function useInvalidator(queryClient = useQueryClient()) {
     queryClient.invalidateQueries();
   }
   return {
-    everything,
+    everything: everything,
     everythingThrottled: () => {
       if (
         !lastInvalidateEverythingTime ||
@@ -43,8 +42,7 @@ export function useInvalidator(queryClient = useQueryClient()) {
     // Facility resources:
     facility: {
       meetings: () => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
-      staff: () => queryClient.invalidateQueries({queryKey: FacilityStaff.keys.staff()}),
-      clients: () => queryClient.invalidateQueries({queryKey: FacilityClient.keys.client()}),
+      users: () => queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()}),
     },
     // Global:
     dictionaries: () => queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),

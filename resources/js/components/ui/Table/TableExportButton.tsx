@@ -191,7 +191,7 @@ export const TableExportButton: VoidComponent = () => {
       <PopOver
         trigger={(triggerProps) => (
           <Button {...triggerProps()} class="secondary small text-nowrap">
-            <AiOutlineFileExcel class="inlineIcon text-current" /> {t("tables.export.label")}
+            <AiOutlineFileExcel class="inlineIcon" /> {t("tables.export.label")}
           </Button>
         )}
       >

@@ -24,7 +24,7 @@ export interface MultilineTextFieldProps
   readonly label?: LabelOverride;
   readonly small?: boolean;
   readonly richTextPreview?: boolean;
-  readonly persistenceKey?: string;
+  readonly staticPersistenceKey?: string;
   readonly initialShowPreview?: boolean;
 }
 
@@ -39,14 +39,14 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
     "label",
     "small",
     "richTextPreview",
-    "persistenceKey",
+    "staticPersistenceKey",
     "initialShowPreview",
   ]);
   const t = useLangFunc();
   const [showPreview, setShowPreview] = createSignal(props.initialShowPreview ?? true);
   const {form} = useFormContext();
   createLocalStoragePersistence<PersistentState>({
-    key: `RichTextFieldPreview:${props.persistenceKey || "_"}`,
+    key: `RichTextFieldPreview:${props.staticPersistenceKey || "_"}`,
     onLoad: (value) => setShowPreview(value.preview),
     value: () => ({preview: showPreview()}),
     serialiser: richJSONSerialiser<PersistentState>(),

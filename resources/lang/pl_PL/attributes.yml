@@ -1,25 +1,42 @@
 # Attribute name key is attributes.<model>.<attribute>, with "generic" being the fallback model.
 attributes:
   generic:
-    birthDate: "data urodzenia"
-    contactEmail: "e-mail kontaktowy"
-    contactPhone: "telefon"
-    addressStreetNumber: "adres: ulica i numer"
-    addressPostalCode: "adres: kod pocztowy"
-    addressCity: "adres: miasto"
-    documentsLinks: "linki do dokumentów"
+    birthDate:
+      name: "data urodzenia"
+    contactEmail:
+      name: "e-mail kontaktowy"
+    contactPhone:
+      name: "telefon"
+      desc: "Numer głównego telefonu kontaktowego (jeżeli ta osoba ma więcej numerów telefonu, dodaj je w opisie)"
+    addressStreetNumber:
+      name: "adres: ulica i numer"
+    addressPostalCode:
+      name: "adres: kod pocztowy"
+    addressCity:
+      name: "adres: miasto"
+    documentsLinks:
+      name: "linki do dokumentów"
+      desc: "Tutaj możesz zapisać linki do zewnętrznych dokumentów powiązanych z tym obiektem"
 
-  meetingResource.resource: "$t(models.meeting.resources)"
-  dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
+  dictionary.positionRequiredAttributes:
+    name: "wymagane atrybuty pozycji"
 
   client:
-    contactStartAt: "data zgłoszenia"
-    contactEndAt: "zakończenie kontaktu"
+    documentsLinks:
+      desc: "Tutaj możesz zapisać linki do zewnętrznych dokumentów powiązanych z tym klientem"
+    shortCode:
+      desc: "Numer klienta $t(em_dash) identyfikator. Pozostaw pusty aby nadać kolejny numer automatycznie. Wstaw znak minus aby nie nadawać numeru."
+    contactStartAt:
+      name: "data zgłoszenia"
+    contactEndAt:
+      name: "zakończenie kontaktu"
 
   position:
-    positionGroup: "[grupa]"
+    positionGroup:
+      name: "[grupa]"
     # attributes of meetingType dictionary:
-    durationMinutes: "domyślna długość spotkania"
+    durationMinutes:
+      name: "domyślna długość spotkania"
 
 requirement_level:
   empty: "Pole nie powinno mieć wartości"
