@@ -6,7 +6,7 @@
 - kalendarzem wizyt klientów
 - grafikami pracy pracowników fundacji
 
-Aktualnie system jest używany przez jedną z placówek [Fundacji Dajemy Dzieciom Siłę](fdds.pl), w planie jest wdrożenie go w większej liczbie placówek.
+Aktualnie system jest używany przez jedną z placówek [Fundacji Dajemy Dzieciom Siłę](http://fdds.pl/), w planie jest wdrożenie go w większej liczbie placówek.
 
 <img height="60" src="./public/img/memo_joint_logo.png">
 
