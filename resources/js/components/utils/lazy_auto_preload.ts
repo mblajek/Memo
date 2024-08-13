@@ -6,7 +6,7 @@ const componentsToPreload: {preload: () => Promise<unknown>}[] = [];
 let preloadTimer: ReturnType<typeof setTimeout> | undefined;
 
 /** Idle time after which to preload. */
-const PRELOAD_INTERVAL_MILLIS = 1000;
+const PRELOAD_INTERVAL_MILLIS = 2000;
 
 /** Wait the interval, then preload one component, and repeat. */
 function schedulePreload() {

@@ -117,6 +117,7 @@ meeting:
   categoryDictId: "kategoria"
   typeDictId: "typ spotkania"
   statusDictId: "$t(dictionary.meetingStatus._name)"
+  isFacilityWide: "cała placówka"
   attendant: "uczestnik"
   attendants: "uczestnicy"
   attendants.count: "$t(models.meeting.attendants)$t(thin_space)$t(en_dash)$t(thin_space)liczba"

@@ -231,6 +231,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnGroups: ["meeting", true],
       // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
     },
+    isFacilityWide: {name: "isFacilityWide", initialVisible: false, columnGroups: "meeting"},
     attendants: {
       name: "attendants.*.userId",
       extraDataColumns: ["attendants"],

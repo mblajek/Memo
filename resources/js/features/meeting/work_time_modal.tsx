@@ -36,7 +36,15 @@ export const createWorkTimeModal = registerGlobalPageElement<WorkTimeModalParams
             onEdited={doAndClearParams(args, params().onEdited)}
             onCreated={doAndClearParams(args, params().onCreated)}
             onCloned={doAndClearParams(args, params().onCloned)}
-            onDeleted={doAndClearParams(args, params().onDeleted)}
+            onDeleted={(count, deletedThisWorkTime) => {
+              try {
+                params().onDeleted?.(count, deletedThisWorkTime);
+              } finally {
+                if (deletedThisWorkTime) {
+                  args.clearParams();
+                }
+              }
+            }}
             onCancel={doAndClearParams(args, params().onCancel)}
           />
         );

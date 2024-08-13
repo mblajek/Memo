@@ -169,13 +169,12 @@ export function useCalendarBlocksAndEvents({
         );
       }
       if (meeting.typeDictId === meetingTypeDict()?.work_time.id) {
-        const facilityWide = !meeting.staff.length;
         const style: JSX.CSSProperties = {
-          background: CALENDAR_BACKGROUNDS[facilityWide ? "facilityWorkTime" : "staffWorkTime"],
+          background: CALENDAR_BACKGROUNDS[meeting.isFacilityWide ? "facilityWorkTime" : "staffWorkTime"],
         };
         const timeSpan = partDayTimeSpan();
         const stylingPreference: CellStylingPreference = {
-          strength: BACKGROUND_PREFERENCE_STRENGTHS.workTime[facilityWide ? "facility" : "staff"],
+          strength: BACKGROUND_PREFERENCE_STRENGTHS.workTime[meeting.isFacilityWide ? "facility" : "staff"],
           style,
         };
         const WorkTimeSummary: VoidComponent<htmlAttributes.span & {readonly day: DateTime}> = (props) => (
@@ -184,7 +183,7 @@ export function useCalendarBlocksAndEvents({
             timeSpan={timeSpan}
             style={style}
             label={(time) =>
-              facilityWide ? (
+              meeting.isFacilityWide ? (
                 <span>
                   {time} <facilityIcons.Facility class="inlineIcon" size="12" />
                 </span>
@@ -195,46 +194,45 @@ export function useCalendarBlocksAndEvents({
             title={(time) =>
               `${t("with_colon", {
                 text: capitalizeString(
-                  facilityWide ? t("calendar.facility_work_time") : meetingTypeDict()?.work_time.label,
+                  meeting.isFacilityWide ? t("calendar.facility_work_time") : meetingTypeDict()?.work_time.label,
                 ),
               })} ${time}`
             }
             {...commonBlockProps()}
           />
         );
-        (facilityWide ? facilityWorkTimeBlocks : staffWorkTimeBlocks).push({
+        (meeting.isFacilityWide ? facilityWorkTimeBlocks : staffWorkTimeBlocks).push({
           meeting,
           ...timeSpan,
           contentInHoursArea: () => (
             <TimeBlock style={style} label={meeting.notes || undefined} {...commonBlockProps()} />
           ),
-          contentInAllDayArea: facilityWide
+          contentInAllDayArea: meeting.isFacilityWide
             ? calendarFunction === "timeTables"
               ? (colInfo) => <WorkTimeSummary day={colInfo.day} class="text-grey-text" />
               : undefined
             : (colInfo) => <WorkTimeSummary day={colInfo.day} />,
           allDayAreaStylingPreference: stylingPreference,
-          contentInMonthCell: facilityWide
+          contentInMonthCell: meeting.isFacilityWide
             ? calendarFunction === "timeTables"
               ? (monthInfo) => <WorkTimeSummary day={monthInfo.day} class="text-grey-text" />
               : undefined
             : (monthInfo) => <WorkTimeSummary day={monthInfo.day} />,
           monthCellStylingPreference: stylingPreference,
-          order: ORDERS.workTime[facilityWide ? "facility" : "staff"],
+          order: ORDERS.workTime[meeting.isFacilityWide ? "facility" : "staff"],
         });
       } else if (meeting.typeDictId === meetingTypeDict()?.leave_time.id) {
-        const facilityWide = !meeting.staff.length;
         const style: JSX.CSSProperties = {
-          background: CALENDAR_BACKGROUNDS[facilityWide ? "facilityLeaveTime" : "staffLeaveTime"],
+          background: CALENDAR_BACKGROUNDS[meeting.isFacilityWide ? "facilityLeaveTime" : "staffLeaveTime"],
         };
         const timeSpan = matchingTimeSpan();
         const stylingPreference: CellStylingPreference | undefined = timeSpan.allDay
           ? {
-              strength: BACKGROUND_PREFERENCE_STRENGTHS.allDayLeaveTime[facilityWide ? "facility" : "staff"],
+              strength: BACKGROUND_PREFERENCE_STRENGTHS.allDayLeaveTime[meeting.isFacilityWide ? "facility" : "staff"],
               style,
             }
           : undefined;
-        const genericName = facilityWide
+        const genericName = meeting.isFacilityWide
           ? t(timeSpan.allDay ? "calendar.facility_leave_time.all_day" : "calendar.facility_leave_time.part_day")
           : t("calendar.staff_leave_time");
         const LeaveTimeSummary: VoidComponent<{readonly day: DateTime}> = (props) => (
@@ -252,7 +250,7 @@ export function useCalendarBlocksAndEvents({
             )}
             title={(time) =>
               [
-                facilityWide && timeSpan.allDay
+                meeting.isFacilityWide && timeSpan.allDay
                   ? capitalizeString(genericName)
                   : `${t("with_colon", {text: capitalizeString(genericName)})} ${time}`,
                 meeting.notes,
@@ -263,7 +261,7 @@ export function useCalendarBlocksAndEvents({
             {...commonBlockProps()}
           />
         );
-        (facilityWide ? facilityLeaveTimeBlocks : staffLeaveTimeBlocks).push({
+        (meeting.isFacilityWide ? facilityLeaveTimeBlocks : staffLeaveTimeBlocks).push({
           meeting,
           ...timeSpan,
           contentInHoursArea: () => (
@@ -278,7 +276,7 @@ export function useCalendarBlocksAndEvents({
           allDayAreaStylingPreference: stylingPreference,
           contentInMonthCell: (monthInfo) => <LeaveTimeSummary day={monthInfo.day} />,
           monthCellStylingPreference: stylingPreference,
-          order: ORDERS.leaveTime[facilityWide ? "facility" : "staff"],
+          order: ORDERS.leaveTime[meeting.isFacilityWide ? "facility" : "staff"],
         });
       } else if (meeting.categoryDictId !== meetingCategoryDict()?.system.id) {
         /**

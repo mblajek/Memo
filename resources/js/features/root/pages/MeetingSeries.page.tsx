@@ -43,6 +43,7 @@ export default (() => {
         cols.meeting.category,
         cols.meeting.type,
         cols.meeting.statusTags,
+        cols.meeting.isFacilityWide,
         cols.meeting.attendants,
         cols.meeting.attendantsAttendance,
         cols.meeting.attendantsCount,

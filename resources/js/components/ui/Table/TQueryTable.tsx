@@ -597,15 +597,19 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
               component={col.header || defColumnConfig.header}
               ctx={ctx}
               filter={filter}
-              filterControl={() => (
-                <Dynamic
-                  component={schemaCol && filterControl}
-                  column={ctx.column}
-                  schema={schemaCol!}
-                  filter={filter[0]()}
-                  setFilter={filter[1]}
-                />
-              )}
+              filterControl={
+                schemaCol &&
+                filterControl &&
+                (() => (
+                  <Dynamic
+                    component={filterControl}
+                    column={ctx.column}
+                    schema={schemaCol!}
+                    filter={filter[0]()}
+                    setFilter={filter[1]}
+                  />
+                ))
+              }
             />
           ),
         },

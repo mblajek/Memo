@@ -566,48 +566,50 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             />
             <div class={s.buttons}>
               {/* Display only one clear button at a time. */}
-              <Switch>
-                <Match when={!api().isInputValueEmpty}>
-                  <Button
-                    data-scope="combobox"
-                    class={cx(s.clearButton)}
-                    onClick={() => {
-                      api().setInputValue("");
-                      api().focus();
-                    }}
-                    title={t("actions.clear")}
-                  >
-                    <FiDelete />
-                  </Button>
-                </Match>
-                <Match when={!props.multiple && props.nullable && api().value.length}>
-                  <Button
-                    class={cx(s.clearButton)}
-                    onClick={(e) => {
-                      // Avoid opening the select on button click.
-                      e.stopPropagation();
-                      api().clearValue();
-                    }}
-                    title={t("actions.clear")}
-                  >
-                    <FiDelete />
-                  </Button>
-                </Match>
-                <Match when={props.multiple && props.showClearButton && api().value.length}>
-                  <Button
-                    class={cx(s.clearButton)}
-                    onClick={(e) => {
-                      // Avoid opening the select on button click.
-                      e.stopPropagation();
-                      api().clearValue();
-                    }}
-                    title={t("actions.clear")}
-                  >
-                    {/* Use a bin icon for multiple select because it looks more destructive, which is appropriate. */}
-                    <RiSystemDeleteBin6Line />
-                  </Button>
-                </Match>
-              </Switch>
+              <Show when={!isDisabled()}>
+                <Switch>
+                  <Match when={!api().isInputValueEmpty}>
+                    <Button
+                      data-scope="combobox"
+                      class={cx(s.clearButton)}
+                      onClick={() => {
+                        api().setInputValue("");
+                        api().focus();
+                      }}
+                      title={t("actions.clear")}
+                    >
+                      <FiDelete />
+                    </Button>
+                  </Match>
+                  <Match when={!props.multiple && props.nullable && api().value.length}>
+                    <Button
+                      class={cx(s.clearButton)}
+                      onClick={(e) => {
+                        // Avoid opening the select on button click.
+                        e.stopPropagation();
+                        api().clearValue();
+                      }}
+                      title={t("actions.clear")}
+                    >
+                      <FiDelete />
+                    </Button>
+                  </Match>
+                  <Match when={props.multiple && props.showClearButton && api().value.length}>
+                    <Button
+                      class={cx(s.clearButton)}
+                      onClick={(e) => {
+                        // Avoid opening the select on button click.
+                        e.stopPropagation();
+                        api().clearValue();
+                      }}
+                      title={t("actions.clear")}
+                    >
+                      {/* Use a bin icon for multiple select because it looks more destructive, which is appropriate. */}
+                      <RiSystemDeleteBin6Line />
+                    </Button>
+                  </Match>
+                </Switch>
+              </Show>
               <Button
               // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
               // The control will handle clicks.
@@ -653,7 +655,7 @@ interface IndentSelectItemInGroupProps extends htmlAttributes.div {
 
 export const IndentSelectItemInGroup: ParentComponent<IndentSelectItemInGroupProps> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["indent"]);
-  return <div {...htmlAttributes.merge(divProps, {class: props.indent ?? true ? "pl-3" : undefined})} />;
+  return <div {...htmlAttributes.merge(divProps, {class: (props.indent ?? true) ? "pl-3" : undefined})} />;
 };
 
 export const DefaultSelectItemsGroupHeader: VoidComponent<{readonly groupName: string}> = (props) => (
