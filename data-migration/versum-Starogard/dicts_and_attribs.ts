@@ -190,7 +190,7 @@ dictionariesAndAttributes.push(
     isMultiValue: false,
     type: "dict",
     dictionaryNnOrName: "dict:status klienta",
-    requirementLevel: "recommended",
+    requirementLevel: "optional",
   },
 
   {
@@ -242,7 +242,7 @@ dictionariesAndAttributes.push(
       "Skarszewy",
       "FDDS",
       "Rewitalizacja",
-      "Rodzina",
+      "CWR",
       "Ukraina",
     ].map((n) => ({nn: `projekt:${n}`, name: `+${n}`})),
   },

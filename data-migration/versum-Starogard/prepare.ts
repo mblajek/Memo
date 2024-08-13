@@ -55,8 +55,8 @@ type FieldsType<T extends string[]> = T[number];
 
 // prettier-ignore
 interface FilesType {
-  klienci:FieldsType<["ID","imię","nazwisko","email","numer PESEL","numer karty","Saldo klienta","telefon komórkowy","telefon stacjonarny","płeć","adres","kod pocztowy","miasto","data urodzenia","data imienin (dzień i miesiąc)","opis","sformatowany opis","pochodzenie klienta (źródło)","status pochodzenia klienta","przypomnienie SMS","przypomnienie email","wysyłka masowa SMS","wysyłka masowa email","Marketing Automatyczny SMS","Marketing Automatyczny email","życzenia urodzinowe/imieninowe SMS","życzenia urodzinowe/imieninowe email","Program Lojalnościowy SMS","Program Lojalnościowy email","opinie SMS","opinie email","dodany dnia","zgoda handlowa","status programu lojalnościowego","punkty programu lojalnościowego","Maksymalna liczba rezerwacji online","zdefiniowane: relacje","zdefiniowane: dorosły/dziecko","zdefiniowane: wiek w momencie zgłoszenia","zdefiniowane: powód zgłoszenia","zdefiniowane: sprawca","zdefiniowane: płeć sprawcy","zdefiniowane: data zgłoszenia","zdefiniowane: data pierwszej konsultacji","zdefiniowane: Notatka o kliencie","zdefiniowane: Projekt","zdefiniowane: Status klienta","zdefiniowane: Skład grupy roboczej","zdefiniowane: Koordynator przypadku"]>,
-  terminy:FieldsType<["ID wizyty","ID relacji usługa/wizyta","pracownik","początek","koniec","imię klienta","nazwisko klienta","telefon komórkowy","email","ID klienta","ID usługi","usługa","czas trwania","powiązane zasoby","sugerowana cena (PLN)","zapłacono (PLN)","status","forma płatności","dodana przez","etykiety","data dodania","data ostatniej modyfikacji","autor ostatniej modyfikacji","data finalizacji","sfinalizowane przez","dodatkowy opis","numer rezerwacji"]>,
+  klienci: FieldsType<["ID","imię","nazwisko","email","numer PESEL","numer karty","Saldo klienta","telefon komórkowy","telefon stacjonarny","płeć","adres","kod pocztowy","miasto","data urodzenia","data imienin (dzień i miesiąc)","opis","sformatowany opis","pochodzenie klienta (źródło)","status pochodzenia klienta","przypomnienie SMS","przypomnienie email","wysyłka masowa SMS","wysyłka masowa email","Marketing Automatyczny SMS","Marketing Automatyczny email","życzenia urodzinowe/imieninowe SMS","życzenia urodzinowe/imieninowe email","Program Lojalnościowy SMS","Program Lojalnościowy email","opinie SMS","opinie email","dodany dnia","zgoda handlowa","status programu lojalnościowego","punkty programu lojalnościowego","Maksymalna liczba rezerwacji online","zdefiniowane: relacje","zdefiniowane: dorosły/dziecko","zdefiniowane: wiek w momencie zgłoszenia","zdefiniowane: powód zgłoszenia","zdefiniowane: sprawca","zdefiniowane: płeć sprawcy","zdefiniowane: data zgłoszenia","zdefiniowane: data pierwszej konsultacji","zdefiniowane: Notatka o kliencie","zdefiniowane: Projekt","zdefiniowane: Status klienta","zdefiniowane: Skład grupy roboczej","zdefiniowane: Koordynator przypadku"]>,
+  terminy: FieldsType<["ID wizyty","ID relacji usługa/wizyta","pracownik","początek","koniec","imię klienta","nazwisko klienta","telefon komórkowy","email","ID klienta","ID usługi","usługa","czas trwania","powiązane zasoby","sugerowana cena (PLN)","zapłacono (PLN)","status","forma płatności","dodana przez","etykiety","data dodania","data ostatniej modyfikacji","autor ostatniej modyfikacji","data finalizacji","sfinalizowane przez","dodatkowy opis","numer rezerwacji"]>,
 }
 
 type Row<K extends string> = {readonly [k in K]: string};
@@ -92,8 +92,8 @@ function readRawCSV<K extends string>(file: string): Row<K>[] {
 
 console.log(`Reading export data from ${exportsDir}`);
 
-let KLIENCI = readCSV<FilesType["klienci"]>(`${exportsDir}/klienci.csv`, "ID");
-let TERMINY = readCSV<FilesType["terminy"]>(`${exportsDir}/terminy.csv`, "ID wizyty");
+let KLIENCI = readCSV<FilesType["klienci"]>(`${exportsDir}/klienci_148679.csv`, "ID");
+let TERMINY = readCSV<FilesType["terminy"]>(`${exportsDir}/terminy_148679.csv`, "ID wizyty");
 
 console.log(`Reading static data from ${staticDataDir}`);
 
@@ -117,6 +117,7 @@ console.log(`Liczba prawidłowych klientów: ${KLIENCI.rows.length}`);
 
 console.log(`Liczba wyeksportowanych spotkań: ${TERMINY.rows.length}`);
 TERMINY = rejectAndLog(TERMINY, (t) => !t.pracownik, "Spotkania bez pracownika");
+TERMINY = rejectAndLog(TERMINY, (t) => t.pracownik === "Aurelia Jankowska", "Spotkania Aurelii Jankowskiej");
 TERMINY = rejectAndLog(TERMINY, (t) => t.usługa === "Blokada terminu", `Spotkania "Blokada terminu"`);
 console.log(`Liczba prawidłowych spotkań: ${TERMINY.rows.length}`);
 
@@ -168,9 +169,9 @@ function _logLine(...line: unknown[]) {
 // Deno.exit();
 
 const staff: Staff[] = STAFF.rows.map(({name, email}) => ({
-  nn: tt(email),
-  name: tt(name),
-  email: tt(email),
+  nn: name,
+  name: name,
+  email: email || null,
 }));
 
 function dateTimeFromFormats(s: string, formats: string[], opts?: DateTimeOptions) {
@@ -268,11 +269,17 @@ for (const klient of KLIENCI.rows) {
     projekt = projektGetter.req(klient["zdefiniowane: Projekt"]);
   } else if (klient.email) {
     const mailPart = klient.email.split("@")[0].split(".")[1];
-    const matchingProjekt = projektGetter.values.find((v) => v.split(" ")[0].toLowerCase() === mailPart.toLowerCase());
-    if (matchingProjekt) {
-      projekt = projektGetter.req(matchingProjekt);
+    if (mailPart === "rodzina") {
+      projekt = projektGetter.req("CWR");
     } else {
-      throw new Error(`Unknown project from email: ${JSON.stringify(klient.email)}`);
+      const matchingProjekt = projektGetter.values.find(
+        (v) => v.split(" ")[0].toLowerCase() === mailPart.toLowerCase(),
+      );
+      if (matchingProjekt) {
+        projekt = projektGetter.req(matchingProjekt);
+      } else {
+        throw new Error(`Unknown project from email: ${JSON.stringify(klient.email)}`);
+      }
     }
   }
   let type;
@@ -377,7 +384,7 @@ function getStaff(pracownik: string) {
     if (!staff) {
       throw new Error(`Staff ${JSON.stringify(name)} not found`);
     }
-    staffNn = staff.email;
+    staffNn = staff.name;
     pracownicyCache.set(pracownik, staffNn);
   }
   return staffNn;

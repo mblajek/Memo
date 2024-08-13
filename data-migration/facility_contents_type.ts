@@ -66,7 +66,7 @@ export type RelSpec<RelKey extends string> = Readonly<Record<RelKey, string>>;
 export interface Staff {
   readonly nn: string | readonly string[];
   readonly name: string;
-  readonly email: string;
+  readonly email: string | null;
 }
 
 /** Existing user to give staff in the facility. */
