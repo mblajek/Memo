@@ -60,7 +60,7 @@
     "@zag-js/hover-card": "^0.26.0",
     "@zag-js/popover": "0.26.0",
     "@zag-js/solid": "0.26.0",
-    "axios": "^1.7.2",
+    "axios": "^1.7.4",
     "classnames": "^2.5.1",
     "html-parse-string": "^0.0.9",
     "i18next": "^23.12.1",
