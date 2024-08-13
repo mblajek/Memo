@@ -1,5 +1,4 @@
 import js from "@eslint/js";
-import typescriptPlugin from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 import prettierConfig from "eslint-config-prettier";
 import solid from "eslint-plugin-solid";
@@ -17,7 +16,6 @@ export default [
       ecmaVersion: "latest",
       sourceType: "module",
     },
-    plugins: {"@typescript-eslint": typescriptPlugin},
     rules: {
       "@typescript-eslint/no-empty-function": "off",
       "@typescript-eslint/no-empty-interface": "off",
