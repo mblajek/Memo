@@ -36,7 +36,14 @@ trait TqAttribute
         $valueColumn = Value::getTypeColumn($attribute->type);
         $from = "`values` where `object_id` = `{$table->name}`.`id` and `attribute_id` = '{$attribute->id}'";
         $multi = $attribute->is_multi_value;
-        self::assertType($type, $multi, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list, TqDataTypeEnum::list);
+        self::assertType(
+            $type,
+            $multi,
+            TqDataTypeEnum::uuid_list,
+            TqDataTypeEnum::dict_list,
+            TqDataTypeEnum::list,
+            TqDataTypeEnum::string_list,
+        );
         if ($multi) {
             $this->addColumn(
                 type: $type,

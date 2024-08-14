@@ -3,6 +3,7 @@
 namespace App\Tquery\Filter;
 
 use App\Exceptions\FatalExceptionFactory;
+use Illuminate\Http\Resources\MissingValue;
 
 enum TqFilterOperator: string
 {
@@ -35,22 +36,12 @@ enum TqFilterOperator: string
     public const array CMP = [self::lt, self::le, self::gt, self::ge];
     /** @var self[] */
     public const array LIKE = [self::lv, self::pv, self::vp, self::pvp, self::regexp];
-    /** @var self[] */
-    public const array BINARY = [self::regexp];
     /** @var self[] - filter "val" is list */
     public const array LIST_FILTER = [self::in, self::has_all, self::has_any, self::has_only];
     /** @var self[] - db column is list */
     public const array LIST_COLUMN = [self::has, self::has_all, self::has_any, self::has_only];
 
-    public function sqlPrefix(): string
-    {
-        return match ($this) {
-            self::regexp => 'binary',
-            default => '',
-        };
-    }
-
-    public function sqlOperator(): string
+    public function sqlOperator(): string|MissingValue
     {
         return match ($this) {
             self::eq => '=',
@@ -60,9 +51,9 @@ enum TqFilterOperator: string
             self::gt => '>',
             self::ge => '>=',
             self::lv, self::pv, self::vp, self::pvp => 'like',
-            self::regexp => 'regexp',
+            self::regexp => 'regexp binary',
             self::in => 'in',
-            default => FatalExceptionFactory::tquery(['operator' => $this->value])->throw(),
+            default => new MissingValue(),
         };
     }
 
