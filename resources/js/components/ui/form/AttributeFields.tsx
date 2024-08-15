@@ -21,7 +21,6 @@ import {DateTime} from "luxon";
 import {
   Accessor,
   For,
-  Index,
   JSX,
   Match,
   ParentComponent,
@@ -39,6 +38,7 @@ import {HideableSection} from "../HideableSection";
 import {InfoIcon} from "../InfoIcon";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
+import {ThingsList} from "../ThingsList";
 import {CHECKBOX, EmptyValueSymbol} from "../symbols";
 import {title} from "../title";
 import {CheckboxField} from "./CheckboxField";
@@ -228,20 +228,20 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-32 whitespace-pre-wrap"})} />
     );
     const defaultView = () => {
-      function simpleAttributeView(type: SimpleAttributeType | DictAttributeType, val = value) {
+      function simpleAttributeView(type: SimpleAttributeType | DictAttributeType, val = value()) {
         switch (type) {
           case "string":
           case "text":
           case "int":
-            return <>{String(val())}</>;
+            return String(val);
           case "bool":
-            return <>{val() === true ? t("bool_values.yes") : t("bool_values.no")}</>;
+            return val === true ? t("bool_values.yes") : t("bool_values.no");
           case "date":
-            return <>{DateTime.fromISO(val() as string).toLocaleString({...DATE_FORMAT, weekday: "long"})}</>;
+            return DateTime.fromISO(val as string).toLocaleString({...DATE_FORMAT, weekday: "long"});
           case "datetime":
-            return <>{DateTime.fromISO(val() as string).toLocaleString({...DATE_TIME_FORMAT, weekday: "long"})}</>;
+            return DateTime.fromISO(val as string).toLocaleString({...DATE_TIME_FORMAT, weekday: "long"});
           case "dict":
-            return <>{dictionaries()?.getPositionById(val() as string)?.label}</>;
+            return dictionaries()?.getPositionById(val as string)?.label;
           default:
             return type satisfies never;
         }
@@ -268,30 +268,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         switch (basicType) {
           case "bool":
           case "date":
+          case "datetime":
           case "dict":
           case "int":
-            return (
-              <DefaultViewer>
-                <Index each={values()}>
-                  {(item, i) => (
-                    <span>
-                      {simpleAttributeView(basicType, item)}
-                      <Show when={i < values().length - 1}>
-                        <span class="text-grey-text mr-0.5">, </span>
-                      </Show>
-                    </span>
-                  )}
-                </Index>
-              </DefaultViewer>
-            );
-          case "datetime":
           case "string":
           case "text":
             return (
               <DefaultViewer>
-                <ul class="list-disc list-inside">
-                  <For each={values()}>{(item) => <li>{simpleAttributeView(basicType, () => item)}</li>}</For>
-                </ul>
+                <ThingsList things={values()} map={(v) => simpleAttributeView(basicType, v)} />
               </DefaultViewer>
             );
           default:

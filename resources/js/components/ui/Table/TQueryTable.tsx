@@ -642,7 +642,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       if (previewMode) {
         if (previewMode === "textExport") {
           columnDef.cell = (ctx) => (
-            <PaddedCell>
+            <PaddedCell class="whitespace-pre-wrap">
               {columnDef.meta?.tquery?.textExportCell?.({
                 value: ctx.getValue(),
                 row: ctx.row.original,

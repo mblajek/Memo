@@ -6,6 +6,7 @@ import {DateTime} from "luxon";
 import {Accessor, Index, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
 import {ChildrenOrFunc, getChildrenElement} from "../children_func";
 import {EmptyValueSymbol} from "../symbols";
+import {ThingsList} from "../ThingsList";
 import {Header} from "./Header";
 import {IdColumn} from "./IdColumn";
 
@@ -129,11 +130,7 @@ function defaultFormatValue(value: unknown) {
   if (value == undefined) {
     return undefined;
   } else if (Array.isArray(value)) {
-    return (
-      <ul>
-        <Index each={value}>{(item) => <li>{defaultFormatValue(item())}</li>}</Index>
-      </ul>
-    );
+    return <ThingsList things={value} map={defaultFormatValue} />;
   } else if (typeof value === "object") {
     return JSON.stringify(value);
   } else {
