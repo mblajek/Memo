@@ -33,6 +33,7 @@ export function useTableTextExportCells() {
     list: def,
     object: def,
     string: def,
+    stringList: def,
     text: def,
     uuid: def,
     uuidList: def,

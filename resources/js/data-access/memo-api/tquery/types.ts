@@ -38,6 +38,7 @@ interface PlainDataColumnSchema extends DataColumnSchemaBase {
     // An object of a form known both to backend and frontend.
     | "object"
     | "string"
+    | "string_list"
     | "text"
     | "uuid"
     | "uuid_list";

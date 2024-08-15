@@ -12,6 +12,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 | datetime         | +    | . | .  | .    | +   | .    | +      | +    |
 | int              | +    | + | +  | .    | +   | +    | +      | +    |
 | string           | +    | + | +  | .    | +   | +    | +      | +    |
+| string_list      | +    | . | .  | .    | .   | +    | +      | .    |
 | text             | +    | . | .  | .    | .   | +    | +?(8)  | .    |
 | uuid             | +    | + | +  | .    | .   | .    | +      | .    |
 | dict(1)          | +    | + | +  | .    | .   | .    | +      | +    |
