@@ -105,7 +105,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       new QueryClient({
         defaultOptions: {
           queries: {
-            refetchOnReconnect: true,
+            refetchOnReconnect: false,
             refetchOnMount: true,
             refetchOnWindowFocus: false,
             // When opening a page, reload data if it's older than half a minute.
