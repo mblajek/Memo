@@ -337,6 +337,11 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       metaParams: {textExportCell: tableTextExportCells.string()},
       filterControl: TextualFilterControl,
     })
+    .set("string_list", {
+      columnDef: {cell: tableCells.stringList(), enableSorting: false},
+      metaParams: {textExportCell: tableTextExportCells.stringList()},
+      filterControl: TextualFilterControl,
+    })
     .set("text", {
       columnDef: {cell: tableCells.text(), enableSorting: false},
       metaParams: {textExportCell: tableTextExportCells.text()},

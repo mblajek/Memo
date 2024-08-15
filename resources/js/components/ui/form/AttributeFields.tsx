@@ -267,9 +267,9 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         const values = () => value() as unknown[];
         switch (basicType) {
           case "bool":
-          case "string":
-          case "int":
+          case "date":
           case "dict":
+          case "int":
             return (
               <DefaultViewer>
                 <Index each={values()}>
@@ -284,16 +284,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                 </Index>
               </DefaultViewer>
             );
-          case "date":
           case "datetime":
+          case "string":
           case "text":
             return (
-              <DefaultViewer class="flex flex-col items-stretch">
-                <For each={values()}>
-                  {(item) => (
-                    <div class="pl-1 border-gray-200 border-l">{simpleAttributeView(basicType, () => item)}</div>
-                  )}
-                </For>
+              <DefaultViewer>
+                <ul class="list-disc list-inside">
+                  <For each={values()}>{(item) => <li>{simpleAttributeView(basicType, () => item)}</li>}</For>
+                </ul>
               </DefaultViewer>
             );
           default:

@@ -20,6 +20,7 @@ interface Props extends FilterControlProps {
 
 type Mode = "~" | "=" | "*" | "null" | ".*";
 
+/** The filter control for column types `string`, `string_list` and `text`. */
 export const TextualFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();

@@ -85,6 +85,7 @@ export function useTableCells() {
     list: defaultCell,
     object: defaultCell,
     string: defaultCell,
+    stringList: defaultCell,
     text: defaultCell,
     uuid: <T,>() =>
       cellFunc<string, T>((props) => (

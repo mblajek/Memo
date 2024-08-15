@@ -29,6 +29,7 @@ enum TqDataTypeEnum
     //list
     case dict_list;
     case uuid_list;
+    case string_list;
     case list;
     // additional
     case count;
@@ -37,12 +38,11 @@ enum TqDataTypeEnum
 
     public function isNullable(): bool
     {
-        return match ($this) {
-            self::bool_nullable, self::date_nullable, self::datetime_nullable, self::int_nullable,
-            self::string_nullable, self::uuid_nullable, self::dict_nullable, self::text_nullable,
-            self::dict_list, self::uuid_list, self::list => true, // list have "null" operator
-            default => false,
-        };
+        return $this->isList() || match ($this) {
+                self::bool_nullable, self::date_nullable, self::datetime_nullable, self::int_nullable,
+                self::string_nullable, self::uuid_nullable, self::dict_nullable, self::text_nullable, => true,
+                default => false,
+            };
     }
 
     public function isDict(): bool
@@ -51,6 +51,14 @@ enum TqDataTypeEnum
             self::dict, self::dict_nullable, self::dict_list => true,
             default => false,
         };
+    }
+
+    public function isList(): bool
+    {
+        return $this->isUuidList() || match ($this) {
+                self::string_list, self::list => true,
+                default => false,
+            };
     }
 
     public function isUuidList(): bool
@@ -125,7 +133,7 @@ enum TqDataTypeEnum
                     ...TqFilterOperator::LIKE,
                 ],
                 self::uuid, self::dict => [TqFilterOperator::eq, TqFilterOperator::in],
-                self::text => TqFilterOperator::LIKE,
+                self::text, self::string_list => TqFilterOperator::LIKE,
                 self::dict_list, self::uuid_list, => [TqFilterOperator::eq, ...TqFilterOperator::LIST_COLUMN],
                 self::list => [],
                 default => FatalExceptionFactory::tquery()->throw(),
