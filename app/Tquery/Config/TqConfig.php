@@ -58,7 +58,7 @@ final class TqConfig
         string $columnName,
         ?string $columnAlias = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnName,
@@ -73,7 +73,7 @@ final class TqConfig
         string $columnName,
         ?string $columnAlias = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnName,
@@ -90,7 +90,7 @@ final class TqConfig
         ?Closure $order = null,
         ?Closure $renderer = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnOrQuery,
@@ -111,7 +111,7 @@ final class TqConfig
         ?Closure $order = null,
         ?Closure $renderer = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnOrQuery,
@@ -123,19 +123,21 @@ final class TqConfig
         );
     }
 
-    public function addUuidListQuery(
+    public function addListQuery(
         TqDataTypeEnum|TqDictDef $type,
         string $select,
         string $from,
         string $columnAlias,
+        bool $selectDistinct = false,
     ): void {
-        self::assertType($type, true, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, true);
+        $selectDistinct = $selectDistinct ? 'distinct ' : '';
         $this->addColumn(
             type: $type,
-            columnOrQuery: fn(string $tableName) => "select json_arrayagg($select) from $from",
+            columnOrQuery: fn(string $tableName) => "select json_arrayagg({$selectDistinct}{$select}) from $from",
             table: null,
             columnAlias: Str::camel($columnAlias),
-            filter: fn(string $query) => "select count(distinct $select) from $from and ($select",
+            filter: fn(string $query) => "select count(distinct {$select}) from $from and ($select",
         );
     }
 
@@ -217,6 +219,11 @@ final class TqConfig
             sorter: $sorter,
             renderer: $renderer,
         );
+    }
+
+    private static function assertStringOrUuidList(TqDataTypeEnum|TqDictDef $type, bool $is): void
+    {
+        self::assertType($type, $is, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list, TqDataTypeEnum::string_list);
     }
 
     private static function assertType(TqDataTypeEnum|TqDictDef $type, bool $is, TqDataTypeEnum ...$types): void

@@ -75,7 +75,7 @@ readonly class MeetingTquery extends TqService
                 "select count(1) from `meeting_attendants` $attendantWhere",
                 "$attendanceName.count",
             );
-            $config->addUuidListQuery(
+            $config->addListQuery(
                 TqDataTypeEnum::uuid_list,
                 '`meeting_attendants`.`user_id`',
                 "`meeting_attendants` $attendantWhere",
@@ -88,7 +88,7 @@ readonly class MeetingTquery extends TqService
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
                 "$attendanceName.*.name",
             );
-            $config->addUuidListQuery(
+            $config->addListQuery(
                 new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::AttendanceStatus),
                 '`meeting_attendants`.`attendance_status_dict_id`',
                 "`meeting_attendants` $attendantWhere",
@@ -113,7 +113,7 @@ readonly class MeetingTquery extends TqService
             "select count(1) from $resourceFromWhere",
             'resources.count',
         );
-        $config->addUuidListQuery(
+        $config->addListQuery(
             new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::MeetingResource),
             '`meeting_resources`.`resource_dict_id`',
             $resourceFromWhere,
