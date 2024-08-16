@@ -1,6 +1,6 @@
 <?php
 
-use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DBH;
+use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DMH;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -32,11 +32,11 @@ return new class extends Migration {
             $table->dateTime('deactivated_at')->nullable();
         });
         Schema::table('clients', function (Blueprint $table) {
-            DBH::ascii($table, 'short_code')->nullable();
+            DMH::ascii($table, 'short_code')->nullable();
         });
         DB::table('clients')->update(['short_code' => '-']);
         Schema::table('clients', function (Blueprint $table) {
-            DBH::ascii($table, 'short_code')->nullable(false)->change();
+            DMH::ascii($table, 'short_code')->nullable(false)->change();
         });
     }
 

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DBH;
+use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DMH;
 
 return new class extends Migration
 {
@@ -27,8 +27,8 @@ return new class extends Migration
                     'table' => 'clients',
                     'created_at' => $date,
                     'updated_at' => $date,
-                    'created_by' => DBH::USER_SYSTEM,
-                    'updated_by' => DBH::USER_SYSTEM,
+                    'created_by' => DMH::USER_SYSTEM,
+                    'updated_by' => DMH::USER_SYSTEM,
                     'is_fixed' => true,
                 ], [
                 [
