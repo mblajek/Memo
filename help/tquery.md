@@ -12,13 +12,12 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 | datetime         | +    | . | .  | .    | +   | .    | +      | +    |
 | int              | +    | + | +  | .    | +   | +    | +      | +    |
 | string           | +    | + | +  | .    | +   | +    | +      | +    |
-| string_list      | +    | . | .  | .    | .   | +    | +      | .    |
 | text             | +    | . | .  | .    | .   | +    | +?(8)  | .    |
 | uuid             | +    | + | +  | .    | .   | .    | +      | .    |
 | dict(1)          | +    | + | +  | .    | .   | .    | +      | +    |
 | dict_list(3)     | +    | + | .  | +    | .   | .    | +      | .    |
 | uuid_list(3)     | +    | + | .  | +    | .   | .    | +      | .    |
-| string_list(3)   | +    | + | .  | .    | .   | +    | +      | .    |
+| string_list(3)   | +    | . | .  | .    | .   | +(6) | +      | .    |
 | list(4)          | +    | . | .  | .    | .   | .    | +      | .    |
 | object(2)        | *    | . | .  | .    | .   | .    | *      | .    |
 | **inne:**        |
@@ -59,6 +58,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 - `(3)` - wiele wartości słownikowych, zwracanych jako lista uuid lub lista uuid np. użytkowników
 - `(4)` - lista obiektów/wartości o dowolnej strukturze, ustalonej z frontendem
 - `(5)` - liczba zgrupowanych rekordów, jeżeli tquery było wywołane z opcją `distnct=true`
+- `(6)` - dowolny element z listy spełnia warunek, docelowo może to być `has_any:%v%`, ...
 - `(8)` - mógłby to być opcją typu substring(256), żeby nie zwracać 100 wierszy po 4kb tekstu, a może nie musi
 
 
