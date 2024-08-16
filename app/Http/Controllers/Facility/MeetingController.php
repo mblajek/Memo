@@ -40,7 +40,7 @@ class MeetingController extends ApiController
                 properties: [
                     new OA\Property(property: 'typeDictId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'date', type: 'string', example: '2023-12-13'),
-                    new OA\Property(property: 'notes', type: 'string', example: '', nullable: true),
+                    new OA\Property(property: 'notes', type: 'string', example: null, nullable: true),
                     new OA\Property(property: 'startDayminute', type: 'int', example: 600),
                     new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
                     new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),
@@ -154,7 +154,7 @@ class MeetingController extends ApiController
                 properties: [
                     new OA\Property(property: 'typeDictId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'date', type: 'string', example: '2023-12-13'),
-                    new OA\Property(property: 'notes', type: 'string', example: '', nullable: true),
+                    new OA\Property(property: 'notes', type: 'string', example: null, nullable: true),
                     new OA\Property(property: 'startDayminute', type: 'int', example: 600),
                     new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
                     new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),

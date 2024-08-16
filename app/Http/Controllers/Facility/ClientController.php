@@ -59,7 +59,7 @@ class ClientController extends ApiController
 
         $users = User::query()->from($query->clone()->addSelect('users.*'))->get();
         $clients = Client::query()->from($query->clone()->addSelect('clients.*'))
-            ->with(['values'])->get()->keyBy('member_id');
+            ->with(['values', 'groupClients'])->get()->keyBy('member_id');
         foreach ($users as $user) {
             $user->client = $clients->offsetGet($user->member_id);
         }

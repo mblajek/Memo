@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Facility\ClientController;
+use App\Http\Controllers\Facility\ClientGroupController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\FacilityAdminController;
 use App\Http\Controllers\Facility\MeetingAttendantTqueryController;
@@ -101,6 +102,12 @@ Route::prefix('/v1')->group(function () {
             Route::post('/attendant/tquery', [MeetingAttendantTqueryController::class, 'post']);
             Route::get('/client/tquery', [MeetingClientTqueryController::class, 'get']);
             Route::post('/client/tquery', [MeetingClientTqueryController::class, 'post']);
+        });
+        Route::prefix('/client-group')->group(function () {
+            Route::post('/', [ClientGroupController::class, 'post']);
+            Route::get('/list', [ClientGroupController::class, 'list']);
+            Route::patch('/{clientGroup}', [ClientGroupController::class, 'patch']);
+            Route::delete('/{clientGroup}', [ClientGroupController::class, 'delete']);
         });
         Route::prefix('/admin')->group(function () {
             Route::prefix('/attribute')->group(function () {

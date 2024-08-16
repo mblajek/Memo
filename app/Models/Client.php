@@ -9,12 +9,15 @@ use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\ClientShortCodeRule;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $short_code
  * @property-read Member $member
+ * @property-read Collection<array-key, GroupClient> $groupClients
  * @method static ClientBuilder query()
  */
 class Client extends Model
@@ -47,6 +50,16 @@ class Client extends Model
     public function member(): HasOne
     {
         return $this->hasOne(Member::class);
+    }
+
+    public function groupClients(): HasMany
+    {
+        return $this->hasMany(GroupClient::class, 'client_id')->from(
+            GroupClient::query()
+                ->join('members', 'members.user_id', 'group_clients.user_id')
+                ->select(['group_clients.*', 'members.client_id']),
+            'group_clients',
+        );
     }
 
     public function fillShortCode(): void
