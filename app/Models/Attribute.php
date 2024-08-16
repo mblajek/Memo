@@ -18,17 +18,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
 
 /**
- * @property ?string facility_id
- * @property AttributeTable table
- * @property string name
- * @property string api_name
- * @property AttributeType type
- * @property ?string dictionary_id
- * @property int default_order
- * @property ?bool is_multi_value
- * @property bool is_fixed
- * @property AttributeRequirementLevel requirement_level
- * @property string description
+ * @property ?string $facility_id
+ * @property AttributeTable $table
+ * @property string $name
+ * @property string $api_name
+ * @property AttributeType $type
+ * @property ?string $dictionary_id
+ * @property int $default_order
+ * @property ?bool $is_multi_value
+ * @property bool $is_fixed
+ * @property AttributeRequirementLevel $requirement_level
+ * @property string $description
  * @method static AttributeBuilder query()
  */
 class Attribute extends Model

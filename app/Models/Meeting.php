@@ -19,16 +19,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Validation\Rule;
 
 /**
- * @property string facility_id
- * @property string category_dict_id
- * @property string type_dict_id
- * @property string notes
- * @property string date
- * @property int start_dayminute
- * @property int duration_minutes
- * @property string status_dict_id
- * @property ?string from_meeting_id
- * @property ?string interval
+ * @property string $facility_id
+ * @property string $category_dict_id
+ * @property string $type_dict_id
+ * @property string $notes
+ * @property string $date
+ * @property int $start_dayminute
+ * @property int $duration_minutes
+ * @property string $status_dict_id
+ * @property ?string $from_meeting_id
+ * @property ?string $interval
  * @property-read Collection|MeetingAttendant[] $attendants
  * @property-read Collection|MeetingResource[] $resources
  * @method static MeetingBuilder query()

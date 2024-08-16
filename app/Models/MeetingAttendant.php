@@ -7,10 +7,10 @@ use App\Models\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @property string meeting_id
- * @property string user_id
- * @property string attendance_type_dict_id
- * @property string attendance_status_dict_id
+ * @property string $meeting_id
+ * @property string $user_id
+ * @property string $attendance_type_dict_id
+ * @property string $attendance_status_dict_id
  * @method static MeetingAttendantBuilder query()
  */
 class MeetingAttendant extends Model

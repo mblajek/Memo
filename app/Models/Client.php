@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * @property string short_code
+ * @property string $short_code
  * @property-read Member $member
  * @method static ClientBuilder query()
  */
