@@ -76,6 +76,7 @@ facility_user:
   completedMeetingsCountLastMonth: "liczba wizyt w ost. miesiącu"
   plannedMeetingsCount: "liczba zaplanowanych wizyt"
   plannedMeetingsCountNextMonth: "liczba wizyt w nast. miesiącu"
+  meetings: "$t(models.meeting._name_plural)"
 
 staff:
   _name: "pracownik"
@@ -103,6 +104,14 @@ client:
     updatedAt: "$t(models.generic.updatedAt)"
     updatedBy.name: "$t(models.generic.updatedBy.name)"
     updatedBy.id: "$t(models.generic.updatedBy.id)"
+
+client_group:
+  _name: "grupa klientów"
+  _name_plural: "grupy klientów"
+  clients: "członkowie"
+  client:
+    userId: "osoba"
+    role: "rola"
 
 meeting:
   _name: "spotkanie"

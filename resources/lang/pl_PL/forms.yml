@@ -1,4 +1,5 @@
 generic:
+  optional_field_hint: "(opcjonalne)"
   submit: "$t(actions.save)"
 
 login:
@@ -183,3 +184,18 @@ client_delete:
   success:
     remove: "Usunięto klienta"
     deduplicate: "Usunięto duplikat"
+
+client_group:
+
+client_group_edit:
+  form_name: "Edycja grupy klientów"
+  success: "Zmieniono grupę klientów"
+
+client_group_create:
+  form_name: "Nowa grupa klientów"
+  success: "Utworzono grupę klientów"
+
+client_group_delete:
+  form_name: "Usunięcie grupy klientów"
+  confirmation_text: "Czy na pewno usunąć to powiązanie klientów? Klienci nie zostaną usunięci."
+  submit: "Usuń powiązanie"

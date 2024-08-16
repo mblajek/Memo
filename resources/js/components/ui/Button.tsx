@@ -55,6 +55,7 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
 };
 
 interface BaseProps<ConfirmResult> extends ButtonProps {
+  readonly icon?: JSX.Element;
   readonly label?: JSX.Element;
   /**
    * The method to apply the delete, after it was confirmed by the user (if confirmation was requested and not overridden).
@@ -88,7 +89,7 @@ interface ConfirmProps<ConfirmResult> extends BaseProps<ConfirmResult> {
 type Props<ConfirmResult> = NoConfirmProps | ConfirmProps<ConfirmResult>;
 
 export const DeleteButton = <ConfirmResult,>(allProps: Props<ConfirmResult>) => {
-  const [props, buttonProps] = splitProps(allProps, ["label", "confirm", "ctrlAltOverride", "delete"]);
+  const [props, buttonProps] = splitProps(allProps, ["icon", "label", "confirm", "ctrlAltOverride", "delete"]);
   const t = useLangFunc();
   const [isDeleting, setIsDeleting] = createSignal(false);
   async function onClick(e: MouseEvent) {
@@ -117,7 +118,7 @@ export const DeleteButton = <ConfirmResult,>(allProps: Props<ConfirmResult>) => 
       <Show when={isDeleting()}>
         <SmallSpinner />
       </Show>{" "}
-      <actionIcons.Delete class="inlineIcon" /> {props.label === undefined ? t("actions.delete") : props.label}
+      {props.icon ?? <actionIcons.Delete class="inlineIcon" />} {props.label ?? t("actions.delete")}
     </Button>
   );
 };

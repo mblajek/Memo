@@ -6,6 +6,7 @@ import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
+import {createFormNudge} from "components/ui/form/util";
 import {actionIcons} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
@@ -18,7 +19,7 @@ import {
   MeetingResourceForCreate,
   MeetingResourceForPatch,
 } from "data-access/memo-api/resources/meeting.resource";
-import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, createMemo, on} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
@@ -81,18 +82,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     ),
   );
 
-  // For some reason the form sometimes fails to propagate events from the selects. Nudge the data just in case.
-  createComputed(
-    on(
-      // eslint-disable-next-line solid/reactivity
-      createMemo(() =>
-        form
-          .data(props.name)
-          .map(({userId}) => userId)
-          .join(""),
-      ),
-      () => form.setData((d) => d),
-    ),
+  createFormNudge(form, () =>
+    form
+      .data(props.name)
+      .map(({userId}) => userId)
+      .join(""),
   );
   const attendantsMemo = createMemo(() => form.data(props.name), [], {
     equals: (a, b) => a.length === b.length && a.every((v, i) => v.userId === b[i]!.userId),

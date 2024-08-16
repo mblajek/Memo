@@ -11,14 +11,14 @@ export const parseGetListResponse = <T extends Api.Entity>(res: AxiosResponse<Ap
 export const parsePostResponse = (res: AxiosResponse<Api.Response.Post>) => res.data.data;
 
 /** An id or an array of id that can be passed to a list request. */
-export type ListInParam = Api.Id | Api.Id[];
+export type ListInParam = Api.Id | readonly Api.Id[];
 
 /**
  * Returns a list request. If the argument is an array, the ids are sorted to ensure deterministic
  * value, which makes the value suitable for a query key.
  */
 export function createListRequest(inParam?: ListInParam): Api.Request.GetListParams {
-  return Array.isArray(inParam) ? (inParam.length ? {in: inParam.toSorted().join(",")} : {}) : {in: inParam};
+  return Array.isArray(inParam) ? (inParam.length ? {in: inParam.toSorted().join(",")} : {}) : {in: inParam as Api.Id};
 }
 
 export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id, T> {

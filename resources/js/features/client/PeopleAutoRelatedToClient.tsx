@@ -1,4 +1,5 @@
 import {Capitalize} from "components/ui/Capitalize";
+import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {SmallSpinner} from "components/ui/Spinner";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {title} from "components/ui/title";
@@ -8,7 +9,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {For, Show, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
-import {UserLink} from "./UserLink";
+import {UserLink} from "../facility-users/UserLink";
 
 const _DIRECTIVES_ = null && title;
 
@@ -86,9 +87,9 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
 
   return (
     <div class="flex flex-col">
-      <h2 class="font-medium">
+      <StandaloneFieldLabel>
         <Capitalize text={t("facility_user.related_users")} />
-      </h2>
+      </StandaloneFieldLabel>
       <QueryBarrier queries={[relatedUsersQuery.dataQuery]} pending={() => <SmallSpinner />}>
         <Show when={relatedPeople()?.staff.length || relatedPeople()?.clients.length} fallback={<EmptyValueSymbol />}>
           <div class="flex flex-col gap-1">

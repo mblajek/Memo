@@ -396,7 +396,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   });
   const unknownValues = createMemo<readonly string[]>(
     () => {
-      if (props.isLoading) {
+      if (props.isLoading || itemsMap().size < filteredItems().length) {
         // If still loading, just assume optimistically all the values will become known.
         return [];
       }

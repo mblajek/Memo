@@ -1,6 +1,7 @@
 import {useQueryClient} from "@tanstack/solid-query";
 import {DateTime} from "luxon";
 import {System, User} from "./groups";
+import {FacilityClientGroup} from "./groups/FacilityClientGroup";
 import {FacilityMeeting} from "./groups/FacilityMeeting";
 import {FacilityUsers} from "./groups/FacilityUsers";
 import {Facilities, Users} from "./groups/shared";
@@ -43,6 +44,7 @@ export function useInvalidator(queryClient = useQueryClient()) {
     facility: {
       meetings: () => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
       users: () => queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()}),
+      clientGroups: () => queryClient.invalidateQueries({queryKey: FacilityClientGroup.keys.clientGroup()}),
     },
     // Global:
     dictionaries: () => queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),

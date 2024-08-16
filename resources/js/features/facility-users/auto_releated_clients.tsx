@@ -55,10 +55,6 @@ export function useAutoRelatedClients() {
                 {type: "column", column: "_count", desc: true},
                 {type: "column", column: "attendant.name", desc: false},
               ],
-              itemFunc: (row, defItem) => ({
-                ...defItem,
-                requestReplacementWhenSelected: true,
-              }),
             },
             mergeIntoPriorityItem: (priorityItem, regularItem) => regularItem,
           } satisfies Partial<BaseTQuerySelectProps>)
