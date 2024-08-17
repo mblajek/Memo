@@ -7,14 +7,19 @@ import {TextField} from "components/ui/form/TextField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {createFormNudge} from "components/ui/form/util";
 import {actionIcons} from "components/ui/icons";
+import {PopOver} from "components/ui/PopOver";
+import {SimpleMenu} from "components/ui/SimpleMenu";
 import {EmptyValueSymbol} from "components/ui/symbols";
-import {NON_NULLABLE, useLangFunc} from "components/utils";
+import {cx, NON_NULLABLE, useLangFunc} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
-import {Index, VoidComponent, createEffect, createMemo, splitProps} from "solid-js";
+import {AiFillCaretDown} from "solid-icons/ai";
+import {For, Index, VoidComponent, createEffect, createMemo, splitProps} from "solid-js";
 import {z} from "zod";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {ClientGroupBox} from "./ClientGroupBox";
+import {useClientsData} from "./clients_data";
 
 const getSchema = () =>
   z.object({
@@ -38,8 +43,10 @@ interface Props extends FormConfigWithoutTransformFn<ClientGroupFormType> {
 export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "currentClientId", "onCancel"]);
   const t = useLangFunc();
+  const {clientTypeDict} = useFixedDictionaries();
   const modelQuerySpecs = useModelQuerySpecs();
   const autoRelatedClients = useAutoRelatedClients();
+  const clientsData = useClientsData();
   return (
     <FelteForm
       id={props.id}
@@ -98,17 +105,50 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                             disabled={isCurrentClient()}
                           />
                         </div>
-                        <span inert={userId() ? undefined : true}>
-                          <TextField
-                            class="h-full"
-                            name={`clients.${index}.role`}
-                            label=""
-                            small
-                            placeholder={t("forms.generic.optional_field_hint")}
-                          />
-                        </span>
+                        <div>
+                          <div
+                            class={cx("flex items-stretch", userId() ? undefined : "opacity-40")}
+                            inert={userId() ? undefined : true}
+                          >
+                            <div class="flex-grow">
+                              <TextField
+                                class="rounded-e-none"
+                                name={`clients.${index}.role`}
+                                label=""
+                                small
+                                placeholder={
+                                  userId() && clientsData.getById(userId()!)?.type.id === clientTypeDict()?.child.id
+                                    ? clientTypeDict()?.child.label
+                                    : undefined
+                                }
+                              />
+                            </div>
+                            <PopOver
+                              trigger={(triggerProps) => (
+                                <Button
+                                  {...triggerProps()}
+                                  class="secondary small !min-h-small-input !px-0.5 !rounded-s-none -ml-px"
+                                >
+                                  <AiFillCaretDown class="text-current" />
+                                </Button>
+                              )}
+                            >
+                              {(popOver) => (
+                                <SimpleMenu onClick={() => popOver().close()}>
+                                  <For each={Object.values(t.getObjects("facility_user.client_groups.role_presets"))}>
+                                    {(preset) => (
+                                      <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
+                                        {preset || <EmptyValueSymbol />}
+                                      </Button>
+                                    )}
+                                  </For>
+                                </SimpleMenu>
+                              )}
+                            </PopOver>
+                          </div>
+                        </div>
                         <Button
-                          class="secondary small !min-h-small-input h-full"
+                          class="secondary small !min-h-small-input"
                           title={
                             isCurrentClient()
                               ? t("facility_user.client_groups.first_client_frozen")

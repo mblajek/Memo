@@ -18,7 +18,11 @@ export type ListInParam = Api.Id | readonly Api.Id[];
  * value, which makes the value suitable for a query key.
  */
 export function createListRequest(inParam?: ListInParam): Api.Request.GetListParams {
-  return Array.isArray(inParam) ? (inParam.length ? {in: inParam.toSorted().join(",")} : {}) : {in: inParam as Api.Id};
+  return Array.isArray(inParam)
+    ? inParam.length
+      ? {in: inParam.toSorted().join(",")}
+      : {}
+    : {in: inParam as Api.Id | undefined};
 }
 
 export function byId<T extends Api.Entity>(list: T[] | undefined): Map<Api.Id, T> {

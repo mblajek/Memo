@@ -1,5 +1,4 @@
 generic:
-  optional_field_hint: "(opcjonalne)"
   submit: "$t(actions.save)"
 
 login:
