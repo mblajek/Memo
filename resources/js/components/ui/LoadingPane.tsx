@@ -29,11 +29,7 @@ export const LoadingPane: VoidComponent<LoadingPaneProps> = (props) => {
   );
 };
 
-interface MutationTrackingLoadingPaneProps {
-  readonly id: string;
-}
-
-export const MutationTrackingLoadingPane: VoidComponent<MutationTrackingLoadingPaneProps> = (props) => {
+export const MutationTrackingLoadingPane: VoidComponent = () => {
   const mutationsTracker = useMutationsTracker();
-  return <LoadingPane isLoading={mutationsTracker.isMutating(props.id)} />;
+  return <LoadingPane isLoading={mutationsTracker.isAnyPending()} />;
 };

@@ -1,16 +1,16 @@
+import {createMutation} from "@tanstack/solid-query";
 import {DeleteButton} from "components/ui/Button";
 import {ConfirmParams, createConfirmation} from "components/ui/confirmation";
 import {htmlAttributes} from "components/utils";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
+import {FacilityMeeting, SeriesDeleteOption} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {TOptions} from "i18next";
 import {Accessor, createMemo, createSignal, Show, splitProps, VoidComponent} from "solid-js";
 import {MeetingInSeriesInfo} from "./MeetingInSeriesInfo";
-import {useMeetingAPI} from "./meeting_api";
 
 export type MeetingForDelete = Partial<
   Pick<TQMeetingResource, "id" | "categoryDictId" | "typeDictId" | "interval" | "seriesNumber" | "seriesCount">
@@ -24,7 +24,6 @@ interface Props extends htmlAttributes.button {
 export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
   const [props, buttonProps] = splitProps(allProps, ["meeting", "onDeleted"]);
   const t = useLangFunc();
-  const meetingAPI = useMeetingAPI();
   const invalidate = useInvalidator();
   const confirmation = createConfirmation();
   const {meetingTypeDict, meetingCategoryDict} = useFixedDictionaries();
@@ -36,13 +35,17 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
         ? "work_time_delete"
         : "meeting_delete",
   );
+  const meetingDeleteMutation = createMutation(() => ({
+    mutationFn: FacilityMeeting.deleteMeeting,
+    meta: {isFormSubmit: true},
+  }));
 
   function tt(subkey: string, options?: TOptions) {
     return t(`forms.${formId()}.${subkey}`, options);
   }
 
   async function deleteMeeting(deleteOption: SeriesDeleteOption) {
-    const {count} = await meetingAPI.delete(props.meeting.id!, deleteOption);
+    const {count} = (await meetingDeleteMutation.mutateAsync({id: props.meeting.id!, deleteOption})).data;
     toastSuccess(tt("success", {count}));
     props.onDeleted?.(count, deleteOption !== "from_next");
     invalidate.facility.meetings();

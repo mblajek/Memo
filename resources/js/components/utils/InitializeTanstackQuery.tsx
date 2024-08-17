@@ -11,7 +11,6 @@ import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
 import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {useLangFunc} from ".";
 import {MemoLoader} from "../ui/MemoLoader";
-import {useMutationsTracker} from "./mutations_tracker";
 import {ToastMessages, toastError} from "./toast";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
@@ -45,7 +44,6 @@ interface MutationMeta {
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
-  const mutationsTracker = useMutationsTracker();
 
   function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
     const invalidate = useInvalidator(queryClient);
@@ -134,19 +132,6 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             },
             retryDelay: 500,
           },
-          mutations: {
-            onMutate: (variables) => {
-              const id = extractId(variables);
-              if (id) {
-                return mutationsTracker.registerMutation(id);
-              }
-            },
-            onSettled: (data, error, variables, context) => {
-              if (typeof context === "function") {
-                context();
-              }
-            },
-          },
         },
         queryCache: new QueryCache({
           onError(error, query) {
@@ -167,19 +152,6 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
     </QueryClientProvider>
   );
 };
-
-function extractId(variables: unknown): string | undefined {
-  if (typeof variables === "string") {
-    if (variables.length === Api.ID_LENGTH) {
-      return variables;
-    }
-  } else if (variables && typeof variables === "object" && Object.hasOwn(variables, "id")) {
-    const id = (variables as Api.Entity).id;
-    if (typeof id === "string" && id.length === Api.ID_LENGTH) {
-      return id;
-    }
-  }
-}
 
 /** Prefetch some of the required queries beforehand. */
 const InitQueries: VoidComponent = () => {

@@ -22,7 +22,7 @@ export const ClientGroupViewEditForm: VoidComponent<Props> = (props) => {
           <ClientGroupView group={props.group} currentClientId={props.currentClientId} />
           <CreatedByInfo data={props.group} />
         </div>
-        <MutationTrackingLoadingPane id={props.group.id} />
+        <MutationTrackingLoadingPane />
       </div>
       <div class="flex gap-1 justify-between">
         <ClientGroupDeleteButton groupId={props.group.id} />
