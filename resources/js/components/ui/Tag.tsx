@@ -43,7 +43,7 @@ export const SimpleTag: VoidComponent<SimpleTagProps> = (props) => {
 };
 
 export function simpleTagRandomColor(seedString: string) {
-  return randomColor({seedString, lightness: [30, 50], chroma: [20, 60]});
+  return randomColor({seedString, lightness: [35, 55], chroma: [20, 60]});
 }
 
 export const TagsLine: ParentComponent<htmlAttributes.div> = (props) => {

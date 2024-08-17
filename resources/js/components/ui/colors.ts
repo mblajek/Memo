@@ -24,7 +24,7 @@ function getFromRange(r: Random, range: number | RandomRange): number {
 export function randomColor({seedString, lightness, chroma}: RandomColorParams) {
   const r = seedString ? Random.fromString(seedString) : Random.RANDOM;
   const hue = r.nextFloat();
-  return `lch(${getFromRange(r, lightness)}% ${getFromRange(r, chroma)}% ${hue}turn)`;
+  return `oklch(${getFromRange(r, lightness)}% ${getFromRange(r, chroma)}% ${hue}turn)`;
 }
 
 /** Mixes the color with the specified amount of white. */

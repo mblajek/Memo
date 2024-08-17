@@ -1,3 +1,4 @@
+import {useLangFunc} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
@@ -6,12 +7,15 @@ import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
 import {For, Show, VoidComponent} from "solid-js";
 import {RichTextView} from "../RichTextView";
 import {AttendantListItem, FieldDisp} from "./meeting_details";
+import {Capitalize} from "../Capitalize";
+import {facilityIcons} from "../icons";
 
 interface Props {
   readonly meeting: TQMeetingResource;
 }
 
 export const MeetingHoverCard: VoidComponent<Props> = (props) => {
+  const t = useLangFunc();
   const dictionaries = useDictionaries();
   return (
     <div class="max-w-sm bg-white border border-gray-400 rounded shadow p-2 flex flex-col gap-2 text-sm">
@@ -21,6 +25,12 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
       </div>
       <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
       <MeetingStatusTags meeting={props.meeting} />
+      <Show when={props.meeting.isFacilityWide}>
+        <div>
+          <facilityIcons.Facility class="inlineIcon" />{" "}
+          <Capitalize class="font-semibold" text={t("models.meeting.isFacilityWide")} />
+        </div>
+      </Show>
       <Show when={props.meeting.staff.length}>
         <ul>
           <For each={props.meeting.staff}>
