@@ -44,7 +44,7 @@ class ClientGroup extends Model
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')]),
             'notes' => Valid::text(sometimes: true, nullable: true),
             'clients' => Valid::list(sometimes: true, min: 0),
-            'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
+            'clients.*' => Valid::array(keys: ['user_id', 'role']),
             'clients.*.role' => Valid::trimmed(sometimes: true, nullable: true),
             'clients.*.user_id' => Valid::uuid([
                 new UniqueWithMemoryRule('client'),
