@@ -7,7 +7,7 @@ after_or_equal: "Pole {{attribute}} musi być datą nie wcześniejszą niż {{da
 alpha: "Pole {{attribute}} może zawierać jedynie litery."
 alpha_dash: "Pole {{attribute}} może zawierać jedynie litery, cyfry i myślniki."
 alpha_num: "Pole {{attribute}} może zawierać jedynie litery i cyfry."
-array: "Pole {{attribute}} musi być tablicą z polami {{values, list}}."
+array: "Pole {{attribute}} musi być obiektem z polami {{values, list}}."
 ascii: "Pole {{attribute}} może zawierać tylko jednobajtowe znaki alfanumeryczne i symbole."
 before: "Pole {{attribute}} musi być datą wcześniejszą niż {{date}}."
 before_or_equal: "Pole {{attribute}} musi być datą nie późniejszą niż {{date}}."
