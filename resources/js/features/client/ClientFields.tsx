@@ -83,7 +83,7 @@ export function useTableAttributeColumnConfigs() {
           model: "client",
           includeFixed: true,
           fixedOverrides: {
-            shortCode: {
+            "shortCode": {
               columnDef: {
                 cell: cellFunc<string>((props) => (
                   <PaddedCell class="text-right">
@@ -111,14 +111,14 @@ export function useTableAttributeColumnConfigs() {
                 />
               ),
             },
-            typeDictId: {initialVisible: true, columnDef: {size: 180}},
-            genderDictId: {columnDef: {size: 180}},
-            birthDate: {
+            "typeDictId": {initialVisible: true, columnDef: {size: 180}},
+            "genderDictId": {columnDef: {size: 180}},
+            "birthDate": {
               initialVisible: true,
               columnDef: {cell: tableCells.dateNoWeekday()},
             },
-            addressCity: {initialVisible: true},
-            contactEmail: {
+            "addressCity": {initialVisible: true},
+            "contactEmail": {
               initialVisible: true,
               columnDef: {
                 cell: cellFunc<string>((props) => (
@@ -128,7 +128,7 @@ export function useTableAttributeColumnConfigs() {
                 )),
               },
             },
-            contactPhone: {
+            "contactPhone": {
               initialVisible: true,
               columnDef: {
                 cell: cellFunc<string>((props) => (
@@ -139,7 +139,7 @@ export function useTableAttributeColumnConfigs() {
                 size: 180,
               },
             },
-            documentsLinks: {
+            "documentsLinks": {
               columnDef: {
                 cell: cellFunc<string[]>((props) => (
                   <PaddedCell>
@@ -148,7 +148,9 @@ export function useTableAttributeColumnConfigs() {
                 )),
               },
             },
-            notes: {
+            "documentsLinks.count": false,
+            "notificationMethodDictIds.count": false,
+            "notes": {
               columnDef: {
                 cell: cellFunc<string>((props) => (
                   <ScrollableCell>

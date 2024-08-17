@@ -23,6 +23,8 @@ interface DataColumnSchemaBase {
   readonly nullable: boolean;
   /** The attribute defining this data column. */
   readonly attributeId?: string;
+  /** If specified, this column is a transformation of another column. */
+  readonly transform?: string;
 }
 
 export type DataColumnSchema = PlainDataColumnSchema | DictDataColumnSchema;
