@@ -30,3 +30,4 @@ client_groups:
     title: "Usunięcie klienta z grupy"
     body: "Czy na pewno usunąć tego klienta z grupy? (Profil klienta nie zostanie usunięty.)"
     confirm: "Usuń klienta z grupy"
+    success: "Usunięto klienta z grupy"

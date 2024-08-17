@@ -40,7 +40,6 @@ export const ClientGroupEditForm: VoidComponent<ClientGroupEditFormProps> = (pro
       // Important: Invalidation should happen after calling onEdited which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
       // but also causes problems apparently.
-      invalidate.facility.users();
       invalidate.facility.clientGroups();
     };
   }

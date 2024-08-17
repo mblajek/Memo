@@ -3,24 +3,13 @@ import {DeleteButton} from "components/ui/Button";
 import {createConfirmation} from "components/ui/confirmation";
 import {userIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
-import {createCached} from "components/utils/cache";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
 import {useInvalidator} from "data-access/memo-api/invalidator";
+import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
-
-export const useClientGroupDelete = createCached(() => {
-  const deleteMutation = createMutation(() => ({
-    mutationFn: FacilityClientGroup.deleteClientGroup,
-    meta: {isFormSubmit: true},
-  }));
-  return {
-    delete: async (groupId: string) => deleteMutation.mutateAsync(groupId),
-    isPending: () => deleteMutation.isPending,
-  };
-});
 
 interface ClientGroupDeleteButtonProps {
   readonly groupId: Api.Id;
@@ -31,9 +20,12 @@ export const ClientGroupDeleteButton: VoidComponent<ClientGroupDeleteButtonProps
   const t = useLangFunc();
   const confirmation = createConfirmation();
   const invalidate = useInvalidator();
-  const clientGroupDelete = useClientGroupDelete();
+  const deleteMutation = createMutation(() => ({
+    mutationFn: FacilityClientGroup.deleteClientGroup,
+    meta: {isFormSubmit: true},
+  }));
   async function deleteClientGroup() {
-    await clientGroupDelete.delete(props.groupId);
+    await deleteMutation.mutateAsync(props.groupId);
     toastSuccess(t("forms.client_group_delete.success"));
     props.onSuccess?.();
     // Important: Invalidation should happen after calling onEdited which typically closes the form.
@@ -59,7 +51,7 @@ export const ClientGroupDeleteButton: VoidComponent<ClientGroupDeleteButtonProps
 };
 
 interface ClientGroupDeleteClientButtonProps {
-  readonly groupId: Api.Id;
+  readonly group: ClientGroupResource;
   readonly clientId: Api.Id;
   readonly onSuccess?: () => void;
 }
@@ -67,6 +59,23 @@ interface ClientGroupDeleteClientButtonProps {
 export const ClientGroupDeleteClientButton: VoidComponent<ClientGroupDeleteClientButtonProps> = (props) => {
   const t = useLangFunc();
   const confirmation = createConfirmation();
+  const invalidate = useInvalidator();
+  const clientGroupPatchMutation = createMutation(() => ({
+    mutationFn: FacilityClientGroup.updateClientGroup,
+    meta: {isFormSubmit: true},
+  }));
+  async function deleteClient() {
+    await clientGroupPatchMutation.mutateAsync({
+      id: props.group.id,
+      clients: props.group.clients.filter(({userId}) => userId !== props.clientId),
+    });
+    toastSuccess(t("facility_user.client_groups.delete_current_client.success"));
+    props.onSuccess?.();
+    // Important: Invalidation should happen after calling onEdited which typically closes the form.
+    // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
+    // but also causes problems apparently.
+    invalidate.facility.clientGroups();
+  }
   return (
     <DeleteButton
       class="secondary small"
@@ -85,9 +94,7 @@ export const ClientGroupDeleteClientButton: VoidComponent<ClientGroupDeleteClien
         })
       }
       ctrlAltOverride
-      delete={() => {
-        // TODO: Implement delete client from group
-      }}
+      delete={deleteClient}
     />
   );
 };

@@ -1,6 +1,8 @@
 import {AxiosRequestConfig} from "axios";
 
 export namespace Api {
+  export const ID_LENGTH = 36;
+
   /** UUID of an entity. */
   export type Id = string;
 
