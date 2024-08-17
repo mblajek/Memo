@@ -3,7 +3,6 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Models\Attribute;
 use Closure;
 use Illuminate\Support\Str;
 

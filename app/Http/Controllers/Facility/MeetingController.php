@@ -47,7 +47,7 @@ class MeetingController extends ApiController
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -55,18 +55,23 @@ class MeetingController extends ApiController
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
-                                nullable: true,
                             ),
                         ]
                     )
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
                                 property: 'attendanceStatusDictId',
+                                type: 'string',
+                                format: 'uuid',
+                                example: null,
+                            ),
+                            new OA\Property(
+                                property: 'clientGroupId',
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
@@ -110,6 +115,7 @@ class MeetingController extends ApiController
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
+                'clients.*.client_group_id',
                 'resources',
                 'resources.*',
                 'resources.*.resource_dict_id',
@@ -161,7 +167,7 @@ class MeetingController extends ApiController
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -169,18 +175,23 @@ class MeetingController extends ApiController
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
-                                nullable: true,
                             ),
                         ]
                     )
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
                                 property: 'attendanceStatusDictId',
+                                type: 'string',
+                                format: 'uuid',
+                                example: null,
+                            ),
+                            new OA\Property(
+                                property: 'clientGroupId',
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
@@ -240,6 +251,7 @@ class MeetingController extends ApiController
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
+                'clients.*.client_group_id',
                 'resources.*',
                 'resources.*.resource_dict_id',
             ])

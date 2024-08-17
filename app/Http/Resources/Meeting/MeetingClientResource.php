@@ -15,6 +15,12 @@ use OpenApi\Attributes as OA;
             type: 'string',
             format: 'uuid',
             example: 'UUID',
+        ),
+        new OA\Property(
+            property: 'clientGroupId',
+            type: 'string',
+            format: 'uuid',
+            example: 'UUID',
             nullable: true,
         ),
     ]
@@ -29,6 +35,7 @@ class MeetingClientResource extends AbstractJsonResource
         return [
             'userId' => true,
             'attendanceStatusDictId' => true,
+            'clientGroupId' => true,
         ];
     }
 }

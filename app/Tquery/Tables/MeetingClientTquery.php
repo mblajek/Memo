@@ -80,6 +80,12 @@ final readonly class MeetingClientTquery extends MeetingTquery
             'attendance_status_dict_id',
             'attendant.attendance_status_dict_id',
         );
+        $config->addJoined(
+            TqDataTypeEnum::uuid_nullable,
+            TqTableAliasEnum::meeting_attendants,
+            'client_group_id',
+            'attendant.client_group_id',
+        );
 
         FacilityUserTquery::addAttendantFields($this->facility, $config);
         ClientTquery::addClientFields($this->facility, $config);
