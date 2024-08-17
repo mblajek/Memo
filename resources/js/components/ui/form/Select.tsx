@@ -3,7 +3,7 @@ import * as combobox from "@zag-js/combobox";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {useIsFieldsetDisabled} from "components/utils/fieldset_disabled_tracker";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
@@ -502,6 +502,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     api().setValue([...selected]);
   }
 
+  // eslint-disable-next-line solid/reactivity
+  const isOpenDelayed = debouncedAccessor(() => api().isOpen, {timeMs: 50, outputImmediately: (o) => !o});
   return (
     <>
       <FieldBox {...props}>
@@ -625,6 +627,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           ref={portalRoot}
           {...api().positionerProps}
           class={cx(s.selectPortal, {
+            [s.isOpen!]: isOpenDelayed(),
             [s.small!]: props.small,
             [s.loading!]: props.isLoading,
           })}
