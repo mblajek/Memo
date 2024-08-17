@@ -60,6 +60,7 @@ trait TqAttribute
                 table: $table,
                 columnAlias: Str::camel($columnAlias) . '.count',
                 attributeId: $attributeId,
+                transform: 'count',
             );
         } else {
             $this->addColumn(

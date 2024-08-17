@@ -25,6 +25,7 @@ final readonly class TqColumnConfig
         public string $columnAlias,
         public ?string $dictionaryId,
         public ?string $attributeId,
+        public ?string $transform,
         ?Closure $selector,
         ?Closure $filter,
         ?Closure $sorter,
