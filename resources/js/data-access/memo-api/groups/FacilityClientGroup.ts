@@ -26,7 +26,7 @@ export namespace FacilityClientGroup {
     clientGroup: () => ["facility", "clientGroup"] as const,
     clientGroupList: (request?: Api.Request.GetListParams) =>
       [...keys.clientGroup(), "list", request, activeFacilityId()] as const,
-    clientGroupGet: (id: Api.Id) => [...keys.clientGroup(), "list", createListRequest(id), activeFacilityId()] as const,
+    clientGroupGet: (id: Api.Id) => [...keys.clientGroup(), "get", id, activeFacilityId()] as const,
   };
 
   export const clientGroupsQueryOptions = (ids: ListInParam) => {
