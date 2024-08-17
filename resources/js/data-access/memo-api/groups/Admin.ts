@@ -38,7 +38,7 @@ export namespace Admin {
   export const keys = {
     user: () => [...Users.keys.user(), "admin"] as const,
     userList: (request?: Api.Request.GetListParams) => [...keys.user(), "list", request] as const,
-    userGet: (id: Api.Id) => keys.userList(createListRequest(id)),
+    userGet: (id: Api.Id) => [...keys.user(), "get", id] as const,
     facility: () => [...Facilities.keys.facility(), "admin"] as const,
   };
 

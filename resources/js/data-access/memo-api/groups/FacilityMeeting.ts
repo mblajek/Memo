@@ -48,7 +48,7 @@ export namespace FacilityMeeting {
     meetingList: (request: Api.Request.GetListParams) =>
       [...keys.meeting(), "list", request, activeFacilityId()] as const,
     // The key does not contain the facility id because it already contains the meeting id, which is already unique.
-    meetingGet: (id: Api.Id) => [...keys.meeting(), "list", createListRequest(id)] as const,
+    meetingGet: (id: Api.Id) => [...keys.meeting(), "get", id] as const,
   };
 
   export const meetingsQueryOptions = (ids: ListInParam) => {

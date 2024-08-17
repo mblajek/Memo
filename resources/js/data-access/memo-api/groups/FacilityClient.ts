@@ -54,7 +54,7 @@ export namespace FacilityClient {
     client: () => [...FacilityUsers.keys.user(), "client"] as const,
     clientList: (request?: Api.Request.GetListParams) =>
       [...keys.client(), "list", request, activeFacilityId()] as const,
-    clientGet: (id: Api.Id) => [...keys.client(), "list", createListRequest(id), activeFacilityId()] as const,
+    clientGet: (id: Api.Id) => [...keys.client(), "get", id, activeFacilityId()] as const,
   };
 
   export const clientsQueryOptions = (ids: ListInParam) => {
