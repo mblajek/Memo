@@ -41,6 +41,11 @@ export const ClientGroupView: VoidComponent<Props> = (props) => {
             </div>
           )}
         </For>
+        <div class="text-grey-text">
+          {t("parenthesised", {
+            text: t("facility_user.client_groups.clients_count", {count: props.group.clients.length}),
+          })}
+        </div>
       </div>
       <div class="flex flex-col">
         <StandaloneFieldLabel>

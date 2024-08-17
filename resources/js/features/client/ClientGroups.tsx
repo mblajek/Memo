@@ -53,13 +53,18 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
   });
   return (
     <div class="flex flex-col gap-1">
-      <div class="flex gap-1 items-center">
-        <clientGroupIcons.ClientGroup size="22" />
-        <StandaloneFieldLabel>
-          <Capitalize
-            text={t("facility_user.client_group__interval", {postProcess: "interval", count: groupIds().length})}
-          />
-        </StandaloneFieldLabel>
+      <div class="flex justify-between items-center gap-2">
+        <div class="flex gap-1 items-center">
+          <clientGroupIcons.ClientGroup size="22" />
+          <StandaloneFieldLabel>
+            <Capitalize
+              text={t("facility_user.client_group__interval", {postProcess: "interval", count: groupIds().length})}
+            />
+          </StandaloneFieldLabel>
+        </div>
+        <Show when={groupIds().length}>
+          <CreateGroupButton title={t("actions.client_group.add_another")} />
+        </Show>
       </div>
       <Show
         when={groupIds().length}
@@ -74,31 +79,28 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
       >
         <QueryBarrier queries={[dataQuery]}>
           <Show when={groupIds().length > 1}>
-            <div class="flex items-stretch gap-1">
-              <Select
-                name="selectedGroupId"
-                label=""
-                items={groupIds().map((groupId) => ({
-                  value: groupId,
-                  label: () => (
-                    <Show
-                      when={dataQuery.data!.find(({id}) => id === groupId)}
-                      fallback={
-                        // The group can only be missing as a result of a race.
-                        <SmallSpinner />
-                      }
-                    >
-                      {(group) => <ClientGroupLabel group={group()} />}
-                    </Show>
-                  ),
-                }))}
-                value={selectedGroupId()}
-                onValueChange={setSelectedGroupId}
-                nullable={false}
-                small
-              />
-              <CreateGroupButton title={t("actions.client_group.add_another")} />
-            </div>
+            <Select
+              name="selectedGroupId"
+              label=""
+              items={groupIds().map((groupId) => ({
+                value: groupId,
+                label: () => (
+                  <Show
+                    when={dataQuery.data!.find(({id}) => id === groupId)}
+                    fallback={
+                      // The group can only be missing as a result of a race.
+                      <SmallSpinner />
+                    }
+                  >
+                    {(group) => <ClientGroupLabel group={group()} />}
+                  </Show>
+                ),
+              }))}
+              value={selectedGroupId()}
+              onValueChange={setSelectedGroupId}
+              nullable={false}
+              small
+            />
           </Show>
           <Show when={dataQuery.data!.find(({id}) => id === selectedGroupId())} fallback={<EmptyValueSymbol />}>
             {(group) => <ClientGroupViewEditForm group={group()} currentClientId={props.client.id} />}

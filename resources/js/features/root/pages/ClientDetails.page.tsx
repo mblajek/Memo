@@ -150,7 +150,9 @@ export default (() => {
                   </FelteForm>
                 </div>
                 <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
-                  <ClientGroups client={user()} />
+                  <div style={{width: "min(800px, 100%)"}}>
+                    <ClientGroups client={user()} />
+                  </div>
                   <PeopleAutoRelatedToClient clientId={userId()} />
                   <UserMeetingsTables
                     userName={user().name}
