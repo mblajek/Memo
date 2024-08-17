@@ -191,7 +191,7 @@ final class TqConfig
         string|Closure $columnOrQuery,
         ?TqTableAliasEnum $table,
         string $columnAlias,
-        ?Attribute $attribute = null,
+        ?string $attributeId = null,
         ?Closure $selector = null,
         ?Closure $filter = null,
         ?Closure $sorter = null,
@@ -204,7 +204,7 @@ final class TqConfig
             throw FatalExceptionFactory::tquery();
         }
         [$dataType, $dictionaryId] = ($type instanceof TqDataTypeEnum)
-            ? [$type, $attribute?->dictionary_id] : [$type->dataType, $type->dictionaryId];
+            ? [$type, null] : [$type->dataType, $type->dictionaryId];
         $this->filterableColumns = null;
         $this->columns[$columnAlias] = new TqColumnConfig(
             config: $this,
@@ -213,7 +213,7 @@ final class TqConfig
             table: $table,
             columnAlias: $columnAlias,
             dictionaryId: $dictionaryId,
-            attribute: $attribute,
+            attributeId: $attributeId,
             selector: $selector,
             filter: $filter,
             sorter: $sorter,
