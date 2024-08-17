@@ -63,6 +63,7 @@ with_ellipsis: "{{-text}}$t(ellipsis)"
 em_dash: "—"
 en_dash: "–"
 thin_space: " "
+thin_n_thin: "$t(thin_space)$t(en_dash)$t(thin_space)"
 
 more_info: "Więcej informacji"
 

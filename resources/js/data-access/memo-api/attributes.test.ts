@@ -1,3 +1,4 @@
+import {LangFunc} from "components/utils";
 import {NO_FACILITY} from "state/activeFacilityId.state";
 import {describe, expect, test} from "vitest";
 import {makeAttributable} from "./attributable";
@@ -5,7 +6,7 @@ import {Attributes} from "./attributes";
 import {Dictionaries} from "./dictionaries";
 
 describe("Attributes", () => {
-  const langFunc = (key: unknown) => `t(${key})`;
+  const langFunc = ((key: unknown) => `t(${key})`) as LangFunc;
   const dictionaries = Dictionaries.fromResources(langFunc, [
     {
       id: "dd",

@@ -1,5 +1,4 @@
 generic:
-  optional_field_hint: "(opcjonalne)"
   submit: "$t(actions.save)"
 
 login:
@@ -199,3 +198,4 @@ client_group_delete:
   form_name: "Usunięcie grupy klientów"
   confirmation_text: "Czy na pewno usunąć to powiązanie klientów? Klienci nie zostaną usunięci."
   submit: "Usuń powiązanie"
+  success: "Usunięto grupę klientów"

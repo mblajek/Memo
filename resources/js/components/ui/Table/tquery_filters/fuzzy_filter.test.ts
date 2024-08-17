@@ -1,3 +1,4 @@
+import {LangFunc} from "components/utils";
 import {Dictionaries} from "data-access/memo-api/dictionaries";
 import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
 import {Schema} from "data-access/memo-api/tquery/types";
@@ -303,89 +304,86 @@ describe("buildFuzzyGlobalFilter", () => {
   });
 
   describe("for dict columns", () => {
-    const dictionaries = Dictionaries.fromResources(
-      (key) => `t(${key})`,
-      [
-        {
-          id: "dictA",
-          name: "dictA",
-          facilityId: null,
-          isFixed: true,
-          isExtendable: false,
-          positions: [
-            {
-              id: "dictA1",
-              name: "+qq pozycja A 1",
-              dictionaryId: "dictA",
-              facilityId: null,
-              isDisabled: false,
-              isFixed: false,
-              defaultOrder: 0,
-              positionGroupDictId: null,
-            },
-            {
-              id: "dictA2",
-              name: "+ww pozycja A 2",
-              dictionaryId: "dictA",
-              facilityId: null,
-              isDisabled: false,
-              isFixed: false,
-              defaultOrder: 0,
-              positionGroupDictId: null,
-            },
-            {
-              id: "dictA3",
-              name: "+ee pozycja A 3",
-              dictionaryId: "dictA",
-              facilityId: null,
-              isDisabled: false,
-              isFixed: false,
-              defaultOrder: 0,
-              positionGroupDictId: null,
-            },
-          ],
-        },
-        {
-          id: "dictB",
-          name: "dictB",
-          facilityId: null,
-          isFixed: true,
-          isExtendable: false,
-          positions: [
-            {
-              id: "dictB1",
-              name: "+ww pozycja B 1",
-              dictionaryId: "dictB",
-              facilityId: null,
-              isDisabled: false,
-              isFixed: false,
-              defaultOrder: 0,
-              positionGroupDictId: null,
-            },
-            {
-              id: "dictB2",
-              name: "+ee pozycja B 2",
-              dictionaryId: "dictB",
-              facilityId: null,
-              isDisabled: false,
-              isFixed: false,
-              defaultOrder: 0,
-              positionGroupDictId: null,
-            },
-            {
-              id: "dictB3",
-              name: "+rr pozycja B 3",
-              dictionaryId: "dictB",
-              facilityId: null,
-              isDisabled: false,
-              isFixed: false,
-              defaultOrder: 0,
-              positionGroupDictId: null,
-            },
-          ],
-        },
-      ],
-    );
+    const dictionaries = Dictionaries.fromResources(((key) => `t(${key})`) as LangFunc, [
+      {
+        id: "dictA",
+        name: "dictA",
+        facilityId: null,
+        isFixed: true,
+        isExtendable: false,
+        positions: [
+          {
+            id: "dictA1",
+            name: "+qq pozycja A 1",
+            dictionaryId: "dictA",
+            facilityId: null,
+            isDisabled: false,
+            isFixed: false,
+            defaultOrder: 0,
+            positionGroupDictId: null,
+          },
+          {
+            id: "dictA2",
+            name: "+ww pozycja A 2",
+            dictionaryId: "dictA",
+            facilityId: null,
+            isDisabled: false,
+            isFixed: false,
+            defaultOrder: 0,
+            positionGroupDictId: null,
+          },
+          {
+            id: "dictA3",
+            name: "+ee pozycja A 3",
+            dictionaryId: "dictA",
+            facilityId: null,
+            isDisabled: false,
+            isFixed: false,
+            defaultOrder: 0,
+            positionGroupDictId: null,
+          },
+        ],
+      },
+      {
+        id: "dictB",
+        name: "dictB",
+        facilityId: null,
+        isFixed: true,
+        isExtendable: false,
+        positions: [
+          {
+            id: "dictB1",
+            name: "+ww pozycja B 1",
+            dictionaryId: "dictB",
+            facilityId: null,
+            isDisabled: false,
+            isFixed: false,
+            defaultOrder: 0,
+            positionGroupDictId: null,
+          },
+          {
+            id: "dictB2",
+            name: "+ee pozycja B 2",
+            dictionaryId: "dictB",
+            facilityId: null,
+            isDisabled: false,
+            isFixed: false,
+            defaultOrder: 0,
+            positionGroupDictId: null,
+          },
+          {
+            id: "dictB3",
+            name: "+rr pozycja B 3",
+            dictionaryId: "dictB",
+            facilityId: null,
+            isDisabled: false,
+            isFixed: false,
+            defaultOrder: 0,
+            positionGroupDictId: null,
+          },
+        ],
+      },
+    ]);
     const schema: Schema = {
       columns: [
         {name: "col1", type: "dict", dictionaryId: "dictA", nullable: true},
