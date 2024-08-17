@@ -124,7 +124,7 @@ class MeetingController extends ApiController
     #[OA\Get(
         path: '/api/v1/facility/{facility}/meeting/list',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Get facility meetings',
+        summary: 'Get meetings',
         tags: ['Facility meeting'],
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
@@ -148,7 +148,7 @@ class MeetingController extends ApiController
     #[OA\Patch(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Update facility meeting',
+        summary: 'Update meeting',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
@@ -251,7 +251,7 @@ class MeetingController extends ApiController
     #[OA\Delete(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Delete facility meeting',
+        summary: 'Delete meeting',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
