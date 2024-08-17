@@ -204,6 +204,9 @@ column_groups:
     force_shown: "Kolumna grupująca musi być widoczna"
     grouped: "Wartości w kolumnie są zgrupowane"
 
+transform_suffixes:
+  count: "$t(models.generic.count_suffix)"
+
 rows__zero: "Brak wierszy"
 rows__one: "{{count, number}} wiersz"
 rows__few: "{{count, number}} wiersze"
