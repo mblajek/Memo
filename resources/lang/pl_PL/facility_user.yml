@@ -42,3 +42,7 @@ client_groups:
     foster_mother: "matka zastępcza"
     foster_father: "ojciec zastępczy"
     caregiver: "opiekun"
+  clients_count__zero: "brak członków"
+  clients_count__one: "{{count, number}} członek"
+  clients_count__few: "{{count, number}} członków"
+  clients_count__many: "{{count, number}} członków"
