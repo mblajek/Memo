@@ -38,7 +38,13 @@ class ClientGroupService
                 $currentAttendants = $clientGroup->groupClients->keyBy('user_id')->all();
                 /** @var array<non-falsy-string, MeetingAttendant> $newAttendants */
                 [$userIdsToRemove, $newAttendants] = $finalClients;
+
                 $clientGroup->groupClients()->whereIn('user_id', $userIdsToRemove)->delete();
+                MeetingAttendant::query()
+                    ->whereIn('user_id', $userIdsToRemove)
+                    ->where('client_group_id', $clientGroup->id)
+                    ->update(['client_group_id' => null]);
+
                 foreach ($newAttendants as $userId => $newAttendant) {
                     if (array_key_exists($userId, $currentAttendants)) {
                         $currentAttendants[$userId]->update($newAttendant->attributesToArray());

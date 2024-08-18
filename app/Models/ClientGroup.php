@@ -43,7 +43,7 @@ class ClientGroup extends Model
         return match ($field) {
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')]),
             'notes' => Valid::text(sometimes: true, nullable: true),
-            'clients' => Valid::list(sometimes: true, min: 0),
+            'clients' => Valid::list(sometimes: true),
             'clients.*' => Valid::array(keys: ['user_id', 'role']),
             'clients.*.role' => Valid::trimmed(sometimes: true, nullable: true),
             'clients.*.user_id' => Valid::uuid([

@@ -10,6 +10,7 @@ use App\Http\Resources\ClientGroup\ClientGroupResource;
 use App\Models\ClientGroup;
 use App\Models\GroupClient;
 use App\Models\Facility;
+use App\Models\MeetingAttendant;
 use App\Services\Client\ClientGroupService;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
@@ -94,6 +95,11 @@ class ClientGroupController extends ApiController
         $clientGroupsQuery = ClientGroup::query()->where('facility_id', $facility->id);
         $this->applyRequestIn($clientGroupsQuery);
         $this->getRequestIn();
+        $clientGroupsQuery->select('client_groups.*')->selectSub(
+            'select count(1) from `meeting_attendants`'
+            . ' where `meeting_attendants`.`client_group_id` = `client_groups`.`id`',
+            'meeting_count',
+        );
         return ClientGroupResource::collection($clientGroupsQuery->with(['groupClients'])->get());
     }
 
@@ -182,6 +188,7 @@ class ClientGroupController extends ApiController
     ): JsonResponse {
         $clientGroup->belongsToFacilityOrFail();
         DB::transaction(function () use ($clientGroup) {
+            MeetingAttendant::query()->where('client_group_id', $clientGroup->id)->update(['client_group_id' => null]);
             GroupClient::query()->where('client_group_id', $clientGroup->id)->delete();
             ClientGroup::query()->where('id', $clientGroup->id)->delete();
         });
