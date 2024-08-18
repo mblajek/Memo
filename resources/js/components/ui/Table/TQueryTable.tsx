@@ -547,7 +547,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       if (attributeId) {
         let attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
         if (meta.transform) {
-          attributeLabel += t(`tables.transform_suffixes.${meta.transform}`, {defaultValue: `.${meta.transform}`});
+          attributeLabel = t(`tables.transforms.${meta.transform}`, {
+            base: attributeLabel,
+            defaultValue: `${attributeLabel}.${meta.transform}`,
+          });
         }
         return baseTranslations.columnNameOverride
           ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
