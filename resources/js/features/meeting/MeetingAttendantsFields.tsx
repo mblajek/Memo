@@ -14,10 +14,11 @@ import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {
-  MeetingAttendantResource,
+  MeetingClientResource,
   MeetingResource,
   MeetingResourceForCreate,
   MeetingResourceForPatch,
+  MeetingStaffResource,
 } from "data-access/memo-api/resources/meeting.resource";
 import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
 import {z} from "zod";
@@ -38,6 +39,7 @@ const getAttendantsSchema = () =>
   z.array(
     z.object({
       userId: z.string(),
+      clientGroupId: z.string(),
       attendanceStatusDictId: z.string(),
     }),
   );
@@ -59,7 +61,10 @@ interface FormAttendantsData extends Obj {
   readonly clients: readonly FormAttendantData[];
 }
 
-type FormAttendantData = Pick<MeetingAttendantResource, "userId" | "attendanceStatusDictId">;
+type FormAttendantData = Pick<
+  MeetingStaffResource & MeetingClientResource,
+  "userId" | "clientGroupId" | "attendanceStatusDictId"
+>;
 
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -291,9 +296,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 export function useAttendantsCreator() {
   const {attendanceStatusDict} = useFixedDictionaries();
 
-  function createAttendant({userId = "", attendanceStatusDictId}: Partial<FormAttendantData> = {}) {
+  function createAttendant({userId = "", clientGroupId, attendanceStatusDictId}: Partial<FormAttendantData> = {}) {
     return {
       userId,
+      clientGroupId: clientGroupId || "",
       attendanceStatusDictId: attendanceStatusDictId || attendanceStatusDict()!.ok.id,
     } satisfies FormAttendantData;
   }
@@ -309,7 +315,7 @@ export function useAttendantsCreator() {
     meeting: MeetingResource,
     attendanceStatusOverride?: Partial<FormAttendantData>,
   ) {
-    function getAttendants(attendantsFromMeeting: readonly FormAttendantData[]) {
+    function getAttendants(attendantsFromMeeting: readonly (MeetingStaffResource | MeetingClientResource)[]) {
       const attendants = attendantsFromMeeting.map((attendant) =>
         createAttendant({...attendant, ...attendanceStatusOverride}),
       );
@@ -343,7 +349,7 @@ export function useAttendantsCreator() {
 
 export function getAttendantsValuesForEdit(values: Partial<FormAttendantsData>) {
   return {
-    staff: values.staff?.filter(({userId}) => userId),
+    staff: values.staff?.filter(({userId}) => userId).map((staff) => ({...staff, clientGroupId: undefined})),
     clients: values.clients?.filter(({userId}) => userId),
   } satisfies Partial<MeetingResourceForPatch>;
 }

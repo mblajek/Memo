@@ -32,6 +32,7 @@ export const ClientGroupDeleteButton: VoidComponent<ClientGroupDeleteButtonProps
     // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
     // but also causes problems apparently.
     invalidate.facility.clientGroups();
+    invalidate.facility.meetings();
   }
   return (
     <DeleteButton

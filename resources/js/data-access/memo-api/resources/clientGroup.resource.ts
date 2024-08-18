@@ -4,6 +4,7 @@ export interface ClientGroupResource extends CreatedUpdatedResource {
   readonly id: string;
   readonly clients: readonly ClientGroupClientResource[];
   readonly notes: string | null;
+  readonly meetingCount: number;
 }
 
 export interface ClientGroupClientResource {
