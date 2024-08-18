@@ -3,7 +3,6 @@
 namespace App\Tquery\Config;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Models\Attribute;
 use Closure;
 use Illuminate\Support\Str;
 
@@ -58,7 +57,7 @@ final class TqConfig
         string $columnName,
         ?string $columnAlias = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnName,
@@ -73,7 +72,7 @@ final class TqConfig
         string $columnName,
         ?string $columnAlias = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnName,
@@ -90,7 +89,7 @@ final class TqConfig
         ?Closure $order = null,
         ?Closure $renderer = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnOrQuery,
@@ -111,7 +110,7 @@ final class TqConfig
         ?Closure $order = null,
         ?Closure $renderer = null,
     ): void {
-        self::assertType($type, false, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, false);
         $this->addColumn(
             type: $type,
             columnOrQuery: $columnOrQuery,
@@ -123,19 +122,21 @@ final class TqConfig
         );
     }
 
-    public function addUuidListQuery(
+    public function addListQuery(
         TqDataTypeEnum|TqDictDef $type,
         string $select,
         string $from,
         string $columnAlias,
+        bool $selectDistinct = false,
     ): void {
-        self::assertType($type, true, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list);
+        self::assertStringOrUuidList($type, true);
+        $selectDistinct = $selectDistinct ? 'distinct ' : '';
         $this->addColumn(
             type: $type,
-            columnOrQuery: fn(string $tableName) => "select json_arrayagg($select) from $from",
+            columnOrQuery: fn(string $tableName) => "select json_arrayagg({$selectDistinct}{$select}) from $from",
             table: null,
             columnAlias: Str::camel($columnAlias),
-            filter: fn(string $query) => "select count(distinct $select) from $from and ($select",
+            filter: fn(string $query) => "select count(distinct {$select}) from $from and ($select",
         );
     }
 
@@ -189,7 +190,8 @@ final class TqConfig
         string|Closure $columnOrQuery,
         ?TqTableAliasEnum $table,
         string $columnAlias,
-        ?Attribute $attribute = null,
+        ?string $attributeId = null,
+        ?string $transform = null,
         ?Closure $selector = null,
         ?Closure $filter = null,
         ?Closure $sorter = null,
@@ -202,7 +204,7 @@ final class TqConfig
             throw FatalExceptionFactory::tquery();
         }
         [$dataType, $dictionaryId] = ($type instanceof TqDataTypeEnum)
-            ? [$type, $attribute?->dictionary_id] : [$type->dataType, $type->dictionaryId];
+            ? [$type, null] : [$type->dataType, $type->dictionaryId];
         $this->filterableColumns = null;
         $this->columns[$columnAlias] = new TqColumnConfig(
             config: $this,
@@ -211,12 +213,18 @@ final class TqConfig
             table: $table,
             columnAlias: $columnAlias,
             dictionaryId: $dictionaryId,
-            attribute: $attribute,
+            attributeId: $attributeId,
+            transform: $transform,
             selector: $selector,
             filter: $filter,
             sorter: $sorter,
             renderer: $renderer,
         );
+    }
+
+    private static function assertStringOrUuidList(TqDataTypeEnum|TqDictDef $type, bool $is): void
+    {
+        self::assertType($type, $is, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list, TqDataTypeEnum::string_list);
     }
 
     private static function assertType(TqDataTypeEnum|TqDictDef $type, bool $is, TqDataTypeEnum ...$types): void

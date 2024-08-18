@@ -1,6 +1,7 @@
 import {useQueryClient} from "@tanstack/solid-query";
 import {DateTime} from "luxon";
 import {System, User} from "./groups";
+import {FacilityClientGroup} from "./groups/FacilityClientGroup";
 import {FacilityMeeting} from "./groups/FacilityMeeting";
 import {FacilityUsers} from "./groups/FacilityUsers";
 import {Facilities, Users} from "./groups/shared";
@@ -10,18 +11,17 @@ let lastInvalidateEverythingTime: DateTime | undefined;
 const INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS = 3000;
 
 export function useInvalidator(queryClient = useQueryClient()) {
-  function everything() {
-    lastInvalidateEverythingTime = DateTime.now();
-    queryClient.invalidateQueries();
-  }
-  return {
-    everything: everything,
+  const invalidate = {
+    everything: () => {
+      lastInvalidateEverythingTime = DateTime.now();
+      queryClient.invalidateQueries();
+    },
     everythingThrottled: () => {
       if (
         !lastInvalidateEverythingTime ||
         Date.now() - lastInvalidateEverythingTime.toMillis() > INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS
       ) {
-        everything();
+        invalidate.everything();
         return true;
       }
       return false;
@@ -43,9 +43,14 @@ export function useInvalidator(queryClient = useQueryClient()) {
     facility: {
       meetings: () => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
       users: () => queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()}),
+      clientGroups: () => {
+        invalidate.facility.users();
+        queryClient.invalidateQueries({queryKey: FacilityClientGroup.keys.clientGroup()});
+      },
     },
     // Global:
     dictionaries: () => queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),
     attributes: () => queryClient.invalidateQueries({queryKey: System.keys.attribute()}),
   };
+  return invalidate;
 }

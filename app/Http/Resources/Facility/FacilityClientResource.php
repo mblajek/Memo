@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Facility;
 
 use App\Http\Resources\AbstractOpenApiResource;
+use App\Models\Client;
 use App\Models\User;
 use OpenApi\Attributes as OA;
 
@@ -13,7 +14,7 @@ use OpenApi\Attributes as OA;
     ],
 )] /**
  * @method __construct(User $resource)
- * @mixin User
+ * @mixin Client
  */
 class FacilityClientResource extends AbstractOpenApiResource
 {
@@ -25,7 +26,8 @@ class FacilityClientResource extends AbstractOpenApiResource
     protected static function getMappedFields(): array
     {
         return [
-            'shortCode',
+            'shortCode' => true,
+            'groupIds' => fn(self $client) => $client->groupClients->pluck('client_group_id'),
         ];
     }
 }

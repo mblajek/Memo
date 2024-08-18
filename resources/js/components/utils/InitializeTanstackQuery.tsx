@@ -44,6 +44,7 @@ interface MutationMeta {
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
+
   function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
     const invalidate = useInvalidator(queryClient);
     if (!isAxiosError<Api.ErrorResponse>(error)) {
@@ -100,6 +101,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       }
     }
   }
+
   const queryClient = createMemo(
     () =>
       new QueryClient({

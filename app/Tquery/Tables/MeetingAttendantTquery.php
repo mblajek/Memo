@@ -60,6 +60,12 @@ final readonly class MeetingAttendantTquery extends MeetingTquery
             'attendance_status_dict_id',
             'attendant.attendance_status_dict_id',
         );
+        $config->addJoined(
+            TqDataTypeEnum::uuid_nullable,
+            TqTableAliasEnum::meeting_attendants,
+            'client_group_id',
+            'attendant.client_group_id',
+        );
 
         return $config;
     }

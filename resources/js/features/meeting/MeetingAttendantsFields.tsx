@@ -6,6 +6,7 @@ import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
+import {createFormNudge} from "components/ui/form/util";
 import {actionIcons} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
@@ -13,12 +14,13 @@ import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {
-  MeetingAttendantResource,
+  MeetingClientResource,
   MeetingResource,
   MeetingResourceForCreate,
   MeetingResourceForPatch,
+  MeetingStaffResource,
 } from "data-access/memo-api/resources/meeting.resource";
-import {Index, Match, Show, Switch, VoidComponent, createComputed, createEffect, createMemo, on} from "solid-js";
+import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
@@ -37,6 +39,7 @@ const getAttendantsSchema = () =>
   z.array(
     z.object({
       userId: z.string(),
+      clientGroupId: z.string(),
       attendanceStatusDictId: z.string(),
     }),
   );
@@ -58,7 +61,10 @@ interface FormAttendantsData extends Obj {
   readonly clients: readonly FormAttendantData[];
 }
 
-type FormAttendantData = Pick<MeetingAttendantResource, "userId" | "attendanceStatusDictId">;
+type FormAttendantData = Pick<
+  MeetingStaffResource & MeetingClientResource,
+  "userId" | "clientGroupId" | "attendanceStatusDictId"
+>;
 
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -81,18 +87,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     ),
   );
 
-  // For some reason the form sometimes fails to propagate events from the selects. Nudge the data just in case.
-  createComputed(
-    on(
-      // eslint-disable-next-line solid/reactivity
-      createMemo(() =>
-        form
-          .data(props.name)
-          .map(({userId}) => userId)
-          .join(""),
-      ),
-      () => form.setData((d) => d),
-    ),
+  createFormNudge(form, () =>
+    form
+      .data(props.name)
+      .map(({userId}) => userId)
+      .join(""),
   );
   const attendantsMemo = createMemo(() => form.data(props.name), [], {
     equals: (a, b) => a.length === b.length && a.every((v, i) => v.userId === b[i]!.userId),
@@ -297,9 +296,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 export function useAttendantsCreator() {
   const {attendanceStatusDict} = useFixedDictionaries();
 
-  function createAttendant({userId = "", attendanceStatusDictId}: Partial<FormAttendantData> = {}) {
+  function createAttendant({userId = "", clientGroupId, attendanceStatusDictId}: Partial<FormAttendantData> = {}) {
     return {
       userId,
+      clientGroupId: clientGroupId || "",
       attendanceStatusDictId: attendanceStatusDictId || attendanceStatusDict()!.ok.id,
     } satisfies FormAttendantData;
   }
@@ -315,7 +315,7 @@ export function useAttendantsCreator() {
     meeting: MeetingResource,
     attendanceStatusOverride?: Partial<FormAttendantData>,
   ) {
-    function getAttendants(attendantsFromMeeting: readonly FormAttendantData[]) {
+    function getAttendants(attendantsFromMeeting: readonly (MeetingStaffResource | MeetingClientResource)[]) {
       const attendants = attendantsFromMeeting.map((attendant) =>
         createAttendant({...attendant, ...attendanceStatusOverride}),
       );
@@ -349,7 +349,7 @@ export function useAttendantsCreator() {
 
 export function getAttendantsValuesForEdit(values: Partial<FormAttendantsData>) {
   return {
-    staff: values.staff?.filter(({userId}) => userId),
+    staff: values.staff?.filter(({userId}) => userId).map((staff) => ({...staff, clientGroupId: undefined})),
     clients: values.clients?.filter(({userId}) => userId),
   } satisfies Partial<MeetingResourceForPatch>;
 }

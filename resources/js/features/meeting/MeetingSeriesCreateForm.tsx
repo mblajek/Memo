@@ -33,7 +33,7 @@ export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps
     if (!params.dates.length) {
       return;
     }
-    const ids = (await meetingMutation.mutateAsync({meetingId: props.startMeeting.id, request: params})).data.data.ids;
+    const ids = (await meetingMutation.mutateAsync({id: props.startMeeting.id, request: params})).data.data.ids;
     // eslint-disable-next-line solid/reactivity
     return () => {
       if (props.showToast ?? true) {

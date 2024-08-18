@@ -235,6 +235,8 @@ type FullColumnConfig<TData = DataItem> = ColumnConfig &
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
 const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
 
+const SUPPORTED_TRANSFORMS: ReadonlySet<string> = new Set(["count"]);
+
 /**
  * The state of the table persisted in the local storage.
  *
@@ -425,8 +427,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
                 if (!isDataColumn(col) || !col.attributeId) {
                   return undefined;
                 }
+                if (col.transform && !SUPPORTED_TRANSFORMS.has(col.transform)) {
+                  console.warn(`Unknown column transform on attribute column ${col.name}: ${col.transform}`);
+                  return undefined;
+                }
                 const attribute = attributes()!.getById(col.attributeId);
-                const select = isAttributeSelected(selection, attribute);
+                const select = isAttributeSelected(selection, attribute, col.transform);
                 if (select) {
                   if (configuredColumns.has(col.name)) {
                     if (select.explicit) {
@@ -536,9 +542,16 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       if (column === countColumn()) {
         return t("tables.column_groups.count_column_label");
       }
-      const attributeId = table()?.getColumn(column)?.columnDef.meta?.tquery?.attributeId;
+      const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
+      const attributeId = meta?.attributeId;
       if (attributeId) {
-        const attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
+        let attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
+        if (meta.transform) {
+          attributeLabel = t(`tables.transforms.${meta.transform}`, {
+            base: attributeLabel,
+            defaultValue: `${attributeLabel}.${meta.transform}`,
+          });
+        }
         return baseTranslations.columnNameOverride
           ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
           : attributeLabel || "";

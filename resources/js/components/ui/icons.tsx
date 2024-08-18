@@ -14,7 +14,7 @@ import {
 } from "solid-icons/bs";
 import {FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
-import {IoPersonCircleOutline} from "solid-icons/io";
+import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {htmlAttributes} from "../utils";
 
@@ -33,6 +33,10 @@ export namespace staffIcons {
 export namespace clientIcons {
   export const Menu: IconTypes = (props) => <IoPersonCircleOutline {...props} />;
   export const Client: IconTypes = (props) => <IoPersonCircleOutline {...props} />;
+}
+
+export namespace clientGroupIcons {
+  export const ClientGroup: IconTypes = (props) => <IoPeopleCircleOutline {...props} />;
 }
 
 export namespace adminIcons {

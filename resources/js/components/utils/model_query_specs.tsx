@@ -1,21 +1,16 @@
 import {createQuery} from "@tanstack/solid-query";
 import {BaseTQuerySelectProps, TQuerySelectProps} from "components/ui/form/TQuerySelect";
-import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {User} from "data-access/memo-api/groups";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {FacilityUsers} from "data-access/memo-api/groups/FacilityUsers";
 import {Facilities} from "data-access/memo-api/groups/shared";
+import {ClientBirthDateShortInfo} from "features/client/ClientBirthDateShortInfo";
 import {UserLink} from "features/facility-users/UserLink";
-import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
-import {DATE_FORMAT} from "./formatting";
-import {useLangFunc} from "./lang";
 
 export function useModelQuerySpecs() {
-  const t = useLangFunc();
-  const dictionaries = useDictionaries();
   const userStatus = createQuery(User.statusQueryOptions);
   const permissions = () => userStatus.data?.permissions;
   return {
@@ -61,27 +56,17 @@ export function useModelQuerySpecs() {
         querySpec: {
           entityURL: `facility/${activeFacilityId()}/user/client`,
           prefixQueryKey: FacilityClient.keys.client(),
-          valueColumn: "id",
-          extraColumns: ["client.typeDictId", "client.birthDate"],
           sort: [
             {type: "column", column: "name", desc: false},
             {type: "column", column: "client.birthDate", desc: true},
           ],
           itemFunc: (row, defItem) => {
-            const birthDateStr = row.getStr("client.birthDate");
             const Link: VoidComponent = () => (
               <UserLink type="clients" userId={row.get("id")} name={row.get("name")} link={false} />
             );
             const Birthday: VoidComponent = () => (
               <div class="text-grey-text">
-                <Show
-                  when={birthDateStr}
-                  fallback={<>{dictionaries()?.getPositionById(row.get("client.typeDictId")!).label}</>}
-                >
-                  {t("facility_user.birth_date_short", {
-                    date: DateTime.fromISO(birthDateStr!).toLocaleString(DATE_FORMAT),
-                  })}
-                </Show>
+                <ClientBirthDateShortInfo clientId={row.get("id")!} />
               </div>
             );
             return {

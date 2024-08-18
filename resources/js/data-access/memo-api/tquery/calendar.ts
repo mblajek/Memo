@@ -2,7 +2,7 @@ import {DaysRange} from "components/ui/calendar/days_range";
 import {CalendarFunction} from "components/ui/meetings-calendar/calendar_modes";
 import {Accessor, createMemo, on} from "solid-js";
 import {useFixedDictionaries} from "../fixed_dictionaries";
-import {MeetingAttendantResource, MeetingResource} from "../resources/meeting.resource";
+import {MeetingClientResource, MeetingResource, MeetingStaffResource} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {dateToISO} from "../utils";
 import {FilterH, FilterReductor} from "./filter_utils";
@@ -44,7 +44,7 @@ export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_C
     readonly clients: readonly TQMeetingAttendantResource[];
   };
 
-export interface TQMeetingAttendantResource extends MeetingAttendantResource {
+export interface TQMeetingAttendantResource extends MeetingStaffResource, MeetingClientResource {
   readonly name: string;
   readonly attendanceTypeDictId: string;
 }

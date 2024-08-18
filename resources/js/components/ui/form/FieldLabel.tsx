@@ -1,6 +1,6 @@
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {htmlAttributes} from "components/utils";
-import {JSX, Show, VoidComponent, splitProps} from "solid-js";
+import {JSX, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 import {title} from "../title";
 import {TranslatedText} from "../TranslatedText";
 import {LabelOverride, applyLabelOverride, getDirectLabelOverride} from "./labels";
@@ -29,7 +29,7 @@ interface Props extends htmlAttributes.label {
  * Otherwise, the label is not present.
  */
 export const FieldLabel: VoidComponent<Props> = (allProps) => {
-  const [props, labelProps] = splitProps(allProps, ["fieldName", "umbrella", "label", "wrapIn", "title"]);
+  const [props, labelProps] = splitProps(allProps, ["fieldName", "umbrella", "label", "wrapIn"]);
   const form = useFormContextIfInForm();
   return (
     <TranslatedText
@@ -40,14 +40,13 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
         const overridden = applyLabelOverride(text, props.label);
         return (
           <Show when={overridden} fallback={props.wrapIn?.(overridden)}>
-            <label
+            <StandaloneFieldLabel
               id={labelIdForField(props.fieldName)}
               for={props.umbrella ? undefined : props.fieldName}
-              {...htmlAttributes.merge(labelProps, {class: "font-bold"})}
-              use:title={props.title}
+              {...labelProps}
             >
               {props.wrapIn?.(overridden) ?? overridden}
-            </label>
+            </StandaloneFieldLabel>
           </Show>
         );
       }}
@@ -58,3 +57,8 @@ export const FieldLabel: VoidComponent<Props> = (allProps) => {
 export function labelIdForField(fieldName: string) {
   return fieldName ? `label_for_${fieldName}` : undefined;
 }
+
+export const StandaloneFieldLabel: ParentComponent<htmlAttributes.label> = (allProps) => {
+  const [props, labelProps] = splitProps(allProps, ["title"]);
+  return <label {...htmlAttributes.merge(labelProps, {class: "font-bold"})} use:title={props.title} />;
+};

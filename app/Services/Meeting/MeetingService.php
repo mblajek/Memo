@@ -49,10 +49,8 @@ class MeetingService
         $finalResources = $this->extractResources($data);
 
         DB::transaction(function () use ($meeting, $finalAttendants, $finalResources) {
-            if ($meeting->isDirty()) {
-                $meeting->save();
-            }
-            if (!is_null($finalAttendants)) {
+            $meeting->save();
+            if ($finalAttendants !== null) {
                 /** @var array<non-falsy-string, MeetingAttendant> $currentAttendants */
                 $currentAttendants = $meeting->attendants->keyBy('user_id')->all();
                 /** @var array<non-falsy-string, MeetingAttendant> $newAttendants */
@@ -66,7 +64,7 @@ class MeetingService
                     }
                 }
             }
-            if (!is_null($finalResources)) {
+            if ($finalResources !== null) {
                 $meeting->resources()->delete();
                 if (count($finalResources) > 0) {
                     $meeting->resources()->saveMany($finalResources);
@@ -97,22 +95,17 @@ class MeetingService
             ->attrValues()[Attribute::getById(PositionAttributeUuidEnum::Category)->api_name]);
     }
 
-    private function extract(array &$data, string $key)
+    private function extract(array $data, string $key)
     {
-        if (!array_key_exists($key, $data)) {
-            return null;
-        }
-        $dataKey = $data[$key];
-        unset($data[$key]);
-        return $dataKey;
+        return array_key_exists($key, $data) ? ($data[$key] ?: []) : null;
     }
 
     /** @return ?array<non-falsy-string, MeetingAttendant> */
-    private function extractStaff(array &$data): ?array
+    private function extractStaff(array $data): ?array
     {
         $attendants = [];
         $attendantsData = $this->extract($data, 'staff');
-        if (is_null($attendantsData)) {
+        if ($attendantsData === null) {
             return null;
         }
         foreach ($attendantsData as $attendantData) {
@@ -124,11 +117,11 @@ class MeetingService
     }
 
     /** @return ?array<non-falsy-string, MeetingAttendant> */
-    private function extractClients(array &$data): ?array
+    private function extractClients(array $data): ?array
     {
         $attendants = [];
         $attendantsData = $this->extract($data, 'clients');
-        if (is_null($attendantsData)) {
+        if ($attendantsData === null) {
             return null;
         }
         foreach ($attendantsData as $attendantData) {
@@ -140,7 +133,7 @@ class MeetingService
     }
 
     /** @return ?array<non-falsy-string, MeetingAttendant> */
-    private function extractResources(array &$data): ?array
+    private function extractResources(array $data): ?array
     {
         $resources = [];
         $resourcesData = $this->extract($data, 'resources');
@@ -154,7 +147,7 @@ class MeetingService
         return $resources;
     }
 
-    public function extractPatchAttendants(array &$data, Meeting $meeting): ?array
+    public function extractPatchAttendants(array $data, Meeting $meeting): ?array
     {
         $newStaff = $this->extractStaff($data);
         $newClients = $this->extractClients($data);

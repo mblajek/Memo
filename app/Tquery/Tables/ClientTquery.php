@@ -5,6 +5,7 @@ namespace App\Tquery\Tables;
 use App\Models\Client;
 use App\Models\Facility;
 use App\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
@@ -28,6 +29,39 @@ final readonly class ClientTquery extends FacilityUserTquery
         foreach (Client::attrMap($facility) as $attribute) {
             $config->addAttribute($attribute, 'client');
         }
+
+        $config->addQuery(
+            type: TqDataTypeEnum::int,
+            columnOrQuery: fn(string $tableName) => //
+            "select count(1) from `group_clients` where `group_clients`.`user_id` = `users`.`id`",
+            columnAlias: 'client.groups.count'
+        );
+
+        $config->addListQuery(
+            type: TqDataTypeEnum::uuid_list,
+            select: "`group_clients`.`client_group_id`",
+            from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`",
+            columnAlias: 'client.groups.*.id',
+        );
+
+        $config->addListQuery(
+            type: TqDataTypeEnum::string_list,
+            select: "`group_clients`.`role`",
+            from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`"
+            . " and `group_clients`.`role` is not null",
+            columnAlias: 'client.groups.*.role',
+        );
+
+        $config->addListQuery(
+            type: TqDataTypeEnum::uuid_list,
+            select: "`group_clients`.`user_id`",
+            from: "`group_clients` as `current_group_clients` join `group_clients`"
+            . " on `group_clients`.`client_group_id` = `current_group_clients`.`client_group_id`"
+            . " and `group_clients`.`id` != `current_group_clients`.`id`"
+            . " where `current_group_clients`.`user_id` = `users`.`id`",
+            columnAlias: 'client.groups.*.clients.*.user_id',
+            selectDistinct: true,
+        );
     }
 
     protected function getConfig(): TqConfig

@@ -17,8 +17,9 @@ import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {ClientResourceForPatch} from "data-access/memo-api/resources/client.resource";
 import {ClientFields} from "features/client/ClientFields";
+import {ClientGroups} from "features/client/ClientGroups";
+import {PeopleAutoRelatedToClient} from "features/client/PeopleAutoRelatedToClient";
 import {createClientDeleteModal} from "features/client/client_delete_modal";
-import {PeopleAutoRelatedToClient} from "features/facility-users/PeopleAutoRelatedToClient";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
 import {UserMeetingsTables} from "features/facility-users/UserMeetingsTables";
 import {useUserMeetingsStats} from "features/facility-users/user_meetings_stats";
@@ -122,26 +123,24 @@ export default (() => {
                               <FelteSubmit cancel={formCancel} />
                             </Match>
                             <Match when={!editMode()}>
-                              <div class="flex justify-end">
-                                <div class="flex gap-1">
-                                  <Show when={status.data?.permissions.facilityAdmin}>
-                                    <DeleteButton
-                                      class="secondary small"
-                                      label={t("forms.client_delete.activate_button")}
-                                      delete={() =>
-                                        clientDeleteModal.show({
-                                          id: userId(),
-                                          initialRequiresDuplicateOf: hasMeetings(),
-                                          onSuccess: ({duplicateOf}) =>
-                                            navigate(
-                                              `/${activeFacility()?.url}/clients${duplicateOf ? `/${duplicateOf}` : ""}`,
-                                            ),
-                                        })
-                                      }
-                                    />
-                                  </Show>
-                                  <EditButton class="secondary small" onClick={[setEditMode, true]} />
-                                </div>
+                              <div class="flex justify-between gap-1">
+                                <Show when={status.data?.permissions.facilityAdmin}>
+                                  <DeleteButton
+                                    class="secondary small"
+                                    label={t("forms.client_delete.activate_button")}
+                                    delete={() =>
+                                      clientDeleteModal.show({
+                                        id: userId(),
+                                        initialRequiresDuplicateOf: hasMeetings(),
+                                        onSuccess: ({duplicateOf}) =>
+                                          navigate(
+                                            `/${activeFacility()?.url}/clients${duplicateOf ? `/${duplicateOf}` : ""}`,
+                                          ),
+                                      })
+                                    }
+                                  />
+                                </Show>
+                                <EditButton class="secondary small" onClick={[setEditMode, true]} />
                               </div>
                             </Match>
                           </Switch>
@@ -151,6 +150,9 @@ export default (() => {
                   </FelteForm>
                 </div>
                 <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
+                  <div style={{width: "min(800px, 100%)"}}>
+                    <ClientGroups client={user()} />
+                  </div>
                   <PeopleAutoRelatedToClient clientId={userId()} />
                   <UserMeetingsTables
                     userName={user().name}

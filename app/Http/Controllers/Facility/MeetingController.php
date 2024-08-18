@@ -40,14 +40,14 @@ class MeetingController extends ApiController
                 properties: [
                     new OA\Property(property: 'typeDictId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'date', type: 'string', example: '2023-12-13'),
-                    new OA\Property(property: 'notes', type: 'string', example: '', nullable: true),
+                    new OA\Property(property: 'notes', type: 'string', example: null, nullable: true),
                     new OA\Property(property: 'startDayminute', type: 'int', example: 600),
                     new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
                     new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -55,18 +55,23 @@ class MeetingController extends ApiController
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
-                                nullable: true,
                             ),
                         ]
                     )
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
                                 property: 'attendanceStatusDictId',
+                                type: 'string',
+                                format: 'uuid',
+                                example: null,
+                            ),
+                            new OA\Property(
+                                property: 'clientGroupId',
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
@@ -110,6 +115,7 @@ class MeetingController extends ApiController
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
+                'clients.*.client_group_id',
                 'resources',
                 'resources.*',
                 'resources.*.resource_dict_id',
@@ -124,7 +130,7 @@ class MeetingController extends ApiController
     #[OA\Get(
         path: '/api/v1/facility/{facility}/meeting/list',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Get facility meetings',
+        summary: 'Get meetings',
         tags: ['Facility meeting'],
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
@@ -148,20 +154,20 @@ class MeetingController extends ApiController
     #[OA\Patch(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Update facility meeting',
+        summary: 'Update meeting',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: 'typeDictId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'date', type: 'string', example: '2023-12-13'),
-                    new OA\Property(property: 'notes', type: 'string', example: '', nullable: true),
+                    new OA\Property(property: 'notes', type: 'string', example: null, nullable: true),
                     new OA\Property(property: 'startDayminute', type: 'int', example: 600),
                     new OA\Property(property: 'durationMinutes', type: 'int', example: 60),
                     new OA\Property(property: 'statusDictId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'isRemote', type: 'bool', example: false),
                     new OA\Property(
                         property: 'staff', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
@@ -169,18 +175,23 @@ class MeetingController extends ApiController
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
-                                nullable: true,
                             ),
                         ]
                     )
                     ),
                     new OA\Property(
                         property: 'clients', type: 'array', items: new OA\Items(
-                        required: ['userId'],
+                        required: ['userId', 'attendanceStatusDictId'],
                         properties: [
                             new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                             new OA\Property(
                                 property: 'attendanceStatusDictId',
+                                type: 'string',
+                                format: 'uuid',
+                                example: null,
+                            ),
+                            new OA\Property(
+                                property: 'clientGroupId',
                                 type: 'string',
                                 format: 'uuid',
                                 example: null,
@@ -240,6 +251,7 @@ class MeetingController extends ApiController
                 'clients.*',
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
+                'clients.*.client_group_id',
                 'resources.*',
                 'resources.*.resource_dict_id',
             ])
@@ -251,7 +263,7 @@ class MeetingController extends ApiController
     #[OA\Delete(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Delete facility meeting',
+        summary: 'Delete meeting',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
                 properties: [

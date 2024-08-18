@@ -1,6 +1,7 @@
 import {A} from "@solidjs/router";
 import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {useCustomTableCells} from "components/ui/Table/custom_table_cells";
 import {actionIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
@@ -13,6 +14,7 @@ import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state"
 export default (() => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
+  const customTableCells = useCustomTableCells();
   const {getCreatedUpdatedColumns} = useTableColumns();
   const tableAttributeColumnConfigs = useTableAttributeColumnConfigs();
   return (
@@ -39,6 +41,13 @@ export default (() => {
           },
         },
         tableAttributeColumnConfigs.client(),
+        {name: "client.groups.count", initialVisible: false},
+        {name: "client.groups.*.role", initialVisible: false},
+        {
+          name: "client.groups.*.clients.*.userId",
+          columnDef: {cell: customTableCells.facilityUsers()},
+          initialVisible: false,
+        },
         {name: "firstMeetingDate", initialVisible: false},
         {name: "lastMeetingDate"},
         {name: "completedMeetingsCount"},

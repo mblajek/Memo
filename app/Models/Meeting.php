@@ -10,6 +10,7 @@ use App\Models\QueryBuilders\MeetingBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
+use App\Rules\MeetingClientGroupRule;
 use App\Rules\MemberExistsRule;
 use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
@@ -77,7 +78,11 @@ class Meeting extends Model
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
             'is_remote' => Valid::bool(),
             'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
-            'staff.*', 'clients.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
+            'staff.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
+            'clients.*' => Valid::array(
+                keys: ['user_id', 'attendance_status_dict_id', 'client_group_id'],
+                rules: [new MeetingClientGroupRule()]
+            ),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
             Valid::dict(DictionaryUuidEnum::AttendanceStatus),
             'staff.*.user_id' => Valid::uuid([
@@ -87,7 +92,10 @@ class Meeting extends Model
             'clients.*.user_id' => Valid::uuid([
                 new UniqueWithMemoryRule('attendant'),
                 new MemberExistsRule(AttendanceType::Client),
+                new MeetingClientGroupRule(),
             ]),
+            // validated as client.* with MeetingClientGroupRule
+            'clients.*.client_group_id' => Valid::uuid(nullable: true),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,

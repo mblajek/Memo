@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Meeting;
 
-use App\Http\Resources\AbstractOpenApiResource;
+use App\Http\Resources\AbstractJsonResource;
 use App\Models\MeetingAttendant;
 use OpenApi\Attributes as OA;
 
@@ -15,6 +15,12 @@ use OpenApi\Attributes as OA;
             type: 'string',
             format: 'uuid',
             example: 'UUID',
+        ),
+        new OA\Property(
+            property: 'clientGroupId',
+            type: 'string',
+            format: 'uuid',
+            example: 'UUID',
             nullable: true,
         ),
     ]
@@ -22,13 +28,14 @@ use OpenApi\Attributes as OA;
  * @method __construct(MeetingAttendant $resource)
  * @mixin MeetingAttendant
  */
-class MeetingClientResource extends AbstractOpenApiResource
+class MeetingClientResource extends AbstractJsonResource
 {
     protected static function getMappedFields(): array
     {
         return [
             'userId' => true,
             'attendanceStatusDictId' => true,
+            'clientGroupId' => true,
         ];
     }
 }

@@ -55,6 +55,7 @@ export const ClientDeleteForm: VoidComponent<ClientDeleteFormProps> = (allProps)
     toastSuccess(t(duplicateOf ? "forms.client_delete.success.deduplicate" : "forms.client_delete.success.remove"));
     props.onSuccess?.({duplicateOf});
     invalidate.facility.users();
+    invalidate.facility.clientGroups();
   }
 
   const ClientInfo: VoidComponent<{readonly userId: string}> = (props) => (

@@ -25,7 +25,7 @@ interface MemberRow {
   readonly "hasGlobalAdmin": boolean;
 }
 
-/** Returns a function for returning display name of users. Works in the context of the current facility. */
+/** Returns a helper for getting display name of users. Works in the context of the current facility. */
 export const useMembersData = createCached(() => {
   const request: DataRequest = {
     columns: (

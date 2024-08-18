@@ -2,7 +2,11 @@ import {Tag, TagsLine} from "components/ui/Tag";
 import {useLangFunc} from "components/utils";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {MeetingAttendantResource, MeetingResource} from "data-access/memo-api/resources/meeting.resource";
+import {
+  MeetingClientResource,
+  MeetingResource,
+  MeetingStaffResource,
+} from "data-access/memo-api/resources/meeting.resource";
 import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
 interface MeetingStatusTagsProps {
@@ -24,7 +28,10 @@ export const MeetingStatusTags: VoidComponent<MeetingStatusTagsProps> = (props) 
     ClientLatePresentTag,
     RemoteTag,
   } = useStatusTags();
-  function anyHasStatus(attendants: readonly MeetingAttendantResource[] | undefined, status: Position) {
+  function anyHasStatus(
+    attendants: readonly (MeetingStaffResource | MeetingClientResource)[] | undefined,
+    status: Position,
+  ) {
     return attendants?.some(({attendanceStatusDictId}) => attendanceStatusDictId === status.id);
   }
   const tags = () => {

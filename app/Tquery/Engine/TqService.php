@@ -32,7 +32,8 @@ abstract readonly class TqService
                 'type' => $column->type->notNullBaseType()->name,
                 'nullable' => $column->type->isNullable(),
                 'dictionaryId' => $column->dictionaryId,
-                'attributeId' => $column->attribute?->id,
+                'attributeId' => $column->attributeId,
+                'transform' => $column->transform,
             ], fn(mixed $value) => $value !== null), array_values($this->config->columns)),
             'customFilters' => new stdClass(),
         ];
