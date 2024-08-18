@@ -110,7 +110,6 @@ class MeetingService
         }
         foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
-            $attendant->client_group_id ??= null; // to be read as null from attributesToArray in patch
             $attendant->attendance_type_dict_id = AttendanceType::Staff->value;
             $attendants[$attendant->user_id] = $attendant;
         }
@@ -127,7 +126,6 @@ class MeetingService
         }
         foreach ($attendantsData as $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
-            $attendant->client_group_id ??= null; // to be read as null from attributesToArray in patch
             $attendant->attendance_type_dict_id = AttendanceType::Client->value;
             $attendants[$attendant->user_id] = $attendant;
         }

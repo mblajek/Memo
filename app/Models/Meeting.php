@@ -95,7 +95,7 @@ class Meeting extends Model
                 new MeetingClientGroupRule(),
             ]),
             // validated as client.* with MeetingClientGroupRule
-            'clients.*.client_group_id' => Valid::uuid(sometimes: true, nullable: true),
+            'clients.*.client_group_id' => Valid::uuid(nullable: true),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,
