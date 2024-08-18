@@ -84,6 +84,7 @@ tables:
       attendant.attendanceTypeDictId: "$t(dictionary.attendanceType._name)"
       attendant.userId: "$t(models.meeting.attendant)"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
+      attendant.clientGroupId: "$t(models.client_group._name)"
     summary__zero: "Brak uczestnictw"
     summary__one: "{{count, number}} uczestnictwo"
     summary__few: "{{count, number}} uczestnictwa"

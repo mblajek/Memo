@@ -53,6 +53,7 @@ export default (() => {
         {name: "plannedMeetingsCount", initialVisible: false, columnGroups: "attendant"},
         {name: "plannedMeetingsCountNextMonth", initialVisible: false, columnGroups: "attendant"},
         ...getCreatedUpdatedColumns({entity: "client", overrides: {columnGroups: "attendant"}}),
+        cols.attendant.get("attendantClientGroup", {initialVisible: true}),
         cols.attendant.attendanceStatus,
         cols.meeting.id,
         cols.meeting.date,
