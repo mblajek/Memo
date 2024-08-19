@@ -14,7 +14,7 @@ function showToast(toastFunction: ToastHandler, message: Message, options?: Toas
         <Button
           // TODO: Use translated text as the label. This is hard because we can't use useLangFunc here.
           aria-label="close"
-          onClick={() => toast.dismiss(id)}
+          onClick={() => toastDismiss(id)}
         >
           <VsClose size="24" class="text-black" />
         </Button>
@@ -44,3 +44,7 @@ export const ToastMessages: VoidComponent<ToastMessagesProps> = (props) => (
     </ul>
   </Show>
 );
+
+export function toastDismiss(id: string) {
+  toast.dismiss(id);
+}
