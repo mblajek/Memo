@@ -138,10 +138,10 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ...getCreatedUpdatedColumns(),
                       ]}
                       columnGroups={{
+                        defaultInclude: false,
                         overrides: {
-                          "meeting": false,
-                          "statusDictId": false,
-                          "attendant.attendanceStatusDictId": false,
+                          categoryDictId: true,
+                          typeDictId: true,
                         },
                       }}
                       intrinsicFilter={{
@@ -248,10 +248,10 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ...getCreatedUpdatedColumns(),
                       ]}
                       columnGroups={{
+                        defaultInclude: false,
                         overrides: {
-                          "meeting": false,
-                          "statusDictId": false,
-                          "attendant.attendanceStatusDictId": false,
+                          categoryDictId: true,
+                          typeDictId: true,
                         },
                       }}
                       intrinsicFilter={{
@@ -327,7 +327,15 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.resources,
                         ...getCreatedUpdatedColumns(),
                       ]}
-                      columnGroups={{overrides: {meeting: false}}}
+                      columnGroups={{
+                        defaultInclude: false,
+                        overrides: {
+                          "categoryDictId": true,
+                          "typeDictId": true,
+                          "statusDictId": true,
+                          "attendant.attendanceStatusDictId": true,
+                        },
+                      }}
                       intrinsicFilter={intrinsicFilter()}
                       intrinsicSort={sortByDate({desc: true})}
                       initialSort={[{id: "date", desc: true}]}
