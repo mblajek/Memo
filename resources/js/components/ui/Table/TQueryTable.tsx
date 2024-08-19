@@ -159,6 +159,9 @@ export interface TQueryTableProps<TData = DataItem> {
    * Default: false.
    */
   readonly nonBlocking?: boolean;
+  /** The definition of the columns in the table, in their correct order. */
+  readonly columns: readonly PartialColumnConfigEntry<TData>[];
+  readonly columnGroups?: ColumnGroupsSelection;
   /**
    * The filter that is always applied to the data, regardless of other filtering.
    * This is used to create e.g. a table of entities A on the details page of a particular
@@ -167,9 +170,6 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly intrinsicFilter?: FilterH;
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
-  /** The definition of the columns in the table, in their correct order. */
-  readonly columns: readonly PartialColumnConfigEntry<TData>[];
-  readonly columnGroups?: ColumnGroupsSelection;
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */

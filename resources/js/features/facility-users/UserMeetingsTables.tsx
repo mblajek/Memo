@@ -108,26 +108,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTranslations={tableTranslations}
                       staticPersistenceKey={`${props.staticPersistenceKey}.planned`}
                       staticTableId="planned"
-                      intrinsicFilter={{
-                        type: "op",
-                        op: "&",
-                        val: [
-                          intrinsicFilter(),
-                          {
-                            type: "column",
-                            column: "statusDictId",
-                            op: "=",
-                            val: meetingStatusDict()!.planned.id,
-                          },
-                          {
-                            type: "column",
-                            column: "attendant.attendanceStatusDictId",
-                            op: "in",
-                            val: presenceStatuses()!,
-                          },
-                        ],
-                      }}
-                      intrinsicSort={sortByDate({desc: false})}
                       columns={[
                         cols.meeting.id,
                         cols.meeting.dateTimeActions,
@@ -164,6 +144,26 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                           "attendant.attendanceStatusDictId": false,
                         },
                       }}
+                      intrinsicFilter={{
+                        type: "op",
+                        op: "&",
+                        val: [
+                          intrinsicFilter(),
+                          {
+                            type: "column",
+                            column: "statusDictId",
+                            op: "=",
+                            val: meetingStatusDict()!.planned.id,
+                          },
+                          {
+                            type: "column",
+                            column: "attendant.attendanceStatusDictId",
+                            op: "in",
+                            val: presenceStatuses()!,
+                          },
+                        ],
+                      }}
+                      intrinsicSort={sortByDate({desc: false})}
                       initialSort={[{id: "date", desc: false}]}
                       staticExportConfig={exportConfig("planned")}
                     />
@@ -218,26 +218,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTranslations={tableTranslations}
                       staticPersistenceKey={`${props.staticPersistenceKey}.completed`}
                       staticTableId="completed"
-                      intrinsicFilter={{
-                        type: "op",
-                        op: "&",
-                        val: [
-                          intrinsicFilter(),
-                          {
-                            type: "column",
-                            column: "statusDictId",
-                            op: "=",
-                            val: meetingStatusDict()!.completed.id,
-                          },
-                          {
-                            type: "column",
-                            column: "attendant.attendanceStatusDictId",
-                            op: "in",
-                            val: presenceStatuses()!,
-                          },
-                        ],
-                      }}
-                      intrinsicSort={sortByDate({desc: true})}
                       columns={[
                         cols.meeting.id,
                         cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
@@ -274,6 +254,26 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                           "attendant.attendanceStatusDictId": false,
                         },
                       }}
+                      intrinsicFilter={{
+                        type: "op",
+                        op: "&",
+                        val: [
+                          intrinsicFilter(),
+                          {
+                            type: "column",
+                            column: "statusDictId",
+                            op: "=",
+                            val: meetingStatusDict()!.completed.id,
+                          },
+                          {
+                            type: "column",
+                            column: "attendant.attendanceStatusDictId",
+                            op: "in",
+                            val: presenceStatuses()!,
+                          },
+                        ],
+                      }}
+                      intrinsicSort={sortByDate({desc: true})}
                       initialSort={[{id: "date", desc: true}]}
                       staticExportConfig={exportConfig("completed")}
                     />
@@ -298,8 +298,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTranslations={tableTranslations}
                       staticPersistenceKey={`${props.staticPersistenceKey}.all`}
                       staticTableId="all"
-                      intrinsicFilter={intrinsicFilter()}
-                      intrinsicSort={sortByDate({desc: true})}
                       columns={[
                         cols.meeting.id,
                         cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
@@ -330,6 +328,8 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ...getCreatedUpdatedColumns(),
                       ]}
                       columnGroups={{overrides: {meeting: false}}}
+                      intrinsicFilter={intrinsicFilter()}
+                      intrinsicSort={sortByDate({desc: true})}
                       initialSort={[{id: "date", desc: true}]}
                       staticExportConfig={exportConfig("all")}
                     />

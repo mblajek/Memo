@@ -31,7 +31,6 @@ export default (() => {
       staticEntityURL={`facility/${activeFacilityId()}/user/staff`}
       staticTranslations={createTableTranslations(["staff", "facility_user", "user"])}
       staticPersistenceKey="facilityStaff"
-      intrinsicFilter={showInactive() ? undefined : {type: "column", column: "staff.isActive", op: "=", val: true}}
       columns={[
         {name: "id", initialVisible: false},
         {
@@ -78,6 +77,8 @@ export default (() => {
         // TODO: Switch to entity: "staff".
         ...getCreatedUpdatedColumns(),
       ]}
+      intrinsicFilter={showInactive() ? undefined : {type: "column", column: "staff.isActive", op: "=", val: true}}
+      intrinsicSort={[{type: "column", column: "name", desc: false}]}
       initialSort={[{id: "name", desc: false}]}
       customSectionBelowTable={
         isFacilityAdmin() ? (

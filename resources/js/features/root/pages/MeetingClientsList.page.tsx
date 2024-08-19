@@ -30,11 +30,6 @@ export default (() => {
       staticPersistenceKey="facilityMeetingClients"
       // This table has multiple heavy to render columns.
       nonBlocking
-      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
-      intrinsicSort={[
-        {type: "column", column: "date", desc: true},
-        {type: "column", column: "startDayminute", desc: true},
-      ]}
       columns={[
         cols.attendant.attendantClient,
         tableAttributeColumnConfigs.client(),
@@ -81,6 +76,11 @@ export default (() => {
         cols.meeting.resources,
         ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting"}}),
         cols.meeting.actions,
+      ]}
+      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
+      intrinsicSort={[
+        {type: "column", column: "date", desc: true},
+        {type: "column", column: "startDayminute", desc: true},
       ]}
       initialSort={[{id: "date", desc: true}]}
       helpHref="/help/reports#meeting-clients"

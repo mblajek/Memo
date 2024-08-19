@@ -72,6 +72,7 @@ export default (() => {
           },
         },
       ]}
+      intrinsicSort={[{type: "column", column: "updatedAt", desc: true}]}
       initialSort={[{id: "name", desc: false}]}
       customSectionBelowTable={
         <div class="ml-2 flex gap-1">
