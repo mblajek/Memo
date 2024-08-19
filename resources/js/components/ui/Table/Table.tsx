@@ -37,6 +37,7 @@ import {BigSpinner} from "../Spinner";
 import {EmptyValueSymbol} from "../symbols";
 import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
+import {useColumnsByPrefixUtil} from "./tquery_filters/fuzzy_filter";
 
 export interface TableTranslations {
   tableName(o?: TOptions): string;
@@ -46,10 +47,12 @@ export interface TableTranslations {
   /** Summary of the table. */
   summary(count: number, activeColumnGroups?: readonly string[], o?: TOptions): string;
   columnGroup(group: string, o?: TOptions): string;
+  columnsByPrefix?: ReadonlyMap<string, string>;
 }
 
 export function createTableTranslations(tableName: string | string[]): TableTranslations {
   const t = useLangFunc();
+  const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const names = typeof tableName === "string" ? [tableName] : tableName;
   const tableNameKeys = [
     ...names.map((n) => `tables.tables.${n}.table_name`),
@@ -69,10 +72,12 @@ export function createTableTranslations(tableName: string | string[]): TableTran
     `tables.tables.generic.with_column_group.${columnGroup}.summary`,
   ];
   const columnGroupsKeyPrefixes = [
-    ...names.map((n) => `tables.tables.${n}.column_groups.`),
-    `tables.tables.generic.column_groups.`,
+    ...[names, "generic"].map((n) => `tables.tables.${n}.column_groups.`),
     ...columnNameKeyPrefixes,
   ];
+  const columnsByPrefix = columnsByPrefixUtil.fromColumnPrefixes(
+    [...names, "generic"].map((n) => `tables.tables.${n}.column_prefixes`),
+  );
   return {
     tableName: (o) => t(tableNameKeys, o),
     columnName: (column, o) =>
@@ -99,6 +104,7 @@ export function createTableTranslations(tableName: string | string[]): TableTran
         columnGroupsKeyPrefixes.map((p) => p + group),
         o,
       ),
+    columnsByPrefix,
   };
 }
 

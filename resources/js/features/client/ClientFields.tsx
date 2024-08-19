@@ -147,6 +147,7 @@ export function useTableAttributeColumnConfigs() {
                   </PaddedCell>
                 )),
               },
+              globalFilterable: false,
             },
             "documentsLinks.count": false,
             "notificationMethodDictIds.count": false,

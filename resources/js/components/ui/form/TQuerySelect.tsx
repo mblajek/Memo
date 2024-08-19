@@ -68,6 +68,8 @@ export interface TQueryConfig {
   readonly limit?: number;
   /** See tquery DataRequest.distinct. */
   readonly distinct?: boolean;
+  /** Column prefixes for filtering. */
+  readonly columnsByPrefix?: ReadonlyMap<string, ColumnName>;
   /**
    * A function creating the items. It can make use of the default item properties provided.
    * The default includes the value (taken from the value column) and the text (from the label columns).
@@ -114,6 +116,7 @@ function makeQuery(
     sort,
     limit = DEFAULT_LIMIT,
     distinct,
+    columnsByPrefix,
     itemFunc,
   }: TQueryConfig,
   {initialExtraFilter}: {initialExtraFilter?: FilterH} = {},
@@ -128,6 +131,7 @@ function makeQuery(
     sort,
     limit,
     distinct,
+    columnsByPrefix,
   });
   const {
     dataQuery,

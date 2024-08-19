@@ -83,6 +83,7 @@ export function createTableRequestCreator({
   intrinsicSort = () => undefined,
   initialSort = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
+  columnsByPrefix,
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
   columnGroups?: Accessor<readonly ColumnGroup[] | undefined>;
@@ -90,6 +91,7 @@ export function createTableRequestCreator({
   intrinsicSort?: Accessor<Sort | undefined>;
   initialSort?: SortingState;
   initialPageSize?: number;
+  columnsByPrefix?: ReadonlyMap<string, ColumnName>;
 }): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   const columnsConfigByName = createMemo(() => {
@@ -254,7 +256,7 @@ export function createTableRequestCreator({
         columns: columnsConfig()
           .filter(({isDataColumn, globalFilterable}) => isDataColumn && globalFilterable)
           .map(({name}) => name),
-        // TODO: Add columnsByPrefix for some columns, e.g. tel:, id= (for short code).
+        columnsByPrefix,
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {

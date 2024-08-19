@@ -9,9 +9,11 @@ import {ClientBirthDateShortInfo} from "features/client/ClientBirthDateShortInfo
 import {UserLink} from "features/facility-users/UserLink";
 import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
+import {useColumnsByPrefixUtil} from "../ui/Table/tquery_filters/fuzzy_filter";
 
 export function useModelQuerySpecs() {
   const userStatus = createQuery(User.statusQueryOptions);
+  const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const permissions = () => userStatus.data?.permissions;
   return {
     user: () => {
@@ -45,6 +47,9 @@ export function useModelQuerySpecs() {
           {type: "column", column: "staff.deactivatedAt", desc: true},
           {type: "column", column: "name", desc: false},
         ],
+        columnsByPrefix: columnsByPrefixUtil.fromColumnPrefixes(
+          ["staff", "generic"].map((n) => `tables.tables.${n}.column_prefixes`),
+        ),
         itemFunc: (row, defItem) => ({
           ...defItem,
           label: () => <UserLink type="staff" userId={row.get("id")} name={row.get("name")} link={false} />,
@@ -60,6 +65,9 @@ export function useModelQuerySpecs() {
             {type: "column", column: "name", desc: false},
             {type: "column", column: "client.birthDate", desc: true},
           ],
+          columnsByPrefix: columnsByPrefixUtil.fromColumnPrefixes(
+            ["client", "generic"].map((n) => `tables.tables.${n}.column_prefixes`),
+          ),
           itemFunc: (row, defItem) => {
             const Link: VoidComponent = () => (
               <UserLink type="clients" userId={row.get("id")} name={row.get("name")} link={false} />

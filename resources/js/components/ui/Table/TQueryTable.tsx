@@ -363,15 +363,38 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       columnDef: {cell: tableCells.dict()},
       metaParams: {textExportCell: tableTextExportCells.dict()},
       filterControl: DictFilterControl,
-      globalFilterable: true,
     })
     .set("dict_list", {
       columnDef: {cell: tableCells.dictList(), enableSorting: false, size: 270},
       metaParams: {textExportCell: tableTextExportCells.dictList()},
       filterControl: DictListFilterControl,
-      globalFilterable: true,
     });
 
+  const [table, setTable] = createSignal<SolidTable<DataItem>>();
+  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
+  const translations: TableTranslations = {
+    ...baseTranslations,
+    columnName: (column, o) => {
+      if (column === countColumn()) {
+        return t("tables.column_groups.count_column_label");
+      }
+      const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
+      const attributeId = meta?.attributeId;
+      if (attributeId) {
+        let attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
+        if (meta.transform) {
+          attributeLabel = t(`tables.transforms.${meta.transform}`, {
+            base: attributeLabel,
+            defaultValue: `${attributeLabel}.${meta.transform}`,
+          });
+        }
+        return baseTranslations.columnNameOverride
+          ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
+          : attributeLabel || "";
+      }
+      return baseTranslations.columnName(column, o);
+    },
+  };
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     columnGroups,
@@ -382,6 +405,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       props.initialPageSize ||
       // eslint-disable-next-line solid/reactivity
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
+    columnsByPrefix: translations.columnsByPrefix,
   });
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
@@ -494,7 +518,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       setEffectiveActiveColumnGroups(activeColumnGroups[0]());
     }
   });
-  const [table, setTable] = createSignal<SolidTable<DataItem>>();
   const historyPersistenceKey = `TQueryTable:${props.staticPersistenceKey || "main"}`;
   const columnFilterStates = new ColumnFilterStates();
   if (props.staticPersistenceKey) {
@@ -535,30 +558,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
-  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
-  const translations: TableTranslations = {
-    ...baseTranslations,
-    columnName: (column, o) => {
-      if (column === countColumn()) {
-        return t("tables.column_groups.count_column_label");
-      }
-      const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
-      const attributeId = meta?.attributeId;
-      if (attributeId) {
-        let attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
-        if (meta.transform) {
-          attributeLabel = t(`tables.transforms.${meta.transform}`, {
-            base: attributeLabel,
-            defaultValue: `${attributeLabel}.${meta.transform}`,
-          });
-        }
-        return baseTranslations.columnNameOverride
-          ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
-          : attributeLabel || "";
-      }
-      return baseTranslations.columnName(column, o);
-    },
-  };
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
