@@ -4,6 +4,7 @@ import {BigSpinner} from "components/ui/Spinner";
 import {TableExportConfig, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {Tabs} from "components/ui/Tabs";
+import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {EM_DASH} from "components/ui/symbols";
 import {DATE_FORMAT, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -65,9 +66,9 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   return (
     <div class="flex flex-col">
       <Show when={dictionaries()} fallback={<BigSpinner />}>
-        <h2 class="font-medium">
+        <StandaloneFieldLabel>
           <Capitalize text={tableTranslations.tableName()} />
-        </h2>
+        </StandaloneFieldLabel>
         <Tabs
           tabs={[
             {
@@ -136,10 +137,12 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.seriesType,
                         cols.meeting.seriesNumber,
                         cols.meeting.seriesCount,
+                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
                         cols.meeting.category,
                         cols.meeting.type,
                         cols.meeting.statusTags,
                         cols.attendant.get("attendanceStatus", {initialVisible: false}),
+                        cols.meeting.isFacilityWide,
                         cols.meeting.attendants,
                         cols.meeting.attendantsAttendance,
                         cols.meeting.attendantsCount,
@@ -244,10 +247,12 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.seriesType,
                         cols.meeting.seriesNumber,
                         cols.meeting.seriesCount,
+                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
                         cols.meeting.category,
                         cols.meeting.type,
                         cols.meeting.statusTags,
                         cols.attendant.get("attendanceStatus", {initialVisible: false}),
+                        cols.meeting.isFacilityWide,
                         cols.meeting.attendants,
                         cols.meeting.attendantsAttendance,
                         cols.meeting.attendantsCount,
@@ -304,10 +309,12 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.seriesType,
                         cols.meeting.seriesNumber,
                         cols.meeting.seriesCount,
+                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
                         cols.meeting.category,
                         cols.meeting.type,
                         cols.meeting.statusTags,
                         cols.attendant.attendanceStatus,
+                        cols.meeting.isFacilityWide,
                         cols.meeting.attendants,
                         cols.meeting.attendantsAttendance,
                         cols.meeting.attendantsCount,

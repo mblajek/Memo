@@ -8,6 +8,7 @@ generic:
   name: "nazwa"
   email: "adres e-mail"
   notes: "opis"
+  count_suffix: "$t(thin_n_thin)liczba"
 
 dictionary:
   _name: "słownik"
@@ -76,6 +77,7 @@ facility_user:
   completedMeetingsCountLastMonth: "liczba wizyt w ost. miesiącu"
   plannedMeetingsCount: "liczba zaplanowanych wizyt"
   plannedMeetingsCountNextMonth: "liczba wizyt w nast. miesiącu"
+  meetings: "$t(models.meeting._name_plural)"
 
 staff:
   _name: "pracownik"
@@ -103,6 +105,17 @@ client:
     updatedAt: "$t(models.generic.updatedAt)"
     updatedBy.name: "$t(models.generic.updatedBy.name)"
     updatedBy.id: "$t(models.generic.updatedBy.id)"
+    groups.count: "grupy$t(models.generic.count_suffix)"
+    groups.*.role: "grupy$t(thin_n_thin)role"
+    groups.*.clients.*.userId: "grupy$t(thin_n_thin)osoby"
+
+client_group:
+  _name: "grupa klientów"
+  _name_plural: "grupy klientów"
+  clients: "członkowie"
+  client:
+    userId: "osoba"
+    role: "rola"
 
 meeting:
   _name: "spotkanie"
@@ -117,13 +130,14 @@ meeting:
   categoryDictId: "kategoria"
   typeDictId: "typ spotkania"
   statusDictId: "$t(dictionary.meetingStatus._name)"
+  isFacilityWide: "cała placówka"
   attendant: "uczestnik"
   attendants: "uczestnicy"
-  attendants.count: "$t(models.meeting.attendants)$t(thin_space)$t(en_dash)$t(thin_space)liczba"
+  attendants.count: "$t(models.meeting.attendants)$t(models.generic.count_suffix)"
   staff: "$t(models.staff._name_plural)"
-  staff.count: "$t(models.meeting.staff)$t(thin_space)$t(en_dash)$t(thin_space)liczba"
+  staff.count: "$t(models.meeting.staff)$t(models.generic.count_suffix)"
   clients: "$t(models.client._name_plural)"
-  clients.count: "$t(models.meeting.clients)$t(thin_space)$t(en_dash)$t(thin_space)liczba"
+  clients.count: "$t(models.meeting.clients)$t(models.generic.count_suffix)"
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"

@@ -17,7 +17,7 @@ export const CreatedByInfo: VoidComponent<Props> = (allProps) => {
   const [mode, setMode] = createSignal<"created" | "updated">("created");
   return (
     <div {...htmlAttributes.merge(divProps, {class: "flex flex-col items-end text-xs"})}>
-      <div>
+      <div class="text-end">
         <Button
           onClick={() => setMode(mode() === "created" ? "updated" : "created")}
           title={t("toggle_created_updated_info")}

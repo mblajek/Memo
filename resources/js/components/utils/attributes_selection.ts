@@ -7,7 +7,8 @@ export interface PartialAttributesSelection<D = never> {
   /** Whether to include the fixed attributes. Default: false. */
   readonly includeFixed?: boolean;
   /**
-   * Map from fixed attribute apiName to the override value. Values meaning:
+   * Map from fixed attribute apiName, potentially with a suffix appended after a dot,
+   * to the override value. Values meaning:
    * - false: disables this fixed attribute, even if includeFixed is true.
    * - true or other non-null: enables this fixed attribute, even if includeFixed is false.
    *   The value can also provide an override value for the attribute. The meaning of this value
@@ -34,7 +35,7 @@ export function getUnknownFixedAttributes<D>(
   selection: AttributesSelection<D>,
   attributes: Attribute[],
 ): string[] | undefined {
-  const unknownFixedAttributes = new Set(Object.keys(selection.fixedOverrides));
+  const unknownFixedAttributes = new Set(Object.keys(selection.fixedOverrides).map((key) => key.split(".")[0]!));
   for (const attribute of attributes)
     if (attribute.model === selection.model)
       if (attribute.isFixed) {
@@ -46,12 +47,13 @@ export function getUnknownFixedAttributes<D>(
 export function isAttributeSelected<D>(
   selection: AttributesSelection<D>,
   {model, isFixed, apiName}: Pick<Attribute, "model" | "isFixed" | "apiName">,
+  suffix?: string,
 ): {selected: true; explicit: boolean; override?: D} | undefined {
   if (model !== selection.model) {
     return undefined;
   }
   if (isFixed) {
-    const override = selection.fixedOverrides[apiName];
+    const override = selection.fixedOverrides[suffix ? `${apiName}.${suffix}` : apiName];
     return override === undefined
       ? selection.includeFixed
         ? {selected: true, explicit: false}

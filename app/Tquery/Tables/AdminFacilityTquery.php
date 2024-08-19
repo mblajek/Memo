@@ -7,7 +7,7 @@ use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\TqService;
 
-readonly class AdminFacilityTquery extends TqService
+final readonly class AdminFacilityTquery extends TqService
 {
     protected function getConfig(): TqConfig
     {

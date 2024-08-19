@@ -24,11 +24,11 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
- * @property string name
- * @property ?string email
- * @property ?CarbonImmutable email_verified_at
- * @property ?string password
- * @property ?string remember_token
+ * @property string $name
+ * @property ?string $email
+ * @property ?CarbonImmutable $email_verified_at
+ * @property ?string $password
+ * @property ?string $remember_token
  * @property ?string $last_login_facility_id
  * @property ?string $managed_by_facility_id
  * @property ?string $global_admin_grant_id

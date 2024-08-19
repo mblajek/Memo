@@ -54,7 +54,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       preventPageLeave={false}
     >
       <TextField name="email" type="email" autocomplete="username" autofocus />
-      <PasswordField name="password" autocomplete="current-password" />
+      <PasswordField name="password" autocomplete="current-password" allowShow="whileHeld" />
       <FelteSubmit />
     </FelteForm>
   );

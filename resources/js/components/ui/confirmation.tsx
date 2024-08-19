@@ -64,25 +64,21 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
               >
                 {jsx(data().cancelText, t("actions.cancel"))}
               </Button>
-              <div
-                class="flex-grow basis-0"
-                use:title={[
+              <Button
+                ref={(el) => focusThis(el)}
+                class={cx("flex-grow basis-0", (data().mode || "default") === "default" ? "primary" : "secondary")}
+                title={[
                   data().mode === "danger" ? t("confirmation.read_before_confirm") : undefined,
                   {placement: "bottom"},
                 ]}
+                onClick={() => {
+                  data().resolve(true);
+                  args.clearParams();
+                }}
+                disabled={data().confirmDisabled?.() || readBeforeConfirm()}
               >
-                <Button
-                  ref={(el) => focusThis(el)}
-                  class={cx("w-full h-full", (data().mode || "default") === "default" ? "primary" : "secondary")}
-                  onClick={() => {
-                    data().resolve(true);
-                    args.clearParams();
-                  }}
-                  disabled={data().confirmDisabled?.() || readBeforeConfirm()}
-                >
-                  {jsx(data().confirmText, t("actions.confirm"))}
-                </Button>
-              </div>
+                {jsx(data().confirmText, t("actions.confirm"))}
+              </Button>
             </div>
           </div>
         );

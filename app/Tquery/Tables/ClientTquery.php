@@ -10,7 +10,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class ClientTquery extends FacilityUserTquery
+final readonly class ClientTquery extends FacilityUserTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -26,15 +26,48 @@ readonly class ClientTquery extends FacilityUserTquery
     final public static function addClientFields(Facility $facility, TqConfig $config): void
     {
         $config->addBaseOnTable(TqTableAliasEnum::clients, 'client');
-        $config->addJoined(TqDataTypeEnum::string, TqTableAliasEnum::clients, 'short_code');
         foreach (Client::attrMap($facility) as $attribute) {
             $config->addAttribute($attribute, 'client');
         }
+
+        $config->addQuery(
+            type: TqDataTypeEnum::int,
+            columnOrQuery: fn(string $tableName) => //
+            "select count(1) from `group_clients` where `group_clients`.`user_id` = `users`.`id`",
+            columnAlias: 'client.groups.count'
+        );
+
+        $config->addListQuery(
+            type: TqDataTypeEnum::uuid_list,
+            select: "`group_clients`.`client_group_id`",
+            from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`",
+            columnAlias: 'client.groups.*.id',
+        );
+
+        $config->addListQuery(
+            type: TqDataTypeEnum::string_list,
+            select: "`group_clients`.`role`",
+            from: "`group_clients` where `group_clients`.`user_id` = `users`.`id`"
+            . " and `group_clients`.`role` is not null",
+            columnAlias: 'client.groups.*.role',
+        );
+
+        $config->addListQuery(
+            type: TqDataTypeEnum::uuid_list,
+            select: "`group_clients`.`user_id`",
+            from: "`group_clients` as `current_group_clients` join `group_clients`"
+            . " on `group_clients`.`client_group_id` = `current_group_clients`.`client_group_id`"
+            . " and `group_clients`.`id` != `current_group_clients`.`id`"
+            . " where `current_group_clients`.`user_id` = `users`.`id`",
+            columnAlias: 'client.groups.*.clients.*.user_id',
+            selectDistinct: true,
+        );
     }
 
     protected function getConfig(): TqConfig
     {
-        $config = parent::getConfig();
+        $config = parent::getConfig(); // keep $config->uniqueTable - users.id is still unique
+
         self::addClientFields($this->facility, $config);
         return $config;
     }

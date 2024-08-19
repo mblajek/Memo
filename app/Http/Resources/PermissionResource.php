@@ -38,11 +38,6 @@ class PermissionResource extends AbstractJsonResource
             'facilityStaff' => false,
             'facilityAdmin' => false,
             'developer' => false,
-            // hide added by AbstractJsonResource:
-            'createdAt' => null,
-            'updatedAt' => null,
-            'createdBy' => null,
-            'updatedBy' => null,
         ];
     }
 }

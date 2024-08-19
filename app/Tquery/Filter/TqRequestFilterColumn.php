@@ -77,10 +77,22 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
         $inverse = ($this->inverse xor $invert);
         $columnType = $this->column->type;
 
-        if ($columnType->isUuidList()) {
+        $sqlOperator = $this->operator->sqlOperator();
+
+        $query = null;
+        if ($columnType->isList()) {
             // "where ... and (column" appended with "is null or true)" matches any value
             $anyValue = 'is null or true';
-            $query = match ($this->operator) {
+            if ($this->operator === TqFilterOperator::null) {
+                $query = fn(null $bind) => "($filterQuery $anyValue)) = 0";
+            } elseif ($columnType === TqDataTypeEnum::string_list
+                && in_array($this->operator, TqFilterOperator::LIKE, true)) {
+                $query = fn(TqSingleBind $bind) => "($filterQuery $sqlOperator {$bind->use()})) != 0";
+            } elseif (!$columnType->isUuidList()) {
+                FatalExceptionFactory::tquery()->throw();
+            }
+
+            $query ??= match ($this->operator) {
                 TqFilterOperator::null => fn(null $bind) => "($filterQuery $anyValue)) = 0",
                 TqFilterOperator::has => fn(TqSingleBind $bind) => "($filterQuery = {$bind->use()})) != 0",
                 TqFilterOperator::has_any => fn(TqListBind $bind) => "($filterQuery in {$bind->use()})) != 0",
@@ -94,10 +106,8 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
             };
             $nullable = false;
         } else {
-            $sqlPrefix = $this->operator->sqlPrefix();
-            $sqlOperator = $this->operator->sqlOperator();
             if ($this->operator === TqFilterOperator::null) {
-                $query = fn(null $bind) => trim("$sqlPrefix $filterQuery $sqlOperator");
+                $query = fn(null $bind) => trim("$filterQuery $sqlOperator");
             } else {
                 if ($columnType->notNullBaseType() === TqDataTypeEnum::string) {
                     // fix for 'Illegal mix of collations (ascii*) and (utf8*)' error
@@ -105,7 +115,7 @@ readonly class TqRequestFilterColumn extends TqRequestAbstractFilter
                     // there are no 'text' columns with 'ascii' encoding
                     $filterQuery = "convert($filterQuery using utf8mb4)";
                 }
-                $query = fn(TqBind $bind) => trim("$sqlPrefix $filterQuery $sqlOperator {$bind->use()}");
+                $query = fn(TqBind $bind) => trim("$filterQuery $sqlOperator {$bind->use()}");
             }
             $nullable = $columnType->isNullable();
         }

@@ -9,7 +9,7 @@ use App\Tquery\Config\TqDictDef;
 use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class MeetingAttendantTquery extends MeetingTquery
+final readonly class MeetingAttendantTquery extends MeetingTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -34,6 +34,7 @@ readonly class MeetingAttendantTquery extends MeetingTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
+        $config->uniqueTable = TqTableAliasEnum::users;
 
         $config->addJoined(
             TqDataTypeEnum::uuid,
@@ -58,6 +59,12 @@ readonly class MeetingAttendantTquery extends MeetingTquery
             TqTableAliasEnum::meeting_attendants,
             'attendance_status_dict_id',
             'attendant.attendance_status_dict_id',
+        );
+        $config->addJoined(
+            TqDataTypeEnum::uuid_nullable,
+            TqTableAliasEnum::meeting_attendants,
+            'client_group_id',
+            'attendant.client_group_id',
         );
 
         return $config;

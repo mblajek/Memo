@@ -105,7 +105,8 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
         if (!table) {
           return;
         }
-        if (table.scrollTop >= table.scrollHeight - table.clientHeight) {
+        // Use a safety margin.
+        if (table.scrollTop >= table.scrollHeight - table.clientHeight - 3) {
           setTimeout(() => {
             table.scrollTop = table.scrollHeight;
           });

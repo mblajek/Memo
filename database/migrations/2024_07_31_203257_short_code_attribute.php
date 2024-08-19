@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DBH;
+use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DMH;
 
 return new class extends Migration
 {
@@ -15,7 +15,7 @@ return new class extends Migration
     {
         $date = '2024-07-31 00:00:00';
         Schema::table('attributes', function (Blueprint $table) {
-            $table->string('notes', 4096)->nullable();
+            $table->string('description', 4096)->nullable();
         });
         DB::statement(
             "update `attributes` set `default_order` = `default_order` + 1 where `table` = 'clients'"
@@ -27,8 +27,8 @@ return new class extends Migration
                     'table' => 'clients',
                     'created_at' => $date,
                     'updated_at' => $date,
-                    'created_by' => DBH::USER_SYSTEM,
-                    'updated_by' => DBH::USER_SYSTEM,
+                    'created_by' => DMH::USER_SYSTEM,
+                    'updated_by' => DMH::USER_SYSTEM,
                     'is_fixed' => true,
                 ], [
                 [
@@ -54,7 +54,7 @@ return new class extends Migration
         DB::statement("update `attributes` set `default_order` = `default_order` - 1 where `table` = 'clients'"
             ." order by `default_order`");
         Schema::table('attributes', function (Blueprint $table) {
-            $table->dropColumn('notes');
+            $table->dropColumn('description');
         });
     }
 };

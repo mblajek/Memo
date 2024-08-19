@@ -613,15 +613,28 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     if (!daysSelection().contains(meetingDate)) {
       setDaysSelectionAndMonthFromDay(meetingDate);
     }
-    if (meeting.staff.length) {
+    if (meeting.staff.length || meeting.resources.length) {
       if (mode() === "day") {
+        // Select all the staff columns, or all the meeting resources if no staff.
         const selectedResources = new Set(selectedResourcesCheckbox());
-        for (const {userId} of meeting.staff) {
-          selectedResources.add(userId);
+        if (meeting.staff.length) {
+          for (const {userId} of meeting.staff) {
+            selectedResources.add(userId);
+          }
+        } else {
+          for (const {resourceDictId} of meeting.resources) {
+            selectedResources.add(resourceDictId);
+          }
         }
         setSelectedResourcesCheckbox(selectedResources);
-      } else if (!meeting.staff.some((staff) => staff.userId === selectedResourceRadio())) {
-        setSelectedResourceRadio(meeting.staff[0]!.userId);
+      } else if (
+        !meeting.staff.some(({userId}) => userId === selectedResourceRadio()) &&
+        !meeting.resources.some(({resourceDictId}) => resourceDictId === selectedResourceRadio())
+      ) {
+        // If not visible, show the first staff or the first meeting resource column.
+        setSelectedResourceRadio(
+          meeting.staff.length ? meeting.staff[0]!.userId : meeting.resources[0]!.resourceDictId,
+        );
       }
     }
     if (

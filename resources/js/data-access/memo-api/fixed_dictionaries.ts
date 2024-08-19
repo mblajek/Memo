@@ -16,6 +16,7 @@ export function useFixedDictionaries() {
   }
   return {
     dictionaries,
+    clientTypeDict: tDict("clientType", ["child", "adult"]),
     meetingCategoryDict: tDict("meetingCategory", ["other", "system"]),
     meetingTypeDict: tDict("meetingType", ["work_time", "leave_time", "other"]),
     meetingStatusDict: tDict("meetingStatus", ["planned", "completed", "cancelled"]),

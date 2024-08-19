@@ -4,6 +4,7 @@ import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "componen
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
 import {TextExportedCell, exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
 import {DictFilterControl} from "components/ui/Table/tquery_filters/DictFilterControl";
+import {NullFilterControl} from "components/ui/Table/tquery_filters/NullFilterControl";
 import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/UuidListSelectFilterControl";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
@@ -39,6 +40,7 @@ type TQMeetingAttendanceResource = TQFullMeetingResource & {
   readonly "attendant.attendanceTypeDictId": string;
   readonly "attendant.id": string;
   readonly "attendant.name": string;
+  readonly "attendant.clientGroupId": string;
   readonly "attendant.attendanceStatusDictId": string;
 };
 
@@ -231,6 +233,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnGroups: ["meeting", true],
       // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
     },
+    isFacilityWide: {name: "isFacilityWide", initialVisible: false, columnGroups: "meeting"},
     attendants: {
       name: "attendants.*.userId",
       extraDataColumns: ["attendants"],
@@ -422,6 +425,21 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     attendantClient: {
       ...attendantColumn,
       filterControl: (props) => <UuidSelectFilterControl {...props} {...modelQuerySpecs.userClient()} />,
+    },
+    attendantClientGroup: {
+      name: "attendant.clientGroupId",
+      columnDef: {
+        // TODO: Add a reasonable cell and export cell definition.
+        cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v}>{() => t("bool_values.yes")}</ShowCellVal>
+          </PaddedCell>
+        )),
+        size: 250,
+      },
+      filterControl: NullFilterControl,
+      initialVisible: false,
+      // TODO: Add grouping by client group.
     },
     attendanceStatus: {
       name: "attendant.attendanceStatusDictId",

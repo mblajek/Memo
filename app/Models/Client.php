@@ -9,12 +9,15 @@ use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\ClientShortCodeRule;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * @property string short_code
+ * @property string $short_code
  * @property-read Member $member
+ * @property-read Collection<array-key, GroupClient> $groupClients
  * @method static ClientBuilder query()
  */
 class Client extends Model
@@ -49,19 +52,32 @@ class Client extends Model
         return $this->hasOne(Member::class);
     }
 
+    public function groupClients(): HasMany
+    {
+        return $this->hasMany(GroupClient::class, 'client_id')->from(
+            GroupClient::query()
+                ->join('members', 'members.user_id', 'group_clients.user_id')
+                ->select(['group_clients.*', 'members.client_id']),
+            'group_clients',
+        );
+    }
+
     public function fillShortCode(): void
     {
         if ($this->short_code !== null) {
             return;
         }
-        $this->short_code = Client::query()
+        $builder = Client::query()
             ->selectRaw(
                 "lpad(cast(`clients`.`short_code` as int)+1, length(`clients`.`short_code`), '0') as `new_short_code`"
             )
             ->join('members', 'members.client_id', 'clients.id')
             ->where('members.facility_id', PermissionMiddleware::facility()->id)
             ->whereRaw("clients.short_code REGEXP '^[0-9]+$'")
-            ->orderByRaw('cast(clients.short_code as int) desc')
-            ->first(['new_short_code'])?->new_short_code ?? '1';
+            ->orderByRaw('cast(clients.short_code as int) desc');
+        if ($this->id) {
+            $builder->where('clients.id', '!=', $this->id);
+        }
+        $this->short_code = $builder->first(['new_short_code'])?->new_short_code ?? '1';
     }
 }

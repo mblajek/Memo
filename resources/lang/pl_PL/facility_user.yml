@@ -21,3 +21,28 @@ staff:
   is_inactive:
     label: "Pracownik jest nieaktywny"
     since: "(od {{date}})"
+
+client_group__interval: "(0-1)[$t(models.client_group._name)];(2-inf)[$t(models.client_group._name_plural)];"
+client_groups:
+  first_client_frozen: "Ten klient musi należeć do grupy"
+  delete_current_client:
+    button: "Usuń klienta z grupy"
+    title: "Usunięcie klienta z grupy"
+    body: "Czy na pewno usunąć bieżącego klienta z grupy? (Profil klienta nie zostanie usunięty.)"
+    confirm: "Usuń klienta z grupy"
+    success: "Usunięto klienta z grupy"
+  role_presets:
+    empty: ""
+    mother: "matka"
+    father: "ojciec"
+    grandmother: "babcia"
+    grandfather: "dziadek"
+    sister: "siostra"
+    brother: "brat"
+    foster_mother: "matka zastępcza"
+    foster_father: "ojciec zastępczy"
+    caregiver: "opiekun"
+  clients_count__zero: "brak członków"
+  clients_count__one: "{{count, number}} członek"
+  clients_count__few: "{{count, number}} członków"
+  clients_count__many: "{{count, number}} członków"

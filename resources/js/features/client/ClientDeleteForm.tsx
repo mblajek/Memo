@@ -13,6 +13,7 @@ import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
+import {OcBlocked2} from "solid-icons/oc";
 import {createSignal, Show, splitProps, VoidComponent} from "solid-js";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
@@ -54,6 +55,7 @@ export const ClientDeleteForm: VoidComponent<ClientDeleteFormProps> = (allProps)
     toastSuccess(t(duplicateOf ? "forms.client_delete.success.deduplicate" : "forms.client_delete.success.remove"));
     props.onSuccess?.({duplicateOf});
     invalidate.facility.users();
+    invalidate.facility.clientGroups();
   }
 
   const ClientInfo: VoidComponent<{readonly userId: string}> = (props) => (
@@ -92,10 +94,9 @@ export const ClientDeleteForm: VoidComponent<ClientDeleteFormProps> = (allProps)
       preventPageLeave={false}
     >
       {(form) => {
+        const missingDuplicateOf = () => requiresDuplicateOf() && !form.data("duplicateOf");
         const submitDisabled = () =>
-          readBeforeConfirm() ||
-          (requiresDuplicateOf() && !form.data("duplicateOf")) ||
-          form.data("duplicateOf") === props.id;
+          readBeforeConfirm() || missingDuplicateOf() || form.data("duplicateOf") === props.id;
         return (
           <>
             <div class="flex flex-col gap-2">
@@ -146,6 +147,15 @@ export const ClientDeleteForm: VoidComponent<ClientDeleteFormProps> = (allProps)
               class="secondary"
               disabled={submitDisabled()}
               title={submitDisabled() ? t("forms.client_delete.form_info.disabled_submit_hint") : undefined}
+              submitLabel={
+                missingDuplicateOf()
+                  ? (defLabel) => (
+                      <span>
+                        <OcBlocked2 class="inlineIcon text-red-700" /> {defLabel}
+                      </span>
+                    )
+                  : undefined
+              }
               cancel={props.onCancel}
             />
           </>

@@ -8,14 +8,14 @@ use App\Models\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @property string attribute_id
- * @property string object_id
- * @property ?string ref_dict_id
- * @property ?string ref_object_id
- * @property ?string string_value
- * @property ?int int_value
- * @property ?string datetime_value // no cast
- * @property int default_order
+ * @property string $attribute_id
+ * @property string $object_id
+ * @property ?string $ref_dict_id
+ * @property ?string $ref_object_id
+ * @property ?string $string_value
+ * @property ?int $int_value
+ * @property ?string $datetime_value // no cast
+ * @property int $default_order
  * @method static ValueBuilder query()
  */
 class Value extends Model

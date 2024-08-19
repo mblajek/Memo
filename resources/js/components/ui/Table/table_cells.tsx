@@ -6,6 +6,7 @@ import {DateTime} from "luxon";
 import {Accessor, Index, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
 import {ChildrenOrFunc, getChildrenElement} from "../children_func";
 import {EmptyValueSymbol} from "../symbols";
+import {ThingsList} from "../ThingsList";
 import {Header} from "./Header";
 import {IdColumn} from "./IdColumn";
 
@@ -85,6 +86,7 @@ export function useTableCells() {
     list: defaultCell,
     object: defaultCell,
     string: defaultCell,
+    stringList: defaultCell,
     text: defaultCell,
     uuid: <T,>() =>
       cellFunc<string, T>((props) => (
@@ -128,11 +130,7 @@ function defaultFormatValue(value: unknown) {
   if (value == undefined) {
     return undefined;
   } else if (Array.isArray(value)) {
-    return (
-      <ul>
-        <Index each={value}>{(item) => <li>{defaultFormatValue(item())}</li>}</Index>
-      </ul>
-    );
+    return <ThingsList things={value} map={defaultFormatValue} />;
   } else if (typeof value === "object") {
     return JSON.stringify(value);
   } else {
@@ -160,11 +158,15 @@ interface ShowCellValProps<V> {
   readonly children?: ChildrenOrFunc<[Accessor<V>]>;
 }
 
+function isEmptyArray(value: unknown): value is readonly [] {
+  return Array.isArray(value) && !value.length;
+}
+
 export const ShowCellVal = <V,>(props: ShowCellValProps<V>) => {
   return (
     <Show
-      when={props.v != undefined}
-      fallback={<>{props.fallback ?? (props.v === null ? <EmptyValueSymbol /> : undefined)}</>}
+      when={props.v != undefined && !isEmptyArray(props.v)}
+      fallback={<>{props.fallback ?? (props.v === null || isEmptyArray(props.v) ? <EmptyValueSymbol /> : undefined)}</>}
     >
       {getChildrenElement(props.children || ((v) => <>{String(v())}</>), () => props.v as V)}
     </Show>

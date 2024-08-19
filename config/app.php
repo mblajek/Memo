@@ -63,5 +63,5 @@ return [
     /* usable in tinker, eg. DB instead of Illuminate\Support\Facades\DB */
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
-    ])->toArray(), 
+    ])->toArray(),
 ];

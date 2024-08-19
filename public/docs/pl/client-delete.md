@@ -9,22 +9,22 @@ Poniżej opisano dostępne sposoby na usunięcie klienta.
 
 ### Zduplikowani klienci {#delete-duplicate}
 
-Może się zdarzyć, że dwa (lub więcej) wpisy na liście klientów odnoszą się do tej samej osoby. Może to być
-skutkiem pomyłki (dodano klienta zamiast użyć istniejącego wpisu) lub importu z innego systemu.
+Może się zdarzyć, że dwa (lub więcej) profile na liście klientów odnoszą się do tej samej osoby. Może to być
+skutkiem pomyłki (dodano klienta zamiast użyć istniejącego profilu) lub importu z innego systemu.
 
-Należy wtedy połączyć klientów w jeden wpis. Jest to operacja odbywająca się częściowo ręcznie, a częściowo
+Należy wtedy połączyć klientów w jeden profil. Jest to operacja odbywająca się częściowo ręcznie, a częściowo
 automatycznie — wszystkie dane klienta trzeba połączyć ręcznie, natomiast informacje o jego spotkaniach
 i przynależności do grup zostaną połączone automatycznie.
 
 Postępuj zgodnie z poniższą instrukcją:
 
-1. Wybierz jeden z wpisów jako _**właściwy**_, czyli ten, który ma być w pełni zachowany. Nie ma
-istotnego znaczenia, który z wpisów to będzie, ale warto wybrać ten, który ma najwięcej informacji,
+1. Zdecyduj który profili jest _**właściwy**_ — jest to ten, który zostanie w pełni zachowany. Nie ma
+istotnego znaczenia, który z profili to będzie, ale warto wybrać ten, który ma najwięcej informacji,
 albo ma je najbardziej aktualne.
-1. W osobnym oknie przeglądarki otwórz drugi wpis — _**duplikat**_ (ten wpis będzie docelowo usunięty).
+1. W osobnym oknie przeglądarki otwórz drugi profil — _**duplikat**_ (ten profil będzie docelowo usunięty).
 Następnie upewnij się, że wszystkie istotne informacje (dane osobowe, opis itp.) znajdujące się w _duplikacie_ są
-również zapisane we _właściwym_ wpisie. Jeżeli nie, edytuj _właściwy_ wpis, aby dodać brakujące informacje.
-Na tym etapie zignoruj spotkania przypisane do poszczególnych wpisów, oraz grupy klientów.
+również zapisane we _właściwym_ profilu. Jeżeli nie, edytuj _właściwy_ profil, aby dodać brakujące informacje.
+Na tym etapie zignoruj spotkania przypisane do poszczególnych klientów, oraz grupy klientów.
 1. **Kolejne kroki może przeprowadzić tylko administrator placówki.**
 Na koncie _duplikatu_ kliknij _$t(forms.client_delete.activate_button)_ i przeczytaj uważnie informacje,
 które zostały wyświetlone na ekranie.

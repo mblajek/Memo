@@ -1,5 +1,5 @@
-import {A} from "@solidjs/router";
 import {Email} from "components/ui/Email";
+import {LinksList} from "components/ui/LinksList";
 import {Phone} from "components/ui/Phone";
 import {RichTextView} from "components/ui/RichTextView";
 import {SmallSpinner} from "components/ui/Spinner";
@@ -14,7 +14,7 @@ import {PartialAttributesSelection} from "components/utils/attributes_selection"
 import {SHORT_CODE_EMPTY} from "data-access/memo-api/resources/client.resource";
 import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
-import {For, Show, VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 
 interface Props {
   readonly editMode: boolean;
@@ -51,22 +51,7 @@ const DETAILS_ATTRIBUTES_SELECTION: PartialAttributesSelection<AttributeParams<a
       view: (phone) => <Phone class="font-semibold" phone={phone()} />,
     } satisfies AttributeParams<string>,
     documentsLinks: {
-      view: (links) => (
-        <div class="flex flex-col gap-1">
-          <For each={links()}>
-            {(link) => (
-              <A
-                href={link}
-                target="_blank"
-                class="inline-block text-sm wrapTextAnywhere"
-                style={{"line-height": "normal"}}
-              >
-                {link}
-              </A>
-            )}
-          </For>
-        </div>
-      ),
+      view: (links) => <LinksList links={links()} />,
     } satisfies AttributeParams<string[]>,
   },
 };
@@ -98,7 +83,7 @@ export function useTableAttributeColumnConfigs() {
           model: "client",
           includeFixed: true,
           fixedOverrides: {
-            shortCode: {
+            "shortCode": {
               columnDef: {
                 cell: cellFunc<string>((props) => (
                   <PaddedCell class="text-right">
@@ -126,14 +111,14 @@ export function useTableAttributeColumnConfigs() {
                 />
               ),
             },
-            typeDictId: {initialVisible: true, columnDef: {size: 180}},
-            genderDictId: {columnDef: {size: 180}},
-            birthDate: {
+            "typeDictId": {initialVisible: true, columnDef: {size: 180}},
+            "genderDictId": {columnDef: {size: 180}},
+            "birthDate": {
               initialVisible: true,
               columnDef: {cell: tableCells.dateNoWeekday()},
             },
-            addressCity: {initialVisible: true},
-            contactEmail: {
+            "addressCity": {initialVisible: true},
+            "contactEmail": {
               initialVisible: true,
               columnDef: {
                 cell: cellFunc<string>((props) => (
@@ -143,7 +128,7 @@ export function useTableAttributeColumnConfigs() {
                 )),
               },
             },
-            contactPhone: {
+            "contactPhone": {
               initialVisible: true,
               columnDef: {
                 cell: cellFunc<string>((props) => (
@@ -154,7 +139,18 @@ export function useTableAttributeColumnConfigs() {
                 size: 180,
               },
             },
-            notes: {
+            "documentsLinks": {
+              columnDef: {
+                cell: cellFunc<string[]>((props) => (
+                  <PaddedCell>
+                    <ShowCellVal v={props.v}>{(v) => <LinksList links={v()} />}</ShowCellVal>
+                  </PaddedCell>
+                )),
+              },
+            },
+            "documentsLinks.count": false,
+            "notificationMethodDictIds.count": false,
+            "notes": {
               columnDef: {
                 cell: cellFunc<string>((props) => (
                   <ScrollableCell>

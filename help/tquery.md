@@ -17,6 +17,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 | dict(1)          | +    | + | +  | .    | .   | .    | +      | +    |
 | dict_list(3)     | +    | + | .  | +    | .   | .    | +      | .    |
 | uuid_list(3)     | +    | + | .  | +    | .   | .    | +      | .    |
+| string_list(3)   | +    | . | .  | .    | .   | +(6) | +      | .    |
 | list(4)          | +    | . | .  | .    | .   | .    | +      | .    |
 | object(2)        | *    | . | .  | .    | .   | .    | *      | .    |
 | **inne:**        |
@@ -25,7 +26,7 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 - dla wszystkich porównań `val` powinno być (zależnie od typu porównania, wartością lub listą)
   - tego samego typu co kolumna dla `bool`, `int`, `string`, `text`-`string`
   - stringiem poprawnie reprezentującą wartość (`date` - `Y-m-d`; `datetime` - `Y-m-d\TH:i:s\Z`;
-   `uuid`, `dict`, `dict_list` - uuid v4)
+    `uuid`, `dict`, `dict_list` - uuid v4)
   - dla operatorów `=`, `==` i `in` dla `string` wartość musi być strimmowana
   - wartość nie może być pustym stringiem
   - dla operatorów `has_*` wartość musi być niepustą listą
@@ -53,10 +54,11 @@ Pole `filter`, o ile istnieje, zawiera obiekt filtra lub `always` (where true) l
 
 - `(1)` - pojedyncza wartość słownikowa, zwracana jako uuid
 - `(2)` - obiekt o dowolnej strukturze, ustalonej z frontendem, możliwe, że nie wystąpi,
-i zawsze będzie przekazywany jako pola "object.*" w płaskiej strukturze
+  i zawsze będzie przekazywany jako pola "object.*" w płaskiej strukturze
 - `(3)` - wiele wartości słownikowych, zwracanych jako lista uuid lub lista uuid np. użytkowników
 - `(4)` - lista obiektów/wartości o dowolnej strukturze, ustalonej z frontendem
 - `(5)` - liczba zgrupowanych rekordów, jeżeli tquery było wywołane z opcją `distnct=true`
+- `(6)` - dowolny element z listy spełnia warunek, docelowo może to być `has_any:%v%`, ...
 - `(8)` - mógłby to być opcją typu substring(256), żeby nie zwracać 100 wierszy po 4kb tekstu, a może nie musi
 
 

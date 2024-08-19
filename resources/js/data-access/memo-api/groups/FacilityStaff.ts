@@ -28,7 +28,7 @@ export namespace FacilityStaff {
   export const keys = {
     staff: () => [...FacilityUsers.keys.user(), "staff"] as const,
     staffList: (request?: Api.Request.GetListParams) => [...keys.staff(), "list", request, activeFacilityId()] as const,
-    staffGet: (id: Api.Id) => [...keys.staff(), "list", createListRequest(id), activeFacilityId()] as const,
+    staffGet: (id: Api.Id) => [...keys.staff(), "get", id, activeFacilityId()] as const,
   };
 
   export const staffQueryOptions = (ids: ListInParam) => {

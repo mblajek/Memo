@@ -38,8 +38,9 @@ enum AttributeType: string
         DictionaryUuidEnum|string|null $dictionaryId,
     ): TqDictDef|TqDataTypeEnum {
         $type = $multi ? match ($this) {
-            self::Bool, self::Date, self::Datetime, self::Int, self::String, self::Text => TqDataTypeEnum::list,
+            self::Bool, self::Date, self::Datetime, self::Int, self::Text => TqDataTypeEnum::list,
             self::Users, self::Clients, self::Attributes => TqDataTypeEnum::uuid_list,
+            self::String => TqDataTypeEnum::string_list,
             self::Dict => TqDataTypeEnum::dict_list,
             self::Separator => FatalExceptionFactory::unexpected()->throw(),
         } : match ($this) {
