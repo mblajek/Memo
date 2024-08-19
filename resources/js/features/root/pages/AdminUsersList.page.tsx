@@ -39,13 +39,14 @@ export default (() => {
         {name: "hasEmailVerified", initialVisible: false},
         {name: "hasPassword"},
         {name: "passwordExpireAt", initialVisible: false},
+        {name: "facilities.*.name", initialVisible: false},
         {name: "facilities.count", initialVisible: false},
-        {
-          name: "hasGlobalAdmin",
-          columnDef: {size: 130},
-        },
         {name: "managedByFacility.name", initialVisible: false},
         {name: "lastLoginFacility.name", initialVisible: false},
+        {name: "hasGlobalAdmin", columnDef: {size: 130}},
+        // {name: "hasFacilityAdmin", initialVisible: false},
+        // {name: "isStaff", initialVisible: false},
+        // {name: "isClient", initialVisible: false},
         ...getCreatedUpdatedColumns({globalAdmin: true}),
         {
           name: "actions",

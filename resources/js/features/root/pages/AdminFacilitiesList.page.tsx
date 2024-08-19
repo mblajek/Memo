@@ -37,6 +37,7 @@ export default (() => {
             )),
           },
         },
+        {name: "facilityAdmins.*.name"},
         ...getCreatedUpdatedColumns({globalAdmin: true}),
         {
           name: "actions",
