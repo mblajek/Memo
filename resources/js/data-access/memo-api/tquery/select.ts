@@ -43,8 +43,7 @@ export function createSelectRequestCreator({
         schema: sch,
         columns,
         dictionaries: dictionaries(),
-        // TODO: Consider adding columnsByPrefix for some columns, e.g. id= for Versum ids.
-        // This would allow selecting e.g. a person by their Versum id.
+        // TODO: Consider adding columnsByPrefix for some columns, e.g. id= for short codes.
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {

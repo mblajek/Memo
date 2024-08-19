@@ -49,12 +49,6 @@ export interface TQMeetingAttendantResource extends MeetingStaffResource, Meetin
   readonly attendanceTypeDictId: string;
 }
 
-/**
- * Creates a request creator used by a calendar.
- *
- * TODO: Optimise to avoid loading data that is already cached, maybe load a full month at once if
- * only one staff member is selected etc.
- */
 export function createCalendarRequestCreator({
   calendarFunction,
   intrinsicFilter = "always",

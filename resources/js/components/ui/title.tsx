@@ -127,7 +127,7 @@ export function title(element: Element, accessor: Accessor<TitleDirectiveType>) 
       const [titleValue, tippyProps] = isArrayForm(value) ? value : [value];
       if (titleValue != undefined && titleValue !== "") {
         element.setAttribute(
-          "aria-label",
+          "aria-description",
           typeof titleValue === "string"
             ? titleValue
             : titleValue instanceof HTMLElement

@@ -74,8 +74,7 @@ export default (() => {
         {name: "completedMeetingsCountLastMonth"},
         {name: "plannedMeetingsCount", initialVisible: false},
         {name: "plannedMeetingsCountNextMonth"},
-        // TODO: Switch to entity: "staff".
-        ...getCreatedUpdatedColumns(),
+        ...getCreatedUpdatedColumns({entity: "staff"}),
       ]}
       intrinsicFilter={showInactive() ? undefined : {type: "column", column: "staff.isActive", op: "=", val: true}}
       intrinsicSort={[{type: "column", column: "name", desc: false}]}

@@ -254,7 +254,7 @@ export function createTableRequestCreator({
         columns: columnsConfig()
           .filter(({isDataColumn, globalFilterable}) => isDataColumn && globalFilterable)
           .map(({name}) => name),
-        // TODO: Add columnsByPrefix for some columns, e.g. tel:, id= (for Versum ids).
+        // TODO: Add columnsByPrefix for some columns, e.g. tel:, id= (for short code).
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {
