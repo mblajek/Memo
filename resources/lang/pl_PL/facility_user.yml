@@ -26,9 +26,9 @@ client_group__interval: "(0-1)[$t(models.client_group._name)];(2-inf)[$t(models.
 client_groups:
   first_client_frozen: "Ten klient musi należeć do grupy"
   delete_current_client:
-    button: "Usuń tego klienta z grupy"
+    button: "Usuń klienta z grupy"
     title: "Usunięcie klienta z grupy"
-    body: "Czy na pewno usunąć tego klienta z grupy? (Profil klienta nie zostanie usunięty.)"
+    body: "Czy na pewno usunąć bieżącego klienta z grupy? (Profil klienta nie zostanie usunięty.)"
     confirm: "Usuń klienta z grupy"
     success: "Usunięto klienta z grupy"
   role_presets:

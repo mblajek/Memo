@@ -33,7 +33,7 @@ user_edit:
   validation:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
     cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu email jako niezweryfikowany."
-  success: "Zmieniono dane"
+  success: "Zmodyfikowano dane"
 
 user_create:
   form_name: "Nowa osoba"
@@ -47,7 +47,7 @@ facility_create:
 
 facility_edit:
   form_name: "Edycja placówki"
-  success: "Zmieniono dane placówki"
+  success: "Zmodyfikowano dane placówki"
 
 meeting:
   default_duration: "Sugerowane:"
@@ -71,7 +71,7 @@ meeting_create:
 
 meeting_edit:
   form_name: "Edycja spotkania"
-  success: "Zmieniono spotkanie"
+  success: "Zmodyfikowano spotkanie"
 
 meeting_delete:
   form_name: "Usunięcie spotkania"
@@ -118,7 +118,7 @@ work_time_create:
 
 work_time_edit:
   form_name: "Edycja czasu pracy / nieobecności"
-  success: "Zmieniono czas pracy / nieobecność"
+  success: "Zmodyfikowano czas pracy / nieobecność"
 
 work_time_delete:
   form_name: "Usunięcie czasu pracy / nieobecności"
@@ -156,7 +156,7 @@ client:
 
 client_edit:
   form_name: "Edycja klienta"
-  success: "Zmieniono dane klienta"
+  success: "Zmodyfikowano dane klienta"
 
 client_create:
   form_name: "Nowy klient"
@@ -188,10 +188,11 @@ client_group:
 
 client_group_edit:
   form_name: "Edycja grupy klientów"
-  success: "Zmieniono grupę klientów"
+  success: "Zmodyfikowano grupę klientów"
 
 client_group_create:
   form_name: "Nowa grupa klientów"
+  submit: "$t(actions.create)"
   success: "Utworzono grupę klientów"
 
 client_group_delete:
@@ -199,3 +200,17 @@ client_group_delete:
   confirmation_text: "Czy na pewno usunąć to powiązanie klientów? Klienci nie zostaną usunięci."
   submit: "Usuń powiązanie"
   success: "Usunięto grupę klientów"
+
+add_to_client_group:
+  form_name: "Dodaj klienta do grupy"
+  field_names:
+    group_member: "Wybierz grupę, do której ma zostać dodany aktualny klient"
+  text:
+    group_member_is_same: "To jest ten sam klient! Wybierz innego klienta."
+    no_groups: "Wybrany klient nie należy do grupy."
+    already_in_group: "Bieżący klient już należy do wybranej grupy."
+    select_group_hint: "Wybierz grupę powyżej"
+  submit:
+    add_to_group: "Dodaj do grupy$t(ellipsis)"
+    create_group: "Utwórz grupę$t(ellipsis)"
+  success: "Dodano do grupy klientów"

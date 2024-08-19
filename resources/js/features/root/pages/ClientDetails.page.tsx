@@ -151,7 +151,7 @@ export default (() => {
                 </div>
                 <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
                   <div style={{width: "min(800px, 100%)"}}>
-                    <ClientGroups client={user()} />
+                    <ClientGroups client={user()} allowEditing />
                   </div>
                   <PeopleAutoRelatedToClient clientId={userId()} />
                   <UserMeetingsTables

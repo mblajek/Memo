@@ -16,6 +16,7 @@ import {
 export interface ClientGroupEditFormProps {
   readonly staticGroupId: Api.Id;
   readonly currentClientId?: string;
+  readonly initialValuesEditFunc?: (initialValues: ClientGroupFormType) => ClientGroupFormType;
   readonly onSuccess?: () => void;
   readonly onDeleted?: () => void;
   readonly onCancel?: () => void;
@@ -48,7 +49,7 @@ export const ClientGroupEditForm: VoidComponent<ClientGroupEditFormProps> = (pro
     <QueryBarrier queries={[clientGroupQuery]} ignoreCachedData {...notFoundError()}>
       <ClientGroupForm
         id="client_group_edit"
-        initialValues={clientGroupInitialValuesForEdit(clientGroup()!)}
+        initialValues={(props.initialValuesEditFunc || ((v) => v))(clientGroupInitialValuesForEdit(clientGroup()!))}
         currentClientId={props.currentClientId}
         onSubmit={updateClientGroup}
         onCancel={() => props.onCancel?.()}

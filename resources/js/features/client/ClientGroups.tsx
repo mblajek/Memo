@@ -9,27 +9,35 @@ import {EmptyValueSymbol} from "components/ui/symbols";
 import {htmlAttributes, QueryBarrier, useLangFunc} from "components/utils";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
 import {ClientResource} from "data-access/memo-api/resources/client.resource";
-import {createComputed, createSignal, ParentComponent, Show, VoidComponent} from "solid-js";
+import {TbArrowBadgeRight} from "solid-icons/tb";
+import {createComputed, createSignal, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
+import {createAddToClientGroupModal} from "./add_to_client_group_modal";
 import {createClientGroupCreateModal} from "./client_group_create_modal";
 import {ClientGroupLabel} from "./ClientGroupLabel";
 import {ClientGroupViewEditForm} from "./ClientGroupViewEditForm";
+import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 
 interface Props {
   readonly client: ClientResource;
+  readonly onGroupChange?: (group: ClientGroupResource | undefined, isFetching: boolean) => void;
+  /** Whether the component allows editing and creating groups (as opposed to just viewing). Default: false */
+  readonly allowEditing?: boolean;
+  readonly noGroupsText?: () => JSX.Element;
 }
 
 export const ClientGroups: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const clientGroupCreateModal = createClientGroupCreateModal();
+  const addToClientGroupModal = createAddToClientGroupModal();
   const groupIds = () => props.client.client.groupIds || [];
   const dataQuery = createQuery(() => ({
     ...FacilityClientGroup.clientGroupsQueryOptions(groupIds()),
     enabled: groupIds().length > 0,
   }));
 
-  const CreateGroupButton: ParentComponent<htmlAttributes.button> = (props2) => (
+  const CreateGroupButton: ParentComponent<htmlAttributes.button> = (buttonProps) => (
     <Button
-      {...htmlAttributes.merge(props2, {class: "secondary small"})}
+      {...htmlAttributes.merge(buttonProps, {class: "secondary small"})}
       onClick={() =>
         clientGroupCreateModal.show({
           initialValues: {
@@ -39,7 +47,18 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
         })
       }
     >
-      <actionIcons.Add class="inlineIcon" /> {props2.children}
+      <actionIcons.Add class="inlineIcon" />
+      <clientGroupIcons.ClientGroup class="inlineIcon -ml-0.5" /> {buttonProps.children}
+    </Button>
+  );
+
+  const AddToClientGroupButton: ParentComponent<htmlAttributes.button> = (buttonProps) => (
+    <Button
+      {...htmlAttributes.merge(buttonProps, {class: "secondary small"})}
+      onClick={() => addToClientGroupModal.show({clientId: props.client.id})}
+    >
+      <TbArrowBadgeRight class="inlineIcon strokeIcon" />
+      <clientGroupIcons.ClientGroup class="inlineIcon -ml-0.5" /> {buttonProps.children}
     </Button>
   );
 
@@ -51,6 +70,12 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
       setSelectedGroupId(groupIds()[0]);
     }
   });
+  createComputed(() =>
+    props.onGroupChange?.(
+      dataQuery.data?.find(({id}) => id === selectedGroupId()),
+      dataQuery.isFetching,
+    ),
+  );
   return (
     <div class="flex flex-col gap-1">
       <div class="flex justify-between items-center gap-2">
@@ -62,7 +87,7 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
             />
           </StandaloneFieldLabel>
         </div>
-        <Show when={groupIds().length}>
+        <Show when={props.allowEditing && groupIds().length}>
           <CreateGroupButton title={t("actions.client_group.add_another")} />
         </Show>
       </div>
@@ -70,10 +95,13 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
         when={groupIds().length}
         fallback={
           <>
-            <EmptyValueSymbol />
-            <div>
-              <CreateGroupButton>{t("actions.client_group.add")}</CreateGroupButton>
-            </div>
+            {props.noGroupsText?.() ?? <EmptyValueSymbol />}
+            <Show when={props.allowEditing}>
+              <div class="flex gap-1">
+                <CreateGroupButton>{t("actions.client_group.add")}</CreateGroupButton>
+                <AddToClientGroupButton>{t("actions.client_group.add_to")}</AddToClientGroupButton>
+              </div>
+            </Show>
           </>
         }
       >
@@ -103,7 +131,13 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
             />
           </Show>
           <Show when={dataQuery.data!.find(({id}) => id === selectedGroupId())} fallback={<EmptyValueSymbol />}>
-            {(group) => <ClientGroupViewEditForm group={group()} currentClientId={props.client.id} />}
+            {(group) => (
+              <ClientGroupViewEditForm
+                group={group()}
+                currentClientId={props.client.id}
+                allowEditing={props.allowEditing}
+              />
+            )}
           </Show>
         </QueryBarrier>
       </Show>

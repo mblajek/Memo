@@ -15,7 +15,7 @@ import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {AiFillCaretDown} from "solid-icons/ai";
-import {For, Index, VoidComponent, createEffect, createMemo, splitProps} from "solid-js";
+import {createEffect, createMemo, For, Index, splitProps, VoidComponent} from "solid-js";
 import {z} from "zod";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {ClientGroupBox} from "./ClientGroupBox";
@@ -82,6 +82,14 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
             ? form.data("clients").findIndex(({userId}) => userId === props.currentClientId)
             : undefined,
         );
+        if (props.currentClientId) {
+          setTimeout(() => {
+            const focusIndex = form.data("clients").findIndex(({userId}) => userId === props.currentClientId);
+            if (focusIndex >= 0) {
+              document.getElementById(`clients.${focusIndex}.role`)?.focus();
+            }
+          });
+        }
         return (
           <>
             <ClientGroupBox>
@@ -177,18 +185,15 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
 };
 
 export function clientGroupInitialValuesForEdit(group: ClientGroupResource) {
-  return (
-    group &&
-    ({
-      clients: group.clients.map(({userId, role}) => ({userId, role: role || ""})),
-      notes: group.notes || "",
-    } satisfies ClientGroupFormType)
-  );
+  return {
+    clients: group.clients.map(({userId, role}) => ({userId, role: role || ""})),
+    notes: group.notes || "",
+  } satisfies ClientGroupFormType;
 }
 
-export function clientGroupInitialValuesForCreate() {
+export function clientGroupInitialValuesForCreate(clientIds: string[] = []) {
   return {
-    clients: [],
+    clients: clientIds.map((userId) => ({userId, role: ""})),
     notes: "",
   } satisfies ClientGroupFormType;
 }
