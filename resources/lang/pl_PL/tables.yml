@@ -9,15 +9,15 @@ tables:
       id: "id"
       actions: "akcje"
     column_groups:
-      meeting: "$t(models.meeting._name)"
-      attendant: "$t(models.meeting.attendant)"
+      meeting_multicolumn: "$t(models.meeting._name)"
+      attendant_multicolumn: "$t(models.meeting.attendant)"
     with_column_group:
-      meeting:
+      meeting_multicolumn:
         summary__zero: "Brak spotkań"
         summary__one: "{{count, number}} spotkanie"
         summary__few: "{{count, number}} spotkania"
         summary__many: "{{count, number}} spotkań"
-      attendant:
+      attendant_multicolumn:
         summary__zero: "Brak uczestników"
         summary__one: "{{count, number}} uczestnik"
         summary__few: "{{count, number}} uczestników"
@@ -125,13 +125,18 @@ tables:
       client.updatedBy.name: "zmodyfikowano przez (klient)"
       client.updatedBy.id: "$t(tables.tables.meeting_client.column_names.client.updatedBy.id)"
     column_groups:
-      attendant: "$t(models.client._name)"
+      attendant_multicolumn: "$t(models.client._name)"
     with_column_group:
-      attendant:
+      attendant_multicolumn:
         summary__zero: "Brak klientów"
         summary__one: "{{count, number}} klient"
         summary__few: "{{count, number}} klientów"
         summary__many: "{{count, number}} klientów"
+      attendant.clientGroupId:
+        summary__zero: "Brak grup"
+        summary__one: "{{count, number}} grupa"
+        summary__few: "{{count, number}} grupy"
+        summary__many: "{{count, number}} grup"
 
   time_table:
     table_name: "Grafiki pracy"

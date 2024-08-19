@@ -44,9 +44,9 @@ export default (() => {
         {name: "managedByFacility.name", initialVisible: false},
         {name: "lastLoginFacility.name", initialVisible: false},
         {name: "hasGlobalAdmin", columnDef: {size: 130}},
-        // {name: "hasFacilityAdmin", initialVisible: false},
-        // {name: "isStaff", initialVisible: false},
-        // {name: "isClient", initialVisible: false},
+        {name: "hasFacilityAdmin", columnDef: {size: 130}, initialVisible: false},
+        {name: "isStaff", initialVisible: false},
+        {name: "isClient", initialVisible: false},
         ...getCreatedUpdatedColumns({globalAdmin: true}),
         {
           name: "actions",

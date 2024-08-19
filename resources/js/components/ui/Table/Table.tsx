@@ -54,6 +54,7 @@ export function createTableTranslations(tableName: string | string[]): TableTran
   const t = useLangFunc();
   const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const names = typeof tableName === "string" ? [tableName] : tableName;
+  const namesWithGeneric = [...names, "generic"];
   const tableNameKeys = [
     ...names.map((n) => `tables.tables.${n}.table_name`),
     ...names.map((n) => `models.${n}._name_plural`),
@@ -67,16 +68,14 @@ export function createTableTranslations(tableName: string | string[]): TableTran
     `models.generic.`,
   ];
   const summaryKeys = [...names.map((n) => `tables.tables.${n}.summary`), "tables.tables.generic.summary"];
-  const summaryWithColumnGroup = (columnGroup: string) => [
-    ...names.map((n) => `tables.tables.${n}.with_column_group.${columnGroup}.summary`),
-    `tables.tables.generic.with_column_group.${columnGroup}.summary`,
-  ];
+  const summaryWithColumnGroup = (columnGroup: string) =>
+    namesWithGeneric.map((n) => `tables.tables.${n}.with_column_group.${columnGroup}.summary`);
   const columnGroupsKeyPrefixes = [
-    ...[names, "generic"].map((n) => `tables.tables.${n}.column_groups.`),
+    ...namesWithGeneric.map((n) => `tables.tables.${n}.column_groups.`),
     ...columnNameKeyPrefixes,
   ];
   const columnsByPrefix = columnsByPrefixUtil.fromColumnPrefixes(
-    [...names, "generic"].map((n) => `tables.tables.${n}.column_prefixes`),
+    namesWithGeneric.map((n) => `tables.tables.${n}.column_prefixes`),
   );
   return {
     tableName: (o) => t(tableNameKeys, o),

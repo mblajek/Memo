@@ -96,11 +96,11 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   };
 
   const meetingColumns = {
-    id: {name: "id", initialVisible: false, columnGroups: ":meeting"},
+    id: {name: "id", initialVisible: false, columnGroups: ":meeting_multicolumn"},
     date: {
       name: "date",
       columnDef: {size: 190, sortDescFirst: true, enableHiding: false},
-      columnGroups: ["meeting", true],
+      columnGroups: ["meeting_multicolumn", true],
     },
     time: {
       name: "startDayminute",
@@ -122,9 +122,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           (v, ctx) => `${formatDayMinuteHM(v)}-${formatDayMinuteHM((v + ctx.row.durationMinutes) % MAX_DAY_MINUTE)}`,
         ),
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
-    duration: {name: "durationMinutes", initialVisible: false, columnDef: {size: 120}, columnGroups: "meeting"},
+    duration: {
+      name: "durationMinutes",
+      initialVisible: false,
+      columnDef: {size: 120},
+      columnGroups: "meeting_multicolumn",
+    },
     seriesInfo: {
       name: "isClone",
       extraDataColumns: ["interval", "seriesNumber", "seriesCount"],
@@ -151,7 +156,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         size: 150,
         enableSorting: false,
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
     seriesType: {
       name: "interval",
@@ -175,21 +180,25 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         size: 120,
         sortDescFirst: false,
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
     seriesNumber: {
       name: "seriesNumber",
       columnDef: {sortDescFirst: false},
       initialVisible: false,
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
     seriesCount: {
       name: "seriesCount",
       columnDef: {sortDescFirst: false},
       initialVisible: false,
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
-    category: {name: "categoryDictId", initialVisible: false, columnGroups: ["meeting", true, "typeDictId"]},
+    category: {
+      name: "categoryDictId",
+      initialVisible: false,
+      columnGroups: ["meeting_multicolumn", true, "typeDictId"],
+    },
     type: {
       name: "typeDictId",
       filterControl: (props) => (
@@ -202,7 +211,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           }
         />
       ),
-      columnGroups: ["meeting", true],
+      columnGroups: ["meeting_multicolumn", true],
     },
     workTimeType: {
       name: "typeDictId",
@@ -216,7 +225,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           }
         />
       ),
-      columnGroups: ["meeting", true],
+      columnGroups: ["meeting_multicolumn", true],
     },
     statusTags: {
       name: "statusDictId",
@@ -230,10 +239,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </ScrollableCell>
         )),
       },
-      columnGroups: ["meeting", true],
+      columnGroups: ["meeting_multicolumn", true],
       // TODO: Consider a custom textExportCell that includes all the status tags, not just the meeting status.
     },
-    isFacilityWide: {name: "isFacilityWide", initialVisible: false, columnGroups: "meeting"},
+    isFacilityWide: {name: "isFacilityWide", initialVisible: false, columnGroups: "meeting_multicolumn"},
     attendants: {
       name: "attendants.*.userId",
       extraDataColumns: ["attendants"],
@@ -264,10 +273,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           (v, ctx) => ctx.row.attendants?.map((u) => u.name).join(", "),
         ),
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
-    attendantsAttendance: {name: "attendants.*.attendanceStatusDictId", initialVisible: false, columnGroups: "meeting"},
-    attendantsCount: {name: "attendants.count", initialVisible: false, columnGroups: "meeting"},
+    attendantsAttendance: {
+      name: "attendants.*.attendanceStatusDictId",
+      initialVisible: false,
+      columnGroups: "meeting_multicolumn",
+    },
+    attendantsCount: {name: "attendants.count", initialVisible: false, columnGroups: "meeting_multicolumn"},
     staff: {
       name: "staff.*.userId",
       extraDataColumns: ["staff"],
@@ -285,10 +298,14 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           (v, ctx) => ctx.row.staff.map((u) => u.name).join(", "),
         ),
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
-    staffAttendance: {name: "staff.*.attendanceStatusDictId", initialVisible: false, columnGroups: "meeting"},
-    staffCount: {name: "staff.count", initialVisible: false, columnGroups: "meeting"},
+    staffAttendance: {
+      name: "staff.*.attendanceStatusDictId",
+      initialVisible: false,
+      columnGroups: "meeting_multicolumn",
+    },
+    staffCount: {name: "staff.count", initialVisible: false, columnGroups: "meeting_multicolumn"},
     clients: {
       name: "clients.*.userId",
       extraDataColumns: ["clients"],
@@ -306,11 +323,15 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           (v, ctx) => ctx.row.clients.map((u) => u.name).join(", "),
         ),
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
-    clientsAttendance: {name: "clients.*.attendanceStatusDictId", initialVisible: false, columnGroups: "meeting"},
-    clientsCount: {name: "clients.count", initialVisible: false, columnGroups: "meeting"},
-    isRemote: {name: "isRemote", columnGroups: "meeting"},
+    clientsAttendance: {
+      name: "clients.*.attendanceStatusDictId",
+      initialVisible: false,
+      columnGroups: "meeting_multicolumn",
+    },
+    clientsCount: {name: "clients.count", initialVisible: false, columnGroups: "meeting_multicolumn"},
+    isRemote: {name: "isRemote", columnGroups: "meeting_multicolumn"},
     notes: {
       name: "notes",
       columnDef: {
@@ -320,10 +341,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           </ScrollableCell>
         )),
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
-    workTimeNotes: {name: "notes", columnGroups: "meeting"},
-    resources: {name: "resources.*.dictId", columnGroups: "meeting"},
+    workTimeNotes: {name: "notes", columnGroups: "meeting_multicolumn"},
+    resources: {name: "resources.*.dictId", columnGroups: "meeting_multicolumn"},
     actions: {
       name: "actions",
       isDataColumn: false,
@@ -341,7 +362,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         enableHiding: false,
         ...AUTO_SIZE_COLUMN_DEFS,
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
     dateTimeActions: {
       name: "date",
@@ -390,7 +411,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
           formatDateTimeForTextExport(DateTime.fromISO(v).set(dayMinuteToHM(ctx.row.startDayminute))),
         ),
       },
-      columnGroups: "meeting",
+      columnGroups: "meeting_multicolumn",
     },
   } satisfies Partial<Record<string, PartialColumnConfig<TQFullMeetingResource>>>;
   const attendantColumn = {
@@ -413,10 +434,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         (v, ctx) => ctx.row["attendant.name"],
       ),
     },
-    columnGroups: "::attendant",
+    columnGroups: "::attendant_multicolumn",
   } satisfies PartialColumnConfig<TQMeetingAttendanceResource>;
   const attendantsColumns = {
-    attendanceType: {name: "attendant.attendanceTypeDictId", columnGroups: "attendant"},
+    attendanceType: {name: "attendant.attendanceTypeDictId", columnGroups: "attendant_multicolumn"},
     attendant: attendantColumn,
     attendantStaff: {
       ...attendantColumn,
@@ -439,7 +460,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       },
       filterControl: NullFilterControl,
       initialVisible: false,
-      // TODO: Add grouping by client group.
+      columnGroups: true,
     },
     attendanceStatus: {
       name: "attendant.attendanceStatusDictId",

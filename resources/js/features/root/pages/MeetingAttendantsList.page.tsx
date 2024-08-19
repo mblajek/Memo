@@ -47,7 +47,7 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
-        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting"}}),
+        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting_multicolumn"}}),
         cols.meeting.actions,
       ]}
       intrinsicFilter={meetingTableFilters.isRegularMeeting()}
