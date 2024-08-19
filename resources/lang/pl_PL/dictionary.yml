@@ -75,3 +75,6 @@ notificationMethod:
 
 positionGroup:
   _name: "[grupa pozycji]"
+
+clientGroupClientRole:
+  _name: "rola klienta w grupie"

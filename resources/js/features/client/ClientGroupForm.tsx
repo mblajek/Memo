@@ -12,10 +12,11 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {cx, NON_NULLABLE, useLangFunc} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {AiFillCaretDown} from "solid-icons/ai";
-import {createEffect, createMemo, For, Index, splitProps, VoidComponent} from "solid-js";
+import {createEffect, createMemo, For, Index, Show, splitProps, VoidComponent} from "solid-js";
 import {z} from "zod";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {ClientGroupBox} from "./ClientGroupBox";
@@ -43,6 +44,7 @@ interface Props extends FormConfigWithoutTransformFn<ClientGroupFormType> {
 export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "currentClientId", "onCancel"]);
   const t = useLangFunc();
+  const dictionaries = useDictionaries();
   const {clientTypeDict} = useFixedDictionaries();
   const modelQuerySpecs = useModelQuerySpecs();
   const autoRelatedClients = useAutoRelatedClients();
@@ -100,6 +102,8 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                   {(_client, index) => {
                     const isCurrentClient = () => index === currentClientIndex();
                     const userId = () => form.data(`clients.${index}.userId`);
+                    const isChild = () =>
+                      userId() && clientsData.getById(userId()!)?.type.id === clientTypeDict()?.child.id;
                     return (
                       <>
                         <div class="col-start-1">
@@ -124,11 +128,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                                 name={`clients.${index}.role`}
                                 label=""
                                 small
-                                placeholder={
-                                  userId() && clientsData.getById(userId()!)?.type.id === clientTypeDict()?.child.id
-                                    ? clientTypeDict()?.child.label
-                                    : undefined
-                                }
+                                placeholder={isChild() ? clientTypeDict()?.child.label : undefined}
                               />
                             </div>
                             <PopOver
@@ -143,10 +143,24 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                             >
                               {(popOver) => (
                                 <SimpleMenu onClick={() => popOver().close()}>
-                                  <For each={Object.values(t.getObjects("facility_user.client_groups.role_presets"))}>
+                                  <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
+                                    <span class="text-grey-text">
+                                      <Show
+                                        when={isChild()}
+                                        fallback={t("facility_user.client_groups.role_preset_empty")}
+                                      >
+                                        {clientTypeDict()?.child.label}
+                                      </Show>
+                                    </span>
+                                  </Button>
+                                  <For
+                                    each={dictionaries()
+                                      ?.get("clientGroupClientRole")
+                                      .activePositions.map(({label}) => label)}
+                                  >
                                     {(preset) => (
                                       <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
-                                        {preset || <EmptyValueSymbol />}
+                                        {preset}
                                       </Button>
                                     )}
                                   </For>
