@@ -95,7 +95,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
         return (
           <>
             <ClientGroupBox>
-              <div class="grid gap-1" style={{"grid-template-columns": "50% 1fr auto"}}>
+              <div class="grid gap-1" style={{"grid-template-columns": "2fr 1fr auto"}}>
                 <FieldLabel fieldName="client.userId" umbrella />
                 <FieldLabel fieldName="client.role" umbrella />
                 <Index each={form.data("clients")} fallback={<EmptyValueSymbol />}>
@@ -119,12 +119,12 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                         </div>
                         <div>
                           <div
-                            class={cx("flex items-stretch", userId() ? undefined : "opacity-40")}
+                            class={cx("flex items-stretch min-w-0", userId() ? undefined : "opacity-40")}
                             inert={userId() ? undefined : true}
                           >
                             <div class="flex-grow">
                               <TextField
-                                class="rounded-e-none"
+                                class="w-full rounded-e-none"
                                 name={`clients.${index}.role`}
                                 label=""
                                 small
