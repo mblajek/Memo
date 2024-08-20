@@ -15,7 +15,7 @@ import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {AiFillCaretDown} from "solid-icons/ai";
-import {createEffect, createMemo, For, Index, on, Show, splitProps, VoidComponent} from "solid-js";
+import {createEffect, createMemo, For, Index, Match, on, splitProps, Switch, VoidComponent} from "solid-js";
 import {z} from "zod";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {ClientGroupBox} from "./ClientGroupBox";
@@ -143,27 +143,31 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                             >
                               {(popOver) => (
                                 <SimpleMenu onClick={() => popOver().close()}>
-                                  <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
-                                    <span class="text-grey-text">
-                                      <Show
-                                        when={isChild()}
-                                        fallback={t("facility_user.client_groups.role_preset_empty")}
-                                      >
-                                        {clientTypeDict()?.child.label}
-                                      </Show>
-                                    </span>
-                                  </Button>
-                                  <For
-                                    each={dictionaries()
-                                      ?.get("clientGroupClientRole")
-                                      .activePositions.map(({label}) => label)}
-                                  >
-                                    {(preset) => (
-                                      <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
-                                        {preset}
+                                  <Switch>
+                                    <Match when={isChild()}>
+                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
+                                        <span class="text-grey-text">{clientTypeDict()?.child.label}</span>
                                       </Button>
-                                    )}
-                                  </For>
+                                    </Match>
+                                    <Match when="not child">
+                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
+                                        <span class="text-grey-text">
+                                          {t("facility_user.client_groups.role_preset_empty")}
+                                        </span>
+                                      </Button>
+                                      <For
+                                        each={dictionaries()
+                                          ?.get("clientGroupClientRole")
+                                          .activePositions.map(({label}) => label)}
+                                      >
+                                        {(preset) => (
+                                          <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
+                                            {preset}
+                                          </Button>
+                                        )}
+                                      </For>
+                                    </Match>
+                                  </Switch>
                                 </SimpleMenu>
                               )}
                             </PopOver>
