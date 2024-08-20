@@ -1,7 +1,3 @@
-import {Obj} from "@felte/core";
-import {FormType} from "components/felte-form/FelteForm";
-import {Accessor, createComputed, createMemo, on} from "solid-js";
-
 /**
  * Trims a value from a text input field into the value that is sent to the backend.
  *
@@ -36,9 +32,3 @@ export const TRIM_ON_BLUR = {
     }
   },
 };
-
-/** Creates a computation that nudges the form data, i.e. fixes reactivity loss in it. */
-export function createFormNudge<T extends Obj>(form: FormType<T>, observedValue: Accessor<unknown>) {
-  const observedMemo = createMemo(observedValue);
-  createComputed(on(observedMemo, () => form.setData((d) => d)));
-}

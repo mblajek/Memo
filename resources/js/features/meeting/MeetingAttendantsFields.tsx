@@ -6,7 +6,6 @@ import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {createFormNudge} from "components/ui/form/util";
 import {actionIcons} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
@@ -87,33 +86,33 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     ),
   );
 
-  createFormNudge(form, () =>
-    form
-      .data(props.name)
-      .map(({userId}) => userId)
-      .join(""),
+  createEffect(
+    on(
+      [
+        () => props.viewMode,
+        () => form.data(props.name),
+        // To nudge the form and improve reactivity.
+        form.data,
+      ],
+      ([viewMode, attendants], _prevInput, prevAttendantIds: readonly string[] | undefined) => {
+        // When in edit mode, add an empty row at the end in the following situations:
+        if (
+          !viewMode &&
+          // there are no rows, or...
+          (!attendants.length ||
+            // ...the last row was empty and it got filled in, but it was not the only row
+            // (in case of one row, the component is in "one row mode" and doesn't add rows automatically).
+            (prevAttendantIds &&
+              attendants.length > 1 &&
+              attendants.length === prevAttendantIds.length &&
+              !prevAttendantIds.at(-1) &&
+              attendants.at(-1)!.userId))
+        )
+          form.addField(props.name, createAttendant());
+        return attendants.map(({userId}) => userId);
+      },
+    ),
   );
-  const attendantsMemo = createMemo(() => form.data(props.name), [], {
-    equals: (a, b) => a.length === b.length && a.every((v, i) => v.userId === b[i]!.userId),
-  });
-  createEffect<readonly FormAttendantData[]>((prevAttendants) => {
-    const attendants = attendantsMemo();
-    // When in edit mode, add an empty row at the end in the following situations:
-    if (
-      !props.viewMode &&
-      // there are no rows, or...
-      (!attendants.length ||
-        // ...the last row was empty and it got filled in, but it was not the only row
-        // (in case of one row, the component is in "one row mode" and doesn't add rows automatically).
-        (prevAttendants &&
-          attendants.length > 1 &&
-          attendants.length === prevAttendants.length &&
-          !prevAttendants.at(-1)?.userId &&
-          attendants.at(-1)!.userId))
-    )
-      form.addField(props.name, createAttendant());
-    return attendants;
-  });
 
   return (
     <div class="flex flex-col items-stretch">

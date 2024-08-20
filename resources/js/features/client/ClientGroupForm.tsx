@@ -5,7 +5,6 @@ import {Button} from "components/ui/Button";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {TextField} from "components/ui/form/TextField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {createFormNudge} from "components/ui/form/util";
 import {actionIcons} from "components/ui/icons";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
@@ -16,7 +15,7 @@ import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {AiFillCaretDown} from "solid-icons/ai";
-import {createEffect, createMemo, For, Index, Show, splitProps, VoidComponent} from "solid-js";
+import {createEffect, createMemo, For, Index, on, Show, splitProps, VoidComponent} from "solid-js";
 import {z} from "zod";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {ClientGroupBox} from "./ClientGroupBox";
@@ -59,18 +58,19 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
       {...formProps}
     >
       {(form) => {
-        createFormNudge(form, () =>
-          form
-            .data("clients")
-            .map(({userId}) => userId)
-            .join(""),
+        createEffect(
+          on(
+            [
+              () => form.data("clients"), // To nudge the form and improve reactivity.
+              form.data,
+            ],
+            ([clients]) => {
+              if (!clients.length || clients.at(-1)!.userId) {
+                form.addField("clients", {userId: "", role: ""});
+              }
+            },
+          ),
         );
-        createEffect(() => {
-          const clients = form.data("clients");
-          if (!clients.length || clients.at(-1)!.userId) {
-            form.addField("clients", {userId: "", role: ""});
-          }
-        });
         const priorityQueryParams = autoRelatedClients.selectParamsExtension(() =>
           // Make sure this is the same for all the client selects if there are multiple clients,
           // to avoid sending multiple additional requests.
