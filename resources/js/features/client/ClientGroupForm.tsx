@@ -61,8 +61,8 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
         createEffect(
           on(
             [
-              () => form.data("clients"), // To nudge the form and improve reactivity.
-              form.data,
+              () => form.data("clients"),
+              form.data, // to nudge the form and improve reactivity
             ],
             ([clients]) => {
               if (!clients.length || clients.at(-1)!.userId) {

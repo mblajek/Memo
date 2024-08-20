@@ -91,8 +91,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
       [
         () => props.viewMode,
         () => form.data(props.name),
-        // To nudge the form and improve reactivity.
-        form.data,
+        form.data, // to nudge the form and improve reactivity
       ],
       ([viewMode, attendants], _prevInput, prevAttendantIds: readonly string[] | undefined) => {
         // When in edit mode, add an empty row at the end in the following situations:
