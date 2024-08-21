@@ -9,13 +9,13 @@ import {EmptyValueSymbol} from "components/ui/symbols";
 import {htmlAttributes, QueryBarrier, useLangFunc} from "components/utils";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
 import {ClientResource} from "data-access/memo-api/resources/client.resource";
+import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {TbArrowBadgeRight} from "solid-icons/tb";
 import {createComputed, createSignal, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
 import {createAddToClientGroupModal} from "./add_to_client_group_modal";
 import {createClientGroupCreateModal} from "./client_group_create_modal";
 import {ClientGroupLabel} from "./ClientGroupLabel";
 import {ClientGroupViewEditForm} from "./ClientGroupViewEditForm";
-import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 
 interface Props {
   readonly client: ClientResource;
@@ -127,7 +127,6 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
               value={selectedGroupId()}
               onValueChange={setSelectedGroupId}
               nullable={false}
-              small
             />
           </Show>
           <Show when={dataQuery.data!.find(({id}) => id === selectedGroupId())} fallback={<EmptyValueSymbol />}>
