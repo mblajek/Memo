@@ -88,13 +88,12 @@ export default (() => {
                   }}
                 />
                 <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
-                  <div class="flex flex-col items-stretch gap-4 relative">
+                  <div style={{"min-width": "400px", "flex-basis": "600px"}}>
                     <FelteForm
                       id="client_edit"
                       translationsFormNames={["client_edit", "client", "facility_user"]}
                       translationsModel={["client", "facility_user"]}
                       class="flex flex-col items-stretch gap-4 relative"
-                      style={{width: "min(600px, 100%)"}}
                       schema={getSchema()}
                       initialValues={user()}
                       onSubmit={updateClient}
@@ -151,7 +150,7 @@ export default (() => {
                       }}
                     </FelteForm>
                   </div>
-                  <div class={hiddenInEditModeClass()} style={{width: "min(800px, 100%)"}}>
+                  <div class={hiddenInEditModeClass()} style={{"min-width": "400px", "flex-basis": "800px"}}>
                     <ClientGroups client={user()} allowEditing />
                   </div>
                 </div>
