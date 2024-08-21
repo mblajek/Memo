@@ -6,6 +6,7 @@ import {DATE_TIME_FORMAT, useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {V1} from "data-access/memo-api/config";
 import {ThemeIcon, useThemeControl} from "features/root/components/theme_control";
+import {BaseAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
 import {LoginForm} from "./Login.form";
@@ -24,13 +25,17 @@ export const createLoginModal = registerGlobalPageElement<true>((args) => {
           <div class="flex gap-1 justify-end">
             <span
               class="text-grey-text"
-              use:title={`${t("about_page.commit_date")} ${systemStatusMonitor.status()?.commitDate ? DateTime.fromISO(systemStatusMonitor.status()!.commitDate!).toLocaleString(DATE_TIME_FORMAT) : "?"}`}
+              use:title={`${t("about_page.commit_date")} ${
+                systemStatusMonitor.baseStatus()?.commitDate
+                  ? DateTime.fromISO(systemStatusMonitor.baseStatus()!.commitDate!).toLocaleString(DATE_TIME_FORMAT)
+                  : "?"
+              }`}
               onDblClick={() => {
                 getSelection()?.empty();
                 open(`${V1.defaults.baseURL}/system/status`, "_blank");
               }}
             >
-              {t("app_version_short", {version: systemStatusMonitor.status()?.version})}
+              <BaseAppVersion />
             </span>
           </div>
         </div>

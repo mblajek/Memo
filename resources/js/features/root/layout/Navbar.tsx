@@ -3,7 +3,7 @@ import {FullLogo} from "components/ui/FullLogo";
 import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
-import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
+import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
@@ -24,7 +24,6 @@ export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
-  const systemStatusMonitor = useSystemStatusMonitor();
   const facilityUrl = () => activeFacility()?.url;
 
   const FacilityAdminOrStaffBarrier: ParentComponent = (props) => (
@@ -148,7 +147,7 @@ export const Navbar: VoidComponent = () => {
       </nav>
       <div class="grow" />
       <A href="/help/about" class="p-2 !text-grey-text">
-        {t("app_name")} {systemStatusMonitor.baseStatus()?.version}
+        {t("app_name")} <BaseAppVersion />
       </A>
     </aside>
   );

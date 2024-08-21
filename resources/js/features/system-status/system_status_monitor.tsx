@@ -27,5 +27,5 @@ export const useSystemStatusMonitor = createCached(() => {
     }
     setLastStatus(status);
   });
-  return {baseStatus, status: lastStatus, needsReload};
+  return {baseStatus, lastStatus, needsReload};
 });
