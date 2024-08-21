@@ -1,4 +1,4 @@
-import {Index, JSX, VoidComponent} from "solid-js";
+import {Index, JSX, splitProps, VoidComponent} from "solid-js";
 import {htmlAttributes} from "../utils";
 import {SimpleTag, TagsLine} from "./Tag";
 
@@ -20,7 +20,8 @@ const URL_REGEXP =
  * Currently only supports custom tags, created as `#tag` or `#long tag`, not mixed with non-tag
  * elements on a single text line.
  */
-export const RichTextView: VoidComponent<Props> = (props) => {
+export const RichTextView: VoidComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["text", "fallback"]);
   const content = () => {
     return props.text
       ? props.text.split("\n").map((line) => {
@@ -61,5 +62,7 @@ export const RichTextView: VoidComponent<Props> = (props) => {
         })
       : props.fallback;
   };
-  return <div {...htmlAttributes.merge(props, {class: "overflow-x-clip overflow-y-auto wrapText"})}>{content()}</div>;
+  return (
+    <div {...htmlAttributes.merge(divProps, {class: "overflow-x-clip overflow-y-auto wrapText"})}>{content()}</div>
+  );
 };
