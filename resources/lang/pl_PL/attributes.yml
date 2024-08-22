@@ -39,7 +39,7 @@ attributes:
       name: "domyślna długość spotkania"
 
 requirement_level:
-  empty: "Pole nie powinno mieć wartości"
+  empty: "Wartość powinna zostać usunięta"
   optional: "Pole jest opcjonalne"
   recommended: "Pole powinno być wypełnione"
   required: "Pole musi być wypełnione"
