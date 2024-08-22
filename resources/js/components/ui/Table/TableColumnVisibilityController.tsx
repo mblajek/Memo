@@ -1,9 +1,12 @@
 import {VisibilityState} from "@tanstack/solid-table";
 import {cx, debouncedAccessor, useLangFunc} from "components/utils";
-import {For, Show, VoidComponent, createComputed, createSignal} from "solid-js";
+import {OcSearch2} from "solid-icons/oc";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
 import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
 import {PopOver} from "../PopOver";
+import {SearchInput} from "../SearchInput";
+import {EmptyValueSymbol} from "../symbols";
 import {title} from "../title";
 
 const _DIRECTIVES = null && title;
@@ -13,16 +16,34 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const table = useTable();
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
   const columnGroupingInfo = table.options.meta?.tquery?.columnGroupingInfo;
+  const [search, setSearch] = createSignal("");
+  const translations = table.options.meta?.translations;
+  let searchInput: HTMLInputElement | undefined;
+  function matchesSearch(columnId: string) {
+    return translations && search()
+      ? translations.columnName(columnId).toLowerCase().includes(search().toLowerCase())
+      : true;
+  }
+  const displayedColumns = createMemo(() =>
+    table.getAllLeafColumns().filter((column) => {
+      const groupingInfo = columnGroupingInfo?.(column.id);
+      return groupingInfo && !groupingInfo.isCount && matchesSearch(column.id);
+    }),
+  );
   const [visibility, setVisibility] = createSignal<Readonly<VisibilityState>>();
   const isDefaultVisibility = () => {
     const vis = visibility();
     return (
       !!vis &&
       Object.entries(vis).every(
-        ([id, visible]) => columnGroupingInfo?.(id).isCount || visible === (defaultColumnVisibility?.()[id] ?? true),
+        ([id, visible]) =>
+          columnGroupingInfo?.(id).isCount ||
+          !matchesSearch(id) ||
+          visible === (defaultColumnVisibility?.()[id] ?? true),
       )
     );
   };
+  const isDefaultSizing = () => !Object.keys(table.getState().columnSizing).some(matchesSearch);
   // eslint-disable-next-line solid/reactivity
   const debouncedVisibility = debouncedAccessor(visibility, {outputImmediately: () => isDefaultVisibility()});
   createComputed(() => {
@@ -39,41 +60,61 @@ export const TableColumnVisibilityController: VoidComponent = () => {
       currentVisibility[column.id] = column.getIsVisible();
     }
     setVisibility(currentVisibility);
+    setSearch("");
     return (
-      <>
+      <div class="flex flex-col min-h-0 items-stretch" onClick={() => searchInput?.focus()}>
+        <Show when={translations}>
+          <div class="flex items-center">
+            <OcSearch2 class="shrink-0 px-1" size="24" />
+            <SearchInput
+              ref={searchInput}
+              divClass="flex-grow"
+              class="px-1 outline-none"
+              value={search()}
+              onValueChange={setSearch}
+              placeholder={t("tables.columns_search.placeholder")}
+            />
+          </div>
+        </Show>
         <div class="overflow-y-auto flex flex-col gap-0.5">
           <div class="flex flex-col">
-            <For each={table.getAllLeafColumns()}>
+            <For
+              each={displayedColumns()}
+              fallback={
+                <Show when={search()} fallback={<EmptyValueSymbol />}>
+                  <div class="p-1 text-center text-grey-text">{t("tables.columns_search.no_results")}</div>
+                </Show>
+              }
+            >
               {(column) => {
                 const groupingInfo = () => columnGroupingInfo?.(column.id);
+                const selectBg = () =>
+                  resetHovered() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];
                 return (
-                  <Show when={groupingInfo() && !groupingInfo()?.isCount}>
-                    <label
-                      class={cx("px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline select-none", {
-                        "!bg-select": resetHovered()
-                          ? defaultColumnVisibility?.()[column.id]
-                          : visibility()?.[column.id],
-                      })}
-                    >
-                      <input
-                        class={column.getCanHide() ? undefined : "invisible"}
-                        name={`column_visibility_${column.id}`}
-                        checked={visibility()?.[column.id]}
-                        onChange={({target}) => setVisibility((v) => ({...v, [column.id]: target.checked}))}
-                        type="checkbox"
-                        disabled={!column.getCanHide() || groupingInfo()?.isForceShown}
-                        use:title={
-                          groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
-                        }
-                      />{" "}
-                      <ColumnName def={column.columnDef} />
-                      <Show when={groupingInfo()?.isGrouped}>
-                        <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
-                          {t("tables.column_groups.grouping_symbol")}
-                        </span>
-                      </Show>
-                    </label>
-                  </Show>
+                  <label
+                    class={cx(
+                      "px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline select-none",
+                      selectBg() ? "!bg-select" : undefined,
+                    )}
+                  >
+                    <input
+                      class={column.getCanHide() ? undefined : "invisible"}
+                      name={`column_visibility_${column.id}`}
+                      checked={visibility()?.[column.id]}
+                      onChange={({target}) => setVisibility((v) => ({...v, [column.id]: target.checked}))}
+                      type="checkbox"
+                      disabled={!column.getCanHide() || groupingInfo()?.isForceShown}
+                      use:title={
+                        groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
+                      }
+                    />{" "}
+                    <ColumnName def={column.columnDef} />
+                    <Show when={groupingInfo()?.isGrouped}>
+                      <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
+                        {t("tables.column_groups.grouping_symbol")}
+                      </span>
+                    </Show>
+                  </label>
                 );
               }}
             </For>
@@ -84,8 +125,24 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             {(defaultColumnVisibility) => (
               <Button
                 class="secondary small"
-                onClick={() => setVisibility(defaultColumnVisibility())}
+                onClick={() =>
+                  setVisibility((visibility) => {
+                    const defVis = defaultColumnVisibility()();
+                    if (!search()) {
+                      return defVis;
+                    }
+                    const vis = {...visibility};
+                    for (const [id, defVisible] of Object.entries(defVis)) {
+                      if (matchesSearch(id)) {
+                        vis[id] = defVisible;
+                      }
+                    }
+                    return vis;
+                  })
+                }
                 disabled={isDefaultVisibility()}
+                // Use inert to make the parent handle onClick also when disabled.
+                inert={isDefaultVisibility() ? true : undefined}
                 onMouseOver={[setResetHovered, true]}
                 onMouseOut={[setResetHovered, false]}
               >
@@ -95,13 +152,29 @@ export const TableColumnVisibilityController: VoidComponent = () => {
           </Show>
           <Button
             class="secondary small"
-            onClick={() => table.setColumnSizing({})}
-            disabled={!Object.keys(table.getState().columnSizing).length}
+            onClick={() =>
+              // eslint-disable-next-line solid/reactivity
+              table.setColumnSizing((sizing) => {
+                if (!search()) {
+                  return {};
+                }
+                const siz = {...sizing};
+                for (const id of Object.keys(siz)) {
+                  if (matchesSearch(id)) {
+                    delete siz[id];
+                  }
+                }
+                return siz;
+              })
+            }
+            disabled={isDefaultSizing()}
+            // Use inert to make the parent handle onClick also when disabled.
+            inert={isDefaultSizing() ? true : undefined}
           >
             {t("tables.reset_column_sizes")}
           </Button>
         </div>
-      </>
+      </div>
     );
   };
 

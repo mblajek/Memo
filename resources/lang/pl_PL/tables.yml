@@ -219,6 +219,10 @@ column_groups:
 transforms:
   count: "{{base}}$t(models.generic.count_suffix)"
 
+columns_search:
+  placeholder: "Szukaj kolumny"
+  no_results: "Brak pasujących kolumn"
+
 rows__zero: "Brak wierszy"
 rows__one: "{{count, number}} wiersz"
 rows__few: "{{count, number}} wiersze"

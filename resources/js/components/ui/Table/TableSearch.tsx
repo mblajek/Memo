@@ -23,7 +23,7 @@ export const TableSearch: VoidComponent<ParentProps<Props>> = (props) => {
       class={cx("px-1", filter() ? "border-memo-active" : undefined)}
       placeholder={props.placeholder || t("actions.search")}
       value={filter()}
-      onInput={({target: {value}}) => setFilter(value)}
+      onValueChange={setFilter}
     />
   );
 };
