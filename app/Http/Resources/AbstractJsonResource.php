@@ -34,7 +34,9 @@ abstract class AbstractJsonResource extends JsonResource
             if (array_is_list($mappedFields)) {
                 $mappedFields = array_fill_keys($mappedFields, true);
             }
-            $mappedFields += array_fill_keys(['createdAt', 'updatedAt', 'createdBy', 'updatedBy'], true);
+            if ($this instanceof AbstractOpenApiResource) {
+                $mappedFields += array_fill_keys(['createdAt', 'updatedAt', 'createdBy', 'updatedBy'], true);
+            }
             self::$classMappedFields[static::class] = $mappedFields;
         }
         $result = [];

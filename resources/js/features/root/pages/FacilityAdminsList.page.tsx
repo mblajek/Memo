@@ -15,7 +15,6 @@ export default (() => {
       staticEntityURL={`facility/${activeFacilityId()}/user`}
       staticTranslations={createTableTranslations(["facility_admin", "facility_user", "user"])}
       staticPersistenceKey="facilityAdmins"
-      intrinsicFilter={{type: "column", column: "member.hasFacilityAdmin", op: "=", val: true}}
       columns={[
         {name: "id", initialVisible: false},
         {
@@ -38,6 +37,8 @@ export default (() => {
         {name: "hasGlobalAdmin", columnDef: {size: 130}},
         ...getCreatedUpdatedColumns(),
       ]}
+      intrinsicFilter={{type: "column", column: "member.hasFacilityAdmin", op: "=", val: true}}
+      intrinsicSort={[{type: "column", column: "name", desc: false}]}
       initialSort={[{id: "name", desc: false}]}
     />
   );

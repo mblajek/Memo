@@ -31,7 +31,8 @@ class TqRendererGenerator
             TqDataTypeEnum::bool => self::nullable(fn(string $value) => (bool)(int)$value),
             TqDataTypeEnum::datetime => self::nullable(fn(string $value) => DateHelper::dbToZuluString($value)),
             TqDataTypeEnum::int => self::nullable(fn(string $value) => (int)$value),
-            TqDataTypeEnum::dict_list, TqDataTypeEnum::uuid_list, TqDataTypeEnum::list => self::jsonParse(...),
+            TqDataTypeEnum::dict_list, TqDataTypeEnum::uuid_list,
+            TqDataTypeEnum::string_list, TqDataTypeEnum::list => self::jsonParse(...),
             default => self::forward(...),
         };
     }

@@ -1,4 +1,5 @@
 import {createTableTranslations} from "components/ui/Table";
+import {useCustomTableCells} from "components/ui/Table/custom_table_cells";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
@@ -10,6 +11,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 export default (() => {
   const cols = useMeetingTableColumns();
   const meetingTableFilters = useMeetingTableFilters();
+  const customTableCells = useCustomTableCells();
   const {getCreatedUpdatedColumns} = useTableColumns();
   const tableAttributeColumnConfigs = useTableAttributeColumnConfigs();
   return (
@@ -28,21 +30,25 @@ export default (() => {
       staticPersistenceKey="facilityMeetingClients"
       // This table has multiple heavy to render columns.
       nonBlocking
-      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
-      intrinsicSort={[
-        {type: "column", column: "date", desc: true},
-        {type: "column", column: "startDayminute", desc: true},
-      ]}
       columns={[
         cols.attendant.attendantClient,
         tableAttributeColumnConfigs.client(),
-        {name: "firstMeetingDate", initialVisible: false, columnGroups: "attendant"},
-        {name: "lastMeetingDate", initialVisible: false, columnGroups: "attendant"},
-        {name: "completedMeetingsCount", initialVisible: false, columnGroups: "attendant"},
-        {name: "completedMeetingsCountLastMonth", initialVisible: false, columnGroups: "attendant"},
-        {name: "plannedMeetingsCount", initialVisible: false, columnGroups: "attendant"},
-        {name: "plannedMeetingsCountNextMonth", initialVisible: false, columnGroups: "attendant"},
-        ...getCreatedUpdatedColumns({entity: "client", overrides: {columnGroups: "attendant"}}),
+        {name: "client.groups.count", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "client.groups.*.role", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {
+          name: "client.groups.*.clients.*.userId",
+          columnDef: {cell: customTableCells.facilityUsers()},
+          initialVisible: false,
+          columnGroups: "attendant_multicolumn",
+        },
+        {name: "firstMeetingDate", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "lastMeetingDate", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "completedMeetingsCount", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "completedMeetingsCountLastMonth", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "plannedMeetingsCount", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "plannedMeetingsCountNextMonth", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        ...getCreatedUpdatedColumns({entity: "client", overrides: {columnGroups: "attendant_multicolumn"}}),
+        cols.attendant.get("attendantClientGroup", {initialVisible: true}),
         cols.attendant.attendanceStatus,
         cols.meeting.id,
         cols.meeting.date,
@@ -55,6 +61,7 @@ export default (() => {
         cols.meeting.category,
         cols.meeting.type,
         cols.meeting.statusTags,
+        cols.meeting.isFacilityWide,
         cols.meeting.get("attendants", {initialVisible: false}),
         cols.meeting.attendantsAttendance,
         cols.meeting.attendantsCount,
@@ -67,8 +74,13 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
-        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting"}}),
+        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting_multicolumn"}}),
         cols.meeting.actions,
+      ]}
+      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
+      intrinsicSort={[
+        {type: "column", column: "date", desc: true},
+        {type: "column", column: "startDayminute", desc: true},
       ]}
       initialSort={[{id: "date", desc: true}]}
       helpHref="/help/reports#meeting-clients"

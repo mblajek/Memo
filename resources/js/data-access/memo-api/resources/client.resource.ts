@@ -8,11 +8,15 @@ export interface ClientResource extends UserResource {
 
 export const SHORT_CODE_EMPTY = "-";
 
-interface ClientSpecificFields extends AttributableMarker<"client"> {}
+type ClientSpecificFields = AttributableMarker<"client"> & {
+  readonly groupIds: readonly string[] | null;
+};
 
 export type ClientResourceForCreate = Pick<ClientResource, "id" | "name"> & {
-  readonly client: ClientSpecificFields;
+  readonly client: ClientSpecificFieldsForCreate;
 };
+
+export type ClientSpecificFieldsForCreate = Omit<ClientSpecificFields, "groupIds">;
 
 export type ClientResourceForPatch = Pick<ClientResource, "id"> &
   Partial<Pick<ClientResource, "name">> & {

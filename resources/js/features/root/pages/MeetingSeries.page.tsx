@@ -31,7 +31,6 @@ export default (() => {
           {type: "column", column: "fromMeetingId", op: "=", val: params.fromMeetingId || ""} satisfies FilterH,
         ].filter(NON_NULLABLE),
       }}
-      intrinsicSort={[{type: "column", column: "seriesNumber", desc: false}]}
       columns={[
         cols.meeting.get("seriesNumber", {initialVisible: true}),
         cols.meeting.id,
@@ -43,6 +42,7 @@ export default (() => {
         cols.meeting.category,
         cols.meeting.type,
         cols.meeting.statusTags,
+        cols.meeting.isFacilityWide,
         cols.meeting.attendants,
         cols.meeting.attendantsAttendance,
         cols.meeting.attendantsCount,
@@ -59,7 +59,7 @@ export default (() => {
         cols.meeting.actions,
       ]}
       columnGroups={false}
-      initialSort={[{id: "seriesNumber", desc: false}]}
+      intrinsicSort={[{type: "column", column: "seriesNumber", desc: false}]}
     />
   );
 }) satisfies VoidComponent;

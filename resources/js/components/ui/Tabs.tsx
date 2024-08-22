@@ -51,7 +51,7 @@ export const Tabs: VoidComponent<Props> = (props) => {
                 return (
                   <Button
                     class={cx(
-                      "px-1.5 pt-1 text-black hover:bg-hover rounded-t-lg border",
+                      "flex-shrink min-w-0 px-1.5 pt-1 text-black hover:bg-hover rounded-t-lg border overflow-clip",
                       isActive()
                         ? "border-input-border border-b-transparent"
                         : "text-opacity-70 border-gray-100 border-b-input-border",

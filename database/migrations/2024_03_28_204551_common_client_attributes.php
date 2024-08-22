@@ -181,7 +181,7 @@ return new class extends Migration {
             'id'
         );
         Schema::table('clients', function (Blueprint $table) {
-            DMH::uuid($table, 'type_dict_id')->nullable();
+            DMH::charUuid($table, 'type_dict_id')->nullable();
             $table->string('contact_email')->nullable();
             $table->string('contact_phone')->nullable();
             $table->string('address_street_number')->nullable();
@@ -198,7 +198,7 @@ return new class extends Migration {
         }
         DB::table('clients')->whereNull('type_dict_id')->update(['type_dict_id' => $clientTypeAdult]);
         Schema::table('clients', function (Blueprint $table) {
-            DMH::uuid($table, 'type_dict_id')->change();
+            DMH::charUuid($table, 'type_dict_id')->change();
             $table->foreign('type_dict_id')->references('id')->on('positions');
         });
         DB::table('attributes')->where('id', $clientTypeAttribute)
@@ -243,7 +243,7 @@ return new class extends Migration {
         ])->update(['is_fixed' => true]);
 
         Schema::table('users', function (Blueprint $table) {
-            DMH::uuid($table, 'managed_by_facility_id')->nullable();
+            DMH::charUuid($table, 'managed_by_facility_id')->nullable();
             $table->foreign('managed_by_facility_id')->references('id')->on('facilities');
         });
     }

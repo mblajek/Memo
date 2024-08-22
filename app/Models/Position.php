@@ -12,12 +12,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
 
 /**
- * @property string dictionary_id
- * @property string facility_id
- * @property string name
- * @property bool is_fixed
- * @property bool is_disabled
- * @property int default_order
+ * @property string $dictionary_id
+ * @property string $facility_id
+ * @property string $name
+ * @property bool $is_fixed
+ * @property bool $is_disabled
+ * @property int $default_order
  * @property-read Dictionary $dictionary
  * @method static PositionBuilder query()
  */

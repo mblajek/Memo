@@ -148,7 +148,7 @@ export const Navbar: VoidComponent = () => {
       </nav>
       <div class="grow" />
       <A href="/help/about" class="p-2 !text-grey-text">
-        {t("app_name")} {systemStatusMonitor.status()?.version}
+        {t("app_name")} {systemStatusMonitor.baseStatus()?.version}
       </A>
     </aside>
   );

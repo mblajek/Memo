@@ -1,4 +1,4 @@
-import {NON_NULLABLE} from "components/utils";
+import {NON_NULLABLE, useLangFunc} from "components/utils";
 import {Dictionaries, Dictionary} from "data-access/memo-api/dictionaries";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ColumnName, Schema, StringColumnFilter} from "data-access/memo-api/tquery/types";
@@ -185,10 +185,11 @@ export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFi
   function columnFilter(column: ColumnName, wordFilter: WordFilter): FilterH | undefined {
     const colConfig = config.schema.columns.find((c) => c.name === column);
     if (!colConfig) {
+      console.error(`Unexpected missing column: ${column}`);
       return undefined;
     }
     const {type} = colConfig;
-    if (type === "string" || type === "text") {
+    if (type === "string" || type === "text" || type === "string_list") {
       return {type: "column", column, ...wordFilter};
     } else if (type === "dict") {
       if (!config.dictionaries) {
@@ -248,5 +249,15 @@ export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFi
         };
       },
     ).filter(NON_NULLABLE),
+  };
+}
+
+export function useColumnsByPrefixUtil() {
+  const t = useLangFunc();
+  return {
+    fromColumnPrefixes(key: string | readonly string[]): FuzzyGlobalFilterConfig["columnsByPrefix"] {
+      const entries = Object.entries(t.getObjects(key, {mergeObjects: true}));
+      return entries.length ? new Map<string, string>(entries.map(([column, prefix]) => [prefix, column])) : undefined;
+    },
   };
 }

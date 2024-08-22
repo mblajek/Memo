@@ -1,11 +1,7 @@
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
-import {
-  MeetingResource,
-  MeetingResourceForCreate,
-  MeetingResourceForPatch,
-} from "../resources/meeting.resource";
+import {MeetingResource, MeetingResourceForCreate, MeetingResourceForPatch} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
 
@@ -28,15 +24,11 @@ export namespace FacilityMeeting {
   export const updateMeeting = (meeting: Api.Request.Patch<MeetingResourceForPatch>, config?: Api.Config) =>
     V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting, config);
   export const deleteMeeting = (
-    {meetingId, deleteOption}: {meetingId: Api.Id; deleteOption: SeriesDeleteOption},
+    {id, deleteOption}: {id: Api.Id; deleteOption: SeriesDeleteOption},
     config?: Api.Config,
-  ) => V1.delete(`/facility/${activeFacilityId()}/meeting/${meetingId}`, {...config, data: {series: deleteOption}});
-  export const cloneMeeting = ({meetingId, request}: {meetingId: Api.Id; request: CloneRequest}, config?: Api.Config) =>
-    V1.post<Api.Response.Post<CloneResponse>>(
-      `/facility/${activeFacilityId()}/meeting/${meetingId}/clone`,
-      request,
-      config,
-    );
+  ) => V1.delete(`/facility/${activeFacilityId()}/meeting/${id}`, {...config, data: {series: deleteOption}});
+  export const cloneMeeting = ({id, request}: {id: Api.Id; request: CloneRequest}, config?: Api.Config) =>
+    V1.post<Api.Response.Post<CloneResponse>>(`/facility/${activeFacilityId()}/meeting/${id}/clone`, request, config);
 
   export type CloneInterval = "1d" | "7d" | "14d";
 
@@ -56,7 +48,7 @@ export namespace FacilityMeeting {
     meetingList: (request: Api.Request.GetListParams) =>
       [...keys.meeting(), "list", request, activeFacilityId()] as const,
     // The key does not contain the facility id because it already contains the meeting id, which is already unique.
-    meetingGet: (id: Api.Id) => [...keys.meeting(), "list", createListRequest(id)] as const,
+    meetingGet: (id: Api.Id) => [...keys.meeting(), "get", id] as const,
   };
 
   export const meetingsQueryOptions = (ids: ListInParam) => {
@@ -74,4 +66,4 @@ export namespace FacilityMeeting {
     }) satisfies SolidQueryOpts<MeetingResource>;
 }
 
-export type SeriesDeleteOption = "one" | "from_this" | "all";
+export type SeriesDeleteOption = "one" | "from_this" | "from_next" | "all";

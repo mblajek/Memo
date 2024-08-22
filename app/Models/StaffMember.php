@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $timetable_id
- * @property string $deactivated_at // no cast // todo
+ * @property string $deactivated_at
  * @property-read Timetable $timetable
  * @property-read Member $member
  * @method static StaffMemberBuilder query()

@@ -90,6 +90,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       return {
         columns: [
           {type: "column", column: "id"},
+          {type: "column", column: "isFacilityWide"},
           {type: "column", column: "staff"},
           {type: "column", column: "date"},
           {type: "column", column: "startDayminute"},
@@ -112,7 +113,8 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       };
     }),
   });
-  const otherMeetings = () => conflictsQuery.dataQuery.data?.data as Meeting[] | undefined;
+  type OtherMeeting = Meeting & {readonly isFacilityWide: boolean};
+  const otherMeetings = () => conflictsQuery.dataQuery.data?.data as OtherMeeting[] | undefined;
 
   function getConflictsFor(staffId: string): ConflictInfo | "loading" | "unknown" {
     const {id, date, startDayMinute, durationMinutes} = meetingData();
@@ -138,16 +140,16 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
     const conflictingStaffLeaveTimes: {readonly notes?: string}[] = [];
     const conflictingMeetings: {readonly typeDictId: string}[] = [];
     let outsideOfWorkTime = true;
-    function isRelevantMeeting(meeting: Meeting) {
+    function isRelevantMeeting(meeting: OtherMeeting) {
       if (meeting.id === id) {
         return false;
       }
-      if (meeting.staff.length) {
-        const staffAttendanceStatus = meeting.staff.find(({userId}) => userId === staffId)?.attendanceStatusDictId;
-        return staffAttendanceStatus && presenceStatuses()?.includes(staffAttendanceStatus);
-      } else {
+      if (meeting.isFacilityWide) {
         // Among the facility-wide meetings, only the leave times are relevant.
         return meeting.typeDictId === meetingTypeDict()!.leave_time.id;
+      } else {
+        const staffAttendanceStatus = meeting.staff.find(({userId}) => userId === staffId)?.attendanceStatusDictId;
+        return staffAttendanceStatus && presenceStatuses()?.includes(staffAttendanceStatus);
       }
     }
     for (const otherMeeting of otherMeetings()!.filter(isRelevantMeeting)) {
@@ -156,14 +158,13 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
         startDayMinute: otherMeeting.startDayminute,
         durationMinutes: otherMeeting.durationMinutes,
       });
-      const facilityWide = !otherMeeting.staff.length;
       if (isStartTimeKnown) {
         if (isAllDay) {
           const wholeDay = interval;
           if (otherMeeting.typeDictId === meetingTypeDict()!.leave_time.id) {
             // Assume a full day meeting conflicts only with a full day leave time.
             if (otherInterval.engulfs(wholeDay)) {
-              (facilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
+              (otherMeeting.isFacilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
                 notes: otherMeeting.notes || undefined,
               });
             }
@@ -176,7 +177,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
         } else {
           if (otherMeeting.typeDictId === meetingTypeDict()!.leave_time.id) {
             if (interval.overlaps(otherInterval)) {
-              (facilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
+              (otherMeeting.isFacilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
                 notes: otherMeeting.notes || undefined,
               });
             }
@@ -198,7 +199,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
         if (otherMeeting.typeDictId === meetingTypeDict()!.leave_time.id) {
           // Conflict only if it is a full day leave time.
           if (otherInterval.engulfs(wholeDay)) {
-            (facilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
+            (otherMeeting.isFacilityWide ? conflictingFacilityLeaveTimes : conflictingStaffLeaveTimes).push({
               notes: otherMeeting.notes || undefined,
             });
           }

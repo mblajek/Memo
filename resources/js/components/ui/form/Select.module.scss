@@ -107,6 +107,10 @@
 }
 
 .selectPortal {
+  &.isOpen[data-part="positioner"] {
+    transition: transform 60ms;
+  }
+
   > [data-part="content"] {
     @apply bg-popup-bg border rounded shadow-xl;
     @apply overflow-x-clip overflow-y-auto z-dropdown;

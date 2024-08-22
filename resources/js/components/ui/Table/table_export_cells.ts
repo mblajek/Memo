@@ -33,13 +33,14 @@ export function useTableTextExportCells() {
     list: def,
     object: def,
     string: def,
+    stringList: def,
     text: def,
     uuid: def,
     uuidList: def,
     dict: <T>() => exportCellFunc<TextExportedCell, string, T>((v) => dictionaries()?.getPositionById(v).label),
     dictList: <T>() =>
       exportCellFunc<TextExportedCell, string[], T>((v) =>
-        v.map((w) => dictionaries()?.getPositionById(w).label).join(","),
+        v.map((w) => dictionaries()?.getPositionById(w).label).join("\n"),
       ),
   };
 }
@@ -82,7 +83,7 @@ function defaultFormatTextExportValue(value: unknown): string | undefined {
   if (value == undefined) {
     return undefined;
   } else if (Array.isArray(value)) {
-    return value.map(defaultFormatTextExportValue).join(", ");
+    return value.map(defaultFormatTextExportValue).join("\n");
   } else if (typeof value === "object") {
     return `{${Object.entries(value)
       .map(([k, v]) => `${k}: ${defaultFormatTextExportValue(v)}`)

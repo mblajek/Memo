@@ -18,11 +18,22 @@ export default (() => {
       staticEntityURL={`facility/${activeFacilityId()}/meeting`}
       staticTranslations={createTableTranslations(["time_table", "meeting"])}
       staticPersistenceKey="facilityTimeTablesFacilityTable"
+      columns={[
+        cols.meeting.id,
+        cols.meeting.date,
+        cols.meeting.time,
+        cols.meeting.duration,
+        cols.meeting.workTimeType,
+        cols.meeting.workTimeNotes,
+        ...getCreatedUpdatedColumns(),
+        cols.meeting.actions,
+      ]}
+      columnGroups={false}
       intrinsicFilter={{
         type: "op",
         op: "&",
         val: [
-          {type: "column", column: "staff.count", op: "=", val: 0},
+          {type: "column", column: "isFacilityWide", op: "=", val: true},
           {
             type: "column",
             column: "typeDictId",
@@ -35,17 +46,6 @@ export default (() => {
         {type: "column", column: "date", desc: true},
         {type: "column", column: "startDayminute", desc: true},
       ]}
-      columns={[
-        cols.meeting.id,
-        cols.meeting.date,
-        cols.meeting.time,
-        cols.meeting.duration,
-        cols.meeting.workTimeType,
-        cols.meeting.workTimeNotes,
-        ...getCreatedUpdatedColumns(),
-        cols.meeting.actions,
-      ]}
-      columnGroups={false}
       initialSort={[{id: "date", desc: true}]}
     />
   );

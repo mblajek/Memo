@@ -72,6 +72,7 @@ readonly class TqEngine
         foreach ($this->request->sortColumns as $requestSort) {
             $requestSort->applySort($this->builder);
         }
+        $this->builder->orderBy("`{$this->request->config->uniqueTable->name}`.`id`", desc: false);
     }
 
     private function applyPaging(): void

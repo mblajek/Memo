@@ -17,16 +17,22 @@ export interface MeetingResource extends CreatedUpdatedResource {
   readonly durationMinutes: number;
   readonly statusDictId: string;
   readonly isRemote: boolean;
-  readonly staff: readonly MeetingAttendantResource[];
-  readonly clients: readonly MeetingAttendantResource[];
+  readonly staff: readonly MeetingStaffResource[];
+  readonly clients: readonly MeetingClientResource[];
   readonly resources: readonly MeetingResourceResource[];
   readonly fromMeetingId: string | null;
   readonly interval: string | null;
 }
 
-export interface MeetingAttendantResource {
+interface MeetingAttendantResourceBase {
   readonly userId: string;
   readonly attendanceStatusDictId: string;
+}
+
+export interface MeetingStaffResource extends MeetingAttendantResourceBase {}
+
+export interface MeetingClientResource extends MeetingAttendantResourceBase {
+  readonly clientGroupId: string | null;
 }
 
 export interface MeetingResourceResource {
@@ -46,10 +52,15 @@ export type MeetingResourceForCreate = Pick<
   | "isRemote"
   | "resources"
 > & {
-  readonly staff: readonly MeetingAttendantResourceForCreate[];
-  readonly clients: readonly MeetingAttendantResourceForCreate[];
+  readonly staff: readonly MeetingStaffResourceForCreate[];
+  readonly clients: readonly MeetingClientResourceForCreate[];
 } & PartialNullable<Pick<MeetingResource, "date" | "startDayminute" | "durationMinutes">>;
 
-export type MeetingAttendantResourceForCreate = Pick<MeetingAttendantResource, "userId" | "attendanceStatusDictId">;
+export type MeetingStaffResourceForCreate = Pick<MeetingStaffResource, "userId" | "attendanceStatusDictId">;
+
+export type MeetingClientResourceForCreate = Pick<
+  MeetingClientResource,
+  "userId" | "clientGroupId" | "attendanceStatusDictId"
+>;
 
 export type MeetingResourceForPatch = Api.Entity & MeetingResourceForCreate;

@@ -2,7 +2,7 @@ import {DaysRange} from "components/ui/calendar/days_range";
 import {CalendarFunction} from "components/ui/meetings-calendar/calendar_modes";
 import {Accessor, createMemo, on} from "solid-js";
 import {useFixedDictionaries} from "../fixed_dictionaries";
-import {MeetingAttendantResource, MeetingResource} from "../resources/meeting.resource";
+import {MeetingClientResource, MeetingResource, MeetingStaffResource} from "../resources/meeting.resource";
 import {Api} from "../types";
 import {dateToISO} from "../utils";
 import {FilterH, FilterReductor} from "./filter_utils";
@@ -29,7 +29,7 @@ const RESOURCE_COLUMNS = [
 ] as const satisfies (keyof MeetingResource)[];
 
 /** The list of columns to fetch. */
-const COLUMNS = [...RESOURCE_COLUMNS, "seriesNumber", "seriesCount"] as const;
+const COLUMNS = [...RESOURCE_COLUMNS, "isFacilityWide", "seriesNumber", "seriesCount"] as const;
 
 export type SeriesNumberAndCount = {
   readonly seriesNumber: number | null;
@@ -39,21 +39,16 @@ export type SeriesNumberAndCount = {
 /** A meeting resource type fetched from tquery. */
 export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_COLUMNS)[number], "staff" | "clients">> &
   SeriesNumberAndCount & {
+    readonly isFacilityWide: boolean;
     readonly staff: readonly TQMeetingAttendantResource[];
     readonly clients: readonly TQMeetingAttendantResource[];
   };
 
-export interface TQMeetingAttendantResource extends MeetingAttendantResource {
+export interface TQMeetingAttendantResource extends MeetingStaffResource, MeetingClientResource {
   readonly name: string;
   readonly attendanceTypeDictId: string;
 }
 
-/**
- * Creates a request creator used by a calendar.
- *
- * TODO: Optimise to avoid loading data that is already cached, maybe load a full month at once if
- * only one staff member is selected etc.
- */
 export function createCalendarRequestCreator({
   calendarFunction,
   intrinsicFilter = "always",
@@ -105,38 +100,31 @@ export function createCalendarRequestCreator({
                 val: [meetingTypeDict()!.work_time.id, meetingTypeDict()!.leave_time.id],
               }
             : (calendarFunction satisfies never);
-      let staffFilter: FilterH;
-      let meetingResourcesFilter: FilterH;
+      let staffAndMeetingResourcesFilter: FilterH;
       // Fetch for all staff and resources if showing a single day.
       if (daysRange().length() <= 1) {
-        staffFilter = "always";
-        meetingResourcesFilter = "always";
+        staffAndMeetingResourcesFilter = "always";
       } else {
-        const hasStaffFilter: FilterH = {
-          type: "column",
-          column: "staff.*.userId",
-          op: "has_any",
-          val: staff().toSorted(),
-        };
-        const isFacilityWide: FilterH = staff().length
-          ? {type: "column", column: "staff.count", op: "=", val: 0}
-          : "never";
-        staffFilter = {
-          type: "op",
-          op: "|",
-          val: [hasStaffFilter, isFacilityWide],
-        };
-        meetingResourcesFilter = {type: "column", column: "resources.*.dictId", op: "has_any", val: meetingResources()};
+        if (staff().length || meetingResources().length) {
+          staffAndMeetingResourcesFilter = {
+            type: "op",
+            op: "|",
+            val: [
+              // Show facility wide meetings only if any staff is selected.
+              staff().length ? {type: "column", column: "isFacilityWide", op: "=", val: true} : "never",
+              {type: "column", column: "staff.*.userId", op: "has_any", val: staff().toSorted()},
+              {type: "column", column: "resources.*.dictId", op: "has_any", val: meetingResources().toSorted()},
+            ],
+          };
+        } else {
+          // No staff and no resources requested, so nothing to show.
+          staffAndMeetingResourcesFilter = "never";
+        }
       }
       return filterReductor()!.reduce({
         type: "op",
         op: "&",
-        val: [
-          intrinsicFilter,
-          dateFilter,
-          typeFilter,
-          {type: "op", op: "|", val: [staffFilter, meetingResourcesFilter]},
-        ],
+        val: [intrinsicFilter, dateFilter, typeFilter, staffAndMeetingResourcesFilter],
       });
     };
     const request = createMemo((): DataRequest | undefined => {

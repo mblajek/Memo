@@ -1,12 +1,11 @@
 import {cx, debouncedAccessor} from "components/utils";
 import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/types";
+import {Api} from "data-access/memo-api/types";
 import {createComputed} from "solid-js";
 import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControl} from "./types";
-
-const UUID_LENGTH = 36;
 
 export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilter> = (props) => {
   const filterFieldNames = useFilterFieldNames();
@@ -31,7 +30,7 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
     }
   }
   const debouncedValue = debouncedAccessor(value, {
-    outputImmediately: (v) => !v || v === "*" || v === "''" || v.length === UUID_LENGTH,
+    outputImmediately: (v) => !v || v === "*" || v === "''" || v.length === Api.ID_LENGTH,
   });
   createComputed(() => props.setFilter(buildFilter(debouncedValue())));
   return (

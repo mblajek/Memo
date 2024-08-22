@@ -5,12 +5,10 @@ namespace App\Models;
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\QueryBuilders\GrantBuilder;
 use App\Models\Traits\BaseModel;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
 /**
- * @property-read Collection|Facility[] $facilities
  * @method static GrantBuilder query()
  */
 class Grant extends Model

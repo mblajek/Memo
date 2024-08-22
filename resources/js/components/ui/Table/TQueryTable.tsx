@@ -159,6 +159,9 @@ export interface TQueryTableProps<TData = DataItem> {
    * Default: false.
    */
   readonly nonBlocking?: boolean;
+  /** The definition of the columns in the table, in their correct order. */
+  readonly columns: readonly PartialColumnConfigEntry<TData>[];
+  readonly columnGroups?: ColumnGroupsSelection;
   /**
    * The filter that is always applied to the data, regardless of other filtering.
    * This is used to create e.g. a table of entities A on the details page of a particular
@@ -167,9 +170,6 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly intrinsicFilter?: FilterH;
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
-  /** The definition of the columns in the table, in their correct order. */
-  readonly columns: readonly PartialColumnConfigEntry<TData>[];
-  readonly columnGroups?: ColumnGroupsSelection;
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
@@ -234,6 +234,8 @@ type FullColumnConfig<TData = DataItem> = ColumnConfig &
 
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
 const DEFAULT_EMBEDDED_PAGE_SIZE = 10;
+
+const SUPPORTED_TRANSFORMS: ReadonlySet<string> = new Set(["count"]);
 
 /**
  * The state of the table persisted in the local storage.
@@ -337,6 +339,11 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       metaParams: {textExportCell: tableTextExportCells.string()},
       filterControl: TextualFilterControl,
     })
+    .set("string_list", {
+      columnDef: {cell: tableCells.stringList(), enableSorting: false},
+      metaParams: {textExportCell: tableTextExportCells.stringList()},
+      filterControl: TextualFilterControl,
+    })
     .set("text", {
       columnDef: {cell: tableCells.text(), enableSorting: false},
       metaParams: {textExportCell: tableTextExportCells.text()},
@@ -356,15 +363,38 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       columnDef: {cell: tableCells.dict()},
       metaParams: {textExportCell: tableTextExportCells.dict()},
       filterControl: DictFilterControl,
-      globalFilterable: true,
     })
     .set("dict_list", {
       columnDef: {cell: tableCells.dictList(), enableSorting: false, size: 270},
       metaParams: {textExportCell: tableTextExportCells.dictList()},
       filterControl: DictListFilterControl,
-      globalFilterable: true,
     });
 
+  const [table, setTable] = createSignal<SolidTable<DataItem>>();
+  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
+  const translations: TableTranslations = {
+    ...baseTranslations,
+    columnName: (column, o) => {
+      if (column === countColumn()) {
+        return t("tables.column_groups.count_column_label");
+      }
+      const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
+      const attributeId = meta?.attributeId;
+      if (attributeId) {
+        let attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
+        if (meta.transform) {
+          attributeLabel = t(`tables.transforms.${meta.transform}`, {
+            base: attributeLabel,
+            defaultValue: `${attributeLabel}.${meta.transform}`,
+          });
+        }
+        return baseTranslations.columnNameOverride
+          ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
+          : attributeLabel || "";
+      }
+      return baseTranslations.columnName(column, o);
+    },
+  };
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     columnGroups,
@@ -375,6 +405,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       props.initialPageSize ||
       // eslint-disable-next-line solid/reactivity
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
+    columnsByPrefix: translations.columnsByPrefix,
   });
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
@@ -420,8 +451,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
                 if (!isDataColumn(col) || !col.attributeId) {
                   return undefined;
                 }
+                if (col.transform && !SUPPORTED_TRANSFORMS.has(col.transform)) {
+                  console.warn(`Unknown column transform on attribute column ${col.name}: ${col.transform}`);
+                  return undefined;
+                }
                 const attribute = attributes()!.getById(col.attributeId);
-                const select = isAttributeSelected(selection, attribute);
+                const select = isAttributeSelected(selection, attribute, col.transform);
                 if (select) {
                   if (configuredColumns.has(col.name)) {
                     if (select.explicit) {
@@ -483,7 +518,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       setEffectiveActiveColumnGroups(activeColumnGroups[0]());
     }
   });
-  const [table, setTable] = createSignal<SolidTable<DataItem>>();
   const historyPersistenceKey = `TQueryTable:${props.staticPersistenceKey || "main"}`;
   const columnFilterStates = new ColumnFilterStates();
   if (props.staticPersistenceKey) {
@@ -524,23 +558,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
-  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
-  const translations: TableTranslations = {
-    ...baseTranslations,
-    columnName: (column, o) => {
-      if (column === countColumn()) {
-        return t("tables.column_groups.count_column_label");
-      }
-      const attributeId = table()?.getColumn(column)?.columnDef.meta?.tquery?.attributeId;
-      if (attributeId) {
-        const attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
-        return baseTranslations.columnNameOverride
-          ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
-          : attributeLabel || "";
-      }
-      return baseTranslations.columnName(column, o);
-    },
-  };
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
@@ -597,15 +614,19 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
               component={col.header || defColumnConfig.header}
               ctx={ctx}
               filter={filter}
-              filterControl={() => (
-                <Dynamic
-                  component={schemaCol && filterControl}
-                  column={ctx.column}
-                  schema={schemaCol!}
-                  filter={filter[0]()}
-                  setFilter={filter[1]}
-                />
-              )}
+              filterControl={
+                schemaCol &&
+                filterControl &&
+                (() => (
+                  <Dynamic
+                    component={filterControl}
+                    column={ctx.column}
+                    schema={schemaCol!}
+                    filter={filter[0]()}
+                    setFilter={filter[1]}
+                  />
+                ))
+              }
             />
           ),
         },
@@ -633,7 +654,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       if (previewMode) {
         if (previewMode === "textExport") {
           columnDef.cell = (ctx) => (
-            <PaddedCell>
+            <PaddedCell class="whitespace-pre-wrap">
               {columnDef.meta?.tquery?.textExportCell?.({
                 value: ctx.getValue(),
                 row: ctx.row.original,

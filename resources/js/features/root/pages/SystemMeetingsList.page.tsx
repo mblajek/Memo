@@ -38,7 +38,7 @@ export default (() => {
         ...getCreatedUpdatedColumns(),
         cols.meeting.actions,
       ]}
-      columnGroups={{overrides: {meeting: false}}}
+      columnGroups={{overrides: {meeting_multicolumn: false}}}
       initialSort={[{id: "date", desc: false}]}
     />
   );

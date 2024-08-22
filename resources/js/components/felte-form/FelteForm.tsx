@@ -22,6 +22,7 @@ import {LoadingPane} from "../ui/LoadingPane";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {createFormLeaveConfirmation} from "../ui/form/form_leave_confirmation";
 import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
+import {useMutationsTracker} from "../utils/mutations_tracker";
 import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
 import {recursiveUnwrapFormValues} from "./wrapped_fields";
@@ -80,8 +81,6 @@ export type FormProps<T extends Obj = Obj> = Omit<htmlAttributes.form, "onSubmit
  * and returning JSX, similar to the function form of the `<Show>` component.
  */
 export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Element => {
-  const t = useLangFunc();
-  const confirmation = createFormLeaveConfirmation();
   const [props, createFormOptions, formProps] = splitProps(
     allProps,
     [
@@ -95,6 +94,9 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     ],
     ["debounced", "extend", "initialValues", "onError", "onSubmit", "onSuccess", "transform", "validate", "warn"],
   );
+  const t = useLangFunc();
+  const confirmation = createFormLeaveConfirmation();
+  const mutationsTracking = useMutationsTracker();
   const translationsFormNames = createMemo(() => [...(props.translationsFormNames || [allProps.id]), "generic"]);
   const translationsModels = createMemo(() =>
     Array.isArray(props.translationsModel) ? props.translationsModel || [] : [props.translationsModel],
@@ -296,7 +298,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         <fieldset class="contents" disabled={formDisabled()} inert={form.isSubmitting() || undefined}>
           {getChildrenElement(props.children, form, contextValue)}
         </fieldset>
-        <LoadingPane isLoading={form.isSubmitting()} />
+        <LoadingPane isLoading={form.isSubmitting() || mutationsTracking.isAnyPending()} />
       </form>
     </TypedFormContext.Provider>
   );

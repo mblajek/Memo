@@ -36,6 +36,7 @@ export default (() => {
         cols.meeting.category,
         cols.meeting.type,
         cols.meeting.statusTags,
+        cols.meeting.isFacilityWide,
         cols.meeting.get("attendants", {initialVisible: false}),
         cols.meeting.attendantsAttendance,
         cols.meeting.attendantsCount,
@@ -51,7 +52,7 @@ export default (() => {
         ...getCreatedUpdatedColumns(),
         cols.meeting.actions,
       ]}
-      columnGroups={{overrides: {meeting: false}}}
+      columnGroups={{overrides: {meeting_multicolumn: false}}}
       initialSort={[{id: "date", desc: true}]}
       helpHref="/help/reports#meetings"
     />

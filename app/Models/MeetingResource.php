@@ -7,8 +7,8 @@ use App\Models\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @property string meeting_id
- * @property string resource_dict_id
+ * @property string $meeting_id
+ * @property string $resource_dict_id
  * @method static MeetingResourceBuilder query()
  */
 class MeetingResource extends Model

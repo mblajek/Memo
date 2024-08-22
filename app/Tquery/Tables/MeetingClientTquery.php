@@ -11,7 +11,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
-readonly class MeetingClientTquery extends MeetingTquery
+final readonly class MeetingClientTquery extends MeetingTquery
 {
     protected function getBuilder(): TqBuilder
     {
@@ -46,6 +46,7 @@ readonly class MeetingClientTquery extends MeetingTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
+        $config->uniqueTable = TqTableAliasEnum::users;
 
         $config->addJoined(
             TqDataTypeEnum::uuid,
@@ -78,6 +79,12 @@ readonly class MeetingClientTquery extends MeetingTquery
             TqTableAliasEnum::meeting_attendants,
             'attendance_status_dict_id',
             'attendant.attendance_status_dict_id',
+        );
+        $config->addJoined(
+            TqDataTypeEnum::uuid_nullable,
+            TqTableAliasEnum::meeting_attendants,
+            'client_group_id',
+            'attendant.client_group_id',
         );
 
         FacilityUserTquery::addAttendantFields($this->facility, $config);

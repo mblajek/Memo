@@ -63,13 +63,14 @@ with_ellipsis: "{{-text}}$t(ellipsis)"
 em_dash: "—"
 en_dash: "–"
 thin_space: " "
+thin_n_thin: "$t(thin_space)$t(en_dash)$t(thin_space)"
 
 more_info: "Więcej informacji"
 
 select:
   no_items: "Brak opcji"
   no_matching_items: "Brak pasujących opcji"
-  limit_exceeded: "Wpisz filtr, aby zobaczyć inne opcje"
+  limit_exceeded: "Wpisz filtr, aby zobaczyć więcej opcji"
 
 user_settings: "Opcje użytkownika"
 

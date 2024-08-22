@@ -29,3 +29,8 @@ facility:
 client:
   add: "Dodaj klienta"
   delete: "Usuń klienta"
+client_group:
+  add: "Utwórz grupę klientów"
+  add_another: "Utwórz kolejną grupę klientów"
+  delete: "Usuń grupę"
+  add_to: "Dodaj do istniejącej grupy"

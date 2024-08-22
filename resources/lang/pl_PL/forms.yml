@@ -33,7 +33,7 @@ user_edit:
   validation:
     cannot_remove_own_global_admin: "Użytkownik nie może odebrać sobie uprawnień globalnego administratora."
     cannot_remove_own_email_verified: "Użytkownik nie może ustawić własnego adresu email jako niezweryfikowany."
-  success: "Zmieniono dane"
+  success: "Zmodyfikowano dane"
 
 user_create:
   form_name: "Nowa osoba"
@@ -47,7 +47,7 @@ facility_create:
 
 facility_edit:
   form_name: "Edycja placówki"
-  success: "Zmieniono dane placówki"
+  success: "Zmodyfikowano dane placówki"
 
 meeting:
   default_duration: "Sugerowane:"
@@ -71,24 +71,23 @@ meeting_create:
 
 meeting_edit:
   form_name: "Edycja spotkania"
-  success: "Zmieniono spotkanie"
+  success: "Zmodyfikowano spotkanie"
 
 meeting_delete:
   form_name: "Usunięcie spotkania"
   confirmation_text: "Czy na pewno usunąć to spotkanie?"
   series_info: "To spotkanie jest częścią serii"
   one: "Usuń tylko to spotkanie"
-  from_this__one: "Usuń to spotkanie i kolejne {{count,number}} w serii"
-  from_this__few: "Usuń to spotkanie i kolejne {{count,number}} w serii"
-  from_this__many: "Usuń to spotkanie i kolejnych {{count,number}} w serii"
-  all__few: "Usuń wszystkie {{count, number}} spotkania w serii"
-  all__many: "Usuń wszystkie {{count, number}} spotkań w serii"
-  submit__one: "Usuń spotkanie"
-  submit__few: "Usuń {{count, number}} spotkania"
-  submit__many: "Usuń {{count, number}} spotkań"
+  from_this: "Usuń to spotkanie i wszystkie późniejsze"
+  from_next: "Zachowaj to spotkanie, ale usuń wszystkie późniejsze"
+  all: "Usuń całą serię"
+  submit: "Usuń spotkanie"
+  submit_series__one: "Usuń {{count,number}} spotkanie"
+  submit_series__few: "Usuń {{count,number}} spotkania"
+  submit_series__many: "Usuń {{count,number}} spotkań"
   success__one: "Usunięto spotkanie"
-  success__few: "Usunięto {{count, number}} spotkania"
-  success__many: "Usunięto {{count, number}} spotkań"
+  success__few: "Usunięto {{count,number}} spotkania"
+  success__many: "Usunięto {{count,number}} spotkań"
 
 meeting_series:
   field_names:
@@ -119,24 +118,23 @@ work_time_create:
 
 work_time_edit:
   form_name: "Edycja czasu pracy / nieobecności"
-  success: "Zmieniono czas pracy / nieobecność"
+  success: "Zmodyfikowano czas pracy / nieobecność"
 
 work_time_delete:
   form_name: "Usunięcie czasu pracy / nieobecności"
   confirmation_text: "Czy na pewno usunąć ten wpis?"
   series_info: "Ten wpis jest częścią serii"
   one: "Usuń tylko ten wpis"
-  from_this__one: "Usuń ten wpis i kolejny {{count,number}} w serii"
-  from_this__few: "Usuń ten wpis i kolejne {{count,number}} w serii"
-  from_this__many: "Usuń ten wpis i kolejnych {{count,number}} w serii"
-  all__few: "Usuń wszystkie {{count, number}} wpisy w serii"
-  all__many: "Usuń wszystkich {{count, number}} wpisów w serii"
-  submit__one: "Usuń wpis"
-  submit__few: "Usuń {{count, number}} wpisy"
-  submit__many: "Usuń {{count, number}} wpisów"
+  from_this: "Usuń ten wpis i wszystkie późniejsze"
+  from_next: "Zachowaj ten wpis, ale usuń wszystkie późniejsze"
+  all: "Usuń całą serię"
+  submit: "Usuń wpis"
+  submit_series__one: "Usuń {{count,number}} wpis"
+  submit_series__few: "Usuń {{count,number}} wpisy"
+  submit_series__many: "Usuń {{count,number}} wpisów"
   success__one: "Usunięto wpis"
-  success__few: "Usunięto {{count, number}} wpisy"
-  success__many: "Usunięto {{count, number}} wpisów"
+  success__few: "Usunięto {{count,number}} wpisy"
+  success__many: "Usunięto {{count,number}} wpisów"
 
 work_time_series:
   field_names:
@@ -158,7 +156,7 @@ client:
 
 client_edit:
   form_name: "Edycja klienta"
-  success: "Zmieniono dane klienta"
+  success: "Zmodyfikowano dane klienta"
 
 client_create:
   form_name: "Nowy klient"
@@ -185,3 +183,34 @@ client_delete:
   success:
     remove: "Usunięto klienta"
     deduplicate: "Usunięto duplikat"
+
+client_group:
+
+client_group_edit:
+  form_name: "Edycja grupy klientów"
+  success: "Zmodyfikowano grupę klientów"
+
+client_group_create:
+  form_name: "Nowa grupa klientów"
+  submit: "$t(actions.create)"
+  success: "Utworzono grupę klientów"
+
+client_group_delete:
+  form_name: "Usunięcie grupy klientów"
+  confirmation_text: "Czy na pewno usunąć to powiązanie klientów? Klienci nie zostaną usunięci."
+  submit: "Usuń powiązanie"
+  success: "Usunięto grupę klientów"
+
+add_to_client_group:
+  form_name: "Dodaj klienta do grupy"
+  field_names:
+    group_member: "Wybierz grupę, do której ma zostać dodany aktualny klient"
+  text:
+    group_member_is_same: "To jest ten sam klient! Wybierz innego klienta."
+    no_groups: "Wybrany klient nie należy do grupy."
+    already_in_group: "Bieżący klient już należy do wybranej grupy."
+    select_group_hint: "Wybierz grupę powyżej"
+  submit:
+    add_to_group: "Dodaj do grupy$t(ellipsis)"
+    create_group: "Utwórz grupę$t(ellipsis)"
+  success: "Dodano do grupy klientów"

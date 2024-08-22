@@ -37,6 +37,7 @@ import {BigSpinner} from "../Spinner";
 import {EmptyValueSymbol} from "../symbols";
 import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
+import {useColumnsByPrefixUtil} from "./tquery_filters/fuzzy_filter";
 
 export interface TableTranslations {
   tableName(o?: TOptions): string;
@@ -46,11 +47,14 @@ export interface TableTranslations {
   /** Summary of the table. */
   summary(count: number, activeColumnGroups?: readonly string[], o?: TOptions): string;
   columnGroup(group: string, o?: TOptions): string;
+  columnsByPrefix?: ReadonlyMap<string, string>;
 }
 
 export function createTableTranslations(tableName: string | string[]): TableTranslations {
   const t = useLangFunc();
+  const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const names = typeof tableName === "string" ? [tableName] : tableName;
+  const namesWithGeneric = [...names, "generic"];
   const tableNameKeys = [
     ...names.map((n) => `tables.tables.${n}.table_name`),
     ...names.map((n) => `models.${n}._name_plural`),
@@ -64,15 +68,15 @@ export function createTableTranslations(tableName: string | string[]): TableTran
     `models.generic.`,
   ];
   const summaryKeys = [...names.map((n) => `tables.tables.${n}.summary`), "tables.tables.generic.summary"];
-  const summaryWithColumnGroup = (columnGroup: string) => [
-    ...names.map((n) => `tables.tables.${n}.with_column_group.${columnGroup}.summary`),
-    `tables.tables.generic.with_column_group.${columnGroup}.summary`,
-  ];
+  const summaryWithColumnGroup = (columnGroup: string) =>
+    namesWithGeneric.map((n) => `tables.tables.${n}.with_column_group.${columnGroup}.summary`);
   const columnGroupsKeyPrefixes = [
-    ...names.map((n) => `tables.tables.${n}.column_groups.`),
-    `tables.tables.generic.column_groups.`,
+    ...namesWithGeneric.map((n) => `tables.tables.${n}.column_groups.`),
     ...columnNameKeyPrefixes,
   ];
+  const columnsByPrefix = columnsByPrefixUtil.fromColumnPrefixes(
+    namesWithGeneric.map((n) => `tables.tables.${n}.column_prefixes`),
+  );
   return {
     tableName: (o) => t(tableNameKeys, o),
     columnName: (column, o) =>
@@ -99,6 +103,7 @@ export function createTableTranslations(tableName: string | string[]): TableTran
         columnGroupsKeyPrefixes.map((p) => p + group),
         o,
       ),
+    columnsByPrefix,
   };
 }
 

@@ -35,14 +35,22 @@ export function useTableColumns() {
         initialVisible: false,
         globalFilterable: false,
       },
-      createdBy: {name: `${prefix}createdBy.name`, initialVisible: false, globalFilterable: false},
+      createdBy: {
+        name: `${prefix}createdBy.name`,
+        initialVisible: false,
+        globalFilterable: false,
+      },
       updatedAt: {
         name: `${prefix}updatedAt`,
         columnDef: {sortDescFirst: true},
         initialVisible: false,
         globalFilterable: false,
       },
-      updatedBy: {name: `${prefix}updatedBy.name`, initialVisible: false, globalFilterable: false},
+      updatedBy: {
+        name: `${prefix}updatedBy.name`,
+        initialVisible: false,
+        globalFilterable: false,
+      },
     });
     const globalAdminColumnsSet = createTableColumnsSet({
       ...columnsSet.getColumns(),

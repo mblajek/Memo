@@ -19,11 +19,6 @@ export default (() => {
       staticPersistenceKey="facilityMeetingAttendants"
       // This table has multiple heavy to render columns.
       nonBlocking
-      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
-      intrinsicSort={[
-        {type: "column", column: "date", desc: true},
-        {type: "column", column: "startDayminute", desc: true},
-      ]}
       columns={[
         cols.attendant.attendanceType,
         cols.attendant.attendant,
@@ -39,6 +34,7 @@ export default (() => {
         cols.meeting.category,
         cols.meeting.type,
         cols.meeting.statusTags,
+        cols.meeting.isFacilityWide,
         cols.meeting.get("attendants", {initialVisible: false}),
         cols.meeting.attendantsAttendance,
         cols.meeting.attendantsCount,
@@ -51,8 +47,13 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
-        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting"}}),
+        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting_multicolumn"}}),
         cols.meeting.actions,
+      ]}
+      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
+      intrinsicSort={[
+        {type: "column", column: "date", desc: true},
+        {type: "column", column: "startDayminute", desc: true},
       ]}
       initialSort={[{id: "date", desc: true}]}
       helpHref="/help/reports#meeting-attendants"

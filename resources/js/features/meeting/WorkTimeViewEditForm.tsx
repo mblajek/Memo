@@ -1,6 +1,6 @@
+import {createMutation} from "@tanstack/solid-query";
 import {Button, EditButton} from "components/ui/Button";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
-import {LoadingPane} from "components/ui/LoadingPane";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
@@ -8,10 +8,12 @@ import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIc
 import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
+import {useMutationsTracker} from "components/utils/mutations_tracker";
 import {skipUndefinedValues} from "components/utils/object_util";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {Api, RequiredNonNullable} from "data-access/memo-api/types";
@@ -22,7 +24,7 @@ import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {MeetingDeleteButton} from "./MeetingDeleteButton";
 import {WorkTimeForm, WorkTimeFormType} from "./WorkTimeForm";
 import {getStaffValueForPatch, staffInitialValue} from "./WorkTimeStaffSelectField";
-import {useMeetingAPI, useMeetingWithExtraInfo} from "./meeting_api";
+import {useMeetingWithExtraInfo} from "./meeting_api";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_time_controller";
@@ -36,7 +38,7 @@ export interface WorkTimeViewEditFormProps {
   readonly onEdited?: (meeting: MeetingBasicData) => void;
   readonly onCreated?: (meeting: MeetingBasicData) => void;
   readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
-  readonly onDeleted?: () => void;
+  readonly onDeleted?: (count: number, deletedThisWorkTime: boolean) => void;
   readonly onCancel?: () => void;
 }
 
@@ -45,12 +47,15 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   const activeFacility = useActiveFacility();
   const attributes = useAttributes();
   const {dictionaries, meetingStatusDict} = useFixedDictionaries();
-  const meetingAPI = useMeetingAPI();
+  const mutationsTracker = useMutationsTracker();
   const invalidate = useInvalidator();
   const workTimeCreateModal = createWorkTimeCreateModal();
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const {meetingQuery, meeting: workTime} = useMeetingWithExtraInfo(props.staticMeetingId);
-  const isBusy = () => !!meetingAPI.isPending();
+  const meetingUpdateMutation = createMutation(() => ({
+    mutationFn: FacilityMeeting.updateMeeting,
+    meta: {isFormSubmit: true},
+  }));
 
   function transformFormValues(values: Partial<WorkTimeFormType>): Partial<MeetingResourceForPatch> {
     return {
@@ -63,7 +68,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   async function updateWorkTime(values: Partial<WorkTimeFormType>) {
     const origMeeting = workTime();
     const meetingPatch = transformFormValues(values);
-    await meetingAPI.update(props.staticMeetingId, meetingPatch);
+    await meetingUpdateMutation.mutateAsync({id: props.staticMeetingId, ...meetingPatch});
     // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.work_time_edit.success"));
@@ -132,18 +137,12 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                   }
                 }}
               />
-              <LoadingPane
-                isLoading={
-                  // If the edit mutation is pending, the form already shows the pane.
-                  meetingAPI.isPending()?.delete
-                }
-              />
             </div>
             <Show when={props.viewMode}>
               <div class="flex gap-1 justify-between">
                 <MeetingDeleteButton
                   class="secondary small"
-                  disabled={isBusy()}
+                  disabled={mutationsTracker.isAnyPending()}
                   meeting={workTime()}
                   onDeleted={props.onDeleted}
                 />
@@ -191,7 +190,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                         </For>
                       </SimpleMenu>
                     )}
-                    disabled={isBusy()}
+                    disabled={mutationsTracker.isAnyPending()}
                   >
                     <MeetingRepeatIcon class="inlineIcon" />{" "}
                     {t(workTime().fromMeetingId ? "meetings.extend_series" : "meetings.create_series")}
@@ -200,7 +199,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                     <EditButton
                       class="secondary small"
                       onClick={[props.onViewModeChange!, false]}
-                      disabled={isBusy()}
+                      disabled={mutationsTracker.isAnyPending()}
                     />
                   </Show>
                 </div>

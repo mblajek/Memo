@@ -1,8 +1,9 @@
 import {Show, VoidComponent} from "solid-js";
 import {cx, debouncedAccessor} from "../utils";
+import {useMutationsTracker} from "../utils/mutations_tracker";
 import {BigSpinner} from "./Spinner";
 
-interface Props {
+interface LoadingPaneProps {
   readonly isLoading?: boolean;
 }
 
@@ -10,7 +11,7 @@ interface Props {
  * A loading pane displayed on top of a relative-positioned component while it is loading.
  * It does not block pointer events.
  */
-export const LoadingPane: VoidComponent<Props> = (props) => {
+export const LoadingPane: VoidComponent<LoadingPaneProps> = (props) => {
   // eslint-disable-next-line solid/reactivity
   const shown = debouncedAccessor(() => props.isLoading, {timeMs: 1000, outputImmediately: (isLoading) => !!isLoading});
   return (
@@ -26,4 +27,9 @@ export const LoadingPane: VoidComponent<Props> = (props) => {
       </Show>
     </div>
   );
+};
+
+export const MutationTrackingLoadingPane: VoidComponent = () => {
+  const mutationsTracker = useMutationsTracker();
+  return <LoadingPane isLoading={mutationsTracker.isAnyPending()} />;
 };

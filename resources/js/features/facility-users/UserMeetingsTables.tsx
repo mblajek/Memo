@@ -4,6 +4,7 @@ import {BigSpinner} from "components/ui/Spinner";
 import {TableExportConfig, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {Tabs} from "components/ui/Tabs";
+import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {EM_DASH} from "components/ui/symbols";
 import {DATE_FORMAT, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -65,9 +66,9 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   return (
     <div class="flex flex-col">
       <Show when={dictionaries()} fallback={<BigSpinner />}>
-        <h2 class="font-medium">
+        <StandaloneFieldLabel>
           <Capitalize text={tableTranslations.tableName()} />
-        </h2>
+        </StandaloneFieldLabel>
         <Tabs
           tabs={[
             {
@@ -107,6 +108,42 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTranslations={tableTranslations}
                       staticPersistenceKey={`${props.staticPersistenceKey}.planned`}
                       staticTableId="planned"
+                      columns={[
+                        cols.meeting.id,
+                        cols.meeting.dateTimeActions,
+                        cols.meeting.get("time", {initialVisible: false}),
+                        cols.meeting.get("duration", {initialVisible: false}),
+                        cols.meeting.get("seriesInfo", {initialVisible: false}),
+                        cols.meeting.seriesType,
+                        cols.meeting.seriesNumber,
+                        cols.meeting.seriesCount,
+                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
+                        cols.meeting.category,
+                        cols.meeting.type,
+                        cols.meeting.statusTags,
+                        cols.attendant.get("attendanceStatus", {initialVisible: false}),
+                        cols.meeting.isFacilityWide,
+                        cols.meeting.attendants,
+                        cols.meeting.attendantsAttendance,
+                        cols.meeting.attendantsCount,
+                        cols.meeting.get("staff", {initialVisible: false}),
+                        cols.meeting.staffAttendance,
+                        cols.meeting.staffCount,
+                        cols.meeting.get("clients", {initialVisible: false}),
+                        cols.meeting.clientsAttendance,
+                        cols.meeting.clientsCount,
+                        cols.meeting.get("isRemote", {initialVisible: false}),
+                        cols.meeting.notes,
+                        cols.meeting.resources,
+                        ...getCreatedUpdatedColumns(),
+                      ]}
+                      columnGroups={{
+                        defaultInclude: false,
+                        overrides: {
+                          categoryDictId: true,
+                          typeDictId: true,
+                        },
+                      }}
                       intrinsicFilter={{
                         type: "op",
                         op: "&",
@@ -127,40 +164,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ],
                       }}
                       intrinsicSort={sortByDate({desc: false})}
-                      columns={[
-                        cols.meeting.id,
-                        cols.meeting.dateTimeActions,
-                        cols.meeting.get("time", {initialVisible: false}),
-                        cols.meeting.get("duration", {initialVisible: false}),
-                        cols.meeting.get("seriesInfo", {initialVisible: false}),
-                        cols.meeting.seriesType,
-                        cols.meeting.seriesNumber,
-                        cols.meeting.seriesCount,
-                        cols.meeting.category,
-                        cols.meeting.type,
-                        cols.meeting.statusTags,
-                        cols.attendant.get("attendanceStatus", {initialVisible: false}),
-                        cols.meeting.attendants,
-                        cols.meeting.attendantsAttendance,
-                        cols.meeting.attendantsCount,
-                        cols.meeting.get("staff", {initialVisible: false}),
-                        cols.meeting.staffAttendance,
-                        cols.meeting.staffCount,
-                        cols.meeting.get("clients", {initialVisible: false}),
-                        cols.meeting.clientsAttendance,
-                        cols.meeting.clientsCount,
-                        cols.meeting.get("isRemote", {initialVisible: false}),
-                        cols.meeting.notes,
-                        cols.meeting.resources,
-                        ...getCreatedUpdatedColumns(),
-                      ]}
-                      columnGroups={{
-                        overrides: {
-                          "meeting": false,
-                          "statusDictId": false,
-                          "attendant.attendanceStatusDictId": false,
-                        },
-                      }}
                       initialSort={[{id: "date", desc: false}]}
                       staticExportConfig={exportConfig("planned")}
                     />
@@ -215,6 +218,42 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTranslations={tableTranslations}
                       staticPersistenceKey={`${props.staticPersistenceKey}.completed`}
                       staticTableId="completed"
+                      columns={[
+                        cols.meeting.id,
+                        cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
+                        cols.meeting.get("time", {initialVisible: false}),
+                        cols.meeting.get("duration", {initialVisible: false}),
+                        cols.meeting.get("seriesInfo", {initialVisible: false}),
+                        cols.meeting.seriesType,
+                        cols.meeting.seriesNumber,
+                        cols.meeting.seriesCount,
+                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
+                        cols.meeting.category,
+                        cols.meeting.type,
+                        cols.meeting.statusTags,
+                        cols.attendant.get("attendanceStatus", {initialVisible: false}),
+                        cols.meeting.isFacilityWide,
+                        cols.meeting.attendants,
+                        cols.meeting.attendantsAttendance,
+                        cols.meeting.attendantsCount,
+                        cols.meeting.get("staff", {initialVisible: false}),
+                        cols.meeting.staffAttendance,
+                        cols.meeting.staffCount,
+                        cols.meeting.get("clients", {initialVisible: false}),
+                        cols.meeting.clientsAttendance,
+                        cols.meeting.clientsCount,
+                        cols.meeting.get("isRemote", {initialVisible: false}),
+                        cols.meeting.notes,
+                        cols.meeting.resources,
+                        ...getCreatedUpdatedColumns(),
+                      ]}
+                      columnGroups={{
+                        defaultInclude: false,
+                        overrides: {
+                          categoryDictId: true,
+                          typeDictId: true,
+                        },
+                      }}
                       intrinsicFilter={{
                         type: "op",
                         op: "&",
@@ -235,40 +274,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         ],
                       }}
                       intrinsicSort={sortByDate({desc: true})}
-                      columns={[
-                        cols.meeting.id,
-                        cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
-                        cols.meeting.get("time", {initialVisible: false}),
-                        cols.meeting.get("duration", {initialVisible: false}),
-                        cols.meeting.get("seriesInfo", {initialVisible: false}),
-                        cols.meeting.seriesType,
-                        cols.meeting.seriesNumber,
-                        cols.meeting.seriesCount,
-                        cols.meeting.category,
-                        cols.meeting.type,
-                        cols.meeting.statusTags,
-                        cols.attendant.get("attendanceStatus", {initialVisible: false}),
-                        cols.meeting.attendants,
-                        cols.meeting.attendantsAttendance,
-                        cols.meeting.attendantsCount,
-                        cols.meeting.get("staff", {initialVisible: false}),
-                        cols.meeting.staffAttendance,
-                        cols.meeting.staffCount,
-                        cols.meeting.get("clients", {initialVisible: false}),
-                        cols.meeting.clientsAttendance,
-                        cols.meeting.clientsCount,
-                        cols.meeting.get("isRemote", {initialVisible: false}),
-                        cols.meeting.notes,
-                        cols.meeting.resources,
-                        ...getCreatedUpdatedColumns(),
-                      ]}
-                      columnGroups={{
-                        overrides: {
-                          "meeting": false,
-                          "statusDictId": false,
-                          "attendant.attendanceStatusDictId": false,
-                        },
-                      }}
                       initialSort={[{id: "date", desc: true}]}
                       staticExportConfig={exportConfig("completed")}
                     />
@@ -293,8 +298,6 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       staticTranslations={tableTranslations}
                       staticPersistenceKey={`${props.staticPersistenceKey}.all`}
                       staticTableId="all"
-                      intrinsicFilter={intrinsicFilter()}
-                      intrinsicSort={sortByDate({desc: true})}
                       columns={[
                         cols.meeting.id,
                         cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
@@ -304,10 +307,12 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.seriesType,
                         cols.meeting.seriesNumber,
                         cols.meeting.seriesCount,
+                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
                         cols.meeting.category,
                         cols.meeting.type,
                         cols.meeting.statusTags,
                         cols.attendant.attendanceStatus,
+                        cols.meeting.isFacilityWide,
                         cols.meeting.attendants,
                         cols.meeting.attendantsAttendance,
                         cols.meeting.attendantsCount,
@@ -322,7 +327,17 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.resources,
                         ...getCreatedUpdatedColumns(),
                       ]}
-                      columnGroups={{overrides: {meeting: false}}}
+                      columnGroups={{
+                        defaultInclude: false,
+                        overrides: {
+                          "categoryDictId": true,
+                          "typeDictId": true,
+                          "statusDictId": true,
+                          "attendant.attendanceStatusDictId": true,
+                        },
+                      }}
+                      intrinsicFilter={intrinsicFilter()}
+                      intrinsicSort={sortByDate({desc: true})}
                       initialSort={[{id: "date", desc: true}]}
                       staticExportConfig={exportConfig("all")}
                     />

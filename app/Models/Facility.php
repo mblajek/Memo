@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
 
 /**
- * @property string name
- * @property string url
- * @property ?string timetable_id
+ * @property string $name
+ * @property string $url
+ * @property ?string $timetable_id
  * @property-read Timetable $timetable
  * @method static FacilityBuilder query()
  */

@@ -17,8 +17,9 @@ import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {ClientResourceForPatch} from "data-access/memo-api/resources/client.resource";
 import {ClientFields} from "features/client/ClientFields";
+import {ClientGroups} from "features/client/ClientGroups";
+import {PeopleAutoRelatedToClient} from "features/client/PeopleAutoRelatedToClient";
 import {createClientDeleteModal} from "features/client/client_delete_modal";
-import {PeopleAutoRelatedToClient} from "features/facility-users/PeopleAutoRelatedToClient";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
 import {UserMeetingsTables} from "features/facility-users/UserMeetingsTables";
 import {useUserMeetingsStats} from "features/facility-users/user_meetings_stats";
@@ -54,6 +55,7 @@ export default (() => {
     mutationFn: FacilityClient.updateClient,
     meta: {isFormSubmit: true},
   }));
+  const hiddenInEditModeClass = () => (editMode() ? "hidden" : undefined);
   return (
     <div class="m-2">
       <QueryBarrier queries={[dataQuery]} ignoreCachedData {...notFoundError()}>
@@ -75,55 +77,54 @@ export default (() => {
 
             return (
               <div class="flex flex-col items-stretch gap-4">
-                <div class="flex flex-col items-stretch gap-4 relative">
-                  <UserDetailsHeader
-                    type="clients"
-                    user={{
-                      ...user(),
-                      createdAt: user().client.createdAt,
-                      createdBy: user().client.createdBy,
-                      updatedAt: user().client.updatedAt,
-                      updatedBy: user().client.updatedBy,
-                    }}
-                  />
-                  <FelteForm
-                    id="client_edit"
-                    translationsFormNames={["client_edit", "client", "facility_user"]}
-                    translationsModel={["client", "facility_user"]}
-                    class="flex flex-col items-stretch gap-4 relative"
-                    style={{width: "min(600px, 100%)"}}
-                    schema={getSchema()}
-                    initialValues={user()}
-                    onSubmit={updateClient}
-                  >
-                    {(form) => {
-                      createEffect(() => {
-                        form.setInitialValues(user() as unknown as FormType);
-                        setTimeout(() => {
-                          if (!editMode() && !dataQuery.isPending) {
-                            form.reset();
-                          }
+                <UserDetailsHeader
+                  type="clients"
+                  user={{
+                    ...user(),
+                    createdAt: user().client.createdAt,
+                    createdBy: user().client.createdBy,
+                    updatedAt: user().client.updatedAt,
+                    updatedBy: user().client.updatedBy,
+                  }}
+                />
+                <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
+                  <div style={{"min-width": "400px", "flex-basis": "600px"}}>
+                    <FelteForm
+                      id="client_edit"
+                      translationsFormNames={["client_edit", "client", "facility_user"]}
+                      translationsModel={["client", "facility_user"]}
+                      class="flex flex-col items-stretch gap-4 relative"
+                      schema={getSchema()}
+                      initialValues={user()}
+                      onSubmit={updateClient}
+                    >
+                      {(form) => {
+                        createEffect(() => {
+                          form.setInitialValues(user() as unknown as FormType);
+                          setTimeout(() => {
+                            if (!editMode() && !dataQuery.isPending) {
+                              form.reset();
+                            }
+                          });
                         });
-                      });
-                      async function formCancel() {
-                        if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
-                          form.reset();
-                          setEditMode(false);
+                        async function formCancel() {
+                          if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
+                            form.reset();
+                            setEditMode(false);
+                          }
                         }
-                      }
-                      return (
-                        <>
-                          <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
-                            {(show) => <TextField name="name" disabled={!show()} />}
-                          </HideableSection>
-                          <ClientFields editMode={editMode()} />
-                          <Switch>
-                            <Match when={editMode()}>
-                              <FelteSubmit cancel={formCancel} />
-                            </Match>
-                            <Match when={!editMode()}>
-                              <div class="flex justify-end">
-                                <div class="flex gap-1">
+                        return (
+                          <>
+                            <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
+                              {(show) => <TextField name="name" disabled={!show()} />}
+                            </HideableSection>
+                            <ClientFields editMode={editMode()} />
+                            <Switch>
+                              <Match when={editMode()}>
+                                <FelteSubmit cancel={formCancel} />
+                              </Match>
+                              <Match when={!editMode()}>
+                                <div class="flex justify-between gap-1">
                                   <Show when={status.data?.permissions.facilityAdmin}>
                                     <DeleteButton
                                       class="secondary small"
@@ -142,15 +143,18 @@ export default (() => {
                                   </Show>
                                   <EditButton class="secondary small" onClick={[setEditMode, true]} />
                                 </div>
-                              </div>
-                            </Match>
-                          </Switch>
-                        </>
-                      );
-                    }}
-                  </FelteForm>
+                              </Match>
+                            </Switch>
+                          </>
+                        );
+                      }}
+                    </FelteForm>
+                  </div>
+                  <div class={hiddenInEditModeClass()} style={{"min-width": "400px", "flex-basis": "800px"}}>
+                    <ClientGroups client={user()} allowEditing />
+                  </div>
                 </div>
-                <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
+                <div class={cx("contents", hiddenInEditModeClass())}>
                   <PeopleAutoRelatedToClient clientId={userId()} />
                   <UserMeetingsTables
                     userName={user().name}

@@ -19,6 +19,7 @@ trait TqAttribute
         if ($attribute->type === AttributeType::Separator) {
             return; // todo: maybe tquery separator
         }
+        $attributeId = $attribute->id;
         $type = $attribute->getTqueryDataType();
         $table = TqTableAliasEnum::fromTableName($attribute->table->value);
         $columnAlias = Str::camel((($prefix !== null) ? "$prefix." : '') . $attribute->api_name);
@@ -29,22 +30,37 @@ trait TqAttribute
                 columnOrQuery: $attribute->api_name,
                 table: $table,
                 columnAlias: $columnAlias,
-                attribute: $attribute,
+                attributeId: $attributeId,
             );
             return;
         }
         $valueColumn = Value::getTypeColumn($attribute->type);
         $from = "`values` where `object_id` = `{$table->name}`.`id` and `attribute_id` = '{$attribute->id}'";
         $multi = $attribute->is_multi_value;
-        self::assertType($type, $multi, TqDataTypeEnum::uuid_list, TqDataTypeEnum::dict_list, TqDataTypeEnum::list);
+        self::assertType(
+            $type,
+            $multi,
+            TqDataTypeEnum::uuid_list,
+            TqDataTypeEnum::dict_list,
+            TqDataTypeEnum::string_list,
+            TqDataTypeEnum::list // int list, date list
+        );
         if ($multi) {
             $this->addColumn(
                 type: $type,
                 columnOrQuery: fn(string $tableName) => "select json_arrayagg(`$valueColumn`) from $from",
                 table: $table,
                 columnAlias: Str::camel($columnAlias),
-                attribute: $attribute,
+                attributeId: $attributeId,
                 filter: fn(string $query) => "select count(distinct `$valueColumn`) from $from and (`$valueColumn`",
+            );
+            $this->addColumn(
+                type: TqDataTypeEnum::int,
+                columnOrQuery: fn(string $tableName) => "select count(1) from $from",
+                table: $table,
+                columnAlias: Str::camel($columnAlias) . '.count',
+                attributeId: $attributeId,
+                transform: 'count',
             );
         } else {
             $this->addColumn(
@@ -52,7 +68,7 @@ trait TqAttribute
                 columnOrQuery: fn(string $tableName) => "select `$valueColumn` from $from limit 1", // redundant limit
                 table: $table,
                 columnAlias: $columnAlias,
-                attribute: $attribute,
+                attributeId: $attributeId,
             );
         }
     }

@@ -143,7 +143,7 @@ export type TypedDictionary<P extends string> = {
   getDictionary(): Dictionary;
   getPosition(positionIdOrName: string): Position;
 } & {
-  readonly [positionName in P]: Position;
+  readonly [_positionName in P]: Position;
 };
 
 export function typedDictionary<P extends string>(dict: Dictionary, positionNames: P[]) {

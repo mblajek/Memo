@@ -15,16 +15,16 @@ final class DatabaseMigrationHelper
 
     public static function base(Blueprint $table): void
     {
-        self::uuid($table, 'id')->primary();
+        self::charUuid($table, 'id')->primary();
         $table->dateTime('created_at');
         $table->dateTime('updated_at');
-        $table->char('created_by', 36)->collation('ascii_bin');
-        $table->char('updated_by', 36)->collation('ascii_bin');
+        self::charUuid($table, 'created_by');
+        self::charUuid($table, 'updated_by');
         $table->foreign('created_by')->references('id')->on('users');
         $table->foreign('updated_by')->references('id')->on('users');
     }
 
-    public static function uuid(Blueprint $table, string $name): ColumnDefinition
+    public static function charUuid(Blueprint $table, string $name): ColumnDefinition
     {
         return $table->char($name, 36)->collation('ascii_bin');
     }

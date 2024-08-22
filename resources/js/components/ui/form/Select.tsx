@@ -3,7 +3,7 @@ import * as combobox from "@zag-js/combobox";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {useIsFieldsetDisabled} from "components/utils/fieldset_disabled_tracker";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
@@ -396,7 +396,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   });
   const unknownValues = createMemo<readonly string[]>(
     () => {
-      if (props.isLoading) {
+      if (props.isLoading || itemsMap().size < filteredItems().length) {
         // If still loading, just assume optimistically all the values will become known.
         return [];
       }
@@ -502,6 +502,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     api().setValue([...selected]);
   }
 
+  // eslint-disable-next-line solid/reactivity
+  const isOpenDelayed = debouncedAccessor(() => api().isOpen, {timeMs: 50, outputImmediately: (o) => !o});
   return (
     <>
       <FieldBox {...props}>
@@ -566,48 +568,50 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             />
             <div class={s.buttons}>
               {/* Display only one clear button at a time. */}
-              <Switch>
-                <Match when={!api().isInputValueEmpty}>
-                  <Button
-                    data-scope="combobox"
-                    class={cx(s.clearButton)}
-                    onClick={() => {
-                      api().setInputValue("");
-                      api().focus();
-                    }}
-                    title={t("actions.clear")}
-                  >
-                    <FiDelete />
-                  </Button>
-                </Match>
-                <Match when={!props.multiple && props.nullable && api().value.length}>
-                  <Button
-                    class={cx(s.clearButton)}
-                    onClick={(e) => {
-                      // Avoid opening the select on button click.
-                      e.stopPropagation();
-                      api().clearValue();
-                    }}
-                    title={t("actions.clear")}
-                  >
-                    <FiDelete />
-                  </Button>
-                </Match>
-                <Match when={props.multiple && props.showClearButton && api().value.length}>
-                  <Button
-                    class={cx(s.clearButton)}
-                    onClick={(e) => {
-                      // Avoid opening the select on button click.
-                      e.stopPropagation();
-                      api().clearValue();
-                    }}
-                    title={t("actions.clear")}
-                  >
-                    {/* Use a bin icon for multiple select because it looks more destructive, which is appropriate. */}
-                    <RiSystemDeleteBin6Line />
-                  </Button>
-                </Match>
-              </Switch>
+              <Show when={!isDisabled()}>
+                <Switch>
+                  <Match when={!api().isInputValueEmpty}>
+                    <Button
+                      data-scope="combobox"
+                      class={cx(s.clearButton)}
+                      onClick={() => {
+                        api().setInputValue("");
+                        api().focus();
+                      }}
+                      title={t("actions.clear")}
+                    >
+                      <FiDelete />
+                    </Button>
+                  </Match>
+                  <Match when={!props.multiple && props.nullable && api().value.length}>
+                    <Button
+                      class={cx(s.clearButton)}
+                      onClick={(e) => {
+                        // Avoid opening the select on button click.
+                        e.stopPropagation();
+                        api().clearValue();
+                      }}
+                      title={t("actions.clear")}
+                    >
+                      <FiDelete />
+                    </Button>
+                  </Match>
+                  <Match when={props.multiple && props.showClearButton && api().value.length}>
+                    <Button
+                      class={cx(s.clearButton)}
+                      onClick={(e) => {
+                        // Avoid opening the select on button click.
+                        e.stopPropagation();
+                        api().clearValue();
+                      }}
+                      title={t("actions.clear")}
+                    >
+                      {/* Use a bin icon for multiple select because it looks more destructive, which is appropriate. */}
+                      <RiSystemDeleteBin6Line />
+                    </Button>
+                  </Match>
+                </Switch>
+              </Show>
               <Button
               // Don't use api().triggerProps because it sorts the selection in multiple mode, which is not desired.
               // The control will handle clicks.
@@ -623,6 +627,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           ref={portalRoot}
           {...api().positionerProps}
           class={cx(s.selectPortal, {
+            [s.isOpen!]: isOpenDelayed(),
             [s.small!]: props.small,
             [s.loading!]: props.isLoading,
           })}
@@ -653,7 +658,7 @@ interface IndentSelectItemInGroupProps extends htmlAttributes.div {
 
 export const IndentSelectItemInGroup: ParentComponent<IndentSelectItemInGroupProps> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["indent"]);
-  return <div {...htmlAttributes.merge(divProps, {class: props.indent ?? true ? "pl-3" : undefined})} />;
+  return <div {...htmlAttributes.merge(divProps, {class: (props.indent ?? true) ? "pl-3" : undefined})} />;
 };
 
 export const DefaultSelectItemsGroupHeader: VoidComponent<{readonly groupName: string}> = (props) => (
