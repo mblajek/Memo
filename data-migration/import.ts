@@ -1,7 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import {parseArgs} from "https://deno.land/std@0.220.1/cli/parse_args.ts";
 import {
-  Attendant,
   AttributeValues,
   FacilityContents,
   Order,
@@ -12,6 +11,10 @@ import {
   facilityContentStats,
 } from "./facility_contents_type.ts";
 import {readConfig} from "./import_config.ts";
+import luxon from "./luxon.ts";
+
+const {DateTime} = luxon;
+type DateTime = luxon.DateTime;
 
 const params = parseArgs(Deno.args, {
   string: ["config"],
@@ -98,9 +101,16 @@ console.log(`  Staff: ${await apiCount(`facility/${facility.id}/user/staff`)}`);
 console.log(`  Clients: ${await apiCount(`facility/${facility.id}/user/client`)}`);
 console.log(`  Meetings: ${await apiCount(`facility/${facility.id}/meeting`)}`);
 
+console.log("\nData to import:");
+const stat = Deno.statSync(config.preparedFile);
+if (!stat.isFile || !stat.mtime) {
+  throw new Error("Prepared file is not a file!");
+}
+const preparedMtime = DateTime.fromJSDate(stat.mtime);
+console.log(
+  `Prepared file modified time: ${preparedMtime.toRelative()} (${preparedMtime.toFormat("yyyy-MM-dd HH:mm:ss")})`,
+);
 const prepared = JSON.parse(Deno.readTextFileSync(config.preparedFile)) as FacilityContents;
-
-console.log("Data to import:");
 console.log(facilityContentStats(prepared));
 
 if (!confirm("\nVerify the information above.\nContinue?")) {
@@ -531,10 +541,6 @@ try {
       no_show: attendanceStatusDictionary.positions.find((p: any) => p.name === "no_show").id,
       cancelled: attendanceStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
     };
-    const attendant = (att: Attendant) => ({
-      userId: nnMapper.get(att.userNn),
-      attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
-    });
     for (const meeting of trackProgress(prepared.meetings, "meetings")) {
       const {id: meetingId} = await apiCreate({
         nn: meeting.nn,
@@ -550,8 +556,15 @@ try {
           durationMinutes: meeting.durationMinutes,
           statusDictId: meetingStatuses[meeting.status],
           isRemote: meeting.isRemote,
-          staff: meeting.staff.map(attendant),
-          clients: meeting.clients.map(attendant),
+          staff: meeting.staff.map((att) => ({
+            userId: nnMapper.get(att.userNn),
+            attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
+          })),
+          clients: meeting.clients.map((att) => ({
+            userId: nnMapper.get(att.userNn),
+            attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
+            clientGroupId: att.clientGroupNn ? nnMapper.get(att.clientGroupNn) : null,
+          })),
           fromMeetingId:
             meeting.fromMeetingNn && meeting.fromMeetingNn !== meeting.nn
               ? nnMapper.get(meeting.fromMeetingNn)

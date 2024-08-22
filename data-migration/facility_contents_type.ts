@@ -122,8 +122,8 @@ export interface Meeting {
   readonly durationMinutes: number;
   readonly status: "planned" | "completed" | "cancelled";
   readonly isRemote: boolean;
-  readonly staff: readonly Attendant[];
-  readonly clients: readonly Attendant[];
+  readonly staff: readonly StaffAttendant[];
+  readonly clients: readonly ClientAttendant[];
   readonly fromMeetingNn?: string;
   readonly interval?: string;
   readonly createdAt?: string;
@@ -132,9 +132,13 @@ export interface Meeting {
   readonly updatedByNn?: string;
 }
 
-export interface Attendant {
+interface BaseAttendant {
   readonly userNn: string;
   readonly attendanceStatus: "ok" | "late_present" | "too_late" | "no_show" | "cancelled";
+}
+export interface StaffAttendant extends BaseAttendant {}
+export interface ClientAttendant extends BaseAttendant {
+  readonly clientGroupNn?: string;
 }
 
 export function facilityContentStats(contents: FacilityContents) {

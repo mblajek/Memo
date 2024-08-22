@@ -288,6 +288,18 @@ dictionariesAndAttributes.push(
     model: "client",
     isMultiValue: true,
     type: "string",
-    requirementLevel: "optional",
+    requirementLevel: "empty",
+  },
+
+  {
+    kind: "extendDictionary",
+    name: "clientGroupClientRole",
+    positions: [
+      {name: "+matka"},
+      {name: "+ojciec"},
+      {name: "+matka zastępcza"},
+      {name: "+ojciec zastępczy"},
+      {name: "+opiekun"},
+    ],
   },
 );

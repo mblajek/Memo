@@ -240,7 +240,7 @@ console.log(`Usunięci klienci: ${deletedClients.size}`);
 for (const klientId of deletedClients) {
   clients.push({
     nn: klientId,
-    name: "(klient usunięty)",
+    name: "🗑 (klient usunięty)",
     client: {
       typeDictId: {
         kind: "dict",
