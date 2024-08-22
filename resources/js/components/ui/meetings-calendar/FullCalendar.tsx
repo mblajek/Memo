@@ -701,17 +701,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     },
   });
 
-  function filterByStaffOrResource<T extends WithOrigMeetingInfo>(
-    items: readonly T[],
-    resourceId: string,
-    isStaff: boolean,
-  ) {
-    return items.filter((item) =>
-      isStaff
-        ? !item.meeting.staff.length || item.meeting.staff.some((s) => s.userId === resourceId)
-        : item.meeting.resources.some((r) => r.resourceDictId === resourceId),
-    );
-  }
+  const blocksByStaffFilter = (staffId: string) => (block: WithOrigMeetingInfo) =>
+    block.meeting.isFacilityWide || block.meeting.staff.some((s) => s.userId === staffId);
+  const blocksByMeetingResourceFilter = (meetingResourceId: string) => (block: WithOrigMeetingInfo) =>
+    block.meeting.isFacilityWide || block.meeting.resources.some((r) => r.resourceDictId === meetingResourceId);
+  const blocksFilter = (resourceId: string, isStaff: boolean) =>
+    isStaff ? blocksByStaffFilter(resourceId) : blocksByMeetingResourceFilter(resourceId);
+  const eventsByStaffFilter = (staffId: string) => (event: WithOrigMeetingInfo) =>
+    event.meeting.isFacilityWide || event.meeting.staff.some((s) => s.userId === staffId);
+  const eventsByMeetingResourceFilter = (meetingResourceId: string) => (event: WithOrigMeetingInfo) =>
+    // No facility-wide events shown for meeting resources.
+    event.meeting.resources.some((r) => r.resourceDictId === meetingResourceId);
+  const eventsFilter = (resourceId: string, isStaff: boolean) =>
+    isStaff ? eventsByStaffFilter(resourceId) : eventsByMeetingResourceFilter(resourceId);
 
   function onMeetingsCreated(firstMeeting: MeetingBasicData, otherMeetingIds?: string[]) {
     meetingChangeEffects(
@@ -723,8 +725,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
 
   function getCalendarColumnPart(day: DateTime, resourceId: string) {
     const isStaff = staffResourcesById().has(resourceId);
-    const relevantBlocks = createMemo(() => filterByStaffOrResource(blocks(), resourceId, isStaff));
-    const relevantEvents = createMemo(() => filterByStaffOrResource(events(), resourceId, isStaff));
+    const relevantBlocks = createMemo(() => blocks().filter(blocksFilter(resourceId, isStaff)));
+    const relevantEvents = createMemo(() => events().filter(eventsFilter(resourceId, isStaff)));
     return {
       day,
       allDayArea: () => (
@@ -872,8 +874,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           month={daysSelection().start}
           day={day}
           monthViewInfo={{day, resourceId}}
-          blocks={filterByStaffOrResource(blocks(), resourceId, isStaff)}
-          events={filterByStaffOrResource(events(), resourceId, isStaff)}
+          blocks={blocks().filter(blocksFilter(resourceId, isStaff))}
+          events={events().filter(eventsFilter(resourceId, isStaff))}
           style={{background: CALENDAR_BACKGROUNDS.main}}
           onDateClick={() => {
             setMode("week");

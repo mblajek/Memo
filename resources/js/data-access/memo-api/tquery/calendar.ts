@@ -110,8 +110,7 @@ export function createCalendarRequestCreator({
             type: "op",
             op: "|",
             val: [
-              // Show facility wide meetings only if any staff is selected.
-              staff().length ? {type: "column", column: "isFacilityWide", op: "=", val: true} : "never",
+              {type: "column", column: "isFacilityWide", op: "=", val: true},
               {type: "column", column: "staff.*.userId", op: "has_any", val: staff().toSorted()},
               {type: "column", column: "resources.*.dictId", op: "has_any", val: meetingResources().toSorted()},
             ],
