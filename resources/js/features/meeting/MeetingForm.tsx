@@ -37,7 +37,7 @@ const getSchema = () =>
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 
 export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType>> = (props) => {
-  const {meetingStatusDict} = useFixedDictionaries();
+  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
 
   const ByMode: VoidComponent<{view?: JSX.Element; edit?: JSX.Element}> = (byModeProps) => (
     <Show when={props.viewMode} fallback={byModeProps.edit}>
@@ -112,12 +112,14 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
           </div>
           <CheckboxField name="isRemote" />
           <RichTextViewEdit name="notes" viewMode={props.viewMode} staticPersistenceKey="meeting.notes" />
-          <DictionarySelect
-            name="resources"
-            dictionary="meetingResource"
-            multiple
-            placeholder={EMPTY_VALUE_SYMBOL_STRING}
-          />
+          <Show when={dictionaries()?.get("meetingResource").allPositions.length}>
+            <DictionarySelect
+              name="resources"
+              dictionary="meetingResource"
+              multiple
+              placeholder={EMPTY_VALUE_SYMBOL_STRING}
+            />
+          </Show>
           <ByMode
             edit={
               <FelteSubmit
