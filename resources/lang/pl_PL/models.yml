@@ -69,6 +69,7 @@ user:
   hasFacilityAdmin: "administrator placówki"
   isStaff: "pracownik"
   isClient: "klient"
+  members: "przypisane placówki"
 
 facility_user:
   _name: "pracownik/klient"
