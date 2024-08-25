@@ -462,7 +462,7 @@ export const RequirementLevelMarker: VoidComponent<RequirementLevelProps> = (pro
       <span class="text-sm text-grey-text select-none">
         <Switch>
           <Match when={props.level === "empty"}>
-            <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⛌</span>
+            <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⤫</span>
           </Match>
           <Match when={props.level === "optional"}>?</Match>
           <Match when={props.level === "recommended"}>
