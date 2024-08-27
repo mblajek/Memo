@@ -57,9 +57,14 @@ import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
 import {title} from "../title";
 import {StaffInfo, WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
+import {
+  CalendarLocationState,
+  CalendarMeetingSearchParams,
+  CalendarSearchParams,
+  CalendarViewSearchParams,
+} from "./calendar_link";
 import {CALENDAR_MODES, CalendarFunction, CalendarFunctionContext, CalendarMode} from "./calendar_modes";
 import {CALENDAR_BACKGROUNDS, coloringToStyle, getRandomEventColors} from "./colors";
-import {CalendarLocationState, CalendarSearchParams} from "./meeting_link";
 
 const _DIRECTIVES_ = null && title;
 
@@ -669,6 +674,23 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     attempt();
   }
 
+  function showResources(resourceIds: string[]) {
+    if (!resourceIds.length) {
+      return;
+    }
+    if (mode() === "day") {
+      setSelectedResourcesCheckbox((selected) => {
+        const set = new Set(selected);
+        for (const resourceId of resourceIds) {
+          set.add(resourceId);
+        }
+        return set;
+      });
+    } else if (!selectedResourceRadio() || !resourceIds.includes(selectedResourceRadio()!)) {
+      setSelectedResourceRadio(resourceIds[0]);
+    }
+  }
+
   const SCROLL_MARGIN_PIXELS = 20;
   const scrollMarginMinutes = createMemo(() => Math.round((SCROLL_MARGIN_PIXELS / pixelsPerHour()) * 60));
   const [scrollToDayMinute, setScrollToDayMinute] = createSignal<number>();
@@ -686,19 +708,41 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   onMount(() => {
     scrollIntoView(7 * 60, 1e3);
   });
-  const meetingToShowFromLocationState = () => location.state?.meetingToShow;
-  const meetingToShowQuery = createQuery(() => ({
-    enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
-    ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
-  }));
-  createOneTimeEffect({
-    input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
-    effect: (meeting) => {
-      setSearchParams({meetingId: undefined});
-      history.replaceState({...history.state, meetingToShow: undefined}, "");
-      // Give the calendar time to scroll to the initial position first.
-      setTimeout(() => goToMeeting(meeting), 100);
-    },
+  onMount(() => {
+    if ((searchParams as Partial<CalendarMeetingSearchParams>).meetingId) {
+      const meetingSearchParams = searchParams as CalendarMeetingSearchParams;
+      const meetingToShowFromLocationState = () => location.state?.meetingToShow;
+      const meetingToShowQuery = createQuery(() => ({
+        enabled: !!meetingSearchParams.meetingId && !meetingToShowFromLocationState(),
+        ...FacilityMeeting.meetingQueryOptions(meetingSearchParams.meetingId || ""),
+      }));
+      createOneTimeEffect({
+        input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
+        effect: (meeting) => {
+          setSearchParams({meetingId: undefined}, {replace: true});
+          history.replaceState({...history.state, meetingToShow: undefined}, "");
+          // Give the calendar time to scroll to the initial position first.
+          setTimeout(() => goToMeeting(meeting), 100);
+        },
+      });
+    } else {
+      const viewSearchParams = searchParams as CalendarViewSearchParams;
+      if (viewSearchParams.mode || viewSearchParams.date || viewSearchParams.resources) {
+        if (viewSearchParams.mode) {
+          setMode(viewSearchParams.mode);
+        }
+        if (viewSearchParams.date) {
+          setDaysSelectionAndMonthFromDay(DateTime.fromISO(viewSearchParams.date));
+        }
+        if (viewSearchParams.resources) {
+          showResources(viewSearchParams.resources.split(","));
+        }
+        onMount(() => {
+          setSearchParams({mode: undefined, date: undefined, resources: undefined});
+          history.replaceState({...history.state, mode: undefined, date: undefined, resources: undefined}, "");
+        });
+      }
+    }
   });
 
   const blocksByStaffFilter = (staffId: string) => (block: WithOrigMeetingInfo) =>

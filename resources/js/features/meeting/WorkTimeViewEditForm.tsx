@@ -5,7 +5,7 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
-import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
+import {getMeetingLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {useMutationsTracker} from "components/utils/mutations_tracker";

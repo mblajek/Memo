@@ -9,6 +9,7 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
+import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
@@ -37,6 +38,7 @@ import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tq
 import {dateToISO} from "data-access/memo-api/utils";
 import {DateTime, WeekdayNumbers} from "luxon";
 import {IconTypes} from "solid-icons";
+import {BiRegularCalendarX} from "solid-icons/bi";
 import {BsThreeDots} from "solid-icons/bs";
 import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
@@ -47,7 +49,6 @@ import {batch, createComputed, createMemo, createSignal, For, Show, splitProps, 
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {useWeeklyTimeTablesActions} from "./weekly_time_tables_actions";
-import {BiRegularCalendarX} from "solid-icons/bi";
 
 const _DIRECTIVES = null && title;
 
@@ -311,10 +312,13 @@ export default (() => {
                 use:title={`${week().start.toLocaleString(DATE_FORMAT)} ${EN_DASH} ${week().end.toLocaleString(DATE_FORMAT)}`}
               >
                 <A
-                  // TODO: Implement showing the current week and staff.
-                  href={`/${activeFacility()?.url}/admin/time-tables`}
+                  {...getCalendarViewLinkData(`/${activeFacility()?.url}/admin/time-tables`, {
+                    mode: "week",
+                    date: week().start,
+                    resources: selection() === SELECTION_FACILITY_WIDE ? undefined : [selection()],
+                  })}
                 >
-                  {ctx.getValue().toLocaleString(DATE_FORMAT)}
+                  {week().start.toLocaleString(DATE_FORMAT)}
                 </A>
               </span>
               <Show when={week().contains(currentDate())}>
