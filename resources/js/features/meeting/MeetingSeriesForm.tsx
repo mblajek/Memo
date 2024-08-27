@@ -228,6 +228,9 @@ export function getMeetingSeriesCloneParams({
   includeAllDates?: boolean;
 }): FacilityMeeting.CloneRequest {
   const interval = values.seriesInterval as FacilityMeeting.CloneInterval;
+  if (interval === "-") {
+    throw new Error("Invalid interval");
+  }
   const daysInterval =
     interval === "1d" ? 1 : interval === "7d" ? 7 : interval === "14d" ? 14 : (interval satisfies never);
   const allDates = Array.from({length: seriesLengthToNumMeetings(values.seriesLength) - 1}, (_, i) =>
