@@ -11,7 +11,7 @@ import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
-import {TbCalendarTime, TbHelp} from "solid-icons/tb";
+import {TbCalendarCode, TbCalendarTime, TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, ParentComponent, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -69,15 +69,9 @@ export const Navbar: VoidComponent = () => {
                   end
                 />
                 <NavigationItem
-                  icon={OcTable3}
-                  href={`/${facilityUrl()}/admin/time-tables/staff`}
-                  routeKey="facility.facility_admin.time_tables_staff"
-                  small
-                />
-                <NavigationItem
-                  icon={OcTable3}
-                  href={`/${facilityUrl()}/admin/time-tables/facility`}
-                  routeKey="facility.facility_admin.time_tables_facility"
+                  icon={TbCalendarCode}
+                  href={`/${facilityUrl()}/admin/time-tables/weekly`}
+                  routeKey="facility.facility_admin.time_tables_weekly"
                   small
                 />
               </NavigationItem>

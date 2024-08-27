@@ -1,0 +1,652 @@
+import {A} from "@solidjs/router";
+import {CellContext, createSolidTable} from "@tanstack/solid-table";
+import {createLocalStoragePersistence} from "components/persistence/persistence";
+import {richJSONSerialiser} from "components/persistence/serialiser";
+import {Button} from "components/ui/Button";
+import {useHolidays} from "components/ui/calendar/holidays";
+import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
+import {capitalizeString} from "components/ui/Capitalize";
+import {TQuerySelect} from "components/ui/form/TQuerySelect";
+import {actionIcons, facilityIcons} from "components/ui/icons";
+import {InfoIcon} from "components/ui/InfoIcon";
+import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
+import {PopOver} from "components/ui/PopOver";
+import {SimpleMenu} from "components/ui/SimpleMenu";
+import {EmptyValueSymbol, EN_DASH} from "components/ui/symbols";
+import {
+  AUTO_SIZE_COLUMN_DEFS,
+  createTableTranslations,
+  getBaseTableOptions,
+  PaddedCell,
+  Table,
+  TableTranslations,
+} from "components/ui/Table";
+import {TextInput} from "components/ui/TextInput";
+import {TimeDuration} from "components/ui/TimeDuration";
+import {title} from "components/ui/title";
+import {currentDate, cx, DATE_FORMAT, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
+import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {useLocale} from "components/utils/LocaleContext";
+import {useModelQuerySpecs} from "components/utils/model_query_specs";
+import {useMutationsTracker} from "components/utils/mutations_tracker";
+import {AlignedDayMinute} from "components/utils/time_formatting";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
+import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
+import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
+import {dateToISO} from "data-access/memo-api/utils";
+import {DateTime, WeekdayNumbers} from "luxon";
+import {IconTypes} from "solid-icons";
+import {BsThreeDots} from "solid-icons/bs";
+import {FaSolidCircleDot} from "solid-icons/fa";
+import {ImInfo} from "solid-icons/im";
+import {IoArrowUndoOutline} from "solid-icons/io";
+import {OcArrowdown2, OcMovetobottom2} from "solid-icons/oc";
+import {TbArrowBigRight, TbNotes} from "solid-icons/tb";
+import {batch, createComputed, createMemo, createSignal, For, Show, splitProps, VoidComponent} from "solid-js";
+import {Dynamic} from "solid-js/web";
+import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
+import {useWeeklyTimeTablesActions} from "./weekly_time_tables_actions";
+import {BiRegularCalendarX} from "solid-icons/bi";
+
+const _DIRECTIVES = null && title;
+
+const RESOURCE_COLUMNS = [
+  "id",
+  "date",
+  "startDayminute",
+  "durationMinutes",
+  "typeDictId",
+  "notes",
+] as const satisfies (keyof MeetingResource)[];
+const COLUMNS = [...RESOURCE_COLUMNS, "isFacilityWide"] as const;
+
+type Meeting = Pick<MeetingResource, (typeof RESOURCE_COLUMNS)[number]> & {
+  readonly isFacilityWide: boolean;
+};
+
+interface WeekData {
+  readonly weekDate: DateTime;
+  readonly byWeekday: Readonly<Record<WeekdayNumbers, DayData>> & readonly (DayData | undefined)[];
+}
+
+interface DayData {
+  readonly day: DateTime;
+  readonly workTimes: Meeting[];
+  isStaffLeaveDay: boolean;
+  isFacilityWorkDay: boolean;
+  isFacilityLeaveDay: boolean;
+  isHoliday: boolean;
+}
+
+type PersistentState = {
+  readonly selection: string;
+  readonly fromMonth?: string;
+  readonly toMonth?: string;
+};
+const PERSISTENCE_VERSION = 1;
+
+const SELECTION_FACILITY_WIDE = "f";
+
+export default (() => {
+  const t = useLangFunc();
+  const holidays = useHolidays();
+  const modelsQuerySpecs = useModelQuerySpecs();
+  const mutationsTracker = useMutationsTracker();
+  const {meetingTypeDict} = useFixedDictionaries();
+  const locale = useLocale();
+  const weekDaysCalculator = new WeekDaysCalculator(locale);
+  const activeFacility = useActiveFacility();
+  const actions = useWeeklyTimeTablesActions();
+  const [selection, setSelection] = createSignal<string>(SELECTION_FACILITY_WIDE);
+  const [fromMonth, setFromMonth] = createSignal("");
+  const [toMonth, setToMonth] = createSignal("");
+  const defaultFromMonth = createMemo(() => currentDate().minus({months: 1}).toFormat("yyyy-MM"));
+  const defaultToMonth = createMemo(() => currentDate().plus({years: 1}).toFormat("yyyy-MM"));
+  const isDefaultMonthsRange = () => fromMonth() === defaultFromMonth() && toMonth() === defaultToMonth();
+  createComputed(() => {
+    if (!fromMonth()) {
+      setFromMonth(defaultFromMonth());
+    }
+    if (!toMonth()) {
+      setToMonth(defaultToMonth());
+    }
+  });
+  createLocalStoragePersistence<PersistentState>({
+    key: `WeeklyTimeTables`,
+    value: () => ({
+      selection: selection(),
+      fromMonth: fromMonth(),
+      toMonth: toMonth(),
+    }),
+    onLoad: (state) =>
+      batch(() => {
+        setSelection(state.selection);
+        if (state.fromMonth) {
+          setFromMonth(state.fromMonth);
+        }
+        if (state.toMonth) {
+          setToMonth(state.toMonth);
+        }
+      }),
+    serialiser: richJSONSerialiser<PersistentState>(),
+    version: [PERSISTENCE_VERSION],
+  });
+  const fromDate = createMemo(() =>
+    fromMonth() ? weekDaysCalculator.startOfWeek(DateTime.fromFormat(fromMonth(), "yyyy-MM")) : undefined,
+  );
+  const toDate = createMemo(() =>
+    toMonth() ? weekDaysCalculator.endOfWeek(DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month")) : undefined,
+  );
+  const {dataQuery} = createTQuery({
+    prefixQueryKey: FacilityMeeting.keys.meeting(),
+    entityURL: `facility/${activeFacilityId()}/meeting`,
+    requestCreator: staticRequestCreator(() => ({
+      columns: COLUMNS.map((column) => ({type: "column", column})),
+      filter: {
+        type: "op",
+        op: "&",
+        val: [
+          {
+            type: "column",
+            column: "typeDictId",
+            op: "in",
+            val: meetingTypeDict() ? [meetingTypeDict()!.work_time.id, meetingTypeDict()!.leave_time.id] : [],
+          },
+          selection() === SELECTION_FACILITY_WIDE
+            ? {type: "column", column: "isFacilityWide", op: "=", val: true}
+            : {
+                type: "op",
+                op: "|",
+                val: [
+                  {type: "column", column: "staff.*.userId", op: "has", val: selection()},
+                  {type: "column", column: "isFacilityWide", op: "=", val: true},
+                ],
+              },
+          {type: "column", column: "date", op: ">=", val: fromDate() ? dateToISO(fromDate()!) : ""},
+          {type: "column", column: "date", op: "<=", val: toDate() ? dateToISO(toDate()!) : ""},
+        ],
+      },
+      sort: [],
+      paging: {size: 5000},
+    })),
+    dataQueryOptions: () => ({enabled: !!(meetingTypeDict() && selection() && fromMonth() && toMonth())}),
+  });
+
+  function createWeekData(weekDate: DateTime): WeekData {
+    return {
+      weekDate,
+      byWeekday: [
+        undefined,
+        ...weekDaysCalculator.weekdays
+          .sort((a, b) => a.weekday - b.weekday)
+          .map(({index}) => {
+            const day = weekDate.plus({days: index});
+            return {
+              day,
+              workTimes: [],
+              isStaffLeaveDay: false,
+              isFacilityWorkDay: false,
+              isFacilityLeaveDay: false,
+              isHoliday: holidays.isHoliday(day),
+            } satisfies DayData;
+          }),
+      ] as unknown as Record<WeekdayNumbers, DayData> & (DayData | undefined)[],
+    };
+  }
+  const weeksDataAndSelection = createMemo<{weeksData: WeekData[]; selection: string}>((prev) => {
+    const weeksByMillis = new Map<number, WeekData>();
+    const meetings = dataQuery.data?.data as Meeting[] | undefined;
+    if (
+      meetings &&
+      fromDate() &&
+      toDate() &&
+      // Hide data while fetching data for a new selection.
+      (selection() === prev?.selection || !dataQuery.isFetching)
+    ) {
+      /** Predicate determining whether the specified work_time meeting is specified for the selection (facility or staff). */
+      const isMainWorkTime: (meeting: Meeting) => boolean =
+        selection() === SELECTION_FACILITY_WIDE
+          ? (meeting) => meeting.isFacilityWide
+          : (meeting) => !meeting.isFacilityWide;
+      for (const meeting of meetings) {
+        const day = DateTime.fromISO(meeting.date);
+        const weekDate = weekDaysCalculator.startOfWeek(day);
+        let weekData = weeksByMillis.get(weekDate.toMillis());
+        if (!weekData) {
+          weekData = createWeekData(weekDate);
+          weeksByMillis.set(weekDate.toMillis(), weekData);
+        }
+        const dayData = weekData.byWeekday[day.weekday];
+        if (meeting.typeDictId === meetingTypeDict()!.work_time.id) {
+          if (isMainWorkTime(meeting)) {
+            dayData.workTimes.push(meeting);
+            dayData.workTimes.sort(
+              (a, b) => a.startDayminute - b.startDayminute || a.durationMinutes - b.durationMinutes,
+            );
+          }
+          if (meeting.isFacilityWide) {
+            dayData.isFacilityWorkDay = true;
+          }
+        } else if (meeting.isFacilityWide) {
+          dayData.isFacilityLeaveDay = true;
+        } else {
+          dayData.isStaffLeaveDay = true;
+        }
+      }
+    }
+    const weeksData = [];
+    for (let weekDate = fromDate()!; weekDate <= toDate()!; weekDate = weekDate.plus({weeks: 1})) {
+      weeksData.push(weeksByMillis.get(weekDate.toMillis()) || createWeekData(weekDate));
+    }
+    return {weeksData, selection: selection()};
+  });
+  const weeksData = () => weeksDataAndSelection().weeksData;
+
+  const baseTranslations = createTableTranslations("time_table_weekly");
+  const translations: TableTranslations = {
+    ...baseTranslations,
+    columnName: (column, o) =>
+      column.startsWith("weekday-")
+        ? DateTime.fromObject({weekday: Number(column.slice(8)) as WeekdayNumbers}).toLocaleString({weekday: "long"})
+        : baseTranslations.columnName(column, o),
+  };
+  const [selectedWeekDate, setSelectedWeekDate] = createSignal<DateTime | undefined>(undefined, {
+    equals: (a, b) => a?.toMillis() === b?.toMillis(),
+  });
+  createComputed(() => {
+    if (
+      selectedWeekDate() &&
+      (!fromDate() ||
+        selectedWeekDate()!.toMillis() < fromDate()!.toMillis() ||
+        !toDate() ||
+        selectedWeekDate()!.toMillis() > toDate()!.toMillis())
+    ) {
+      setSelectedWeekDate(undefined);
+    }
+  });
+  const CenteredEmptyValueSymbol: VoidComponent = () => (
+    <div class="flex justify-center">
+      <EmptyValueSymbol />
+    </div>
+  );
+
+  async function confirmAndExecute(
+    sourceWeekDate: DateTime | undefined,
+    target: DateTime | readonly [DateTime, DateTime],
+  ) {
+    if (
+      await actions.confirmAndExecute(
+        {
+          sourceWeekDate,
+          targetWeeksRange: target instanceof DateTime ? [target, target] : target,
+        },
+        // eslint-disable-next-line solid/reactivity
+        (weekDate) =>
+          weeksData()
+            .find((weekData) => weekData.weekDate.toMillis() === weekDate.toMillis())
+            ?.byWeekday.flatMap((dayData) => dayData?.workTimes || []) || [],
+      )
+    ) {
+      setSelectedWeekDate(undefined);
+    }
+  }
+
+  const table = createSolidTable({
+    ...getBaseTableOptions<WeekData>({
+      defaultColumn: {enableSorting: false, ...AUTO_SIZE_COLUMN_DEFS},
+    }),
+    get data() {
+      return weeksData();
+    },
+    columns: [
+      {
+        id: "weekDate",
+        accessorFn: (d) => d.weekDate,
+        cell: (ctx: CellContext<WeekData, DateTime>) => {
+          const week = () => weekDaysCalculator.dayToWeek(ctx.getValue());
+          return (
+            <PaddedCell class="flex items-center gap-1">
+              <span
+                use:title={`${week().start.toLocaleString(DATE_FORMAT)} ${EN_DASH} ${week().end.toLocaleString(DATE_FORMAT)}`}
+              >
+                <A
+                  // TODO: Implement showing the current week and staff.
+                  href={`/${activeFacility()?.url}/admin/time-tables`}
+                >
+                  {ctx.getValue().toLocaleString(DATE_FORMAT)}
+                </A>
+              </span>
+              <Show when={week().contains(currentDate())}>
+                <div use:title={capitalizeString(t("calendar.this_week"))}>
+                  <FaSolidCircleDot class="text-red-700" size={10} />
+                </div>
+              </Show>
+            </PaddedCell>
+          );
+        },
+      },
+      {
+        id: "actions",
+        cell: (ctx: CellContext<WeekData, never>) => {
+          const weekDate = () => ctx.row.original.weekDate;
+          return (
+            <PaddedCell class="flex justify-center items-center">
+              <Show
+                when={weekDate().toMillis() !== selectedWeekDate()?.toMillis()}
+                fallback={
+                  <Button
+                    class="minimal !px-1 !border-select !bg-memo-active !text-white"
+                    onClick={[setSelectedWeekDate, undefined]}
+                    title={t("facility_user.weekly_time_tables.selected_week_click_to_deselect")}
+                  >
+                    <TbArrowBigRight class="text-current" size="20" />
+                  </Button>
+                }
+              >
+                <PopOver
+                  trigger={(props, api) => (
+                    <Button
+                      {...props}
+                      class={cx("minimal !px-1", api().isOpen ? "!bg-select" : undefined)}
+                      title={[t("facility_user.weekly_time_tables.click_to_see_actions"), {hideOnClick: true}]}
+                    >
+                      <BsThreeDots class="text-current" size="20" />
+                    </Button>
+                  )}
+                >
+                  {(popOver) => {
+                    const MenuItem: VoidComponent<
+                      htmlAttributes.button & {
+                        readonly disabledTitle?: string;
+                        icon: IconTypes | readonly IconTypes[];
+                        label: string;
+                      }
+                    > = (allProps) => {
+                      const [props, buttonProps] = splitProps(allProps, ["disabledTitle", "icon", "label"]);
+                      return (
+                        <Button
+                          {...htmlAttributes.merge(buttonProps, {class: "flex items-center gap-2"})}
+                          title={buttonProps.disabled ? props.disabledTitle : undefined}
+                        >
+                          <div class="flex flex-col">
+                            <For each={Array.isArray(props.icon) ? props.icon : [props.icon]}>
+                              {(icon: IconTypes, index) => (
+                                <Dynamic class={index() ? "-mt-px" : undefined} component={icon} />
+                              )}
+                            </For>
+                          </div>
+                          {props.label}
+                        </Button>
+                      );
+                    };
+                    return (
+                      <SimpleMenu class="max-w-80" onClick={() => popOver().close()}>
+                        <MenuItem
+                          icon={TbArrowBigRight}
+                          label={t("facility_user.weekly_time_tables.select_week")}
+                          onClick={[setSelectedWeekDate, weekDate()]}
+                        />
+                        <Show when={!selectedWeekDate()}>
+                          <hr class="border-input-border" />
+                          <MenuItem
+                            icon={[actionIcons.Repeat, OcArrowdown2]}
+                            label={t("facility_user.weekly_time_tables.paste_this_until_end")}
+                            onClick={() => confirmAndExecute(weekDate(), [weekDate().plus({weeks: 1}), toDate()!])}
+                          />
+                          <MenuItem
+                            icon={actionIcons.Delete}
+                            label={t("facility_user.weekly_time_tables.delete_week.this")}
+                            onClick={() => confirmAndExecute(undefined, weekDate())}
+                          />
+                          <MenuItem
+                            icon={[actionIcons.Delete, OcArrowdown2]}
+                            label={t("facility_user.weekly_time_tables.delete_week.from_this")}
+                            onClick={() => confirmAndExecute(undefined, [weekDate(), toDate()!])}
+                          />
+                        </Show>
+                        <Show when={selectedWeekDate()}>
+                          {(selectedWeekDate) => (
+                            <>
+                              <MenuItem
+                                icon={IoArrowUndoOutline}
+                                label={t("facility_user.weekly_time_tables.undo_select_week")}
+                                onClick={(e) => {
+                                  setSelectedWeekDate(undefined);
+                                  // Don't close the menu.
+                                  e.stopPropagation();
+                                }}
+                              />
+                              <hr class="border-input-border" />
+                              <MenuItem
+                                icon={actionIcons.Paste}
+                                label={t("facility_user.weekly_time_tables.paste_here")}
+                                onClick={() => confirmAndExecute(selectedWeekDate(), weekDate())}
+                              />
+                              <MenuItem
+                                icon={[actionIcons.Repeat, OcMovetobottom2]}
+                                label={t("facility_user.weekly_time_tables.paste_until_here")}
+                                disabled={selectedWeekDate().toMillis() > weekDate().toMillis()}
+                                disabledTitle={t("facility_user.weekly_time_tables.disabled_title_only_works_forward")}
+                                onClick={() =>
+                                  confirmAndExecute(selectedWeekDate(), [
+                                    selectedWeekDate().plus({weeks: 1}),
+                                    weekDate(),
+                                  ])
+                                }
+                              />
+                              <MenuItem
+                                icon={[actionIcons.Delete, OcMovetobottom2]}
+                                label={t("facility_user.weekly_time_tables.delete_until_here")}
+                                disabled={selectedWeekDate().toMillis() > weekDate().toMillis()}
+                                disabledTitle={t("facility_user.weekly_time_tables.disabled_title_only_works_forward")}
+                                onClick={() => confirmAndExecute(undefined, [selectedWeekDate(), weekDate()])}
+                              />
+                            </>
+                          )}
+                        </Show>
+                      </SimpleMenu>
+                    );
+                  }}
+                </PopOver>
+              </Show>
+            </PaddedCell>
+          );
+        },
+        minSize: 0,
+      },
+      ...weekDaysCalculator.weekdays.map(({weekday}) => ({
+        id: `weekday-${weekday}`,
+        accessorFn: (d: WeekData) => d.byWeekday[weekday],
+        cell: (ctx: CellContext<WeekData, DayData | undefined>) => (
+          <Show
+            when={ctx.getValue()}
+            fallback={
+              <PaddedCell style={{background: CALENDAR_BACKGROUNDS.main}}>
+                <CenteredEmptyValueSymbol />
+              </PaddedCell>
+            }
+          >
+            {(dayData) => (
+              <PaddedCell
+                class="flex flex-col justify-between"
+                style={{
+                  background: [
+                    dayData().isFacilityWorkDay
+                      ? dayData().workTimes.length
+                        ? CALENDAR_BACKGROUNDS.staffWorkTime
+                        : CALENDAR_BACKGROUNDS.facilityWorkTime
+                      : CALENDAR_BACKGROUNDS.main,
+                    dayData().isFacilityLeaveDay ? CALENDAR_BACKGROUNDS.facilityLeaveTime : undefined,
+                    dayData().isStaffLeaveDay ? CALENDAR_BACKGROUNDS.staffLeaveTime : undefined,
+                    dayData().isHoliday ? CALENDAR_BACKGROUNDS.holiday : undefined,
+                  ]
+                    .reverse()
+                    .filter(NON_NULLABLE)
+                    .join(", "),
+                }}
+              >
+                <Show when={dayData().workTimes.length} fallback={<CenteredEmptyValueSymbol />}>
+                  <ul>
+                    <For each={dayData().workTimes}>
+                      {(meeting, index) => {
+                        const conflict = () =>
+                          dayData()
+                            .workTimes.slice(0, index())
+                            .some((m) => m.startDayminute + m.durationMinutes >= meeting.startDayminute);
+                        return (
+                          <li
+                            class={cx(
+                              "whitespace-nowrap",
+                              index() ? "-mt-1" : undefined,
+                              conflict() ? "text-red-600" : undefined,
+                            )}
+                          >
+                            <AlignedDayMinute dayMinute={meeting.startDayminute} />
+                            {EN_DASH}
+                            <AlignedDayMinute
+                              dayMinute={(meeting.startDayminute + meeting.durationMinutes) % MAX_DAY_MINUTE}
+                            />
+                            <Show when={meeting.notes}>
+                              <span use:title={meeting.notes}>
+                                <TbNotes class="inlineIcon strokeIcon" size="12" />
+                              </span>
+                            </Show>
+                            <Show when={conflict()}>
+                              <span use:title={t("facility_user.weekly_time_tables.overlapping")}>
+                                <BiRegularCalendarX class="inlineIcon" size="12" />
+                              </span>
+                            </Show>
+                          </li>
+                        );
+                      }}
+                    </For>
+                  </ul>
+                </Show>
+                <div
+                  class={cx(
+                    "self-end hover:text-grey-text",
+                    dayData().isHoliday ||
+                      (dayData().workTimes.length && !dayData().isFacilityWorkDay) ||
+                      dayData().isFacilityLeaveDay ||
+                      dayData().isStaffLeaveDay
+                      ? "text-grey-text"
+                      : "text-gray-300",
+                  )}
+                  style={{
+                    // Use negative margins instead of absolute position to avoid overlapping the fixed table header.
+                    "height": "10px",
+                    "margin-bottom": "-2px",
+                    "margin-top": "-8px",
+                    "margin-right": "-4px",
+                  }}
+                  use:title={[
+                    capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})),
+                    dayData().isHoliday ? t("facility_user.weekly_time_tables.day_notes.holiday") : undefined,
+                    dayData().workTimes.length && !dayData().isFacilityWorkDay
+                      ? t("facility_user.weekly_time_tables.day_notes.working_on_facility_non_working_day")
+                      : undefined,
+                    dayData().isFacilityLeaveDay
+                      ? t("facility_user.weekly_time_tables.day_notes.facility_leave_time")
+                      : undefined,
+                    dayData().isStaffLeaveDay
+                      ? t("facility_user.weekly_time_tables.day_notes.staff_leave_time")
+                      : undefined,
+                  ]
+                    .filter(NON_NULLABLE)
+                    .join("\n")}
+                >
+                  <ImInfo size="10" class="text-current" />
+                </div>
+              </PaddedCell>
+            )}
+          </Show>
+        ),
+        minSize: 130,
+      })),
+      {
+        id: "totalWorkTime",
+        accessorFn: (d: WeekData) => {
+          let total = 0;
+          for (const dayData of d.byWeekday) {
+            if (dayData) {
+              for (const meeting of dayData.workTimes) {
+                total += meeting.durationMinutes;
+              }
+            }
+          }
+          return total;
+        },
+        cell: (ctx: CellContext<WeekData, number>) => (
+          <PaddedCell class="text-right">
+            <Show when={ctx.getValue()} fallback={<EmptyValueSymbol />}>
+              {(totalMinutes) => <TimeDuration minutes={totalMinutes()} />}
+            </Show>
+          </PaddedCell>
+        ),
+      },
+    ],
+    meta: {translations},
+  });
+
+  return (
+    <Table
+      table={table}
+      mode="standalone"
+      isDimmed={dataQuery.isFetching || mutationsTracker.isAnyPending()}
+      aboveTable={() => (
+        <div class="flex items-stretch justify-between gap-2">
+          <TQuerySelect
+            name="staff"
+            value={selection()}
+            onValueChange={setSelection}
+            {...modelsQuerySpecs.userStaff()}
+            topItems={(filterText) =>
+              filterText
+                ? undefined
+                : [
+                    {
+                      value: SELECTION_FACILITY_WIDE,
+                      text: t("meetings.facility_wide"),
+                      label: () => (
+                        <div class="flex items-center gap-1">
+                          <facilityIcons.Facility class="pl-0.5" size="18" />
+                          {t("meetings.facility_wide")}
+                        </div>
+                      ),
+                    },
+                  ]
+            }
+            nullable={false}
+          />
+          <div class="flex items-stretch gap-1">
+            <TextInput
+              class="px-2"
+              type="month"
+              value={fromMonth()}
+              onInput={({target: {value}}) => setFromMonth(value)}
+              required
+            />
+            <div class="self-center">{EN_DASH}</div>
+            <TextInput class="px-2" type="month" value={toMonth()} onInput={({target: {value}}) => setToMonth(value)} />
+            <Button
+              onClick={() => {
+                setFromMonth(defaultFromMonth());
+                setToMonth(defaultToMonth());
+              }}
+              title={t("facility_user.weekly_time_tables.reset_dates")}
+            >
+              <actionIcons.Reset
+                class={cx("-ml-1 text-black", isDefaultMonthsRange() ? "dimmed" : undefined)}
+                size="20"
+              />
+            </Button>
+            <div class="flex items-center">
+              <InfoIcon href="/help/staff-time-tables#weekly" title={t("facility_user.weekly_time_tables.more_info")} />
+            </div>
+          </div>
+        </div>
+      )}
+    />
+  );
+}) satisfies VoidComponent;

@@ -149,6 +149,12 @@ tables:
     summary__few: "$t(tables.tables.generic.summary__few)"
     summary__many: "$t(tables.tables.generic.summary__many)"
 
+  time_table_weekly:
+    table_name: "Tygodniowe grafiki pracy"
+    column_names:
+      weekDate: "początek tyg."
+      totalWorkTime: "łączny czas pracy"
+
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"
