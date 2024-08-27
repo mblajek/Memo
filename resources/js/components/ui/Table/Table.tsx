@@ -366,6 +366,7 @@ export interface TableFeaturesConfig {
 }
 
 const DEFAULT_PAGE_SIZE = 50;
+const PAGE_SIZE_WITHOUT_PAGINATION = 10000;
 
 /**
  * Returns base options for createSolidTable.
@@ -387,7 +388,9 @@ export function getBaseTableOptions<T>({
   const columnVisibilitySignal = getFeatureSignal(columnVisibility, {});
   const sortingSignal = getFeatureSignal(sorting, []);
   const globalFilterSignal = getFeatureSignal(globalFilter, "");
-  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE});
+  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE}) || [
+    () => ({pageIndex: 0, pageSize: PAGE_SIZE_WITHOUT_PAGINATION}),
+  ];
   const baseState: Partial<TableState> = {
     get columnVisibility() {
       return columnVisibilitySignal?.[0]();

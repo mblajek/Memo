@@ -55,10 +55,7 @@ export default (() => {
   const table = createMemo(() =>
     createSolidTable({
       ...getBaseTableOptions<Attribute>({
-        features: {
-          sorting: [{id: "Name", desc: false}],
-          pagination: {pageIndex: 0, pageSize: 1e6},
-        },
+        features: {sorting: [{id: "Name", desc: false}]},
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
       }),
       get data() {
