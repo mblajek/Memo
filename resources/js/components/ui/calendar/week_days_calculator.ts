@@ -4,13 +4,16 @@ import {DaysRange} from "./days_range";
 
 export class WeekDaysCalculator {
   readonly weekInfo;
+  /** A list of week days, sorted by index (0 to 6). */
   readonly weekdays;
 
   constructor(readonly locale: Intl.Locale) {
     this.weekInfo = getWeekInfo(locale);
-    this.weekdays = Array.from(this.dayToWeek(DateTime.fromMillis(0)), (exampleDay) => ({
+    const week = this.dayToWeek(DateTime.fromMillis(0));
+    this.weekdays = Array.from(week, (exampleDay, index) => ({
       weekday: exampleDay.weekday,
       isWeekend: this.isWeekend(exampleDay),
+      index,
       exampleDay,
     }));
   }

@@ -30,7 +30,7 @@ export namespace FacilityMeeting {
   export const cloneMeeting = ({id, request}: {id: Api.Id; request: CloneRequest}, config?: Api.Config) =>
     V1.post<Api.Response.Post<CloneResponse>>(`/facility/${activeFacilityId()}/meeting/${id}/clone`, request, config);
 
-  export type CloneInterval = "1d" | "7d" | "14d";
+  export type CloneInterval = "1d" | "7d" | "14d" | "-";
 
   export interface CloneRequest {
     readonly interval: CloneInterval;
