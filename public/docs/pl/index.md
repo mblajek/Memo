@@ -9,7 +9,7 @@
 ## Dokumenty pomocy
 
 - Pracownicy
-  - [Zarządzanie godzinami pracy](staff-time-tables)
+  - [Grafiki pracy](staff-time-tables)
 - Klienci
   - [Usuwanie klientów](client-delete)
 - Spotkania
