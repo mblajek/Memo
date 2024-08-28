@@ -25,6 +25,8 @@ export namespace Api {
     export type Get<T extends object> = {data: T};
     export type GetList<T extends Entity> = {data: T[]};
     export type Post<T = Entity> = {data: T};
+    // TODO: Maybe this should be `{data: T}`.
+    export type Delete<T extends object> = T;
   }
 
   export type ErrorResponse = {

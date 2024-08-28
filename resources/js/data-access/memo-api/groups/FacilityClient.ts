@@ -20,7 +20,7 @@ export namespace FacilityClient {
       config,
     );
   export const deleteClient = (data: DeleteParams, config?: Api.Config) =>
-    V1.delete<DeleteResponse>(`/facility/${activeFacilityId()}/user/client/${data.id}`, {
+    V1.delete<Api.Response.Delete<DeleteResponse>>(`/facility/${activeFacilityId()}/user/client/${data.id}`, {
       data: data.duplicateOf ? {duplicateOf: data.duplicateOf} : undefined,
       ...config,
     });
