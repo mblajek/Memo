@@ -1,5 +1,5 @@
 import {ButtonLike} from "components/ui/ButtonLike";
-import {htmlAttributes, useLangFunc} from "components/utils";
+import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {UserLink} from "features/facility-users/UserLink";
@@ -43,7 +43,10 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
         return (
           <ButtonLike
             {...htmlAttributes.merge(divProps, {
-              class: "border rounded cursor-pointer select-none relative",
+              class: cx(
+                "border rounded cursor-pointer select-none relative",
+                meeting()["resourceConflicts.*.meetingId"].length ? "!border-l-4 !border-red-600" : undefined,
+              ),
               style: {
                 height: `${props.height || DEFAULT_HEIGHT}px`,
                 ...coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),

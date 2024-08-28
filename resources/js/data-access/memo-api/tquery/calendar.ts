@@ -29,7 +29,13 @@ const RESOURCE_COLUMNS = [
 ] as const satisfies (keyof MeetingResource)[];
 
 /** The list of columns to fetch. */
-const COLUMNS = [...RESOURCE_COLUMNS, "isFacilityWide", "seriesNumber", "seriesCount"] as const;
+const COLUMNS = [
+  ...RESOURCE_COLUMNS,
+  "isFacilityWide",
+  "seriesNumber",
+  "seriesCount",
+  "resourceConflicts.*.meetingId",
+] as const;
 
 export type SeriesNumberAndCount = {
   readonly seriesNumber: number | null;
@@ -39,9 +45,10 @@ export type SeriesNumberAndCount = {
 /** A meeting resource type fetched from tquery. */
 export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_COLUMNS)[number], "staff" | "clients">> &
   SeriesNumberAndCount & {
-    readonly isFacilityWide: boolean;
-    readonly staff: readonly TQMeetingAttendantResource[];
-    readonly clients: readonly TQMeetingAttendantResource[];
+    readonly "staff": readonly TQMeetingAttendantResource[];
+    readonly "clients": readonly TQMeetingAttendantResource[];
+    readonly "isFacilityWide": boolean;
+    readonly "resourceConflicts.*.meetingId": readonly string[];
   };
 
 export interface TQMeetingAttendantResource extends MeetingStaffResource, MeetingClientResource {
