@@ -146,19 +146,29 @@ readonly class MeetingTquery extends TqService
             'series_number',
         );
 
-        $date = (new \DateTimeImmutable('yesterday'))->format('Y-m-d');
+        $this->addConflictColumns($config);
+
+        $config->addCount();
+        return $config;
+    }
+
+    private function addConflictColumns(TqConfig $config): void
+    {
+        $date = (new \DateTimeImmutable('-2day'))
+            ->setTimezone(new \DateTimeZone('Europe/Warsaw'))
+            ->format('Y-m-d');
         $statusCancelled = Meeting::STATUS_CANCELLED;
-        $config->addListQuery(
-            TqDataTypeEnum::uuid_list,
-            '`other_meetings`.`id`',
-            '`meeting_resources` inner join `meeting_resources` as `other_meeting_resources`'
+        $categorySystem = Meeting::CATEGORY_SYSTEM;
+
+        $fromSql = '`meeting_resources` inner join `meeting_resources` as `other_meeting_resources`'
             . ' on `other_meeting_resources`.`resource_dict_id` = `meeting_resources`.`resource_dict_id`'
             . ' inner join `meetings` as `other_meetings`'
             . ' on `other_meetings`.`id` = `other_meeting_resources`.`meeting_id`'
             . ' where `meeting_resources`.`meeting_id` = `meetings`.`id` and `meetings`.`id` != `other_meetings`.`id`'
             . " and `other_meetings`.`facility_id` = '{$this->facility->id}'"
             . " and '$statusCancelled' not in (`meetings`.`status_dict_id`, `other_meetings`.`status_dict_id`)"
-            . " and `meetings`.`date` >= '$date' and `other_meetings`.`date` >= '$date'"
+            . " and '$categorySystem' not in (`meetings`.`category_dict_id`, `other_meetings`.`category_dict_id`)"
+            . " and `meetings`.`date` > '$date' and `other_meetings`.`date` >= '$date'" // other from 2 days
             . ' and `other_meetings`.`date` between' // redundant operation, but may optimize query
             . ' (`meetings`.`date` - interval 1 day) and (`meetings`.`date` + interval 1 day)'
             . " and datediff(`meetings`.`date`, '$date') * 1440 + `meetings`.`start_dayminute`"
@@ -166,12 +176,30 @@ readonly class MeetingTquery extends TqService
             . " + `other_meetings`.`start_dayminute` + `other_meetings`.`duration_minutes`"
             . " and datediff(`other_meetings`.`date`, '$date') * 1440 + `other_meetings`.`start_dayminute`"
             . " < datediff(`meetings`.`date`, '$date') * 1440" // minutes in day
-            . " + `meetings`.`start_dayminute` + `meetings`.`duration_minutes`",
-            'resource_conflicts.*.meetingId',
+            . " + `meetings`.`start_dayminute` + `meetings`.`duration_minutes`";
+
+        $config->addListQuery(
+            type: TqDataTypeEnum::uuid_list,
+            select: '`other_meetings`.`id`',
+            from: $fromSql,
+            columnAlias: 'resource_conflicts.*.meeting_id',
             selectDistinct: true,
         );
 
-        $config->addCount();
-        return $config;
+        $config->addListQuery(
+            type: new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::MeetingResource),
+            select: '`meeting_resources`.`resource_dict_id`',
+            from: $fromSql,
+            columnAlias: 'resource_conflicts.*.resource_dict_id',
+            selectDistinct: true,
+        );
+
+        $config->addQuery(
+            type: TqDataTypeEnum::bool_nullable,
+            columnOrQuery: fn(string $tableName) => //
+            "select IF(`meetings`.`date` > '$date', exists (select 1 from $fromSql), null)",
+            columnAlias: 'resource_conflicts.exists',
+
+        );
     }
 }
