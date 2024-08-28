@@ -156,8 +156,8 @@ readonly class MeetingTquery extends TqService
             . ' inner join `meetings` as `other_meetings`'
             . ' on `other_meetings`.`id` = `other_meeting_resources`.`meeting_id`'
             . ' where `meeting_resources`.`meeting_id` = `meetings`.`id` and `meetings`.`id` != `other_meetings`.`id`'
-            . " and `meetings`.`status_dict_id` != '$statusCancelled'"
-            . " and `other_meetings`.`status_dict_id` != '$statusCancelled'"
+            . " and `other_meetings`.`facility_id` = '{$this->facility->id}'"
+            . " and '$statusCancelled' not in (`meetings`.`status_dict_id`, `other_meetings`.`status_dict_id`)"
             . " and `meetings`.`date` >= '$date' and `other_meetings`.`date` >= '$date'"
             . ' and `other_meetings`.`date` between' // redundant operation, but may optimize query
             . ' (`meetings`.`date` - interval 1 day) and (`meetings`.`date` + interval 1 day)'
