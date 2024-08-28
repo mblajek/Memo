@@ -6,7 +6,7 @@ interface Props {
   readonly seconds?: boolean;
 }
 
-export const AlignedDayMinute: VoidComponent<Props> = (props) => {
+export const AlignedTime: VoidComponent<Props> = (props) => {
   const formatted = () => formatDayMinuteHM(props.dayMinute, props.seconds ? {second: "2-digit"} : undefined);
   return (
     <span>

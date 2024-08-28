@@ -30,7 +30,7 @@ import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useLocale} from "components/utils/LocaleContext";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
-import {AlignedDayMinute} from "components/utils/time_formatting";
+import {AlignedTime} from "components/utils/time_formatting";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
@@ -506,9 +506,9 @@ export default (() => {
                               conflict() ? "text-red-600" : undefined,
                             )}
                           >
-                            <AlignedDayMinute dayMinute={meeting.startDayminute} />
+                            <AlignedTime dayMinute={meeting.startDayminute} />
                             {EN_DASH}
-                            <AlignedDayMinute
+                            <AlignedTime
                               dayMinute={(meeting.startDayminute + meeting.durationMinutes) % MAX_DAY_MINUTE}
                             />
                             <Show when={meeting.notes}>
