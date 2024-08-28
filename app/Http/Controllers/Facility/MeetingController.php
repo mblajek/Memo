@@ -363,7 +363,7 @@ class MeetingController extends ApiController
                         property: 'date', type: 'array',
                         items: new OA\Items(type: 'string', example: '2023-12-13'),
                     ),
-                    new OA\Property(property: 'interval', type: 'string', example: '1d'),
+                    new OA\Property(property: 'interval', type: 'string', example: '1d', nullable: true),
                 ]
             )
         ),
@@ -394,7 +394,7 @@ class MeetingController extends ApiController
         ['dates' => $dates, 'interval' => $interval] = $this->validate([
             'dates' => Valid::list(['max:100']),
             'dates.*' => Valid::date([new UniqueWithMemoryRule('dates')]),
-            'interval' => Valid::trimmed(['ascii'], max: 32),
+            'interval' => Valid::trimmed(['ascii'], nullable: true, max: 32),
         ]);
 
         $ids = $meetingCloneService->clone($meeting, $dates, $interval);
