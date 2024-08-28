@@ -26,6 +26,7 @@ import {
   createUniqueId,
   mergeProps,
   on,
+  onMount,
   splitProps,
 } from "solid-js";
 import {Portal} from "solid-js/web";
@@ -295,6 +296,14 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       ),
     );
 
+  onMount(() => {
+    if (!props.multiple && !props.nullable && !props.value) {
+      const enabledItems = props.items.filter((item) => !item.disabled);
+      if (enabledItems.length === 1) {
+        api().setValue([enabledItems[0]!.value]);
+      }
+    }
+  });
   const isInternalFilteringMode = () => props.onFilterChange === "internal";
   /** The items after filtering, regardless of the filtering mode. */
   const filteredItems = createMemo(() => {
