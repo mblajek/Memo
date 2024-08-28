@@ -167,7 +167,7 @@ readonly class MeetingTquery extends TqService
             . " and datediff(`other_meetings`.`date`, '$date') * 1440 + `other_meetings`.`start_dayminute`"
             . " < datediff(`meetings`.`date`, '$date') * 1440" // minutes in day
             . " + `meetings`.`start_dayminute` + `meetings`.`duration_minutes`",
-            'resources.conflicts',
+            'resource_conflicts.*.meetingId',
             selectDistinct: true,
         );
 
