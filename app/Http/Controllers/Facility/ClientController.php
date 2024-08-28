@@ -200,7 +200,7 @@ class ClientController extends ApiController
                         new OA\Property(property: 'clientDeleted', type: 'bool'),
                         new OA\Property(property: 'memberDeleted', type: 'bool'),
                         new OA\Property(property: 'userDeleted', type: 'bool'),
-                    ])
+                    ]),
                 ]
             )
             ),

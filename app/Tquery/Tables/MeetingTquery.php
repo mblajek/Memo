@@ -4,6 +4,7 @@ namespace App\Tquery\Tables;
 
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
+use App\Models\Meeting;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Models\UuidEnum\MeetingAttributeUuidEnum;
 use App\Tquery\Config\TqConfig;
@@ -143,6 +144,31 @@ readonly class MeetingTquery extends TqService
                 . ' or (`other`.`start_dayminute` = `meetings`.`start_dayminute`'
                 . ' and `other`.`id` <= `meetings`.`id`))))',
             'series_number',
+        );
+
+        $date = (new \DateTimeImmutable('yesterday'))->format('Y-m-d');
+        $statusCancelled = Meeting::STATUS_CANCELLED;
+        $config->addListQuery(
+            TqDataTypeEnum::uuid_list,
+            '`other_meetings`.`id`',
+            '`meeting_resources` inner join `meeting_resources` as `other_meeting_resources`'
+            . ' on `other_meeting_resources`.`resource_dict_id` = `meeting_resources`.`resource_dict_id`'
+            . ' inner join `meetings` as `other_meetings`'
+            . ' on `other_meetings`.`id` = `other_meeting_resources`.`meeting_id`'
+            . ' where `meeting_resources`.`meeting_id` = `meetings`.`id` and `meetings`.`id` != `other_meetings`.`id`'
+            . " and `meetings`.`status_dict_id` != '$statusCancelled'"
+            . " and `other_meetings`.`status_dict_id` != '$statusCancelled'"
+            . " and `meetings`.`date` >= '$date' and `other_meetings`.`date` >= '$date'"
+            . ' and `other_meetings`.`date` between' // redundant operation, but may optimize query
+            . ' (`meetings`.`date` - interval 1 day) and (`meetings`.`date` + interval 1 day)'
+            . " and datediff(`meetings`.`date`, '$date') * 1440 + `meetings`.`start_dayminute`"
+            . " < datediff(`other_meetings`.`date`, '$date') * 1440" // minutes in day
+            . " + `other_meetings`.`start_dayminute` + `other_meetings`.`duration_minutes`"
+            . " and datediff(`other_meetings`.`date`, '$date') * 1440 + `other_meetings`.`start_dayminute`"
+            . " < datediff(`meetings`.`date`, '$date') * 1440" // minutes in day
+            . " + `meetings`.`start_dayminute` + `meetings`.`duration_minutes`",
+            'resources.conflicts',
+            selectDistinct: true,
         );
 
         $config->addCount();

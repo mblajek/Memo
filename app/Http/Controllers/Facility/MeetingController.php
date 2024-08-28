@@ -312,11 +312,11 @@ class MeetingController extends ApiController
         $meeting->belongsToFacilityOrFail();
         $data = $this->validate([
             'series' => Valid::string([
-                Rule::in($meeting->from_meeting_id ? ['one', 'from_this', 'from_next', 'all'] : ['one'])
+                Rule::in($meeting->from_meeting_id ? ['one', 'from_this', 'from_next', 'all'] : ['one']),
             ], sometimes: true),
             'other_ids' => Valid::list(sometimes: true, min: 0),
             'other_ids.*' => Valid::uuid([
-                Rule::exists('meetings', 'id')->where('facility_id', $this->getFacilityOrFail()->id)
+                Rule::exists('meetings', 'id')->where('facility_id', $this->getFacilityOrFail()->id),
             ], sometimes: true),
         ]);
         /** @var 'one'|'from_this'|'from_next'|'all' $series */
