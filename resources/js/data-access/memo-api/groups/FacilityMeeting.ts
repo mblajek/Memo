@@ -23,17 +23,27 @@ export namespace FacilityMeeting {
     V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/meeting`, meeting, config);
   export const updateMeeting = (meeting: Api.Request.Patch<MeetingResourceForPatch>, config?: Api.Config) =>
     V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting, config);
-  export const deleteMeeting = (
-    {id, deleteOption}: {id: Api.Id; deleteOption: SeriesDeleteOption},
-    config?: Api.Config,
-  ) => V1.delete(`/facility/${activeFacilityId()}/meeting/${id}`, {...config, data: {series: deleteOption}});
+  export const deleteMeeting = ({id, request}: {id: Api.Id; request?: DeleteRequest}, config?: Api.Config) =>
+    V1.delete<Api.Response.Delete<DeleteResponse>>(`/facility/${activeFacilityId()}/meeting/${id}`, {
+      ...config,
+      data: request,
+    });
   export const cloneMeeting = ({id, request}: {id: Api.Id; request: CloneRequest}, config?: Api.Config) =>
     V1.post<Api.Response.Post<CloneResponse>>(`/facility/${activeFacilityId()}/meeting/${id}/clone`, request, config);
 
-  export type CloneInterval = "1d" | "7d" | "14d" | "-";
+  export interface DeleteRequest {
+    readonly series?: SeriesDeleteOption;
+    readonly otherIds?: readonly Api.Id[];
+  }
+
+  export interface DeleteResponse {
+    readonly count: number;
+  }
+
+  export type CloneInterval = "1d" | "7d" | "14d";
 
   export interface CloneRequest {
-    readonly interval: CloneInterval;
+    readonly interval: CloneInterval | null;
     /** Dates of the clones of the meeting. */
     readonly dates: string[];
   }

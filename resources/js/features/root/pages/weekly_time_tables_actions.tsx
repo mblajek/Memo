@@ -89,43 +89,40 @@ export function useWeeklyTimeTablesActions() {
       targetWeeks.push(week);
       week = week.plus({weeks: options.weeksInterval});
     }
-    let numMeetingsToDelete = 0;
-    const tasks = [];
+    const meetingsToDelete: string[] = [];
     if (options.deleteExisting) {
       for (const week of targetWeeks) {
         for (const meeting of getMeetings(week)) {
           if (!options.skipHolidays || !holidays.isHoliday(DateTime.fromISO(meeting.date))) {
-            // TODO: Get an endpoint for deleting multiple meetings in a single call to reduce the number of API calls.
-            tasks.push(() => deleteMutation.mutateAsync({id: meeting.id, deleteOption: "one"}));
-            numMeetingsToDelete++;
+            meetingsToDelete.push(meeting.id);
           }
         }
       }
     }
-    let numSourceMeetings = 0;
+    const tasks = [];
+    if (meetingsToDelete.length) {
+      tasks.push(() => deleteMutation.mutateAsync({id: meetingsToDelete[0]!, request: {otherIds: meetingsToDelete}}));
+    }
     let numMeetingsToCreate = 0;
-    if (sourceWeekDate) {
-      const sourceMeetings = getMeetings(sourceWeekDate);
-      numSourceMeetings = sourceMeetings.length;
-      for (const [dateStr, dateSourceMeetings] of Map.groupBy(sourceMeetings, (meeting) => meeting.date)) {
-        const date = DateTime.fromISO(dateStr);
-        let targetDates = targetWeeks.map((targetWeek) => date.plus(targetWeek.diff(sourceWeekDate, "week")));
-        if (options.skipHolidays) {
-          targetDates = targetDates.filter((date) => !holidays.isHoliday(date));
-        }
-        if (targetDates.length) {
-          numMeetingsToCreate += targetDates.length * dateSourceMeetings.length;
-          const dates = targetDates.map(dateToISO);
-          for (const sourceMeeting of dateSourceMeetings) {
-            tasks.push(() => cloneMutation.mutateAsync({id: sourceMeeting.id, request: {dates, interval: "-"}}));
-          }
+    const sourceMeetings = sourceWeekDate ? getMeetings(sourceWeekDate) : [];
+    for (const [dateStr, dateSourceMeetings] of Map.groupBy(sourceMeetings, (meeting) => meeting.date)) {
+      const date = DateTime.fromISO(dateStr);
+      let targetDates = targetWeeks.map((targetWeek) => date.plus(targetWeek.diff(sourceWeekDate!, "week")));
+      if (options.skipHolidays) {
+        targetDates = targetDates.filter((date) => !holidays.isHoliday(date));
+      }
+      if (targetDates.length) {
+        numMeetingsToCreate += targetDates.length * dateSourceMeetings.length;
+        const dates = targetDates.map(dateToISO);
+        for (const sourceMeeting of dateSourceMeetings) {
+          tasks.push(() => cloneMutation.mutateAsync({id: sourceMeeting.id, request: {dates, interval: null}}));
         }
       }
     }
     return {
       targetWeeks,
-      numMeetingsToDelete,
-      numSourceMeetings,
+      numMeetingsToDelete: meetingsToDelete.length,
+      numSourceMeetings: sourceMeetings.length,
       numMeetingsToCreate,
       tasks,
     };
