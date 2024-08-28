@@ -22,11 +22,10 @@ export namespace Api {
   }
 
   export namespace Response {
-    export type Get<T extends object> = {data: T};
-    export type GetList<T extends Entity> = {data: T[]};
-    export type Post<T = Entity> = {data: T};
-    // TODO: Maybe this should be `{data: T}`.
-    export type Delete<T extends object> = T;
+    export type Get<T extends object> = {readonly data: T};
+    export type GetList<T extends Entity> = {readonly data: T[]};
+    export type Post<T = Entity> = {readonly data: T};
+    export type Delete<T extends object> = {readonly data: T};
   }
 
   export type ErrorResponse = {

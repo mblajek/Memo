@@ -46,7 +46,7 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
 
   async function deleteMeeting(deleteOption: SeriesDeleteOption) {
     const {count} = (await meetingDeleteMutation.mutateAsync({id: props.meeting.id!, request: {series: deleteOption}}))
-      .data;
+      .data.data;
     toastSuccess(tt("success", {count}));
     props.onDeleted?.(count, deleteOption !== "from_next");
     invalidate.facility.meetings();
