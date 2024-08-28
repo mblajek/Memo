@@ -135,6 +135,8 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.get("isRemote", {initialVisible: false}),
                         cols.meeting.notes,
                         cols.meeting.resources,
+                        cols.meeting.resourceConflictsExist,
+                        cols.meeting.resourceConflictsResources,
                         ...getCreatedUpdatedColumns(),
                       ]}
                       columnGroups={{
@@ -325,6 +327,8 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.get("isRemote", {initialVisible: false}),
                         cols.meeting.notes,
                         cols.meeting.resources,
+                        cols.meeting.resourceConflictsExist,
+                        cols.meeting.resourceConflictsResources,
                         ...getCreatedUpdatedColumns(),
                       ]}
                       columnGroups={{
