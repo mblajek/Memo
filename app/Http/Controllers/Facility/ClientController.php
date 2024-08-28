@@ -196,9 +196,11 @@ class ClientController extends ApiController
             new OA\Response(
                 response: 200, description: 'Deleted', content: new OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'clientDeleted', type: 'bool'),
-                    new OA\Property(property: 'memberDeleted', type: 'bool'),
-                    new OA\Property(property: 'userDeleted', type: 'bool'),
+                    new OA\Property(property: 'data', properties: [
+                        new OA\Property(property: 'clientDeleted', type: 'bool'),
+                        new OA\Property(property: 'memberDeleted', type: 'bool'),
+                        new OA\Property(property: 'userDeleted', type: 'bool'),
+                    ])
                 ]
             )
             ),
@@ -228,7 +230,7 @@ class ClientController extends ApiController
         } else {
             $deleted = $deleteClientService->delete($member);
         }
-        return new JsonResponse($deleted);
+        return new JsonResponse(['data' => $deleted]);
     }
 
     private function wrapClientValidator(array $clientValidator): array
