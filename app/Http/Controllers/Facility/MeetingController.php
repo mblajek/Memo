@@ -295,7 +295,9 @@ class MeetingController extends ApiController
             new OA\Response(
                 response: 200, description: 'OK', content: new  OA\JsonContent(
                 properties: [
-                    new OA\Property(property: 'count', type: 'int'),
+                    new OA\Property(property: 'data', properties: [
+                        new OA\Property(property: 'count', type: 'int'),
+                    ]),
                 ]
             )
             ),
@@ -348,7 +350,7 @@ class MeetingController extends ApiController
             MeetingResourceModel::query()->whereIn('meeting_id', $ids)->delete();
             Meeting::query()->whereIn('id', $ids)->delete();
         });
-        return new JsonResponse(['count' => count($ids)]);
+        return new JsonResponse(['data' => ['count' => count($ids)]]);
     }
 
     #[OA\Post(
@@ -379,7 +381,18 @@ class MeetingController extends ApiController
             ),
         ],
         responses: [
-            new OA\Response(response: 201, description: 'Created many'),
+            new OA\Response(response: 201, description: 'Created many', content: new OA\JsonContent(properties: [
+                new OA\Property(
+                    property: 'data', properties: [
+                    new OA\Property(
+                        property: 'ids', type: 'array', items: new OA\Items(
+                        type: 'string',
+                        example: '2023-12-13'
+                    ),
+                    ),
+                ],
+                ),
+            ])),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
