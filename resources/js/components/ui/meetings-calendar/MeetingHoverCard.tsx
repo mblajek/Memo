@@ -4,11 +4,12 @@ import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {MeetingInSeriesInfo} from "features/meeting/MeetingInSeriesInfo";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
+import {BiRegularCalendarX} from "solid-icons/bi";
 import {For, Show, VoidComponent} from "solid-js";
-import {RichTextView} from "../RichTextView";
-import {AttendantListItem, FieldDisp} from "./meeting_details";
 import {Capitalize} from "../Capitalize";
 import {facilityIcons} from "../icons";
+import {RichTextView} from "../RichTextView";
+import {AttendantListItem, FieldDisp} from "./meeting_details";
 
 interface Props {
   readonly meeting: TQMeetingResource;
@@ -23,6 +24,12 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
         <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
         <MeetingInSeriesInfo meeting={props.meeting} showLink={false} />
       </div>
+      <Show when={props.meeting["resourceConflicts.*.meetingId"].length}>
+        <div class="flex items-center gap-1 font-bold text-red-600">
+          <BiRegularCalendarX class="text-current" size="30" />
+          <div>{t("meetings.resource_conflicts.meeting_has_conflicts")}</div>
+        </div>
+      </Show>
       <div>{dictionaries()?.getPositionById(props.meeting.typeDictId).label}</div>
       <MeetingStatusTags meeting={props.meeting} />
       <Show when={props.meeting.isFacilityWide}>

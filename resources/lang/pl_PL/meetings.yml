@@ -53,3 +53,6 @@ conflicts:
 facility_wide: "Cała placówka"
 
 work_time_or_leave_time: "Czas pracy / nieobecność"
+
+resource_conflicts:
+  meeting_has_conflicts: "Konflikt zasobów: inne spotkanie korzysta w tym czasie z tego samego zasobu!"
