@@ -272,6 +272,11 @@ class MeetingController extends ApiController
                         type: 'string',
                         enum: ['one', 'from_this', 'from_next', 'all'],
                     ),
+                    new OA\Property(
+                        property: 'otherIds',
+                        type: 'array',
+                        items: new OA\Items(type: 'string', format: 'uuid'),
+                    ),
                 ]
             )
         ),
@@ -303,16 +308,17 @@ class MeetingController extends ApiController
         Meeting $meeting,
     ): JsonResponse {
         $meeting->belongsToFacilityOrFail();
+        $data = $this->validate([
+            'series' => Valid::string([
+                Rule::in($meeting->from_meeting_id ? ['one', 'from_this', 'from_next', 'all'] : ['one'])
+            ], sometimes: true),
+            'other_ids' => Valid::list(sometimes: true, min: 0),
+            'other_ids.*' => Valid::uuid([
+                Rule::exists('meetings', 'id')->where('facility_id', $this->getFacilityOrFail()->id)
+            ], sometimes: true),
+        ]);
         /** @var 'one'|'from_this'|'from_next'|'all' $series */
-        if ($meeting->from_meeting_id) {
-            $series = $this->validate([
-                'series' => Valid::string([Rule::in(['one', 'from_this', 'from_next', 'all'])], sometimes: true),
-            ])['series'] ?? 'one';
-        } else {
-            $series = $this->validate([
-                'series' => Valid::string([Rule::in(['one'])], sometimes: true),
-            ])['series'] ?? 'one';
-        }
+        $series = $data['series'] ?? 'one';
         if ($series === 'one') {
             $ids = [$meeting->id];
         } else {
@@ -335,6 +341,7 @@ class MeetingController extends ApiController
             }
             $ids = $query->get()->pluck('id')->toArray();
         }
+        $ids = array_unique([...$ids, ...($data['other_ids'] ?? [])]);
 
         DB::transaction(function () use ($ids) {
             MeetingAttendant::query()->whereIn('meeting_id', $ids)->delete();
