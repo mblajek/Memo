@@ -2,7 +2,7 @@ import * as dialog from "@zag-js/dialog";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
-import {Accessor, JSX, Show, createMemo, createRenderEffect, createUniqueId, onCleanup} from "solid-js";
+import {Accessor, JSX, Show, createMemo, createRenderEffect, createSignal, createUniqueId, onCleanup} from "solid-js";
 import {Portal} from "solid-js/web";
 import {Button} from "./Button";
 import s from "./Modal.module.scss";
@@ -87,6 +87,8 @@ function isEscapeReason(reason: EscapeReason | CloseReason): reason is EscapeRea
 
 type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseReason<T, C>;
 
+const DRAG_MARGIN = 20;
+
 /**
  * A modal, displaying on top of the page.
  *
@@ -138,14 +140,18 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
     }),
   );
   const api = createMemo(() => dialog.connect(state, send, normalizeProps));
+  const [relativePos, setRelativePos] = createSignal<readonly [number, number]>([0, 0]);
   const shouldBeOpen = createMemo(() => !!props.open);
   createRenderEffect(() => {
     if (shouldBeOpen()) {
       api().open();
     } else {
       api().close();
+      setRelativePos([0, 0]);
     }
   });
+  const [grabPos, setGrabPos] = createSignal<readonly [number, number]>();
+  let positioner: HTMLDivElement | undefined;
   return (
     <Show when={props.open}>
       {(value) => (
@@ -153,11 +159,42 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
           <Portal>
             <div class={cx(s.modal, closeOn().has("closeButton") && s.withCloseButton)}>
               <div {...api().backdropProps} />
-              <div {...api().positionerProps}>
-                <div {...api().contentProps} style={props.style}>
+              <div
+                ref={positioner}
+                {...api().positionerProps}
+                onPointerMove={(e) => {
+                  if (e.buttons === 1) {
+                    if (grabPos()) {
+                      setRelativePos([
+                        Math.min(Math.max(e.clientX, DRAG_MARGIN), window.innerWidth - DRAG_MARGIN) - grabPos()![0],
+                        Math.min(Math.max(e.clientY, DRAG_MARGIN), window.innerHeight - DRAG_MARGIN) - grabPos()![1],
+                      ]);
+                    }
+                  } else {
+                    setGrabPos(undefined);
+                  }
+                }}
+                onPointerUp={[setGrabPos, undefined]}
+              >
+                <div
+                  {...api().contentProps}
+                  style={{...props.style, left: `${relativePos()[0]}px`, top: `${relativePos()[1]}px`}}
+                >
                   <div class={s.innerContent}>
                     <Show when={props.title}>
-                      <h2 {...api().titleProps}>{props.title}</h2>
+                      <h2
+                        {...api().titleProps}
+                        onPointerDown={(e) => {
+                          if (e.buttons === 1) {
+                            setGrabPos([
+                              e.clientX - positioner!.clientLeft - relativePos()[0],
+                              e.clientY - positioner!.clientTop - relativePos()[1],
+                            ]);
+                          }
+                        }}
+                      >
+                        {props.title}
+                      </h2>
                     </Show>
                     <div class={s.body}>{getChildrenElement(props.children, value)}</div>
                     {/* Place the close button at the end so that it is focused last. */}

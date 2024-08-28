@@ -6,11 +6,11 @@
   }
 
   [data-part="positioner"] {
-    @apply fixed inset-0 flex items-center justify-center;
+    @apply fixed inset-0 flex items-center justify-center touch-none;
   }
 
   [data-part="content"] {
-    @apply overflow-x-clip overflow-y-auto max-w-full max-h-full mx-10;
+    @apply overflow-x-clip overflow-y-auto max-w-full max-h-full mx-10 relative touch-none;
 
     .innerContent {
       @apply bg-white rounded-lg shadow-xl p-4;
@@ -25,7 +25,7 @@
   }
 
   [data-part="title"] {
-    @apply font-bold;
+    @apply font-bold cursor-grab select-none;
     font-size: 1.3rem;
   }
 
