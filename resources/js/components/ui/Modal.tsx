@@ -14,7 +14,7 @@ import {
   Show,
 } from "solid-js";
 import {Portal} from "solid-js/web";
-import {observeClientSize, Size, windowSize} from "../utils/size_observers";
+import {Size, useResizeObserver, windowSize} from "../utils/resize_observer";
 import {Button} from "./Button";
 import s from "./Modal.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
@@ -125,6 +125,7 @@ const DRAG_MARGIN = 50;
  */
 export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element => {
   const t = useLangFunc();
+  const resizeObserver = useResizeObserver();
   const closeOn = createMemo(
     () =>
       new Set<CloseReason>(
@@ -166,7 +167,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
   let positioner: HTMLDivElement | undefined;
   const [contentElement, setContentElement] = createSignal<HTMLDivElement>();
   // eslint-disable-next-line solid/reactivity
-  const contentSize = observeClientSize(contentElement);
+  const contentSize = resizeObserver.observeClientSize(contentElement);
   const contentPos = (): Size | undefined =>
     contentSize() && [
       (windowSize()[0] - contentSize()![0]) / 2 + relativePos()[0],
