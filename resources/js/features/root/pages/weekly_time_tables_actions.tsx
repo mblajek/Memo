@@ -1,20 +1,24 @@
 import {createMutation} from "@tanstack/solid-query";
 import {useHolidays} from "components/ui/calendar/holidays";
+import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {createConfirmation} from "components/ui/confirmation";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {HideableSection} from "components/ui/HideableSection";
+import {MODAL_STYLE_PRESETS} from "components/ui/Modal";
 import {EN_DASH} from "components/ui/symbols";
+import {ThingsList} from "components/ui/ThingsList";
 import {DATE_FORMAT, useLangFunc} from "components/utils";
+import {useLocale} from "components/utils/LocaleContext";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {dateToISO} from "data-access/memo-api/utils";
 import {TOptions} from "i18next";
-import {DateTime} from "luxon";
-import {createMemo, createSignal, getOwner, runWithOwner, Show, VoidComponent} from "solid-js";
+import {DateTime, WeekdayNumbers} from "luxon";
+import {Accessor, createMemo, createSignal, getOwner, runWithOwner, Show, VoidComponent} from "solid-js";
 
 type Meeting = Pick<MeetingResource, "id" | "date">;
 
@@ -24,6 +28,7 @@ export interface WeeklyTimeTablesAction {
   readonly sourceWeekDate: DateTime | undefined;
   /** The weeks range to which the source weeks should be cloned, or where work times should be deleted. */
   readonly targetWeeksRange: readonly [DateTime, DateTime];
+  readonly weekdaysSelection: ReadonlyMap<WeekdayNumbers, Accessor<boolean>>;
 }
 
 /** Options for performing an action. */
@@ -43,6 +48,7 @@ export interface WeeklyTimeTablesActionOptions {
   readonly skipHolidays: boolean;
 }
 
+/** A function returning meetings from the specified week. Only meetings from the active weekdays are returned. */
 type MeetingsGetter = (weekDate: DateTime) => readonly Meeting[];
 
 interface Transaction {
@@ -57,6 +63,8 @@ export function useWeeklyTimeTablesActions() {
   const t = useLangFunc();
   const invalidate = useInvalidator();
   const holidays = useHolidays();
+  const locale = useLocale();
+  const weekDaysCalculator = new WeekDaysCalculator(locale);
   const confirmation = createConfirmation();
   const owner = getOwner();
   const deleteMutation = createMutation(() => ({
@@ -193,6 +201,27 @@ export function useWeeklyTimeTablesActions() {
         </div>
       );
 
+      const ActiveWeekdaysInfo: VoidComponent = () => (
+        <Show when={[...action.weekdaysSelection.values()].some((sel) => !sel())}>
+          <div class="flex flex-col">
+            <div>{tt("active_weekdays")}</div>
+            <ThingsList
+              things={weekDaysCalculator.weekdays}
+              map={({weekday, exampleDay}) => (
+                <span
+                  class={
+                    action.weekdaysSelection.get(weekday)!() ? undefined : "line-through text-black text-opacity-40"
+                  }
+                >
+                  {exampleDay.weekdayLong}
+                </span>
+              )}
+              mode="commas"
+            />
+          </div>
+        </Show>
+      );
+
       const DeleteCount: VoidComponent = () => (
         <div class="flex flex-col">
           <HideableSection show={deleteExisting()}>
@@ -233,6 +262,7 @@ export function useWeeklyTimeTablesActions() {
                       <EverySecondWeekControl />
                       <TargetWeeksRange />
                     </div>
+                    <ActiveWeekdaysInfo />
                     <div class="flex flex-col">
                       <CheckboxInput
                         checked={deleteExisting()}
@@ -255,11 +285,13 @@ export function useWeeklyTimeTablesActions() {
                       <EverySecondWeekControl />
                       <TargetWeeksRange />
                     </div>
+                    <ActiveWeekdaysInfo />
                     <SkipHolidaysControl />
                     <DeleteCount />
                   </div>
                 ),
               }),
+          modalStyle: MODAL_STYLE_PRESETS.medium,
         })
         .then(
           // eslint-disable-next-line solid/reactivity

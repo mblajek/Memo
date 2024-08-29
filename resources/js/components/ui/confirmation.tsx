@@ -15,6 +15,7 @@ export interface ConfirmParams {
   readonly cancelText?: JSX.Element | Accessor<JSX.Element>;
   readonly mode?: ConfirmationMode;
   readonly confirmDisabled?: Accessor<boolean>;
+  readonly modalStyle?: JSX.CSSProperties;
 }
 
 /**
@@ -40,7 +41,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
     <Modal
       title={args.params()?.title}
       open={args.params()}
-      style={MODAL_STYLE_PRESETS.narrow}
+      style={{...MODAL_STYLE_PRESETS.narrow, ...args.params()?.modalStyle}}
       closeOn={["escapeKey", "closeButton"]}
       onClose={() => {
         args.params()?.resolve(undefined);

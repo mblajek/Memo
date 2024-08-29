@@ -7,6 +7,7 @@ import {Button} from "../Button";
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly ctx: HeaderContext<any, unknown>;
+  readonly extraLine?: JSX.Element;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly filter?: Signal<any | undefined>;
   readonly filterControl?: () => JSX.Element;
@@ -35,6 +36,7 @@ export const Header: VoidComponent<Props> = (props) => {
           </Button>
         </Show>
       </span>
+      {props.extraLine}
       <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
         {(filterControl) => (
           <div class="flex flex-wrap items-end gap-0.5 overflow-y-auto">
