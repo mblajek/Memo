@@ -3,17 +3,22 @@ import {Accessor, createComputed, createSignal, on, onCleanup} from "solid-js";
 export type Size = readonly [number, number];
 
 const callbacks = new Map<Element, (entry: ResizeObserverEntry) => void>();
-const resizeObserver = new ResizeObserver((entries) => {
-  for (const entry of entries) {
-    callbacks.get(entry.target)?.(entry);
-  }
-});
+const resizeObserver = window.ResizeObserver
+  ? new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        callbacks.get(entry.target)?.(entry);
+      }
+    })
+  : undefined;
 
 export function observeResize<E extends HTMLElement, T>(
   element: Accessor<E | undefined>,
   func: (entry: ResizeObserverEntry) => T,
   init?: T | ((element: E) => T),
 ): Accessor<T | undefined> {
+  if (!resizeObserver) {
+    throw new Error("ResizeObserver is not supported");
+  }
   const [signal, setSignal] = createSignal<T>();
   createComputed(
     on(element, (element) => {
