@@ -4,12 +4,14 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {MeetingResource, MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
+import {Accessor, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
 /** The meeting resource with additional fields fetched from */
 export interface MeetingWithExtraInfo extends MeetingResource {
-  readonly seriesNumber?: number;
-  readonly seriesCount?: number;
+  readonly "seriesNumber"?: number;
+  readonly "seriesCount"?: number;
+  readonly "resourceConflicts.*.resourceDictId"?: readonly string[];
 }
 
 export function useMeetingWithExtraInfo(meetingId: string) {
@@ -22,23 +24,27 @@ export function useMeetingWithExtraInfo(meetingId: string) {
       columns: [
         {type: "column", column: "seriesNumber"},
         {type: "column", column: "seriesCount"},
+        {type: "column", column: "resourceConflicts.*.resourceDictId"},
       ],
       filter: {type: "column", column: "id", op: "=", val: meetingId},
       sort: [],
       paging: {size: 1},
     }),
-    dataQueryOptions: () => ({enabled: !!meetingQuery.data?.fromMeetingId}),
+  });
+  const meeting = createMemo((): MeetingWithExtraInfo | undefined => {
+    const meeting = meetingQuery.data;
+    if (!meeting) {
+      return undefined;
+    }
+    // Remove any series info for work time.
+    if (meeting.typeDictId === meetingTypeDict()?.work_time.id) {
+      return {...meeting, fromMeetingId: null, interval: null};
+    }
+    return {...meeting, ...meetingTQuery.data?.data[0]};
   });
   return {
     meetingQuery,
-    meeting: (): MeetingWithExtraInfo => {
-      const meeting = meetingQuery.data!;
-      // Remove any series info for work time.
-      if (meeting.typeDictId === meetingTypeDict()?.work_time.id) {
-        return {...meeting, fromMeetingId: null, interval: null};
-      }
-      return {...meeting, ...meetingTQuery.data?.data[0]};
-    },
+    meeting: meeting as Accessor<MeetingWithExtraInfo>,
   };
 }
 

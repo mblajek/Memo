@@ -51,7 +51,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
             {...htmlAttributes.merge(divProps, {
               class: cx(
                 "px-0.5 border rounded flex flex-col items-stretch min-h-0 cursor-pointer select-none relative",
-                meeting()["resourceConflicts.*.meetingId"].length ? "!border-l-4 !border-red-600" : undefined,
+                meeting()["resourceConflicts.*.resourceDictId"].length ? "!border-l-4 !border-red-600" : undefined,
               ),
               style: {
                 height: `${props.height || DEFAULT_HEIGHT}px`,
@@ -130,7 +130,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                 "w-full h-full border rounded flex flex-col items-stretch cursor-pointer select-none",
                 crosses().fromPrevDay ? "border-t-0 rounded-t-none" : undefined,
                 crosses().toNextDay ? "border-b-0 rounded-b-none" : undefined,
-                meeting()["resourceConflicts.*.meetingId"].length ? "!border-l-4 !border-red-600" : undefined,
+                meeting()["resourceConflicts.*.resourceDictId"].length ? "!border-l-4 !border-red-600" : undefined,
               ),
               style: coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
             })}

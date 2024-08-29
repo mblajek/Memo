@@ -5,7 +5,7 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
-import {getMeetingLinkData} from "components/ui/meetings-calendar/calendar_link";
+import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
@@ -115,7 +115,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
               <div class="flex justify-between">
                 <Show when={props.showGoToMeetingButton} fallback={<span />}>
                   <LinkWithNewTabLink
-                    {...getMeetingLinkData(`/${activeFacility()?.url}/admin/time-tables`, workTime())}
+                    {...getCalendarViewLinkData(`/${activeFacility()?.url}/admin/time-tables`, {meeting: workTime()})}
                   >
                     {t("meetings.show_in_calendar")}
                   </LinkWithNewTabLink>

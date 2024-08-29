@@ -7,7 +7,7 @@ import {useHolidays} from "components/ui/calendar/holidays";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
 import {capitalizeString} from "components/ui/Capitalize";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {actionIcons, facilityIcons} from "components/ui/icons";
+import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
@@ -38,7 +38,6 @@ import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tq
 import {dateToISO} from "data-access/memo-api/utils";
 import {DateTime, WeekdayNumbers} from "luxon";
 import {IconTypes} from "solid-icons";
-import {BiRegularCalendarX} from "solid-icons/bi";
 import {BsThreeDots} from "solid-icons/bs";
 import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
@@ -518,7 +517,7 @@ export default (() => {
                             </Show>
                             <Show when={conflict()}>
                               <span use:title={t("facility_user.weekly_time_tables.overlapping")}>
-                                <BiRegularCalendarX class="inlineIcon" size="12" />
+                                <calendarIcons.Conflict class="inlineIcon" size="12" />
                               </span>
                             </Show>
                           </li>

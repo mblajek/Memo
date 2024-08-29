@@ -4,12 +4,12 @@ import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";
 import {MeetingInSeriesInfo} from "features/meeting/MeetingInSeriesInfo";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
-import {BiRegularCalendarX} from "solid-icons/bi";
 import {For, Show, VoidComponent} from "solid-js";
 import {Capitalize} from "../Capitalize";
-import {facilityIcons} from "../icons";
+import {calendarIcons, facilityIcons} from "../icons";
 import {RichTextView} from "../RichTextView";
 import {AttendantListItem, FieldDisp} from "./meeting_details";
+import {ThingsList} from "../ThingsList";
 
 interface Props {
   readonly meeting: TQMeetingResource;
@@ -24,9 +24,9 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
         <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />
         <MeetingInSeriesInfo meeting={props.meeting} showLink={false} />
       </div>
-      <Show when={props.meeting["resourceConflicts.*.meetingId"].length}>
+      <Show when={props.meeting["resourceConflicts.*.resourceDictId"].length}>
         <div class="flex items-center gap-1 font-bold text-red-600">
-          <BiRegularCalendarX class="text-current" size="30" />
+          <calendarIcons.Conflict class="text-current" size="30" />
           <div>{t("meetings.resource_conflicts.meeting_has_conflicts")}</div>
         </div>
       </Show>
@@ -59,12 +59,22 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
       </Show>
       <Show when={props.meeting.resources.length}>
         <FieldDisp field="resources">
-          <div class="wrapText">
-            {props.meeting.resources
-              .map((r) => dictionaries()?.getPositionById(r.resourceDictId).label)
-              // Join by comma because Intl.ListFormat doesn't seem to work very well in Polish.
-              .join(", ")}
-          </div>
+          <ThingsList
+            things={props.meeting.resources}
+            map={({resourceDictId}) => {
+              const conflict = () => props.meeting["resourceConflicts.*.resourceDictId"].includes(resourceDictId);
+              return (
+                <span class={conflict() ? "text-red-600 font-semibold" : undefined}>
+                  {dictionaries()?.getPositionById(resourceDictId).label}
+                  <Show when={conflict()}>
+                    {" "}
+                    <calendarIcons.Conflict class="inlineIcon" />
+                  </Show>
+                </span>
+              );
+            }}
+            mode="commas"
+          />
         </FieldDisp>
       </Show>
     </div>

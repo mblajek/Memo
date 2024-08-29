@@ -42,6 +42,7 @@ import {
   VoidComponent,
   batch,
   createComputed,
+  createEffect,
   createMemo,
   createSignal,
   mergeProps,
@@ -57,12 +58,7 @@ import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
 import {title} from "../title";
 import {StaffInfo, WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
-import {
-  CalendarLocationState,
-  CalendarMeetingSearchParams,
-  CalendarSearchParams,
-  CalendarViewSearchParams,
-} from "./calendar_link";
+import {CalendarLocationState, CalendarSearchParams} from "./calendar_link";
 import {CALENDAR_MODES, CalendarFunction, CalendarFunctionContext, CalendarMode} from "./calendar_modes";
 import {CALENDAR_BACKGROUNDS, coloringToStyle, getRandomEventColors} from "./colors";
 
@@ -708,13 +704,25 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   onMount(() => {
     scrollIntoView(7 * 60, 1e3);
   });
-  onMount(() => {
-    if ((searchParams as Partial<CalendarMeetingSearchParams>).meetingId) {
-      const meetingSearchParams = searchParams as CalendarMeetingSearchParams;
+  createEffect(() => {
+    if (searchParams.mode || searchParams.date || searchParams.resources) {
+      if (searchParams.mode) {
+        setMode(searchParams.mode);
+      }
+      if (searchParams.date) {
+        setDaysSelectionAndMonthFromDay(DateTime.fromISO(searchParams.date));
+      }
+      if (searchParams.resources) {
+        showResources(searchParams.resources.split(","));
+      }
+      setSearchParams({mode: undefined, date: undefined, resources: undefined});
+      history.replaceState({...history.state, mode: undefined, date: undefined, resources: undefined}, "");
+    }
+    if (searchParams.meetingId) {
       const meetingToShowFromLocationState = () => location.state?.meetingToShow;
       const meetingToShowQuery = createQuery(() => ({
-        enabled: !!meetingSearchParams.meetingId && !meetingToShowFromLocationState(),
-        ...FacilityMeeting.meetingQueryOptions(meetingSearchParams.meetingId || ""),
+        enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
+        ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
       }));
       createOneTimeEffect({
         input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
@@ -725,23 +733,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setTimeout(() => goToMeeting(meeting), 100);
         },
       });
-    } else {
-      const viewSearchParams = searchParams as CalendarViewSearchParams;
-      if (viewSearchParams.mode || viewSearchParams.date || viewSearchParams.resources) {
-        if (viewSearchParams.mode) {
-          setMode(viewSearchParams.mode);
-        }
-        if (viewSearchParams.date) {
-          setDaysSelectionAndMonthFromDay(DateTime.fromISO(viewSearchParams.date));
-        }
-        if (viewSearchParams.resources) {
-          showResources(viewSearchParams.resources.split(","));
-        }
-        onMount(() => {
-          setSearchParams({mode: undefined, date: undefined, resources: undefined});
-          history.replaceState({...history.state, mode: undefined, date: undefined, resources: undefined}, "");
-        });
-      }
     }
   });
 
