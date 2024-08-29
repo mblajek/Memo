@@ -1,4 +1,5 @@
 import {AnchorProps} from "@solidjs/router";
+import {Modifiable} from "components/utils/modifiable";
 import {toPlainObject} from "components/utils/object_util";
 import {MeetingBasicData} from "features/meeting/meeting_basic_data";
 import {DateTime} from "luxon";
@@ -36,7 +37,7 @@ export function getCalendarViewLinkData(
     meeting?: string | MeetingBasicData;
   },
 ) {
-  const params: {-readonly [K in keyof CalendarSearchParams]: CalendarSearchParams[K]} = {};
+  const params: Modifiable<CalendarSearchParams> = {};
   let state: CalendarLocationState | undefined;
   if (mode) {
     params.mode = mode;

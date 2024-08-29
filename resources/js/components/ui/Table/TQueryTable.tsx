@@ -20,6 +20,7 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
+import {Modifiable} from "components/utils/modifiable";
 import {intersects, objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -732,7 +733,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   };
 
   const columnGroupingInfos = createMemo<ReadonlyMap<string, ColumnGroupingInfo>>(() => {
-    const infos = new Map<string, {-readonly [K in keyof ColumnGroupingInfo]: ColumnGroupingInfo[K]}>();
+    const infos = new Map<string, Modifiable<ColumnGroupingInfo>>();
     for (const col of columns()) {
       infos.set(col.id!, {
         isCount: col.id === countColumn(),
