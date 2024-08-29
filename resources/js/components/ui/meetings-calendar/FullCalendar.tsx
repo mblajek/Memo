@@ -704,37 +704,42 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   onMount(() => {
     scrollIntoView(7 * 60, 1e3);
   });
-  createEffect(() => {
-    if (searchParams.mode || searchParams.date || searchParams.resources) {
-      if (searchParams.mode) {
-        setMode(searchParams.mode);
+  const searchParamsObj = createMemo(() => ({...searchParams}));
+  createEffect(
+    on(searchParamsObj, (searchParams) => {
+      if (searchParams.mode || searchParams.date || searchParams.resources) {
+        if (searchParams.mode) {
+          setMode(searchParams.mode);
+        }
+        if (searchParams.date) {
+          setDaysSelectionAndMonthFromDay(DateTime.fromISO(searchParams.date));
+        }
+        if (searchParams.resources) {
+          showResources(searchParams.resources.split(","));
+        }
+        onMount(() => {
+          setSearchParams({mode: undefined, date: undefined, resources: undefined}, {replace: true});
+          history.replaceState({...history.state, mode: undefined, date: undefined, resources: undefined}, "");
+        });
       }
-      if (searchParams.date) {
-        setDaysSelectionAndMonthFromDay(DateTime.fromISO(searchParams.date));
+      if (searchParams.meetingId) {
+        const meetingToShowFromLocationState = () => location.state?.meetingToShow;
+        const meetingToShowQuery = createQuery(() => ({
+          enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
+          ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
+        }));
+        createOneTimeEffect({
+          input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
+          effect: (meeting) => {
+            setSearchParams({meetingId: undefined}, {replace: true});
+            history.replaceState({...history.state, meetingToShow: undefined}, "");
+            // Give the calendar time to scroll to the initial position first.
+            setTimeout(() => goToMeeting(meeting), 100);
+          },
+        });
       }
-      if (searchParams.resources) {
-        showResources(searchParams.resources.split(","));
-      }
-      setSearchParams({mode: undefined, date: undefined, resources: undefined});
-      history.replaceState({...history.state, mode: undefined, date: undefined, resources: undefined}, "");
-    }
-    if (searchParams.meetingId) {
-      const meetingToShowFromLocationState = () => location.state?.meetingToShow;
-      const meetingToShowQuery = createQuery(() => ({
-        enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
-        ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
-      }));
-      createOneTimeEffect({
-        input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
-        effect: (meeting) => {
-          setSearchParams({meetingId: undefined}, {replace: true});
-          history.replaceState({...history.state, meetingToShow: undefined}, "");
-          // Give the calendar time to scroll to the initial position first.
-          setTimeout(() => goToMeeting(meeting), 100);
-        },
-      });
-    }
-  });
+    }),
+  );
 
   const blocksByStaffFilter = (staffId: string) => (block: WithOrigMeetingInfo) =>
     block.meeting.isFacilityWide || block.meeting.staff.some((s) => s.userId === staffId);
