@@ -499,6 +499,13 @@ export default (() => {
                 <CheckboxInput
                   checked={weekdaySelected()}
                   onChecked={setWeekdaySelected}
+                  onDblClick={() => {
+                    // Select all if no other days are selected.
+                    const selectAll = [...weekdaysSelection].every(([wkd, [getter]]) => wkd === weekday || !getter());
+                    for (const [wkd, [_getter, setter]] of weekdaysSelection) {
+                      setter(selectAll || wkd === weekday);
+                    }
+                  }}
                   label={<span class="font-normal">{t("facility_user.weekly_time_tables.weekday_active")}</span>}
                 />
               }
