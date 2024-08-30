@@ -115,6 +115,7 @@ interface TQueryTableMeta<TData extends RowData> {
 }
 
 interface ColumnGroupingInfo {
+  readonly isValid: boolean;
   readonly isCount: boolean;
   readonly isGrouping: boolean;
   readonly isGrouped: boolean;
@@ -539,9 +540,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         // Ensure a bad (e.g. outdated) entry won't affect visibility of a column that cannot have
         // the visibility controlled by the user.
         const colVis = {...value.colVis};
-        for (const col of columnsConfig()) {
-          if (col.columnDef.enableHiding === false || !col.persistVisibility) {
-            delete colVis[col.name];
+        for (const colName of Object.keys(colVis)) {
+          const col = columnsConfig().find((c) => c.name === colName);
+          if (!col || col.columnDef.enableHiding === false || !col.persistVisibility) {
+            delete colVis[colName];
           }
         }
         columnVisibility[1](colVis);
@@ -736,6 +738,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     const infos = new Map<string, Modifiable<ColumnGroupingInfo>>();
     for (const col of columns()) {
       infos.set(col.id!, {
+        isValid: true,
         isCount: col.id === countColumn(),
         isGrouping: false,
         isGrouped: false,
@@ -761,7 +764,14 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     }
     return infos;
   });
-  const columnGroupingInfo = (column: string) => columnGroupingInfos().get(column)!;
+  const INVALID_COLUMN_GROUPING_INFO: ColumnGroupingInfo = {
+    isValid: false,
+    isCount: false,
+    isGrouping: false,
+    isGrouped: false,
+    isForceShown: false,
+  };
+  const columnGroupingInfo = (column: string) => columnGroupingInfos().get(column) || INVALID_COLUMN_GROUPING_INFO;
 
   setTable(
     createSolidTable<DataItem>({

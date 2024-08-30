@@ -29,6 +29,9 @@ export const SearchInput: VoidComponent<Props> = (allProps) => {
     <div class={cx(props.divClass, "flex items-stretch relative")}>
       <TextInput
         autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck={false}
         {...htmlAttributes.merge(inputProps, {
           class: "grow !pr-6",
           onInput: setNow,
