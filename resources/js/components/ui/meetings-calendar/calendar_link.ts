@@ -10,7 +10,8 @@ export interface CalendarLocationState {
 }
 
 export type CalendarSearchParams = {
-  readonly mode?: CalendarMode;
+  /** Calendar mode or comma-separated acceptable calendar modes. */
+  readonly mode?: string;
   readonly date?: string;
   readonly resources?: string;
   readonly meetingId?: string;
@@ -31,7 +32,7 @@ export function getCalendarViewLinkData(
     resources,
     meeting,
   }: {
-    mode?: CalendarMode;
+    mode?: CalendarMode | readonly CalendarMode[];
     date?: DateTime;
     resources?: readonly string[];
     meeting?: string | MeetingBasicData;
@@ -40,7 +41,7 @@ export function getCalendarViewLinkData(
   const params: Modifiable<CalendarSearchParams> = {};
   let state: CalendarLocationState | undefined;
   if (mode) {
-    params.mode = mode;
+    params.mode = typeof mode === "string" ? mode : mode.join(",");
   }
   if (date) {
     params.date = date.toISODate();

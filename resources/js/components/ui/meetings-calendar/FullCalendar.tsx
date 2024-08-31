@@ -709,7 +709,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     on(searchParamsObj, (searchParams) => {
       if (searchParams.mode || searchParams.date || searchParams.resources) {
         if (searchParams.mode) {
-          setMode(searchParams.mode);
+          const modes = searchParams.mode.split(",");
+          if (!modes.includes(mode())) {
+            const firstMode = modes[0]!;
+            if ((CALENDAR_MODES as readonly string[]).includes(firstMode)) {
+              setMode(firstMode as CalendarMode);
+            }
+          }
         }
         if (searchParams.date) {
           setDaysSelectionAndMonthFromDay(DateTime.fromISO(searchParams.date));

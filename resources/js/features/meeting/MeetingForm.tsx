@@ -153,6 +153,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
                 {(conflictingResourceIds) => (
                   <LinkWithNewTabLink
                     {...getCalendarViewLinkData(`/${activeFacility()?.url}/calendar`, {
+                      mode: ["week", "day"],
                       resources: conflictingResourceIds(),
                       meeting: props.meeting,
                     })}
