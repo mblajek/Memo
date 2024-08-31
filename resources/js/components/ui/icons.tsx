@@ -1,5 +1,5 @@
 import {IconTemplate, IconTypes} from "solid-icons";
-import {BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
+import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
   BsFileEarmarkPerson,
   BsHouse,
@@ -64,6 +64,10 @@ export namespace actionIcons {
   export const Copy: IconTypes = (props) => <BiRegularCopy {...props} />;
   export const Paste: IconTypes = (props) => <BiRegularPaste {...props} />;
   export const Reset: IconTypes = (props) => <CgUndo {...props} />;
+}
+
+export namespace calendarIcons {
+  export const Conflict: IconTypes = (props) => <BiRegularCalendarX {...props} />;
 }
 
 namespace customIcons {

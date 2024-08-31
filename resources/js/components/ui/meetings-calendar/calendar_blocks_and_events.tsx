@@ -6,6 +6,7 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createCalendarRequestCreator, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
+import {useMeetingsCache} from "features/meeting/meeting_api";
 import {MeetingModalParams} from "features/meeting/meeting_modal";
 import {WorkTimeModalParams} from "features/meeting/work_time_modal";
 import {DateTime} from "luxon";
@@ -99,6 +100,7 @@ export function useCalendarBlocksAndEvents({
   events: () => readonly Ev[];
 } {
   const t = useLangFunc();
+  const meetingsCache = useMeetingsCache();
   const {meetingCategoryDict, meetingTypeDict} = useFixedDictionaries();
   const locale = useLocale();
   const weekDaysCalculator = new WeekDaysCalculator(locale);
@@ -119,8 +121,10 @@ export function useCalendarBlocksAndEvents({
     }),
     dataQueryOptions: {refetchOnWindowFocus: true},
   });
+  const meetings = () => meetingsDataQuery.data?.data as readonly TQMeetingResource[] | undefined;
+  meetingsCache.register(meetings);
   const blocksAndEvents = createMemo(() => {
-    if (!meetingCategoryDict() || !meetingsDataQuery.data) {
+    if (!meetingCategoryDict() || !meetings()) {
       return {blocks: [], events: []};
     }
     const facilityWorkTimeBlocks: Bl[] = [];
@@ -128,7 +132,7 @@ export function useCalendarBlocksAndEvents({
     const facilityLeaveTimeBlocks: Bl[] = [];
     const staffLeaveTimeBlocks: Bl[] = [];
     const meetingEvents: Ev[] = [];
-    for (const meeting of meetingsDataQuery.data.data as readonly TQMeetingResource[]) {
+    for (const meeting of meetings()!) {
       const date = DateTime.fromISO(meeting.date);
       const isAllDay = meeting.startDayminute === 0 && meeting.durationMinutes === MAX_DAY_MINUTE;
       const allDayTimeSpan = (): AllDayTimeSpan => ({

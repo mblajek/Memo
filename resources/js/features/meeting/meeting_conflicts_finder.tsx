@@ -1,3 +1,4 @@
+import {calendarIcons} from "components/ui/icons";
 import {SmallSpinner} from "components/ui/Spinner";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
@@ -14,7 +15,6 @@ import {
   BiRegularCalendarCheck,
   BiRegularCalendarEvent,
   BiRegularCalendarExclamation,
-  BiRegularCalendarX,
 } from "solid-icons/bi";
 import {Accessor, For, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
@@ -282,7 +282,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
           messageKey: string,
         ) {
           if (conflictingLeaveTimes.length) {
-            iconType = BiRegularCalendarX;
+            iconType = calendarIcons.Conflict;
             styleClass = "text-orange-600";
             let message = t(messageKey);
             const notes = conflictingLeaveTimes.map(({notes}) => notes?.replaceAll("\n", ", ")).filter(Boolean);

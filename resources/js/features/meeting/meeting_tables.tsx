@@ -346,6 +346,18 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     },
     workTimeNotes: {name: "notes", columnGroups: "meeting_multicolumn"},
     resources: {name: "resources.*.dictId", columnGroups: "meeting_multicolumn"},
+    resourceConflictsExist: {
+      name: "resourceConflicts.exists",
+      columnGroups: "meeting_multicolumn",
+      initialVisible: false,
+      persistVisibility: false,
+    },
+    resourceConflictsResources: {
+      name: "resourceConflicts.*.resourceDictId",
+      columnGroups: "meeting_multicolumn",
+      initialVisible: false,
+      persistVisibility: false,
+    },
     actions: {
       name: "actions",
       isDataColumn: false,

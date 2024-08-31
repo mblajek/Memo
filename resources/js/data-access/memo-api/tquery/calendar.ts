@@ -34,7 +34,7 @@ const COLUMNS = [
   "isFacilityWide",
   "seriesNumber",
   "seriesCount",
-  "resourceConflicts.*.meetingId",
+  "resourceConflicts.*.resourceDictId",
 ] as const;
 
 export type SeriesNumberAndCount = {
@@ -48,7 +48,7 @@ export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_C
     readonly "staff": readonly TQMeetingAttendantResource[];
     readonly "clients": readonly TQMeetingAttendantResource[];
     readonly "isFacilityWide": boolean;
-    readonly "resourceConflicts.*.meetingId": readonly string[];
+    readonly "resourceConflicts.*.resourceDictId": readonly string[];
   };
 
 export interface TQMeetingAttendantResource extends MeetingStaffResource, MeetingClientResource {

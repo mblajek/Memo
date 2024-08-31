@@ -1,13 +1,18 @@
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
+import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
+import {calendarIcons} from "components/ui/icons";
+import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
+import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingResourceForCreate, MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {JSX, Show, VoidComponent} from "solid-js";
+import {useActiveFacility} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {AbstractMeetingForm, AbstractMeetingFormProps} from "./AbstractMeetingForm";
 import {MeetingAttendantsFields, getAttendantsSchemaPart} from "./MeetingAttendantsFields";
@@ -37,7 +42,9 @@ const getSchema = () =>
 export type MeetingFormType = z.infer<ReturnType<typeof getSchema>>;
 
 export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType>> = (props) => {
+  const t = useLangFunc();
   const {dictionaries, meetingStatusDict} = useFixedDictionaries();
+  const activeFacility = useActiveFacility();
 
   const ByMode: VoidComponent<{view?: JSX.Element; edit?: JSX.Element}> = (byModeProps) => (
     <Show when={props.viewMode} fallback={byModeProps.edit}>
@@ -113,12 +120,54 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
           <CheckboxField name="isRemote" />
           <RichTextViewEdit name="notes" viewMode={props.viewMode} staticPersistenceKey="meeting.notes" />
           <Show when={dictionaries()?.get("meetingResource").allPositions.length}>
-            <DictionarySelect
-              name="resources"
-              dictionary="meetingResource"
-              multiple
-              placeholder={EMPTY_VALUE_SYMBOL_STRING}
-            />
+            <div class="flex flex-col items-stretch">
+              <DictionarySelect
+                name="resources"
+                dictionary="meetingResource"
+                itemFunc={(pos, defItem) => {
+                  const conflict = () =>
+                    props.viewMode && props.meeting?.["resourceConflicts.*.resourceDictId"]?.includes(pos.id);
+                  return {
+                    ...defItem(),
+                    label: () => (
+                      <span class={conflict() ? "text-red-600 font-semibold" : undefined}>
+                        {defItem().text}
+                        <Show when={conflict()}>
+                          {" "}
+                          <calendarIcons.Conflict class="inlineIcon" />
+                        </Show>
+                      </span>
+                    ),
+                  };
+                }}
+                multiple
+                placeholder={EMPTY_VALUE_SYMBOL_STRING}
+              />
+              <Show
+                when={
+                  props.meeting?.["resourceConflicts.*.resourceDictId"]?.length
+                    ? props.meeting?.["resourceConflicts.*.resourceDictId"]
+                    : undefined
+                }
+              >
+                {(conflictingResourceIds) => (
+                  <LinkWithNewTabLink
+                    {...getCalendarViewLinkData(`/${activeFacility()?.url}/calendar`, {
+                      resources: conflictingResourceIds(),
+                      meeting: props.meeting,
+                    })}
+                    onClick={(e) => {
+                      // Cancel the form, but not when the new tab link is clicked.
+                      if (!e.currentTarget.target) {
+                        props.onCancel?.();
+                      }
+                    }}
+                  >
+                    {t("meetings.resource_conflicts.show_conflicts")}
+                  </LinkWithNewTabLink>
+                )}
+              </Show>
+            </div>
           </Show>
           <ByMode
             edit={

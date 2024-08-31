@@ -229,6 +229,8 @@ columns_search:
   placeholder: "Szukaj kolumny"
   no_results: "Brak pasujących kolumn"
 
+no_persist_visibility: "Ta kolumna jest domyślnie ukrywana, ponieważ uzyskiwanie jej wartości jest kosztowne obliczeniowo"
+
 rows__zero: "Brak wierszy"
 rows__one: "{{count, number}} wiersz"
 rows__few: "{{count, number}} wiersze"

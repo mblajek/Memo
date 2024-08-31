@@ -125,6 +125,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                             <div class="flex-grow">
                               <TextField
                                 class="w-full rounded-e-none"
+                                autocapitalize="off"
                                 name={`clients.${index}.role`}
                                 label=""
                                 small

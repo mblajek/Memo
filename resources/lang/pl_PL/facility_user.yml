@@ -39,6 +39,7 @@ client_groups:
 
 weekly_time_tables:
   reset_dates: "Przywróć domyślny zakres dat"
+  weekday_active: "zaznacz"
   overlapping: "Te godziny pracy pokrywają się lub stykają z innym wpisem.\nNależy zastąpić pokrywające się wpisy jednym."
   selected_week_click_to_deselect: "Zaznaczony tydzień\nKliknij aby cofnąć zaznaczenie"
   click_to_see_actions: "Kliknij aby zobaczyć możliwe akcje"
@@ -54,6 +55,7 @@ weekly_time_tables:
   disabled_title_only_works_forward: "Ta akcja działa tylko w przód w czasie"
   more_info: "Więcej informacji o zarządzaniu godzinami pracy placówki i pracowników"
   day_notes:
+    weekday_inactive: "Dzień tygodnia nie jest zaznaczony $t(em_dash) zostanie pominięty przez akcje"
     holiday: "Dzień wolny od pracy"
     working_on_facility_non_working_day: "Pracownik pracuje, chociaż placówka nie jest otwarta"
     facility_leave_time: "Placówka ma wolny dzień lub godziny"
@@ -69,6 +71,7 @@ weekly_time_tables:
       delete_count__few: "Usunięte zostaną {{count, number}} wpisy."
       delete_count__many: "Usuniętych zostanie {{count, number}} wpisów."
       skip_holidays: "Pomiń dni wolne od pracy"
+    active_weekdays: "Operacja zmodyfikuje tylko zaznaczone dni tygodnia:"
     paste:
       title: "Kopiowanie godzin pracy"
       confirm: "Kopiuj"

@@ -1,6 +1,7 @@
 import {VisibilityState} from "@tanstack/solid-table";
 import {cx, debouncedAccessor, useLangFunc} from "components/utils";
 import {OcSearch2} from "solid-icons/oc";
+import {RiSystemEyeCloseFill} from "solid-icons/ri";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
 import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
@@ -109,6 +110,17 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                       }
                     />{" "}
                     <ColumnName def={column.columnDef} />
+                    <Show
+                      when={
+                        visibility()?.[column.id] &&
+                        !defaultColumnVisibility?.()[column.id] &&
+                        !column.columnDef.meta?.config?.persistVisibility
+                      }
+                    >
+                      <span use:title={t("tables.no_persist_visibility")}>
+                        <RiSystemEyeCloseFill class="text-grey-text" size="12" />
+                      </span>
+                    </Show>
                     <Show when={groupingInfo()?.isGrouped}>
                       <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
                         {t("tables.column_groups.grouping_symbol")}

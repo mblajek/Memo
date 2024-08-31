@@ -45,7 +45,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
             {...htmlAttributes.merge(divProps, {
               class: cx(
                 "border rounded cursor-pointer select-none relative",
-                meeting()["resourceConflicts.*.meetingId"].length ? "!border-l-4 !border-red-600" : undefined,
+                meeting()["resourceConflicts.*.resourceDictId"].length ? "!border-l-4 !border-red-600" : undefined,
               ),
               style: {
                 height: `${props.height || DEFAULT_HEIGHT}px`,

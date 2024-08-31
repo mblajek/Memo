@@ -1,13 +1,14 @@
 import {A} from "@solidjs/router";
-import {CellContext, createSolidTable} from "@tanstack/solid-table";
+import {CellContext, createSolidTable, HeaderContext} from "@tanstack/solid-table";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
 import {Button} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
 import {capitalizeString} from "components/ui/Capitalize";
+import {CheckboxInput} from "components/ui/CheckboxInput";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {actionIcons, facilityIcons} from "components/ui/icons";
+import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
@@ -18,6 +19,7 @@ import {
   AUTO_SIZE_COLUMN_DEFS,
   createTableTranslations,
   getBaseTableOptions,
+  Header,
   PaddedCell,
   Table,
   TableTranslations,
@@ -38,14 +40,24 @@ import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tq
 import {dateToISO} from "data-access/memo-api/utils";
 import {DateTime, WeekdayNumbers} from "luxon";
 import {IconTypes} from "solid-icons";
-import {BiRegularCalendarX} from "solid-icons/bi";
 import {BsThreeDots} from "solid-icons/bs";
 import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
 import {IoArrowUndoOutline} from "solid-icons/io";
 import {OcArrowdown2, OcMovetobottom2} from "solid-icons/oc";
 import {TbArrowBigRight, TbNotes} from "solid-icons/tb";
-import {batch, createComputed, createMemo, createSignal, For, Show, splitProps, VoidComponent} from "solid-js";
+import {
+  Accessor,
+  batch,
+  createComputed,
+  createMemo,
+  createSignal,
+  For,
+  Show,
+  Signal,
+  splitProps,
+  VoidComponent,
+} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {useWeeklyTimeTablesActions} from "./weekly_time_tables_actions";
@@ -102,6 +114,11 @@ export default (() => {
   const [selection, setSelection] = createSignal<string>(SELECTION_FACILITY_WIDE);
   const [fromMonth, setFromMonth] = createSignal("");
   const [toMonth, setToMonth] = createSignal("");
+  const weekdaysSelection = new Map<WeekdayNumbers, Signal<boolean>>();
+  for (const {weekday} of weekDaysCalculator.weekdays) {
+    // eslint-disable-next-line solid/reactivity
+    weekdaysSelection.set(weekday, createSignal(true));
+  }
   const defaultFromMonth = createMemo(() => currentDate().minus({months: 1}).toFormat("yyyy-MM"));
   const defaultToMonth = createMemo(() => currentDate().plus({years: 1}).toFormat("yyyy-MM"));
   const isDefaultMonthsRange = () => fromMonth() === defaultFromMonth() && toMonth() === defaultToMonth();
@@ -276,17 +293,28 @@ export default (() => {
     sourceWeekDate: DateTime | undefined,
     target: DateTime | readonly [DateTime, DateTime],
   ) {
+    const weekdaysSelectionGetters = new Map<WeekdayNumbers, Accessor<boolean>>();
+    for (const [weekday, [getter, _setter]] of weekdaysSelection) {
+      weekdaysSelectionGetters.set(weekday, getter);
+    }
     if (
       await actions.confirmAndExecute(
         {
           sourceWeekDate,
           targetWeeksRange: target instanceof DateTime ? [target, target] : target,
+          weekdaysSelection: weekdaysSelectionGetters,
         },
         // eslint-disable-next-line solid/reactivity
         (weekDate) =>
           weeksData()
             .find((weekData) => weekData.weekDate.toMillis() === weekDate.toMillis())
-            ?.byWeekday.flatMap((dayData) => dayData?.workTimes || []) || [],
+            ?.byWeekday.flatMap((dayData, index) => {
+              if (index) {
+                const weekday = index as WeekdayNumbers;
+                return (weekdaysSelection.get(weekday)![0]() && dayData?.workTimes) || [];
+              }
+              return [];
+            }) || [],
       )
     ) {
       setSelectedWeekDate(undefined);
@@ -459,115 +487,139 @@ export default (() => {
         },
         minSize: 0,
       },
-      ...weekDaysCalculator.weekdays.map(({weekday}) => ({
-        id: `weekday-${weekday}`,
-        accessorFn: (d: WeekData) => d.byWeekday[weekday],
-        cell: (ctx: CellContext<WeekData, DayData | undefined>) => (
-          <Show
-            when={ctx.getValue()}
-            fallback={
-              <PaddedCell style={{background: CALENDAR_BACKGROUNDS.main}}>
-                <CenteredEmptyValueSymbol />
-              </PaddedCell>
-            }
-          >
-            {(dayData) => (
-              <PaddedCell
-                class="flex flex-col justify-between"
-                style={{
-                  background: [
-                    dayData().isFacilityWorkDay
-                      ? dayData().workTimes.length
-                        ? CALENDAR_BACKGROUNDS.staffWorkTime
-                        : CALENDAR_BACKGROUNDS.facilityWorkTime
-                      : CALENDAR_BACKGROUNDS.main,
-                    dayData().isFacilityLeaveDay ? CALENDAR_BACKGROUNDS.facilityLeaveTime : undefined,
-                    dayData().isStaffLeaveDay ? CALENDAR_BACKGROUNDS.staffLeaveTime : undefined,
-                    dayData().isHoliday ? CALENDAR_BACKGROUNDS.holiday : undefined,
-                  ]
-                    .reverse()
-                    .filter(NON_NULLABLE)
-                    .join(", "),
-                }}
-              >
-                <Show when={dayData().workTimes.length} fallback={<CenteredEmptyValueSymbol />}>
-                  <ul>
-                    <For each={dayData().workTimes}>
-                      {(meeting, index) => {
-                        const conflict = () =>
-                          dayData()
-                            .workTimes.slice(0, index())
-                            .some((m) => m.startDayminute + m.durationMinutes >= meeting.startDayminute);
-                        return (
-                          <li
-                            class={cx(
-                              "whitespace-nowrap",
-                              index() ? "-mt-1" : undefined,
-                              conflict() ? "text-red-600" : undefined,
-                            )}
-                          >
-                            <AlignedTime dayMinute={meeting.startDayminute} />
-                            {EN_DASH}
-                            <AlignedTime
-                              dayMinute={(meeting.startDayminute + meeting.durationMinutes) % MAX_DAY_MINUTE}
-                            />
-                            <Show when={meeting.notes}>
-                              <span use:title={meeting.notes}>
-                                <TbNotes class="inlineIcon strokeIcon" size="12" />
-                              </span>
-                            </Show>
-                            <Show when={conflict()}>
-                              <span use:title={t("facility_user.weekly_time_tables.overlapping")}>
-                                <BiRegularCalendarX class="inlineIcon" size="12" />
-                              </span>
-                            </Show>
-                          </li>
-                        );
-                      }}
-                    </For>
-                  </ul>
-                </Show>
-                <div
-                  class={cx(
-                    "self-end hover:text-grey-text",
-                    dayData().isHoliday ||
-                      (dayData().workTimes.length && !dayData().isFacilityWorkDay) ||
-                      dayData().isFacilityLeaveDay ||
-                      dayData().isStaffLeaveDay
-                      ? "text-grey-text"
-                      : "text-gray-300",
-                  )}
-                  style={{
-                    // Use negative margins instead of absolute position to avoid overlapping the fixed table header.
-                    "height": "10px",
-                    "margin-bottom": "-2px",
-                    "margin-top": "-8px",
-                    "margin-right": "-4px",
+      ...weekDaysCalculator.weekdays.map(({weekday}) => {
+        const [weekdaySelected, setWeekdaySelected] = weekdaysSelection.get(weekday)!;
+        return {
+          id: `weekday-${weekday}`,
+          accessorFn: (d: WeekData) => d.byWeekday[weekday],
+          header: (ctx: HeaderContext<WeekData, DayData | undefined>) => (
+            <Header
+              ctx={ctx}
+              extraLine={
+                <CheckboxInput
+                  checked={weekdaySelected()}
+                  onChecked={setWeekdaySelected}
+                  onDblClick={() => {
+                    // Select all if no other days are selected.
+                    const selectAll = [...weekdaysSelection].every(([wkd, [getter]]) => wkd === weekday || !getter());
+                    for (const [wkd, [_getter, setter]] of weekdaysSelection) {
+                      setter(selectAll || wkd === weekday);
+                    }
                   }}
-                  use:title={[
-                    capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})),
-                    dayData().isHoliday ? t("facility_user.weekly_time_tables.day_notes.holiday") : undefined,
-                    dayData().workTimes.length && !dayData().isFacilityWorkDay
-                      ? t("facility_user.weekly_time_tables.day_notes.working_on_facility_non_working_day")
-                      : undefined,
-                    dayData().isFacilityLeaveDay
-                      ? t("facility_user.weekly_time_tables.day_notes.facility_leave_time")
-                      : undefined,
-                    dayData().isStaffLeaveDay
-                      ? t("facility_user.weekly_time_tables.day_notes.staff_leave_time")
-                      : undefined,
-                  ]
-                    .filter(NON_NULLABLE)
-                    .join("\n")}
+                  label={<span class="font-normal">{t("facility_user.weekly_time_tables.weekday_active")}</span>}
+                />
+              }
+            />
+          ),
+          cell: (ctx: CellContext<WeekData, DayData | undefined>) => (
+            <Show
+              when={ctx.getValue()}
+              fallback={
+                <PaddedCell style={{background: CALENDAR_BACKGROUNDS.main}}>
+                  <CenteredEmptyValueSymbol />
+                </PaddedCell>
+              }
+            >
+              {(dayData) => (
+                <PaddedCell
+                  class="flex flex-col justify-between"
+                  style={{
+                    background: [
+                      dayData().isFacilityWorkDay
+                        ? dayData().workTimes.length
+                          ? CALENDAR_BACKGROUNDS.staffWorkTime
+                          : CALENDAR_BACKGROUNDS.facilityWorkTime
+                        : CALENDAR_BACKGROUNDS.main,
+                      dayData().isFacilityLeaveDay ? CALENDAR_BACKGROUNDS.facilityLeaveTime : undefined,
+                      dayData().isStaffLeaveDay ? CALENDAR_BACKGROUNDS.staffLeaveTime : undefined,
+                      dayData().isHoliday ? CALENDAR_BACKGROUNDS.holiday : undefined,
+                    ]
+                      .reverse()
+                      .filter(NON_NULLABLE)
+                      .join(", "),
+                  }}
                 >
-                  <ImInfo size="10" class="text-current" />
-                </div>
-              </PaddedCell>
-            )}
-          </Show>
-        ),
-        minSize: 130,
-      })),
+                  <Show when={dayData().workTimes.length} fallback={<CenteredEmptyValueSymbol />}>
+                    <ul>
+                      <For each={dayData().workTimes}>
+                        {(meeting, index) => {
+                          const conflict = () =>
+                            dayData()
+                              .workTimes.slice(0, index())
+                              .some((m) => m.startDayminute + m.durationMinutes >= meeting.startDayminute);
+                          return (
+                            <li
+                              class={cx(
+                                "whitespace-nowrap",
+                                index() ? "-mt-1" : undefined,
+                                conflict() ? "text-red-600" : "text-black",
+                                weekdaySelected() ? undefined : "text-opacity-20",
+                              )}
+                            >
+                              <AlignedTime dayMinute={meeting.startDayminute} />
+                              {EN_DASH}
+                              <AlignedTime
+                                dayMinute={(meeting.startDayminute + meeting.durationMinutes) % MAX_DAY_MINUTE}
+                              />
+                              <Show when={meeting.notes}>
+                                <span use:title={meeting.notes}>
+                                  <TbNotes class="inlineIcon strokeIcon" size="12" />
+                                </span>
+                              </Show>
+                              <Show when={conflict()}>
+                                <span use:title={t("facility_user.weekly_time_tables.overlapping")}>
+                                  <calendarIcons.Conflict class="inlineIcon" size="12" />
+                                </span>
+                              </Show>
+                            </li>
+                          );
+                        }}
+                      </For>
+                    </ul>
+                  </Show>
+                  <div
+                    class={cx(
+                      "self-end hover:text-grey-text",
+                      dayData().isHoliday ||
+                        (dayData().workTimes.length && !dayData().isFacilityWorkDay) ||
+                        dayData().isFacilityLeaveDay ||
+                        dayData().isStaffLeaveDay
+                        ? "text-grey-text"
+                        : "text-gray-300",
+                    )}
+                    style={{
+                      // Use negative margins instead of absolute position to avoid overlapping the fixed table header.
+                      "height": "10px",
+                      "margin-bottom": "-2px",
+                      "margin-top": "-8px",
+                      "margin-right": "-4px",
+                    }}
+                    use:title={[
+                      capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})),
+                      weekdaySelected() ? undefined : t("facility_user.weekly_time_tables.day_notes.weekday_inactive"),
+                      dayData().isHoliday ? t("facility_user.weekly_time_tables.day_notes.holiday") : undefined,
+                      dayData().workTimes.length && !dayData().isFacilityWorkDay
+                        ? t("facility_user.weekly_time_tables.day_notes.working_on_facility_non_working_day")
+                        : undefined,
+                      dayData().isFacilityLeaveDay
+                        ? t("facility_user.weekly_time_tables.day_notes.facility_leave_time")
+                        : undefined,
+                      dayData().isStaffLeaveDay
+                        ? t("facility_user.weekly_time_tables.day_notes.staff_leave_time")
+                        : undefined,
+                    ]
+                      .filter(NON_NULLABLE)
+                      .join("\n")}
+                  >
+                    <ImInfo size="10" class="text-current" />
+                  </div>
+                </PaddedCell>
+              )}
+            </Show>
+          ),
+          minSize: 130,
+        };
+      }),
       {
         id: "totalWorkTime",
         accessorFn: (d: WeekData) => {

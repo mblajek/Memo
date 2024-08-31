@@ -1,4 +1,5 @@
 import {AnchorProps} from "@solidjs/router";
+import {Modifiable} from "components/utils/modifiable";
 import {toPlainObject} from "components/utils/object_util";
 import {MeetingBasicData} from "features/meeting/meeting_basic_data";
 import {DateTime} from "luxon";
@@ -8,53 +9,51 @@ export interface CalendarLocationState {
   readonly meetingToShow?: MeetingBasicData;
 }
 
-export type CalendarView = {
-  readonly mode?: CalendarMode;
-  readonly date?: DateTime;
-  readonly resources?: readonly string[];
-};
-
-export type CalendarViewSearchParams = {
+export type CalendarSearchParams = {
   readonly mode?: CalendarMode;
   readonly date?: string;
   readonly resources?: string;
+  readonly meetingId?: string;
 };
-export type CalendarMeetingSearchParams = {
-  readonly meetingId: string;
-};
-
-export type CalendarSearchParams = Partial<CalendarViewSearchParams | CalendarMeetingSearchParams>;
-
-/** Prepared href for a particular view of a calendar page. */
-export function getCalendarViewLinkData(calendarHref: string, view: CalendarView) {
-  const params = new URLSearchParams();
-  if (view.mode) {
-    params.set("mode", view.mode);
-  }
-  if (view.date) {
-    params.set("date", view.date.toISODate());
-  }
-  if (view.resources) {
-    params.set("resources", view.resources.join(","));
-  }
-  return {href: `${calendarHref}?${params}`} satisfies Partial<AnchorProps>;
-}
 
 /**
- * Prepares href and state to be used when creating a link to a particular entity or meeting in the calendar.
+ * Prepares href and state to be used when creating a link to a particular view or meeting in the calendar.
  *
  * If the meeting is provided as basic data and the link is opened in the same window, the data is passed
  * through location state to avoid fetching it again. If only meeting id is provided, or if the link is
  * opened in a new window, the calendar takes the meeting id from the query string and fetches its data.
  */
-export function getMeetingLinkData(calendarHref: string, meeting: string | MeetingBasicData) {
-  const [meetingId, meetingBasicData] = typeof meeting === "string" ? [meeting, undefined] : [meeting.id, meeting];
-  return {
-    href: `${calendarHref}?${new URLSearchParams({meetingId} satisfies CalendarSearchParams)}`,
-    state: {
-      meetingToShow:
-        meetingBasicData &&
-        toPlainObject(meetingBasicData, [
+export function getCalendarViewLinkData(
+  calendarHref: string,
+  {
+    mode,
+    date,
+    resources,
+    meeting,
+  }: {
+    mode?: CalendarMode;
+    date?: DateTime;
+    resources?: readonly string[];
+    meeting?: string | MeetingBasicData;
+  },
+) {
+  const params: Modifiable<CalendarSearchParams> = {};
+  let state: CalendarLocationState | undefined;
+  if (mode) {
+    params.mode = mode;
+  }
+  if (date) {
+    params.date = date.toISODate();
+  }
+  if (resources) {
+    params.resources = resources.join(",");
+  }
+  if (meeting) {
+    const [meetingId, meetingBasicData] = typeof meeting === "string" ? [meeting, undefined] : [meeting.id, meeting];
+    params.meetingId = meetingId;
+    if (meetingBasicData) {
+      state = {
+        meetingToShow: toPlainObject(meetingBasicData, [
           "id",
           "typeDictId",
           "date",
@@ -63,6 +62,8 @@ export function getMeetingLinkData(calendarHref: string, meeting: string | Meeti
           "staff",
           "resources",
         ]),
-    } satisfies CalendarLocationState,
-  } satisfies Partial<AnchorProps>;
+      };
+    }
+  }
+  return {href: `${calendarHref}?${new URLSearchParams(params)}`, state} satisfies Partial<AnchorProps>;
 }
