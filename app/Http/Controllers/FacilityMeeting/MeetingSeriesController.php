@@ -261,9 +261,9 @@ class MeetingSeriesController extends ApiController
     ): JsonResponse {
         [
             'samples' => $samples,
-            'staff' => $withStaff,
-            'clients' => $withClients,
-            'resources' => $withResources,
+            'staff' => $staff,
+            'clients' => $clients,
+            'resources' => $resources,
             'ignore_meeting_ids' => $ignoreMeetingIds,
         ] = $this->validate([
             'samples' => Valid::list(['max:100']),
@@ -287,47 +287,60 @@ class MeetingSeriesController extends ApiController
             'ignore_meeting_ids' => [],
         ];
 
-        $response = [];
-        $unpackKeys = fn(string $key, array $items) => ['id' => $key, 'meetingIds' => $items];
-        $startMinutesFromDate = "datediff(`meetings`.`date`, ?) * 1440 + `meetings`.`start_dayminute`";
+        if (!($conflictTypes = array_keys(array_filter(compact(['staff', 'clients', 'resources']))))) {
+            return new JsonResponse(data: ['data' => array_fill_keys(array_keys($samples), new stdClass())]);
+        }
+
         $commonQuery = Meeting::query()
             ->where('facility_id', $this->getFacilityOrFail()->id)
             ->whereNotIn('id', $ignoreMeetingIds)
             ->where('status_dict_id', '!=', Meeting::STATUS_CANCELLED)
-            ->where('category_dict_id', '!=', Meeting::CATEGORY_SYSTEM)
-            ->with(($withStaff || $withClients) ? ['attendants'] : [])
-            ->with($withResources ? ['resources'] : []);
+            ->where('category_dict_id', '!=', Meeting::CATEGORY_SYSTEM);
+        $startMinutesFromDate = "datediff(`meetings`.`date`, ?) * 1440 + `meetings`.`start_dayminute`";
 
+        $meetingIdsGrouped = [];
         foreach (
             $samples as ['date' => $date, 'start_dayminute' => $startDayminute, 'duration_minutes' => $durationMinutes]
         ) {
             $dateObject = DateTimeImmutable::createFromFormat('Y-m-d', $date);
-            $staff = $withStaff ? [] : null;
-            $clients = $withClients ? [] : null;
-            $resources = $withResources ? [] : null;
+            $meetingIdsGrouped [] = $commonQuery->clone()
+                ->whereBetween('date', [$dateObject->modify('-1day'), $dateObject->modify('+1day')])
+                ->whereRaw("$startMinutesFromDate + `meetings`.`duration_minutes` > ?", [$date, $startDayminute])
+                ->whereRaw("$startMinutesFromDate < ?", [$date, $startDayminute + $durationMinutes])
+                ->get('id')->pluck('id')->toArray();
+        }
 
-            foreach (
-                $commonQuery->clone()
-                    ->whereBetween('date', [$dateObject->modify('-1day'), $dateObject->modify('+1day')])
-                    ->whereRaw("$startMinutesFromDate + `meetings`.`duration_minutes` > ?", [$date, $startDayminute])
-                    ->whereRaw("$startMinutesFromDate < ?", [$date, $startDayminute + $durationMinutes])
-                    ->get('id') as $meeting
-            ) {
-                foreach (($withStaff ? $meeting->getAttendants(AttendanceType::Staff) : []) as $attendant) {
-                    $staff[$attendant->user_id][] = $meeting->id;
-                }
-                foreach (($withClients ? $meeting->getAttendants(AttendanceType::Client) : []) as $attendant) {
-                    $clients[$attendant->user_id][] = $meeting->id;
-                }
-                foreach (($withResources ? $meeting->resources : []) as $resource) {
-                    $resources[$resource->resource_dict_id][] = $meeting->id;
+        $meetingsData = [];
+        foreach (
+            Meeting::query()->whereIn('id', array_unique(array_merge(...$meetingIdsGrouped)))
+                ->with(array_keys(array_filter(['attendants' => $staff || $clients, 'resources' => $resources])))
+                ->get('id') as $meeting
+        ) {
+            $meetingsData[$meeting->id] = array_combine(
+                $conflictTypes,
+                array_map(fn(string $conflictType) => match ($conflictType) {
+                    'staff' => $meeting->getAttendants(AttendanceType::Staff)->pluck('id')->toArray(),
+                    'clients' => $meeting->getAttendants(AttendanceType::Client)->pluck('id')->toArray(),
+                    'resources' => $meeting->resources->pluck('resource_dict_id')->toArray(),
+                }, $conflictTypes),
+            );
+        }
+
+        $response = [];
+        foreach ($meetingIdsGrouped as $meetingIdsGroup) {
+            $data = array_fill_keys($conflictTypes, []);
+            foreach ($meetingIdsGroup as $meetingId) {
+                foreach ($meetingsData[$meetingId] as $conflictType => $ids) {
+                    foreach ($ids as $id) {
+                        if (!array_key_exists($id, $data[$conflictType])) {
+                            $data[$conflictType][$id] = ['id' => $id, 'meetingIds' => [$meetingId]];
+                        } else {
+                            $data[$conflictType][$id]['meetingIds'][] = $meetingId;
+                        }
+                    }
                 }
             }
-
-            $response [] = array_map(
-                fn(array $array) => array_map($unpackKeys, array_keys($array), array_values($array)),
-                array_filter(['resources' => $resources, 'clients' => $clients, 'staff' => $staff], is_array(...)),
-            ) ?: (new stdClass());
+            $response[] = array_map(array_values(...), $data);
         }
         return new JsonResponse(data: ['data' => $response], status: 200);
     }
