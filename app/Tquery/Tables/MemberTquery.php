@@ -2,9 +2,11 @@
 
 namespace App\Tquery\Tables;
 
+use App\Models\User;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
+use App\Tquery\Engine\Bind\TqSingleBind;
 use App\Tquery\Engine\TqBuilder;
 
 final readonly class MemberTquery extends FacilityUserTquery
@@ -18,7 +20,7 @@ final readonly class MemberTquery extends FacilityUserTquery
             'user_id',
             left: true,
             inv: true,
-            condition: "`members`.`facility_id` = '{$this->facility->id}'"
+            condition: "`members`.`facility_id` = '{$this->facility->id}'",
         );
         $builder->join(
             TqTableAliasEnum::members,
@@ -27,12 +29,15 @@ final readonly class MemberTquery extends FacilityUserTquery
             left: true,
             inv: false,
         );
-        $builder->where(
-            query: fn(null $bind) => "`members`.`id` is not null or`users`.`global_admin_grant_id` is not null",
+        $builder->where( // return members, global admins and system
+            query: fn(TqSingleBind $bind) => //
+                "`members`.`id` is not null"
+                . " or `users`.`global_admin_grant_id` is not null"
+                . " or `users`.`id` = {$bind->use()}",
             or: false,
-            value: null,
+            value: User::SYSTEM,
             inverse: false,
-            nullable: false
+            nullable: false,
         );
 
         return $builder;
