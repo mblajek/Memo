@@ -194,7 +194,7 @@ class MeetingSeriesController extends ApiController
         summary: 'Find potential conflicts (system meetings ignored)',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['samples', 'staff', 'clients', 'resources'],
+                required: ['samples'],
                 properties: [
                     new OA\Property(
                         property: 'samples',
@@ -273,14 +273,17 @@ class MeetingSeriesController extends ApiController
                 'start_dayminute',
                 'duration_minutes',
             ]), 'samples.*.'),
-            'staff' => Valid::bool(),
-            'clients' => Valid::bool(),
-            'resources' => Valid::bool(),
+            'staff' => Valid::bool(sometimes: true),
+            'clients' => Valid::bool(sometimes: true),
+            'resources' => Valid::bool(sometimes: true),
             'ignore_meeting_ids' => Valid::list(sometimes: true, min: 0),
             'ignore_meeting_ids.*' => Valid::uuid([
                 Rule::exists('meetings', 'id')->where('facility_id', $this->getFacilityOrFail()->id),
             ], sometimes: true),
         ]) + [
+            'staff' => false,
+            'clients' => false,
+            'resources' => false,
             'ignore_meeting_ids' => [],
         ];
 
