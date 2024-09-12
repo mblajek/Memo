@@ -1,25 +1,18 @@
 <?php
 
-namespace App\Http\Controllers\Facility;
+namespace App\Http\Controllers\FacilityMeeting;
 
 use App\Exceptions\ApiException;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
 use App\Http\Resources\Meeting\MeetingResource;
-use App\Models\MeetingResource as MeetingResourceModel;
 use App\Models\Facility;
 use App\Models\Meeting;
-use App\Models\MeetingAttendant;
-use App\Rules\UniqueWithMemoryRule;
-use App\Rules\Valid;
-use App\Services\Meeting\MeetingCloneService;
 use App\Services\Meeting\MeetingService;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -258,160 +251,5 @@ class MeetingController extends ApiController
         );
         $meetingService->patch($meeting, $data);
         return new JsonResponse();
-    }
-
-    #[OA\Delete(
-        path: '/api/v1/facility/{facility}/meeting/{meeting}',
-        description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Delete meeting',
-        requestBody: new OA\RequestBody(
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(
-                        property: 'series',
-                        type: 'string',
-                        enum: ['one', 'from_this', 'from_next', 'all'],
-                    ),
-                    new OA\Property(
-                        property: 'otherIds',
-                        type: 'array',
-                        items: new OA\Items(type: 'string', format: 'uuid'),
-                    ),
-                ]
-            )
-        ),
-        tags: ['Facility meeting'],
-        parameters: [
-            new FacilityParameter(),
-            new OA\Parameter(
-                name: 'meeting',
-                description: 'Meeting id',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            ),
-        ],
-        responses: [
-            new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'data', properties: [
-                        new OA\Property(property: 'count', type: 'int'),
-                    ]),
-                ]
-            )
-            ),
-            new OA\Response(response: 401, description: 'Unauthorised'),
-        ]
-    )] /** @throws ApiException */
-    public function delete(
-        /** @noinspection PhpUnusedParameterInspection */
-        Facility $facility,
-        Meeting $meeting,
-    ): JsonResponse {
-        $meeting->belongsToFacilityOrFail();
-        $data = $this->validate([
-            'series' => Valid::string([
-                Rule::in($meeting->from_meeting_id ? ['one', 'from_this', 'from_next', 'all'] : ['one']),
-            ], sometimes: true),
-            'other_ids' => Valid::list(sometimes: true, min: 0),
-            'other_ids.*' => Valid::uuid([
-                Rule::exists('meetings', 'id')->where('facility_id', $this->getFacilityOrFail()->id),
-            ], sometimes: true),
-        ]);
-        /** @var 'one'|'from_this'|'from_next'|'all' $series */
-        $series = $data['series'] ?? 'one';
-        if ($series === 'one') {
-            $ids = [$meeting->id];
-        } else {
-            $query = DB::query()
-                ->select('meetings.id')
-                ->where('base_meeting.id', $meeting->id)
-                ->from('meetings as base_meeting')
-                ->join('meetings', 'meetings.from_meeting_id', 'base_meeting.from_meeting_id');
-            if ($series === 'from_this' || $series === 'from_next') {
-                $query->whereRaw(
-                    '(`base_meeting`.`date` < `meetings`.`date`'
-                    . ' or (`base_meeting`.`date` = `meetings`.`date`'
-                    . ' and (`base_meeting`.`start_dayminute` < `meetings`.`start_dayminute`'
-                    . ' or (`base_meeting`.`start_dayminute` = `meetings`.`start_dayminute`'
-                    . ' and `base_meeting`.`id` <= `meetings`.`id`))))',
-                );
-            }
-            if ($series === 'from_next') {
-                $query->whereRaw('`base_meeting`.`id` != `meetings`.`id`');
-            }
-            $ids = $query->get()->pluck('id')->toArray();
-        }
-        $ids = array_unique([...$ids, ...($data['other_ids'] ?? [])]);
-
-        DB::transaction(function () use ($ids) {
-            MeetingAttendant::query()->whereIn('meeting_id', $ids)->delete();
-            MeetingResourceModel::query()->whereIn('meeting_id', $ids)->delete();
-            Meeting::query()->whereIn('id', $ids)->delete();
-        });
-        return new JsonResponse(['data' => ['count' => count($ids)]]);
-    }
-
-    #[OA\Post(
-        path: '/api/v1/facility/{facility}/meeting/{meeting}/clone',
-        description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
-        summary: 'Clone meeting',
-        requestBody: new OA\RequestBody(
-            content: new OA\JsonContent(
-                required: ['dates', 'interval'],
-                properties: [
-                    new OA\Property(
-                        property: 'date', type: 'array',
-                        items: new OA\Items(type: 'string', example: '2023-12-13'),
-                    ),
-                    new OA\Property(property: 'interval', type: 'string', example: '1d', nullable: true),
-                ]
-            )
-        ),
-        tags: ['Facility meeting'],
-        parameters: [
-            new FacilityParameter(),
-            new OA\Parameter(
-                name: 'meeting',
-                description: 'Meeting id',
-                in: 'path',
-                required: true,
-                schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            ),
-        ],
-        responses: [
-            new OA\Response(response: 201, description: 'Created many', content: new OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', properties: [
-                    new OA\Property(
-                        property: 'ids', type: 'array', items: new OA\Items(
-                        type: 'string',
-                        example: '2023-12-13'
-                    ),
-                    ),
-                ],
-                ),
-            ])),
-            new OA\Response(response: 400, description: 'Bad Request'),
-            new OA\Response(response: 401, description: 'Unauthorised'),
-        ]
-    )] /** @throws Throwable */
-    public function clone(
-        /** @noinspection PhpUnusedParameterInspection */
-        Facility $facility,
-        Meeting $meeting,
-        MeetingCloneService $meetingCloneService,
-    ): JsonResponse {
-        $meeting->belongsToFacilityOrFail();
-        ['dates' => $dates, 'interval' => $interval] = $this->validate([
-            'dates' => Valid::list(['max:100']),
-            'dates.*' => Valid::date([new UniqueWithMemoryRule('dates')]),
-            'interval' => Valid::trimmed(['ascii'], nullable: true, max: 32),
-        ]);
-
-        $ids = $meetingCloneService->clone($meeting, $dates, $interval);
-
-        return new JsonResponse(data: ['data' => ['ids' => $ids]], status: 201);
     }
 }
