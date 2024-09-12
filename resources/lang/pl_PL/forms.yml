@@ -17,6 +17,8 @@ password_change:
 user:
   field_names:
     hasPassword: "posiada hasło logowania do Memo"
+  clear_password_expire_at: "Wyłącz wygasanie hasła"
+  password_expire_never: "Hasło nie wygaśnie."
   members_destructive_update_warning:
     header: "UWAGA!"
     line1: "Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki."

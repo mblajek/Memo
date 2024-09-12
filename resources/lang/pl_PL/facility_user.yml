@@ -38,8 +38,9 @@ client_groups:
   clients_count__many: "{{count, number}} członków"
 
 weekly_time_tables:
-  reset_dates: "Przywróć domyślny zakres dat"
-  weekday_active: "zaznacz"
+  reset_dates: "Ustaw domyślny zakres dat"
+  weekday_active_checkbox: "Akcje zostaną wykonane tylko na zaznaczonych dniach tygodnia.\nKliknij podwójnie aby zaznaczyć tylko ten dzień tygodnia."
+  click_to_show_week: "Kliknij aby edytować grafik na ten tydzień."
   overlapping: "Te godziny pracy pokrywają się lub stykają z innym wpisem.\nNależy zastąpić pokrywające się wpisy jednym."
   selected_week_click_to_deselect: "Zaznaczony tydzień\nKliknij aby cofnąć zaznaczenie"
   click_to_see_actions: "Kliknij aby zobaczyć możliwe akcje"

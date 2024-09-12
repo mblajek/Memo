@@ -1,8 +1,10 @@
 import {createMutation} from "@tanstack/solid-query";
-import {useLangFunc} from "components/utils";
+import {currentDate, useLangFunc} from "components/utils";
+import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {toastSuccess} from "components/utils/toast";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {useInvalidator} from "data-access/memo-api/invalidator";
+import {dateTimeToISO} from "data-access/memo-api/utils";
 import {VoidComponent} from "solid-js";
 import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
@@ -31,6 +33,9 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
 
   async function updateUser(values: UserFormType) {
     // First create the user fields (without the members).
+    const passwordExpireAt = values.passwordExpireAt
+      ? dateTimeToISO(dateTimeLocalInputToDateTime(values.passwordExpireAt))
+      : null;
     const {data} = await userMutation.mutateAsync({
       name: values.name,
       ...(values.email
@@ -39,8 +44,8 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
             hasEmailVerified: values.hasEmailVerified,
             hasPassword: values.hasPassword,
             ...(values.hasPassword && values.password
-              ? {password: values.password, passwordExpireAt: null}
-              : {password: null, passwordExpireAt: null}),
+              ? {password: values.password, passwordExpireAt}
+              : {password: null, passwordExpireAt}),
           }
         : {
             email: null,
@@ -75,6 +80,7 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
       hasEmailVerified: false,
       hasPassword: false,
       password: "",
+      passwordExpireAt: dateTimeToDateTimeLocalInput(currentDate().plus({days: 7})),
       // At least the members array is required, otherwise the members form part fails to realise
       // that it should be an array.
       members: [],
