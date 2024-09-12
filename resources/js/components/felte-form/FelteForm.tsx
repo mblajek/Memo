@@ -169,6 +169,9 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
                 attribute: getQuotedFieldName(error.field, {skipIfMissing: true}),
                 ...error.data,
                 ...(typeof error.data?.other === "string" ? {other: getQuotedFieldName(error.data.other)} : undefined),
+                ...(Array.isArray(error.data?.values)
+                  ? {values: error.data.values.map((v) => (typeof v === "string" ? getQuotedFieldName(v) : v))}
+                  : undefined),
                 ...(typeof error.data?.member_type === "string"
                   ? {member_type: t(`validation.special_fields.member_type.${error.data.member_type}`)}
                   : undefined),

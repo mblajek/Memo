@@ -1,11 +1,14 @@
 import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {QueryBarrier, useLangFunc} from "components/utils";
+import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {notFoundError} from "components/utils/NotFoundError";
 import {toastSuccess} from "components/utils/toast";
 import {Admin, User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
+import {dateTimeToISO} from "data-access/memo-api/utils";
+import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
 import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
@@ -59,6 +62,9 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
       }
     }
     // First mutate the user fields (without the members).
+    const passwordExpireAt = values.passwordExpireAt
+      ? dateTimeToISO(dateTimeLocalInputToDateTime(values.passwordExpireAt))
+      : null;
     await userMutation.mutateAsync({
       id: oldUser.id,
       name: values.name,
@@ -70,10 +76,10 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
             ...(values.hasPassword
               ? oldUser.hasPassword && !values.password
                 ? // The user has a password already and it is not changed.
-                  {}
+                  {passwordExpireAt}
                 : // New password or a password change.
-                  {password: values.password, passwordExpireAt: null}
-              : {password: null, passwordExpireAt: null}),
+                  {password: values.password, passwordExpireAt}
+              : {password: null, passwordExpireAt}),
           }
         : {
             email: null,
@@ -112,6 +118,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
       hasEmailVerified: u.hasEmailVerified,
       hasPassword: u.hasPassword,
       password: "",
+      passwordExpireAt: u.passwordExpireAt ? dateTimeToDateTimeLocalInput(DateTime.fromISO(u.passwordExpireAt)) : "",
       members: u.members.map(({facilityId, hasFacilityAdmin, isFacilityStaff, isFacilityClient}) => ({
         facilityId,
         hasFacilityAdmin,
