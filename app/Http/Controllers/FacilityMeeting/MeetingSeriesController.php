@@ -21,6 +21,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
+use stdClass;
 use Throwable;
 
 class MeetingSeriesController extends ApiController
@@ -193,6 +194,7 @@ class MeetingSeriesController extends ApiController
         summary: 'Find potential conflicts (system meetings ignored)',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
+                required: ['samples', 'staff', 'clients', 'resources'],
                 properties: [
                     new OA\Property(
                         property: 'samples',
@@ -223,7 +225,30 @@ class MeetingSeriesController extends ApiController
             new OA\Response(response: 200, description: 'Created many', content: new OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data',
-                    example: '{}',
+                    type: 'array',
+                    items: new OA\Items(properties: [
+                        new OA\Property(property: 'staff', type: 'array', items: new OA\Items(properties: [
+                            new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+                            new OA\Property(
+                                property: 'meetingIds', type: 'array', format: 'uuid',
+                                items: new OA\Items(type: 'string', format: 'uuid', example: 'UUID')
+                            ),
+                        ])),
+                        new OA\Property(property: 'clients', type: 'array', items: new OA\Items(properties: [
+                            new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+                            new OA\Property(
+                                property: 'meetingIds', type: 'array', format: 'uuid',
+                                items: new OA\Items(type: 'string', format: 'uuid', example: 'UUID')
+                            ),
+                        ])),
+                        new OA\Property(property: 'resources', type: 'array', items: new OA\Items(properties: [
+                            new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+                            new OA\Property(
+                                property: 'meetingIds', type: 'array', format: 'uuid',
+                                items: new OA\Items(type: 'string', format: 'uuid', example: 'UUID')
+                            ),
+                        ])),
+                    ])
                 ),
             ])),
             new OA\Response(response: 400, description: 'Bad Request'),
@@ -299,7 +324,7 @@ class MeetingSeriesController extends ApiController
             $response [] = array_map(
                 fn(array $array) => array_map($unpackKeys, array_keys($array), array_values($array)),
                 array_filter(['resources' => $resources, 'clients' => $clients, 'staff' => $staff], is_array(...)),
-            );
+            ) ?: (new stdClass());
         }
         return new JsonResponse(data: ['data' => $response], status: 200);
     }
