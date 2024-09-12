@@ -337,7 +337,9 @@ export default (() => {
           return (
             <PaddedCell class="flex items-center gap-1">
               <span
-                use:title={`${week().start.toLocaleString(DATE_FORMAT)} ${EN_DASH} ${week().end.toLocaleString(DATE_FORMAT)}`}
+                use:title={`${week().start.toLocaleString(DATE_FORMAT)} ${EN_DASH} ${week().end.toLocaleString(DATE_FORMAT)}\n${t(
+                  "facility_user.weekly_time_tables.click_to_show_week",
+                )}`}
               >
                 <A
                   {...getCalendarViewLinkData(`/${activeFacility()?.url}/admin/time-tables`, {
@@ -495,20 +497,23 @@ export default (() => {
           header: (ctx: HeaderContext<WeekData, DayData | undefined>) => (
             <Header
               ctx={ctx}
-              extraLine={
-                <CheckboxInput
-                  checked={weekdaySelected()}
-                  onChecked={setWeekdaySelected}
-                  onDblClick={() => {
-                    // Select all if no other days are selected.
-                    const selectAll = [...weekdaysSelection].every(([wkd, [getter]]) => wkd === weekday || !getter());
-                    for (const [wkd, [_getter, setter]] of weekdaysSelection) {
-                      setter(selectAll || wkd === weekday);
-                    }
-                  }}
-                  label={<span class="font-normal">{t("facility_user.weekly_time_tables.weekday_active")}</span>}
-                />
-              }
+              wrapIn={(header) => (
+                <div class="flex justify-between gap-1 items-center">
+                  <div class={weekdaySelected() ? undefined : "text-grey-text"}>{header}</div>
+                  <CheckboxInput
+                    checked={weekdaySelected()}
+                    onChecked={setWeekdaySelected}
+                    onDblClick={() => {
+                      // Select all if no other days are selected.
+                      const selectAll = [...weekdaysSelection].every(([wkd, [getter]]) => wkd === weekday || !getter());
+                      for (const [wkd, [_getter, setter]] of weekdaysSelection) {
+                        setter(selectAll || wkd === weekday);
+                      }
+                    }}
+                    title={t("facility_user.weekly_time_tables.weekday_active_checkbox")}
+                  />
+                </div>
+              )}
             />
           ),
           cell: (ctx: CellContext<WeekData, DayData | undefined>) => (

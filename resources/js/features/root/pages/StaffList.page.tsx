@@ -1,5 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
+import {CheckboxInput} from "components/ui/CheckboxInput";
 import {Email} from "components/ui/Email";
 import {cellFunc, createTableTranslations, PaddedCell, ShowCellVal} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
@@ -82,15 +83,11 @@ export default (() => {
       customSectionBelowTable={
         isFacilityAdmin() ? (
           <div class="flex items-center ml-2">
-            <label class="flex gap-1 items-center">
-              <input
-                type="checkbox"
-                id="staff_list_only_active"
-                checked={showInactive()}
-                onInput={() => setShowInactive((a) => !a)}
-              />
-              {t("facility_user.staff.list_show_inactive")}
-            </label>
+            <CheckboxInput
+              checked={showInactive()}
+              onChecked={setShowInactive}
+              label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
+            />
           </div>
         ) : undefined
       }
