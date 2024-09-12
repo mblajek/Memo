@@ -96,7 +96,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [MeetingController::class, 'list']);
             Route::post('/conflicts', [MeetingSeriesController::class, 'conflicts']);
             Route::patch('/{meeting}', [MeetingController::class, 'patch']);
-            Route::delete('/{meeting}', [MeetingController::class, 'delete']);
+            Route::delete('/{meeting}', [MeetingSeriesController::class, 'delete']);
             Route::post('/{meeting}/clone', [MeetingSeriesController::class, 'clone']);
             Route::get('/tquery', [MeetingTqueryController::class, 'get']);
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
