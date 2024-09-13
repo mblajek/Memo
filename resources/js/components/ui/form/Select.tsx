@@ -98,6 +98,7 @@ export interface MultipleSelectPropsPart {
   readonly onValueChange?: (value: readonly string[]) => void;
   /** Whether to show the button to clear all of the selected values. Defaults to true. */
   readonly showClearButton?: boolean;
+  readonly closeOnSelect?: boolean;
 }
 
 export type SingleSelectProps = SelectBaseProps & SingleSelectPropsPart;
@@ -233,6 +234,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         // Clear the filtering, in case the user wants to select another item later.
         if (typeof props.onFilterChange === "function") {
           props.onFilterChange?.(undefined);
+        }
+        if (props.multiple && value.length && props.closeOnSelect) {
+          setTimeout(() => api().close());
         }
       },
       // Keep the input empty when the value is selected. The selected value is displayed outside of
