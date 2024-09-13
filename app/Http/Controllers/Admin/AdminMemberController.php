@@ -31,8 +31,8 @@ class AdminMemberController extends ApiController
             content: new OA\JsonContent(
                 required: ['userId', 'facilityId', 'hasFacilityAdmin', 'isFacilityClient', 'isFacilityStaff'],
                 properties: [
-                    new OA\Property(property: 'userId', type: 'string', example: 'UUID'),
-                    new OA\Property(property: 'facilityId', type: 'string', example: 'UUID'),
+                    new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
+                    new OA\Property(property: 'facilityId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: true),
                     new OA\Property(property: 'isFacilityClient', type: 'bool', example: true),
                     new OA\Property(property: 'isFacilityStaff', type: 'bool', example: true),
@@ -41,7 +41,11 @@ class AdminMemberController extends ApiController
         ),
         tags: ['Admin'],
         responses: [
-            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'data', properties: [
+                    new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+                ]),
+            ])),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]

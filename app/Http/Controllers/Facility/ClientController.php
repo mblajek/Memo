@@ -83,7 +83,12 @@ class ClientController extends ApiController
         tags: ['Facility client'],
         parameters: [new FacilityParameter()],
         responses: [
-            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'data', properties: [
+                    new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+                    new OA\Property(property: 'shortCode', type: 'string', example: '0123'),
+                ]),
+            ])),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
@@ -110,7 +115,7 @@ class ClientController extends ApiController
             $member->save();
         });
         return new JsonResponse(data: [
-            'data' => ['id' => $user->id, 'clientId' => $client->id, 'shortCode' => $client->short_code],
+            'data' => ['id' => $user->id, 'shortCode' => $client->short_code],
         ], status: 201);
     }
 

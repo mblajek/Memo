@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Models\Enums\AttributeTable;
+use App\Models\Member;
 use App\Rules\Valid;
 use App\Utils\Date\DateHelper;
 use Illuminate\Http\JsonResponse;
@@ -27,7 +28,7 @@ class DeveloperController extends ApiController
         $status = Artisan::output();
         $statusHash = md5($status);
         if ($hash === $statusHash) {
-            Artisan::call('migrate', ['--step' => true]);
+            Artisan::call('migrate', array_fill_keys(['--step', '--force'], true));
             $statusHash = Artisan::output();
         }
         return new Response($status . $statusHash, headers: ['Content-Type' => 'text/plain']);
@@ -35,24 +36,34 @@ class DeveloperController extends ApiController
 
     public function overwriteMetadata(): JsonResponse
     {
-        // todo: access Client as User/Client using user.id, and return only user.id from POST client
+        $model = AttributeTable::{ucfirst(
+            $this->validate([
+                'model' => Valid::trimmed(
+                    [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))]
+                )
+            ])['model']
+        )};
+        $isClientOrStaff = $model === AttributeTable::Client || $model === AttributeTable::StaffMember;
+
         $data = $this->validate([
-            'model' => Valid::trimmed(
-                [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))]
-            ),
             'id' => Valid::uuid(),
+            'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], sometimes: !$isClientOrStaff),
             'created_at' => Valid::datetime(sometimes: true),
             'updated_at' => Valid::datetime(sometimes: true),
             'created_by' => Valid::uuid([Rule::exists('users', 'id')], sometimes: true),
             'updated_by' => Valid::uuid([Rule::exists('users', 'id')], sometimes: true),
         ]);
+
+        $id = (!$isClientOrStaff) ? $data['id'] : Member::query()->where('user_id', $data['id'])
+            ->where('facility_id', $data['facility_id'])->firstOrFail()
+            ->offsetGet(($model === AttributeTable::Client) ? 'client_id' : 'staff_member_id');
+
         $updateData = array_intersect_key($data, array_flip(['created_by', 'updated_by']))
             + array_map(
                 DateHelper::zuluToDbString(...),
                 array_intersect_key($data, array_flip(['created_at', 'updated_at']))
             );
-        $updated = DB::table(AttributeTable::{ucfirst($data['model'])}->value)
-            ->where('id', $data['id'])->update($updateData);
+        $updated = DB::table($model->value)->where('id', $id)->update($updateData);
         return new JsonResponse(data: ['data' => (bool)$updated], status: 200);
     }
 }
