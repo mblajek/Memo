@@ -40,7 +40,7 @@ class DeveloperController extends ApiController
             $this->validate([
                 'model' => Valid::trimmed(
                     [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))]
-                )
+                ),
             ])['model']
         )};
         $isClientOrStaff = $model === AttributeTable::Client || $model === AttributeTable::StaffMember;
