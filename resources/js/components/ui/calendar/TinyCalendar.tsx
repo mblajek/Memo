@@ -1,11 +1,14 @@
 import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
+import {BsCaretDown, BsCaretUp} from "solid-icons/bs";
 import {CgCalendar, CgCalendarToday} from "solid-icons/cg";
 import {FaSolidArrowLeft, FaSolidArrowRight} from "solid-icons/fa";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, mergeProps, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
+import {PopOver} from "../PopOver";
+import {SimpleMenu} from "../SimpleMenu";
 import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {useHolidays} from "./holidays";
@@ -35,6 +38,8 @@ interface Props extends htmlAttributes.div {
   /** Function called with the full range of visible days. */
   readonly onVisibleRangeChange?: (range: DaysRange) => void;
 }
+
+const YEARS_RANGE = [1900, 9999] as const;
 
 const DEFAULT_PROPS = {
   showWeekdayNames: false,
@@ -140,7 +145,40 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           <Show when={props.onMonthNameClick} fallback={<div>{props.month.monthLong}</div>}>
             <Button onClick={() => props.onMonthNameClick?.()}>{props.month.monthLong}</Button>
           </Show>
-          <div>{props.month.year}</div>
+          <PopOver trigger={(triggerProps) => <Button {...triggerProps()}>{props.month.year}</Button>}>
+            {(popOver) => {
+              const yearsRadius = 5;
+              const [centerYear, setCenterYear] = createSignal(props.month.year);
+              createComputed(() =>
+                setCenterYear(
+                  Math.min(Math.max(centerYear(), YEARS_RANGE[0] + yearsRadius), YEARS_RANGE[1] - yearsRadius),
+                ),
+              );
+              return (
+                <SimpleMenu>
+                  <Button class="flex justify-center" onClick={() => setCenterYear((y) => y - yearsRadius)}>
+                    <BsCaretUp />
+                  </Button>
+                  <For each={Array.from({length: 2 * yearsRadius + 1}, (_, i) => centerYear() + i - yearsRadius)}>
+                    {(year) => (
+                      <Button
+                        class={year === props.month.year ? "font-bold" : undefined}
+                        onClick={() => {
+                          popOver().close();
+                          props.setMonth(props.month.set({year}));
+                        }}
+                      >
+                        {year}
+                      </Button>
+                    )}
+                  </For>
+                  <Button class="flex justify-center" onClick={() => setCenterYear((y) => y + yearsRadius)}>
+                    <BsCaretDown />
+                  </Button>
+                </SimpleMenu>
+              );
+            }}
+          </PopOver>
         </div>
         <Button
           disabled={!retButtonAction()}

@@ -195,6 +195,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
                 ),
               })}
               multiple
+              closeOnSelect
               placeholder={EMPTY_VALUE_SYMBOL_STRING}
             />
             <HideableSection show={conflictingResourceIds().length}>

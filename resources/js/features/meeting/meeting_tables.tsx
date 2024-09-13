@@ -22,6 +22,7 @@ import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, createTableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
+import {SharedClientGroupLabel} from "../client/SharedClientGroupLabel";
 import {UserLink} from "../facility-users/UserLink";
 import {FacilityUserType} from "../facility-users/user_types";
 import {MeetingDeleteButton} from "./MeetingDeleteButton";
@@ -463,10 +464,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     attendantClientGroup: {
       name: "attendant.clientGroupId",
       columnDef: {
-        // TODO: Add a reasonable cell and export cell definition.
         cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
-            <ShowCellVal v={props.v}>{() => t("bool_values.yes")}</ShowCellVal>
+            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} />}</ShowCellVal>
           </PaddedCell>
         )),
         size: 250,

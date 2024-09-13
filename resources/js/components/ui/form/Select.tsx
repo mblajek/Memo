@@ -98,6 +98,7 @@ export interface MultipleSelectPropsPart {
   readonly onValueChange?: (value: readonly string[]) => void;
   /** Whether to show the button to clear all of the selected values. Defaults to true. */
   readonly showClearButton?: boolean;
+  readonly closeOnSelect?: boolean;
 }
 
 export type SingleSelectProps = SelectBaseProps & SingleSelectPropsPart;
@@ -234,6 +235,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         if (typeof props.onFilterChange === "function") {
           props.onFilterChange?.(undefined);
         }
+        if (props.multiple && value.length && props.closeOnSelect) {
+          setTimeout(() => api().close());
+        }
       },
       // Keep the input empty when the value is selected. The selected value is displayed outside of
       // the input.
@@ -283,8 +287,16 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     createComputed(
       on(
         () => formContext.form.data(props.name),
-        (formValue) =>
-          api().setValue(Array.isArray(formValue) ? (formValue as string[]) : formValue ? [formValue as string] : []),
+        (formValue) => {
+          if (Array.isArray(formValue)) {
+            api().setValue(formValue as string[]);
+          } else if (formValue == undefined) {
+            api().setValue([]);
+            formContext.form.setData(props.name, props.multiple ? [] : "");
+          } else {
+            api().setValue([formValue as string]);
+          }
+        },
       ),
     );
   else
