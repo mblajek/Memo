@@ -661,7 +661,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     viewWorkTime: (params) => workTimeModal.show(params),
   });
 
-  function meetingChangeEffects(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: string[]) {
+  function meetingChangeEffects(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: readonly string[]) {
     blinkMeeting(meeting.id);
     for (const id of otherMeetingIds || []) {
       blinkMeeting(id);
@@ -676,7 +676,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     ));
   }
 
-  function goToMeeting(meeting: MeetingBasicData, otherMeetingIds?: string[]) {
+  function goToMeeting(meeting: MeetingBasicData, otherMeetingIds?: readonly string[]) {
     const meetingDate = DateTime.fromISO(meeting.date);
     if (!daysSelection().contains(meetingDate)) {
       setDaysSelectionAndMonthFromDay(meetingDate);
@@ -829,7 +829,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const eventsFilter = (resourceId: string, isStaff: boolean) =>
     isStaff ? eventsByStaffFilter(resourceId) : eventsByMeetingResourceFilter(resourceId);
 
-  function onMeetingsCreated(firstMeeting: MeetingBasicData, otherMeetingIds?: string[]) {
+  function onMeetingsCreated(firstMeeting: MeetingBasicData, otherMeetingIds?: readonly string[]) {
     meetingChangeEffects(
       t(otherMeetingIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
       firstMeeting,

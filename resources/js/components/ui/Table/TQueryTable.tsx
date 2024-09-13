@@ -12,7 +12,7 @@ import {
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
-import {NON_NULLABLE, NUMBER_FORMAT, debouncedAccessor, useLangFunc} from "components/utils";
+import {NON_NULLABLE, NUMBER_FORMAT, delayedAccessor, useLangFunc} from "components/utils";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
@@ -529,7 +529,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   const columnFilterStates = new ColumnFilterStates();
   if (props.staticPersistenceKey) {
     // eslint-disable-next-line solid/reactivity
-    const columnSizing = debouncedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
+    const columnSizing = delayedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
     createLocalStoragePersistence<PersistentState>({
       key: `TQueryTable:${props.staticPersistenceKey}`,
       value: () => ({

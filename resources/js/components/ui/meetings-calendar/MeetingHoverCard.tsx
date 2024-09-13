@@ -25,7 +25,7 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
         <MeetingInSeriesInfo meeting={props.meeting} showLink={false} />
       </div>
       <Show when={props.meeting["resourceConflicts.*.resourceDictId"].length}>
-        <div class="flex items-center gap-1 font-bold text-red-600">
+        <div class="flex items-center gap-1 font-semibold text-red-600">
           <calendarIcons.Conflict class="text-current" size="30" />
           <div>{t("meetings.resource_conflicts.meeting_has_conflicts")}</div>
         </div>
@@ -64,7 +64,7 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
             map={({resourceDictId}) => {
               const conflict = () => props.meeting["resourceConflicts.*.resourceDictId"].includes(resourceDictId);
               return (
-                <span class={conflict() ? "text-red-600 font-semibold" : undefined}>
+                <span class={conflict() ? "text-red-600" : undefined}>
                   {dictionaries()?.getPositionById(resourceDictId).label}
                   <Show when={conflict()}>
                     {" "}

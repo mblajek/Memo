@@ -3,7 +3,7 @@ import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
 import {ClientResource, ClientResourceForCreate, ClientResourceForPatch} from "../resources/client.resource";
 import {Api} from "../types";
-import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
+import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
 import {FacilityUsers} from "./FacilityUsers";
 
 /**
@@ -47,7 +47,7 @@ export namespace FacilityClient {
       params: request,
     });
   const getClientsList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
-    getClientsListBase(request, config).then(parseGetListResponse);
+    getClientsListBase(request, config).then(parseListResponse);
   const getClient = createGetFromList(getClientsListBase);
 
   export const keys = {

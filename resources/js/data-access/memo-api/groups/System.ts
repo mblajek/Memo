@@ -5,7 +5,7 @@ import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
 import {FacilityResource} from "../resources/facility.resource";
 import {Api} from "../types";
-import {parseGetListResponse, parseGetResponse} from "../utils";
+import {parseGetResponse, parseListResponse} from "../utils";
 import {Facilities} from "./shared";
 
 /**
@@ -14,7 +14,7 @@ import {Facilities} from "./shared";
  */
 export namespace System {
   const getFacilitiesList = (config?: Api.Config) =>
-    V1.get<Api.Response.GetList<FacilityResource>>("/system/facility/list", config).then(parseGetListResponse);
+    V1.get<Api.Response.GetList<FacilityResource>>("/system/facility/list", config).then(parseListResponse);
   export const facilitiesQueryOptions = () =>
     ({
       queryFn: ({signal}) => getFacilitiesList({signal}),
@@ -25,7 +25,7 @@ export namespace System {
     }) satisfies SolidQueryOptions;
 
   const getDictionariesList = (config?: Api.Config) =>
-    V1.get<Api.Response.GetList<DictionaryResource>>("/system/dictionary/list", config).then(parseGetListResponse);
+    V1.get<Api.Response.GetList<DictionaryResource>>("/system/dictionary/list", config).then(parseListResponse);
   export const dictionariesQueryOptions = () =>
     ({
       queryFn: ({signal}) => getDictionariesList({signal}),
@@ -36,7 +36,7 @@ export namespace System {
     }) satisfies SolidQueryOptions;
 
   const getAttributesList = (config?: Api.Config) =>
-    V1.get<Api.Response.GetList<AttributeResource>>("/system/attribute/list", config).then(parseGetListResponse);
+    V1.get<Api.Response.GetList<AttributeResource>>("/system/attribute/list", config).then(parseListResponse);
   export const attributesQueryOptions = () =>
     ({
       queryFn: ({signal}) => getAttributesList({signal}),

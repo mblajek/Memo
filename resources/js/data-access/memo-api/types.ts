@@ -23,7 +23,8 @@ export namespace Api {
 
   export namespace Response {
     export type Get<T extends object> = {readonly data: T};
-    export type GetList<T extends Entity> = {readonly data: T[]};
+    export type List<T> = {readonly data: T[]};
+    export type GetList<T extends Entity> = List<T>;
     export type Post<T = Entity> = {readonly data: T};
     export type Delete<T extends object> = {readonly data: T};
   }

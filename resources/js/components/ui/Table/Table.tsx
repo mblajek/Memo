@@ -13,7 +13,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import {currentTime, cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {currentTime, cx, delayedAccessor, useLangFunc} from "components/utils";
 import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
@@ -232,9 +232,9 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
       [
         scrollingWrapper,
         isScrolling,
-        // Allow multiple steps to accummulate before this is triggered. This improves smoothness.
+        // Allow multiple steps to accumulate before this is triggered. This improves smoothness.
         // eslint-disable-next-line solid/reactivity
-        debouncedAccessor(desiredScrollX, {
+        delayedAccessor(desiredScrollX, {
           timeMs: 100,
           outputImmediately: (x) => x === undefined,
         }),

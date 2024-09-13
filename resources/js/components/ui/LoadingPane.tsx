@@ -1,5 +1,5 @@
 import {Show, VoidComponent} from "solid-js";
-import {cx, debouncedAccessor} from "../utils";
+import {cx, delayedAccessor} from "../utils";
 import {useMutationsTracker} from "../utils/mutations_tracker";
 import {BigSpinner} from "./Spinner";
 
@@ -13,7 +13,10 @@ interface LoadingPaneProps {
  */
 export const LoadingPane: VoidComponent<LoadingPaneProps> = (props) => {
   // eslint-disable-next-line solid/reactivity
-  const shown = debouncedAccessor(() => props.isLoading, {timeMs: 1000, outputImmediately: (isLoading) => !!isLoading});
+  const shown = delayedAccessor(() => props.isLoading, {
+    timeMs: 1000,
+    outputImmediately: (isLoading) => !!isLoading,
+  });
   return (
     <div
       class={cx(

@@ -46,7 +46,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   };
   const isDefaultSizing = () => !Object.keys(table.getState().columnSizing).some(matchesSearch);
   // eslint-disable-next-line solid/reactivity
-  const debouncedVisibility = debouncedAccessor(visibility, {outputImmediately: () => isDefaultVisibility()});
+  const debouncedVisibility = debouncedAccessor(visibility, {timeMs: 500});
   createComputed(() => {
     const vis = debouncedVisibility();
     if (vis) {

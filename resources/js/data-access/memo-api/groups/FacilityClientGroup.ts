@@ -3,7 +3,7 @@ import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
 import {ClientGroupResource, ClientGroupResourceForCreate} from "../resources/clientGroup.resource";
 import {Api} from "../types";
-import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
+import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
 
 export namespace FacilityClientGroup {
   export const createClientGroup = (group: Api.Request.Create<ClientGroupResourceForCreate>, config?: Api.Config) =>
@@ -19,7 +19,7 @@ export namespace FacilityClientGroup {
       params: request,
     });
   const getClientGroupsList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
-    getClientGroupsListBase(request, config).then(parseGetListResponse);
+    getClientGroupsListBase(request, config).then(parseListResponse);
   const getClient = createGetFromList(getClientGroupsListBase);
 
   export const keys = {

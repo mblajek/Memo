@@ -36,10 +36,10 @@ export const AbstractMeetingForm = <MeetingFormType extends Obj>(allProps: Props
     "onViewModeChange",
     "onCancel",
     "schema",
-    "children",
   ]);
-  // eslint-disable-next-line solid/reactivity
-  const formProps: FormConfigWithoutTransformFn<MeetingFormType> = formPropsObj;
+  const formProps: FormConfigWithoutTransformFn<MeetingFormType> & Pick<FormProps<MeetingFormType>, "children"> =
+    // eslint-disable-next-line solid/reactivity
+    formPropsObj;
   return (
     <FelteForm
       id={props.id}
@@ -68,8 +68,6 @@ export const AbstractMeetingForm = <MeetingFormType extends Obj>(allProps: Props
         }
       }}
       disabled={props.viewMode}
-    >
-      {props.children}
-    </FelteForm>
+    />
   );
 };

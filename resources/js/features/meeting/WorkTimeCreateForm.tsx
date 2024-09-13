@@ -18,7 +18,7 @@ import {getStaffValueForCreate} from "./WorkTimeStaffSelectField";
 
 export interface WorkTimeCreateFormProps {
   readonly initialValues?: Partial<WorkTimeFormType>;
-  readonly onSuccess?: (meeting: MeetingBasicData, cloneIds?: string[]) => void;
+  readonly onSuccess?: (meeting: MeetingBasicData, cloneIds?: readonly string[]) => void;
   readonly onCancel?: () => void;
 }
 
