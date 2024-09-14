@@ -79,7 +79,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
           samples: [
             {
               date: delayedDateAndTime().date ? dateToISO(DateTime.fromISO(delayedDateAndTime().date)) : "",
-              startDayminute: startDayMinute || -1,
+              startDayminute: startDayMinute ?? -1,
               durationMinutes: durationMinutes || 5,
             },
           ],
