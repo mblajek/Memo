@@ -5,7 +5,7 @@ import {title} from "../title";
 import {TranslatedText} from "../TranslatedText";
 import {LabelOverride, applyLabelOverride, getDirectLabelOverride} from "./labels";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 interface Props extends htmlAttributes.label {
   readonly fieldName: string;

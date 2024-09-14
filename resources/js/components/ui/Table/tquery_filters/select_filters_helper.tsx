@@ -8,7 +8,7 @@ import {VoidComponent} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
 import {SelectItemLabelOnList, makeSelectItem} from "./select_items";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 export function useSingleSelectFilterHelper() {
   const t = useLangFunc();

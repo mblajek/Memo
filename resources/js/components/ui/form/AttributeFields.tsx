@@ -48,7 +48,7 @@ import {TQuerySelect} from "./TQuerySelect";
 import {TextField} from "./TextField";
 import {SimpleMultiField} from "./multi_fields";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 export type AttributesType = Record<string, unknown>;
 export const ATTRIBUTES_SCHEMA = z.record(z.unknown());

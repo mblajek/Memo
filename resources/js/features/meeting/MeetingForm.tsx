@@ -28,7 +28,7 @@ import {MeetingTypeFields} from "./MeetingTypeFields";
 import {MeetingStatusInfoIcon} from "./attendance_status_info";
 import {getMeetingTimeDurationData, getMeetingTimeFieldsSchemaPart} from "./meeting_time_controller";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 const getSchema = () =>
   z

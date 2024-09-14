@@ -84,7 +84,7 @@ import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
 import {ColumnFilterStates} from "./tquery_filters/column_filter_states";
 import {FilterControl} from "./tquery_filters/types";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {

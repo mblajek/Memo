@@ -22,7 +22,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "./attendance_status_info";
 import {getMeetingTimeInterval} from "./meeting_time_controller";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 /**
  * The information about the currently created/edited meeting to calculate conflicts for.
@@ -50,6 +50,7 @@ interface ConflictingLeaveTime {
 }
 
 /** The list of columns to fetch. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const COLUMNS = [
   "id",
   "date",

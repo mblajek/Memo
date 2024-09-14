@@ -1,6 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
-import {ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
+import {AccessorKeyColumnDefBase, ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
@@ -37,7 +37,7 @@ export default (() => {
     } satisfies Partial<IdentifiedColumnDef<T>>;
   }
 
-  function getCommonColumns<E extends Dictionary | Position>(h: ColumnHelper<E>) {
+  function getCommonColumns<E extends Dictionary | Position>(h: ColumnHelper<E>): AccessorKeyColumnDefBase<E>[] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const helper = h as ColumnHelper<any>;
     return [

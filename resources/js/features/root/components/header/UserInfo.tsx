@@ -20,7 +20,7 @@ import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, createMemo
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {ThemeIcon, useThemeControl} from "../theme_control";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 interface WindowWithDeveloperLogin {
   developerLogin(developer: boolean): void;

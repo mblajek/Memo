@@ -32,7 +32,7 @@ import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 type TQFullMeetingResource = TQMeetingResource & {
   readonly attendants: readonly TQMeetingAttendantResource[];

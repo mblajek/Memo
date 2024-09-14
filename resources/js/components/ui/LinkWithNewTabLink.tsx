@@ -4,7 +4,7 @@ import {mergeProps, ParentComponent, Show, splitProps} from "solid-js";
 import {useLangFunc} from "../utils";
 import {title} from "./title";
 
-const _DIRECTIVES_ = null && title;
+const _DIRECTIVES_ = () => title;
 
 interface Props extends AnchorProps {
   /** Whether the content should be a link to open in the same tab. Default: true. */
