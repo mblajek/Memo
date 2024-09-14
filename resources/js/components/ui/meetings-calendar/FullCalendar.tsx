@@ -68,7 +68,7 @@ import {
   getRandomEventColors,
 } from "./colors";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 interface Props extends htmlAttributes.div {
   readonly staticCalendarFunction: CalendarFunction;

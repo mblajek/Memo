@@ -62,7 +62,7 @@ import {Dynamic} from "solid-js/web";
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {useWeeklyTimeTablesActions} from "./weekly_time_tables_actions";
 
-const _DIRECTIVES = () => title;
+type _Directives = typeof title;
 
 const RESOURCE_COLUMNS = [
   "id",

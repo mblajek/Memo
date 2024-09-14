@@ -11,7 +11,7 @@ import {For, Show, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {UserLink} from "../facility-users/UserLink";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 interface Props {
   readonly clientId: string;

@@ -7,7 +7,7 @@ import {SeriesNumberAndCount, TQMeetingResource} from "data-access/memo-api/tque
 import {Match, Show, Switch, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 interface Props {
   readonly meeting: Partial<Pick<TQMeetingResource, "fromMeetingId" | "interval" | "seriesNumber" | "seriesCount">>;

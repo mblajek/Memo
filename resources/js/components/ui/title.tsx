@@ -111,7 +111,7 @@ const tippySingletonManager = new TippySingletonManager();
  *
  *     import {title} from "components/ui/title";
  *     // ...
- *     const _DIRECTIVES_ = () => title; // Avoid import auto-removal and support tree-shaking.
+ *     type _Directives = typeof title; // Avoid import auto-removal and support tree-shaking.
  *     // ...
  *     <element use:title="The title text" />
  *

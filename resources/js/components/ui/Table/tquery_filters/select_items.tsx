@@ -4,7 +4,7 @@ import {title} from "components/ui/title";
 import {cx} from "components/utils";
 import {Match, Show, Switch, VoidComponent} from "solid-js";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 interface SelectItemSymbolProps {
   readonly symbol: string;

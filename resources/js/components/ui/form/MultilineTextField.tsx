@@ -13,7 +13,7 @@ import {labelIdForField} from "./FieldLabel";
 import {LabelOverride} from "./labels";
 import {TRIM_ON_BLUR, trimInput} from "./util";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 export interface MultilineTextFieldProps
   extends Pick<

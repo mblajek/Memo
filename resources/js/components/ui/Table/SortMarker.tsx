@@ -7,7 +7,7 @@ import {Dynamic} from "solid-js/web";
 import {title} from "../title";
 import {useTable} from "./TableContext";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 interface Props {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
