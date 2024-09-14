@@ -141,8 +141,8 @@ export class Attribute<T = unknown> {
           return `???.${n}`;
         }
         return [
-          `attributes.attributes.${resource.model}.${n}.name`,
-          `attributes.attributes.generic.${n}.name`,
+          `attributes.attributes.${resource.model}.${n}`,
+          `attributes.attributes.generic.${n}`,
           `models.${resource.model}.${resource.apiName}`,
           `models.generic.${resource.apiName}`,
           resource.dictionaryId
