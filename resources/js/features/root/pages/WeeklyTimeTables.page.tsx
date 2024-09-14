@@ -638,6 +638,17 @@ export default (() => {
           }
           return total;
         },
+        header: (ctx: HeaderContext<WeekData, DayData | undefined>) => (
+          <Header
+            ctx={ctx}
+            wrapIn={(header) => (
+              <div class="flex gap-1 items-center">
+                {header}
+                <InfoIcon title={translations.columnName("totalWorkTime.desc")} />
+              </div>
+            )}
+          />
+        ),
         cell: (ctx: CellContext<WeekData, number>) => (
           <PaddedCell class="text-right">
             <Show when={ctx.getValue()} fallback={<EmptyValueSymbol />}>
