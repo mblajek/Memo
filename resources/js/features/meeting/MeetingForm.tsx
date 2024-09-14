@@ -124,7 +124,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
             <CheckboxField name="createSeries" />
             <Show when={form.data("date")}>
               {(formData) => (
-                <fieldset data-felte-keep-on-remove>
+                <fieldset data-felte-keep-on-remove disabled={!form.data("createSeries")}>
                   <HideableSection show={form.data("createSeries")}>
                     <div class="pl-2 border-l-4 border-gray-400">
                       <MeetingSeriesControls startDate={DateTime.fromISO(formData())} compact />
