@@ -31,7 +31,7 @@ class AdminUserController extends ApiController
         parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data', type: 'array', items: new OA\Items(
                     ref: '#/components/schemas/AdminUserResource'

@@ -56,7 +56,7 @@ class SystemController extends ApiController
         tags: ['System'],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/FacilityResource'),
                 ),
@@ -77,7 +77,7 @@ class SystemController extends ApiController
         parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data', type: 'array', items: new OA\Items(
                     ref: '#/components/schemas/DictionaryResource'
@@ -104,7 +104,7 @@ class SystemController extends ApiController
         parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data', type: 'array', items: new OA\Items(
                     ref: '#/components/schemas/AttributeResource'
@@ -128,7 +128,7 @@ class SystemController extends ApiController
         summary: 'System status',
         tags: ['System'],
         responses: [
-            new OA\Response(response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+            new OA\Response(response: 200, description: 'OK', content: new OA\JsonContent(properties: [
                 new OA\Property(property: 'data', type: 'array', items: new OA\Items(properties: [
                     new OA\Property(property: 'version', type: 'string', example: '1.2.3'),
                     new OA\Property(property: 'appEnv', type: 'string', example: 'production'),

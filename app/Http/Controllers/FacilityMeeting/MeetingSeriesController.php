@@ -65,7 +65,7 @@ class MeetingSeriesController extends ApiController
         ],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(
+                response: 200, description: 'OK', content: new OA\JsonContent(
                 properties: [
                     new OA\Property(property: 'data', properties: [
                         new OA\Property(property: 'count', type: 'int'),
