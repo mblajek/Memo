@@ -1,5 +1,5 @@
 import {Accessor, createEffect} from "solid-js";
-import {then} from "../utils/async";
+import {asyncThen} from "../utils/async";
 import {RichJSONValue, Serialiser, richJSONSerialiser} from "./serialiser";
 import {Storage} from "./storage";
 import {Version, isDisabledVersion, joinVersions} from "./version";
@@ -42,7 +42,7 @@ export function createPersistence<T, S = string>({
   if (isDisabledVersion(fullVersion)) {
     return;
   }
-  then(storage.load(fullVersion), (loaded) => {
+  asyncThen(storage.load(fullVersion), (loaded) => {
     const stored = deserialise<T, S>(serialiser, loaded);
     if (stored !== undefined) {
       try {

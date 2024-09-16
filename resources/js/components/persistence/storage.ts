@@ -1,6 +1,6 @@
 import {User} from "data-access/memo-api/groups";
 import {onCleanup} from "solid-js";
-import {OrPromise, then} from "../utils/async";
+import {OrPromise, asyncThen} from "../utils/async";
 import {
   Version,
   createVersionedStringValue,
@@ -43,7 +43,7 @@ export function createVersioningStorage(base: NonVersioningStorage, addedVersion
       if (isDisabledVersion(fullVersion)) {
         return undefined;
       }
-      return then(base.load(), (value) => readVersionedStringValue(value, fullVersion));
+      return asyncThen(base.load(), (value) => readVersionedStringValue(value, fullVersion));
     },
     clear() {
       base.clear();
@@ -68,7 +68,7 @@ export function createCachingStorage(base: NonVersioningStorage, cache: StorageC
       const cached = cache.load();
       return cached
         ? cached.value
-        : then(base.load(), (value) => {
+        : asyncThen(base.load(), (value) => {
             cache.store(value);
             return value;
           });
