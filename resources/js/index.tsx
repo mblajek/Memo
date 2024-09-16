@@ -2,7 +2,6 @@
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
 import {InitializeTanstackQuery} from "components/utils";
-import {Settings} from "luxon";
 import {DEV, ErrorBoundary, Show} from "solid-js";
 import {DelegatedEvents, render} from "solid-js/web";
 import {Toaster} from "solid-toast";
@@ -14,19 +13,16 @@ import {LocaleContext} from "./components/utils/LocaleContext";
 import {DictionariesAndAttributesProvider} from "./data-access/memo-api/dictionaries_and_attributes_context";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
+import {luxonInit} from "./luxon_init";
 
 const root = document.getElementById("root");
-
-if (!(root instanceof HTMLElement)) throw new Error("Root element not found.");
+if (!(root instanceof HTMLElement)) {
+  throw new Error("Root element not found.");
+}
 
 const TOAST_DURATION_SECS = 10;
 
-Settings.throwOnInvalid = true;
-declare module "luxon" {
-  interface TSSettings {
-    throwOnInvalid: true;
-  }
-}
+luxonInit();
 
 // Allow stopping propagation of events (see https://github.com/solidjs/solid/issues/1786#issuecomment-1694589801).
 DelegatedEvents.clear();

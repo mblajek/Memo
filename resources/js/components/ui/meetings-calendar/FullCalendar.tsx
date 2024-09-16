@@ -1,7 +1,7 @@
 import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {CalendarColumn, ColumnsCalendar} from "components/ui/calendar/ColumnsCalendar";
 import {MonthCalendar, MonthCalendarDay, getMonthCalendarRange} from "components/ui/calendar/MonthCalendar";
 import {MonthCalendarCell} from "components/ui/calendar/MonthCalendarCell";
@@ -440,8 +440,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   if (props.staticSelectionPersistenceKey) {
-    createLocalStoragePersistence<PersistentSelectionState>({
-      key: `FullCalendar:${props.staticSelectionPersistenceKey}`,
+    createPersistence<PersistentSelectionState>({
+      storage: localStorageStorage(`FullCalendar:${props.staticSelectionPersistenceKey}`),
       value: () => ({
         today: currentDate().toISODate(),
         mode: mode(),
@@ -496,13 +496,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           },
         });
       },
-      serialiser: richJSONSerialiser<PersistentSelectionState>(),
       version: [PERSISTENCE_SELECTION_VERSION],
     });
   }
   if (props.staticPresentationPersistenceKey) {
-    createLocalStoragePersistence<PersistentPresentationState>({
-      key: `FullCalendar:${props.staticPresentationPersistenceKey}`,
+    createPersistence<PersistentPresentationState>({
+      storage: localStorageStorage(`FullCalendar:${props.staticPresentationPersistenceKey}`),
       value: () => ({
         pixelsPerHour: pixelsPerHour(),
         allDayEventsHeight: allDayEventsHeight(),
@@ -515,7 +514,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setMonthEventsHeight(state.monthEventsHeight || MONTH_EVENTS_HEIGHT_RANGE.def);
         });
       },
-      serialiser: richJSONSerialiser<PersistentPresentationState>(),
       version: [PERSISTENCE_PRESENTATION_VERSION],
     });
   }

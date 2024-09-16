@@ -10,8 +10,8 @@ import {
   createSolidTable,
 } from "@tanstack/solid-table";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {NON_NULLABLE, NUMBER_FORMAT, delayedAccessor, useLangFunc} from "components/utils";
 import {
   PartialAttributesSelection,
@@ -530,8 +530,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   if (props.staticPersistenceKey) {
     // eslint-disable-next-line solid/reactivity
     const columnSizing = delayedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
-    createLocalStoragePersistence<PersistentState>({
-      key: `TQueryTable:${props.staticPersistenceKey}`,
+    createPersistence<PersistentState>({
+      storage: localStorageStorage(`TQueryTable:${props.staticPersistenceKey}`),
       value: () => ({
         colVis: columnVisibility[0](),
         colSize: columnSizing() || {},
@@ -549,7 +549,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         columnVisibility[1](colVis);
         onMount(() => table()!.setColumnSizing(value.colSize || {}));
       },
-      serialiser: richJSONSerialiser<PersistentState>(),
       version: [PERSISTENCE_VERSION],
     });
   }

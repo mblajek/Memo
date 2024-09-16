@@ -1,6 +1,6 @@
 import {useFormContext} from "components/felte-form/FelteForm";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {userStorageStorage} from "components/persistence/storage";
 import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {RiArrowsArrowLeftSLine, RiArrowsArrowRightSLine} from "solid-icons/ri";
 import {Show, VoidComponent, createSignal, splitProps} from "solid-js";
@@ -45,11 +45,10 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
   const t = useLangFunc();
   const [showPreview, setShowPreview] = createSignal(props.initialShowPreview ?? true);
   const {form} = useFormContext();
-  createLocalStoragePersistence<PersistentState>({
-    key: `RichTextFieldPreview:${props.staticPersistenceKey || "_"}`,
+  createPersistence<PersistentState>({
+    storage: userStorageStorage(`RichTextFieldPreview:${props.staticPersistenceKey || "_"}`),
     onLoad: (value) => setShowPreview(value.preview),
     value: () => ({preview: showPreview()}),
-    serialiser: richJSONSerialiser<PersistentState>(),
     version: [1],
   });
   const text = () => {
@@ -99,7 +98,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
             </Show>
           </Button>
           <Show when={showPreview()}>
-            <div class="w-full h-full px-1 overflow-auto" use:title={t("preview")}>
+            <div class="w-full h-full px-1 overflow-auto" use:title={[t("preview"), {delay: [1000, undefined]}]}>
               <div class="max-h-0 min-h-max">
                 <RichTextView text={text()} fallback={<EmptyValueSymbol />} />
               </div>

@@ -1,3 +1,6 @@
+import {User} from "data-access/memo-api/groups";
+import {onCleanup} from "solid-js";
+import {OrPromise, then} from "../utils/async";
 import {
   Version,
   createVersionedStringValue,
@@ -13,13 +16,13 @@ export interface Storage<S = string> {
    * Loads and returns the value. Returns undefined if no value is found or a value stored with
    * a different version is found.
    */
-  load(currentVersion: Version): S | undefined;
+  load(currentVersion: Version): OrPromise<S | undefined>;
   clear(): void;
 }
 
 export interface NonVersioningStorage<S = string> {
   store(value: S): void;
-  load(): S | undefined;
+  load(): OrPromise<S | undefined>;
   clear(): void;
 }
 
@@ -29,17 +32,51 @@ export function createVersioningStorage(base: NonVersioningStorage, addedVersion
     return joinVersions(version, addedVersion);
   }
   return {
-    store: (value, version) => {
+    store(value, version) {
       const fullVersion = getFullVersion(version);
       if (!isDisabledVersion(fullVersion)) {
         base.store(createVersionedStringValue(value, fullVersion));
       }
     },
-    load: (currentVersion) => {
+    load(currentVersion) {
       const fullVersion = getFullVersion(currentVersion);
-      return isDisabledVersion(fullVersion) ? undefined : readVersionedStringValue(base.load(), fullVersion);
+      if (isDisabledVersion(fullVersion)) {
+        return undefined;
+      }
+      return then(base.load(), (value) => readVersionedStringValue(value, fullVersion));
     },
-    clear: () => base.clear(),
+    clear() {
+      base.clear();
+    },
+  };
+}
+
+interface StorageCache {
+  store(value: string | undefined): void;
+  load(): {value: string | undefined} | undefined;
+}
+
+export function createCachingStorage(base: NonVersioningStorage, cache: StorageCache): NonVersioningStorage {
+  return {
+    store(value) {
+      if (cache.load()?.value !== value) {
+        cache.store(value);
+        base.store(value);
+      }
+    },
+    load() {
+      const cached = cache.load();
+      return cached
+        ? cached.value
+        : then(base.load(), (value) => {
+            cache.store(value);
+            return value;
+          });
+    },
+    clear() {
+      cache.store(undefined);
+      base.clear();
+    },
   };
 }
 
@@ -53,9 +90,15 @@ export function localStorageStorage(key: string): Storage {
   const fullKey = LOCAL_STORAGE_KEY_PREFIX + key;
   return createVersioningStorage(
     {
-      store: (value) => localStorage.setItem(fullKey, value),
-      load: () => localStorage.getItem(fullKey) ?? undefined,
-      clear: () => localStorage.removeItem(fullKey),
+      store(value) {
+        localStorage.setItem(fullKey, value);
+      },
+      load() {
+        return localStorage.getItem(fullKey) ?? undefined;
+      },
+      clear() {
+        localStorage.removeItem(fullKey);
+      },
     },
     [Number(localStorage.getItem(LOCAL_STORAGE_STORAGE_VERSION_KEY) ?? 1)],
   );
@@ -79,4 +122,58 @@ export function clearAllLocalStorageStorages() {
  */
 export function setLocalStoragePersistenceVersionComponent(versionComponent: number) {
   localStorage.setItem(LOCAL_STORAGE_STORAGE_VERSION_KEY, String(versionComponent));
+}
+
+const USER_STORAGE_KEY_PREFIX = "persistence:";
+const USER_STORAGE_INVALIDATION_INTERVAL_SECS = 5 * 60;
+
+const USER_STORAGE_CACHE_MAP = new Map<string, StorageCache>();
+
+function getUserStorageCache(key: string) {
+  let cache = USER_STORAGE_CACHE_MAP.get(key);
+  if (!cache) {
+    let cached: {value: string | undefined} | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    function setInvalidationTimeout() {
+      clearTimeout(timeoutId);
+      setTimeout(invalidate, USER_STORAGE_INVALIDATION_INTERVAL_SECS * 1000);
+    }
+    function invalidate() {
+      cached = undefined;
+      setInvalidationTimeout();
+    }
+    onCleanup(() => clearTimeout(timeoutId));
+    cache = {
+      store(value) {
+        cached = {value};
+        setInvalidationTimeout();
+      },
+      load() {
+        return cached;
+      },
+    };
+    USER_STORAGE_CACHE_MAP.set(key, cache);
+  }
+  return cache;
+}
+
+export function userStorageStorage(key: string): Storage {
+  const fullKey = USER_STORAGE_KEY_PREFIX + key;
+  return createVersioningStorage(
+    createCachingStorage(
+      {
+        store(value) {
+          User.storagePut(fullKey, value);
+        },
+        async load() {
+          const stored = await User.storageGet(fullKey);
+          return typeof stored === "string" ? stored : undefined;
+        },
+        clear() {
+          User.storagePut(fullKey, null);
+        },
+      },
+      getUserStorageCache(key),
+    ),
+  );
 }

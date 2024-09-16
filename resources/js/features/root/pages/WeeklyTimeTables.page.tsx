@@ -1,7 +1,7 @@
 import {A} from "@solidjs/router";
 import {CellContext, createSolidTable, HeaderContext} from "@tanstack/solid-table";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
@@ -130,8 +130,8 @@ export default (() => {
       setToMonth(defaultToMonth());
     }
   });
-  createLocalStoragePersistence<PersistentState>({
-    key: `WeeklyTimeTables`,
+  createPersistence<PersistentState>({
+    storage: localStorageStorage("WeeklyTimeTables"),
     value: () => ({
       selection: selection(),
       fromMonth: fromMonth(),
@@ -147,7 +147,6 @@ export default (() => {
           setToMonth(state.toMonth);
         }
       }),
-    serialiser: richJSONSerialiser<PersistentState>(),
     version: [PERSISTENCE_VERSION],
   });
   const fromDate = createMemo(() =>
