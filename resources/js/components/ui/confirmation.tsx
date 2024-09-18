@@ -6,7 +6,7 @@ import {Button} from "./Button";
 import {MODAL_STYLE_PRESETS, Modal} from "./Modal";
 import {title} from "./title";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 export interface ConfirmParams {
   readonly title: string;

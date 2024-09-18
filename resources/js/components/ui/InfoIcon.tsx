@@ -6,7 +6,7 @@ import {Button} from "./Button";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 import {title} from "./title";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 interface LinkProps extends Omit<AnchorProps, "children"> {
   readonly href: string;

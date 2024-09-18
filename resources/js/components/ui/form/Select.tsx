@@ -293,6 +293,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
           } else if (formValue == undefined) {
             api().setValue([]);
             formContext.form.setData(props.name, props.multiple ? [] : "");
+          } else if (formValue === "" && !props.multiple) {
+            api().setValue([]);
           } else {
             api().setValue([formValue as string]);
           }

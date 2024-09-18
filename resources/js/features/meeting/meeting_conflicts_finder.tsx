@@ -22,7 +22,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "./attendance_status_info";
 import {getMeetingTimeInterval} from "./meeting_time_controller";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 /**
  * The information about the currently created/edited meeting to calculate conflicts for.

@@ -28,7 +28,7 @@ import {MeetingTypeFields} from "./MeetingTypeFields";
 import {MeetingStatusInfoIcon} from "./attendance_status_info";
 import {getMeetingTimeDurationData, getMeetingTimeFieldsSchemaPart} from "./meeting_time_controller";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 const getSchema = () =>
   z
@@ -79,7 +79,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
           samples: [
             {
               date: delayedDateAndTime().date ? dateToISO(DateTime.fromISO(delayedDateAndTime().date)) : "",
-              startDayminute: startDayMinute || -1,
+              startDayminute: startDayMinute ?? -1,
               durationMinutes: durationMinutes || 5,
             },
           ],
@@ -124,7 +124,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
             <CheckboxField name="createSeries" />
             <Show when={form.data("date")}>
               {(formData) => (
-                <fieldset data-felte-keep-on-remove>
+                <fieldset data-felte-keep-on-remove disabled={!form.data("createSeries")}>
                   <HideableSection show={form.data("createSeries")}>
                     <div class="pl-2 border-l-4 border-gray-400">
                       <MeetingSeriesControls startDate={DateTime.fromISO(formData())} compact />

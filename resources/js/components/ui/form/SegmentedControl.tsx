@@ -56,9 +56,7 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
               cx(
                 props.small ? "px-1" : "px-2 py-0.5",
                 "border rounded",
-                active
-                  ? ["border-memo-active rounded", isDisabled() ? "bg-disabled" : "bg-select"]
-                  : "border-transparent",
+                active ? "border-memo-active bg-select" : "border-transparent",
               )
             }
           >

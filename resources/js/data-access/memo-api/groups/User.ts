@@ -4,7 +4,7 @@ import {V1} from "../config";
 import {MemberResource} from "../resources/member.resource";
 import {PermissionsResource} from "../resources/permissions.resource";
 import {UserResource} from "../resources/user.resource";
-import {Api} from "../types";
+import {Api, JSONValue} from "../types";
 import {parseGetResponse} from "../utils";
 import {Users} from "./shared";
 
@@ -31,6 +31,25 @@ export namespace User {
 
   export const setLastLoginFacilityId = (lastLoginFacilityId: Api.Id, config?: Api.Config) =>
     V1.patch("/user", {lastLoginFacilityId}, config);
+
+  export const storageList = (config?: Api.Config) =>
+    V1.get<readonly string[]>("/user/storage", config).then((res) => res.data);
+  // TODO: Uncomment when the backend stops validating (and potentially mangling) the JSON.
+  // Until then, temporary implementation serialises the JSON to string first.
+  // export const storageGet = (key: string, config?: Api.Config) =>
+  //   V1.get<JSONValue>(`/user/storage/${key}`, config).then((res) => res.data);
+  // export const storagePut = (key: string, value: JSONValue, config?: Api.Config) =>
+  //   V1.put<readonly string[]>(`/user/storage/${key}`, value, {
+  //     ...config,
+  //     headers: {"Content-Type": "application/json"},
+  //   });
+  export const storageGet = (key: string, config?: Api.Config) =>
+    V1.get<string>(`/user/storage/${key}`, config).then((res) => res.data as JSONValue);
+  export const storagePut = (key: string, value: JSONValue, config?: Api.Config) =>
+    V1.put<readonly string[]>(`/user/storage/${key}`, JSON.stringify(value), {
+      ...config,
+      headers: {"Content-Type": "application/json"},
+    });
 
   type PermissionsFacilityKeys = "facilityId" | "facilityMember" | "facilityClient" | "facilityStaff" | "facilityAdmin";
   // Ensure these are really keys.
@@ -61,6 +80,9 @@ export namespace User {
     all: () => [...Users.keys.user()] as const,
     statusAll: () => [...keys.all(), "status"] as const,
     status: () => [...keys.statusAll(), activeFacilityId()] as const,
+    storage: () => [...keys.all(), "storage"] as const,
+    storageList: () => [...keys.storage(), "list"] as const,
+    storageEntry: (key: string) => [...keys.storage(), "entry", key] as const,
   };
 
   export const statusQueryOptions = () =>
@@ -75,4 +97,16 @@ export namespace User {
       refetchOnWindowFocus: true,
       refetchInterval: 60 * 1000,
     }) satisfies SolidQueryOptions<GetStatusData>;
+
+  export const storageListQueryOptions = () =>
+    ({
+      queryFn: () => storageList(),
+      queryKey: keys.storageList(),
+    }) satisfies SolidQueryOptions<readonly string[]>;
+
+  export const storageEntryQueryOptions = <T extends JSONValue>(key: string) =>
+    ({
+      queryFn: () => storageGet(key) as Promise<T | null>,
+      queryKey: keys.storageEntry(key),
+    }) satisfies SolidQueryOptions<T | null>;
 }

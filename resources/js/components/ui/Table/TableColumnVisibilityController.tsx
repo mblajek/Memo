@@ -10,7 +10,7 @@ import {SearchInput} from "../SearchInput";
 import {EmptyValueSymbol} from "../symbols";
 import {title} from "../title";
 
-const _DIRECTIVES = () => title;
+type _Directives = typeof title;
 
 export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();

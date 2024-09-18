@@ -1,7 +1,7 @@
 import {A} from "@solidjs/router";
 import {CellContext, createSolidTable, HeaderContext} from "@tanstack/solid-table";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
@@ -62,7 +62,7 @@ import {Dynamic} from "solid-js/web";
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {useWeeklyTimeTablesActions} from "./weekly_time_tables_actions";
 
-const _DIRECTIVES = () => title;
+type _Directives = typeof title;
 
 const RESOURCE_COLUMNS = [
   "id",
@@ -130,8 +130,8 @@ export default (() => {
       setToMonth(defaultToMonth());
     }
   });
-  createLocalStoragePersistence<PersistentState>({
-    key: `WeeklyTimeTables`,
+  createPersistence<PersistentState>({
+    storage: localStorageStorage("WeeklyTimeTables"),
     value: () => ({
       selection: selection(),
       fromMonth: fromMonth(),
@@ -147,7 +147,6 @@ export default (() => {
           setToMonth(state.toMonth);
         }
       }),
-    serialiser: richJSONSerialiser<PersistentState>(),
     version: [PERSISTENCE_VERSION],
   });
   const fromDate = createMemo(() =>
@@ -638,6 +637,17 @@ export default (() => {
           }
           return total;
         },
+        header: (ctx: HeaderContext<WeekData, DayData | undefined>) => (
+          <Header
+            ctx={ctx}
+            wrapIn={(header) => (
+              <div class="flex gap-1 items-center">
+                {header}
+                <InfoIcon title={translations.columnName("totalWorkTime.desc")} />
+              </div>
+            )}
+          />
+        ),
         cell: (ctx: CellContext<WeekData, number>) => (
           <PaddedCell class="text-right">
             <Show when={ctx.getValue()} fallback={<EmptyValueSymbol />}>

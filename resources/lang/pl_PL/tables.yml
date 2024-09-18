@@ -154,6 +154,7 @@ tables:
     column_names:
       weekDate: "początek tyg."
       totalWorkTime: "łączny czas pracy"
+      totalWorkTime.desc: "Bazowy czas pracy. Nieobecności i dni wolne placówki nie są odliczane od sumy godzin pracy."
 
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"

@@ -1,3 +1,4 @@
+import {JSONValue} from "data-access/memo-api/types";
 import {DateTime, Duration, Interval} from "luxon";
 import {DaysRange} from "../ui/calendar/days_range";
 import {Version} from "./version";
@@ -7,15 +8,6 @@ export interface Serialiser<T, S = string> {
   deserialise(value: S): T;
   version?: Version;
 }
-
-export type JSONValue<ExtraTypes = never> =
-  | string
-  | number
-  | boolean
-  | null
-  | readonly JSONValue<ExtraTypes>[]
-  | Readonly<{readonly [key: string]: JSONValue<ExtraTypes>}>
-  | ExtraTypes;
 
 /**
  * A JSON serialiser, supporting only values directly supported by JSON serialisation.

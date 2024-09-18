@@ -11,7 +11,7 @@ import {useSystemStatusMonitor} from "features/system-status/system_status_monit
 import {DateTime} from "luxon";
 import {LoginForm} from "./Login.form";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 export const createLoginModal = registerGlobalPageElement<true>((args) => {
   const t = useLangFunc();

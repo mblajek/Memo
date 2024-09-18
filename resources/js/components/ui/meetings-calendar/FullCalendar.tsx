@@ -1,7 +1,7 @@
 import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {CalendarColumn, ColumnsCalendar} from "components/ui/calendar/ColumnsCalendar";
 import {MonthCalendar, MonthCalendarDay, getMonthCalendarRange} from "components/ui/calendar/MonthCalendar";
 import {MonthCalendarCell} from "components/ui/calendar/MonthCalendarCell";
@@ -68,7 +68,7 @@ import {
   getRandomEventColors,
 } from "./colors";
 
-const _DIRECTIVES_ = () => title;
+type _Directives = typeof title;
 
 interface Props extends htmlAttributes.div {
   readonly staticCalendarFunction: CalendarFunction;
@@ -263,31 +263,30 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         </span>
       ),
       resources: staffResources(),
-      footer: userStatus.data?.permissions.facilityAdmin
-        ? () => (
-            <div class="px-1 text-center">
-              <CheckboxInput
-                style={{scale: "0.9"}}
-                checked={showInactiveStaff()}
-                onChecked={(checked) =>
-                  batch(() => {
-                    setShowInactiveStaff(checked);
-                    if (!checked) {
-                      const selected = new Set(selectedResources());
-                      for (const staff of staffById().values()) {
-                        if (!staff["staff.isActive"]) {
-                          selected.delete(staff.id);
-                        }
+      footer: () =>
+        userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"]) ? (
+          <div class="px-1 text-center">
+            <CheckboxInput
+              style={{scale: "0.9"}}
+              checked={showInactiveStaff()}
+              onChecked={(checked) =>
+                batch(() => {
+                  setShowInactiveStaff(checked);
+                  if (!checked) {
+                    const selected = new Set(selectedResources());
+                    for (const staff of staffById().values()) {
+                      if (!staff["staff.isActive"]) {
+                        selected.delete(staff.id);
                       }
-                      setSelectedResources(selected);
                     }
-                  })
-                }
-                label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
-              />
-            </div>
-          )
-        : undefined,
+                    setSelectedResources(selected);
+                  }
+                })
+              }
+              label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
+            />
+          </div>
+        ) : undefined,
     });
     const meetingResources = meetingResourceResources();
     if (meetingResources.length) {
@@ -440,8 +439,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   if (props.staticSelectionPersistenceKey) {
-    createLocalStoragePersistence<PersistentSelectionState>({
-      key: `FullCalendar:${props.staticSelectionPersistenceKey}`,
+    createPersistence<PersistentSelectionState>({
+      storage: localStorageStorage(`FullCalendar:${props.staticSelectionPersistenceKey}`),
       value: () => ({
         today: currentDate().toISODate(),
         mode: mode(),
@@ -496,13 +495,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           },
         });
       },
-      serialiser: richJSONSerialiser<PersistentSelectionState>(),
       version: [PERSISTENCE_SELECTION_VERSION],
     });
   }
   if (props.staticPresentationPersistenceKey) {
-    createLocalStoragePersistence<PersistentPresentationState>({
-      key: `FullCalendar:${props.staticPresentationPersistenceKey}`,
+    createPersistence<PersistentPresentationState>({
+      storage: localStorageStorage(`FullCalendar:${props.staticPresentationPersistenceKey}`),
       value: () => ({
         pixelsPerHour: pixelsPerHour(),
         allDayEventsHeight: allDayEventsHeight(),
@@ -515,7 +513,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setMonthEventsHeight(state.monthEventsHeight || MONTH_EVENTS_HEIGHT_RANGE.def);
         });
       },
-      serialiser: richJSONSerialiser<PersistentPresentationState>(),
       version: [PERSISTENCE_PRESENTATION_VERSION],
     });
   }
