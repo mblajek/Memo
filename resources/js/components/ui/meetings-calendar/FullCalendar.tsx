@@ -263,31 +263,30 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         </span>
       ),
       resources: staffResources(),
-      footer: userStatus.data?.permissions.facilityAdmin
-        ? () => (
-            <div class="px-1 text-center">
-              <CheckboxInput
-                style={{scale: "0.9"}}
-                checked={showInactiveStaff()}
-                onChecked={(checked) =>
-                  batch(() => {
-                    setShowInactiveStaff(checked);
-                    if (!checked) {
-                      const selected = new Set(selectedResources());
-                      for (const staff of staffById().values()) {
-                        if (!staff["staff.isActive"]) {
-                          selected.delete(staff.id);
-                        }
+      footer: () =>
+        userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"]) ? (
+          <div class="px-1 text-center">
+            <CheckboxInput
+              style={{scale: "0.9"}}
+              checked={showInactiveStaff()}
+              onChecked={(checked) =>
+                batch(() => {
+                  setShowInactiveStaff(checked);
+                  if (!checked) {
+                    const selected = new Set(selectedResources());
+                    for (const staff of staffById().values()) {
+                      if (!staff["staff.isActive"]) {
+                        selected.delete(staff.id);
                       }
-                      setSelectedResources(selected);
                     }
-                  })
-                }
-                label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
-              />
-            </div>
-          )
-        : undefined,
+                    setSelectedResources(selected);
+                  }
+                })
+              }
+              label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
+            />
+          </div>
+        ) : undefined,
     });
     const meetingResources = meetingResourceResources();
     if (meetingResources.length) {
