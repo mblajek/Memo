@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use App\Exceptions\FatalExceptionFactory;
 use App\Utils\Date\DateHelper;
-use App\Utils\Transformer\ArrayKeyTransformer;
+use App\Utils\Transformer\StringTransformer;
 use Closure;
 use DateTimeInterface;
 use Illuminate\Http\Request;
@@ -59,7 +59,7 @@ abstract class AbstractJsonResource extends JsonResource
         if ($this->withAttrValues()) {
             $resource = $this->resource;
             if (method_exists($resource, 'attrValues')) {
-                $result += ArrayKeyTransformer::toCamel($resource->attrValues());
+                $result += StringTransformer::camelKeys($resource->attrValues());
             } else {
                 FatalExceptionFactory::unexpected()->throw();
             }
