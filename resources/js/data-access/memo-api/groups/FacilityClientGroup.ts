@@ -34,7 +34,7 @@ export namespace FacilityClientGroup {
     return {
       queryFn: ({signal}) => getClientGroupsList(request, {signal}),
       queryKey: keys.clientGroupList(request),
-    } satisfies SolidQueryOpts<ClientGroupResource[]>;
+    } satisfies SolidQueryOpts<readonly ClientGroupResource[]>;
   };
 
   export const clientGroupQueryOptions = (id: Api.Id) =>
