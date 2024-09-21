@@ -50,6 +50,7 @@ import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
 import {getMeetingTimeFullData} from "./meeting_time_controller";
+import {ClientGroupBox} from "../client/ClientGroupBox";
 
 type _Directives = typeof title;
 
@@ -388,7 +389,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   );
 
   return (
-    <div class="flex flex-col items-stretch gap-1">
+    <div class="flex flex-col items-stretch">
       <div class="grid gap-1" style={{"grid-template-columns": "1.5fr 1.2rem 1fr"}}>
         <div class="col-span-2">
           <FieldLabel
@@ -596,88 +597,92 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           }}
         </Index>
       </div>
-      <Show when={props.name === "clients"}>
-        <div class="flex flex-col">
-          <Show when={!props.viewMode || clientsGroupsMode() === "shared"}>
-            <FieldLabel fieldName="clientsGroupsMode" umbrella />
-          </Show>
-          <Show when={!props.viewMode}>
-            <div class="self-start">
-              <SegmentedControl
-                name="clientsGroupsMode"
-                label=""
-                items={[
-                  {
-                    value: "none",
-                    label: () => (
-                      <span use:title={[translations.fieldName("clientsGroupsMode.none.desc"), {delay: 500}]}>
-                        {translations.fieldName("clientsGroupsMode.none")}
-                      </span>
-                    ),
-                  },
-                  {
-                    value: "shared",
-                    label: () => (
-                      <span
-                        use:title={[
-                          translations.fieldName(
-                            sharedGroups().length
-                              ? "clientsGroupsMode.shared.desc"
-                              : "clientsGroupsMode.shared.desc_no_shared_options",
-                          ),
-                          {delay: 500},
-                        ]}
-                      >
-                        {translations.fieldName("clientsGroupsMode.shared")}
-                      </span>
-                    ),
-                    disabled: !sharedGroups().length,
-                  },
-                  {
-                    value: "separate",
-                    label: () => (
-                      <span use:title={[translations.fieldName("clientsGroupsMode.separate.desc"), {delay: 500}]}>
-                        {translations.fieldName("clientsGroupsMode.separate")}
-                      </span>
-                    ),
-                  },
-                ]}
-                value={clientsGroupsMode()}
-                onValueChange={setClientsGroupsMode}
-                small
-              />
-            </div>
-          </Show>
-          <HideableSection show={clientsGroupsMode() === "shared"}>
-            {(show) => (
-              <div class="mt-1 flex gap-1 items-center">
-                <div use:title={capitalizeString(translations.fieldName("sharedClientsGroupId"))}>
-                  <clientGroupIcons.ClientGroup size="22" />
-                </div>
-                <div class="flex-grow">
-                  <Show
-                    when={sharedGroups().length > 1}
-                    fallback={<SharedClientGroupLabel groupId={sharedClientsGroupId()} />}
-                  >
-                    <Select
-                      name="sharedClientsGroupId"
+      <Show when={props.name === "clients" && (!props.viewMode || clientsGroupsMode() === "shared")}>
+        <HideableSection show={allGroups().size}>
+          <ClientGroupBox class="mt-2 flex flex-col">
+            <Show when={!props.viewMode || clientsGroupsMode() === "shared"}>
+              <div class="flex items-baseline justify-between gap-2">
+                <FieldLabel fieldName="clientsGroupsMode" umbrella />
+                <Show when={!props.viewMode}>
+                  <div class="self-start">
+                    <SegmentedControl
+                      name="clientsGroupsMode"
                       label=""
-                      items={sharedGroups().map((groupId) => ({
-                        value: groupId,
-                        label: () => <SharedClientGroupLabel groupId={groupId} />,
-                      }))}
-                      value={sharedClientsGroupId()}
-                      onValueChange={setSharedClientsGroupId}
-                      nullable={false}
-                      disabled={!show()}
+                      items={[
+                        {
+                          value: "none",
+                          label: () => (
+                            <span use:title={[translations.fieldName("clientsGroupsMode.none.desc"), {delay: 500}]}>
+                              {translations.fieldName("clientsGroupsMode.none")}
+                            </span>
+                          ),
+                        },
+                        {
+                          value: "shared",
+                          label: () => (
+                            <span
+                              use:title={[
+                                translations.fieldName(
+                                  sharedGroups().length
+                                    ? "clientsGroupsMode.shared.desc"
+                                    : "clientsGroupsMode.shared.desc_no_shared_options",
+                                ),
+                                {delay: 500},
+                              ]}
+                            >
+                              {translations.fieldName("clientsGroupsMode.shared")}
+                            </span>
+                          ),
+                          disabled: !sharedGroups().length,
+                        },
+                        {
+                          value: "separate",
+                          label: () => (
+                            <span use:title={[translations.fieldName("clientsGroupsMode.separate.desc"), {delay: 500}]}>
+                              {translations.fieldName("clientsGroupsMode.separate")}
+                            </span>
+                          ),
+                        },
+                      ]}
+                      value={clientsGroupsMode()}
+                      onValueChange={setClientsGroupsMode}
                       small
                     />
-                  </Show>
-                </div>
+                  </div>
+                </Show>
               </div>
-            )}
-          </HideableSection>
-        </div>
+            </Show>
+            <HideableSection show={clientsGroupsMode() === "shared"}>
+              {(show) => (
+                <div class="mt-1 flex gap-1 items-center">
+                  <div use:title={capitalizeString(translations.fieldName("sharedClientsGroupId"))}>
+                    <clientGroupIcons.ClientGroup size="22" />
+                  </div>
+                  <div class="flex-grow">
+                    <Show
+                      when={sharedGroups().length > 1}
+                      fallback={<SharedClientGroupLabel groupId={sharedClientsGroupId()} />}
+                    >
+                      <Select
+                        name="sharedClientsGroupId"
+                        label=""
+                        items={sharedGroups().map((groupId) => ({
+                          value: groupId,
+                          label: () => <SharedClientGroupLabel groupId={groupId} />,
+                        }))}
+                        value={sharedClientsGroupId()}
+                        onValueChange={setSharedClientsGroupId}
+                        nullable={false}
+                        disabled={!show()}
+                        small
+                      />
+                    </Show>
+                  </div>
+                </div>
+              )}
+            </HideableSection>
+          </ClientGroupBox>
+        </HideableSection>
       </Show>
     </div>
   );
