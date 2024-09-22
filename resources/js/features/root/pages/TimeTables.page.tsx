@@ -9,6 +9,7 @@ export default (() => {
       staticCalendarFunction="timeTables"
       staticSelectionPersistenceKey={`facility.${activeFacilityId()}.calendar`}
       staticPresentationPersistenceKey="timeTables.calendar.presentation"
+      helpHref="/help/staff-time-tables#calendar"
     />
   );
 }) satisfies VoidComponent;
