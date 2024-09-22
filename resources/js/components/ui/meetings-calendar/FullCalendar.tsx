@@ -54,6 +54,7 @@ import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state"
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {CheckboxInput} from "../CheckboxInput";
+import {InfoIcon} from "../InfoIcon";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
@@ -80,6 +81,8 @@ interface Props extends htmlAttributes.div {
   readonly staticSelectionPersistenceKey?: string;
   /** The key to use for persisting the presentation (view) settings. If not present, presentation settings are not persisted. */
   readonly staticPresentationPersistenceKey?: string;
+  /** Href link to the help page describing the table. */
+  readonly helpHref?: string;
 }
 
 const defaultProps = () =>
@@ -141,6 +144,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "initialDay",
     "staticSelectionPersistenceKey",
     "staticPresentationPersistenceKey",
+    "helpHref",
   ]);
   const t = useLangFunc();
   const locale = useLocale();
@@ -1132,6 +1136,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
               small
             />
+            <Show when={props.helpHref}>
+              {(href) => (
+                <div class="flex items-center">
+                  <InfoIcon href={href()} target="_blank" title={t("calendar.more_info")} />
+                </div>
+              )}
+            </Show>
           </div>
           <Switch>
             <Match when={!selectedResources().size}>

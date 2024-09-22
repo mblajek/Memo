@@ -6,6 +6,8 @@ Objaśnienie dostępnych raportów:
 
 ## Raport _$t(routes.facility.meetings|cap)_ {#meetings}
 
+Link: [/«placówka»/meetings](/__facility/meetings)
+
 Ten raport pokazuje wszystkie spotkania w systemie, przy czym każdy wiersz tabeli odpowiada jednemu spotkaniu.
 
 Ten raport jest odpowiedni do filtrowania spotkań po kryteriach takich jak daty, statusy, opisy, liczby uczestników.
@@ -13,6 +15,8 @@ Ten raport jest odpowiedni do filtrowania spotkań po kryteriach takich jak daty
 Spotkania można [grupować](table-grouping) po niektórych kolumnach.
 
 ## Raport _$t(routes.facility.meeting_attendants|cap)_ {#meeting-attendants}
+
+Link: [/«placówka»/meeting-attendants](/__facility/meeting-attendants)
 
 Ten raport pokazuje wszystkie _uczestnictwa w spotkaniach_. Oznacza to, że jeżeli w systemie istnieje spotkanie z trzema uczestnikami
 (np. jeden pracownik i dwoje klientów), to w tym raporcie pojawią się trzy wiersze związane z tym spotkaniem, przy czym:
@@ -32,6 +36,8 @@ _$t(dictionaries.attendance_type.staff)_,
 - włącz grupowanie według uczestnika.
 
 ## Raport _$t(routes.facility.meeting_clients|cap)_ {#meeting-clients}
+
+Link: [/«placówka»/meeting-clients](/__facility/meeting-clients)
 
 Ten raport, podobnie jak poprzedni, pokazuje _uczestnictwa w spotkaniach_, jednak tym razem są to jedynie uczestnictwa klientów
 (bez pracowników). W tym raporcie widoczne są również atrybuty klienta, w tym atrybuty zdefiniowane przez placówkę.
