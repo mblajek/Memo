@@ -1,7 +1,7 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
-import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
+import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {IconTypes} from "solid-icons";
 import {FaSolidAngleDown} from "solid-icons/fa";
@@ -42,7 +42,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
    */
   const hasActiveItem = createMemo(
     // eslint-disable-next-line solid/reactivity
-    on(debouncedAccessor(activeItemTrigger, {timeMs: 20}), () => container()?.querySelector(`a.${ACTIVE_ITEM_CLASS}`)),
+    on(delayedAccessor(activeItemTrigger, {timeMs: 20}), () => container()?.querySelector(`a.${ACTIVE_ITEM_CLASS}`)),
   );
   const ch = children(() => props.children);
   return (

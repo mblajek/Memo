@@ -13,7 +13,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import {currentTime, cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {currentTime, cx, delayedAccessor, useLangFunc} from "components/utils";
 import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
@@ -232,9 +232,9 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
       [
         scrollingWrapper,
         isScrolling,
-        // Allow multiple steps to accummulate before this is triggered. This improves smoothness.
+        // Allow multiple steps to accumulate before this is triggered. This improves smoothness.
         // eslint-disable-next-line solid/reactivity
-        debouncedAccessor(desiredScrollX, {
+        delayedAccessor(desiredScrollX, {
           timeMs: 100,
           outputImmediately: (x) => x === undefined,
         }),
@@ -366,6 +366,7 @@ export interface TableFeaturesConfig {
 }
 
 const DEFAULT_PAGE_SIZE = 50;
+const PAGE_SIZE_WITHOUT_PAGINATION = 10000;
 
 /**
  * Returns base options for createSolidTable.
@@ -387,7 +388,9 @@ export function getBaseTableOptions<T>({
   const columnVisibilitySignal = getFeatureSignal(columnVisibility, {});
   const sortingSignal = getFeatureSignal(sorting, []);
   const globalFilterSignal = getFeatureSignal(globalFilter, "");
-  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE});
+  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE}) || [
+    () => ({pageIndex: 0, pageSize: PAGE_SIZE_WITHOUT_PAGINATION}),
+  ];
   const baseState: Partial<TableState> = {
     get columnVisibility() {
       return columnVisibilitySignal?.[0]();

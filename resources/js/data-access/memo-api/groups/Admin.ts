@@ -4,7 +4,7 @@ import {AdminUserResource, AdminUserResourceForCreate} from "../resources/adminU
 import {FacilityResource} from "../resources/facility.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
-import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
+import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
 import {Facilities, Users} from "./shared";
 
 /**
@@ -26,7 +26,7 @@ export namespace Admin {
   const getUsersListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {...config, params: request});
   const getUsersList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
-    getUsersListBase(request, config).then(parseGetListResponse);
+    getUsersListBase(request, config).then(parseListResponse);
   const getUser = createGetFromList(getUsersListBase);
 
   export const createMember = (member: Api.Request.Create<MemberResource>, config?: Api.Config) =>

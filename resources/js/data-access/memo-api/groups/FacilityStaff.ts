@@ -3,7 +3,7 @@ import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
 import {StaffResource, StaffResourceForCreate, StaffResourceForPatch} from "../resources/staff.resource";
 import {Api} from "../types";
-import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
+import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
 import {FacilityUsers} from "./FacilityUsers";
 
 /**
@@ -22,7 +22,7 @@ export namespace FacilityStaff {
       params: request,
     });
   const getStaffList = (request?: Api.Request.GetListParams, config?: Api.Config) =>
-    getStaffListBase(request, config).then(parseGetListResponse);
+    getStaffListBase(request, config).then(parseListResponse);
   const getStaffMember = createGetFromList(getStaffListBase);
 
   export const keys = {

@@ -31,7 +31,7 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
         onClick: props.onEmptyClick,
       })}
       preferences={[blocks(), events()].flatMap((objs) =>
-        objs.map((o) => o.monthCellStylingPreference).filter(NON_NULLABLE),
+        objs.map((o) => o.allDayAreaStylingPreference).filter(NON_NULLABLE),
       )}
     >
       <div class={cx("flex flex-col items-stretch p-px", showAddButton() ? undefined : "mb-2")}>

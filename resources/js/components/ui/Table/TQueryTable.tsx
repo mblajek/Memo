@@ -12,7 +12,7 @@ import {
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createLocalStoragePersistence} from "components/persistence/persistence";
 import {richJSONSerialiser} from "components/persistence/serialiser";
-import {NON_NULLABLE, NUMBER_FORMAT, debouncedAccessor, useLangFunc} from "components/utils";
+import {NON_NULLABLE, NUMBER_FORMAT, delayedAccessor, useLangFunc} from "components/utils";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
@@ -20,6 +20,7 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
+import {Modifiable} from "components/utils/modifiable";
 import {intersects, objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -83,7 +84,7 @@ import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
 import {ColumnFilterStates} from "./tquery_filters/column_filter_states";
 import {FilterControl} from "./tquery_filters/types";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
@@ -95,6 +96,7 @@ declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     readonly tquery?: TQueryColumnMeta<TData>;
+    readonly config?: FullColumnConfig<TData>;
   }
 }
 
@@ -113,6 +115,7 @@ interface TQueryTableMeta<TData extends RowData> {
 }
 
 interface ColumnGroupingInfo {
+  readonly isValid: boolean;
   readonly isCount: boolean;
   readonly isGrouping: boolean;
   readonly isGrouped: boolean;
@@ -205,6 +208,8 @@ export interface PartialColumnConfig<TData = DataItem> {
   readonly metaParams?: ColumnMetaParams<TData>;
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
+  /** Whether the column visibility should be saved across visits. Default: true. */
+  readonly persistVisibility?: boolean;
   /** Whether the global filter can match this column. Default: depends on the column type. */
   readonly globalFilterable?: boolean;
   readonly columnGroups?: ColumnGroupParam;
@@ -229,7 +234,7 @@ export interface AttributeColumnsConfig<TData = DataItem> {
 export type PartialColumnConfigEntry<TData = DataItem> = PartialColumnConfig<TData> | AttributeColumnsConfig<TData>;
 
 type FullColumnConfig<TData = DataItem> = ColumnConfig &
-  Required<Pick<PartialColumnConfig<TData>, "isDataColumn" | "columnDef" | "header">> &
+  Required<Pick<PartialColumnConfig<TData>, "isDataColumn" | "columnDef" | "header" | "persistVisibility">> &
   Pick<PartialColumnConfig<TData>, "filterControl" | "metaParams">;
 
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
@@ -277,6 +282,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         header = Header,
         metaParams,
         initialVisible = true,
+        persistVisibility = true,
         globalFilterable = true,
         columnGroups,
       }) =>
@@ -293,6 +299,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           header,
           metaParams,
           initialVisible,
+          persistVisibility,
           globalFilterable,
           columnGroups: columnGroupsCollector.column(name, columnGroups),
         }) satisfies FullColumnConfig,
@@ -307,7 +314,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   const tableTextExportCells = useTableTextExportCells();
   const defaultColumnConfigByType = new Map<ColumnType, Partial<PartialColumnConfig<DataItem>>>()
     .set("bool", {
-      columnDef: {cell: tableCells.bool(), size: 100},
+      columnDef: {cell: tableCells.bool(), size: 150},
       metaParams: {textExportCell: tableTextExportCells.bool()},
       filterControl: BoolFilterControl,
     })
@@ -522,7 +529,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   const columnFilterStates = new ColumnFilterStates();
   if (props.staticPersistenceKey) {
     // eslint-disable-next-line solid/reactivity
-    const columnSizing = debouncedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
+    const columnSizing = delayedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
     createLocalStoragePersistence<PersistentState>({
       key: `TQueryTable:${props.staticPersistenceKey}`,
       value: () => ({
@@ -533,9 +540,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         // Ensure a bad (e.g. outdated) entry won't affect visibility of a column that cannot have
         // the visibility controlled by the user.
         const colVis = {...value.colVis};
-        for (const col of columnsConfig()) {
-          if (col.columnDef.enableHiding === false) {
-            delete colVis[col.name];
+        for (const colName of Object.keys(colVis)) {
+          const col = columnsConfig().find((c) => c.name === colName);
+          if (!col || col.columnDef.enableHiding === false || !col.persistVisibility) {
+            delete colVis[colName];
           }
         }
         columnVisibility[1](colVis);
@@ -635,7 +643,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         // be mutated, and wrapping it would be complicated.
         defColumnConfig.columnDef,
         col.columnDef,
-        {meta: {tquery: schemaCol}},
+        {meta: {tquery: schemaCol, config: col}},
         {meta: {tquery: defColumnConfig.metaParams}},
         {meta: {tquery: col.metaParams}},
       ) satisfies ColumnDef<DataItem, unknown>;
@@ -727,9 +735,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   };
 
   const columnGroupingInfos = createMemo<ReadonlyMap<string, ColumnGroupingInfo>>(() => {
-    const infos = new Map<string, {-readonly [K in keyof ColumnGroupingInfo]: ColumnGroupingInfo[K]}>();
+    const infos = new Map<string, Modifiable<ColumnGroupingInfo>>();
     for (const col of columns()) {
       infos.set(col.id!, {
+        isValid: true,
         isCount: col.id === countColumn(),
         isGrouping: false,
         isGrouped: false,
@@ -755,7 +764,14 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     }
     return infos;
   });
-  const columnGroupingInfo = (column: string) => columnGroupingInfos().get(column)!;
+  const INVALID_COLUMN_GROUPING_INFO: ColumnGroupingInfo = {
+    isValid: false,
+    isCount: false,
+    isGrouping: false,
+    isGrouped: false,
+    isForceShown: false,
+  };
+  const columnGroupingInfo = (column: string) => columnGroupingInfos().get(column) || INVALID_COLUMN_GROUPING_INFO;
 
   setTable(
     createSolidTable<DataItem>({

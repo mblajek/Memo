@@ -51,7 +51,7 @@ readonly class AdminUserTquery extends TqService
             [
                 ['facility_admin_grant_id', 'has_facility_admin'],
                 ['staff_member_id', 'is_staff'],
-                ['client_id', 'is_client']
+                ['client_id', 'is_client'],
             ] as [$column, $alias]
         ) {
             $config->addQuery(

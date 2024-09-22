@@ -18,7 +18,7 @@ import {createSignal, Show, splitProps, VoidComponent} from "solid-js";
 import {z} from "zod";
 import {UserLink} from "../facility-users/UserLink";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 const getSchema = () =>
   z.object({

@@ -4,7 +4,7 @@ import {SmallSpinner} from "./Spinner";
 import {actionIcons} from "./icons";
 import {mergeTitleDirectiveProps, title, TitleDirectiveType} from "./title";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface ButtonProps extends Omit<htmlAttributes.button, "title"> {
   readonly title?: TitleDirectiveType;

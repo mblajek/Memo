@@ -49,7 +49,10 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
         return (
           <ButtonLike
             {...htmlAttributes.merge(divProps, {
-              class: "px-0.5 border rounded flex flex-col items-stretch min-h-0 cursor-pointer select-none relative",
+              class: cx(
+                "px-0.5 border rounded flex flex-col items-stretch min-h-0 cursor-pointer select-none relative",
+                meeting()["resourceConflicts.*.resourceDictId"].length ? "!border-l-4 !border-red-600" : undefined,
+              ),
               style: {
                 height: `${props.height || DEFAULT_HEIGHT}px`,
                 ...coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
@@ -127,6 +130,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                 "w-full h-full border rounded flex flex-col items-stretch cursor-pointer select-none",
                 crosses().fromPrevDay ? "border-t-0 rounded-t-none" : undefined,
                 crosses().toNextDay ? "border-b-0 rounded-b-none" : undefined,
+                meeting()["resourceConflicts.*.resourceDictId"].length ? "!border-l-4 !border-red-600" : undefined,
               ),
               style: coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
             })}

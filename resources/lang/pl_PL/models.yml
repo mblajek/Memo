@@ -69,6 +69,7 @@ user:
   hasFacilityAdmin: "administrator placówki"
   isStaff: "pracownik"
   isClient: "klient"
+  members: "przypisane placówki"
 
 facility_user:
   _name: "pracownik/klient"
@@ -144,3 +145,5 @@ meeting:
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"
+  resourceConflicts.exists: "konflikt zasobów"
+  resourceConflicts.*.resourceDictId: "konflikt$t(thin_n_thin)zasoby"

@@ -15,12 +15,14 @@ import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
+import {AlignedTime} from "components/utils/time_formatting";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ScrollableCell, createTableColumnsSet} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {Index, Match, ParentComponent, Show, Switch, VoidComponent, splitProps} from "solid-js";
+import {SharedClientGroupLabel} from "../client/SharedClientGroupLabel";
 import {UserLink} from "../facility-users/UserLink";
 import {FacilityUserType} from "../facility-users/user_types";
 import {MeetingDeleteButton} from "./MeetingDeleteButton";
@@ -30,7 +32,7 @@ import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
 import {createWorkTimeModal} from "./work_time_modal";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 type TQFullMeetingResource = TQMeetingResource & {
   readonly attendants: readonly TQMeetingAttendantResource[];
@@ -61,8 +63,8 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         {t("calendar.all_day")}
       </Match>
       <Match when={props.startDayMinute !== undefined && props.durationMinutes !== undefined}>
-        {formatDayMinuteHM(props.startDayMinute!, {hour: "2-digit"})} {EN_DASH}{" "}
-        {formatDayMinuteHM((props.startDayMinute! + props.durationMinutes!) % MAX_DAY_MINUTE, {hour: "2-digit"})}
+        <AlignedTime dayMinute={props.startDayMinute!} /> {EN_DASH}{" "}
+        <AlignedTime dayMinute={(props.startDayMinute! + props.durationMinutes!) % MAX_DAY_MINUTE} />
       </Match>
     </Switch>
   );
@@ -345,6 +347,18 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     },
     workTimeNotes: {name: "notes", columnGroups: "meeting_multicolumn"},
     resources: {name: "resources.*.dictId", columnGroups: "meeting_multicolumn"},
+    resourceConflictsExist: {
+      name: "resourceConflicts.exists",
+      columnGroups: "meeting_multicolumn",
+      initialVisible: false,
+      persistVisibility: false,
+    },
+    resourceConflictsResources: {
+      name: "resourceConflicts.*.resourceDictId",
+      columnGroups: "meeting_multicolumn",
+      initialVisible: false,
+      persistVisibility: false,
+    },
     actions: {
       name: "actions",
       isDataColumn: false,
@@ -450,10 +464,9 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     attendantClientGroup: {
       name: "attendant.clientGroupId",
       columnDef: {
-        // TODO: Add a reasonable cell and export cell definition.
         cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
-            <ShowCellVal v={props.v}>{() => t("bool_values.yes")}</ShowCellVal>
+            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} />}</ShowCellVal>
           </PaddedCell>
         )),
         size: 250,

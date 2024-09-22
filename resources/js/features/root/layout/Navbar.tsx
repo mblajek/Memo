@@ -3,7 +3,7 @@ import {FullLogo} from "components/ui/FullLogo";
 import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
-import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
+import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
@@ -11,7 +11,7 @@ import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
-import {TbCalendarTime, TbHelp} from "solid-icons/tb";
+import {TbCalendarCode, TbCalendarTime, TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {DEV, ParentComponent, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -24,7 +24,6 @@ export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
-  const systemStatusMonitor = useSystemStatusMonitor();
   const facilityUrl = () => activeFacility()?.url;
 
   const FacilityAdminOrStaffBarrier: ParentComponent = (props) => (
@@ -70,15 +69,9 @@ export const Navbar: VoidComponent = () => {
                   end
                 />
                 <NavigationItem
-                  icon={OcTable3}
-                  href={`/${facilityUrl()}/admin/time-tables/staff`}
-                  routeKey="facility.facility_admin.time_tables_staff"
-                  small
-                />
-                <NavigationItem
-                  icon={OcTable3}
-                  href={`/${facilityUrl()}/admin/time-tables/facility`}
-                  routeKey="facility.facility_admin.time_tables_facility"
+                  icon={TbCalendarCode}
+                  href={`/${facilityUrl()}/admin/time-tables/weekly`}
+                  routeKey="facility.facility_admin.time_tables_weekly"
                   small
                 />
               </NavigationItem>
@@ -148,7 +141,7 @@ export const Navbar: VoidComponent = () => {
       </nav>
       <div class="grow" />
       <A href="/help/about" class="p-2 !text-grey-text">
-        {t("app_name")} {systemStatusMonitor.baseStatus()?.version}
+        {t("app_name")} <BaseAppVersion />
       </A>
     </aside>
   );

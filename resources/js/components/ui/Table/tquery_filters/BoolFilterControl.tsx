@@ -42,16 +42,8 @@ export const BoolFilterControl: FilterControl<NullColumnFilter | BoolColumnFilte
     ];
     if (props.schema.nullable) {
       items.push(
-        makeSelectItem({
-          value: "*",
-          symbol: t("tables.filter.symbols.non_null_value"),
-          description: t("tables.filter.non_null_value"),
-        }),
-        makeSelectItem({
-          value: "null",
-          symbol: t("tables.filter.symbols.null_value"),
-          description: t("tables.filter.null_value"),
-        }),
+        makeSelectItem({value: "*", description: t("tables.filter.non_null_value")}),
+        makeSelectItem({value: "null", description: t("tables.filter.null_value")}),
       );
     }
     return items;

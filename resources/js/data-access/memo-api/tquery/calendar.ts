@@ -29,7 +29,13 @@ const RESOURCE_COLUMNS = [
 ] as const satisfies (keyof MeetingResource)[];
 
 /** The list of columns to fetch. */
-const COLUMNS = [...RESOURCE_COLUMNS, "isFacilityWide", "seriesNumber", "seriesCount"] as const;
+const COLUMNS = [
+  ...RESOURCE_COLUMNS,
+  "isFacilityWide",
+  "seriesNumber",
+  "seriesCount",
+  "resourceConflicts.*.resourceDictId",
+] as const;
 
 export type SeriesNumberAndCount = {
   readonly seriesNumber: number | null;
@@ -39,9 +45,10 @@ export type SeriesNumberAndCount = {
 /** A meeting resource type fetched from tquery. */
 export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_COLUMNS)[number], "staff" | "clients">> &
   SeriesNumberAndCount & {
-    readonly isFacilityWide: boolean;
-    readonly staff: readonly TQMeetingAttendantResource[];
-    readonly clients: readonly TQMeetingAttendantResource[];
+    readonly "staff": readonly TQMeetingAttendantResource[];
+    readonly "clients": readonly TQMeetingAttendantResource[];
+    readonly "isFacilityWide": boolean;
+    readonly "resourceConflicts.*.resourceDictId": readonly string[];
   };
 
 export interface TQMeetingAttendantResource extends MeetingStaffResource, MeetingClientResource {
@@ -110,8 +117,7 @@ export function createCalendarRequestCreator({
             type: "op",
             op: "|",
             val: [
-              // Show facility wide meetings only if any staff is selected.
-              staff().length ? {type: "column", column: "isFacilityWide", op: "=", val: true} : "never",
+              {type: "column", column: "isFacilityWide", op: "=", val: true},
               {type: "column", column: "staff.*.userId", op: "has_any", val: staff().toSorted()},
               {type: "column", column: "resources.*.dictId", op: "has_any", val: meetingResources().toSorted()},
             ],

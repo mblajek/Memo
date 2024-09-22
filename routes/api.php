@@ -1,21 +1,22 @@
 <?php
 
 use App\Exceptions\ExceptionFactory;
-use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\Facility\ClientController;
 use App\Http\Controllers\Facility\ClientGroupController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\FacilityAdminController;
-use App\Http\Controllers\Facility\MeetingAttendantTqueryController;
-use App\Http\Controllers\Facility\MeetingClientTqueryController;
-use App\Http\Controllers\Facility\MeetingController;
-use App\Http\Controllers\Facility\MeetingTqueryController;
 use App\Http\Controllers\Facility\MemberTqueryController;
 use App\Http\Controllers\Facility\StaffController;
 use App\Http\Controllers\Facility\StaffTqueryController;
+use App\Http\Controllers\FacilityMeeting\MeetingAttendantTqueryController;
+use App\Http\Controllers\FacilityMeeting\MeetingClientTqueryController;
+use App\Http\Controllers\FacilityMeeting\MeetingController;
+use App\Http\Controllers\FacilityMeeting\MeetingSeriesController;
+use App\Http\Controllers\FacilityMeeting\MeetingTqueryController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\Tquery\AdminFacilityTqueryController;
@@ -93,9 +94,10 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/meeting')->group(function () {
             Route::post('/', [MeetingController::class, 'post']);
             Route::get('/list', [MeetingController::class, 'list']);
+            Route::post('/conflicts', [MeetingSeriesController::class, 'conflicts']);
             Route::patch('/{meeting}', [MeetingController::class, 'patch']);
-            Route::delete('/{meeting}', [MeetingController::class, 'delete']);
-            Route::post('/{meeting}/clone', [MeetingController::class, 'clone']);
+            Route::delete('/{meeting}', [MeetingSeriesController::class, 'delete']);
+            Route::post('/{meeting}/clone', [MeetingSeriesController::class, 'clone']);
             Route::get('/tquery', [MeetingTqueryController::class, 'get']);
             Route::post('/tquery', [MeetingTqueryController::class, 'post']);
             Route::get('/attendant/tquery', [MeetingAttendantTqueryController::class, 'get']);

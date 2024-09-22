@@ -36,3 +36,61 @@ client_groups:
   clients_count__one: "{{count, number}} członek"
   clients_count__few: "{{count, number}} członków"
   clients_count__many: "{{count, number}} członków"
+
+weekly_time_tables:
+  reset_dates: "Ustaw domyślny zakres dat"
+  weekday_active_checkbox: "Akcje zostaną wykonane tylko na zaznaczonych dniach tygodnia.\nKliknij podwójnie aby zaznaczyć tylko ten dzień tygodnia."
+  click_to_show_week: "Kliknij aby edytować grafik na ten tydzień."
+  overlapping: "Te godziny pracy pokrywają się lub stykają z innym wpisem.\nNależy zastąpić pokrywające się wpisy jednym."
+  selected_week_click_to_deselect: "Zaznaczony tydzień\nKliknij aby cofnąć zaznaczenie"
+  click_to_see_actions: "Kliknij aby zobaczyć możliwe akcje"
+  select_week: "Zaznacz ten tydzień"
+  undo_select_week: "Cofnij zaznaczenie"
+  delete_week:
+    this: "Usuń godziny pracy z tego tygodnia$t(ellipsis)"
+    from_this: "Usuń godziny pracy z tego i kolejnych tygodni, aż do końca tabeli$t(ellipsis)"
+  paste_this_until_end: "Powtarzaj ten tydzień aż do końca tabeli$t(ellipsis)"
+  paste_here: "Kopiuj tutaj godziny pracy z zaznaczonego tygodnia$t(ellipsis)"
+  paste_until_here: "Powtarzaj zaznaczony tydzień aż do tego tygodnia$t(ellipsis)"
+  delete_until_here: "Usuń godziny pracy od zaznaczonego tygodnia aż do tego tygodnia$t(ellipsis)"
+  disabled_title_only_works_forward: "Ta akcja działa tylko w przód w czasie"
+  more_info: "Więcej informacji o zarządzaniu godzinami pracy placówki i pracowników"
+  day_notes:
+    weekday_inactive: "Dzień tygodnia nie jest zaznaczony $t(em_dash) zostanie pominięty przez akcje"
+    holiday: "Dzień wolny od pracy"
+    working_on_facility_non_working_day: "Pracownik pracuje, chociaż placówka nie jest otwarta"
+    facility_leave_time: "Placówka ma wolny dzień lub godziny"
+    staff_leave_time: "Pracownik ma zgłoszoną nieobecność"
+  confirmation:
+    target_weeks:
+      from: "Od"
+      to: "do"
+      interval:
+        1: "każdy tydzień"
+        2: "co drugi tydzień"
+      delete_count__one: "Usunięty zostanie {{count, number}} wpis."
+      delete_count__few: "Usunięte zostaną {{count, number}} wpisy."
+      delete_count__many: "Usuniętych zostanie {{count, number}} wpisów."
+      skip_holidays: "Pomiń dni wolne od pracy"
+    active_weekdays: "Operacja zmodyfikuje tylko zaznaczone dni tygodnia:"
+    paste:
+      title: "Kopiowanie godzin pracy"
+      confirm: "Kopiuj"
+      source_week:
+        title: "Tydzień źródłowy"
+        entries_count__one: "{{count, number}} wpis"
+        entries_count__few: "{{count, number}} wpisy"
+        entries_count__many: "{{count, number}} wpisów"
+      target_weeks:
+        title: "Tygodnie docelowe"
+        delete_existing: "Usuń istniejące godziny pracy w docelowych tygodniach"
+        no_delete_existing: "Uwaga: Godziny pracy istniejące już w docelowych tygodniach nie zostaną usunięte, co może spowodować powstanie nieprawidłowej konfiguracji."
+        paste_count__one: "Utworzony zostanie {{count, number}} wpis skopiowany z tygodnia źródłowego."
+        paste_count__few: "Utworzone zostaną {{count, number}} wpisy skopiowane z tygodnia źródłowego."
+        paste_count__many: "Utworzonych zostanie {{count, number}} wpisów skopiowanych z tygodnia źródłowego."
+    delete:
+      title: "Usunięcie godzin pracy"
+      confirm: "Usuń"
+      target_weeks:
+        title: "Tygodnie"
+  success: "Zmodyfikowano godziny pracy"

@@ -9,5 +9,5 @@ export interface MenuItem {
 }
 
 export const SimpleMenu: ParentComponent<htmlAttributes.div> = (props) => (
-  <div {...htmlAttributes.merge(props, {class: cx(s.simpleMenu, "flex flex-col items-stretch")})} />
+  <div {...htmlAttributes.merge(props, {class: cx(s.simpleMenu, "flex flex-col items-stretch overflow-y-auto")})} />
 );

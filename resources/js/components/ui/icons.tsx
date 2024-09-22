@@ -1,5 +1,5 @@
 import {IconTemplate, IconTypes} from "solid-icons";
-import {BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
+import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
   BsFileEarmarkPerson,
   BsHouse,
@@ -12,6 +12,7 @@ import {
   BsPersonDash,
   BsPersonGear,
 } from "solid-icons/bs";
+import {CgUndo} from "solid-icons/cg";
 import {FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
@@ -60,6 +61,13 @@ export namespace actionIcons {
   export const Repeat: IconTypes = (props) => <BiRegularRepeat {...props} />;
   export const RepeatFirst: IconTypes = (props) => <customIcons.RepeatFirst {...props} />;
   export const RepeatLast: IconTypes = (props) => <customIcons.RepeatLast {...props} />;
+  export const Copy: IconTypes = (props) => <BiRegularCopy {...props} />;
+  export const Paste: IconTypes = (props) => <BiRegularPaste {...props} />;
+  export const Reset: IconTypes = (props) => <CgUndo {...props} />;
+}
+
+export namespace calendarIcons {
+  export const Conflict: IconTypes = (props) => <BiRegularCalendarX {...props} />;
 }
 
 namespace customIcons {

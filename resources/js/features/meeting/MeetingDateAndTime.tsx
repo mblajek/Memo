@@ -5,7 +5,7 @@ import {CheckboxField} from "components/ui/form/CheckboxField";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
 import {EN_DASH} from "components/ui/symbols";
-import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
+import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {
   DayMinuteRange,
   MAX_DAY_MINUTE,
@@ -134,9 +134,9 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
 
   // Delay the duration minutes displayed on the page by a fraction of a second to avoid blinking of the wrong value
   // while the hour wrapping correct is applied.
-  const delayedDurationMinutes = debouncedAccessor(durationMinutes, {timeMs: 1});
+  const delayedDurationMinutes = delayedAccessor(durationMinutes, {timeMs: 1});
   const allDay = () => form.data("time").allDay;
-  const delayedAllDay = debouncedAccessor(allDay, {timeMs: 100});
+  const delayedAllDay = delayedAccessor(allDay, {timeMs: 100});
 
   return (
     <>

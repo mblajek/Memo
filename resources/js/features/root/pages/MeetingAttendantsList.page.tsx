@@ -47,6 +47,8 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
+        cols.meeting.resourceConflictsExist,
+        cols.meeting.resourceConflictsResources,
         ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting_multicolumn"}}),
         cols.meeting.actions,
       ]}

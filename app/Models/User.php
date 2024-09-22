@@ -165,7 +165,7 @@ class User extends Authenticatable
                         $original && blank($original->password) ? 'required_if_accepted:has_password' : null,
                     ],
                     [
-                        $isInsert || $isPatch,
+                        $isInsert,
                         'required_with:password_expire_at',
                     ],
                     [

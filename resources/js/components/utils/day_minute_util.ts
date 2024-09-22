@@ -134,3 +134,11 @@ export function dayMinuteToTimeInput(dayMinute: number) {
 export function dateTimeToTimeInput(dateTime: DateTime) {
   return dateTime.toISOTime().slice(0, 5);
 }
+
+export function dateTimeToDateTimeLocalInput(dateTime: DateTime) {
+  return dateTime.toLocal().toISO().slice(0, 16);
+}
+
+export function dateTimeLocalInputToDateTime(dateTimeLocalInputValue: string) {
+  return DateTime.fromISO(dateTimeLocalInputValue);
+}

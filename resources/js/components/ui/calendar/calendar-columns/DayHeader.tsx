@@ -10,7 +10,7 @@ import {Dynamic} from "solid-js/web";
 import {useHolidays} from "../holidays";
 import {WeekDaysCalculator} from "../week_days_calculator";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface Props extends htmlAttributes.div {
   readonly day: DateTime;

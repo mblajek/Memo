@@ -12,7 +12,7 @@ import {useHolidays} from "./holidays";
 import {Block, Event} from "./types";
 import {WeekDaysCalculator} from "./week_days_calculator";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface Props<M> extends htmlAttributes.div {
   readonly month: DateTime;

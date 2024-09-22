@@ -149,6 +149,13 @@ tables:
     summary__few: "$t(tables.tables.generic.summary__few)"
     summary__many: "$t(tables.tables.generic.summary__many)"
 
+  time_table_weekly:
+    table_name: "Tygodniowe grafiki pracy"
+    column_names:
+      weekDate: "początek tyg."
+      totalWorkTime: "łączny czas pracy"
+      totalWorkTime.desc: "Bazowy czas pracy. Nieobecności i dni wolne placówki nie są odliczane od sumy godzin pracy."
+
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"
@@ -218,6 +225,12 @@ column_groups:
 
 transforms:
   count: "{{base}}$t(models.generic.count_suffix)"
+
+columns_search:
+  placeholder: "Szukaj kolumny"
+  no_results: "Brak pasujących kolumn"
+
+no_persist_visibility: "Ta kolumna jest domyślnie ukrywana, ponieważ uzyskiwanie jej wartości jest kosztowne obliczeniowo"
 
 rows__zero: "Brak wierszy"
 rows__one: "{{count, number}} wiersz"

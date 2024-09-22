@@ -6,7 +6,7 @@ import {TimeSpan} from "../calendar/types";
 import {title} from "../title";
 import {timeSpanSummary, TimeSpanSummary} from "./TimeSpanSummary";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface TimeBlockSummaryProps extends Omit<htmlAttributes.span, "title"> {
   readonly day: DateTime;

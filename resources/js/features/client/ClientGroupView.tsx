@@ -57,7 +57,7 @@ export const ClientGroupView: VoidComponent<Props> = (props) => {
           <StandaloneFieldLabel>
             <Capitalize text={t("models.generic.notes")} />
           </StandaloneFieldLabel>
-          <div>{props.group.notes || <EmptyValueSymbol />} </div>
+          <div class="wrapText">{props.group.notes || <EmptyValueSymbol />} </div>
         </div>
       </div>
       <CreatedByInfo data={props.group} />

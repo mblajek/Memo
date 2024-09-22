@@ -1,4 +1,4 @@
-import {DateTime} from "luxon";
+import {DateTime, Settings} from "luxon";
 import {createSignal} from "solid-js";
 
 // Current time, with seconds accuracy.
@@ -28,3 +28,12 @@ update();
 export const currentTime = getCurrentTime;
 export const currentTimeMinute = getCurrentTimeMinute;
 export const currentDate = getCurrentDate;
+
+export function withNoThrowOnInvalid<T>(func: () => T) {
+  try {
+    Settings.throwOnInvalid = false;
+    return func();
+  } finally {
+    Settings.throwOnInvalid = true;
+  }
+}

@@ -1,5 +1,5 @@
 import {Accessor, Component, createMemo, mergeProps, splitProps} from "solid-js";
-import {debouncedAccessor, htmlAttributes} from "../utils";
+import {delayedAccessor, htmlAttributes} from "../utils";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
 interface Props extends Omit<htmlAttributes.div, "children"> {
@@ -26,13 +26,13 @@ export const HideableSection: Component<Props> = (allProps) => {
   let div: HTMLDivElement | undefined;
   /** Whether the section is fully opened. */
   // eslint-disable-next-line solid/reactivity
-  const hasFullHeight = debouncedAccessor(show, {
+  const hasFullHeight = delayedAccessor(show, {
     timeMs: () => props.transitionTimeMs,
     outputImmediately: (show) => !show,
   });
   /** The show signal, delayed by epsilon. See doc for maxHeight for description. */
   // eslint-disable-next-line solid/reactivity
-  const showDelayedByEpsilon = debouncedAccessor(show, {timeMs: 20});
+  const showDelayedByEpsilon = delayedAccessor(show, {timeMs: 20});
   /**
    * The current max-height. The logic:
    * - If the section is fully opened, it is unset to allow auto height.

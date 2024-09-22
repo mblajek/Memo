@@ -1,5 +1,5 @@
 import {Accessor, For, JSX, VoidComponent, createComputed, createSignal, on} from "solid-js";
-import {cx, debouncedAccessor} from "../utils";
+import {cx, delayedAccessor} from "../utils";
 import {TrackingMarker} from "../utils/TrackingMarker";
 import {Button} from "./Button";
 
@@ -77,7 +77,7 @@ export const Tabs: VoidComponent<Props> = (props) => {
             // Delay hiding the contents by 0ms to avoid showing neither of the tabs for a moment,
             // as this might cause the page to jump up because the contents is suddenly much shorter.
             // eslint-disable-next-line solid/reactivity
-            const isActive = debouncedAccessor(() => tab.id === activeId(), {
+            const isActive = delayedAccessor(() => tab.id === activeId(), {
               timeMs: 0,
               outputImmediately: (active) => active,
             });

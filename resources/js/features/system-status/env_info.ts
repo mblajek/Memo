@@ -3,7 +3,7 @@ import {isDEV} from "components/utils/dev_mode";
 import {useSystemStatusMonitor} from "./system_status_monitor";
 
 export function useEnvInfo() {
-  const {status} = useSystemStatusMonitor();
+  const status = useSystemStatusMonitor().baseStatus;
   return {
     background: () => {
       const st = status();

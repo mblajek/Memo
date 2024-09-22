@@ -3,7 +3,7 @@ import * as combobox from "@zag-js/combobox";
 import {PropTypes, normalizeProps, useMachine} from "@zag-js/solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
-import {cx, debouncedAccessor, htmlAttributes, useLangFunc} from "components/utils";
+import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {useIsFieldsetDisabled} from "components/utils/fieldset_disabled_tracker";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
@@ -26,6 +26,7 @@ import {
   createUniqueId,
   mergeProps,
   on,
+  onMount,
   splitProps,
 } from "solid-js";
 import {Portal} from "solid-js/web";
@@ -97,6 +98,7 @@ export interface MultipleSelectPropsPart {
   readonly onValueChange?: (value: readonly string[]) => void;
   /** Whether to show the button to clear all of the selected values. Defaults to true. */
   readonly showClearButton?: boolean;
+  readonly closeOnSelect?: boolean;
 }
 
 export type SingleSelectProps = SelectBaseProps & SingleSelectPropsPart;
@@ -233,6 +235,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         if (typeof props.onFilterChange === "function") {
           props.onFilterChange?.(undefined);
         }
+        if (props.multiple && value.length && props.closeOnSelect) {
+          setTimeout(() => api().close());
+        }
       },
       // Keep the input empty when the value is selected. The selected value is displayed outside of
       // the input.
@@ -282,8 +287,18 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     createComputed(
       on(
         () => formContext.form.data(props.name),
-        (formValue) =>
-          api().setValue(Array.isArray(formValue) ? (formValue as string[]) : formValue ? [formValue as string] : []),
+        (formValue) => {
+          if (Array.isArray(formValue)) {
+            api().setValue(formValue as string[]);
+          } else if (formValue == undefined) {
+            api().setValue([]);
+            formContext.form.setData(props.name, props.multiple ? [] : "");
+          } else if (formValue === "" && !props.multiple) {
+            api().setValue([]);
+          } else {
+            api().setValue([formValue as string]);
+          }
+        },
       ),
     );
   else
@@ -295,6 +310,14 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       ),
     );
 
+  onMount(() => {
+    if (!props.multiple && !props.nullable && !props.value) {
+      const enabledItems = props.items.filter((item) => !item.disabled);
+      if (enabledItems.length === 1) {
+        api().setValue([enabledItems[0]!.value]);
+      }
+    }
+  });
   const isInternalFilteringMode = () => props.onFilterChange === "internal";
   /** The items after filtering, regardless of the filtering mode. */
   const filteredItems = createMemo(() => {
@@ -503,7 +526,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   }
 
   // eslint-disable-next-line solid/reactivity
-  const isOpenDelayed = debouncedAccessor(() => api().isOpen, {timeMs: 50, outputImmediately: (o) => !o});
+  const isOpenDelayed = delayedAccessor(() => api().isOpen, {timeMs: 50, outputImmediately: (o) => !o});
   return (
     <>
       <FieldBox {...props}>

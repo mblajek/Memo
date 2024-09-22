@@ -1,10 +1,10 @@
 import {FormConfigWithoutTransformFn, Obj} from "@felte/core";
 import {isAxiosError} from "axios";
 import {FelteForm, FormProps} from "components/felte-form/FelteForm";
-import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {Api} from "data-access/memo-api/types";
 import {splitProps} from "solid-js";
 import {ZodSchema} from "zod";
+import {MeetingWithExtraInfo} from "./meeting_api";
 
 export interface AbstractMeetingFormProps<MeetingFormType extends Obj>
   extends FormConfigWithoutTransformFn<MeetingFormType> {
@@ -12,7 +12,7 @@ export interface AbstractMeetingFormProps<MeetingFormType extends Obj>
   readonly extraTranslationsFormNames?: readonly string[];
   readonly viewMode: boolean;
   /** The meeting resource, for showing some of the readonly information about the meeting. */
-  readonly meeting?: MeetingResource;
+  readonly meeting?: MeetingWithExtraInfo;
   /** Whether the meeting date and time should start as editable, even if provided in the initial values. */
   readonly forceTimeEditable?: boolean;
   readonly allowCreateSeries?: boolean;
@@ -36,10 +36,10 @@ export const AbstractMeetingForm = <MeetingFormType extends Obj>(allProps: Props
     "onViewModeChange",
     "onCancel",
     "schema",
-    "children",
   ]);
-  // eslint-disable-next-line solid/reactivity
-  const formProps: FormConfigWithoutTransformFn<MeetingFormType> = formPropsObj;
+  const formProps: FormConfigWithoutTransformFn<MeetingFormType> & Pick<FormProps<MeetingFormType>, "children"> =
+    // eslint-disable-next-line solid/reactivity
+    formPropsObj;
   return (
     <FelteForm
       id={props.id}
@@ -68,8 +68,6 @@ export const AbstractMeetingForm = <MeetingFormType extends Obj>(allProps: Props
         }
       }}
       disabled={props.viewMode}
-    >
-      {props.children}
-    </FelteForm>
+    />
   );
 };

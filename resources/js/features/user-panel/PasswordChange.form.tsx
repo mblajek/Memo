@@ -3,10 +3,11 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {useLangFunc} from "components/utils";
+import {PasswordExpirationState} from "components/utils/password_expiration";
 import {toastSuccess} from "components/utils/toast";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {z} from "zod";
 
 const getSchema = () =>
@@ -26,6 +27,7 @@ type Input = z.input<ReturnType<typeof getSchema>>;
 type Output = z.output<ReturnType<typeof getSchema>>;
 
 interface Props {
+  readonly expiration?: PasswordExpirationState;
   readonly onSuccess?: () => void;
   readonly onCancel?: () => void;
 }
@@ -74,6 +76,9 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
       <PasswordField name="current" autocomplete="current-password" autofocus />
       <PasswordField name="password" autocomplete="new-password" allowShow="whileHeld" />
       <PasswordField name="repeat" autocomplete="new-password" />
+      <Show when={props.expiration}>
+        {(expiration) => <div class="font-semibold text-red-600">{t(`auth.password_expiration.${expiration()}`)}</div>}
+      </Show>
       <FelteSubmit cancel={props.onCancel} />
     </FelteForm>
   );

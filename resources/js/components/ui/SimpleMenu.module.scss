@@ -1,5 +1,7 @@
 .simpleMenu {
-  > button {
+  > button,
+  // Buttons with title are wrapped in <span class="contents">.
+  > span:global(.contents) > button {
     @apply px-2 py-1 text-left text-black disabled:text-opacity-50;
     &:disabled * {
       @apply text-opacity-50;

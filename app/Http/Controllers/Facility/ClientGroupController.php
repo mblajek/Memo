@@ -50,7 +50,11 @@ class ClientGroupController extends ApiController
         tags: ['Facility client'],
         parameters: [new FacilityParameter()],
         responses: [
-            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'data', properties: [
+                    new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+                ]),
+            ])),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
@@ -79,7 +83,7 @@ class ClientGroupController extends ApiController
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
                 new OA\Property(
                     property: 'data', type: 'array', items: new OA\Items(
                     ref: '#/components/schemas/ClientGroupResource'

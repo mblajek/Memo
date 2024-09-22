@@ -129,9 +129,9 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
           autocomplete="off"
           class="h-full w-full min-h-small-input"
           value={inputUsed() ? inputText() : ""}
+          onValueChange={setInputText}
           maxlength={inputUsed() ? undefined : 0}
           disabled={!inputUsed()}
-          onInput={({target: {value}}) => setInputText(value)}
         />
       </div>
     </div>

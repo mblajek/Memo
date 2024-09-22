@@ -2,6 +2,7 @@
 
 namespace App\Tquery\Tables;
 
+use App\Models\User;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqTableAliasEnum;
@@ -13,7 +14,14 @@ final readonly class MemberTquery extends FacilityUserTquery
     protected function getBuilder(): TqBuilder
     {
         $builder = TqBuilder::fromTable(TqTableAliasEnum::users);
-        $builder->join(TqTableAliasEnum::users, TqTableAliasEnum::members, 'user_id', left: false, inv: true);
+        $builder->join(
+            TqTableAliasEnum::users,
+            TqTableAliasEnum::members,
+            'user_id',
+            left: true,
+            inv: true,
+            condition: "`members`.`facility_id` = '{$this->facility->id}'",
+        );
         $builder->join(
             TqTableAliasEnum::members,
             TqTableAliasEnum::staff_members,
@@ -21,8 +29,17 @@ final readonly class MemberTquery extends FacilityUserTquery
             left: true,
             inv: false,
         );
-        $builder->where(fn(TqSingleBind $bind) => //
-        "members.facility_id = {$bind->use()}", false, $this->facility->id, false, false);
+        $builder->where( // return members, global admins and system
+            query: fn(TqSingleBind $bind) => //
+                "`members`.`id` is not null"
+                . " or `users`.`global_admin_grant_id` is not null"
+                . " or `users`.`id` = {$bind->use()}",
+            or: false,
+            value: User::SYSTEM,
+            inverse: false,
+            nullable: false,
+        );
+
         return $builder;
     }
 
@@ -45,8 +62,8 @@ final readonly class MemberTquery extends FacilityUserTquery
         $config->addQuery(
             TqDataTypeEnum::bool,
             fn(string $tableName) => //
-                'select `staff_members`.`id` is not null and `staff_members`.`deactivated_at` is null',
-                'member.is_active_staff',
+            'select `staff_members`.`id` is not null and `staff_members`.`deactivated_at` is null',
+            'member.is_active_staff',
         );
         $config->addJoined(
             TqDataTypeEnum::is_not_null,
