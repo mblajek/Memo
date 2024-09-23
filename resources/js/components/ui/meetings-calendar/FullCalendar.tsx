@@ -12,9 +12,8 @@ import {DayHeader} from "components/ui/calendar/calendar-columns/DayHeader";
 import {HoursArea} from "components/ui/calendar/calendar-columns/HoursArea";
 import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHeader";
 import {DaysRange} from "components/ui/calendar/days_range";
-import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
+import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {NON_NULLABLE, currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
-import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
@@ -147,7 +146,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "helpHref",
   ]);
   const t = useLangFunc();
-  const locale = useLocale();
   const dictionaries = useDictionaries();
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
@@ -307,13 +305,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   });
 
   const [mode, setMode] = createSignal(props.initialMode);
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   function getRange(day: DateTime, m = mode()) {
     switch (m) {
       case "month":
         return new DaysRange(day.startOf("month"), day.endOf("month"));
       case "week":
-        return weekDaysCalculator.dayToWorkdays(day);
+        return getWorkWeekFromDay(day);
       case "day":
         return DaysRange.oneDay(day);
       default:
@@ -412,7 +409,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     let range;
     if (mode() === "week" && daysSelection().length() === 7) {
       // Keep the 7-day week.
-      range = weekDaysCalculator.dayToWeek(currentDate());
+      range = getWeekFromDay(currentDate());
     } else {
       range = getRange(currentDate());
     }
@@ -536,12 +533,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               // Never change tinyCalMonth when switching from month to week.
               if (daysSelectionByMode.get("week")?.[0]().length() === 7) {
                 // Select a calendar week.
-                setDaysSelection(weekDaysCalculator.dayToWeek(prevDaysSelection.start));
+                setDaysSelection(getWeekFromDay(prevDaysSelection.start));
               } else {
                 // Select the first work week of this month.
                 for (const day of prevDaysSelection) {
-                  if (!weekDaysCalculator.isWeekend(day)) {
-                    setDaysSelection(weekDaysCalculator.dayToWorkdays(day));
+                  if (!day.isWeekend) {
+                    setDaysSelection(getWorkWeekFromDay(day));
                     break;
                   }
                 }
@@ -981,7 +978,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       return [];
     }
     const isStaff = staffById().has(resourceId);
-    const daysRange = getMonthCalendarRange(weekDaysCalculator, daysSelection().start);
+    const daysRange = getMonthCalendarRange(daysSelection().start);
     return Array.from(daysRange, (day) => ({
       day,
       content: () => (

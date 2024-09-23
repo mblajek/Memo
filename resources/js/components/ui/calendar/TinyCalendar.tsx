@@ -1,5 +1,4 @@
 import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
-import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
 import {BsCaretDown, BsCaretUp} from "solid-icons/bs";
 import {CgCalendar, CgCalendarToday} from "solid-icons/cg";
@@ -12,7 +11,7 @@ import {SimpleMenu} from "../SimpleMenu";
 import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {useHolidays} from "./holidays";
-import {WeekDaysCalculator} from "./week_days_calculator";
+import {getWeekdays} from "./week_days_calculator";
 
 interface Props extends htmlAttributes.div {
   /** The current selection visible in the tiny calendar. */
@@ -66,8 +65,6 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   ]);
 
   const t = useLangFunc();
-  const locale = useLocale();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   const holidays = useHolidays();
   const monthStart = createMemo(() => props.month.startOf("month"), undefined, {
     equals: (prev, next) => prev.toMillis() === next.toMillis(),
@@ -91,7 +88,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   /** The range of days to show in the calendar. */
   const range = createMemo(() => {
     // Always show (at least) two days of the previous month.
-    const start = weekDaysCalculator.startOfWeek(monthStart().minus({days: 2}));
+    const start = monthStart().minus({days: 2}).startOf("week", {useLocaleWeeks: true});
     // Show 6 weeks.
     const numDays = 6 * 7;
     return new DaysRange(start, start.plus({days: numDays - 1}));
@@ -107,9 +104,9 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
         isToday,
         classes: cx({
           [s.today!]: isToday,
-          [s.weekend!]: weekDaysCalculator.isWeekend(day),
-          [s.startOfWeek!]: weekDaysCalculator.isStartOfWeek(day),
-          [s.endOfWeek!]: weekDaysCalculator.isEndOfWeek(day),
+          [s.weekend!]: day.isWeekend,
+          [s.startOfWeek!]: day.startOf("week", {useLocaleWeeks: true}).hasSame(day, "day"),
+          [s.endOfWeek!]: day.endOf("week", {useLocaleWeeks: true}).hasSame(day, "day"),
           [s.holiday!]: holidays.isHoliday(day),
           [s.otherMonth!]: day.month !== monthStart().month,
         }),
@@ -197,7 +194,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
       </div>
       <div class={s.days}>
         <Show when={props.showWeekdayNames}>
-          <For each={weekDaysCalculator.weekdays}>
+          <For each={getWeekdays()}>
             {({exampleDay, isWeekend}) => (
               <div class={cx(s.weekday, {[s.weekend!]: isWeekend})}>
                 {exampleDay.toLocaleString({weekday: "narrow"})}

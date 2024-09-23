@@ -10,7 +10,6 @@ import App from "./App";
 import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {GlobalPageElements} from "./components/utils/GlobalPageElements";
-import {LocaleContext} from "./components/utils/LocaleContext";
 import {DictionariesAndAttributesProvider} from "./data-access/memo-api/dictionaries_and_attributes_context";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
@@ -41,38 +40,36 @@ render(() => {
         pluralSeparator: "__",
       }}
     >
-      <LocaleContext.Provider value={new Intl.Locale(navigator.language)}>
-        <Show when={!translationsLoaded()}>
-          {/* Show the loader until the translations are loaded. The page is displayed underneath, and
+      <Show when={!translationsLoaded()}>
+        {/* Show the loader until the translations are loaded. The page is displayed underneath, and
         the strings will get updated reactively when the translations are ready. */}
-          <MemoLoader />
-        </Show>
-        <MetaProvider>
-          <ErrorBoundary
-            fallback={(error, reset) => {
-              console.error(error);
-              return <FatalError error={error} reset={reset} />;
+        <MemoLoader />
+      </Show>
+      <MetaProvider>
+        <ErrorBoundary
+          fallback={(error, reset) => {
+            console.error(error);
+            return <FatalError error={error} reset={reset} />;
+          }}
+        >
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className: "mr-4 !pr-0",
+              duration: TOAST_DURATION_SECS * 1000,
             }}
-          >
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                className: "mr-4 !pr-0",
-                duration: TOAST_DURATION_SECS * 1000,
-              }}
-            />
-            <InitializeTanstackQuery>
-              <DictionariesAndAttributesProvider>
-                <TimeZoneController>
-                  <App />
-                </TimeZoneController>
-              </DictionariesAndAttributesProvider>
-            </InitializeTanstackQuery>
-            <GlobalPageElements />
-            <LoaderInPortal />
-          </ErrorBoundary>
-        </MetaProvider>
-      </LocaleContext.Provider>
+          />
+          <InitializeTanstackQuery>
+            <DictionariesAndAttributesProvider>
+              <TimeZoneController>
+                <App />
+              </TimeZoneController>
+            </DictionariesAndAttributesProvider>
+          </InitializeTanstackQuery>
+          <GlobalPageElements />
+          <LoaderInPortal />
+        </ErrorBoundary>
+      </MetaProvider>
     </TransProvider>
   );
 }, root);

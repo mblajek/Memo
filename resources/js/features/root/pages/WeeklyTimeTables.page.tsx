@@ -4,7 +4,7 @@ import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
-import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
+import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {capitalizeString} from "components/ui/Capitalize";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
@@ -29,7 +29,6 @@ import {TimeDuration} from "components/ui/TimeDuration";
 import {title} from "components/ui/title";
 import {currentDate, cx, DATE_FORMAT, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
-import {useLocale} from "components/utils/LocaleContext";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
 import {AlignedTime} from "components/utils/time_formatting";
@@ -107,15 +106,14 @@ export default (() => {
   const modelsQuerySpecs = useModelQuerySpecs();
   const mutationsTracker = useMutationsTracker();
   const {meetingTypeDict} = useFixedDictionaries();
-  const locale = useLocale();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   const activeFacility = useActiveFacility();
   const actions = useWeeklyTimeTablesActions();
   const [selection, setSelection] = createSignal<string>(SELECTION_FACILITY_WIDE);
   const [fromMonth, setFromMonth] = createSignal("");
   const [toMonth, setToMonth] = createSignal("");
   const weekdaysSelection = new Map<WeekdayNumbers, Signal<boolean>>();
-  for (const {weekday} of weekDaysCalculator.weekdays) {
+  const weekdays = getWeekdays();
+  for (const {weekday} of weekdays) {
     // eslint-disable-next-line solid/reactivity
     weekdaysSelection.set(weekday, createSignal(true));
   }
@@ -150,10 +148,12 @@ export default (() => {
     version: [PERSISTENCE_VERSION],
   });
   const fromDate = createMemo(() =>
-    fromMonth() ? weekDaysCalculator.startOfWeek(DateTime.fromFormat(fromMonth(), "yyyy-MM")) : undefined,
+    fromMonth() ? DateTime.fromFormat(fromMonth(), "yyyy-MM").startOf("week", {useLocaleWeeks: true}) : undefined,
   );
   const toDate = createMemo(() =>
-    toMonth() ? weekDaysCalculator.endOfWeek(DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month")) : undefined,
+    toMonth()
+      ? DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month").endOf("week", {useLocaleWeeks: true})
+      : undefined,
   );
   const {dataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
@@ -195,7 +195,7 @@ export default (() => {
       weekDate,
       byWeekday: [
         undefined,
-        ...weekDaysCalculator.weekdays
+        ...weekdays
           .sort((a, b) => a.weekday - b.weekday)
           .map(({index}) => {
             const day = weekDate.plus({days: index});
@@ -228,7 +228,7 @@ export default (() => {
           : (meeting) => !meeting.isFacilityWide;
       for (const meeting of meetings) {
         const day = DateTime.fromISO(meeting.date);
-        const weekDate = weekDaysCalculator.startOfWeek(day);
+        const weekDate = day.startOf("week", {useLocaleWeeks: true});
         let weekData = weeksByMillis.get(weekDate.toMillis());
         if (!weekData) {
           weekData = createWeekData(weekDate);
@@ -332,7 +332,7 @@ export default (() => {
         id: "weekDate",
         accessorFn: (d) => d.weekDate,
         cell: (ctx: CellContext<WeekData, DateTime>) => {
-          const week = () => weekDaysCalculator.dayToWeek(ctx.getValue());
+          const week = () => getWeekFromDay(ctx.getValue());
           return (
             <PaddedCell class="flex items-center gap-1">
               <span
@@ -488,7 +488,7 @@ export default (() => {
         },
         minSize: 0,
       },
-      ...weekDaysCalculator.weekdays.map(({weekday}) => {
+      ...weekdays.map(({weekday}) => {
         const [weekdaySelected, setWeekdaySelected] = weekdaysSelection.get(weekday)!;
         return {
           id: `weekday-${weekday}`,
