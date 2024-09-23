@@ -31,7 +31,12 @@ export const FacilityControl: VoidComponent = () => {
         facilities[0]
       )?.id;
     },
-    effect: setActiveFacilityId,
+    effect: (facilityId) => {
+      setActiveFacilityId(facilityId);
+      if (facilityId !== statusQuery.data!.user.lastLoginFacilityId) {
+        User.setLastLoginFacilityId(facilityId);
+      }
+    },
   });
   return (
     <Show when={userFacilities()}>
@@ -50,21 +55,18 @@ export const FacilityControl: VoidComponent = () => {
               nullable={false}
               value={activeFacilityId()}
               onValueChange={(facilityId) => {
-                if (facilityId) {
-                  if (facilityId !== activeFacilityId()) {
-                    const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
-                    if (url) {
-                      // Facility pages might assume that the active facility id never changes, because changing the facility
-                      // always recreates the whole page by performing this navigation.
-                      navigate("/");
-                      setTimeout(() => {
-                        setActiveFacilityId(facilityId);
-                        navigate(`/${url}`);
-                      });
-                    }
+                if (facilityId && facilityId !== activeFacilityId()) {
+                  const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
+                  if (url) {
+                    // Facility pages might assume that the active facility id never changes, because changing the facility
+                    // always recreates the whole page by performing this navigation.
+                    navigate("/");
+                    setTimeout(() => {
+                      setActiveFacilityId(facilityId);
+                      navigate(`/${url}`);
+                    });
                   }
-                  if (facilityId !== statusQuery.data!.user.lastLoginFacilityId)
-                    User.setLastLoginFacilityId(facilityId);
+                  User.setLastLoginFacilityId(facilityId);
                 }
               }}
             />
