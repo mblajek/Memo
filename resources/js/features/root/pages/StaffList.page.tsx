@@ -1,5 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
+import {CheckboxInput} from "components/ui/CheckboxInput";
 import {Email} from "components/ui/Email";
 import {cellFunc, createTableTranslations, PaddedCell, ShowCellVal} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
@@ -31,7 +32,6 @@ export default (() => {
       staticEntityURL={`facility/${activeFacilityId()}/user/staff`}
       staticTranslations={createTableTranslations(["staff", "facility_user", "user"])}
       staticPersistenceKey="facilityStaff"
-      intrinsicFilter={showInactive() ? undefined : {type: "column", column: "staff.isActive", op: "=", val: true}}
       columns={[
         {name: "id", initialVisible: false},
         {
@@ -75,22 +75,19 @@ export default (() => {
         {name: "completedMeetingsCountLastMonth"},
         {name: "plannedMeetingsCount", initialVisible: false},
         {name: "plannedMeetingsCountNextMonth"},
-        // TODO: Switch to entity: "staff".
-        ...getCreatedUpdatedColumns(),
+        ...getCreatedUpdatedColumns({entity: "staff"}),
       ]}
+      intrinsicFilter={showInactive() ? undefined : {type: "column", column: "staff.isActive", op: "=", val: true}}
+      intrinsicSort={[{type: "column", column: "name", desc: false}]}
       initialSort={[{id: "name", desc: false}]}
       customSectionBelowTable={
         isFacilityAdmin() ? (
           <div class="flex items-center ml-2">
-            <label class="flex gap-1 items-center">
-              <input
-                type="checkbox"
-                id="staff_list_only_active"
-                checked={showInactive()}
-                onInput={() => setShowInactive((a) => !a)}
-              />
-              {t("facility_user.staff.list_show_inactive")}
-            </label>
+            <CheckboxInput
+              checked={showInactive()}
+              onChecked={setShowInactive}
+              label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
+            />
           </div>
         ) : undefined
       }

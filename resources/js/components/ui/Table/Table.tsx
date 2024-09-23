@@ -13,7 +13,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import {currentTime, cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {currentTimeSecond, cx, delayedAccessor, useLangFunc} from "components/utils";
 import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
@@ -37,6 +37,7 @@ import {BigSpinner} from "../Spinner";
 import {EmptyValueSymbol} from "../symbols";
 import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
+import {useColumnsByPrefixUtil} from "./tquery_filters/fuzzy_filter";
 
 export interface TableTranslations {
   tableName(o?: TOptions): string;
@@ -46,11 +47,14 @@ export interface TableTranslations {
   /** Summary of the table. */
   summary(count: number, activeColumnGroups?: readonly string[], o?: TOptions): string;
   columnGroup(group: string, o?: TOptions): string;
+  columnsByPrefix?: ReadonlyMap<string, string>;
 }
 
 export function createTableTranslations(tableName: string | string[]): TableTranslations {
   const t = useLangFunc();
+  const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const names = typeof tableName === "string" ? [tableName] : tableName;
+  const namesWithGeneric = [...names, "generic"];
   const tableNameKeys = [
     ...names.map((n) => `tables.tables.${n}.table_name`),
     ...names.map((n) => `models.${n}._name_plural`),
@@ -64,15 +68,15 @@ export function createTableTranslations(tableName: string | string[]): TableTran
     `models.generic.`,
   ];
   const summaryKeys = [...names.map((n) => `tables.tables.${n}.summary`), "tables.tables.generic.summary"];
-  const summaryWithColumnGroup = (columnGroup: string) => [
-    ...names.map((n) => `tables.tables.${n}.with_column_group.${columnGroup}.summary`),
-    `tables.tables.generic.with_column_group.${columnGroup}.summary`,
-  ];
+  const summaryWithColumnGroup = (columnGroup: string) =>
+    namesWithGeneric.map((n) => `tables.tables.${n}.with_column_group.${columnGroup}.summary`);
   const columnGroupsKeyPrefixes = [
-    ...names.map((n) => `tables.tables.${n}.column_groups.`),
-    `tables.tables.generic.column_groups.`,
+    ...namesWithGeneric.map((n) => `tables.tables.${n}.column_groups.`),
     ...columnNameKeyPrefixes,
   ];
+  const columnsByPrefix = columnsByPrefixUtil.fromColumnPrefixes(
+    namesWithGeneric.map((n) => `tables.tables.${n}.column_prefixes`),
+  );
   return {
     tableName: (o) => t(tableNameKeys, o),
     columnName: (column, o) =>
@@ -99,6 +103,7 @@ export function createTableTranslations(tableName: string | string[]): TableTran
         columnGroupsKeyPrefixes.map((p) => p + group),
         o,
       ),
+    columnsByPrefix,
   };
 }
 
@@ -220,16 +225,16 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
   // in onScrollEnd, but also after enough time is elapsed since the last onScroll event, because in some
   // situations the onScrollEnd event is not reliable, and we don't want to get stuck thinking the table
   // is still scrolling when it's not.
-  const isScrolling = createMemo(() => currentTime().toMillis() - lastScrollTimestamp() < 100);
+  const isScrolling = createMemo(() => currentTimeSecond().toMillis() - lastScrollTimestamp() < 100);
   const [desiredScrollX, setDesiredScrollX] = createSignal<number>();
   createEffect(
     on(
       [
         scrollingWrapper,
         isScrolling,
-        // Allow multiple steps to accummulate before this is triggered. This improves smoothness.
+        // Allow multiple steps to accumulate before this is triggered. This improves smoothness.
         // eslint-disable-next-line solid/reactivity
-        debouncedAccessor(desiredScrollX, {
+        delayedAccessor(desiredScrollX, {
           timeMs: 100,
           outputImmediately: (x) => x === undefined,
         }),
@@ -361,6 +366,7 @@ export interface TableFeaturesConfig {
 }
 
 const DEFAULT_PAGE_SIZE = 50;
+const PAGE_SIZE_WITHOUT_PAGINATION = 10000;
 
 /**
  * Returns base options for createSolidTable.
@@ -382,7 +388,9 @@ export function getBaseTableOptions<T>({
   const columnVisibilitySignal = getFeatureSignal(columnVisibility, {});
   const sortingSignal = getFeatureSignal(sorting, []);
   const globalFilterSignal = getFeatureSignal(globalFilter, "");
-  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE});
+  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE}) || [
+    () => ({pageIndex: 0, pageSize: PAGE_SIZE_WITHOUT_PAGINATION}),
+  ];
   const baseState: Partial<TableState> = {
     get columnVisibility() {
       return columnVisibilitySignal?.[0]();

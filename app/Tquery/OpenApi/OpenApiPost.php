@@ -66,7 +66,7 @@ class OpenApiPost extends OA\Post
             parameters: $parameters,
             responses: [
                 new OA\Response(
-                    response: 200, description: 'OK', content: new  OA\JsonContent(properties: [
+                    response: 200, description: 'OK', content: new OA\JsonContent(properties: [
                     new OA\Property(property: 'meta', properties: [
                         new OA\Property(
                             property: 'columns', type: 'array', items: new OA\Items(properties: [

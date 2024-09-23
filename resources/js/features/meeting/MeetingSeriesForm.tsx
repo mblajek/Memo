@@ -2,13 +2,11 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm, FormProps, useFormContext} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {useHolidays} from "components/ui/calendar/holidays";
-import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {RangeField} from "components/ui/form/RangeField";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {DATE_FORMAT, cx, useLangFunc} from "components/utils";
-import {useLocale} from "components/utils/LocaleContext";
 import {FormattedDateTime} from "components/utils/date_formatting";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {DateTime} from "luxon";
@@ -82,8 +80,6 @@ interface MeetingSeriseControlsProps {
 export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = (props) => {
   const t = useLangFunc();
   const {form, translations} = useFormContext<MeetingSeriesFormType>();
-  const locale = useLocale();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   const holidays = useHolidays();
   const startDate = createMemo(() => props.startDate.startOf("day"));
   const [meetingDatesTable, setMeetingDatesTable] = createSignal<HTMLDivElement>();
@@ -126,10 +122,7 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
 
   const MeetingDate: VoidComponent<{date: DateTime; class?: string}> = (props) => (
     <span
-      class={cx(
-        weekDaysCalculator.isWeekend(props.date) || holidays.isHoliday(props.date) ? "text-red-800" : "text-black",
-        props.class,
-      )}
+      class={cx(props.date.isWeekend || holidays.isHoliday(props.date) ? "text-red-800" : "text-black", props.class)}
     >
       <FormattedDateTime dateTime={props.date} format={{...DATE_FORMAT, weekday: "short"}} alignWeekday />
     </span>
@@ -175,8 +168,7 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
                     date.hasSame(startDate(), "day")
                       ? true
                       : // By default skip weekends (unless the start date is on a weekend) and holidays.
-                        !holidays.isHoliday(date) &&
-                          (!weekDaysCalculator.isWeekend(date) || weekDaysCalculator.isWeekend(startDate())),
+                        !holidays.isHoliday(date) && (!date.isWeekend || startDate().isWeekend),
                   ),
                 );
               }

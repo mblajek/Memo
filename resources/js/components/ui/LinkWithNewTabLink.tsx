@@ -1,10 +1,10 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
 import {FiExternalLink} from "solid-icons/fi";
-import {ParentComponent, Show, splitProps} from "solid-js";
+import {mergeProps, ParentComponent, Show, splitProps} from "solid-js";
 import {useLangFunc} from "../utils";
 import {title} from "./title";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface Props extends AnchorProps {
   /** Whether the content should be a link to open in the same tab. Default: true. */
@@ -12,6 +12,7 @@ interface Props extends AnchorProps {
   /** Whether the link icon to open in the new tab should be displayed. Default: same as sameTabLink. */
   readonly newTabLink?: boolean;
   readonly newTabLinkTitle?: string;
+  readonly newTabLinkProps?: Partial<AnchorProps>;
 }
 
 /**
@@ -20,22 +21,27 @@ interface Props extends AnchorProps {
  * The primary link is just a text instead if it would go to the current page.
  */
 export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
-  const [props, anchorProps] = splitProps(allProps, ["sameTabLink", "newTabLink", "newTabLinkTitle", "children"]);
+  const [props, anchorProps] = splitProps(allProps, [
+    "sameTabLink",
+    "newTabLink",
+    "newTabLinkTitle",
+    "newTabLinkProps",
+    "children",
+  ]);
   const t = useLangFunc();
   const location = useLocation();
-  const isOnThisUserPage = () => location.pathname === anchorProps.href;
+  const isOnThisPage = () => location.pathname === anchorProps.href;
+  // eslint-disable-next-line solid/reactivity
+  const newTabAnchorProps = mergeProps(anchorProps, () => props.newTabLinkProps);
   return (
     <span class="text-current">
-      <Show
-        when={isOnThisUserPage() || props.sameTabLink === false}
-        fallback={<A {...anchorProps}>{props.children}</A>}
-      >
+      <Show when={isOnThisPage() || props.sameTabLink === false} fallback={<A {...anchorProps}>{props.children}</A>}>
         {props.children}
       </Show>
       <Show when={(props.newTabLink ?? props.sameTabLink) !== false}>
         {" "}
         <span use:title={props.newTabLinkTitle || t("open_in_new_tab")}>
-          <A {...anchorProps} target="_blank">
+          <A {...newTabAnchorProps} target="_blank">
             <FiExternalLink class="inlineIcon strokeIcon" />
           </A>
         </span>

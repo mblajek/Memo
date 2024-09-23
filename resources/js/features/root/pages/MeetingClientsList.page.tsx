@@ -30,29 +30,24 @@ export default (() => {
       staticPersistenceKey="facilityMeetingClients"
       // This table has multiple heavy to render columns.
       nonBlocking
-      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
-      intrinsicSort={[
-        {type: "column", column: "date", desc: true},
-        {type: "column", column: "startDayminute", desc: true},
-      ]}
       columns={[
         cols.attendant.attendantClient,
         tableAttributeColumnConfigs.client(),
-        {name: "client.groups.count", initialVisible: false, columnGroups: "attendant"},
-        {name: "client.groups.*.role", initialVisible: false, columnGroups: "attendant"},
+        {name: "client.groups.count", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "client.groups.*.role", initialVisible: false, columnGroups: "attendant_multicolumn"},
         {
           name: "client.groups.*.clients.*.userId",
           columnDef: {cell: customTableCells.facilityUsers()},
           initialVisible: false,
-          columnGroups: "attendant",
+          columnGroups: "attendant_multicolumn",
         },
-        {name: "firstMeetingDate", initialVisible: false, columnGroups: "attendant"},
-        {name: "lastMeetingDate", initialVisible: false, columnGroups: "attendant"},
-        {name: "completedMeetingsCount", initialVisible: false, columnGroups: "attendant"},
-        {name: "completedMeetingsCountLastMonth", initialVisible: false, columnGroups: "attendant"},
-        {name: "plannedMeetingsCount", initialVisible: false, columnGroups: "attendant"},
-        {name: "plannedMeetingsCountNextMonth", initialVisible: false, columnGroups: "attendant"},
-        ...getCreatedUpdatedColumns({entity: "client", overrides: {columnGroups: "attendant"}}),
+        {name: "firstMeetingDate", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "lastMeetingDate", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "completedMeetingsCount", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "completedMeetingsCountLastMonth", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "plannedMeetingsCount", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        {name: "plannedMeetingsCountNextMonth", initialVisible: false, columnGroups: "attendant_multicolumn"},
+        ...getCreatedUpdatedColumns({entity: "client", overrides: {columnGroups: "attendant_multicolumn"}}),
         cols.attendant.get("attendantClientGroup", {initialVisible: true}),
         cols.attendant.attendanceStatus,
         cols.meeting.id,
@@ -79,8 +74,15 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
-        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting"}}),
+        cols.meeting.resourceConflictsExist,
+        cols.meeting.resourceConflictsResources,
+        ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting_multicolumn"}}),
         cols.meeting.actions,
+      ]}
+      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
+      intrinsicSort={[
+        {type: "column", column: "date", desc: true},
+        {type: "column", column: "startDayminute", desc: true},
       ]}
       initialSort={[{id: "date", desc: true}]}
       helpHref="/help/reports#meeting-clients"

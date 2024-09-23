@@ -2,15 +2,13 @@ import {Button} from "components/ui/Button";
 import {capitalizeString} from "components/ui/Capitalize";
 import {title} from "components/ui/title";
 import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
-import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
 import {FaSolidCircleDot} from "solid-icons/fa";
 import {VoidComponent, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {useHolidays} from "../holidays";
-import {WeekDaysCalculator} from "../week_days_calculator";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface Props extends htmlAttributes.div {
   readonly day: DateTime;
@@ -21,14 +19,12 @@ interface Props extends htmlAttributes.div {
 export const DayHeader: VoidComponent<Props> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["day", "onDateClick"]);
   const t = useLangFunc();
-  const locale = useLocale();
   const holidays = useHolidays();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   return (
     <div
       {...htmlAttributes.merge(divProps, {
         class: cx("w-full flex flex-col items-center px-1 overflow-clip", {
-          "text-red-800": holidays.isHoliday(props.day) || weekDaysCalculator.isWeekend(props.day),
+          "text-red-800": holidays.isHoliday(props.day) || props.day.isWeekend,
         }),
       })}
     >

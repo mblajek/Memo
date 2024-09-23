@@ -1,8 +1,9 @@
-import {DateTime} from "luxon";
-import {createSignal} from "solid-js";
+import {DateTime, Settings} from "luxon";
+import {createEffect, createSignal, on} from "solid-js";
+import {timeZone} from "time_zone_controller";
 
 // Current time, with seconds accuracy.
-const [getCurrentTime, setCurrentTime] = createSignal(DateTime.now());
+const [getCurrentTimeSecond, setCurrentTimeSecond] = createSignal(DateTime.now());
 // Current time, with minutes accuracy.
 const [getCurrentTimeMinute, setCurrentTimeMinute] = createSignal(DateTime.now().startOf("minute"));
 // Current date, with days accuracy.
@@ -12,11 +13,11 @@ function update() {
   const now = DateTime.now();
   if (now.minute !== getCurrentTimeMinute().minute) {
     setCurrentTimeMinute(now.startOf("minute"));
-    if (now.day !== getCurrentTime().day) {
+    if (now.day !== getCurrentTimeSecond().day) {
       setCurrentDate(now.startOf("day"));
     }
   }
-  setCurrentTime(now);
+  setCurrentTimeSecond(now);
   // Update again at the start of the next second.
   setTimeout(update, 1000 - now.millisecond);
 }
@@ -25,6 +26,22 @@ function update() {
 // eslint-disable-next-line solid/reactivity
 update();
 
-export const currentTime = getCurrentTime;
+createEffect(
+  on(timeZone, (timeZone) => {
+    setCurrentTimeMinute((t) => t.setZone(timeZone));
+    setCurrentTimeSecond((t) => t.setZone(timeZone));
+  }),
+);
+
+export const currentTimeSecond = getCurrentTimeSecond;
 export const currentTimeMinute = getCurrentTimeMinute;
 export const currentDate = getCurrentDate;
+
+export function withNoThrowOnInvalid<T>(func: () => T) {
+  try {
+    Settings.throwOnInvalid = false;
+    return func();
+  } finally {
+    Settings.throwOnInvalid = true;
+  }
+}

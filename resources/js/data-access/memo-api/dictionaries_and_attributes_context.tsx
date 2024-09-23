@@ -1,5 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils";
+import {Modifiable} from "components/utils/modifiable";
 import {translationsLoaded} from "i18n_loader";
 import {Accessor, ParentComponent, createContext, createMemo, useContext} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -32,7 +33,7 @@ export const DictionariesAndAttributesProvider: ParentComponent<Props> = (props)
   // Treat the attributes as static.
   // eslint-disable-next-line solid/reactivity
   const {allDictionaries, allAttributes} = props;
-  const thisContext: Partial<{-readonly [K in keyof ContextValue]: ContextValue[K]}> = {};
+  const thisContext: Partial<Modifiable<ContextValue>> = {};
   const parentContext = useContext(Context);
   if (allDictionaries) {
     thisContext.allDictionaries = allDictionaries;

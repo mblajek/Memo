@@ -6,7 +6,7 @@ import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
 import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
-import {getMeetingLinkData} from "components/ui/meetings-calendar/meeting_link";
+import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {QueryBarrier, useLangFunc} from "components/utils";
 import {notFoundError} from "components/utils/NotFoundError";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
@@ -133,7 +133,9 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
             <div class="relative flex flex-col">
               <div class="flex justify-between">
                 <Show when={props.showGoToMeetingButton} fallback={<span />}>
-                  <LinkWithNewTabLink {...getMeetingLinkData(`/${activeFacility()?.url}/calendar`, meeting())}>
+                  <LinkWithNewTabLink
+                    {...getCalendarViewLinkData(`/${activeFacility()?.url}/calendar`, {meeting: meeting()})}
+                  >
                     {t("meetings.show_in_calendar")}
                   </LinkWithNewTabLink>
                 </Show>
@@ -147,10 +149,10 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                 meeting={meeting()}
                 onSubmit={updateMeeting}
                 onCancel={() => {
-                  if (props.onViewModeChange) {
-                    props.onViewModeChange(true);
-                  } else {
+                  if (props.viewMode || !props.onViewModeChange) {
                     props.onCancel?.();
+                  } else {
+                    props.onViewModeChange(true);
                   }
                 }}
               />

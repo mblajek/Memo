@@ -49,10 +49,12 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
+        cols.meeting.resourceConflictsExist,
+        cols.meeting.resourceConflictsResources,
         ...getCreatedUpdatedColumns(),
         cols.meeting.actions,
       ]}
-      columnGroups={{overrides: {meeting: false}}}
+      columnGroups={{overrides: {meeting_multicolumn: false}}}
       initialSort={[{id: "date", desc: true}]}
       helpHref="/help/reports#meetings"
     />

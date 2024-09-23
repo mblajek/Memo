@@ -109,9 +109,9 @@ required_array_keys: "Pole {{attribute}} musi zawierać wartości: {{values, lis
 required_if: "Pole {{attribute}} jest wymagane gdy {{other}} ma wartość {{value}}."
 required_if_accepted: "To pole jest wymagane gdy {{other}} jest wybrane."
 required_unless: "Pole {{attribute}} jest wymagane jeżeli {{other}} nie znajduje się w {{values, list(type: disjunction)}}."
-required_with: "Pole {{attribute}} jest wymagane gdy {{values}} jest obecny."
+required_with: "Pole {{attribute}} jest wymagane gdy {{values}} jest obecne."
 required_with_all: "Pole {{attribute}} jest wymagane gdy wszystkie {{values, list}} są obecne."
-required_without: "Pole {{attribute}} jest wymagane gdy {{values}} nie jest obecny."
+required_without: "Pole {{attribute}} jest wymagane gdy {{values}} nie jest obecne."
 required_without_all: "Pole {{attribute}} jest wymagane gdy żadne z {{values, list(type: disjunction)}} nie są obecne."
 same: "Pole {{attribute}} i {{other}} muszą być takie same."
 size:

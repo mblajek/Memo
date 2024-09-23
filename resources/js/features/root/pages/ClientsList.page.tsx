@@ -56,7 +56,7 @@ export default (() => {
         {name: "plannedMeetingsCountNextMonth"},
         ...getCreatedUpdatedColumns({entity: "client"}),
       ]}
-      columnGroups={{overrides: {attendant: false}}}
+      columnGroups={{overrides: {attendant_multicolumn: false}}}
       intrinsicSort={[
         {type: "column", column: "lastMeetingDate", desc: true},
         {type: "column", column: "name", desc: false},

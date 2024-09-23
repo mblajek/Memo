@@ -1,10 +1,9 @@
 import {cx, htmlAttributes} from "components/utils";
-import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
-import {For, JSX, VoidComponent, createMemo, splitProps} from "solid-js";
+import {createMemo, For, JSX, splitProps, VoidComponent} from "solid-js";
 import {LoadingPane} from "../LoadingPane";
 import {DaysRange} from "./days_range";
-import {WeekDaysCalculator} from "./week_days_calculator";
+import {getWeekdays} from "./week_days_calculator";
 
 interface Props extends htmlAttributes.div {
   readonly month: DateTime;
@@ -21,9 +20,8 @@ export interface MonthCalendarDay {
 
 export const MonthCalendar: VoidComponent<Props> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["month", "days", "isLoading", "onWheelWithAlt"]);
-  const locale = useLocale();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
-  const daysRange = () => getMonthCalendarRange(weekDaysCalculator, props.month);
+  const weekdays = getWeekdays();
+  const daysRange = () => getMonthCalendarRange(props.month);
   const calendarDaysMap = createMemo<ReadonlyMap<number, MonthCalendarDay>>(() => {
     const map = new Map<number, MonthCalendarDay>();
     for (const day of props.days) {
@@ -36,7 +34,7 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
       <div
         class="h-full p-px grid gap-px"
         style={{
-          "grid-template-columns": `[content-start] ${weekDaysCalculator.weekdays
+          "grid-template-columns": `[content-start] ${weekdays
             .map(({isWeekend}) => `minmax(0, ${isWeekend ? "0.75" : "1"}fr)`)
             .join(" ")} [content-end] var(--sb-size)`,
           "grid-template-rows": "min-content 1fr",
@@ -44,7 +42,7 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
       >
         <div class="bg-gray-300 row-span-full rounded-sm -m-px" style={{"grid-column": "content"}} />
         <div class="col-span-full row-start-1 grid grid-rows-subgrid grid-cols-subgrid">
-          <For each={weekDaysCalculator.weekdays}>
+          <For each={weekdays}>
             {({exampleDay, isWeekend}) => (
               <div
                 class={cx(
@@ -87,9 +85,9 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
   );
 };
 
-export function getMonthCalendarRange(weekDaysCalculator: WeekDaysCalculator, day: DateTime) {
+export function getMonthCalendarRange(day: DateTime) {
   return new DaysRange(
-    weekDaysCalculator.startOfWeek(day.startOf("month")),
-    weekDaysCalculator.endOfWeek(day.endOf("month")),
+    day.startOf("month").startOf("week", {useLocaleWeeks: true}),
+    day.endOf("month").endOf("week", {useLocaleWeeks: true}),
   );
 }

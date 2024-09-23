@@ -1,4 +1,4 @@
-import {cx, debouncedAccessor} from "components/utils";
+import {cx, delayedAccessor} from "components/utils";
 import {Show, VoidComponent, createSignal, onCleanup, onMount} from "solid-js";
 import {Portal} from "solid-js/web";
 import MemoIcon from "./MemoLoader.svg";
@@ -12,8 +12,10 @@ const [loaderCount, setLoaderCount] = createSignal(0);
  * is at least one MemoLoader element rendered.
  */
 export const MemoLoader: VoidComponent = () => {
-  onMount(() => setLoaderCount((v) => v + 1));
-  onCleanup(() => setLoaderCount((v) => v - 1));
+  onMount(() => {
+    setLoaderCount((v) => v + 1);
+    onCleanup(() => setLoaderCount((v) => v - 1));
+  });
   return <></>;
 };
 
@@ -24,7 +26,7 @@ export const MemoLoader: VoidComponent = () => {
 export const LoaderInPortal: VoidComponent = () => {
   const isVisible = () => !!loaderCount();
   // Destroy the loader element completely a moment after disappearing.
-  const exists = debouncedAccessor(isVisible, {timeMs: 1000, outputImmediately: (v) => v});
+  const exists = delayedAccessor(isVisible, {timeMs: 1000, outputImmediately: (v) => v});
   return (
     <Show when={exists()}>
       <Portal>

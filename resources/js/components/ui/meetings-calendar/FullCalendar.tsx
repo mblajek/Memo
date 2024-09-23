@@ -1,7 +1,7 @@
 import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {CalendarColumn, ColumnsCalendar} from "components/ui/calendar/ColumnsCalendar";
 import {MonthCalendar, MonthCalendarDay, getMonthCalendarRange} from "components/ui/calendar/MonthCalendar";
 import {MonthCalendarCell} from "components/ui/calendar/MonthCalendarCell";
@@ -12,9 +12,8 @@ import {DayHeader} from "components/ui/calendar/calendar-columns/DayHeader";
 import {HoursArea} from "components/ui/calendar/calendar-columns/HoursArea";
 import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHeader";
 import {DaysRange} from "components/ui/calendar/days_range";
-import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
+import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {NON_NULLABLE, currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
-import {useLocale} from "components/utils/LocaleContext";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
@@ -42,6 +41,7 @@ import {
   VoidComponent,
   batch,
   createComputed,
+  createEffect,
   createMemo,
   createSignal,
   mergeProps,
@@ -52,16 +52,23 @@ import {
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
+import {CheckboxInput} from "../CheckboxInput";
+import {InfoIcon} from "../InfoIcon";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
 import {title} from "../title";
 import {StaffInfo, WithOrigMeetingInfo, useCalendarBlocksAndEvents} from "./calendar_blocks_and_events";
+import {CalendarLocationState, CalendarSearchParams} from "./calendar_link";
 import {CALENDAR_MODES, CalendarFunction, CalendarFunctionContext, CalendarMode} from "./calendar_modes";
-import {CALENDAR_BACKGROUNDS, coloringToStyle, getRandomEventColors} from "./colors";
-import {CalendarLocationState, CalendarSearchParams} from "./meeting_link";
+import {
+  CALENDAR_BACKGROUNDS,
+  NON_STAFF_PLANNED_MEETING_COLORING,
+  coloringToStyle,
+  getRandomEventColors,
+} from "./colors";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface Props extends htmlAttributes.div {
   readonly staticCalendarFunction: CalendarFunction;
@@ -73,6 +80,8 @@ interface Props extends htmlAttributes.div {
   readonly staticSelectionPersistenceKey?: string;
   /** The key to use for persisting the presentation (view) settings. If not present, presentation settings are not persisted. */
   readonly staticPresentationPersistenceKey?: string;
+  /** Href link to the help page describing the table. */
+  readonly helpHref?: string;
 }
 
 const defaultProps = () =>
@@ -134,9 +143,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "initialDay",
     "staticSelectionPersistenceKey",
     "staticPresentationPersistenceKey",
+    "helpHref",
   ]);
   const t = useLangFunc();
-  const locale = useLocale();
   const dictionaries = useDictionaries();
   const {attendantsInitialValueForCreate} = useAttendantsCreator();
   const meetingCreateModal = createMeetingCreateModal();
@@ -153,6 +162,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }[props.staticCalendarFunction];
 
   const userStatus = createQuery(User.statusQueryOptions);
+  const [showInactiveStaff, setShowInactiveStaff] = createSignal(false);
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
     entityURL: `facility/${activeFacilityId()}/user/staff`,
@@ -160,40 +170,60 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       columns: [
         {type: "column", column: "id"},
         {type: "column", column: "name"},
+        {type: "column", column: "staff.isActive"},
       ],
-      filter: {type: "column", column: "staff.isActive", op: "=", val: true},
       sort: [{type: "column", column: "name", desc: false}],
       paging: {size: 1000},
     }),
   });
-  const staff = () => staffDataQuery.data?.data as readonly {id: string; name: string}[] | undefined;
+  interface StaffObj {
+    readonly "id": string;
+    readonly "name": string;
+    readonly "staff.isActive": boolean;
+  }
+  const staff = () => staffDataQuery.data?.data as readonly StaffObj[] | undefined;
+  const staffById = createMemo((): ReadonlyMap<string, StaffObj> => {
+    const map = new Map<string, StaffObj>();
+    for (const staffMember of staff() || []) {
+      map.set(staffMember.id, staffMember);
+    }
+    return map;
+  });
   const staffResources = createMemo(
     () =>
-      staff()?.map((staff) => {
-        const coloring = getRandomEventColors(staff.id);
-        return {
-          id: staff.id,
-          text: staff.name,
-          coloring,
-          label: () => (
-            <div class="w-full py-1 flex justify-between gap-1 select-none">
-              <span class="line-clamp-2" style={{"font-size": "0.92rem", "line-height": "1.15"}}>
-                {staff.name}
-              </span>
-              <Show when={props.staticCalendarFunction === "work"}>
+      staff()
+        ?.map((staff) => {
+          const coloring = getRandomEventColors(staff.id);
+          if (!showInactiveStaff() && !staff["staff.isActive"]) {
+            return undefined;
+          }
+          return {
+            id: staff.id,
+            text: staff.name,
+            coloring,
+            label: () => (
+              <div class="w-full py-1 flex justify-between gap-1 select-none">
                 <span
-                  class="shrink-0 self-center border rounded"
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    ...coloringToStyle(coloring, {part: "colorMarker"}),
-                  }}
-                />
-              </Show>
-            </div>
-          ),
-        } satisfies ResourceItem & Record<string, unknown>;
-      }) || [],
+                  class={cx("line-clamp-2", staff["staff.isActive"] ? undefined : "text-grey-text")}
+                  style={{"font-size": "0.92rem", "line-height": "1.15"}}
+                >
+                  {staff.name}
+                </span>
+                <Show when={props.staticCalendarFunction === "work"}>
+                  <span
+                    class="shrink-0 self-center border rounded"
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      ...coloringToStyle(coloring, {part: "colorMarker"}),
+                    }}
+                  />
+                </Show>
+              </div>
+            ),
+          } satisfies ResourceItem & Record<string, unknown>;
+        })
+        .filter(NON_NULLABLE) || [],
   );
   const staffResourcesById = createMemo(() => {
     const byId = new Map<string, ReturnType<typeof staffResources>[number]>();
@@ -235,6 +265,30 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         </span>
       ),
       resources: staffResources(),
+      footer: () =>
+        userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"]) ? (
+          <div class="px-1 text-center">
+            <CheckboxInput
+              style={{scale: "0.9"}}
+              checked={showInactiveStaff()}
+              onChecked={(checked) =>
+                batch(() => {
+                  setShowInactiveStaff(checked);
+                  if (!checked) {
+                    const selected = new Set(selectedResources());
+                    for (const staff of staffById().values()) {
+                      if (!staff["staff.isActive"]) {
+                        selected.delete(staff.id);
+                      }
+                    }
+                    setSelectedResources(selected);
+                  }
+                })
+              }
+              label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
+            />
+          </div>
+        ) : undefined,
     });
     const meetingResources = meetingResourceResources();
     if (meetingResources.length) {
@@ -251,13 +305,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   });
 
   const [mode, setMode] = createSignal(props.initialMode);
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   function getRange(day: DateTime, m = mode()) {
     switch (m) {
       case "month":
         return new DaysRange(day.startOf("month"), day.endOf("month"));
       case "week":
-        return weekDaysCalculator.dayToWorkdays(day);
+        return getWorkWeekFromDay(day);
       case "day":
         return DaysRange.oneDay(day);
       default:
@@ -307,6 +360,20 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
   }
 
+  // Show inactive staff if an inactive staff member is selected.
+  createComputed(() => {
+    if (showInactiveStaff() || !staff()) {
+      return;
+    }
+    for (const selectedResource of selectedResources()) {
+      const staff = staffById().get(selectedResource);
+      if (staff && !staff["staff.isActive"]) {
+        setShowInactiveStaff(true);
+        return;
+      }
+    }
+  });
+
   /** The last days selection in each of the modes. */
   const daysSelectionByMode = new Map<CalendarMode, Signal<DaysRange>>();
   for (const mode of CALENDAR_MODES) {
@@ -342,7 +409,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     let range;
     if (mode() === "week" && daysSelection().length() === 7) {
       // Keep the 7-day week.
-      range = weekDaysCalculator.dayToWeek(currentDate());
+      range = getWeekFromDay(currentDate());
     } else {
       range = getRange(currentDate());
     }
@@ -373,8 +440,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   if (props.staticSelectionPersistenceKey) {
-    createLocalStoragePersistence<PersistentSelectionState>({
-      key: `FullCalendar:${props.staticSelectionPersistenceKey}`,
+    createPersistence<PersistentSelectionState>({
+      storage: localStorageStorage(`FullCalendar:${props.staticSelectionPersistenceKey}`),
       value: () => ({
         today: currentDate().toISODate(),
         mode: mode(),
@@ -429,13 +496,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           },
         });
       },
-      serialiser: richJSONSerialiser<PersistentSelectionState>(),
       version: [PERSISTENCE_SELECTION_VERSION],
     });
   }
   if (props.staticPresentationPersistenceKey) {
-    createLocalStoragePersistence<PersistentPresentationState>({
-      key: `FullCalendar:${props.staticPresentationPersistenceKey}`,
+    createPersistence<PersistentPresentationState>({
+      storage: localStorageStorage(`FullCalendar:${props.staticPresentationPersistenceKey}`),
       value: () => ({
         pixelsPerHour: pixelsPerHour(),
         allDayEventsHeight: allDayEventsHeight(),
@@ -448,7 +514,6 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           setMonthEventsHeight(state.monthEventsHeight || MONTH_EVENTS_HEIGHT_RANGE.def);
         });
       },
-      serialiser: richJSONSerialiser<PersistentPresentationState>(),
       version: [PERSISTENCE_PRESENTATION_VERSION],
     });
   }
@@ -468,12 +533,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               // Never change tinyCalMonth when switching from month to week.
               if (daysSelectionByMode.get("week")?.[0]().length() === 7) {
                 // Select a calendar week.
-                setDaysSelection(weekDaysCalculator.dayToWeek(prevDaysSelection.start));
+                setDaysSelection(getWeekFromDay(prevDaysSelection.start));
               } else {
                 // Select the first work week of this month.
                 for (const day of prevDaysSelection) {
-                  if (!weekDaysCalculator.isWeekend(day)) {
-                    setDaysSelection(weekDaysCalculator.dayToWorkdays(day));
+                  if (!day.isWeekend) {
+                    setDaysSelection(getWorkWeekFromDay(day));
                     break;
                   }
                 }
@@ -566,11 +631,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       // If staff is not loaded yet, we cannot distinguish between staff and meeting resources.
       // This might happen if selected resources are loaded from the persistence.
       for (const resourceId of selectedResources()) {
-        const staff = staffResourcesById().get(resourceId);
-        if (staff) {
+        const isStaff = staffById().has(resourceId);
+        if (isStaff) {
+          const staff = staffResourcesById().get(resourceId);
           staffMap.set(resourceId, {
             id: resourceId,
-            plannedMeetingColoring: staff.coloring,
+            plannedMeetingColoring: staff?.coloring || NON_STAFF_PLANNED_MEETING_COLORING,
           });
         } else {
           meetingResources.push(resourceId);
@@ -593,7 +659,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     viewWorkTime: (params) => workTimeModal.show(params),
   });
 
-  function meetingChangeEffects(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: string[]) {
+  function meetingChangeEffects(message: JSX.Element, meeting: MeetingBasicData, otherMeetingIds?: readonly string[]) {
     blinkMeeting(meeting.id);
     for (const id of otherMeetingIds || []) {
       blinkMeeting(id);
@@ -608,7 +674,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     ));
   }
 
-  function goToMeeting(meeting: MeetingBasicData, otherMeetingIds?: string[]) {
+  function goToMeeting(meeting: MeetingBasicData, otherMeetingIds?: readonly string[]) {
     const meetingDate = DateTime.fromISO(meeting.date);
     if (!daysSelection().contains(meetingDate)) {
       setDaysSelectionAndMonthFromDay(meetingDate);
@@ -669,6 +735,23 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     attempt();
   }
 
+  function showResources(resourceIds: string[]) {
+    if (!resourceIds.length) {
+      return;
+    }
+    if (mode() === "day") {
+      setSelectedResourcesCheckbox((selected) => {
+        const set = new Set(selected);
+        for (const resourceId of resourceIds) {
+          set.add(resourceId);
+        }
+        return set;
+      });
+    } else if (!selectedResourceRadio() || !resourceIds.includes(selectedResourceRadio()!)) {
+      setSelectedResourceRadio(resourceIds[0]);
+    }
+  }
+
   const SCROLL_MARGIN_PIXELS = 20;
   const scrollMarginMinutes = createMemo(() => Math.round((SCROLL_MARGIN_PIXELS / pixelsPerHour()) * 60));
   const [scrollToDayMinute, setScrollToDayMinute] = createSignal<number>();
@@ -686,34 +769,65 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   onMount(() => {
     scrollIntoView(7 * 60, 1e3);
   });
-  const meetingToShowFromLocationState = () => location.state?.meetingToShow;
-  const meetingToShowQuery = createQuery(() => ({
-    enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
-    ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
-  }));
-  createOneTimeEffect({
-    input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
-    effect: (meeting) => {
-      setSearchParams({meetingId: undefined});
-      history.replaceState({...history.state, meetingToShow: undefined}, "");
-      // Give the calendar time to scroll to the initial position first.
-      setTimeout(() => goToMeeting(meeting), 100);
-    },
-  });
+  const searchParamsObj = createMemo(() => ({...searchParams}));
+  createEffect(
+    on(searchParamsObj, (searchParams) => {
+      if (searchParams.mode || searchParams.date || searchParams.resources) {
+        if (searchParams.mode) {
+          const modes = searchParams.mode.split(",");
+          if (!modes.includes(mode())) {
+            const firstMode = modes[0]!;
+            if ((CALENDAR_MODES as readonly string[]).includes(firstMode)) {
+              setMode(firstMode as CalendarMode);
+            }
+          }
+        }
+        // Wait for mode change to propagate before setting the other params.
+        onMount(() => {
+          if (searchParams.date) {
+            setDaysSelectionAndMonthFromDay(DateTime.fromISO(searchParams.date));
+          }
+          if (searchParams.resources) {
+            showResources(searchParams.resources.split(","));
+          }
+          setSearchParams({mode: undefined, date: undefined, resources: undefined}, {replace: true});
+          history.replaceState({...history.state, mode: undefined, date: undefined, resources: undefined}, "");
+        });
+      }
+      if (searchParams.meetingId) {
+        const meetingToShowFromLocationState = () => location.state?.meetingToShow;
+        const meetingToShowQuery = createQuery(() => ({
+          enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
+          ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
+        }));
+        createOneTimeEffect({
+          input: () => meetingToShowFromLocationState() || meetingToShowQuery.data,
+          effect: (meeting) => {
+            setSearchParams({meetingId: undefined}, {replace: true});
+            history.replaceState({...history.state, meetingToShow: undefined}, "");
+            // Give the calendar time to scroll to the initial position first.
+            setTimeout(() => goToMeeting(meeting), 100);
+          },
+        });
+      }
+    }),
+  );
 
-  function filterByStaffOrResource<T extends WithOrigMeetingInfo>(
-    items: readonly T[],
-    resourceId: string,
-    isStaff: boolean,
-  ) {
-    return items.filter((item) =>
-      isStaff
-        ? !item.meeting.staff.length || item.meeting.staff.some((s) => s.userId === resourceId)
-        : item.meeting.resources.some((r) => r.resourceDictId === resourceId),
-    );
-  }
+  const blocksByStaffFilter = (staffId: string) => (block: WithOrigMeetingInfo) =>
+    block.meeting.isFacilityWide || block.meeting.staff.some((s) => s.userId === staffId);
+  const blocksByMeetingResourceFilter = (meetingResourceId: string) => (block: WithOrigMeetingInfo) =>
+    block.meeting.isFacilityWide || block.meeting.resources.some((r) => r.resourceDictId === meetingResourceId);
+  const blocksFilter = (resourceId: string, isStaff: boolean) =>
+    isStaff ? blocksByStaffFilter(resourceId) : blocksByMeetingResourceFilter(resourceId);
+  const eventsByStaffFilter = (staffId: string) => (event: WithOrigMeetingInfo) =>
+    event.meeting.isFacilityWide || event.meeting.staff.some((s) => s.userId === staffId);
+  const eventsByMeetingResourceFilter = (meetingResourceId: string) => (event: WithOrigMeetingInfo) =>
+    // No facility-wide events shown for meeting resources.
+    event.meeting.resources.some((r) => r.resourceDictId === meetingResourceId);
+  const eventsFilter = (resourceId: string, isStaff: boolean) =>
+    isStaff ? eventsByStaffFilter(resourceId) : eventsByMeetingResourceFilter(resourceId);
 
-  function onMeetingsCreated(firstMeeting: MeetingBasicData, otherMeetingIds?: string[]) {
+  function onMeetingsCreated(firstMeeting: MeetingBasicData, otherMeetingIds?: readonly string[]) {
     meetingChangeEffects(
       t(otherMeetingIds?.length ? "forms.meeting_series_create.success" : "forms.meeting_create.success"),
       firstMeeting,
@@ -722,9 +836,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   function getCalendarColumnPart(day: DateTime, resourceId: string) {
-    const isStaff = staffResourcesById().has(resourceId);
-    const relevantBlocks = createMemo(() => filterByStaffOrResource(blocks(), resourceId, isStaff));
-    const relevantEvents = createMemo(() => filterByStaffOrResource(events(), resourceId, isStaff));
+    const isStaff = staffById().has(resourceId);
+    const relevantBlocks = createMemo(() => blocks().filter(blocksFilter(resourceId, isStaff)));
+    const relevantEvents = createMemo(() => events().filter(eventsFilter(resourceId, isStaff)));
     return {
       day,
       allDayArea: () => (
@@ -822,7 +936,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             if (!selectedResources().has(id)) {
               return undefined;
             }
-            const isStaff = staffResourcesById().has(id);
+            const isStaff = staffById().has(id);
             return {
               header: () => (
                 <ResourceHeader
@@ -863,8 +977,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     if (!resourceId) {
       return [];
     }
-    const isStaff = staffResourcesById().has(resourceId);
-    const daysRange = getMonthCalendarRange(weekDaysCalculator, daysSelection().start);
+    const isStaff = staffById().has(resourceId);
+    const daysRange = getMonthCalendarRange(daysSelection().start);
     return Array.from(daysRange, (day) => ({
       day,
       content: () => (
@@ -872,8 +986,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           month={daysSelection().start}
           day={day}
           monthViewInfo={{day, resourceId}}
-          blocks={filterByStaffOrResource(blocks(), resourceId, isStaff)}
-          events={filterByStaffOrResource(events(), resourceId, isStaff)}
+          blocks={blocks().filter(blocksFilter(resourceId, isStaff))}
+          events={events().filter(eventsFilter(resourceId, isStaff))}
           style={{background: CALENDAR_BACKGROUNDS.main}}
           onDateClick={() => {
             setMode("week");
@@ -1019,6 +1133,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
               small
             />
+            <Show when={props.helpHref}>
+              {(href) => (
+                <div class="flex items-center">
+                  <InfoIcon href={href()} target="_blank" title={t("calendar.more_info")} />
+                </div>
+              )}
+            </Show>
           </div>
           <Switch>
             <Match when={!selectedResources().size}>

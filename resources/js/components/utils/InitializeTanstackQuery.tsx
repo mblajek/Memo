@@ -11,7 +11,7 @@ import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
 import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {useLangFunc} from ".";
 import {MemoLoader} from "../ui/MemoLoader";
-import {ToastMessages, toastError} from "./toast";
+import {ToastMessages, toastDismiss, toastError} from "./toast";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
@@ -44,6 +44,8 @@ interface MutationMeta {
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
+  /** The ids of error toasts for form submits. They get dismissed when submitting again. */
+  const formErrorToasts: string[] = [];
 
   function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
     const invalidate = useInvalidator(queryClient);
@@ -91,11 +93,14 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             }
             // Don't show multiple "unauthorised" toasts, this is an error that typically occurs on all the active queries,
             // so use id to display just a single toast.
-            const toastId =
+            let toastId =
               errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
                 ? "exception.unauthorised"
                 : undefined;
-            toastError(() => <ToastMessages messages={messages} />, {id: toastId});
+            toastId = toastError(() => <ToastMessages messages={messages} />, {id: toastId});
+            if (meta?.isFormSubmit) {
+              formErrorToasts.push(toastId);
+            }
           }
         });
       }
@@ -139,7 +144,16 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
           },
         }),
         mutationCache: new MutationCache({
-          onError(error, _variables, _context, mutation) {
+          onMutate(variables, mutation) {
+            if (mutation.meta?.isFormSubmit) {
+              // Clear any earlier validation errors from form submits.
+              for (const id of formErrorToasts) {
+                toastDismiss(id);
+              }
+              formErrorToasts.length = 0;
+            }
+          },
+          onError(error, variables, context, mutation) {
             toastErrors(queryClient(), error, mutation.meta);
           },
         }),

@@ -5,17 +5,17 @@ import {Button} from "components/ui/Button";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {TextField} from "components/ui/form/TextField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {createFormNudge} from "components/ui/form/util";
 import {actionIcons} from "components/ui/icons";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {cx, NON_NULLABLE, useLangFunc} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
+import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {AiFillCaretDown} from "solid-icons/ai";
-import {createEffect, createMemo, For, Index, splitProps, VoidComponent} from "solid-js";
+import {createEffect, createMemo, For, Index, Match, on, splitProps, Switch, VoidComponent} from "solid-js";
 import {z} from "zod";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {ClientGroupBox} from "./ClientGroupBox";
@@ -43,6 +43,7 @@ interface Props extends FormConfigWithoutTransformFn<ClientGroupFormType> {
 export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
   const [props, formProps] = splitProps(allProps, ["id", "currentClientId", "onCancel"]);
   const t = useLangFunc();
+  const dictionaries = useDictionaries();
   const {clientTypeDict} = useFixedDictionaries();
   const modelQuerySpecs = useModelQuerySpecs();
   const autoRelatedClients = useAutoRelatedClients();
@@ -57,18 +58,19 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
       {...formProps}
     >
       {(form) => {
-        createFormNudge(form, () =>
-          form
-            .data("clients")
-            .map(({userId}) => userId)
-            .join(""),
+        createEffect(
+          on(
+            [
+              () => form.data("clients"),
+              form.data, // to nudge the form and improve reactivity
+            ],
+            ([clients]) => {
+              if (!clients.length || clients.at(-1)!.userId) {
+                form.addField("clients", {userId: "", role: ""});
+              }
+            },
+          ),
         );
-        createEffect(() => {
-          const clients = form.data("clients");
-          if (!clients.length || clients.at(-1)!.userId) {
-            form.addField("clients", {userId: "", role: ""});
-          }
-        });
         const priorityQueryParams = autoRelatedClients.selectParamsExtension(() =>
           // Make sure this is the same for all the client selects if there are multiple clients,
           // to avoid sending multiple additional requests.
@@ -93,13 +95,15 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
         return (
           <>
             <ClientGroupBox>
-              <div class="grid gap-1" style={{"grid-template-columns": "50% 1fr auto"}}>
+              <div class="grid gap-1" style={{"grid-template-columns": "2fr 1fr auto"}}>
                 <FieldLabel fieldName="client.userId" umbrella />
                 <FieldLabel fieldName="client.role" umbrella />
                 <Index each={form.data("clients")} fallback={<EmptyValueSymbol />}>
                   {(_client, index) => {
                     const isCurrentClient = () => index === currentClientIndex();
                     const userId = () => form.data(`clients.${index}.userId`);
+                    const isChild = () =>
+                      userId() && clientsData.getById(userId()!)?.type.id === clientTypeDict()?.child.id;
                     return (
                       <>
                         <div class="col-start-1">
@@ -115,20 +119,17 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                         </div>
                         <div>
                           <div
-                            class={cx("flex items-stretch", userId() ? undefined : "opacity-40")}
+                            class={cx("flex items-stretch min-w-0", userId() ? undefined : "opacity-40")}
                             inert={userId() ? undefined : true}
                           >
                             <div class="flex-grow">
                               <TextField
-                                class="rounded-e-none"
+                                class="w-full rounded-e-none"
+                                autocapitalize="off"
                                 name={`clients.${index}.role`}
                                 label=""
                                 small
-                                placeholder={
-                                  userId() && clientsData.getById(userId()!)?.type.id === clientTypeDict()?.child.id
-                                    ? clientTypeDict()?.child.label
-                                    : undefined
-                                }
+                                placeholder={isChild() ? clientTypeDict()?.child.label : undefined}
                               />
                             </div>
                             <PopOver
@@ -143,13 +144,31 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                             >
                               {(popOver) => (
                                 <SimpleMenu onClick={() => popOver().close()}>
-                                  <For each={Object.values(t.getObjects("facility_user.client_groups.role_presets"))}>
-                                    {(preset) => (
-                                      <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
-                                        {preset || <EmptyValueSymbol />}
+                                  <Switch>
+                                    <Match when={isChild()}>
+                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
+                                        <span class="text-grey-text">{clientTypeDict()?.child.label}</span>
                                       </Button>
-                                    )}
-                                  </For>
+                                    </Match>
+                                    <Match when="not child">
+                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
+                                        <span class="text-grey-text">
+                                          {t("facility_user.client_groups.role_preset_empty")}
+                                        </span>
+                                      </Button>
+                                      <For
+                                        each={dictionaries()
+                                          ?.get("clientGroupClientRole")
+                                          .activePositions.map(({label}) => label)}
+                                      >
+                                        {(preset) => (
+                                          <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
+                                            {preset}
+                                          </Button>
+                                        )}
+                                      </For>
+                                    </Match>
+                                  </Switch>
                                 </SimpleMenu>
                               )}
                             </PopOver>

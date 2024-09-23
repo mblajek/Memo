@@ -55,7 +55,7 @@ export function calculateOverlaps<T>(
         currentObjects.size + 1,
         // If there are multiple older overlapping spans, they for sure have the same count,
         // and new count cannot be lower than that.
-        currentObjects.size ? overlapsMap.get(currentObjects.values().next().value)?.count || 0 : 0,
+        currentObjects.size ? overlapsMap.get(currentObjects.values().next().value!)?.count || 0 : 0,
       );
       if (count > 1) {
         const currentSpansOverlaps = Array.from(currentObjects, (other) => {

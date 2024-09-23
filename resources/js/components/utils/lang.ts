@@ -3,7 +3,7 @@ import {TOptions} from "i18next";
 import {isDEV} from "./dev_mode";
 
 interface LangFuncBase {
-  (key: string | string[], options?: TOptions): string;
+  (key: string | readonly string[], options?: TOptions): string;
 }
 
 /**
@@ -11,8 +11,13 @@ interface LangFuncBase {
  * to get the first available translation.
  */
 export interface LangFunc extends LangFuncBase {
-  getObjects(key: string | string[], options?: TOptions): Record<string, string>;
+  getObjects(key: string | readonly string[], options?: TGetObjectsOptions): Record<string, string>;
 }
+
+export type TGetObjectsOptions = TOptions & {
+  /** Whether to merge the values from multiple keys, instead of returning the first present object. */
+  mergeObjects?: boolean;
+};
 
 let langFunc: LangFunc | undefined;
 
@@ -34,8 +39,8 @@ export function useLangFunc(): LangFunc {
       if (!key.length) {
         throw new Error(`Called useLangFunc with an empty key list.`);
       }
-      // Check if the value is present under any of the keys, and return it if so.
-      const value = t(key, {...options, defaultValue: MISSING_VALUE});
+      // Check if the value is present under any of the keys, or the default value is specified, and return it if so.
+      const value = t(key as string[], {defaultValue: MISSING_VALUE, ...options});
       if (value !== MISSING_VALUE) {
         return value;
       }
@@ -43,10 +48,14 @@ export function useLangFunc(): LangFunc {
       // listing all the keys, if the options don't have a default value.
       return t(key[0]!, {defaultValue: `??${isDEV() ? key.join("|") : key[0]}`, ...options});
     };
+    const getObjectsLangFunc = (key: string | readonly string[], options?: TOptions) =>
+      // For returnObjects a record is returned instead of string.
+      langFuncBase(key, {...options, returnObjects: true, defaultValue: {}}) as unknown as Record<string, string>;
     langFunc = Object.assign(langFuncBase, {
       getObjects(key, options) {
-        // For returnObjects a record is returned instead of string.
-        return langFuncBase(key, {...options, returnObjects: true}) as unknown as Record<string, string>;
+        return options?.mergeObjects && Array.isArray(key)
+          ? Object.assign({}, ...key.toReversed().map((k) => getObjectsLangFunc(k, options)))
+          : getObjectsLangFunc(key, options);
       },
     } satisfies Pick<LangFunc, "getObjects">);
   }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Facility;
+namespace App\Http\Controllers\FacilityMeeting;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;

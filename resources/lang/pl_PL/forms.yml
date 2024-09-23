@@ -17,6 +17,8 @@ password_change:
 user:
   field_names:
     hasPassword: "posiada hasło logowania do Memo"
+  clear_password_expire_at: "Wyłącz wygasanie hasła"
+  password_expire_never: "Hasło nie wygaśnie."
   members_destructive_update_warning:
     header: "UWAGA!"
     line1: "Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki."
@@ -61,6 +63,16 @@ meeting:
     time.allDay: "$t(calendar.all_day)"
     staff__interval: "(1)[$t(models.staff._name)];(0-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
+    clientsGroupsMode: "$t(models.client_group._name)"
+    clientsGroupsMode.none: "brak"
+    clientsGroupsMode.none.desc: "Klienci uczestniczą w spotkaniu bez związku z grupami"
+    clientsGroupsMode.shared: "wspólna grupa"
+    clientsGroupsMode.shared.desc: "W spotkaniu uczestniczą klienci należący do jednej grupy"
+    clientsGroupsMode.shared.desc_no_shared_options: "Brak wspólnych grup $t(em_dash) nie można wybrać jednej grupy dla wszystkich klientów"
+    clientsGroupsMode.separate: "osobne grupy"
+    clientsGroupsMode.separate.desc: "Każdy klient ma osobno wybraną grupę, w ramach której uczestniczy w spotkaniu (opcja zaawansowana)"
+    sharedClientsGroupId: "grupa klientów, w ramach której wszyscy klienci uczestniczą w spotkaniu"
+    attendantClientGroupId: "grupa klientów, w ramach której ten klient uczestniczy w spotkaniu"
 
 meeting_create:
   field_names:

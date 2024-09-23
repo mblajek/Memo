@@ -10,9 +10,9 @@ import {
   createSolidTable,
 } from "@tanstack/solid-table";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
-import {NON_NULLABLE, NUMBER_FORMAT, debouncedAccessor, useLangFunc} from "components/utils";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
+import {NON_NULLABLE, NUMBER_FORMAT, delayedAccessor, useLangFunc} from "components/utils";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
@@ -20,6 +20,7 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
+import {Modifiable} from "components/utils/modifiable";
 import {intersects, objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -83,7 +84,7 @@ import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
 import {ColumnFilterStates} from "./tquery_filters/column_filter_states";
 import {FilterControl} from "./tquery_filters/types";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
@@ -95,6 +96,7 @@ declare module "@tanstack/table-core" {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     readonly tquery?: TQueryColumnMeta<TData>;
+    readonly config?: FullColumnConfig<TData>;
   }
 }
 
@@ -113,6 +115,7 @@ interface TQueryTableMeta<TData extends RowData> {
 }
 
 interface ColumnGroupingInfo {
+  readonly isValid: boolean;
   readonly isCount: boolean;
   readonly isGrouping: boolean;
   readonly isGrouped: boolean;
@@ -159,6 +162,9 @@ export interface TQueryTableProps<TData = DataItem> {
    * Default: false.
    */
   readonly nonBlocking?: boolean;
+  /** The definition of the columns in the table, in their correct order. */
+  readonly columns: readonly PartialColumnConfigEntry<TData>[];
+  readonly columnGroups?: ColumnGroupsSelection;
   /**
    * The filter that is always applied to the data, regardless of other filtering.
    * This is used to create e.g. a table of entities A on the details page of a particular
@@ -167,9 +173,6 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly intrinsicFilter?: FilterH;
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
-  /** The definition of the columns in the table, in their correct order. */
-  readonly columns: readonly PartialColumnConfigEntry<TData>[];
-  readonly columnGroups?: ColumnGroupsSelection;
   readonly initialSort?: SortingState;
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
@@ -205,6 +208,8 @@ export interface PartialColumnConfig<TData = DataItem> {
   readonly metaParams?: ColumnMetaParams<TData>;
   /** The initial column visibility. Default: true. */
   readonly initialVisible?: boolean;
+  /** Whether the column visibility should be saved across visits. Default: true. */
+  readonly persistVisibility?: boolean;
   /** Whether the global filter can match this column. Default: depends on the column type. */
   readonly globalFilterable?: boolean;
   readonly columnGroups?: ColumnGroupParam;
@@ -229,7 +234,7 @@ export interface AttributeColumnsConfig<TData = DataItem> {
 export type PartialColumnConfigEntry<TData = DataItem> = PartialColumnConfig<TData> | AttributeColumnsConfig<TData>;
 
 type FullColumnConfig<TData = DataItem> = ColumnConfig &
-  Required<Pick<PartialColumnConfig<TData>, "isDataColumn" | "columnDef" | "header">> &
+  Required<Pick<PartialColumnConfig<TData>, "isDataColumn" | "columnDef" | "header" | "persistVisibility">> &
   Pick<PartialColumnConfig<TData>, "filterControl" | "metaParams">;
 
 const DEFAULT_STANDALONE_PAGE_SIZE = 50;
@@ -277,6 +282,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         header = Header,
         metaParams,
         initialVisible = true,
+        persistVisibility = true,
         globalFilterable = true,
         columnGroups,
       }) =>
@@ -293,6 +299,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           header,
           metaParams,
           initialVisible,
+          persistVisibility,
           globalFilterable,
           columnGroups: columnGroupsCollector.column(name, columnGroups),
         }) satisfies FullColumnConfig,
@@ -307,7 +314,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   const tableTextExportCells = useTableTextExportCells();
   const defaultColumnConfigByType = new Map<ColumnType, Partial<PartialColumnConfig<DataItem>>>()
     .set("bool", {
-      columnDef: {cell: tableCells.bool(), size: 100},
+      columnDef: {cell: tableCells.bool(), size: 150},
       metaParams: {textExportCell: tableTextExportCells.bool()},
       filterControl: BoolFilterControl,
     })
@@ -363,15 +370,38 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       columnDef: {cell: tableCells.dict()},
       metaParams: {textExportCell: tableTextExportCells.dict()},
       filterControl: DictFilterControl,
-      globalFilterable: true,
     })
     .set("dict_list", {
       columnDef: {cell: tableCells.dictList(), enableSorting: false, size: 270},
       metaParams: {textExportCell: tableTextExportCells.dictList()},
       filterControl: DictListFilterControl,
-      globalFilterable: true,
     });
 
+  const [table, setTable] = createSignal<SolidTable<DataItem>>();
+  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
+  const translations: TableTranslations = {
+    ...baseTranslations,
+    columnName: (column, o) => {
+      if (column === countColumn()) {
+        return t("tables.column_groups.count_column_label");
+      }
+      const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
+      const attributeId = meta?.attributeId;
+      if (attributeId) {
+        let attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
+        if (meta.transform) {
+          attributeLabel = t(`tables.transforms.${meta.transform}`, {
+            base: attributeLabel,
+            defaultValue: `${attributeLabel}.${meta.transform}`,
+          });
+        }
+        return baseTranslations.columnNameOverride
+          ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
+          : attributeLabel || "";
+      }
+      return baseTranslations.columnName(column, o);
+    },
+  };
   const requestCreator = createTableRequestCreator({
     columnsConfig,
     columnGroups,
@@ -382,6 +412,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       props.initialPageSize ||
       // eslint-disable-next-line solid/reactivity
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
+    columnsByPrefix: translations.columnsByPrefix,
   });
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
@@ -494,14 +525,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       setEffectiveActiveColumnGroups(activeColumnGroups[0]());
     }
   });
-  const [table, setTable] = createSignal<SolidTable<DataItem>>();
   const historyPersistenceKey = `TQueryTable:${props.staticPersistenceKey || "main"}`;
   const columnFilterStates = new ColumnFilterStates();
   if (props.staticPersistenceKey) {
     // eslint-disable-next-line solid/reactivity
-    const columnSizing = debouncedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
-    createLocalStoragePersistence<PersistentState>({
-      key: `TQueryTable:${props.staticPersistenceKey}`,
+    const columnSizing = delayedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
+    createPersistence<PersistentState>({
+      storage: localStorageStorage(`TQueryTable:${props.staticPersistenceKey}`),
       value: () => ({
         colVis: columnVisibility[0](),
         colSize: columnSizing() || {},
@@ -510,15 +540,15 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         // Ensure a bad (e.g. outdated) entry won't affect visibility of a column that cannot have
         // the visibility controlled by the user.
         const colVis = {...value.colVis};
-        for (const col of columnsConfig()) {
-          if (col.columnDef.enableHiding === false) {
-            delete colVis[col.name];
+        for (const colName of Object.keys(colVis)) {
+          const col = columnsConfig().find((c) => c.name === colName);
+          if (!col || col.columnDef.enableHiding === false || !col.persistVisibility) {
+            delete colVis[colName];
           }
         }
         columnVisibility[1](colVis);
         onMount(() => table()!.setColumnSizing(value.colSize || {}));
       },
-      serialiser: richJSONSerialiser<PersistentState>(),
       version: [PERSISTENCE_VERSION],
     });
   }
@@ -535,30 +565,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.
   setAllInitialised(true);
-  const baseTranslations = props.staticTranslations || createTableTranslations("generic");
-  const translations: TableTranslations = {
-    ...baseTranslations,
-    columnName: (column, o) => {
-      if (column === countColumn()) {
-        return t("tables.column_groups.count_column_label");
-      }
-      const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
-      const attributeId = meta?.attributeId;
-      if (attributeId) {
-        let attributeLabel = attributeId ? attributes()?.getById(attributeId).label : undefined;
-        if (meta.transform) {
-          attributeLabel = t(`tables.transforms.${meta.transform}`, {
-            base: attributeLabel,
-            defaultValue: `${attributeLabel}.${meta.transform}`,
-          });
-        }
-        return baseTranslations.columnNameOverride
-          ? baseTranslations.columnNameOverride(column, {defaultValue: attributeLabel || ""})
-          : attributeLabel || "";
-      }
-      return baseTranslations.columnName(column, o);
-    },
-  };
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
@@ -636,7 +642,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         // be mutated, and wrapping it would be complicated.
         defColumnConfig.columnDef,
         col.columnDef,
-        {meta: {tquery: schemaCol}},
+        {meta: {tquery: schemaCol, config: col}},
         {meta: {tquery: defColumnConfig.metaParams}},
         {meta: {tquery: col.metaParams}},
       ) satisfies ColumnDef<DataItem, unknown>;
@@ -728,9 +734,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   };
 
   const columnGroupingInfos = createMemo<ReadonlyMap<string, ColumnGroupingInfo>>(() => {
-    const infos = new Map<string, {-readonly [K in keyof ColumnGroupingInfo]: ColumnGroupingInfo[K]}>();
+    const infos = new Map<string, Modifiable<ColumnGroupingInfo>>();
     for (const col of columns()) {
       infos.set(col.id!, {
+        isValid: true,
         isCount: col.id === countColumn(),
         isGrouping: false,
         isGrouped: false,
@@ -756,7 +763,14 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     }
     return infos;
   });
-  const columnGroupingInfo = (column: string) => columnGroupingInfos().get(column)!;
+  const INVALID_COLUMN_GROUPING_INFO: ColumnGroupingInfo = {
+    isValid: false,
+    isCount: false,
+    isGrouping: false,
+    isGrouped: false,
+    isForceShown: false,
+  };
+  const columnGroupingInfo = (column: string) => columnGroupingInfos().get(column) || INVALID_COLUMN_GROUPING_INFO;
 
   setTable(
     createSolidTable<DataItem>({

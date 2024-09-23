@@ -48,7 +48,7 @@ import {TQuerySelect} from "./TQuerySelect";
 import {TextField} from "./TextField";
 import {SimpleMultiField} from "./multi_fields";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 export type AttributesType = Record<string, unknown>;
 export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
@@ -462,7 +462,7 @@ export const RequirementLevelMarker: VoidComponent<RequirementLevelProps> = (pro
       <span class="text-sm text-grey-text select-none">
         <Switch>
           <Match when={props.level === "empty"}>
-            <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⛌</span>
+            <span class={props.isEmpty ? undefined : WARN_COLOR_CLASS}>⤫</span>
           </Match>
           <Match when={props.level === "optional"}>?</Match>
           <Match when={props.level === "recommended"}>

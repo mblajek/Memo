@@ -51,11 +51,11 @@ attendanceStatus:
     planned: "zaplanowane"
     completed: "obecność"
     cancelled: "ktoś inny odwołał"
-  # The gender-neutral form "odwołano" is not good here because it does not convey that
-  # it is this particular person who cancelled the meeting.
   late_present: "niepunktualność"
   too_late: "spóźnienie-nieobecność"
   no_show: "niestawienie się"
+  # The gender-neutral form "odwołano" is not good here because it does not convey that
+  # it is this particular person who cancelled the meeting.
   cancelled: "odwołał/a"
   _explanations:
     ok:
@@ -75,3 +75,6 @@ notificationMethod:
 
 positionGroup:
   _name: "[grupa pozycji]"
+
+clientGroupClientRole:
+  _name: "rola klienta w grupie"

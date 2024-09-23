@@ -3,7 +3,7 @@ import {V1} from "../config";
 import {SolidQueryOpts} from "../query_utils";
 import {MeetingResource, MeetingResourceForCreate, MeetingResourceForPatch} from "../resources/meeting.resource";
 import {Api} from "../types";
-import {ListInParam, createGetFromList, createListRequest, parseGetListResponse} from "../utils";
+import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
 
 /**
  * @see {@link https://test-memo.fdds.pl/api/documentation#/Facility%20meeting production docs}
@@ -16,30 +16,74 @@ export namespace FacilityMeeting {
       params: request,
     });
   const getMeetingsList = (request: Api.Request.GetListParams, config?: Api.Config) =>
-    getMeetingsListBase(request, config).then(parseGetListResponse);
+    getMeetingsListBase(request, config).then(parseListResponse);
   const getMeeting = createGetFromList(getMeetingsListBase);
 
   export const createMeeting = (meeting: MeetingResourceForCreate, config?: Api.Config) =>
     V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/meeting`, meeting, config);
   export const updateMeeting = (meeting: Api.Request.Patch<MeetingResourceForPatch>, config?: Api.Config) =>
     V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting, config);
-  export const deleteMeeting = (
-    {id, deleteOption}: {id: Api.Id; deleteOption: SeriesDeleteOption},
-    config?: Api.Config,
-  ) => V1.delete(`/facility/${activeFacilityId()}/meeting/${id}`, {...config, data: {series: deleteOption}});
+
+  export const deleteMeeting = ({id, request}: {id: Api.Id; request?: DeleteRequest}, config?: Api.Config) =>
+    V1.delete<Api.Response.Delete<DeleteResponse>>(`/facility/${activeFacilityId()}/meeting/${id}`, {
+      ...config,
+      data: request,
+    });
+
+  export interface DeleteRequest {
+    readonly series?: SeriesDeleteOption;
+    readonly otherIds?: readonly Api.Id[];
+  }
+
+  export interface DeleteResponse {
+    readonly count: number;
+  }
+
   export const cloneMeeting = ({id, request}: {id: Api.Id; request: CloneRequest}, config?: Api.Config) =>
     V1.post<Api.Response.Post<CloneResponse>>(`/facility/${activeFacilityId()}/meeting/${id}/clone`, request, config);
 
   export type CloneInterval = "1d" | "7d" | "14d";
 
   export interface CloneRequest {
-    readonly interval: CloneInterval;
+    readonly interval: CloneInterval | null;
     /** Dates of the clones of the meeting. */
-    readonly dates: string[];
+    readonly dates: readonly string[];
   }
 
   export interface CloneResponse {
-    readonly ids: string[];
+    readonly ids: readonly string[];
+  }
+
+  export const getConflicts = (request: ConflictsRequest, config?: Api.Config) =>
+    V1.post<Api.Response.List<SampleConflicts>>(
+      `/facility/${activeFacilityId()}/meeting/conflicts`,
+      request,
+      config,
+    ).then(parseListResponse);
+
+  export interface ConflictsRequest {
+    readonly samples: readonly ConflictsSample[];
+    readonly staff?: boolean;
+    readonly clients?: boolean;
+    readonly resources?: boolean;
+    readonly ignoreMeetingIds?: readonly Api.Id[];
+  }
+
+  export interface ConflictsSample {
+    readonly date: string;
+    readonly startDayminute: number;
+    readonly durationMinutes: number;
+  }
+
+  export interface SampleConflicts {
+    readonly staff?: readonly ConflictInfo[];
+    readonly clients?: readonly ConflictInfo[];
+    readonly resources?: readonly ConflictInfo[];
+  }
+
+  export interface ConflictInfo {
+    readonly id: Api.Id;
+    readonly meetingIds: readonly Api.Id[];
   }
 
   export const keys = {
@@ -49,6 +93,7 @@ export namespace FacilityMeeting {
       [...keys.meeting(), "list", request, activeFacilityId()] as const,
     // The key does not contain the facility id because it already contains the meeting id, which is already unique.
     meetingGet: (id: Api.Id) => [...keys.meeting(), "get", id] as const,
+    conflicts: (request: ConflictsRequest) => [...keys.meeting(), "conflicts", request] as const,
   };
 
   export const meetingsQueryOptions = (ids: ListInParam) => {
@@ -56,7 +101,7 @@ export namespace FacilityMeeting {
     return {
       queryFn: ({signal}) => getMeetingsList(request, {signal}),
       queryKey: keys.meetingList(request),
-    } satisfies SolidQueryOpts<MeetingResource[]>;
+    } satisfies SolidQueryOpts<readonly MeetingResource[]>;
   };
 
   export const meetingQueryOptions = (id: Api.Id) =>
@@ -64,6 +109,12 @@ export namespace FacilityMeeting {
       queryFn: ({signal}) => getMeeting(id, {signal}),
       queryKey: keys.meetingGet(id),
     }) satisfies SolidQueryOpts<MeetingResource>;
+
+  export const conflictsQueryOptions = (request: ConflictsRequest) =>
+    ({
+      queryFn: ({signal}) => getConflicts(request, {signal}),
+      queryKey: keys.conflicts(request),
+    }) satisfies SolidQueryOpts<readonly SampleConflicts[]>;
 }
 
 export type SeriesDeleteOption = "one" | "from_this" | "from_next" | "all";

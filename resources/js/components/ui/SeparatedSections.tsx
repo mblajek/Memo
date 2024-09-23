@@ -34,15 +34,7 @@ export const SeparatedSections: ParentComponent<Props> = (props) => {
     }
   });
   const sections = createMemo(
-    on(chArray, (chArray, prevChArray) => {
-      if (prevChArray) {
-        for (const prevChild of prevChArray) {
-          if (prevChild instanceof HTMLElement && !chArray.includes(prevChild)) {
-            obs.unobserve(prevChild);
-            elementToIsPresentSignal.delete(prevChild);
-          }
-        }
-      }
+    on(chArray, (chArray) => {
       const sections = chArray.map((section, i) => {
         let isPresent: Accessor<boolean>;
         const isPresentSignal = elementToIsPresentSignal.get(section);
@@ -58,6 +50,14 @@ export const SeparatedSections: ParentComponent<Props> = (props) => {
         }
         const needsSeparatorBefore = () => isPresent() && sections.slice(0, i).some(({isPresent}) => isPresent());
         return {section, isPresent, needsSeparatorBefore};
+      });
+      onCleanup(() => {
+        for (const child of chArray) {
+          if (child instanceof HTMLElement) {
+            obs.unobserve(child);
+            elementToIsPresentSignal.delete(child);
+          }
+        }
       });
       return sections;
     }),

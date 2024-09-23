@@ -35,37 +35,55 @@ const DEFAULT_TIPPY_PROPS = {
   },
 } satisfies Partial<TippyProps>;
 
-/** An object that manages the current app-wide singleton tippy. */
+/**
+ * An object that manages the current app-wide singleton tippy.
+ * There seem to be some bugs related to adding and removing individual tippys in the singleton tippy,
+ * so the singleton tippy is recreated when the set of tippys change, buffering the changes on a timer
+ * to improve performance.
+ */
 class TippySingletonManager {
-  /** The individual tippys for the elements that should show title. */
+  /**
+   * The individual tippys for the elements that should show title. It might not yet be the current set of
+   * instances in the singleton tippy. */
   private tippys: readonly Instance[] = [];
+  /** The list of tippys that should be destroyed when the singleton tippy is recreated next time. */
+  private tippysToDestroy: Instance[] = [];
 
   private tippySingleton: CreateSingletonInstance | undefined;
 
-  private tippySingletonSetInstancesTimer: ReturnType<typeof setTimeout> | undefined;
-  private tippySingletonRecreationTimer: ReturnType<typeof setTimeout> | undefined;
+  private recreateTimer: ReturnType<typeof setTimeout> | undefined;
 
   add(newTippy: Instance) {
     this.tippys = [...this.tippys, newTippy];
-    this.setInstances();
+    this.scheduleRecreate();
     return () => this.delete(newTippy);
   }
 
   delete(tippyToDelete: Instance) {
-    const removeTippy = () => {
-      // There seems to be a bug in the tippy library occurring when calling setInstances with a reduced
-      // list of individual tippys. So instead when removing a tippy delete the singleton and recreate it.
-      this.tippySingleton?.destroy();
-      tippyToDelete.destroy();
-      this.tippys = this.tippys.filter((t) => t !== tippyToDelete);
-      this.tippySingleton = undefined;
-      this.recreateTippySingleton();
-    };
+    this.tippysToDestroy.push(tippyToDelete);
+    this.tippys = this.tippys.filter((t) => t !== tippyToDelete);
     if (this.tippySingleton?.state.isMounted) {
       this.tippySingleton.hide();
-      setTimeout(removeTippy, 500);
+      this.scheduleRecreate(500);
     } else {
-      removeTippy();
+      this.scheduleRecreate();
+    }
+  }
+
+  private scheduleRecreate(delayMillis = 100) {
+    if (!this.recreateTimer) {
+      this.recreateTimer = setTimeout(() => {
+        this.recreateTimer = undefined;
+        if (this.tippySingleton) {
+          this.tippySingleton.destroy();
+          for (const tippy of this.tippysToDestroy) {
+            tippy.destroy();
+          }
+          this.tippysToDestroy = [];
+          this.tippySingleton = undefined;
+        }
+        this.getTippySingleton();
+      }, delayMillis);
     }
   }
 
@@ -82,20 +100,6 @@ class TippySingletonManager {
       });
     return this.tippySingleton;
   }
-
-  private setInstances() {
-    clearTimeout(this.tippySingletonSetInstancesTimer);
-    this.tippySingletonSetInstancesTimer = setTimeout(() => {
-      this.getTippySingleton().setInstances([...this.tippys]);
-    }, 100);
-  }
-
-  /** Recreate the tippy singleton. Debounce to avoid multiple recreations in succession. */
-  private recreateTippySingleton() {
-    clearTimeout(this.tippySingletonSetInstancesTimer);
-    clearTimeout(this.tippySingletonRecreationTimer);
-    this.tippySingletonRecreationTimer = setTimeout(() => this.getTippySingleton(), 100);
-  }
 }
 
 const tippySingletonManager = new TippySingletonManager();
@@ -107,7 +111,7 @@ const tippySingletonManager = new TippySingletonManager();
  *
  *     import {title} from "components/ui/title";
  *     // ...
- *     const _DIRECTIVES_ = null && title; // Avoid import auto-removal and support tree-shaking.
+ *     type _Directives = typeof title; // Avoid import auto-removal and support tree-shaking.
  *     // ...
  *     <element use:title="The title text" />
  *
@@ -127,7 +131,7 @@ export function title(element: Element, accessor: Accessor<TitleDirectiveType>) 
       const [titleValue, tippyProps] = isArrayForm(value) ? value : [value];
       if (titleValue != undefined && titleValue !== "") {
         element.setAttribute(
-          "aria-label",
+          "aria-description",
           typeof titleValue === "string"
             ? titleValue
             : titleValue instanceof HTMLElement

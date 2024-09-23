@@ -7,23 +7,25 @@ import {createEffect, createSignal} from "solid-js";
 export const useSystemStatusMonitor = createCached(() => {
   const [needsReload, setNeedsReload] = createSignal(false);
   const systemStatusQuery = createQuery(System.statusQueryOptions);
-  let baseStatus: SystemStatusResource | undefined;
+  const [baseStatus, setBaseStatus] = createSignal<SystemStatusResource>();
   const [lastStatus, setLastStatus] = createSignal<SystemStatusResource>();
   createEffect(() => {
     const status = systemStatusQuery.data;
-    if (!baseStatus) {
-      baseStatus = status;
+    if (!baseStatus()) {
+      setBaseStatus(status);
       setLastStatus(status);
       return;
     }
     if (!status) {
       return;
     }
-    if (status.commitHash !== lastStatus()!.commitHash) {
-      console.info(`System version changed. Commit hash: ${lastStatus()?.commitHash} -> ${status.commitHash}`);
+    if (status.version !== lastStatus()!.version || status.commitHash !== lastStatus()!.commitHash) {
+      console.info(
+        `System version changed. Version: ${lastStatus()?.version} -> ${status.version}, commit hash: ${lastStatus()?.commitHash} -> ${status.commitHash}`,
+      );
       setNeedsReload(true);
     }
     setLastStatus(status);
   });
-  return {baseStatus, status: lastStatus, needsReload};
+  return {baseStatus, lastStatus, needsReload};
 });

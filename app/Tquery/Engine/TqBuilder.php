@@ -9,6 +9,7 @@ use App\Tquery\Config\TqTableAliasEnum;
 use App\Tquery\Engine\Bind\TqBind;
 use Closure;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 class TqBuilder
@@ -38,6 +39,7 @@ class TqBuilder
         string $joinColumn,
         bool $left,
         bool $inv,
+        ?string $condition = null,
     ): bool {
         if (in_array($table, $this->joins, strict: true)) {
             return false;
@@ -46,10 +48,13 @@ class TqBuilder
         $this->joins[] = $table;
         $this->builder->join(
             "{$table->baseTable()} as {$table->name}",
-            "{$table->name}.$tableColumn",
-            '=',
-            "{$joinBase->name}.$baseColumn",
-            $left ? 'left' : 'inner',
+            function (JoinClause $join) use ($table, $tableColumn, $joinBase, $baseColumn, $condition) {
+                $join->on("{$table->name}.$tableColumn", '=', "{$joinBase->name}.$baseColumn");
+                if ($condition !== null) {
+                    $join->whereRaw($condition);
+                }
+            },
+            type: $left ? 'left' : 'inner',
         );
         return true;
     }

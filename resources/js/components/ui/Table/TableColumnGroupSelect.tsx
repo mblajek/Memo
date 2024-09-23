@@ -8,7 +8,7 @@ import {InfoIcon} from "../InfoIcon";
 import {title} from "../title";
 import {useTable} from "./TableContext";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 const NO_GROUPING_VALUE = "-";
 

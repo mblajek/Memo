@@ -13,7 +13,7 @@ import {createUserEditModal} from "../user-edit/user_edit_modal";
 import {CreatedByInfo} from "./CreatedByInfo";
 import {UserLink} from "./UserLink";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface Props {
   readonly type: FacilityUserType;

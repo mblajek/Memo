@@ -35,7 +35,7 @@ export const ThingsList = <T,>(props: Props<T>) => {
   return (
     <Switch>
       <Match when={mode() === "commas"}>
-        <ul>
+        <ul class="inline-block">
           <For each={items()}>
             {(item, i) => (
               <li class="inline-block">

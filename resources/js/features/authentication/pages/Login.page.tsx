@@ -1,4 +1,4 @@
-import {useIsRouting, useNavigate} from "@solidjs/router";
+import {useNavigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {MemoLoader} from "components/ui/MemoLoader";
 import {QueryBarrier} from "components/utils";
@@ -18,12 +18,13 @@ import {createLoginModal} from "../forms/login/login_modal";
  */
 export default (() => {
   const navigate = useNavigate();
-  const isRouting = useIsRouting();
   const statusQuery = createQuery(User.statusQueryOptions);
   const systemStatusMonitor = useSystemStatusMonitor();
   const invalidate = useInvalidator();
   onMount(() => setActiveFacilityId(undefined));
   const loginModal = createLoginModal();
+  /** Whether the successful login was already handled. This is used to avoid the effect firing more than once for any reasons. */
+  let loginHandled = false;
   createEffect(() => {
     if (systemStatusMonitor.needsReload()) {
       // If on the login screen, just reload without asking.
@@ -31,11 +32,11 @@ export default (() => {
     } else if (statusQuery.isError && !loginModal.isShown()) {
       loginModal.show();
     } else if (statusQuery.isSuccess) {
-      loginModal.hide();
-      if (!isRouting()) {
-        if (!invalidate.everythingThrottled()) {
-          invalidate.userStatusAndFacilityPermissions();
-        }
+      if (!loginHandled) {
+        loginHandled = true;
+        loginModal.hide();
+        invalidate.everythingThrottled();
+        invalidate.userStatusAndFacilityPermissions({clearCache: true});
         navigate("/help");
       }
     }

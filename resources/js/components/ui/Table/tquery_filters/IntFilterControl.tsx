@@ -7,7 +7,7 @@ import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControl} from "./types";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 type IntRangeFilter =
   | {

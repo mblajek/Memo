@@ -37,6 +37,7 @@ duration:
   hours_minutes: "{{hours}} godz. {{minutes}} min."
 
 today: "dzisiaj"
+this_week: "bieżący tydzień"
 
 select_resource_to_show_calendar: "Wybierz pracownika lub zasób aby wyświetlić kalendarz"
 
@@ -69,3 +70,7 @@ staff_leave_time: "nieobecność"
 
 show_my_calendar: "Mój kalendarz"
 show_my_details: "Moje dane i spotkania"
+
+more_info: "Kliknij aby dowiedzieć się więcej o tym kalendarzu"
+
+nonlocal_time_zone: "Strefa czasowa placówki jest inna niż lokalna strefa czasowa. Wszystkie daty/godziny wyswietlane są w strefie czasowej wybranej placówki."

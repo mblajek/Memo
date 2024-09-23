@@ -6,15 +6,18 @@ import {TextInput} from "./TextInput";
 
 interface Props extends htmlAttributes.input {
   readonly divClass?: string;
+  readonly onValueChange?: (value: string) => void;
 }
 
 export const SearchInput: VoidComponent<Props> = (allProps) => {
-  const [props, inputProps] = splitProps(allProps, ["divClass"]);
+  const [props, inputProps] = splitProps(allProps, ["divClass", "onValueChange"]);
   const t = useLangFunc();
   let ref: HTMLInputElement | undefined;
   const [value, setValue] = createSignal("");
   function setNow() {
-    setValue(ref?.value || "");
+    const val = ref?.value || "";
+    props.onValueChange?.(val);
+    setValue(val);
   }
   createEffect(
     on(
@@ -26,6 +29,9 @@ export const SearchInput: VoidComponent<Props> = (allProps) => {
     <div class={cx(props.divClass, "flex items-stretch relative")}>
       <TextInput
         autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck={false}
         {...htmlAttributes.merge(inputProps, {
           class: "grow !pr-6",
           onInput: setNow,

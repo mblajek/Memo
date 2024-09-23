@@ -22,9 +22,11 @@ export namespace Api {
   }
 
   export namespace Response {
-    export type Get<T extends object> = {data: T};
-    export type GetList<T extends Entity> = {data: T[]};
-    export type Post<T = Entity> = {data: T};
+    export type Get<T extends object> = {readonly data: T};
+    export type List<T> = {readonly data: T[]};
+    export type GetList<T extends Entity> = List<T>;
+    export type Post<T = Entity> = {readonly data: T};
+    export type Delete<T extends object> = {readonly data: T};
   }
 
   export type ErrorResponse = {
@@ -61,3 +63,12 @@ export type PartialNullable<T> = {
 export type RequiredNonNullable<T> = {
   [K in keyof T]-?: NonNullable<T[K]>;
 };
+
+export type JSONValue<ExtraTypes = never> =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly JSONValue<ExtraTypes>[]
+  | Readonly<{readonly [key: string]: JSONValue<ExtraTypes>}>
+  | ExtraTypes;

@@ -19,6 +19,7 @@ export function createSelectRequestCreator({
   sort,
   limit,
   distinct,
+  columnsByPrefix,
 }: {
   intrinsicFilter?: FilterH;
   initialExtraFilter?: FilterH;
@@ -26,6 +27,7 @@ export function createSelectRequestCreator({
   sort: Sort;
   limit: number;
   distinct?: boolean;
+  columnsByPrefix?: ReadonlyMap<string, ColumnName>;
 }): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   return (schema) => {
@@ -43,8 +45,7 @@ export function createSelectRequestCreator({
         schema: sch,
         columns,
         dictionaries: dictionaries(),
-        // TODO: Consider adding columnsByPrefix for some columns, e.g. id= for Versum ids.
-        // This would allow selecting e.g. a person by their Versum id.
+        columnsByPrefix,
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {

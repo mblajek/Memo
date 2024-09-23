@@ -1,6 +1,5 @@
 import {currentDate, cx, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
 import {filterAndSortInDayView} from "components/utils/day_minute_util";
-import {useLocale} from "components/utils/LocaleContext";
 import {DateTime} from "luxon";
 import {FaSolidCircleDot} from "solid-icons/fa";
 import {createMemo, For, JSX, Show, splitProps} from "solid-js";
@@ -10,9 +9,8 @@ import {title} from "../title";
 import {CellWithPreferredStyling} from "./CellWithPreferredStyling";
 import {useHolidays} from "./holidays";
 import {Block, Event} from "./types";
-import {WeekDaysCalculator} from "./week_days_calculator";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 interface Props<M> extends htmlAttributes.div {
   readonly month: DateTime;
@@ -35,9 +33,7 @@ export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
     "onEmptyClick",
   ]);
   const t = useLangFunc();
-  const locale = useLocale();
   const holidays = useHolidays();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   const isThisMonth = () => props.day.hasSame(props.month, "month");
   const blocks = createMemo(() => filterAndSortInDayView(props.day, props.blocks));
   const events = createMemo(() => filterAndSortInDayView(props.day, props.events));
@@ -60,7 +56,7 @@ export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
           <Button
             class={cx(
               "bg-inherit px-0.5 rounded font-semibold flex gap-0.5 items-center text-base -mb-0.5 hover:underline",
-              weekDaysCalculator.isWeekend(props.day) || holidays.isHoliday(props.day) ? "text-red-800" : "text-black",
+              props.day.isWeekend || holidays.isHoliday(props.day) ? "text-red-800" : "text-black",
               isThisMonth() ? undefined : "text-opacity-50",
               holidays.isHoliday(props.day) ? "underline decoration-1 hover:decoration-2" : undefined,
             )}

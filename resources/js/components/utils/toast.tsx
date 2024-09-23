@@ -3,19 +3,17 @@ import {For, JSX, Show, VoidComponent} from "solid-js";
 import toast, {ToastHandler, ToastOptions} from "solid-toast";
 import {Button} from "../ui/Button";
 import {cx} from "./classnames";
+import {useLangFunc} from "./lang";
 
 type Message = string | (() => JSX.Element);
 
 function showToast(toastFunction: ToastHandler, message: Message, options?: ToastOptions) {
+  const t = useLangFunc();
   const id = toastFunction(
     () => (
       <div class="flex gap-2">
         {typeof message === "function" ? message() : message}
-        <Button
-          // TODO: Use translated text as the label. This is hard because we can't use useLangFunc here.
-          aria-label="close"
-          onClick={() => toast.dismiss(id)}
-        >
+        <Button aria-label="close" onClick={() => toastDismiss(id)} title={t("actions.close")}>
           <VsClose size="24" class="text-black" />
         </Button>
       </div>
@@ -44,3 +42,7 @@ export const ToastMessages: VoidComponent<ToastMessagesProps> = (props) => (
     </ul>
   </Show>
 );
+
+export function toastDismiss(id: string) {
+  toast.dismiss(id);
+}

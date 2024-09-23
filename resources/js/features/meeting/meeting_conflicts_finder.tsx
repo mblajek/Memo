@@ -1,3 +1,4 @@
+import {calendarIcons} from "components/ui/icons";
 import {SmallSpinner} from "components/ui/Spinner";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
@@ -14,7 +15,6 @@ import {
   BiRegularCalendarCheck,
   BiRegularCalendarEvent,
   BiRegularCalendarExclamation,
-  BiRegularCalendarX,
 } from "solid-icons/bi";
 import {Accessor, For, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
@@ -22,7 +22,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "./attendance_status_info";
 import {getMeetingTimeInterval} from "./meeting_time_controller";
 
-const _DIRECTIVES_ = null && title;
+type _Directives = typeof title;
 
 /**
  * The information about the currently created/edited meeting to calculate conflicts for.
@@ -50,6 +50,7 @@ interface ConflictingLeaveTime {
 }
 
 /** The list of columns to fetch. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const COLUMNS = [
   "id",
   "date",
@@ -282,7 +283,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
           messageKey: string,
         ) {
           if (conflictingLeaveTimes.length) {
-            iconType = BiRegularCalendarX;
+            iconType = calendarIcons.Conflict;
             styleClass = "text-orange-600";
             let message = t(messageKey);
             const notes = conflictingLeaveTimes.map(({notes}) => notes?.replaceAll("\n", ", ")).filter(Boolean);

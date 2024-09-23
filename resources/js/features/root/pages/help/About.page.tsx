@@ -3,6 +3,7 @@ import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {DATE_TIME_FORMAT, useLangFunc} from "components/utils";
+import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
@@ -17,12 +18,14 @@ export default (() => {
       <h1 class="text-2xl font-bold mb-4">
         <Capitalize text={t("routes.help_pages.about")} />
       </h1>
-      <Show when={systemStatusMonitor.status()}>
+      <Show when={systemStatusMonitor.lastStatus()}>
         {(status) => (
           <div class="flex flex-col gap-2 items-stretch">
             <div class="grid gap-x-3 gap-y-1 self-start" style={{"grid-template-columns": "auto auto"}}>
               <label class="font-semibold">{t("about_page.app_version")}</label>
-              <div>{status().version}</div>
+              <div>
+                <FullAppVersion />
+              </div>
               <label class="font-semibold">{t("about_page.app_env")}</label>
               <div>
                 <Show when={status().appEnv} fallback={<EmptyValueSymbol />}>

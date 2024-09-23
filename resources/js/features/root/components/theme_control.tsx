@@ -1,5 +1,5 @@
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {createCached} from "components/utils/cache";
 import {IconProps, IconTypes} from "solid-icons";
 import {IoMoonOutline, IoSunnyOutline} from "solid-icons/io";
@@ -36,15 +36,14 @@ export const PageWithTheme: ParentComponent = (props) => {
 
 export const useThemeControl = createCached(() => {
   const [theme, setTheme] = createSignal<Theme>("light");
-  createLocalStoragePersistence<PersistentState>({
-    key: "theme",
+  createPersistence<PersistentState>({
+    storage: localStorageStorage("theme"),
     value: () => ({
       theme: theme(),
     }),
     onLoad: (value) => {
       setTheme(value.theme);
     },
-    serialiser: richJSONSerialiser<PersistentState>(),
     version: [1],
   });
   return {

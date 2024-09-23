@@ -1,12 +1,13 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {Button} from "components/ui/Button";
 import {HideableSection} from "components/ui/HideableSection";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {TextField} from "components/ui/form/TextField";
-import {useLangFunc} from "components/utils";
+import {cx, useLangFunc} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Show, VoidComponent, createComputed, on, splitProps} from "solid-js";
 import {z} from "zod";
@@ -19,6 +20,7 @@ const getSchema = () =>
     hasEmailVerified: z.boolean(),
     hasPassword: z.boolean(),
     password: z.string(),
+    passwordExpireAt: z.string(),
     members: userMembersFormPart.getSchema(),
     managedByFacilityId: z.string(),
     hasGlobalAdmin: z.boolean(),
@@ -82,23 +84,37 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
             />
             <HideableSection show={form.data("hasPassword")}>
               {(show) => (
-                <PasswordField
-                  name="password"
-                  {...(initialValues()?.hasPassword
-                    ? {
-                        label: t("forms.user_edit.field_names.newPassword"),
-                        placeholder: t("forms.user_edit.password_empty_to_leave_unchanged"),
-                      }
-                    : {})}
-                  // Prevent password autocomplete. Just autocomplete="off" does not work.
-                  autocomplete="off"
-                  readonly
-                  disabled={!show()}
-                  allowShow
-                  onClick={(e) => {
-                    e.currentTarget.readOnly = false;
-                  }}
-                />
+                <div class="flex flex-col">
+                  <PasswordField
+                    name="password"
+                    {...(initialValues()?.hasPassword
+                      ? {
+                          label: t("forms.user_edit.field_names.newPassword"),
+                          placeholder: t("forms.user_edit.password_empty_to_leave_unchanged"),
+                        }
+                      : {})}
+                    // Prevent password autocomplete. Just autocomplete="off" does not work.
+                    autocomplete="off"
+                    readonly
+                    disabled={!show()}
+                    allowShow
+                    onClick={(e) => {
+                      e.currentTarget.readOnly = false;
+                    }}
+                  />
+                  <TextField
+                    class={cx("text-black", form.data("passwordExpireAt") ? undefined : "text-opacity-50")}
+                    name="passwordExpireAt"
+                    type="datetime-local"
+                  />
+                  <div>
+                    <Show when={form.data("passwordExpireAt")} fallback={t("forms.user.password_expire_never")}>
+                      <Button class="linkLike" onClick={() => form.setFields("passwordExpireAt", "")}>
+                        {t("forms.user.clear_password_expire_at")}
+                      </Button>
+                    </Show>
+                  </div>
+                </div>
               )}
             </HideableSection>
           </div>

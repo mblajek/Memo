@@ -1,4 +1,4 @@
-import {cx, debouncedAccessor} from "components/utils";
+import {cx, delayedAccessor} from "components/utils";
 import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/types";
 import {Api} from "data-access/memo-api/types";
 import {createComputed} from "solid-js";
@@ -29,7 +29,7 @@ export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilte
         return {type: "column", column: props.schema.name, op: "=", val: value};
     }
   }
-  const debouncedValue = debouncedAccessor(value, {
+  const debouncedValue = delayedAccessor(value, {
     outputImmediately: (v) => !v || v === "*" || v === "''" || v.length === Api.ID_LENGTH,
   });
   createComputed(() => props.setFilter(buildFilter(debouncedValue())));

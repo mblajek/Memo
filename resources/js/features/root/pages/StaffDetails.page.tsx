@@ -90,7 +90,7 @@ export default (() => {
                   translationsFormNames={["staff_edit", "staff", "facility_user"]}
                   translationsModel={["staff", "facility_user"]}
                   class="flex flex-col items-stretch gap-4 relative"
-                  style={{width: "min(600px, 100%)"}}
+                  style={{"min-width": "400px", "max-width": "600px"}}
                   schema={getSchema()}
                   onSubmit={updateStaff}
                 >

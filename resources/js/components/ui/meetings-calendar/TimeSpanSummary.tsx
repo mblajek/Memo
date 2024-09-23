@@ -1,5 +1,6 @@
 import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
 import {formatDayMinuteHM, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {AlignedTime} from "components/utils/time_formatting";
 import {Match, Switch, VoidComponent} from "solid-js";
 import {TimeSpan} from "../calendar/types";
 import {EN_DASH} from "../symbols";
@@ -21,10 +22,12 @@ export const TimeSpanSummary: VoidComponent<Props> = (props) => {
         <Match when={!props.timeSpan.allDay && props.timeSpan}>
           {(timeSpan) => (
             <>
-              <span class="font-weight-medium">{formatDayMinuteHM(timeSpan().startDayMinute)}</span>
+              <span class="font-weight-medium">
+                <AlignedTime dayMinute={timeSpan().startDayMinute} />
+              </span>
               {EN_DASH}
               <span class="font-weight-medium">
-                {formatDayMinuteHM((timeSpan().startDayMinute + timeSpan().durationMinutes) % MAX_DAY_MINUTE)}
+                <AlignedTime dayMinute={(timeSpan().startDayMinute + timeSpan().durationMinutes) % MAX_DAY_MINUTE} />
               </span>
             </>
           )}

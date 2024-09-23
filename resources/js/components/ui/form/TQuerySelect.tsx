@@ -45,7 +45,7 @@ export interface BaseTQuerySelectProps
   /** A query spec used when fetching replacement items. Default: same as querySpec (just with no limit). */
   readonly replacementQuerySpec?: TQueryConfig;
   /** Additional items to put at the top. */
-  readonly topItems?: readonly SelectItem[];
+  readonly topItems?: readonly SelectItem[] | ((filterText: string | undefined) => readonly SelectItem[] | undefined);
 }
 
 export interface TQueryConfig {
@@ -68,6 +68,8 @@ export interface TQueryConfig {
   readonly limit?: number;
   /** See tquery DataRequest.distinct. */
   readonly distinct?: boolean;
+  /** Column prefixes for filtering. */
+  readonly columnsByPrefix?: ReadonlyMap<string, ColumnName>;
   /**
    * A function creating the items. It can make use of the default item properties provided.
    * The default includes the value (taken from the value column) and the text (from the label columns).
@@ -114,6 +116,7 @@ function makeQuery(
     sort,
     limit = DEFAULT_LIMIT,
     distinct,
+    columnsByPrefix,
     itemFunc,
   }: TQueryConfig,
   {initialExtraFilter}: {initialExtraFilter?: FilterH} = {},
@@ -128,6 +131,7 @@ function makeQuery(
     sort,
     limit,
     distinct,
+    columnsByPrefix,
   });
   const {
     dataQuery,
@@ -191,6 +195,8 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
   const [replacementEnabled, setReplacementEnabled] = createSignal(false);
   const isSuccess = () => (priorityData()?.dataQuery.isSuccess ?? true) && dataQuery.isSuccess;
   const isFetching = () => priorityData()?.dataQuery.isFetching || dataQuery.isFetching;
+  const topItems = () =>
+    (typeof props.topItems === "function" ? props.topItems(filterText[0]()) : props.topItems) || [];
   /** The items and loading status. They are returned in a single memo to avoid races. */
   const joinedItemsAndIsLoading = createMemo<{readonly items: readonly SelectItem[]; readonly isLoading: boolean}>(
     (prev) => {
@@ -198,7 +204,7 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
         // Wait for both queries to finish fetching before processing any results.
         return {...prev, isLoading: true};
       }
-      let array: SelectItem[] = props.topItems?.slice() || [];
+      let array: SelectItem[] = [...topItems()];
       if (priorityData()) {
         let priorityItems = priorityData()!.items();
         const numPriorityItems = priorityItems.length;
@@ -251,7 +257,7 @@ export const TQuerySelect: VoidComponent<TQuerySelectProps> = (allProps) => {
     },
     {
       // eslint-disable-next-line solid/reactivity
-      items: props.topItems || [],
+      items: topItems(),
       isLoading: true,
     },
   );

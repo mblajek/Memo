@@ -2,7 +2,8 @@ import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {cx} from "components/utils";
 import {TrackingMarker} from "components/utils/TrackingMarker";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
-import {For, JSX, Show, VoidComponent, createComputed, createMemo, createSignal, on} from "solid-js";
+import {hasProp} from "components/utils/props";
+import {For, JSX, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {LabelOverride} from "./labels";
 
@@ -36,17 +37,17 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
   <FieldsetDisabledTracker>
     {(isFieldsetDisabled) => {
       const formContext = useFormContextIfInForm();
-      const [value, setValue] = createSignal<string | undefined>(props.value ?? props.items[0]?.value);
+      const [value, setValue] = createSignal<string>();
       const isDisabled = () => isFieldsetDisabled() || props.disabled;
-      createComputed(
-        // eslint-disable-next-line solid/reactivity
-        on(formContext ? () => formContext.form.data(props.name) as string : () => props.value, setValue),
-      );
+      const inputValue = () =>
+        hasProp(props, "value") ? props.value : formContext ? (formContext.form.data(props.name) as string) : undefined;
+      createComputed(() => setValue(inputValue() ?? props.items[0]?.value));
       createComputed(() => {
         if (value() !== undefined) {
           props.onValueChange?.(value()!);
         }
       });
+      const isFormMode = formContext && !hasProp(props, "value");
 
       return (
         <FieldBox name={props.name} label={props.label} umbrella>
@@ -56,9 +57,7 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
               cx(
                 props.small ? "px-1" : "px-2 py-0.5",
                 "border rounded",
-                active
-                  ? ["border-memo-active rounded", isDisabled() ? "bg-disabled" : "bg-select"]
-                  : "border-transparent",
+                active ? "border-memo-active bg-select" : "border-transparent",
               )
             }
           >
@@ -70,41 +69,55 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
                   isDisabled() ? "bg-disabled" : undefined,
                 )}
               >
-                <For each={props.items}>
-                  {(item) => {
-                    const isActive = createMemo(() => value() === item.value);
-                    const isItemDisabled = () => isDisabled() || item.disabled;
+                <For each={props.items.map(({value}) => value)}>
+                  {(itemValue, index) => {
+                    const item = () => props.items[index()]!;
+                    const isActive = () => value() === itemValue;
+                    const isItemDisabled = () => isDisabled() || item().disabled;
+                    function activate() {
+                      if (!isItemDisabled()) {
+                        setValue(itemValue);
+                      }
+                    }
+                    let input: HTMLInputElement | undefined;
                     return (
                       <label
                         class={cx(
                           "select-none text-black z-10",
                           isItemDisabled()
                             ? "text-opacity-50"
-                            : ["cursor-pointer", isActive() ? undefined : "text-opacity-70"],
+                            : ["cursor-pointer", isActive() ? undefined : "text-opacity-80"],
                         )}
+                        tabIndex="0"
+                        onClick={isFormMode ? undefined : activate}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            if (isFormMode) {
+                              input?.click();
+                            } else {
+                              activate();
+                            }
+                          }
+                        }}
                       >
-                        <MarkerTarget id={item.value}>
-                          <Show when={item.label} fallback={<>{item.value}</>}>
+                        <MarkerTarget id={itemValue}>
+                          <Show when={item().label} fallback={<>{itemValue}</>}>
                             {(label) => label()()}
                           </Show>
                         </MarkerTarget>
-                        <input
-                          type="radio"
-                          name={props.name}
-                          value={item.value}
-                          class="hidden"
-                          disabled={isItemDisabled()}
-                          checked={isActive()}
-                          onInput={
-                            formContext
-                              ? undefined
-                              : ({currentTarget}) => {
-                                  if (currentTarget.checked) {
-                                    setValue(item.value);
-                                  }
-                                }
-                          }
-                        />
+                        <Show when={isFormMode}>
+                          <input
+                            ref={input}
+                            type="radio"
+                            name={props.name}
+                            value={itemValue}
+                            class="hidden"
+                            checked={isActive()}
+                            disabled={isItemDisabled()}
+                            onClick={activate}
+                          />
+                        </Show>
                       </label>
                     );
                   }}

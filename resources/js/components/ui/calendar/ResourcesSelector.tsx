@@ -15,6 +15,7 @@ interface Props extends htmlAttributes.div {
 export interface ResourceGroup {
   readonly label: () => JSX.Element;
   readonly resources: readonly ResourceItem[];
+  readonly footer?: () => JSX.Element;
 }
 
 export interface ResourceItem {
@@ -34,7 +35,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
   return (
     <div {...htmlAttributes.merge(divProps, {class: "flex flex-col gap-2"})}>
       <For each={props.resourceGroups}>
-        {({label, resources}, i) => {
+        {({label, resources, footer}, i) => {
           const checkboxId = () => (props.mode === "checkbox" ? `resourceGroup_${i()}` : undefined);
           const [checkbox, setCheckbox] = createSignal<HTMLInputElement>();
           const state = createMemo(() => {
@@ -139,6 +140,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                     );
                   }}
                 </For>
+                {footer?.()}
               </div>
             </div>
           );

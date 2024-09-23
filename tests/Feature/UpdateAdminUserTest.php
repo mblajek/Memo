@@ -241,19 +241,6 @@ class UpdateAdminUserTest extends TestCase
         $this->assertEquals($data['passwordExpireAt'], $user->password_expire_at->toIso8601ZuluString());
     }
 
-    public function testWithPasswordWithoutPasswordExpireAtFails(): void
-    {
-        $user = User::factory()->create();
-
-        $data = [
-            'passwordExpireAt' => self::now(),
-        ];
-
-        $result = $this->execute($user->id, $data);
-
-        $result->assertBadRequest();
-    }
-
     public function testWithoutPasswordWithPasswordExpireAtSucceeds(): void
     {
         $user = User::factory()->create();
@@ -264,7 +251,7 @@ class UpdateAdminUserTest extends TestCase
 
         $result = $this->execute($user->id, $data);
 
-        $result->assertBadRequest();
+        $result->assertOk();
     }
 
     // Logic tests

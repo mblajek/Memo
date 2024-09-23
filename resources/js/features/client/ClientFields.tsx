@@ -78,7 +78,7 @@ export function useTableAttributeColumnConfigs() {
     client: () =>
       ({
         attributeColumns: true,
-        defaultConfig: {initialVisible: false, columnGroups: "attendant"},
+        defaultConfig: {initialVisible: false, columnGroups: "attendant_multicolumn"},
         selection: {
           model: "client",
           includeFixed: true,
@@ -147,6 +147,7 @@ export function useTableAttributeColumnConfigs() {
                   </PaddedCell>
                 )),
               },
+              globalFilterable: false,
             },
             "documentsLinks.count": false,
             "notificationMethodDictIds.count": false,

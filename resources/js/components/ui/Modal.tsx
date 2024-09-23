@@ -2,8 +2,19 @@ import * as dialog from "@zag-js/dialog";
 import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
-import {Accessor, JSX, Show, createMemo, createRenderEffect, createUniqueId, onCleanup} from "solid-js";
+import {
+  Accessor,
+  createComputed,
+  createMemo,
+  createRenderEffect,
+  createSignal,
+  createUniqueId,
+  JSX,
+  onCleanup,
+  Show,
+} from "solid-js";
 import {Portal} from "solid-js/web";
+import {Size, useResizeObserver, windowSize} from "../utils/resize_observer";
 import {Button} from "./Button";
 import s from "./Modal.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
@@ -87,6 +98,8 @@ function isEscapeReason(reason: EscapeReason | CloseReason): reason is EscapeRea
 
 type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseReason<T, C>;
 
+const DRAG_MARGIN = 50;
+
 /**
  * A modal, displaying on top of the page.
  *
@@ -112,6 +125,7 @@ type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseRea
  */
 export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element => {
   const t = useLangFunc();
+  const resizeObserver = useResizeObserver();
   const closeOn = createMemo(
     () =>
       new Set<CloseReason>(
@@ -138,12 +152,54 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
     }),
   );
   const api = createMemo(() => dialog.connect(state, send, normalizeProps));
+  /** Position of the modal, relative to its default central position. */
+  const [relativePos, setRelativePos] = createSignal<readonly [number, number]>([0, 0]);
   const shouldBeOpen = createMemo(() => !!props.open);
   createRenderEffect(() => {
     if (shouldBeOpen()) {
       api().open();
     } else {
       api().close();
+      setRelativePos([0, 0]);
+    }
+  });
+  const [grabPos, setGrabPos] = createSignal<readonly [number, number]>();
+  let positioner: HTMLDivElement | undefined;
+  const [contentElement, setContentElement] = createSignal<HTMLDivElement>();
+  // eslint-disable-next-line solid/reactivity
+  const contentSize = resizeObserver.observeClientSize(contentElement);
+  const contentPos = (): Size | undefined =>
+    contentSize() && [
+      (windowSize()[0] - contentSize()![0]) / 2 + relativePos()[0],
+      (windowSize()[1] - contentSize()![1]) / 2 + relativePos()[1],
+    ];
+  createComputed(() => {
+    if (!contentSize()) {
+      return;
+    }
+    const [cw] = contentSize()!;
+    const [cx, cy] = contentPos()!;
+    let dx = 0;
+    let dy = 0;
+    const overRight = cx + DRAG_MARGIN - windowSize()[0];
+    if (overRight > 0) {
+      dx = -overRight;
+    } else {
+      const overLeft = -(cx + cw - DRAG_MARGIN);
+      if (overLeft > 0) {
+        dx = overLeft;
+      }
+    }
+    if (cy < 0) {
+      dy -= cy;
+    } else {
+      const overBottom = cy + DRAG_MARGIN - windowSize()[1];
+      if (overBottom > 0) {
+        dy = -overBottom;
+      }
+    }
+    if (dx || dy) {
+      setRelativePos([relativePos()[0] + dx, relativePos()[1] + dy]);
     }
   });
   return (
@@ -151,26 +207,56 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
       {(value) => (
         <Show when={api().isOpen}>
           <Portal>
-            <div class={cx(s.modal, closeOn().has("closeButton") && s.withCloseButton)}>
+            <div
+              class={cx(s.modal, closeOn().has("closeButton") && s.withCloseButton)}
+              onPointerMove={(e) => {
+                if (e.buttons === 1) {
+                  if (grabPos()) {
+                    setRelativePos([e.clientX - grabPos()![0], e.clientY - grabPos()![1]]);
+                  }
+                } else {
+                  setGrabPos(undefined);
+                }
+              }}
+              onPointerUp={[setGrabPos, undefined]}
+            >
               <div {...api().backdropProps} />
-              <div {...api().positionerProps}>
-                <div {...api().contentProps} style={props.style}>
-                  <div class={s.innerContent}>
-                    <Show when={props.title}>
-                      <h2 {...api().titleProps}>{props.title}</h2>
-                    </Show>
-                    <div class={s.body}>{getChildrenElement(props.children, value)}</div>
-                    {/* Place the close button at the end so that it is focused last. */}
-                    <Show when={closeOn().has("closeButton")}>
-                      <Button
-                        class={s.closeButton}
-                        aria-label={t("actions.close")}
-                        onClick={() => props.onClose?.("closeButton" as C)}
-                      >
-                        <VsClose class="w-6 h-6" />
-                      </Button>
-                    </Show>
-                  </div>
+              <div ref={positioner} {...api().positionerProps}>
+                <div
+                  ref={setContentElement}
+                  {...api().contentProps}
+                  style={{
+                    ...props.style,
+                    left: `${relativePos()[0]}px`,
+                    top: `${relativePos()[1]}px`,
+                  }}
+                >
+                  <Show when={props.title}>
+                    <h2
+                      {...api().titleProps}
+                      onPointerDown={(e) => {
+                        if (e.buttons === 1) {
+                          setGrabPos([
+                            e.clientX - positioner!.clientLeft - relativePos()[0],
+                            e.clientY - positioner!.clientTop - relativePos()[1],
+                          ]);
+                        }
+                      }}
+                    >
+                      {props.title}
+                    </h2>
+                  </Show>
+                  <div class={s.body}>{getChildrenElement(props.children, value)}</div>
+                  {/* Place the close button at the end so that it is focused last. */}
+                  <Show when={closeOn().has("closeButton")}>
+                    <Button
+                      class={s.closeButton}
+                      aria-label={t("actions.close")}
+                      onClick={() => props.onClose?.("closeButton" as C)}
+                    >
+                      <VsClose class="w-6 h-6" />
+                    </Button>
+                  </Show>
                 </div>
               </div>
             </div>

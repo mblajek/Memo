@@ -46,7 +46,7 @@ export function useTableTextExportCells() {
 }
 
 export function formatDateTimeForTextExport(dateTime: DateTime) {
-  return dateTime.toLocal().toLocaleString(DATE_TIME_FORMAT);
+  return dateTime.toLocaleString(DATE_TIME_FORMAT);
 }
 
 /**

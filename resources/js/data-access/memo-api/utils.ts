@@ -5,10 +5,9 @@ import {Api} from "./types";
 
 export const parseGetResponse = <T extends object>(res: AxiosResponse<Api.Response.Get<T>>) => res.data.data;
 
-export const parseGetListResponse = <T extends Api.Entity>(res: AxiosResponse<Api.Response.GetList<T>>) =>
-  res.data.data;
+export const parseListResponse = <T>(res: AxiosResponse<Api.Response.List<T>>) => res.data.data;
 
-export const parsePostResponse = (res: AxiosResponse<Api.Response.Post>) => res.data.data;
+export const parsePostResponse = <T>(res: AxiosResponse<Api.Response.Post<T>>) => res.data.data;
 
 /** An id or an array of id that can be passed to a list request. */
 export type ListInParam = Api.Id | readonly Api.Id[];
