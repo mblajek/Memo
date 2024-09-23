@@ -12,8 +12,10 @@ const [loaderCount, setLoaderCount] = createSignal(0);
  * is at least one MemoLoader element rendered.
  */
 export const MemoLoader: VoidComponent = () => {
-  onMount(() => setLoaderCount((v) => v + 1));
-  onCleanup(() => setLoaderCount((v) => v - 1));
+  onMount(() => {
+    setLoaderCount((v) => v + 1);
+    onCleanup(() => setLoaderCount((v) => v - 1));
+  });
   return <></>;
 };
 

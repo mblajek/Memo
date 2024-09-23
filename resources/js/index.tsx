@@ -5,6 +5,7 @@ import {InitializeTanstackQuery} from "components/utils";
 import {DEV, ErrorBoundary, Show} from "solid-js";
 import {DelegatedEvents, render} from "solid-js/web";
 import {Toaster} from "solid-toast";
+import {TimeZoneController} from "time_zone_controller";
 import App from "./App";
 import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
@@ -31,19 +32,16 @@ render(() => {
   return (
     <TransProvider
       options={{
-        backend: {
-          loadPath: "/api/v1/system/translation/{{lng}}/list",
-        },
+        backend: {loadPath: "/api/v1/system/translation/{{lng}}/list"},
         debug: !!DEV,
-        fallbackLng: false,
         initImmediate: false,
-        lng: "pl",
+        fallbackLng: "pl",
         load: "currentOnly",
-        supportedLngs: ["pl", "en-US"],
+        supportedLngs: ["pl"],
         pluralSeparator: "__",
       }}
     >
-      <LocaleContext.Provider value={new Intl.Locale("pl")}>
+      <LocaleContext.Provider value={new Intl.Locale(navigator.language)}>
         <Show when={!translationsLoaded()}>
           {/* Show the loader until the translations are loaded. The page is displayed underneath, and
         the strings will get updated reactively when the translations are ready. */}
@@ -65,7 +63,9 @@ render(() => {
             />
             <InitializeTanstackQuery>
               <DictionariesAndAttributesProvider>
-                <App />
+                <TimeZoneController>
+                  <App />
+                </TimeZoneController>
               </DictionariesAndAttributesProvider>
             </InitializeTanstackQuery>
             <GlobalPageElements />

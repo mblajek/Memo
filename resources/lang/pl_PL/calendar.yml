@@ -72,3 +72,5 @@ show_my_calendar: "Mój kalendarz"
 show_my_details: "Moje dane i spotkania"
 
 more_info: "Kliknij aby dowiedzieć się więcej o tym kalendarzu"
+
+nonlocal_time_zone: "Strefa czasowa placówki jest inna niż lokalna strefa czasowa. Wszystkie daty/godziny wyswietlane są w strefie czasowej wybranej placówki."

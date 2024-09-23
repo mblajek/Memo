@@ -13,7 +13,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import {currentTime, cx, delayedAccessor, useLangFunc} from "components/utils";
+import {currentTimeSecond, cx, delayedAccessor, useLangFunc} from "components/utils";
 import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
@@ -225,7 +225,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
   // in onScrollEnd, but also after enough time is elapsed since the last onScroll event, because in some
   // situations the onScrollEnd event is not reliable, and we don't want to get stuck thinking the table
   // is still scrolling when it's not.
-  const isScrolling = createMemo(() => currentTime().toMillis() - lastScrollTimestamp() < 100);
+  const isScrolling = createMemo(() => currentTimeSecond().toMillis() - lastScrollTimestamp() < 100);
   const [desiredScrollX, setDesiredScrollX] = createSignal<number>();
   createEffect(
     on(

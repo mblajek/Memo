@@ -29,7 +29,7 @@ export type FormTimeDataType = Obj &
   };
 
 export function meetingTimePartDayInitialValue(time?: DateTime, durationMinutes?: number) {
-  const localTime = time?.toLocal().startOf("minute");
+  const localTime = time?.startOf("minute");
   function timeInput(time: DateTime | undefined) {
     return time ? dateTimeToTimeInput(time) : "";
   }

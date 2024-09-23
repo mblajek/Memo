@@ -29,7 +29,3 @@ const DEFAULT_WEEK_INFO = {
 export function getWeekInfo(locale: Locale) {
   return locale.getWeekInfo?.() || locale.weekInfo || DEFAULT_WEEK_INFO;
 }
-
-export function getCurrentLocale() {
-  return new Intl.Locale(new Intl.DateTimeFormat().resolvedOptions().locale);
-}
