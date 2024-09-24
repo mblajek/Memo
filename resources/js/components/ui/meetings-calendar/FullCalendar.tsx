@@ -1,5 +1,6 @@
 import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
+import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {CalendarColumn, ColumnsCalendar} from "components/ui/calendar/ColumnsCalendar";
@@ -163,6 +164,16 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
 
   const userStatus = createQuery(User.statusQueryOptions);
   const [showInactiveStaff, setShowInactiveStaff] = createSignal(false);
+  createHistoryPersistence({
+    key: "FullCalendar",
+    value: () => ({showInactive: showInactiveStaff()}),
+    onLoad: (value) => {
+      setShowInactiveStaff(value.showInactive);
+    },
+    onReset: () => {
+      setShowInactiveStaff(false);
+    },
+  });
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
     entityURL: `facility/${activeFacilityId()}/user/staff`,

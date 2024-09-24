@@ -129,7 +129,7 @@ export default (() => {
     }
   });
   createPersistence<PersistentState>({
-    storage: localStorageStorage("WeeklyTimeTables"),
+    storage: localStorageStorage(`WeeklyTimeTables:facility.${activeFacilityId()}`),
     value: () => ({
       selection: selection(),
       fromMonth: fromMonth(),
