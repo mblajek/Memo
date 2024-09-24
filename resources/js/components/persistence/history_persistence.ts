@@ -2,6 +2,8 @@ import {Accessor, createEffect, onCleanup} from "solid-js";
 
 type LoadType = "initial" | "popstate";
 
+const resetFunctions: (() => void)[] = [];
+
 /**
  * Creates a history persistence.
  *
@@ -13,10 +15,12 @@ export function createHistoryPersistence<T>({
   key,
   value,
   onLoad,
+  onReset,
 }: {
   key: string;
   value: Accessor<T>;
   onLoad: (value: T, type: LoadType) => void;
+  onReset?: () => void;
 }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function loadIfPresent(state: any, type: LoadType) {
@@ -28,10 +32,20 @@ export function createHistoryPersistence<T>({
   loadIfPresent(history.state, "initial");
   const popStateHandler = (e: PopStateEvent) => loadIfPresent(e.state, "popstate");
   addEventListener("popstate", popStateHandler);
-  onCleanup(() => removeEventListener("popstate", popStateHandler));
+  const resetFunc = () => onReset?.();
+  resetFunctions.push(resetFunc);
+  onCleanup(() => {
+    removeEventListener("popstate", popStateHandler);
+    resetFunctions.splice(resetFunctions.indexOf(resetFunc), 1);
+  });
   createEffect(() => history.replaceState({...history.state, [key]: value()}, ""));
 }
 
-export function clearAllHistoryState() {
+export function clearAllHistoryState({forceReset = false} = {}) {
   history.replaceState(null, "");
+  if (forceReset) {
+    for (const resetFunc of resetFunctions) {
+      resetFunc();
+    }
+  }
 }

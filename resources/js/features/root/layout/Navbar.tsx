@@ -1,13 +1,16 @@
 import {A} from "@solidjs/router";
+import {Button} from "components/ui/Button";
 import {FullLogo} from "components/ui/FullLogo";
 import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {FaSolidList} from "solid-icons/fa";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
+import {IoReloadSharp} from "solid-icons/io";
 import {OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
@@ -22,6 +25,7 @@ import s from "./layout.module.scss";
 
 export const Navbar: VoidComponent = () => {
   const t = useLangFunc();
+  const invalidate = useInvalidator();
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
   const facilityUrl = () => activeFacility()?.url;
@@ -140,9 +144,26 @@ export const Navbar: VoidComponent = () => {
         </Show>
       </nav>
       <div class="grow" />
-      <A href="/help/about" class="p-2 !text-grey-text">
-        {t("app_name")} <BaseAppVersion />
-      </A>
+      <div class="p-2 flex items-end gap-2 justify-between">
+        <A href="/help/about" class="!text-grey-text">
+          {t("app_name")} <BaseAppVersion />
+        </A>
+        <Button
+          class={cx(
+            "p-1 rounded-full active:bg-select transition-colors",
+            invalidate.isThrottled() ? "text-gray-300" : "text-grey-text hover:text-memo-active",
+          )}
+          style={{"transition-duration": "300ms"}}
+          disabled={invalidate.isThrottled()}
+          onClick={() => invalidate.everythingThrottled()}
+          title={[
+            `${t("refresh_button")}${invalidate.isThrottled() ? `\n${t("refresh_button.disabled")}` : ""}`,
+            {hideOnClick: true},
+          ]}
+        >
+          <IoReloadSharp class="ml-px text-current" size="18" />
+        </Button>
+      </div>
     </aside>
   );
 };

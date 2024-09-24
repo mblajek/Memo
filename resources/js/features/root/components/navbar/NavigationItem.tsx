@@ -1,8 +1,8 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
+import {clearAllHistoryState} from "components/persistence/history_persistence";
 import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
 import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
-import {useInvalidator} from "data-access/memo-api/invalidator";
 import {IconTypes} from "solid-icons";
 import {FaSolidAngleDown} from "solid-icons/fa";
 import {ParentComponent, Show, children, createMemo, createSignal, on, splitProps} from "solid-js";
@@ -26,7 +26,6 @@ const ACTIVE_ITEM_CLASS = "__activeNavItem";
 export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) => {
   const [props, aProps] = splitProps(allProps, ["icon", "routeKey", "small", "children"]);
   const t = useLangFunc();
-  const invalidate = useInvalidator();
   const location = useLocation();
   const [container, setContainer] = createSignal<HTMLDivElement>();
   /* A signal that changes whenever the active navigation item might change. */
@@ -59,7 +58,8 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
         activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
         onClick={(event) => {
           if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS) && location.pathname === aProps.href) {
-            invalidate.everythingThrottled();
+            clearAllHistoryState({forceReset: true});
+            event.preventDefault();
           }
         }}
       >
