@@ -13,31 +13,41 @@ import {LoginForm} from "./Login.form";
 
 type _Directives = typeof title;
 
-export const createLoginModal = registerGlobalPageElement<true>((args) => {
+interface Params {
+  readonly lightBackdrop?: boolean;
+}
+
+export const createLoginModal = registerGlobalPageElement<Params | true>((args) => {
   const t = useLangFunc();
   const systemStatusMonitor = useSystemStatusMonitor();
   const {toggleTheme} = useThemeControl();
+  const backdropClass = () => {
+    const params = args.params();
+    return typeof params === "object" && params?.lightBackdrop ? "bg-black/10" : undefined;
+  };
   return (
-    <Modal open={args.params()} style={MODAL_STYLE_PRESETS.narrow}>
+    <Modal
+      open={args.params()}
+      style={MODAL_STYLE_PRESETS.narrow}
+      backdropClass={backdropClass()}
+      title={<FullLogo class="w-full h-16" />}
+    >
       <div class="flex flex-col gap-4">
-        <div class="flex flex-col">
-          <FullLogo class="w-full h-16" />
-          <div class="flex gap-1 justify-end">
-            <span
-              class="text-grey-text"
-              use:title={`${t("about_page.commit_date")} ${
-                systemStatusMonitor.baseStatus()?.commitDate
-                  ? DateTime.fromISO(systemStatusMonitor.baseStatus()!.commitDate!).toLocaleString(DATE_TIME_FORMAT)
-                  : "?"
-              }`}
-              onDblClick={() => {
-                getSelection()?.empty();
-                open(`${V1.defaults.baseURL}/system/status`, "_blank");
-              }}
-            >
-              <BaseAppVersion />
-            </span>
-          </div>
+        <div class="flex gap-1 justify-end">
+          <span
+            class="text-grey-text"
+            use:title={`${t("about_page.commit_date")} ${
+              systemStatusMonitor.baseStatus()?.commitDate
+                ? DateTime.fromISO(systemStatusMonitor.baseStatus()!.commitDate!).toLocaleString(DATE_TIME_FORMAT)
+                : "?"
+            }`}
+            onDblClick={() => {
+              getSelection()?.empty();
+              open(`${V1.defaults.baseURL}/system/status`, "_blank");
+            }}
+          >
+            <BaseAppVersion />
+          </span>
         </div>
         <div class="flex flex-col relative">
           <div class="absolute top-0 right-0 z-10">

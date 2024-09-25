@@ -20,11 +20,13 @@ import s from "./Modal.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
 interface BaseProps<T> {
-  readonly title?: string;
+  readonly title?: JSX.Element;
   /**
    * Style of the modal, mostly for specifying the size. When absent, a reasonable minimum width is used.
    */
   readonly style?: JSX.CSSProperties;
+  /** The class for the backdrop, mostly for specifying color. */
+  readonly backdropClass?: string;
   /**
    * A value determining whether the modal is open. If truthy, the value is also available for the modal
    * children in its function form.
@@ -220,7 +222,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
               }}
               onPointerUp={[setGrabPos, undefined]}
             >
-              <div {...api().backdropProps} />
+              <div {...api().backdropProps} class={props.backdropClass ?? "bg-black/30"} />
               <div ref={positioner} {...api().positionerProps}>
                 <div
                   ref={setContentElement}
