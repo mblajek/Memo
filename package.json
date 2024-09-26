@@ -56,7 +56,6 @@
     "@tanstack/solid-query": "^5.56.2",
     "@tanstack/solid-table": "^8.20.5",
     "@zag-js/combobox": "0.26.0",
-    "@zag-js/dialog": "0.26.0",
     "@zag-js/hover-card": "0.26.0",
     "@zag-js/popover": "0.26.0",
     "@zag-js/solid": "0.26.0",
