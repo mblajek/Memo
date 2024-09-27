@@ -110,7 +110,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
           </ButtonLike>
         );
       }}
-      hoverCard={() => <MeetingHoverCard meeting={meeting()} />}
+      hoverCard={(onHovered) => <MeetingHoverCard meeting={meeting()} onHovered={onHovered} />}
     />
   );
 };

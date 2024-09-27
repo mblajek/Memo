@@ -1,3 +1,4 @@
+import {Boundary} from "@floating-ui/dom";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {RichTextView} from "components/ui/RichTextView";
 import {cx, htmlAttributes, useLangFunc} from "components/utils";
@@ -91,7 +92,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
           </ButtonLike>
         );
       }}
-      hoverCard={() => <MeetingHoverCard meeting={blockProps.meeting} />}
+      hoverCard={(onHovered) => <MeetingHoverCard meeting={blockProps.meeting} onHovered={onHovered} />}
     />
   );
 };
@@ -107,13 +108,13 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const calendar = useColumnsCalendar();
   const meeting = () => blockProps.meeting;
-  const boundary = () => {
+  const boundary = (): Boundary => {
     const areaRect = calendar.hoursArea().getBoundingClientRect();
     return {
       x: 0,
       // Allow the full width of the page.
       width: document.body.clientWidth,
-      y: areaRect.y - 20,
+      y: areaRect.y,
       height: areaRect.height,
     };
   };
@@ -193,7 +194,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
         );
       }}
       hoverBoundary={boundary()}
-      hoverCard={() => <MeetingHoverCard meeting={blockProps.meeting} />}
+      hoverCard={(onHovered) => <MeetingHoverCard meeting={blockProps.meeting} onHovered={onHovered} />}
     />
   );
 };
