@@ -1,4 +1,5 @@
 import {Accessor, createEffect, onCleanup} from "solid-js";
+import {useEventListener} from "../utils/event_listener";
 
 type LoadType = "initial" | "popstate";
 
@@ -30,14 +31,10 @@ export function createHistoryPersistence<T>({
     }
   }
   loadIfPresent(history.state, "initial");
-  const popStateHandler = (e: PopStateEvent) => loadIfPresent(e.state, "popstate");
-  addEventListener("popstate", popStateHandler);
+  useEventListener(window, "popstate", (e) => loadIfPresent(e.state, "popstate"));
   const resetFunc = () => onReset?.();
   resetFunctions.push(resetFunc);
-  onCleanup(() => {
-    removeEventListener("popstate", popStateHandler);
-    resetFunctions.splice(resetFunctions.indexOf(resetFunc), 1);
-  });
+  onCleanup(() => resetFunctions.splice(resetFunctions.indexOf(resetFunc), 1));
   createEffect(() => history.replaceState({...history.state, [key]: value()}, ""));
 }
 

@@ -2,6 +2,7 @@ import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
 import {Accessor, createComputed, createMemo, createSignal, createUniqueId, JSX, onCleanup, Show} from "solid-js";
 import {Portal} from "solid-js/web";
+import {useEventListener} from "../utils/event_listener";
 import {Size, useResizeObserver, windowSize} from "../utils/resize_observer";
 import {Button} from "./Button";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
@@ -192,24 +193,25 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
             }
           },
         };
-        const escapeHandler = (e: KeyboardEvent) => {
-          if (modalsStack.at(-1) !== modalId) {
-            return;
-          }
-          if (e.key === "Escape") {
-            tryClose("escapeKey");
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            if (document.activeElement !== document.body && document.activeElement instanceof HTMLElement) {
-              document.activeElement.blur();
+        useEventListener(
+          document,
+          "keydown",
+          (e) => {
+            if (modalsStack.at(-1) !== modalId) {
+              return;
             }
-          }
-        };
-        document.addEventListener("keydown", escapeHandler, {capture: true});
-        onCleanup(() => {
-          document.removeEventListener("keydown", escapeHandler);
-          modalsStack.splice(modalsStack.indexOf(modalId), 1);
-        });
+            if (e.key === "Escape") {
+              tryClose("escapeKey");
+              e.stopImmediatePropagation();
+              e.preventDefault();
+              if (document.activeElement !== document.body && document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+              }
+            }
+          },
+          {capture: true},
+        );
+        onCleanup(() => modalsStack.splice(modalsStack.indexOf(modalId), 1));
         return (
           <Portal>
             <div

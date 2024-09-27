@@ -2,8 +2,8 @@ import {Boundary, flip, shift} from "@floating-ui/dom";
 import {cx, delayedAccessor, htmlAttributes} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
-import {JSX, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
-import {Dynamic, Portal} from "solid-js/web";
+import {JSX, Show, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
+import {Dynamic} from "solid-js/web";
 import {Floating} from "../Floating";
 import s from "./HoverableMeetingEventBlock.module.scss";
 import {CANCELLED_MEETING_COLORING, COMPLETED_MEETING_COLORING, Coloring} from "./colors";
@@ -100,9 +100,8 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
 
   return (
     <Floating
-      reference={(ref) => (
+      reference={
         <Dynamic
-          ref={ref}
           component={props.contents}
           hovered={hovered()}
           coloring={coloring()}
@@ -115,11 +114,10 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
           onMouseEnter={[setHovered, true]}
           onMouseLeave={[setHovered, false]}
         />
-      )}
-      floating={(ref, posStyle) => (
-        <Portal>
+      }
+      floating={(posStyle) => (
+        <Show when={dictionaries() && props.hoverCard && floatVisible()}>
           <div
-            ref={ref}
             class={cx("pointer-events-none z-modal overflow-clip", shouldShow() ? undefined : "opacity-0")}
             style={{
               transition: `opacity ${DISAPPEAR_MILLIS}ms ease`,
@@ -128,9 +126,8 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
           >
             {props.hoverCard!(() => setFloatHovered(true))}
           </div>
-        </Portal>
+        </Show>
       )}
-      showFloating={dictionaries() && props.hoverCard && floatVisible()}
       options={{
         placement: "right-start",
         middleware: [shift(overflowParams()), flip({crossAxis: false, ...overflowParams()})],
