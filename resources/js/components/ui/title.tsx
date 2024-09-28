@@ -64,7 +64,7 @@ class TippySingletonManager {
     this.tippys = this.tippys.filter((t) => t !== tippyToDelete);
     if (this.tippySingleton?.state.isMounted) {
       this.tippySingleton.hide();
-      this.scheduleRecreate(500);
+      this.scheduleRecreate(300);
     } else {
       this.scheduleRecreate();
     }
@@ -158,6 +158,7 @@ export function title(element: Element, accessor: Accessor<TitleDirectiveType>) 
               : Array.isArray(tippyProps?.delay)
                 ? tippyProps.delay.map((d, i) => (d === undefined ? DEFAULT_TITLE_DELAY[i] : d))
                 : tippyProps?.delay) as TippyProps["delay"],
+            theme: "memo",
           });
           tippySingletonManager.add(thisTippy);
         }

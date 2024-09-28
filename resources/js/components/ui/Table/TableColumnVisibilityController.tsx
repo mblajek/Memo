@@ -192,10 +192,10 @@ export const TableColumnVisibilityController: VoidComponent = () => {
 
   return (
     <PopOver
-      trigger={(triggerProps) => (
+      trigger={(popOver) => (
         <Button
-          {...triggerProps()}
           class="rounded px-2 border border-input-border pressedWithShadow"
+          onClick={popOver.open}
           disabled={!table.getAllLeafColumns().length}
         >
           {t("tables.choose_columns")}

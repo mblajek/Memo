@@ -188,8 +188,8 @@ export const TableExportButton: VoidComponent = () => {
   return (
     <>
       <PopOver
-        trigger={(triggerProps) => (
-          <Button {...triggerProps()} class="secondary small text-nowrap">
+        trigger={(popOver) => (
+          <Button onClick={popOver.open} class="secondary small text-nowrap">
             <AiOutlineFileExcel class="inlineIcon" /> {t("tables.export.label")}
           </Button>
         )}
@@ -223,7 +223,7 @@ export const TableExportButton: VoidComponent = () => {
                 <Show when={allRowsExportData() && !currentPageHasAllData()}>
                   <Button
                     onClick={() => {
-                      popOver().close();
+                      popOver.close();
                       exportRows(allRowsExportData()!);
                     }}
                   >
@@ -232,7 +232,7 @@ export const TableExportButton: VoidComponent = () => {
                 </Show>
                 <Button
                   onClick={() => {
-                    popOver().close();
+                    popOver.close();
                     exportRows(currentPageExportData());
                   }}
                 >

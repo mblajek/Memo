@@ -378,11 +378,11 @@ export default (() => {
                 }
               >
                 <PopOver
-                  trigger={(props, api) => (
+                  trigger={(popOver) => (
                     <Button
-                      {...props}
-                      class={cx("minimal !px-1", api().isOpen ? "!bg-select" : undefined)}
+                      class={cx("minimal !px-1", popOver.isOpen ? "!bg-select" : undefined)}
                       title={[t("facility_user.weekly_time_tables.click_to_see_actions"), {hideOnClick: true}]}
+                      onClick={popOver.open}
                     >
                       <BsThreeDots class="text-current" size="20" />
                     </Button>
@@ -414,7 +414,7 @@ export default (() => {
                       );
                     };
                     return (
-                      <SimpleMenu class="max-w-80" onClick={() => popOver().close()}>
+                      <SimpleMenu class="max-w-80" onClick={() => popOver.close()}>
                         <MenuItem
                           icon={TbArrowBigRight}
                           label={t("facility_user.weekly_time_tables.select_week")}

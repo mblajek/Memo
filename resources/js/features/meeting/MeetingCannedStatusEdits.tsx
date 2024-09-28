@@ -4,7 +4,7 @@ import {ButtonLike} from "components/ui/ButtonLike";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {clientIcons, staffIcons} from "components/ui/icons";
-import {currentTimeMinute, cx, htmlAttributes, useLangFunc} from "components/utils";
+import {currentTimeMinute, cx, useLangFunc} from "components/utils";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityUserType} from "features/facility-users/user_types";
@@ -74,10 +74,10 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
   return (
     <div class="flex gap-1">
       <PopOver
-        trigger={(triggerProps) => (
+        trigger={(popOver) => (
           <ButtonLike
-            {...(triggerProps() as htmlAttributes.div)}
             class="flex-grow flex items-center justify-center secondary small select-none"
+            onClick={popOver.open}
             disabled={form.isSubmitting()}
           >
             {t("meetings.mark_as_cancelled.text")} <AiFillCaretDown class="text-current" />
@@ -85,7 +85,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         )}
       >
         {(popOver) => (
-          <SimpleMenu onClick={() => popOver().close()}>
+          <SimpleMenu onClick={() => popOver.close()}>
             <Show when={form.data("staff").some(({userId}) => userId)}>
               <Button onClick={() => cancelBy("staff", attendanceStatusDict()!.cancelled)}>
                 <staffIcons.Staff class="inlineIcon" /> {t("meetings.mark_as_cancelled.by_staff")}
