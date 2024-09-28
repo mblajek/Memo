@@ -1,6 +1,7 @@
 import {createEffect, createMemo, createSignal, on, onCleanup, splitProps, VoidComponent} from "solid-js";
 import {htmlAttributes} from "../utils";
 import {useResizeObserver} from "../utils/resize_observer";
+import {isDEV} from "../utils/dev_mode";
 
 interface Props extends htmlAttributes.div {
   readonly levels: number;
@@ -15,7 +16,7 @@ const MARGINS = {
 
 const BLOCK_H_TO_W = Math.sqrt(3) / 2;
 
-const SPEED_MULT = 1;
+const DEV_SPEED_MULT = 100;
 
 const PACE = {
   alone: {b: 400, c: 500},
@@ -31,6 +32,9 @@ const PAUSES = {
 const MAX_FPS = 30;
 const MAX_TICKS_INTERVAL = 1000;
 
+const MEMO_COLORS = ["#cdd500", "#009dc5", "#62358c", "#009f98", "#af1615"];
+const COLORS_ALPHA = 0.4;
+
 type Vec = readonly [number, number];
 
 export const Wrights: VoidComponent<Props> = (allProps) => {
@@ -42,6 +46,8 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
   const canvasSize = resizeObserver.observeClientSize(container);
   // eslint-disable-next-line solid/reactivity
   const levels = props.levels;
+  const colorsRot = Math.random();
+  const colors = MEMO_COLORS.toSorted(() => Math.random() - 0.5);
   const data = createMemo(() => {
     if (!canvasSize()) {
       return undefined;
@@ -85,6 +91,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
   interface PlacedBlockData {
     readonly tPlaced: number;
     readonly uPos: Vec;
+    readonly targetColor: string;
   }
 
   const createdBlocks = new Map<string, "available" | "taken" | PlacedBlockData>([["a".repeat(levels), "available"]]);
@@ -191,6 +198,18 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     return {remTime: time, uPos: path[0]!.uPos};
   }
 
+  function getTargetColor([x, y]: Vec) {
+    const levLen = 1 << (levels - 1);
+    const rot = Math.atan2(y - ((2 * levLen) / 3 - 0.5), x - (levLen - 0.5)) / 2 / Math.PI + 2 + colorsRot;
+    const [cd1, cd2] = colors
+      .map((color, i) => ({
+        percent: Math.abs(((rot - i / colors.length) % 1) - 0.5) * colors.length * 100 * COLORS_ALPHA,
+        color,
+      }))
+      .sort((d1, d2) => d1.percent - d2.percent);
+    return `color-mix(in oklab, ${cd1!.color} ${cd2!.percent}%, ${cd2!.color} ${cd1!.percent}%)`;
+  }
+
   function placeBlock(block: string, path: Path) {
     numPlacedBlocks++;
     const estBuildTime = (rt / numPlacedBlocks) * totalNumBlocks;
@@ -200,7 +219,12 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     if (numPlacedBlocks === totalNumBlocks) {
       finishTime = prevTime + blockFillTime + 1000;
     }
-    createdBlocks.set(block, {tPlaced: rt, uPos: path.at(-1)!.uPos});
+    const uPos = path.at(-1)!.uPos;
+    createdBlocks.set(block, {
+      tPlaced: rt,
+      uPos,
+      targetColor: getTargetColor(uPos),
+    });
     if (block[levels - 1] === "c" && reserveBlock()) {
       wrights.push({home: block, phase: "appear", tPhaseStart: rt, block: undefined, path});
     }
@@ -225,20 +249,28 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     const {ctx, cw, ch, x0, y0, bw, bh} = d;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, cw, ch);
-    ctx.strokeStyle = "#ddd";
+    const WRIGHT_COLOR = "#bbb";
+    const BLOCK_INIT_COLOR = "#ddd";
     const minBlockLineWidth = 1;
     for (const blockData of createdBlocks.values()) {
       if (typeof blockData !== "string") {
         const tElapsed = rt - blockData.tPlaced;
         const outerR = bw >= 2 ? bw / 2 : 1;
-        const innerR = tElapsed >= blockFillTime ? -0.1 : (1 - tElapsed / blockFillTime) * (outerR - minBlockLineWidth);
+        let innerR;
+        if (tElapsed >= blockFillTime) {
+          innerR = -0.1;
+          ctx.strokeStyle = blockData.targetColor;
+        } else {
+          const frac = tElapsed / blockFillTime;
+          innerR = between(outerR - minBlockLineWidth, 0, frac);
+          ctx.strokeStyle = `color-mix(in srgb, ${BLOCK_INIT_COLOR}, ${blockData.targetColor} ${100 * frac ** 3}%)`;
+        }
         ctx.lineWidth = outerR - innerR;
         ctx.beginPath();
         ctx.arc(x0 + blockData.uPos[0] * bw, y0 - blockData.uPos[1] * bh, (innerR + outerR) / 2, 0, Math.PI * 2, false);
         ctx.stroke();
       }
     }
-    const WRIGHT_COLOR = "#bbb";
     const wrightRadius = 0.1 * bw;
     function drawWright(x: number, y: number, legLen = bw / 2) {
       ctx.strokeStyle = WRIGHT_COLOR;
@@ -279,7 +311,14 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       ctx.strokeStyle = `rgb(from ${WRIGHT_COLOR} r g b / ${(1 - frac) ** 2})`;
       ctx.lineWidth = between(wrightRadius, 2 * wrightRadius, frac);
       ctx.beginPath();
-      ctx.arc(x, y, between(wrightRadius / 2, 1.5 * wrightRadius, frac ** 0.6), 0, Math.PI * 2, false);
+      const r = between(wrightRadius / 2, 1.5 * wrightRadius, frac ** 0.6);
+      const outerR = r + ctx.lineWidth / 2;
+      ctx.arc(x, y, r, 0, Math.PI * 2, false);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, y + outerR);
+      ctx.lineTo(x, y + outerR + between(bw / 2 - outerR, 0, frac));
       ctx.stroke();
     }
     for (const wright of wrights) {
@@ -341,7 +380,9 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       if (!d) {
         return;
       }
-      time *= SPEED_MULT;
+      if (isDEV()) {
+        time *= DEV_SPEED_MULT;
+      }
       if (!time0) {
         time0 = time;
         prevTime = time;
