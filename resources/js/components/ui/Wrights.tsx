@@ -1,7 +1,7 @@
 import {createEffect, createMemo, createSignal, on, onCleanup, splitProps, VoidComponent} from "solid-js";
 import {htmlAttributes} from "../utils";
-import {useResizeObserver} from "../utils/resize_observer";
 import {isDEV} from "../utils/dev_mode";
+import {useResizeObserver} from "../utils/resize_observer";
 
 interface Props extends htmlAttributes.div {
   readonly levels: number;
@@ -16,7 +16,7 @@ const MARGINS = {
 
 const BLOCK_H_TO_W = Math.sqrt(3) / 2;
 
-const DEV_SPEED_MULT = 100;
+const DEV_SPEED_MULT = 1;
 
 const PACE = {
   alone: {b: 400, c: 500},
@@ -33,7 +33,7 @@ const MAX_FPS = 30;
 const MAX_TICKS_INTERVAL = 1000;
 
 const MEMO_COLORS = ["#cdd500", "#009dc5", "#62358c", "#009f98", "#af1615"];
-const COLORS_ALPHA = 0.4;
+const COLORS_ALPHA = 0.2;
 
 type Vec = readonly [number, number];
 
@@ -82,30 +82,60 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     readonly home: string | undefined;
     phase: "appear" | "carry" | "reserved" | "wait" | "disappear" | "absent";
     tPhaseStart: number;
-    block: string | undefined;
-    path: Path | undefined;
+    block?: BlockData;
+    path?: Path;
   }
 
-  const wrights: Wright[] = [{home: undefined, phase: "wait", tPhaseStart: 0, block: undefined, path: undefined}];
+  const wrights: Wright[] = [{home: undefined, phase: "wait", tPhaseStart: 0}];
 
-  interface PlacedBlockData {
-    readonly tPlaced: number;
-    readonly uPos: Vec;
-    readonly targetColor: string;
+  interface BlockData {
+    readonly block: string;
+    readonly color: string;
+    readonly uPlacePos: Vec;
+    readonly path: Path;
+    tTaken?: number;
+    tPlaced?: number;
   }
 
-  const createdBlocks = new Map<string, "available" | "taken" | PlacedBlockData>([["a".repeat(levels), "available"]]);
-  const availableBlocks = [...createdBlocks.keys()];
+  const createdBlocks = new Map<string, BlockData>();
+  const availableBlocks: string[] = [];
   const totalNumBlocks = 3 ** levels;
   let numBlocksToReserve = totalNumBlocks - 1;
   let numPlacedBlocks = 0;
 
+  function getBlockPath(block: string) {
+    const path: PathItem[] = [{uPos: [0, 0], type: undefined, units: 0}];
+    let x = 0;
+    let y = 0;
+    let levLen = 1 << (levels - 1);
+    for (let i = 0; i < block.length; i++) {
+      const c = block[i] as "a" | "b" | "c";
+      if (c !== "a") {
+        const travel = U_TRAVEL[c];
+        x += travel[0] * levLen;
+        y += travel[1] * levLen;
+        path.push({uPos: [x, y], type: c, units: levLen});
+      }
+      levLen >>= 1;
+    }
+    return path;
+  }
+
   function createAvailableBlock(block: string) {
     if (!createdBlocks.has(block)) {
-      createdBlocks.set(block, "available");
+      const path = getBlockPath(block);
+      const uPlacePos = path.at(-1)!.uPos;
+      createdBlocks.set(block, {
+        block,
+        path,
+        uPlacePos,
+        color: getBlockColor(uPlacePos),
+      });
       availableBlocks.push(block);
     }
   }
+
+  createAvailableBlock("a".repeat(levels));
 
   function createUnblockedBlocks(block: string) {
     if (block[levels - 1] === "a") {
@@ -128,7 +158,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
         const otherTip =
           block.slice(0, lastCInd - 1) + (block[lastCInd - 1] === "a" ? "b" : "a") + block.slice(lastCInd);
         const otherTipState = createdBlocks.get(otherTip);
-        if (otherTipState && otherTipState !== "available") {
+        if (otherTipState?.tTaken) {
           createAvailableBlock(block.slice(0, lastCInd - 1) + "c" + "a".repeat(levels - lastCInd));
         }
       }
@@ -155,9 +185,10 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       availableBlocks.length - 1,
     );
     const block = availableBlocks.splice(i, 1)[0]!;
+    const bl = createdBlocks.get(block)!;
+    bl.tTaken = rt;
     createUnblockedBlocks(block);
-    createdBlocks.set(block, "taken");
-    return block;
+    return bl;
   }
 
   const U_TRAVEL = {b: [1, 0], c: [0.5, 1]} as const;
@@ -198,7 +229,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     return {remTime: time, uPos: path[0]!.uPos};
   }
 
-  function getTargetColor([x, y]: Vec) {
+  function getBlockColor([x, y]: Vec) {
     const levLen = 1 << (levels - 1);
     const rot = Math.atan2(y - ((2 * levLen) / 3 - 0.5), x - (levLen - 0.5)) / 2 / Math.PI + 2 + colorsRot;
     const [cd1, cd2] = colors
@@ -210,7 +241,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     return `color-mix(in oklab, ${cd1!.color} ${cd2!.percent}%, ${cd2!.color} ${cd1!.percent}%)`;
   }
 
-  function placeBlock(block: string, path: Path) {
+  function placeBlock(block: BlockData, path: Path) {
     numPlacedBlocks++;
     const estBuildTime = (rt / numPlacedBlocks) * totalNumBlocks;
     if (estBuildTime < blockFillTime) {
@@ -219,14 +250,9 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     if (numPlacedBlocks === totalNumBlocks) {
       finishTime = prevTime + blockFillTime + 1000;
     }
-    const uPos = path.at(-1)!.uPos;
-    createdBlocks.set(block, {
-      tPlaced: rt,
-      uPos,
-      targetColor: getTargetColor(uPos),
-    });
-    if (block[levels - 1] === "c" && reserveBlock()) {
-      wrights.push({home: block, phase: "appear", tPhaseStart: rt, block: undefined, path});
+    block.tPlaced = rt;
+    if (block.block[levels - 1] === "c" && reserveBlock()) {
+      wrights.push({home: block.block, phase: "appear", tPhaseStart: rt, path});
     }
   }
 
@@ -250,30 +276,37 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, cw, ch);
     const WRIGHT_COLOR = "#bbb";
-    const BLOCK_INIT_COLOR = "#ddd";
-    const minBlockLineWidth = 1;
+    const minBlockLineWidth = 1.5;
     for (const blockData of createdBlocks.values()) {
-      if (typeof blockData !== "string") {
+      if (blockData.tPlaced) {
         const tElapsed = rt - blockData.tPlaced;
         const outerR = bw >= 2 ? bw / 2 : 1;
         let innerR;
+        ctx.strokeStyle = blockData.color;
         if (tElapsed >= blockFillTime) {
           innerR = -0.1;
-          ctx.strokeStyle = blockData.targetColor;
         } else {
           const frac = tElapsed / blockFillTime;
           innerR = between(outerR - minBlockLineWidth, 0, frac);
-          ctx.strokeStyle = `color-mix(in srgb, ${BLOCK_INIT_COLOR}, ${blockData.targetColor} ${100 * frac ** 3}%)`;
         }
+        ctx.strokeStyle = blockData.color;
         ctx.lineWidth = outerR - innerR;
         ctx.beginPath();
-        ctx.arc(x0 + blockData.uPos[0] * bw, y0 - blockData.uPos[1] * bh, (innerR + outerR) / 2, 0, Math.PI * 2, false);
+        ctx.arc(
+          x0 + blockData.uPlacePos![0] * bw,
+          y0 - blockData.uPlacePos![1] * bh,
+          (innerR + outerR) / 2,
+          0,
+          Math.PI * 2,
+          false,
+        );
         ctx.stroke();
       }
     }
     const wrightRadius = 0.1 * bw;
     function drawWright(x: number, y: number, legLen = bw / 2) {
       ctx.strokeStyle = WRIGHT_COLOR;
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, y);
       ctx.lineTo(x, y + legLen);
@@ -322,7 +355,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       ctx.stroke();
     }
     for (const wright of wrights) {
-      const {phase, tPhaseStart, path} = wright;
+      const {block, phase, tPhaseStart, path} = wright;
       const phaseT = Math.max(0, rt - tPhaseStart);
       switch (phase) {
         case "appear": {
@@ -347,7 +380,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
           const x = x0 + uPos[0] * bw;
           const y = y0 - uPos[1] * bh;
           ctx.fillStyle = "white";
-          ctx.strokeStyle = "#ddd";
+          ctx.strokeStyle = block!.color;
           ctx.lineWidth = minBlockLineWidth;
           const outerR = bw >= 2 ? bw / 2 : 1;
           ctx.beginPath();
@@ -394,34 +427,13 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       }
       const {x0, bw} = d;
 
-      function getBlockPath(
-        block: string,
-        {uOffset = [0, 0], station = false}: {uOffset?: Vec; station?: boolean} = {},
-      ) {
-        const path: PathItem[] = [];
-        if (station) {
-          const stationUPosX = x0 / bw + 0.6;
-          path.push(
-            {uPos: [-stationUPosX, 0], type: undefined, units: 0},
-            {uPos: [0, 0], type: "b", units: stationUPosX},
-          );
-        } else {
-          path.push({uPos: [0, 0], type: undefined, units: 0});
-        }
-        let x = uOffset[0];
-        let y = uOffset[1];
-        let levLen = 1 << (levels - 1);
-        for (let i = 0; i < block.length; i++) {
-          const c = block[i] as "a" | "b" | "c";
-          if (c !== "a") {
-            const travel = U_TRAVEL[c];
-            x += travel[0] * levLen;
-            y += travel[1] * levLen;
-            path.push({uPos: [x, y], type: c, units: levLen});
-          }
-          levLen >>= 1;
-        }
-        return path;
+      function stationPath(path: Path): Path {
+        const stationUPosX = x0 / bw + 0.6;
+        return [
+          {uPos: [-stationUPosX, 0], type: undefined, units: 0},
+          {uPos: [0, 0], type: "b", units: stationUPosX},
+          ...path.slice(1),
+        ];
       }
 
       function tick(time: number) {
@@ -453,7 +465,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
                   wright.phase = "carry";
                   wright.block = block;
                   wright.tPhaseStart = rt;
-                  wright.path = getBlockPath(block, {station: true});
+                  wright.path = stationPath(block.path);
                   minNextPickupT =
                     rt +
                     Math.random() * (MIN_PICKUP_INTERVAL_RANGE[1] - MIN_PICKUP_INTERVAL_RANGE[0]) +

@@ -59,7 +59,7 @@ export default (() => {
 }) satisfies VoidComponent;
 
 const LoginBackground: VoidComponent = () => {
-  const START_AFTER_SECS = 120;
+  const START_AFTER_SECS = 10 * 60;
   const t0 = currentTimeSecond();
   return (
     <Wrights
