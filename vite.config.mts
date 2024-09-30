@@ -29,27 +29,10 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        // Suppress the mixed-decls deprecation warnings. They are not relevant for us, and they cannot
-        // be easily suppressed as vite calls scss using the old JS api.
-        // See https://sass-lang.com/d/mixed-decls
-        logger: {
-          warn: (message, options) => {
-            if (options.deprecation && options.deprecationType.id === "mixed-decls") {
-              return;
-            }
-            console.warn(message);
-          },
-        },
+        // See: https://sass-lang.com/documentation/breaking-changes/legacy-js-api/
+        api: "modern-compiler",
       },
     },
-  },
-  resolve: {
-    alias: [
-      {
-        find: /^~(.+)/,
-        replacement: "$1",
-      },
-    ],
   },
   server: {
     host: "0.0.0.0",
