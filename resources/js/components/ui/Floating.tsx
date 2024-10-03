@@ -91,7 +91,7 @@ export const Floating: VoidComponent<Props> = (props) => {
   const displayedReference = createMemo(() => {
     if (hasProp(props as PropsWithReference, "reference")) {
       return (
-        <GetRef ref={(ref) => setReferenceElement(getRefElement(ref))}>
+        <GetRef ref={(ref) => setReferenceElement(getRefElement(ref))} waitForMount>
           {(props as PropsWithReference).reference}
         </GetRef>
       );

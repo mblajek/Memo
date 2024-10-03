@@ -62,10 +62,14 @@ export const PopOver: Component<Props> = (props) => {
           {capture: true},
         );
         return (
-          <GetRef ref={(v) => (floatingRef = v)}>
+          <GetRef
+            ref={(v) => {
+              floatingRef = v;
+            }}
+          >
             <Show when={open()}>
               <div
-                class="z-dropdown bg-white border border-gray-700 rounded shadow-xl overflow-clip flex flex-col"
+                class="z-dropdown max-w-fit bg-white border border-gray-700 rounded shadow-xl overflow-clip flex flex-col"
                 style={posStyle()}
               >
                 {getChildrenElement(props.children, popOver)}

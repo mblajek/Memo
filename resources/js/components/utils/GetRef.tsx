@@ -1,36 +1,42 @@
-import {children, createComputed, ParentComponent} from "solid-js";
+import {children, createComputed, createEffect, ParentComponent} from "solid-js";
 import {NON_NULLABLE} from "./array_filter";
 
 interface GetRefsProps {
   readonly refs: (refs: HTMLElement[]) => void;
-  /** Whether to silently ignore non-HTMLElement children and just set refs to empty array. Default: false. */
-  readonly silentErrors?: boolean;
+  /** Whether to wait with setting the refs to after mount. */
+  readonly waitForMount?: boolean;
 }
 
 /**
  * Gets the reference of the child HTMLElements.
  * Children must consist of only HTMLElements (null and undefined children are ignored).
+ *
+ * Note that the ref will be set before the component is mounted.
  */
 export const GetRefs: ParentComponent<GetRefsProps> = (props) => {
   const ch = children(() => props.children);
-  createComputed(() => {
+  const effectFunc = () => {
     const childrenArr = ch.toArray().filter(NON_NULLABLE);
     if (!childrenArr.every((ch) => ch instanceof HTMLElement)) {
-      if (!props.silentErrors) {
-        console.error("GetRefs children must be HTMLElements, got:", childrenArr);
-      }
+      console.error("GetRefs children must be HTMLElements, got:", childrenArr);
       props.refs([]);
       return;
     }
     props.refs(childrenArr);
-  });
+  };
+  // eslint-disable-next-line solid/reactivity
+  if (props.waitForMount) {
+    createEffect(effectFunc);
+  } else {
+    createComputed(effectFunc);
+  }
   return <>{ch()}</>;
 };
 
 interface GetRefProps {
   readonly ref: (ref: HTMLElement | undefined) => void;
-  /** Whether to silently ignore non-HTMLElement child and just set ref to undefined. Default: false. */
-  readonly silentErrors?: boolean;
+  /** Whether to wait with setting the ref to after mount. */
+  readonly waitForMount?: boolean;
 }
 
 /**
@@ -42,15 +48,13 @@ export const GetRef: ParentComponent<GetRefProps> = (props) => {
     <GetRefs
       refs={(refs) => {
         if (refs.length > 1) {
-          if (!props.silentErrors) {
-            console.error("GetRef must have exactly one HTMLElement child, got:", refs);
-          }
+          console.error("GetRef must have exactly one HTMLElement child, got:", refs);
           props.ref(undefined);
           return;
         }
         props.ref(refs[0]);
       }}
-      silentErrors={props.silentErrors}
+      waitForMount={props.waitForMount}
     >
       {props.children}
     </GetRefs>

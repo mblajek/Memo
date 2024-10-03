@@ -118,7 +118,7 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
       floating={(posStyle) => (
         <Show when={dictionaries() && props.hoverCard && floatVisible()}>
           <div
-            class={cx("pointer-events-none z-modal overflow-clip", shouldShow() ? undefined : "opacity-0")}
+            class={cx("pointer-events-none z-modal overflow-clip max-w-fit", shouldShow() ? undefined : "opacity-0")}
             style={{
               transition: `opacity ${DISAPPEAR_MILLIS}ms ease`,
               ...posStyle(),
