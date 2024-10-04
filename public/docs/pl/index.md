@@ -11,9 +11,11 @@
 - Pracownicy
   - [Grafiki pracy](staff-time-tables)
 - Klienci
+  - [Grupy klientów](client-groups)
   - [Usuwanie klientów](client-delete)
 - Spotkania
   - [Statusy](meeting-statuses)
+  - [Kontekst — grupy klientów](meeting-client-groups)
 - Tabele
   - [Filtrowanie](table-filtering)
   - [Eksport danych](table-export)

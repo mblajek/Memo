@@ -50,3 +50,6 @@ Być może chcesz ustawić także filtr na statusie spotkania oraz uczestnictwa.
 - Następnie użyj grupowania według spotkania aby usunąć duplikaty spotkań i móc zobaczyć ostateczną liczbę spotkań,
 na których co najmniej jeden z klientów jest z Warszawy.
 - Tabelę nadal można filtrować, na przykład ustawiając kryteria dla daty spotkania, albo też dla innych atrybutów klienta.
+
+Tabelę można też grupować po [grupie klientów](meeting-client-groups) ustawionej jako kontekst uczestnictwa w spotkaniu.
+Pozwala to policzyć grupy klientów, które były kontekstem określonych spotkań (na przykład spotkań w ostatnim kwartale).

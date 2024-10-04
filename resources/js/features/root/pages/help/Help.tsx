@@ -44,7 +44,7 @@ export const Help: VoidComponent<Props> = (props) => {
     }
   });
   return (
-    <div class="overflow-y-auto p-2 max-w-5xl">
+    <div class="overflow-y-auto p-2 pr-4 max-w-5xl">
       <QueryBarrier
         queries={[query]}
         error={(queries) => (

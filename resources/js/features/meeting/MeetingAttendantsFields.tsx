@@ -3,6 +3,7 @@ import {useFormContext} from "components/felte-form/FelteForm";
 import {Button} from "components/ui/Button";
 import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
+import {InfoIcon} from "components/ui/InfoIcon";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
@@ -42,6 +43,7 @@ import {
 } from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
+import {ClientGroupBox} from "../client/ClientGroupBox";
 import {SharedClientGroupLabel} from "../client/SharedClientGroupLabel";
 import {useClientGroupFetcher} from "../client/client_group_fetcher";
 import {UserLink} from "../facility-users/UserLink";
@@ -50,7 +52,6 @@ import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
 import {getMeetingTimeFullData} from "./meeting_time_controller";
-import {ClientGroupBox} from "../client/ClientGroupBox";
 
 type _Directives = typeof title;
 
@@ -599,10 +600,13 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
       </div>
       <Show when={props.name === "clients" && (!props.viewMode || clientsGroupsMode() === "shared")}>
         <HideableSection show={allGroups().size}>
-          <ClientGroupBox class="mt-2 flex flex-col">
+          <ClientGroupBox class="mt-4 flex flex-col">
             <Show when={!props.viewMode || clientsGroupsMode() === "shared"}>
-              <div class="flex items-baseline justify-between gap-2">
-                <FieldLabel fieldName="clientsGroupsMode" umbrella />
+              <div class="flex justify-between items-center gap-2">
+                <div class="flex gap-1">
+                  <FieldLabel fieldName="clientsGroupsMode" umbrella />
+                  <InfoIcon href="/help" />
+                </div>
                 <Show when={!props.viewMode}>
                   <div class="self-start">
                     <SegmentedControl
@@ -654,11 +658,14 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             </Show>
             <HideableSection show={clientsGroupsMode() === "shared"}>
               {(show) => (
-                <div class="mt-1 flex gap-1 items-center">
-                  <div use:title={capitalizeString(translations.fieldName("sharedClientsGroupId"))}>
+                <div class="mt-1 grid gap-x-1" style={{"grid-template-columns": "auto 1fr"}}>
+                  <div
+                    class="flex items-center"
+                    use:title={capitalizeString(translations.fieldName("sharedClientsGroupId"))}
+                  >
                     <clientGroupIcons.ClientGroup size="22" />
                   </div>
-                  <div class="flex-grow">
+                  <div>
                     <Show
                       when={sharedGroups().length > 1}
                       fallback={<SharedClientGroupLabel groupId={sharedClientsGroupId()} />}
@@ -677,6 +684,33 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         small
                       />
                     </Show>
+                  </div>
+                  <div class="col-start-2 text-sm">
+                    <Switch>
+                      <Match when={clientsGroupsMode() !== "shared" || !sharedClientsGroupId()}>&nbsp;</Match>
+                      <Match
+                        when={allGroups()
+                          .get(sharedClientsGroupId())?.()
+                          ?.some((clientId) => !selectedClients().includes(clientId))}
+                      >
+                        <Button
+                          class="text-start linkLike p-0"
+                          onClick={() => {
+                            let index = selectedClients().length;
+                            for (const clientId of allGroups().get(sharedClientsGroupId())?.() || []) {
+                              if (!selectedClients().includes(clientId)) {
+                                form.addField("clients", createAttendant({userId: clientId}), index++);
+                              }
+                            }
+                          }}
+                        >
+                          {translations.fieldName("sharedClientsGroupId.addAll")}
+                        </Button>
+                      </Match>
+                      <Match when="all added">
+                        <div class="text-grey-text">{translations.fieldName("sharedClientsGroupId.allAdded")}</div>
+                      </Match>
+                    </Switch>
                   </div>
                 </div>
               )}
