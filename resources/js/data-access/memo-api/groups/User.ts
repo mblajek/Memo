@@ -34,21 +34,13 @@ export namespace User {
 
   export const storageList = (config?: Api.Config) =>
     V1.get<readonly string[]>("/user/storage", config).then((res) => res.data);
-  // TODO: Uncomment when the backend stops validating (and potentially mangling) the JSON.
-  // Until then, temporary implementation serialises the JSON to string first.
-  // export const storageGet = (key: string, config?: Api.Config) =>
-  //   V1.get<JSONValue>(`/user/storage/${key}`, config).then((res) => res.data);
-  // export const storagePut = (key: string, value: JSONValue, config?: Api.Config) =>
-  //   V1.put<readonly string[]>(`/user/storage/${key}`, value, {
-  //     ...config,
-  //     headers: {"Content-Type": "application/json"},
-  //   });
   export const storageGet = (key: string, config?: Api.Config) =>
-    V1.get<string>(`/user/storage/${key}`, config).then((res) => res.data as JSONValue);
+    V1.get<JSONValue>(`/user/storage/${key}`, config).then((res) => res.data);
   export const storagePut = (key: string, value: JSONValue, config?: Api.Config) =>
-    V1.put<readonly string[]>(`/user/storage/${key}`, JSON.stringify(value), {
+    V1.put<readonly string[]>(`/user/storage/${key}`, value, {
       ...config,
       headers: {"Content-Type": "application/json"},
+      transformRequest: (data) => JSON.stringify(data),
     });
 
   type PermissionsFacilityKeys = "facilityId" | "facilityMember" | "facilityClient" | "facilityStaff" | "facilityAdmin";
