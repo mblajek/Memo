@@ -348,7 +348,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 }
                 const modeChanged = prev && clientsGroupsMode() !== prev.clientsGroupsMode;
                 if (clientsGroupsMode() === "none") {
-                  if (!modeChanged && sharedGroups.length && !prev?.sharedGroups.length) {
+                  if (!props.viewMode && !modeChanged && sharedGroups.length && !prev?.sharedGroups.length) {
                     setMode("shared", sharedGroups[0]);
                   } else {
                     setSharedClientsGroupId("");
@@ -359,7 +359,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       if (!sharedGroups.includes(sharedClientsGroupId())) {
                         determineClientsGroupsMode(formData);
                       }
-                    } else if (modeChanged) {
+                    } else if (!props.viewMode && modeChanged) {
                       setMode(
                         "shared",
                         formData.clients.find(({clientGroupId}) => sharedGroups.includes(clientGroupId))
@@ -685,33 +685,35 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       />
                     </Show>
                   </div>
-                  <div class="col-start-2 text-sm">
-                    <Switch>
-                      <Match when={clientsGroupsMode() !== "shared" || !sharedClientsGroupId()}>&nbsp;</Match>
-                      <Match
-                        when={allGroups()
-                          .get(sharedClientsGroupId())?.()
-                          ?.some((clientId) => !selectedClients().includes(clientId))}
-                      >
-                        <Button
-                          class="text-start linkLike p-0"
-                          onClick={() => {
-                            let index = selectedClients().length;
-                            for (const clientId of allGroups().get(sharedClientsGroupId())?.() || []) {
-                              if (!selectedClients().includes(clientId)) {
-                                form.addField("clients", createAttendant({userId: clientId}), index++);
-                              }
-                            }
-                          }}
+                  <Show when={!props.viewMode}>
+                    <div class="col-start-2 text-sm">
+                      <Switch>
+                        <Match when={clientsGroupsMode() !== "shared" || !sharedClientsGroupId()}>&nbsp;</Match>
+                        <Match
+                          when={allGroups()
+                            .get(sharedClientsGroupId())?.()
+                            ?.some((clientId) => !selectedClients().includes(clientId))}
                         >
-                          {translations.fieldName("sharedClientsGroupId.addAll")}
-                        </Button>
-                      </Match>
-                      <Match when="all added">
-                        <div class="text-grey-text">{translations.fieldName("sharedClientsGroupId.allAdded")}</div>
-                      </Match>
-                    </Switch>
-                  </div>
+                          <Button
+                            class="text-start linkLike p-0"
+                            onClick={() => {
+                              let index = selectedClients().length;
+                              for (const clientId of allGroups().get(sharedClientsGroupId())?.() || []) {
+                                if (!selectedClients().includes(clientId)) {
+                                  form.addField("clients", createAttendant({userId: clientId}), index++);
+                                }
+                              }
+                            }}
+                          >
+                            {translations.fieldName("sharedClientsGroupId.addAll")}
+                          </Button>
+                        </Match>
+                        <Match when="all added">
+                          <div class="text-grey-text">{translations.fieldName("sharedClientsGroupId.allAdded")}</div>
+                        </Match>
+                      </Switch>
+                    </div>
+                  </Show>
                 </div>
               )}
             </HideableSection>
