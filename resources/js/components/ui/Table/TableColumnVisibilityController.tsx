@@ -2,7 +2,7 @@ import {VisibilityState} from "@tanstack/solid-table";
 import {cx, debouncedAccessor, useLangFunc} from "components/utils";
 import {OcSearch2} from "solid-icons/oc";
 import {RiSystemEyeCloseFill} from "solid-icons/ri";
-import {For, Show, VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
 import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
 import {PopOver} from "../PopOver";
@@ -62,6 +62,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
     }
     setVisibility(currentVisibility);
     setSearch("");
+    onMount(() => setTimeout(() => searchInput?.focus()));
     return (
       <div class="flex flex-col min-h-0 items-stretch" onClick={() => searchInput?.focus()}>
         <Show when={translations}>
@@ -74,6 +75,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
               value={search()}
               onValueChange={setSearch}
               placeholder={t("tables.columns_search.placeholder")}
+              autofocus
             />
           </div>
         </Show>
