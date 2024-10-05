@@ -237,7 +237,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 
           /** Sets the groups mode based on the selected groups. */
           function determineClientsGroupsMode(formData: FormAttendantsData) {
-            if (clientsGroupsMode() === "separate") {
+            if (clientsGroupsMode() === "separate" && selectedClients().length > 1) {
               // Leave alone the separate mode.
               return;
             }
@@ -372,7 +372,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     determineClientsGroupsMode(formData);
                   }
                 } else {
-                  setSharedClientsGroupId("");
+                  determineClientsGroupsMode(formData);
                 }
                 setAttendanceGroups(form.data());
                 return {
@@ -627,27 +627,37 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             <span
                               use:title={[
                                 translations.fieldName(
-                                  sharedGroups().length
-                                    ? "clientsGroupsMode.shared.desc"
-                                    : "clientsGroupsMode.shared.desc_no_shared_options",
+                                  selectedClients().length === 1
+                                    ? "clientsGroupsMode.shared_one_client.desc"
+                                    : sharedGroups().length
+                                      ? "clientsGroupsMode.shared.desc"
+                                      : "clientsGroupsMode.shared.desc_no_shared_options",
                                 ),
                                 {delay: 500},
                               ]}
                             >
-                              {translations.fieldName("clientsGroupsMode.shared")}
+                              {translations.fieldName(
+                                selectedClients().length === 1
+                                  ? "clientsGroupsMode.shared_one_client"
+                                  : "clientsGroupsMode.shared",
+                              )}
                             </span>
                           ),
                           disabled: !sharedGroups().length,
                         },
-                        {
-                          value: "separate",
-                          label: () => (
-                            <span use:title={[translations.fieldName("clientsGroupsMode.separate.desc"), {delay: 500}]}>
-                              {translations.fieldName("clientsGroupsMode.separate")}
-                            </span>
-                          ),
-                        },
-                      ]}
+                        selectedClients().length > 1
+                          ? {
+                              value: "separate",
+                              label: () => (
+                                <span
+                                  use:title={[translations.fieldName("clientsGroupsMode.separate.desc"), {delay: 500}]}
+                                >
+                                  {translations.fieldName("clientsGroupsMode.separate")}
+                                </span>
+                              ),
+                            }
+                          : undefined,
+                      ].filter(NON_NULLABLE)}
                       value={clientsGroupsMode()}
                       onValueChange={setClientsGroupsMode}
                       small

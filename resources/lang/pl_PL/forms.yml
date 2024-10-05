@@ -71,6 +71,8 @@ meeting:
     clientsGroupsMode.shared: "wspólna grupa"
     clientsGroupsMode.shared.desc: "Klienci uczestniczą w spotkaniu w kontekście wspólnej grupy"
     clientsGroupsMode.shared.desc_no_shared_options: "Brak wspólnych grup $t(em_dash) nie można wybrać jednej grupy dla wszystkich klientów"
+    clientsGroupsMode.shared_one_client: "wybrana grupa"
+    clientsGroupsMode.shared_one_client.desc: "Klient uczestniczy w spotkaniu w kontekście wybranej grupy"
     clientsGroupsMode.separate: "osobne grupy"
     clientsGroupsMode.separate.desc: "Każdy klient uczestniczy w spotkaniu w kontekście osobno wybranej grupy (opcja zaawansowana)"
     sharedClientsGroupId: "wspólny kontekst dla wszystkich klientów"
