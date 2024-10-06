@@ -38,11 +38,26 @@ export const currentTimeSecond = getCurrentTimeSecond;
 export const currentTimeMinute = getCurrentTimeMinute;
 export const currentDate = getCurrentDate;
 
-export function withNoThrowOnInvalid<T>(func: () => T) {
+export function withNoThrowOnInvalid<T extends {isValid: boolean} | undefined>(
+  func: () => T,
+  fallbackOnInvalid: () => T,
+): T;
+export function withNoThrowOnInvalid<T>(func: () => T): T;
+export function withNoThrowOnInvalid<T>(func: () => T, fallbackOnInvalid?: () => T) {
+  let result: T;
   try {
     Settings.throwOnInvalid = false;
-    return func();
+    result = func();
   } finally {
     Settings.throwOnInvalid = true;
   }
+  if (
+    fallbackOnInvalid &&
+    result !== undefined &&
+    "isValid" in (result as {isValid?: boolean}) &&
+    !(result as {isValid: boolean}).isValid
+  ) {
+    return fallbackOnInvalid();
+  }
+  return result;
 }

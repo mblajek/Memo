@@ -27,7 +27,15 @@ import {
 import {TextInput} from "components/ui/TextInput";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {title} from "components/ui/title";
-import {currentDate, cx, DATE_FORMAT, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
+import {
+  currentDate,
+  cx,
+  DATE_FORMAT,
+  htmlAttributes,
+  NON_NULLABLE,
+  useLangFunc,
+  withNoThrowOnInvalid,
+} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
@@ -147,12 +155,22 @@ export default (() => {
       }),
     version: [PERSISTENCE_VERSION],
   });
-  const fromDate = createMemo(() =>
-    fromMonth() ? DateTime.fromFormat(fromMonth(), "yyyy-MM").startOf("week", {useLocaleWeeks: true}) : undefined,
+  const fromDate = createMemo((prev: DateTime | undefined) =>
+    fromMonth()
+      ? withNoThrowOnInvalid(
+          // eslint-disable-next-line solid/reactivity
+          () => DateTime.fromFormat(fromMonth(), "yyyy-MM").startOf("week", {useLocaleWeeks: true}),
+          () => prev,
+        )
+      : undefined,
   );
-  const toDate = createMemo(() =>
+  const toDate = createMemo((prev: DateTime | undefined) =>
     toMonth()
-      ? DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month").endOf("week", {useLocaleWeeks: true})
+      ? withNoThrowOnInvalid(
+          // eslint-disable-next-line solid/reactivity
+          () => DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month").endOf("week", {useLocaleWeeks: true}),
+          () => prev,
+        )
       : undefined,
   );
   const {dataQuery} = createTQuery({
@@ -694,14 +712,19 @@ export default (() => {
           />
           <div class="flex items-stretch gap-1">
             <TextInput
-              class="px-2"
+              class="w-52 px-2"
               type="month"
               value={fromMonth()}
               onInput={({target: {value}}) => setFromMonth(value)}
               required
             />
             <div class="self-center">{EN_DASH}</div>
-            <TextInput class="px-2" type="month" value={toMonth()} onInput={({target: {value}}) => setToMonth(value)} />
+            <TextInput
+              class="w-52 px-2"
+              type="month"
+              value={toMonth()}
+              onInput={({target: {value}}) => setToMonth(value)}
+            />
             <Button
               onClick={() => {
                 setFromMonth(defaultFromMonth());
