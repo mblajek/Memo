@@ -99,7 +99,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
           </Button>
           <Show when={showPreview()}>
             <div class="w-full h-full px-1 overflow-auto" use:title={[t("preview"), {delay: [1000, undefined]}]}>
-              <div class="max-h-0 min-h-max">
+              <div class="h-0">
                 <RichTextView text={text()} fallback={<EmptyValueSymbol />} />
               </div>
             </div>
