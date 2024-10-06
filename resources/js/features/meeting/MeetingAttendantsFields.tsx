@@ -442,7 +442,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
               >
                 <div class="col-span-full grid grid-cols-subgrid">
-                  <div class={cx("col-start-1 flex items-center gap-1", conflictsFinder() ? undefined : "col-span-2")}>
+                  <div class={cx("col-start-1 flex gap-1", conflictsFinder() ? undefined : "col-span-2")}>
                     <Switch>
                       <Match when={props.viewMode}>
                         <div class="flex items-center">
