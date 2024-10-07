@@ -52,9 +52,9 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
                 ...coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
               },
             })}
-            // Needed to make the event clickable on a touch screen.
-            onPointerUp={(e) => {
+            onClick={(e) => {
               if (e.button === 0) {
+                e.stopPropagation();
                 props.onClick?.();
               }
             }}
