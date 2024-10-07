@@ -164,7 +164,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                       });
                     }}
                     popOver={(popOver) => (
-                      <SimpleMenu onClick={() => popOver().close()}>
+                      <SimpleMenu onClick={popOver.close}>
                         <Button onClick={[createCopyInDays, 0]}>{t("meetings.create_copy.any")}</Button>
                         <For
                           each={

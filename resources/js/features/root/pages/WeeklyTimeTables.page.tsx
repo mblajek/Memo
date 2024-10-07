@@ -27,7 +27,15 @@ import {
 import {TextInput} from "components/ui/TextInput";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {title} from "components/ui/title";
-import {currentDate, cx, DATE_FORMAT, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
+import {
+  currentDate,
+  cx,
+  DATE_FORMAT,
+  htmlAttributes,
+  NON_NULLABLE,
+  useLangFunc,
+  withNoThrowOnInvalid,
+} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
@@ -49,6 +57,7 @@ import {
   Accessor,
   batch,
   createComputed,
+  createEffect,
   createMemo,
   createSignal,
   For,
@@ -120,7 +129,7 @@ export default (() => {
   const defaultFromMonth = createMemo(() => currentDate().minus({months: 1}).toFormat("yyyy-MM"));
   const defaultToMonth = createMemo(() => currentDate().plus({years: 1}).toFormat("yyyy-MM"));
   const isDefaultMonthsRange = () => fromMonth() === defaultFromMonth() && toMonth() === defaultToMonth();
-  createComputed(() => {
+  createEffect(() => {
     if (!fromMonth()) {
       setFromMonth(defaultFromMonth());
     }
@@ -129,7 +138,7 @@ export default (() => {
     }
   });
   createPersistence<PersistentState>({
-    storage: localStorageStorage("WeeklyTimeTables"),
+    storage: localStorageStorage(`WeeklyTimeTables:facility.${activeFacilityId()}`),
     value: () => ({
       selection: selection(),
       fromMonth: fromMonth(),
@@ -147,12 +156,22 @@ export default (() => {
       }),
     version: [PERSISTENCE_VERSION],
   });
-  const fromDate = createMemo(() =>
-    fromMonth() ? DateTime.fromFormat(fromMonth(), "yyyy-MM").startOf("week", {useLocaleWeeks: true}) : undefined,
+  const fromDate = createMemo((prev: DateTime | undefined) =>
+    fromMonth()
+      ? withNoThrowOnInvalid(
+          // eslint-disable-next-line solid/reactivity
+          () => DateTime.fromFormat(fromMonth(), "yyyy-MM").startOf("week", {useLocaleWeeks: true}),
+          () => prev,
+        )
+      : undefined,
   );
-  const toDate = createMemo(() =>
+  const toDate = createMemo((prev: DateTime | undefined) =>
     toMonth()
-      ? DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month").endOf("week", {useLocaleWeeks: true})
+      ? withNoThrowOnInvalid(
+          // eslint-disable-next-line solid/reactivity
+          () => DateTime.fromFormat(toMonth(), "yyyy-MM").endOf("month").endOf("week", {useLocaleWeeks: true}),
+          () => prev,
+        )
       : undefined,
   );
   const {dataQuery} = createTQuery({
@@ -378,11 +397,11 @@ export default (() => {
                 }
               >
                 <PopOver
-                  trigger={(props, api) => (
+                  trigger={(popOver) => (
                     <Button
-                      {...props}
-                      class={cx("minimal !px-1", api().isOpen ? "!bg-select" : undefined)}
+                      class={cx("minimal !px-1", popOver.isOpen ? "!bg-select" : undefined)}
                       title={[t("facility_user.weekly_time_tables.click_to_see_actions"), {hideOnClick: true}]}
+                      onClick={popOver.open}
                     >
                       <BsThreeDots class="text-current" size="20" />
                     </Button>
@@ -414,7 +433,7 @@ export default (() => {
                       );
                     };
                     return (
-                      <SimpleMenu class="max-w-80" onClick={() => popOver().close()}>
+                      <SimpleMenu class="max-w-80" onClick={() => popOver.close()}>
                         <MenuItem
                           icon={TbArrowBigRight}
                           label={t("facility_user.weekly_time_tables.select_week")}
@@ -504,7 +523,9 @@ export default (() => {
                     onChecked={setWeekdaySelected}
                     onDblClick={() => {
                       // Select all if no other days are selected.
-                      const selectAll = [...weekdaysSelection].every(([wkd, [getter]]) => wkd === weekday || !getter());
+                      const selectAll = weekdaysSelection
+                        .entries()
+                        .every(([wkd, [getter]]) => wkd === weekday || !getter());
                       for (const [wkd, [_getter, setter]] of weekdaysSelection) {
                         setter(selectAll || wkd === weekday);
                       }
@@ -692,14 +713,18 @@ export default (() => {
           />
           <div class="flex items-stretch gap-1">
             <TextInput
-              class="px-2"
+              class="w-52 px-2"
               type="month"
               value={fromMonth()}
               onInput={({target: {value}}) => setFromMonth(value)}
-              required
             />
             <div class="self-center">{EN_DASH}</div>
-            <TextInput class="px-2" type="month" value={toMonth()} onInput={({target: {value}}) => setToMonth(value)} />
+            <TextInput
+              class="w-52 px-2"
+              type="month"
+              value={toMonth()}
+              onInput={({target: {value}}) => setToMonth(value)}
+            />
             <Button
               onClick={() => {
                 setFromMonth(defaultFromMonth());

@@ -16,12 +16,13 @@ import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
-import {Context, JSX, createContext, createMemo, onCleanup, onMount, splitProps, useContext} from "solid-js";
+import {Context, JSX, createContext, createMemo, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {LoadingPane} from "../ui/LoadingPane";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {createFormLeaveConfirmation} from "../ui/form/form_leave_confirmation";
 import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
+import {useEventListener} from "../utils/event_listener";
 import {useMutationsTracker} from "../utils/mutations_tracker";
 import {toastError} from "../utils/toast";
 import {UNKNOWN_VALIDATION_MESSAGES_FIELD} from "./UnknownValidationMessages";
@@ -251,13 +252,11 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     function shouldConfirmPageLeave(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
       return (props.preventPageLeave ?? true) && !e.defaultPrevented && (form.isDirty() || form.isSubmitting());
     }
-    function onBeforeUnload(e: BeforeUnloadEvent) {
+    useEventListener(window, "beforeunload", (e) => {
       if (shouldConfirmPageLeave(e)) {
         e.preventDefault();
       }
-    }
-    window.addEventListener("beforeunload", onBeforeUnload);
-    onCleanup(() => window.removeEventListener("beforeunload", onBeforeUnload));
+    });
     useBeforeLeave(async (e) => {
       if (shouldConfirmPageLeave(e)) {
         e.preventDefault();

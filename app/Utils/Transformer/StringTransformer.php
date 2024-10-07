@@ -8,8 +8,8 @@ use ValueError;
 
 class StringTransformer
 {
-    static array $camelCache = [];
-    static array $snakeCache = [];
+    private static array $camelCache = [];
+    private static array $snakeCache = [];
 
     public static function snake(string $value): string
     {

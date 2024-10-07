@@ -518,6 +518,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     activeColumnGroups,
     countColumn,
     miniState,
+    resetMiniState,
   } = requestController;
   const [effectiveActiveColumnGroups, setEffectiveActiveColumnGroups] = createSignal<readonly string[]>([]);
   createEffect(() => {
@@ -561,6 +562,11 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     onLoad: (state) => {
       miniState[1](state.tquery);
       columnFilterStates.setAll(state.columnFilters);
+    },
+    onReset: () => {
+      resetMiniState();
+      // The columnFilterStates get cleared by each individual filter control when the filters are
+      // reset, which is done above.
     },
   });
   // Allow querying data now that the DEV columns are added and columns visibility is loaded.

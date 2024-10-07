@@ -175,5 +175,5 @@ export const ShowCellVal = <V,>(props: ShowCellValProps<V>) => {
 
 /** Table cell content, with padding. */
 export const PaddedCell: ParentComponent<htmlAttributes.div> = (props) => (
-  <div {...htmlAttributes.merge(props, {class: "w-full h-full px-1.5 py-1"})} />
+  <div {...htmlAttributes.merge(props, {class: "px-1.5 py-1"})} />
 );

@@ -132,8 +132,8 @@ export const UserInfo: VoidComponent = () => {
           <div class="flex gap-1">
             {statusQuery.data?.user.name}
             <PopOver
-              trigger={(triggerProps) => (
-                <Button title={[t("user_settings"), {hideOnClick: true}]} {...triggerProps()}>
+              trigger={(popOver) => (
+                <Button title={[t("user_settings"), {hideOnClick: true}]} onClick={popOver.open}>
                   <TbPassword class="inlineIcon" />
                   <Show when={passwordExpiration()}>
                     <WarningMark />
@@ -145,7 +145,7 @@ export const UserInfo: VoidComponent = () => {
                 <SimpleMenu>
                   <Button
                     onClick={() => {
-                      popOver().close();
+                      popOver.close();
                       passwordChangeModal.show();
                     }}
                   >

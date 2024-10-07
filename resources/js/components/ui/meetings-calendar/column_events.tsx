@@ -1,7 +1,9 @@
+import {Boundary} from "@floating-ui/dom";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {RichTextView} from "components/ui/RichTextView";
 import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {crossesDateBoundaries} from "components/utils/day_minute_util";
+import {reactToWindowResize, useResizeObserver} from "components/utils/resize_observer";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";
@@ -91,7 +93,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
           </ButtonLike>
         );
       }}
-      hoverCard={() => <MeetingHoverCard meeting={blockProps.meeting} />}
+      hoverCard={(onHovered) => <MeetingHoverCard meeting={blockProps.meeting} onHovered={onHovered} />}
     />
   );
 };
@@ -107,16 +109,21 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const calendar = useColumnsCalendar();
   const meeting = () => blockProps.meeting;
-  const boundary = () => {
-    const areaRect = calendar.hoursArea().getBoundingClientRect();
-    return {
-      x: 0,
-      // Allow the full width of the page.
-      width: document.body.clientWidth,
-      y: areaRect.y - 20,
-      height: areaRect.height,
-    };
-  };
+  const resizeObserver = useResizeObserver();
+  const hoursAreaBoundingRect = resizeObserver.observeBoundingClientRect(calendar.hoursArea);
+  const boundary = createMemo((): Boundary | undefined => {
+    reactToWindowResize();
+    const rect = hoursAreaBoundingRect();
+    return rect
+      ? {
+          x: 0,
+          // Allow the full width of the page.
+          width: document.body.clientWidth,
+          y: rect.y,
+          height: rect.height,
+        }
+      : undefined;
+  });
   const crosses = createMemo(() => crossesDateBoundaries(props.day, props.timeSpan));
   return (
     <HoverableMeetingEventBlock
@@ -193,7 +200,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
         );
       }}
       hoverBoundary={boundary()}
-      hoverCard={() => <MeetingHoverCard meeting={blockProps.meeting} />}
+      hoverCard={(onHovered) => <MeetingHoverCard meeting={blockProps.meeting} onHovered={onHovered} />}
     />
   );
 };

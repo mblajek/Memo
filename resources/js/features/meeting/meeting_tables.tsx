@@ -250,10 +250,10 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       extraDataColumns: ["attendants"],
       columnDef: {
         cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
-          <ScrollableCell baseHeight={baseHeight} class="flex flex-col gap-1">
+          <ScrollableCell baseHeight={baseHeight}>
             <ShowCellVal v={props.row.attendants}>
               {(v) => (
-                <>
+                <div class="flex flex-col gap-1">
                   <UserLinks
                     type="staff"
                     users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.staff.id)}
@@ -262,7 +262,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
                     type="clients"
                     users={v().filter((u) => u.attendanceTypeDictId === attendanceTypeDict()?.client.id)}
                   />
-                </>
+                </div>
               )}
             </ShowCellVal>
           </ScrollableCell>

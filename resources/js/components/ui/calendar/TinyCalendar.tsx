@@ -142,7 +142,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           <Show when={props.onMonthNameClick} fallback={<div>{props.month.monthLong}</div>}>
             <Button onClick={() => props.onMonthNameClick?.()}>{props.month.monthLong}</Button>
           </Show>
-          <PopOver trigger={(triggerProps) => <Button {...triggerProps()}>{props.month.year}</Button>}>
+          <PopOver trigger={(popOver) => <Button onClick={popOver.open}>{props.month.year}</Button>}>
             {(popOver) => {
               const yearsRadius = 5;
               const [centerYear, setCenterYear] = createSignal(props.month.year);
@@ -161,7 +161,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
                       <Button
                         class={year === props.month.year ? "font-bold" : undefined}
                         onClick={() => {
-                          popOver().close();
+                          popOver.close();
                           props.setMonth(props.month.set({year}));
                         }}
                       >

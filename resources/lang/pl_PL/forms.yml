@@ -17,8 +17,10 @@ password_change:
 user:
   field_names:
     hasPassword: "posiada hasło logowania do Memo"
-  clear_password_expire_at: "Wyłącz wygasanie hasła"
+  clear_password_expire_at: "Anuluj wygasanie hasła"
   password_expire_never: "Hasło nie wygaśnie."
+  set_password_expire_in_7d: "Wygaś za 7 dni"
+  set_password_expired: "Wygaś natychmiast"
   members_destructive_update_warning:
     header: "UWAGA!"
     line1: "Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki."
@@ -63,16 +65,20 @@ meeting:
     time.allDay: "$t(calendar.all_day)"
     staff__interval: "(1)[$t(models.staff._name)];(0-inf)[$t(models.staff._name_plural)];"
     clients__interval: "(1)[$t(models.client._name)];(0-inf)[$t(models.client._name_plural)];"
-    clientsGroupsMode: "$t(models.client_group._name)"
+    clientsGroupsMode: "Kontekst $t(em_dash) grupa klientów"
     clientsGroupsMode.none: "brak"
-    clientsGroupsMode.none.desc: "Klienci uczestniczą w spotkaniu bez związku z grupami"
+    clientsGroupsMode.none.desc: "Klienci uczestniczą w spotkaniu bez kontekstu grupy"
     clientsGroupsMode.shared: "wspólna grupa"
-    clientsGroupsMode.shared.desc: "W spotkaniu uczestniczą klienci należący do jednej grupy"
+    clientsGroupsMode.shared.desc: "Klienci uczestniczą w spotkaniu w kontekście wspólnej grupy"
     clientsGroupsMode.shared.desc_no_shared_options: "Brak wspólnych grup $t(em_dash) nie można wybrać jednej grupy dla wszystkich klientów"
+    clientsGroupsMode.shared_one_client: "wybrana grupa"
+    clientsGroupsMode.shared_one_client.desc: "Klient uczestniczy w spotkaniu w kontekście wybranej grupy"
     clientsGroupsMode.separate: "osobne grupy"
-    clientsGroupsMode.separate.desc: "Każdy klient ma osobno wybraną grupę, w ramach której uczestniczy w spotkaniu (opcja zaawansowana)"
-    sharedClientsGroupId: "grupa klientów, w ramach której wszyscy klienci uczestniczą w spotkaniu"
-    attendantClientGroupId: "grupa klientów, w ramach której ten klient uczestniczy w spotkaniu"
+    clientsGroupsMode.separate.desc: "Każdy klient uczestniczy w spotkaniu w kontekście osobno wybranej grupy (opcja zaawansowana)"
+    sharedClientsGroupId: "wspólny kontekst dla wszystkich klientów"
+    sharedClientsGroupId.addAll: "Dodaj wszystkich do spotkania"
+    sharedClientsGroupId.allAdded: "Wszyscy uczestniczą w spotkaniu"
+    attendantClientGroupId: "kontekst dla tego klienta"
 
 meeting_create:
   field_names:

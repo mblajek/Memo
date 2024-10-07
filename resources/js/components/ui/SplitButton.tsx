@@ -1,14 +1,13 @@
-import * as popover from "@zag-js/popover";
 import {AiFillCaretDown} from "solid-icons/ai";
-import {Accessor, ParentComponent, Show, splitProps} from "solid-js";
+import {ParentComponent, Show, splitProps} from "solid-js";
 import {cx, htmlAttributes} from "../utils";
 import {Button} from "./Button";
-import {PopOver} from "./PopOver";
+import {PopOver, PopOverControl} from "./PopOver";
 import {ChildrenOrFunc} from "./children_func";
 
 interface Props extends htmlAttributes.button {
   readonly divClass?: string;
-  readonly popOver: ChildrenOrFunc<[Accessor<popover.Api>]>;
+  readonly popOver: ChildrenOrFunc<[PopOverControl]>;
 }
 
 export const SplitButton: ParentComponent<Props> = (allProps) => {
@@ -21,20 +20,20 @@ export const SplitButton: ParentComponent<Props> = (allProps) => {
         {buttonProps.children}
       </Button>
       <Show when={props.popOver}>
-        {(popOver) => (
+        {(popOverContents) => (
           <PopOver
-            trigger={(triggerProps) => (
+            trigger={(popOver) => (
               <Button
                 {...htmlAttributes.merge(buttonProps, {
                   class: "basis-0 -ml-px !rounded-s-none border-l border-l-memo-active",
                 })}
-                {...triggerProps()}
+                onClick={popOver.open}
               >
                 <AiFillCaretDown class="text-current" />
               </Button>
             )}
           >
-            {popOver()}
+            {popOverContents()}
           </PopOver>
         )}
       </Show>

@@ -88,7 +88,10 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
           </StandaloneFieldLabel>
         </div>
         <Show when={props.allowEditing && groupIds().length}>
-          <CreateGroupButton title={t("actions.client_group.add_another")} />
+          <div class="flex gap-1">
+            <CreateGroupButton title={t("actions.client_group.add_another")} />
+            <AddToClientGroupButton title={t("actions.client_group.add_to")} />
+          </div>
         </Show>
       </div>
       <Show
