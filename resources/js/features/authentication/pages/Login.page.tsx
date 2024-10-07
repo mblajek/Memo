@@ -24,22 +24,19 @@ export default (() => {
   const invalidate = useInvalidator();
   onMount(() => setActiveFacilityId(undefined));
   const loginModal = createLoginModal();
-  /** Whether the successful login was already handled. This is used to avoid the effect firing more than once for any reasons. */
-  let loginHandled = false;
   createEffect(() => {
     if (systemStatusMonitor.needsReload()) {
       // If on the login screen, just reload without asking.
       location.reload();
     } else if (statusQuery.isError && !loginModal.isShown()) {
-      loginModal.show({lightBackdrop: true});
-    } else if (statusQuery.isSuccess) {
-      if (!loginHandled) {
-        loginHandled = true;
-        loginModal.hide();
-        invalidate.everythingThrottled();
-        invalidate.userStatusAndFacilityPermissions({clearCache: true});
-        navigate("/help");
-      }
+      loginModal.show({
+        lightBackdrop: true,
+        onSuccess: () => {
+          invalidate.everythingThrottled();
+          invalidate.userStatusAndFacilityPermissions({clearCache: true});
+          navigate("/help");
+        },
+      });
     }
   });
   return (
