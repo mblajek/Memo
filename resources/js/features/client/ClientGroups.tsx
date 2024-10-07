@@ -1,4 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
+import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
@@ -63,6 +64,13 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
   );
 
   const [selectedGroupId, setSelectedGroupId] = createSignal<string | undefined>();
+  createHistoryPersistence({
+    key: "ClientGroups",
+    value: () => ({selectedGroupId: selectedGroupId()}),
+    onLoad: (value) => {
+      setSelectedGroupId(value.selectedGroupId);
+    },
+  });
   createComputed(() => {
     if (!groupIds().length) {
       setSelectedGroupId(undefined);
