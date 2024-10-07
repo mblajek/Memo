@@ -605,7 +605,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               <div class="flex justify-between items-center gap-2">
                 <div class="flex gap-1">
                   <FieldLabel fieldName="clientsGroupsMode" umbrella />
-                  <InfoIcon href="/help" />
+                  <InfoIcon href="/help/meeting-client-groups" />
                 </div>
                 <Show when={!props.viewMode}>
                   <div class="self-start">
