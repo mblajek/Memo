@@ -11,8 +11,8 @@ class StringTransformer
     private static array $camelCache = [];
     private static array $snakeCache = [];
 
-    private const string CAMEL_REGEXP = '/^((?:__)?[a-z][a-z0-9]+)([a-z0-9A-Z]*)$/';
-    private const string SNAKE_REGEXP = '/^((?:__)?[a-z][a-z0-9]+)((?:_[a-z][a-z0-9]*)*)$/';
+    private const string CAMEL_REGEXP = '/^((?:__)?[a-z][a-z0-9]*)([a-z0-9A-Z]*)$/';
+    private const string SNAKE_REGEXP = '/^((?:__)?[a-z][a-z0-9]*)((?:_[a-z][a-z0-9]*)*)$/';
 
     public static function snake(string $value): string
     {
