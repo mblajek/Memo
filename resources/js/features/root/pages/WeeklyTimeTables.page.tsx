@@ -57,6 +57,7 @@ import {
   Accessor,
   batch,
   createComputed,
+  createEffect,
   createMemo,
   createSignal,
   For,
@@ -128,7 +129,7 @@ export default (() => {
   const defaultFromMonth = createMemo(() => currentDate().minus({months: 1}).toFormat("yyyy-MM"));
   const defaultToMonth = createMemo(() => currentDate().plus({years: 1}).toFormat("yyyy-MM"));
   const isDefaultMonthsRange = () => fromMonth() === defaultFromMonth() && toMonth() === defaultToMonth();
-  createComputed(() => {
+  createEffect(() => {
     if (!fromMonth()) {
       setFromMonth(defaultFromMonth());
     }
@@ -716,7 +717,6 @@ export default (() => {
               type="month"
               value={fromMonth()}
               onInput={({target: {value}}) => setFromMonth(value)}
-              required
             />
             <div class="self-center">{EN_DASH}</div>
             <TextInput
