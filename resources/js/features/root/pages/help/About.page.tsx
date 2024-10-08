@@ -45,7 +45,7 @@ export default (() => {
                 <Show when={status().commitHash} fallback={<EmptyValueSymbol />}>
                   {(commitHash) => (
                     <>
-                      <A class="font-mono" href={`${GITHUB_LINK}/tree/${commitHash()}`} target="_blank">
+                      <A class="font-mono" href={`${GITHUB_LINK}/commits/${commitHash()}`} target="_blank">
                         {commitHash()}
                       </A>{" "}
                       <CopyToClipboard text={status().commitHash} />
