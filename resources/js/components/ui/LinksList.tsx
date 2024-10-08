@@ -1,5 +1,5 @@
-import {A} from "@solidjs/router";
 import {VoidComponent} from "solid-js";
+import {ExternalLink} from "./ExternalLink";
 import {ThingsList} from "./ThingsList";
 
 interface Props {
@@ -9,15 +9,7 @@ interface Props {
 export const LinksList: VoidComponent<Props> = (props) => {
   return (
     <div class="text-sm">
-      <ThingsList
-        things={props.links}
-        map={(link) => (
-          <A href={link} target="_blank">
-            {link}
-          </A>
-        )}
-        mode="bullets"
-      />
+      <ThingsList things={props.links} map={(link) => <ExternalLink link={link} />} mode="bullets" />
     </div>
   );
 };
