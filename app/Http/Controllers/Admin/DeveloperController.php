@@ -6,8 +6,10 @@ use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Models\Enums\AttributeTable;
 use App\Models\Member;
+use App\Models\StaffMember;
 use App\Rules\Valid;
 use App\Utils\Date\DateHelper;
+use App\Utils\Nullable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
@@ -63,6 +65,25 @@ class DeveloperController extends ApiController
                 array_intersect_key($data, array_flip(['created_at', 'updated_at']))
             );
         $updated = DB::table($model->value)->where('id', $id)->update($updateData);
+        return new JsonResponse(data: ['data' => (bool)$updated], status: 200);
+    }
+
+    public function patchStaff(): JsonResponse
+    {
+        $data = $this->validate([
+            'id' => Valid::uuid(),
+            'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')]),
+            'deactivated_at' => Valid::datetime(nullable: true),
+        ]);
+
+        $id = Member::query()->where('user_id', $data['id'])
+            ->where('facility_id', $data['facility_id'])->firstOrFail()
+            ->offsetGet('staff_member_id');
+
+        $updated = StaffMember::query()->where('id', $id)->update([
+            'deactivated_at' => Nullable::call($data['deactivated_at'], DateHelper::zuluToDbString(...))
+        ]);
+
         return new JsonResponse(data: ['data' => (bool)$updated], status: 200);
     }
 }

@@ -53,6 +53,7 @@ Route::prefix('/v1')->group(function () {
         Route::prefix('/developer')->group(function () {
             Route::get('/migrate/{hash?}', [DeveloperController::class, 'migrate']);
             Route::post('/overwrite-metadata', [DeveloperController::class, 'overwriteMetadata']);
+            Route::post('/patch-staff', [DeveloperController::class, 'patchStaff']);
         });
         Route::prefix('/user')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
