@@ -31,8 +31,8 @@ W tej tabeli szczególnie użyteczne jest [grupowanie](table-grouping). Przykła
 w których uczestniczył każdy z pracowników w danym okresie:
 
 - ustaw filtr daty spotkania na ten okres, oraz inne filtry spotkania, jak na przykład status,
-- ustaw filtr kolumny _$t(models.meeting_attendant.column_names.attendant.attendanceTypeDictId)_ na
-_$t(dictionaries.attendance_type.staff)_,
+- ustaw filtr kolumny _$t(tables.tables.meeting_attendant.column_names.attendant.attendanceTypeDictId)_ na
+_$t(dictionary.attendanceType.staff)_,
 - włącz grupowanie według uczestnika.
 
 ## Raport _$t(routes.facility.meeting_clients|cap)_ {#meeting-clients}
