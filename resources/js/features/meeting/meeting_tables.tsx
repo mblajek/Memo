@@ -419,6 +419,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
             </ShowCellVal>
           </PaddedCell>
         )),
+        size: 300,
       },
       metaParams: {
         textExportCell: exportCellFunc<TextExportedCell, string, TQFullMeetingResource>((v, ctx) =>
