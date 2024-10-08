@@ -1,5 +1,5 @@
 .tippy-box[data-theme~="memo"] {
-  @apply text-black bg-select border-solid border-memo-active;
+  @apply overflow-clip text-black bg-select border-solid border-memo-active;
 
   &[data-placement^="top"] > .tippy-arrow::before {
     @apply border-t-select;

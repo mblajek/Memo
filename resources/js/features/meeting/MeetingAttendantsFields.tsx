@@ -693,7 +693,12 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         {
                           value: "none",
                           label: () => (
-                            <span use:title={[translations.fieldName("clientsGroupsMode.none.desc"), {delay: 500}]}>
+                            <span
+                              use:title={[
+                                translations.fieldName("clientsGroupsMode.none.desc"),
+                                {delay: [800, undefined]},
+                              ]}
+                            >
                               {translations.fieldName("clientsGroupsMode.none")}
                             </span>
                           ),
@@ -710,7 +715,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                                       ? "clientsGroupsMode.shared.desc"
                                       : "clientsGroupsMode.shared.desc_no_shared_options",
                                 ),
-                                {delay: 500},
+                                {delay: [800, undefined]},
                               ]}
                             >
                               {translations.fieldName(
@@ -727,7 +732,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                               value: "separate",
                               label: () => (
                                 <span
-                                  use:title={[translations.fieldName("clientsGroupsMode.separate.desc"), {delay: 500}]}
+                                  use:title={[
+                                    translations.fieldName("clientsGroupsMode.separate.desc"),
+                                    {delay: [800, undefined]},
+                                  ]}
                                 >
                                   {translations.fieldName("clientsGroupsMode.separate")}
                                 </span>
