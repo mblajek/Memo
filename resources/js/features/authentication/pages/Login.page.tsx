@@ -10,6 +10,8 @@ import {createEffect, onMount, VoidComponent} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {createLoginModal} from "../forms/login/login_modal";
 
+const INITIAL_PAGE = "/help";
+
 /**
  * The login page.
  *
@@ -34,9 +36,11 @@ export default (() => {
         onSuccess: () => {
           invalidate.everythingThrottled();
           invalidate.userStatusAndFacilityPermissions({clearCache: true});
-          navigate("/help");
+          navigate(INITIAL_PAGE);
         },
       });
+    } else if (statusQuery.isSuccess) {
+      navigate(INITIAL_PAGE);
     }
   });
   return (
