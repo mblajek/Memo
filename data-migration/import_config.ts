@@ -1,4 +1,4 @@
-import * as JSONC from "https://deno.land/std@0.220.1/jsonc/parse.ts";
+import * as JSONC from "jsr:@std/jsonc";
 
 export interface ImportConfig {
   /** Path to the prepared facility contents JSON file. */
@@ -18,13 +18,13 @@ export interface ImportConfig {
 }
 
 export function readConfig(file: string) {
-  const data = JSONC.parse(Deno.readTextFileSync(file));
+  const data = JSONC.parse(Deno.readTextFileSync(file)) as Record<string, unknown>;
   return new Proxy(data, {
     get(target, prop) {
-      if (!Object.hasOwn(target, prop)) {
+      if (typeof prop === "symbol" || !Object.hasOwn(target, prop)) {
         throw new Error(`Missing property in config: ${String(prop)}`);
       }
       return target[prop];
     },
-  }) as ImportConfig;
+  }) as unknown as ImportConfig;
 }

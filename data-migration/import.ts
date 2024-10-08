@@ -1,8 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
-import {parseArgs} from "https://deno.land/std@0.220.1/cli/parse_args.ts";
+import {parseArgs} from "jsr:@std/cli";
 import {
   AttributeValues,
+  DateTimeType,
   FacilityContents,
+  NewFacilityStaff,
   Order,
   Position,
   PositionInExtension,
@@ -190,12 +192,16 @@ const nnMapper = new NnMapper(config.nnMappingFileBase);
 
 async function apiMutate({path, type, params}: {path: string; type: string; params: CallParams}) {
   const resp = (await api(path, params)).data;
-  if (type === "dictionary" || type === "position") {
-    cache.dictionaries = undefined;
-  } else if (type === "attribute") {
-    cache.attributes = undefined;
+  if (config.dryRun) {
+    return {id: "dry-run-id"};
+  } else {
+    if (type === "dictionary" || type === "position") {
+      cache.dictionaries = undefined;
+    } else if (type === "attribute") {
+      cache.attributes = undefined;
+    }
+    return resp;
   }
-  return resp;
 }
 
 async function apiCreate({
@@ -325,7 +331,7 @@ async function attributeValues(attributeValues: AttributeValues | undefined) {
     if (value) {
       res[attrib.apiName] = Array.isArray(value)
         ? await Promise.all(value.map(async (v) => await attrVal(v)))
-        : await attrVal(value);
+        : await attrVal(value as SingleAttributeValue);
     }
   }
   return res;
@@ -366,6 +372,10 @@ async function getDefaultOrder<RelKey extends string>(
     const relDefOrder = await getItemDefaultOrder(order);
     return order.rel === "before" ? relDefOrder : relDefOrder + 1;
   }
+}
+
+function dateTimeType(dateTime: DateTimeType | null | undefined) {
+  return typeof dateTime === "string" ? dateTime : dateTime?.toJSON() || null;
 }
 
 async function createPosition({
@@ -457,45 +467,58 @@ try {
     }
 
   if (!config.onlyDictionariesAndAttributes) {
-    const makeStaff = async (userId: string) =>
-      await apiCreate({
-        path: "admin/member",
-        type: "member",
-        object: {
-          userId,
-          facilityId,
-          isFacilityStaff: true,
-          hasFacilityAdmin: false,
-          isFacilityClient: false,
-        },
-      });
-    for (const staff of trackProgress(prepared.giveStaff, "staff to give")) {
-      await makeStaff(staff.id);
-      if (staff.nn) {
-        nnMapper.set({nn: staff.nn, id: staff.id, type: "user"});
+    for (let staff of trackProgress(prepared.facilityStaff, "facility staff")) {
+      let userId;
+      if (staff.id) {
+        userId = staff.id;
+        if (staff.nn) {
+          nnMapper.set({nn: staff.nn, id: userId, type: "user"});
+        }
+      } else {
+        staff = staff as NewFacilityStaff;
+        userId = (
+          await apiCreate({
+            nn: staff.nn,
+            path: "admin/user",
+            type: "user",
+            object: {
+              // TODO: Revert to just name when the backend starts honoring deactivatedAt.
+              name: staff.deactivatedAt ? `${staff.name} (nieaktywny)` : staff.name,
+              // name: staff.name,
+              deactivatedAt: dateTimeType(staff.deactivatedAt),
+              email: staff.email ? (config.staffEmailsPrefix || "") + staff.email : null,
+              hasEmailVerified: !!staff.email,
+              ...(staff.password
+                ? {
+                    password: staff.password,
+                    passwordExpireAt: dateTimeType(staff.passwordExpireAt),
+                  }
+                : {
+                    password: null,
+                    passwordExpireAt: null,
+                  }),
+              hasGlobalAdmin: false,
+            },
+          })
+        ).id;
       }
-    }
-    for (const staff of trackProgress(prepared.staff, "staff")) {
-      const userId = (
+      if (staff.isStaff || staff.isAdmin) {
         await apiCreate({
-          nn: staff.nn,
-          path: "admin/user",
-          type: "user",
+          path: "admin/member",
+          type: "member",
           object: {
-            name: staff.name,
-            email: staff.email ? (config.staffEmailsPrefix || "") + staff.email : null,
-            hasEmailVerified: !!staff.email,
-            password: null,
-            passwordExpireAt: null,
-            hasGlobalAdmin: false,
+            userId,
+            facilityId,
+            isFacilityStaff: staff.isStaff,
+            hasFacilityAdmin: staff.isAdmin,
+            isFacilityClient: false,
           },
-        })
-      ).id;
-      await makeStaff(userId);
+        });
+      }
     }
 
     for (const client of trackProgress(prepared.clients, "clients")) {
-      const {clientId} = await apiCreate({
+      const {id} = await apiCreate({
         nn: client.nn,
         path: `facility/${facilityId}/user/client`,
         type: "client",
@@ -508,9 +531,10 @@ try {
         await api("admin/developer/overwrite-metadata", {
           req: {
             model: "client",
-            id: clientId,
+            facilityId,
+            id,
             createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
-            createdAt: client.createdAt,
+            createdAt: dateTimeType(client.createdAt),
           },
         });
     }
@@ -542,14 +566,22 @@ try {
       cancelled: attendanceStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
     };
     for (const meeting of trackProgress(prepared.meetings, "meetings")) {
+      let typeDictId;
+      if (nnMapper.has(meeting.typeDictNnOrName)) {
+        typeDictId = nnMapper.get(meeting.typeDictNnOrName);
+      } else {
+        const typePos = meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName);
+        if (!typePos) {
+          throw new Error(`Meeting type not found: ${JSON.stringify(meeting.typeDictNnOrName)}`);
+        }
+        typeDictId = typePos.id;
+      }
       const {id: meetingId} = await apiCreate({
         nn: meeting.nn,
         path: `facility/${facilityId}/meeting`,
         type: "meeting",
         object: {
-          typeDictId: nnMapper.has(meeting.typeDictNnOrName)
-            ? nnMapper.get(meeting.typeDictNnOrName)
-            : meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName).id,
+          typeDictId,
           notes: meeting.notes,
           date: meeting.date,
           startDayminute: meeting.startDayMinute,
@@ -577,9 +609,9 @@ try {
           req: {
             model: "meeting",
             id: meetingId,
-            createdAt: meeting.createdAt,
+            createdAt: dateTimeType(meeting.createdAt),
             createdBy: meeting.createdByNn ? nnMapper.get(meeting.createdByNn) : undefined,
-            updatedAt: meeting.updatedAt,
+            updatedAt: dateTimeType(meeting.updatedAt),
             updatedBy: meeting.updatedByNn ? nnMapper.get(meeting.updatedByNn) : undefined,
           },
         });

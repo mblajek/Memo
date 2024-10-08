@@ -1,9 +1,9 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="dom" />
 
-import * as fs from "https://deno.land/std@0.190.0/fs/mod.ts";
-import {parseArgs} from "https://deno.land/std@0.220.1/cli/parse_args.ts";
-import * as csv from "https://deno.land/std@0.220.1/csv/mod.ts";
+import * as fs from "jsr:@std/fs";
+import {parseArgs} from "jsr:@std/cli";
+import * as csv from "jsr:@std/csv";
 import {DateTimeOptions} from "https://esm.sh/luxon@latest";
 import {
   Client,
@@ -12,7 +12,7 @@ import {
   facilityContentStats,
   Meeting,
   NnAttributeValue,
-  Staff,
+  FacilityStaff,
 } from "../facility_contents_type.ts";
 import luxon from "../luxon.ts";
 import {dictionariesAndAttributes, MEETING_TYPES} from "./dicts_and_attribs.ts";
@@ -58,7 +58,7 @@ type FieldsType<T extends string[]> = T[number];
 
 // prettier-ignore
 interface FilesType {
-  klienci: FieldsType<["ID","imię","nazwisko","email","numer PESEL","numer karty","Saldo klienta","telefon komórkowy","telefon stacjonarny","płeć","adres","kod pocztowy","miasto","data urodzenia","data imienin (dzień i miesiąc)","opis","sformatowany opis","pochodzenie klienta (źródło)","status pochodzenia klienta","przypomnienie SMS","przypomnienie email","wysyłka masowa SMS","wysyłka masowa email","Marketing Automatyczny SMS","Marketing Automatyczny email","życzenia urodzinowe/imieninowe SMS","życzenia urodzinowe/imieninowe email","Program Lojalnościowy SMS","Program Lojalnościowy email","opinie SMS","opinie email","dodany dnia","zgoda handlowa","status programu lojalnościowego","punkty programu lojalnościowego","Maksymalna liczba rezerwacji online","zdefiniowane: relacje","zdefiniowane: dorosły/dziecko","zdefiniowane: wiek w momencie zgłoszenia","zdefiniowane: powód zgłoszenia","zdefiniowane: sprawca","zdefiniowane: płeć sprawcy","zdefiniowane: data zgłoszenia","zdefiniowane: data pierwszej konsultacji","zdefiniowane: Notatka o kliencie","zdefiniowane: Projekt","zdefiniowane: Status klienta","zdefiniowane: Skład grupy roboczej","zdefiniowane: Koordynator przypadku"]>,
+  klienci: FieldsType<["ID","imię","nazwisko","email","numer PESEL","numer karty","Saldo klienta","telefon komórkowy","telefon stacjonarny","płeć","adres","kod pocztowy","miasto","data urodzenia","data imienin (dzień i miesiąc)","opis","sformatowany opis","pochodzenie klienta (źródło)","status pochodzenia klienta","przypomnienie SMS","przypomnienie email","wysyłka masowa SMS","wysyłka masowa email","Marketing Automatyczny SMS","Marketing Automatyczny email","życzenia urodzinowe/imieninowe SMS","życzenia urodzinowe/imieninowe email","Program Lojalnościowy SMS","Program Lojalnościowy email","opinie SMS","opinie email","dodany dnia","zgoda handlowa","status programu lojalnościowego","punkty programu lojalnościowego","Maksymalna liczba rezerwacji online","zdefiniowane: Relacje","zdefiniowane: Dorosły/Dziecko","zdefiniowane: Wiek w momencie zgłoszenia","zdefiniowane: Powód zgłoszenia","zdefiniowane: Sprawca","zdefiniowane: Płeć sprawcy","zdefiniowane: Data zgłoszenia","zdefiniowane: Data pierwszej konsultacji","zdefiniowane: Kontakt zakończony","zdefiniowane: Notatka o kliencie","zdefiniowane: Problem alkoholowy"]>,
   terminy: FieldsType<["ID wizyty","ID relacji usługa/wizyta","pracownik","początek","koniec","imię klienta","nazwisko klienta","telefon komórkowy","email","ID klienta","ID usługi","usługa","czas trwania","powiązane zasoby","sugerowana cena (PLN)","zapłacono (PLN)","status","forma płatności","dodana przez","etykiety","data dodania","data ostatniej modyfikacji","autor ostatniej modyfikacji","data finalizacji","sfinalizowane przez","dodatkowy opis","numer rezerwacji"]>,
 }
 
@@ -95,12 +95,19 @@ function readRawCSV<K extends string>(file: string): Row<K>[] {
 
 console.log(`Reading export data from ${exportsDir}`);
 
-let KLIENCI = readCSV<FilesType["klienci"]>(`${exportsDir}/klienci_148679.csv`, "ID");
-let TERMINY = readCSV<FilesType["terminy"]>(`${exportsDir}/terminy_148679.csv`, "ID wizyty");
+let KLIENCI = readCSV<FilesType["klienci"]>(`${exportsDir}/klienci_143413.csv`, "ID");
+let TERMINY = readCSV<FilesType["terminy"]>(`${exportsDir}/terminy_143413.csv`, "ID wizyty");
 
 console.log(`Reading static data from ${staticDataDir}`);
 
-const STAFF = readCSV<"name" | "email">(`${staticDataDir}/staff.csv`, "email");
+const STAFF = readCSV<
+  | "Imię i nazwisko"
+  | "Adres email"
+  | "Może logować się do Memo?"
+  | "Posiada własny kalendarz spotkań w Memo?"
+  | "Jest aktualnym pracownikiem?"
+  | "Jest administratorem z dostępem do raportów itp.?"
+>(`${staticDataDir}/staff.csv`, "Adres email");
 
 console.log("Analysing data");
 
@@ -120,16 +127,21 @@ console.log(`Liczba prawidłowych klientów: ${KLIENCI.rows.length}`);
 
 console.log(`Liczba wyeksportowanych spotkań: ${TERMINY.rows.length}`);
 TERMINY = rejectAndLog(TERMINY, (t) => !t.pracownik, "Spotkania bez pracownika");
-TERMINY = rejectAndLog(TERMINY, (t) => t.pracownik === "Aurelia Jankowska", "Spotkania Aurelii Jankowskiej");
-TERMINY = rejectAndLog(TERMINY, (t) => t.usługa === "Blokada terminu", `Spotkania "Blokada terminu"`);
 console.log(`Liczba prawidłowych spotkań: ${TERMINY.rows.length}`);
 
 function tt(text: string) {
+  let t = text;
+  for (;;) {
+    const t1 = t.replaceAll(/<([a-z1-6]*\b)[\s\S]*?(?:>([\s\S]*?)<\/\1>|\/>)/g, (_mat, tag, content = "") =>
+      tag === "br" ? "\n" : tag === "p" || tag === "div" ? content + "\n" : content,
+    );
+    if (t1 === t) {
+      break;
+    }
+    t = t1;
+  }
   return (
-    text
-      .replaceAll(/<([a-z]*\b)[\s\S]*?(?:>([\s\S]+?)<\/\1>|\/>)/g, (_mat, tag, content = "") =>
-        tag === "br" ? "\n" : tag === "p" ? content + "\n" : content,
-      )
+    t
       // The only entities that actually appear in the data:
       .replaceAll("&nbsp;", " ")
       .replaceAll("&oacute;", "ó")
@@ -171,10 +183,19 @@ function _logLine(...line: unknown[]) {
 // );
 // Deno.exit();
 
-const staff: Staff[] = STAFF.rows.map(({name, email}) => ({
-  nn: name,
-  name: name,
-  email: email || null,
+const facilityStaff: FacilityStaff[] = STAFF.rows.map((row) => ({
+  nn: row["Imię i nazwisko"],
+  name: row["Imię i nazwisko"],
+  email: row["Adres email"] || null,
+  ...(row["Może logować się do Memo?"] === "tak"
+    ? {
+        password: "Memo2024",
+        passwordExpireAt: DateTime.now().startOf("day").plus({weeks: 1}),
+      }
+    : {password: null, passwordExpireAt: null}),
+  isStaff: row["Posiada własny kalendarz spotkań w Memo?"] === "tak",
+  isAdmin: row["Jest administratorem z dostępem do raportów itp.?"] === "tak",
+  deactivatedAt: row["Jest aktualnym pracownikiem?"] === "nie" ? DateTime.now().startOf("month") : null,
 }));
 
 function dateTimeFromFormats(s: string, formats: string[], opts?: DateTimeOptions) {
@@ -188,20 +209,12 @@ function dateTimeFromFormats(s: string, formats: string[], opts?: DateTimeOption
   return DateTime.fromFormat(s, formats[0], opts);
 }
 
-function dateTimeIn(s: string, opts?: DateTimeOptions) {
+function parseDateTime(s: string, opts?: DateTimeOptions) {
   return dateTimeFromFormats(s, ["yyyy-MM-dd H:mm:ss ZZZ", "yyyy-MM-dd H:mm"], opts);
 }
 
-function dateDDMMYYYYIn(s: string) {
+function parseDateDDMMYYYY(s: string) {
   return dateTimeFromFormats(s.trim(), ["d.MM.yyyy", "d.MM.yyyy.", "d.MM.yy", "d.MM.yy.", "yyyy-MM-dd"]);
-}
-
-function dateTimeOut(d: DateTime) {
-  return d.toUTC().set({millisecond: 0}).toISO({suppressMilliseconds: true});
-}
-
-function dateTimeInOut(s: string, opts?: DateTimeOptions) {
-  return dateTimeOut(dateTimeIn(s, opts));
 }
 
 const clients: Client[] = [];
@@ -238,7 +251,7 @@ deletedClients.delete("");
 for (const klient of KLIENCI.rows) {
   deletedClients.delete(klient.ID);
 }
-console.log(`Usunięci klienci: ${deletedClients.size}`);
+console.log(`Usunięci klienci do dodania: ${deletedClients.size}`);
 
 for (const klientId of deletedClients) {
   clients.push({
@@ -256,54 +269,48 @@ for (const klientId of deletedClients) {
   });
 }
 
-const projektGetter = customDictGetter("projekt");
 for (const klient of KLIENCI.rows) {
   const terminy = TERMINY.rows
     .filter((t) => t["ID klienta"] === klient.ID)
-    .sort((a, b) => dateTimeIn(a.początek).toMillis() - dateTimeIn(b.początek).toMillis());
-  const statusKlientaGetter = customDictGetter("status klienta");
+    .sort((a, b) => parseDateTime(a.początek).toMillis() - parseDateTime(b.początek).toMillis());
   const powódZgłoszeniaGetter = customDictGetter("powód zgłoszenia");
-  const sprawcaGetter = customDictGetter("sprawca", {
-    "osoba z poza rodziny znana dziecku": "osoba spoza rodziny znana dziecku",
-    "osoba z poza rodzina nieznana dziecku": "osoba spoza rodziny nieznana dziecku",
-  });
-  let projekt;
-  if (klient["zdefiniowane: Projekt"]) {
-    projekt = projektGetter.req(klient["zdefiniowane: Projekt"]);
-  } else if (klient.email) {
-    const mailPart = klient.email.split("@")[0].split(".")[1];
-    if (mailPart === "rodzina") {
-      projekt = projektGetter.req("CWR");
-    } else {
-      const matchingProjekt = projektGetter.values.find(
-        (v) => v.split(" ")[0].toLowerCase() === mailPart.toLowerCase(),
-      );
-      if (matchingProjekt) {
-        projekt = projektGetter.req(matchingProjekt);
-      } else {
-        throw new Error(`Unknown project from email: ${JSON.stringify(klient.email)}`);
-      }
-    }
-  }
+  const sprawcaGetter = customDictGetter("sprawca");
   let type;
-  if (klient["zdefiniowane: dorosły/dziecko"] === "dziecko") {
+  if (klient["zdefiniowane: Dorosły/Dziecko"] === "Dziecko") {
     type = "child";
-  } else if (klient["zdefiniowane: dorosły/dziecko"] === "dorosły") {
+  } else if (klient["zdefiniowane: Dorosły/Dziecko"] === "Dorosły") {
     type = "adult";
   } else if (klient["data urodzenia"]) {
     const birth = DateTime.fromISO(klient["data urodzenia"]);
-    const ref = klient["zdefiniowane: data zgłoszenia"]
-      ? dateDDMMYYYYIn(klient["zdefiniowane: data zgłoszenia"])
+    const ref = klient["zdefiniowane: Data zgłoszenia"]
+      ? parseDateDDMMYYYY(klient["zdefiniowane: Data zgłoszenia"])
       : DateTime.fromISO("2024-01-01");
     const age = ref.diff(birth, "years").years;
     type = age < 18 ? "child" : "adult";
   } else {
     type = "adult";
   }
+  const links = [];
+  const notesFromLinks = [];
+  for (const linksLine of tt(klient["zdefiniowane: Notatka o kliencie"]).split("\n").filter(Boolean)) {
+    if (linksLine.startsWith("http")) {
+      links.push(linksLine);
+    } else {
+      notesFromLinks.push(linksLine);
+    }
+  }
+  const notes = [
+    tt(klient["opis"]),
+    tt(klient["telefon stacjonarny"]) ? `Telefon stacjonarny: ${tt(klient["telefon stacjonarny"])}` : undefined,
+    notesFromLinks.join("\n"),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
   clients.push({
     nn: klient.ID,
     name: tt(`${klient.imię} ${klient.nazwisko}`),
-    createdAt: dateTimeInOut(klient["dodany dnia"]),
+    createdAt: parseDateTime(klient["dodany dnia"]),
     client: {
       typeDictId: {
         kind: "dict",
@@ -318,38 +325,39 @@ for (const klient of KLIENCI.rows) {
       birthDate: klient["data urodzenia"]
         ? {kind: "const", value: DateTime.fromISO(klient["data urodzenia"]).toISODate()}
         : undefined,
-      wiekWMomencieZgloszeniaU$: klient["zdefiniowane: wiek w momencie zgłoszenia"]
-        ? {kind: "const", value: parseInt(klient["zdefiniowane: wiek w momencie zgłoszenia"])}
+      wiekWMomencieZgloszeniaU$: klient["zdefiniowane: Wiek w momencie zgłoszenia"]
+        ? {kind: "const", value: parseInt(klient["zdefiniowane: Wiek w momencie zgłoszenia"])}
         : undefined,
       contactPhone: {kind: "const", value: klient["telefon komórkowy"]},
+      contactEmail: {kind: "const", value: klient["email"]},
       addressStreetNumber: {kind: "const", value: tt(klient.adres)},
       addressPostalCode: {kind: "const", value: tt(klient["kod pocztowy"])},
       addressCity: {kind: "const", value: tt(klient.miasto)},
-      statusKlientaU$: statusKlientaGetter.opt(klient["zdefiniowane: Status klienta"]),
-      contactStartAt: klient["zdefiniowane: data zgłoszenia"]
+      contactStartAt: klient["zdefiniowane: Data zgłoszenia"]
         ? {
             kind: "const",
-            value: dateDDMMYYYYIn(klient["zdefiniowane: data zgłoszenia"]).toISODate(),
+            value: parseDateDDMMYYYY(klient["zdefiniowane: Data zgłoszenia"]).toISODate(),
           }
         : undefined,
-      contactEndAt:
-        klient["zdefiniowane: Status klienta"] === "kontakt zakończony"
-          ? {
-              kind: "const",
-              value: (terminy.length
-                ? dateTimeIn(terminy.at(-1)!.początek)
-                : klient["zdefiniowane: data zgłoszenia"]
-                  ? dateDDMMYYYYIn(klient["zdefiniowane: data zgłoszenia"])
-                  : undefined
-              )?.toISODate(),
-            }
-          : undefined,
-      powodZgloszeniaU$: klient["zdefiniowane: powód zgłoszenia"]
+      contactEndAt: klient["zdefiniowane: Kontakt zakończony"]
+        ? {
+            kind: "const",
+            value: (terminy.length
+              ? parseDateTime(terminy.at(-1)!.początek)
+              : klient["zdefiniowane: Data zgłoszenia"]
+                ? parseDateDDMMYYYY(klient["zdefiniowane: Data zgłoszenia"])
+                : undefined
+            )
+              // TODO: What else?
+              ?.toISODate(),
+          }
+        : undefined,
+      powodZgloszeniaU$: klient["zdefiniowane: Powód zgłoszenia"]
         .split(", ")
         .filter(Boolean)
         .map(powódZgłoszeniaGetter.req),
-      sprawcaU$: klient["zdefiniowane: sprawca"].split(", ").filter(Boolean).map(sprawcaGetter.req),
-      plecSprawcyU$: klient["zdefiniowane: płeć sprawcy"]
+      sprawcaU$: klient["zdefiniowane: Sprawca"].split(", ").filter(Boolean).map(sprawcaGetter.req),
+      plecSprawcyU$: klient["zdefiniowane: Płeć sprawcy"]
         .split(", ")
         .filter(Boolean)
         .map((p) => ({
@@ -357,24 +365,34 @@ for (const klient of KLIENCI.rows) {
           dictName: "gender",
           positionName: p === "kobieta" ? "female" : p === "mężczyzna" ? "male" : "unknown",
         })),
-      projektU$: projekt,
       shortCode: {kind: "const", value: klient["numer karty"]},
-      relacjeU$: tt(klient["zdefiniowane: relacje"])
+      relacjeU$: tt(klient["zdefiniowane: Relacje"])
         .split("\n")
         .filter(Boolean)
         .map((r) => ({kind: "const", value: r})),
+      rodzinaZProblememAlkoholowymU$: {
+        kind: "const",
+        value: !!klient["zdefiniowane: Problem alkoholowy"],
+      },
+      // TODO: Enable when the limit is lifted.
+      // documentsLinks: {
+      //   kind: "const",
+      //   value: links.length <= 1 ? links.map((l) => `dokumentacja: ${l}`) : links,
+      // },
       notes: {
         kind: "const",
-        value: [tt(klient["zdefiniowane: Notatka o kliencie"]), tt(klient["zdefiniowane: Skład grupy roboczej"])]
-          .filter(Boolean)
-          .join("\n"),
+        value: notes,
       },
+      zrodloInfOPoradniU$:
+        klient["pochodzenie klienta (źródło)"].toLowerCase() === "facebook"
+          ? [{kind: "nn", nn: "źródło informacji:internet"}]
+          : [],
     },
   });
 }
 
 function intervalBetween(d1: string, d2: string) {
-  const numDays = dateTimeIn(d2).diff(dateTimeIn(d1), "days").days;
+  const numDays = parseDateTime(d2).diff(parseDateTime(d1), "days").days;
   return [1, 7, 14].includes(numDays) ? `${numDays}d` : undefined;
 }
 
@@ -383,11 +401,11 @@ function getStaff(pracownik: string) {
   let staffNn = pracownicyCache.get(pracownik);
   const name = tt(pracownik);
   if (!staffNn) {
-    const staff = STAFF.rows.find((staff) => staff.name === name);
+    const staff = STAFF.rows.find((staff) => staff["Imię i nazwisko"] === name);
     if (!staff) {
       throw new Error(`Staff ${JSON.stringify(name)} not found`);
     }
-    staffNn = staff.name;
+    staffNn = staff["Imię i nazwisko"];
     pracownicyCache.set(pracownik, staffNn);
   }
   return staffNn;
@@ -406,32 +424,28 @@ const ETYKIETY = {
 const meetingTypes = MEETING_TYPES.flatMap((c) => c.types.map((t) => t.name));
 function meetingTypeNn(typeName: string) {
   const [mappedTypeName, retainUsługa = false] = meetingTypeMapping.get(typeName) || [typeName];
-  if (!meetingTypes.includes(mappedTypeName)) {
-    throw new Error(`Meeting type ${JSON.stringify(typeName)} not found`);
+  if (mappedTypeName !== "other" && !meetingTypes.includes(mappedTypeName)) {
+    throw new Error(`Meeting type ${JSON.stringify(typeName)} (mapped as ${JSON.stringify(mappedTypeName)}) not found`);
   }
-  return [`meetingType:${mappedTypeName}`, retainUsługa ? typeName : undefined] as const;
+  return [
+    mappedTypeName === "other" ? mappedTypeName : `meetingType:${mappedTypeName}`,
+    retainUsługa ? typeName : undefined,
+  ] as const;
 }
 
 const meetingTypeMapping = new Map<string, [type: string, retain?: boolean]>([
-  ["Konsultacja psychologiczna dorosły", ["Konsultacja psychologiczna"]],
-  ["Terapia indywidualna dziecko", ["Terapia indywidualna"]],
-  ["Konsultacja psychologiczna dziecko", ["Konsultacja psychologiczna"]],
-  ["Terapia indywidualna dorosły", ["Terapia indywidualna"]],
-  ["Konsultacja prawna ", ["Konsultacja prawna"]],
-  ["Konsultacja pierwszorazowa - dorosły", ["Konsultacja pierwszorazowa"]],
-  ["konsultacja rodzicielska", ["Konsultacja rodzinna"]],
-  ["Przesłuchanie", ["Czynności służbowe", true]],
-  ["Konsultacja pierwszorazowa - dziecko", ["Konsultacja pierwszorazowa"]],
-  ["Zebranie kliniczne", ["Zespół kliniczny"]],
-  ["konsultacja dla klientów z Ukrainy ", ["Konsultacja psychologiczna", true]],
-  ["konsultacja z rodzicem", ["Konsultacja psychologiczna", true]],
-  ["konsultacja dla par", ["Konsultacja rodzinna"]],
-  ["konsultacja kwalifikacyjna", ["Konsultacja kwalifikacyjna"]],
-  ["Grupa dla nastolatków", ["Grupa dla dzieci i młodzieży"]],
-  ["Dyżur prawny telefoniczny 800100100", ["Czynności służbowe", true]],
-  ["Superwizja sekretariatu", ["Czynności służbowe", true]],
-  ["Konsultascja psychologiczno - pedagogiczna", ["Konsultacja psychologiczna"]],
-  ["konsultacja prawna z profesjonalistą", ["Konsultacja prawna", true]],
+  ["Konsultacja psychologiczna DOROSŁY", ["Konsultacja psychologiczna"]],
+  ["Konsultacja psychologiczna DZIECKO", ["Konsultacja psychologiczna"]],
+  ["Terapia indywidualna DOROSŁY", ["Terapia indywidualna"]],
+  ["Terapia indywidualna DZIECKO", ["Terapia indywidualna"]],
+  ["Konsultacja pierwszorazowa DOROSŁY", ["Konsultacja pierwszorazowa"]],
+  ["Konsultacja pierwszorazowa DZIECKO", ["Konsultacja pierwszorazowa"]],
+  ["Konsultacja prawna klient", ["Konsultacja prawna – klient"]],
+  ["Konsultacja prawna profesjonalista", ["Konsultacja prawna – profesjonalista"]],
+  ["Konsultacja psychiatryczna DZIECKO", ["Konsultacja psychiatryczna"]],
+  ["Infolinia dla Kuratorów", ["other", true]],
+  ["Interwencja kryzysowa- zewnętrzna ", ["other", true]],
+  ["Blokada terminu", ["Czynności służbowe", true]],
 ]);
 
 const unknownMeetingTypes = new Map<string, number>();
@@ -458,7 +472,7 @@ for (let i = 0; i < TERMINY.rows.length; i++) {
     termin["ID klienta"] === prevTermin["ID klienta"];
   const etykiety = new Set(termin.etykiety.split(", ").filter(Boolean));
   const staffNn = getStaff(termin.pracownik);
-  let start = dateTimeIn(termin.początek);
+  let start = parseDateTime(termin.początek);
   const [meetingTypeNnOrName, notesPrefix = undefined] = termin.usługa ? meetingTypeNn(termin.usługa) : ["other"];
   const meeting = {
     nn: termin["ID relacji usługa/wizyta"],
@@ -488,9 +502,9 @@ for (let i = 0; i < TERMINY.rows.length; i++) {
           interval: intervalBetween(prevTermin["początek"], termin["początek"]),
         }
       : undefined),
-    createdAt: dateTimeInOut(termin["data dodania"], {zone: "UTC"}),
+    createdAt: parseDateTime(termin["data dodania"], {zone: "UTC"}),
     createdByNn: getStaff(termin["dodana przez"]),
-    updatedAt: dateTimeInOut(termin["data ostatniej modyfikacji"], {zone: "UTC"}),
+    updatedAt: parseDateTime(termin["data ostatniej modyfikacji"], {zone: "UTC"}),
     updatedByNn: getStaff(termin["autor ostatniej modyfikacji"]),
   } satisfies Meeting;
   const multiDayParts: Meeting[] = [];
@@ -511,7 +525,7 @@ for (let i = 0; i < TERMINY.rows.length; i++) {
 
 const facilityContents: FacilityContents = {
   dictionariesAndAttributes,
-  staff,
+  facilityStaff,
   clients,
   meetings,
 };

@@ -7,4 +7,8 @@ declare module "https://esm.sh/luxon@latest" {
   }
 }
 
+luxon.DateTime.prototype.toJSON = function () {
+  return this.toUTC().set({millisecond: 0}).toISO({suppressMilliseconds: true});
+};
+
 export default luxon;

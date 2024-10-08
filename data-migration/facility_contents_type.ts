@@ -1,10 +1,13 @@
+import luxon from "./luxon.ts";
+
+type DateTime = luxon.DateTime;
+
 export interface FacilityContents {
   readonly defNn?: readonly DefNN[];
 
   readonly dictionariesAndAttributes?: DictionaryOrAttributeAction[];
 
-  readonly staff?: readonly Staff[];
-  readonly giveStaff?: readonly GiveStaff[];
+  readonly facilityStaff?: readonly FacilityStaff[];
   readonly clients?: readonly Client[];
   readonly patchClients?: readonly ClientPatch[];
 
@@ -62,14 +65,27 @@ export type Order<RelKey extends string> = "atStart" | "atEnd" | RelOrder<RelKey
 export type RelOrder<RelKey extends string> = {readonly rel: "before" | "after"} & RelSpec<RelKey>;
 export type RelSpec<RelKey extends string> = Readonly<Record<RelKey, string>>;
 
-/** New user with staff member role to create. */
-export interface Staff {
+interface FacilityStaffBase {
   readonly nn: string | readonly string[];
-  readonly name: string;
-  readonly email: string | null;
+  readonly isStaff: boolean;
+  readonly isAdmin: boolean;
 }
 
-/** Existing user to give staff in the facility. */
+export interface NewFacilityStaff extends FacilityStaffBase {
+  readonly id?: undefined;
+  readonly name: string;
+  readonly email: string | null;
+  readonly password: string | null;
+  readonly passwordExpireAt: DateTimeType | null;
+  readonly deactivatedAt: DateTimeType | null;
+}
+
+export interface ExistingFacilityStaff extends FacilityStaffBase {
+  readonly id: string;
+}
+
+export type FacilityStaff = NewFacilityStaff | ExistingFacilityStaff;
+
 export interface GiveStaff {
   readonly nn?: string | readonly string[];
   readonly id: string;
@@ -80,7 +96,7 @@ export interface Client {
   readonly name: string;
   readonly client: AttributeValues;
   readonly createdByNn?: string;
-  readonly createdAt?: string;
+  readonly createdAt?: DateTimeType;
 }
 
 export interface ClientPatch {
@@ -111,7 +127,7 @@ export interface ExistingDictAttributeValue {
 }
 
 export type SingleAttributeValue = ConstAttributeValue | NnAttributeValue | ExistingDictAttributeValue;
-export type AttributeValue = SingleAttributeValue | SingleAttributeValue[];
+export type AttributeValue = SingleAttributeValue | readonly SingleAttributeValue[];
 
 export interface Meeting {
   readonly nn?: string;
@@ -126,9 +142,9 @@ export interface Meeting {
   readonly clients: readonly ClientAttendant[];
   readonly fromMeetingNn?: string;
   readonly interval?: string;
-  readonly createdAt?: string;
+  readonly createdAt?: DateTimeType;
   readonly createdByNn?: string;
-  readonly updatedAt?: string;
+  readonly updatedAt?: DateTimeType;
   readonly updatedByNn?: string;
 }
 
@@ -141,12 +157,14 @@ export interface ClientAttendant extends BaseAttendant {
   readonly clientGroupNn?: string;
 }
 
+export type DateTimeType = DateTime | string;
+
 export function facilityContentStats(contents: FacilityContents) {
   return `\
   Dictionaries: ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "createDictionary").length || 0} + \
 extend ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "extendDictionary").length || 0}
   Attributes: ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "createAttribute").length || 0}
-  Staff: ${contents.staff?.length || 0} + give ${contents.giveStaff?.length || 0}
+  Facility staff: ${contents.facilityStaff?.length || 0}
   Clients: ${contents.clients?.length || 0} + patch ${contents.patchClients?.length || 0}
   Meetings: ${contents.meetings?.length || 0}
 `;
