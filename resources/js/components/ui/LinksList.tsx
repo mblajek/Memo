@@ -9,7 +9,11 @@ interface Props {
 export const LinksList: VoidComponent<Props> = (props) => {
   return (
     <div class="text-sm">
-      <ThingsList things={props.links} map={(link) => <ExternalLink link={link} />} mode="bullets" />
+      <ThingsList
+        things={props.links}
+        map={(link) => <ExternalLink link={link} />}
+        mode={props.links.length <= 1 ? "commas" : "bullets"}
+      />
     </div>
   );
 };
