@@ -5,6 +5,7 @@ import {RichTextView} from "components/ui/RichTextView";
 import {SmallSpinner} from "components/ui/Spinner";
 import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table";
 import {AttributeColumnsConfig} from "components/ui/Table/TQueryTable";
+import {NullFilterControl} from "components/ui/Table/tquery_filters/NullFilterControl";
 import {TextualFilterControl} from "components/ui/Table/tquery_filters/TextualFilterControl";
 import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
@@ -147,6 +148,7 @@ export function useTableAttributeColumnConfigs() {
                   </PaddedCell>
                 )),
               },
+              filterControl: NullFilterControl,
               globalFilterable: false,
             },
             "documentsLinks.count": false,
