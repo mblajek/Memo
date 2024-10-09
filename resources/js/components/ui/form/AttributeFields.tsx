@@ -93,9 +93,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       function simpleAttributeField(type: SimpleAttributeType, fieldName = name()) {
         switch (type) {
           case "string":
-            return <TextField name={fieldName} label="" small />;
-          case "text":
-            return <MultilineTextField name={fieldName} label="" small />;
+          case "text": {
+            const {isMultiLine = type === "text"} = aProps.attribute.metadata;
+            return isMultiLine ? (
+              <MultilineTextField name={fieldName} label="" small />
+            ) : (
+              <TextField name={fieldName} label="" small />
+            );
+          }
           case "int":
             return <TextField name={fieldName} type="number" label="" small />;
           case "bool":

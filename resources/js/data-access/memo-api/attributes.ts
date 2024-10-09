@@ -3,6 +3,7 @@ import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {Attributable, getAttributeModel, makeAttributable, readAttribute} from "./attributable";
 import {Dictionaries, Dictionary, dictionaryNameTranslationKey} from "./dictionaries";
 import {
+  AttributeMetadataResource,
   AttributeModel,
   AttributeResource,
   AttributeType,
@@ -108,6 +109,7 @@ export class Attribute<T = unknown> {
     readonly label: string,
     readonly apiName: string,
     readonly type: AttributeType,
+    readonly metadata: AttributeMetadataResource,
     readonly basicType: SimpleAttributeType | DictAttributeType | SeparatorAttributeType | undefined,
     readonly typeModel: AttributeModel | undefined,
     readonly dictionary: Dictionary | undefined,
@@ -152,6 +154,7 @@ export class Attribute<T = unknown> {
       }),
       resource.apiName,
       resource.type,
+      resource.metadata || {},
       resource.typeModel
         ? undefined
         : (resource.type as SimpleAttributeType | DictAttributeType | SeparatorAttributeType),

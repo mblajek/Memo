@@ -45,6 +45,7 @@ export interface AttributeResource {
   /** The field name in API communication. */
   readonly apiName: string;
   readonly type: AttributeType;
+  readonly metadata: AttributeMetadataResource | null;
   /** The type of the attribute, filled in only if it is a model value (not simple value or dict). */
   readonly typeModel: AttributeModel | null;
   /** The dictionary type. Only filled in if type is dict. */
@@ -57,4 +58,9 @@ export interface AttributeResource {
   readonly defaultOrder: number;
   readonly isMultiValue: boolean | null;
   readonly requirementLevel: RequirementLevel;
+}
+
+export interface AttributeMetadataResource {
+  // For string and text:
+  readonly isMultiLine?: boolean;
 }
