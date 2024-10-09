@@ -4,7 +4,6 @@ namespace App\Http\Resources;
 
 use App\Models\Attribute;
 use App\Models\Enums\AttributeRequirementLevel;
-use App\Models\UuidEnum\AttributeUuidEnum;
 use OpenApi\Attributes as OA;
 use Illuminate\Support\Str;
 

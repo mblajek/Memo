@@ -80,9 +80,8 @@ class DeveloperController extends ApiController
             ->where('facility_id', $data['facility_id'])->firstOrFail()
             ->offsetGet('staff_member_id');
 
-        $updated = StaffMember::query()->where('id', $id)->update([
-            'deactivated_at' => Nullable::call($data['deactivated_at'], DateHelper::zuluToDbString(...))
-        ]);
+        $updated = StaffMember::query()->where('id', $id)
+            ->update(['deactivated_at' => Nullable::call($data['deactivated_at'], DateHelper::zuluToDbString(...))]);
 
         return new JsonResponse(data: ['data' => (bool)$updated], status: 200);
     }
