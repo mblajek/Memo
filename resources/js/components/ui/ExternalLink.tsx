@@ -4,7 +4,7 @@ import {title} from "./title";
 
 const _Directives = typeof title;
 
-const URL_REGEXP = /^(ftp|https?|app):\S+$/;
+const URL_REGEXP = /^(ftp:|https?:|www\d?\.)\S+$/;
 
 interface Props {
   readonly link: string;
