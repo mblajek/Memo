@@ -82,14 +82,13 @@ export function createTQuery<C, K extends PrefixQueryKey>({
 }) {
   const extraDataQueryOptions: Accessor<ExtraDataQueryOptions<K>> =
     typeof dataQueryOptions === "function" ? dataQueryOptions : () => dataQueryOptions || {};
-  const disabledByExtraDataQueryOptions = () => extraDataQueryOptions().enabled === false;
   const entityURLFunc = typeof entityURL === "function" ? entityURL : () => entityURL;
   const schemaQuery = createQuery(() => ({
     queryKey: ["tquery-schema", entityURLFunc()] satisfies SchemaQueryKey,
     queryFn: () => V1.get<Schema>(`${entityURLFunc()}/tquery`).then((res) => res.data),
     staleTime: 3600 * 1000,
     refetchOnMount: false,
-    enabled: !disabledByExtraDataQueryOptions(),
+    // Fetching the schema is always enabled.
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
@@ -111,7 +110,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
     // It is difficult to match the types here because of the defined/undefined initial data types.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...(extraDataQueryOptions?.() as any),
-    enabled: !!request() && !disabledByExtraDataQueryOptions(),
+    enabled: !!request() && extraDataQueryOptions().enabled !== false,
   }));
   return {
     schema,
