@@ -291,8 +291,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           isDataColumn,
           extraDataColumns: extraDataColumns
             ? Array.isArray(extraDataColumns)
-              ? {standard: extraDataColumns as readonly string[], whenGrouping: undefined}
-              : (extraDataColumns as ExtraDataColumns)
+              ? {standard: extraDataColumns, whenGrouping: undefined}
+              : extraDataColumns
             : undefined,
           columnDef,
           filterControl,

@@ -7,7 +7,7 @@ export interface Attributable {
 }
 
 /** Returns a copy of the object which is also attributable as the specified model(s). */
-export function makeAttributable<O extends object>(object: O, model: string | string[]): O & Attributable {
+export function makeAttributable<O extends object>(object: O, model: string | readonly string[]): O & Attributable {
   const models = new Set<string>(isAttributable(object) ? getAttributeModel(object) : undefined);
   if (Array.isArray(model)) {
     for (const m of model) {

@@ -195,7 +195,8 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
               }
               if (Array.isArray(touched)) {
                 if (touched.length) {
-                  return [setTouched(touched[0]), ...touched.slice(1)];
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  return [setTouched(touched[0] as Readonly<Touched<any>>), ...touched.slice(1)];
                 } else {
                   return [true];
                 }
