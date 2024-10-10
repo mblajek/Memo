@@ -8,7 +8,7 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CHECKBOX} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
-import {DATE_TIME_FORMAT, currentTime, useLangFunc} from "components/utils";
+import {DATE_TIME_FORMAT, currentTimeMinute, useLangFunc} from "components/utils";
 import {isDEV, resetDEV, toggleDEV} from "components/utils/dev_mode";
 import {usePasswordExpiration} from "components/utils/password_expiration";
 import {User} from "data-access/memo-api/groups";
@@ -16,8 +16,10 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
+import {TiWarningOutline} from "solid-icons/ti";
 import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
+import {usesLocalTimeZone} from "time_zone_controller";
 import {ThemeIcon, useThemeControl} from "../theme_control";
 
 type _Directives = typeof title;
@@ -25,6 +27,8 @@ type _Directives = typeof title;
 interface WindowWithDeveloperLogin {
   developerLogin(developer: boolean): void;
 }
+
+const FORMAT = {...DATE_TIME_FORMAT, second: undefined, weekday: "long"} satisfies Intl.DateTimeFormatOptions;
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
@@ -87,6 +91,25 @@ export const UserInfo: VoidComponent = () => {
     }),
   );
 
+  const CurrentTime: VoidComponent = () => {
+    return (
+      <div class={usesLocalTimeZone() ? undefined : "text-orange-600"}>
+        <Index
+          // Display each part in a separate span to allow selecting the date.
+          each={currentTimeMinute().toLocaleParts(FORMAT)}
+        >
+          {(item) => <span>{item().value}</span>}
+        </Index>
+        <Show when={!usesLocalTimeZone()}>
+          {" "}
+          <span use:title={t("calendar.nonlocal_time_zone")}>
+            <TiWarningOutline class="inlineIcon" />
+          </span>
+        </Show>
+      </div>
+    );
+  };
+
   return (
     <div class="pr-2 text-sm flex justify-between items-center gap-4">
       <div class="flex justify-between items-center gap-2">
@@ -105,19 +128,12 @@ export const UserInfo: VoidComponent = () => {
           </Switch>
         </div>
         <div class="flex flex-col justify-between items-stretch">
-          <div>
-            <Index
-              // Display each part in a separate span to allow selecting the date.
-              each={currentTime().toLocaleParts({...DATE_TIME_FORMAT, weekday: "long"})}
-            >
-              {(item) => <span>{item().value}</span>}
-            </Index>
-          </div>
+          <CurrentTime />
           <div class="flex gap-1">
             {statusQuery.data?.user.name}
             <PopOver
-              trigger={(triggerProps) => (
-                <Button title={[t("user_settings"), {hideOnClick: true}]} {...triggerProps()}>
+              trigger={(popOver) => (
+                <Button title={[t("user_settings"), {hideOnClick: true}]} onClick={popOver.open}>
                   <TbPassword class="inlineIcon" />
                   <Show when={passwordExpiration()}>
                     <WarningMark />
@@ -129,7 +145,7 @@ export const UserInfo: VoidComponent = () => {
                 <SimpleMenu>
                   <Button
                     onClick={() => {
-                      popOver().close();
+                      popOver.close();
                       passwordChangeModal.show();
                     }}
                   >

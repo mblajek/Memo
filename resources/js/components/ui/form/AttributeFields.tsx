@@ -93,9 +93,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       function simpleAttributeField(type: SimpleAttributeType, fieldName = name()) {
         switch (type) {
           case "string":
-            return <TextField name={fieldName} label="" small />;
-          case "text":
-            return <MultilineTextField name={fieldName} label="" small />;
+          case "text": {
+            const {isMultiLine = type === "text"} = aProps.attribute.metadata;
+            return isMultiLine ? (
+              <MultilineTextField name={fieldName} label="" small />
+            ) : (
+              <TextField name={fieldName} label="" small />
+            );
+          }
           case "int":
             return <TextField name={fieldName} type="number" label="" small />;
           case "bool":
@@ -214,16 +219,14 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
     readonly params?: AttributeParams<unknown>;
   }
 
+  function getIsEmpty(v: unknown, overrideIsEmpty?: (v: unknown) => boolean) {
+    return overrideIsEmpty ? overrideIsEmpty(v) : v == undefined || v === "" || (Array.isArray(v) && !v.length);
+  }
+
   const AttributeView: VoidComponent<AttributeViewProps> = (aProps) => {
     const name = () => fieldName(aProps.attribute);
     const value = createMemo(() => recursiveUnwrapFormValues(form.data(name())));
-    const hasValue = () => {
-      const v = value();
-      if (aProps.params?.isEmpty) {
-        return !aProps.params.isEmpty(v);
-      }
-      return v !== undefined && v !== "" && !(Array.isArray(v) && !v.length);
-    };
+    const isEmpty = () => getIsEmpty(value(), aProps.params?.isEmpty);
     const DefaultViewer: ParentComponent<htmlAttributes.div> = (props) => (
       <div {...htmlAttributes.merge(props, {class: "overflow-y-auto max-h-32 whitespace-pre-wrap"})} />
     );
@@ -288,7 +291,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
     return (
       <div class="overflow-clip px-1">
         <Switch>
-          <Match when={!hasValue()}>
+          <Match when={isEmpty()}>
             <Show when={aProps.params?.viewEmpty} fallback={<EmptyValueSymbol />}>
               {(viewEmpty) => viewEmpty()()}
             </Show>
@@ -390,12 +393,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
                 <For each={group.attributeIds}>
                   {(attributeId) => {
                     const {attribute, selected} = relevantAttributes()!.get(attributeId)!;
-                    const isEmpty = () => {
-                      const value = form.data(fieldName(attribute));
-                      return selected.override?.isEmpty
-                        ? selected.override.isEmpty(value)
-                        : value == undefined || value == "";
-                    };
+                    const isEmpty = () => getIsEmpty(form.data(fieldName(attribute)), selected.override?.isEmpty);
                     return (
                       <HideableSection
                         show={

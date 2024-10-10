@@ -108,3 +108,6 @@ preview: "Podgląd"
 
 confirmation:
   read_before_confirm: "Przeczytaj uważnie czego dotyczy pytanie"
+
+refresh_button: "Odśwież wszystkie wyświetlane dane"
+refresh_button.disabled: "Zaczekaj$t(ellipsis)"

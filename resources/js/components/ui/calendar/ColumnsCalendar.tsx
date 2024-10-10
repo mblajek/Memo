@@ -1,5 +1,6 @@
 import {currentDate, currentTimeMinute, cx, htmlAttributes} from "components/utils";
 import {DayMinuteRange, MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "components/utils/day_minute_util";
+import {GetRef} from "components/utils/GetRef";
 import {DateTime} from "luxon";
 import {
   Accessor,
@@ -173,61 +174,62 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
         >
           <For each={props.columns}>{(col) => <div class={s.cell}>{col.allDayArea()}</div>}</For>
         </div>
-        <div
-          ref={(div) => {
-            setHoursArea(div);
-            div.addEventListener(
-              "wheel",
-              (e) => {
-                if (e.altKey) {
-                  props.onWheelWithAlt?.(e, "hours");
-                  e.preventDefault();
-                }
-              },
-              {passive: false},
-            );
-          }}
-          class={s.hoursArea}
-          onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}
-        >
-          <div class={s.timeTrack}>
-            <Index each={timeTrackLabelDayMinutes()}>
-              {(dayMinute) => (
-                <div
-                  class={cx(s.label, dayMinute() % 60 ? undefined : s.fullHour)}
-                  style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
-                >
-                  {formatDayMinuteHM(dayMinute())}
-                </div>
-              )}
-            </Index>
-            <Show when={props.columns.some(({day}) => isToday(day))}>
-              <div class={s.nowLine} style={{top: `${nowPixelY()}px`}} />
-            </Show>
+        <GetRef ref={setHoursArea} waitForMount>
+          <div
+            ref={(div) => {
+              div.addEventListener(
+                "wheel",
+                (e) => {
+                  if (e.altKey) {
+                    props.onWheelWithAlt?.(e, "hours");
+                    e.preventDefault();
+                  }
+                },
+                {passive: false},
+              );
+            }}
+            class={s.hoursArea}
+            onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}
+          >
+            <div class={s.timeTrack}>
+              <Index each={timeTrackLabelDayMinutes()}>
+                {(dayMinute) => (
+                  <div
+                    class={cx(s.label, dayMinute() % 60 ? undefined : s.fullHour)}
+                    style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
+                  >
+                    {formatDayMinuteHM(dayMinute())}
+                  </div>
+                )}
+              </Index>
+              <Show when={props.columns.some(({day}) => isToday(day))}>
+                <div class={s.nowLine} style={{top: `${nowPixelY()}px`}} />
+              </Show>
+            </div>
+            <div class={s.columnsHoursArea}>
+              <For each={props.columns}>
+                {(col) => (
+                  <div class={s.cell}>
+                    {col.hoursArea()}
+                    <Show when={isToday(col.day)}>
+                      <div class={s.nowLine} style={{top: `${nowPixelY()}px`}} />
+                    </Show>
+                  </div>
+                )}
+              </For>
+            </div>
+            <div class={s.gridRowLines}>
+              <Index each={[...dayMinutes(), MAX_DAY_MINUTE]}>
+                {(dayMinute) => (
+                  <div
+                    class={cx(s.gridRowLine, dayMinute() % 60 ? undefined : s.fullHour)}
+                    style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
+                  />
+                )}
+              </Index>
+            </div>
           </div>
-          <div class={s.columnsHoursArea}>
-            <For each={props.columns}>
-              {(col) => (
-                <div class={s.cell}>
-                  {col.hoursArea()}
-                  <Show when={isToday(col.day)}>
-                    <div class={s.nowLine} style={{top: `${nowPixelY()}px`}} />
-                  </Show>
-                </div>
-              )}
-            </For>
-          </div>
-          <div class={s.gridRowLines}>
-            <Index each={[...dayMinutes(), MAX_DAY_MINUTE]}>
-              {(dayMinute) => (
-                <div
-                  class={cx(s.gridRowLine, dayMinute() % 60 ? undefined : s.fullHour)}
-                  style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
-                />
-              )}
-            </Index>
-          </div>
-        </div>
+        </GetRef>
       </Context.Provider>
       <LoadingPane isLoading={props.isLoading} />
     </div>

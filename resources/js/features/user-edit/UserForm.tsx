@@ -7,9 +7,10 @@ import {CheckboxField} from "components/ui/form/CheckboxField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {TextField} from "components/ui/form/TextField";
-import {cx, useLangFunc} from "components/utils";
+import {currentDate, currentTimeMinute, cx, useLangFunc} from "components/utils";
+import {dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
-import {Show, VoidComponent, createComputed, on, splitProps} from "solid-js";
+import {Match, Show, Switch, VoidComponent, createComputed, on, splitProps} from "solid-js";
 import {z} from "zod";
 import * as userMembersFormPart from "./UserMembersFormPart";
 
@@ -108,11 +109,36 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
                     type="datetime-local"
                   />
                   <div>
-                    <Show when={form.data("passwordExpireAt")} fallback={t("forms.user.password_expire_never")}>
-                      <Button class="linkLike" onClick={() => form.setFields("passwordExpireAt", "")}>
-                        {t("forms.user.clear_password_expire_at")}
-                      </Button>
-                    </Show>
+                    <Switch>
+                      <Match when={form.data("passwordExpireAt")}>
+                        <Button class="linkLike" onClick={() => form.setFields("passwordExpireAt", "")}>
+                          {t("forms.user.clear_password_expire_at")}
+                        </Button>
+                      </Match>
+                      <Match when="expire never">
+                        {t("forms.user.password_expire_never")}{" "}
+                        <Button
+                          class="linkLike"
+                          onClick={() =>
+                            form.setFields(
+                              "passwordExpireAt",
+                              dateTimeToDateTimeLocalInput(currentDate().plus({weeks: 1})),
+                            )
+                          }
+                        >
+                          {t("forms.user.set_password_expire_in_7d")}
+                        </Button>
+                        ,{" "}
+                        <Button
+                          class="linkLike"
+                          onClick={() =>
+                            form.setFields("passwordExpireAt", dateTimeToDateTimeLocalInput(currentTimeMinute()))
+                          }
+                        >
+                          {t("forms.user.set_password_expired")}
+                        </Button>
+                      </Match>{" "}
+                    </Switch>
                   </div>
                 </div>
               )}

@@ -1,5 +1,6 @@
 import {htmlAttributes, useLangFunc} from "components/utils";
 import {createSignal, JSX, ParentComponent, Show, splitProps, VoidComponent} from "solid-js";
+import {hasProp} from "../utils/props";
 import {SmallSpinner} from "./Spinner";
 import {actionIcons} from "./icons";
 import {mergeTitleDirectiveProps, title, TitleDirectiveType} from "./title";
@@ -18,7 +19,7 @@ interface ButtonProps extends Omit<htmlAttributes.button, "title"> {
  * is placed, using use:title. This is because the title would not appear on a disabled button.
  */
 export const Button: ParentComponent<ButtonProps> = (allProps) => {
-  const hasTitle = Object.hasOwn(allProps, "title");
+  const hasTitle = hasProp(allProps, "title");
   if (hasTitle) {
     const [props, buttonProps] = splitProps(allProps, ["title"]);
     let titleTriggerTarget: HTMLSpanElement | undefined;

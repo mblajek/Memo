@@ -178,7 +178,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                       });
                     }}
                     popOver={(popOver) => (
-                      <SimpleMenu onClick={() => popOver().close()}>
+                      <SimpleMenu onClick={popOver.close}>
                         <Button onClick={[createCopyInDays, 0]}>{t("meetings.create_copy.any")}</Button>
                         <For
                           each={

@@ -1,16 +1,15 @@
-import {ParentComponent, createSignal, onCleanup, onMount, splitProps} from "solid-js";
+import {ParentComponent, createSignal, onMount, splitProps} from "solid-js";
 import {cx, htmlAttributes} from "../utils";
+import {useEventListener} from "../utils/event_listener";
 
 export const FullScreenPre: ParentComponent<htmlAttributes.div> = (allProps) => {
   const [childrenProps, divProps] = splitProps(allProps, ["children"]);
   const [wrap, setWrap] = createSignal(true);
-  const documentKeyPressListener = (e: KeyboardEvent) => {
+  useEventListener(document, "keypress", (e) => {
     if (e.key === "w") {
       setWrap(!wrap());
     }
-  };
-  onMount(() => document.addEventListener("keypress", documentKeyPressListener));
-  onCleanup(() => document.removeEventListener("keypress", documentKeyPressListener));
+  });
   let pre: HTMLPreElement | undefined;
   const [wrapInfoOpacity, setWrapInfoOpacity] = createSignal<number>();
   onMount(() => {

@@ -1,11 +1,11 @@
 import {VisibilityState} from "@tanstack/solid-table";
 import {cx, debouncedAccessor, useLangFunc} from "components/utils";
 import {OcSearch2} from "solid-icons/oc";
-import {RiSystemEyeCloseFill} from "solid-icons/ri";
-import {For, Show, VoidComponent, createComputed, createMemo, createSignal} from "solid-js";
+import {RiArrowsContractLeftRightLine, RiSystemEyeCloseFill} from "solid-icons/ri";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
 import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
-import {PopOver} from "../PopOver";
+import {PopOver, PopOverControl} from "../PopOver";
 import {SearchInput} from "../SearchInput";
 import {EmptyValueSymbol} from "../symbols";
 import {title} from "../title";
@@ -55,13 +55,14 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   });
   const [resetHovered, setResetHovered] = createSignal(false);
 
-  const Content: VoidComponent = () => {
+  const Content: VoidComponent<{readonly popOver: PopOverControl}> = (props) => {
     const currentVisibility: VisibilityState = {};
     for (const column of table.getAllLeafColumns()) {
       currentVisibility[column.id] = column.getIsVisible();
     }
     setVisibility(currentVisibility);
     setSearch("");
+    onMount(() => setTimeout(() => searchInput?.focus()));
     return (
       <div class="flex flex-col min-h-0 items-stretch" onClick={() => searchInput?.focus()}>
         <Show when={translations}>
@@ -74,6 +75,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
               value={search()}
               onValueChange={setSearch}
               placeholder={t("tables.columns_search.placeholder")}
+              autofocus
             />
           </div>
         </Show>
@@ -94,37 +96,53 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 return (
                   <label
                     class={cx(
-                      "px-2 pt-0.5 hover:bg-hover flex gap-1 items-baseline select-none",
+                      "px-2 pt-0.5 hover:bg-hover flex justify-between gap-2 items-baseline select-none",
                       selectBg() ? "!bg-select" : undefined,
                     )}
                   >
-                    <input
-                      class={column.getCanHide() ? undefined : "invisible"}
-                      name={`column_visibility_${column.id}`}
-                      checked={visibility()?.[column.id]}
-                      onChange={({target}) => setVisibility((v) => ({...v, [column.id]: target.checked}))}
-                      type="checkbox"
-                      disabled={!column.getCanHide() || groupingInfo()?.isForceShown}
-                      use:title={
-                        groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
-                      }
-                    />{" "}
-                    <ColumnName def={column.columnDef} />
-                    <Show
-                      when={
-                        visibility()?.[column.id] &&
-                        !defaultColumnVisibility?.()[column.id] &&
-                        !column.columnDef.meta?.config?.persistVisibility
-                      }
-                    >
-                      <span use:title={t("tables.no_persist_visibility")}>
-                        <RiSystemEyeCloseFill class="text-grey-text" size="12" />
-                      </span>
-                    </Show>
-                    <Show when={groupingInfo()?.isGrouped}>
-                      <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
-                        {t("tables.column_groups.grouping_symbol")}
-                      </span>
+                    <div class="flex gap-2 items-baseline">
+                      <input
+                        class={column.getCanHide() ? undefined : "invisible"}
+                        name={`column_visibility_${column.id}`}
+                        checked={visibility()?.[column.id]}
+                        onChange={({target}) => setVisibility((v) => ({...v, [column.id]: target.checked}))}
+                        type="checkbox"
+                        disabled={!column.getCanHide() || groupingInfo()?.isForceShown}
+                        use:title={
+                          groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
+                        }
+                      />{" "}
+                      <ColumnName def={column.columnDef} />
+                      <Show
+                        when={
+                          visibility()?.[column.id] &&
+                          !defaultColumnVisibility?.()[column.id] &&
+                          !column.columnDef.meta?.config?.persistVisibility
+                        }
+                      >
+                        <span use:title={t("tables.no_persist_visibility")}>
+                          <RiSystemEyeCloseFill class="text-grey-text" size="12" />
+                        </span>
+                      </Show>
+                      <Show when={groupingInfo()?.isGrouped}>
+                        <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
+                          {t("tables.column_groups.grouping_symbol")}
+                        </span>
+                      </Show>
+                    </div>
+                    <Show when={visibility()?.[column.id]}>
+                      <Button
+                        class="self-center"
+                        onClick={() => {
+                          document
+                            .querySelector(`[data-header-for-column="${column.id}"]`)
+                            ?.scrollIntoView({inline: "center", behavior: "smooth"});
+                          props.popOver.close();
+                        }}
+                        title={t("tables.scroll_to_column")}
+                      >
+                        <RiArrowsContractLeftRightLine class="text-grey-text" size="14" />
+                      </Button>
                     </Show>
                   </label>
                 );
@@ -192,17 +210,17 @@ export const TableColumnVisibilityController: VoidComponent = () => {
 
   return (
     <PopOver
-      trigger={(triggerProps) => (
+      trigger={(popOver) => (
         <Button
-          {...triggerProps()}
           class="rounded px-2 border border-input-border pressedWithShadow"
+          onClick={popOver.open}
           disabled={!table.getAllLeafColumns().length}
         >
           {t("tables.choose_columns")}
         </Button>
       )}
     >
-      <Content />
+      {(popOver) => <Content popOver={popOver} />}
     </PopOver>
   );
 };

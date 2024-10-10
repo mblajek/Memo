@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {createQuery, keepPreviousData} from "@tanstack/solid-query";
 import {delayedAccessor} from "components/utils";
 import {createCached} from "components/utils/cache";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
@@ -11,25 +11,33 @@ export const useClientGroupFetcher = createCached(() => {
   const dataQuery = createQuery(() => ({
     ...FacilityClientGroup.clientGroupsQueryOptions(delayedClientGroups()),
     enabled: delayedClientGroups().length > 0,
+    placeholderData: keepPreviousData,
   }));
-  return (clientGroupId: Accessor<string>) => {
-    createEffect(
-      on(clientGroupId, (clientGroupId) => {
-        const map = new Map(clientGroupsCounts());
-        map.set(clientGroupId, (map.get(clientGroupId) || 0) + 1);
-        setClientGroupsCounts(map);
-        onCleanup(() => {
-          const map = new Map(clientGroupsCounts());
-          const count = map.get(clientGroupId)!;
-          if (count === 1) {
-            map.delete(clientGroupId);
-          } else {
-            map.set(clientGroupId, count - 1);
+  return {
+    dataQuery,
+    numSubscribedGroups: () => clientGroupsCounts().size,
+    fetch(clientGroupId: string | Accessor<string | undefined>) {
+      const clientGroupIdFunc = typeof clientGroupId === "string" ? () => clientGroupId : clientGroupId;
+      createEffect(
+        on(clientGroupIdFunc, (clientGroupId) => {
+          if (clientGroupId) {
+            const map = new Map(clientGroupsCounts());
+            map.set(clientGroupId, (map.get(clientGroupId) || 0) + 1);
+            setClientGroupsCounts(map);
+            onCleanup(() => {
+              const map = new Map(clientGroupsCounts());
+              const count = map.get(clientGroupId)!;
+              if (count === 1) {
+                map.delete(clientGroupId);
+              } else {
+                map.set(clientGroupId, count - 1);
+              }
+              setClientGroupsCounts(map);
+            });
           }
-          setClientGroupsCounts(map);
-        });
-      }),
-    );
-    return {dataQuery, clientGroup: () => dataQuery.data?.find((group) => group.id === clientGroupId())};
+        }),
+      );
+      return () => dataQuery.data?.find((group) => group.id === clientGroupIdFunc());
+    },
   };
 });

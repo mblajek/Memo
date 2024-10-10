@@ -19,6 +19,7 @@ make_a_copy: "Utwórz kopię"
 show: "Pokaż"
 open: "Otwórz"
 export: "Eksportuj"
+pick: "Wybierz"
 
 details: "Szczegóły"
 

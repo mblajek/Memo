@@ -3,7 +3,7 @@ import {DateTime} from "luxon";
 
 /** Converts a DateTime to the string usable as value of <input type="datetime-local">. */
 export function dateTimeToDateTimeLocal(dateTime: DateTime) {
-  return dateTime.toLocal().set({second: 0, millisecond: 0}).toISO({includeOffset: false, suppressSeconds: true});
+  return dateTime.set({second: 0, millisecond: 0}).toISO({includeOffset: false, suppressSeconds: true});
 }
 
 /** Converts the ISO time to the string usable as value of <input type="datetime-local">. */

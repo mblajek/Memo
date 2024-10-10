@@ -1,11 +1,10 @@
-import {Boundary} from "@floating-ui/dom";
-import * as hoverCard from "@zag-js/hover-card";
-import {normalizeProps, useMachine} from "@zag-js/solid";
-import {cx, htmlAttributes} from "components/utils";
+import {Boundary, flip, shift} from "@floating-ui/dom";
+import {cx, delayedAccessor, htmlAttributes} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
-import {JSX, Show, VoidComponent, VoidProps, createEffect, createMemo, createSignal, createUniqueId} from "solid-js";
-import {Dynamic, Portal} from "solid-js/web";
+import {JSX, Show, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
+import {Dynamic} from "solid-js/web";
+import {Floating} from "../Floating";
 import s from "./HoverableMeetingEventBlock.module.scss";
 import {CANCELLED_MEETING_COLORING, COMPLETED_MEETING_COLORING, Coloring} from "./colors";
 
@@ -33,7 +32,7 @@ export interface HoverableMeetingEventBlockProps {
   readonly entityId?: string;
   readonly contents: VoidComponent<ContentsProps>;
   readonly hoverBoundary?: Boundary;
-  readonly hoverCard?: () => JSX.Element;
+  readonly hoverCard?: (onHovered: () => void) => JSX.Element;
 }
 
 interface ContentsProps extends htmlAttributes.div {
@@ -50,35 +49,12 @@ const BLINK = {
 
 export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBlockProps> = (props) => {
   const {dictionaries, meetingStatusDict} = useFixedDictionaries();
-
-  const [hoverState, hoverSend] = useMachine(
-    hoverCard.machine({
-      id: createUniqueId(),
-      closeDelay: DISAPPEAR_MILLIS,
-      positioning: {
-        boundary: () => props.hoverBoundary || document.body,
-        gutter: 0,
-        strategy: "absolute",
-        placement: "right-start",
-        overflowPadding: 0,
-        flip: true,
-      },
-    }),
-    {
-      context: () => ({
-        // Make sure the hover is not opened initially - this causes the position to be calculated incorrectly.
-        // This is a workaround for what seems to be a zag bug.
-        openDelay: dictionaries() ? 100 : 2000,
-      }),
-    },
-  );
-  const hoverApi = createMemo(() => hoverCard.connect(hoverState, hoverSend, normalizeProps));
-  const [hoveredGetter, hoveredSetter] = createSignal(false);
+  const [localHovered, setLocalHovered] = createSignal(false);
+  const hovered = () => props.hovered ?? localHovered();
   function setHovered(hovered: boolean) {
-    hoveredSetter(hovered);
+    setLocalHovered(hovered);
     props.onHoverChange?.(hovered);
   }
-  const hovered = () => props.hovered ?? hoveredGetter();
   const coloring = createMemo(() =>
     props.meeting.statusDictId === meetingStatusDict()?.planned.id
       ? props.plannedColoring
@@ -104,47 +80,58 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
     }
     return props.blink;
   });
+  // eslint-disable-next-line solid/reactivity
+  const shouldShow = delayedAccessor(localHovered, {timeMs: 100, outputImmediately: (v) => !v});
+  const [floatHovered, setFloatHovered] = createSignal(false);
+  const floatVisible = delayedAccessor(shouldShow, {
+    timeMs: DISAPPEAR_MILLIS,
+    outputImmediately: (v) => v || floatHovered(),
+  });
+  createComputed(() => {
+    if (!floatVisible()) {
+      setFloatHovered(false);
+    }
+  });
+  const overflowParams = createMemo(() => ({
+    boundary: props.hoverBoundary || document.body,
+    // Allow overflowing the top a bit, but leave a margin at the bottom.
+    padding: {top: -20, bottom: 10},
+  }));
 
   return (
-    <>
-      <Dynamic
-        component={props.contents}
-        hovered={hovered()}
-        coloring={coloring()}
-        class={cx("overflow-clip", isBlinking() ? s.blink : undefined)}
-        style={{
-          "animation-duration": `${BLINK.durationIntervalMs / 2}ms`,
-          "animation-iteration-count": BLINK.count * 2,
-        }}
-        data-entity-id={props.entityId}
-        {...{
-          ...(hoverApi().triggerProps as VoidProps<htmlAttributes.div>),
-          // Remove the default touch scroll behaviour, which is to block touch scrolling.
-          onTouchStart: undefined,
-        }}
-        onMouseEnter={[setHovered, true]}
-        onMouseLeave={[setHovered, false]}
-        onClick={(e: Event) => e.stopPropagation()}
-      />
-      <Show when={dictionaries() && hoverApi().isOpen && props.hoverCard}>
-        {(hoverCard) => {
-          const card = hoverCard()();
-          return (
-            <Portal>
-              <div {...hoverApi().positionerProps} class="pointer-events-auto">
-                <div
-                  {...hoverApi().contentProps}
-                  class={cx("z-modal overflow-clip", {"opacity-0": !hovered()})}
-                  style={{transition: `opacity ${DISAPPEAR_MILLIS}ms ease`}}
-                  onMouseEnter={() => hoverApi().close()}
-                >
-                  {card}
-                </div>
-              </div>
-            </Portal>
-          );
-        }}
-      </Show>
-    </>
+    <Floating
+      reference={
+        <Dynamic
+          component={props.contents}
+          hovered={hovered()}
+          coloring={coloring()}
+          class={cx("overflow-clip", isBlinking() ? s.blink : undefined)}
+          style={{
+            "animation-duration": `${BLINK.durationIntervalMs / 2}ms`,
+            "animation-iteration-count": BLINK.count * 2,
+          }}
+          data-entity-id={props.entityId}
+          onMouseEnter={[setHovered, true]}
+          onMouseLeave={[setHovered, false]}
+        />
+      }
+      floating={(posStyle) => (
+        <Show when={dictionaries() && props.hoverCard && floatVisible()}>
+          <div
+            class={cx("pointer-events-none z-modal overflow-clip max-w-fit", shouldShow() ? undefined : "opacity-0")}
+            style={{
+              transition: `opacity ${DISAPPEAR_MILLIS}ms ease`,
+              ...posStyle(),
+            }}
+          >
+            {props.hoverCard!(() => setFloatHovered(true))}
+          </div>
+        </Show>
+      )}
+      options={{
+        placement: "right-start",
+        middleware: [shift(overflowParams()), flip({crossAxis: false, ...overflowParams()})],
+      }}
+    />
   );
 };

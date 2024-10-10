@@ -5,6 +5,7 @@ import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {useIsFieldsetDisabled} from "components/utils/fieldset_disabled_tracker";
+import {hasProp} from "components/utils/props";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
 import {ImCross, ImSpinner2} from "solid-icons/im";
@@ -283,7 +284,15 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   const api = createMemo(() => combobox.connect<PropTypes, SelectItem>(state, send, normalizeProps));
   createComputed(() => setFilterValue(api().inputValue));
 
-  if (formContext)
+  if (hasProp(props, "value"))
+    createComputed(
+      on(
+        () => props.value,
+        (propsValue) =>
+          api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
+      ),
+    );
+  else if (formContext)
     createComputed(
       on(
         () => formContext.form.data(props.name),
@@ -299,14 +308,6 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             api().setValue([formValue as string]);
           }
         },
-      ),
-    );
-  else
-    createComputed(
-      on(
-        () => props.value,
-        (propsValue) =>
-          api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
       ),
     );
 

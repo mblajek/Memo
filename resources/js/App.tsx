@@ -170,7 +170,7 @@ const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => 
           <Dynamic component={props.component} {...innerProps} />
         </>
       )}
-      load={(args) => {
+      preload={(args) => {
         // Clear history state on browser refresh. Some browsers keep the state after a refresh which seems wrong.
         if (args.intent === "initial") {
           clearAllHistoryState();

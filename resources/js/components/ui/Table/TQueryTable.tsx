@@ -10,8 +10,8 @@ import {
   createSolidTable,
 } from "@tanstack/solid-table";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {NON_NULLABLE, NUMBER_FORMAT, delayedAccessor, useLangFunc} from "components/utils";
 import {
   PartialAttributesSelection,
@@ -47,6 +47,7 @@ import {
   createMemo,
   createSignal,
   onMount,
+  untrack,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {
@@ -89,7 +90,6 @@ type _Directives = typeof title;
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
     readonly tquery?: TQueryTableMeta<TData>;
-    readonly historyPersistenceKey?: string;
     readonly columnFilterStates?: ColumnFilterStates;
   }
 
@@ -424,9 +424,23 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       meta: {tquery: {isTable: true}},
     }),
   });
+  const {
+    columnVisibility,
+    globalFilter,
+    getColumnFilter,
+    columnsWithActiveFilters,
+    clearColumnFilters,
+    sorting,
+    pagination,
+    activeColumnGroups,
+    countColumn,
+    miniState,
+    resetMiniState,
+  } = requestController;
+  let persistencesCreated = false;
   createComputed(() => {
     const sch = schema();
-    if (sch && attributes())
+    if (sch && attributes()) {
       batch(() => {
         const configuredColumns = new Set();
         const foundAttributeColumnsConfigs = props.columns
@@ -506,66 +520,64 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           setDevColumnsConfig([]);
         }
       });
+      // Create the persistences, but make sure it is only done once, and doesn't cause this block to run again.
+      if (!persistencesCreated) {
+        persistencesCreated = true;
+        untrack(() => {
+          if (props.staticPersistenceKey) {
+            // eslint-disable-next-line solid/reactivity
+            const columnSizing = delayedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
+            createPersistence<PersistentState>({
+              storage: localStorageStorage(`TQueryTable:${props.staticPersistenceKey}`),
+              value: () => ({
+                colVis: columnVisibility[0](),
+                colSize: columnSizing() || {},
+              }),
+              onLoad: (value) => {
+                // Ensure a bad (e.g. outdated) entry won't affect visibility of a column that cannot have
+                // the visibility controlled by the user.
+                const colVis = {...value.colVis};
+                for (const colName of Object.keys(colVis)) {
+                  const col = columnsConfig().find((c) => c.name === colName);
+                  if (!col || col.columnDef.enableHiding === false || !col.persistVisibility) {
+                    delete colVis[colName];
+                  }
+                }
+                columnVisibility[1](colVis);
+                onMount(() => table()!.setColumnSizing(value.colSize || {}));
+              },
+              version: [PERSISTENCE_VERSION],
+            });
+          }
+          createHistoryPersistence({
+            key: `TQueryTable:${props.staticPersistenceKey || "main"}`,
+            value: () => ({
+              tquery: miniState[0](),
+              columnFilters: columnFilterStates.getAll(),
+            }),
+            onLoad: (state) => {
+              miniState[1](state.tquery);
+              columnFilterStates.setAll(state.columnFilters);
+            },
+            onReset: () => {
+              resetMiniState();
+              // The columnFilterStates get cleared by each individual filter control when the filters are
+              // reset, which is done above.
+            },
+          });
+          // Allow querying data now that the DEV columns are added and columns visibility is loaded.
+          setAllInitialised(true);
+        });
+      }
+    }
   });
-  const {
-    columnVisibility,
-    globalFilter,
-    getColumnFilter,
-    columnsWithActiveFilters,
-    clearColumnFilters,
-    sorting,
-    pagination,
-    activeColumnGroups,
-    countColumn,
-    miniState,
-  } = requestController;
   const [effectiveActiveColumnGroups, setEffectiveActiveColumnGroups] = createSignal<readonly string[]>([]);
   createEffect(() => {
     if (dataQuery.isSuccess && !dataQuery.isPlaceholderData) {
       setEffectiveActiveColumnGroups(activeColumnGroups[0]());
     }
   });
-  const historyPersistenceKey = `TQueryTable:${props.staticPersistenceKey || "main"}`;
   const columnFilterStates = new ColumnFilterStates();
-  if (props.staticPersistenceKey) {
-    // eslint-disable-next-line solid/reactivity
-    const columnSizing = delayedAccessor(() => table()?.getState().columnSizing, {timeMs: 500});
-    createLocalStoragePersistence<PersistentState>({
-      key: `TQueryTable:${props.staticPersistenceKey}`,
-      value: () => ({
-        colVis: columnVisibility[0](),
-        colSize: columnSizing() || {},
-      }),
-      onLoad: (value) => {
-        // Ensure a bad (e.g. outdated) entry won't affect visibility of a column that cannot have
-        // the visibility controlled by the user.
-        const colVis = {...value.colVis};
-        for (const colName of Object.keys(colVis)) {
-          const col = columnsConfig().find((c) => c.name === colName);
-          if (!col || col.columnDef.enableHiding === false || !col.persistVisibility) {
-            delete colVis[colName];
-          }
-        }
-        columnVisibility[1](colVis);
-        onMount(() => table()!.setColumnSizing(value.colSize || {}));
-      },
-      serialiser: richJSONSerialiser<PersistentState>(),
-      version: [PERSISTENCE_VERSION],
-    });
-  }
-  createHistoryPersistence({
-    key: historyPersistenceKey,
-    value: () => ({
-      tquery: miniState[0](),
-      columnFilters: columnFilterStates.getAll(),
-    }),
-    onLoad: (state) => {
-      miniState[1](state.tquery);
-      columnFilterStates.setAll(state.columnFilters);
-    },
-  });
-  // Allow querying data now that the DEV columns are added and columns visibility is loaded.
-  setAllInitialised(true);
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
@@ -811,7 +823,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           effectiveActiveColumnGroups,
           columnGroupingInfo,
         },
-        historyPersistenceKey,
         columnFilterStates,
       },
     }),

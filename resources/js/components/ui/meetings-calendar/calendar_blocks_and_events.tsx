@@ -1,7 +1,6 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
 import {cx, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
-import {useLocale} from "components/utils/LocaleContext";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createCalendarRequestCreator, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
@@ -15,7 +14,6 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {TimeBlock} from "../calendar/calendar-columns/blocks";
 import {DaysRange} from "../calendar/days_range";
 import {AllDayTimeSpan, Block, CellStylingPreference, Event, PartDayTimeSpan} from "../calendar/types";
-import {WeekDaysCalculator} from "../calendar/week_days_calculator";
 import {capitalizeString} from "../Capitalize";
 import {facilityIcons} from "../icons";
 import {CalendarFunction, CalendarMode} from "./calendar_modes";
@@ -102,8 +100,6 @@ export function useCalendarBlocksAndEvents({
   const t = useLangFunc();
   const meetingsCache = useMeetingsCache();
   const {meetingCategoryDict, meetingTypeDict} = useFixedDictionaries();
-  const locale = useLocale();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   const {dataQuery: meetingsDataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
     entityURL: `facility/${activeFacilityId()}/meeting`,
@@ -112,8 +108,8 @@ export function useCalendarBlocksAndEvents({
       daysRange: () =>
         mode() === "month"
           ? new DaysRange(
-              weekDaysCalculator.startOfWeek(daysRange().start),
-              weekDaysCalculator.endOfWeek(daysRange().end),
+              daysRange().start.startOf("week", {useLocaleWeeks: true}),
+              daysRange().end.endOf("week", {useLocaleWeeks: true}),
             )
           : daysRange(),
       staff: () => [...staffMap().keys()],

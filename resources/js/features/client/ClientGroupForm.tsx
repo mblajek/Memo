@@ -133,17 +133,17 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                               />
                             </div>
                             <PopOver
-                              trigger={(triggerProps) => (
+                              trigger={(popOver) => (
                                 <Button
-                                  {...triggerProps()}
                                   class="secondary small !min-h-small-input !px-0.5 !rounded-s-none -ml-px"
+                                  onClick={popOver.open}
                                 >
                                   <AiFillCaretDown class="text-current" />
                                 </Button>
                               )}
                             >
                               {(popOver) => (
-                                <SimpleMenu onClick={() => popOver().close()}>
+                                <SimpleMenu onClick={() => popOver.close()}>
                                   <Switch>
                                     <Match when={isChild()}>
                                       <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>

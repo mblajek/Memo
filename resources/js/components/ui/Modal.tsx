@@ -1,30 +1,22 @@
-import * as dialog from "@zag-js/dialog";
-import {normalizeProps, useMachine} from "@zag-js/solid";
 import {cx, useLangFunc} from "components/utils";
 import {VsClose} from "solid-icons/vs";
-import {
-  Accessor,
-  createComputed,
-  createMemo,
-  createRenderEffect,
-  createSignal,
-  createUniqueId,
-  JSX,
-  onCleanup,
-  Show,
-} from "solid-js";
+import {Accessor, createComputed, createMemo, createSignal, createUniqueId, JSX, onCleanup, Show} from "solid-js";
 import {Portal} from "solid-js/web";
+import {useEventListener} from "../utils/event_listener";
 import {Size, useResizeObserver, windowSize} from "../utils/resize_observer";
 import {Button} from "./Button";
-import s from "./Modal.module.scss";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
 interface BaseProps<T> {
-  readonly title?: string;
+  readonly title?: JSX.Element;
+  /** Whether the dialog can be moved by dragging the title bar or the margin above it. Default: true. */
+  readonly canDrag?: boolean;
   /**
    * Style of the modal, mostly for specifying the size. When absent, a reasonable minimum width is used.
    */
   readonly style?: JSX.CSSProperties;
+  /** The class for the backdrop, mostly for specifying color. */
+  readonly backdropClass?: string;
   /**
    * A value determining whether the modal is open. If truthy, the value is also available for the modal
    * children in its function form.
@@ -100,6 +92,9 @@ type Props<T, C extends CloseReason> = PropsNoCloseReason<T> | PropsWithCloseRea
 
 const DRAG_MARGIN = 50;
 
+/** The list of currently opened modals. This is used to detect which modal should react to the Escape key. */
+const modalsStack: string[] = [];
+
 /**
  * A modal, displaying on top of the page.
  *
@@ -141,74 +136,86 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
     }
   }
   onCleanup(() => tryClose("modalCleanup"));
-  const [state, send] = useMachine(
-    dialog.machine({
-      closeOnInteractOutside: false,
-      closeOnEscapeKeyDown: false,
-      onEscapeKeyDown: () => tryClose("escapeKey"),
-      onInteractOutside: () => tryClose("clickOutside"),
-      onPointerDownOutside: () => tryClose("clickOutside"),
-      id: createUniqueId(),
-    }),
-  );
-  const api = createMemo(() => dialog.connect(state, send, normalizeProps));
-  /** Position of the modal, relative to its default central position. */
-  const [relativePos, setRelativePos] = createSignal<readonly [number, number]>([0, 0]);
-  const shouldBeOpen = createMemo(() => !!props.open);
-  createRenderEffect(() => {
-    if (shouldBeOpen()) {
-      api().open();
-    } else {
-      api().close();
-      setRelativePos([0, 0]);
-    }
-  });
-  const [grabPos, setGrabPos] = createSignal<readonly [number, number]>();
-  let positioner: HTMLDivElement | undefined;
-  const [contentElement, setContentElement] = createSignal<HTMLDivElement>();
-  // eslint-disable-next-line solid/reactivity
-  const contentSize = resizeObserver.observeClientSize(contentElement);
-  const contentPos = (): Size | undefined =>
-    contentSize() && [
-      (windowSize()[0] - contentSize()![0]) / 2 + relativePos()[0],
-      (windowSize()[1] - contentSize()![1]) / 2 + relativePos()[1],
-    ];
-  createComputed(() => {
-    if (!contentSize()) {
-      return;
-    }
-    const [cw] = contentSize()!;
-    const [cx, cy] = contentPos()!;
-    let dx = 0;
-    let dy = 0;
-    const overRight = cx + DRAG_MARGIN - windowSize()[0];
-    if (overRight > 0) {
-      dx = -overRight;
-    } else {
-      const overLeft = -(cx + cw - DRAG_MARGIN);
-      if (overLeft > 0) {
-        dx = overLeft;
-      }
-    }
-    if (cy < 0) {
-      dy -= cy;
-    } else {
-      const overBottom = cy + DRAG_MARGIN - windowSize()[1];
-      if (overBottom > 0) {
-        dy = -overBottom;
-      }
-    }
-    if (dx || dy) {
-      setRelativePos([relativePos()[0] + dx, relativePos()[1] + dy]);
-    }
-  });
   return (
     <Show when={props.open}>
-      {(value) => (
-        <Show when={api().isOpen}>
+      {(value) => {
+        const modalId = createUniqueId();
+        modalsStack.push(modalId);
+        /** Position of the modal, relative to its default central position. */
+        const [relativePos, setRelativePos] = createSignal<readonly [number, number]>([0, 0]);
+        const [grabPos, setGrabPos] = createSignal<readonly [number, number]>();
+        let positioner: HTMLDivElement | undefined;
+        const [contentElement, setContentElement] = createSignal<HTMLDivElement>();
+        // eslint-disable-next-line solid/reactivity
+        const contentSize = resizeObserver.observeClientSize(contentElement);
+        const contentPos = (): Size | undefined =>
+          contentSize() && [
+            (windowSize()[0] - contentSize()![0]) / 2 + relativePos()[0],
+            (windowSize()[1] - contentSize()![1]) / 2 + relativePos()[1],
+          ];
+        createComputed(() => {
+          if (!contentSize()) {
+            return;
+          }
+          const [cw] = contentSize()!;
+          const [cx, cy] = contentPos()!;
+          let dx = 0;
+          let dy = 0;
+          const overRight = cx + DRAG_MARGIN - windowSize()[0];
+          if (overRight > 0) {
+            dx = -overRight;
+          } else {
+            const overLeft = -(cx + cw - DRAG_MARGIN);
+            if (overLeft > 0) {
+              dx = overLeft;
+            }
+          }
+          if (cy < 0) {
+            dy -= cy;
+          } else {
+            const overBottom = cy + DRAG_MARGIN - windowSize()[1];
+            if (overBottom > 0) {
+              dy = -overBottom;
+            }
+          }
+          if (dx || dy) {
+            setRelativePos([relativePos()[0] + dx, relativePos()[1] + dy]);
+          }
+        });
+        const canDrag = () => props.canDrag ?? true;
+        const grabHandler = {
+          onPointerDown: (e: PointerEvent) => {
+            if (canDrag() && e.buttons === 1) {
+              setGrabPos([
+                e.clientX - positioner!.clientLeft - relativePos()[0],
+                e.clientY - positioner!.clientTop - relativePos()[1],
+              ]);
+            }
+          },
+        };
+        useEventListener(
+          document,
+          "keydown",
+          (e) => {
+            if (modalsStack.at(-1) !== modalId) {
+              return;
+            }
+            if (e.key === "Escape") {
+              tryClose("escapeKey");
+              e.stopImmediatePropagation();
+              e.preventDefault();
+              if (document.activeElement !== document.body && document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+              }
+            }
+          },
+          {capture: true},
+        );
+        onCleanup(() => modalsStack.splice(modalsStack.indexOf(modalId), 1));
+        return (
           <Portal>
             <div
-              class={cx(s.modal, closeOn().has("closeButton") && s.withCloseButton)}
+              class="absolute z-modal"
               onPointerMove={(e) => {
                 if (e.buttons === 1) {
                   if (grabPos()) {
@@ -220,37 +227,47 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
               }}
               onPointerUp={[setGrabPos, undefined]}
             >
-              <div {...api().backdropProps} />
-              <div ref={positioner} {...api().positionerProps}>
+              <div
+                class={cx("fixed inset-0", props.backdropClass ?? "bg-black/30")}
+                onPointerDown={() => tryClose("clickOutside")}
+              />
+              <div
+                ref={positioner}
+                class="fixed inset-0 flex items-center justify-center touch-none pointer-events-none"
+              >
                 <div
                   ref={setContentElement}
-                  {...api().contentProps}
+                  class="overflow-clip max-w-full max-h-full mx-10 relative bg-white rounded-lg shadow-xl pl-4 pt-4 flex flex-col gap-1 pointer-events-auto"
                   style={{
+                    "min-width": "400px",
                     ...props.style,
-                    left: `${relativePos()[0]}px`,
-                    top: `${relativePos()[1]}px`,
+                    "left": `${relativePos()[0]}px`,
+                    "top": `${relativePos()[1]}px`,
                   }}
                 >
                   <Show when={props.title}>
                     <h2
-                      {...api().titleProps}
-                      onPointerDown={(e) => {
-                        if (e.buttons === 1) {
-                          setGrabPos([
-                            e.clientX - positioner!.clientLeft - relativePos()[0],
-                            e.clientY - positioner!.clientTop - relativePos()[1],
-                          ]);
-                        }
-                      }}
+                      class={cx(
+                        "font-bold select-none touch-none pr-4",
+                        canDrag() ? "cursor-grab" : undefined,
+                        closeOn().has("closeButton") ? "pr-8" : undefined,
+                      )}
+                      style={{"font-size": "1.3rem"}}
+                      {...grabHandler}
                     >
                       {props.title}
                     </h2>
                   </Show>
-                  <div class={s.body}>{getChildrenElement(props.children, value)}</div>
+                  <div
+                    // Grab handler covering the top margin of the dialog.
+                    class={cx("absolute top-0 right-4 left-4 h-4 touch-none", canDrag() ? "cursor-grab" : undefined)}
+                    {...grabHandler}
+                  />
+                  <div class="overflow-y-auto pr-4 pb-4">{getChildrenElement(props.children, value)}</div>
                   {/* Place the close button at the end so that it is focused last. */}
                   <Show when={closeOn().has("closeButton")}>
                     <Button
-                      class={s.closeButton}
+                      class="absolute top-0 right-0 m-1"
                       aria-label={t("actions.close")}
                       onClick={() => props.onClose?.("closeButton" as C)}
                     >
@@ -261,8 +278,8 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
               </div>
             </div>
           </Portal>
-        </Show>
-      )}
+        );
+      }}
     </Show>
   );
 };

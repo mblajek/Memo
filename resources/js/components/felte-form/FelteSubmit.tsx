@@ -1,6 +1,6 @@
-import * as popover from "@zag-js/popover";
-import {Accessor, JSX, Show, VoidComponent, splitProps} from "solid-js";
+import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {Button} from "../ui/Button";
+import {PopOverControl} from "../ui/PopOver";
 import {SmallSpinner} from "../ui/Spinner";
 import {SplitButton} from "../ui/SplitButton";
 import {ChildrenOrFunc} from "../ui/children_func";
@@ -18,7 +18,7 @@ interface Props extends htmlAttributes.button {
   /** Whether to include the unknown validation messages above the button. Default: true. */
   readonly includeUnknownValidationMessages?: boolean;
   /** Pop-over to show under the submit button's arrow. The submit button is a split button if specified. */
-  readonly splitSubmitPopOver?: ChildrenOrFunc<[Accessor<popover.Api>]>;
+  readonly splitSubmitPopOver?: ChildrenOrFunc<[PopOverControl]>;
 }
 
 /**

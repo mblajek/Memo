@@ -1,31 +1,29 @@
 import {useQueryClient} from "@tanstack/solid-query";
-import {DateTime} from "luxon";
+import {createSignal} from "solid-js";
 import {System, User} from "./groups";
 import {FacilityClientGroup} from "./groups/FacilityClientGroup";
 import {FacilityMeeting} from "./groups/FacilityMeeting";
 import {FacilityUsers} from "./groups/FacilityUsers";
 import {Facilities, Users} from "./groups/shared";
 
-let lastInvalidateEverythingTime: DateTime | undefined;
-
 const INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS = 3000;
 
 export function useInvalidator(queryClient = useQueryClient()) {
+  const [throttled, setThrottled] = createSignal(false);
   const invalidate = {
     everything: () => {
-      lastInvalidateEverythingTime = DateTime.now();
       queryClient.invalidateQueries();
+      setThrottled(true);
+      setTimeout(() => setThrottled(false), INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS);
     },
     everythingThrottled: () => {
-      if (
-        !lastInvalidateEverythingTime ||
-        Date.now() - lastInvalidateEverythingTime.toMillis() > INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS
-      ) {
-        invalidate.everything();
-        return true;
+      if (throttled()) {
+        return false;
       }
-      return false;
+      invalidate.everything();
+      return true;
     },
+    isThrottled: throttled,
     // Shared:
     users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
     facilities: () => queryClient.invalidateQueries({queryKey: Facilities.keys.facility()}),

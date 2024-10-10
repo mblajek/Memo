@@ -136,7 +136,7 @@ export function dateTimeToTimeInput(dateTime: DateTime) {
 }
 
 export function dateTimeToDateTimeLocalInput(dateTime: DateTime) {
-  return dateTime.toLocal().toISO().slice(0, 16);
+  return dateTime.toISO().slice(0, 16);
 }
 
 export function dateTimeLocalInputToDateTime(dateTimeLocalInputValue: string) {

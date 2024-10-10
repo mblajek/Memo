@@ -43,14 +43,15 @@ export type ColumnFilters = Readonly<Record<ColumnName, Signal<FilterH | undefin
 interface RequestController {
   readonly columnVisibility: Signal<VisibilityState>;
   readonly globalFilter: Signal<string>;
-  readonly getColumnFilter: (column: ColumnName) => Signal<FilterH | undefined>;
+  getColumnFilter(column: ColumnName): Signal<FilterH | undefined>;
   readonly columnsWithActiveFilters: Accessor<readonly string[]>;
-  readonly clearColumnFilters: () => void;
+  clearColumnFilters(): void;
   readonly sorting: Signal<SortingState>;
   readonly pagination: Signal<PaginationState>;
   readonly activeColumnGroups: Signal<readonly string[]>;
   readonly countColumn: Accessor<ColumnName | undefined>;
   readonly miniState: [Accessor<MiniState>, (state: MiniState) => void];
+  resetMiniState(): void;
 }
 
 /**
@@ -312,12 +313,14 @@ export function createTableRequestCreator({
         pagination: pagination(),
         activeColumnGroups: activeColumnGroups(),
       }) satisfies MiniState;
+    // eslint-disable-next-line solid/reactivity
+    const initialMiniState = miniState();
     function setMiniState(state: MiniState) {
       goToFirstPageOnChanges = false;
       batch(() => {
         setGlobalFilter(state.globalFilter);
-        for (const [column, filter] of state.columnFilters) {
-          getColumnFilter(column)[1](filter);
+        for (const [column, signal] of Object.entries(columnFilters())) {
+          signal[1](state.columnFilters.get(column));
         }
         setSorting(state.sorting);
         setPagination(state.pagination);
@@ -326,6 +329,9 @@ export function createTableRequestCreator({
       setTimeout(() => {
         goToFirstPageOnChanges = true;
       });
+    }
+    function resetMiniState() {
+      setMiniState(initialMiniState);
     }
     return {
       request,
@@ -340,6 +346,7 @@ export function createTableRequestCreator({
         activeColumnGroups: [activeColumnGroups, setActiveColumnGroups],
         countColumn,
         miniState: [miniState, setMiniState],
+        resetMiniState,
       },
     };
   };

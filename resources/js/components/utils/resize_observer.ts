@@ -57,7 +57,11 @@ export const useResizeObserver = createCached(() => {
     return observeTarget<E, Size>(element, (element) => [element.clientWidth, element.clientHeight]);
   }
 
-  return {observe, observeTarget, observeClientSize};
+  function observeBoundingClientRect<E extends HTMLElement>(element: Accessor<E | undefined>) {
+    return observeTarget<E, DOMRectReadOnly>(element, (element) => element.getBoundingClientRect());
+  }
+
+  return {observe, observeTarget, observeClientSize, observeBoundingClientRect};
 });
 
 const [getWindowSize, setWindowSize] = createSignal<Size>([window.innerWidth, window.innerHeight]);
@@ -65,3 +69,8 @@ const [getWindowSize, setWindowSize] = createSignal<Size>([window.innerWidth, wi
 addEventListener("resize", () => setWindowSize([window.innerWidth, window.innerHeight]));
 
 export const windowSize = getWindowSize;
+
+/** A function that creates a dependence on the window size when used in a computation. */
+export function reactToWindowResize() {
+  getWindowSize();
+}

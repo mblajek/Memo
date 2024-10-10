@@ -1,17 +1,24 @@
 import {Obj} from "@felte/core";
 import {useFormContext} from "components/felte-form/FelteForm";
 import {Button} from "components/ui/Button";
-import {Capitalize} from "components/ui/Capitalize";
+import {Capitalize, capitalizeString} from "components/ui/Capitalize";
+import {HideableSection} from "components/ui/HideableSection";
+import {InfoIcon} from "components/ui/InfoIcon";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
+import {SegmentedControl} from "components/ui/form/SegmentedControl";
+import {Select} from "components/ui/form/Select";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
-import {actionIcons} from "components/ui/icons";
-import {EmptyValueSymbol} from "components/ui/symbols";
+import {actionIcons, clientGroupIcons} from "components/ui/icons";
+import {EMPTY_VALUE_SYMBOL_STRING, EmptyValueSymbol} from "components/ui/symbols";
+import {title} from "components/ui/title";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
+import {toPlainObject} from "components/utils/object_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {
   MeetingClientResource,
   MeetingResource,
@@ -19,14 +26,35 @@ import {
   MeetingResourceForPatch,
   MeetingStaffResource,
 } from "data-access/memo-api/resources/meeting.resource";
-import {Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
+import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
+import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
+import {
+  Accessor,
+  Index,
+  Match,
+  Show,
+  Switch,
+  VoidComponent,
+  batch,
+  createComputed,
+  createEffect,
+  createMemo,
+  createSignal,
+  on,
+} from "solid-js";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
+import {ClientGroupBox} from "../client/ClientGroupBox";
+import {SharedClientGroupLabel} from "../client/SharedClientGroupLabel";
+import {useClientGroupFetcher} from "../client/client_group_fetcher";
 import {UserLink} from "../facility-users/UserLink";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
 import {getMeetingTimeFullData} from "./meeting_time_controller";
+
+type _Directives = typeof title;
 
 export const getAttendantsSchemaPart = () =>
   z.object({
@@ -60,6 +88,8 @@ interface FormAttendantsData extends Obj {
   readonly clients: readonly FormAttendantData[];
 }
 
+type ClientsGroupsMode = "none" | "shared" | "separate";
+
 type FormAttendantData = Pick<
   MeetingStaffResource & MeetingClientResource,
   "userId" | "clientGroupId" | "attendanceStatusDictId"
@@ -71,7 +101,8 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const {createAttendant} = useAttendantsCreator();
   const modelQuerySpecs = useModelQuerySpecs();
   const autoRelatedClients = useAutoRelatedClients();
-  const {form, isFormDisabled} = useFormContext<MeetingFormType>();
+  const clientGroupFetcher = useClientGroupFetcher();
+  const {form, translations, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
   const showConflicts = createMemo(() => props.name === "staff" && (props.showConflicts ?? true));
@@ -113,16 +144,273 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     ),
   );
 
+  const selectedClients = createMemo(
+    on(
+      form.data, // to nudge the form and improve reactivity
+      (formData) => (props.name === "clients" ? formData.clients.map(({userId}) => userId).filter(Boolean) : []),
+    ),
+  );
+  const {dataQuery: clientsWithGroupsDataQuery} = createTQuery({
+    prefixQueryKey: FacilityClient.keys.client(),
+    entityURL: `facility/${activeFacilityId()}/user/client`,
+    requestCreator: staticRequestCreator((schema) => {
+      const reductor = new FilterReductor(schema);
+      return {
+        columns: [
+          {type: "column", column: "id"},
+          {type: "column", column: "client.groups.*.id"},
+        ],
+        filter: reductor.reduce({type: "column", column: "id", op: "in", val: selectedClients()}),
+        sort: [],
+        paging: {size: 1000},
+      };
+    }),
+  });
+  const groupsByClientId = createMemo((): ReadonlyMap<string, readonly string[]> => {
+    const map = new Map<string, readonly string[]>();
+    for (const client of clientsWithGroupsDataQuery.data?.data ?? []) {
+      map.set(client.id as string, client["client.groups.*.id"] as readonly string[]);
+    }
+    return map;
+  });
+  /** All groups of all the selected clients. */
+  const allGroups = createMemo((): ReadonlyMap<string, Accessor<readonly string[] | undefined>> => {
+    if (props.name === "clients") {
+      const allGroupIds = new Set<string>();
+      for (const groups of groupsByClientId().values()) {
+        for (const group of groups) {
+          allGroupIds.add(group);
+        }
+      }
+      for (const {clientGroupId} of form.data("clients")) {
+        if (clientGroupId) {
+          allGroupIds.add(clientGroupId);
+        }
+      }
+      const map = new Map<string, Accessor<readonly string[] | undefined>>();
+      for (const groupId of allGroupIds) {
+        const group = clientGroupFetcher.fetch(groupId);
+        map.set(groupId, () => group()?.clients.map(({userId}) => userId));
+      }
+      return map;
+    } else {
+      return new Map();
+    }
+  });
+  /** Determines if, according to the loaded data, the user is in the given group. False negatives are possible. */
+  function isClientInGroup(clientId: string, groupId: string) {
+    return (
+      clientId &&
+      (groupsByClientId().get(clientId)?.includes(groupId) || allGroups().get(groupId)?.()?.includes(clientId))
+    );
+  }
+  /** The groups that all the selected clients belong to. */
+  const sharedGroups = createMemo((): readonly string[] => [
+    ...allGroups()
+      .keys()
+      .filter((groupId) => selectedClients().every((clientId) => isClientInGroup(clientId, groupId))),
+  ]);
+
+  const [clientsGroupsMode, setClientsGroupsMode] = createSignal<ClientsGroupsMode>();
+  const [sharedClientsGroupId, setSharedClientsGroupId] = createSignal<string>("");
+
+  createComputed(
+    on(
+      () => props.name === "clients",
+      (isClients) => {
+        if (isClients) {
+          function getSelectedAttendanceGroups(formData: FormAttendantsData) {
+            const res: (string | undefined)[] = [];
+            for (const {userId, clientGroupId} of formData.clients) {
+              if (userId && !res.includes(clientGroupId || undefined)) {
+                res.push(clientGroupId || undefined);
+              }
+            }
+            return res;
+          }
+
+          function setMode(mode: ClientsGroupsMode, sharedGroup = "") {
+            batch(() => {
+              setClientsGroupsMode(mode);
+              setSharedClientsGroupId(clientsGroupsMode() === "shared" ? sharedGroup : "");
+            });
+          }
+
+          /** Sets the groups mode based on the selected groups. */
+          function determineClientsGroupsMode(formData: FormAttendantsData) {
+            if (clientsGroupsMode() === "separate" && selectedClients().length > 1) {
+              // Leave alone the separate mode.
+              return;
+            }
+            const attendanceGroups = getSelectedAttendanceGroups(formData);
+            if (attendanceGroups.length === 0 || (attendanceGroups.length === 1 && !attendanceGroups[0])) {
+              setMode("none");
+            } else if (attendanceGroups.length === 1) {
+              setMode("shared", attendanceGroups[0]!);
+            } else {
+              setMode("separate");
+            }
+          }
+
+          function setAttendanceGroup(formData: FormAttendantsData, clientIndex: number, groupId: string) {
+            const client = formData.clients[clientIndex];
+            if (client && client.clientGroupId !== groupId) {
+              form.setFields(`clients.${clientIndex}.clientGroupId`, groupId);
+            }
+          }
+
+          /** Sets the selected groups based on the mode and shared group. */
+          function setAttendanceGroups(formData: FormAttendantsData) {
+            if (clientsGroupsMode() === "separate") {
+              return;
+            }
+            for (let i = 0; i < formData.clients.length; i++) {
+              if (!formData.clients[i]!.userId || clientsGroupsMode() === "none") {
+                setAttendanceGroup(formData, i, "");
+              } else if (clientsGroupsMode() === "shared") {
+                setAttendanceGroup(formData, i, sharedClientsGroupId() || "");
+              }
+            }
+          }
+
+          // Initialise mode based on the selection when the form is opened.
+          determineClientsGroupsMode(form.data());
+
+          createEffect(
+            on(
+              [
+                () =>
+                  clientsWithGroupsDataQuery.isSuccess &&
+                  (!clientGroupFetcher.numSubscribedGroups() || clientGroupFetcher.dataQuery.isSuccess),
+                sharedGroups,
+                groupsByClientId,
+                clientsGroupsMode,
+                sharedClientsGroupId,
+                form.data, // to nudge the form and improve reactivity
+              ],
+              (
+                [querySuccess, sharedGroups, _groupsByClientId, _clientsGroupsMode, _sharedClientsGroupId, formData],
+                _prevInput,
+                prev:
+                  | {
+                      formData: FormAttendantsData;
+                      sharedGroups: readonly string[];
+                      groupsByClientId: ReadonlyMap<string, readonly string[]>;
+                      clientsGroupsMode: ClientsGroupsMode | undefined;
+                      sharedClientsGroupId: string;
+                    }
+                  | undefined,
+              ) => {
+                if (!querySuccess) {
+                  // Don't do any more advanced updates without the data.
+                  return prev;
+                }
+
+                const formClientsChanged =
+                  prev &&
+                  !(
+                    formData.clients.length === prev.formData.clients.length &&
+                    formData.clients.every(
+                      (c1, i) =>
+                        c1.userId === prev.formData.clients[i]!.userId &&
+                        c1.clientGroupId === prev.formData.clients[i]!.clientGroupId,
+                    )
+                  );
+                let clientsChanged = formClientsChanged;
+                for (let i = 0; i < formData.clients.length; i++) {
+                  const {userId, clientGroupId} = formData.clients[i]!;
+                  if (userId) {
+                    if (clientGroupId) {
+                      if (!isClientInGroup(userId, clientGroupId)) {
+                        // Invalid state.
+                        setAttendanceGroup(
+                          formData,
+                          i,
+                          clientsGroupsMode() === "shared" &&
+                            sharedClientsGroupId() &&
+                            isClientInGroup(userId, sharedClientsGroupId())
+                            ? sharedClientsGroupId()
+                            : "",
+                        );
+                        clientsChanged = true;
+                      }
+                    } else if (formClientsChanged) {
+                      if (clientsGroupsMode() === "shared") {
+                        if (sharedClientsGroupId() && isClientInGroup(userId, sharedClientsGroupId())) {
+                          setAttendanceGroup(formData, i, sharedClientsGroupId());
+                        }
+                      } else if (clientsGroupsMode() === "separate") {
+                        const dupClient = formData.clients.find((c, j) => c.userId === userId && j !== i);
+                        if (dupClient) {
+                          setAttendanceGroup(formData, i, dupClient.clientGroupId);
+                        } else {
+                          const prevClient = prev?.formData.clients.find((c) => c.userId === userId);
+                          if (!prevClient) {
+                            setAttendanceGroup(formData, i, groupsByClientId().get(userId)?.[0] || "");
+                          }
+                        }
+                      }
+                    } else if (
+                      clientsGroupsMode() === "separate" &&
+                      groupsByClientId().has(userId) &&
+                      !prev?.groupsByClientId.has(userId)
+                    ) {
+                      setAttendanceGroup(formData, i, groupsByClientId().get(userId)![0] || "");
+                    }
+                  }
+                }
+                if (clientsChanged) {
+                  determineClientsGroupsMode(form.data());
+                  formData = form.data();
+                }
+                const modeChanged = prev && clientsGroupsMode() !== prev.clientsGroupsMode;
+                if (clientsGroupsMode() === "none") {
+                  if (!props.viewMode && !modeChanged && sharedGroups.length && !prev?.sharedGroups.length) {
+                    setMode("shared", sharedGroups[0]);
+                  } else {
+                    setSharedClientsGroupId("");
+                  }
+                } else if (clientsGroupsMode() === "shared") {
+                  if (sharedGroups.length) {
+                    if (sharedClientsGroupId()) {
+                      if (!sharedGroups.includes(sharedClientsGroupId())) {
+                        determineClientsGroupsMode(formData);
+                      }
+                    } else if (!props.viewMode && modeChanged) {
+                      setMode(
+                        "shared",
+                        formData.clients.find(({clientGroupId}) => sharedGroups.includes(clientGroupId))
+                          ?.clientGroupId || sharedGroups[0],
+                      );
+                    } else {
+                      determineClientsGroupsMode(formData);
+                    }
+                  } else {
+                    determineClientsGroupsMode(formData);
+                  }
+                } else {
+                  determineClientsGroupsMode(formData);
+                }
+                setAttendanceGroups(form.data());
+                return {
+                  formData: toPlainObject(form.data()),
+                  sharedGroups,
+                  groupsByClientId: groupsByClientId(),
+                  clientsGroupsMode: clientsGroupsMode(),
+                  sharedClientsGroupId: sharedClientsGroupId(),
+                };
+              },
+            ),
+          );
+        }
+      },
+    ),
+  );
+
   return (
     <div class="flex flex-col items-stretch">
-      <div
-        class="grid gap-x-1"
-        style={{
-          "grid-template-columns": "1.5fr 1.2rem 1fr",
-          "row-gap": 0,
-        }}
-      >
-        <div class="col-span-2">
+      <div class="grid gap-1" style={{"grid-template-columns": "1.5fr 1fr"}}>
+        <div>
           <FieldLabel
             fieldName={props.name}
             umbrella
@@ -149,38 +437,41 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             />
           </div>
         </Show>
-        <div class="col-span-full grid grid-cols-subgrid gap-1 span">
-          <Index each={form.data(props.name)} fallback={<EmptyValueSymbol />}>
-            {(_attendant, index) => {
-              const userId = () => form.data(`${props.name}.${index}.userId`);
-              const priorityQueryParams = createMemo(() =>
-                props.name === "clients"
-                  ? // eslint-disable-next-line solid/reactivity
-                    autoRelatedClients.selectParamsExtension(() =>
-                      // Make sure this is the same for all the client selects if there are multiple clients,
-                      // to avoid sending multiple additional requests.
-                      form
-                        .data(props.name)
-                        .map(({userId}) => userId)
-                        .filter(NON_NULLABLE),
-                    )
-                  : undefined,
-              );
-              return (
-                <Show
-                  when={userId() || !props.viewMode}
-                  fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
-                >
-                  <div class={cx("col-start-1 flex items-center gap-1", conflictsFinder() ? undefined : "col-span-2")}>
+        <Index each={form.data(props.name)} fallback={<EmptyValueSymbol class="col-span-full" />}>
+          {(_attendant, index) => {
+            const userId = () => form.data(`${props.name}.${index}.userId`);
+            const priorityQueryParams = createMemo(() =>
+              props.name === "clients"
+                ? // eslint-disable-next-line solid/reactivity
+                  autoRelatedClients.selectParamsExtension(() =>
+                    // Make sure this is the same for all the client selects if there are multiple clients,
+                    // to avoid sending multiple additional requests.
+                    form
+                      .data(props.name)
+                      .map(({userId}) => userId)
+                      .filter(NON_NULLABLE),
+                  )
+                : undefined,
+            );
+            const clientGroups = createMemo(() => groupsByClientId().get(userId() || "") || []);
+            const clientGroupId = () =>
+              props.name === "clients" ? form.data(`clients.${index}.clientGroupId`) : undefined;
+            return (
+              <Show
+                when={userId() || !props.viewMode}
+                fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
+              >
+                <div class="col-span-full grid grid-cols-subgrid">
+                  <div class="flex gap-1 items-start">
                     <Switch>
                       <Match when={props.viewMode}>
-                        <div class="flex items-center">
+                        <div class="flex-grow flex items-center">
                           <PlaceholderField name={`${props.name}.${index}.userId`} />
                           <UserLink type={props.name} userId={userId()} />
                         </div>
                       </Match>
-                      <Match when={!props.viewMode}>
-                        <div class="flex-grow">
+                      <Match when="edit mode">
+                        <div class="flex-grow flex flex-col">
                           <TQuerySelect
                             name={`${props.name}.${index}.userId`}
                             label=""
@@ -196,17 +487,72 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         </div>
                       </Match>
                     </Switch>
-                  </div>
-                  <Show when={conflictsFinder()}>
-                    {(conflictsFinder) => {
-                      const {ConflictsInfo} = conflictsFinder();
-                      return (
-                        <div class="min-h-small-input self-start flex flex-col items-center justify-center">
-                          <ConflictsInfo userId={userId()} />
+                    <Switch>
+                      <Match when={conflictsFinder()}>
+                        {(conflictsFinder) => {
+                          const {ConflictsInfo} = conflictsFinder();
+                          return (
+                            <div class="min-h-small-input self-start flex flex-col items-center justify-center">
+                              <ConflictsInfo userId={userId()} />
+                            </div>
+                          );
+                        }}
+                      </Match>
+                      <Match
+                        when={props.name === "clients" && clientsGroupsMode() === "separate" && clientGroups().length}
+                      >
+                        <Button
+                          class="min-h-small-input self-start"
+                          title={
+                            <div>
+                              <div>
+                                <Show
+                                  when={clientGroupId()}
+                                  fallback={translations.fieldName("attendantClientGroupId.none")}
+                                >
+                                  {(clientGroupId) => (
+                                    <>
+                                      {translations.fieldName("attendantClientGroupId.some")}{" "}
+                                      <SharedClientGroupLabel groupId={clientGroupId()} />
+                                    </>
+                                  )}
+                                </Show>
+                              </div>
+                              <Show when={!props.viewMode}>
+                                <div>{translations.fieldName("attendantClientGroupId.click_to_toggle")}</div>
+                              </Show>
+                            </div>
+                          }
+                          onClick={() =>
+                            form.setFields(`clients.${index}.clientGroupId`, clientGroupId() ? "" : clientGroups()[0])
+                          }
+                          disabled={props.viewMode}
+                        >
+                          <clientGroupIcons.ClientGroup
+                            class={clientGroupId() ? "text-black" : "text-gray-400"}
+                            size="20"
+                          />
+                        </Button>
+                      </Match>
+                      <Match when={props.name === "clients" && clientGroupId()}>
+                        <div
+                          class="min-h-small-input self-start flex flex-col items-center justify-center"
+                          use:title={
+                            <div>
+                              <Capitalize
+                                text={t("with_colon", {text: translations.fieldName("attendantClientGroupId")})}
+                              />
+                              <div>
+                                <SharedClientGroupLabel groupId={clientGroupId()} />
+                              </div>
+                            </div>
+                          }
+                        >
+                          <clientGroupIcons.ClientGroup size="20" />
                         </div>
-                      );
-                    }}
-                  </Show>
+                      </Match>
+                    </Switch>
+                  </div>
                   <div class="flex gap-1">
                     <Show
                       when={userId()}
@@ -281,12 +627,194 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                       </Show>
                     </Show>
                   </div>
-                </Show>
-              );
-            }}
-          </Index>
-        </div>
+                  <Show when={props.name === "clients"}>
+                    <HideableSection
+                      class="col-span-full"
+                      show={
+                        userId() && clientsGroupsMode() === "separate" && !props.viewMode && clientGroups().length > 1
+                      }
+                    >
+                      {(show) => (
+                        <div class="mt-px mb-1 flex items-center gap-1">
+                          <div
+                            class="ml-6"
+                            use:title={<Capitalize text={translations.fieldName("attendantClientGroupId")} />}
+                          >
+                            <clientGroupIcons.ClientGroup class="text-current" size="22" />
+                          </div>
+                          <Show
+                            when={!props.viewMode && clientGroups().length}
+                            fallback={
+                              <SharedClientGroupLabel
+                                groupId={form.data(`clients.${index}.clientGroupId`) || undefined}
+                              />
+                            }
+                          >
+                            <div class="flex-grow">
+                              <Select
+                                name={`clients.${index}.clientGroupId`}
+                                label=""
+                                items={clientGroups().map((groupId) => ({
+                                  value: groupId,
+                                  label: () => <SharedClientGroupLabel groupId={groupId} />,
+                                }))}
+                                nullable
+                                small
+                                disabled={!show()}
+                                placeholder={EMPTY_VALUE_SYMBOL_STRING}
+                              />
+                            </div>
+                          </Show>
+                        </div>
+                      )}
+                    </HideableSection>
+                  </Show>
+                </div>
+              </Show>
+            );
+          }}
+        </Index>
       </div>
+      <Show when={props.name === "clients" && (!props.viewMode || clientsGroupsMode() === "shared")}>
+        <HideableSection show={allGroups().size}>
+          <ClientGroupBox class="mt-4 flex flex-col">
+            <Show when={!props.viewMode || clientsGroupsMode() === "shared"}>
+              <div class="flex justify-between items-center gap-2">
+                <div class="flex gap-1">
+                  <FieldLabel fieldName="clientsGroupsMode" umbrella />
+                  <InfoIcon href="/help/meeting-client-groups" />
+                </div>
+                <Show when={!props.viewMode}>
+                  <div class="self-start">
+                    <SegmentedControl
+                      name="clientsGroupsMode"
+                      label=""
+                      items={[
+                        {
+                          value: "none",
+                          label: () => (
+                            <span
+                              use:title={[
+                                translations.fieldName("clientsGroupsMode.none.desc"),
+                                {delay: [800, undefined]},
+                              ]}
+                            >
+                              {translations.fieldName("clientsGroupsMode.none")}
+                            </span>
+                          ),
+                        },
+                        {
+                          value: "shared",
+                          label: () => (
+                            <span
+                              use:title={[
+                                translations.fieldName(
+                                  selectedClients().length === 1
+                                    ? "clientsGroupsMode.shared_one_client.desc"
+                                    : sharedGroups().length
+                                      ? "clientsGroupsMode.shared.desc"
+                                      : "clientsGroupsMode.shared.desc_no_shared_options",
+                                ),
+                                {delay: [800, undefined]},
+                              ]}
+                            >
+                              {translations.fieldName(
+                                selectedClients().length === 1
+                                  ? "clientsGroupsMode.shared_one_client"
+                                  : "clientsGroupsMode.shared",
+                              )}
+                            </span>
+                          ),
+                          disabled: !sharedGroups().length,
+                        },
+                        selectedClients().length > 1
+                          ? {
+                              value: "separate",
+                              label: () => (
+                                <span
+                                  use:title={[
+                                    translations.fieldName("clientsGroupsMode.separate.desc"),
+                                    {delay: [800, undefined]},
+                                  ]}
+                                >
+                                  {translations.fieldName("clientsGroupsMode.separate")}
+                                </span>
+                              ),
+                            }
+                          : undefined,
+                      ].filter(NON_NULLABLE)}
+                      value={clientsGroupsMode()}
+                      onValueChange={setClientsGroupsMode}
+                      small
+                    />
+                  </div>
+                </Show>
+              </div>
+            </Show>
+            <HideableSection show={clientsGroupsMode() === "shared"}>
+              {(show) => (
+                <div class="mt-1 grid gap-x-1" style={{"grid-template-columns": "auto 1fr"}}>
+                  <div
+                    class="flex items-center"
+                    use:title={capitalizeString(translations.fieldName("sharedClientsGroupId"))}
+                  >
+                    <clientGroupIcons.ClientGroup size="22" />
+                  </div>
+                  <div>
+                    <Show
+                      when={sharedGroups().length > 1}
+                      fallback={<SharedClientGroupLabel groupId={sharedClientsGroupId()} />}
+                    >
+                      <Select
+                        name="sharedClientsGroupId"
+                        label=""
+                        items={sharedGroups().map((groupId) => ({
+                          value: groupId,
+                          label: () => <SharedClientGroupLabel groupId={groupId} />,
+                        }))}
+                        value={sharedClientsGroupId()}
+                        onValueChange={setSharedClientsGroupId}
+                        nullable={false}
+                        disabled={!show()}
+                        small
+                      />
+                    </Show>
+                  </div>
+                  <Show when={!props.viewMode}>
+                    <div class="col-start-2 text-sm">
+                      <Switch>
+                        <Match when={clientsGroupsMode() !== "shared" || !sharedClientsGroupId()}>&nbsp;</Match>
+                        <Match
+                          when={allGroups()
+                            .get(sharedClientsGroupId())?.()
+                            ?.some((clientId) => !selectedClients().includes(clientId))}
+                        >
+                          <Button
+                            class="text-start linkLike p-0"
+                            onClick={() => {
+                              let index = selectedClients().length;
+                              for (const clientId of allGroups().get(sharedClientsGroupId())?.() || []) {
+                                if (!selectedClients().includes(clientId)) {
+                                  form.addField("clients", createAttendant({userId: clientId}), index++);
+                                }
+                              }
+                            }}
+                          >
+                            {translations.fieldName("sharedClientsGroupId.addAll")}
+                          </Button>
+                        </Match>
+                        <Match when="all added">
+                          <div class="text-grey-text">{translations.fieldName("sharedClientsGroupId.allAdded")}</div>
+                        </Match>
+                      </Switch>
+                    </div>
+                  </Show>
+                </div>
+              )}
+            </HideableSection>
+          </ClientGroupBox>
+        </HideableSection>
+      </Show>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import {Accessor, createComputed, createSignal, getOwner, on, onCleanup, runWithOwner} from "solid-js";
+import {Accessor, createComputed, createSignal, getOwner, onCleanup, runWithOwner} from "solid-js";
 
 export const INPUT_DEBOUNCE_MS = 600;
 
@@ -58,23 +58,22 @@ export function debouncedAccessor<T>(
       typeof timeMs === "number" ? timeMs : timeMs(),
     );
   }
-  createComputed(
-    on(input, (input) => {
-      if (outputImmediately?.(input)) {
-        writeOutput(input);
-        setTimer();
-      } else if (timeoutId) {
+  createComputed(() => {
+    const inputVal = input();
+    if (outputImmediately?.(inputVal)) {
+      writeOutput(inputVal);
+      setTimer();
+    } else if (timeoutId) {
+      needsWriteOutput = true;
+    } else {
+      setTimer();
+      if (lazy) {
         needsWriteOutput = true;
       } else {
-        setTimer();
-        if (lazy) {
-          needsWriteOutput = true;
-        } else {
-          writeOutput(input);
-        }
+        writeOutput(inputVal);
       }
-    }),
-  );
+    }
+  });
   onCleanup(() => clearTimeout(timeoutId));
   return output;
 }

@@ -99,7 +99,8 @@ html {
       filter: hue-rotate(-0.11turn);
     }
     &:indeterminate {
-      filter: brightness(1.3);
+      // Make it similar to the memo-active color on Chrome.
+      filter: hue-rotate(-0.11turn) brightness(1.3);
     }
     &:disabled {
       filter: brightness(0.8);
@@ -225,6 +226,11 @@ html {
   // Text that wraps to always be fully visible.
   .wrapTextAnywhere {
     @apply wrapText;
+    overflow-wrap: anywhere;
+  }
+
+  .wrapLinkAnywhere {
+    word-break: break-all;
     overflow-wrap: anywhere;
   }
 }

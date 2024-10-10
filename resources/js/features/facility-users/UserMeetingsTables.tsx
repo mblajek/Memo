@@ -32,7 +32,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const {dictionaries, meetingStatusDict} = useFixedDictionaries();
   const {presenceStatuses} = useAttendanceStatusesInfo();
   const entityURL = () => `facility/${activeFacilityId()}/meeting/attendant`;
-  const cols = useMeetingTableColumns({baseHeight: "3rem"});
+  const cols = useMeetingTableColumns({baseHeight: "3.5rem"});
   const meetingTableFilters = useMeetingTableFilters();
   const {getCreatedUpdatedColumns} = useTableColumns();
   const intrinsicFilter = (): FilterH => ({

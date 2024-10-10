@@ -24,6 +24,9 @@ export default (() => {
     onLoad: (value) => {
       setShowInactive(value.showInactive);
     },
+    onReset: () => {
+      setShowInactive(false);
+    },
   });
   return (
     <TQueryTable

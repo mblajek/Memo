@@ -1,6 +1,6 @@
 import {createMutation} from "@tanstack/solid-query";
 import {useHolidays} from "components/ui/calendar/holidays";
-import {WeekDaysCalculator} from "components/ui/calendar/week_days_calculator";
+import {getWeekdays} from "components/ui/calendar/week_days_calculator";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {createConfirmation} from "components/ui/confirmation";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
@@ -10,7 +10,6 @@ import {MODAL_STYLE_PRESETS} from "components/ui/Modal";
 import {EN_DASH} from "components/ui/symbols";
 import {ThingsList} from "components/ui/ThingsList";
 import {DATE_FORMAT, useLangFunc} from "components/utils";
-import {useLocale} from "components/utils/LocaleContext";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -63,8 +62,6 @@ export function useWeeklyTimeTablesActions() {
   const t = useLangFunc();
   const invalidate = useInvalidator();
   const holidays = useHolidays();
-  const locale = useLocale();
-  const weekDaysCalculator = new WeekDaysCalculator(locale);
   const confirmation = createConfirmation();
   const owner = getOwner();
   const deleteMutation = createMutation(() => ({
@@ -202,11 +199,11 @@ export function useWeeklyTimeTablesActions() {
       );
 
       const ActiveWeekdaysInfo: VoidComponent = () => (
-        <Show when={[...action.weekdaysSelection.values()].some((sel) => !sel())}>
+        <Show when={action.weekdaysSelection.values().some((sel) => !sel())}>
           <div class="flex flex-col">
             <div>{tt("active_weekdays")}</div>
             <ThingsList
-              things={weekDaysCalculator.weekdays}
+              things={getWeekdays()}
               map={({weekday, exampleDay}) => (
                 <span
                   class={

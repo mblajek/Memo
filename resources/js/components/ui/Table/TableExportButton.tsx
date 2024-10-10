@@ -1,6 +1,6 @@
 import {Column, RowData, Table} from "@tanstack/solid-table";
-import {createLocalStoragePersistence} from "components/persistence/persistence";
-import {richJSONSerialiser} from "components/persistence/serialiser";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -178,19 +178,18 @@ export const TableExportButton: VoidComponent = () => {
   const currentPageHasAllData = () => allRowsExportData()?.numRows === currentPageExportData().numRows;
 
   const [formatId, setFormatId] = createSignal(FORMATS[0]!.id);
-  createLocalStoragePersistence<PersistentState>({
-    key: "Table:export",
+  createPersistence<PersistentState>({
+    storage: localStorageStorage("Table:export"),
     value: () => ({format: formatId()}),
     onLoad: (value) => setFormatId((FORMATS.find((m) => m.id === value.format) || FORMATS[0]!).id),
-    serialiser: richJSONSerialiser<PersistentState>(),
     version: [1],
   });
 
   return (
     <>
       <PopOver
-        trigger={(triggerProps) => (
-          <Button {...triggerProps()} class="secondary small text-nowrap">
+        trigger={(popOver) => (
+          <Button onClick={popOver.open} class="secondary small text-nowrap">
             <AiOutlineFileExcel class="inlineIcon" /> {t("tables.export.label")}
           </Button>
         )}
@@ -224,7 +223,7 @@ export const TableExportButton: VoidComponent = () => {
                 <Show when={allRowsExportData() && !currentPageHasAllData()}>
                   <Button
                     onClick={() => {
-                      popOver().close();
+                      popOver.close();
                       exportRows(allRowsExportData()!);
                     }}
                   >
@@ -233,7 +232,7 @@ export const TableExportButton: VoidComponent = () => {
                 </Show>
                 <Button
                   onClick={() => {
-                    popOver().close();
+                    popOver.close();
                     exportRows(currentPageExportData());
                   }}
                 >
