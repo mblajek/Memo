@@ -2,11 +2,12 @@ import {useNavigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {MemoLoader} from "components/ui/MemoLoader";
 import {Wrights} from "components/ui/Wrights";
-import {currentTimeSecond, QueryBarrier} from "components/utils";
+import {currentTimeMinute, QueryBarrier} from "components/utils";
+import {useEventListener} from "components/utils/event_listener";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
-import {createEffect, onMount, VoidComponent} from "solid-js";
+import {createEffect, createSignal, onMount, VoidComponent} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {createLoginModal} from "../forms/login/login_modal";
 
@@ -60,13 +61,24 @@ export default (() => {
 }) satisfies VoidComponent;
 
 const LoginBackground: VoidComponent = () => {
-  const START_AFTER_SECS = 10 * 60;
-  const t0 = currentTimeSecond();
+  const START_AFTER_MINUTES = 10;
+  const [startTime, setStartTime] = createSignal(currentTimeMinute().plus({minutes: START_AFTER_MINUTES}));
+  const [speedMult, setSpeedMult] = createSignal(1);
+  useEventListener(document, "input", ({target}) => {
+    if (target instanceof HTMLInputElement && target.type === "password") {
+      const cmd = target.value;
+      if (cmd === "\u0053\u0069\u0065\u0072\u0070\u0069\u0144\u0073\u006b\u0069") {
+        setStartTime(currentTimeMinute());
+        target.value = "";
+      } else {
+        const match = /^Speed:(\d{1,3})$/.exec(cmd);
+        if (match) {
+          setSpeedMult(Number(match[1]));
+        }
+      }
+    }
+  });
   return (
-    <Wrights
-      class="fixed inset-0"
-      levels={7}
-      paused={currentTimeSecond().toMillis() < t0.toMillis() + START_AFTER_SECS * 1000}
-    />
+    <Wrights class="fixed inset-0" levels={7} paused={currentTimeMinute() < startTime()} speedMult={speedMult()} />
   );
 };

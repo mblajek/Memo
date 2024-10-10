@@ -5,8 +5,8 @@ import {useEventListener} from "../utils/event_listener";
 export const FullScreenPre: ParentComponent<htmlAttributes.div> = (allProps) => {
   const [childrenProps, divProps] = splitProps(allProps, ["children"]);
   const [wrap, setWrap] = createSignal(true);
-  useEventListener(document, "keypress", (e) => {
-    if (e.key === "w") {
+  useEventListener(document, "keydown", (e) => {
+    if (e.key.toLowerCase() === "w") {
       setWrap(!wrap());
     }
   });
