@@ -50,7 +50,7 @@ export interface TableTranslations {
   columnsByPrefix?: ReadonlyMap<string, string>;
 }
 
-export function createTableTranslations(tableName: string | string[]): TableTranslations {
+export function createTableTranslations(tableName: string | readonly string[]): TableTranslations {
   const t = useLangFunc();
   const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const names = typeof tableName === "string" ? [tableName] : tableName;

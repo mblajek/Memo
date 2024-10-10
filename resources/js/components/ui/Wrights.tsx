@@ -6,6 +6,7 @@ import {useResizeObserver} from "../utils/resize_observer";
 interface Props extends htmlAttributes.div {
   readonly levels: number;
   readonly paused?: boolean;
+  readonly speedMult?: number;
 }
 
 const MARGINS = {
@@ -38,7 +39,7 @@ const COLORS_ALPHA = 0.2;
 type Vec = readonly [number, number];
 
 export const Wrights: VoidComponent<Props> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["levels", "paused"]);
+  const [props, divProps] = splitProps(allProps, ["levels", "paused", "speedMult"]);
   const resizeObserver = useResizeObserver();
   const [container, setContainer] = createSignal<HTMLDivElement>();
   let ctx: CanvasRenderingContext2D | undefined;
@@ -437,8 +438,9 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       }
 
       function tick(time: number) {
+        const dTime = time - prevTime;
         prevTime = time;
-        rt = time - time0;
+        rt += dTime * (props.speedMult || 1);
         for (const wright of wrights) {
           const {phase, tPhaseStart, block, path} = wright;
           const phaseT = Math.max(0, rt - tPhaseStart);

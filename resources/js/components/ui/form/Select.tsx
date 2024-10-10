@@ -289,7 +289,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       on(
         () => props.value,
         (propsValue) =>
-          api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
+          api().setValue(
+            Array.isArray(propsValue) ? (propsValue as string[]) : propsValue === undefined ? [] : [propsValue],
+          ),
       ),
     );
   else if (formContext)
