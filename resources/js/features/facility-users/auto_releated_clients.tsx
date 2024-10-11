@@ -20,7 +20,7 @@ export function useAutoRelatedClients() {
       userIdsMemo().length
         ? ({
             priorityQuerySpec: {
-              entityURL: `facility/${activeFacilityId()}/meeting/attendant`,
+              entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting/attendant`,
               prefixQueryKey: FacilityMeeting.keys.meeting(),
               intrinsicFilter: {
                 type: "op",

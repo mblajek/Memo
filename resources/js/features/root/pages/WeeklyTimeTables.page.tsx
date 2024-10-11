@@ -176,7 +176,7 @@ export default (() => {
   );
   const {dataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     requestCreator: staticRequestCreator(() => ({
       columns: COLUMNS.map((column) => ({type: "column", column})),
       filter: {

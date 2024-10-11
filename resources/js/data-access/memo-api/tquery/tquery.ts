@@ -11,8 +11,8 @@ type EntityURL = string;
 
 type PrefixQueryKey = readonly unknown[];
 
-type SchemaQueryKey = readonly ["tquery-schema", EntityURL];
-type DataQueryKey<K extends PrefixQueryKey> = readonly [...K, "tquery", EntityURL, DataRequest];
+type SchemaQueryKey = readonly ["tquery-schema", EntityURL | undefined];
+type DataQueryKey<K extends PrefixQueryKey> = readonly [...K, "tquery", EntityURL | undefined, DataRequest];
 
 function getRequestFromQueryKey<K extends PrefixQueryKey>(queryKey: DataQueryKey<K>): DataRequest {
   return (queryKey satisfies readonly [...unknown[], DataRequest]).at(-1) as DataRequest;
@@ -67,7 +67,7 @@ const EMPTY_RESPONSE: DataResponse = {meta: {totalDataSize: 0}, data: []};
  * Creates a tquery.
  *
  * @param prefixQueryKey The TanStack Query prefix of the data query (can be used to invalidate data).
- * @param entityURL The URL of the tquery endpoint.
+ * @param entityURL The URL of the tquery endpoint. Undefined to disable the query.
  */
 export function createTQuery<C, K extends PrefixQueryKey>({
   prefixQueryKey,
@@ -76,7 +76,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   dataQueryOptions,
 }: {
   prefixQueryKey: K | Accessor<K>;
-  entityURL: EntityURL | Accessor<EntityURL>;
+  entityURL: EntityURL | undefined | Accessor<EntityURL | undefined>;
   requestCreator: RequestCreator<C>;
   dataQueryOptions?: ExtraDataQueryOptions<K> | Accessor<ExtraDataQueryOptions<K>>;
 }) {
@@ -88,7 +88,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
     queryFn: () => V1.get<Schema>(`${entityURLFunc()}/tquery`).then((res) => res.data),
     staleTime: 3600 * 1000,
     refetchOnMount: false,
-    // Fetching the schema is always enabled.
+    enabled: !!entityURLFunc(),
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
@@ -110,7 +110,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
     // It is difficult to match the types here because of the defined/undefined initial data types.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...(extraDataQueryOptions?.() as any),
-    enabled: !!request() && extraDataQueryOptions().enabled !== false,
+    enabled: !!entityURLFunc() && !!request() && extraDataQueryOptions().enabled !== false,
   }));
   return {
     schema,

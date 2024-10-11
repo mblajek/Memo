@@ -32,7 +32,7 @@ export const useClientsData = createCached(() => {
     paging: {size: 1e6},
   };
   const {dataQuery} = createTQuery({
-    entityURL: () => `facility/${activeFacilityId()}/user/client`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/client`,
     prefixQueryKey: FacilityClient.keys.client(),
     requestCreator: staticRequestCreator(request),
     dataQueryOptions: () => ({

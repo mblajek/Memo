@@ -152,7 +152,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   );
   const {dataQuery: clientsWithGroupsDataQuery} = createTQuery({
     prefixQueryKey: FacilityClient.keys.client(),
-    entityURL: `facility/${activeFacilityId()}/user/client`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/client`,
     requestCreator: staticRequestCreator((schema) => {
       const reductor = new FilterReductor(schema);
       return {
