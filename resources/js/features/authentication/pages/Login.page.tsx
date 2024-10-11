@@ -78,7 +78,18 @@ const LoginBackground: VoidComponent = () => {
       }
     }
   });
+  function randomFrom(arr: readonly number[]) {
+    return arr[Math.floor(Math.random() * arr.length)]!;
+  }
+  const levels = randomFrom([6, 7]);
+  const houseSize = randomFrom([2, 3]);
   return (
-    <Wrights class="fixed inset-0" levels={7} paused={currentTimeMinute() < startTime()} speedMult={speedMult()} />
+    <Wrights
+      class="fixed inset-0"
+      levels={levels}
+      houseSize={houseSize}
+      paused={currentTimeMinute() < startTime()}
+      speedMult={speedMult()}
+    />
   );
 };
