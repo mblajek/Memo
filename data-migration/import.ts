@@ -50,7 +50,22 @@ async function api(path: string, params?: CallParams) {
   };
   const callBackend = !config.dryRun || params?.runEvenInDryRun || fetchParams.method === "GET";
   if (callBackend) {
-    const resp = await fetch(fullPath, fetchParams);
+    let attempts = 3;
+    let resp: Response;
+    for (;;) {
+      try {
+        resp = await fetch(fullPath, fetchParams);
+        break;
+      } catch (e) {
+        console.error("Fetching error:", e);
+        if (--attempts) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          console.log("Retrying...");
+        } else {
+          throw e;
+        }
+      }
+    }
     if (!resp.ok) {
       console.error("Error response:", await resp.text());
       console.error("Request:", fullPath, fetchParams);
@@ -469,8 +484,20 @@ try {
   if (!config.onlyDictionariesAndAttributes) {
     for (let staff of trackProgress(prepared.facilityStaff, "facility staff")) {
       let userId;
-      if (staff.id) {
-        userId = staff.id;
+      if (staff.existing) {
+        userId = (
+          await api("admin/user/tquery", {
+            req: {
+              columns: [{type: "column", column: "id"}],
+              filter: {type: "column", column: "email", op: "=", val: staff.email},
+              sort: [],
+              paging: {size: 1},
+            },
+          })
+        ).data[0]?.id;
+        if (!userId) {
+          throw new Error(`Existing user not found: ${staff.email}`);
+        }
         if (staff.nn) {
           nnMapper.set({nn: staff.nn, id: userId, type: "user"});
         }
@@ -482,10 +509,8 @@ try {
             path: "admin/user",
             type: "user",
             object: {
-              // TODO: Revert to just name when the backend starts honoring deactivatedAt.
+              // TODO: Revert to just name when there is a way to set deactivatedAt.
               name: staff.deactivatedAt ? `${staff.name} (nieaktywny)` : staff.name,
-              // name: staff.name,
-              deactivatedAt: dateTimeType(staff.deactivatedAt),
               email: staff.email ? (config.staffEmailsPrefix || "") + staff.email : null,
               hasEmailVerified: !!staff.email,
               ...(staff.password

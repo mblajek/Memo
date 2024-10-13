@@ -107,6 +107,7 @@ const STAFF = readCSV<
   | "Posiada własny kalendarz spotkań w Memo?"
   | "Jest aktualnym pracownikiem?"
   | "Jest administratorem z dostępem do raportów itp.?"
+  | "Istnieje już w Memo z tym adresem email?"
 >(`${staticDataDir}/staff.csv`, "Adres email");
 
 console.log("Analysing data");
@@ -185,17 +186,24 @@ function _logLine(...line: unknown[]) {
 
 const facilityStaff: FacilityStaff[] = STAFF.rows.map((row) => ({
   nn: row["Imię i nazwisko"],
-  name: row["Imię i nazwisko"],
-  email: row["Adres email"] || null,
-  ...(row["Może logować się do Memo?"] === "tak"
+  ...(row["Istnieje już w Memo z tym adresem email?"] === "tak"
     ? {
-        password: "Memo2024",
-        passwordExpireAt: DateTime.now().startOf("day").plus({weeks: 1}),
+        existing: true,
+        email: row["Adres email"]!,
       }
-    : {password: null, passwordExpireAt: null}),
+    : {
+        name: row["Imię i nazwisko"],
+        email: row["Adres email"] || null,
+        ...(row["Może logować się do Memo?"] === "tak"
+          ? {
+              password: "Memo2024",
+              passwordExpireAt: DateTime.now().startOf("day").plus({weeks: 1}),
+            }
+          : {password: null, passwordExpireAt: null}),
+        deactivatedAt: row["Jest aktualnym pracownikiem?"] === "nie" ? DateTime.now().startOf("month") : null,
+      }),
   isStaff: row["Posiada własny kalendarz spotkań w Memo?"] === "tak",
   isAdmin: row["Jest administratorem z dostępem do raportów itp.?"] === "tak",
-  deactivatedAt: row["Jest aktualnym pracownikiem?"] === "nie" ? DateTime.now().startOf("month") : null,
 }));
 
 function dateTimeFromFormats(s: string, formats: string[], opts?: DateTimeOptions) {
@@ -374,11 +382,10 @@ for (const klient of KLIENCI.rows) {
         kind: "const",
         value: !!klient["zdefiniowane: Problem alkoholowy"],
       },
-      // TODO: Enable when the limit is lifted.
-      // documentsLinks: {
-      //   kind: "const",
-      //   value: links.length <= 1 ? links.map((l) => `dokumentacja: ${l}`) : links,
-      // },
+      documentsLinks: {
+        kind: "const",
+        value: links.length <= 1 ? links.map((l) => `dokumentacja: ${l}`) : links,
+      },
       notes: {
         kind: "const",
         value: notes,
@@ -446,6 +453,7 @@ const meetingTypeMapping = new Map<string, [type: string, retain?: boolean]>([
   ["Infolinia dla Kuratorów", ["other", true]],
   ["Interwencja kryzysowa- zewnętrzna ", ["other", true]],
   ["Blokada terminu", ["Czynności służbowe", true]],
+  ["Superwizja zespołu", ["Superwizja"]],
 ]);
 
 const unknownMeetingTypes = new Map<string, number>();

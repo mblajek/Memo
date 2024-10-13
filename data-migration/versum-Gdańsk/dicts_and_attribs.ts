@@ -19,8 +19,9 @@ export const MEETING_TYPES = [
     category: "Wewnętrzne",
     types: [
       {name: "Czynności służbowe", duration: 0},
-      {name: "Superwizja zespołu", duration: 180},
+      {name: "Superwizja", duration: 180},
       {name: "Zebranie kliniczne", duration: 240},
+      {name: "Wolny termin", duration: 60},
     ],
   },
   {

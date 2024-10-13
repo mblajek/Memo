@@ -72,7 +72,7 @@ interface FacilityStaffBase {
 }
 
 export interface NewFacilityStaff extends FacilityStaffBase {
-  readonly id?: undefined;
+  readonly existing?: false;
   readonly name: string;
   readonly email: string | null;
   readonly password: string | null;
@@ -81,15 +81,11 @@ export interface NewFacilityStaff extends FacilityStaffBase {
 }
 
 export interface ExistingFacilityStaff extends FacilityStaffBase {
-  readonly id: string;
+  readonly existing: true;
+  readonly email: string;
 }
 
 export type FacilityStaff = NewFacilityStaff | ExistingFacilityStaff;
-
-export interface GiveStaff {
-  readonly nn?: string | readonly string[];
-  readonly id: string;
-}
 
 export interface Client {
   readonly nn?: string | readonly string[];
