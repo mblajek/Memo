@@ -38,7 +38,10 @@ export const Header: VoidComponent<Props> = (props) => {
   );
 
   return (
-    <div class="h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1 relative">
+    <div
+      class="h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1 relative"
+      data-header-for-column={props.ctx.column.id}
+    >
       {props.wrapIn ? props.wrapIn(header) : header}
       <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
         {(filterControl) => (

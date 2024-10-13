@@ -9,12 +9,13 @@ attributes:
     addressPostalCode: "adres: kod pocztowy"
     addressCity: "adres: miasto"
     documentsLinks: "linki do dokumentów"
-    documentsLinks.desc: "Tutaj możesz zapisać linki do zewnętrznych dokumentów powiązanych z tym obiektem"
+    documentsLinks.desc.format_info: "Aby nadać linkowi nazwę, wpisz:\n\t\tnazwa dokumentu: https://link.do.dokumentu"
+    documentsLinks.desc: "Linki do zewnętrznych dokumentów powiązanych z tym obiektem.\n$t(attributes.attributes.generic.documentsLinks.desc.format_info)"
 
   dictionary.positionRequiredAttributes: "wymagane atrybuty pozycji"
 
   client:
-    documentsLinks.desc: "Tutaj możesz zapisać linki do zewnętrznych dokumentów powiązanych z tym klientem"
+    documentsLinks.desc: "Linki do zewnętrznych dokumentów powiązanych z tym klientem.\n$t(attributes.attributes.generic.documentsLinks.desc.format_info)"
     shortCode.desc: "Numer klienta $t(em_dash) identyfikator. Pozostaw pusty aby nadać kolejny numer automatycznie. Wstaw znak minus aby nie nadawać numeru."
     contactStartAt: "data zgłoszenia"
     contactEndAt: "zakończenie kontaktu"

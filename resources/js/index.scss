@@ -228,4 +228,9 @@ html {
     @apply wrapText;
     overflow-wrap: anywhere;
   }
+
+  .wrapLinkAnywhere {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+  }
 }

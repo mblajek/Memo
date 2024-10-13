@@ -238,3 +238,5 @@ rows__few: "{{count, number}} wiersze"
 rows__many: "{{count, number}} wierszy"
 
 more_info: "Kliknij aby dowiedzieć się więcej o tej tabeli"
+
+scroll_to_column: "Przewiń tabelę aby zobaczyć kolumnę"

@@ -57,6 +57,9 @@ class AttributeResource extends AbstractOpenApiResource
             'isMultiValue' => true,
             'requirementLevel' => true,
             'description' => true,
+            // documents links
+            'metadata' => fn(self $attribute) => ($attribute->id === 'e1c14100-070d-4213-8927-6b7aed9617a4')
+                ? ['isMultiLine' => false] : null,
         ];
     }
 }

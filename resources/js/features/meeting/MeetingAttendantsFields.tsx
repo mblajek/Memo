@@ -15,6 +15,7 @@ import {EMPTY_VALUE_SYMBOL_STRING, EmptyValueSymbol} from "components/ui/symbols
 import {title} from "components/ui/title";
 import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
+import {toPlainObject} from "components/utils/object_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
@@ -294,6 +295,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   | {
                       formData: FormAttendantsData;
                       sharedGroups: readonly string[];
+                      groupsByClientId: ReadonlyMap<string, readonly string[]>;
                       clientsGroupsMode: ClientsGroupsMode | undefined;
                       sharedClientsGroupId: string;
                     }
@@ -332,13 +334,28 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         );
                         clientsChanged = true;
                       }
+                    } else if (formClientsChanged) {
+                      if (clientsGroupsMode() === "shared") {
+                        if (sharedClientsGroupId() && isClientInGroup(userId, sharedClientsGroupId())) {
+                          setAttendanceGroup(formData, i, sharedClientsGroupId());
+                        }
+                      } else if (clientsGroupsMode() === "separate") {
+                        const dupClient = formData.clients.find((c, j) => c.userId === userId && j !== i);
+                        if (dupClient) {
+                          setAttendanceGroup(formData, i, dupClient.clientGroupId);
+                        } else {
+                          const prevClient = prev?.formData.clients.find((c) => c.userId === userId);
+                          if (!prevClient) {
+                            setAttendanceGroup(formData, i, groupsByClientId().get(userId)?.[0] || "");
+                          }
+                        }
+                      }
                     } else if (
-                      formClientsChanged &&
-                      clientsGroupsMode() === "shared" &&
-                      sharedClientsGroupId() &&
-                      isClientInGroup(userId, sharedClientsGroupId())
+                      clientsGroupsMode() === "separate" &&
+                      groupsByClientId().has(userId) &&
+                      !prev?.groupsByClientId.has(userId)
                     ) {
-                      setAttendanceGroup(formData, i, sharedClientsGroupId());
+                      setAttendanceGroup(formData, i, groupsByClientId().get(userId)![0] || "");
                     }
                   }
                 }
@@ -376,8 +393,9 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 }
                 setAttendanceGroups(form.data());
                 return {
-                  formData: form.data(),
+                  formData: toPlainObject(form.data()),
                   sharedGroups,
+                  groupsByClientId: groupsByClientId(),
                   clientsGroupsMode: clientsGroupsMode(),
                   sharedClientsGroupId: sharedClientsGroupId(),
                 };
@@ -391,8 +409,8 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 
   return (
     <div class="flex flex-col items-stretch">
-      <div class="grid gap-1" style={{"grid-template-columns": "1.5fr 1.2rem 1fr"}}>
-        <div class="col-span-2">
+      <div class="grid gap-1" style={{"grid-template-columns": "1.5fr 1fr"}}>
+        <div>
           <FieldLabel
             fieldName={props.name}
             umbrella
@@ -436,16 +454,18 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 : undefined,
             );
             const clientGroups = createMemo(() => groupsByClientId().get(userId() || "") || []);
+            const clientGroupId = () =>
+              props.name === "clients" ? form.data(`clients.${index}.clientGroupId`) : undefined;
             return (
               <Show
                 when={userId() || !props.viewMode}
                 fallback={<PlaceholderField name={`${props.name}.${index}.userId`} />}
               >
                 <div class="col-span-full grid grid-cols-subgrid">
-                  <div class={cx("col-start-1 flex gap-1", conflictsFinder() ? undefined : "col-span-2")}>
+                  <div class="flex gap-1 items-start">
                     <Switch>
                       <Match when={props.viewMode}>
-                        <div class="flex items-center">
+                        <div class="flex-grow flex items-center">
                           <PlaceholderField name={`${props.name}.${index}.userId`} />
                           <UserLink type={props.name} userId={userId()} />
                         </div>
@@ -467,17 +487,72 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         </div>
                       </Match>
                     </Switch>
-                  </div>
-                  <Show when={conflictsFinder()}>
-                    {(conflictsFinder) => {
-                      const {ConflictsInfo} = conflictsFinder();
-                      return (
-                        <div class="min-h-small-input self-start flex flex-col items-center justify-center">
-                          <ConflictsInfo userId={userId()} />
+                    <Switch>
+                      <Match when={conflictsFinder()}>
+                        {(conflictsFinder) => {
+                          const {ConflictsInfo} = conflictsFinder();
+                          return (
+                            <div class="min-h-small-input self-start flex flex-col items-center justify-center">
+                              <ConflictsInfo userId={userId()} />
+                            </div>
+                          );
+                        }}
+                      </Match>
+                      <Match
+                        when={props.name === "clients" && clientsGroupsMode() === "separate" && clientGroups().length}
+                      >
+                        <Button
+                          class="min-h-small-input self-start"
+                          title={
+                            <div>
+                              <div>
+                                <Show
+                                  when={clientGroupId()}
+                                  fallback={translations.fieldName("attendantClientGroupId.none")}
+                                >
+                                  {(clientGroupId) => (
+                                    <>
+                                      {translations.fieldName("attendantClientGroupId.some")}{" "}
+                                      <SharedClientGroupLabel groupId={clientGroupId()} />
+                                    </>
+                                  )}
+                                </Show>
+                              </div>
+                              <Show when={!props.viewMode}>
+                                <div>{translations.fieldName("attendantClientGroupId.click_to_toggle")}</div>
+                              </Show>
+                            </div>
+                          }
+                          onClick={() =>
+                            form.setFields(`clients.${index}.clientGroupId`, clientGroupId() ? "" : clientGroups()[0])
+                          }
+                          disabled={props.viewMode}
+                        >
+                          <clientGroupIcons.ClientGroup
+                            class={clientGroupId() ? "text-black" : "text-gray-400"}
+                            size="20"
+                          />
+                        </Button>
+                      </Match>
+                      <Match when={props.name === "clients" && clientGroupId()}>
+                        <div
+                          class="min-h-small-input self-start flex flex-col items-center justify-center"
+                          use:title={
+                            <div>
+                              <Capitalize
+                                text={t("with_colon", {text: translations.fieldName("attendantClientGroupId")})}
+                              />
+                              <div>
+                                <SharedClientGroupLabel groupId={clientGroupId()} />
+                              </div>
+                            </div>
+                          }
+                        >
+                          <clientGroupIcons.ClientGroup size="20" />
                         </div>
-                      );
-                    }}
-                  </Show>
+                      </Match>
+                    </Switch>
+                  </div>
                   <div class="flex gap-1">
                     <Show
                       when={userId()}
@@ -553,15 +628,17 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     </Show>
                   </div>
                   <Show when={props.name === "clients"}>
-                    <HideableSection class="col-span-full" show={userId() && clientsGroupsMode() === "separate"}>
+                    <HideableSection
+                      class="col-span-full"
+                      show={
+                        userId() && clientsGroupsMode() === "separate" && !props.viewMode && clientGroups().length > 1
+                      }
+                    >
                       {(show) => (
                         <div class="mt-px mb-1 flex items-center gap-1">
                           <div
-                            class={cx(
-                              "ml-6",
-                              form.data(`clients.${index}.clientGroupId`) ? undefined : "text-grey-text",
-                            )}
-                            use:title={capitalizeString(translations.fieldName("attendantClientGroupId"))}
+                            class="ml-6"
+                            use:title={<Capitalize text={translations.fieldName("attendantClientGroupId")} />}
                           >
                             <clientGroupIcons.ClientGroup class="text-current" size="22" />
                           </div>
@@ -605,7 +682,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               <div class="flex justify-between items-center gap-2">
                 <div class="flex gap-1">
                   <FieldLabel fieldName="clientsGroupsMode" umbrella />
-                  <InfoIcon href="/help" />
+                  <InfoIcon href="/help/meeting-client-groups" />
                 </div>
                 <Show when={!props.viewMode}>
                   <div class="self-start">
@@ -616,7 +693,12 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         {
                           value: "none",
                           label: () => (
-                            <span use:title={[translations.fieldName("clientsGroupsMode.none.desc"), {delay: 500}]}>
+                            <span
+                              use:title={[
+                                translations.fieldName("clientsGroupsMode.none.desc"),
+                                {delay: [800, undefined]},
+                              ]}
+                            >
                               {translations.fieldName("clientsGroupsMode.none")}
                             </span>
                           ),
@@ -633,7 +715,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                                       ? "clientsGroupsMode.shared.desc"
                                       : "clientsGroupsMode.shared.desc_no_shared_options",
                                 ),
-                                {delay: 500},
+                                {delay: [800, undefined]},
                               ]}
                             >
                               {translations.fieldName(
@@ -650,7 +732,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                               value: "separate",
                               label: () => (
                                 <span
-                                  use:title={[translations.fieldName("clientsGroupsMode.separate.desc"), {delay: 500}]}
+                                  use:title={[
+                                    translations.fieldName("clientsGroupsMode.separate.desc"),
+                                    {delay: [800, undefined]},
+                                  ]}
                                 >
                                   {translations.fieldName("clientsGroupsMode.separate")}
                                 </span>
