@@ -56,11 +56,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const [resetHovered, setResetHovered] = createSignal(false);
 
   const Content: VoidComponent<{readonly popOver: PopOverControl}> = (props) => {
-    const currentVisibility: VisibilityState = {};
-    for (const column of table.getAllLeafColumns()) {
-      currentVisibility[column.id] = column.getIsVisible();
-    }
-    setVisibility(currentVisibility);
+    setVisibility({...table.getState().columnVisibility});
     setSearch("");
     onMount(() => setTimeout(() => searchInput?.focus()));
     return (
@@ -157,12 +153,8 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 class="secondary small"
                 onClick={() =>
                   setVisibility((visibility) => {
-                    const defVis = defaultColumnVisibility()();
-                    if (!search()) {
-                      return defVis;
-                    }
                     const vis = {...visibility};
-                    for (const [id, defVisible] of Object.entries(defVis)) {
+                    for (const [id, defVisible] of Object.entries(defaultColumnVisibility()())) {
                       if (matchesSearch(id)) {
                         vis[id] = defVisible;
                       }
