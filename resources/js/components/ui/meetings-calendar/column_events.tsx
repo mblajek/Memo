@@ -15,6 +15,7 @@ import {AllDayTimeSpan, PartDayTimeSpan, TimeSpan} from "../calendar/types";
 import {HoverableMeetingEventBlock, HoverableMeetingEventBlockProps} from "./HoverableMeetingEventBlock";
 import {MeetingHoverCard} from "./MeetingHoverCard";
 import {MeetingRepeatIcon} from "./MeetingRepeatIcon";
+import {MeetingResourcesView} from "./MeetingResourcesView";
 import {TimeSpanSummary} from "./TimeSpanSummary";
 import {coloringToStyle} from "./colors";
 import {AttendantListItem} from "./meeting_details";
@@ -105,7 +106,6 @@ interface MeetingEventProps extends CommonProps {
 /** A block representing a meeting in the hours area of the calendar. */
 export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) => {
   const [props, blockProps] = splitProps(allProps, ["day", "timeSpan", "onClick"]);
-  const t = useLangFunc();
   const {dictionaries, meetingTypeDict} = useFixedDictionaries();
   const calendar = useColumnsCalendar();
   const meeting = () => blockProps.meeting;
@@ -178,16 +178,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                       text={meeting().notes!}
                     />
                   </Show>
-                  <Show when={meeting().resources.length}>
-                    <div>
-                      {t("parenthesised", {
-                        text: meeting()
-                          .resources.map((r) => dictionaries()?.getPositionById(r.resourceDictId).label)
-                          // Join by comma because Intl.ListFormat doesn't seem to work very well in Polish.
-                          .join(", "),
-                      })}
-                    </div>
-                  </Show>
+                  <MeetingResourcesView meeting={meeting()} />
                 </SeparatedSections>
               </div>
               <Show when={meeting().fromMeetingId}>
