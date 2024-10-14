@@ -178,7 +178,10 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                       text={meeting().notes!}
                     />
                   </Show>
-                  <MeetingResourcesView meeting={meeting()} />
+                  <MeetingResourcesView
+                    resourceIds={meeting().resources.map((r) => r.resourceDictId)}
+                    conflictingResourceIds={meeting()["resourceConflicts.*.resourceDictId"]}
+                  />
                 </SeparatedSections>
               </div>
               <Show when={meeting().fromMeetingId}>

@@ -67,7 +67,10 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
         </Show>
         <Show when={props.meeting.resources.length}>
           <FieldDisp field="resources">
-            <MeetingResourcesView meeting={props.meeting} />
+            <MeetingResourcesView
+              resourceIds={props.meeting.resources.map((r) => r.resourceDictId)}
+              conflictingResourceIds={props.meeting["resourceConflicts.*.resourceDictId"]}
+            />
           </FieldDisp>
         </Show>
       </div>

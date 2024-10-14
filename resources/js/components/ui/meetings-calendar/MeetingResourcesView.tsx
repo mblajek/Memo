@@ -1,22 +1,22 @@
 import {cx} from "components/utils";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
-import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {For, JSX, Show, VoidComponent} from "solid-js";
 import {calendarIcons} from "../icons";
 
 interface Props {
-  readonly meeting: TQMeetingResource;
+  readonly resourceIds: readonly string[];
+  readonly conflictingResourceIds?: readonly string[];
   readonly fallback?: JSX.Element;
 }
 
 export const MeetingResourcesView: VoidComponent<Props> = (props) => {
   const dictionaries = useDictionaries();
   return (
-    <Show when={props.meeting.resources.length} fallback={props.fallback}>
+    <Show when={props.resourceIds.length} fallback={props.fallback}>
       <div class="flex flex-wrap gap-0.5" style={{"line-height": "initial"}}>
-        <For each={props.meeting.resources}>
-          {({resourceDictId}) => {
-            const hasConflict = () => props.meeting["resourceConflicts.*.resourceDictId"]?.includes(resourceDictId);
+        <For each={props.resourceIds}>
+          {(id) => {
+            const hasConflict = () => props.conflictingResourceIds?.includes(id);
             return (
               <div
                 class={cx(
@@ -24,7 +24,7 @@ export const MeetingResourcesView: VoidComponent<Props> = (props) => {
                   hasConflict() ? "text-red-600" : undefined,
                 )}
               >
-                {dictionaries()?.getPositionById(resourceDictId)?.label}
+                {dictionaries()?.getPositionById(id)?.label}
                 <Show when={hasConflict()}>
                   <calendarIcons.Conflict class="text-current" size="1em" />
                 </Show>
