@@ -414,6 +414,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
     columnsByPrefix: translations.columnsByPrefix,
   });
+  const columnFilterStates = new ColumnFilterStates();
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
     entityURL,
@@ -578,7 +579,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       setEffectiveActiveColumnGroups(activeColumnGroups[0]());
     }
   });
-  const columnFilterStates = new ColumnFilterStates();
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,
