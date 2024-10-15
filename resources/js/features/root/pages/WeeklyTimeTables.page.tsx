@@ -547,7 +547,7 @@ export default (() => {
             >
               {(dayData) => (
                 <PaddedCell
-                  class="flex flex-col justify-between"
+                  class="h-full flex flex-col justify-between"
                   style={{
                     background: [
                       dayData().isFacilityWorkDay
