@@ -5,18 +5,27 @@ namespace App\Exceptions;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
 use Stringable;
+use Throwable;
 use UnitEnum;
 
+/** @mixin Throwable */
 trait ApiExceptionTrait
 {
+    public ?string $customMessage = null;
     public readonly string $errorCode;
     public readonly array $errorData;
     public readonly int $httpCode;
     protected array $validationErrors = [];
 
+    /** @throws static */
+    public function throw()
+    {
+        throw $this;
+    }
+
     public function getData(): array
     {
-        return ['code' => $this->errorCode, 'data' => $this->errorData];
+        return ['message' => $this->customMessage, 'code' => $this->errorCode, 'data' => $this->errorData];
     }
 
     public function getJson(): string
@@ -47,5 +56,12 @@ trait ApiExceptionTrait
     public function render(): JsonResponse
     {
         return $this->renderMany();
+    }
+
+    public function setMessage(string $message): self
+    {
+        $this->customMessage = $message;
+        $this->message = $this->getJson();
+        return $this;
     }
 }

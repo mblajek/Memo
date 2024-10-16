@@ -33,7 +33,6 @@ class DateHelper
         throw TimezoneException::fromTimezone($date->getTimezone());
     }
 
-
     public static function toDbString(DateTimeInterface $date): string
     {
         if ($date->getOffset() === 0) {

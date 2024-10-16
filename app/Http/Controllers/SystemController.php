@@ -10,8 +10,10 @@ use App\Http\Resources\FacilityResource;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Facility;
+use App\Services\Database\DatabaseDumpService;
 use App\Services\System\TranslationsService;
 use App\Utils\Date\DateHelper;
+use App\Utils\Nullable;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
@@ -137,6 +139,8 @@ class SystemController extends ApiController
                     new OA\Property(property: 'currentDate', type: 'datetime'),
                     new OA\Property(property: 'commitHash', type: 'string', nullable: true),
                     new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
+                    new OA\Property(property: 'lastDump', type: 'datetime', nullable: true),
+                    new OA\Property(property: 'cpu15m', type: 'float', nullable: true),
                 ])),
             ])),
         ]
@@ -144,8 +148,8 @@ class SystemController extends ApiController
     public function status(): JsonResponse
     {
         $cache = Cache::get('system_status');
-        if (is_array($cache) && count($cache) === 3) {
-            [$commitHash, $commitDateZulu, $cpu15m] = $cache;
+        if (is_array($cache) && count($cache) === 4) {
+            [$commitHash, $commitDateZulu, $cpu15m, $lastDump] = $cache;
         } else {
             try {
                 [$commitHash, $commitDate] = file(App::storagePath('app/git-version.txt'), FILE_IGNORE_NEW_LINES);
@@ -157,10 +161,11 @@ class SystemController extends ApiController
                 system('uptime');
                 $cpu15m = Str::match('/[.0-9]+$/', trim(ob_get_clean() ?? ''));
                 $cpu15m = strlen($cpu15m) ? floatval($cpu15m) : null;
+                $lastDump = Nullable::call(DatabaseDumpService::lastDumpDatetime(), DateHelper::toZuluString(...));
             } catch (Throwable) {
-                [$commitHash, $commitDateZulu, $cpu15m] = [null, null, null];
+                [$commitHash, $commitDateZulu, $cpu15m, $lastDump] = [null, null, null, null];
             }
-            Cache::put('system_status', [$commitHash, $commitDateZulu, $cpu15m], 15 /* 15s */);
+            Cache::put('system_status', [$commitHash, $commitDateZulu, $cpu15m, $lastDump], 15 /* 15s */);
         }
         return new JsonResponse([
             'data' => [
@@ -171,6 +176,7 @@ class SystemController extends ApiController
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'commitHash' => $commitHash,
                 'commitDate' => $commitDateZulu,
+                'lastDump' => $lastDump,
                 'cpu15m' => $cpu15m,
             ],
         ]);

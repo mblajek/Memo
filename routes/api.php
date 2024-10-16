@@ -111,6 +111,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [ClientGroupController::class, 'list']);
             Route::patch('/{clientGroup}', [ClientGroupController::class, 'patch']);
             Route::delete('/{clientGroup}', [ClientGroupController::class, 'delete']);
+            Route::post('/assign-to-attendants', [ClientGroupController::class, 'assignToAttendants']);
         });
         Route::prefix('/admin')->group(function () {
             Route::prefix('/attribute')->group(function () {

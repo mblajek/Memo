@@ -6,16 +6,21 @@ use App\Exceptions\ApiException;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\ClientGroup\ClientGroupResource;
 use App\Models\ClientGroup;
+use App\Models\Enums\AttendanceType;
 use App\Models\GroupClient;
 use App\Models\Facility;
 use App\Models\MeetingAttendant;
+use App\Rules\MemberExistsRule;
+use App\Rules\Valid;
 use App\Services\Client\ClientGroupService;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -47,7 +52,7 @@ class ClientGroupController extends ApiController
                 ]
             )
         ),
-        tags: ['Facility client'],
+        tags: ['Facility client group'],
         parameters: [new FacilityParameter()],
         responses: [
             new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [
@@ -79,7 +84,7 @@ class ClientGroupController extends ApiController
         path: '/api/v1/facility/{facility}/client-group/list',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Get client groups',
-        tags: ['Facility client'],
+        tags: ['Facility client group'],
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
@@ -127,7 +132,7 @@ class ClientGroupController extends ApiController
                 ]
             )
         ),
-        tags: ['Facility client'],
+        tags: ['Facility client group'],
         parameters: [
             new FacilityParameter(),
             new OA\Parameter(
@@ -169,7 +174,7 @@ class ClientGroupController extends ApiController
         path: '/api/v1/facility/{facility}/client-group/{clientGroup}',
         description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
         summary: 'Delete client group',
-        tags: ['Facility client'],
+        tags: ['Facility client group'],
         parameters: [
             new FacilityParameter(),
             new OA\Parameter(
@@ -197,5 +202,62 @@ class ClientGroupController extends ApiController
             ClientGroup::query()->where('id', $clientGroup->id)->delete();
         });
         return new JsonResponse();
+    }
+
+    #[OA\Post(
+        path: '/api/v1/facility/{facility}/client-group/assign-to-attendants',
+        description: new PermissionDescribe([Permission::facilityAdmin, Permission::facilityStaff]),
+        summary: 'Update client group',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['clientUserId', 'clientGroupId', 'replaceAll'],
+                properties: [
+                    new OA\Property(
+                        property: 'clientUserId', type: 'string', format: 'uuid', example: 'UUID', nullable: true
+                    ),
+                    new OA\Property(
+                        property: 'clientGroupId', type: 'string', format: 'uuid', example: 'UUID', nullable: false
+                    ),
+                    new OA\Property(property: 'replaceAll', type: 'bool', example: false, nullable: false),
+                ]
+            )
+        ),
+        tags: ['Facility client group'],
+        parameters: [new FacilityParameter()],
+        responses: [
+            new OA\Response(
+                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
+                new OA\Property(
+                    property: 'data', type: 'array', items: new OA\Items(
+                    ref: '#/components/schemas/ClientGroupAssignResource'
+                ),
+                ),
+            ])
+            ),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ]
+    )] /** @throws ApiException */
+    public function assignToAttendants(
+        /** @noinspection PhpUnusedParameterInspection */
+        Facility $facility,
+        ClientGroupService $clientGroupService
+    ): JsonResource {
+        $facilityId = $this->getFacilityOrFail()->id;
+        $developerPermission = PermissionMiddleware::permissions()->developer;
+        $data = $this->validate([
+            'client_user_id' => Valid::uuid([new MemberExistsRule(AttendanceType::Client),], nullable: true),
+            'client_group_id' => Valid::uuid(
+                [Rule::exists('client_groups', 'id')->where('facility_id', $facilityId)],
+                nullable: $developerPermission,
+            ),
+            'replace_all' => Valid::bool($developerPermission ? [] : ['declined']),
+        ]);
+        return $clientGroupService->assignToAttendants(
+            facilityId: '8ebbd98c-0bc3-4850-9120-3544e6018e54',
+            clientUserId: $data['client_user_id'],
+            groupId: $data['client_group_id'],
+            replaceAll: $data['replace_all'],
+        );
     }
 }
