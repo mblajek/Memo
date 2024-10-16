@@ -160,24 +160,26 @@ class NnMapper {
   private readonly writer;
   private readonly encoder = new TextEncoder();
 
-  constructor(readonly filePathBase: string) {
-    this.file = Deno.openSync(
-      `${filePathBase}_${new Date().toISOString().slice(0, 19).replaceAll(/[-:]/g, "").replace("T", "_")}.csv`,
-      {
-        write: true,
-        createNew: true,
-      },
-    );
-    this.writer = this.file.writable.getWriter();
-    this.write("nn,id,type\n");
+  constructor(readonly filePathBase: string | null) {
+    if (filePathBase) {
+      this.file = Deno.openSync(
+        `${filePathBase}_${new Date().toISOString().slice(0, 19).replaceAll(/[-:]/g, "").replace("T", "_")}.csv`,
+        {
+          write: true,
+          createNew: true,
+        },
+      );
+      this.writer = this.file.writable.getWriter();
+      this.write("nn,id,type\n");
+    }
   }
 
   async close() {
-    await this.writer.close();
+    await this.writer?.close();
   }
 
   private async write(line: string) {
-    await this.writer.write(this.encoder.encode(line));
+    await this.writer?.write(this.encoder.encode(line));
   }
 
   async set({nn, id, type}: {nn: string | readonly string[]; id: string; type: string}) {
@@ -572,6 +574,17 @@ try {
         object: {
           name: clientPatch.name,
           client: await attributeValues(clientPatch.client),
+        },
+      });
+    }
+    for (const clientGroup of trackProgress(prepared.clientGroups, "client groups")) {
+      await apiCreate({
+        nn: clientGroup.nn,
+        path: `facility/${facilityId}/client-group`,
+        type: "clientGroup",
+        object: {
+          clients: clientGroup.clients.map((c) => ({userId: nnMapper.get(c.clientNn), role: c.role})),
+          notes: clientGroup.notes,
         },
       });
     }

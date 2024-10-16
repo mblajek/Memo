@@ -4,7 +4,7 @@ export interface ImportConfig {
   /** Path to the prepared facility contents JSON file. */
   readonly preparedFile: string;
   /** Path to the CSV mapping file to create. Time and extension is appended. */
-  readonly nnMappingFileBase: string;
+  readonly nnMappingFileBase: string | null;
   /** The URL to the Memo app, in the form `https://memo.host/`. */
   readonly memoURL: string;
   readonly facilityId: string;

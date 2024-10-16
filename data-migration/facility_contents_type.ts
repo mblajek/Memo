@@ -10,6 +10,7 @@ export interface FacilityContents {
   readonly facilityStaff?: readonly FacilityStaff[];
   readonly clients?: readonly Client[];
   readonly patchClients?: readonly ClientPatch[];
+  readonly clientGroups?: readonly ClientGroup[];
 
   readonly meetings?: readonly Meeting[];
 }
@@ -102,6 +103,17 @@ export interface ClientPatch {
   readonly client: AttributeValues;
 }
 
+export interface ClientGroup {
+  readonly nn?: string | readonly string[];
+  readonly clients: readonly ClientGroupClient[];
+  readonly notes: string | null;
+}
+
+export interface ClientGroupClient {
+  readonly clientNn: string;
+  readonly role: string | null;
+}
+
 export interface AttributeValues {
   readonly [apiName: string]: AttributeValue | undefined;
 }
@@ -162,6 +174,7 @@ extend ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "extendDic
   Attributes: ${contents.dictionariesAndAttributes?.filter((a) => a.kind === "createAttribute").length || 0}
   Facility staff: ${contents.facilityStaff?.length || 0}
   Clients: ${contents.clients?.length || 0} + patch ${contents.patchClients?.length || 0}
+  Client groups: ${contents.clientGroups?.length || 0}
   Meetings: ${contents.meetings?.length || 0}
 `;
 }
