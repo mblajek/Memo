@@ -7,7 +7,6 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
-
 class DatabaseDumpService
 {
     public const string DUMP_DATETIME_FORMAT = 'Ymd-His';
