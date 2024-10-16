@@ -19,7 +19,9 @@ export function useUserMeetingsStats(
   userId: Accessor<string>,
 ): Accessor<UserMeetingsStats | undefined> {
   const {dataQuery} = createTQuery({
-    entityURL: `facility/${activeFacilityId()}/user/${type === "staff" ? "staff" : type === "clients" ? "client" : (type satisfies never)}`,
+    entityURL: () =>
+      activeFacilityId() &&
+      `facility/${activeFacilityId()}/user/${type === "staff" ? "staff" : type === "clients" ? "client" : (type satisfies never)}`,
     prefixQueryKey: [...FacilityMeeting.keys.meeting(), "userStats"],
     requestCreator: staticRequestCreator(() => ({
       columns: [

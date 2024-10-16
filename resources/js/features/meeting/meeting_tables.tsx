@@ -9,6 +9,7 @@ import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/Uu
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {actionIcons} from "components/ui/icons";
+import {MeetingResourcesView} from "components/ui/meetings-calendar/MeetingResourcesView";
 import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {htmlAttributes, useLangFunc} from "components/utils";
@@ -346,7 +347,25 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnGroups: "meeting_multicolumn",
     },
     workTimeNotes: {name: "notes", columnGroups: "meeting_multicolumn"},
-    resources: {name: "resources.*.dictId", columnGroups: "meeting_multicolumn"},
+    resources: {
+      name: "resources.*.dictId",
+      columnDef: {
+        cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <ShowCellVal v={props.v}>
+              {(v) => (
+                <MeetingResourcesView
+                  resourceIds={v()}
+                  conflictingResourceIds={props.row["resourceConflicts.*.resourceDictId"]}
+                />
+              )}
+            </ShowCellVal>
+          </ScrollableCell>
+        )),
+      },
+      columnGroups: "meeting_multicolumn",
+    },
+    resourcesCount: {name: "resources.count", columnGroups: "meeting_multicolumn", initialVisible: false},
     resourceConflictsExist: {
       name: "resourceConflicts.exists",
       columnGroups: "meeting_multicolumn",
@@ -355,6 +374,15 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     },
     resourceConflictsResources: {
       name: "resourceConflicts.*.resourceDictId",
+      columnDef: {
+        cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <ShowCellVal v={props.v}>
+              {(v) => <MeetingResourcesView resourceIds={v()} conflictingResourceIds={v()} />}
+            </ShowCellVal>
+          </ScrollableCell>
+        )),
+      },
       columnGroups: "meeting_multicolumn",
       initialVisible: false,
       persistVisibility: false,

@@ -40,7 +40,7 @@ export function useModelQuerySpecs() {
     },
     userStaff: () => ({
       querySpec: {
-        entityURL: `facility/${activeFacilityId()}/user/staff`,
+        entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/staff`,
         prefixQueryKey: FacilityStaff.keys.staff(),
         sort: [
           {type: "column", column: "staff.isActive", desc: true},
@@ -59,7 +59,7 @@ export function useModelQuerySpecs() {
     userClient: ({showBirthDateWhenSelected = false} = {}) => {
       return {
         querySpec: {
-          entityURL: `facility/${activeFacilityId()}/user/client`,
+          entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/client`,
           prefixQueryKey: FacilityClient.keys.client(),
           sort: [
             {type: "column", column: "name", desc: false},
@@ -100,7 +100,7 @@ export function useModelQuerySpecs() {
     },
     userStaffOrClient: () => ({
       querySpec: {
-        entityURL: `facility/${activeFacilityId()}/user`,
+        entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user`,
         prefixQueryKey: FacilityUsers.keys.user(),
         intrinsicFilter: {
           type: "op",
