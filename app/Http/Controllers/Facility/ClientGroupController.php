@@ -254,7 +254,7 @@ class ClientGroupController extends ApiController
             'replace_all' => Valid::bool($developerPermission ? [] : ['declined']),
         ]);
         return $clientGroupService->assignToAttendants(
-            facilityId: '8ebbd98c-0bc3-4850-9120-3544e6018e54',
+            facilityId: $facilityId,
             clientUserId: $data['client_user_id'],
             groupId: $data['client_group_id'],
             replaceAll: $data['replace_all'],
