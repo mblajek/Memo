@@ -130,9 +130,13 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                       <Button
                         class="self-center"
                         onClick={() => {
-                          document
-                            .querySelector(`[data-header-for-column="${column.id}"]`)
-                            ?.scrollIntoView({inline: "center", behavior: "smooth"});
+                          const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
+                          header?.scrollIntoView({inline: "center", behavior: "smooth"});
+                          header?.animate([{}, {backgroundColor: "var(--tc-select)"}], {
+                            direction: "alternate",
+                            duration: 230,
+                            iterations: 6,
+                          });
                           props.popOver.close();
                         }}
                         title={t("tables.scroll_to_column")}
