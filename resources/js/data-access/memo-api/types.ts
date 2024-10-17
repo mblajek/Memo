@@ -7,7 +7,7 @@ export namespace Api {
   export type Id = string;
 
   export interface Entity {
-    id: Id;
+    readonly id: Id;
   }
 
   /** Comma-separated UUIDs. */
@@ -29,21 +29,23 @@ export namespace Api {
     export type Delete<T extends object> = {readonly data: T};
   }
 
-  export type ErrorResponse = {
-    errors: Error[];
-  };
+  export interface ErrorResponse {
+    readonly errors: readonly Error[];
+  }
 
-  export type BaseError = {
-    code: string;
-    data?: Partial<Record<string, string | string[]>>;
-    trace?: unknown;
-  };
+  export interface BaseError {
+    readonly code: string;
+    readonly data?: ErrorData;
+    readonly trace?: unknown;
+  }
 
-  export type ValidationError = {
-    field: string;
-    code: string;
-    data?: Partial<Record<string, string | string[]>>;
-  };
+  export interface ValidationError {
+    readonly field: string;
+    readonly code: string;
+    readonly data?: ErrorData;
+  }
+
+  type ErrorData = Readonly<Partial<Record<string, string | readonly string[]>>>;
 
   export type Error = BaseError | ValidationError;
 

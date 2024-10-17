@@ -5,7 +5,6 @@ import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {JSX, Show, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Floating} from "../Floating";
-import s from "./HoverableMeetingEventBlock.module.scss";
 import {CANCELLED_MEETING_COLORING, COMPLETED_MEETING_COLORING, Coloring} from "./colors";
 
 export interface HoverableMeetingEventBlockProps {
@@ -64,19 +63,23 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
           ? CANCELLED_MEETING_COLORING
           : (undefined as never),
   );
-  const [isBlinking, setIsBlinking] = createSignal(false);
-  let blinkTimer: ReturnType<typeof setTimeout> | undefined;
+  let referenceElem: HTMLDivElement | undefined;
+  let anim: Animation | undefined;
   createEffect((prevBlink) => {
     if (props.blink && props.blink !== prevBlink) {
-      setIsBlinking(false);
-      clearTimeout(blinkTimer);
-      setTimeout(() => {
-        setIsBlinking(true);
-        blinkTimer = setTimeout(() => setIsBlinking(false), BLINK.durationIntervalMs * BLINK.count);
-      });
+      anim?.cancel();
+      anim = referenceElem?.animate(
+        [{outlineOffset: "-1px"}, {opacity: "0.6", outlineWidth: "6px", outlineOffset: "-7px"}],
+        {
+          direction: "alternate",
+          easing: "ease-in-out",
+          duration: BLINK.durationIntervalMs / 2,
+          iterations: BLINK.count * 2,
+        },
+      );
     } else if (props.blink === false) {
-      setIsBlinking(false);
-      clearTimeout(blinkTimer);
+      anim?.cancel();
+      anim = undefined;
     }
     return props.blink;
   });
@@ -102,14 +105,11 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
     <Floating
       reference={
         <Dynamic
+          ref={referenceElem}
           component={props.contents}
           hovered={hovered()}
           coloring={coloring()}
-          class={cx("overflow-clip", isBlinking() ? s.blink : undefined)}
-          style={{
-            "animation-duration": `${BLINK.durationIntervalMs / 2}ms`,
-            "animation-iteration-count": BLINK.count * 2,
-          }}
+          class="overflow-clip outline outline-0 outline-memo-active"
           data-entity-id={props.entityId}
           onMouseEnter={[setHovered, true]}
           onMouseLeave={[setHovered, false]}

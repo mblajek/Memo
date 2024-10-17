@@ -145,5 +145,6 @@ meeting:
   attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
   isRemote: "spotkanie zdalne"
   resources: "zasoby"
+  resources.count: "$t(models.meeting.resources)$t(models.generic.count_suffix)"
   resourceConflicts.exists: "konflikt zasobów"
   resourceConflicts.*.resourceDictId: "konflikt$t(thin_n_thin)zasoby"

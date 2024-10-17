@@ -152,7 +152,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   );
   const {dataQuery: clientsWithGroupsDataQuery} = createTQuery({
     prefixQueryKey: FacilityClient.keys.client(),
-    entityURL: `facility/${activeFacilityId()}/user/client`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/client`,
     requestCreator: staticRequestCreator((schema) => {
       const reductor = new FilterReductor(schema);
       return {
@@ -389,6 +389,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     determineClientsGroupsMode(formData);
                   }
                 } else {
+                  if (prev?.clientsGroupsMode === "none" && !props.viewMode) {
+                    for (let i = 0; i < formData.clients.length; i++) {
+                      setAttendanceGroup(formData, i, groupsByClientId().get(formData.clients[i]!.userId)?.[0] || "");
+                    }
+                  }
                   determineClientsGroupsMode(formData);
                 }
                 setAttendanceGroups(form.data());
