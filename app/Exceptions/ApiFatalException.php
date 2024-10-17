@@ -8,12 +8,6 @@ class ApiFatalException extends RuntimeException
 {
     use ApiExceptionTrait;
 
-    /** @throws static */
-    public function throw()
-    {
-        throw $this;
-    }
-
     public function __construct(string $errorCode, array $errorData = [])
     {
         $this->errorCode = $errorCode;

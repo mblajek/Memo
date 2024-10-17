@@ -40,13 +40,13 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
           "grid-template-rows": "min-content 1fr",
         }}
       >
-        <div class="bg-gray-300 row-span-full rounded-sm -m-px" style={{"grid-column": "content"}} />
+        <div class="bg-gray-300 row-span-full rounded-xs -m-px" style={{"grid-column": "content"}} />
         <div class="col-span-full row-start-1 grid grid-rows-subgrid grid-cols-subgrid">
           <For each={weekdays}>
             {({exampleDay, isWeekend}) => (
               <div
                 class={cx(
-                  "bg-white rounded-sm text-center uppercase text-xs overflow-clip",
+                  "bg-white rounded-xs text-center uppercase text-xs overflow-clip",
                   isWeekend ? "text-red-800" : "text-black",
                 )}
               >
@@ -73,7 +73,7 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
         >
           <For each={[...daysRange()]}>
             {(day, index) => (
-              <div class={cx("rounded-sm overflow-clip", index() % 7 ? undefined : "col-start-1")}>
+              <div class={cx("rounded-xs overflow-clip", index() % 7 ? undefined : "col-start-1")}>
                 {calendarDaysMap().get(day.toMillis())?.content()}
               </div>
             )}

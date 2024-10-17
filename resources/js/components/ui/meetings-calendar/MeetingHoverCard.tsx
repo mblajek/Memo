@@ -8,8 +8,8 @@ import {For, Show, VoidComponent} from "solid-js";
 import {Capitalize} from "../Capitalize";
 import {calendarIcons, facilityIcons} from "../icons";
 import {RichTextView} from "../RichTextView";
-import {ThingsList} from "../ThingsList";
 import {AttendantListItem, FieldDisp} from "./meeting_details";
+import {MeetingResourcesView} from "./MeetingResourcesView";
 
 interface Props {
   readonly meeting: TQMeetingResource;
@@ -67,21 +67,9 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
         </Show>
         <Show when={props.meeting.resources.length}>
           <FieldDisp field="resources">
-            <ThingsList
-              things={props.meeting.resources}
-              map={({resourceDictId}) => {
-                const conflict = () => props.meeting["resourceConflicts.*.resourceDictId"].includes(resourceDictId);
-                return (
-                  <span class={conflict() ? "text-red-600" : undefined}>
-                    {dictionaries()?.getPositionById(resourceDictId).label}
-                    <Show when={conflict()}>
-                      {" "}
-                      <calendarIcons.Conflict class="inlineIcon" />
-                    </Show>
-                  </span>
-                );
-              }}
-              mode="commas"
+            <MeetingResourcesView
+              resourceIds={props.meeting.resources.map((r) => r.resourceDictId)}
+              conflictingResourceIds={props.meeting["resourceConflicts.*.resourceDictId"]}
             />
           </FieldDisp>
         </Show>
