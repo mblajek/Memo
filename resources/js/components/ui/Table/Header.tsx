@@ -55,7 +55,7 @@ export const Header: VoidComponent<Props> = (props) => {
       </Show>
       <Show when={props.ctx.column.getCanResize()}>
         <div
-          ref={(div) => div.addEventListener("touchstart", (e) => resizeHandler()(e), {passive: true})}
+          on:touchstart={{handleEvent: (e) => resizeHandler()(e), passive: true}}
           class={cx(
             "absolute top-0 right-0 h-full cursor-col-resize w-[5px] select-none touch-none",
             props.ctx.column.getIsResizing() ? "bg-memo-active" : "hover:bg-gray-400",

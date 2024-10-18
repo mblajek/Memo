@@ -102,7 +102,7 @@ export function useCalendarBlocksAndEvents({
   const {meetingCategoryDict, meetingTypeDict} = useFixedDictionaries();
   const {dataQuery: meetingsDataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     requestCreator: createCalendarRequestCreator({
       calendarFunction,
       daysRange: () =>

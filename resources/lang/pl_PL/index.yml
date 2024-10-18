@@ -100,8 +100,7 @@ form_page_leave_confirmation:
 about_page:
   app_version: "Wersja aplikacji:"
   app_env: "Środowisko:"
-  commit_date: "Data wersji:"
-  commit_hash: "Identyfikator wersji:"
+  commit_info: "Commit:"
   cpu_load: "Obciążenie CPU:"
 
 preview: "Podgląd"

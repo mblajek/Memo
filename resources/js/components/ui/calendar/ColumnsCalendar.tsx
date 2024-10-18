@@ -158,17 +158,14 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           <For each={props.columns}>{(col) => <div class={s.cell}>{col.header()}</div>}</For>
         </div>
         <div
-          ref={(div) => {
-            div.addEventListener(
-              "wheel",
-              (e) => {
-                if (e.altKey) {
-                  props.onWheelWithAlt?.(e, "allDay");
-                  e.preventDefault();
-                }
-              },
-              {passive: false},
-            );
+          on:wheel={{
+            handleEvent: (e) => {
+              if (e.altKey) {
+                props.onWheelWithAlt?.(e, "allDay");
+                e.preventDefault();
+              }
+            },
+            passive: false,
           }}
           class={s.columnsAllDayArea}
         >
@@ -176,17 +173,14 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
         </div>
         <GetRef ref={setHoursArea} waitForMount>
           <div
-            ref={(div) => {
-              div.addEventListener(
-                "wheel",
-                (e) => {
-                  if (e.altKey) {
-                    props.onWheelWithAlt?.(e, "hours");
-                    e.preventDefault();
-                  }
-                },
-                {passive: false},
-              );
+            on:wheel={{
+              handleEvent: (e) => {
+                if (e.altKey) {
+                  props.onWheelWithAlt?.(e, "hours");
+                  e.preventDefault();
+                }
+              },
+              passive: false,
             }}
             class={s.hoursArea}
             onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}

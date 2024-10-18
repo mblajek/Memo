@@ -82,6 +82,7 @@ export default [
       "prefer-const": "warn",
       "sort-imports": "off",
       "sort-keys": "off",
+      "solid/jsx-no-undef": "off",
     },
     linterOptions: {
       reportUnusedDisableDirectives: "error",
