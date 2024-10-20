@@ -9,6 +9,10 @@ exception:
     translation: "Błędna konfiguracja tłumaczeń"
     tquery: "Błędna konfiguracja tabel"
     unexpected: "Błąd konfiguracji"
+  notification:
+    sms:
+      invalid_number_format: "Niepoprawny format numeru telefonu: {{phoneNumber}}"
+      message_too_long: "Za długa treść wiadomości: ({{length, number}} > {{max, number}})"
   validation: "Przesłano niepoprawne dane"
   form_submit: "Błąd przetwarzania formularza"
   unauthorised: "Brak autoryzacji"
