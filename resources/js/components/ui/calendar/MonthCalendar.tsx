@@ -56,18 +56,15 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
           </For>
         </div>
         <div
-          ref={(div) =>
-            div.addEventListener(
-              "wheel",
-              (e) => {
-                if (e.altKey) {
-                  props.onWheelWithAlt?.(e);
-                  e.preventDefault();
-                }
-              },
-              {passive: false},
-            )
-          }
+          on:wheel={{
+            handleEvent: (e) => {
+              if (e.altKey) {
+                props.onWheelWithAlt?.(e);
+                e.preventDefault();
+              }
+            },
+            passive: false,
+          }}
           class="col-span-full row-start-2 grid grid-cols-subgrid gap-px overflow-x-clip overflow-y-auto"
           style={{"grid-auto-rows": "1fr"}}
         >
