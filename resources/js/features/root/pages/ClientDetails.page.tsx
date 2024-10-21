@@ -118,7 +118,7 @@ export default (() => {
                             <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
                               {(show) => <TextField name="name" disabled={!show()} />}
                             </HideableSection>
-                            <ClientFields editMode={editMode()} />
+                            <ClientFields editMode={editMode()} client={user()} />
                             <Switch>
                               <Match when={editMode()}>
                                 <FelteSubmit cancel={formCancel} />
