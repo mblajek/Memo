@@ -10,6 +10,8 @@ export const SHORT_CODE_EMPTY = "-";
 
 type ClientSpecificFields = AttributableMarker<"client"> & {
   readonly groupIds: readonly string[] | null;
+  readonly contactPhone?: string | null;
+  readonly contactEmail?: string | null;
 };
 
 export type ClientResourceForCreate = Pick<ClientResource, "id" | "name"> & {

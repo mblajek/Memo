@@ -58,4 +58,22 @@ class ExceptionFactory
     {
         return new ApiException(409, 'exception.user_not_managed_by_facility');
     }
+
+    public static function smsInvalidNumberFormat(string $phoneNumber): ApiException
+    {
+        return new ApiException(
+            400,
+            'exception.notification.sms.invalid_number_format',
+            ['phoneNumber' => $phoneNumber],
+        );
+    }
+
+    public static function smsMessageTooLong(int $max, int $length): ApiException
+    {
+        return new ApiException(
+            400,
+            'exception.notification.sms.message_too_long',
+            ['max' => $max, 'length' => $length],
+        );
+    }
 }

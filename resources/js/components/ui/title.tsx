@@ -5,8 +5,6 @@ import "tippy.js/dist/border.css";
 import "tippy.js/dist/tippy.css";
 import "./title.scss";
 
-export type TitleDirectiveType = JSX.Element | readonly [JSX.Element, Partial<ExtraTippyProps>];
-
 interface ExtraTippyProps extends Omit<TippyProps, "delay"> {
   /** The appear/disappear delay. Undefined means the default. */
   readonly delay?: number | readonly [number | null | undefined, number | null | undefined];
@@ -14,8 +12,8 @@ interface ExtraTippyProps extends Omit<TippyProps, "delay"> {
 
 declare module "solid-js" {
   namespace JSX {
-    interface Directives {
-      title: TitleDirectiveType;
+    interface DirectiveFunctions {
+      title: typeof title;
     }
   }
 }
@@ -104,6 +102,8 @@ class TippySingletonManager {
 
 const tippySingletonManager = new TippySingletonManager();
 
+export type TitleDirectiveType = JSX.Element | readonly [JSX.Element, Partial<ExtraTippyProps>];
+
 /**
  * A replacement for the title attribute, using tippy.js.
  *
@@ -124,7 +124,7 @@ const tippySingletonManager = new TippySingletonManager();
  *   The easiest workaround is to wrap the (potentially) disabled element in a div or span and put
  *   the title on that element.
  */
-export function title(element: Element, accessor: Accessor<TitleDirectiveType>) {
+export function title(element: HTMLElement, accessor: Accessor<TitleDirectiveType>) {
   let thisTippy: Instance | undefined;
   createEffect(
     on(accessor, (value) => {

@@ -176,7 +176,7 @@ export default (() => {
   );
   const {dataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     requestCreator: staticRequestCreator(() => ({
       columns: COLUMNS.map((column) => ({type: "column", column})),
       filter: {
@@ -547,7 +547,7 @@ export default (() => {
             >
               {(dayData) => (
                 <PaddedCell
-                  class="flex flex-col justify-between"
+                  class="h-full flex flex-col justify-between"
                   style={{
                     background: [
                       dayData().isFacilityWorkDay

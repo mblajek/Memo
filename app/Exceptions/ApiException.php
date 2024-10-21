@@ -9,7 +9,7 @@ class ApiException extends Exception
     use ApiExceptionTrait;
 
     /** @throws static */
-    public function throw()
+    public function throw(): never
     {
         throw $this;
     }

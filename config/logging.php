@@ -1,5 +1,6 @@
 <?php
 
+use App\Notification\Dev\DevNotificationLogFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -53,7 +54,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['daily'],
             'ignore_exceptions' => false,
         ],
 
@@ -63,9 +64,17 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
         ],
 
+        'dev_notifications' => [
+            'driver' => 'daily',
+            'tap' => [DevNotificationLogFormatter::class],
+            'path' => storage_path('logs/dev_notifications.log'),
+            'level' => 'debug',
+            'days' => 4,
+        ],
+
         'daily' => [
             'driver' => 'daily',
-            'path' => storage_path('logs/laravel.log'),
+            'path' => storage_path('logs/memo.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => 14,
         ],

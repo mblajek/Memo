@@ -7,65 +7,87 @@ import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Ta
 import {AttributeColumnsConfig} from "components/ui/Table/TQueryTable";
 import {NullFilterControl} from "components/ui/Table/tquery_filters/NullFilterControl";
 import {TextualFilterControl} from "components/ui/Table/tquery_filters/TextualFilterControl";
+import {WarningMark} from "components/ui/WarningMark";
 import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
 import {EmptyValueSymbol} from "components/ui/symbols";
-import {DATE_FORMAT} from "components/utils";
-import {PartialAttributesSelection} from "components/utils/attributes_selection";
-import {SHORT_CODE_EMPTY} from "data-access/memo-api/resources/client.resource";
+import {title} from "components/ui/title";
+import {DATE_FORMAT, useLangFunc} from "components/utils";
+import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
+import {ClientResource, SHORT_CODE_EMPTY} from "data-access/memo-api/resources/client.resource";
 import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
 
+type _Directives_ = typeof title;
+
 interface Props {
   readonly editMode: boolean;
   readonly showAllAttributes?: boolean;
+  readonly client?: ClientResource;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DETAILS_ATTRIBUTES_SELECTION: PartialAttributesSelection<AttributeParams<any>> = {
-  model: "client",
-  includeFixed: true,
-  fixedOverrides: {
-    shortCode: {
-      isEmpty: (shortCode) => shortCode === SHORT_CODE_EMPTY,
-      view: (shortCode) => (
-        <Show
-          when={shortCode()}
-          fallback={
-            // Empty value is only temporary, it will be loaded with the next invalidation.
-            <SmallSpinner />
-          }
-        >
-          {shortCode()}
-        </Show>
-      ),
-    } satisfies AttributeParams<string>,
-    notes: false,
-    birthDate: {
-      view: (date) => <span>{DateTime.fromISO(date()).toLocaleString(DATE_FORMAT)}</span>,
-    } satisfies AttributeParams<string>,
-    contactEmail: {
-      view: (email) => <Email email={email()} />,
-    } satisfies AttributeParams<string>,
-    contactPhone: {
-      view: (phone) => <Phone class="font-semibold" phone={phone()} />,
-    } satisfies AttributeParams<string>,
-    documentsLinks: {
-      view: (links) => <LinksList links={links()} />,
-    } satisfies AttributeParams<string[]>,
-  },
-};
 
 /** The client form fields, consisting of fixed and non-fixed attributes, as well as possibly other fields. */
 export const ClientFields: VoidComponent<Props> = (props) => {
+  const t = useLangFunc();
+  const {notificationMethodDict} = useFixedDictionaries();
   return (
     <>
       <AttributeFields
         model="client"
         minRequirementLevel={props.showAllAttributes ? undefined : props.editMode ? "optional" : "recommended"}
         nestFieldsUnder="client"
-        selection={DETAILS_ATTRIBUTES_SELECTION}
+        selection={{
+          model: "client",
+          includeFixed: true,
+          fixedOverrides: {
+            shortCode: {
+              isEmpty: (shortCode) => shortCode === SHORT_CODE_EMPTY,
+              view: (shortCode) => (
+                <Show
+                  when={shortCode()}
+                  fallback={
+                    // Empty value is only temporary, it will be loaded with the next invalidation.
+                    <SmallSpinner />
+                  }
+                >
+                  {shortCode()}
+                </Show>
+              ),
+            } satisfies AttributeParams<string>,
+            notes: false,
+            birthDate: {
+              view: (date) => <span>{DateTime.fromISO(date()).toLocaleString(DATE_FORMAT)}</span>,
+            } satisfies AttributeParams<string>,
+            contactEmail: {
+              view: (email) => <Email email={email()} />,
+            } satisfies AttributeParams<string>,
+            contactPhone: {
+              view: (phone) => <Phone class="font-semibold" phone={phone()} />,
+            } satisfies AttributeParams<string>,
+            notificationMethodDictIds: {
+              view: (methodIds, defaultView) => (
+                <div class="flex flex-wrap gap-1">
+                  <div>{defaultView()}</div>
+                  <Show
+                    when={
+                      props.client &&
+                      methodIds().includes(notificationMethodDict()?.sms.id || "") &&
+                      !props.client.client.contactPhone
+                    }
+                  >
+                    <div use:title={t("facility_user.client.notification_method_requires_contact_data")}>
+                      <WarningMark />
+                    </div>
+                  </Show>
+                </div>
+              ),
+            } satisfies AttributeParams<readonly string[]>,
+            documentsLinks: {
+              view: (links) => <LinksList links={links()} />,
+            } satisfies AttributeParams<readonly string[]>,
+          },
+        }}
         editMode={props.editMode}
       />
       <RichTextViewEdit name="client.notes" viewMode={!props.editMode} staticPersistenceKey="client.notes" />
