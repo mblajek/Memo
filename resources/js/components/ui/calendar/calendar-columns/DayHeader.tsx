@@ -4,8 +4,7 @@ import {title} from "components/ui/title";
 import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {DateTime} from "luxon";
 import {FaSolidCircleDot} from "solid-icons/fa";
-import {VoidComponent, splitProps} from "solid-js";
-import {Dynamic} from "solid-js/web";
+import {Show, VoidComponent, splitProps} from "solid-js";
 import {useHolidays} from "../holidays";
 
 type _Directives = typeof title;
@@ -28,22 +27,16 @@ export const DayHeader: VoidComponent<Props> = (allProps) => {
         }),
       })}
     >
-      <Dynamic
-        component={props.onDateClick ? Button : "div"}
-        class="flex items-center gap-1"
-        onClick={() => props.onDateClick?.()}
-      >
-        <div
-          class={cx("mb-0.5 ", {invisible: !props.day.hasSame(currentDate(), "day")})}
-          use:title={capitalizeString(t("calendar.today"))}
-        >
-          <FaSolidCircleDot class="text-red-700" size={10} />
-        </div>
+      <Button onClick={() => props.onDateClick?.()} class="flex items-center" disabled={!props.onDateClick}>
+        <Show when={props.day.hasSame(currentDate(), "day")}>
+          <div class="w-0 relative -left-3" use:title={capitalizeString(t("calendar.today"))}>
+            <FaSolidCircleDot class="text-red-700" size={10} />
+          </div>
+        </Show>
         <div class={cx("text-2xl", holidays.isHoliday(props.day) ? "underline decoration-1" : undefined)}>
           {props.day.day}
         </div>
-        <div style={{width: "10px"}} />
-      </Dynamic>
+      </Button>
       <div class="-mt-1.5 uppercase text-xs text-center">{props.day.weekdayLong}</div>
     </div>
   );

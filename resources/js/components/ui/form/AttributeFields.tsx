@@ -56,7 +56,8 @@ export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
 interface Props {
   readonly model: string;
   // The override type must match the attribute type.
-  readonly selection: PartialAttributesSelection<AttributeParams<unknown>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly selection: PartialAttributesSelection<AttributeParams<any>>;
   readonly minRequirementLevel?: RequirementLevel;
   readonly nestFieldsUnder?: string;
   readonly editMode: boolean;
@@ -64,7 +65,7 @@ interface Props {
 
 export interface AttributeParams<V> {
   readonly isEmpty?: (formValue: V) => boolean;
-  readonly view?: (formValue: Accessor<V>) => JSX.Element;
+  readonly view?: (formValue: Accessor<V>, defaultView: () => JSX.Element) => JSX.Element;
   readonly viewEmpty?: () => JSX.Element;
 }
 
@@ -296,7 +297,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
               {(viewEmpty) => viewEmpty()()}
             </Show>
           </Match>
-          <Match when={aProps.params?.view}>{(view) => view()(value)}</Match>
+          <Match when={aProps.params?.view}>{(view) => view()(value, defaultView)}</Match>
           <Match when="fallback">{defaultView()}</Match>
         </Switch>
       </div>
