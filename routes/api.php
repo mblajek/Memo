@@ -39,6 +39,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [SystemController::class, 'attributeList']);
         });
         Route::get('/status', [SystemController::class, 'status']);
+        Route::post('/log', [SystemController::class, 'log']);
     });
     Route::prefix('/user')->group(function () {
         Route::patch('', [UserController::class, 'patch']);

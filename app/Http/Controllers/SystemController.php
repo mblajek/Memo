@@ -10,13 +10,16 @@ use App\Http\Resources\FacilityResource;
 use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Facility;
+use App\Models\LogEntry;
 use App\Services\Database\DatabaseDumpService;
+use App\Services\System\LogService;
 use App\Services\System\TranslationsService;
 use App\Utils\Date\DateHelper;
 use App\Utils\Nullable;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
@@ -30,11 +33,13 @@ class SystemController extends ApiController
     protected function initPermissions(): void
     {
         $this->permissionOneOf(Permission::any);
+
+        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('log');
     }
 
     #[OA\Get(
         path: '/api/v1/system/translation/{lang}/list',
-        description: new PermissionDescribe(Permission::any),
+        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
         summary: 'All translations',
         tags: ['System'],
         parameters: [
@@ -180,5 +185,41 @@ class SystemController extends ApiController
                 'cpu15m' => $cpu15m,
             ],
         ]);
+    }
+
+    #[OA\Post(
+        path: '/api/v1/system/log',
+        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        summary: 'Add log entry',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['errorLevel', 'message'],
+                properties: [
+                    new OA\Property(property: 'errorLevel', type: 'string', enum: LogEntry::LEVELS, example: 'info'),
+                    new OA\Property(property: 'message', type: 'string', example: 'message'),
+                    new OA\Property(property: 'context', type: 'string', example: null, nullable: true),
+                ]
+            )
+        ),
+        tags: ['System'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ],
+    )] /** @throws Throwable */
+    public function log(
+        LogService $logService,
+        Request $request,
+    ): JsonResponse {
+        $data = $this->validate(LogEntry::getInsertValidator(['error_level', 'message', 'context']));
+        $logService->addEntry(
+            request: $request,
+            source: 'api',
+            errorLevel: $data['error_level'],
+            message: $data['message'],
+            context: $data['context'] ?? null,
+        );
+        return new JsonResponse();
     }
 }

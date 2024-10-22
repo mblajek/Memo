@@ -8,7 +8,7 @@
   - `php artisan cache:clear`
   - `rm storage/logs`
   - bez: `artisan config/event/route:cache`
-- do `x-new` skopiować plik `artisan` i 9 folderów:
+- do `x-new` skopiować plik `artisan`, `composer.json` i 9 folderów:
   - app
   - bootstrap
   - config
