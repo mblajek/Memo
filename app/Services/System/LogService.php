@@ -12,19 +12,26 @@ use ValueError;
 class LogService
 {
     /** @throws Throwable */
-    public function addEntry(Request $request, string $source, string $errorLevel, string $message, ?string $context)
-    {
+    public function addEntry(
+        Request $request,
+        string $source,
+        string $errorLevel,
+        string $message,
+        ?string $context,
+    ): string {
         if (!in_array($source, LogEntry::SOURCES, true)) {
             throw new ValueError("Source must be one of: " . implode(', ', LogEntry::SOURCES));
         }
-        (new LogEntry([
+        $logEntry = new LogEntry([
             'user_id' => PermissionMiddleware::permissions()->user?->id,
             'source' => $source,
             'client_ip' => $request->ip(),
             'user_agent_text_id' => Texts::getId($request->userAgent()),
             'error_level' => $errorLevel,
             'message' => $message,
-            'context' => $context,
-        ]))->saveOrFail();
+            'context_text_id' => Texts::getId($context),
+        ]);
+        $logEntry->saveOrFail();
+        return $logEntry->id;
     }
 }

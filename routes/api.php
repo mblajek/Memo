@@ -55,6 +55,10 @@ Route::prefix('/v1')->group(function () {
             Route::get('/migrate/{hash?}', [DeveloperController::class, 'migrate']);
             Route::post('/overwrite-metadata', [DeveloperController::class, 'overwriteMetadata']);
             Route::post('/patch-staff', [DeveloperController::class, 'patchStaff']);
+            Route::prefix('/log')->group(function () {
+                Route::get('/tquery', [DeveloperController::class, 'logTqueryGet']);
+                Route::post('/tquery', [DeveloperController::class, 'logTqueryPost']);
+            });
         });
         Route::prefix('/user')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);

@@ -14,7 +14,9 @@ return new class extends Migration {
             DMH::charUuid($table, 'id')->primary();
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
-            $table->string('text', 4096);
+            $table->integer('length');
+            $table->string('short_text', 16351);
+            $table->mediumText('long_text')->nullable();
         });
 
         Schema::create('log_entries', function (Blueprint $table) {
@@ -29,7 +31,7 @@ return new class extends Migration {
 
             DMH::ascii($table, 'error_level');
             $table->string('message', 4096);
-            $table->string('context', 4096)->nullable();
+            DMH::charUuid($table, 'context_text_id')->nullable();
 
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('user_agent_text_id')->references('id')->on('texts');

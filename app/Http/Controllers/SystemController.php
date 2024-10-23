@@ -203,7 +203,11 @@ class SystemController extends ApiController
         ),
         tags: ['System'],
         responses: [
-            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 201, description: 'Created', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'data', properties: [
+                    new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
+                ]),
+            ])),
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
@@ -213,13 +217,13 @@ class SystemController extends ApiController
         Request $request,
     ): JsonResponse {
         $data = $this->validate(LogEntry::getInsertValidator(['error_level', 'message', 'context']));
-        $logService->addEntry(
+        $logEntryIsd = $logService->addEntry(
             request: $request,
             source: 'api',
             errorLevel: $data['error_level'],
             message: $data['message'],
             context: $data['context'] ?? null,
         );
-        return new JsonResponse();
+        return new JsonResponse(['data' => ['id' => $logEntryIsd]], status: 201);
     }
 }

@@ -48,7 +48,7 @@ class LogEntry extends Model
         'user_agent_text_id',
         'error_level',
         'message',
-        'context',
+        'context_text_id',
     ];
 
     protected $casts = [
@@ -61,7 +61,7 @@ class LogEntry extends Model
         return match ($field) {
             'error_level' => Valid::trimmed([Rule::in(self::LEVELS)]),
             'message' => Valid::text(),
-            'context' => Valid::text(sometimes: true, nullable: true),
+            'context' => Valid::text(sometimes: true, nullable: true, max: 150_000),
         };
     }
 }
