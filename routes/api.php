@@ -39,6 +39,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [SystemController::class, 'attributeList']);
         });
         Route::get('/status', [SystemController::class, 'status']);
+        Route::post('/log', [SystemController::class, 'log']);
     });
     Route::prefix('/user')->group(function () {
         Route::patch('', [UserController::class, 'patch']);
@@ -54,6 +55,10 @@ Route::prefix('/v1')->group(function () {
             Route::get('/migrate/{hash?}', [DeveloperController::class, 'migrate']);
             Route::post('/overwrite-metadata', [DeveloperController::class, 'overwriteMetadata']);
             Route::post('/patch-staff', [DeveloperController::class, 'patchStaff']);
+            Route::prefix('/log')->group(function () {
+                Route::get('/tquery', [DeveloperController::class, 'logTqueryGet']);
+                Route::post('/tquery', [DeveloperController::class, 'logTqueryPost']);
+            });
         });
         Route::prefix('/user')->group(function () {
             Route::get('/list', [AdminUserController::class, 'list']);
@@ -111,6 +116,7 @@ Route::prefix('/v1')->group(function () {
             Route::get('/list', [ClientGroupController::class, 'list']);
             Route::patch('/{clientGroup}', [ClientGroupController::class, 'patch']);
             Route::delete('/{clientGroup}', [ClientGroupController::class, 'delete']);
+            Route::post('/assign-to-attendants', [ClientGroupController::class, 'assignToAttendants']);
         });
         Route::prefix('/admin')->group(function () {
             Route::prefix('/attribute')->group(function () {

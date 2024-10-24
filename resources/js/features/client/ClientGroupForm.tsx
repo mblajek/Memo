@@ -120,7 +120,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                         <div>
                           <div
                             class={cx("flex items-stretch min-w-0", userId() ? undefined : "opacity-40")}
-                            inert={userId() ? undefined : true}
+                            bool:inert={!userId()}
                           >
                             <div class="flex-grow">
                               <TextField

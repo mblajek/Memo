@@ -9,7 +9,7 @@ class ApiFatalException extends RuntimeException
     use ApiExceptionTrait;
 
     /** @throws static */
-    public function throw()
+    public function throw(): never
     {
         throw $this;
     }

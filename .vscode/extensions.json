@@ -1,8 +1,6 @@
 {
   "recommendations": [
-    "eamodio.gitlens",
     "github.vscode-github-actions",
-    "vitest.explorer",
     "DavidAnson.vscode-markdownlint",
     "esbenp.prettier-vscode",
     "bradlc.vscode-tailwindcss"

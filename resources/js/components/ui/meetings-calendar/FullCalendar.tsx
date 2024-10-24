@@ -176,7 +176,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   });
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
-    entityURL: `facility/${activeFacilityId()}/user/staff`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/staff`,
     requestCreator: staticRequestCreator({
       columns: [
         {type: "column", column: "id"},

@@ -289,7 +289,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       on(
         () => props.value,
         (propsValue) =>
-          api().setValue(Array.isArray(propsValue) ? propsValue : propsValue === undefined ? [] : [propsValue]),
+          api().setValue(
+            Array.isArray(propsValue) ? (propsValue as string[]) : propsValue === undefined ? [] : [propsValue],
+          ),
       ),
     );
   else if (formContext)
@@ -299,11 +301,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
         (formValue) => {
           if (Array.isArray(formValue)) {
             api().setValue(formValue as string[]);
-          } else if (formValue == undefined) {
+          } else if (formValue == undefined || formValue === "") {
             api().setValue([]);
             formContext.form.setData(props.name, props.multiple ? [] : "");
-          } else if (formValue === "" && !props.multiple) {
-            api().setValue([]);
           } else {
             api().setValue([formValue as string]);
           }
@@ -540,7 +540,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             [s.multiple!]: props.multiple,
             [s.small!]: props.small,
           })}
-          inert={isDisabled() || undefined}
+          bool:inert={isDisabled()}
         >
           <div
             {...api().controlProps}
@@ -588,7 +588,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
               class="bg-inherit"
               placeholder={api().value.length ? undefined : props.placeholder}
               // Without filtering, the input is used just for the placeholder.
-              inert={props.onFilterChange ? undefined : true}
+              bool:inert={!props.onFilterChange}
             />
             <div class={s.buttons}>
               {/* Display only one clear button at a time. */}

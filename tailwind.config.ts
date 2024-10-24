@@ -40,6 +40,10 @@ export default {
         // Reduce spacing between the disc and the text when using list-disc.
         disc: "'⦁ '",
       },
+      borderRadius: {
+        sm: "0.25rem",
+        xs: "0.125rem",
+      },
     },
     fontFamily: {
       main: "Mulish",

@@ -49,7 +49,7 @@ export function useMeetingWithExtraInfo(meetingId: string) {
   const cachedMeeting = () => meetingsCache.get(meetingId);
   const {dataQuery: meetingTQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     requestCreator: staticRequestCreator({
       columns: [
         {type: "column", column: "seriesNumber"},

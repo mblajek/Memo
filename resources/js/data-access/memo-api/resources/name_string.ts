@@ -20,13 +20,13 @@ export function getNameTranslation(name: NameString, translationFunc: (name: str
 export function getNameTranslation(
   t: LangFunc,
   name: NameString,
-  keyFunc: (name: string) => string | string[],
+  keyFunc: (name: string) => string | readonly string[],
   o?: TOptions,
 ): string;
 export function getNameTranslation(
   ...args:
     | [NameString, (name: string) => string]
-    | [LangFunc, NameString, (name: string) => string | string[], TOptions?]
+    | [LangFunc, NameString, (name: string) => string | readonly string[], TOptions?]
 ) {
   function isDirect(a: typeof args): a is [NameString, (name: string) => string] {
     return typeof args[0] === "string";

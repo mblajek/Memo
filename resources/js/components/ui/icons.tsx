@@ -13,62 +13,12 @@ import {
   BsPersonGear,
 } from "solid-icons/bs";
 import {CgUndo} from "solid-icons/cg";
+import {FaRegularBell} from "solid-icons/fa";
 import {FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {htmlAttributes} from "../utils";
-
-export namespace userIcons {
-  export const AdminMenu: IconTypes = (props) => <BsPersonGear {...props} />;
-  export const Add: IconTypes = (props) => <BsPersonAdd {...props} />;
-  export const Remove: IconTypes = (props) => <BsPersonDash {...props} />;
-}
-
-export namespace staffIcons {
-  export const Menu: IconTypes = (props) => <BsPersonBadge {...props} />;
-  export const Staff: IconTypes = (props) => <BsPersonBadge {...props} />;
-  export const StaffAndFacilityAdmin: IconTypes = (props) => <BsPersonBadge {...props} />;
-}
-
-export namespace clientIcons {
-  export const Menu: IconTypes = (props) => <IoPersonCircleOutline {...props} />;
-  export const Client: IconTypes = (props) => <IoPersonCircleOutline {...props} />;
-}
-
-export namespace clientGroupIcons {
-  export const ClientGroup: IconTypes = (props) => <IoPeopleCircleOutline {...props} />;
-}
-
-export namespace adminIcons {
-  export const Menu: IconTypes = (props) => <BsFileEarmarkPerson {...props} />;
-  export const Admin: IconTypes = (props) => <BsFileEarmarkPerson {...props} />;
-}
-
-export namespace facilityIcons {
-  export const AdminMenu: IconTypes = (props) => <BsHouseGear {...props} />;
-  export const Add: IconTypes = (props) => <BsHouseAdd {...props} />;
-  export const Remove: IconTypes = (props) => <BsHouseDash {...props} />;
-  export const Facility: IconTypes = (props) => <BsHouse {...props} />;
-  export const Facilities: IconTypes = (props) => <BsHouses {...props} />;
-}
-
-export namespace actionIcons {
-  export const Edit: IconTypes = (props) => <FiEdit2 {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
-  export const Add: IconTypes = (props) => <BiRegularPlus {...props} />;
-  export const Delete: IconTypes = (props) => <RiSystemDeleteBin6Line {...props} />;
-  export const Details: IconTypes = (props) => <ImCircleRight {...props} />;
-  export const Repeat: IconTypes = (props) => <BiRegularRepeat {...props} />;
-  export const RepeatFirst: IconTypes = (props) => <customIcons.RepeatFirst {...props} />;
-  export const RepeatLast: IconTypes = (props) => <customIcons.RepeatLast {...props} />;
-  export const Copy: IconTypes = (props) => <BiRegularCopy {...props} />;
-  export const Paste: IconTypes = (props) => <BiRegularPaste {...props} />;
-  export const Reset: IconTypes = (props) => <CgUndo {...props} />;
-}
-
-export namespace calendarIcons {
-  export const Conflict: IconTypes = (props) => <BiRegularCalendarX {...props} />;
-}
 
 namespace customIcons {
   export const RepeatFirst: IconTypes = (props) =>
@@ -87,4 +37,56 @@ namespace customIcons {
       },
       props,
     );
+}
+
+export namespace userIcons {
+  export const AdminMenu = BsPersonGear;
+  export const Add = BsPersonAdd;
+  export const Remove = BsPersonDash;
+}
+
+export namespace staffIcons {
+  export const Menu = BsPersonBadge;
+  export const Staff = BsPersonBadge;
+  export const StaffAndFacilityAdmin = BsPersonBadge;
+}
+
+export namespace clientIcons {
+  export const Menu = IoPersonCircleOutline;
+  export const Client = IoPersonCircleOutline;
+}
+
+export namespace clientGroupIcons {
+  export const ClientGroup = IoPeopleCircleOutline;
+}
+
+export namespace adminIcons {
+  export const Menu = BsFileEarmarkPerson;
+  export const Admin = BsFileEarmarkPerson;
+}
+
+export namespace facilityIcons {
+  export const AdminMenu = BsHouseGear;
+  export const Add = BsHouseAdd;
+  export const Remove = BsHouseDash;
+  export const Facility = BsHouse;
+  export const Facilities = BsHouses;
+}
+
+export namespace actionIcons {
+  export const Edit: IconTypes = (props) => <FiEdit2 {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
+  export const Add = BiRegularPlus;
+  export const Delete = RiSystemDeleteBin6Line;
+  export const Details = ImCircleRight;
+  export const Repeat = BiRegularRepeat;
+  export const RepeatFirst = customIcons.RepeatFirst;
+  export const RepeatLast = customIcons.RepeatLast;
+  export const Copy = BiRegularCopy;
+  export const Paste = BiRegularPaste;
+  export const Reset = CgUndo;
+  export const Notify = FaRegularBell;
+}
+
+export namespace calendarIcons {
+  export const Conflict = BiRegularCalendarX;
 }
