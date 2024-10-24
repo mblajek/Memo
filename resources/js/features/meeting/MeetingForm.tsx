@@ -21,6 +21,7 @@ import {useActiveFacility} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {AbstractMeetingForm, AbstractMeetingFormProps} from "./AbstractMeetingForm";
 import {MeetingAttendantsFields, getAttendantsSchemaPart} from "./MeetingAttendantsFields";
+import {MeetingAttendantsNotifications} from "./MeetingAttendantsNotifications";
 import {MeetingCannedStatusEdits} from "./MeetingCannedStatusEdits";
 import {MeetingDateAndTime} from "./MeetingDateAndTime";
 import {MeetingSeriesControls, getMeetingSeriesSchema} from "./MeetingSeriesForm";
@@ -172,6 +173,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
             showAttendanceStatusLabel={false}
             viewMode={props.viewMode}
           />
+          <MeetingAttendantsNotifications viewMode={props.viewMode} />
         </div>
         <CheckboxField name="isRemote" />
         <RichTextViewEdit name="notes" viewMode={props.viewMode} staticPersistenceKey="meeting.notes" />

@@ -298,7 +298,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         }}
         {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
       >
-        <fieldset class="contents" disabled={formDisabled()} inert={form.isSubmitting() || undefined}>
+        <fieldset class="contents" disabled={formDisabled()} bool:inert={form.isSubmitting()}>
           {getChildrenElement(props.children, form, contextValue)}
         </fieldset>
         <LoadingPane isLoading={form.isSubmitting() || mutationsTracking.isAnyPending()} />

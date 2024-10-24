@@ -23,5 +23,6 @@ export function useFixedDictionaries() {
     meetingResourcesDict: tDict("meetingResource", []),
     attendanceTypeDict: tDict("attendanceType", ["staff", "client"]),
     attendanceStatusDict: tDict("attendanceStatus", ["ok", "cancelled", "no_show", "late_present", "too_late"]),
+    notificationMethodDict: tDict("notificationMethod", ["sms"]),
   };
 }

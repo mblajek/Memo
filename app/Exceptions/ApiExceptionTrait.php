@@ -17,12 +17,6 @@ trait ApiExceptionTrait
     public readonly int $httpCode;
     protected array $validationErrors = [];
 
-    /** @throws static */
-    public function throw()
-    {
-        throw $this;
-    }
-
     public function getData(): array
     {
         return ['message' => $this->customMessage, 'code' => $this->errorCode, 'data' => $this->errorData];

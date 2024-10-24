@@ -24,7 +24,7 @@ export const ButtonLike: ParentComponent<Props> = (props) => {
       role="button"
       aria-disabled={props.disabled}
       tabindex="0"
-      inert={props.disabled || undefined}
+      bool:inert={props.disabled}
       onKeyPress={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();

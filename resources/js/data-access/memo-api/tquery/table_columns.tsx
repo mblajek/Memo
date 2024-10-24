@@ -2,9 +2,10 @@ import {PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfigEntry} from "components/ui/Table/TQueryTable";
 import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
+import {htmlAttributes} from "components/utils";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {objectRecursiveMerge} from "components/utils/object_util";
-import {ParentComponent, Show} from "solid-js";
+import {ParentComponent, Show, splitProps} from "solid-js";
 import {DataItem} from "./types";
 
 export function createTableColumnsSet<K extends string, T>(columns: Record<K, PartialColumnConfigEntry<T>>) {
@@ -134,7 +135,7 @@ export function useTableColumns() {
   };
 }
 
-interface ScrollableCellProps {
+export interface ScrollableCellProps extends htmlAttributes.div {
   readonly baseHeight?: string;
 }
 
@@ -149,6 +150,9 @@ const DEFAULT_BASE_HEIGHT = "5rem";
  *   this cell grows to use all the available height, possibly up to the point when scrolling is no
  *   longer needed.
  */
-export const ScrollableCell: ParentComponent<ScrollableCellProps> = (props) => {
-  return <PaddedCell style={{"max-height": props.baseHeight || DEFAULT_BASE_HEIGHT}}>{props.children}</PaddedCell>;
+export const ScrollableCell: ParentComponent<ScrollableCellProps> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["baseHeight"]);
+  return (
+    <PaddedCell {...htmlAttributes.merge(divProps, {style: {"max-height": props.baseHeight || DEFAULT_BASE_HEIGHT}})} />
+  );
 };

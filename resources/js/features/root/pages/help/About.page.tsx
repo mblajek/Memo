@@ -32,24 +32,25 @@ export default (() => {
                   {(appEnv) => <>{appEnv()}</>}
                 </Show>
               </div>
-              <label class="font-semibold">{t("about_page.commit_date")}</label>
-              <div>
-                <Show when={status().commitDate} fallback={<EmptyValueSymbol />}>
-                  {(commitDate) =>
-                    DateTime.fromISO(commitDate()).toLocaleString({...DATE_TIME_FORMAT, weekday: "long"})
-                  }
-                </Show>
-              </div>
-              <label class="font-semibold">{t("about_page.commit_hash")}</label>
-              <div>
+              <label class="font-semibold">{t("about_page.commit_info")}</label>
+              <div class="flex gap-1 items-baseline">
                 <Show when={status().commitHash} fallback={<EmptyValueSymbol />}>
                   {(commitHash) => (
                     <>
                       <A class="font-mono" href={`${GITHUB_LINK}/commits/${commitHash()}`} target="_blank">
-                        {commitHash()}
-                      </A>{" "}
-                      <CopyToClipboard text={status().commitHash} />
+                        {commitHash().slice(0, 7)}
+                      </A>
+                      <CopyToClipboard text={commitHash()} />
                     </>
+                  )}
+                </Show>
+                <Show when={status().commitDate} fallback={<EmptyValueSymbol />}>
+                  {(commitDate) => (
+                    <span>
+                      {t("parenthesised", {
+                        text: DateTime.fromISO(commitDate()).toLocaleString({...DATE_TIME_FORMAT, weekday: "long"}),
+                      })}
+                    </span>
                   )}
                 </Show>
               </div>

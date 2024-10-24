@@ -40,16 +40,15 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
       }
     }
   });
-  const isError = () => props.queries.some(({isError}) => isError);
-  const isSuccess = () =>
-    props.queries.every((query) => query.isSuccess && (!props.ignoreCachedData || query.isFetchedAfterMount));
-  const isPending = () => !isError() && !isSuccess();
-
   return (
     <Switch>
-      <Match when={isError()}>{props.error(props.queries)}</Match>
-      <Match when={isPending()}>{props.pending()}</Match>
-      <Match when={isSuccess()}>{props.children}</Match>
+      <Match when={props.queries.some(({isError}) => isError)}>{props.error(props.queries)}</Match>
+      <Match
+        when={props.queries.every((query) => query.isSuccess && (!props.ignoreCachedData || query.isFetchedAfterMount))}
+      >
+        {props.children}
+      </Match>
+      <Match when="pending">{props.pending()}</Match>
     </Switch>
   );
 }

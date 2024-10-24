@@ -156,6 +156,21 @@ tables:
       totalWorkTime: "łączny czas pracy"
       totalWorkTime.desc: "Bazowy czas pracy. Nieobecności i dni wolne placówki nie są odliczane od sumy godzin pracy."
 
+  logs:
+    table_name: "Logi"
+    column_names:
+      createdAtDate: "data"
+      createdAt: "czas"
+      source: "źródło"
+      logLevel: "poziom"
+      message: "treść"
+      context: "kontekst"
+      appVersion: "wersja aplikacji"
+      clientIp: "adres IP"
+      userAgent: "przeglądarka"
+      user.id: "id użytkownika"
+      user.name: "użytkownik"
+
 choose_columns: "Wybierz kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"

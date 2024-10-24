@@ -57,6 +57,21 @@ export namespace System {
       refetchInterval: 60 * 1000,
     }) satisfies SolidQueryOptions;
 
+  export const log = (req: LogRequest, config?: Api.Config) =>
+    V1.post<Api.Response.Post<LogResponse>>("/system/log", req, config);
+
+  export interface LogRequest {
+    readonly logLevel: LogLevel;
+    readonly message: string;
+    readonly context?: string;
+  }
+
+  export type LogLevel = "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+
+  export interface LogResponse {
+    readonly id: Api.Id;
+  }
+
   export const keys = {
     facility: () => [...Facilities.keys.facility(), "system"] as const,
     facilityList: () => [...keys.facility(), "list"] as const,

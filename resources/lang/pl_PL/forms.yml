@@ -82,6 +82,7 @@ meeting:
     attendantClientGroupId.some: "Ten klient uczestniczy w spotkaniu w kontekście swojej grupy:"
     attendantClientGroupId.none: "Ten klient uczestniczy w spotkaniu bez kontekstu grupy"
     attendantClientGroupId.click_to_toggle: "Kliknij aby włączyć$t(thin_space)/$t(thin_space)wyłączyć"
+    notifications: "powiadomienia"
 
 meeting_create:
   field_names:
