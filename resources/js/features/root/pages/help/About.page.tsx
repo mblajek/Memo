@@ -2,7 +2,7 @@ import {A} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/symbols";
-import {DATE_TIME_FORMAT, useLangFunc} from "components/utils";
+import {currentTimeSecond, DATE_TIME_FORMAT, SilentAccessBarrier, useLangFunc} from "components/utils";
 import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
@@ -53,8 +53,28 @@ export default (() => {
                   )}
                 </Show>
               </div>
-              <label class="font-semibold">{t("about_page.cpu_load")}</label>
-              <div>{status().cpu15m.toFixed(2)}</div>
+              <SilentAccessBarrier roles={["globalAdmin"]}>
+                <label class="font-semibold">{t("about_page.last_dump")}</label>
+                <div>
+                  <Show when={status().lastDump} fallback={<EmptyValueSymbol />}>
+                    {(lastDump) => {
+                      const lastDumpDate = () => DateTime.fromISO(lastDump());
+                      return (
+                        <div>
+                          {lastDumpDate().toRelative({base: currentTimeSecond(), style: "short"})}{" "}
+                          <span class="text-grey-text">
+                            {t("parenthesised", {
+                              text: lastDumpDate().toLocaleString({...DATE_TIME_FORMAT, weekday: "long"}),
+                            })}
+                          </span>
+                        </div>
+                      );
+                    }}
+                  </Show>
+                </div>
+                <label class="font-semibold">{t("about_page.cpu_load")}</label>
+                <div>{status().cpu15m.toFixed(2)}</div>
+              </SilentAccessBarrier>
             </div>
           </div>
         )}

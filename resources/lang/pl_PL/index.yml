@@ -102,6 +102,7 @@ about_page:
   app_env: "Środowisko:"
   commit_date: "Data wersji:"
   commit_hash: "Identyfikator wersji:"
+  last_dump: "Kopia bezpieczeństwa:"
   cpu_load: "Obciążenie CPU:"
 
 preview: "Podgląd"
