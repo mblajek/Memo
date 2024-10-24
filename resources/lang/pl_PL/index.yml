@@ -105,6 +105,7 @@ about_page:
   app_version: "Wersja aplikacji:"
   app_env: "Środowisko:"
   commit_info: "Commit:"
+  last_dump: "Kopia bezpieczeństwa:"
   cpu_load: "Obciążenie CPU:"
 
 preview: "Podgląd"
