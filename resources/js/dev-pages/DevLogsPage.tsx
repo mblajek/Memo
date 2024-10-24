@@ -42,6 +42,7 @@ export default (() => {
             size: 500,
           },
         },
+        {name: "appVersion", columnDef: {size: 150}, columnGroups: true},
         {name: "clientIp", columnDef: {size: 150}, initialVisible: false, columnGroups: true},
         {
           name: "userAgent",
@@ -59,7 +60,10 @@ export default (() => {
         {name: "user.name", columnGroups: true},
       ]}
       initialSort={[{id: "createdAt", desc: true}]}
-      intrinsicSort={[{type: "column", column: "createdAt", desc: true}]}
+      intrinsicSort={[
+        {type: "column", column: "createdAt", desc: true},
+        {type: "column", column: "createdAtDate", desc: true},
+      ]}
     />
   );
 }) satisfies VoidComponent;

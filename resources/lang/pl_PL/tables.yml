@@ -165,6 +165,7 @@ tables:
       errorLevel: "poziom"
       message: "treść"
       context: "kontekst"
+      appVersion: "wersja aplikacji"
       clientIp: "adres IP"
       userAgent: "przeglądarka"
       user.id: "id użytkownika"
