@@ -46,7 +46,11 @@ render(() => {
         <ErrorBoundary
           fallback={(error, reset) => {
             console.error(error);
-            return <FatalError error={error} reset={reset} />;
+            return (
+              <InitializeTanstackQuery>
+                <FatalError error={error} reset={reset} />
+              </InitializeTanstackQuery>
+            );
           }}
         >
           <Toaster
