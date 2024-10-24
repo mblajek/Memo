@@ -16,7 +16,7 @@ class LogService
     public function addEntry(
         Request $request,
         string $source,
-        string $errorLevel,
+        string $logLevel,
         string $message,
         ?string $context,
     ): string {
@@ -29,7 +29,7 @@ class LogService
             'source' => $source,
             'client_ip' => $request->ip(),
             'user_agent_text_id' => Texts::getId($request->userAgent()),
-            'error_level' => $errorLevel,
+            'log_level' => $logLevel,
             'message' => $message,
             'context_text_id' => Texts::getId($context),
         ]);

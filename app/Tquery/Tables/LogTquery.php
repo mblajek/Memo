@@ -32,7 +32,7 @@ final readonly class LogTquery extends TqService
             'user_agent',
         );
 
-        $config->addSimple(TqDataTypeEnum::string, 'error_level');
+        $config->addSimple(TqDataTypeEnum::string, 'log_level');
         $config->addSimple(TqDataTypeEnum::text, 'message');
 
         $config->addQuery(

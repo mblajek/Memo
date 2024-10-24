@@ -193,9 +193,9 @@ class SystemController extends ApiController
         summary: 'Add log entry',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['errorLevel', 'message'],
+                required: ['logLevel', 'message'],
                 properties: [
-                    new OA\Property(property: 'errorLevel', type: 'string', enum: LogEntry::LEVELS, example: 'info'),
+                    new OA\Property(property: 'logLevel', type: 'string', enum: LogEntry::LEVELS, example: 'info'),
                     new OA\Property(property: 'message', type: 'string', example: 'message'),
                     new OA\Property(property: 'context', type: 'string', example: null, nullable: true),
                 ]
@@ -216,11 +216,11 @@ class SystemController extends ApiController
         LogService $logService,
         Request $request,
     ): JsonResponse {
-        $data = $this->validate(LogEntry::getInsertValidator(['error_level', 'message', 'context']));
+        $data = $this->validate(LogEntry::getInsertValidator(['log_level', 'message', 'context']));
         $logEntryIsd = $logService->addEntry(
             request: $request,
             source: 'api',
-            errorLevel: $data['error_level'],
+            logLevel: $data['log_level'],
             message: $data['message'],
             context: $data['context'] ?? null,
         );

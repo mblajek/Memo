@@ -30,7 +30,7 @@ return new class extends Migration {
             DMH::ascii($table, 'client_ip', 255)->nullable();
             DMH::charUuid($table, 'user_agent_text_id')->nullable();
 
-            DMH::ascii($table, 'error_level');
+            DMH::ascii($table, 'log_level');
             $table->string('message', 4096);
             DMH::charUuid($table, 'context_text_id')->nullable();
 

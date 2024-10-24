@@ -16,13 +16,14 @@ use Psr\Log\LogLevel;
  * @property string id
  * @property CarbonImmutable created_at
  * @property CarbonImmutable updated_at
+ * @property string $app_version
  * @property ?string $user_id
  * @property string $source
  * @property ?string $client_ip
  * @property ?string $user_agent_text_id
- * @property string $error_level
+ * @property string $log_level
  * @property string $message
- * @property ?string $context
+ * @property ?string $context_text_id
  * @method static LogEntryBuilder query()
  * @mixin Model
  */
@@ -47,7 +48,7 @@ class LogEntry extends Model
         'source',
         'client_ip',
         'user_agent_text_id',
-        'error_level',
+        'log_level',
         'message',
         'context_text_id',
     ];
@@ -60,7 +61,7 @@ class LogEntry extends Model
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
-            'error_level' => Valid::trimmed([Rule::in(self::LEVELS)]),
+            'log_level' => Valid::trimmed([Rule::in(self::LEVELS)]),
             'message' => Valid::text(),
             'context' => Valid::text(sometimes: true, nullable: true, max: 150_000),
         };
