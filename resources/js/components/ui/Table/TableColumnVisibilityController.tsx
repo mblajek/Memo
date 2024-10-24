@@ -168,7 +168,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 }
                 disabled={isDefaultVisibility()}
                 // Use inert to make the parent handle onClick also when disabled.
-                inert={isDefaultVisibility() ? true : undefined}
+                inert={isDefaultVisibility()}
                 onMouseOver={[setResetHovered, true]}
                 onMouseOut={[setResetHovered, false]}
               >
@@ -195,7 +195,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             }
             disabled={isDefaultSizing()}
             // Use inert to make the parent handle onClick also when disabled.
-            inert={isDefaultSizing() ? true : undefined}
+            inert={isDefaultSizing()}
           >
             {t("tables.reset_column_sizes")}
           </Button>

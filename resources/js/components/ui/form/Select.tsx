@@ -540,7 +540,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             [s.multiple!]: props.multiple,
             [s.small!]: props.small,
           })}
-          inert={isDisabled() || undefined}
+          bool:inert={isDisabled()}
         >
           <div
             {...api().controlProps}
@@ -588,7 +588,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
               class="bg-inherit"
               placeholder={api().value.length ? undefined : props.placeholder}
               // Without filtering, the input is used just for the placeholder.
-              inert={props.onFilterChange ? undefined : true}
+              bool:inert={!props.onFilterChange}
             />
             <div class={s.buttons}>
               {/* Display only one clear button at a time. */}

@@ -318,7 +318,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                         const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
                         return (
                           <NonBlocking nonBlocking={props.nonBlocking}>
-                            <div class={s.dataRow} inert={props.isDimmed || undefined}>
+                            <div class={s.dataRow} bool:inert={props.isDimmed}>
                               <For each={columns()}>
                                 {({column, getCellContext}) => (
                                   <Show when={column.getIsVisible()}>
