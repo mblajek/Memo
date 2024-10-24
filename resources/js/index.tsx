@@ -11,6 +11,7 @@ import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 import {DictionariesAndAttributesProvider} from "./data-access/memo-api/dictionaries_and_attributes_context";
+import "./global_init";
 import {translationsLoaded} from "./i18n_loader";
 import "./index.scss";
 import {luxonInit} from "./luxon_init";

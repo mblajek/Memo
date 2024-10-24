@@ -5,7 +5,7 @@ import {createSelectRequestCreator} from "data-access/memo-api/tquery/select";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {ColumnName, Sort} from "data-access/memo-api/tquery/types";
 import {BsScissors} from "solid-icons/bs";
-import {VoidComponent, createMemo, createSignal, mergeProps, on, splitProps} from "solid-js";
+import {Accessor, VoidComponent, createMemo, createSignal, mergeProps, on, splitProps} from "solid-js";
 import {Hr} from "../Hr";
 import {
   MultipleSelectPropsPart,
@@ -51,7 +51,7 @@ export interface BaseTQuerySelectProps
 export interface TQueryConfig {
   /** The prefix used for the data query (this allows invalidating the tquery data). */
   readonly prefixQueryKey: QueryKey;
-  readonly entityURL: string;
+  readonly entityURL: string | undefined | Accessor<string | undefined>;
   /** A filter that is always applied to the query. */
   readonly intrinsicFilter?: FilterH;
   /** The column used as the value of items. It must be unique among the results. Default: `"id"`. */
@@ -136,11 +136,7 @@ function makeQuery(
   const {
     dataQuery,
     requestController: {filterText, extraFilter},
-  } = createTQuery({
-    prefixQueryKey: prefixQueryKey,
-    entityURL: entityURL,
-    requestCreator,
-  });
+  } = createTQuery({prefixQueryKey, entityURL, requestCreator});
   const items = createMemo<readonly SelectItem[]>(() => {
     if (!dataQuery.isSuccess) {
       return [];

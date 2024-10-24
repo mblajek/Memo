@@ -55,6 +55,7 @@ export default (() => {
         cols.meeting.get("isRemote", {initialVisible: false}),
         cols.meeting.notes,
         cols.meeting.resources,
+        cols.meeting.resourcesCount,
         ...getCreatedUpdatedColumns(),
         cols.meeting.actions,
       ]}

@@ -81,7 +81,7 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
   const {dictionaries, meetingCategoryDict, meetingTypeDict, meetingStatusDict} = useFixedDictionaries();
   const {presenceStatuses} = useAttendanceStatusesInfo();
   const conflictsQuery = createTQuery({
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     prefixQueryKey: FacilityMeeting.keys.meeting(),
     requestCreator: staticRequestCreator(() => {
       const {date} = meetingData();
