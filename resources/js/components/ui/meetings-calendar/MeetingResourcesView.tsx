@@ -20,7 +20,7 @@ export const MeetingResourcesView: VoidComponent<Props> = (props) => {
             return (
               <div
                 class={cx(
-                  "min-h-5 px-0.5 border border-gray-500 bg-black bg-opacity-5 rounded-sm whitespace-nowrap flex gap-0.5 items-center",
+                  "min-h-5 px-0.5 border border-gray-400 bg-black bg-opacity-5 rounded-sm whitespace-nowrap flex gap-0.5 items-center",
                   hasConflict() ? "text-red-600" : undefined,
                 )}
               >
