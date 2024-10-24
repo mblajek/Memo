@@ -23,6 +23,7 @@ return new class extends Migration {
             DMH::charUuid($table, 'id')->primary();
             $table->dateTime('created_at');
             $table->dateTime('updated_at');
+            DMH::ascii($table, 'app_version');
 
             DMH::charUuid($table, 'user_id')->nullable();
             DMH::ascii($table, 'source');

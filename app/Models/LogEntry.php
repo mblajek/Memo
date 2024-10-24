@@ -42,6 +42,7 @@ class LogEntry extends Model
     protected $table = 'log_entries';
 
     protected $fillable = [
+        'app_version',
         'user_id',
         'source',
         'client_ip',

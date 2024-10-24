@@ -2,6 +2,7 @@
 
 namespace App\Services\System;
 
+use App\Http\Controllers\ApiController;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Models\LogEntry;
 use App\Utils\Texts;
@@ -23,6 +24,7 @@ class LogService
             throw new ValueError("Source must be one of: " . implode(', ', LogEntry::SOURCES));
         }
         $logEntry = new LogEntry([
+            'app_version' => ApiController::VERSION,
             'user_id' => PermissionMiddleware::permissions()->user?->id,
             'source' => $source,
             'client_ip' => $request->ip(),

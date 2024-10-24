@@ -17,6 +17,7 @@ final readonly class LogTquery extends TqService
         $config->addQuery(TqDataTypeEnum::date, fn(string $tableName) => //
         "cast(`$tableName`.`created_at` as date)", "created_at_date");
 
+        $config->addSimple(TqDataTypeEnum::string, 'app_version');
         $config->addSimple(TqDataTypeEnum::uuid_nullable, 'user_id', 'user.id');
         $config->addQuery(TqDataTypeEnum::string_nullable, fn(string $tableName) => //
         "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`user_id`", "user.name");
