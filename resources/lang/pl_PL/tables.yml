@@ -162,7 +162,7 @@ tables:
       createdAtDate: "data"
       createdAt: "czas"
       source: "źródło"
-      errorLevel: "poziom"
+      logLevel: "poziom"
       message: "treść"
       context: "kontekst"
       appVersion: "wersja aplikacji"

@@ -18,7 +18,7 @@ export default (() => {
         {name: "createdAtDate", initialVisible: false, columnGroups: true},
         {name: "createdAt"},
         {name: "source", columnDef: {size: 150}, columnGroups: true},
-        {name: "errorLevel", columnDef: {size: 150}, columnGroups: true},
+        {name: "logLevel", columnDef: {size: 150}, columnGroups: true},
         {
           name: "message",
           columnDef: {

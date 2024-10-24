@@ -61,12 +61,12 @@ export namespace System {
     V1.post<Api.Response.Post<LogResponse>>("/system/log", req, config);
 
   export interface LogRequest {
-    readonly errorLevel: ErrorLevel;
+    readonly logLevel: LogLevel;
     readonly message: string;
     readonly context?: string;
   }
 
-  export type ErrorLevel = "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
+  export type LogLevel = "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
 
   export interface LogResponse {
     readonly id: Api.Id;
