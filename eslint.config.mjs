@@ -83,6 +83,11 @@ export default [
       "sort-imports": "off",
       "sort-keys": "off",
       "solid/jsx-no-undef": "off",
+      "solid/no-unknown-namespaces": [
+        "error",
+        // Add the bool: prefix, not included by the rule yet.
+        {allowedNamespaces: ["on", "use", "prop", "attr", "bool"]},
+      ],
     },
     linterOptions: {
       reportUnusedDisableDirectives: "error",
