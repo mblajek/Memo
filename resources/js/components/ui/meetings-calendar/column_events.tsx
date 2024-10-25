@@ -175,6 +175,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                         "grow shrink overflow-y-clip !overflow-x-visible",
                         meeting().resources.length ? "min-h-px" : undefined,
                       )}
+                      inert
                       text={meeting().notes!}
                     />
                   </Show>
