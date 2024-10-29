@@ -10,6 +10,7 @@ interface Props {
   readonly trigger: (popOver: PopOverControl) => JSX.Element;
   readonly placement?: Partial<ComputePositionConfig>;
   readonly children: ChildrenOrFunc<[PopOverControl]>;
+  readonly popOverClass?: string;
 }
 
 export interface PopOverControl {
@@ -30,7 +31,7 @@ const DEFAULT_PLACEMENT: Partial<ComputePositionConfig> = {
     offset({mainAxis: 1}),
     shift(DETECT_OVERFLOW_OPTIONS),
     flip({crossAxis: false, ...DETECT_OVERFLOW_OPTIONS}),
-    middleware.maxSize(DETECT_OVERFLOW_OPTIONS),
+    middleware.reactiveSize({getFloatingStyle: middleware.reactiveSize.getMaxSizeStyle, ...DETECT_OVERFLOW_OPTIONS}),
   ],
 };
 
@@ -69,7 +70,10 @@ export const PopOver: Component<Props> = (props) => {
           >
             <Show when={open()}>
               <div
-                class="z-dropdown max-w-fit bg-white border border-gray-700 rounded shadow-xl overflow-clip flex flex-col"
+                class={
+                  props.popOverClass ||
+                  "z-dropdown max-w-fit bg-white border border-gray-700 rounded shadow-xl flex flex-col"
+                }
                 style={posStyle()}
               >
                 {getChildrenElement(props.children, popOver)}
