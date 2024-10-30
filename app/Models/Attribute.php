@@ -108,7 +108,7 @@ class Attribute extends Model
         $facility = ($facility === true) ? PermissionMiddleware::permissions()->facility : $facility;
         $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
         return array_filter(self::getAll(), fn(self $attribute) => //
-            ($facilityId === null || $attribute->facility_id === null || $attribute->facility_id === $facilityId)
+            ($attribute->facility_id === null || $attribute->facility_id === $facilityId)
             && ($table === null || $attribute->getAttributeValue('table') === $table));
     }
 
