@@ -154,10 +154,14 @@ class SystemController extends ApiController
     {
         $cache = Cache::get('system_status');
         if (is_array($cache) && count($cache) === 4) {
-            [$commitHash, $commitDateZulu, $cpu15m, $lastDump] = $cache;
+            [$commitHash, $commitDateZulu, $cpu15m, $lastDump, $isRc] = $cache;
         } else {
             try {
-                [$commitHash, $commitDate] = file(App::storagePath('app/git-version.txt'), FILE_IGNORE_NEW_LINES);
+                [$commitHash, $commitDate, $branch] = file(
+                    App::storagePath('app/git-version.txt'),
+                    FILE_IGNORE_NEW_LINES,
+                );
+                $isRc = str_starts_with($branch, '## RC-');
                 $commitDateZulu = DateHelper::toZuluString(
                     DateTimeImmutable::createFromFormat('Y-m-d H:i:s P', $commitDate)
                         ->setTimezone(new DateTimeZone('UTC'))
@@ -168,13 +172,13 @@ class SystemController extends ApiController
                 $cpu15m = strlen($cpu15m) ? floatval($cpu15m) : null;
                 $lastDump = Nullable::call(DatabaseDumpService::lastDumpDatetime(), DateHelper::toZuluString(...));
             } catch (Throwable) {
-                [$commitHash, $commitDateZulu, $cpu15m, $lastDump] = [null, null, null, null];
+                [$commitHash, $commitDateZulu, $cpu15m, $lastDump, $isRc] = [null, null, null, null, null];
             }
-            Cache::put('system_status', [$commitHash, $commitDateZulu, $cpu15m, $lastDump], 15 /* 15s */);
+            Cache::put('system_status', [$commitHash, $commitDateZulu, $cpu15m, $lastDump, $isRc], 15 /* 15s */);
         }
         return new JsonResponse([
             'data' => [
-                'version' => self::VERSION,
+                'version' => self::VERSION . ($isRc ? ' RC' : ''),
                 'appEnv' => env('APP_ENV'),
                 'appEnvColor' => env('APP_ENV_COLOR') ?: null,
                 'randomUuid' => Str::uuid()->toString(),
