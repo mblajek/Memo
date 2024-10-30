@@ -6,6 +6,7 @@ import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {FacilityUsers} from "data-access/memo-api/groups/FacilityUsers";
 import {Facilities} from "data-access/memo-api/groups/shared";
 import {ClientBirthDateShortInfo} from "features/client/ClientBirthDateShortInfo";
+import {useClientsData} from "features/client/clients_data";
 import {UserLink} from "features/facility-users/UserLink";
 import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -57,6 +58,8 @@ export function useModelQuerySpecs() {
       },
     }),
     userClient: ({showBirthDateWhenSelected = false} = {}) => {
+      // Preload the birth dates.
+      useClientsData();
       return {
         querySpec: {
           entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/client`,

@@ -27,6 +27,13 @@ export default (() => {
   const invalidate = useInvalidator();
   onMount(() => setActiveFacilityId(undefined));
   const loginModal = createLoginModal();
+  let navigated = false;
+  function navigateToInitialPage() {
+    if (!navigated) {
+      navigated = true;
+      navigate(INITIAL_PAGE);
+    }
+  }
   createEffect(() => {
     if (systemStatusMonitor.needsReload()) {
       // If on the login screen, just reload without asking.
@@ -37,11 +44,11 @@ export default (() => {
         onSuccess: () => {
           invalidate.everythingThrottled();
           invalidate.userStatusAndFacilityPermissions({clearCache: true});
-          navigate(INITIAL_PAGE);
+          navigateToInitialPage();
         },
       });
     } else if (statusQuery.isSuccess) {
-      navigate(INITIAL_PAGE);
+      navigateToInitialPage();
     }
   });
   return (

@@ -1,3 +1,4 @@
+import {Middleware, MiddlewareData} from "@floating-ui/core";
 import {
   autoUpdate,
   AutoUpdateOptions,
@@ -105,6 +106,7 @@ export const Floating: VoidComponent<Props> = (props) => {
     const pos = computed();
     return pos
       ? {
+          ...middleware.reactiveSize.getData(pos.middlewareData)?.floatingStyle,
           position: pos.strategy,
           left: `${pos.x}px`,
           top: `${pos.y}px`,
@@ -152,27 +154,71 @@ function boundingRect(rects: ClientRectObject[]): DOMRect {
 }
 
 export namespace middleware {
-  /** Middleware setting the maximum width and height to the available width and height. */
-  export function maxSize(optionOverrides?: SizeOptions | Derivable<SizeOptions>) {
-    const derivableOptionOverrides = derivable(optionOverrides);
-    return size((state) => {
-      const overrides = derivableOptionOverrides(state);
-      return {
-        apply: (state) => {
-          const {elements, availableWidth, availableHeight} = state;
-          Object.assign(elements.floating.style, {
-            maxWidth: availableWidth < elements.floating.scrollWidth ? `${Math.max(0, availableWidth)}px` : undefined,
-            maxHeight:
-              availableHeight < elements.floating.scrollHeight ? `${Math.max(0, availableHeight)}px` : undefined,
-          });
-          overrides.apply?.(state);
-        },
-        ...overrides,
-      };
-    });
+  type SizeStateArg = Parameters<NonNullable<SizeOptions["apply"]>>[0];
+
+  interface ReactiveSizeOptions extends Omit<SizeOptions, "apply"> {
+    /** Returns the style that should be applied to the floating element. */
+    getFloatingStyle?: (state: SizeStateArg) => JSX.CSSProperties;
   }
 
-  function derivable<T>(arg: T | Derivable<T> | undefined): Derivable<Partial<T>> {
-    return typeof arg === "function" ? (arg as Derivable<T>) : () => arg || {};
+  interface ReactiveSizeData {
+    /** The underlying builtin size middleware. */
+    readonly baseSize: Middleware;
+    readonly floatingStyle?: JSX.CSSProperties;
   }
+
+  export const REACTIVE_SIZE_NAME = "reactiveSize";
+
+  /**
+   * Middleware for controlling the size of the floating element, similar to the builtin size middleware,
+   * but operating in a reactive way. Instead of the `apply` function, there is a `getFloatingStyle`
+   * function returning the desired style. The style is then returned as `posStyle` by the Floating
+   * component.
+   *
+   * Might not work correctly if auto-update is disabled.
+   */
+  export function reactiveSize(options: ReactiveSizeOptions | Derivable<ReactiveSizeOptions>): Middleware {
+    return {
+      name: REACTIVE_SIZE_NAME,
+      options,
+      fn: async (state) => {
+        let floatingStyle: JSX.CSSProperties | undefined;
+        const calculatedOptions = typeof options === "function" ? options(state) : options;
+        let thisState = reactiveSize.getData(state.middlewareData);
+        if (!thisState?.baseSize) {
+          thisState = {
+            baseSize: size({
+              ...calculatedOptions,
+              apply: (state) => {
+                floatingStyle = calculatedOptions.getFloatingStyle?.(state);
+              },
+            }),
+          };
+          state.middlewareData[REACTIVE_SIZE_NAME] = thisState;
+        }
+        await thisState.baseSize.fn(state);
+        return {
+          data: {...thisState, floatingStyle} satisfies ReactiveSizeData,
+          // Never return the reset. If the style changes the floating element, the next change
+          // will be triggered by auto-update. Returning the reset signal doesn't help because
+          // the style is not applied before running the middlewares again.
+        };
+      },
+    };
+  }
+
+  reactiveSize.getData = (data: MiddlewareData) => data[REACTIVE_SIZE_NAME] as ReactiveSizeData | undefined;
+
+  /** A function for `getFloatingStyle` limiting the maximum size of the floating element. */
+  reactiveSize.getMaxSizeStyle = ({rects, availableWidth, availableHeight}: SizeStateArg): JSX.CSSProperties => ({
+    "box-sizing": "border-box",
+    // Use some margin of error to avoid infinite loops caused by rounding.
+    "max-width": availableWidth < rects.floating.width + 1 ? `${Math.max(0, availableWidth)}px` : undefined,
+    "max-height": availableHeight < rects.floating.height + 1 ? `${Math.max(0, availableHeight)}px` : undefined,
+  });
+
+  /** A function for `getFloatingStyle` setting the minimum floating width to the reference width. */
+  reactiveSize.getMatchWidthStyle = ({rects}: SizeStateArg): JSX.CSSProperties => ({
+    "min-width": `${rects.reference.width}px`,
+  });
 }

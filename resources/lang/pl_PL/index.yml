@@ -115,3 +115,11 @@ confirmation:
 
 refresh_button: "Odśwież wszystkie wyświetlane dane"
 refresh_button.disabled: "Zaczekaj$t(ellipsis)"
+
+phone_number:
+  errors:
+    unknown: "Numer telefonu jest nieprawidłowy"
+    INVALID_COUNTRY: "Nieprawidłowy kod kraju"
+    TOO_SHORT: "Numer jest za krótki"
+    TOO_LONG: "Numer jest za długi"
+    INVALID_LENGTH: "Nieprawidłowa długość numeru"
