@@ -151,12 +151,21 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               style={{"grid-template-rows": "auto auto", "grid-template-columns": `1fr ${allDay() ? "" : "auto"} 1fr`}}
             >
               <div class="flex items-center gap-0.5">
-                <input
-                  id="date"
-                  name="date"
-                  type="date"
-                  class="basis-32 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
-                />
+                <div class="basis-40 grow grid">
+                  <input
+                    id="date"
+                    name="date"
+                    type="date"
+                    class="row-start-1 col-start-1 min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
+                  />
+                  <Show when={form.data("date")}>
+                    {(date) => (
+                      <div class="row-start-1 col-start-1 flex items-center justify-end pr-10 pointer-events-none">
+                        {DateTime.fromISO(date()).weekdayShort}
+                      </div>
+                    )}
+                  </Show>
+                </div>
                 <Show when={!allDay()}>
                   <TimeInput id="time.startTime" name="time.startTime" />
                 </Show>
@@ -168,7 +177,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 <HideableSection show={!allDay()} transitionTimeMs={HIDEABLE_SECTIONS_TRANSITION_TIME_MS}>
                   <div class="flex items-center gap-0.5">
                     <TimeInput id="time.endTime" name="time.endTime" disabled={allDay()} />
-                    <div class="basis-32 grow">
+                    <div class="basis-40 grow">
                       <Show when={!delayedAllDay() && durationMinutes()}>
                         {t("parenthesis.open")}
                         <TimeDuration minutes={delayedDurationMinutes()!} />
