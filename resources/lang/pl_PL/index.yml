@@ -123,3 +123,6 @@ phone_number:
     TOO_SHORT: "Numer jest za krótki"
     TOO_LONG: "Numer jest za długi"
     INVALID_LENGTH: "Nieprawidłowa długość numeru"
+
+dev:
+  print_error_to_console: "Wypisz ten komunikat na konsoli w narzędziach deweloperskich\nMoże to pomóc w analizowaniu błędów"
