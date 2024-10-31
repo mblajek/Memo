@@ -147,11 +147,11 @@ function itemToString(item: SelectItem) {
   return item.text || item.value;
 }
 function itemToLabel(item: SelectItem) {
-  return item.label ? item.label() : <>{itemToString(item)}</>;
+  return item.label ? <>{item.label()}</> : <>{itemToString(item)}</>;
 }
 function itemToLabelOnList(item: SelectItem) {
   return item.labelOnList ? (
-    item.labelOnList()
+    <>{item.labelOnList()}</>
   ) : (
     <IndentSelectItemInGroup indent={!!item.groupName}>{itemToLabel(item)}</IndentSelectItemInGroup>
   );
