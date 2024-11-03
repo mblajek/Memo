@@ -50,7 +50,7 @@ export interface TableTranslations {
   columnsByPrefix?: ReadonlyMap<string, string>;
 }
 
-export function createTableTranslations(tableName: string | string[]): TableTranslations {
+export function createTableTranslations(tableName: string | readonly string[]): TableTranslations {
   const t = useLangFunc();
   const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const names = typeof tableName === "string" ? [tableName] : tableName;
@@ -276,26 +276,23 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                 <div class={s.tableBg}>
                   <div class={s.table} style={{"grid-template-columns": gridTemplateColumns()}}>
                     <div
-                      ref={(div) =>
-                        div.addEventListener(
-                          "wheel",
-                          (e) => {
-                            if (e.deltaX) {
-                              // With 2d wheels (like a touchpad) avoid too much interference between the axes.
-                              setDesiredScrollX(undefined);
-                              return;
-                            }
-                            const scrWrapper = scrollingWrapper();
-                            if (scrWrapper && !e.shiftKey && e.deltaY) {
-                              setDesiredScrollX((l = scrWrapper.scrollLeft) =>
-                                Math.min(Math.max(l + e.deltaY, 0), scrWrapper.scrollWidth - scrWrapper.clientWidth),
-                              );
-                              e.preventDefault();
-                            }
-                          },
-                          {passive: false},
-                        )
-                      }
+                      on:wheel={{
+                        handleEvent: (e) => {
+                          if (e.deltaX) {
+                            // With 2d wheels (like a touchpad) avoid too much interference between the axes.
+                            setDesiredScrollX(undefined);
+                            return;
+                          }
+                          const scrWrapper = scrollingWrapper();
+                          if (scrWrapper && !e.shiftKey && e.deltaY) {
+                            setDesiredScrollX((l = scrWrapper.scrollLeft) =>
+                              Math.min(Math.max(l + e.deltaY, 0), scrWrapper.scrollWidth - scrWrapper.clientWidth),
+                            );
+                            e.preventDefault();
+                          }
+                        },
+                        passive: false,
+                      }}
                       class={s.headerRow}
                     >
                       <For each={columns()}>
@@ -321,7 +318,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                         const row = typeof rowMaybeAccessor === "function" ? rowMaybeAccessor : () => rowMaybeAccessor;
                         return (
                           <NonBlocking nonBlocking={props.nonBlocking}>
-                            <div class={s.dataRow} inert={props.isDimmed || undefined}>
+                            <div class={s.dataRow} bool:inert={props.isDimmed}>
                               <For each={columns()}>
                                 {({column, getCellContext}) => (
                                   <Show when={column.getIsVisible()}>

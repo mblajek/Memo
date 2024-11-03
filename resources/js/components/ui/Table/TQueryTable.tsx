@@ -291,8 +291,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           isDataColumn,
           extraDataColumns: extraDataColumns
             ? Array.isArray(extraDataColumns)
-              ? {standard: extraDataColumns as readonly string[], whenGrouping: undefined}
-              : (extraDataColumns as ExtraDataColumns)
+              ? {standard: extraDataColumns, whenGrouping: undefined}
+              : extraDataColumns
             : undefined,
           columnDef,
           filterControl,
@@ -414,6 +414,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
     columnsByPrefix: translations.columnsByPrefix,
   });
+  const columnFilterStates = new ColumnFilterStates();
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
     entityURL,
@@ -535,11 +536,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
               }),
               onLoad: (value) => {
                 // Ensure a bad (e.g. outdated) entry won't affect visibility of a column that cannot have
-                // the visibility controlled by the user.
+                // the visibility controlled by the user. Leave alone unknown columns, they might exist in
+                // a different context, e.g. in a different facility.
                 const colVis = {...value.colVis};
                 for (const colName of Object.keys(colVis)) {
                   const col = columnsConfig().find((c) => c.name === colName);
-                  if (!col || col.columnDef.enableHiding === false || !col.persistVisibility) {
+                  if (col && (col.columnDef.enableHiding === false || !col.persistVisibility)) {
                     delete colVis[colName];
                   }
                 }
@@ -577,7 +579,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       setEffectiveActiveColumnGroups(activeColumnGroups[0]());
     }
   });
-  const columnFilterStates = new ColumnFilterStates();
   const {rowsCount, pageCount, scrollToTopSignal, filterErrors} = tableHelper({
     requestController,
     dataQuery,

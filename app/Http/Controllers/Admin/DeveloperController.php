@@ -8,9 +8,11 @@ use App\Models\Enums\AttributeTable;
 use App\Models\Member;
 use App\Models\StaffMember;
 use App\Rules\Valid;
+use App\Tquery\Tables\LogTquery;
 use App\Utils\Date\DateHelper;
 use App\Utils\Nullable;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -84,5 +86,32 @@ class DeveloperController extends ApiController
             ->update(['deactivated_at' => Nullable::call($data['deactivated_at'], DateHelper::zuluToDbString(...))]);
 
         return new JsonResponse(data: ['data' => (bool)$updated], status: 200);
+    }
+
+    // developer - no openapi
+    // #[OpenApiGet(
+    //     path: '/api/v1/admin/developer/log/tquery',
+    //     permissions: new PermissionDescribe(Permission::developer),
+    //     summary: 'Log tquery',
+    //     tag: 'Admin',
+    // )]
+    public function logTqueryGet(
+        LogTquery $tquery,
+    ): JsonResponse {
+        return new JsonResponse($tquery->getConfigArray());
+    }
+
+    // developer - no openapi
+    // #[OpenApiPost(
+    //     path: '/api/v1/admin/developer/log/tquery',
+    //     permissions: new PermissionDescribe(Permission::developer),
+    //     summary:  'Log tquery',
+    //     tag: 'Admin',
+    // )]
+    public function logTqueryPost(
+        LogTquery $tquery,
+        Request $request,
+    ): JsonResponse {
+        return new JsonResponse($tquery->query($request));
     }
 }

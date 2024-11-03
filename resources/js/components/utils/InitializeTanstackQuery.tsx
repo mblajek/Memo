@@ -55,7 +55,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
     const status = error.response?.status;
     if (!status || !meta?.quietHTTPStatuses?.includes(status)) {
       const respErrors = error.response?.data.errors;
-      let errorsToShow: Api.Error[] = [];
+      let errorsToShow: readonly Api.Error[] = [];
       if (respErrors) {
         // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
         if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {

@@ -19,6 +19,7 @@ enum TqTableAliasEnum
     case clients;
     case staff_members;
     case managed_by_facility;
+    case log_entries;
 
     public static function fromTableName(string $table): self
     {

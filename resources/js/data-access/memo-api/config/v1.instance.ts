@@ -23,7 +23,7 @@ export interface OriginalResponseForUnexpectedError {
 export function getOriginalResponseForUnexpectedError(
   data: Api.ErrorResponse,
 ): OriginalResponseForUnexpectedError | undefined {
-  return (data as Partial<Record<string, unknown>>).original as OriginalResponseForUnexpectedError;
+  return (data as unknown as UnknownData).original as OriginalResponseForUnexpectedError;
 }
 
 V1.interceptors.response.use(undefined, (error: AxiosError) => {

@@ -9,6 +9,10 @@ exception:
     translation: "Błędna konfiguracja tłumaczeń"
     tquery: "Błędna konfiguracja tabel"
     unexpected: "Błąd konfiguracji"
+  notification:
+    sms:
+      invalid_number_format: "Niepoprawny format numeru telefonu: {{phoneNumber}}"
+      message_too_long: "Za długa treść wiadomości: ({{length, number}} > {{max, number}})"
   validation: "Przesłano niepoprawne dane"
   form_submit: "Błąd przetwarzania formularza"
   unauthorised: "Brak autoryzacji"
@@ -100,8 +104,8 @@ form_page_leave_confirmation:
 about_page:
   app_version: "Wersja aplikacji:"
   app_env: "Środowisko:"
-  commit_date: "Data wersji:"
-  commit_hash: "Identyfikator wersji:"
+  commit_info: "Commit:"
+  last_dump: "Kopia bezpieczeństwa:"
   cpu_load: "Obciążenie CPU:"
 
 preview: "Podgląd"
@@ -111,3 +115,14 @@ confirmation:
 
 refresh_button: "Odśwież wszystkie wyświetlane dane"
 refresh_button.disabled: "Zaczekaj$t(ellipsis)"
+
+phone_number:
+  errors:
+    unknown: "Numer telefonu jest nieprawidłowy"
+    INVALID_COUNTRY: "Nieprawidłowy kod kraju"
+    TOO_SHORT: "Numer jest za krótki"
+    TOO_LONG: "Numer jest za długi"
+    INVALID_LENGTH: "Nieprawidłowa długość numeru"
+
+dev:
+  print_error_to_console: "Wypisz ten komunikat na konsoli w narzędziach deweloperskich\nMoże to pomóc w analizowaniu błędów"

@@ -74,7 +74,7 @@ meeting:
     clientsGroupsMode.shared_one_client: "wybrana grupa"
     clientsGroupsMode.shared_one_client.desc: "Klient uczestniczy w spotkaniu w kontekście wybranej grupy"
     clientsGroupsMode.separate: "osobne grupy"
-    clientsGroupsMode.separate.desc: "Każdy klient uczestniczy w spotkaniu w kontekście osobno wybranej grupy (opcja zaawansowana)"
+    clientsGroupsMode.separate.desc: "Każdy klient uczestniczy w spotkaniu w kontekście osobno wybranej grupy"
     sharedClientsGroupId: "wspólny kontekst dla wszystkich klientów"
     sharedClientsGroupId.addAll: "Dodaj wszystkich do spotkania"
     sharedClientsGroupId.allAdded: "Wszyscy uczestniczą w spotkaniu"
@@ -82,6 +82,7 @@ meeting:
     attendantClientGroupId.some: "Ten klient uczestniczy w spotkaniu w kontekście swojej grupy:"
     attendantClientGroupId.none: "Ten klient uczestniczy w spotkaniu bez kontekstu grupy"
     attendantClientGroupId.click_to_toggle: "Kliknij aby włączyć$t(thin_space)/$t(thin_space)wyłączyć"
+    notifications: "powiadomienia"
 
 meeting_create:
   field_names:

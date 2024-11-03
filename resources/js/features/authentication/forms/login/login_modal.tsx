@@ -39,7 +39,7 @@ export const createLoginModal = registerGlobalPageElement<Params | true>((args) 
           <div class="flex gap-1 justify-end">
             <span
               class="text-grey-text"
-              use:title={`${t("about_page.commit_date")} ${
+              use:title={`${t("about_page.commit_info")} ${
                 systemStatusMonitor.baseStatus()?.commitDate
                   ? DateTime.fromISO(systemStatusMonitor.baseStatus()!.commitDate!).toLocaleString(DATE_TIME_FORMAT)
                   : "?"

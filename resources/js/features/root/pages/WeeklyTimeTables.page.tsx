@@ -176,7 +176,7 @@ export default (() => {
   );
   const {dataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     requestCreator: staticRequestCreator(() => ({
       columns: COLUMNS.map((column) => ({type: "column", column})),
       filter: {
@@ -547,7 +547,7 @@ export default (() => {
             >
               {(dayData) => (
                 <PaddedCell
-                  class="flex flex-col justify-between"
+                  class="h-full flex flex-col justify-between"
                   style={{
                     background: [
                       dayData().isFacilityWorkDay
@@ -620,7 +620,10 @@ export default (() => {
                       "margin-right": "-4px",
                     }}
                     use:title={[
-                      capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})),
+                      capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})) +
+                        (dayData().day.hasSame(currentDate(), "day")
+                          ? " " + t("parenthesised", {text: t("calendar.today")})
+                          : ""),
                       weekdaySelected() ? undefined : t("facility_user.weekly_time_tables.day_notes.weekday_inactive"),
                       dayData().isHoliday ? t("facility_user.weekly_time_tables.day_notes.holiday") : undefined,
                       dayData().workTimes.length && !dayData().isFacilityWorkDay
@@ -636,7 +639,12 @@ export default (() => {
                       .filter(NON_NULLABLE)
                       .join("\n")}
                   >
-                    <ImInfo size="10" class="text-current" />
+                    <Show
+                      when={dayData().day.hasSame(currentDate(), "day")}
+                      fallback={<ImInfo class="text-current" size="10" />}
+                    >
+                      <FaSolidCircleDot class="text-red-700" size="10" />
+                    </Show>
                   </div>
                 </PaddedCell>
               )}

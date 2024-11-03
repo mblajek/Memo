@@ -56,11 +56,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const [resetHovered, setResetHovered] = createSignal(false);
 
   const Content: VoidComponent<{readonly popOver: PopOverControl}> = (props) => {
-    const currentVisibility: VisibilityState = {};
-    for (const column of table.getAllLeafColumns()) {
-      currentVisibility[column.id] = column.getIsVisible();
-    }
-    setVisibility(currentVisibility);
+    setVisibility({...table.getState().columnVisibility});
     setSearch("");
     onMount(() => setTimeout(() => searchInput?.focus()));
     return (
@@ -134,9 +130,13 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                       <Button
                         class="self-center"
                         onClick={() => {
-                          document
-                            .querySelector(`[data-header-for-column="${column.id}"]`)
-                            ?.scrollIntoView({inline: "center", behavior: "smooth"});
+                          const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
+                          header?.scrollIntoView({inline: "center", behavior: "smooth"});
+                          header?.animate([{}, {backgroundColor: "var(--tc-select)"}], {
+                            direction: "alternate",
+                            duration: 230,
+                            iterations: 6,
+                          });
                           props.popOver.close();
                         }}
                         title={t("tables.scroll_to_column")}
@@ -157,12 +157,8 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 class="secondary small"
                 onClick={() =>
                   setVisibility((visibility) => {
-                    const defVis = defaultColumnVisibility()();
-                    if (!search()) {
-                      return defVis;
-                    }
                     const vis = {...visibility};
-                    for (const [id, defVisible] of Object.entries(defVis)) {
+                    for (const [id, defVisible] of Object.entries(defaultColumnVisibility()())) {
                       if (matchesSearch(id)) {
                         vis[id] = defVisible;
                       }
@@ -172,7 +168,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 }
                 disabled={isDefaultVisibility()}
                 // Use inert to make the parent handle onClick also when disabled.
-                inert={isDefaultVisibility() ? true : undefined}
+                inert={isDefaultVisibility()}
                 onMouseOver={[setResetHovered, true]}
                 onMouseOut={[setResetHovered, false]}
               >
@@ -199,7 +195,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             }
             disabled={isDefaultSizing()}
             // Use inert to make the parent handle onClick also when disabled.
-            inert={isDefaultSizing() ? true : undefined}
+            inert={isDefaultSizing()}
           >
             {t("tables.reset_column_sizes")}
           </Button>

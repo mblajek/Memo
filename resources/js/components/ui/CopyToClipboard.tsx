@@ -1,35 +1,33 @@
 import {BiRegularCopy} from "solid-icons/bi";
-import {Show, VoidComponent, createSignal} from "solid-js";
-import {cx, useLangFunc} from "../utils";
-import {Button} from "./Button";
+import {Show, splitProps, VoidComponent} from "solid-js";
+import {useLangFunc} from "../utils";
+import {ButtonProps} from "./Button";
+import {IconButton} from "./IconButton";
 
-interface Props {
+interface Props extends ButtonProps {
   readonly text: string | undefined;
   /** Whether the text should be displayed on hover. */
   readonly textInTitle?: boolean;
 }
 
 /** A "Copy to clipboard" icon, copying the specified text on click. */
-export const CopyToClipboard: VoidComponent<Props> = (props) => {
+export const CopyToClipboard: VoidComponent<Props> = (allProps) => {
+  const [props, buttonProps] = splitProps(allProps, ["text", "textInTitle"]);
   const t = useLangFunc();
-  const [copied, setCopied] = createSignal(false);
   return (
     <Show when={props.text}>
       {(text) => (
-        <Button
-          title={
-            props.textInTitle ? `${t("actions.copy_to_clipboard")}\n${props.text}` : t("actions.copy_to_clipboard")
-          }
-        >
-          <BiRegularCopy
-            class={cx("inlineIcon", copied() ? undefined : "dimmed")}
-            onClick={() => {
-              navigator.clipboard.writeText(text());
-              setCopied(true);
-              setTimeout(() => setCopied(false), 350);
-            }}
-          />
-        </Button>
+        <IconButton
+          {...buttonProps}
+          icon={BiRegularCopy}
+          title={[
+            props.textInTitle ? `${t("actions.copy_to_clipboard")}\n${props.text}` : t("actions.copy_to_clipboard"),
+            {hideOnClick: true},
+          ]}
+          onClick={() => {
+            navigator.clipboard.writeText(text());
+          }}
+        />
       )}
     </Show>
   );
