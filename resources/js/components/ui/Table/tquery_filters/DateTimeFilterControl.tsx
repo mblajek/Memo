@@ -1,3 +1,4 @@
+import {DateInput} from "components/ui/DateInput";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
@@ -119,13 +120,11 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
         />
       </Show>
       <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
-        <input
+        <DateInput
           name={filterFieldNames.get(`from_${props.schema.name}`)}
           type={inputsType()}
-          class={cx(
-            "w-full min-h-small-input border border-input-border rounded text-black",
-            lower() ? undefined : "text-opacity-50",
-          )}
+          outerClass="w-full"
+          class="min-h-small-input"
           max={upper()}
           value={lower()}
           onInput={({target: {value}}) => setLower(value)}
@@ -133,13 +132,11 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       </div>
       <div>{t("range.to")}</div>
       <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
-        <input
+        <DateInput
           name={filterFieldNames.get(`to_${props.schema.name}`)}
           type={inputsType()}
-          class={cx(
-            "w-full min-h-small-input border border-input-border rounded text-black",
-            upper() ? undefined : "text-opacity-50",
-          )}
+          outerClass="w-full"
+          class="min-h-small-input"
           min={lower()}
           value={upper()}
           onInput={({target: {value}}) => setUpper(value)}

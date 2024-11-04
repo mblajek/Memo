@@ -1,4 +1,5 @@
 import {Button, EditButton} from "components/ui/Button";
+import {DateInput} from "components/ui/DateInput";
 import {HideableSection} from "components/ui/HideableSection";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {CheckboxField} from "components/ui/form/CheckboxField";
@@ -151,21 +152,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               style={{"grid-template-rows": "auto auto", "grid-template-columns": `1fr ${allDay() ? "" : "auto"} 1fr`}}
             >
               <div class="flex items-center gap-0.5">
-                <div class="basis-40 grow grid">
-                  <input
-                    id="date"
-                    name="date"
-                    type="date"
-                    class="row-start-1 col-start-1 min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
-                  />
-                  <Show when={form.data("date")}>
-                    {(date) => (
-                      <div class="row-start-1 col-start-1 flex items-center justify-end pr-10 pointer-events-none">
-                        {DateTime.fromISO(date()).weekdayShort}
-                      </div>
-                    )}
-                  </Show>
-                </div>
+                <DateInput id="date" name="date" outerClass="basis-40 grow" class="min-h-big-input px-2" />
                 <Show when={!allDay()}>
                   <TimeInput id="time.startTime" name="time.startTime" />
                 </Show>
