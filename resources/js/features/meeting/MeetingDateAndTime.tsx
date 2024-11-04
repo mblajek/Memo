@@ -195,7 +195,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                   // In the all day mode this does not change the height of the page, so no transition is needed.
                   transitionTimeMs={delayedAllDay() ? 0 : HIDEABLE_SECTIONS_TRANSITION_TIME_MS}
                 >
-                  {(show) => {
+                  {({show}) => {
                     const canApplySuggestion = () =>
                       show() &&
                       (defaultDurationMinutes() === MAX_DAY_MINUTE || allDay() || form.data("time.startTime"));

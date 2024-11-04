@@ -56,11 +56,11 @@ export const WorkTimeForm: VoidComponent<AbstractMeetingFormProps<WorkTimeFormTy
               <Show when={props.allowCreateSeries}>
                 <CheckboxField name="createSeries" />
                 <Show when={form.data("date")}>
-                  {(formData) => (
+                  {(date) => (
                     <fieldset data-felte-keep-on-remove>
-                      <HideableSection show={form.data("createSeries")}>
+                      <HideableSection show={form.data("createSeries")} destroyWhenFullyCollapsed>
                         <div class="pl-2 border-l-4 border-gray-400">
-                          <MeetingSeriesControls startDate={DateTime.fromISO(formData())} compact />
+                          <MeetingSeriesControls startDate={DateTime.fromISO(date())} compact />
                         </div>
                       </HideableSection>
                     </fieldset>
