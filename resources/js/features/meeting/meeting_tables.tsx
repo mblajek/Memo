@@ -495,7 +495,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnDef: {
         cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
-            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} />}</ShowCellVal>
+            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} allowViewGroup />}</ShowCellVal>
           </PaddedCell>
         )),
         size: 250,

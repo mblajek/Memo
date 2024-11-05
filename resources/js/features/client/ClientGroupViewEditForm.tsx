@@ -7,14 +7,16 @@ import {createClientGroupEditModal} from "./client_group_edit_modal";
 import {ClientGroupBox} from "./ClientGroupBox";
 import {ClientGroupView} from "./ClientGroupView";
 
-interface Props {
+export interface ClientGroupViewEditFormProps {
   readonly group: ClientGroupResource;
   readonly currentClientId?: string;
-  /** Whether the component allows editing and creating groups (as opposed to just viewing). Default: false */
+  /** Whether the component allows editing groups (as opposed to just viewing). Default: false */
   readonly allowEditing?: boolean;
+  /** Whether the component allows deleting groups. Default: same as allowEditing */
+  readonly allowDeleting?: boolean;
 }
 
-export const ClientGroupViewEditForm: VoidComponent<Props> = (props) => {
+export const ClientGroupViewEditForm: VoidComponent<ClientGroupViewEditFormProps> = (props) => {
   const clientGroupEditModal = createClientGroupEditModal();
   return (
     <ClientGroupBox class="flex flex-col gap-3">
@@ -22,9 +24,11 @@ export const ClientGroupViewEditForm: VoidComponent<Props> = (props) => {
         <ClientGroupView group={props.group} currentClientId={props.currentClientId} />
         <MutationTrackingLoadingPane />
       </div>
-      <Show when={props.allowEditing}>
-        <div class="flex gap-1 justify-between">
+      <div class="flex gap-1 justify-between">
+        <Show when={props.allowDeleting ?? props.allowEditing ?? true} fallback={<div />}>
           <ClientGroupDeleteButton groupId={props.group.id} />
+        </Show>
+        <Show when={props.allowEditing ?? true} fallback={<div />}>
           <div class="flex gap-1">
             <Show when={props.group.clients.length > 1 && props.currentClientId}>
               {(currentClientId) => <ClientGroupDeleteClientButton group={props.group} clientId={currentClientId()} />}
@@ -39,8 +43,8 @@ export const ClientGroupViewEditForm: VoidComponent<Props> = (props) => {
               }
             />
           </div>
-        </div>
-      </Show>
+        </Show>
+      </div>
     </ClientGroupBox>
   );
 };
