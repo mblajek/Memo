@@ -771,7 +771,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             ?.some((clientId) => !selectedClientIds().includes(clientId))}
                         >
                           <Button
-                            class="text-start linkLike p-0"
+                            class="linkLike p-0"
                             onClick={() => {
                               let index = selectedClientIds().length;
                               for (const clientId of allGroups().get(sharedClientsGroupId())?.() || []) {

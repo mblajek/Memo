@@ -2,6 +2,8 @@
 
 Memo jest wspierane na następujących przeglądarkach desktopowych (uruchamianych na komputerze):
 
+<!-- Be sure to keep in sync with BrowserWarning.tsx -->
+
 - [Google Chrome](https://www.google.com/chrome/), wersja 122 i nowsze
 - [Microsoft Edge](https://www.microsoft.com/edge), wersja 122 i nowsze
 - [Mozilla Firefox](https://www.mozilla.org/firefox/), wersja 131 i nowsze

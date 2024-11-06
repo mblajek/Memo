@@ -8,15 +8,17 @@ import {MemoTitle} from "features/root/MemoTitle";
 import {Show, VoidComponent, createSignal, onMount} from "solid-js";
 
 interface Props {
-  readonly title: string;
+  readonly title?: string;
   readonly mdPath: string;
 }
 
 /**
  * A component displaying a help page, loaded from the mdPath as markdown.
  *
- * This component sets the page title to props.title, prepended with the `# Title` from the markdown.
- * It also rewrites image sources to be relative to the mdPath.
+ * If props.title is specified, this component sets the page title to props.title,
+ * prepended with the `# Title` from the markdown.
+ *
+ * The component rewrites image sources to be relative to the mdPath.
  */
 export const Help: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -68,7 +70,7 @@ export const Help: VoidComponent<Props> = (props) => {
               const [h1Title, setH1Title] = createSignal<string>();
               return (
                 <>
-                  <Show when={h1Title()}>
+                  <Show when={props.title && h1Title()}>
                     <MemoTitle title={`${h1Title()} ${EM_DASH} ${props.title}`} />
                   </Show>
                   <h1 ref={(h1) => onMount(() => setH1Title(h1.textContent || undefined))} {...h1Props} />

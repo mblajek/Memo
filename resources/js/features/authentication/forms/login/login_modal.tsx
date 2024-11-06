@@ -3,6 +3,7 @@ import {FullLogo} from "components/ui/FullLogo";
 import {Modal, MODAL_STYLE_PRESETS} from "components/ui/Modal";
 import {title} from "components/ui/title";
 import {cx, DATE_TIME_FORMAT, useLangFunc} from "components/utils";
+import {BrowserWarning} from "components/utils/BrowserWarning";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {doAndClearParams} from "components/utils/modals";
 import {V1} from "data-access/memo-api/config";
@@ -57,6 +58,7 @@ export const createLoginModal = registerGlobalPageElement<Params | true>((args) 
               <BaseAppVersion />
             </div>
           </div>
+          <BrowserWarning />
           <div class="flex flex-col relative">
             <div class="absolute top-0 right-0 z-10">
               <Button onClick={toggleTheme} title={t("switch_theme")}>

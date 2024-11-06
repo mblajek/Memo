@@ -127,3 +127,7 @@ phone_number:
 
 dev:
   print_error_to_console: "Wypisz ten komunikat na konsoli w narzędziach deweloperskich\nMoże to pomóc w analizowaniu błędów"
+
+browsers:
+  unsupported: "Uwaga! Ta przeglądarka nie jest wspierana i aplikacja może nie działać poprawnie! ({{browser}})"
+  supported_browsers_info: "Informacje na temat wspieranych przeglądarek"
