@@ -13,20 +13,17 @@ import {isDEV, resetDEV, toggleDEV} from "components/utils/dev_mode";
 import {usePasswordExpiration} from "components/utils/password_expiration";
 import {User} from "data-access/memo-api/groups";
 import {useInvalidator} from "data-access/memo-api/invalidator";
+import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
-import {HiOutlineCheckCircle, HiOutlineXCircle} from "solid-icons/hi";
+import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
 import {TbPassword} from "solid-icons/tb";
 import {TiWarningOutline} from "solid-icons/ti";
-import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, createMemo, on} from "solid-js";
+import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, on} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {usesLocalTimeZone} from "time_zone_controller";
 import {ThemeIcon, useThemeControl} from "../theme_control";
 
 type _Directives = typeof title;
-
-interface WindowWithDeveloperLogin {
-  developerLogin(developer: boolean): void;
-}
 
 const FORMAT = {...DATE_TIME_FORMAT, second: undefined, weekday: "long"} satisfies Intl.DateTimeFormatOptions;
 
@@ -37,8 +34,8 @@ export const UserInfo: VoidComponent = () => {
   const passwordExpiration = usePasswordExpiration();
   const passwordChangeModal = createPasswordChangeModal();
   const {toggleTheme} = useThemeControl();
-
   const invalidate = useInvalidator();
+  const developerPermission = useDeveloperPermission();
   const logout = createMutation(() => ({
     mutationFn: () => User.logout(),
     meta: {
@@ -54,34 +51,6 @@ export const UserInfo: VoidComponent = () => {
       });
     },
   }));
-  const developerLogin = createMutation(() => ({
-    mutationFn: User.developerLogin,
-    onSuccess() {
-      invalidate.userStatusAndFacilityPermissions();
-    },
-  }));
-
-  const isGlobalAdmin = createMemo(() => statusQuery.data?.permissions.globalAdmin);
-  createEffect(() => {
-    if (isGlobalAdmin()) {
-      const windowWithDeveloperLogin = window as unknown as WindowWithDeveloperLogin;
-      if (!windowWithDeveloperLogin.developerLogin) {
-        // eslint-disable-next-line no-console
-        console.debug("Call developerLogin(true) to gain developer permission.");
-        windowWithDeveloperLogin.developerLogin = (developer) => {
-          (async () => {
-            if (typeof developer !== "boolean") {
-              throw new Error("Expected boolean argument");
-            }
-            await developerLogin.mutateAsync({developer});
-            toggleDEV(developer);
-            // eslint-disable-next-line no-console
-            console.log(developer ? "Developer login success." : "Developer logout success.");
-          })();
-        };
-      }
-    }
-  });
 
   createEffect(
     on(passwordExpiration, (expiration, prevExpiration) => {
@@ -129,12 +98,34 @@ export const UserInfo: VoidComponent = () => {
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <CurrentTime />
-          <div class="flex gap-1">
+          <div class="flex gap-1 items-center">
             {statusQuery.data?.user.name}
+            <Show when={developerPermission.enabled()}>
+              <PopOver
+                trigger={(popOver) => (
+                  <Button title={["Developer permission", {hideOnClick: true}]} onClick={popOver.open}>
+                    <HiSolidWrenchScrewdriver class="text-current" />
+                  </Button>
+                )}
+              >
+                {(popOver) => (
+                  <SimpleMenu>
+                    <Button
+                      onClick={() => {
+                        popOver.close();
+                        developerPermission.enable(false);
+                      }}
+                    >
+                      Developer logout
+                    </Button>
+                  </SimpleMenu>
+                )}
+              </PopOver>
+            </Show>
             <PopOver
               trigger={(popOver) => (
                 <Button title={[t("user_settings"), {hideOnClick: true}]} onClick={popOver.open}>
-                  <TbPassword class="inlineIcon" />
+                  <TbPassword class="text-current" />
                   <Show when={passwordExpiration()}>
                     <WarningMark />
                   </Show>
@@ -157,14 +148,9 @@ export const UserInfo: VoidComponent = () => {
                   <Button onClick={toggleTheme}>
                     {t("switch_theme")} <ThemeIcon class="inlineIcon" />
                   </Button>
-                  <Show when={DEV || isDEV() || statusQuery.data?.permissions.developer}>
+                  <Show when={DEV || isDEV() || developerPermission.enabled()}>
                     <Button class="flex gap-2 items-center justify-between" onClick={() => toggleDEV()}>
-                      <div class="flex flex-col">
-                        <span>{CHECKBOX(isDEV())} DEV mode</span>
-                        <Show when={statusQuery.data?.permissions.developer}>
-                          <span class="text-sm text-grey-text">Developer permission</span>
-                        </Show>
-                      </div>
+                      {CHECKBOX(isDEV())} DEV mode
                       <InfoIcon href="/help/dev/developer-modes" />
                     </Button>
                   </Show>

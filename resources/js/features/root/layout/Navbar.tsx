@@ -5,6 +5,7 @@ import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "com
 import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {useInvalidator} from "data-access/memo-api/invalidator";
+import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
@@ -29,6 +30,7 @@ export const Navbar: VoidComponent = () => {
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
   const facilityUrl = () => activeFacility()?.url;
+  const developerPermission = useDeveloperPermission();
 
   const FacilityAdminOrStaffBarrier: ParentComponent = (props) => (
     <SilentAccessBarrier
@@ -148,7 +150,22 @@ export const Navbar: VoidComponent = () => {
       </nav>
       <div class="grow" />
       <div class="p-2 flex items-end gap-2 justify-between">
-        <A href="/help/about" class="!text-grey-text">
+        <A
+          href="/help/about"
+          class="!text-grey-text"
+          onClick={(e) => {
+            const sel = document.getSelection();
+            if (
+              !developerPermission.enabled() &&
+              sel?.focusNode &&
+              e.currentTarget.contains(sel.focusNode) &&
+              sel.focusOffset === 3
+            ) {
+              sel.empty();
+              developerPermission.enable(true);
+            }
+          }}
+        >
           {t("app_name")} <BaseAppVersion />
         </A>
         <Button
