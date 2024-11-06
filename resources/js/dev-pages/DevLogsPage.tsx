@@ -84,7 +84,7 @@ const LogText: VoidComponent<LogTextProps> = (props) => {
       <div class="basis-0 min-w-0 grow">{props.text}</div>
       <div class="px-0.5 flex flex-col text-base">
         <CopyToClipboard class="bg-white rounded" text={props.text} />
-        <Show when={props.printToConsoleButton && props.text.match(/\n(\t| {2,})at /)}>
+        <Show when={props.printToConsoleButton && props.text.match(/\w+\.js:\d+/)}>
           <IconButton
             class="bg-white rounded"
             icon={FaSolidTerminal}
