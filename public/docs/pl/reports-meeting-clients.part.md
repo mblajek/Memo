@@ -1,5 +1,6 @@
-Ten raport, podobnie jak poprzedni, pokazuje _uczestnictwa w spotkaniach_, jednak tym razem są to jedynie uczestnictwa klientów
-(bez pracowników). W tym raporcie widoczne są również atrybuty klienta, w tym atrybuty zdefiniowane przez placówkę.
+Ten raport, podobnie jak [Raport _$t(routes.facility.meeting_attendants|cap)_](reports#meeting-attendants),
+pokazuje _uczestnictwa w spotkaniach_, jednak tym razem są to jedynie uczestnictwa klientów
+(bez pracowników). W tym raporcie widoczne są również atrybuty klientów.
 
 Przykład użycia [grupowania](table-grouping) dla tej tabeli:
 

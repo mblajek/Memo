@@ -6,9 +6,11 @@ import {EM_DASH} from "components/ui/symbols";
 import {QueryBarrier, SimpleErrors, useLangFunc} from "components/utils";
 import {MemoTitle} from "features/root/MemoTitle";
 import {Show, VoidComponent, createSignal, onMount} from "solid-js";
+import {resolvePath} from "./markdown_resolver";
 
 interface Props {
   readonly title?: string;
+  readonly currentPath?: string;
   readonly mdPath: string;
   /** Whether the help is included in another document. This causes the component not to set padding etc. Default: false */
   readonly inlined?: boolean;
@@ -48,9 +50,6 @@ export const Help: VoidComponent<Props> = (props) => {
       setTimeout(() => document.querySelector(`a[href="${location.hash}"]`)?.scrollIntoView(), 100);
     }
   });
-  function toAbsolutePath(relativePath: string) {
-    return [...props.mdPath.split("/").slice(0, -1), relativePath].join("/");
-  }
   return (
     <div class={props.inlined ? undefined : "overflow-y-auto p-2 pr-4 max-w-5xl"}>
       <QueryBarrier
@@ -63,13 +62,14 @@ export const Help: VoidComponent<Props> = (props) => {
           >
             <div class="w-fit bg-purple-100 m-2 p-4 rounded-md">
               <h1 class="text-xl text-center mb-2">{t("errors.docs_page_not_found.title")}</h1>
-              <p>{t("errors.docs_page_not_found.body", {url: location.pathname})}</p>
+              <p>{t("errors.docs_page_not_found.body", {url: props.currentPath || location.pathname})}</p>
             </div>
           </Show>
         )}
       >
         <Markdown
           markdown={processMarkdown(query.data!)}
+          linksRelativeTo={props.currentPath || location.pathname}
           components={{
             // Set the page title based on the # header.
             h1: (h1Props) => {
@@ -89,7 +89,7 @@ export const Help: VoidComponent<Props> = (props) => {
                   {...{
                     ...imgProps,
                     node: undefined,
-                    src: toAbsolutePath(imgProps.src!),
+                    src: resolvePath(props.mdPath, imgProps.src!),
                   }}
                 />
               );
@@ -99,7 +99,7 @@ export const Help: VoidComponent<Props> = (props) => {
                 if (pProps.node.children.length === 1 && pProps.node.children[0]!.type === "text") {
                   const match = pProps.node.children[0]!.value.match(/^\$include\(([^)\s]+\.md)\)$/);
                   if (match) {
-                    return toAbsolutePath(match[1]!);
+                    return resolvePath(props.mdPath, match[1]!);
                   }
                 }
                 return undefined;

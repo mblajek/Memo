@@ -68,7 +68,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
-import {InfoIcon} from "../InfoIcon";
+import {PageInfoIcon, PageInfoIconProps} from "../PageInfoIcon";
 import {title} from "../title";
 import {TableColumnGroupSelect} from "./TableColumnGroupSelect";
 import {TableExportButton} from "./TableExportButton";
@@ -178,8 +178,7 @@ export interface TQueryTableProps<TData = DataItem> {
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
   readonly staticExportConfig?: TableExportConfig;
-  /** Href link to the help page describing the table. */
-  readonly helpHref?: string;
+  readonly pageInfo?: PageInfoIconProps;
 }
 
 export interface PartialColumnConfig<TData = DataItem> {
@@ -844,10 +843,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           />
           <TableColumnGroupSelect />
           <TableColumnVisibilityController />
-          <Show when={props.helpHref}>
-            {(href) => (
+          <Show when={props.pageInfo}>
+            {(pageInfo) => (
               <div class="flex items-center">
-                <InfoIcon href={href()} target="_blank" title={t("tables.more_info")} />
+                <PageInfoIcon title={t("tables.more_info")} {...pageInfo()} />
               </div>
             )}
           </Show>

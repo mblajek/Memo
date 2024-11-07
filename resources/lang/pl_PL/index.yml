@@ -131,3 +131,6 @@ dev:
 browsers:
   unsupported: "Uwaga! Ta przeglądarka nie jest wspierana i aplikacja może nie działać poprawnie! ({{browser}})"
   supported_browsers_info: "Informacje na temat wspieranych przeglądarek"
+
+help:
+  open_full_help_page: "Otwórz pełną stronę pomocy"
