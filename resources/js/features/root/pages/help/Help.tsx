@@ -10,6 +10,8 @@ import {Show, VoidComponent, createSignal, onMount} from "solid-js";
 interface Props {
   readonly title?: string;
   readonly mdPath: string;
+  /** Whether the help is included in another document. This causes the component not to set padding etc. Default: false */
+  readonly inlined?: boolean;
 }
 
 /**
@@ -45,8 +47,11 @@ export const Help: VoidComponent<Props> = (props) => {
       setTimeout(() => document.querySelector(`a[href="${location.hash}"]`)?.scrollIntoView(), 100);
     }
   });
+  function toAbsolutePath(relativePath: string) {
+    return [...props.mdPath.split("/").slice(0, -1), relativePath].join("/");
+  }
   return (
-    <div class="overflow-y-auto p-2 pr-4 max-w-5xl">
+    <div class={props.inlined ? undefined : "overflow-y-auto p-2 pr-4 max-w-5xl"}>
       <QueryBarrier
         queries={[query]}
         error={(queries) => (
@@ -78,16 +83,30 @@ export const Help: VoidComponent<Props> = (props) => {
               );
             },
             img: (imgProps) => {
-              // Rewrite the image source to path relative to mdPath, and not to the current app URL.
-              const src = () => [...props.mdPath.split("/").slice(0, -1), imgProps.src!].join("/");
               return (
                 <img
                   {...{
                     ...imgProps,
                     node: undefined,
-                    src: src(),
+                    src: toAbsolutePath(imgProps.src!),
                   }}
                 />
+              );
+            },
+            p: (pProps) => {
+              const includedPath = () => {
+                if (pProps.node.children.length === 1 && pProps.node.children[0]!.type === "text") {
+                  const match = pProps.node.children[0]!.value.match(/^\$include\(([^)\s]+\.md)\)$/);
+                  if (match) {
+                    return toAbsolutePath(match[1]!);
+                  }
+                }
+                return undefined;
+              };
+              return (
+                <Show when={includedPath()} fallback={<p {...pProps} />}>
+                  {(includedPath) => <Help mdPath={includedPath()} inlined />}
+                </Show>
               );
             },
           }}

@@ -32,6 +32,10 @@ This document presents some of the Markdown features that can be used in Memo do
 
 The user documentation for each supported language is placed in a separate directory under /docs. Keep in mind that file names and anchors should have English names so that the documentation structure is the same in every language.
 
+### Include {#include}
+
+$include(include.part.md)
+
 ## Index
 
 - [Developer modes](developer-modes)

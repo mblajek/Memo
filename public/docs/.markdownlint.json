@@ -3,5 +3,6 @@
   "code-fence-style": {"style": "consistent"},
   "line-length": false,
   "fenced-code-language": false,
-  "heading-increment": false
+  "first-line-heading": false,
+  "heading-increment": false,
 }
