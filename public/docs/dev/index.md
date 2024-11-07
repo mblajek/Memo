@@ -18,8 +18,10 @@ This document presents some of the Markdown features that can be used in Memo do
 - Images are supported using the standard syntax `![alt text](path "optional title")` (see the Memo logo above).
 - Tables are supported (see [below](#files) for an example).
 - Texts from the translations can be inserted by writing `$t(<translation_key>)` (without the `<>` brackets), or `$t(<translation_key>|cap)` to capitalise the text.
-  Example: _$t(models.user._name|cap)_ is the word for _user_ in the language $t(language).
+  Example: _"$t(models.user._name|cap)"_ is the word for _"user"_ in the language $t(language).
 - The created markdown should pass the configured markdown linter (although the linter rules can be tweaked as needed).
+
+$include(include.part.md)
 
 ## Files organisation {#files}
 
@@ -31,10 +33,6 @@ This document presents some of the Markdown features that can be used in Memo do
 ### Translations {#translations}
 
 The user documentation for each supported language is placed in a separate directory under /docs. Keep in mind that file names and anchors should have English names so that the documentation structure is the same in every language.
-
-### Include {#include}
-
-$include(include.part.md)
 
 ## Index
 

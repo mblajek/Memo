@@ -36,6 +36,7 @@ export const Help: VoidComponent<Props> = (props) => {
     },
     queryKey: ["help", props.mdPath],
   }));
+  import.meta.hot?.on("docsFileChange", () => query.refetch());
   function processMarkdown(markdown: string) {
     return markdown.replaceAll(/\$t\((\w[\w.]+)(\|cap)?\)/g, (match, key, cap) => {
       const text = t(key);

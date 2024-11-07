@@ -1,4 +1,5 @@
 import {useTransContext} from "@mbarzda/solid-i18next";
+import {dependOnTranslationsVersion} from "i18n_loader";
 import {TOptions} from "i18next";
 import {isDEV} from "./dev_mode";
 
@@ -33,6 +34,7 @@ export function useLangFunc(): LangFunc {
     }
     const [t] = transContext;
     const langFuncBase: LangFuncBase = (key, options) => {
+      dependOnTranslationsVersion();
       if (typeof key === "string") {
         return t(key, {defaultValue: `??${key}`, ...options});
       }
