@@ -2,6 +2,7 @@ import {createMutation} from "@tanstack/solid-query";
 import {AxiosError, isAxiosError} from "axios";
 import {DateTime} from "luxon";
 import {Match, Show, Switch, VoidComponent, createMemo, createSignal, onMount} from "solid-js";
+import {getFullErrorMessage} from "./components/error_util";
 import {Button} from "./components/ui/Button";
 import {FullScreenPre} from "./components/ui/FullScreenPre";
 import {SmallSpinner} from "./components/ui/Spinner";
@@ -29,9 +30,7 @@ export const FatalError: VoidComponent<Props> = (props) => {
   // eslint-disable-next-line solid/reactivity
   import.meta.hot?.on("vite:afterUpdate", () => props.reset());
   const error = createMemo(() => {
-    const fullMessage = (
-      props.error instanceof Error ? props.error.stack || props.error.message : String(props.error)
-    ).trim();
+    const fullMessage = getFullErrorMessage(props.error);
     const headLines = fullMessage.split("\n", 2);
     return {
       head: headLines.join("\n").trim(),
