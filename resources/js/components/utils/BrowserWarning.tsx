@@ -15,8 +15,8 @@ const REPORTED_BROWSERS_IN_USER_AGENT_STRING = ["Chrome", "Edg" /* sic! */, "Fir
 
 export const BrowserWarning: VoidComponent = () => {
   const t = useLangFunc();
-  let isSupported = false;
-  let browser;
+  let status: "unsupported" | "outdated" | "supported_up_to_date" = "unsupported";
+  let browser: {browser: string; version?: number};
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const {userAgentData} = navigator as any;
   if (userAgentData?.brands) {
@@ -27,33 +27,42 @@ export const BrowserWarning: VoidComponent = () => {
       brandsMap.set(brand, version);
     }
     const reportedBrowser = REPORTED_BROWSERS.find((b) => brandsMap.has(b)) || brandsMap.keys().next().value!;
-    browser = `${reportedBrowser} ${brandsMap.get(reportedBrowser)}`;
-    isSupported ||= EXPECTED_BROWSER_VERSIONS.some(([b, v]) => {
+    browser = {browser: reportedBrowser, version: brandsMap.get(reportedBrowser)};
+    status = EXPECTED_BROWSER_VERSIONS.some(([b, v]) => {
       const brandVersion = brandsMap.get(b);
       return brandVersion && brandVersion >= v;
-    });
+    })
+      ? "supported_up_to_date"
+      : EXPECTED_BROWSER_VERSIONS.some(([b, _v]) => brandsMap.has(b))
+        ? "outdated"
+        : "unsupported";
   } else {
     const match = navigator.userAgent.match(
       new RegExp(`\\b(${REPORTED_BROWSERS_IN_USER_AGENT_STRING.join("|")})/(\\d+)`),
     );
     if (match) {
-      const reportedBrowser = match[1];
+      const reportedBrowser = match[1]!;
       const version = Number(match[2]);
-      isSupported = EXPECTED_BROWSER_VERSIONS.some(([b, v]) => b === reportedBrowser && version >= v);
-      browser = `${reportedBrowser} ${version}`;
+      status = EXPECTED_BROWSER_VERSIONS.some(([b, v]) => b === reportedBrowser && version >= v)
+        ? "supported_up_to_date"
+        : EXPECTED_BROWSER_VERSIONS.some(([b, _v]) => b === reportedBrowser)
+          ? "outdated"
+          : "unsupported";
+      browser = {browser: reportedBrowser, version};
     } else {
-      browser = "unknown";
+      browser = {browser: "unknown"};
     }
   }
-  if (isSupported) {
+  if (status === "supported_up_to_date") {
     // eslint-disable-next-line solid/components-return-once
     return undefined;
   }
   const [browserSupportInfo, setBrowserSupportInfo] = createSignal(false);
   return (
     <>
-      <div class="flex flex-col">
-        <div class="text-red-600 font-semibold">{t("browsers.unsupported", {browser})}</div>
+      <div class="flex flex-col gap-2">
+        <div class="text-red-600 font-semibold">{t(`browsers.${status}`)}</div>
+        <div class="">{t("browsers.your_browser", browser)}</div>
         <Button class="linkLike" onClick={[setBrowserSupportInfo, true]}>
           {t("browsers.supported_browsers_info")}
         </Button>
