@@ -33,7 +33,7 @@ export default (() => {
             )),
             size: 500,
           },
-          columnGroups: true,
+          columnGroups: [true, "context"],
         },
         {
           name: "context",
@@ -45,6 +45,7 @@ export default (() => {
             )),
             size: 500,
           },
+          columnGroups: true,
         },
         {name: "appVersion", columnDef: {size: 150}, columnGroups: true},
         {name: "clientIp", columnDef: {size: 150}, initialVisible: false, columnGroups: true},
