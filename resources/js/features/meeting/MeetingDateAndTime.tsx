@@ -15,7 +15,7 @@ import {
 } from "components/utils/day_minute_util";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
-import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on, onMount} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {MeetingInSeriesInfo} from "./MeetingInSeriesInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
@@ -67,11 +67,13 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       }
     }),
   );
-  createComputed(() => {
-    if (!props.allowAllDay) {
-      form.setFields("time.allDay", false);
-    }
-  });
+  onMount(() =>
+    createComputed(() => {
+      if (!props.allowAllDay) {
+        form.setFields("time.allDay", false);
+      }
+    }),
+  );
   const hoursList = createMemo(() => {
     if (!props.suggestedTimes) {
       return undefined;
@@ -202,7 +204,9 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                   }}
                 </HideableSection>
               </div>
-              <CheckboxField name="time.allDay" disabled={props.allowAllDay === false} />
+              <Show when={props.allowAllDay}>
+                <CheckboxField name="time.allDay" />
+              </Show>
             </div>
           </fieldset>
         </div>

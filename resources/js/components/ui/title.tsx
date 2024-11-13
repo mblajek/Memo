@@ -183,7 +183,7 @@ function isArrayForm(value: TitleDirectiveType): value is readonly [JSX.Element,
 
 export function mergeTitleDirectiveProps(
   value: TitleDirectiveType,
-  extraProps: Partial<TippyProps>,
+  defaultProps: Partial<ExtraTippyProps>,
 ): TitleDirectiveType {
-  return isArrayForm(value) ? [value[0], {...value[1], ...extraProps}] : [value, extraProps];
+  return isArrayForm(value) ? [value[0], {...defaultProps, ...value[1]}] : [value, defaultProps];
 }

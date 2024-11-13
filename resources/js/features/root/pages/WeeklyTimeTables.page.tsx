@@ -401,7 +401,7 @@ export default (() => {
                   trigger={(popOver) => (
                     <Button
                       class={cx("minimal !px-1", popOver.isOpen ? "!bg-select" : undefined)}
-                      title={[t("facility_user.weekly_time_tables.click_to_see_actions"), {hideOnClick: true}]}
+                      title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
                       <BsThreeDots class="text-current" size="20" />

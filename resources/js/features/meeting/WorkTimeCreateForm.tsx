@@ -14,9 +14,11 @@ import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
 import {getMeetingTimeFullData, meetingTimePartDayInitialValue} from "./meeting_time_controller";
 import {getClearedSeriesValues, getMeetingSeriesCloneParams, MeetingSeriesFormType} from "./MeetingSeriesForm";
 import {getUnusedMeetingFields, WorkTimeForm, WorkTimeFormType} from "./WorkTimeForm";
-import {getStaffValueForCreate} from "./WorkTimeStaffSelectField";
+import {WorkTimeStaff} from "./WorkTimeStaff";
+import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./WorkTimeViewEditForm";
 
 export interface WorkTimeCreateFormProps {
+  readonly subtype: WorkTimeFormSubtype;
   readonly initialValues?: Partial<WorkTimeFormType>;
   readonly onSuccess?: (meeting: MeetingBasicData, cloneIds?: readonly string[]) => void;
   readonly onCancel?: () => void;
@@ -25,7 +27,7 @@ export interface WorkTimeCreateFormProps {
 export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
-  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
+  const {dictionaries, meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   const meetingAPI = useMeetingAPI();
   const invalidate = useInvalidator();
 
@@ -34,8 +36,12 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
       ...values,
       ...getClearedSeriesValues(),
       ...getMeetingTimeFullData(values).timeValues,
-      ...getStaffValueForCreate(dictionaries()!, values),
       ...getUnusedMeetingFields(dictionaries()!),
+      typeDictId: props.subtype.typeDictId,
+      staff:
+        props.subtype.staff === SUBTYPE_FACILITY_WIDE
+          ? []
+          : [{userId: props.subtype.staff.id, attendanceStatusDictId: attendanceStatusDict()!.ok.id}],
     };
   }
 
@@ -52,7 +58,9 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
     );
     // eslint-disable-next-line solid/reactivity
     return () => {
-      toastSuccess(t(cloneIds?.length ? "forms.work_time_series_create.success" : "forms.work_time_create.success"));
+      toastSuccess(
+        t(cloneIds?.length ? "forms.work_time_series_create.success" : `forms.${props.subtype.formId}.success`),
+      );
       props.onSuccess?.({...(meeting as RequiredNonNullable<MeetingResourceForCreate>), id}, cloneIds);
       // Important: Invalidation should happen after calling onSuccess which typically closes the form.
       // Otherwise the queries used by this form start fetching data immediately, which not only makes no sense,
@@ -64,8 +72,6 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
   const initialValues = () =>
     ({
       ...meetingTimePartDayInitialValue(),
-      typeDictId: "",
-      staff: "",
       notes: "",
       createSeries: false,
       ...defaultMeetingSeriesInitialValues(),
@@ -75,16 +81,20 @@ export const WorkTimeCreateForm: VoidComponent<WorkTimeCreateFormProps> = (props
 
   return (
     <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
-      <WorkTimeForm
-        id="work_time_create"
-        extraTranslationsFormNames={["meeting_create", "work_time_series_create"]}
-        initialValues={initialValues()}
-        forceTimeEditable
-        viewMode={false}
-        allowCreateSeries
-        onSubmit={createWorkTimes}
-        onCancel={props.onCancel}
-      />
+      <div class="flex flex-col gap-1">
+        <WorkTimeStaff staff={props.subtype.staff} />
+        <WorkTimeForm
+          id={props.subtype.formId}
+          subtype={props.subtype}
+          extraTranslationsFormNames={["meeting_create", "work_time_series_create"]}
+          initialValues={initialValues()}
+          forceTimeEditable
+          viewMode={false}
+          allowCreateSeries
+          onSubmit={createWorkTimes}
+          onCancel={props.onCancel}
+        />
+      </div>
     </Show>
   );
 };

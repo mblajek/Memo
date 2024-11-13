@@ -23,21 +23,30 @@ import {useActiveFacility} from "state/activeFacilityId.state";
 import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {MeetingDeleteButton} from "./MeetingDeleteButton";
 import {WorkTimeForm, WorkTimeFormType} from "./WorkTimeForm";
-import {getStaffValueForPatch, staffInitialValue} from "./WorkTimeStaffSelectField";
+import {WorkTimeStaff} from "./WorkTimeStaff";
 import {useMeetingWithExtraInfo} from "./meeting_api";
 import {MeetingBasicData} from "./meeting_basic_data";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_time_controller";
 import {createWorkTimeCreateModal} from "./work_time_create_modal";
 
+export const SUBTYPE_FACILITY_WIDE = "facilityWide";
+
+export interface WorkTimeFormSubtype {
+  readonly formId: string;
+  readonly typeDictId: string;
+  readonly staff: {readonly id: Api.Id} | typeof SUBTYPE_FACILITY_WIDE;
+}
+
 export interface WorkTimeViewEditFormProps {
   readonly staticMeetingId: Api.Id;
+  readonly subtype: WorkTimeFormSubtype;
   readonly viewMode: boolean;
   readonly showGoToMeetingButton?: boolean;
   readonly onViewModeChange?: (viewMode: boolean) => void;
   readonly onEdited?: (meeting: MeetingBasicData) => void;
   readonly onCreated?: (meeting: MeetingBasicData) => void;
-  readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: string[]) => void;
+  readonly onCloned?: (firstMeeting: MeetingBasicData, otherMeetingIds: Api.Id[]) => void;
   readonly onDeleted?: (count: number, deletedThisWorkTime: boolean) => void;
   readonly onCancel?: () => void;
 }
@@ -46,7 +55,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const attributes = useAttributes();
-  const {dictionaries, meetingStatusDict} = useFixedDictionaries();
+  const {meetingStatusDict} = useFixedDictionaries();
   const mutationsTracker = useMutationsTracker();
   const invalidate = useInvalidator();
   const workTimeCreateModal = createWorkTimeCreateModal();
@@ -61,7 +70,6 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
     return {
       ...values,
       ...getMeetingTimeFullData(values).timeValues,
-      ...getStaffValueForPatch(dictionaries()!, values),
     };
   }
 
@@ -71,7 +79,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
     await meetingUpdateMutation.mutateAsync({id: props.staticMeetingId, ...meetingPatch});
     // eslint-disable-next-line solid/reactivity
     return () => {
-      toastSuccess(t("forms.work_time_edit.success"));
+      toastSuccess(t(`forms.${props.subtype.formId}.success`));
       props.onEdited?.({
         ...origMeeting,
         ...skipUndefinedValues(meetingPatch as RequiredNonNullable<MeetingResourceForPatch>),
@@ -86,8 +94,6 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   const initialValues = () => {
     return {
       ...meetingTimeInitialValueForEdit(workTime()),
-      typeDictId: workTime().typeDictId,
-      ...staffInitialValue(workTime()),
       notes: workTime().notes || "",
     } satisfies WorkTimeFormType;
   };
@@ -99,6 +105,8 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
         date: DateTime.fromISO(workTime().date).plus({days}).toISODate(),
         fromMeetingId: props.staticMeetingId,
       },
+      subtype: {typeDictId: props.subtype.typeDictId, staff: props.subtype.staff},
+      availableStaff: props.subtype.staff === SUBTYPE_FACILITY_WIDE ? undefined : props.subtype.staff.id,
       onSuccess: (meeting) => props.onCreated?.(meeting),
     });
   }
@@ -111,8 +119,9 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
       >
         <Show when={attributes() && meetingStatusDict()} fallback={<BigSpinner />}>
           <div class="flex flex-col gap-3">
-            <div class="relative flex flex-col">
+            <div class="relative flex flex-col gap-1">
               <div class="flex justify-between">
+                <WorkTimeStaff staff={props.subtype.staff} />
                 <Show when={props.showGoToMeetingButton} fallback={<span />}>
                   <LinkWithNewTabLink
                     {...getCalendarViewLinkData(`/${activeFacility()?.url}/admin/time-tables`, {meeting: workTime()})}
@@ -123,7 +132,8 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                 <CreatedByInfo class="-mb-2" data={workTime()} />
               </div>
               <WorkTimeForm
-                id="work_time_edit"
+                id={props.subtype.formId}
+                subtype={props.subtype}
                 initialValues={initialValues()}
                 viewMode={props.viewMode}
                 onViewModeChange={props.onViewModeChange}

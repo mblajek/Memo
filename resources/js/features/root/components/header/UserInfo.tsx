@@ -103,7 +103,7 @@ export const UserInfo: VoidComponent = () => {
             <Show when={developerPermission.enabled()}>
               <PopOver
                 trigger={(popOver) => (
-                  <Button title={["Developer permission", {hideOnClick: true}]} onClick={popOver.open}>
+                  <Button title="Developer permission" onClick={popOver.open}>
                     <HiSolidWrenchScrewdriver class="text-current" />
                   </Button>
                 )}
@@ -124,7 +124,7 @@ export const UserInfo: VoidComponent = () => {
             </Show>
             <PopOver
               trigger={(popOver) => (
-                <Button title={[t("user_settings"), {hideOnClick: true}]} onClick={popOver.open}>
+                <Button title={t("user_settings")} onClick={popOver.open}>
                   <TbPassword class="text-current" />
                   <Show when={passwordExpiration()}>
                     <WarningMark />

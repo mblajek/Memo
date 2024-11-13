@@ -870,10 +870,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
-                initialValues: {
-                  ...meetingTimeFullDayInitialValue(day),
-                  staff: resourceId,
-                },
+                initialValues: meetingTimeFullDayInitialValue(day),
+                availableStaff: resourceId,
               });
             } else {
               return props.staticCalendarFunction satisfies never;
@@ -900,10 +898,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
-                initialValues: {
-                  ...meetingTimePartDayInitialValue(time),
-                  staff: resourceId,
-                },
+                initialValues: meetingTimePartDayInitialValue(time),
+                availableStaff: resourceId,
               });
             } else {
               return props.staticCalendarFunction satisfies never;
@@ -1015,10 +1011,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
-                initialValues: {
-                  ...meetingTimeFullDayInitialValue(day),
-                  staff: resourceId,
-                },
+                initialValues: meetingTimeFullDayInitialValue(day),
+                availableStaff: resourceId,
               });
             } else {
               return props.staticCalendarFunction satisfies never;
