@@ -41,3 +41,7 @@ i18next.on("languageChanged", (lang) => {
 export const currentLanguage = getCurrentLanguage;
 
 import.meta.hot?.on("translationsFileChange", () => i18next.reloadResources());
+
+// Make i18n available on window for testing.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).i18next = i18next;

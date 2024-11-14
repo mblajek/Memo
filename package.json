@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test-watch": "vitest watch",
     "coverage": "vitest run --coverage",
-    "lint": "eslint resources/js"
+    "lint": "eslint resources/js",
+    "cy:open": "cypress open --e2e"
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.10",
@@ -24,6 +25,7 @@
     "@typescript-eslint/eslint-plugin": "^8.11.0",
     "@typescript-eslint/parser": "^8.11.0",
     "autoprefixer": "^10.4.20",
+    "cypress": "^13.15.2",
     "eslint": "^9.13.0",
     "eslint-config-love": "^89.0.1",
     "eslint-config-prettier": "^9.1.0",
