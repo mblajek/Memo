@@ -35,7 +35,11 @@ export function useLangFunc(): LangFunc {
     const t = transContext[0];
     const langFuncBase: LangFuncBase = (key, options) => {
       if (i18next.language === "testing") {
-        return typeof key === "string" ? key : key[0]!;
+        const entries = Object.entries({
+          ...options,
+          defaultValue: undefined,
+        }).flatMap(([k, v]) => (v === undefined ? [] : [`${k}:${v}`]));
+        return `${typeof key === "string" ? key : key[0]!}${entries.length ? `{${entries.join(",")}}` : ""}`;
       }
       dependOnTranslationsVersion();
       if (typeof key === "string") {

@@ -9,7 +9,7 @@ interface TestingUserData {
 
 export function logIn(testingUserData: TestingUserData) {
   cy.session(
-    testingUserData.email,
+    [testingUserData.email, testingUserData.password],
     () => {
       cy.visit("/login");
       cy.get("#email").type(testingUserData.email);
@@ -19,7 +19,7 @@ export function logIn(testingUserData: TestingUserData) {
     },
     {
       validate: () => {
-        apiRequest("/user/status").its("status").should("eq", 200);
+        cy.request("/api/v1/user/status").its("status").should("eq", 200);
       },
     },
   );
@@ -31,9 +31,5 @@ export function disableTranslations() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (w as any).i18next?.changeLanguage("testing");
   });
-  cy.contains("app_name");
-}
-
-export function apiRequest(path: string) {
-  return cy.request(`/api/v1${path}`);
+  cy.contains("app_version");
 }

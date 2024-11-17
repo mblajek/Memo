@@ -1,5 +1,5 @@
 import {Help} from "features/root/pages/help/Help";
-import {currentLanguage} from "i18n_loader";
+import {resolveMdFromAppPath} from "features/root/pages/help/markdown_resolver";
 import {createSignal, VoidComponent} from "solid-js";
 import {Button} from "../ui/Button";
 import {Modal, MODAL_STYLE_PRESETS} from "../ui/Modal";
@@ -75,7 +75,7 @@ export const BrowserWarning: VoidComponent = () => {
         canDrag={false}
       >
         <div class="flex flex-col gap-1">
-          <Help mdPath={`/docs/${currentLanguage()}/supported-browsers.md`} />
+          <Help mdPath={resolveMdFromAppPath("/help/supported-browsers")} />
           <Button class="primary" onClick={() => setBrowserSupportInfo(false)}>
             {t("actions.ok")}
           </Button>
