@@ -13,7 +13,7 @@ interface SelectItemSymbolProps {
 }
 
 export const SelectItemSymbol: VoidComponent<SelectItemSymbolProps> = (props) => (
-  <span class={cx("font-semibold", props.class)} use:title={props.title}>
+  <span class={cx("font-semibold line-clamp-1", props.class)} use:title={props.title}>
     {props.symbol}
   </span>
 );
