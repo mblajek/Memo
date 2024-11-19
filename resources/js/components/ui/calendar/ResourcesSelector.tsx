@@ -1,6 +1,9 @@
 import {cx, htmlAttributes} from "components/utils";
 import {For, JSX, Show, VoidComponent, createMemo, createRenderEffect, createSignal, splitProps} from "solid-js";
+import {hoverSignal} from "../hover_signal";
 import {EmptyValueSymbol} from "../symbols";
+
+type _Directives = typeof hoverSignal;
 
 export type ResourcesSelectionMode = "radio" | "checkbox";
 
@@ -100,8 +103,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                         class={cx("px-1 flex gap-1 items-center hover:bg-hover", {
                           "bg-select hover:bg-select": checked(),
                         })}
-                        onPointerEnter={() => props.onHover?.(id)}
-                        onPointerLeave={() => props.onHover?.(undefined)}
+                        use:hoverSignal={(hovered) => props.onHover?.(hovered ? id : undefined)}
                       >
                         <Show
                           when={props.mode === "checkbox"}

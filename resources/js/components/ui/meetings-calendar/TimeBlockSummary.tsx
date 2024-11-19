@@ -3,10 +3,11 @@ import {crossesDateBoundaries} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {createMemo, JSX, splitProps, VoidComponent} from "solid-js";
 import {TimeSpan} from "../calendar/types";
+import {hoverSignal} from "../hover_signal";
 import {title} from "../title";
 import {timeSpanSummary, TimeSpanSummary} from "./TimeSpanSummary";
 
-type _Directives = typeof title;
+type _Directives = typeof title | typeof hoverSignal;
 
 interface TimeBlockSummaryProps extends Omit<htmlAttributes.span, "title"> {
   readonly day: DateTime;
@@ -48,8 +49,7 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
             }
           : undefined),
       })}
-      onMouseEnter={() => props.onHoverChange?.(true)}
-      onMouseLeave={() => props.onHoverChange?.(false)}
+      use:hoverSignal={(hovered) => props.onHoverChange?.(hovered)}
     >
       <span use:title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}>
         {(props.label || ((time) => time))(<TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />)}
