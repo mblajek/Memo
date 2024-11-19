@@ -498,17 +498,20 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     if (!enabledItems.length) {
       return;
     }
+    const maxInd = enabledItems.length - 1;
     let ind = 0;
     if (focusedItem()) {
       ind = enabledItems.indexOf(focusedItem()!);
       if (ind < 0) {
         ind = 0;
       } else {
-        ind += dir;
-        if (ind < 0) {
-          ind = canWrap ? enabledItems.length - 1 : 0;
-        } else if (ind >= enabledItems.length) {
-          ind = canWrap ? 0 : enabledItems.length - 1;
+        const newInd = ind + dir;
+        if (newInd < 0) {
+          ind = ind > 0 ? 0 : canWrap ? maxInd : 0;
+        } else if (newInd > maxInd) {
+          ind = ind < maxInd ? maxInd : canWrap ? 0 : maxInd;
+        } else {
+          ind = newInd;
         }
       }
     }
