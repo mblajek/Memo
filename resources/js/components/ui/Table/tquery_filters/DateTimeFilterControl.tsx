@@ -4,7 +4,7 @@ import {cx, useLangFunc} from "components/utils";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
-import {Show, VoidComponent, createComputed} from "solid-js";
+import {Show, VoidComponent, createComputed, createMemo} from "solid-js";
 import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
@@ -46,14 +46,17 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
     initial: {lower: "", upper: ""},
     filter: () => props.filter,
   });
+  const getInputsData = createMemo(() => {
+    const l = lower() ? DateTime.fromISO(lower()) : undefined;
+    const u = upper() ? DateTime.fromISO(upper()) : undefined;
+    return {l, u, conflict: l && u && l > u};
+  });
   createComputed(() => {
-    let l = lower() ? DateTime.fromISO(lower()) : undefined;
-    let u = upper() ? DateTime.fromISO(upper()) : undefined;
-    if (l && u && l > u) {
-      // Clear the upper range and let the computation run again.
-      setUpper("");
+    const inputs = getInputsData();
+    if (inputs.conflict) {
       return;
     }
+    let {l, u} = inputs;
     if (!l && !u) {
       return props.setFilter(undefined);
     }
@@ -107,8 +110,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       <div>{t("range.from")}</div>
       <Show when={canSyncRange()}>
         <div
-          class={s.valuesSyncer}
-          classList={{[s.inactive!]: !syncActive()}}
+          class={cx(s.valuesSyncer, syncActive() ? undefined : s.inactive)}
           use:title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
           onClick={() => {
             if (lower()) {
@@ -125,9 +127,13 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
           type={inputsType()}
           outerClass="w-full"
           class="min-h-small-input"
-          max={upper()}
+          max={getInputsData().conflict ? undefined : upper()}
           value={lower()}
-          onInput={({target: {value}}) => setLower(value)}
+          onInput={({target: {value, validity}}) => {
+            if (!validity.badInput) {
+              setLower(value);
+            }
+          }}
         />
       </div>
       <div>{t("range.to")}</div>
@@ -139,7 +145,11 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
           class="min-h-small-input"
           min={lower()}
           value={upper()}
-          onInput={({target: {value}}) => setUpper(value)}
+          onInput={({target: {value, validity}}) => {
+            if (!validity.badInput) {
+              setUpper(value);
+            }
+          }}
         />
       </div>
     </div>

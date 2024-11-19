@@ -43,8 +43,15 @@ export const DateInput: VoidComponent<Props> = (allProps) => {
                 onInput: ({currentTarget}) => setValue((currentTarget as HTMLInputElement).value),
                 onChange: ({currentTarget}) => setValue((currentTarget as HTMLInputElement).value),
               }),
+          onKeyDown: (e: KeyboardEvent) => {
+            if (e.key === "Delete") {
+              (e.currentTarget as HTMLInputElement).value = "";
+              e.preventDefault();
+            }
+          },
         })}
         type={type()}
+        max={inputProps.max || "3000-12-31"}
       />
       <Show when={showWeekday() && value()}>
         <div class="row-start-1 col-start-1 flex items-center justify-end pr-8 pointer-events-none">
