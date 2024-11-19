@@ -1,5 +1,8 @@
+import {hoverSignal} from "components/ui/hover_signal";
 import {cx, htmlAttributes} from "components/utils";
 import {ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
+
+type _Directives = typeof hoverSignal;
 
 interface PartDayBlockProps extends htmlAttributes.div {
   readonly label?: string;
@@ -18,8 +21,7 @@ export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => 
         ),
         style: {"outline-offset": "-2px"},
       })}
-      onMouseEnter={() => props.onHoverChange?.(true)}
-      onMouseLeave={() => props.onHoverChange?.(false)}
+      use:hoverSignal={(hovered) => props.onHoverChange?.(hovered)}
     >
       <Show when={props.label}>
         <div
