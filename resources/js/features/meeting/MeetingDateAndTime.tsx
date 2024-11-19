@@ -1,4 +1,5 @@
 import {Button, EditButton} from "components/ui/Button";
+import {DateInput} from "components/ui/DateInput";
 import {HideableSection} from "components/ui/HideableSection";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {CheckboxField} from "components/ui/form/CheckboxField";
@@ -14,7 +15,7 @@ import {
 } from "components/utils/day_minute_util";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
-import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on} from "solid-js";
+import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on, onMount} from "solid-js";
 import {DateAndTimeInfo} from "./DateAndTimeInfo";
 import {MeetingInSeriesInfo} from "./MeetingInSeriesInfo";
 import {createMeetingTimeController, useMeetingTimeForm} from "./meeting_time_controller";
@@ -66,11 +67,13 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       }
     }),
   );
-  createComputed(() => {
-    if (!props.allowAllDay) {
-      form.setFields("time.allDay", false);
-    }
-  });
+  onMount(() =>
+    createComputed(() => {
+      if (!props.allowAllDay) {
+        form.setFields("time.allDay", false);
+      }
+    }),
+  );
   const hoursList = createMemo(() => {
     if (!props.suggestedTimes) {
       return undefined;
@@ -151,12 +154,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               style={{"grid-template-rows": "auto auto", "grid-template-columns": `1fr ${allDay() ? "" : "auto"} 1fr`}}
             >
               <div class="flex items-center gap-0.5">
-                <input
-                  id="date"
-                  name="date"
-                  type="date"
-                  class="basis-32 grow min-h-big-input border border-input-border rounded px-2 aria-invalid:border-red-400 disabled:bg-disabled"
-                />
+                <DateInput id="date" name="date" outerClass="basis-40 grow" class="min-h-big-input px-2" />
                 <Show when={!allDay()}>
                   <TimeInput id="time.startTime" name="time.startTime" />
                 </Show>
@@ -168,7 +166,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                 <HideableSection show={!allDay()} transitionTimeMs={HIDEABLE_SECTIONS_TRANSITION_TIME_MS}>
                   <div class="flex items-center gap-0.5">
                     <TimeInput id="time.endTime" name="time.endTime" disabled={allDay()} />
-                    <div class="basis-32 grow">
+                    <div class="basis-40 grow">
                       <Show when={!delayedAllDay() && durationMinutes()}>
                         {t("parenthesis.open")}
                         <TimeDuration minutes={delayedDurationMinutes()!} />
@@ -186,7 +184,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                   // In the all day mode this does not change the height of the page, so no transition is needed.
                   transitionTimeMs={delayedAllDay() ? 0 : HIDEABLE_SECTIONS_TRANSITION_TIME_MS}
                 >
-                  {(show) => {
+                  {({show}) => {
                     const canApplySuggestion = () =>
                       show() &&
                       (defaultDurationMinutes() === MAX_DAY_MINUTE || allDay() || form.data("time.startTime"));
@@ -206,7 +204,9 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                   }}
                 </HideableSection>
               </div>
-              <CheckboxField name="time.allDay" disabled={props.allowAllDay === false} />
+              <Show when={props.allowAllDay}>
+                <CheckboxField name="time.allDay" />
+              </Show>
             </div>
           </fieldset>
         </div>

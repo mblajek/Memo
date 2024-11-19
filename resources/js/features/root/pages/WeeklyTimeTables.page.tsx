@@ -12,6 +12,7 @@ import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
+import {PageInfoIcon} from "components/ui/PageInfoIcon";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {EmptyValueSymbol, EN_DASH} from "components/ui/symbols";
@@ -176,7 +177,7 @@ export default (() => {
   );
   const {dataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     requestCreator: staticRequestCreator(() => ({
       columns: COLUMNS.map((column) => ({type: "column", column})),
       filter: {
@@ -400,7 +401,7 @@ export default (() => {
                   trigger={(popOver) => (
                     <Button
                       class={cx("minimal !px-1", popOver.isOpen ? "!bg-select" : undefined)}
-                      title={[t("facility_user.weekly_time_tables.click_to_see_actions"), {hideOnClick: true}]}
+                      title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
                       <BsThreeDots class="text-current" size="20" />
@@ -547,7 +548,7 @@ export default (() => {
             >
               {(dayData) => (
                 <PaddedCell
-                  class="flex flex-col justify-between"
+                  class="h-full flex flex-col justify-between"
                   style={{
                     background: [
                       dayData().isFacilityWorkDay
@@ -620,7 +621,10 @@ export default (() => {
                       "margin-right": "-4px",
                     }}
                     use:title={[
-                      capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})),
+                      capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})) +
+                        (dayData().day.hasSame(currentDate(), "day")
+                          ? " " + t("parenthesised", {text: t("calendar.today")})
+                          : ""),
                       weekdaySelected() ? undefined : t("facility_user.weekly_time_tables.day_notes.weekday_inactive"),
                       dayData().isHoliday ? t("facility_user.weekly_time_tables.day_notes.holiday") : undefined,
                       dayData().workTimes.length && !dayData().isFacilityWorkDay
@@ -636,7 +640,12 @@ export default (() => {
                       .filter(NON_NULLABLE)
                       .join("\n")}
                   >
-                    <ImInfo size="10" class="text-current" />
+                    <Show
+                      when={dayData().day.hasSame(currentDate(), "day")}
+                      fallback={<ImInfo class="text-current" size="10" />}
+                    >
+                      <FaSolidCircleDot class="text-red-700" size="10" />
+                    </Show>
                   </div>
                 </PaddedCell>
               )}
@@ -738,7 +747,11 @@ export default (() => {
               />
             </Button>
             <div class="flex items-center">
-              <InfoIcon href="/help/staff-time-tables#weekly" title={t("facility_user.weekly_time_tables.more_info")} />
+              <PageInfoIcon
+                href="/help/staff-time-tables#weekly"
+                shortDocsHref="/help/staff-time-tables-weekly.part"
+                title={t("facility_user.weekly_time_tables.more_info")}
+              />
             </div>
           </div>
         </div>

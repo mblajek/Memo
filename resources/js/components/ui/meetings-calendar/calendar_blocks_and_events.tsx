@@ -102,7 +102,7 @@ export function useCalendarBlocksAndEvents({
   const {meetingCategoryDict, meetingTypeDict} = useFixedDictionaries();
   const {dataQuery: meetingsDataQuery} = createTQuery({
     prefixQueryKey: FacilityMeeting.keys.meeting(),
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     requestCreator: createCalendarRequestCreator({
       calendarFunction,
       daysRange: () =>
@@ -161,9 +161,7 @@ export function useCalendarBlocksAndEvents({
               : {},
             {
               onEditClick:
-                calendarFunction === "timeTables"
-                  ? () => viewWorkTime({staticMeetingId: meeting.id, initialViewMode: true})
-                  : undefined,
+                calendarFunction === "timeTables" ? () => viewWorkTime({meeting, initialViewMode: true}) : undefined,
             } as const,
           ),
         );

@@ -103,7 +103,7 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
                       >
                         <MarkerTarget id={itemValue}>
                           <Show when={item().label} fallback={<>{itemValue}</>}>
-                            {(label) => label()()}
+                            {(label) => <>{label()()}</>}
                           </Show>
                         </MarkerTarget>
                         <Show when={isFormMode}>

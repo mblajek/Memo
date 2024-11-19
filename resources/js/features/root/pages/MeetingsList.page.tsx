@@ -49,6 +49,7 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
+        cols.meeting.resourcesCount,
         cols.meeting.resourceConflictsExist,
         cols.meeting.resourceConflictsResources,
         ...getCreatedUpdatedColumns(),
@@ -56,7 +57,7 @@ export default (() => {
       ]}
       columnGroups={{overrides: {meeting_multicolumn: false}}}
       initialSort={[{id: "date", desc: true}]}
-      helpHref="/help/reports#meetings"
+      pageInfo={{href: "/help/reports#meetings", shortDocsHref: "/help/reports-meetings.part"}}
     />
   );
 }) satisfies VoidComponent;

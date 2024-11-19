@@ -1,5 +1,6 @@
 import {useTransContext} from "@mbarzda/solid-i18next";
-import {TOptions} from "i18next";
+import {dependOnTranslationsVersion} from "i18n_loader";
+import i18next, {TOptions} from "i18next";
 import {isDEV} from "./dev_mode";
 
 interface LangFuncBase {
@@ -31,8 +32,16 @@ export function useLangFunc(): LangFunc {
     if (!transContext) {
       throw new Error(`Called useLangFunc outside of the provider.`);
     }
-    const [t] = transContext;
+    const t = transContext[0];
     const langFuncBase: LangFuncBase = (key, options) => {
+      if (i18next.language === "testing") {
+        const entries = Object.entries({
+          ...options,
+          defaultValue: undefined,
+        }).flatMap(([k, v]) => (v === undefined ? [] : [`${k}:${v}`]));
+        return `${typeof key === "string" ? key : key[0]!}${entries.length ? `{${entries.join(",")}}` : ""}`;
+      }
+      dependOnTranslationsVersion();
       if (typeof key === "string") {
         return t(key, {defaultValue: `??${key}`, ...options});
       }

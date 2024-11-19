@@ -1,12 +1,19 @@
-import {DateTime} from "luxon";
+import {DateTime, WeekdayNumbers} from "luxon";
 import {For, Show, Signal, VoidComponent, createSignal, onMount} from "solid-js";
 import {LangFunc, useLangFunc} from "./lang";
 import {currentDate} from "./time";
 
 const weekdayNameByOrigName = new Map<string, string>();
 
-/** Returns the desired weekday name, using the possible overrides from the translations. */
-function weekdayName(t: LangFunc, weekday: string) {
+/** Returns the short weekday name, using the possible overrides from the translations. */
+export function shortWeekdayName(t: LangFunc, weekday: DateTime | WeekdayNumbers) {
+  return weekdayNameFromString(
+    t,
+    (typeof weekday === "number" ? DateTime.fromObject({weekday}) : weekday).weekdayShort,
+  );
+}
+
+function weekdayNameFromString(t: LangFunc, weekday: string) {
   let result = weekdayNameByOrigName.get(weekday);
   if (!result) {
     result = t(`calendar.weekday_overrides.${weekday}`, {defaultValue: weekday});
@@ -19,7 +26,7 @@ function weekdayName(t: LangFunc, weekday: string) {
 export function formatDateTimeWithWeekday(t: LangFunc, dateTime: DateTime, format: Intl.DateTimeFormatOptions) {
   return dateTime
     .toLocaleParts(format)
-    .map((part) => (part.type === "weekday" ? weekdayName(t, part.value) : part.value))
+    .map((part) => (part.type === "weekday" ? weekdayNameFromString(t, part.value) : part.value))
     .join("");
 }
 
@@ -44,7 +51,7 @@ export const FormattedDateTime: VoidComponent<Props> = (props) => {
       <For each={props.dateTime.toLocaleParts(props.format)}>
         {(part) => (
           <Show when={part.type === "weekday"} fallback={part.value}>
-            <Show when={props.alignWeekday} fallback={weekdayName(t, part.value)}>
+            <Show when={props.alignWeekday} fallback={weekdayNameFromString(t, part.value)}>
               <AlignedWeekday value={part.value} format={props.format} />
             </Show>
           </Show>
@@ -76,7 +83,7 @@ function getWeekdayNames(t: LangFunc, format: Intl.DateTimeFormatOptions) {
         .toLocaleParts(format)
         .find((p) => p.type === "weekday");
       if (weekdayPart) {
-        namesArr.push(weekdayName(t, weekdayPart.value));
+        namesArr.push(weekdayNameFromString(t, weekdayPart.value));
       }
     }
     const [getNames, setNames] = createSignal(namesArr);
@@ -118,7 +125,7 @@ const AlignedWeekday: VoidComponent<{value: string; format: Intl.DateTimeFormatO
           )}
         </For>
       </span>
-      <span style={{"grid-column": 1, "grid-row": 1}}>{weekdayName(t, props.value)}</span>
+      <span style={{"grid-column": 1, "grid-row": 1}}>{weekdayNameFromString(t, props.value)}</span>
     </span>
   );
 };

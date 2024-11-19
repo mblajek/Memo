@@ -1,6 +1,6 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {recursiveUnwrapFormValues} from "components/felte-form/wrapped_fields";
-import {DATE_FORMAT, DATE_TIME_FORMAT, NON_NULLABLE, cx, htmlAttributes, useLangFunc} from "components/utils";
+import {DATE_FORMAT, DATE_TIME_FORMAT, NON_NULLABLE, htmlAttributes, useLangFunc} from "components/utils";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
@@ -42,6 +42,7 @@ import {ThingsList} from "../ThingsList";
 import {CHECKBOX, EmptyValueSymbol} from "../symbols";
 import {title} from "../title";
 import {CheckboxField} from "./CheckboxField";
+import {DateField} from "./DateField";
 import {DictionarySelect} from "./DictionarySelect";
 import {MultilineTextField} from "./MultilineTextField";
 import {TQuerySelect} from "./TQuerySelect";
@@ -56,7 +57,8 @@ export const ATTRIBUTES_SCHEMA = z.record(z.unknown());
 interface Props {
   readonly model: string;
   // The override type must match the attribute type.
-  readonly selection: PartialAttributesSelection<AttributeParams<unknown>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly selection: PartialAttributesSelection<AttributeParams<any>>;
   readonly minRequirementLevel?: RequirementLevel;
   readonly nestFieldsUnder?: string;
   readonly editMode: boolean;
@@ -64,7 +66,7 @@ interface Props {
 
 export interface AttributeParams<V> {
   readonly isEmpty?: (formValue: V) => boolean;
-  readonly view?: (formValue: Accessor<V>) => JSX.Element;
+  readonly view?: (formValue: Accessor<V>, defaultView: () => JSX.Element) => JSX.Element;
   readonly viewEmpty?: () => JSX.Element;
 }
 
@@ -86,7 +88,6 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
 
   const AttributeField: VoidComponent<{readonly attribute: Attribute}> = (aProps) => {
     const name = () => fieldName(aProps.attribute);
-    const value = () => form.data(name());
     const field = () => {
       const nullable = compareRequirementLevels(aProps.attribute.requirementLevel, "required") < 0;
 
@@ -110,15 +111,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
               </div>
             );
           case "date":
-            return (
-              <TextField
-                name={fieldName}
-                type="date"
-                label=""
-                class={cx("text-black", value() ? undefined : "text-opacity-50")}
-                small
-              />
-            );
+            return <DateField name={fieldName} label="" small />;
           case "datetime":
             // TODO: Implement. Cannot use datetime-local because this needs to use UTC.
             return undefined;
@@ -296,7 +289,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
               {(viewEmpty) => viewEmpty()()}
             </Show>
           </Match>
-          <Match when={aProps.params?.view}>{(view) => view()(value)}</Match>
+          <Match when={aProps.params?.view}>{(view) => view()(value, defaultView)}</Match>
           <Match when="fallback">{defaultView()}</Match>
         </Switch>
       </div>

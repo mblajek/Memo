@@ -74,6 +74,7 @@ export default (() => {
         cols.meeting.isRemote,
         cols.meeting.notes,
         cols.meeting.resources,
+        cols.meeting.resourcesCount,
         cols.meeting.resourceConflictsExist,
         cols.meeting.resourceConflictsResources,
         ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting_multicolumn"}}),
@@ -85,7 +86,7 @@ export default (() => {
         {type: "column", column: "startDayminute", desc: true},
       ]}
       initialSort={[{id: "date", desc: true}]}
-      helpHref="/help/reports#meeting-clients"
+      pageInfo={{href: "/help/reports#meeting-clients", shortDocsHref: "/help/reports-meeting-clients.part"}}
     />
   );
 }) satisfies VoidComponent;

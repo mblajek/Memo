@@ -92,7 +92,7 @@ class MeetingService
     private function fillMeetingCategory(Meeting $meeting): void
     {
         $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
-            ->attrValues()[Attribute::getById(PositionAttributeUuidEnum::Category)->api_name]);
+            ->attrValues()[PositionAttributeUuidEnum::Category->apiName()]);
     }
 
     private function extract(array $data, string $key)

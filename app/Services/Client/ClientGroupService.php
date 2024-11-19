@@ -2,10 +2,12 @@
 
 namespace App\Services\Client;
 
+use App\Http\Resources\ClientGroup\ClientGroupAssignedResource;
 use App\Models\ClientGroup;
 use App\Models\Facility;
 use App\Models\GroupClient;
 use App\Models\MeetingAttendant;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 
 class ClientGroupService
@@ -91,5 +93,44 @@ class ClientGroupService
         }
 
         return [$userIdsToRemove, $newClients];
+    }
+
+    public function assignToAttendants(
+        string $facilityId,
+        ?string $clientUserId,
+        ?string $groupId,
+        bool $replaceAll,
+    ): JsonResource {
+        $query = GroupClient::query()
+            ->select(['group_clients.user_id'])
+            ->selectRaw('max(group_clients.client_group_id) as client_group_id')
+            ->selectRaw('count(1) as group_count')
+            ->join('client_groups', 'client_groups.id', 'group_clients.client_group_id')
+            ->where('client_groups.facility_id', $facilityId);
+        if ($clientUserId) {
+            $query->where('group_clients.user_id', $clientUserId);
+        }
+        if ($groupId) {
+            $query->where('group_clients.client_group_id', $groupId);
+        }
+        $all = $query->groupBy(['group_clients.user_id'])->get()->groupBy(fn(GroupClient $groupClient) => //
+            /** @var GroupClient|object $groupClient */ ($groupClient->group_count === 1) ? 'one' : 'many');
+
+        /** @var GroupClient|object $groupClientToUpdate */
+        foreach ($all->get('one', []) as $groupClientToUpdate) {
+            $updateQuery = MeetingAttendant::query()
+                ->join('meetings', 'meetings.id', 'meeting_attendants.meeting_id')
+                ->where('meetings.facility_id', $facilityId)
+                ->where('user_id', $groupClientToUpdate->user_id);
+            if ($replaceAll) {
+                $updateQuery->whereNot('client_group_id', $groupClientToUpdate->client_group_id);
+            } else {
+                $updateQuery->whereNull('client_group_id');
+            }
+            $groupClientToUpdate->update_count = $updateQuery
+                ->update(['client_group_id' => $groupClientToUpdate->client_group_id]);
+            $groupClientToUpdate->group_count = null;
+        }
+        return ClientGroupAssignedResource::make($all);
     }
 }

@@ -8,4 +8,6 @@ export interface SystemStatusResource {
   readonly cpu15m: number;
   readonly appEnv: string;
   readonly appEnvColor: string | null;
+  readonly appEnvFgColor: string | null;
+  readonly lastDump: string | null;
 }

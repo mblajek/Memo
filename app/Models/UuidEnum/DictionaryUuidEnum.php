@@ -12,4 +12,5 @@ enum DictionaryUuidEnum: string
     case MeetingCategory = 'ce12aa23-a5db-49f3-987b-d2db3ab24a3b';
     case PlVoivodeship = 'd96a602d-c10f-4e9d-a3ad-4c450efa7717';
     case MeetingResource = 'fdb0f818-aa1e-4ed9-97cc-2a3cb1b702df';
+    case NotificationMethod = '99e5b807-933d-4fd7-b2d9-3a5350b83cab';
 }

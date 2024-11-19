@@ -9,7 +9,6 @@ interface PartDayBlockProps extends htmlAttributes.div {
 
 export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["label", "hovered", "onHoverChange", "children"]);
-
   return (
     <div
       {...htmlAttributes.merge(divProps, {

@@ -18,7 +18,6 @@ import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toPlainObject} from "components/utils/object_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
-import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {
   MeetingClientResource,
   MeetingResource,
@@ -26,8 +25,6 @@ import {
   MeetingResourceForPatch,
   MeetingStaffResource,
 } from "data-access/memo-api/resources/meeting.resource";
-import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
-import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {
   Accessor,
   Index,
@@ -42,7 +39,6 @@ import {
   createSignal,
   on,
 } from "solid-js";
-import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
 import {ClientGroupBox} from "../client/ClientGroupBox";
 import {SharedClientGroupLabel} from "../client/SharedClientGroupLabel";
@@ -51,6 +47,7 @@ import {UserLink} from "../facility-users/UserLink";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
+import {useMeetingAttendantsClients} from "./meeting_attendants_clients";
 import {useMeetingConflictsFinder} from "./meeting_conflicts_finder";
 import {getMeetingTimeFullData} from "./meeting_time_controller";
 
@@ -144,32 +141,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     ),
   );
 
-  const selectedClients = createMemo(
-    on(
-      form.data, // to nudge the form and improve reactivity
-      (formData) => (props.name === "clients" ? formData.clients.map(({userId}) => userId).filter(Boolean) : []),
-    ),
-  );
-  const {dataQuery: clientsWithGroupsDataQuery} = createTQuery({
-    prefixQueryKey: FacilityClient.keys.client(),
-    entityURL: `facility/${activeFacilityId()}/user/client`,
-    requestCreator: staticRequestCreator((schema) => {
-      const reductor = new FilterReductor(schema);
-      return {
-        columns: [
-          {type: "column", column: "id"},
-          {type: "column", column: "client.groups.*.id"},
-        ],
-        filter: reductor.reduce({type: "column", column: "id", op: "in", val: selectedClients()}),
-        sort: [],
-        paging: {size: 1000},
-      };
-    }),
-  });
+  const {selectedClientIds, selectedClientsDataQuery, selectedClients} = useMeetingAttendantsClients();
   const groupsByClientId = createMemo((): ReadonlyMap<string, readonly string[]> => {
     const map = new Map<string, readonly string[]>();
-    for (const client of clientsWithGroupsDataQuery.data?.data ?? []) {
-      map.set(client.id as string, client["client.groups.*.id"] as readonly string[]);
+    for (const client of selectedClients()) {
+      map.set(client.id as string, client.groupIds);
     }
     return map;
   });
@@ -208,7 +184,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const sharedGroups = createMemo((): readonly string[] => [
     ...allGroups()
       .keys()
-      .filter((groupId) => selectedClients().every((clientId) => isClientInGroup(clientId, groupId))),
+      .filter((groupId) => selectedClientIds().every((clientId) => isClientInGroup(clientId, groupId))),
   ]);
 
   const [clientsGroupsMode, setClientsGroupsMode] = createSignal<ClientsGroupsMode>();
@@ -238,7 +214,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 
           /** Sets the groups mode based on the selected groups. */
           function determineClientsGroupsMode(formData: FormAttendantsData) {
-            if (clientsGroupsMode() === "separate" && selectedClients().length > 1) {
+            if (clientsGroupsMode() === "separate" && selectedClientIds().length > 1) {
               // Leave alone the separate mode.
               return;
             }
@@ -280,7 +256,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             on(
               [
                 () =>
-                  clientsWithGroupsDataQuery.isSuccess &&
+                  selectedClientsDataQuery.isSuccess &&
                   (!clientGroupFetcher.numSubscribedGroups() || clientGroupFetcher.dataQuery.isSuccess),
                 sharedGroups,
                 groupsByClientId,
@@ -389,6 +365,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     determineClientsGroupsMode(formData);
                   }
                 } else {
+                  if (prev?.clientsGroupsMode === "none" && !props.viewMode) {
+                    for (let i = 0; i < formData.clients.length; i++) {
+                      setAttendanceGroup(formData, i, groupsByClientId().get(formData.clients[i]!.userId)?.[0] || "");
+                    }
+                  }
                   determineClientsGroupsMode(formData);
                 }
                 setAttendanceGroups(form.data());
@@ -511,10 +492,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                                   fallback={translations.fieldName("attendantClientGroupId.none")}
                                 >
                                   {(clientGroupId) => (
-                                    <>
-                                      {translations.fieldName("attendantClientGroupId.some")}{" "}
+                                    <div class="flex flex-col">
+                                      {translations.fieldName("attendantClientGroupId.some")}
                                       <SharedClientGroupLabel groupId={clientGroupId()} />
-                                    </>
+                                    </div>
                                   )}
                                 </Show>
                               </div>
@@ -634,7 +615,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         userId() && clientsGroupsMode() === "separate" && !props.viewMode && clientGroups().length > 1
                       }
                     >
-                      {(show) => (
+                      {({show}) => (
                         <div class="mt-px mb-1 flex items-center gap-1">
                           <div
                             class="ml-6"
@@ -709,7 +690,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             <span
                               use:title={[
                                 translations.fieldName(
-                                  selectedClients().length === 1
+                                  selectedClientIds().length === 1
                                     ? "clientsGroupsMode.shared_one_client.desc"
                                     : sharedGroups().length
                                       ? "clientsGroupsMode.shared.desc"
@@ -719,7 +700,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                               ]}
                             >
                               {translations.fieldName(
-                                selectedClients().length === 1
+                                selectedClientIds().length === 1
                                   ? "clientsGroupsMode.shared_one_client"
                                   : "clientsGroupsMode.shared",
                               )}
@@ -727,7 +708,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                           ),
                           disabled: !sharedGroups().length,
                         },
-                        selectedClients().length > 1
+                        selectedClientIds().length > 1
                           ? {
                               value: "separate",
                               label: () => (
@@ -752,7 +733,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               </div>
             </Show>
             <HideableSection show={clientsGroupsMode() === "shared"}>
-              {(show) => (
+              {({show}) => (
                 <div class="mt-1 grid gap-x-1" style={{"grid-template-columns": "auto 1fr"}}>
                   <div
                     class="flex items-center"
@@ -787,14 +768,14 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         <Match
                           when={allGroups()
                             .get(sharedClientsGroupId())?.()
-                            ?.some((clientId) => !selectedClients().includes(clientId))}
+                            ?.some((clientId) => !selectedClientIds().includes(clientId))}
                         >
                           <Button
-                            class="text-start linkLike p-0"
+                            class="linkLike p-0"
                             onClick={() => {
-                              let index = selectedClients().length;
+                              let index = selectedClientIds().length;
                               for (const clientId of allGroups().get(sharedClientsGroupId())?.() || []) {
-                                if (!selectedClients().includes(clientId)) {
+                                if (!selectedClientIds().includes(clientId)) {
                                   form.addField("clients", createAttendant({userId: clientId}), index++);
                                 }
                               }

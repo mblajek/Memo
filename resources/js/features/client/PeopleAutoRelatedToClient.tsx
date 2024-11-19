@@ -23,7 +23,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
   const {attendanceTypeDict} = useFixedDictionaries();
   let countColumn: string | undefined;
   const relatedUsersQuery = createTQuery({
-    entityURL: `facility/${activeFacilityId()}/meeting/attendant`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting/attendant`,
     prefixQueryKey: FacilityMeeting.keys.meeting(),
     requestCreator: staticRequestCreator((schema) => {
       countColumn = schema.columns.find((c) => c.type === "count")!.name;

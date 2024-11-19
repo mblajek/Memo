@@ -4,7 +4,6 @@ import {BigSpinner} from "components/ui/Spinner";
 import {TableExportConfig, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {Tabs} from "components/ui/Tabs";
-import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {EM_DASH} from "components/ui/symbols";
 import {DATE_FORMAT, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -12,7 +11,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {Sort} from "data-access/memo-api/tquery/types";
-import {Accessor, ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
+import {ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "../meeting/attendance_status_info";
 import {useMeetingTableColumns, useMeetingTableFilters} from "../meeting/meeting_tables";
@@ -24,7 +23,7 @@ interface Props {
   readonly userType: FacilityUserType;
   readonly intrinsicFilter: FilterH;
   readonly staticPersistenceKey?: string;
-  readonly userMeetingsStats?: Accessor<UserMeetingsStats | undefined>;
+  readonly userMeetingsStats?: UserMeetingsStats;
 }
 
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
@@ -64,11 +63,8 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
     },
   });
   return (
-    <div class="flex flex-col">
-      <Show when={dictionaries()} fallback={<BigSpinner />}>
-        <StandaloneFieldLabel>
-          <Capitalize text={tableTranslations.tableName()} />
-        </StandaloneFieldLabel>
+    <Show when={dictionaries()} fallback={<BigSpinner />}>
+      <div class="flex flex-col">
         <Tabs
           tabs={[
             {
@@ -77,7 +73,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                 <div class="min-w-48 h-full flex flex-col items-center justify-center">
                   <span>
                     <Capitalize text={t("facility_user.meetings_lists.planned")} />
-                    <Show when={props.userMeetingsStats?.()}>
+                    <Show when={props.userMeetingsStats}>
                       {(stats) => (
                         <span class="text-grey-text">
                           {" "}
@@ -86,7 +82,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       )}
                     </Show>
                   </span>
-                  <Show when={props.userMeetingsStats?.()}>
+                  <Show when={props.userMeetingsStats}>
                     {(stats) => (
                       <Show when={stats().plannedMeetingsCount}>
                         <span class="text-sm text-grey-text">
@@ -135,6 +131,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.get("isRemote", {initialVisible: false}),
                         cols.meeting.notes,
                         cols.meeting.resources,
+                        cols.meeting.resourcesCount,
                         cols.meeting.resourceConflictsExist,
                         cols.meeting.resourceConflictsResources,
                         ...getCreatedUpdatedColumns(),
@@ -179,7 +176,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                 <div class="min-w-48 h-full flex flex-col items-center justify-center">
                   <span>
                     <Capitalize text={t("facility_user.meetings_lists.completed")} />
-                    <Show when={props.userMeetingsStats?.()}>
+                    <Show when={props.userMeetingsStats}>
                       {(stats) => (
                         <span class="text-grey-text">
                           {" "}
@@ -188,7 +185,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                       )}
                     </Show>
                   </span>
-                  <Show when={props.userMeetingsStats?.()}>
+                  <Show when={props.userMeetingsStats}>
                     {(stats) => (
                       <Show when={stats().completedMeetingsCount}>
                         <span class="text-sm text-grey-text">
@@ -247,6 +244,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.get("isRemote", {initialVisible: false}),
                         cols.meeting.notes,
                         cols.meeting.resources,
+                        cols.meeting.resourcesCount,
                         ...getCreatedUpdatedColumns(),
                       ]}
                       columnGroups={{
@@ -327,6 +325,7 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
                         cols.meeting.get("isRemote", {initialVisible: false}),
                         cols.meeting.notes,
                         cols.meeting.resources,
+                        cols.meeting.resourcesCount,
                         cols.meeting.resourceConflictsExist,
                         cols.meeting.resourceConflictsResources,
                         ...getCreatedUpdatedColumns(),
@@ -353,8 +352,8 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
           activeTab={activeTab()}
           onActiveTabChange={setActiveTab}
         />
-      </Show>
-    </div>
+      </div>
+    </Show>
   );
 };
 

@@ -9,6 +9,7 @@ import {UuidListSelectFilterControl} from "components/ui/Table/tquery_filters/Uu
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {actionIcons} from "components/ui/icons";
+import {MeetingResourcesView} from "components/ui/meetings-calendar/MeetingResourcesView";
 import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {htmlAttributes, useLangFunc} from "components/utils";
@@ -30,7 +31,6 @@ import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from 
 import {MeetingStatusTags} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
-import {createWorkTimeModal} from "./work_time_modal";
 
 type _Directives = typeof title;
 
@@ -50,7 +50,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const t = useLangFunc();
   const {meetingTypeDict, meetingCategoryDict, attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
-  const workTimeModal = createWorkTimeModal();
   const modelQuerySpecs = useModelQuerySpecs();
   const {getMeetingTypeCategory} = usePositionsGrouping();
 
@@ -78,17 +77,13 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   > = (allProps) => {
     const [props, buttonProps] = splitProps(allProps, ["meetingId", "meetingType", "children"]);
     return (
-      <Show when={props.meetingId}>
+      <Show when={!isWorkTimeLeaveTime(props.meetingType) && props.meetingId}>
         {(meetingId) => (
           <Button
             {...buttonProps}
-            onClick={() => {
-              if (isWorkTimeLeaveTime(props.meetingType)) {
-                workTimeModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
-              } else {
-                meetingModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
-              }
-            }}
+            onClick={() =>
+              meetingModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true})
+            }
           >
             <actionIcons.Details class="inlineIcon !mb-[2px]" /> {props.children || t("actions.details")}
           </Button>
@@ -346,7 +341,25 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnGroups: "meeting_multicolumn",
     },
     workTimeNotes: {name: "notes", columnGroups: "meeting_multicolumn"},
-    resources: {name: "resources.*.dictId", columnGroups: "meeting_multicolumn"},
+    resources: {
+      name: "resources.*.dictId",
+      columnDef: {
+        cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <ShowCellVal v={props.v}>
+              {(v) => (
+                <MeetingResourcesView
+                  resourceIds={v()}
+                  conflictingResourceIds={props.row["resourceConflicts.*.resourceDictId"]}
+                />
+              )}
+            </ShowCellVal>
+          </ScrollableCell>
+        )),
+      },
+      columnGroups: "meeting_multicolumn",
+    },
+    resourcesCount: {name: "resources.count", columnGroups: "meeting_multicolumn", initialVisible: false},
     resourceConflictsExist: {
       name: "resourceConflicts.exists",
       columnGroups: "meeting_multicolumn",
@@ -355,6 +368,15 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     },
     resourceConflictsResources: {
       name: "resourceConflicts.*.resourceDictId",
+      columnDef: {
+        cell: cellFunc<readonly string[], TQFullMeetingResource>((props) => (
+          <ScrollableCell baseHeight={baseHeight}>
+            <ShowCellVal v={props.v}>
+              {(v) => <MeetingResourcesView resourceIds={v()} conflictingResourceIds={v()} />}
+            </ShowCellVal>
+          </ScrollableCell>
+        )),
+      },
       columnGroups: "meeting_multicolumn",
       initialVisible: false,
       persistVisibility: false,
@@ -467,7 +489,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnDef: {
         cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
-            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} />}</ShowCellVal>
+            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} allowViewGroup />}</ShowCellVal>
           </PaddedCell>
         )),
         size: 250,

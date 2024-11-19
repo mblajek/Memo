@@ -64,7 +64,10 @@ export const AbstractMeetingForm = <MeetingFormType extends Obj>(allProps: Props
             durationRequiredErrorIndex >= 0 &&
             errors.some((e) => Api.isValidationError(e) && e.field === "typeDictId" && e.code === "validation.required")
           )
-            errors.splice(durationRequiredErrorIndex, 1);
+            errorResp.response.data = {
+              ...errorResp.response.data,
+              errors: errors.toSpliced(durationRequiredErrorIndex, 1),
+            };
         }
       }}
       disabled={props.viewMode}

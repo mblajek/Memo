@@ -1,7 +1,7 @@
 import {calendarIcons} from "components/ui/icons";
 import {SmallSpinner} from "components/ui/Spinner";
 import {title} from "components/ui/title";
-import {cx, useLangFunc} from "components/utils";
+import {cx, debouncedAccessor, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -80,11 +80,12 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
   const t = useLangFunc();
   const {dictionaries, meetingCategoryDict, meetingTypeDict, meetingStatusDict} = useFixedDictionaries();
   const {presenceStatuses} = useAttendanceStatusesInfo();
+  const debouncedDate = debouncedAccessor(() => meetingData().date);
   const conflictsQuery = createTQuery({
-    entityURL: `facility/${activeFacilityId()}/meeting`,
+    entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting`,
     prefixQueryKey: FacilityMeeting.keys.meeting(),
     requestCreator: staticRequestCreator(() => {
-      const {date} = meetingData();
+      const date = debouncedDate();
       if (!date || !dictionaries()) {
         return undefined;
       }
@@ -248,7 +249,11 @@ export function useMeetingConflictsFinder(meetingData: Accessor<MeetingData>) {
       }
       const conflict = getConflictsFor(userId);
       if (conflict === "loading") {
-        return <SmallSpinner />;
+        return (
+          <div class="w-5 flex items-center">
+            <SmallSpinner />
+          </div>
+        );
       }
       let iconType;
       let styleClass;

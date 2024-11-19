@@ -5,7 +5,9 @@ import {useResizeObserver} from "../utils/resize_observer";
 
 interface Props extends htmlAttributes.div {
   readonly levels: number;
+  readonly houseSize?: number;
   readonly paused?: boolean;
+  readonly speedMult?: number;
 }
 
 const MARGINS = {
@@ -38,7 +40,7 @@ const COLORS_ALPHA = 0.2;
 type Vec = readonly [number, number];
 
 export const Wrights: VoidComponent<Props> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["levels", "paused"]);
+  const [props, divProps] = splitProps(allProps, ["levels", "houseSize", "paused", "speedMult"]);
   const resizeObserver = useResizeObserver();
   const [container, setContainer] = createSignal<HTMLDivElement>();
   let ctx: CanvasRenderingContext2D | undefined;
@@ -46,6 +48,8 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
   const canvasSize = resizeObserver.observeClientSize(container);
   // eslint-disable-next-line solid/reactivity
   const levels = props.levels;
+  // eslint-disable-next-line solid/reactivity
+  const houseSize = props.houseSize ?? 2;
   const colorsRot = Math.random();
   const colors = MEMO_COLORS.toSorted(() => Math.random() - 0.5);
   const data = createMemo(() => {
@@ -251,7 +255,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       finishTime = prevTime + blockFillTime + 1000;
     }
     block.tPlaced = rt;
-    if (block.block[levels - 1] === "c" && reserveBlock()) {
+    if (block.block.endsWith("c".repeat(houseSize)) && reserveBlock()) {
       wrights.push({home: block.block, phase: "appear", tPhaseStart: rt, path});
     }
   }
@@ -316,18 +320,18 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       ctx.arc(x, y, wrightRadius, 0, Math.PI * 2, false);
       ctx.fill();
     }
-    const JUMP_K = 0.7;
+    const JUMP_K = 0.5;
     const COS_LOW = -Math.cos((JUMP_K * Math.PI) / 2);
     function drawWrightAppear(x: number, y: number, frac: number) {
       const phase1Frac = 0.6;
       const phase2Frac = 0.3;
-      const yt = y + (2 / 3) * bh;
+      const yt = y + (2 / 3) * ((1 << houseSize) - 1) * bh;
       if (frac < phase1Frac) {
         frac /= phase1Frac;
         ctx.strokeStyle = `rgb(from ${WRIGHT_COLOR} r g b / ${frac})`;
-        ctx.lineWidth = between(0.4 * bw, wrightRadius, frac);
+        ctx.lineWidth = between(0.2 * (1 << houseSize) * bw, wrightRadius, frac);
         ctx.beginPath();
-        ctx.arc(x, yt, between(0.8 * bw, wrightRadius / 2, frac ** 0.3), 0, Math.PI * 2, false);
+        ctx.arc(x, yt, between(0.4 * (1 << houseSize) * bw, wrightRadius / 2, frac ** 0.3), 0, Math.PI * 2, false);
         ctx.stroke();
       } else {
         frac -= phase1Frac;
@@ -413,9 +417,6 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       if (!d) {
         return;
       }
-      if (isDEV()) {
-        time *= DEV_SPEED_MULT;
-      }
       if (!time0) {
         time0 = time;
         prevTime = time;
@@ -437,8 +438,9 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
       }
 
       function tick(time: number) {
+        const dTime = time - prevTime;
         prevTime = time;
-        rt = time - time0;
+        rt += dTime * (props.speedMult ?? 1) * (isDEV() ? DEV_SPEED_MULT : 1);
         for (const wright of wrights) {
           const {phase, tPhaseStart, block, path} = wright;
           const phaseT = Math.max(0, rt - tPhaseStart);
