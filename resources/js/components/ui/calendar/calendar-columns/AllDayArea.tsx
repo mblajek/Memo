@@ -39,7 +39,7 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
         <Show when={showAddButton()}>
           <Button
             class="bg-white hover:bg-hover text-grey-text border border-input-border rounded flex justify-center"
-            title={t(calendarFunction === "timeTables" ? "forms.work_time_create.form_name" : "actions.add")}
+            title={t("actions.add")}
           >
             <actionIcons.Add />
           </Button>

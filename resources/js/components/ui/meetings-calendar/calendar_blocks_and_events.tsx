@@ -161,9 +161,7 @@ export function useCalendarBlocksAndEvents({
               : {},
             {
               onEditClick:
-                calendarFunction === "timeTables"
-                  ? () => viewWorkTime({staticMeetingId: meeting.id, initialViewMode: true})
-                  : undefined,
+                calendarFunction === "timeTables" ? () => viewWorkTime({meeting, initialViewMode: true}) : undefined,
             } as const,
           ),
         );

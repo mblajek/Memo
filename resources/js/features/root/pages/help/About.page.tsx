@@ -3,6 +3,7 @@ import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {currentTimeSecond, DATE_TIME_FORMAT, SilentAccessBarrier, useLangFunc} from "components/utils";
+import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
@@ -13,6 +14,7 @@ const GITHUB_LINK = "https://github.com/mblajek/Memo";
 export default (() => {
   const t = useLangFunc();
   const systemStatusMonitor = useSystemStatusMonitor();
+  const developerPermission = useDeveloperPermission();
   return (
     <div class="p-2">
       <h1 class="text-2xl font-bold mb-4">
@@ -73,7 +75,23 @@ export default (() => {
                     }}
                   </Show>
                 </div>
-                <label class="font-semibold">{t("about_page.cpu_load")}</label>
+                <label
+                  class="font-semibold"
+                  onWheel={(e) => {
+                    const sel = document.getSelection();
+                    if (
+                      !developerPermission.enabled() &&
+                      sel?.focusNode &&
+                      e.currentTarget.contains(sel.focusNode) &&
+                      sel.focusOffset === 1
+                    ) {
+                      sel.empty();
+                      developerPermission.enable(true);
+                    }
+                  }}
+                >
+                  {t("about_page.cpu_load")}
+                </label>
                 <div>{status().cpu15m.toFixed(2)}</div>
               </SilentAccessBarrier>
             </div>

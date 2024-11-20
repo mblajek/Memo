@@ -133,17 +133,43 @@ work_time:
     staff: "$t(models.staff._name)"
 
 work_time_create:
-  form_name: "Nowy czas pracy / nieobecność"
+  form_name: "Nowe godziny pracy"
   field_names:
     createSeries: "Utwórz serię"
-  success: "Utworzono czas pracy / nieobecność"
+  success: "Utworzono godziny pracy"
+
+leave_time_create:
+  form_name: "Nowa nieobecność$t(thin_space)/$t(thin_space)wolne"
+  field_names:
+    createSeries: "Utwórz serię"
+  success: "Utworzono nieobecność$t(thin_space)/$t(thin_space)wolne"
+
+facility_wide_leave_time_create:
+  form_name: "Nowe dni$t(thin_space)/$t(thin_space)godziny wolne"
+  field_names:
+    createSeries: "Utwórz serię"
+  success: "Utworzono dni$t(thin_space)/$t(thin_space)godziny wolne"
 
 work_time_edit:
-  form_name: "Edycja czasu pracy / nieobecności"
-  success: "Zmodyfikowano czas pracy / nieobecność"
+  form_name: "Edycja godzin pracy"
+  field_names:
+    entity_name: "godziny pracy"
+  success: "Zmodyfikowano godziny pracy"
+
+leave_time_edit:
+  form_name: "Edycja nieobecności$t(thin_space)/$t(thin_space)wolnego"
+  field_names:
+    entity_name: "nieobecność$t(thin_space)/$t(thin_space)wolne"
+  success: "Zmodyfikowano nieobecność$t(thin_space)/$t(thin_space)wolne"
+
+facility_wide_leave_time_edit:
+  form_name: "Edycja dni$t(thin_space)/$t(thin_space)godzin wolnych"
+  field_names:
+    entity_name: "dni$t(thin_space)/$t(thin_space)godziny wolne"
+  success: "Zmodyfikowano dni$t(thin_space)/$t(thin_space)godziny wolne"
 
 work_time_delete:
-  form_name: "Usunięcie czasu pracy / nieobecności"
+  form_name: "Usunięcie wpisu"
   confirmation_text: "Czy na pewno usunąć ten wpis?"
   series_info: "Ten wpis jest częścią serii"
   one: "Usuń tylko ten wpis"

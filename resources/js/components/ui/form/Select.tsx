@@ -498,17 +498,20 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     if (!enabledItems.length) {
       return;
     }
+    const maxInd = enabledItems.length - 1;
     let ind = 0;
     if (focusedItem()) {
       ind = enabledItems.indexOf(focusedItem()!);
       if (ind < 0) {
         ind = 0;
       } else {
-        ind += dir;
-        if (ind < 0) {
-          ind = canWrap ? enabledItems.length - 1 : 0;
-        } else if (ind >= enabledItems.length) {
-          ind = canWrap ? 0 : enabledItems.length - 1;
+        const newInd = ind + dir;
+        if (newInd < 0) {
+          ind = ind > 0 ? 0 : canWrap ? maxInd : 0;
+        } else if (newInd > maxInd) {
+          ind = ind < maxInd ? maxInd : canWrap ? 0 : maxInd;
+        } else {
+          ind = newInd;
         }
       }
     }
@@ -575,7 +578,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
     }
   }
 
-  let lastPopOverMousePos: readonly [number, number] | undefined;
+  let lastPopOverPointerPos: readonly [number, number] | undefined;
 
   function onFocusIn(e: FocusEvent) {
     if (input && e.target !== input) {
@@ -809,14 +812,14 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                       style={posStyle()}
                       role="listbox"
                       aria-activedescendant={focusedItem() ? elemId(focusedItem()!.value) : undefined}
-                      onMouseMove={(e) => {
-                        lastPopOverMousePos = [e.clientX, e.clientY];
+                      onPointerMove={(e) => {
+                        lastPopOverPointerPos = [e.clientX, e.clientY];
                       }}
-                      onMouseEnter={(e) => {
-                        lastPopOverMousePos = [e.clientX, e.clientY];
+                      onPointerEnter={(e) => {
+                        lastPopOverPointerPos = [e.clientX, e.clientY];
                       }}
-                      onMouseLeave={() => {
-                        lastPopOverMousePos = undefined;
+                      onPointerLeave={() => {
+                        lastPopOverPointerPos = undefined;
                       }}
                       onFocusIn={onFocusIn}
                       onFocusOut={onFocusOut}
@@ -838,11 +841,11 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                             tabindex="0"
                             role="option"
                             aria-selected={item.disabled ? undefined : selection().has(item.value)}
-                            onMouseEnter={(e) => {
+                            onPointerEnter={(e) => {
                               if (
-                                lastPopOverMousePos &&
-                                e.clientX === lastPopOverMousePos[0] &&
-                                e.clientY === lastPopOverMousePos[1]
+                                lastPopOverPointerPos &&
+                                e.clientX === lastPopOverPointerPos[0] &&
+                                e.clientY === lastPopOverPointerPos[1]
                               ) {
                                 // Prevent focusing the item if it's the list that scrolls and not the mouse that moves.
                                 return;

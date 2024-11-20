@@ -14,7 +14,7 @@ import {For, Show, VoidComponent} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {useMeetingAttendantsClients} from "./meeting_attendants_clients";
 
-type _Directives_ = typeof title;
+type _Directives = typeof title;
 
 interface Props {
   readonly viewMode: boolean;

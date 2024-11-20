@@ -31,7 +31,6 @@ import {MeetingInSeriesInfo, MeetingIntervalCommentText, SeriesNumberInfo} from 
 import {MeetingStatusTags} from "./MeetingStatusTags";
 import {MeetingAttendanceStatus} from "./attendance_status_info";
 import {createMeetingModal} from "./meeting_modal";
-import {createWorkTimeModal} from "./work_time_modal";
 
 type _Directives = typeof title;
 
@@ -51,7 +50,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   const t = useLangFunc();
   const {meetingTypeDict, meetingCategoryDict, attendanceTypeDict} = useFixedDictionaries();
   const meetingModal = createMeetingModal();
-  const workTimeModal = createWorkTimeModal();
   const modelQuerySpecs = useModelQuerySpecs();
   const {getMeetingTypeCategory} = usePositionsGrouping();
 
@@ -79,17 +77,13 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
   > = (allProps) => {
     const [props, buttonProps] = splitProps(allProps, ["meetingId", "meetingType", "children"]);
     return (
-      <Show when={props.meetingId}>
+      <Show when={!isWorkTimeLeaveTime(props.meetingType) && props.meetingId}>
         {(meetingId) => (
           <Button
             {...buttonProps}
-            onClick={() => {
-              if (isWorkTimeLeaveTime(props.meetingType)) {
-                workTimeModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
-              } else {
-                meetingModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true});
-              }
-            }}
+            onClick={() =>
+              meetingModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true})
+            }
           >
             <actionIcons.Details class="inlineIcon !mb-[2px]" /> {props.children || t("actions.details")}
           </Button>
@@ -495,7 +489,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       columnDef: {
         cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
-            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} />}</ShowCellVal>
+            <ShowCellVal v={props.v}>{(v) => <SharedClientGroupLabel groupId={v()} allowViewGroup />}</ShowCellVal>
           </PaddedCell>
         )),
         size: 250,

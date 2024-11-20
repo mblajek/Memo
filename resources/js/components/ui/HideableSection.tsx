@@ -1,4 +1,4 @@
-import {Accessor, Component, createMemo, mergeProps, splitProps} from "solid-js";
+import {Accessor, Component, createMemo, mergeProps, Show, splitProps} from "solid-js";
 import {delayedAccessor, htmlAttributes} from "../utils";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
@@ -6,7 +6,14 @@ interface Props extends Omit<htmlAttributes.div, "children"> {
   readonly show: unknown;
   readonly transitionTimeMs?: number;
   readonly transitionTimingFunction?: string;
-  readonly children: ChildrenOrFunc<[Accessor<boolean>]>;
+  readonly destroyWhenFullyCollapsed?: boolean;
+  readonly children: ChildrenOrFunc<[ChildrenArgs]>;
+}
+
+interface ChildrenArgs {
+  readonly show: Accessor<boolean>;
+  readonly fullyCollapsed: Accessor<boolean>;
+  readonly fullyExpanded: Accessor<boolean>;
 }
 
 const DEFAULT_PROPS = {
@@ -21,14 +28,24 @@ const DEFAULT_PROPS = {
  */
 export const HideableSection: Component<Props> = (allProps) => {
   const defProps = mergeProps(DEFAULT_PROPS, allProps);
-  const [props, divProps] = splitProps(defProps, ["show", "transitionTimeMs", "transitionTimingFunction", "children"]);
+  const [props, divProps] = splitProps(defProps, [
+    "show",
+    "transitionTimeMs",
+    "transitionTimingFunction",
+    "destroyWhenFullyCollapsed",
+    "children",
+  ]);
   const show = createMemo(() => !!props.show);
   let div: HTMLDivElement | undefined;
-  /** Whether the section is fully opened. */
   // eslint-disable-next-line solid/reactivity
-  const hasFullHeight = delayedAccessor(show, {
+  const fullyExpanded = delayedAccessor(show, {
     timeMs: () => props.transitionTimeMs,
     outputImmediately: (show) => !show,
+  });
+  // eslint-disable-next-line solid/reactivity
+  const fullyCollapsed = delayedAccessor(show, {
+    timeMs: () => props.transitionTimeMs,
+    outputImmediately: (show) => show,
   });
   /** The show signal, delayed by epsilon. See doc for maxHeight for description. */
   // eslint-disable-next-line solid/reactivity
@@ -41,8 +58,7 @@ export const HideableSection: Component<Props> = (allProps) => {
    *   initial value for transition is locked in, and after that it is zero and relies on
    *   transition for animation.
    */
-  const maxHeight = () =>
-    hasFullHeight() ? undefined : show() || showDelayedByEpsilon() ? `${div?.scrollHeight}px` : "0";
+  const maxHeight = () => (fullyExpanded() ? undefined : showDelayedByEpsilon() ? `${div?.scrollHeight}px` : "0");
   return (
     <div
       ref={div}
@@ -54,7 +70,9 @@ export const HideableSection: Component<Props> = (allProps) => {
         },
       })}
     >
-      {getChildrenElement(props.children, show)}
+      <Show when={!props.destroyWhenFullyCollapsed || !!fullyCollapsed()}>
+        {getChildrenElement(props.children, {show, fullyCollapsed, fullyExpanded})}
+      </Show>
     </div>
   );
 };

@@ -6,7 +6,7 @@ import {WarningMark} from "./WarningMark";
 import {EmptyValueSymbol} from "./symbols";
 import {title} from "./title";
 
-type _Directives_ = typeof title;
+type _Directives = typeof title;
 
 interface Props extends htmlAttributes.span {
   readonly phone: string | undefined;

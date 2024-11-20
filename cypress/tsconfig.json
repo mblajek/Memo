@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "noUncheckedIndexedAccess": true,
+    "types": ["node", "cypress"],
+    "noEmit": true,
+    "isolatedModules": true,
+    "resolveJsonModule": true
+  },
+  "include": ["**/*.ts"]
+}

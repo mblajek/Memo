@@ -8,12 +8,12 @@ import {CreatedByInfo} from "../facility-users/CreatedByInfo";
 import {UserLink} from "../facility-users/UserLink";
 import {ClientBirthDateShortInfo} from "./ClientBirthDateShortInfo";
 
-interface Props {
+export interface ClientGroupViewProps {
   readonly group: ClientGroupResource;
   readonly currentClientId?: string;
 }
 
-export const ClientGroupView: VoidComponent<Props> = (props) => {
+export const ClientGroupView: VoidComponent<ClientGroupViewProps> = (props) => {
   const t = useLangFunc();
   return (
     <div class="flex gap-4 justify-between">

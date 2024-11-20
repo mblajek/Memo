@@ -6,6 +6,7 @@ import {ClientGroupLabel} from "./ClientGroupLabel";
 
 interface Props {
   readonly groupId: string | undefined;
+  readonly allowViewGroup?: boolean;
 }
 
 export const SharedClientGroupLabel: VoidComponent<Props> = (props) => {
@@ -15,7 +16,7 @@ export const SharedClientGroupLabel: VoidComponent<Props> = (props) => {
   return (
     <Show when={props.groupId} fallback={<EmptyValueSymbol />}>
       <Show when={clientGroup()} fallback={<SmallSpinner />}>
-        {(clientGroup) => <ClientGroupLabel group={clientGroup()} />}
+        {(clientGroup) => <ClientGroupLabel group={clientGroup()} allowViewGroup={props.allowViewGroup} />}
       </Show>
     </Show>
   );

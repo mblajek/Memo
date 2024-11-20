@@ -615,7 +615,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         userId() && clientsGroupsMode() === "separate" && !props.viewMode && clientGroups().length > 1
                       }
                     >
-                      {(show) => (
+                      {({show}) => (
                         <div class="mt-px mb-1 flex items-center gap-1">
                           <div
                             class="ml-6"
@@ -733,7 +733,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               </div>
             </Show>
             <HideableSection show={clientsGroupsMode() === "shared"}>
-              {(show) => (
+              {({show}) => (
                 <div class="mt-1 grid gap-x-1" style={{"grid-template-columns": "auto 1fr"}}>
                   <div
                     class="flex items-center"
@@ -771,7 +771,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             ?.some((clientId) => !selectedClientIds().includes(clientId))}
                         >
                           <Button
-                            class="text-start linkLike p-0"
+                            class="linkLike p-0"
                             onClick={() => {
                               let index = selectedClientIds().length;
                               for (const clientId of allGroups().get(sharedClientsGroupId())?.() || []) {
