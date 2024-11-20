@@ -29,6 +29,7 @@ readonly class TqEngine
         $this->applyFilter();
         $this->applySort();
         $this->applyPaging();
+        $this->builder->finish();
         $debug = (App::hasDebugModeEnabled() ? ['sql' => $this->builder->getSql(true)] : []);
         try {
             return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
@@ -91,7 +92,6 @@ readonly class TqEngine
             return $array;
         }, $this->builder->getData());
     }
-
 
     private function getMeta(): array
     {
