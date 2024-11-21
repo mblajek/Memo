@@ -1,3 +1,4 @@
+import {Button} from "components/ui/Button";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
@@ -77,7 +78,7 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
     });
   });
   const canSyncRange = () => true;
-  const syncActive = () => lower() || upper();
+  const syncPossible = () => (lower() || upper()) && lower() !== upper();
   return (
     <div
       class={cx(s.filter, "grid gap-0.5 items-baseline")}
@@ -85,9 +86,9 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
     >
       <div>{t("range.min")}</div>
       <Show when={canSyncRange()}>
-        <div
-          class={cx(s.valuesSyncer, syncActive() ? undefined : s.inactive)}
-          use:title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
+        <Button
+          class={cx(s.valuesSyncer, syncPossible() ? undefined : s.inactive)}
+          title={syncPossible() ? t("tables.filter.click_to_sync_number_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());

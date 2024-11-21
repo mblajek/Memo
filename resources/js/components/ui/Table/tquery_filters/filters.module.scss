@@ -25,12 +25,17 @@
   }
 
   .valuesSyncer {
-    width: 5px;
+    width: 6px;
     height: 55%;
-    @apply row-span-2 self-center;
-    @apply border-2 border-r-0 border-current text-black text-opacity-30 cursor-pointer;
+    transition: height 200ms;
+    @apply row-span-2 self-center flex;
+    @apply border-2 border-r-0 border-current text-black text-opacity-30;
     border-start-start-radius: 3px;
     border-end-start-radius: 3px;
+
+    &.high {
+      height: 100%;
+    }
 
     &.inactive {
       @apply text-opacity-5 cursor-auto;

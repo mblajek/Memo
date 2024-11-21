@@ -1,4 +1,6 @@
+import {Button} from "components/ui/Button";
 import {DateInput} from "components/ui/DateInput";
+import {createHoverSignal, hoverEvents, hoverSignal} from "components/ui/hover_signal";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
@@ -10,7 +12,7 @@ import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {FilterControlProps} from "./types";
 
-type _Directives = typeof title;
+type _Directives = typeof title | typeof hoverSignal;
 
 type DateTimeRangeFilter =
   | {
@@ -100,8 +102,20 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       ],
     });
   });
+  const hoverSignal = createHoverSignal();
   const canSyncRange = () => inputsType() === "date";
-  const syncActive = () => !!lower() || !!upper();
+  const syncPossible = () => !!lower() || !!upper();
+  const currentSyncType = createMemo(() => {
+    const {l, u} = getInputsData();
+    if (!canSyncRange() || !l || !u) {
+      return undefined;
+    }
+    return l.hasSame(u, "day")
+      ? "day"
+      : l.hasSame(u, "month") && l.day === 1 && u.hasSame(u.endOf("month"), "day")
+        ? "month"
+        : undefined;
+  });
   return (
     <div
       class={cx(s.filter, "grid gap-0.5 items-baseline")}
@@ -109,16 +123,39 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
     >
       <div>{t("range.from")}</div>
       <Show when={canSyncRange()}>
-        <div
-          class={cx(s.valuesSyncer, syncActive() ? undefined : s.inactive)}
-          use:title={syncActive() ? t("tables.filter.click_to_sync_date_range") : undefined}
+        <Button
+          class={cx(
+            s.valuesSyncer,
+            syncPossible()
+              ? currentSyncType() === (hoverSignal() ? "day" : "month")
+                ? s.high
+                : undefined
+              : s.inactive,
+          )}
+          title={[
+            syncPossible()
+              ? t(
+                  currentSyncType() === "day"
+                    ? "tables.filter.click_to_set_month_date_range"
+                    : "tables.filter.click_to_sync_date_range",
+                )
+              : undefined,
+            {hideOnClick: false},
+          ]}
           onClick={() => {
-            if (lower()) {
+            if (currentSyncType() === "day") {
+              const day = getInputsData().l!;
+              setLower(day.startOf("month").toISODate());
+              setUpper(day.endOf("month").toISODate());
+            } else if (lower()) {
               setUpper(lower());
             } else if (upper()) {
               setLower(upper());
             }
+            // Only animate the syncer on the next hover.
+            hoverSignal.setHover(false);
           }}
+          {...hoverEvents(hoverSignal)}
         />
       </Show>
       <div class={cx(s.wideEdit, inputsType() === "date" ? s.dateInputContainer : s.dateTimeInputContainer)}>
