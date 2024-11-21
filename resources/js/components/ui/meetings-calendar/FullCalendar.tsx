@@ -54,7 +54,7 @@ import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state"
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {CheckboxInput} from "../CheckboxInput";
-import {PageInfoIcon, PageInfoIconProps} from "../PageInfoIcon";
+import {DocsModalInfoIcon, DocsModalInfoIconProps} from "../docs_modal";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
@@ -81,7 +81,7 @@ interface Props extends htmlAttributes.div {
   readonly staticSelectionPersistenceKey?: string;
   /** The key to use for persisting the presentation (view) settings. If not present, presentation settings are not persisted. */
   readonly staticPresentationPersistenceKey?: string;
-  readonly pageInfo?: PageInfoIconProps;
+  readonly pageInfo?: DocsModalInfoIconProps;
 }
 
 const defaultProps = () =>
@@ -1140,7 +1140,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             <Show when={props.pageInfo}>
               {(pageInfo) => (
                 <div class="flex items-center">
-                  <PageInfoIcon title={t("calendar.more_info")} {...pageInfo()} />
+                  <DocsModalInfoIcon title={t("calendar.more_info")} {...pageInfo()} />
                 </div>
               )}
             </Show>

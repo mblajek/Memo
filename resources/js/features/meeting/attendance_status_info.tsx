@@ -1,4 +1,5 @@
-import {InfoIcon} from "components/ui/InfoIcon";
+import {DocsModal, DocsModalInfoIcon} from "components/ui/docs_modal";
+import {closeAllSelects} from "components/ui/form/Select";
 import {useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {Show, VoidComponent} from "solid-js";
@@ -11,8 +12,9 @@ export const MeetingStatusInfoIcon: VoidComponent<MeetingStatusInfoIconProps> = 
   const t = useLangFunc();
   const {meetingStatusDict} = useFixedDictionaries();
   return (
-    <InfoIcon
-      href="/help/meeting-statuses#status"
+    <DocsModalInfoIcon
+      href="/help/meeting-statuses-status.part"
+      fullPageHref="/help/meeting-statuses#status"
       title={[
         props.meetingStatusId &&
           t(
@@ -29,6 +31,7 @@ export const MeetingStatusInfoIcon: VoidComponent<MeetingStatusInfoIconProps> = 
 };
 
 interface MeetingAttendanceStatusInfoIconProps {
+  readonly docsModal: DocsModal;
   readonly attendanceStatusId?: string;
   readonly meetingStatusId?: string;
 }
@@ -40,8 +43,10 @@ export const MeetingAttendanceStatusInfoIcon: VoidComponent<MeetingAttendanceSta
     <Show when={props.attendanceStatusId ? attendanceStatusDict()?.getPosition(props.attendanceStatusId) : undefined}>
       {(attendanceStatus) => (
         <Show when={attendanceStatus().resource.isFixed}>
-          <InfoIcon
-            href="/help/meeting-statuses#attendance-status"
+          <DocsModalInfoIcon
+            staticDocsModal={props.docsModal}
+            href="/help/meeting-statuses-attendance-status.part"
+            fullPageHref="/help/meeting-statuses#attendance-status"
             title={
               (attendanceStatus().id === attendanceStatusDict()?.ok.id
                 ? props.meetingStatusId &&
@@ -54,6 +59,10 @@ export const MeetingAttendanceStatusInfoIcon: VoidComponent<MeetingAttendanceSta
                     defaultValue: "",
                   })) || t("dictionary.attendanceStatus._explanations.more_info")
             }
+            onClick={(e) => {
+              e.stopPropagation();
+              closeAllSelects();
+            }}
           />
         </Show>
       )}

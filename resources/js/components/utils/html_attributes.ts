@@ -54,6 +54,8 @@ export namespace htmlAttributes {
     "onMouseMove",
     "onMouseDown",
     "onMouseUp",
+    "onKeyDown",
+    "onKeyUp",
   ] satisfies (keyof div)[];
   type EventType = (typeof EVENT_HANDLERS)[number];
 

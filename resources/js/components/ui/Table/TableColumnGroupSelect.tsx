@@ -2,9 +2,9 @@ import {useLangFunc} from "components/utils";
 import {TbColumns3} from "solid-icons/tb";
 import {createUniqueId, Show, VoidComponent} from "solid-js";
 import {Capitalize} from "../Capitalize";
-import {Select} from "../form/Select";
+import {useDocsModalInfoIcon} from "../docs_modal";
+import {closeAllSelects, Select} from "../form/Select";
 import {Hr} from "../Hr";
-import {InfoIcon} from "../InfoIcon";
 import {title} from "../title";
 import {useTable} from "./TableContext";
 
@@ -24,6 +24,7 @@ export const TableColumnGroupSelect: VoidComponent = () => {
   const meta = table.options.meta?.tquery;
   const columnGroups = () => meta?.columnGroups?.();
   const activeColumnGroups = meta?.activeColumnGroups;
+  const {DocsModalInfoIcon} = useDocsModalInfoIcon();
   return (
     <Show when={activeColumnGroups && columnGroups()?.length}>
       <div class="flex items-stretch">
@@ -58,7 +59,13 @@ export const TableColumnGroupSelect: VoidComponent = () => {
                 value: createUniqueId(),
                 label: () => (
                   <span>
-                    {t("more_info")} <InfoIcon href="/help/table-grouping" title="" />
+                    {t("more_info")}{" "}
+                    <DocsModalInfoIcon
+                      href="/help/table-grouping"
+                      title=""
+                      // Close the Select.
+                      onClick={() => closeAllSelects()}
+                    />
                   </span>
                 ),
                 disabled: true,

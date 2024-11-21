@@ -3,7 +3,7 @@ import {useFormContext} from "components/felte-form/FelteForm";
 import {Button} from "components/ui/Button";
 import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
-import {InfoIcon} from "components/ui/InfoIcon";
+import {DocsModalInfoIcon, createDocsModal} from "components/ui/docs_modal";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
@@ -99,6 +99,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const modelQuerySpecs = useModelQuerySpecs();
   const autoRelatedClients = useAutoRelatedClients();
   const clientGroupFetcher = useClientGroupFetcher();
+  const docsModal = createDocsModal();
   const {form, translations, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
   const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
@@ -412,7 +413,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               umbrella
               label={(origLabel) => (
                 <>
-                  {origLabel} <MeetingAttendanceStatusInfoIcon />
+                  {origLabel} <MeetingAttendanceStatusInfoIcon docsModal={docsModal} />
                 </>
               )}
             />
@@ -568,6 +569,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                                 <div class="flex justify-between gap-1">
                                   {label()}
                                   <MeetingAttendanceStatusInfoIcon
+                                    docsModal={docsModal}
                                     attendanceStatusId={item.value}
                                     meetingStatusId={meetingStatusId()}
                                   />
@@ -663,7 +665,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               <div class="flex justify-between items-center gap-2">
                 <div class="flex gap-1">
                   <FieldLabel fieldName="clientsGroupsMode" umbrella />
-                  <InfoIcon href="/help/meeting-client-groups" />
+                  <DocsModalInfoIcon href="/help/meeting-client-groups" />
                 </div>
                 <Show when={!props.viewMode}>
                   <div class="self-start">

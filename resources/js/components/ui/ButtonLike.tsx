@@ -1,8 +1,13 @@
 import {ParentComponent} from "solid-js";
 import {htmlAttributes} from "../utils";
+import {ButtonProps} from "./Button";
+import {mergeTitleDirectiveProps, title} from "./title";
 
-interface Props extends htmlAttributes.div {
+const _Directives = typeof title;
+
+interface Props extends Omit<htmlAttributes.div, "title"> {
   readonly disabled?: boolean;
+  readonly title?: ButtonProps["title"];
 }
 
 /**
@@ -20,19 +25,21 @@ interface Props extends htmlAttributes.div {
 export const ButtonLike: ParentComponent<Props> = (props) => {
   return (
     <div
-      {...props}
+      {...htmlAttributes.merge(props, {
+        class: "inline-block",
+        onKeyDown: (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.currentTarget.click();
+          }
+        },
+      })}
+      title=""
       role="button"
       aria-disabled={props.disabled}
       tabindex="0"
       bool:inert={props.disabled}
-      onKeyPress={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          e.currentTarget.click();
-        } else {
-          htmlAttributes.callHandler(props.onKeyPress, e);
-        }
-      }}
+      use:title={mergeTitleDirectiveProps(props.title, {hideOnClick: true})}
     />
   );
 };

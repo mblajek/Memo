@@ -1,7 +1,7 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {useLangFunc} from "components/utils";
 import {Show, splitProps, VoidComponent} from "solid-js";
-import {InfoIcon} from "../InfoIcon";
+import {DocsModalInfoIcon} from "../docs_modal";
 import {RichTextView} from "../RichTextView";
 import {EmptyValueSymbol} from "../symbols";
 import {FieldBox} from "./FieldBox";
@@ -25,7 +25,7 @@ export const RichTextViewEdit: VoidComponent<Props> = (allProps) => {
           name={props.name}
           label={(origLabel) => (
             <>
-              {origLabel} <InfoIcon href="/help/rich-text" title={t("rich_text_field")} />
+              {origLabel} <DocsModalInfoIcon href="/help/rich-text" title={t("rich_text_field")} />
             </>
           )}
           richTextPreview

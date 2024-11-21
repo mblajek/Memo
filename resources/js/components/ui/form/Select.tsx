@@ -24,6 +24,7 @@ import {
   createUniqueId,
   mergeProps,
   on,
+  onCleanup,
   onMount,
   splitProps,
 } from "solid-js";
@@ -167,6 +168,8 @@ const DETECT_OVERFLOW_OPTIONS = {
   padding: 5,
 } satisfies DetectOverflowOptions;
 
+const isOpenSetters = new Set<(open: boolean) => void>();
+
 /**
  * A select-like component for selecting a single item from a list of items.
  * Supports searching using keyboard (the parent should provide the filtered list of items).
@@ -178,6 +181,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
 
   const isInvalid = () => !isValidationMessageEmpty(formContext?.form.errors(props.name));
   const [isOpen, setIsOpen] = createSignal(false);
+  onMount(() => {
+    isOpenSetters.add(setIsOpen);
+    onCleanup(() => isOpenSetters.delete(setIsOpen));
+  });
   const [filterText, setFilterText] = createSignal("");
   const [selection, selectionSetter] = createSignal<ReadonlySet<string>>(new Set());
 
@@ -565,6 +572,9 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
   }
 
   function activateItem(item: SelectItemInternal, index?: number) {
+    if (item.disabled) {
+      return;
+    }
     if (item.groupHeader) {
       index ??= itemsToShowWithHeaders().indexOf(item);
       if (index >= 0) {
@@ -915,3 +925,9 @@ export const IndentSelectItemInGroup: ParentComponent<IndentSelectItemInGroupPro
 export const DefaultSelectItemsGroupHeader: VoidComponent<{readonly groupName: string}> = (props) => (
   <div class="font-semibold text-gray-700 mt-1">{props.groupName}</div>
 );
+
+export function closeAllSelects() {
+  for (const isOpenSetter of isOpenSetters) {
+    isOpenSetter(false);
+  }
+}

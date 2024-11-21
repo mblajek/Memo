@@ -14,6 +14,7 @@ interface Props {
   readonly mdPath: string;
   /** Whether the help is included in another document. This causes the component not to set padding etc. Default: false */
   readonly inlined?: boolean;
+  readonly offerNewTabLinks?: boolean;
 }
 
 /**
@@ -70,6 +71,7 @@ export const Help: VoidComponent<Props> = (props) => {
         <Markdown
           markdown={processMarkdown(query.data!)}
           linksRelativeTo={props.currentPath || location.pathname}
+          offerNewTabLinks={props.offerNewTabLinks}
           components={{
             // Set the page title based on the # header.
             h1: (h1Props) => {
@@ -106,7 +108,7 @@ export const Help: VoidComponent<Props> = (props) => {
               };
               return (
                 <Show when={includedPath()} fallback={<p {...pProps} />}>
-                  {(includedPath) => <Help mdPath={includedPath()} inlined />}
+                  {(includedPath) => <Help mdPath={includedPath()} inlined offerNewTabLinks={props.offerNewTabLinks} />}
                 </Show>
               );
             },

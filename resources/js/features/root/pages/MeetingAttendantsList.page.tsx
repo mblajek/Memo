@@ -59,7 +59,7 @@ export default (() => {
         {type: "column", column: "startDayminute", desc: true},
       ]}
       initialSort={[{id: "date", desc: true}]}
-      pageInfo={{href: "/help/reports#meeting-attendants", shortDocsHref: "/help/reports-meeting-attendants.part"}}
+      pageInfo={{href: "/help/reports-meeting-attendants.part", fullPageHref: "/help/reports#meeting-attendants"}}
     />
   );
 }) satisfies VoidComponent;
