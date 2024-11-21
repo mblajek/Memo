@@ -77,7 +77,7 @@ export default (() => {
                 </div>
                 <label
                   class="font-semibold"
-                  onWheel={(e) => {
+                  onPointerDown={(e) => {
                     const sel = document.getSelection();
                     if (
                       !developerPermission.enabled() &&

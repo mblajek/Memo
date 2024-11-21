@@ -30,8 +30,8 @@ export const Button: ParentComponent<ButtonProps> = (allProps) => {
         <button
           type="button"
           {...buttonProps}
-          aria-disabled={buttonProps.disabled}
           use:title={mergeTitleDirectiveProps(props.title, {hideOnClick: true, triggerTarget: titleTriggerTarget})}
+          bool:aria-disabled={buttonProps.disabled}
           bool:inert={buttonProps.inert}
         />
       </span>

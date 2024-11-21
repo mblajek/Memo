@@ -26,6 +26,7 @@ interface TextFieldTextInputProps
     htmlAttributes.input,
     | "class"
     | "type"
+    | "required"
     | "min"
     | "max"
     | "step"

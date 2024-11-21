@@ -26,6 +26,7 @@ export default {
     extend: {
       aria: {
         invalid: "invalid",
+        disabled: "disabled",
       },
       colors: APP_COLORS,
       zIndex: Z_INDEX,
