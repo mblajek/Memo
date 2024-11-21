@@ -6,7 +6,7 @@ import {useLangFunc} from "./lang";
 
 // Be sure to keep in sync with supported-browsers.md
 const EXPECTED_BROWSER_VERSIONS = [
-  ["Chromium", 1122],
+  ["Chromium", 122],
   ["Firefox", 131],
 ] as const;
 const REPORTED_BROWSERS = ["Google Chrome", "Microsoft Edge", "Chromium"];
