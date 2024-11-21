@@ -61,6 +61,7 @@ class TqBuilder
 
     public function distinct(): void
     {
+        // must be applied before selects
         if (count($this->builder->columns ?? [])) {
             throw FatalExceptionFactory::tquery();
         }
@@ -117,6 +118,13 @@ class TqBuilder
     public function getSql(bool $raw): string
     {
         return $raw ? $this->builder->toRawSql() : $this->builder->toSql();
+    }
+
+    public function finish(): void
+    {
+        if ($this->distinct && !count($this->builder->groups ?? [])) {
+            $this->builder->groupByRaw('null');
+        }
     }
 
     public function getCount(): int
