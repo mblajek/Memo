@@ -1,5 +1,5 @@
 import {useAppContext} from "app_context";
-import {Accessor, runWithOwner} from "solid-js";
+import {Accessor} from "solid-js";
 
 /**
  * Creates a cached state. A typical use case is caching a memo which depends on a query. Without caching,
@@ -13,9 +13,8 @@ export function createCached<T>(creator: Accessor<T>) {
   let data: T | undefined;
   return () => {
     if (data === undefined) {
-      const {owner} = useAppContext();
-      data = runWithOwner(owner, creator);
+      data = useAppContext().runInAppContext(creator);
     }
-    return data!;
+    return data;
   };
 }

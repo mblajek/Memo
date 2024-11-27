@@ -16,6 +16,7 @@ import {DaysRange} from "components/ui/calendar/days_range";
 import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {NON_NULLABLE, currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -154,6 +155,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const workTimeModal = createWorkTimeModal();
   const location = useLocation<CalendarLocationState>();
   const activeFacility = useActiveFacility();
+  const featureWheelWithAlt = featureUseTrackers.calendarWheelWithAlt();
+  const featureTinyCalDoubleClick = featureUseTrackers.calendarTinyCalendarDoubleClick();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
 
   const PIXELS_PER_HOUR_RANGE = {
@@ -447,6 +450,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     } else {
       return area satisfies never;
     }
+    featureWheelWithAlt.justUsed({area});
   }
 
   if (props.staticSelectionPersistenceKey) {
@@ -1065,6 +1069,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 setMode(mode() === "day" ? "week" : "day");
                 setDaysSelectionAndMonthFromDay(day);
               });
+              featureTinyCalDoubleClick.justUsed();
             }}
             onMonthNameClick={() => {
               batch(() => {

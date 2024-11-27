@@ -1,5 +1,6 @@
 import {HeaderContext} from "@tanstack/solid-table";
 import {cx} from "components/utils";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {JSX, Show, Signal, VoidComponent, createMemo} from "solid-js";
 import {ColumnName, FilterIconButton, SortMarker} from ".";
 import {Button} from "../Button";
@@ -18,6 +19,7 @@ interface Props {
  * as well as filtering if filter element is provided.
  */
 export const Header: VoidComponent<Props> = (props) => {
+  const featureSecondarySort = featureUseTrackers.tableSecondarySort();
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
 
   const ColNameAndIcon: VoidComponent = () => (
@@ -30,7 +32,15 @@ export const Header: VoidComponent<Props> = (props) => {
   const header = (
     <div class="font-bold">
       <Show when={props.ctx.column.getCanSort()} fallback={<ColNameAndIcon />}>
-        <Button class="text-start select-text" onClick={(e) => props.ctx.column.toggleSorting(undefined, e.altKey)}>
+        <Button
+          class="text-start select-text"
+          onClick={(e) => {
+            props.ctx.column.toggleSorting(undefined, e.altKey);
+            if (e.altKey) {
+              featureSecondarySort.justUsed();
+            }
+          }}
+        >
           <ColNameAndIcon />
         </Button>
       </Show>

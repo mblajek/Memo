@@ -19,7 +19,7 @@ export function createSelectRequestCreator({
   sort,
   limit,
   distinct,
-  columnsByPrefix,
+  ...partialFuzzyGlobalFilterConfig
 }: {
   intrinsicFilter?: FilterH;
   initialExtraFilter?: FilterH;
@@ -27,8 +27,7 @@ export function createSelectRequestCreator({
   sort: Sort;
   limit: number;
   distinct?: boolean;
-  columnsByPrefix?: ReadonlyMap<string, ColumnName>;
-}): RequestCreator<RequestController> {
+} & Pick<FuzzyGlobalFilterConfig, "columnsByPrefix" | "onColumnPrefixFilterUsed">): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
   return (schema) => {
     const [filterText, setFilterText] = createSignal<string>("");
@@ -45,7 +44,7 @@ export function createSelectRequestCreator({
         schema: sch,
         columns,
         dictionaries: dictionaries(),
-        columnsByPrefix,
+        ...partialFuzzyGlobalFilterConfig,
       } satisfies FuzzyGlobalFilterConfig;
     });
     const request = createMemo((): DataRequest | undefined => {

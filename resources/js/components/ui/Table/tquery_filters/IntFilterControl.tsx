@@ -2,6 +2,7 @@ import {Button} from "components/ui/Button";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
 import {Show, createComputed, createMemo} from "solid-js";
 import {getFilterStateSignal} from "./column_filter_states";
@@ -25,6 +26,7 @@ type IntRangeFilter =
  */
 export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
   const t = useLangFunc();
+  const featureRangeSync = featureUseTrackers.filterRangeSync();
   const filterFieldNames = useFilterFieldNames();
   const {
     lower: [lower, setLower],
@@ -92,8 +94,10 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
           onClick={() => {
             if (lower()) {
               setUpper(lower());
+              featureRangeSync.justUsed({t: "int"});
             } else if (upper()) {
               setLower(upper());
+              featureRangeSync.justUsed({t: "int"});
             }
           }}
         />

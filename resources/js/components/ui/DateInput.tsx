@@ -1,3 +1,4 @@
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {DateTime} from "luxon";
 import {createSignal, onCleanup, Show, splitProps, VoidComponent} from "solid-js";
 import {useFormContextIfInForm} from "../felte-form/FelteForm";
@@ -13,6 +14,7 @@ interface Props extends htmlAttributes.input {
 export const DateInput: VoidComponent<Props> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["outerClass", "showWeekday"]);
   const t = useLangFunc();
+  const featureKeyUpDown = featureUseTrackers.dateTimeInputKeyUpDown();
   const type = () => inputProps.type || "date";
   const showWeekday = () => props.showWeekday ?? type() === "date";
   const formContext = useFormContextIfInForm();
@@ -47,6 +49,8 @@ export const DateInput: VoidComponent<Props> = (allProps) => {
             if (e.key === "Delete") {
               (e.currentTarget as HTMLInputElement).value = "";
               e.preventDefault();
+            } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+              featureKeyUpDown.justUsed({type: type()});
             }
           },
         })}

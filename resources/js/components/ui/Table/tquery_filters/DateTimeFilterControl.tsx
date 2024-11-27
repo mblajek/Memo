@@ -3,6 +3,7 @@ import {DateInput} from "components/ui/DateInput";
 import {createHoverSignal, hoverEvents, hoverSignal} from "components/ui/hover_signal";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
@@ -36,6 +37,7 @@ interface Props extends FilterControlProps<DateTimeRangeFilter> {
  */
 export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const featureRangeSync = featureUseTrackers.filterRangeSync();
   const filterFieldNames = useFilterFieldNames();
   const columnType = () => props.schema.type as "date" | "datetime";
   const inputsType = () => (columnType() === "datetime" && props.useDateTimeInputs ? "datetime-local" : "date");
@@ -147,10 +149,13 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
               const day = getInputsData().l!;
               setLower(day.startOf("month").toISODate());
               setUpper(day.endOf("month").toISODate());
+              featureRangeSync.justUsed({t: "date", r: "month"});
             } else if (lower()) {
               setUpper(lower());
+              featureRangeSync.justUsed({t: "date", r: "day"});
             } else if (upper()) {
               setLower(upper());
+              featureRangeSync.justUsed({t: "date", r: "day"});
             }
             // Only animate the syncer on the next hover.
             hoverSignal.setHover(false);
