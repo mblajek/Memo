@@ -37,7 +37,7 @@ export const ButtonLike: ParentComponent<Props> = (props) => {
       title=""
       role="button"
       tabindex="0"
-      bool:aria-disabled={props.disabled}
+      aria-disabled={props.disabled}
       bool:inert={props.disabled}
       use:title={mergeTitleDirectiveProps(props.title, {hideOnClick: true})}
     />
