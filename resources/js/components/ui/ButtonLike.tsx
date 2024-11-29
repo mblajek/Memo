@@ -3,7 +3,7 @@ import {htmlAttributes} from "../utils";
 import {ButtonProps} from "./Button";
 import {mergeTitleDirectiveProps, title} from "./title";
 
-const _Directives = typeof title;
+type _Directives = typeof title;
 
 interface Props extends Omit<htmlAttributes.div, "title"> {
   readonly disabled?: boolean;

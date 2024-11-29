@@ -82,8 +82,10 @@ export default (() => {
                     if (
                       !developerPermission.enabled() &&
                       sel?.focusNode &&
+                      e.currentTarget.contains(sel.anchorNode) &&
                       e.currentTarget.contains(sel.focusNode) &&
-                      sel.focusOffset === 1
+                      (sel.anchorOffset === 1 || sel.focusOffset === 1) &&
+                      !sel.isCollapsed
                     ) {
                       sel.empty();
                       developerPermission.enable(true);

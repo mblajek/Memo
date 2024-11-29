@@ -23,7 +23,7 @@ interface BreakdownItem<D extends RichJSONValue> {
   readonly count: number;
 }
 
-type BreakdownKey<D extends RichJSONValue> = {
+export type BreakdownKey<D extends RichJSONValue = RichJSONValue> = {
   readonly path?: string;
   readonly details?: D;
 };
@@ -71,7 +71,7 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
               {
                 logLevel: "info",
                 source: System.LogAPIFrontendSource.FEATURE_USE,
-                message: `Feature use: ${featureId}`,
+                message: featureId,
                 context: JSON.stringify({
                   firstTime: count === 1 ? undefined : dateTimeToISO(firstTime),
                   lastTime: dateTimeToISO(lastTime),
@@ -112,7 +112,7 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
   return {justUsed};
 }
 
-export interface FeatureUseContext<D extends RichJSONValue> {
+export interface FeatureUseContext<D extends RichJSONValue = RichJSONValue> {
   /** First occurrence, skipped if count is 1. */
   readonly firstTime?: string;
   /** Last occurrence. */
@@ -122,7 +122,7 @@ export interface FeatureUseContext<D extends RichJSONValue> {
   readonly breakdown?: readonly FeatureUseContextBreakdownItem<D>[];
 }
 
-export interface FeatureUseContextBreakdownItem<D extends RichJSONValue> {
+export interface FeatureUseContextBreakdownItem<D extends RichJSONValue = RichJSONValue> {
   readonly key: BreakdownKey<D>;
   readonly count: number;
 }
