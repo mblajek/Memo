@@ -40,7 +40,17 @@ export const MeetingAttendanceStatusInfoIcon: VoidComponent<MeetingAttendanceSta
   const t = useLangFunc();
   const {meetingStatusDict, attendanceStatusDict} = useFixedDictionaries();
   return (
-    <Show when={props.attendanceStatusId ? attendanceStatusDict()?.getPosition(props.attendanceStatusId) : undefined}>
+    <Show
+      when={props.attendanceStatusId ? attendanceStatusDict()?.getPosition(props.attendanceStatusId) : undefined}
+      fallback={
+        <DocsModalInfoIcon
+          staticDocsModal={props.docsModal}
+          href="/help/meeting-statuses-attendance-status.part"
+          fullPageHref="/help/meeting-statuses#attendance-status"
+          title={t("dictionary.attendanceStatus._explanations.more_info")}
+        />
+      }
+    >
       {(attendanceStatus) => (
         <Show when={attendanceStatus().resource.isFixed}>
           <DocsModalInfoIcon

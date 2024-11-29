@@ -3,7 +3,8 @@ niezależnie, a także niezależne od statusu spotkania (chociaż pewne kombinac
 
 Objaśnienie poszczególnych wartości:
 
-- status **$t(dictionary.attendanceStatus.ok)** (ok) — Ten status oznacza brak dodatkowych informacji w odniesieniu do tego uczestnika.
+- **status $t(dictionary.attendanceStatus.ok)** (ok) — To jest najczęstszy status uczestnictwa, oznaczający brak szczególnych informacji
+w odniesieniu do tego uczestnika.
   Dokładne znaczenie tego statusu zależy od statusu spotkania (patrz powyżej):
   - gdy spotkanie ma status **$t(dictionary.meetingStatus.planned)**,
     pełny status uczestnika to **$t(dictionary.attendanceStatus.ok) ($t(dictionary.attendanceStatus._ok_extra_info_by_meeting_status.planned))**,
