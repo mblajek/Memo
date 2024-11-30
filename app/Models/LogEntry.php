@@ -31,6 +31,7 @@ class LogEntry extends Model
 {
     use HasFactory;
     use HasUuid;
+
     // use BaseModel; - no created_by/updated_by
     use HasValidator;
 
@@ -38,7 +39,7 @@ class LogEntry extends Model
     public const array LEVELS = [LogLevel::DEBUG, LogLevel::INFO, LogLevel::NOTICE, LogLevel::WARNING,
         LogLevel::ERROR, LogLevel::CRITICAL, LogLevel::ALERT, LogLevel::EMERGENCY];
     //@formatter:on
-    public const array SOURCES = ['api'];
+    public const array SOURCES = ['api_fe_js_error', 'api_fe_feature_use',];
 
     protected $table = 'log_entries';
 
@@ -61,6 +62,7 @@ class LogEntry extends Model
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
+            'source' => Valid::trimmed([Rule::in(self::SOURCES), 'starts_with:api_']),
             'log_level' => Valid::trimmed([Rule::in(self::LEVELS)]),
             'message' => Valid::text(),
             'context' => Valid::text(sometimes: true, nullable: true, max: 150_000),

@@ -222,10 +222,10 @@ class SystemController extends ApiController
         LogService $logService,
         Request $request,
     ): JsonResponse {
-        $data = $this->validate(LogEntry::getInsertValidator(['log_level', 'message', 'context']));
+        $data = $this->validate(LogEntry::getInsertValidator(['source', 'log_level', 'message', 'context']));
         $logEntryIsd = $logService->addEntry(
             request: $request,
-            source: 'api',
+            source: $data['source'],
             logLevel: $data['log_level'],
             message: $data['message'],
             context: $data['context'] ?? null,
