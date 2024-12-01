@@ -34,7 +34,7 @@ export interface FeatureUseTrackerOptions {
 }
 
 const DEFAULT_OPTIONS = {
-  debounce: Duration.fromObject({seconds: 2}),
+  debounce: Duration.fromObject({minutes: 2}),
   logAppPath: false,
 } satisfies FeatureUseTrackerOptions;
 
