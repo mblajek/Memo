@@ -15,6 +15,7 @@ import {
 import {Select} from "components/ui/form/Select";
 import {facilityIcons} from "components/ui/icons";
 import {useLangFunc} from "components/utils";
+import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {Admin, System} from "data-access/memo-api/groups";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {MemberResource} from "data-access/memo-api/resources/member.resource";
@@ -65,6 +66,20 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
       facilities.delete(facilityId);
     }
     return [...facilities.values()].sort((a, b) => a.name.localeCompare(b.name));
+  });
+  createOneTimeEffect({
+    input: () => (facilitiesById().size ? facilitiesById() : undefined),
+    effect: (facilitiesById) => {
+      form.setFields(
+        membersPath,
+        form
+          .data(membersPath)
+          .toSorted(
+            (a, b) =>
+              facilitiesById.get(a.facilityId)?.name.localeCompare(facilitiesById.get(b.facilityId)?.name || "") || 0,
+          ),
+      );
+    },
   });
   const data = createMemo<MemberRow[]>(() => {
     const rows: MemberRow[] = [];
