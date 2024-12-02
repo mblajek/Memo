@@ -9,7 +9,6 @@ import {parseGetResponse, parseListResponse} from "../utils";
 import {Facilities} from "./shared";
 
 /**
- * @see {@link https://test-memo.fdds.pl/api/documentation#/System production docs}
  * @see {@link http://localhost:9081/api/documentation#/System local docs}
  */
 export namespace System {

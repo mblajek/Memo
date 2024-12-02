@@ -8,7 +8,6 @@ import {ListInParam, createGetFromList, createListRequest, parseListResponse} fr
 import {Facilities, Users} from "./shared";
 
 /**
- * @see {@link https://test-memo.fdds.pl/api/documentation#/Admin production docs}
  * @see {@link http://localhost:9081/api/documentation#/Admin local docs}
  */
 export namespace Admin {

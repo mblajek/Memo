@@ -6,7 +6,6 @@ import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
 
 /**
- * @see {@link https://test-memo.fdds.pl/api/documentation#/Facility%20meeting production docs}
  * @see {@link http://localhost:9081/api/documentation#/Facility%20meeting local docs}
  */
 export namespace FacilityMeeting {
