@@ -1,4 +1,4 @@
-import {VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {Button} from "../ui/Button";
 import {InfoIcon} from "../ui/InfoIcon";
 import {createDocsModal} from "../ui/docs_modal";
@@ -15,7 +15,7 @@ const REPORTED_BROWSERS_IN_USER_AGENT_STRING = ["Chrome", "Edg" /* sic! */, "Fir
 export const BrowserWarning: VoidComponent = () => {
   const t = useLangFunc();
   let status: "unsupported" | "outdated" | "supported_up_to_date" = "unsupported";
-  let browser: {browser: string; version?: number};
+  let browser: {browser: string; version?: number} | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const {userAgentData} = navigator as any;
   const docsModal = createDocsModal();
@@ -49,8 +49,6 @@ export const BrowserWarning: VoidComponent = () => {
           ? "outdated"
           : "unsupported";
       browser = {browser: reportedBrowser, version};
-    } else {
-      browser = {browser: "unknown"};
     }
   }
   if (status === "supported_up_to_date") {
@@ -60,7 +58,9 @@ export const BrowserWarning: VoidComponent = () => {
   return (
     <div class="flex flex-col gap-2">
       <div class="text-red-600 font-semibold">{t(`browsers.${status}`)}</div>
-      <div>{t("browsers.your_browser", browser)}</div>
+      <Show when={browser}>
+        <div>{t("browsers.your_browser", browser)}</div>
+      </Show>
       <Button class="linkLike" onClick={() => docsModal.show({href: "/help/supported-browsers", fullPageHref: false})}>
         {t("browsers.supported_browsers_info")} <InfoIcon title="" />
       </Button>
