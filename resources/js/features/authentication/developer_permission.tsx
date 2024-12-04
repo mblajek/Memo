@@ -38,7 +38,11 @@ export function useDeveloperPermission() {
     } finally {
       toastDismiss(toastId);
     }
-    toggleDEV(developer || !!DEV);
+    if (developer) {
+      toggleDEV(true);
+    } else if (!DEV) {
+      toggleDEV(false);
+    }
   }
 
   function developerLogin(...args: unknown[]) {

@@ -3,6 +3,7 @@ import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {currentTimeSecond, DATE_TIME_FORMAT, SilentAccessBarrier, useLangFunc} from "components/utils";
+import {toggleDEV} from "components/utils/dev_mode";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
@@ -80,15 +81,19 @@ export default (() => {
                   onPointerDown={(e) => {
                     const sel = document.getSelection();
                     if (
-                      !developerPermission.enabled() &&
-                      sel?.focusNode &&
+                      sel &&
+                      !sel.isCollapsed &&
                       e.currentTarget.contains(sel.anchorNode) &&
-                      e.currentTarget.contains(sel.focusNode) &&
-                      (sel.anchorOffset === 1 || sel.focusOffset === 1) &&
-                      !sel.isCollapsed
+                      e.currentTarget.contains(sel.focusNode)
                     ) {
-                      sel.empty();
-                      developerPermission.enable(true);
+                      const range = [sel.anchorOffset, sel.focusOffset].sort((a, b) => a - b).join("..");
+                      if (range === "1..2") {
+                        toggleDEV();
+                        sel.empty();
+                      } else if (range === "2..3") {
+                        developerPermission.enable(!developerPermission.enabled());
+                        sel.empty();
+                      }
                     }
                   }}
                 >
