@@ -2,24 +2,37 @@
 
 namespace App\Services\Meeting;
 
-use App\Models\Attribute;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
 use App\Models\MeetingResource;
+use App\Models\Member;
 use App\Models\Position;
 use App\Models\UuidEnum\PositionAttributeUuidEnum;
+use App\Notification\NotificationService;
 use Illuminate\Support\Facades\DB;
 
-class MeetingService
+readonly class MeetingService
 {
+    public function __construct(
+        private NotificationService $notificationService,
+    ) {
+    }
+
     public function create(Facility $facility, array $data): string
     {
         $meeting = new Meeting($data);
         $fromMeeting = $this->handleFromMeetingId($meeting);
         $meeting->facility_id = $facility->id;
         $this->fillMeetingCategory($meeting);
+
+        $notifications = [];
+        foreach ($data['clients'] as $client) {
+            foreach (($client['notifications'] ?? []) as $notification) {
+                $notifications[] = ['user_id' => $client['user_id'], ...$notification];
+            }
+        }
 
         $staff = $this->extractStaff($data) ?? [];
         $clients = $this->extractClients($data) ?? [];
@@ -32,6 +45,23 @@ class MeetingService
             $meeting->attendants()->saveMany($attendants);
             $meeting->resources()->saveMany($resources);
         });
+
+        $notificationObjects = [];
+        foreach ($notifications as $notification) {
+            $userId = $notification['user_id'];
+            $notificationObjects[]= $this->notificationService->schedule(
+                facilityId: $meeting->facility_id,
+                userId: $userId,
+                clientId: Member::query()->where('user_id', $userId)
+                    ->where('facility_id', $meeting->facility_id)
+                    ->firstOrFail(['client_id'])->offsetGet('client_id'),
+                meetingId: $meeting->id,
+                notificationMethodId: $notification['notification_method_dict_id'],
+                address: null,
+                subject: 'Meeting ...',
+                scheduledAt: null,
+            );
+        }
 
         return $meeting->id;
     }

@@ -81,7 +81,7 @@ class Meeting extends Model
             'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
             'staff.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
             'clients.*' => Valid::array(
-                keys: ['user_id', 'attendance_status_dict_id', 'client_group_id'],
+                keys: ['user_id', 'attendance_status_dict_id', 'client_group_id', 'notifications'],
                 rules: [new MeetingClientGroupRule()]
             ),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
@@ -97,6 +97,10 @@ class Meeting extends Model
             ]),
             // validated as client.* with MeetingClientGroupRule
             'clients.*.client_group_id' => Valid::uuid(nullable: true),
+            'clients.*.notifications' => Valid::list(sometimes: true),
+            'clients.*.notifications.*' => Valid::array(keys: ['notification_method_dict_id']),
+            'clients.*.notifications.*.notification_method_dict_id'
+            => Valid::dict(DictionaryUuidEnum::NotificationMethod),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,
