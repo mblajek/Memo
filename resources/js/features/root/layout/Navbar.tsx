@@ -8,6 +8,7 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
+import {CgTrack} from "solid-icons/cg";
 import {FaSolidList} from "solid-icons/fa";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {IoReloadSharp} from "solid-icons/io";
@@ -140,6 +141,7 @@ export const Navbar: VoidComponent = () => {
             <NavigationItem icon={SiSwagger} href="/api/documentation" routeKey="API" target="_blank" small />
             <SilentAccessBarrier roles={["developer"]}>
               <NavigationItem icon={OcLog3} href="/dev/logs" routeKey="Logs" small />
+              <NavigationItem icon={CgTrack} href="/dev/feature-use" routeKey="Feature use" small />
             </SilentAccessBarrier>
             <NavigationItem icon={BiRegularErrorAlt} href="/dev/crash" routeKey="Crash" small />
             <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />

@@ -7,6 +7,7 @@ import {useHolidays} from "components/ui/calendar/holidays";
 import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {capitalizeString} from "components/ui/Capitalize";
 import {CheckboxInput} from "components/ui/CheckboxInput";
+import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -400,7 +401,7 @@ export default (() => {
                   trigger={(popOver) => (
                     <Button
                       class={cx("minimal !px-1", popOver.isOpen ? "!bg-select" : undefined)}
-                      title={[t("facility_user.weekly_time_tables.click_to_see_actions"), {hideOnClick: true}]}
+                      title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
                       <BsThreeDots class="text-current" size="20" />
@@ -746,7 +747,11 @@ export default (() => {
               />
             </Button>
             <div class="flex items-center">
-              <InfoIcon href="/help/staff-time-tables#weekly" title={t("facility_user.weekly_time_tables.more_info")} />
+              <DocsModalInfoIcon
+                href="/help/staff-time-tables-weekly.part"
+                fullPageHref="/help/staff-time-tables#weekly"
+                title={t("facility_user.weekly_time_tables.more_info")}
+              />
             </div>
           </div>
         </div>

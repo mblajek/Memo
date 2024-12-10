@@ -19,7 +19,7 @@ import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
 import {DateTime} from "luxon";
 import {Show, VoidComponent} from "solid-js";
 
-type _Directives_ = typeof title;
+type _Directives = typeof title;
 
 interface Props {
   readonly editMode: boolean;

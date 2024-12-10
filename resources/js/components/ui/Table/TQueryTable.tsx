@@ -20,6 +20,7 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {Modifiable} from "components/utils/modifiable";
 import {intersects, objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
@@ -68,7 +69,7 @@ import {
   getBaseTableOptions,
   useTableCells,
 } from ".";
-import {InfoIcon} from "../InfoIcon";
+import {DocsModalInfoIcon, DocsModalProps} from "../docs_modal";
 import {title} from "../title";
 import {TableColumnGroupSelect} from "./TableColumnGroupSelect";
 import {TableExportButton} from "./TableExportButton";
@@ -178,8 +179,7 @@ export interface TQueryTableProps<TData = DataItem> {
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
   readonly staticExportConfig?: TableExportConfig;
-  /** Href link to the help page describing the table. */
-  readonly helpHref?: string;
+  readonly pageInfo?: DocsModalProps;
 }
 
 export interface PartialColumnConfig<TData = DataItem> {
@@ -259,6 +259,7 @@ const PERSISTENCE_VERSION = 2;
 export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   const t = useLangFunc();
   const attributes = useAttributes();
+  const featureFilterPrefix = featureUseTrackers.fuzzyGlobalFilterColumnPrefix();
   const entityURL = props.staticEntityURL;
   // The attribute columns configs, mapped by the index in props.columns where they were defined.
   const [attributeColumnsConfigsMap, setAttributeColumnsConfigsMap] = createSignal<
@@ -413,6 +414,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
       // eslint-disable-next-line solid/reactivity
       (props.mode === "standalone" ? DEFAULT_STANDALONE_PAGE_SIZE : DEFAULT_EMBEDDED_PAGE_SIZE),
     columnsByPrefix: translations.columnsByPrefix,
+    onColumnPrefixFilterUsed: (prefix) =>
+      featureFilterPrefix.justUsed({comp: "table", model: translations.tableName(), prefix}),
   });
   const columnFilterStates = new ColumnFilterStates();
   const [allInitialised, setAllInitialised] = createSignal(false);
@@ -844,10 +847,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           />
           <TableColumnGroupSelect />
           <TableColumnVisibilityController />
-          <Show when={props.helpHref}>
-            {(href) => (
+          <Show when={props.pageInfo}>
+            {(pageInfo) => (
               <div class="flex items-center">
-                <InfoIcon href={href()} target="_blank" title={t("tables.more_info")} />
+                <DocsModalInfoIcon title={t("tables.more_info")} {...pageInfo()} />
               </div>
             )}
           </Show>

@@ -25,7 +25,7 @@ export default {
   theme: {
     extend: {
       aria: {
-        invalid: "invalid",
+        invalid: 'invalid="true"',
       },
       colors: APP_COLORS,
       zIndex: Z_INDEX,

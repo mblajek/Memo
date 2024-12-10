@@ -1,4 +1,9 @@
 /* @refresh reload */
+import "./index.scss";
+import "./init_luxon";
+import "./init_solid";
+import "./init_types";
+
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
 import {InitializeTanstackQuery} from "components/utils";
@@ -12,10 +17,6 @@ import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 import {DictionariesAndAttributesProvider} from "./data-access/memo-api/dictionaries_and_attributes_context";
 import {translationsLoaded} from "./i18n_loader";
-import "./index.scss";
-import "./init_luxon";
-import "./init_solid";
-import "./init_types";
 
 const root = document.getElementById("root");
 if (!(root instanceof HTMLElement)) {
@@ -24,16 +25,20 @@ if (!(root instanceof HTMLElement)) {
 
 const TOAST_DURATION_SECS = 10;
 
+// Allow setting the language in the session storage, mostly for testing.
+const LANGUAGE_SESSION_STORAGE_KEY = "language";
+
 render(() => {
   return (
     <TransProvider
+      lng={sessionStorage.getItem(LANGUAGE_SESSION_STORAGE_KEY) || undefined}
       options={{
         backend: {loadPath: "/api/v1/system/translation/{{lng}}/list"},
         debug: !!DEV,
         initImmediate: false,
         fallbackLng: "pl",
         load: "currentOnly",
-        supportedLngs: ["pl"],
+        supportedLngs: ["pl", "testing"],
         pluralSeparator: "__",
       }}
     >

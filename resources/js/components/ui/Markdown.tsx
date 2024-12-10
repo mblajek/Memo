@@ -1,14 +1,18 @@
-import {A, useLocation} from "@solidjs/router";
+import {useLocation} from "@solidjs/router";
+import {resolvePath} from "features/root/pages/help/markdown_resolver";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkCustomHeadingId from "remark-custom-heading-id";
 import remarkGfm from "remark-gfm";
 import {ComponentProps, Match, Switch, VoidComponent, createEffect, createSignal, splitProps} from "solid-js";
 import {SolidMarkdown} from "solid-markdown";
 import {htmlAttributes} from "../utils";
+import {LinkWithNewTabLink} from "./LinkWithNewTabLink";
 import s from "./Markdown.module.scss";
 
 interface MarkdownProps extends ComponentProps<typeof SolidMarkdown> {
   readonly markdown: string;
+  readonly linksRelativeTo: string;
+  readonly offerNewTabLinks?: boolean;
 }
 
 /**
@@ -20,7 +24,7 @@ interface MarkdownProps extends ComponentProps<typeof SolidMarkdown> {
  * The component can be further configured using the props of the underlying SolidMarkdown component.
  */
 export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
-  const [props, markdownProps] = splitProps(allProps, ["markdown"]);
+  const [props, markdownProps] = splitProps(allProps, ["markdown", "linksRelativeTo", "offerNewTabLinks"]);
   const location = useLocation();
   const [element, setElement] = createSignal<HTMLDivElement>();
   createEffect(() => {
@@ -48,18 +52,20 @@ export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
                 {/* Anchor links don't work very well on the A component. */}
                 <a {...aProps} />
               </Match>
-              <Match when="fallback">
-                <A
+              <Match when="other file">
+                <LinkWithNewTabLink
                   {...{
-                    href: "",
                     ...aProps,
+                    href: aProps.href ? resolvePath(props.linksRelativeTo, aProps.href) : "",
                     node: undefined,
-                    // Open external links in a new tab. Don't use _self as it reloads the page.
-                    target: aProps.href?.startsWith("http")
-                      ? "_blank"
-                      : aProps.target === "_self"
-                        ? undefined
-                        : aProps.target,
+                    // Open external links in a new tab.
+                    ...(aProps.href?.startsWith("http")
+                      ? {target: "_blank"}
+                      : {
+                          // Don't use _self as it reloads the page.
+                          target: aProps.target === "_self" ? undefined : aProps.target,
+                          newTabLink: props.offerNewTabLinks ?? false,
+                        }),
                   }}
                 />
               </Match>

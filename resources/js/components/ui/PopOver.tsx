@@ -10,7 +10,6 @@ interface Props {
   readonly trigger: (popOver: PopOverControl) => JSX.Element;
   readonly placement?: Partial<ComputePositionConfig>;
   readonly children: ChildrenOrFunc<[PopOverControl]>;
-  readonly popOverClass?: string;
 }
 
 export interface PopOverControl {
@@ -70,10 +69,7 @@ export const PopOver: Component<Props> = (props) => {
           >
             <Show when={open()}>
               <div
-                class={
-                  props.popOverClass ||
-                  "z-dropdown max-w-fit bg-white border border-gray-700 rounded shadow-xl flex flex-col"
-                }
+                class="z-dropdown max-w-fit bg-white border border-gray-700 rounded shadow-xl flex flex-col overflow-clip"
                 style={posStyle()}
               >
                 {getChildrenElement(props.children, popOver)}

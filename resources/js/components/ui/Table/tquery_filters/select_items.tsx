@@ -1,8 +1,7 @@
-import {InfoIcon, InfoIconProps} from "components/ui/InfoIcon";
 import {SelectItem} from "components/ui/form/Select";
 import {title} from "components/ui/title";
 import {cx} from "components/utils";
-import {Match, Show, Switch, VoidComponent} from "solid-js";
+import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
 type _Directives = typeof title;
 
@@ -13,7 +12,7 @@ interface SelectItemSymbolProps {
 }
 
 export const SelectItemSymbol: VoidComponent<SelectItemSymbolProps> = (props) => (
-  <span class={cx("font-semibold", props.class)} use:title={props.title}>
+  <span class={cx("font-semibold line-clamp-1", props.class)} use:title={props.title}>
     {props.symbol}
   </span>
 );
@@ -32,7 +31,7 @@ interface SelectItemLabelProps {
   readonly symbol?: string;
   readonly symbolClass?: string;
   readonly description?: string;
-  readonly infoIcon?: InfoIconProps;
+  readonly infoIcon?: JSX.Element;
 }
 
 export const SelectItemLabelOnList: VoidComponent<SelectItemLabelProps> = (props) => (
@@ -41,7 +40,7 @@ export const SelectItemLabelOnList: VoidComponent<SelectItemLabelProps> = (props
     <Show when={props.description} fallback={<div class="grow">&nbsp</div>}>
       {(desc) => <SelectItemDescription description={desc()} class="grow" />}
     </Show>
-    <Show when={props.infoIcon}>{(infoIcon) => <InfoIcon {...infoIcon()} />}</Show>
+    {props.infoIcon}
   </div>
 );
 

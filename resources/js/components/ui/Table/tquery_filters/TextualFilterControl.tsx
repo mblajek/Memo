@@ -1,5 +1,7 @@
+import {InfoIcon} from "components/ui/InfoIcon";
 import {SearchInput} from "components/ui/SearchInput";
-import {Select, SelectItem} from "components/ui/form/Select";
+import {DocsModalInfoIcon} from "components/ui/docs_modal";
+import {closeAllSelects, Select, SelectItem} from "components/ui/form/Select";
 import {cx, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {createComputed, createMemo, createSignal, VoidComponent} from "solid-js";
@@ -66,9 +68,13 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
         symbol: t("tables.filter.textual.symbols.fuzzy"),
         symbolClass: "w-4",
         description: t("tables.filter.textual.fuzzy"),
-        infoIcon: {
-          href: "/help/table-filtering#fuzzy",
-        },
+        infoIcon: (
+          <DocsModalInfoIcon
+            href="/help/table-filtering-fuzzy.part"
+            fullPageHref="/help/table-filtering#fuzzy"
+            onClick={() => closeAllSelects()}
+          />
+        ),
       }),
     );
     if (props.schema.type === "string") {
@@ -103,9 +109,7 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
         symbol: t("tables.filter.textual.symbols.regexp"),
         symbolClass: "w-4",
         description: t("tables.filter.textual.regexp"),
-        infoIcon: {
-          href: "https://support.google.com/a/answer/1371415?hl=pl",
-        },
+        infoIcon: <InfoIcon href="https://support.google.com/a/answer/1371415?hl=pl" />,
       }),
     );
     return items;

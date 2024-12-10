@@ -2,7 +2,7 @@ import {A, AnchorProps} from "@solidjs/router";
 import {createMemo, VoidComponent} from "solid-js";
 import {title} from "./title";
 
-const _Directives = typeof title;
+type _Directives = typeof title;
 
 const URL_REGEXP = /^(ftp:|https?:|www\d?\.)\S+$/;
 

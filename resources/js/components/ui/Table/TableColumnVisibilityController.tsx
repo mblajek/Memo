@@ -5,12 +5,13 @@ import {RiArrowsContractLeftRightLine, RiSystemEyeCloseFill} from "solid-icons/r
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
 import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
+import {createHoverSignal, hoverSignal} from "../hover_signal";
 import {PopOver, PopOverControl} from "../PopOver";
 import {SearchInput} from "../SearchInput";
 import {EmptyValueSymbol} from "../symbols";
 import {title} from "../title";
 
-type _Directives = typeof title;
+type _Directives = typeof title | typeof hoverSignal;
 
 export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();
@@ -87,6 +88,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             >
               {(column) => {
                 const groupingInfo = () => columnGroupingInfo?.(column.id);
+                const hover = createHoverSignal();
                 const selectBg = () =>
                   resetHovered() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];
                 return (
@@ -95,6 +97,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                       "px-2 pt-0.5 hover:bg-hover flex justify-between gap-2 items-baseline select-none",
                       selectBg() ? "!bg-select" : undefined,
                     )}
+                    use:hoverSignal={hover}
                   >
                     <div class="flex gap-2 items-baseline">
                       <input
@@ -126,24 +129,23 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                         </span>
                       </Show>
                     </div>
-                    <Show when={visibility()?.[column.id]}>
-                      <Button
-                        class="self-center"
-                        onClick={() => {
-                          const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
-                          header?.scrollIntoView({inline: "center", behavior: "smooth"});
-                          header?.animate([{}, {backgroundColor: "var(--tc-select)"}], {
-                            direction: "alternate",
-                            duration: 230,
-                            iterations: 6,
-                          });
-                          props.popOver.close();
-                        }}
-                        title={t("tables.scroll_to_column")}
-                      >
-                        <RiArrowsContractLeftRightLine class="text-grey-text" size="14" />
-                      </Button>
-                    </Show>
+                    <Button
+                      class={cx("self-center", hover() ? "opacity-100" : "opacity-0")}
+                      onClick={() => {
+                        setVisibility((v) => ({...v, [column.id]: true}));
+                        const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
+                        header?.scrollIntoView({inline: "center", behavior: "smooth"});
+                        header?.animate([{}, {backgroundColor: "var(--tc-select)"}], {
+                          direction: "alternate",
+                          duration: 230,
+                          iterations: 6,
+                        });
+                        props.popOver.close();
+                      }}
+                      title={t("tables.scroll_to_column")}
+                    >
+                      <RiArrowsContractLeftRightLine class="text-grey-text" size="14" />
+                    </Button>
                   </label>
                 );
               }}

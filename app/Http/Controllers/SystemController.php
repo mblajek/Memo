@@ -140,6 +140,7 @@ class SystemController extends ApiController
                     new OA\Property(property: 'version', type: 'string', example: '1.2.3'),
                     new OA\Property(property: 'appEnv', type: 'string', example: 'production'),
                     new OA\Property(property: 'appEnvColor', type: 'string', example: '#AABBCC', nullable: true),
+                    new OA\Property(property: 'appEnvFgColor', type: 'string', example: '#FFFFFF', nullable: true),
                     new OA\Property(property: 'randomUuid', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'currentDate', type: 'datetime'),
                     new OA\Property(property: 'commitHash', type: 'string', nullable: true),
@@ -181,6 +182,7 @@ class SystemController extends ApiController
                 'version' => self::VERSION . ($isRc ? ' RC' : ''),
                 'appEnv' => env('APP_ENV'),
                 'appEnvColor' => env('APP_ENV_COLOR') ?: null,
+                'appEnvFgColor' => env('APP_ENV_FG_COLOR') ?: null,
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
                 'commitHash' => $commitHash,
@@ -220,10 +222,10 @@ class SystemController extends ApiController
         LogService $logService,
         Request $request,
     ): JsonResponse {
-        $data = $this->validate(LogEntry::getInsertValidator(['log_level', 'message', 'context']));
+        $data = $this->validate(LogEntry::getInsertValidator(['source', 'log_level', 'message', 'context']));
         $logEntryIsd = $logService->addEntry(
             request: $request,
-            source: 'api',
+            source: $data['source'],
             logLevel: $data['log_level'],
             message: $data['message'],
             context: $data['context'] ?? null,

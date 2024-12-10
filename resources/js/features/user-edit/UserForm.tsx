@@ -84,7 +84,7 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
               title={!form.data("email") ? t("forms.user_edit.has_password_requires_email") : undefined}
             />
             <HideableSection show={form.data("hasPassword")}>
-              {(show) => (
+              {({show}) => (
                 <div class="flex flex-col">
                   <PasswordField
                     name="password"

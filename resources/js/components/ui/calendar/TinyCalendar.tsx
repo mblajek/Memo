@@ -12,6 +12,7 @@ import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {useHolidays} from "./holidays";
 import {getWeekdays} from "./week_days_calculator";
+import {hoverEvents} from "../hover_signal";
 
 interface Props extends htmlAttributes.div {
   /** The current selection visible in the tiny calendar. */
@@ -208,8 +209,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
               class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}
               onClick={() => props.onDayClick?.(di.day, getHoverRange()(di.day))}
               onDblClick={() => props.onDayDoubleClick?.(di.day, getHoverRange()(di.day))}
-              onMouseEnter={[setHover, di.day]}
-              onMouseLeave={[setHover, undefined]}
+              {...hoverEvents((hovered) => setHover(hovered ? di.day : undefined))}
             >
               <Show when={di.isToday}>
                 <div class={s.todayMark} />

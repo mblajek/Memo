@@ -1,5 +1,5 @@
 import {useQueryClient} from "@tanstack/solid-query";
-import {createSignal} from "solid-js";
+import {createSignal, untrack} from "solid-js";
 import {System, User} from "./groups";
 import {FacilityClientGroup} from "./groups/FacilityClientGroup";
 import {FacilityMeeting} from "./groups/FacilityMeeting";
@@ -8,8 +8,9 @@ import {Facilities, Users} from "./groups/shared";
 
 const INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS = 3000;
 
+const [throttled, setThrottled] = createSignal(false);
+
 export function useInvalidator(queryClient = useQueryClient()) {
-  const [throttled, setThrottled] = createSignal(false);
   const invalidate = {
     everything: () => {
       queryClient.invalidateQueries();
@@ -17,7 +18,7 @@ export function useInvalidator(queryClient = useQueryClient()) {
       setTimeout(() => setThrottled(false), INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS);
     },
     everythingThrottled: () => {
-      if (throttled()) {
+      if (untrack(throttled)) {
         return false;
       }
       invalidate.everything();

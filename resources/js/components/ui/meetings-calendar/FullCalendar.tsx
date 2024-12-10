@@ -16,6 +16,7 @@ import {DaysRange} from "components/ui/calendar/days_range";
 import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {NON_NULLABLE, currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -54,7 +55,7 @@ import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state"
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {CheckboxInput} from "../CheckboxInput";
-import {InfoIcon} from "../InfoIcon";
+import {DocsModalInfoIcon, DocsModalInfoIconProps} from "../docs_modal";
 import {SegmentedControl} from "../form/SegmentedControl";
 import {staffIcons} from "../icons";
 import {EN_DASH} from "../symbols";
@@ -81,8 +82,7 @@ interface Props extends htmlAttributes.div {
   readonly staticSelectionPersistenceKey?: string;
   /** The key to use for persisting the presentation (view) settings. If not present, presentation settings are not persisted. */
   readonly staticPresentationPersistenceKey?: string;
-  /** Href link to the help page describing the table. */
-  readonly helpHref?: string;
+  readonly pageInfo?: DocsModalInfoIconProps;
 }
 
 const defaultProps = () =>
@@ -144,7 +144,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     "initialDay",
     "staticSelectionPersistenceKey",
     "staticPresentationPersistenceKey",
-    "helpHref",
+    "pageInfo",
   ]);
   const t = useLangFunc();
   const dictionaries = useDictionaries();
@@ -155,6 +155,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const workTimeModal = createWorkTimeModal();
   const location = useLocation<CalendarLocationState>();
   const activeFacility = useActiveFacility();
+  const featureWheelWithAlt = featureUseTrackers.calendarWheelWithAlt();
+  const featureTinyCalDoubleClick = featureUseTrackers.calendarTinyCalendarDoubleClick();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
 
   const PIXELS_PER_HOUR_RANGE = {
@@ -448,6 +450,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     } else {
       return area satisfies never;
     }
+    featureWheelWithAlt.justUsed({area});
   }
 
   if (props.staticSelectionPersistenceKey) {
@@ -871,10 +874,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
-                initialValues: {
-                  ...meetingTimeFullDayInitialValue(day),
-                  staff: resourceId,
-                },
+                initialValues: meetingTimeFullDayInitialValue(day),
+                availableStaff: resourceId,
               });
             } else {
               return props.staticCalendarFunction satisfies never;
@@ -901,10 +902,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
-                initialValues: {
-                  ...meetingTimePartDayInitialValue(time),
-                  staff: resourceId,
-                },
+                initialValues: meetingTimePartDayInitialValue(time),
+                availableStaff: resourceId,
               });
             } else {
               return props.staticCalendarFunction satisfies never;
@@ -1016,10 +1015,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               });
             } else if (props.staticCalendarFunction === "timeTables") {
               workTimeCreateModal.show({
-                initialValues: {
-                  ...meetingTimeFullDayInitialValue(day),
-                  staff: resourceId,
-                },
+                initialValues: meetingTimeFullDayInitialValue(day),
+                availableStaff: resourceId,
               });
             } else {
               return props.staticCalendarFunction satisfies never;
@@ -1072,6 +1069,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 setMode(mode() === "day" ? "week" : "day");
                 setDaysSelectionAndMonthFromDay(day);
               });
+              featureTinyCalDoubleClick.justUsed();
             }}
             onMonthNameClick={() => {
               batch(() => {
@@ -1144,10 +1142,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
               small
             />
-            <Show when={props.helpHref}>
-              {(href) => (
+            <Show when={props.pageInfo}>
+              {(pageInfo) => (
                 <div class="flex items-center">
-                  <InfoIcon href={href()} target="_blank" title={t("calendar.more_info")} />
+                  <DocsModalInfoIcon title={t("calendar.more_info")} {...pageInfo()} />
                 </div>
               )}
             </Show>

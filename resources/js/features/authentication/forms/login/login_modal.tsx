@@ -1,13 +1,15 @@
 import {Button} from "components/ui/Button";
 import {FullLogo} from "components/ui/FullLogo";
-import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
+import {Modal, MODAL_STYLE_PRESETS} from "components/ui/Modal";
 import {title} from "components/ui/title";
-import {DATE_TIME_FORMAT, useLangFunc} from "components/utils";
+import {cx, DATE_TIME_FORMAT, useLangFunc} from "components/utils";
+import {BrowserWarning} from "components/utils/BrowserWarning";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {doAndClearParams} from "components/utils/modals";
 import {V1} from "data-access/memo-api/config";
 import {ThemeIcon, useThemeControl} from "features/root/components/theme_control";
 import {BaseAppVersion} from "features/system-status/app_version";
+import {useEnvInfo} from "features/system-status/env_info";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
 import {LoginForm} from "./Login.form";
@@ -22,6 +24,7 @@ interface Params {
 export const createLoginModal = registerGlobalPageElement<Params | true>((args) => {
   const t = useLangFunc();
   const systemStatusMonitor = useSystemStatusMonitor();
+  const envInfo = useEnvInfo();
   const {toggleTheme} = useThemeControl();
   const params = (): Partial<Params | undefined> => {
     const paramsOrTrue = args.params();
@@ -36,9 +39,12 @@ export const createLoginModal = registerGlobalPageElement<Params | true>((args) 
     >
       {(params) => (
         <div class="flex flex-col gap-4">
-          <div class="flex gap-1 justify-end">
-            <span
-              class="text-grey-text"
+          <div
+            class={cx("flex gap-2 justify-between rounded", envInfo.style() ? "px-1" : "text-grey-text")}
+            style={envInfo.style()}
+          >
+            <div>{envInfo.info()}</div>
+            <div
               use:title={`${t("about_page.commit_info")} ${
                 systemStatusMonitor.baseStatus()?.commitDate
                   ? DateTime.fromISO(systemStatusMonitor.baseStatus()!.commitDate!).toLocaleString(DATE_TIME_FORMAT)
@@ -50,8 +56,9 @@ export const createLoginModal = registerGlobalPageElement<Params | true>((args) 
               }}
             >
               <BaseAppVersion />
-            </span>
+            </div>
           </div>
+          <BrowserWarning />
           <div class="flex flex-col relative">
             <div class="absolute top-0 right-0 z-10">
               <Button onClick={toggleTheme} title={t("switch_theme")}>

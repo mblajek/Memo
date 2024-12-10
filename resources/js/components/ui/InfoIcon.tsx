@@ -2,42 +2,41 @@ import {A, AnchorProps} from "@solidjs/router";
 import {ImInfo} from "solid-icons/im";
 import {Component, JSX, Match, Switch} from "solid-js";
 import {htmlAttributes, useLangFunc} from "../utils";
-import {Button} from "./Button";
+import {ButtonProps} from "./Button";
+import {ButtonLike} from "./ButtonLike";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 import {title} from "./title";
 
 type _Directives = typeof title;
 
-interface LinkProps extends Omit<AnchorProps, "children"> {
+interface LinkVariantProps extends Omit<AnchorProps, "children"> {
   readonly href: string;
   readonly children?: ChildrenOrFunc<[JSX.Element]>;
 }
 
-interface ButtonProps
-  extends Omit<htmlAttributes.button, "children" | "onClick">,
-    Required<Pick<htmlAttributes.button, "onClick">> {
+interface ButtonVariantProps extends Omit<ButtonProps, "children" | "onClick">, Required<Pick<ButtonProps, "onClick">> {
   readonly href?: undefined;
   readonly children?: ChildrenOrFunc<[JSX.Element]>;
 }
 
-interface TitleProps extends Omit<htmlAttributes.span, "children"> {
+interface TitleVariantProps extends Omit<htmlAttributes.span, "children"> {
   readonly href?: undefined;
   readonly onClick?: undefined;
-  readonly title: string;
+  readonly title?: string;
   readonly children?: ChildrenOrFunc<[JSX.Element]>;
 }
 
-export type InfoIconProps = LinkProps | ButtonProps | TitleProps;
+export type InfoIconProps = LinkVariantProps | ButtonVariantProps | TitleVariantProps;
 
-function isLinkProps(pr: InfoIconProps): pr is LinkProps {
+function isLinkProps(pr: InfoIconProps): pr is LinkVariantProps {
   return !!pr.href;
 }
 
-function isButtonProps(pr: InfoIconProps): pr is ButtonProps {
+function isButtonProps(pr: InfoIconProps): pr is ButtonVariantProps {
   return !pr.href && !!pr.onClick;
 }
 
-function isTitleProps(pr: InfoIconProps): pr is TitleProps {
+function isTitleProps(pr: InfoIconProps): pr is TitleVariantProps {
   return !pr.href && !pr.onClick;
 }
 
@@ -71,9 +70,10 @@ export const InfoIcon: Component<InfoIconProps> = (props) => {
       </Match>
       <Match when={isButtonProps(props) && props}>
         {(buttonProps) => (
-          <Button title={titleContent()} {...buttonProps}>
+          // Use ButtonLike to allow usage inside a disabled form.
+          <ButtonLike title={titleContent()} {...buttonProps}>
             {getChildrenElement(props.children, icon) || icon}
-          </Button>
+          </ButtonLike>
         )}
       </Match>
       <Match when={isTitleProps(props) && props}>

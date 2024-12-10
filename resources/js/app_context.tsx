@@ -1,4 +1,4 @@
-import {Owner, ParentComponent, createContext, getOwner, useContext} from "solid-js";
+import {Owner, ParentComponent, createContext, getOwner, runWithOwner, useContext} from "solid-js";
 
 const AppContext = createContext<AppContext>();
 
@@ -8,6 +8,7 @@ export interface AppContext {
    * It is not cleaned up as long as the app is active.
    */
   readonly owner: Owner;
+  runInAppContext<T>(fn: () => T): T;
 }
 
 export const AppContextProvider: ParentComponent = (props) => {
@@ -19,6 +20,7 @@ export const AppContextProvider: ParentComponent = (props) => {
     get owner() {
       return owner!;
     },
+    runInAppContext: (fn) => runWithOwner(owner!, fn)!,
   };
   const InnerOwnerGetter: ParentComponent = (props) => {
     owner = getOwner()!;

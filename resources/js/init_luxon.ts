@@ -9,6 +9,7 @@ declare module "luxon" {
 
 Settings.throwOnInvalid = true;
 
+Settings.defaultLocale = navigator.language;
 Settings.defaultWeekSettings = getWeekInfo(new Intl.Locale(navigator.language));
 
 // Prevent the luxon classes from serialising as strings, to make it possible to write a custom

@@ -116,6 +116,7 @@ interface FuzzyGlobalFilterConfigBase {
    * the columns list specified.
    */
   readonly columnsByPrefix?: ReadonlyMap<string, ColumnName>;
+  readonly onColumnPrefixFilterUsed?: (prefix: string, column: ColumnName) => void;
 }
 
 /** Config for filtering the specified columns. */
@@ -217,6 +218,7 @@ export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFi
     if (!column) {
       return undefined;
     }
+    config.onColumnPrefixFilterUsed?.(colPrefix, column);
     if (word === EMPTY_CODE) {
       return {type: "column", column, op: "null"};
     }

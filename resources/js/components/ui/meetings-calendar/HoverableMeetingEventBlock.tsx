@@ -5,6 +5,7 @@ import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {JSX, Show, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Floating} from "../Floating";
+import {hoverEvents} from "../hover_signal";
 import {CANCELLED_MEETING_COLORING, COMPLETED_MEETING_COLORING, Coloring} from "./colors";
 
 export interface HoverableMeetingEventBlockProps {
@@ -111,8 +112,7 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
           coloring={coloring()}
           class="overflow-clip outline outline-0 outline-memo-active"
           data-entity-id={props.entityId}
-          onMouseEnter={[setHovered, true]}
-          onMouseLeave={[setHovered, false]}
+          {...hoverEvents(setHovered)}
         />
       }
       floating={(posStyle) => (

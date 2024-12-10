@@ -1,5 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {BaseTQuerySelectProps, TQuerySelectProps} from "components/ui/form/TQuerySelect";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {User} from "data-access/memo-api/groups";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
@@ -14,6 +15,7 @@ import {useColumnsByPrefixUtil} from "../ui/Table/tquery_filters/fuzzy_filter";
 
 export function useModelQuerySpecs() {
   const userStatus = createQuery(User.statusQueryOptions);
+  const featureFilterPrefix = featureUseTrackers.fuzzyGlobalFilterColumnPrefix();
   const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const permissions = () => userStatus.data?.permissions;
   return {
@@ -51,6 +53,7 @@ export function useModelQuerySpecs() {
         columnsByPrefix: columnsByPrefixUtil.fromColumnPrefixes(
           ["staff", "generic"].map((n) => `tables.tables.${n}.column_prefixes`),
         ),
+        onColumnPrefixFilterUsed: (prefix) => featureFilterPrefix.justUsed({comp: "select", model: "staff", prefix}),
         itemFunc: (row, defItem) => ({
           ...defItem,
           label: () => <UserLink type="staff" userId={row.get("id")} name={row.get("name")} link={false} />,
@@ -71,6 +74,7 @@ export function useModelQuerySpecs() {
           columnsByPrefix: columnsByPrefixUtil.fromColumnPrefixes(
             ["client", "generic"].map((n) => `tables.tables.${n}.column_prefixes`),
           ),
+          onColumnPrefixFilterUsed: (prefix) => featureFilterPrefix.justUsed({comp: "select", model: "client", prefix}),
           itemFunc: (row, defItem) => {
             const Link: VoidComponent = () => (
               <UserLink type="clients" userId={row.get("id")} name={row.get("name")} link={false} />

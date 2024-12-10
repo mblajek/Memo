@@ -1,7 +1,10 @@
+import {Button} from "components/ui/Button";
+import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
-import {Show, createComputed} from "solid-js";
+import {Show, createComputed, createMemo} from "solid-js";
 import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
@@ -23,6 +26,7 @@ type IntRangeFilter =
  */
 export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
   const t = useLangFunc();
+  const featureRangeSync = featureUseTrackers.filterRangeSync();
   const filterFieldNames = useFilterFieldNames();
   const {
     lower: [lower, setLower],
@@ -33,12 +37,17 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
     initial: {lower: "", upper: ""},
     filter: () => props.filter,
   });
-  createComputed(() => {
+  const getInputsData = createMemo(() => {
     const l = lower() ? Number(lower()) : undefined;
     const u = upper() ? Number(upper()) : undefined;
+    return {l, u, conflict: l !== undefined && u !== undefined && l > u};
+  });
+  createComputed(() => {
+    const {l, u, conflict} = getInputsData();
+    if (conflict) {
+      return;
+    }
     if (l !== undefined && u !== undefined && l > u) {
-      // Clear the upper range and let the computation run again.
-      setUpper("");
       return;
     }
     if (l === undefined && u === undefined) {
@@ -71,7 +80,7 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
     });
   });
   const canSyncRange = () => true;
-  const syncActive = () => lower() || upper();
+  const syncPossible = () => (lower() || upper()) && lower() !== upper();
   return (
     <div
       class={cx(s.filter, "grid gap-0.5 items-baseline")}
@@ -79,38 +88,47 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
     >
       <div>{t("range.min")}</div>
       <Show when={canSyncRange()}>
-        <div
-          class={s.valuesSyncer}
-          classList={{[s.inactive!]: !syncActive()}}
-          use:title={syncActive() ? t("tables.filter.click_to_sync_number_range") : undefined}
+        <Button
+          class={cx(s.valuesSyncer, syncPossible() ? undefined : s.inactive)}
+          title={syncPossible() ? t("tables.filter.click_to_sync_number_range") : undefined}
           onClick={() => {
             if (lower()) {
               setUpper(lower());
+              featureRangeSync.justUsed({t: "int"});
             } else if (upper()) {
               setLower(upper());
+              featureRangeSync.justUsed({t: "int"});
             }
           }}
         />
       </Show>
       <div class={s.wideEdit}>
-        <input
+        <TextInput
           name={filterFieldNames.get(`from_${props.schema.name}`)}
           type="number"
-          class="w-full min-h-small-input border border-input-border rounded"
-          max={upper()}
+          class="w-full min-h-small-input"
+          max={getInputsData().conflict ? undefined : upper()}
           value={lower()}
-          onInput={({target: {value}}) => setLower(value)}
+          onInput={({target: {value, validity}}) => {
+            if (!validity.badInput) {
+              setLower(value);
+            }
+          }}
         />
       </div>
       <div>{t("range.max")}</div>
       <div class={s.wideEdit}>
-        <input
+        <TextInput
           name={filterFieldNames.get(`to_${props.schema.name}`)}
           type="number"
-          class="w-full min-h-small-input border border-input-border rounded"
+          class="w-full min-h-small-input"
           min={lower()}
           value={upper()}
-          onInput={({target: {value}}) => setUpper(value)}
+          onInput={({target: {value, validity}}) => {
+            if (!validity.badInput) {
+              setUpper(value);
+            }
+          }}
         />
       </div>
     </div>

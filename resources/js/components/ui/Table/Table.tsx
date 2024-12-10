@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {currentTimeSecond, cx, delayedAccessor, useLangFunc} from "components/utils";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {NonBlocking} from "components/utils/NonBlocking";
 import {TOptions} from "i18next";
 import {
@@ -199,6 +200,7 @@ const DEFAULT_PROPS = {
  */
 export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
   const props = mergeProps(DEFAULT_PROPS, allProps);
+  const featureHeadersScroll = featureUseTrackers.tableHorizontalScrollByHeaderHover();
   let scrollToTopElement: HTMLDivElement | undefined;
   createEffect(
     on(
@@ -246,6 +248,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
           // Use a tolerance when comparing. Some devices count position with fractional pixels.
           if (desiredX !== undefined && Math.abs(desiredX - scrWrapper.scrollLeft) >= 2) {
             scrWrapper.scrollTo({left: desiredX, behavior: "smooth"});
+            featureHeadersScroll.justUsed();
           } else {
             setDesiredScrollX(undefined);
           }

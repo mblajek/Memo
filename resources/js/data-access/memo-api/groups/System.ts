@@ -9,7 +9,6 @@ import {parseGetResponse, parseListResponse} from "../utils";
 import {Facilities} from "./shared";
 
 /**
- * @see {@link https://test-memo.fdds.pl/api/documentation#/System production docs}
  * @see {@link http://localhost:9081/api/documentation#/System local docs}
  */
 export namespace System {
@@ -62,8 +61,17 @@ export namespace System {
 
   export interface LogRequest {
     readonly logLevel: LogLevel;
+    readonly source: LogAPIFrontendSource;
     readonly message: string;
     readonly context?: string;
+  }
+
+  /** The log source values allowed by the backend. */
+  export enum LogAPIFrontendSource {
+    // Uncaught JavaScript exception.
+    JS_ERROR = "api_fe_js_error",
+    // Information about a user making use of a tracked feature (UI analytics).
+    FEATURE_USE = "api_fe_feature_use",
   }
 
   export type LogLevel = "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";

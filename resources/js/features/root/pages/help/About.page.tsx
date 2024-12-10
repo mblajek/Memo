@@ -3,6 +3,8 @@ import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {currentTimeSecond, DATE_TIME_FORMAT, SilentAccessBarrier, useLangFunc} from "components/utils";
+import {toggleDEV} from "components/utils/dev_mode";
+import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
@@ -13,6 +15,7 @@ const GITHUB_LINK = "https://github.com/mblajek/Memo";
 export default (() => {
   const t = useLangFunc();
   const systemStatusMonitor = useSystemStatusMonitor();
+  const developerPermission = useDeveloperPermission();
   return (
     <div class="p-2">
       <h1 class="text-2xl font-bold mb-4">
@@ -73,7 +76,29 @@ export default (() => {
                     }}
                   </Show>
                 </div>
-                <label class="font-semibold">{t("about_page.cpu_load")}</label>
+                <label
+                  class="font-semibold"
+                  onPointerDown={(e) => {
+                    const sel = document.getSelection();
+                    if (
+                      sel &&
+                      !sel.isCollapsed &&
+                      e.currentTarget.contains(sel.anchorNode) &&
+                      e.currentTarget.contains(sel.focusNode)
+                    ) {
+                      const range = [sel.anchorOffset, sel.focusOffset].sort((a, b) => a - b).join("..");
+                      if (range === "1..2") {
+                        toggleDEV();
+                        sel.empty();
+                      } else if (range === "2..3") {
+                        developerPermission.enable(!developerPermission.enabled());
+                        sel.empty();
+                      }
+                    }
+                  }}
+                >
+                  {t("about_page.cpu_load")}
+                </label>
                 <div>{status().cpu15m.toFixed(2)}</div>
               </SilentAccessBarrier>
             </div>

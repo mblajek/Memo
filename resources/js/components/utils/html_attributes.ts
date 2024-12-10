@@ -30,6 +30,8 @@ import {skipUndefinedValues} from "./object_util";
 export namespace htmlAttributes {
   export type div = JSX.HTMLElementTags["div"];
   export type span = JSX.HTMLElementTags["span"];
+  export type ul = JSX.HTMLElementTags["ul"];
+  export type li = JSX.HTMLElementTags["li"];
 
   export type button = JSX.HTMLElementTags["button"];
 
@@ -52,6 +54,8 @@ export namespace htmlAttributes {
     "onMouseMove",
     "onMouseDown",
     "onMouseUp",
+    "onKeyDown",
+    "onKeyUp",
   ] satisfies (keyof div)[];
   type EventType = (typeof EVENT_HANDLERS)[number];
 

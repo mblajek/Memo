@@ -3,7 +3,6 @@ import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {Capitalize, capitalizeString} from "components/ui/Capitalize";
-import {InfoIcon} from "components/ui/InfoIcon";
 import {Modal} from "components/ui/Modal";
 import {PopOver} from "components/ui/PopOver";
 import {ProgressBar} from "components/ui/ProgressBar";
@@ -18,6 +17,7 @@ import {toastError, toastSuccess} from "components/utils/toast";
 import {DateTime} from "luxon";
 import {AiOutlineFileExcel} from "solid-icons/ai";
 import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {useDocsModalInfoIcon} from "../docs_modal";
 import {CellsPreviewMode} from "./TQueryTable";
 import {useTable} from "./TableContext";
 import {useTableTextExportCells} from "./table_export_cells";
@@ -57,6 +57,7 @@ export const TableExportButton: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
   const tableExportCells = useTableTextExportCells();
+  const {DocsModalInfoIcon} = useDocsModalInfoIcon();
 
   function createCSVExportFormat(
     id: string,
@@ -216,7 +217,7 @@ export const TableExportButton: VoidComponent = () => {
                   small
                 />
                 <div class="px-1">
-                  <InfoIcon href="/help/table-export" />
+                  <DocsModalInfoIcon href="/help/table-export" onClick={popOver.close} />
                 </div>
               </div>
               <SimpleMenu>

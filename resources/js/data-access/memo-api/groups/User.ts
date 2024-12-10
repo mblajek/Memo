@@ -9,7 +9,6 @@ import {parseGetResponse} from "../utils";
 import {Users} from "./shared";
 
 /**
- * @see {@link https://test-memo.fdds.pl/api/documentation#/User production docs}
  * @see {@link http://localhost:9081/api/documentation#/User local docs}
  */
 export namespace User {

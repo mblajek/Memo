@@ -1,3 +1,5 @@
+import "init_luxon";
+
 import {DateTime, Settings} from "luxon";
 import {createSignal} from "solid-js";
 import {timeZone} from "time_zone_controller";
