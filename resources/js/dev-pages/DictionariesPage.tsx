@@ -1,6 +1,7 @@
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {AccessorKeyColumnDefBase, ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
+import {CheckboxInput} from "components/ui/CheckboxInput";
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
@@ -15,10 +16,10 @@ import {
 import {QueryBarrier} from "components/utils";
 import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
-import {Show, VoidComponent, createMemo} from "solid-js";
+import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
 import {MemoTitle} from "../features/root/MemoTitle";
-import {useAttrValueFormatter} from "./util";
+import {filterByFacility, useAttrValueFormatter} from "./util";
 
 export default (() => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -27,6 +28,7 @@ export default (() => {
   }
   const dictionaries = useAllDictionaries();
   const attributes = useAllAttributes();
+  const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
   const attrValueFormatter = useAttrValueFormatter();
   const tableCells = useTableCells();
   const h = createColumnHelper<Dictionary>();
@@ -78,7 +80,7 @@ export default (() => {
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
       }),
       get data() {
-        return [...(dictionaries() || [])];
+        return filterByFacility(dictionaries(), onlyActiveFacility());
       },
       columns: [
         ...getCommonColumns(h),
@@ -108,7 +110,7 @@ export default (() => {
                 },
                 defaultColumn: AUTO_SIZE_COLUMN_DEFS,
               }),
-              data: positions,
+              data: filterByFacility(positions, onlyActiveFacility()),
               columns: [
                 h.accessor((p) => p.resource.defaultOrder, {
                   id: "Order",
@@ -165,7 +167,17 @@ export default (() => {
       <MemoTitle title="Dictionaries" />
       <div class="contents text-sm">
         <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
-          <Table table={table()} mode="standalone" />
+          <Table
+            table={table()}
+            mode="standalone"
+            aboveTable={() => (
+              <CheckboxInput
+                checked={onlyActiveFacility()}
+                onChecked={setOnlyActiveFacility}
+                label="Only active facility"
+              />
+            )}
+          />
         </Show>
       </div>
     </QueryBarrier>

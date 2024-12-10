@@ -1,6 +1,7 @@
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
+import {CheckboxInput} from "components/ui/CheckboxInput";
 import {BigSpinner} from "components/ui/Spinner";
 import {
   AUTO_SIZE_COLUMN_DEFS,
@@ -16,12 +17,12 @@ import {QueryBarrier} from "components/utils";
 import {Attribute} from "data-access/memo-api/attributes";
 import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
-import {Setter, Show, VoidComponent, createMemo} from "solid-js";
+import {Setter, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {Select} from "../components/ui/form/Select";
 import {EmptyValueSymbol} from "../components/ui/symbols";
 import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
 import {MemoTitle} from "../features/root/MemoTitle";
-import {useAttrValueFormatter} from "./util";
+import {filterByFacility, useAttrValueFormatter} from "./util";
 
 export default (() => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -29,9 +30,8 @@ export default (() => {
     return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
   }
   const attributes = useAllAttributes();
-
   const models = createMemo(() => [...new Set(Array.from(attributes() || [], (a) => a.model))].sort());
-
+  const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
   const attrValueFormatter = useAttrValueFormatter();
   const tableCells = useTableCells();
   const h = createColumnHelper<Attribute>();
@@ -59,7 +59,7 @@ export default (() => {
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
       }),
       get data() {
-        return [...(attributes() || [])];
+        return filterByFacility(attributes(), onlyActiveFacility());
       },
       columns: [
         h.accessor((p) => p.resource.defaultOrder, {
@@ -157,7 +157,17 @@ export default (() => {
       <MemoTitle title="Attributes" />
       <div class="contents text-sm">
         <Show when={attributes()} fallback={<BigSpinner />}>
-          <Table table={table()} mode="standalone" />
+          <Table
+            table={table()}
+            mode="standalone"
+            aboveTable={() => (
+              <CheckboxInput
+                checked={onlyActiveFacility()}
+                onChecked={setOnlyActiveFacility}
+                label="Only active facility"
+              />
+            )}
+          />
         </Show>
       </div>
     </QueryBarrier>
