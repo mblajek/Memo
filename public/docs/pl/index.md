@@ -34,3 +34,5 @@
 - [Mikołaj Błajek](https://github.com/mblajek) — główny programista backendu
 - [Tomasz Błajek](https://github.com/TPReal) — główny programista frontendu
 - [Pozostali programiści](https://github.com/mblajek/Memo/graphs/contributors?type=a)
+
+[Polityka prywatności](privacy-policy)
