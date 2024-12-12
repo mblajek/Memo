@@ -5,7 +5,8 @@ export const TextInput: VoidComponent<htmlAttributes.input> = (props) => (
   <input
     type="text"
     {...htmlAttributes.merge(props, {
-      class: "border border-input-border rounded aria-invalid:border-red-400 disabled:bg-disabled",
+      class:
+        "min-w-4 border border-input-border rounded invalid:border-red-400 aria-invalid:border-red-400 disabled:bg-disabled",
     })}
   />
 );

@@ -1,4 +1,5 @@
 import {QueryKey} from "@tanstack/solid-query";
+import {FuzzyGlobalFilterConfig} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {NON_NULLABLE, useLangFunc} from "components/utils";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {createSelectRequestCreator} from "data-access/memo-api/tquery/select";
@@ -69,7 +70,8 @@ export interface TQueryConfig {
   /** See tquery DataRequest.distinct. */
   readonly distinct?: boolean;
   /** Column prefixes for filtering. */
-  readonly columnsByPrefix?: ReadonlyMap<string, ColumnName>;
+  readonly columnsByPrefix?: FuzzyGlobalFilterConfig["columnsByPrefix"];
+  readonly onColumnPrefixFilterUsed?: FuzzyGlobalFilterConfig["onColumnPrefixFilterUsed"];
   /**
    * A function creating the items. It can make use of the default item properties provided.
    * The default includes the value (taken from the value column) and the text (from the label columns).
@@ -117,6 +119,7 @@ function makeQuery(
     limit = DEFAULT_LIMIT,
     distinct,
     columnsByPrefix,
+    onColumnPrefixFilterUsed,
     itemFunc,
   }: TQueryConfig,
   {initialExtraFilter}: {initialExtraFilter?: FilterH} = {},
@@ -132,6 +135,7 @@ function makeQuery(
     limit,
     distinct,
     columnsByPrefix,
+    onColumnPrefixFilterUsed,
   });
   const {
     dataQuery,

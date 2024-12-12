@@ -9,7 +9,7 @@ export default (() => {
       staticCalendarFunction="timeTables"
       staticSelectionPersistenceKey={`facility.${activeFacilityId()}.calendar`}
       staticPresentationPersistenceKey="timeTables.calendar.presentation"
-      pageInfo={{href: "/help/staff-time-tables#calendar", shortDocsHref: "/help/staff-time-tables-calendar.part"}}
+      pageInfo={{href: "/help/staff-time-tables-calendar.part", fullPageHref: "/help/staff-time-tables#calendar"}}
     />
   );
 }) satisfies VoidComponent;

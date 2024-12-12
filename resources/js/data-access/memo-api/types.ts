@@ -72,5 +72,5 @@ export type JSONValue<ExtraTypes = never> =
   | boolean
   | null
   | readonly JSONValue<ExtraTypes>[]
-  | Readonly<{readonly [key: string]: JSONValue<ExtraTypes>}>
+  | Readonly<{[key: string]: JSONValue<ExtraTypes>}>
   | ExtraTypes;

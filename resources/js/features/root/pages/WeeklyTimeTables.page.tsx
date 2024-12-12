@@ -7,12 +7,12 @@ import {useHolidays} from "components/ui/calendar/holidays";
 import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {capitalizeString} from "components/ui/Capitalize";
 import {CheckboxInput} from "components/ui/CheckboxInput";
+import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
-import {PageInfoIcon} from "components/ui/PageInfoIcon";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {EmptyValueSymbol, EN_DASH} from "components/ui/symbols";
@@ -747,9 +747,9 @@ export default (() => {
               />
             </Button>
             <div class="flex items-center">
-              <PageInfoIcon
-                href="/help/staff-time-tables#weekly"
-                shortDocsHref="/help/staff-time-tables-weekly.part"
+              <DocsModalInfoIcon
+                href="/help/staff-time-tables-weekly.part"
+                fullPageHref="/help/staff-time-tables#weekly"
                 title={t("facility_user.weekly_time_tables.more_info")}
               />
             </div>

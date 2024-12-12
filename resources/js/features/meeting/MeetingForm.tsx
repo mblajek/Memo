@@ -224,8 +224,8 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
           edit={
             <FelteSubmit
               cancel={() => {
-                form.reset();
                 props.onCancel?.();
+                form.reset();
               }}
             />
           }

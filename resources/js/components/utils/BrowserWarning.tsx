@@ -1,8 +1,7 @@
-import {Help} from "features/root/pages/help/Help";
-import {resolveMdFromAppPath} from "features/root/pages/help/markdown_resolver";
-import {createSignal, VoidComponent} from "solid-js";
+import {Show, VoidComponent} from "solid-js";
 import {Button} from "../ui/Button";
-import {Modal, MODAL_STYLE_PRESETS} from "../ui/Modal";
+import {InfoIcon} from "../ui/InfoIcon";
+import {createDocsModal} from "../ui/docs_modal";
 import {useLangFunc} from "./lang";
 
 // Be sure to keep in sync with supported-browsers.md
@@ -16,9 +15,10 @@ const REPORTED_BROWSERS_IN_USER_AGENT_STRING = ["Chrome", "Edg" /* sic! */, "Fir
 export const BrowserWarning: VoidComponent = () => {
   const t = useLangFunc();
   let status: "unsupported" | "outdated" | "supported_up_to_date" = "unsupported";
-  let browser: {browser: string; version?: number};
+  let browser: {browser: string; version?: number} | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const {userAgentData} = navigator as any;
+  const docsModal = createDocsModal();
   if (userAgentData?.brands) {
     const brandsMap = new Map<string, number | undefined>();
     for (const {brand, version: versionStr} of userAgentData.brands as {brand: string; version: string}[]) {
@@ -49,38 +49,21 @@ export const BrowserWarning: VoidComponent = () => {
           ? "outdated"
           : "unsupported";
       browser = {browser: reportedBrowser, version};
-    } else {
-      browser = {browser: "unknown"};
     }
   }
   if (status === "supported_up_to_date") {
     // eslint-disable-next-line solid/components-return-once
     return undefined;
   }
-  const [browserSupportInfo, setBrowserSupportInfo] = createSignal(false);
   return (
-    <>
-      <div class="flex flex-col gap-2">
-        <div class="text-red-600 font-semibold">{t(`browsers.${status}`)}</div>
-        <div class="">{t("browsers.your_browser", browser)}</div>
-        <Button class="linkLike" onClick={[setBrowserSupportInfo, true]}>
-          {t("browsers.supported_browsers_info")}
-        </Button>
-      </div>
-      <Modal
-        open={browserSupportInfo()}
-        style={MODAL_STYLE_PRESETS.docs}
-        closeOn={["escapeKey", "closeButton", "clickOutside"]}
-        onClose={() => setBrowserSupportInfo(false)}
-        canDrag={false}
-      >
-        <div class="flex flex-col gap-1">
-          <Help mdPath={resolveMdFromAppPath("/help/supported-browsers")} />
-          <Button class="primary" onClick={() => setBrowserSupportInfo(false)}>
-            {t("actions.ok")}
-          </Button>
-        </div>
-      </Modal>
-    </>
+    <div class="flex flex-col gap-2">
+      <div class="text-red-600 font-semibold">{t(`browsers.${status}`)}</div>
+      <Show when={browser}>
+        <div>{t("browsers.your_browser", browser)}</div>
+      </Show>
+      <Button class="linkLike" onClick={() => docsModal.show({href: "/help/supported-browsers", fullPageHref: false})}>
+        {t("browsers.supported_browsers_info")} <InfoIcon title="" />
+      </Button>
+    </div>
   );
 };

@@ -6,8 +6,8 @@ import {createHistoryPersistence} from "components/persistence/history_persisten
 import {DeleteButton, EditButton} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
-import {InfoIcon} from "components/ui/InfoIcon";
 import {BigSpinner} from "components/ui/Spinner";
+import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {ATTRIBUTES_SCHEMA} from "components/ui/form/AttributeFields";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
@@ -142,8 +142,8 @@ export default (() => {
                         });
                         async function formCancel() {
                           if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
-                            form.reset();
                             setEditMode(false);
+                            form.reset();
                           }
                         }
                         return (
@@ -210,7 +210,10 @@ export default (() => {
                                 label: () => (
                                   <span>
                                     {t("facility_user.meetings_lists.meetings_for.client_group")}{" "}
-                                    <InfoIcon href="/help/meeting-client-groups" />
+                                    <DocsModalInfoIcon
+                                      href="/help/meeting-client-groups"
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
                                   </span>
                                 ),
                               },

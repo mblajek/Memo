@@ -9,7 +9,7 @@ type _Directives = typeof title;
 interface Props extends AnchorProps {
   /** Whether the content should be a link to open in the same tab. Default: true. */
   readonly sameTabLink?: boolean;
-  /** Whether the link icon to open in the new tab should be displayed. Default: same as sameTabLink. */
+  /** Whether the link icon to open in the new tab should be displayed. Default: same as sameTabLink, or false if target is _blank. */
   readonly newTabLink?: boolean;
   readonly newTabLinkTitle?: string;
   readonly newTabLinkProps?: Partial<AnchorProps>;
@@ -38,7 +38,7 @@ export const LinkWithNewTabLink: ParentComponent<Props> = (allProps) => {
       <Show when={isOnThisPage() || props.sameTabLink === false} fallback={<A {...anchorProps}>{props.children}</A>}>
         {props.children}
       </Show>
-      <Show when={(props.newTabLink ?? props.sameTabLink) !== false}>
+      <Show when={anchorProps.target !== "_blank" && (props.newTabLink ?? props.sameTabLink) !== false}>
         {" "}
         <span use:title={props.newTabLinkTitle || t("open_in_new_tab")}>
           <A {...newTabAnchorProps} target="_blank">

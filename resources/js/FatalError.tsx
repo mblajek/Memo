@@ -64,7 +64,12 @@ export const FatalError: VoidComponent<Props> = (props) => {
       reloadIfNotRepetitive();
       return;
     }
-    logMutation.mutate({logLevel: "critical", message: head, context: full.slice(0, MAX_CONTEXT_LENGTH).trimEnd()});
+    logMutation.mutate({
+      logLevel: "critical",
+      source: System.LogAPIFrontendSource.JS_ERROR,
+      message: head,
+      context: full.slice(0, MAX_CONTEXT_LENGTH).trimEnd(),
+    });
   });
   return (
     <>

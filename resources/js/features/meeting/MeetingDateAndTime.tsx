@@ -13,6 +13,7 @@ import {
   dayMinuteToTimeInput,
   timeInputToDayMinute,
 } from "components/utils/day_minute_util";
+import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on, onMount} from "solid-js";
@@ -47,6 +48,7 @@ const HIDEABLE_SECTIONS_TRANSITION_TIME_MS = 50;
 export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const form = useMeetingTimeForm();
+  const featureKeyUpDown = featureUseTrackers.dateTimeInputKeyUpDown();
   // eslint-disable-next-line solid/reactivity
   const [isForceEditable, setForceEditable] = createSignal(props.forceEditable || false);
   const {
@@ -130,6 +132,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
               }
             }
           });
+          featureKeyUpDown.justUsed({type: "time"});
         }
       }}
     />

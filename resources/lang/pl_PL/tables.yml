@@ -183,6 +183,7 @@ filter:
   column_filters_set: "Aktywne filtry w kolumnach:"
   click_to_clear: "Kliknij aby wyczyścić"
   click_to_sync_date_range: "Kliknij aby ustawić jednodniowy zakres"
+  click_to_set_month_date_range: "Kliknij aby ustawić miesięczny zakres"
   click_to_sync_number_range: "Kliknij aby ustawić max = min"
   non_null_value: "niepuste"
   null_value: "puste"
@@ -192,16 +193,16 @@ filter:
   set_operation:
     has_all:
       short: "oraz"
-      explanation: "Znajdź wiersze, które mają wszystkie wybrane wartości"
+      explanation: "Znajdź wiersze, które mają wszystkie wskazane wartości jednocześnie"
     has_any:
       short: "lub"
-      explanation: "Znajdź wiersze, które mają którąkolwiek z wybranych wartości"
+      explanation: "Znajdź wiersze, które mają którąkolwiek ze wskazanych wartości"
     has_only:
       short: "tylko"
-      explanation: "Znajdź wiersze, które mają co najwyżej wybrane wartości (niekoniecznie wszystkie), i żadnej niewybranej"
+      explanation: "Znajdź wiersze, które mają co najwyżej wskazane wartości (niekoniecznie wszystkie), i żadnej innej"
     =:
       short: "dokł."
-      explanation: "Znajdź wiersze, które mają dokładnie wybrane wartości (nie więcej, nie mniej)"
+      explanation: "Znajdź wiersze, które mają dokładnie wskazane wartości (nie więcej, nie mniej)"
   textual:
     fuzzy: "dopasowanie"
     eq: "równe"

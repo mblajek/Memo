@@ -57,7 +57,7 @@ export default (() => {
       ]}
       columnGroups={{overrides: {meeting_multicolumn: false}}}
       initialSort={[{id: "date", desc: true}]}
-      pageInfo={{href: "/help/reports#meetings", shortDocsHref: "/help/reports-meetings.part"}}
+      pageInfo={{href: "/help/reports-meetings.part", fullPageHref: "/help/reports#meetings"}}
     />
   );
 }) satisfies VoidComponent;
