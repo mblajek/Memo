@@ -18,6 +18,7 @@ import {FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
+import {TbFilter, TbFilterOff, TbPassword} from "solid-icons/tb";
 import {htmlAttributes} from "../utils";
 
 namespace customIcons {
@@ -85,6 +86,11 @@ export namespace actionIcons {
   export const Paste = BiRegularPaste;
   export const Reset = CgUndo;
   export const Notify = FaRegularBell;
+  export const Filter: IconTypes = (props) => <TbFilter {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
+  export const FilterOff: IconTypes = (props) => (
+    <TbFilterOff {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
+  );
+  export const ThreeDots = TbPassword;
 }
 
 export namespace calendarIcons {

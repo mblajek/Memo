@@ -68,7 +68,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             <SearchInput
               ref={searchInput}
               divClass="flex-grow"
-              class="px-1 outline-none"
+              class="outline-none"
               value={search()}
               onValueChange={setSearch}
               placeholder={t("tables.columns_search.placeholder")}

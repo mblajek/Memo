@@ -1,6 +1,7 @@
 import {useNavigate} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
+import {actionIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {MemoLoader} from "components/ui/MemoLoader";
 import {PopOver} from "components/ui/PopOver";
@@ -16,7 +17,6 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
-import {TbPassword} from "solid-icons/tb";
 import {TiWarningOutline} from "solid-icons/ti";
 import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, on} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
@@ -125,7 +125,7 @@ export const UserInfo: VoidComponent = () => {
             <PopOver
               trigger={(popOver) => (
                 <Button title={t("user_settings")} onClick={popOver.open}>
-                  <TbPassword class="text-current" />
+                  <actionIcons.ThreeDots class="text-current" />
                   <Show when={passwordExpiration()}>
                     <WarningMark />
                   </Show>

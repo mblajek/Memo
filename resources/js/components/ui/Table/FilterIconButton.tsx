@@ -1,5 +1,5 @@
+import {actionIcons} from "components/ui/icons";
 import {cx, useLangFunc} from "components/utils";
-import {TbFilter, TbFilterOff} from "solid-icons/tb";
 import {JSX, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
@@ -29,7 +29,7 @@ export const FilterIconButton: VoidComponent<Props> = (props) => {
       onClick={() => props.onClear?.()}
     >
       <Dynamic
-        component={props.isFiltering && !hover() ? TbFilter : TbFilterOff}
+        component={props.isFiltering && !hover() ? actionIcons.Filter : actionIcons.FilterOff}
         class={cx({dimmed: !props.isFiltering})}
       />
     </Button>
