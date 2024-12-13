@@ -2,26 +2,22 @@ import {useLocation} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
-import {EM_DASH} from "components/ui/symbols";
 import {QueryBarrier, SimpleErrors, useLangFunc} from "components/utils";
-import {MemoTitle} from "features/root/MemoTitle";
-import {Show, VoidComponent, createSignal, onMount} from "solid-js";
+import {JSX, Show, VoidComponent, onMount} from "solid-js";
 import {resolvePath} from "./markdown_resolver";
 
 interface Props {
-  readonly title?: string;
   readonly currentPath?: string;
   readonly mdPath: string;
   /** Whether the help is included in another document. This causes the component not to set padding etc. Default: false */
   readonly inlined?: boolean;
   readonly offerNewTabLinks?: boolean;
+  /** Callback providing the content of the h1 element. By default, a regular `<h1>` element is rendered. */
+  readonly onH1?: (h1Props: JSX.IntrinsicElements["h1"], def: () => JSX.Element) => JSX.Element;
 }
 
 /**
  * A component displaying a help page, loaded from the mdPath as markdown.
- *
- * If props.title is specified, this component sets the page title to props.title,
- * prepended with the `# Title` from the markdown.
  *
  * The component rewrites image sources to be relative to the mdPath.
  */
@@ -73,17 +69,9 @@ export const Help: VoidComponent<Props> = (props) => {
           linksRelativeTo={props.currentPath || location.pathname}
           offerNewTabLinks={props.offerNewTabLinks}
           components={{
-            // Set the page title based on the # header.
             h1: (h1Props) => {
-              const [h1Title, setH1Title] = createSignal<string>();
-              return (
-                <>
-                  <Show when={props.title && h1Title()}>
-                    <MemoTitle title={`${h1Title()} ${EM_DASH} ${props.title}`} />
-                  </Show>
-                  <h1 ref={(h1) => onMount(() => setH1Title(h1.textContent || undefined))} {...h1Props} />
-                </>
-              );
+              const def = () => <h1 {...h1Props} />;
+              return props.onH1 ? props.onH1(h1Props, def) : def();
             },
             img: (imgProps) => {
               return (
