@@ -1,3 +1,4 @@
+import {htmlAttributes} from "components/utils";
 import {Accessor, createEffect, createSignal, on, onCleanup} from "solid-js";
 import "tippy.js/animations/shift-toward-subtle.css";
 import "tippy.js/dist/border.css";
@@ -68,10 +69,8 @@ export function hoverSignal(element: HTMLElement, accessor: Accessor<HoverSignal
  */
 export function hoverEvents(signal: HoverSignalInput) {
   const setHover = getSetterFunc(signal);
-  return setHover
-    ? {
-        onPointerEnter: () => setHover(true),
-        onPointerLeave: () => setHover(false),
-      }
-    : undefined;
+  return {
+    onPointerEnter: () => setHover?.(true),
+    onPointerLeave: () => setHover?.(false),
+  } satisfies htmlAttributes.div;
 }

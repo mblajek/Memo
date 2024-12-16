@@ -125,7 +125,7 @@ export const UserInfo: VoidComponent = () => {
             <PopOver
               trigger={(popOver) => (
                 <Button title={t("user_settings")} onClick={popOver.open}>
-                  <actionIcons.ThreeDots class="text-current" />
+                  <actionIcons.ThreeDots class="text-current inlineIcon" />
                   <Show when={passwordExpiration()}>
                     <WarningMark />
                   </Show>
