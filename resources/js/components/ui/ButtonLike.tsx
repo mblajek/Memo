@@ -1,5 +1,5 @@
 import {ParentComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
+import {cx, htmlAttributes} from "../utils";
 import {ButtonProps} from "./Button";
 import {mergeTitleDirectiveProps, title} from "./title";
 
@@ -25,15 +25,16 @@ interface Props extends Omit<htmlAttributes.div, "title"> {
 export const ButtonLike: ParentComponent<Props> = (props) => {
   return (
     <div
-      {...htmlAttributes.merge(props, {
-        class: "inline-block",
-        onKeyDown: (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            e.currentTarget.click();
-          }
-        },
-      })}
+      // TODO: Use htmlAttributes.merge, but fix it so that handlers are attached consistently.
+      // This is a temporary solution.
+      {...props}
+      class={cx(props.class, "inline-block")}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.currentTarget.click();
+        }
+      }}
       title=""
       role="button"
       tabindex="0"
