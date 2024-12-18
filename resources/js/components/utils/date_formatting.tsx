@@ -1,5 +1,6 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {DateTime, WeekdayNumbers} from "luxon";
-import {For, Show, Signal, VoidComponent, createSignal, onMount} from "solid-js";
+import {For, Show, Signal, VoidComponent, createSignal, onMount, splitProps} from "solid-js";
 import {LangFunc, useLangFunc} from "./lang";
 import {currentDate} from "./time";
 
@@ -30,7 +31,7 @@ export function formatDateTimeWithWeekday(t: LangFunc, dateTime: DateTime, forma
     .join("");
 }
 
-interface Props {
+interface Props extends htmlAttributes.span {
   readonly dateTime: DateTime;
   readonly format: Intl.DateTimeFormatOptions;
   /** Whether to display the weekday with constant width, which is useful for a column of dates. */
@@ -44,10 +45,11 @@ interface Props {
  * This component is useful mostly when the short weekday format is used, which is most likely to be
  * overridden in the translations. For other formats, `date.toLocaleString()` is usually sufficient.
  */
-export const FormattedDateTime: VoidComponent<Props> = (props) => {
+export const FormattedDateTime: VoidComponent<Props> = (allProps) => {
+  const [props, spanProps] = splitProps(allProps, ["dateTime", "format", "alignWeekday"]);
   const t = useLangFunc();
   return (
-    <span>
+    <span {...spanProps}>
       <For each={props.dateTime.toLocaleParts(props.format)}>
         {(part) => (
           <Show when={part.type === "weekday"} fallback={part.value}>

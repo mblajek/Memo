@@ -26,6 +26,8 @@ interface Props extends Partial<AnchorProps> {
   readonly link?: boolean;
   /** Whether to show the link for opening in a new tab. Default: same as link. */
   readonly newTabLink?: boolean;
+  /** Whether the user name can wrap. Default: true. */
+  readonly allowWrap?: boolean;
 }
 
 /**
@@ -41,6 +43,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     "showName",
     "link",
     "newTabLink",
+    "allowWrap",
     "userId",
     "name",
   ]);
@@ -103,7 +106,10 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
       >
         {typeIcon()}
         <Show when={props.showName ?? true}>
-          <span class={isInactive() ? "text-grey-text" : undefined} style={{"white-space": "initial"}}>
+          <span
+            class={isInactive() ? "text-grey-text" : undefined}
+            style={{"white-space": (props.allowWrap ?? true) ? "initial" : undefined}}
+          >
             <Switch>
               <Match when={activeFacility() && memberData()?.name}>
                 {(name) => (
