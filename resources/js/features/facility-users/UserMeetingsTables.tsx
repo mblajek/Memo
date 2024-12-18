@@ -6,6 +6,7 @@ import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {Tabs} from "components/ui/Tabs";
 import {EM_DASH} from "components/ui/symbols";
 import {DATE_FORMAT, useLangFunc} from "components/utils";
+import {Recreator} from "components/utils/Recreator";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
@@ -21,10 +22,14 @@ import {FacilityUserType, getFacilityUserTypeName} from "./user_types";
 interface Props {
   readonly userName: string;
   readonly userType: FacilityUserType;
+  /** Whether the tables should show attendances grouped by meeting, because they are attendances for multiple people. */
+  readonly clientGroupMeetings?: boolean;
   readonly intrinsicFilter: FilterH;
   readonly staticPersistenceKey?: string;
   readonly userMeetingsStats?: UserMeetingsStats;
 }
+
+type TableType = "planned" | "completed" | "all";
 
 export const UserMeetingsTables: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -45,11 +50,18 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
       {type: "column", column: "startDayminute", desc},
     ] satisfies Sort;
   }
-  const tableTranslations = createTableTranslations(["meeting_single_attendant", "meeting_attendant", "meeting"]);
-  function exportConfig(tableType: "planned" | "completed" | "all"): TableExportConfig {
+  const tableTranslations = () =>
+    createTableTranslations([
+      props.clientGroupMeetings ? "meeting_multiple_attendants" : "meeting_single_attendant",
+      "meeting_attendant",
+      "meeting",
+    ]);
+  function exportConfig(tableType: TableType): TableExportConfig {
     const baseName =
-      tableType === "all" ? tableTranslations.tableName() : t(`facility_user.meetings_lists.${tableType}`);
-    const userName = `${props.userName.replaceAll(" ", "_")}_(${getFacilityUserTypeName(t, props.userType)})`;
+      tableType === "all" ? tableTranslations().tableName() : t(`facility_user.meetings_lists.${tableType}`);
+    const userName = `${props.userName.replaceAll(" ", "_")}_(${
+      props.clientGroupMeetings ? t("models.client_group._name") : getFacilityUserTypeName(t, props.userType)
+    })`;
     return {
       tableName: `${baseName}__${userName}`,
     };
@@ -62,6 +74,11 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
       setActiveTab(state.activeTab);
     },
   });
+  function getPersistenceKey(tableType: TableType) {
+    return props.staticPersistenceKey
+      ? `${props.staticPersistenceKey}.${tableType}${props.clientGroupMeetings ? ".client_group" : ""}`
+      : undefined;
+  }
   return (
     <Show when={dictionaries()} fallback={<BigSpinner />}>
       <div class="flex flex-col">
@@ -97,75 +114,81 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
               contents: (active) => (
                 <ShowOnceShown when={active()}>
                   <div class="text-sm">
-                    <TQueryTable
-                      mode="embedded"
-                      staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                      staticEntityURL={entityURL()}
-                      staticTranslations={tableTranslations}
-                      staticPersistenceKey={`${props.staticPersistenceKey}.planned`}
-                      staticTableId="planned"
-                      columns={[
-                        cols.meeting.id,
-                        cols.meeting.dateTimeActions,
-                        cols.meeting.get("time", {initialVisible: false}),
-                        cols.meeting.get("duration", {initialVisible: false}),
-                        cols.meeting.get("seriesInfo", {initialVisible: false}),
-                        cols.meeting.seriesType,
-                        cols.meeting.seriesNumber,
-                        cols.meeting.seriesCount,
-                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
-                        cols.meeting.category,
-                        cols.meeting.type,
-                        cols.meeting.statusTags,
-                        cols.attendant.get("attendanceStatus", {initialVisible: false}),
-                        cols.meeting.isFacilityWide,
-                        cols.meeting.attendants,
-                        cols.meeting.attendantsAttendance,
-                        cols.meeting.attendantsCount,
-                        cols.meeting.get("staff", {initialVisible: false}),
-                        cols.meeting.staffAttendance,
-                        cols.meeting.staffCount,
-                        cols.meeting.get("clients", {initialVisible: false}),
-                        cols.meeting.clientsAttendance,
-                        cols.meeting.clientsCount,
-                        cols.meeting.get("isRemote", {initialVisible: false}),
-                        cols.meeting.notes,
-                        cols.meeting.resources,
-                        cols.meeting.resourcesCount,
-                        cols.meeting.resourceConflictsExist,
-                        cols.meeting.resourceConflictsResources,
-                        ...getCreatedUpdatedColumns(),
-                      ]}
-                      columnGroups={{
-                        defaultInclude: false,
-                        overrides: {
-                          categoryDictId: true,
-                          typeDictId: true,
-                        },
-                      }}
-                      intrinsicFilter={{
-                        type: "op",
-                        op: "&",
-                        val: [
-                          intrinsicFilter(),
-                          {
-                            type: "column",
-                            column: "statusDictId",
-                            op: "=",
-                            val: meetingStatusDict()!.planned.id,
+                    <Recreator signal={[props.userType, props.clientGroupMeetings]}>
+                      <TQueryTable
+                        mode="embedded"
+                        staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
+                        staticEntityURL={entityURL()}
+                        staticTranslations={tableTranslations()}
+                        staticPersistenceKey={getPersistenceKey("planned")}
+                        staticTableId="planned"
+                        columns={[
+                          cols.meeting.id,
+                          cols.meeting.dateTimeActions,
+                          cols.meeting.get("time", {initialVisible: false}),
+                          cols.meeting.get("duration", {initialVisible: false}),
+                          cols.meeting.get("seriesInfo", {initialVisible: false}),
+                          cols.meeting.seriesType,
+                          cols.meeting.seriesNumber,
+                          cols.meeting.seriesCount,
+                          ...(props.userType === "clients"
+                            ? [cols.attendant.get("attendantClientGroup", {initialVisible: !props.clientGroupMeetings})]
+                            : []),
+                          cols.meeting.category,
+                          cols.meeting.type,
+                          cols.meeting.statusTags,
+                          cols.attendant.get("attendanceStatus", {initialVisible: false}),
+                          cols.meeting.isFacilityWide,
+                          cols.meeting.attendants,
+                          cols.meeting.attendantsAttendance,
+                          cols.meeting.attendantsCount,
+                          cols.meeting.get("staff", {initialVisible: false}),
+                          cols.meeting.staffAttendance,
+                          cols.meeting.staffCount,
+                          cols.meeting.get("clients", {initialVisible: false}),
+                          cols.meeting.clientsAttendance,
+                          cols.meeting.clientsCount,
+                          cols.meeting.get("isRemote", {initialVisible: false}),
+                          cols.meeting.notes,
+                          cols.meeting.resources,
+                          cols.meeting.resourcesCount,
+                          cols.meeting.resourceConflictsExist,
+                          cols.meeting.resourceConflictsResources,
+                          ...getCreatedUpdatedColumns(),
+                        ]}
+                        columnGroups={{
+                          defaultInclude: false,
+                          overrides: {
+                            categoryDictId: true,
+                            typeDictId: true,
+                            meeting_multicolumn: !!props.clientGroupMeetings,
                           },
-                          {
-                            type: "column",
-                            column: "attendant.attendanceStatusDictId",
-                            op: "in",
-                            val: presenceStatuses()!,
-                          },
-                        ],
-                      }}
-                      intrinsicSort={sortByDate({desc: false})}
-                      initialSort={[{id: "date", desc: false}]}
-                      staticExportConfig={exportConfig("planned")}
-                    />
+                        }}
+                        intrinsicFilter={{
+                          type: "op",
+                          op: "&",
+                          val: [
+                            intrinsicFilter(),
+                            {
+                              type: "column",
+                              column: "statusDictId",
+                              op: "=",
+                              val: meetingStatusDict()!.planned.id,
+                            },
+                            {
+                              type: "column",
+                              column: "attendant.attendanceStatusDictId",
+                              op: "in",
+                              val: presenceStatuses()!,
+                            },
+                          ],
+                        }}
+                        intrinsicSort={sortByDate({desc: false})}
+                        initialSort={[{id: "date", desc: false}]}
+                        initialColumnGroups={props.clientGroupMeetings ? ["meeting_multicolumn"] : undefined}
+                        staticExportConfig={exportConfig("planned")}
+                      />
+                    </Recreator>
                   </div>
                 </ShowOnceShown>
               ),
@@ -210,73 +233,79 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
               contents: (active) => (
                 <ShowOnceShown when={active()}>
                   <div class="text-sm">
-                    <TQueryTable
-                      mode="embedded"
-                      staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                      staticEntityURL={entityURL()}
-                      staticTranslations={tableTranslations}
-                      staticPersistenceKey={`${props.staticPersistenceKey}.completed`}
-                      staticTableId="completed"
-                      columns={[
-                        cols.meeting.id,
-                        cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
-                        cols.meeting.get("time", {initialVisible: false}),
-                        cols.meeting.get("duration", {initialVisible: false}),
-                        cols.meeting.get("seriesInfo", {initialVisible: false}),
-                        cols.meeting.seriesType,
-                        cols.meeting.seriesNumber,
-                        cols.meeting.seriesCount,
-                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
-                        cols.meeting.category,
-                        cols.meeting.type,
-                        cols.meeting.statusTags,
-                        cols.attendant.get("attendanceStatus", {initialVisible: false}),
-                        cols.meeting.isFacilityWide,
-                        cols.meeting.attendants,
-                        cols.meeting.attendantsAttendance,
-                        cols.meeting.attendantsCount,
-                        cols.meeting.get("staff", {initialVisible: false}),
-                        cols.meeting.staffAttendance,
-                        cols.meeting.staffCount,
-                        cols.meeting.get("clients", {initialVisible: false}),
-                        cols.meeting.clientsAttendance,
-                        cols.meeting.clientsCount,
-                        cols.meeting.get("isRemote", {initialVisible: false}),
-                        cols.meeting.notes,
-                        cols.meeting.resources,
-                        cols.meeting.resourcesCount,
-                        ...getCreatedUpdatedColumns(),
-                      ]}
-                      columnGroups={{
-                        defaultInclude: false,
-                        overrides: {
-                          categoryDictId: true,
-                          typeDictId: true,
-                        },
-                      }}
-                      intrinsicFilter={{
-                        type: "op",
-                        op: "&",
-                        val: [
-                          intrinsicFilter(),
-                          {
-                            type: "column",
-                            column: "statusDictId",
-                            op: "=",
-                            val: meetingStatusDict()!.completed.id,
+                    <Recreator signal={[props.userType, props.clientGroupMeetings]}>
+                      <TQueryTable
+                        mode="embedded"
+                        staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
+                        staticEntityURL={entityURL()}
+                        staticTranslations={tableTranslations()}
+                        staticPersistenceKey={getPersistenceKey("completed")}
+                        staticTableId="completed"
+                        columns={[
+                          cols.meeting.id,
+                          cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
+                          cols.meeting.get("time", {initialVisible: false}),
+                          cols.meeting.get("duration", {initialVisible: false}),
+                          cols.meeting.get("seriesInfo", {initialVisible: false}),
+                          cols.meeting.seriesType,
+                          cols.meeting.seriesNumber,
+                          cols.meeting.seriesCount,
+                          ...(props.userType === "clients"
+                            ? [cols.attendant.get("attendantClientGroup", {initialVisible: !props.clientGroupMeetings})]
+                            : []),
+                          cols.meeting.category,
+                          cols.meeting.type,
+                          cols.meeting.statusTags,
+                          cols.attendant.get("attendanceStatus", {initialVisible: false}),
+                          cols.meeting.isFacilityWide,
+                          cols.meeting.attendants,
+                          cols.meeting.attendantsAttendance,
+                          cols.meeting.attendantsCount,
+                          cols.meeting.get("staff", {initialVisible: false}),
+                          cols.meeting.staffAttendance,
+                          cols.meeting.staffCount,
+                          cols.meeting.get("clients", {initialVisible: false}),
+                          cols.meeting.clientsAttendance,
+                          cols.meeting.clientsCount,
+                          cols.meeting.get("isRemote", {initialVisible: false}),
+                          cols.meeting.notes,
+                          cols.meeting.resources,
+                          cols.meeting.resourcesCount,
+                          ...getCreatedUpdatedColumns(),
+                        ]}
+                        columnGroups={{
+                          defaultInclude: false,
+                          overrides: {
+                            categoryDictId: true,
+                            typeDictId: true,
+                            meeting_multicolumn: !!props.clientGroupMeetings,
                           },
-                          {
-                            type: "column",
-                            column: "attendant.attendanceStatusDictId",
-                            op: "in",
-                            val: presenceStatuses()!,
-                          },
-                        ],
-                      }}
-                      intrinsicSort={sortByDate({desc: true})}
-                      initialSort={[{id: "date", desc: true}]}
-                      staticExportConfig={exportConfig("completed")}
-                    />
+                        }}
+                        intrinsicFilter={{
+                          type: "op",
+                          op: "&",
+                          val: [
+                            intrinsicFilter(),
+                            {
+                              type: "column",
+                              column: "statusDictId",
+                              op: "=",
+                              val: meetingStatusDict()!.completed.id,
+                            },
+                            {
+                              type: "column",
+                              column: "attendant.attendanceStatusDictId",
+                              op: "in",
+                              val: presenceStatuses()!,
+                            },
+                          ],
+                        }}
+                        intrinsicSort={sortByDate({desc: true})}
+                        initialSort={[{id: "date", desc: true}]}
+                        initialColumnGroups={props.clientGroupMeetings ? ["meeting_multicolumn"] : undefined}
+                        staticExportConfig={exportConfig("completed")}
+                      />
+                    </Recreator>
                   </div>
                 </ShowOnceShown>
               ),
@@ -291,59 +320,65 @@ export const UserMeetingsTables: VoidComponent<Props> = (props) => {
               contents: (active) => (
                 <ShowOnceShown when={active()}>
                   <div class="text-sm">
-                    <TQueryTable
-                      mode="embedded"
-                      staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
-                      staticEntityURL={entityURL()}
-                      staticTranslations={tableTranslations}
-                      staticPersistenceKey={`${props.staticPersistenceKey}.all`}
-                      staticTableId="all"
-                      columns={[
-                        cols.meeting.id,
-                        cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
-                        cols.meeting.get("time", {initialVisible: false}),
-                        cols.meeting.get("duration", {initialVisible: false}),
-                        cols.meeting.get("seriesInfo", {initialVisible: false}),
-                        cols.meeting.seriesType,
-                        cols.meeting.seriesNumber,
-                        cols.meeting.seriesCount,
-                        ...(props.userType === "clients" ? [cols.attendant.attendantClientGroup] : []),
-                        cols.meeting.category,
-                        cols.meeting.type,
-                        cols.meeting.statusTags,
-                        cols.attendant.attendanceStatus,
-                        cols.meeting.isFacilityWide,
-                        cols.meeting.attendants,
-                        cols.meeting.attendantsAttendance,
-                        cols.meeting.attendantsCount,
-                        cols.meeting.get("staff", {initialVisible: false}),
-                        cols.meeting.staffAttendance,
-                        cols.meeting.staffCount,
-                        cols.meeting.get("clients", {initialVisible: false}),
-                        cols.meeting.clientsAttendance,
-                        cols.meeting.clientsCount,
-                        cols.meeting.get("isRemote", {initialVisible: false}),
-                        cols.meeting.notes,
-                        cols.meeting.resources,
-                        cols.meeting.resourcesCount,
-                        cols.meeting.resourceConflictsExist,
-                        cols.meeting.resourceConflictsResources,
-                        ...getCreatedUpdatedColumns(),
-                      ]}
-                      columnGroups={{
-                        defaultInclude: false,
-                        overrides: {
-                          "categoryDictId": true,
-                          "typeDictId": true,
-                          "statusDictId": true,
-                          "attendant.attendanceStatusDictId": true,
-                        },
-                      }}
-                      intrinsicFilter={intrinsicFilter()}
-                      intrinsicSort={sortByDate({desc: true})}
-                      initialSort={[{id: "date", desc: true}]}
-                      staticExportConfig={exportConfig("all")}
-                    />
+                    <Recreator signal={[props.userType, props.clientGroupMeetings]}>
+                      <TQueryTable
+                        mode="embedded"
+                        staticPrefixQueryKey={FacilityMeeting.keys.meeting()}
+                        staticEntityURL={entityURL()}
+                        staticTranslations={tableTranslations()}
+                        staticPersistenceKey={getPersistenceKey("all")}
+                        staticTableId="all"
+                        columns={[
+                          cols.meeting.id,
+                          cols.meeting.get("dateTimeActions", {columnDef: {sortDescFirst: true}}),
+                          cols.meeting.get("time", {initialVisible: false}),
+                          cols.meeting.get("duration", {initialVisible: false}),
+                          cols.meeting.get("seriesInfo", {initialVisible: false}),
+                          cols.meeting.seriesType,
+                          cols.meeting.seriesNumber,
+                          cols.meeting.seriesCount,
+                          ...(props.userType === "clients"
+                            ? [cols.attendant.get("attendantClientGroup", {initialVisible: !props.clientGroupMeetings})]
+                            : []),
+                          cols.meeting.category,
+                          cols.meeting.type,
+                          cols.meeting.statusTags,
+                          cols.attendant.get("attendanceStatus", {initialVisible: !props.clientGroupMeetings}),
+                          cols.meeting.isFacilityWide,
+                          cols.meeting.attendants,
+                          cols.meeting.attendantsAttendance,
+                          cols.meeting.attendantsCount,
+                          cols.meeting.get("staff", {initialVisible: false}),
+                          cols.meeting.staffAttendance,
+                          cols.meeting.staffCount,
+                          cols.meeting.get("clients", {initialVisible: false}),
+                          cols.meeting.get("clientsAttendance", {initialVisible: props.clientGroupMeetings}),
+                          cols.meeting.clientsCount,
+                          cols.meeting.get("isRemote", {initialVisible: false}),
+                          cols.meeting.notes,
+                          cols.meeting.resources,
+                          cols.meeting.resourcesCount,
+                          cols.meeting.resourceConflictsExist,
+                          cols.meeting.resourceConflictsResources,
+                          ...getCreatedUpdatedColumns(),
+                        ]}
+                        columnGroups={{
+                          defaultInclude: false,
+                          overrides: {
+                            "categoryDictId": true,
+                            "typeDictId": true,
+                            "statusDictId": true,
+                            "attendant.attendanceStatusDictId": true,
+                            "meeting_multicolumn": !!props.clientGroupMeetings,
+                          },
+                        }}
+                        intrinsicFilter={intrinsicFilter()}
+                        intrinsicSort={sortByDate({desc: true})}
+                        initialSort={[{id: "date", desc: true}]}
+                        initialColumnGroups={props.clientGroupMeetings ? ["meeting_multicolumn"] : undefined}
+                        staticExportConfig={exportConfig("all")}
+                      />
+                    </Recreator>
                   </div>
                 </ShowOnceShown>
               ),

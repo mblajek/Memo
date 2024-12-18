@@ -228,6 +228,7 @@ export default (() => {
                     <UserMeetingsTables
                       userName={user().name}
                       userType="clients"
+                      clientGroupMeetings={meetingTablesMode() === "clientGroup"}
                       intrinsicFilter={meetingsIntrinsicFilter()}
                       staticPersistenceKey="clientMeetings"
                       userMeetingsStats={meetingTablesMode() === "clientGroup" ? undefined : meetingsStats()}

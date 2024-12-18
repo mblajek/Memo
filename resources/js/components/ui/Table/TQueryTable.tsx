@@ -175,6 +175,7 @@ export interface TQueryTableProps<TData = DataItem> {
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
   readonly initialSort?: SortingState;
+  readonly initialColumnGroups?: readonly string[];
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
@@ -409,6 +410,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     intrinsicFilter: () => props.intrinsicFilter,
     intrinsicSort: () => props.intrinsicSort,
     initialSort: props.initialSort,
+    initialColumnGroups: props.initialColumnGroups,
     initialPageSize:
       props.initialPageSize ||
       // eslint-disable-next-line solid/reactivity
