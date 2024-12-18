@@ -1,5 +1,6 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
 import {clearAllHistoryState} from "components/persistence/history_persistence";
+import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
 import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
@@ -28,6 +29,7 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
   const t = useLangFunc();
   const location = useLocation();
   const [container, setContainer] = createSignal<HTMLDivElement>();
+  const [forceExpand, setForceExpand] = createSignal(false);
   /* A signal that changes whenever the active navigation item might change. */
   const activeItemTrigger = () => container() && location.pathname;
   /**
@@ -41,7 +43,11 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
    */
   const hasActiveItem = createMemo(
     // eslint-disable-next-line solid/reactivity
-    on(delayedAccessor(activeItemTrigger, {timeMs: 20}), () => container()?.querySelector(`a.${ACTIVE_ITEM_CLASS}`)),
+    on(delayedAccessor(activeItemTrigger, {timeMs: 20}), () => {
+      // Side effect: cancel force expanded on any navigation.
+      setForceExpand(false);
+      return container()?.querySelector(`a.${ACTIVE_ITEM_CLASS}`);
+    }),
   );
   const ch = children(() => props.children);
   return (
@@ -70,13 +76,20 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
           </Show>
           <Show when={ch()}>
             {" "}
-            <FaSolidAngleDown size="12" class="inlineIcon !mb-0 text-gray-400" />
+            <Button
+              onClick={(e) => {
+                setForceExpand(!forceExpand());
+                e.preventDefault();
+              }}
+            >
+              <FaSolidAngleDown size="12" class="inlineIcon !mb-0 text-gray-400" />
+            </Button>
           </Show>
         </span>
       </A>
       <Show when={ch()}>
         {(children) => (
-          <HideableSection show={hasActiveItem()}>
+          <HideableSection show={hasActiveItem() || forceExpand()}>
             <div class="mt-1 ml-3 flex flex-col gap-1">{children()}</div>
           </HideableSection>
         )}
