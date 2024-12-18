@@ -15,6 +15,7 @@ import {TextField} from "components/ui/form/TextField";
 import {createAttributesProcessor} from "components/ui/form/attributes_processor";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
 import {QueryBarrier, cx, useLangFunc} from "components/utils";
+import {Autofocus} from "components/utils/Autofocus";
 import {notFoundError} from "components/utils/NotFoundError";
 import {toastSuccess} from "components/utils/toast";
 import {User} from "data-access/memo-api/groups";
@@ -148,10 +149,12 @@ export default (() => {
                         }
                         return (
                           <>
-                            <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
-                              {({show}) => <TextField name="name" disabled={!show()} />}
-                            </HideableSection>
-                            <ClientFields editMode={editMode()} client={user()} />
+                            <Autofocus autofocus={editMode()}>
+                              <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
+                                {({show}) => <TextField name="name" autofocus disabled={!show()} />}
+                              </HideableSection>
+                              <ClientFields editMode={editMode()} client={user()} />
+                            </Autofocus>
                             <Switch>
                               <Match when={editMode()}>
                                 <FelteSubmit cancel={formCancel} />
