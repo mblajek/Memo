@@ -4,6 +4,7 @@ import {SmallSpinner} from "components/ui/Spinner";
 import {adminIcons, clientIcons, staffIcons} from "components/ui/icons";
 import {EmptyValueSymbol} from "components/ui/symbols";
 import {cx, useLangFunc} from "components/utils";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {Match, Show, Switch, VoidComponent, createMemo, splitProps} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -27,6 +28,12 @@ interface Props extends Partial<AnchorProps> {
   readonly newTabLink?: boolean;
 }
 
+/**
+ * All the user ids that were unknown and were used to cause an invalidation. If the same user id
+ * is encountered again, it will not cause an invalidation again.
+ */
+const unknownUserIdsCausingInvalidation = new Set<string>();
+
 export const UserLink: VoidComponent<Props> = (allProps) => {
   const [props, anchorProps] = splitProps(allProps, [
     "type",
@@ -39,6 +46,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
   ]);
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
+  const invalidate = useInvalidator();
   const membersData = useMembersData();
   const memberData = createMemo(() =>
     props.userId
@@ -117,7 +125,14 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
                 <SmallSpinner />
               </Match>
               <Match when="fallback">
-                <>{t("parenthesised", {text: t("unknown")})}</>
+                {(_unused) => {
+                  if (props.userId && !unknownUserIdsCausingInvalidation.has(props.userId)) {
+                    unknownUserIdsCausingInvalidation.add(props.userId);
+                    invalidate.facility.users();
+                    invalidate.facility.clientGroups();
+                  }
+                  return <>{t("parenthesised", {text: t("unknown")})}</>;
+                }}
               </Match>
             </Switch>
           </span>
