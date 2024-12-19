@@ -486,24 +486,25 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         <Button
                           class="min-h-small-input self-start"
                           title={
-                            <div>
-                              <div>
-                                <Show
-                                  when={clientGroupId()}
-                                  fallback={translations.fieldName("attendantClientGroupId.none")}
-                                >
-                                  {(clientGroupId) => (
-                                    <div class="flex flex-col">
-                                      {translations.fieldName("attendantClientGroupId.some")}
+                            <>
+                              <Show
+                                when={clientGroupId()}
+                                fallback={<p>{translations.fieldName("attendantClientGroupId.none")}</p>}
+                              >
+                                {(clientGroupId) => (
+                                  <>
+                                    <p>{translations.fieldName("attendantClientGroupId.some")}</p>
+                                    <p>
+                                      <clientGroupIcons.ClientGroup size="18" class="inlineIcon" />{" "}
                                       <SharedClientGroupLabel groupId={clientGroupId()} />
-                                    </div>
-                                  )}
-                                </Show>
-                              </div>
-                              <Show when={!props.viewMode}>
-                                <div>{translations.fieldName("attendantClientGroupId.click_to_toggle")}</div>
+                                    </p>
+                                  </>
+                                )}
                               </Show>
-                            </div>
+                              <Show when={!props.viewMode}>
+                                <p>{translations.fieldName("attendantClientGroupId.click_to_toggle")}</p>
+                              </Show>
+                            </>
                           }
                           onClick={() =>
                             form.setFields(`clients.${index}.clientGroupId`, clientGroupId() ? "" : clientGroups()[0])
