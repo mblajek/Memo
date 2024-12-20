@@ -100,7 +100,7 @@ staff:
 client:
   _name: "klient"
   _name_plural: "klienci"
-  shortCode: "numer"
+  shortCode: "nr klienta"
   client:
     shortCode: "$t(models.client.shortCode)"
     createdAt: "$t(models.generic.createdAt)"
