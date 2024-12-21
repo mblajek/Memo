@@ -32,7 +32,6 @@ console.log("Config:", {...config, importUserMemoSessionCookie: "***"});
 
 interface CallParams extends RequestInit {
   readonly req?: object;
-  readonly runEvenInDryRun?: boolean;
 }
 
 async function api(path: string, params?: CallParams) {
@@ -48,42 +47,36 @@ async function api(path: string, params?: CallParams) {
     },
     body,
   };
-  const callBackend = !config.dryRun || params?.runEvenInDryRun || fetchParams.method === "GET";
-  if (callBackend) {
-    let attempts = 3;
-    let resp: Response;
-    for (;;) {
-      try {
-        resp = await fetch(fullPath, fetchParams);
-        break;
-      } catch (e) {
-        console.error("Fetching error:", e);
-        if (--attempts) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-          console.log("Retrying...");
-        } else {
-          throw e;
-        }
+  let attempts = 5;
+  let resp: Response;
+  for (;;) {
+    try {
+      resp = await fetch(fullPath, fetchParams);
+      break;
+    } catch (e) {
+      console.error("Fetching error:", e);
+      if (--attempts) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        console.log("Retrying...");
+      } else {
+        throw e;
       }
     }
-    if (!resp.ok) {
-      console.error("Error response:", await resp.text());
-      console.error("Request:", fullPath, fetchParams);
-      throw new Error(`Error fetching ${fullPath}: ${resp.status} ${resp.statusText}`);
-    }
-    const type = resp.headers.get("content-type");
-    if (!type?.match(/^application\/json(;.+)?$/)) {
-      throw new Error(`Unexpected content type: ${type}`);
-    }
-    const json = await resp.json();
-    if (json.errors) {
-      throw new Error(`API error: ${JSON.stringify(json.errors)}`);
-    }
-    return json;
-  } else {
-    console.debug(`Dry run, would fetch ${fullPath} with params:`, fetchParams);
-    return {data: {}};
   }
+  if (!resp.ok) {
+    console.error("Error response:", await resp.text());
+    console.error("Request:", fullPath, fetchParams);
+    throw new Error(`Error fetching ${fullPath}: ${resp.status} ${resp.statusText}`);
+  }
+  const type = resp.headers.get("content-type");
+  if (!type?.match(/^application\/json(;.+)?$/)) {
+    throw new Error(`Unexpected content type: ${type}`);
+  }
+  const json = await resp.json();
+  if (json.errors) {
+    throw new Error(`API error: ${JSON.stringify(json.errors)}`);
+  }
+  return json;
 }
 
 async function apiCount(entityURL: string) {
@@ -93,30 +86,30 @@ async function apiCount(entityURL: string) {
         columns: [{type: "column", column: "id"}],
         paging: {size: 1},
       },
-      runEvenInDryRun: true,
     })
   ).meta.totalDataSize;
 }
 
-const facility = (await api("system/facility/list")).data.find((f: any) => f.id === config.facilityId);
-if (!facility) {
-  throw new Error(`The specified facility does not exist`);
+async function confirmContinue(message: string) {
+  if (!confirm("\n" + message)) {
+    Deno.exit(1);
+  }
+  await new Promise((resolve) => setTimeout(resolve, 100));
 }
-const facilityId = facility.id;
 
-const userData = (await api(`user/status/${facilityId}`)).data;
+const facilityName = [config.attemptPrefix, config.facilityName].filter(Boolean).join(" ");
+console.log(`Configured facility name: ${facilityName}`);
+const existingFacility = (await api("system/facility/list")).data.find((f: any) => f.name === facilityName);
+let facilityId = existingFacility?.id;
+const userData = (await api(`user/status${facilityId ? "/" + facilityId : ""}`)).data;
 console.log(`User: ${userData.user.name} (${userData.user.email}, ${userData.user.id})`);
-console.log(
-  `  Permissions: ${["globalAdmin", "developer", "facilityAdmin"].filter((p) => userData.permissions[p]).join(", ") || "-"}`,
+const expectedPermissions = ["globalAdmin", "developer", existingFacility ? "facilityAdmin" : undefined].filter(
+  (e): e is string => !!e,
 );
-if (!userData.permissions.developer || !userData.permissions.facilityAdmin) {
+console.log(`  Permissions: ${expectedPermissions.filter((p) => userData.permissions[p]).join(", ") || "-"}`);
+if (!expectedPermissions.every((p) => userData.permissions[p])) {
   throw new Error("Not enough permissions");
 }
-
-console.log(`Facility: ${facility.name} (${facilityId})`);
-console.log(`  Staff: ${await apiCount(`facility/${facility.id}/user/staff`)}`);
-console.log(`  Clients: ${await apiCount(`facility/${facility.id}/user/client`)}`);
-console.log(`  Meetings: ${await apiCount(`facility/${facility.id}/meeting`)}`);
 
 console.log("\nData to import:");
 const stat = Deno.statSync(config.preparedFile);
@@ -130,10 +123,42 @@ console.log(
 const prepared = JSON.parse(Deno.readTextFileSync(config.preparedFile)) as FacilityContents;
 console.log(facilityContentStats(prepared));
 
-if (!confirm("\nVerify the information above.\nContinue?")) {
-  Deno.exit(1);
+await confirmContinue("Verify the information above.\nContinue?");
+
+console.log();
+if (existingFacility) {
+  facilityId = existingFacility.id;
+  console.log(`Existing facility: ${existingFacility.name} (${facilityId})`);
+  console.log(`  Staff: ${await apiCount(`facility/${facilityId}/user/staff`)}`);
+  console.log(`  Clients: ${await apiCount(`facility/${facilityId}/user/client`)}`);
+  console.log(`  Meetings: ${await apiCount(`facility/${facilityId}/meeting`)}`);
+  await confirmContinue("Verify the information above.\nContinue?");
+} else {
+  console.log(
+    `The facility does not exist. Facility ${JSON.stringify(facilityName)} will be created ` +
+      `and the user will be added as its administrator.`,
+  );
+  await confirmContinue("Confirm?");
+  facilityId = (
+    await api("admin/facility", {
+      req: {
+        name: facilityName,
+        url: `url-${String(Math.floor(1000000 * Math.random())).padStart(6, "0")}`,
+      },
+    })
+  ).data.id;
+  console.log(`Facility created: ${facilityName} (${facilityId})`);
+  await api("admin/member", {
+    req: {
+      userId: userData.user.id,
+      facilityId,
+      hasFacilityAdmin: true,
+      isFacilityStaff: false,
+      isFacilityClient: false,
+    },
+  });
+  console.log(`User added as facility admin.`);
 }
-await new Promise((resolve) => setTimeout(resolve, 100));
 
 const cache: {dictionaries: any[] | undefined; attributes: any[] | undefined} = {
   dictionaries: undefined,
@@ -209,16 +234,12 @@ const nnMapper = new NnMapper(config.nnMappingFileBase);
 
 async function apiMutate({path, type, params}: {path: string; type: string; params: CallParams}) {
   const resp = (await api(path, params)).data;
-  if (config.dryRun) {
-    return {id: "dry-run-id"};
-  } else {
-    if (type === "dictionary" || type === "position") {
-      cache.dictionaries = undefined;
-    } else if (type === "attribute") {
-      cache.attributes = undefined;
-    }
-    return resp;
+  if (type === "dictionary" || type === "position") {
+    cache.dictionaries = undefined;
+  } else if (type === "attribute") {
+    cache.attributes = undefined;
   }
+  return resp;
 }
 
 async function apiCreate({
@@ -428,65 +449,64 @@ try {
     nnMapper.set(defNn);
   }
 
-  if (!config.skipDictionariesAndAttributes)
-    for (const action of trackProgress(prepared.dictionariesAndAttributes, "dictionaries and attributes")) {
-      const {kind} = action;
-      if (kind === "createAttribute") {
-        const attr = action;
+  for (const action of trackProgress(prepared.dictionariesAndAttributes, "dictionaries and attributes")) {
+    const {kind} = action;
+    if (kind === "createAttribute") {
+      const attr = action;
+      await apiCreate({
+        nn: attr.nn,
+        path: `facility/${facilityId}/admin/attribute`,
+        type: "attribute",
+        object: {
+          model: attr.model,
+          name: attr.name,
+          description: attr.description || null,
+          apiName: makeAttrApiName(attr.apiName),
+          type: attr.type,
+          dictionaryId: attr.dictionaryNnOrName ? (await findDict(attr.dictionaryNnOrName)).id : null,
+          defaultOrder: await getDefaultOrder(
+            attr.order,
+            async (o) => (await findAttrib(o.attributeApiName)).defaultOrder,
+          ),
+          isMultiValue: attr.isMultiValue,
+          requirementLevel: attr.requirementLevel,
+        },
+      });
+    } else if (kind === "createDictionary") {
+      const dict = action;
+      const dictionaryId = (
         await apiCreate({
-          nn: attr.nn,
-          path: `facility/${facilityId}/admin/attribute`,
-          type: "attribute",
+          nn: dict.nn,
+          path: `facility/${facilityId}/admin/dictionary`,
+          type: "dictionary",
           object: {
-            model: attr.model,
-            name: attr.name,
-            description: attr.description || null,
-            apiName: makeAttrApiName(attr.apiName),
-            type: attr.type,
-            dictionaryId: attr.dictionaryNnOrName ? (await findDict(attr.dictionaryNnOrName)).id : null,
-            defaultOrder: await getDefaultOrder(
-              attr.order,
-              async (o) => (await findAttrib(o.attributeApiName)).defaultOrder,
-            ),
-            isMultiValue: attr.isMultiValue,
-            requirementLevel: attr.requirementLevel,
+            name: dict.name,
+            positionRequiredAttributeIds: dict.positionRequiredAttributeApiNames
+              ? await Promise.all(
+                  dict.positionRequiredAttributeApiNames.map(async (apiName) => (await findAttrib(apiName)).id),
+                )
+              : undefined,
           },
-        });
-      } else if (kind === "createDictionary") {
-        const dict = action;
-        const dictionaryId = (
-          await apiCreate({
-            nn: dict.nn,
-            path: `facility/${facilityId}/admin/dictionary`,
-            type: "dictionary",
-            object: {
-              name: dict.name,
-              positionRequiredAttributeIds: dict.positionRequiredAttributeApiNames
-                ? await Promise.all(
-                    dict.positionRequiredAttributeApiNames.map(async (apiName) => (await findAttrib(apiName)).id),
-                  )
-                : undefined,
-            },
-          })
-        ).id;
-        for (const pos of dict.positions) {
-          await createPosition({dictionaryId, dictNnOrName: dict.name, pos});
-        }
-      } else if (kind === "extendDictionary") {
-        const dict = action;
-        const dictionary = await findDict(dict.name);
-        for (const pos of dict.positions) {
-          await createPosition({dictionaryId: dictionary.id, dictNnOrName: dict.name, pos});
-        }
-      } else {
-        throw new Error(`Unknown action kind: ${kind}`);
+        })
+      ).id;
+      for (const pos of dict.positions) {
+        await createPosition({dictionaryId, dictNnOrName: dict.name, pos});
       }
+    } else if (kind === "extendDictionary") {
+      const dict = action;
+      const dictionary = await findDict(dict.name);
+      for (const pos of dict.positions) {
+        await createPosition({dictionaryId: dictionary.id, dictNnOrName: dict.name, pos});
+      }
+    } else {
+      throw new Error(`Unknown action kind: ${kind}`);
     }
+  }
 
   if (!config.onlyDictionariesAndAttributes) {
     for (let staff of trackProgress(prepared.facilityStaff, "facility staff")) {
       let userId;
-      if (staff.existing) {
+      if (staff.existing && !config.attemptPrefix) {
         userId = (
           await api("admin/user/tquery", {
             req: {
@@ -513,7 +533,11 @@ try {
             object: {
               // TODO: Revert to just name when there is a way to set deactivatedAt.
               name: staff.deactivatedAt ? `${staff.name} (nieaktywny)` : staff.name,
-              email: staff.email ? (config.staffEmailsPrefix || "") + staff.email : null,
+              email: staff.email
+                ? config.attemptPrefix
+                  ? `${config.attemptPrefix}_${staff.email}`
+                  : staff.email
+                : null,
               hasEmailVerified: !!staff.email,
               ...(staff.password
                 ? {
@@ -635,6 +659,7 @@ try {
             attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
             clientGroupId: att.clientGroupNn ? nnMapper.get(att.clientGroupNn) : null,
           })),
+          resources: meeting.resourceNns?.map((nn) => ({resourceDictId: nnMapper.get(nn)})),
           fromMeetingId:
             meeting.fromMeetingNn && meeting.fromMeetingNn !== meeting.nn
               ? nnMapper.get(meeting.fromMeetingNn)

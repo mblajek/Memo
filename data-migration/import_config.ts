@@ -7,14 +7,10 @@ export interface ImportConfig {
   readonly nnMappingFileBase: string | null;
   /** The URL to the Memo app, in the form `https://memo.host/`. */
   readonly memoURL: string;
-  readonly facilityId: string;
+  readonly facilityName: string;
+  readonly attemptPrefix: string | null;
   readonly importUserMemoSessionCookie: string;
-  readonly skipDictionariesAndAttributes: boolean;
   readonly onlyDictionariesAndAttributes: boolean;
-  /** Suffix to add to staff emails, to avoid duplicates when doing test imports. */
-  readonly staffEmailsPrefix: string | undefined;
-  /** Don't actually send the mutating queries. */
-  readonly dryRun: boolean;
 }
 
 export function readConfig(file: string) {

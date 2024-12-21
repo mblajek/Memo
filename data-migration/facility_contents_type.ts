@@ -148,6 +148,7 @@ export interface Meeting {
   readonly isRemote: boolean;
   readonly staff: readonly StaffAttendant[];
   readonly clients: readonly ClientAttendant[];
+  readonly resourceNns?: readonly string[];
   readonly fromMeetingNn?: string;
   readonly interval?: string;
   readonly createdAt?: DateTimeType;
