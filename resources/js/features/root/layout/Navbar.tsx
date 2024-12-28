@@ -2,7 +2,7 @@ import {A} from "@solidjs/router";
 import {Button} from "components/ui/Button";
 import {FullLogo} from "components/ui/FullLogo";
 import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
-import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
+import {cx, SilentAccessBarrier, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
@@ -18,7 +18,7 @@ import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
 import {TbCalendarCode, TbCalendarTime, TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
-import {DEV, ParentComponent, Show, VoidComponent} from "solid-js";
+import {createSignal, DEV, ParentComponent, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
@@ -41,6 +41,7 @@ export const Navbar: VoidComponent = () => {
     </SilentAccessBarrier>
   );
 
+  const [navScrolledToTop, setNavScrolledToTop] = createSignal(true);
   const themeStyle = () => {
     const t = theme();
     return {"--navbar-color": t === "light" ? "#f3f0e0" : t === "dark" ? "#e3e0d0" : (t satisfies never)};
@@ -48,7 +49,16 @@ export const Navbar: VoidComponent = () => {
   return (
     <aside class={s.sidebar} style={themeStyle()}>
       <FullLogo class="h-16 p-2 mt-2" />
-      <nav class={cx("p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}>
+      <div class="h-0 z-10">
+        <div
+          class={cx("h-5 transition-opacity pointer-events-none", navScrolledToTop() ? "opacity-0" : "opacity-30")}
+          style={{background: "radial-gradient(ellipse at top, black, transparent 70%)"}}
+        />
+      </div>
+      <nav
+        class={cx("col-start-1 row-start-1 p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}
+        onScroll={({target}) => setNavScrolledToTop(target.scrollTop === 0)}
+      >
         <Show when={facilityUrl()}>
           <NavigationSection>
             <FacilityAdminOrStaffBarrier>
