@@ -10,6 +10,7 @@ import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
 import {FaSolidList} from "solid-icons/fa";
+import {FiLoader} from "solid-icons/fi";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {IoReloadSharp} from "solid-icons/io";
 import {OcLog3, OcTable3} from "solid-icons/oc";
@@ -143,6 +144,7 @@ export const Navbar: VoidComponent = () => {
               <NavigationItem icon={OcLog3} href="/dev/logs" routeKey="Logs" small />
               <NavigationItem icon={CgTrack} href="/dev/feature-use" routeKey="Feature use" small />
             </SilentAccessBarrier>
+            <NavigationItem icon={FiLoader} href="/dev/preload-statuses" routeKey="Preload" small />
             <NavigationItem icon={BiRegularErrorAlt} href="/dev/crash" routeKey="Crash" small />
             <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />
           </NavigationSection>
