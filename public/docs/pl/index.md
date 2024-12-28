@@ -9,6 +9,7 @@
 ## Dokumenty pomocy
 
 - Pracownicy
+  - [Role i uprawnienia](staff-roles)
   - [Grafiki pracy](staff-time-tables)
 - Klienci
   - [Grupy klientów](client-groups)
