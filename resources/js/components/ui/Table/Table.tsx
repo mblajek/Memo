@@ -13,6 +13,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
+import {ScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {currentTimeSecond, cx, delayedAccessor, useLangFunc} from "components/utils";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {NonBlocking} from "components/utils/NonBlocking";
@@ -256,6 +257,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
       },
     ),
   );
+  const [scrollableUp, setScrollableUp] = createSignal(false);
   const columns = createMemo(
     on(
       () => props.table.getAllLeafColumns(),
@@ -272,7 +274,10 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
             <div
               ref={setScrollingWrapper}
               class={s.scrollingWrapper}
-              onScroll={[setLastScrollTimestamp, Date.now()]}
+              onScroll={({target}) => {
+                setLastScrollTimestamp(Date.now());
+                setScrollableUp(target.scrollTop !== 0);
+              }}
               onScrollEnd={[setLastScrollTimestamp, 0]}
             >
               <div ref={scrollToTopElement} class={s.scrollToTopElement}>
@@ -307,6 +312,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                           </Show>
                         )}
                       </For>
+                      <ScrollableUpMarker class={s.scrollableUpMarker} scrollableUp={scrollableUp()} />
                     </div>
                     <Dynamic
                       component={{For, Index}[props.rowsIteration]}

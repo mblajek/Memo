@@ -29,6 +29,10 @@
                 @apply bg-gray-100;
                 min-height: 2em;
               }
+
+              > .scrollableUpMarker {
+                @apply hidden;
+              }
             }
 
             > .dataRow {
@@ -73,6 +77,9 @@
     > .tableMain > .scrollingWrapper > .scrollToTopElement > .tableBg > .table {
       > .headerRow {
         @apply sticky top-px;
+        > .scrollableUpMarker {
+          @apply block row-start-2 col-span-full;
+        }
       }
       > .bottomBorder {
         @apply sticky bottom-0;
