@@ -120,6 +120,7 @@ client_group:
   client:
     userId: "osoba"
     role: "rola"
+  notes: "krótki opis"
 
 meeting:
   _name: "spotkanie"

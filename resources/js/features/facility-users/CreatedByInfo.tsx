@@ -25,7 +25,7 @@ export const CreatedByInfo: VoidComponent<Props> = (allProps) => {
             setMode(mode() === "created" ? "updated" : "created");
             featureToggle.justUsed();
           }}
-          title={t("toggle_created_updated_info")}
+          title={[t("toggle_created_updated_info"), {hideOnClick: false}]}
         >
           {t(mode() === "created" ? "created_by" : "updated_by")}
         </Button>{" "}
