@@ -256,6 +256,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           createEffect(
             on(
               [
+                () => props.viewMode,
                 () =>
                   selectedClientsDataQuery.isSuccess &&
                   (!clientGroupFetcher.numSubscribedGroups() || clientGroupFetcher.dataQuery.isSuccess),
@@ -266,7 +267,15 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 form.data, // to nudge the form and improve reactivity
               ],
               (
-                [querySuccess, sharedGroups, _groupsByClientId, _clientsGroupsMode, _sharedClientsGroupId, formData],
+                [
+                  viewMode,
+                  querySuccess,
+                  sharedGroups,
+                  _groupsByClientId,
+                  _clientsGroupsMode,
+                  _sharedClientsGroupId,
+                  formData,
+                ],
                 _prevInput,
                 prev:
                   | {
@@ -294,51 +303,53 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     )
                   );
                 let clientsChanged = formClientsChanged;
-                for (let i = 0; i < formData.clients.length; i++) {
-                  const {userId, clientGroupId} = formData.clients[i]!;
-                  if (userId) {
-                    if (clientGroupId) {
-                      if (!isClientInGroup(userId, clientGroupId)) {
-                        // Invalid state.
-                        setAttendanceGroup(
-                          formData,
-                          i,
-                          clientsGroupsMode() === "shared" &&
-                            sharedClientsGroupId() &&
-                            isClientInGroup(userId, sharedClientsGroupId())
-                            ? sharedClientsGroupId()
-                            : "",
-                        );
-                        clientsChanged = true;
-                      }
-                    } else if (formClientsChanged) {
-                      if (clientsGroupsMode() === "shared") {
-                        if (sharedClientsGroupId() && isClientInGroup(userId, sharedClientsGroupId())) {
-                          setAttendanceGroup(formData, i, sharedClientsGroupId());
+                if (!viewMode) {
+                  for (let i = 0; i < formData.clients.length; i++) {
+                    const {userId, clientGroupId} = formData.clients[i]!;
+                    if (userId) {
+                      if (clientGroupId) {
+                        if (!isClientInGroup(userId, clientGroupId)) {
+                          // Invalid state.
+                          setAttendanceGroup(
+                            formData,
+                            i,
+                            clientsGroupsMode() === "shared" &&
+                              sharedClientsGroupId() &&
+                              isClientInGroup(userId, sharedClientsGroupId())
+                              ? sharedClientsGroupId()
+                              : "",
+                          );
+                          clientsChanged = true;
                         }
-                      } else if (clientsGroupsMode() === "separate") {
-                        const dupClient = formData.clients.find((c, j) => c.userId === userId && j !== i);
-                        if (dupClient) {
-                          setAttendanceGroup(formData, i, dupClient.clientGroupId);
-                        } else {
-                          const prevClient = prev?.formData.clients.find((c) => c.userId === userId);
-                          if (!prevClient) {
-                            setAttendanceGroup(formData, i, groupsByClientId().get(userId)?.[0] || "");
+                      } else if (formClientsChanged) {
+                        if (clientsGroupsMode() === "shared") {
+                          if (sharedClientsGroupId() && isClientInGroup(userId, sharedClientsGroupId())) {
+                            setAttendanceGroup(formData, i, sharedClientsGroupId());
+                          }
+                        } else if (clientsGroupsMode() === "separate") {
+                          const dupClient = formData.clients.find((c, j) => c.userId === userId && j !== i);
+                          if (dupClient) {
+                            setAttendanceGroup(formData, i, dupClient.clientGroupId);
+                          } else {
+                            const prevClient = prev?.formData.clients.find((c) => c.userId === userId);
+                            if (!prevClient) {
+                              setAttendanceGroup(formData, i, groupsByClientId().get(userId)?.[0] || "");
+                            }
                           }
                         }
+                      } else if (
+                        clientsGroupsMode() === "separate" &&
+                        groupsByClientId().has(userId) &&
+                        !prev?.groupsByClientId.has(userId)
+                      ) {
+                        setAttendanceGroup(formData, i, groupsByClientId().get(userId)![0] || "");
                       }
-                    } else if (
-                      clientsGroupsMode() === "separate" &&
-                      groupsByClientId().has(userId) &&
-                      !prev?.groupsByClientId.has(userId)
-                    ) {
-                      setAttendanceGroup(formData, i, groupsByClientId().get(userId)![0] || "");
                     }
                   }
-                }
-                if (clientsChanged) {
-                  determineClientsGroupsMode(form.data());
-                  formData = form.data();
+                  if (clientsChanged) {
+                    determineClientsGroupsMode(form.data());
+                    formData = form.data();
+                  }
                 }
                 const modeChanged = prev && clientsGroupsMode() !== prev.clientsGroupsMode;
                 if (clientsGroupsMode() === "none") {
