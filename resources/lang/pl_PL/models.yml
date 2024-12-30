@@ -75,12 +75,12 @@ facility_user:
   _name: "pracownik/klient"
   _name_plural: "pracownicy/klienci"
   name: "$t(models.user.name)"
-  firstMeetingDate: "pierwsza wizyta"
-  lastMeetingDate: "ostatnia wizyta"
-  completedMeetingsCount: "liczba odbytych wizyt"
-  completedMeetingsCountLastMonth: "liczba wizyt w ost. miesiącu"
-  plannedMeetingsCount: "liczba zaplanowanych wizyt"
-  plannedMeetingsCountNextMonth: "liczba wizyt w nast. miesiącu"
+  firstMeetingDate: "pierwsze spotkanie"
+  lastMeetingDate: "ostatnie spotkanie"
+  completedMeetingsCount: "liczba odbytych spotkań"
+  completedMeetingsCountLastMonth: "liczba spotkań w ost. miesiącu"
+  plannedMeetingsCount: "liczba zaplanowanych spotkań"
+  plannedMeetingsCountNextMonth: "liczba spotkań w nast. miesiącu"
   meetings: "$t(models.meeting._name_plural)"
 
 staff:

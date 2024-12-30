@@ -3,7 +3,7 @@
 **$t(app_name)** to system do zarządzania:
 
 - bazą klientów fundacji
-- kalendarzem wizyt klientów
+- kalendarzem spotkań klientów i pracowników
 - grafikami pracy pracowników fundacji
 
 ## Dokumenty pomocy

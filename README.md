@@ -3,7 +3,7 @@
 **Memo** to system do zarządzania:
 
 - bazą klientów fundacji
-- kalendarzem wizyt klientów
+- kalendarzem spotkań klientów i pracowników
 - grafikami pracy pracowników fundacji
 
 Aktualnie system jest używany w kilku placówkach [Fundacji Dajemy Dzieciom Siłę](http://fdds.pl/),
