@@ -221,7 +221,7 @@ dictionariesAndAttributes.push({
   positions: PLACOWKI.map((n) => ({nn: `placowka:${n}`, name: `+${n}`})),
 });
 
-const POKOJE = [
+export const POKOJE = [
   "1 (kosmos)",
   "2 (lekarski)",
   "3 (namiot)",

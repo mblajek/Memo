@@ -16,7 +16,7 @@ import {
   NnAttributeValue,
 } from "../facility_contents_type.ts";
 import luxon from "../luxon.ts";
-import {dictionariesAndAttributes, MEETING_TYPES} from "./dicts_and_attribs.ts";
+import {dictionariesAndAttributes, MEETING_TYPES, POKOJE} from "./dicts_and_attribs.ts";
 
 const {DateTime} = luxon;
 type DateTime = luxon.DateTime;
@@ -53,7 +53,9 @@ const staticDataDir = getParam({
   desc: "path to directory with static data",
   check: fs.existsSync,
 });
-const outPath = getParam({name: "out", desc: "path to output file"});
+const outPaths = getParam({name: "out", desc: "path to output file, or multiple comma-separated paths"})
+  .split(",")
+  .map((path) => path.trim());
 
 type FieldsType<T extends string[]> = T[number];
 
@@ -661,7 +663,7 @@ for (let i = 0; i < TERMINY.rows.length; i++) {
       : undefined),
     resourceNns:
       !staffNn || termin["powiązane zasoby"] === "Pokój przesłuchań"
-        ? ["meetingResource:pokój przesłuchań ❌tylko do przesłuchań❌"]
+        ? [`meetingResource:${POKOJE.find((p) => p.toLocaleLowerCase().includes("przesłuchań"))}`]
         : undefined,
     createdAt: parseDateTime(termin["data dodania"], {zone: "UTC"}),
     createdByNn: getStaff2(termin["dodana przez"]),
@@ -694,6 +696,9 @@ const facilityContents: FacilityContents = {
 console.log("Prepared data:");
 console.log(facilityContentStats(facilityContents));
 
-console.log(`Writing result to ${outPath}`);
-Deno.writeTextFileSync(outPath, JSON.stringify(facilityContents, undefined, 2));
+const outContent = JSON.stringify(facilityContents, undefined, 2);
+for (const outPath of outPaths) {
+  console.log(`Writing result to ${outPath}`);
+  Deno.writeTextFileSync(outPath, outContent);
+}
 console.log("Done");

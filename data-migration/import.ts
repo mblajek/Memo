@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import {parseArgs} from "jsr:@std/cli";
+import {runConcurrent} from "./concurrent.ts";
 import {
   AttributeValues,
   DateTimeType,
@@ -106,7 +107,7 @@ console.log(`User: ${userData.user.name} (${userData.user.email}, ${userData.use
 const expectedPermissions = ["globalAdmin", "developer", existingFacility ? "facilityAdmin" : undefined].filter(
   (e): e is string => !!e,
 );
-console.log(`  Permissions: ${expectedPermissions.filter((p) => userData.permissions[p]).join(", ") || "-"}`);
+console.log(`  Permissions: ${expectedPermissions.map((p) => `${p}: ${userData.permissions[p]}`).join(", ")}`);
 if (!expectedPermissions.every((p) => userData.permissions[p])) {
   throw new Error("Not enough permissions");
 }
@@ -376,8 +377,20 @@ async function attributeValues(attributeValues: AttributeValues | undefined) {
 }
 
 const LOG_INTERVAL_SECS = 10;
-function* trackProgress<T>(array: readonly T[] | undefined, type: string) {
-  const len = array?.length;
+const DEFAULT_CONCURRENCY = 10;
+
+async function processList<T>({
+  list,
+  type,
+  concurrency = false,
+  func,
+}: {
+  list: readonly T[] | undefined;
+  type: string;
+  concurrency?: number | boolean;
+  func: (item: T, {allPrevious}: {allPrevious: () => Promise<void>}) => Promise<void>;
+}) {
+  const len = list?.length;
   if (!len) {
     console.log(`No ${type} to process.`);
     return;
@@ -385,15 +398,23 @@ function* trackProgress<T>(array: readonly T[] | undefined, type: string) {
   console.log(`Processing ${len} ${type}...`);
   const start = Date.now();
   let lastLog = start;
-  for (let i = 0; i < len; i++) {
-    yield array[i];
-    const now = Date.now();
-    if (now - lastLog > LOG_INTERVAL_SECS * 1000) {
-      console.log(
-        `  Progress: ${i + 1} / ${len} (${((100 * (i + 1)) / len).toFixed(1)}% done, ${(((i + 1) / (now - start)) * 60 * 1000).toFixed(1)} per minute)`,
-      );
-      lastLog = now;
-    }
+  let i = 0;
+  for await (const _ of runConcurrent({
+    iterable: list,
+    concurrency: concurrency === false ? 1 : concurrency === true ? DEFAULT_CONCURRENCY : concurrency,
+    func: async (...args) => {
+      await func(...args);
+      i++;
+      const now = Date.now();
+      if (now - lastLog > LOG_INTERVAL_SECS * 1000) {
+        console.log(
+          `  Progress: ${i + 1} / ${len} (${((100 * (i + 1)) / len).toFixed(1)}% done, ${(((i + 1) / (now - start)) * 60 * 1000).toFixed(1)} per minute)`,
+        );
+        lastLog = now;
+      }
+    },
+  })) {
+    // ignore
   }
   console.log(`Processing ${type} done (${((len / (Date.now() - start)) * 60 * 1000).toFixed(1)} per minute).`);
 }
@@ -449,169 +470,193 @@ try {
     nnMapper.set(defNn);
   }
 
-  for (const action of trackProgress(prepared.dictionariesAndAttributes, "dictionaries and attributes")) {
-    const {kind} = action;
-    if (kind === "createAttribute") {
-      const attr = action;
-      await apiCreate({
-        nn: attr.nn,
-        path: `facility/${facilityId}/admin/attribute`,
-        type: "attribute",
-        object: {
-          model: attr.model,
-          name: attr.name,
-          description: attr.description || null,
-          apiName: makeAttrApiName(attr.apiName),
-          type: attr.type,
-          dictionaryId: attr.dictionaryNnOrName ? (await findDict(attr.dictionaryNnOrName)).id : null,
-          defaultOrder: await getDefaultOrder(
-            attr.order,
-            async (o) => (await findAttrib(o.attributeApiName)).defaultOrder,
-          ),
-          isMultiValue: attr.isMultiValue,
-          requirementLevel: attr.requirementLevel,
-        },
-      });
-    } else if (kind === "createDictionary") {
-      const dict = action;
-      const dictionaryId = (
+  await processList({
+    list: prepared.dictionariesAndAttributes,
+    type: "dictionaries and attributes",
+    func: async (action) => {
+      const {kind} = action;
+      if (kind === "createAttribute") {
+        const attr = action;
         await apiCreate({
-          nn: dict.nn,
-          path: `facility/${facilityId}/admin/dictionary`,
-          type: "dictionary",
+          nn: attr.nn,
+          path: `facility/${facilityId}/admin/attribute`,
+          type: "attribute",
           object: {
-            name: dict.name,
-            positionRequiredAttributeIds: dict.positionRequiredAttributeApiNames
-              ? await Promise.all(
-                  dict.positionRequiredAttributeApiNames.map(async (apiName) => (await findAttrib(apiName)).id),
-                )
-              : undefined,
+            model: attr.model,
+            name: attr.name,
+            description: attr.description || null,
+            apiName: makeAttrApiName(attr.apiName),
+            type: attr.type,
+            dictionaryId: attr.dictionaryNnOrName ? (await findDict(attr.dictionaryNnOrName)).id : null,
+            defaultOrder: await getDefaultOrder(
+              attr.order,
+              async (o) => (await findAttrib(o.attributeApiName)).defaultOrder,
+            ),
+            isMultiValue: attr.isMultiValue,
+            requirementLevel: attr.requirementLevel,
           },
-        })
-      ).id;
-      for (const pos of dict.positions) {
-        await createPosition({dictionaryId, dictNnOrName: dict.name, pos});
-      }
-    } else if (kind === "extendDictionary") {
-      const dict = action;
-      const dictionary = await findDict(dict.name);
-      for (const pos of dict.positions) {
-        await createPosition({dictionaryId: dictionary.id, dictNnOrName: dict.name, pos});
-      }
-    } else {
-      throw new Error(`Unknown action kind: ${kind}`);
-    }
-  }
-
-  if (!config.onlyDictionariesAndAttributes) {
-    for (let staff of trackProgress(prepared.facilityStaff, "facility staff")) {
-      let userId;
-      if (staff.existing && !config.attemptPrefix) {
-        userId = (
-          await api("admin/user/tquery", {
-            req: {
-              columns: [{type: "column", column: "id"}],
-              filter: {type: "column", column: "email", op: "=", val: staff.email},
-              sort: [],
-              paging: {size: 1},
-            },
-          })
-        ).data[0]?.id;
-        if (!userId) {
-          throw new Error(`Existing user not found: ${staff.email}`);
-        }
-        if (staff.nn) {
-          nnMapper.set({nn: staff.nn, id: userId, type: "user"});
-        }
-      } else {
-        staff = staff as NewFacilityStaff;
-        userId = (
+        });
+      } else if (kind === "createDictionary") {
+        const dict = action;
+        const dictionaryId = (
           await apiCreate({
-            nn: staff.nn,
-            path: "admin/user",
-            type: "user",
+            nn: dict.nn,
+            path: `facility/${facilityId}/admin/dictionary`,
+            type: "dictionary",
             object: {
-              // TODO: Revert to just name when there is a way to set deactivatedAt.
-              name: staff.deactivatedAt ? `${staff.name} (nieaktywny)` : staff.name,
-              email: staff.email
-                ? config.attemptPrefix
-                  ? `${config.attemptPrefix}_${staff.email}`
-                  : staff.email
-                : null,
-              hasEmailVerified: !!staff.email,
-              ...(staff.password
-                ? {
-                    password: staff.password,
-                    passwordExpireAt: dateTimeType(staff.passwordExpireAt),
-                  }
-                : {
-                    password: null,
-                    passwordExpireAt: null,
-                  }),
-              hasGlobalAdmin: false,
+              name: dict.name,
+              positionRequiredAttributeIds: dict.positionRequiredAttributeApiNames
+                ? await Promise.all(
+                    dict.positionRequiredAttributeApiNames.map(async (apiName) => (await findAttrib(apiName)).id),
+                  )
+                : undefined,
             },
           })
         ).id;
+        for (const pos of dict.positions) {
+          await createPosition({dictionaryId, dictNnOrName: dict.name, pos});
+        }
+      } else if (kind === "extendDictionary") {
+        const dict = action;
+        const dictionary = await findDict(dict.name);
+        for (const pos of dict.positions) {
+          await createPosition({dictionaryId: dictionary.id, dictNnOrName: dict.name, pos});
+        }
+      } else {
+        throw new Error(`Unknown action kind: ${kind}`);
       }
-      if (staff.isStaff || staff.isAdmin) {
-        await apiCreate({
-          path: "admin/member",
-          type: "member",
-          object: {
-            userId,
-            facilityId,
-            isFacilityStaff: staff.isStaff,
-            hasFacilityAdmin: staff.isAdmin,
-            isFacilityClient: false,
-          },
-        });
-      }
-    }
+    },
+  });
 
-    for (const client of trackProgress(prepared.clients, "clients")) {
-      const {id} = await apiCreate({
-        nn: client.nn,
-        path: `facility/${facilityId}/user/client`,
-        type: "client",
-        object: {
-          name: client.name,
-          client: await attributeValues(client.client),
-        },
-      });
-      if (client.createdByNn || client.createdAt)
-        await api("admin/developer/overwrite-metadata", {
-          req: {
-            model: "client",
-            facilityId,
-            id,
-            createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
-            createdAt: dateTimeType(client.createdAt),
+  if (!config.onlyDictionariesAndAttributes) {
+    await processList({
+      list: prepared.facilityStaff,
+      type: "facility staff",
+      concurrency: true,
+      func: async (staff) => {
+        let userId;
+        if (staff.existing && !config.attemptPrefix) {
+          userId = (
+            await api("admin/user/tquery", {
+              req: {
+                columns: [{type: "column", column: "id"}],
+                filter: {type: "column", column: "email", op: "=", val: staff.email},
+                sort: [],
+                paging: {size: 1},
+              },
+            })
+          ).data[0]?.id;
+          if (!userId) {
+            throw new Error(`Existing user not found: ${staff.email}`);
+          }
+          if (staff.nn) {
+            nnMapper.set({nn: staff.nn, id: userId, type: "user"});
+          }
+        } else {
+          staff = staff as NewFacilityStaff;
+          userId = (
+            await apiCreate({
+              nn: staff.nn,
+              path: "admin/user",
+              type: "user",
+              object: {
+                // TODO: Revert to just name when there is a way to set deactivatedAt.
+                name: staff.deactivatedAt ? `${staff.name || staff.email} (nieaktywny)` : staff.name || staff.email,
+                email: staff.email
+                  ? config.attemptPrefix
+                    ? `${config.attemptPrefix}_${staff.email}`
+                    : staff.email
+                  : null,
+                hasEmailVerified: !!staff.email,
+                ...(staff.password
+                  ? {
+                      password: staff.password,
+                      passwordExpireAt: dateTimeType(staff.passwordExpireAt),
+                    }
+                  : {
+                      password: null,
+                      passwordExpireAt: null,
+                    }),
+                hasGlobalAdmin: false,
+              },
+            })
+          ).id;
+        }
+        if (staff.isStaff || staff.isAdmin) {
+          await apiCreate({
+            path: "admin/member",
+            type: "member",
+            object: {
+              userId,
+              facilityId,
+              isFacilityStaff: staff.isStaff,
+              hasFacilityAdmin: staff.isAdmin,
+              isFacilityClient: false,
+            },
+          });
+        }
+      },
+    });
+
+    await processList({
+      list: prepared.clients,
+      type: "clients",
+      concurrency: true,
+      func: async (client) => {
+        const {id} = await apiCreate({
+          nn: client.nn,
+          path: `facility/${facilityId}/user/client`,
+          type: "client",
+          object: {
+            name: client.name,
+            client: await attributeValues(client.client),
           },
         });
-    }
-    for (const clientPatch of trackProgress(prepared.patchClients, "clients to patch")) {
-      await apiPatch({
-        nn: clientPatch.nn,
-        id: clientPatch.id,
-        path: `facility/${facilityId}/user/client`,
-        type: "client",
-        object: {
-          name: clientPatch.name,
-          client: await attributeValues(clientPatch.client),
-        },
-      });
-    }
-    for (const clientGroup of trackProgress(prepared.clientGroups, "client groups")) {
-      await apiCreate({
-        nn: clientGroup.nn,
-        path: `facility/${facilityId}/client-group`,
-        type: "clientGroup",
-        object: {
-          clients: clientGroup.clients.map((c) => ({userId: nnMapper.get(c.clientNn), role: c.role})),
-          notes: clientGroup.notes,
-        },
-      });
-    }
+        if (client.createdByNn || client.createdAt)
+          await api("admin/developer/overwrite-metadata", {
+            req: {
+              model: "client",
+              facilityId,
+              id,
+              createdBy: client.createdByNn ? nnMapper.get(client.createdByNn) : undefined,
+              createdAt: dateTimeType(client.createdAt),
+            },
+          });
+      },
+    });
+    await processList({
+      list: prepared.patchClients,
+      type: "clients to patch",
+      concurrency: true,
+      func: async (clientPatch) => {
+        await apiPatch({
+          nn: clientPatch.nn,
+          id: clientPatch.id,
+          path: `facility/${facilityId}/user/client`,
+          type: "client",
+          object: {
+            name: clientPatch.name,
+            client: await attributeValues(clientPatch.client),
+          },
+        });
+      },
+    });
+    await processList({
+      list: prepared.clientGroups,
+      type: "client groups",
+      concurrency: true,
+      func: async (clientGroup) => {
+        await apiCreate({
+          nn: clientGroup.nn,
+          path: `facility/${facilityId}/client-group`,
+          type: "clientGroup",
+          object: {
+            clients: clientGroup.clients.map((c) => ({userId: nnMapper.get(c.clientNn), role: c.role})),
+            notes: clientGroup.notes,
+          },
+        });
+      },
+    });
     const meetingTypeDictionary = await findDict("meetingType");
     const meetingStatusDictionary = await findDict("meetingStatus");
     const meetingStatuses = {
@@ -627,58 +672,65 @@ try {
       no_show: attendanceStatusDictionary.positions.find((p: any) => p.name === "no_show").id,
       cancelled: attendanceStatusDictionary.positions.find((p: any) => p.name === "cancelled").id,
     };
-    for (const meeting of trackProgress(prepared.meetings, "meetings")) {
-      let typeDictId;
-      if (nnMapper.has(meeting.typeDictNnOrName)) {
-        typeDictId = nnMapper.get(meeting.typeDictNnOrName);
-      } else {
-        const typePos = meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName);
-        if (!typePos) {
-          throw new Error(`Meeting type not found: ${JSON.stringify(meeting.typeDictNnOrName)}`);
+    await processList({
+      list: prepared.meetings,
+      type: "meetings",
+      concurrency: true,
+      func: async (meeting, {allPrevious}) => {
+        let typeDictId;
+        if (nnMapper.has(meeting.typeDictNnOrName)) {
+          typeDictId = nnMapper.get(meeting.typeDictNnOrName);
+        } else {
+          const typePos = meetingTypeDictionary.positions.find((p: any) => p.name === meeting.typeDictNnOrName);
+          if (!typePos) {
+            throw new Error(`Meeting type not found: ${JSON.stringify(meeting.typeDictNnOrName)}`);
+          }
+          typeDictId = typePos.id;
         }
-        typeDictId = typePos.id;
-      }
-      const {id: meetingId} = await apiCreate({
-        nn: meeting.nn,
-        path: `facility/${facilityId}/meeting`,
-        type: "meeting",
-        object: {
-          typeDictId,
-          notes: meeting.notes,
-          date: meeting.date,
-          startDayminute: meeting.startDayMinute,
-          durationMinutes: meeting.durationMinutes,
-          statusDictId: meetingStatuses[meeting.status],
-          isRemote: meeting.isRemote,
-          staff: meeting.staff.map((att) => ({
-            userId: nnMapper.get(att.userNn),
-            attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
-          })),
-          clients: meeting.clients.map((att) => ({
-            userId: nnMapper.get(att.userNn),
-            attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
-            clientGroupId: att.clientGroupNn ? nnMapper.get(att.clientGroupNn) : null,
-          })),
-          resources: meeting.resourceNns?.map((nn) => ({resourceDictId: nnMapper.get(nn)})),
-          fromMeetingId:
-            meeting.fromMeetingNn && meeting.fromMeetingNn !== meeting.nn
-              ? nnMapper.get(meeting.fromMeetingNn)
-              : undefined,
-          interval: meeting.interval,
-        },
-      });
-      if (meeting.createdAt || meeting.createdByNn || meeting.updatedAt || meeting.updatedByNn)
-        await api("admin/developer/overwrite-metadata", {
-          req: {
-            model: "meeting",
-            id: meetingId,
-            createdAt: dateTimeType(meeting.createdAt),
-            createdBy: meeting.createdByNn ? nnMapper.get(meeting.createdByNn) : undefined,
-            updatedAt: dateTimeType(meeting.updatedAt),
-            updatedBy: meeting.updatedByNn ? nnMapper.get(meeting.updatedByNn) : undefined,
+        const fromMeetingNn =
+          meeting.fromMeetingNn && meeting.fromMeetingNn !== meeting.nn ? meeting.fromMeetingNn : undefined;
+        if (fromMeetingNn) {
+          await allPrevious();
+        }
+        const {id: meetingId} = await apiCreate({
+          nn: meeting.nn,
+          path: `facility/${facilityId}/meeting`,
+          type: "meeting",
+          object: {
+            typeDictId,
+            notes: meeting.notes,
+            date: meeting.date,
+            startDayminute: meeting.startDayMinute,
+            durationMinutes: meeting.durationMinutes,
+            statusDictId: meetingStatuses[meeting.status],
+            isRemote: meeting.isRemote,
+            staff: meeting.staff.map((att) => ({
+              userId: nnMapper.get(att.userNn),
+              attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
+            })),
+            clients: meeting.clients.map((att) => ({
+              userId: nnMapper.get(att.userNn),
+              attendanceStatusDictId: attendanceStatuses[att.attendanceStatus],
+              clientGroupId: att.clientGroupNn ? nnMapper.get(att.clientGroupNn) : null,
+            })),
+            resources: meeting.resourceNns?.map((nn) => ({resourceDictId: nnMapper.get(nn)})),
+            fromMeetingId: fromMeetingNn ? nnMapper.get(fromMeetingNn) : undefined,
+            interval: meeting.interval,
           },
         });
-    }
+        if (meeting.createdAt || meeting.createdByNn || meeting.updatedAt || meeting.updatedByNn)
+          await api("admin/developer/overwrite-metadata", {
+            req: {
+              model: "meeting",
+              id: meetingId,
+              createdAt: dateTimeType(meeting.createdAt),
+              createdBy: meeting.createdByNn ? nnMapper.get(meeting.createdByNn) : undefined,
+              updatedAt: dateTimeType(meeting.updatedAt),
+              updatedBy: meeting.updatedByNn ? nnMapper.get(meeting.updatedByNn) : undefined,
+            },
+          });
+      },
+    });
   }
 } finally {
   await nnMapper.close();
