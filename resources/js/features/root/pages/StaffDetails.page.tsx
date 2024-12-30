@@ -16,7 +16,7 @@ import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {StaffResourceForPatch} from "data-access/memo-api/resources/staff.resource";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
-import {UserMeetingsTables} from "features/facility-users/UserMeetingsTables";
+import {useUserMeetingsTables} from "features/facility-users/UserMeetingsTables";
 import {DateTime} from "luxon";
 import {Match, Show, Switch, VoidComponent, createEffect, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -39,6 +39,7 @@ export default (() => {
   const status = createQuery(User.statusQueryOptions);
   const invalidate = useInvalidator();
   const formLeaveConfirmation = createFormLeaveConfirmation();
+  const {UserMeetingsTables} = useUserMeetingsTables();
   const userId = () => params.userId!;
   const dataQuery = createQuery(() => FacilityStaff.staffMemberQueryOptions(userId()));
   const [editMode, setEditMode] = createSignal(false);
@@ -151,8 +152,8 @@ export default (() => {
                 </FelteForm>
                 <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
                   <UserMeetingsTables
-                    userName={user().name}
-                    userType="staff"
+                    staticUserName={user().name}
+                    staticUserType="staff"
                     intrinsicFilter={{
                       type: "column",
                       column: "attendant.userId",

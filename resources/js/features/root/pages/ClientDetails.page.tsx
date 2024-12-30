@@ -14,6 +14,7 @@ import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {TextField} from "components/ui/form/TextField";
 import {createAttributesProcessor} from "components/ui/form/attributes_processor";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
+import {EM_DASH} from "components/ui/symbols";
 import {QueryBarrier, cx, useLangFunc} from "components/utils";
 import {Autofocus} from "components/utils/Autofocus";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -28,9 +29,19 @@ import {ClientGroups} from "features/client/ClientGroups";
 import {PeopleAutoRelatedToClient} from "features/client/PeopleAutoRelatedToClient";
 import {createClientDeleteModal} from "features/client/client_delete_modal";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
-import {UserMeetingsTables} from "features/facility-users/UserMeetingsTables";
+import {useUserMeetingsTables} from "features/facility-users/UserMeetingsTables";
 import {useUserMeetingsStats} from "features/facility-users/user_meetings_stats";
-import {Match, Show, Switch, VoidComponent, createComputed, createEffect, createSignal, onMount} from "solid-js";
+import {
+  Match,
+  Show,
+  Switch,
+  VoidComponent,
+  createComputed,
+  createEffect,
+  createMemo,
+  createSignal,
+  onMount,
+} from "solid-js";
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {z} from "zod";
 
@@ -50,6 +61,7 @@ export default (() => {
   const invalidate = useInvalidator();
   const clientDeleteModal = createClientDeleteModal();
   const formLeaveConfirmation = createFormLeaveConfirmation();
+  const {UserMeetingsTables, ClientNoGroupMeetingsTable, useClientWithNoGroupMeetingsCount} = useUserMeetingsTables();
   const activeFacility = useActiveFacility();
   const clientAttributesProcessor = createAttributesProcessor("client");
   const userId = () => params.userId!;
@@ -63,7 +75,9 @@ export default (() => {
     meta: {isFormSubmit: true},
   }));
   const hiddenInEditModeClass = () => (editMode() ? "hidden" : undefined);
-  const [meetingTablesMode, setMeetingTablesMode] = createSignal<"client" | "clientGroup">("client");
+  const [meetingTablesMode, setMeetingTablesMode] = createSignal<"client" | "clientGroup" | "clientNoClientGroup">(
+    "client",
+  );
   createHistoryPersistence({
     key: "ClientDetails",
     value: () => ({meetingTablesMode: meetingTablesMode()}),
@@ -77,16 +91,23 @@ export default (() => {
         <Show when={dataQuery.data} fallback={<BigSpinner />}>
           {(user) => {
             const [selectedGroupId, setSelectedGroupId] = createSignal<string>();
+            const noGroupMeetingsCount = useClientWithNoGroupMeetingsCount(() =>
+              user().client.groupIds?.length ? userId() : undefined,
+            );
             onMount(() => {
               createComputed(() => {
-                if (!user().client.groupIds?.length || !selectedGroupId()) {
+                if (
+                  !user().client.groupIds?.length ||
+                  !selectedGroupId() ||
+                  (meetingTablesMode() === "clientNoClientGroup" && !noGroupMeetingsCount())
+                ) {
                   setMeetingTablesMode("client");
                 }
               });
             });
             const meetingsIntrinsicFilter = (): FilterH => {
               const mode = meetingTablesMode();
-              if (mode === "client") {
+              if (mode === "client" || mode === "clientNoClientGroup") {
                 return {type: "column", column: "attendant.userId", op: "=", val: userId()};
               } else if (mode === "clientGroup") {
                 return {type: "column", column: "attendant.clientGroupId", op: "=", val: selectedGroupId()!};
@@ -202,40 +223,70 @@ export default (() => {
                         <Capitalize text={t("models.meeting._name_plural")} />
                       </StandaloneFieldLabel>
                       <Show when={user().client.groupIds?.length}>
-                        <div class="self-start mt-1 flex gap-1 items-baseline">
-                          {t("facility_user.meetings_lists.meetings_for")}
-                          <SegmentedControl
-                            name="meeting_tables_mode"
-                            items={[
-                              {value: "client", label: () => t("facility_user.meetings_lists.meetings_for.client")},
-                              {
-                                value: "clientGroup",
-                                label: () => (
-                                  <span>
-                                    {t("facility_user.meetings_lists.meetings_for.client_group")}{" "}
-                                    <DocsModalInfoIcon
-                                      href="/help/meeting-client-groups"
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                  </span>
-                                ),
-                              },
-                            ]}
-                            value={meetingTablesMode()}
-                            onValueChange={setMeetingTablesMode}
-                            small
-                          />
-                        </div>
+                        {(_) => {
+                          const items = createMemo(() => [
+                            {
+                              value: "client",
+                              label: () => t("facility_user.meetings_lists.meetings_for.client"),
+                            },
+                            {
+                              value: "clientGroup",
+                              label: () => t("facility_user.meetings_lists.meetings_for.client_group"),
+                            },
+                            ...(noGroupMeetingsCount()
+                              ? [
+                                  {
+                                    value: "clientNoClientGroup",
+                                    label: () => (
+                                      <span>
+                                        {t("facility_user.meetings_lists.meetings_for.no_client_group")}{" "}
+                                        <span class="text-grey-text">
+                                          {EM_DASH} {noGroupMeetingsCount()}
+                                        </span>
+                                      </span>
+                                    ),
+                                  },
+                                ]
+                              : []),
+                          ]);
+                          return (
+                            <div class="self-start mt-1 flex gap-1 items-baseline">
+                              {t("facility_user.meetings_lists.meetings_for")}
+                              <SegmentedControl
+                                name="meeting_tables_mode"
+                                items={items()}
+                                value={meetingTablesMode()}
+                                onValueChange={setMeetingTablesMode}
+                                small
+                              />
+                              <DocsModalInfoIcon
+                                href="/help/meeting-client-groups"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          );
+                        }}
                       </Show>
                     </div>
-                    <UserMeetingsTables
-                      userName={user().name}
-                      userType="clients"
-                      clientGroupMeetings={meetingTablesMode() === "clientGroup"}
-                      intrinsicFilter={meetingsIntrinsicFilter()}
-                      staticPersistenceKey="clientMeetings"
-                      userMeetingsStats={meetingTablesMode() === "clientGroup" ? undefined : meetingsStats()}
-                    />
+                    <Switch>
+                      <Match when={meetingTablesMode() === "client" || meetingTablesMode() === "clientGroup"}>
+                        <UserMeetingsTables
+                          staticUserName={user().name}
+                          staticUserType="clients"
+                          clientGroupMeetings={meetingTablesMode() === "clientGroup"}
+                          intrinsicFilter={meetingsIntrinsicFilter()}
+                          staticPersistenceKey="clientMeetings"
+                          userMeetingsStats={meetingTablesMode() === "clientGroup" ? undefined : meetingsStats()}
+                        />
+                      </Match>
+                      <Match when={meetingTablesMode() === "clientNoClientGroup"}>
+                        <ClientNoGroupMeetingsTable
+                          staticUserName={user().name}
+                          intrinsicFilter={meetingsIntrinsicFilter()}
+                          staticPersistenceKey="clientMeetings"
+                        />
+                      </Match>
+                    </Switch>
                   </div>
                 </div>
               </div>
