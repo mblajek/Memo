@@ -1,31 +1,35 @@
 import {Select} from "components/ui/form/Select";
+import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {cx, useLangFunc} from "components/utils";
 import {NullColumnFilter} from "data-access/memo-api/tquery/types";
-import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {makeSelectItem} from "./select_items";
-import {FilterControl} from "./types";
+import {FilterControl, FilterHWithState} from "./types";
 
-export const NullFilterControl: FilterControl<NullColumnFilter> = (props) => {
+type Value = "-" | "*" | "null";
+type Filter = FilterHWithState<{value: Value}, NullColumnFilter>;
+
+export const NullFilterControl: FilterControl<Filter> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
   const {
-    value: [value, setValue],
-  } = getFilterStateSignal({
-    // eslint-disable-next-line solid/reactivity
-    column: props.column.id,
-    initial: {value: "-"},
+    state: {
+      value: [value, setValue],
+    },
+    getState,
+  } = getFilterControlState({
+    initial: {value: "-" satisfies Value as Value},
     filter: () => props.filter,
   });
-  function buildFilter(): NullColumnFilter | undefined {
+  function buildFilter(): Filter | undefined {
     switch (value()) {
       case "-":
         return undefined;
       case "*":
-        return {type: "column", column: props.schema.name, op: "null", inv: true};
+        return {type: "column", column: props.schema.name, op: "null", inv: true, state: getState()};
       case "null":
-        return {type: "column", column: props.schema.name, op: "null"};
+        return {type: "column", column: props.schema.name, op: "null", state: getState()};
       default:
         throw new Error(`Invalid value: ${value()}`);
     }
@@ -43,7 +47,7 @@ export const NullFilterControl: FilterControl<NullColumnFilter> = (props) => {
           items={items}
           value={value()}
           onValueChange={(value) => {
-            setValue(value!);
+            setValue(value! as Value);
             props.setFilter(buildFilter());
           }}
           nullable={false}

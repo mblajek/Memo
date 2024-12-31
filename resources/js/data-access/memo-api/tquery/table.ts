@@ -323,8 +323,8 @@ export function createTableRequestCreator({
       goToFirstPageOnChanges = false;
       batch(() => {
         setGlobalFilter(state.globalFilter);
-        for (const [column, signal] of Object.entries(columnFilters())) {
-          signal[1](state.columnFilters.get(column));
+        for (const [column, filter] of state.columnFilters.entries()) {
+          getColumnFilter(column)[1](filter);
         }
         setSorting(state.sorting);
         setPagination(state.pagination);
