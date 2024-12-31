@@ -13,7 +13,12 @@ export default (() => {
       </div>
       <For each={[...getPreloadedModulesInfo()].sort((a, b) => a[0].localeCompare(b[0]))}>
         {([module, info]) => {
-          const match = module.match(/^(.*\/)?(.+?)((?:\.tsx?)?(?:\?.+)?)$/) || [undefined, "", module, ""];
+          const match = module.match(/^(.*\/)?(.+?)((?:\.tsx?|-[a-zA-Z0-9-_]{8}\.js)?(?:\?.+)?)$/) || [
+            undefined,
+            "",
+            module,
+            "",
+          ];
           return (
             <>
               <div class="text-xs text-black text-opacity-40">

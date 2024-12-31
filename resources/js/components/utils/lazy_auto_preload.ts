@@ -34,7 +34,7 @@ function schedulePreload() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function lazyAutoPreload<T extends Component<any>>(fn: () => Promise<{default: T}>) {
   const str = fn.toString();
-  const name = str.match(/\bimport\("(?:\/resources\/js\/)(.+?)"\)/)?.[1] || str;
+  const name = str.match(/\bimport\("((?:\/resources\/js\/|\.\/)?(.+?))"\)/)?.[1] || str;
   setModulesInfo((prev) =>
     new Map(prev).set(name, {preload: () => undefined, loaded: false, preloaded: false, used: false}),
   );
