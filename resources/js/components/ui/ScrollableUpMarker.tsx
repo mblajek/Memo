@@ -1,5 +1,6 @@
 import {cx, htmlAttributes} from "components/utils";
-import {VoidComponent} from "solid-js";
+import {useEventListener} from "components/utils/event_listener";
+import {createSignal, VoidComponent} from "solid-js";
 
 interface Props extends htmlAttributes.div {
   readonly scrollableUp: boolean;
@@ -15,3 +16,18 @@ export const ScrollableUpMarker: VoidComponent<Props> = (props) => {
     </div>
   );
 };
+
+export function createScrollableUpMarker() {
+  const [scrollableUp, setScrollableUp] = createSignal(false);
+  const ScrollableUpMarkerInternal: VoidComponent<htmlAttributes.div> = (props) => (
+    <ScrollableUpMarker {...props} scrollableUp={scrollableUp()} />
+  );
+  function scrollableRef(ref: HTMLElement) {
+    useEventListener(ref, "scroll", () => setScrollableUp(ref.scrollTop > 1));
+  }
+  return {
+    ScrollableUpMarker: ScrollableUpMarkerInternal,
+    scrollableRef,
+    scrollableUp,
+  };
+}

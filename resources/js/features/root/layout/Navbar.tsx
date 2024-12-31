@@ -2,7 +2,7 @@ import {A} from "@solidjs/router";
 import {Button} from "components/ui/Button";
 import {FullLogo} from "components/ui/FullLogo";
 import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
-import {ScrollableUpMarker} from "components/ui/ScrollableUpMarker";
+import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {cx, SilentAccessBarrier, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -19,7 +19,7 @@ import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
 import {TbCalendarCode, TbCalendarTime, TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
-import {createSignal, DEV, ParentComponent, Show, VoidComponent} from "solid-js";
+import {DEV, ParentComponent, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
 import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
@@ -42,7 +42,7 @@ export const Navbar: VoidComponent = () => {
     </SilentAccessBarrier>
   );
 
-  const [scrollableUp, setScrollableUp] = createSignal(false);
+  const {ScrollableUpMarker, scrollableRef} = createScrollableUpMarker();
   const themeStyle = () => {
     const t = theme();
     return {"--navbar-color": t === "light" ? "#f3f0e0" : t === "dark" ? "#e3e0d0" : (t satisfies never)};
@@ -50,10 +50,10 @@ export const Navbar: VoidComponent = () => {
   return (
     <aside class={s.sidebar} style={themeStyle()}>
       <FullLogo class="h-16 p-2 mt-2" />
-      <ScrollableUpMarker scrollableUp={scrollableUp()} />
+      <ScrollableUpMarker />
       <nav
+        ref={scrollableRef}
         class={cx("col-start-1 row-start-1 p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}
-        onScroll={({target}) => setScrollableUp(target.scrollTop !== 0)}
       >
         <Show when={facilityUrl()}>
           <NavigationSection>
