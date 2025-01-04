@@ -1,38 +1,41 @@
 import {InfoIcon} from "components/ui/InfoIcon";
 import {SearchInput} from "components/ui/SearchInput";
+import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {closeAllSelects, Select, SelectItem} from "components/ui/form/Select";
 import {cx, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
-import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {FilterH, filterHToObject} from "data-access/memo-api/tquery/filter_utils";
 import {createComputed, createMemo, createSignal, VoidComponent} from "solid-js";
-import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
 import {makeSelectItem} from "./select_items";
-import {FilterControlProps} from "./types";
+import {FilterControlProps, FilterHWithState} from "./types";
 
-interface Props extends FilterControlProps {
+interface Props extends FilterControlProps<Filter> {
   readonly buildFilter?: (
     mode: Mode,
     value: string,
-    defaultBuildFilter: (mode: Mode, value: string) => FilterH | undefined,
-  ) => FilterH | undefined;
+    defaultBuildFilter: (mode: Mode, value: string) => (FilterH & object) | undefined,
+  ) => (FilterH & object) | undefined;
 }
 
 type Mode = "~" | "=" | "*" | "null" | ".*";
+
+type Filter = FilterHWithState<{mode: Mode; text: string}>;
 
 /** The filter control for column types `string`, `string_list` and `text`. */
 export const TextualFilterControl: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const filterFieldNames = useFilterFieldNames();
   const {
-    mode: [mode, setMode],
-    text: [text, setText],
-  } = getFilterStateSignal({
-    // eslint-disable-next-line solid/reactivity
-    column: props.column.id,
-    initial: {mode: "~" as Mode, text: ""},
+    state: {
+      mode: [mode, setMode],
+      text: [text, setText],
+    },
+    getState,
+  } = getFilterControlState({
+    initial: {mode: "~" satisfies Mode as Mode, text: ""},
     filter: () => props.filter,
   });
   const [inputText, setInputText] = createSignal(text());
@@ -40,10 +43,10 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
   const debouncedInputText = debouncedFilterTextAccessor(inputText);
   createComputed(() => setText(debouncedInputText()));
   createComputed(() => setInputText(text()));
-  function defaultBuildFilter(mode: Mode, value: string): FilterH | undefined {
+  function defaultBuildFilter(mode: Mode, value: string): (FilterH & object) | undefined {
     switch (mode) {
       case "~":
-        return value ? buildFuzzyTextualColumnFilter(value, {column: props.schema.name}) : undefined;
+        return value ? filterHToObject(buildFuzzyTextualColumnFilter(value, {column: props.schema.name})) : undefined;
       case "=":
         return {type: "column", column: props.schema.name, op: "=", val: value};
       case "*":
@@ -56,8 +59,11 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
         throw new Error(`Invalid value: ${value}`);
     }
   }
-  function buildFilter(mode: Mode, value: string): FilterH | undefined {
-    return props.buildFilter ? props.buildFilter(mode, value, defaultBuildFilter) : defaultBuildFilter(mode, value);
+  function buildFilter(mode: Mode, value: string): Filter | undefined {
+    const filter = props.buildFilter
+      ? props.buildFilter(mode, value, defaultBuildFilter)
+      : defaultBuildFilter(mode, value);
+    return filter ? {...filter, state: getState()} : undefined;
   }
   createComputed(() => props.setFilter(buildFilter(mode(), text())));
   const items = createMemo(() => {

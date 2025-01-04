@@ -1,10 +1,10 @@
+import {ButtonLikeProps} from "components/ui/ButtonLike";
 import {BiRegularCopy} from "solid-icons/bi";
 import {Show, splitProps, VoidComponent} from "solid-js";
 import {useLangFunc} from "../utils";
-import {ButtonProps} from "./Button";
 import {IconButton} from "./IconButton";
 
-interface Props extends ButtonProps {
+interface Props extends ButtonLikeProps {
   readonly text: string | undefined;
   /** Whether the text should be displayed on hover. */
   readonly textInTitle?: boolean;
@@ -20,10 +20,9 @@ export const CopyToClipboard: VoidComponent<Props> = (allProps) => {
         <IconButton
           {...buttonProps}
           icon={BiRegularCopy}
-          title={[
-            props.textInTitle ? `${t("actions.copy_to_clipboard")}\n${props.text}` : t("actions.copy_to_clipboard"),
-            {hideOnClick: true},
-          ]}
+          title={
+            props.textInTitle ? `${t("actions.copy_to_clipboard")}\n${props.text}` : t("actions.copy_to_clipboard")
+          }
           onClick={() => {
             navigator.clipboard.writeText(text());
           }}

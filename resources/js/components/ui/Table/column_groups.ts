@@ -101,7 +101,9 @@ export class ColumnGroupsCollector {
           // Only fail for missing positive overrides. Negative overrides can suppress e.g. attribute columns
           // that might be missing at some point.
           if (overrideValue && !this.columnGroups.has(overrideGroup)) {
-            throw new Error(`Override specified for unknown column: ${overrideGroup}`);
+            const message = `Override specified for unknown column: ${overrideGroup}`;
+            console.error(message);
+            throw new Error(message);
           }
         }
       }

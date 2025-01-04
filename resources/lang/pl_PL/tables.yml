@@ -45,7 +45,7 @@ tables:
     summary__few: "{{count, number}} klientów"
     summary__many: "{{count, number}} klientów"
     column_prefixes:
-      client.shortCode: "n"
+      client.shortCode: "nr"
       client.contactPhone: "tel"
       client.contactEmail: "email"
 

@@ -19,7 +19,7 @@ import {
 import {mergeSelectProps} from "./select_helper";
 
 export interface BaseTQuerySelectProps
-  extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
+  extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small" | "autofocus"> {
   /**
    * The configuration of how the items are fetched from tquery.
    *

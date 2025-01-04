@@ -76,6 +76,7 @@ export interface SelectBaseProps {
   readonly placeholder?: string;
   /** Whether the control should be shown in the small version. */
   readonly small?: boolean;
+  readonly autofocus?: boolean;
 }
 
 export interface SingleSelectPropsPart {
@@ -758,6 +759,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         placeholder={selection().size ? undefined : props.placeholder}
                         // Without filtering, the input is used just for the placeholder.
                         bool:inert={!props.onFilterChange}
+                        autofocus={props.autofocus}
                       />
                       <Buttons />
                     </div>
@@ -800,6 +802,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         placeholder={selection().size ? undefined : props.placeholder}
                         // Without filtering, the input is used just for the placeholder.
                         bool:inert={!props.onFilterChange}
+                        autofocus={props.autofocus}
                       />
                       <Buttons />
                     </div>

@@ -83,7 +83,6 @@ import {DictListFilterControl} from "./tquery_filters/DictListFilterControl";
 import {IntFilterControl} from "./tquery_filters/IntFilterControl";
 import {TextualFilterControl} from "./tquery_filters/TextualFilterControl";
 import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
-import {ColumnFilterStates} from "./tquery_filters/column_filter_states";
 import {FilterControl} from "./tquery_filters/types";
 
 type _Directives = typeof title;
@@ -91,7 +90,6 @@ type _Directives = typeof title;
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
     readonly tquery?: TQueryTableMeta<TData>;
-    readonly columnFilterStates?: ColumnFilterStates;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -175,6 +173,7 @@ export interface TQueryTableProps<TData = DataItem> {
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
   readonly initialSort?: SortingState;
+  readonly initialColumnGroups?: readonly string[];
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
@@ -409,6 +408,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     intrinsicFilter: () => props.intrinsicFilter,
     intrinsicSort: () => props.intrinsicSort,
     initialSort: props.initialSort,
+    initialColumnGroups: props.initialColumnGroups,
     initialPageSize:
       props.initialPageSize ||
       // eslint-disable-next-line solid/reactivity
@@ -417,7 +417,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     onColumnPrefixFilterUsed: (prefix) =>
       featureFilterPrefix.justUsed({comp: "table", model: translations.tableName(), prefix}),
   });
-  const columnFilterStates = new ColumnFilterStates();
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
     entityURL,
@@ -558,16 +557,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
             key: `TQueryTable:${props.staticPersistenceKey || "main"}`,
             value: () => ({
               tquery: miniState[0](),
-              columnFilters: columnFilterStates.getAll(),
             }),
             onLoad: (state) => {
               miniState[1](state.tquery);
-              columnFilterStates.setAll(state.columnFilters);
             },
             onReset: () => {
               resetMiniState();
-              // The columnFilterStates get cleared by each individual filter control when the filters are
-              // reset, which is done above.
             },
           });
           // Allow querying data now that the DEV columns are added and columns visibility is loaded.
@@ -827,7 +822,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           effectiveActiveColumnGroups,
           columnGroupingInfo,
         },
-        columnFilterStates,
       },
     }),
   );

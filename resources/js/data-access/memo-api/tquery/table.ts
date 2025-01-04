@@ -83,6 +83,7 @@ export function createTableRequestCreator({
   intrinsicFilter = () => undefined,
   intrinsicSort = () => undefined,
   initialSort = [],
+  initialColumnGroups = [],
   initialPageSize = DEFAULT_PAGE_SIZE,
   ...partialFuzzyGlobalFilterConfig
 }: {
@@ -91,6 +92,7 @@ export function createTableRequestCreator({
   intrinsicFilter?: Accessor<FilterH | undefined>;
   intrinsicSort?: Accessor<Sort | undefined>;
   initialSort?: SortingState;
+  initialColumnGroups?: readonly string[];
   initialPageSize?: number;
 } & Pick<FuzzyGlobalFilterConfig, "columnsByPrefix" | "onColumnPrefixFilterUsed">): RequestCreator<RequestController> {
   const dictionaries = useDictionaries();
@@ -108,6 +110,7 @@ export function createTableRequestCreator({
     }
     return map;
   });
+  // eslint-disable-next-line solid/reactivity
   return (schema) => {
     const [allInitialisedInternal, setAllInitialisedInternal] = createSignal(false);
     const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>(
@@ -120,7 +123,9 @@ export function createTableRequestCreator({
       equals: (a, b) => arraysEqual(a, b, (ai, bi) => ai.id === bi.id && ai.desc === bi.desc),
     });
     const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
-    const [activeColumnGroups, setActiveColumnGroups] = createSignal<readonly string[]>([]);
+    const [activeColumnGroups, setActiveColumnGroups] = createSignal<readonly string[]>(
+      initialColumnGroups.filter((group) => columnGroupsByName().has(group)),
+    );
     function getColumnFilter(column: ColumnName) {
       let signal = columnFilters()[column];
       if (!signal) {
@@ -318,8 +323,8 @@ export function createTableRequestCreator({
       goToFirstPageOnChanges = false;
       batch(() => {
         setGlobalFilter(state.globalFilter);
-        for (const [column, signal] of Object.entries(columnFilters())) {
-          signal[1](state.columnFilters.get(column));
+        for (const [column, filter] of state.columnFilters.entries()) {
+          getColumnFilter(column)[1](filter);
         }
         setSorting(state.sorting);
         setPagination(state.pagination);

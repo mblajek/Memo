@@ -1,8 +1,9 @@
 import {Hr} from "components/ui/Hr";
+import {ControlState} from "components/ui/Table/tquery_filters/filter_control_state";
+import {FilterHWithState} from "components/ui/Table/tquery_filters/types";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {title} from "components/ui/title";
 import {useLangFunc} from "components/utils";
-import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {SetsOp} from "data-access/memo-api/tquery/types";
 import {VoidComponent} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
@@ -51,11 +52,15 @@ export function useSingleSelectFilterHelper() {
     ];
   }
 
-  function buildFilter(value: readonly string[], column: string): FilterH | undefined {
+  function buildFilter<C extends ControlState>(
+    value: readonly string[],
+    column: string,
+    state: C,
+  ): FilterHWithState<C> | undefined {
     if (!value.length) {
       return undefined;
     } else if (value.includes(NON_NULL_VALUE)) {
-      return {type: "column", column, op: "null", inv: true};
+      return {type: "column", column, op: "null", inv: true, state};
     } else {
       const hasNull = value.includes(NULL_VALUE);
       return {
@@ -65,6 +70,7 @@ export function useSingleSelectFilterHelper() {
           hasNull ? {type: "column", column, op: "null"} : "never",
           {type: "column", column, op: "in", val: value.filter((v) => v !== NULL_VALUE)},
         ],
+        state,
       };
     }
   }

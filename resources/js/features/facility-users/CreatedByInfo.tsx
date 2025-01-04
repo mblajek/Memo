@@ -25,15 +25,19 @@ export const CreatedByInfo: VoidComponent<Props> = (allProps) => {
             setMode(mode() === "created" ? "updated" : "created");
             featureToggle.justUsed();
           }}
-          title={t("toggle_created_updated_info")}
+          title={[t("toggle_created_updated_info"), {hideOnClick: false}]}
         >
           {t(mode() === "created" ? "created_by" : "updated_by")}
         </Button>{" "}
-        <UserLink userId={mode() === "created" ? props.data.createdBy : props.data.updatedBy} />
+        <UserLink userId={mode() === "created" ? props.data.createdBy : props.data.updatedBy} allowWrap={false} />
       </div>
       <Show when={mode() === "created" ? props.data.createdAt : props.data.updatedAt}>
         {(dateTime) => (
-          <FormattedDateTime dateTime={DateTime.fromISO(dateTime())} format={{...DATE_TIME_FORMAT, weekday: "short"}} />
+          <FormattedDateTime
+            class="whitespace-nowrap"
+            dateTime={DateTime.fromISO(dateTime())}
+            format={{...DATE_TIME_FORMAT, weekday: "short"}}
+          />
         )}
       </Show>
     </div>

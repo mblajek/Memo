@@ -2,7 +2,8 @@ import {A} from "@solidjs/router";
 import {Button} from "components/ui/Button";
 import {FullLogo} from "components/ui/FullLogo";
 import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
-import {SilentAccessBarrier, cx, useLangFunc} from "components/utils";
+import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
+import {cx, SilentAccessBarrier, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
@@ -10,6 +11,7 @@ import {BiRegularErrorAlt, BiRegularTable} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
 import {FaSolidList} from "solid-icons/fa";
+import {FiLoader} from "solid-icons/fi";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {IoReloadSharp} from "solid-icons/io";
 import {OcLog3, OcTable3} from "solid-icons/oc";
@@ -40,6 +42,7 @@ export const Navbar: VoidComponent = () => {
     </SilentAccessBarrier>
   );
 
+  const {ScrollableUpMarker, scrollableRef} = createScrollableUpMarker();
   const themeStyle = () => {
     const t = theme();
     return {"--navbar-color": t === "light" ? "#f3f0e0" : t === "dark" ? "#e3e0d0" : (t satisfies never)};
@@ -47,7 +50,11 @@ export const Navbar: VoidComponent = () => {
   return (
     <aside class={s.sidebar} style={themeStyle()}>
       <FullLogo class="h-16 p-2 mt-2" />
-      <nav class={cx("p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}>
+      <ScrollableUpMarker />
+      <nav
+        ref={scrollableRef}
+        class={cx("col-start-1 row-start-1 p-3 overflow-y-auto flex flex-col gap-1", s.navScroll)}
+      >
         <Show when={facilityUrl()}>
           <NavigationSection>
             <FacilityAdminOrStaffBarrier>
@@ -143,6 +150,7 @@ export const Navbar: VoidComponent = () => {
               <NavigationItem icon={OcLog3} href="/dev/logs" routeKey="Logs" small />
               <NavigationItem icon={CgTrack} href="/dev/feature-use" routeKey="Feature use" small />
             </SilentAccessBarrier>
+            <NavigationItem icon={FiLoader} href="/dev/preload-statuses" routeKey="Preload" small />
             <NavigationItem icon={BiRegularErrorAlt} href="/dev/crash" routeKey="Crash" small />
             <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />
           </NavigationSection>

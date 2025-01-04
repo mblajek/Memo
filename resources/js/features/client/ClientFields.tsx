@@ -1,3 +1,4 @@
+import {Age} from "components/ui/Age";
 import {Email} from "components/ui/Email";
 import {LinksList} from "components/ui/LinksList";
 import {Phone} from "components/ui/Phone";
@@ -57,7 +58,19 @@ export const ClientFields: VoidComponent<Props> = (props) => {
             } satisfies AttributeParams<string>,
             notes: false,
             birthDate: {
-              view: (date) => <span>{DateTime.fromISO(date()).toLocaleString(DATE_FORMAT)}</span>,
+              view: (date) => {
+                const d = () => DateTime.fromISO(date());
+                return (
+                  <span>
+                    {d().toLocaleString(DATE_FORMAT)}{" "}
+                    <span class="text-grey-text">
+                      {t("parenthesis.open")}
+                      <Age birthDate={d()} />
+                      {t("parenthesis.close")}
+                    </span>
+                  </span>
+                );
+              },
             } satisfies AttributeParams<string>,
             contactEmail: {
               view: (email) => <Email email={email()} />,

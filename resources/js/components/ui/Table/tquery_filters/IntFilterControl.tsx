@@ -1,39 +1,42 @@
 import {Button} from "components/ui/Button";
+import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {cx, useLangFunc} from "components/utils";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
 import {Show, createComputed, createMemo} from "solid-js";
-import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
-import {FilterControl} from "./types";
+import {FilterControl, FilterHWithState} from "./types";
 
 type _Directives = typeof title;
 
-type IntRangeFilter =
+type Filter = FilterHWithState<
+  {lower: string; upper: string},
   | {
       type: "op";
       op: "&";
       val: [(IntColumnFilter & {op: ">="}) | "always", (IntColumnFilter & {op: "<="}) | "always"];
     }
-  | (IntColumnFilter & {op: "="});
+  | (IntColumnFilter & {op: "="})
+>;
 
 /**
  * Filter for int columns.
  * TODO: Add support for nullable columns.
  */
-export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
+export const IntFilterControl: FilterControl<Filter> = (props) => {
   const t = useLangFunc();
   const featureRangeSync = featureUseTrackers.filterRangeSync();
   const filterFieldNames = useFilterFieldNames();
   const {
-    lower: [lower, setLower],
-    upper: [upper, setUpper],
-  } = getFilterStateSignal({
-    // eslint-disable-next-line solid/reactivity
-    column: props.column.id,
+    state: {
+      lower: [lower, setLower],
+      upper: [upper, setUpper],
+    },
+    getState,
+  } = getFilterControlState({
     initial: {lower: "", upper: ""},
     filter: () => props.filter,
   });
@@ -54,7 +57,7 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
       return props.setFilter(undefined);
     }
     if (l !== undefined && l === u) {
-      return props.setFilter({type: "column", column: props.schema.name, op: "=", val: l});
+      return props.setFilter({type: "column", column: props.schema.name, op: "=", val: l, state: getState()});
     }
     return props.setFilter({
       type: "op",
@@ -77,6 +80,7 @@ export const IntFilterControl: FilterControl<IntRangeFilter> = (props) => {
             }
           : "always",
       ],
+      state: getState(),
     });
   });
   const canSyncRange = () => true;

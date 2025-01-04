@@ -7,7 +7,10 @@ import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSele
 import {mergeSelectProps} from "./select_helper";
 
 interface BaseProps
-  extends Pick<SelectBaseProps, "name" | "label" | "getGroupHeader" | "disabled" | "placeholder" | "small"> {
+  extends Pick<
+    SelectBaseProps,
+    "name" | "label" | "getGroupHeader" | "disabled" | "placeholder" | "small" | "autofocus"
+  > {
   /** The id or name of the dictionary. */
   readonly dictionary: string;
   readonly filterable?: boolean;

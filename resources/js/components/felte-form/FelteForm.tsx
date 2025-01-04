@@ -14,6 +14,7 @@ import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
 import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
+import {Autofocus} from "components/utils/Autofocus";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
 import {Context, JSX, createContext, createMemo, onMount, splitProps, useContext} from "solid-js";
@@ -283,26 +284,19 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   } satisfies FormContextValue<T>;
   return (
     <TypedFormContext.Provider value={contextValue}>
-      <form
-        autocomplete="off"
-        ref={(formElem) => {
+      <Autofocus autofocus={!formDisabled()}>
+        <form
+          autocomplete="off"
           // Forward the form element to felte.
-          form.form(formElem);
-          // Focus the autofocus element (as it doesn't happen automatically).
-          onMount(() => {
-            const focusedElem = formElem.querySelector("[autofocus]");
-            if (focusedElem instanceof HTMLElement) {
-              focusedElem.focus();
-            }
-          });
-        }}
-        {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
-      >
-        <fieldset class="contents" disabled={formDisabled()} bool:inert={form.isSubmitting()}>
-          {getChildrenElement(props.children, form, contextValue)}
-        </fieldset>
-        <LoadingPane isLoading={form.isSubmitting() || mutationsTracking.isAnyPending()} />
-      </form>
+          ref={(formElem) => form.form(formElem)}
+          {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
+        >
+          <fieldset class="contents" disabled={formDisabled()} bool:inert={form.isSubmitting()}>
+            {getChildrenElement(props.children, form, contextValue)}
+          </fieldset>
+          <LoadingPane isLoading={form.isSubmitting() || mutationsTracking.isAnyPending()} />
+        </form>
+      </Autofocus>
     </TypedFormContext.Provider>
   );
 };
