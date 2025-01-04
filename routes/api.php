@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\DeveloperController;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Facility\ClientController;
 use App\Http\Controllers\Facility\ClientGroupController;
 use App\Http\Controllers\Facility\ClientTqueryController;
@@ -43,10 +44,10 @@ Route::prefix('/v1')->group(function () {
     });
     Route::prefix('/user')->group(function () {
         Route::patch('', [UserController::class, 'patch']);
-        Route::post('/login', [UserController::class, 'login'])->middleware(['throttle:5,1,api_login']);
+        Route::post('/login', [AuthController::class, 'login'])->middleware(['throttle:5,1,api_login']);
         Route::get('/status/{facility?}', [UserController::class, 'status']);
-        Route::match(['get', 'post'], '/logout', [UserController::class, 'logout']);
-        Route::post('/password', [UserController::class, 'password']);
+        Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout']);
+        Route::post('/password', [AuthController::class, 'password']);
         Route::put('/storage/{key}', [UserController::class, 'storagePut']);
         Route::get('/storage/{key?}', [UserController::class, 'storageGet']);
     });

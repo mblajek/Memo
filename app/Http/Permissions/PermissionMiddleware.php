@@ -10,10 +10,16 @@ use App\Models\Member;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class PermissionMiddleware
 {
+    public const string SESSION_DEVELOPER_MODE = 'developer_mode';
+    // used to log-out on all devices after password change
+    public const string SESSION_PASSWORD_HASH_HASH = 'password_hash_hash';
+
+
     private static ?PermissionObject $permissionObject = null;
 
     public static function permissions(): PermissionObject
@@ -65,11 +71,17 @@ class PermissionMiddleware
 
     private function requestPermissions(Request $request): PermissionObject
     {
+        $session = $request->hasSession() ? $request->session() : null;
+
         $verified = false;
         $unverified = false;
         $globalAdmin = false;
-        /** @var User|null $user */
-        $user = $request->user();
+        $user = User::fromAuthenticatable($request->user());
+        if ($user && $session?->get(self::SESSION_PASSWORD_HASH_HASH) !== $user->passwordHashHash()) {
+            Auth::logout();
+            $user = null;
+        }
+
         $authorised = ($user !== null);
         if ($authorised) {
             $verified = ($user->email_verified_at !== null);
@@ -102,7 +114,7 @@ class PermissionMiddleware
             facilityClient: $member && $member->client_id,
             facilityStaff: $member && $member->staff_member_id,
             facilityAdmin: $member && $member->facility_admin_grant_id,
-            developer: $globalAdmin && $request->hasSession() && $request->session()->get('developer_mode'),
+            developer: $globalAdmin && $session?->get(self::SESSION_DEVELOPER_MODE),
         );
     }
 }

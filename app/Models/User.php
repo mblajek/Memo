@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -50,7 +51,7 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    public const SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
+    public const string SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
 
     /**
      * The attributes that are mass assignable.
@@ -262,5 +263,18 @@ class User extends Authenticatable
             }
         }
         return false;
+    }
+
+    public function passwordHashHash(): string
+    {
+        return md5($this->id . $this->password);
+    }
+
+    public static function fromAuthenticatable(?AuthenticatableContract $authenticatable): ?self
+    {
+        if ($authenticatable && !($authenticatable instanceof self)) {
+            return self::query()->findOrFail($authenticatable->getAuthIdentifier());
+        }
+        return $authenticatable;
     }
 }

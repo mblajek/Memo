@@ -49,6 +49,22 @@ readonly class AdminUserTquery extends TqService
 
         foreach (
             [
+                ['user_login_success', 'last_login_success'],
+                ['user_login_failure', 'last_login_failure'],
+                ['user_password_change', 'last_password_change'],
+            ] as [$source, $alias]
+        ) {
+            $config->addQuery(
+                TqDataTypeEnum::datetime_nullable,
+                fn(string $tableName) => "select `created_at` from `log_entries` where"
+                    . " `log_entries`.`user_id` = `$tableName`.`id`"
+                    . " and `source` = '$source' order by `created_at` desc limit 1",
+                $alias,
+            );
+        }
+
+        foreach (
+            [
                 ['facility_admin_grant_id', 'has_facility_admin'],
                 ['staff_member_id', 'is_staff'],
                 ['client_id', 'is_client'],
