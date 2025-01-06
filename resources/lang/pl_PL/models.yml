@@ -60,6 +60,9 @@ user:
   password: "hasło"
   hasPassword: "posiada hasło"
   passwordExpireAt: "data wygaśnięcia hasła"
+  lastPasswordChangeAt: "ostatnia zmiana hasła"
+  lastLoginSuccessAt: "ostatnie logowanie"
+  lastLoginFailureAt: "ostatnie nieudane logowanie"
   facilities.*.name: "placówki"
   facilities.count: "placówki$t(models.generic.count_suffix)"
   managedByFacilityId: "placówka zarządzająca"
@@ -68,6 +71,7 @@ user:
   hasGlobalAdmin: "globalny administrator"
   hasFacilityAdmin: "administrator placówki"
   isStaff: "pracownik"
+  isActiveStaff: "aktywny pracownik"
   isClient: "klient"
   members: "przypisane placówki"
 
@@ -82,6 +86,9 @@ facility_user:
   plannedMeetingsCount: "liczba zaplanowanych spotkań"
   plannedMeetingsCountNextMonth: "liczba spotkań w nast. miesiącu"
   meetings: "$t(models.meeting._name_plural)"
+  member.isStaff: "$t(models.user.isStaff)"
+  member.isActiveStaff: "$t(models.user.isActiveStaff)"
+  member.isClient: "$t(models.user.isClient)"
 
 staff:
   _name: "pracownik"

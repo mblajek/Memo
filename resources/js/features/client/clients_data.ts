@@ -36,7 +36,7 @@ export const useClientsData = createCached(() => {
     prefixQueryKey: FacilityClient.keys.client(),
     requestCreator: staticRequestCreator(request),
     dataQueryOptions: () => ({
-      enabled: !!dictionaries() && !!activeFacilityId(),
+      enabled: !!dictionaries(),
       staleTime: 3600 * 1000,
     }),
   });

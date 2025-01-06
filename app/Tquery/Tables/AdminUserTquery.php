@@ -49,9 +49,9 @@ readonly class AdminUserTquery extends TqService
 
         foreach (
             [
-                ['user_login_success', 'last_login_success'],
-                ['user_login_failure', 'last_login_failure'],
-                ['user_password_change', 'last_password_change'],
+                ['user_login_success', 'last_login_success_at'],
+                ['user_login_failure', 'last_login_failure_at'],
+                ['user_password_change', 'last_password_change_at'],
             ] as [$source, $alias]
         ) {
             $config->addQuery(
