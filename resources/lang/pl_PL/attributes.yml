@@ -4,7 +4,7 @@ attributes:
     birthDate: "data urodzenia"
     contactEmail: "e-mail kontaktowy"
     contactPhone: "telefon"
-    contactPhone.desc: "Numer głównego telefonu kontaktowego (jeżeli ta osoba ma więcej numerów telefonu, dodaj je w opisie)"
+    contactPhone.desc: "Numer głównego telefonu kontaktowego (jeżeli ta osoba ma więcej numerów telefonu, dodaj je poniżej)"
     addressStreetNumber: "adres: ulica i numer"
     addressPostalCode: "adres: kod pocztowy"
     addressCity: "adres: miasto"
