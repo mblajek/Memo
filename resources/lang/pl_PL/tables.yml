@@ -46,7 +46,7 @@ tables:
     summary__few: "{{count, number}} klientów"
     summary__many: "{{count, number}} klientów"
     column_prefixes:
-      client.shortCode: "nr"
+      client.shortCode: ["nr", "n"]
       client.contactPhone: "tel"
       client.contactEmail: "email"
 
@@ -128,6 +128,8 @@ tables:
       client.updatedAt: "zmodyfikowano (klient)"
       client.updatedBy.name: "zmodyfikowano przez (klient)"
       client.updatedBy.id: "$t(tables.tables.meeting_client.column_names.client.updatedBy.id)"
+      completedMeetingsCount: "liczba wszystkich odbytych spotkań"
+      plannedMeetingsCount: "liczba wszystkich zaplanowanych spotkań"
     column_groups:
       attendant_multicolumn: "$t(models.client._name)"
     with_column_group:

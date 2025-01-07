@@ -12,7 +12,7 @@ interface LangFuncBase {
  * to get the first available translation.
  */
 export interface LangFunc extends LangFuncBase {
-  getObjects(key: string | readonly string[], options?: TGetObjectsOptions): Record<string, string>;
+  getObjects<V = string>(key: string | readonly string[], options?: TGetObjectsOptions): Record<string, V>;
 }
 
 export type TGetObjectsOptions = TOptions & {
