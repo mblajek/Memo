@@ -73,7 +73,7 @@ export const ClientFields: VoidComponent<Props> = (props) => {
               },
             } satisfies AttributeParams<string>,
             contactEmail: {
-              view: (email) => <Email email={email()} />,
+              view: (email) => <Email class="w-full" email={email()} />,
             } satisfies AttributeParams<string>,
             contactPhone: {
               view: (phone) => <Phone class="font-semibold" phone={phone()} />,
