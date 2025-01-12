@@ -57,7 +57,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
       class="flex flex-col gap-4 items-stretch"
       {...formProps}
     >
-      {(form) => {
+      {(form, formContext) => {
         createEffect(
           on(
             [
@@ -142,35 +142,41 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                                 </Button>
                               )}
                             >
-                              {(popOver) => (
-                                <SimpleMenu onClick={() => popOver.close()}>
-                                  <Switch>
-                                    <Match when={isChild()}>
-                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
-                                        <span class="text-grey-text">{clientTypeDict()?.child.label}</span>
-                                      </Button>
-                                    </Match>
-                                    <Match when="not child">
-                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
-                                        <span class="text-grey-text">
-                                          {t("facility_user.client_groups.role_preset_empty")}
-                                        </span>
-                                      </Button>
-                                      <For
-                                        each={dictionaries()
-                                          ?.get("clientGroupClientRole")
-                                          .activePositions.map(({label}) => label)}
-                                      >
-                                        {(preset) => (
-                                          <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
-                                            {preset}
-                                          </Button>
-                                        )}
-                                      </For>
-                                    </Match>
-                                  </Switch>
-                                </SimpleMenu>
-                              )}
+                              {(popOver) => {
+                                function setRole(role: string) {
+                                  form.setFields(`clients.${index}.role`, role);
+                                  (
+                                    formContext.getElement()?.querySelector(`#clients\\.${index}\\.role`) as
+                                      | HTMLElement
+                                      | undefined
+                                  )?.focus();
+                                }
+                                return (
+                                  <SimpleMenu onClick={() => popOver.close()}>
+                                    <Switch>
+                                      <Match when={isChild()}>
+                                        <Button onClick={() => setRole("")}>
+                                          <span class="text-grey-text">{clientTypeDict()?.child.label}</span>
+                                        </Button>
+                                      </Match>
+                                      <Match when="not child">
+                                        <Button onClick={() => setRole("")}>
+                                          <span class="text-grey-text">
+                                            {t("facility_user.client_groups.role_preset_empty")}
+                                          </span>
+                                        </Button>
+                                        <For
+                                          each={dictionaries()
+                                            ?.get("clientGroupClientRole")
+                                            .activePositions.map(({label}) => label)}
+                                        >
+                                          {(preset) => <Button onClick={() => setRole(preset)}>{preset}</Button>}
+                                        </For>
+                                      </Match>
+                                    </Switch>
+                                  </SimpleMenu>
+                                );
+                              }}
                             </PopOver>
                           </div>
                         </div>

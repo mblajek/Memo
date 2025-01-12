@@ -140,6 +140,16 @@ export default (() => {
           id: "Req. level",
           ...textSort(),
         }),
+        h.accessor("description", {
+          id: "Description",
+          cell: cellFunc<string, Attribute>((props) => (
+            <PaddedCell class="whitespace-pre-wrap wrapText">
+              <ShowCellVal v={props.v}>{(v) => v()}</ShowCellVal>
+            </PaddedCell>
+          )),
+          ...textSort(),
+          size: 400,
+        }),
         ...(attributes()
           ?.getForModel("attribute")
           .map((attr) =>

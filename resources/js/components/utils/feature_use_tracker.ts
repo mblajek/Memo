@@ -49,13 +49,13 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
   const logMutation = createMutation(() => ({mutationFn: System.log}));
   let setData = featureUseSetters.get(featureId);
   if (!setData) {
+    // Make sure the effect is persistent.
     appContext.runInAppContext(() => {
       const [data, dataSetter] = createSignal<FeatureUseData<D>>({count: 0, breakdown: new Map()});
       setData = dataSetter;
       featureUseSetters.set(featureId, setData);
       // eslint-disable-next-line solid/reactivity
       const debouncedData = debouncedAccessor(data, {timeMs: fullOptions.debounce.toMillis(), lazy: true});
-      // Make sure the effect is persistent.
       createEffect(
         on(debouncedData, ({firstTime, lastTime, count, breakdown}) => {
           if (firstTime && lastTime && count) {

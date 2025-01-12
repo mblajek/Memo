@@ -46,30 +46,32 @@ export const FacilityControl: VoidComponent = () => {
             <p class="font-semibold">{userFacilities()[0]!.name}</p>
           </Match>
           <Match when={userFacilities().length > 1}>
-            <Select
-              name="activeFacilityId"
-              items={userFacilities().map(({id, name}) => ({
-                value: id,
-                label: () => <span class="font-semibold">{name}</span>,
-              }))}
-              nullable={false}
-              value={activeFacilityId()}
-              onValueChange={(facilityId) => {
-                if (facilityId && facilityId !== activeFacilityId()) {
-                  const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
-                  if (url) {
-                    // Facility pages might assume that the active facility id never changes, because changing the facility
-                    // always recreates the whole page by performing this navigation.
-                    navigate("/");
-                    setTimeout(() => {
-                      setActiveFacilityId(facilityId);
-                      navigate(`/${url}`);
-                    });
+            <div class="min-w-32">
+              <Select
+                name="activeFacilityId"
+                items={userFacilities().map(({id, name}) => ({
+                  value: id,
+                  label: () => <span class="font-semibold">{name}</span>,
+                }))}
+                nullable={false}
+                value={activeFacilityId()}
+                onValueChange={(facilityId) => {
+                  if (facilityId && facilityId !== activeFacilityId()) {
+                    const url = userFacilities().find((facility) => facility.id === facilityId)?.url;
+                    if (url) {
+                      // Facility pages might assume that the active facility id never changes, because changing the facility
+                      // always recreates the whole page by performing this navigation.
+                      navigate("/");
+                      setTimeout(() => {
+                        setActiveFacilityId(facilityId);
+                        navigate(`/${url}`);
+                      });
+                    }
+                    User.setLastLoginFacilityId(facilityId);
                   }
-                  User.setLastLoginFacilityId(facilityId);
-                }
-              }}
-            />
+                }}
+              />
+            </div>
           </Match>
         </Switch>
       )}

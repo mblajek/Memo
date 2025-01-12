@@ -55,11 +55,13 @@ export const Header: VoidComponent<Props> = (props) => {
       {props.wrapIn ? props.wrapIn(header) : header}
       <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
         {(filterControl) => (
-          <div class="flex flex-wrap items-end gap-0.5 overflow-y-auto">
-            <div class="flex-grow basis-0">{filterControl()()}</div>
-            <div class="ml-auto">
-              <FilterIconButton isFiltering={!!props.filter![0]()} onClear={() => props.filter![1](undefined)} />
-            </div>
+          <div class="flex items-stretch min-h-0 gap-0.5">
+            <div class="flex-grow basis-0 overflow-y-auto">{filterControl()()}</div>
+            <FilterIconButton
+              class="self-end mb-1"
+              isFiltering={!!props.filter![0]()}
+              onClear={() => props.filter![1](undefined)}
+            />
           </div>
         )}
       </Show>

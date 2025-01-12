@@ -356,7 +356,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         </label>
       </Show>
       <fieldset data-felte-keep-on-remove disabled={!props.editMode}>
-        <div class="grid gap-x-1" style={{"grid-template-columns": "1fr 2fr auto"}}>
+        <div class="grid gap-x-1" style={{"grid-template-columns": "minmax(8em, 1fr) minmax(8em, 2fr) auto"}}>
           <For each={attributeGroups()} fallback={t("attributes.no_attributes")}>
             {(group) => (
               <SectionWithHeader

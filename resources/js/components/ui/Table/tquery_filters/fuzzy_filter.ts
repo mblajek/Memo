@@ -258,8 +258,14 @@ export function useColumnsByPrefixUtil() {
   const t = useLangFunc();
   return {
     fromColumnPrefixes(key: string | readonly string[]): FuzzyGlobalFilterConfig["columnsByPrefix"] {
-      const entries = Object.entries(t.getObjects(key, {mergeObjects: true}));
-      return entries.length ? new Map<string, string>(entries.map(([column, prefix]) => [prefix, column])) : undefined;
+      const entries = Object.entries(t.getObjects<string | readonly string[]>(key, {mergeObjects: true}));
+      return entries.length
+        ? new Map<string, string>(
+            entries.flatMap(([column, prefixes]) =>
+              typeof prefixes === "string" ? [[prefixes, column]] : prefixes.map((prefix) => [prefix, column]),
+            ),
+          )
+        : undefined;
     },
   };
 }

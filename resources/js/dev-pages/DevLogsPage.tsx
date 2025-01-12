@@ -29,7 +29,7 @@ export default (() => {
           extraDataColumns: ["source"],
           columnDef: {
             cell: cellFunc<string>((props) => (
-              <ScrollableCell class="pr-0 font-mono text-sm whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
+              <ScrollableCell class="pr-0 text-sm whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
                 <ShowCellVal v={props.v}>
                   {(v) => (
                     <LogText
@@ -49,7 +49,7 @@ export default (() => {
           extraDataColumns: ["source"],
           columnDef: {
             cell: cellFunc<string>((props) => (
-              <ScrollableCell class="pr-0 font-mono text-xs whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
+              <ScrollableCell class="pr-0 text-xs whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
                 <ShowCellVal v={props.v}>
                   {(v) => (
                     <LogText
@@ -98,7 +98,7 @@ interface LogTextProps {
 const LogText: VoidComponent<LogTextProps> = (props) => {
   const t = useLangFunc();
   return (
-    <div class="flex gap-1">
+    <div class="flex gap-1 font-mono">
       <div class="basis-0 min-w-0 grow">{props.text}</div>
       <div class="px-0.5 flex flex-col text-base">
         <CopyToClipboard class="bg-white rounded" text={props.text} />

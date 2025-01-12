@@ -62,7 +62,7 @@ export namespace System {
   export interface LogRequest {
     readonly logLevel: LogLevel;
     readonly source: LogAPIFrontendSource;
-    readonly message: string;
+    readonly message?: string;
     readonly context?: string;
   }
 

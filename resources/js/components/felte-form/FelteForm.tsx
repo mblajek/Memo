@@ -17,7 +17,7 @@ import {isAxiosError} from "axios";
 import {Autofocus} from "components/utils/Autofocus";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
-import {Context, JSX, createContext, createMemo, onMount, splitProps, useContext} from "solid-js";
+import {Context, JSX, createContext, createMemo, createSignal, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {LoadingPane} from "../ui/LoadingPane";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
@@ -33,6 +33,7 @@ export interface FormContextValue<T extends Obj = Obj> {
   readonly props: FormProps<T>;
   readonly formConfig: FormConfigWithoutTransformFn<T>;
   readonly form: FormType<T>;
+  getElement(): HTMLFormElement | undefined;
   isFormDisabled(): boolean;
   readonly translations: FormTranslations;
 }
@@ -275,10 +276,12 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   props.onFormCreated?.(form);
 
   const TypedFormContext = typedFormContext<T>();
+  const [formElement, setFormElement] = createSignal<HTMLFormElement>();
   const contextValue = {
     props: allProps,
     formConfig,
     form: form as FormType<T>,
+    getElement: formElement,
     isFormDisabled: () => formDisabled(),
     translations,
   } satisfies FormContextValue<T>;
@@ -288,7 +291,10 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         <form
           autocomplete="off"
           // Forward the form element to felte.
-          ref={(formElem) => form.form(formElem)}
+          ref={(formElem) => {
+            setFormElement(formElem);
+            form.form(formElem);
+          }}
           {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
         >
           <fieldset class="contents" disabled={formDisabled()} bool:inert={form.isSubmitting()}>

@@ -48,6 +48,7 @@ export interface TableTranslations {
   columnNameOverride?(column: string, o?: TOptions): string;
   /** Summary of the table. */
   summary(count: number, activeColumnGroups?: readonly string[], o?: TOptions): string;
+  countColumnLabelOverride(activeColumnGroups?: readonly string[], o?: TOptions): string | undefined;
   columnGroup(group: string, o?: TOptions): string;
   columnsByPrefix?: ReadonlyMap<string, string>;
 }
@@ -100,6 +101,15 @@ export function createTableTranslations(tableName: string | readonly string[]): 
             : summaryKeys,
         {...o, count},
       ),
+    countColumnLabelOverride: (activeColumnGroups: readonly string[], o?: TOptions) =>
+      activeColumnGroups.length === 1
+        ? t(
+            namesWithGeneric.map(
+              (n) => `tables.tables.${n}.with_column_group.${activeColumnGroups[0]}.count_column_label_override`,
+            ),
+            o,
+          )
+        : undefined,
     columnGroup: (group, o) =>
       t(
         columnGroupsKeyPrefixes.map((p) => p + group),

@@ -9,7 +9,7 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CHECKBOX} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
-import {DATE_TIME_FORMAT, currentTimeMinute, useLangFunc} from "components/utils";
+import {DATE_TIME_FORMAT, currentTimeMinute, cx, useLangFunc} from "components/utils";
 import {isDEV, resetDEV, toggleDEV} from "components/utils/dev_mode";
 import {usePasswordExpiration} from "components/utils/password_expiration";
 import {User} from "data-access/memo-api/groups";
@@ -62,7 +62,7 @@ export const UserInfo: VoidComponent = () => {
 
   const CurrentTime: VoidComponent = () => {
     return (
-      <div class={usesLocalTimeZone() ? undefined : "text-orange-600"}>
+      <div class={cx("text-nowrap", usesLocalTimeZone() ? undefined : "text-orange-600")}>
         <Index
           // Display each part in a separate span to allow selecting the date.
           each={currentTimeMinute().toLocaleParts(FORMAT)}
@@ -98,7 +98,7 @@ export const UserInfo: VoidComponent = () => {
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <CurrentTime />
-          <div class="flex gap-1 items-center">
+          <div class="flex gap-1 items-center text-nowrap">
             {statusQuery.data?.user.name}
             <Show when={developerPermission.enabled()}>
               <PopOver

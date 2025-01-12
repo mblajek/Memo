@@ -383,7 +383,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     ...baseTranslations,
     columnName: (column, o) => {
       if (column === countColumn()) {
-        return t("tables.column_groups.count_column_label");
+        const override = baseTranslations.countColumnLabelOverride(effectiveActiveColumnGroups(), o);
+        return override
+          ? t("tables.column_groups.count_column_label.with_override", {...o, override})
+          : t("tables.column_groups.count_column_label");
       }
       const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
       const attributeId = meta?.attributeId;
