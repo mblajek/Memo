@@ -66,7 +66,7 @@ class LogEntry extends Model
         return match ($field) {
             'source' => Valid::trimmed([Rule::in(self::SOURCES), 'starts_with:api_']),
             'log_level' => Valid::trimmed([Rule::in(self::LEVELS)]),
-            'message' => Valid::text(),
+            'message' => Valid::text(sometimes: true, nullable: true),
             'context' => Valid::text(sometimes: true, nullable: true, max: 150_000),
         };
     }

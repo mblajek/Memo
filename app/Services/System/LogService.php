@@ -18,7 +18,7 @@ class LogService
         Request $request,
         string $source,
         string $logLevel,
-        string $message,
+        ?string $message,
         ?string $context = null,
         ?User $user = null,
     ): string {

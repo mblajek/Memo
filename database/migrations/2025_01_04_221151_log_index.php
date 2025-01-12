@@ -12,6 +12,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('log_entries', function (Blueprint $table) {
+            $table->string('message', 4096)->nullable()->change();
             $table->index(['created_at']);
             $table->index(['source']);
             $table->index(['log_level']);

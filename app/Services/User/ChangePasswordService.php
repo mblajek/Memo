@@ -30,7 +30,7 @@ readonly class ChangePasswordService
             request: $request,
             source: 'user_password_change',
             logLevel: LogLevel::INFO,
-            message: $user->email, // quite useless
+            message: null,
             user: $user,
         );
     }
