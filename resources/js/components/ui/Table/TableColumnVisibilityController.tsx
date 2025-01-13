@@ -1,5 +1,6 @@
 import {VisibilityState} from "@tanstack/solid-table";
 import {cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {fullyLowerNormalise} from "components/utils/text_util";
 import {OcSearch2} from "solid-icons/oc";
 import {RiArrowsContractLeftRightLine, RiSystemEyeCloseFill} from "solid-icons/ri";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
@@ -21,9 +22,10 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const [search, setSearch] = createSignal("");
   const translations = table.options.meta?.translations;
   let searchInput: HTMLInputElement | undefined;
+  const normalisedSearch = createMemo(() => fullyLowerNormalise(search()));
   function matchesSearch(columnId: string) {
     return translations && search()
-      ? translations.columnName(columnId).toLowerCase().includes(search().toLowerCase())
+      ? fullyLowerNormalise(translations.columnName(columnId)).includes(normalisedSearch())
       : true;
   }
   const displayedColumns = createMemo(() =>

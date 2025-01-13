@@ -4,6 +4,7 @@ import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages
 import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {hasProp} from "components/utils/props";
+import {fullyLowerNormalise} from "components/utils/text_util";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
 import {ImCross, ImSpinner2} from "solid-icons/im";
@@ -308,7 +309,11 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       if (!filter) {
         return props.items;
       }
-      return props.items.filter((item) => itemToString(item).toLocaleLowerCase().includes(filter));
+      const filterTerm = fullyLowerNormalise(filter);
+      return props.items.filter((item) => {
+        const itemString = itemToString(item);
+        return itemString.includes(filter) || fullyLowerNormalise(itemString).includes(filterTerm);
+      });
     }
     return props.items;
   });
