@@ -25,6 +25,9 @@ export function useInvalidator(queryClient = useQueryClient()) {
       return true;
     },
     isThrottled: throttled,
+    resetEverything: () => {
+      queryClient.resetQueries();
+    },
     // Shared:
     users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
     facilities: () => queryClient.invalidateQueries({queryKey: Facilities.keys.facility()}),

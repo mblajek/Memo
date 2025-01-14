@@ -1,6 +1,7 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {User} from "data-access/memo-api/groups";
+import {useInvalidator} from "data-access/memo-api/invalidator";
 import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
 import {BiRegularErrorAlt} from "solid-icons/bi";
 import {JSX, ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
@@ -37,11 +38,15 @@ interface Props {
  * - Default Pending -> `<MemoLoader />`
  */
 export const AccessBarrier: ParentComponent<Props> = (allProps) => {
+  const invalidate = useInvalidator();
   const defProps = mergeProps(
     {
       fallback: () => <DefaultFallback />,
       roles: [],
-      error: () => <Navigate href="/login" />,
+      error: () => {
+        invalidate.resetEverything();
+        return <Navigate href="/login" />;
+      },
       pending: () => <MemoLoader />,
     } satisfies Partial<Props>,
     allProps,
