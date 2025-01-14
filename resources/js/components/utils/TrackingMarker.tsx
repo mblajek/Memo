@@ -7,6 +7,7 @@ import {
   createRenderEffect,
   createSignal,
   mergeProps,
+  onCleanup,
   splitProps,
 } from "solid-js";
 import {cx} from "./classnames";
@@ -77,7 +78,7 @@ export const TrackingMarker: Component<Props> = (allProps) => {
   createRenderEffect<string | undefined>((prevActiveId) => {
     if (props.activeId !== prevActiveId) {
       clearTimeout(transitionEndTimerId);
-      if (prevActiveId) {
+      if (prevActiveId && targets.has(prevActiveId)) {
         setMarkerPos(prevActiveId);
         setIsTransitioning(true);
         transitionEndTimerId = setTimeout(() => setIsTransitioning(false), props.transitionDurationMillis + 10);
@@ -102,6 +103,7 @@ export const TrackingMarker: Component<Props> = (allProps) => {
     createEffect(() => {
       if (div()) {
         targets.set(targetProps.id, div()!);
+        onCleanup(() => targets.delete(targetProps.id));
       }
     });
     return (
