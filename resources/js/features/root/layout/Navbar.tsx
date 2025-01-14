@@ -2,10 +2,11 @@ import {A} from "@solidjs/router";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
-import {FullLogo, ShortLogo} from "components/ui/FullLogo";
+import {FullLogo, ShortChangingLogo} from "components/ui/FullLogo";
 import {createHoverSignal, hoverSignal} from "components/ui/hover_signal";
 import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
+import {title} from "components/ui/title";
 import {cx, delayedAccessor, SilentAccessBarrier, useLangFunc} from "components/utils";
 import {isDEV} from "components/utils/dev_mode";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -29,7 +30,7 @@ import {NavigationItem} from "../components/navbar/NavigationItem";
 import {NavigationSection} from "../components/navbar/NavigationSection";
 import {useThemeControl} from "../components/theme_control";
 
-type _Directives = typeof hoverSignal;
+type _Directives = typeof title | typeof hoverSignal;
 
 const NavbarContext = createContext<NavbarContextValue>();
 
@@ -117,7 +118,7 @@ export const Navbar: VoidComponent = () => {
           style={{"--sb-track-color": "var(--navbar-color)"}}
         >
           <Show when={collapsed()}>
-            <ShortLogo class="h-12 p-1 mt-2 mb-2" />
+            <ShortChangingLogo class="self-center w-12 h-12 p-1 mt-2 mb-2" />
           </Show>
           <Show when={facilityUrl()}>
             <NavigationSection>

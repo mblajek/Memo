@@ -1,4 +1,5 @@
-import {Accessor, createComputed, createSignal, getOwner, onCleanup, runWithOwner} from "solid-js";
+import {Timeout} from "components/utils/timeout";
+import {Accessor, createComputed, createSignal, getOwner, runWithOwner} from "solid-js";
 
 export const INPUT_DEBOUNCE_MS = 600;
 
@@ -38,7 +39,7 @@ export function debouncedAccessor<T>(
     outputImmediately?: (t: T) => boolean;
   } = {},
 ): Accessor<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Timeout();
   let needsWriteOutput = false;
   const [output, setOutput] = createSignal<T>(input());
   const owner = getOwner();
@@ -47,13 +48,11 @@ export function debouncedAccessor<T>(
     needsWriteOutput = false;
   }
   function setTimer() {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(
+    timeout.set(
       () => {
         if (needsWriteOutput) {
           writeOutput();
         }
-        timeoutId = undefined;
       },
       typeof timeMs === "number" ? timeMs : timeMs(),
     );
@@ -63,7 +62,7 @@ export function debouncedAccessor<T>(
     if (outputImmediately?.(inputVal)) {
       writeOutput(inputVal);
       setTimer();
-    } else if (timeoutId) {
+    } else if (timeout.isSet()) {
       needsWriteOutput = true;
     } else {
       setTimer();
@@ -74,7 +73,6 @@ export function debouncedAccessor<T>(
       }
     }
   });
-  onCleanup(() => clearTimeout(timeoutId));
   return output;
 }
 

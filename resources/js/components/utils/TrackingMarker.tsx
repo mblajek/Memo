@@ -1,3 +1,4 @@
+import {Timeout} from "components/utils/timeout";
 import {
   Component,
   JSX,
@@ -74,14 +75,14 @@ export const TrackingMarker: Component<Props> = (allProps) => {
     }
   }
 
-  let transitionEndTimerId: ReturnType<typeof setTimeout> | undefined;
+  const transitionEndTimer = new Timeout();
   createRenderEffect<string | undefined>((prevActiveId) => {
     if (props.activeId !== prevActiveId) {
-      clearTimeout(transitionEndTimerId);
+      transitionEndTimer.clear();
       if (prevActiveId && targets.has(prevActiveId)) {
         setMarkerPos(prevActiveId);
         setIsTransitioning(true);
-        transitionEndTimerId = setTimeout(() => setIsTransitioning(false), props.transitionDurationMillis + 10);
+        transitionEndTimer.set(() => setIsTransitioning(false), props.transitionDurationMillis + 10);
         function loop() {
           setMarkerPos();
           if (isTransitioning()) {

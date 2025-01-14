@@ -1,9 +1,10 @@
+import {Timeout} from "components/utils/timeout";
 import {Component, createSignal, lazy} from "solid-js";
 import {isDEV} from "./dev_mode";
 
 const componentPreloadFuncs: (() => Promise<unknown>)[] = [];
 
-let preloadTimer: ReturnType<typeof setTimeout> | undefined;
+const preloadTimer = new Timeout();
 
 const [modulesInfo, setModulesInfo] = createSignal<ReadonlyMap<string, ModuleInfo>>(new Map());
 
@@ -21,8 +22,7 @@ const PRELOAD_INTERVAL_MILLIS = 2000;
 
 /** Wait the interval, then preload one component, and repeat. */
 function schedulePreload() {
-  clearTimeout(preloadTimer);
-  preloadTimer = setTimeout(async () => {
+  preloadTimer.set(async () => {
     const preload = componentPreloadFuncs.shift();
     if (preload) {
       await preload();
