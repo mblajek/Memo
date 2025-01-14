@@ -9,3 +9,9 @@ export const FullLogo: VoidComponent<htmlAttributes.div> = (props) => (
     </svg>
   </div>
 );
+
+export const ShortLogo: VoidComponent<htmlAttributes.div> = (props) => (
+  <div {...props}>
+    <img class="w-full h-full" src="/img/memo_logo_short.svg" />
+  </div>
+);
