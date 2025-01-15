@@ -26,7 +26,7 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
         class="flex flex-col gap-2 text-sm pointer-events-auto p-1"
         // pointer-events-auto to allow detecting hover, even if the outside has pointer-events-none,
         // which affects the borders.
-        onMouseOver={() => props.onHovered?.()}
+        onPointerOver={() => props.onHovered?.()}
       >
         <div class="flex flex-col">
           <MeetingDateAndTimeInfo meeting={props.meeting} twoLines />

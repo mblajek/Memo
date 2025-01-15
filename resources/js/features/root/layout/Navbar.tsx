@@ -54,7 +54,7 @@ export const Navbar: VoidComponent = () => {
   const facilityUrl = () => activeFacility()?.url;
   const [collapsed, setCollapsed] = createSignal(false);
   const navbarHover = createHoverSignal();
-  const delayedNavbarHover = delayedAccessor(navbarHover, {timeMs: 1000, outputImmediately: (v) => !v});
+  const delayedNavbarHover = delayedAccessor(navbarHover, {timeMs: 1000, outputImmediately: (v) => v});
   createPersistence({
     value: () => ({
       collapsed: collapsed(),

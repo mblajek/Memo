@@ -6,6 +6,7 @@ import {useLangFunc} from "./lang";
 
 // Be sure to keep in sync with supported-browsers.md
 const EXPECTED_BROWSER_VERSIONS = [
+  ["Chrome", 122], // Needed separately from Chromium for mobile.
   ["Chromium", 122],
   ["Firefox", 131],
 ] as const;

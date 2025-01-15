@@ -6,7 +6,7 @@ import {RiArrowsContractLeftRightLine, RiSystemEyeCloseFill} from "solid-icons/r
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
 import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
-import {createHoverSignal, hoverSignal} from "../hover_signal";
+import {createHoverSignal, hoverEvents, hoverSignal} from "../hover_signal";
 import {PopOver, PopOverControl} from "../PopOver";
 import {SearchInput} from "../SearchInput";
 import {EmptyValueSymbol} from "../symbols";
@@ -56,7 +56,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
       table.setColumnVisibility(vis);
     }
   });
-  const [resetHovered, setResetHovered] = createSignal(false);
+  const resetHover = createHoverSignal();
 
   const Content: VoidComponent<{readonly popOver: PopOverControl}> = (props) => {
     setVisibility({...table.getState().columnVisibility});
@@ -92,7 +92,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 const groupingInfo = () => columnGroupingInfo?.(column.id);
                 const hover = createHoverSignal();
                 const selectBg = () =>
-                  resetHovered() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];
+                  resetHover() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];
                 return (
                   <label
                     class={cx(
@@ -173,8 +173,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 disabled={isDefaultVisibility()}
                 // Use inert to make the parent handle onClick also when disabled.
                 inert={isDefaultVisibility()}
-                onMouseOver={[setResetHovered, true]}
-                onMouseOut={[setResetHovered, false]}
+                {...hoverEvents(resetHover)}
               >
                 {t("actions.restore_default")}
               </Button>

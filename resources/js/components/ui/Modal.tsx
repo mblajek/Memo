@@ -218,15 +218,21 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
             <div
               class="absolute z-modal"
               onPointerMove={(e) => {
-                if (e.buttons === 1) {
-                  if (grabPos()) {
-                    setRelativePos([e.clientX - grabPos()![0], e.clientY - grabPos()![1]]);
+                if (e.isPrimary) {
+                  if (e.buttons === 1) {
+                    if (grabPos()) {
+                      setRelativePos([e.clientX - grabPos()![0], e.clientY - grabPos()![1]]);
+                    }
+                  } else {
+                    setGrabPos(undefined);
                   }
-                } else {
+                }
+              }}
+              onPointerUp={(e) => {
+                if (e.isPrimary) {
                   setGrabPos(undefined);
                 }
               }}
-              onPointerUp={[setGrabPos, undefined]}
             >
               <div
                 class={cx("fixed inset-0", props.backdropClass ?? "bg-black/30")}

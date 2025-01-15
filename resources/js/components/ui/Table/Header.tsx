@@ -72,7 +72,7 @@ export const Header: VoidComponent<Props> = (props) => {
             "absolute top-0 right-0 h-full cursor-col-resize w-[5px] select-none touch-none",
             props.ctx.column.getIsResizing() ? "bg-memo-active" : "hover:bg-gray-400",
           )}
-          onMouseDown={(e) => resizeHandler()(e)}
+          onPointerDown={(e) => resizeHandler()(e)}
         />
       </Show>
     </div>

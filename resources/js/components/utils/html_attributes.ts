@@ -1,8 +1,8 @@
+import {hasProp} from "components/utils/props";
 import {JSX, mergeProps, untrack} from "solid-js";
 import {DOMElement} from "solid-js/jsx-runtime";
 import {cx} from "./classnames";
 import {skipUndefinedValues} from "./object_util";
-import {hasProp} from "components/utils/props";
 
 /**
  * A collection of super-interfaces for props for components that accept HTML element attributes,
@@ -52,13 +52,15 @@ export namespace htmlAttributes {
     "onChange",
     "onClick",
     "onDblClick",
-    "onMouseMove",
-    "onMouseDown",
-    "onMouseUp",
     "onKeyDown",
     "onKeyUp",
     "onPointerEnter",
     "onPointerLeave",
+    "onPointerOver",
+    "onPointerOut",
+    "onPointerDown",
+    "onPointerUp",
+    "onPointerMove",
   ] satisfies (keyof div)[];
   type EventType = (typeof EVENT_HANDLERS)[number];
 
