@@ -9,7 +9,7 @@ import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {WorkTimeCreateFormProps} from "features/meeting/WorkTimeCreateForm";
 import {createComputed, createMemo, createSignal, Match, on, Show, Switch} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
-import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./WorkTimeViewEditForm";
+import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./work_time_form_subtype";
 
 const WorkTimeCreateForm = lazyAutoPreload(() => import("features/meeting/WorkTimeCreateForm"));
 

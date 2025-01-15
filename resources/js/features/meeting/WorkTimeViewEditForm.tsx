@@ -17,6 +17,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {MeetingResourceForPatch} from "data-access/memo-api/resources/meeting.resource";
 import {Api, RequiredNonNullable} from "data-access/memo-api/types";
+import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "features/meeting/work_time_form_subtype";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -29,14 +30,6 @@ import {MeetingBasicData} from "./meeting_basic_data";
 import {createMeetingSeriesCreateModal} from "./meeting_series_create_modal";
 import {getMeetingTimeFullData, meetingTimeInitialValueForEdit} from "./meeting_time_controller";
 import {createWorkTimeCreateModal} from "./work_time_create_modal";
-
-export const SUBTYPE_FACILITY_WIDE = "facilityWide";
-
-export interface WorkTimeFormSubtype {
-  readonly formId: string;
-  readonly typeDictId: string;
-  readonly staff: {readonly id: Api.Id} | typeof SUBTYPE_FACILITY_WIDE;
-}
 
 export interface WorkTimeViewEditFormProps {
   readonly staticMeetingId: Api.Id;
