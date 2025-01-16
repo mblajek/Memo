@@ -1,5 +1,5 @@
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {VoidComponent} from "solid-js";
-import {MemoTitle} from "../features/root/MemoTitle";
 
 export const TestComponent: VoidComponent = () => {
   // TEST CODE HERE:
@@ -17,7 +17,7 @@ export default (() => {
   // Don't submit the changes to this file.
   return (
     <>
-      <MemoTitle title="TestPage" />
+      <AppTitlePrefix prefix="TestPage" />
       <div class="flex flex-col gap-1">
         <div class="w-fit bg-purple-100 m-2 p-4 rounded-md">
           Test your components here during development by creating a test page in TestPage.tsx.

@@ -31,6 +31,7 @@ import {createClientDeleteModal} from "features/client/client_delete_modal";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
 import {useUserMeetingsTables} from "features/facility-users/UserMeetingsTables";
 import {useUserMeetingsStats} from "features/facility-users/user_meetings_stats";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {
   Match,
   Show,
@@ -131,165 +132,168 @@ export default (() => {
             }
 
             return (
-              <div class="flex flex-col items-stretch gap-4">
-                <UserDetailsHeader
-                  type="clients"
-                  user={{
-                    ...user(),
-                    createdAt: user().client.createdAt,
-                    createdBy: user().client.createdBy,
-                    updatedAt: user().client.updatedAt,
-                    updatedBy: user().client.updatedBy,
-                  }}
-                />
-                <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
-                  <div style={{"min-width": "400px", "flex-basis": "600px"}}>
-                    <FelteForm
-                      id="client_edit"
-                      translationsFormNames={["client_edit", "client", "facility_user"]}
-                      translationsModel={["client", "facility_user"]}
-                      class="flex flex-col items-stretch gap-4 relative"
-                      schema={getSchema()}
-                      initialValues={user()}
-                      onSubmit={updateClient}
-                    >
-                      {(form) => {
-                        createEffect(() => {
-                          form.setInitialValues(user() as unknown as FormType);
-                          setTimeout(() => {
-                            if (!editMode() && !dataQuery.isPending) {
+              <>
+                <AppTitlePrefix prefix={user().name} />
+                <div class="flex flex-col items-stretch gap-4">
+                  <UserDetailsHeader
+                    type="clients"
+                    user={{
+                      ...user(),
+                      createdAt: user().client.createdAt,
+                      createdBy: user().client.createdBy,
+                      updatedAt: user().client.updatedAt,
+                      updatedBy: user().client.updatedBy,
+                    }}
+                  />
+                  <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
+                    <div style={{"min-width": "400px", "flex-basis": "600px"}}>
+                      <FelteForm
+                        id="client_edit"
+                        translationsFormNames={["client_edit", "client", "facility_user"]}
+                        translationsModel={["client", "facility_user"]}
+                        class="flex flex-col items-stretch gap-4 relative"
+                        schema={getSchema()}
+                        initialValues={user()}
+                        onSubmit={updateClient}
+                      >
+                        {(form) => {
+                          createEffect(() => {
+                            form.setInitialValues(user() as unknown as FormType);
+                            setTimeout(() => {
+                              if (!editMode() && !dataQuery.isPending) {
+                                form.reset();
+                              }
+                            });
+                          });
+                          async function formCancel() {
+                            if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
+                              setEditMode(false);
                               form.reset();
                             }
-                          });
-                        });
-                        async function formCancel() {
-                          if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
-                            setEditMode(false);
-                            form.reset();
                           }
-                        }
-                        return (
-                          <>
-                            <Autofocus autofocus={editMode()}>
-                              <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
-                                {({show}) => <TextField name="name" autofocus disabled={!show()} />}
-                              </HideableSection>
-                              <ClientFields editMode={editMode()} client={user()} />
-                            </Autofocus>
-                            <Switch>
-                              <Match when={editMode()}>
-                                <FelteSubmit cancel={formCancel} />
-                              </Match>
-                              <Match when={!editMode()}>
-                                <div class="flex justify-between gap-1">
-                                  <Show when={status.data?.permissions.facilityAdmin}>
-                                    <DeleteButton
-                                      class="secondary small"
-                                      label={t("forms.client_delete.activate_button")}
-                                      delete={() =>
-                                        clientDeleteModal.show({
-                                          id: userId(),
-                                          initialRequiresDuplicateOf: hasMeetings(),
-                                          onSuccess: ({duplicateOf}) =>
-                                            navigate(
-                                              `/${activeFacility()?.url}/clients${duplicateOf ? `/${duplicateOf}` : ""}`,
-                                            ),
-                                        })
-                                      }
-                                    />
-                                  </Show>
-                                  <EditButton class="secondary small" onClick={[setEditMode, true]} />
-                                </div>
-                              </Match>
-                            </Switch>
-                          </>
-                        );
-                      }}
-                    </FelteForm>
-                  </div>
-                  <div class={hiddenInEditModeClass()} style={{"min-width": "400px", "flex-basis": "800px"}}>
-                    <ClientGroups
-                      client={user()}
-                      onGroupChange={(group) => setSelectedGroupId(group?.id)}
-                      allowEditing
-                    />
-                  </div>
-                </div>
-                <div class={cx("contents", hiddenInEditModeClass())}>
-                  <PeopleAutoRelatedToClient clientId={userId()} />
-                  <div class="flex flex-col gap-1">
-                    <div class="flex gap-2 justify-between">
-                      <StandaloneFieldLabel>
-                        <Capitalize text={t("models.meeting._name_plural")} />
-                      </StandaloneFieldLabel>
-                      <Show when={user().client.groupIds?.length}>
-                        {(_) => {
-                          const items = createMemo(() => [
-                            {
-                              value: "client",
-                              label: () => t("facility_user.meetings_lists.meetings_for.client"),
-                            },
-                            {
-                              value: "clientGroup",
-                              label: () => t("facility_user.meetings_lists.meetings_for.client_group"),
-                            },
-                            ...(noGroupMeetingsCount()
-                              ? [
-                                  {
-                                    value: "clientNoClientGroup",
-                                    label: () => (
-                                      <span>
-                                        {t("facility_user.meetings_lists.meetings_for.no_client_group")}{" "}
-                                        <span class="text-grey-text">
-                                          {EM_DASH} {noGroupMeetingsCount()}
-                                        </span>
-                                      </span>
-                                    ),
-                                  },
-                                ]
-                              : []),
-                          ]);
                           return (
-                            <div class="self-start mt-1 flex gap-1 items-baseline">
-                              {t("facility_user.meetings_lists.meetings_for")}
-                              <SegmentedControl
-                                name="meeting_tables_mode"
-                                items={items()}
-                                value={meetingTablesMode()}
-                                onValueChange={setMeetingTablesMode}
-                                small
-                              />
-                              <DocsModalInfoIcon
-                                href="/help/meeting-client-groups"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
+                            <>
+                              <Autofocus autofocus={editMode()}>
+                                <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
+                                  {({show}) => <TextField name="name" autofocus disabled={!show()} />}
+                                </HideableSection>
+                                <ClientFields editMode={editMode()} client={user()} />
+                              </Autofocus>
+                              <Switch>
+                                <Match when={editMode()}>
+                                  <FelteSubmit cancel={formCancel} />
+                                </Match>
+                                <Match when={!editMode()}>
+                                  <div class="flex justify-between gap-1">
+                                    <Show when={status.data?.permissions.facilityAdmin}>
+                                      <DeleteButton
+                                        class="secondary small"
+                                        label={t("forms.client_delete.activate_button")}
+                                        delete={() =>
+                                          clientDeleteModal.show({
+                                            id: userId(),
+                                            initialRequiresDuplicateOf: hasMeetings(),
+                                            onSuccess: ({duplicateOf}) =>
+                                              navigate(
+                                                `/${activeFacility()?.url}/clients${duplicateOf ? `/${duplicateOf}` : ""}`,
+                                              ),
+                                          })
+                                        }
+                                      />
+                                    </Show>
+                                    <EditButton class="secondary small" onClick={[setEditMode, true]} />
+                                  </div>
+                                </Match>
+                              </Switch>
+                            </>
                           );
                         }}
-                      </Show>
+                      </FelteForm>
                     </div>
-                    <Switch>
-                      <Match when={meetingTablesMode() === "client" || meetingTablesMode() === "clientGroup"}>
-                        <UserMeetingsTables
-                          staticUserName={user().name}
-                          staticUserType="clients"
-                          clientGroupMeetings={meetingTablesMode() === "clientGroup"}
-                          intrinsicFilter={meetingsIntrinsicFilter()}
-                          staticPersistenceKey="clientMeetings"
-                          userMeetingsStats={meetingTablesMode() === "clientGroup" ? undefined : meetingsStats()}
-                        />
-                      </Match>
-                      <Match when={meetingTablesMode() === "clientNoClientGroup"}>
-                        <ClientNoGroupMeetingsTable
-                          staticUserName={user().name}
-                          intrinsicFilter={meetingsIntrinsicFilter()}
-                          staticPersistenceKey="clientMeetings"
-                        />
-                      </Match>
-                    </Switch>
+                    <div class={hiddenInEditModeClass()} style={{"min-width": "400px", "flex-basis": "800px"}}>
+                      <ClientGroups
+                        client={user()}
+                        onGroupChange={(group) => setSelectedGroupId(group?.id)}
+                        allowEditing
+                      />
+                    </div>
+                  </div>
+                  <div class={cx("contents", hiddenInEditModeClass())}>
+                    <PeopleAutoRelatedToClient clientId={userId()} />
+                    <div class="flex flex-col gap-1">
+                      <div class="flex gap-2 justify-between">
+                        <StandaloneFieldLabel>
+                          <Capitalize text={t("models.meeting._name_plural")} />
+                        </StandaloneFieldLabel>
+                        <Show when={user().client.groupIds?.length}>
+                          {(_) => {
+                            const items = createMemo(() => [
+                              {
+                                value: "client",
+                                label: () => t("facility_user.meetings_lists.meetings_for.client"),
+                              },
+                              {
+                                value: "clientGroup",
+                                label: () => t("facility_user.meetings_lists.meetings_for.client_group"),
+                              },
+                              ...(noGroupMeetingsCount()
+                                ? [
+                                    {
+                                      value: "clientNoClientGroup",
+                                      label: () => (
+                                        <span>
+                                          {t("facility_user.meetings_lists.meetings_for.no_client_group")}{" "}
+                                          <span class="text-grey-text">
+                                            {EM_DASH} {noGroupMeetingsCount()}
+                                          </span>
+                                        </span>
+                                      ),
+                                    },
+                                  ]
+                                : []),
+                            ]);
+                            return (
+                              <div class="self-start mt-1 flex gap-1 items-baseline">
+                                {t("facility_user.meetings_lists.meetings_for")}
+                                <SegmentedControl
+                                  name="meeting_tables_mode"
+                                  items={items()}
+                                  value={meetingTablesMode()}
+                                  onValueChange={setMeetingTablesMode}
+                                  small
+                                />
+                                <DocsModalInfoIcon
+                                  href="/help/meeting-client-groups"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            );
+                          }}
+                        </Show>
+                      </div>
+                      <Switch>
+                        <Match when={meetingTablesMode() === "client" || meetingTablesMode() === "clientGroup"}>
+                          <UserMeetingsTables
+                            staticUserName={user().name}
+                            staticUserType="clients"
+                            clientGroupMeetings={meetingTablesMode() === "clientGroup"}
+                            intrinsicFilter={meetingsIntrinsicFilter()}
+                            staticPersistenceKey="clientMeetings"
+                            userMeetingsStats={meetingTablesMode() === "clientGroup" ? undefined : meetingsStats()}
+                          />
+                        </Match>
+                        <Match when={meetingTablesMode() === "clientNoClientGroup"}>
+                          <ClientNoGroupMeetingsTable
+                            staticUserName={user().name}
+                            intrinsicFilter={meetingsIntrinsicFilter()}
+                            staticPersistenceKey="clientMeetings"
+                          />
+                        </Match>
+                      </Switch>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </>
             );
           }}
         </Show>

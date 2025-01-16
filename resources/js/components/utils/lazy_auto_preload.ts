@@ -4,7 +4,7 @@ import {isDEV} from "./dev_mode";
 
 const componentPreloadFuncs: (() => Promise<unknown>)[] = [];
 
-const preloadTimer = new Timeout();
+const preloadTimer = new Timeout({permanent: true});
 
 const [modulesInfo, setModulesInfo] = createSignal<ReadonlyMap<string, ModuleInfo>>(new Map());
 

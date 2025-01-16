@@ -1,15 +1,11 @@
 import {useLocation} from "@solidjs/router";
-import {capitalizeString} from "components/ui/Capitalize";
-import {EM_DASH} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
 import {GetRef} from "components/utils/GetRef";
-import {MemoTitle} from "features/root/MemoTitle";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {createSignal, Show, VoidComponent} from "solid-js";
 import {Help} from "./Help";
 import {resolveMdFromAppPath} from "./markdown_resolver";
 
 export default (() => {
-  const t = useLangFunc();
   const location = useLocation();
   return (
     <Help
@@ -20,7 +16,7 @@ export default (() => {
         return (
           <>
             <Show when={h1()}>
-              <MemoTitle title={`${h1()!.textContent} ${EM_DASH} ${capitalizeString(t("routes.help"))}`} />
+              <AppTitlePrefix prefix={h1()!.textContent || undefined} />
             </Show>
             <GetRef ref={setH1}>{def()}</GetRef>
           </>

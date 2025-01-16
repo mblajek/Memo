@@ -17,6 +17,7 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {StaffResourceForPatch} from "data-access/memo-api/resources/staff.resource";
 import {UserDetailsHeader} from "features/facility-users/UserDetailsHeader";
 import {useUserMeetingsTables} from "features/facility-users/UserMeetingsTables";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {DateTime} from "luxon";
 import {Match, Show, Switch, VoidComponent, createEffect, createSignal} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -75,95 +76,98 @@ export default (() => {
             }
 
             return (
-              <div class="flex flex-col items-stretch gap-4">
-                <UserDetailsHeader
-                  type="staff"
-                  user={{
-                    ...user(),
-                    createdAt: user().staff.createdAt,
-                    createdBy: user().staff.createdBy,
-                    updatedAt: user().staff.updatedAt,
-                    updatedBy: user().staff.updatedBy,
-                  }}
-                />
-                <FelteForm
-                  id="staff_edit"
-                  translationsFormNames={["staff_edit", "staff", "facility_user"]}
-                  translationsModel={["staff", "facility_user"]}
-                  class="flex flex-col items-stretch gap-4 relative"
-                  style={{"min-width": "400px", "max-width": "600px"}}
-                  schema={getSchema()}
-                  onSubmit={updateStaff}
-                >
-                  {(form) => {
-                    createEffect(() => {
-                      form.setInitialValues({
-                        staff: {
-                          isActive: !user().staff.deactivatedAt,
-                          deactivatedAt: user().staff.deactivatedAt
-                            ? isoToDateTimeLocal(user().staff.deactivatedAt!)
-                            : dateTimeToDateTimeLocal(DateTime.now()),
-                        },
-                      });
-                      form.reset();
-                    });
-                    async function formCancel() {
-                      if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
-                        setEditMode(false);
-                        form.reset();
-                      }
-                    }
-                    return (
-                      <>
-                        <Switch>
-                          <Match when={editMode()}>
-                            <fieldset disabled={!editMode()} data-felte-keep-on-remove>
-                              <CheckboxField name="staff.isActive" />
-                              <HideableSection show={!form.data("staff.isActive")}>
-                                <TextField name="staff.deactivatedAt" type="datetime-local" small />
-                              </HideableSection>
-                            </fieldset>
-                          </Match>
-                          <Match when={user().staff.deactivatedAt}>
-                            {(deactivatedAt) => (
-                              <div>
-                                <span class="font-bold">{t("facility_user.staff.is_inactive.label")}</span>{" "}
-                                {t("facility_user.staff.is_inactive.since", {
-                                  date: DateTime.fromISO(deactivatedAt()).toLocaleString(DATE_TIME_FORMAT),
-                                })}
-                              </div>
-                            )}
-                          </Match>
-                        </Switch>
-                        <Switch>
-                          <Match when={editMode()}>
-                            <FelteSubmit cancel={formCancel} />
-                          </Match>
-                          <Match when={status.data?.permissions.facilityAdmin}>
-                            <div class="flex">
-                              {/* TODO: Restore the Edit button when the backend is implemented. */}
-                              {/* <EditButton class="secondary small" onClick={[setEditMode, true]} /> */}
-                            </div>
-                          </Match>
-                        </Switch>
-                      </>
-                    );
-                  }}
-                </FelteForm>
-                <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
-                  <UserMeetingsTables
-                    staticUserName={user().name}
-                    staticUserType="staff"
-                    intrinsicFilter={{
-                      type: "column",
-                      column: "attendant.userId",
-                      op: "=",
-                      val: userId(),
+              <>
+                <AppTitlePrefix prefix={user().name} />
+                <div class="flex flex-col items-stretch gap-4">
+                  <UserDetailsHeader
+                    type="staff"
+                    user={{
+                      ...user(),
+                      createdAt: user().staff.createdAt,
+                      createdBy: user().staff.createdBy,
+                      updatedAt: user().staff.updatedAt,
+                      updatedBy: user().staff.updatedBy,
                     }}
-                    staticPersistenceKey="staffMeetings"
                   />
+                  <FelteForm
+                    id="staff_edit"
+                    translationsFormNames={["staff_edit", "staff", "facility_user"]}
+                    translationsModel={["staff", "facility_user"]}
+                    class="flex flex-col items-stretch gap-4 relative"
+                    style={{"min-width": "400px", "max-width": "600px"}}
+                    schema={getSchema()}
+                    onSubmit={updateStaff}
+                  >
+                    {(form) => {
+                      createEffect(() => {
+                        form.setInitialValues({
+                          staff: {
+                            isActive: !user().staff.deactivatedAt,
+                            deactivatedAt: user().staff.deactivatedAt
+                              ? isoToDateTimeLocal(user().staff.deactivatedAt!)
+                              : dateTimeToDateTimeLocal(DateTime.now()),
+                          },
+                        });
+                        form.reset();
+                      });
+                      async function formCancel() {
+                        if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
+                          setEditMode(false);
+                          form.reset();
+                        }
+                      }
+                      return (
+                        <>
+                          <Switch>
+                            <Match when={editMode()}>
+                              <fieldset disabled={!editMode()} data-felte-keep-on-remove>
+                                <CheckboxField name="staff.isActive" />
+                                <HideableSection show={!form.data("staff.isActive")}>
+                                  <TextField name="staff.deactivatedAt" type="datetime-local" small />
+                                </HideableSection>
+                              </fieldset>
+                            </Match>
+                            <Match when={user().staff.deactivatedAt}>
+                              {(deactivatedAt) => (
+                                <div>
+                                  <span class="font-bold">{t("facility_user.staff.is_inactive.label")}</span>{" "}
+                                  {t("facility_user.staff.is_inactive.since", {
+                                    date: DateTime.fromISO(deactivatedAt()).toLocaleString(DATE_TIME_FORMAT),
+                                  })}
+                                </div>
+                              )}
+                            </Match>
+                          </Switch>
+                          <Switch>
+                            <Match when={editMode()}>
+                              <FelteSubmit cancel={formCancel} />
+                            </Match>
+                            <Match when={status.data?.permissions.facilityAdmin}>
+                              <div class="flex">
+                                {/* TODO: Restore the Edit button when the backend is implemented. */}
+                                {/* <EditButton class="secondary small" onClick={[setEditMode, true]} /> */}
+                              </div>
+                            </Match>
+                          </Switch>
+                        </>
+                      );
+                    }}
+                  </FelteForm>
+                  <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
+                    <UserMeetingsTables
+                      staticUserName={user().name}
+                      staticUserType="staff"
+                      intrinsicFilter={{
+                        type: "column",
+                        column: "attendant.userId",
+                        op: "=",
+                        val: userId(),
+                      }}
+                      staticPersistenceKey="staffMeetings"
+                    />
+                  </div>
                 </div>
-              </div>
+              </>
             );
           }}
         </Show>

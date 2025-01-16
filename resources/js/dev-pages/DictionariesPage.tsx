@@ -16,9 +16,9 @@ import {
 import {QueryBarrier} from "components/utils";
 import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
-import {MemoTitle} from "../features/root/MemoTitle";
 import {filterByFacility, useAttrValueFormatter} from "./util";
 
 export default (() => {
@@ -164,7 +164,7 @@ export default (() => {
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <MemoTitle title="Dictionaries" />
+      <AppTitlePrefix prefix="Dictionaries" />
       <div class="contents text-sm">
         <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
           <Table

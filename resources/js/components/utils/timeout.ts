@@ -3,8 +3,10 @@ import {onCleanup} from "solid-js";
 export class Timeout {
   timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  constructor() {
-    onCleanup(() => this.clear());
+  constructor({permanent = false}: {permanent?: boolean} = {}) {
+    if (!permanent) {
+      onCleanup(() => this.clear());
+    }
   }
 
   set(...[callback, delay]: Parameters<typeof setTimeout>) {

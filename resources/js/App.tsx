@@ -1,17 +1,18 @@
 import {Navigate, Route, RouteProps, Router, useNavigate, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {AppContextProvider} from "app_context";
-import {AccessBarrier} from "components/utils";
+import {capitalizeString} from "components/ui/Capitalize";
+import {AccessBarrier, useLangFunc} from "components/utils";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {System} from "data-access/memo-api/groups";
 import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
 import {DevRoutes} from "dev-pages/DevRoutes";
 import NotFound from "features/not-found/components/NotFound";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {PageWithTheme} from "features/root/components/theme_control";
 import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {clearAllHistoryState} from "./components/persistence/history_persistence";
-import {MemoRouteTitle} from "./features/root/MemoRouteTitle";
 import {activeFacilityId} from "./state/activeFacilityId.state";
 
 const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.page"));
@@ -161,12 +162,21 @@ type LeafRouteProps<S extends string> = RouteProps<S> &
 /** A leaf route for a page, also setting the page title based on routeKey. */
 const LeafRoute = <S extends string>(allProps: VoidProps<LeafRouteProps<S>>) => {
   const [props, routeProps] = splitProps(allProps, ["routeKey", "component"]);
+  const t = useLangFunc();
+  const pageName = () => {
+    const name = t(`routes.${props.routeKey}`, {defaultValue: ""});
+    if (!name) {
+      // Don't capitalise.
+      return props.routeKey;
+    }
+    return capitalizeString(name);
+  };
   return (
     <Route
       {...routeProps}
       component={(innerProps) => (
         <>
-          <MemoRouteTitle routeKey={props.routeKey} />
+          <AppTitlePrefix prefix={pageName()} />
           <Dynamic component={props.component} {...innerProps} />
         </>
       )}

@@ -7,6 +7,7 @@ import "./init_types";
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
 import {InitializeTanstackQuery} from "components/utils";
+import {AppTitleProvider} from "features/root/AppTitleProvider";
 import {DEV, ErrorBoundary, Show} from "solid-js";
 import {render} from "solid-js/web";
 import {Toaster} from "solid-toast";
@@ -48,33 +49,35 @@ render(() => {
         <MemoLoader />
       </Show>
       <MetaProvider>
-        <ErrorBoundary
-          fallback={(error, reset) => {
-            console.error(error);
-            return (
-              <InitializeTanstackQuery>
-                <FatalError error={error} reset={reset} />
-              </InitializeTanstackQuery>
-            );
-          }}
-        >
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              className: "mr-4 !pr-0",
-              duration: TOAST_DURATION_SECS * 1000,
+        <AppTitleProvider>
+          <ErrorBoundary
+            fallback={(error, reset) => {
+              console.error(error);
+              return (
+                <InitializeTanstackQuery>
+                  <FatalError error={error} reset={reset} />
+                </InitializeTanstackQuery>
+              );
             }}
-          />
-          <InitializeTanstackQuery>
-            <DictionariesAndAttributesProvider>
-              <TimeZoneController>
-                <App />
-              </TimeZoneController>
-            </DictionariesAndAttributesProvider>
-          </InitializeTanstackQuery>
-          <GlobalPageElements />
-          <LoaderInPortal />
-        </ErrorBoundary>
+          >
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className: "mr-4 !pr-0",
+                duration: TOAST_DURATION_SECS * 1000,
+              }}
+            />
+            <InitializeTanstackQuery>
+              <DictionariesAndAttributesProvider>
+                <TimeZoneController>
+                  <App />
+                </TimeZoneController>
+              </DictionariesAndAttributesProvider>
+            </InitializeTanstackQuery>
+            <GlobalPageElements />
+            <LoaderInPortal />
+          </ErrorBoundary>
+        </AppTitleProvider>
       </MetaProvider>
     </TransProvider>
   );

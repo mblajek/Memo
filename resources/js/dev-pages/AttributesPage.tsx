@@ -17,11 +17,11 @@ import {QueryBarrier} from "components/utils";
 import {Attribute} from "data-access/memo-api/attributes";
 import {System} from "data-access/memo-api/groups";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {Setter, Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {Select} from "../components/ui/form/Select";
 import {EmptyValueSymbol} from "../components/ui/symbols";
 import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
-import {MemoTitle} from "../features/root/MemoTitle";
 import {filterByFacility, useAttrValueFormatter} from "./util";
 
 export default (() => {
@@ -164,7 +164,7 @@ export default (() => {
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <MemoTitle title="Attributes" />
+      <AppTitlePrefix prefix="Attributes" />
       <div class="contents text-sm">
         <Show when={attributes()} fallback={<BigSpinner />}>
           <Table
