@@ -1,6 +1,5 @@
 import {Hr} from "components/ui/Hr";
-import {ControlState} from "components/ui/Table/tquery_filters/filter_control_state";
-import {FilterHWithState} from "components/ui/Table/tquery_filters/types";
+import {ControlState, FilterHWithState} from "components/ui/Table/tquery_filters/types";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {title} from "components/ui/title";
 import {useLangFunc} from "components/utils";

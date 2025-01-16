@@ -265,3 +265,14 @@ rows__many: "{{count, number}} wierszy"
 more_info: "Kliknij aby dowiedzieć się więcej o tej tabeli"
 
 scroll_to_column: "Przewiń tabelę aby zobaczyć kolumnę"
+
+saved_views:
+  hint: "Zapisane widoki tabeli"
+  title: "Zapisane widoki"
+  load_hint: "Kliknij aby użyć zapisanego widoku"
+  load_hint_no_change: "Ten widok jest aktualnie wybrany"
+  new_placeholder: "Nowy widok"
+  save_hint: "Zapisz aktualny widok tabeli pod wpisaną nazwą"
+  save_hint_conflict: "Ta nazwa jest już użyta, rozwiń opcje aby zastąpić"
+  overwrite_with_current: "Zapisz aktualny widok (zastąp)"
+  rename_conflict: "Ta nazwa jest już użyta."

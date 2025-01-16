@@ -25,6 +25,7 @@ open: "Otwórz"
 export: "Eksportuj"
 pick: "Wybierz"
 ok: "OK"
+rename: "Zmień nazwę"
 
 details: "Szczegóły"
 

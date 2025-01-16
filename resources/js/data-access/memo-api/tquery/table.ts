@@ -3,7 +3,9 @@ import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-ta
 import {AxiosError} from "axios";
 import {TableTranslations} from "components/ui/Table";
 import {ColumnGroup} from "components/ui/Table/column_groups";
+import {extractFilterState, injectFilterState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
+import {ControlState} from "components/ui/Table/tquery_filters/types";
 import {NON_NULLABLE, useLangFunc} from "components/utils";
 import {arraysEqual, intersects, objectsEqual} from "components/utils/object_util";
 import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
@@ -50,8 +52,13 @@ interface RequestController {
   readonly pagination: Signal<PaginationState>;
   readonly activeColumnGroups: Signal<readonly string[]>;
   readonly countColumn: Accessor<ColumnName | undefined>;
+
   readonly miniState: [Accessor<MiniState>, (state: MiniState) => void];
   resetMiniState(): void;
+
+  getCompleteTableView(): TableView;
+  loadTableView(tableView: TableView): void;
+  resetTableView(): void;
 }
 
 /**
@@ -65,6 +72,32 @@ export interface MiniState {
   readonly pagination: PaginationState;
   readonly activeColumnGroups: readonly string[];
 }
+
+/**
+ * The state of the table that can be saved and restored in another session, or even by another user.
+ * All parts of the state are optional, so an "overlay" state can be persisted and then loaded.
+ *
+ * The page number is not saved, it is not part of the table view.
+ *
+ * Short names are used to reduce the size of the state. The whole state object is a RichJSONValue.
+ */
+export type TableView = {
+  /** Columns information. An empty column view object should be skipped. */
+  readonly c?: Readonly<Record<ColumnName, ColumnView>>;
+  /** Global filter. */
+  readonly gf?: string;
+  /** Active column groups. */
+  readonly cg?: readonly string[];
+  /** Sorting. */
+  readonly s?: SortingState;
+};
+
+export type ColumnView = {
+  /** The column visibility, as number to reduce size. */
+  readonly v?: 1 | 0;
+  /** The column filter state, or null to clear the filter. */
+  readonly fs?: ControlState | null;
+};
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -337,6 +370,53 @@ export function createTableRequestCreator({
     function resetMiniState() {
       setMiniState(initialMiniState);
     }
+    function getCompleteTableView(): TableView {
+      const columnViews: Record<ColumnName, ColumnView> = {};
+      for (const {name} of columnsConfig()) {
+        columnViews[name] = {
+          v: columnVisibility()[name] ? 1 : 0,
+          fs: extractFilterState(getColumnFilter(name)[0]()) || null,
+        };
+      }
+      return {
+        c: columnViews,
+        gf: globalFilter(),
+        cg: activeColumnGroups(),
+        s: sorting(),
+      };
+    }
+    function loadTableView({c, gf, cg, s}: TableView) {
+      batch(() => {
+        const vis = {...columnVisibility()};
+        for (const [column, {v, fs}] of Object.entries(c || {})) {
+          if (v !== undefined) {
+            vis[column] = !!v;
+          }
+          if (fs !== undefined) {
+            getColumnFilter(column)[1]((filter) => injectFilterState(filter, fs || undefined));
+          }
+        }
+        setColumnVisibility(vis);
+        if (gf !== undefined) {
+          setGlobalFilter(gf);
+        }
+        if (cg) {
+          setActiveColumnGroups(cg);
+        }
+        if (s) {
+          setSorting(s);
+        }
+      });
+    }
+    function resetTableView() {
+      batch(() => {
+        setColumnVisibility(defaultColumnVisibility());
+        setColumnFilters({});
+        setGlobalFilter("");
+        setSorting(initialSort);
+        setActiveColumnGroups(initialColumnGroups.filter((group) => columnGroupsByName().has(group)));
+      });
+    }
     return {
       request,
       requestController: {
@@ -351,6 +431,9 @@ export function createTableRequestCreator({
         countColumn,
         miniState: [miniState, setMiniState],
         resetMiniState,
+        getCompleteTableView,
+        loadTableView,
+        resetTableView,
       },
     };
   };

@@ -14,10 +14,12 @@ export const Autofocus: ParentComponent<Props> = (props) => {
         createEffect(() => {
           if (props.autofocus ?? true) {
             for (const ref of refs) {
-              const focusElem = ref.querySelector("[autofocus]");
+              const focusElem = ref.hasAttribute("autofocus") ? ref : ref.querySelector("[autofocus]");
               if (focusElem) {
                 if (focusElem instanceof HTMLElement) {
-                  focusElem.focus();
+                  setTimeout(() => {
+                    focusElem.focus();
+                  }, 10);
                 }
                 break;
               }

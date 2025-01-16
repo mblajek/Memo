@@ -74,6 +74,7 @@ import {title} from "../title";
 import {TableColumnGroupSelect} from "./TableColumnGroupSelect";
 import {TableExportButton} from "./TableExportButton";
 import {TableFiltersClearButton} from "./TableFiltersClearButton";
+import {TableSavedViewsManager} from "./TableSavedViewsManager";
 import {ColumnGroup, ColumnGroupParam, ColumnGroupsCollector, ColumnGroupsSelection} from "./column_groups";
 import {ExportCellFunc, useTableTextExportCells} from "./table_export_cells";
 import {BoolFilterControl} from "./tquery_filters/BoolFilterControl";
@@ -100,6 +101,7 @@ declare module "@tanstack/table-core" {
 }
 
 interface TQueryTableMeta<TData extends RowData> {
+  readonly persistenceKey?: string;
   /** Iterator over all the rows, for export purposes. */
   readonly allRowsExportIterable?: AllRowsExportIterable<TData>;
   readonly cellsPreviewMode?: Signal<CellsPreviewMode | undefined>;
@@ -442,6 +444,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     countColumn,
     miniState,
     resetMiniState,
+    getCompleteTableView,
+    loadTableView,
   } = requestController;
   let persistencesCreated = false;
   createComputed(() => {
@@ -809,6 +813,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         defaultColumnVisibility,
         exportConfig: props.staticExportConfig,
         tquery: {
+          persistenceKey: props.staticPersistenceKey,
           allRowsExportIterable: {
             [Symbol.asyncIterator]: () =>
               getAllRowsExportIterator({
@@ -844,6 +849,9 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           />
           <TableColumnGroupSelect />
           <TableColumnVisibilityController />
+          <Show when={props.staticPersistenceKey}>
+            <TableSavedViewsManager getCurrentView={getCompleteTableView} onLoad={loadTableView} />
+          </Show>
           <Show when={props.pageInfo}>
             {(pageInfo) => (
               <div class="flex items-center">

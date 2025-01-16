@@ -1,3 +1,5 @@
+import {JSONValue} from "data-access/memo-api/types";
+
 export function objectRecursiveMerge<T>(...objects: (Partial<T> | undefined)[]): T {
   const objs = objects as (Partial<Record<string, unknown>> | undefined)[];
   const result = Object.assign({}, ...objs);
@@ -80,4 +82,16 @@ export function objectsEqual(
         key in b && equals((a as Partial<Record<string, unknown>>)[key], (b as Partial<Record<string, unknown>>)[key]),
     )
   );
+}
+
+export function jsonValuesEqual(a: JSONValue, b: JSONValue) {
+  if (a === b) {
+    return true;
+  } else if (Array.isArray(a) && Array.isArray(b)) {
+    return arraysEqual(a, b, jsonValuesEqual);
+  } else if (a && typeof a === "object" && b && typeof b === "object") {
+    return objectsEqual(a, b, jsonValuesEqual as (a: unknown, b: unknown) => boolean);
+  } else {
+    return false;
+  }
 }
