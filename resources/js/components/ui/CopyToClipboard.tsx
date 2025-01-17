@@ -23,9 +23,7 @@ export const CopyToClipboard: VoidComponent<Props> = (allProps) => {
           title={
             props.textInTitle ? `${t("actions.copy_to_clipboard")}\n${props.text}` : t("actions.copy_to_clipboard")
           }
-          onClick={() => {
-            navigator.clipboard.writeText(text());
-          }}
+          onClick={() => navigator.clipboard.writeText(text())}
         />
       )}
     </Show>

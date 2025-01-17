@@ -3,7 +3,7 @@ import {resolvePath} from "features/root/pages/help/markdown_resolver";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkCustomHeadingId from "remark-custom-heading-id";
 import remarkGfm from "remark-gfm";
-import {ComponentProps, Match, Switch, VoidComponent, createEffect, createSignal, splitProps} from "solid-js";
+import {ComponentProps, createEffect, createSignal, Match, splitProps, Switch, VoidComponent} from "solid-js";
 import {SolidMarkdown} from "solid-markdown";
 import {htmlAttributes} from "../utils";
 import {LinkWithNewTabLink} from "./LinkWithNewTabLink";
@@ -13,6 +13,8 @@ interface MarkdownProps extends ComponentProps<typeof SolidMarkdown> {
   readonly markdown: string;
   readonly linksRelativeTo: string;
   readonly offerNewTabLinks?: boolean;
+  /** Whether anchor links pointing to the same document are allowed. Default: true. */
+  readonly allowSelfAnchorLinks?: boolean;
 }
 
 /**
@@ -24,7 +26,12 @@ interface MarkdownProps extends ComponentProps<typeof SolidMarkdown> {
  * The component can be further configured using the props of the underlying SolidMarkdown component.
  */
 export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
-  const [props, markdownProps] = splitProps(allProps, ["markdown", "linksRelativeTo", "offerNewTabLinks"]);
+  const [props, markdownProps] = splitProps(allProps, [
+    "markdown",
+    "linksRelativeTo",
+    "offerNewTabLinks",
+    "allowSelfAnchorLinks",
+  ]);
   const location = useLocation();
   const [element, setElement] = createSignal<HTMLDivElement>();
   createEffect(() => {
@@ -50,7 +57,7 @@ export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
             <Switch>
               <Match when={aProps.href?.startsWith("#")}>
                 {/* Anchor links don't work very well on the A component. */}
-                <a {...aProps} />
+                <a {...{...aProps, ...(props.allowSelfAnchorLinks ? undefined : {href: undefined})}} />
               </Match>
               <Match when="other file">
                 <LinkWithNewTabLink

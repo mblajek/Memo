@@ -56,7 +56,7 @@ export const ValidationMessages: VoidComponent<Props> = (props) => {
   );
   return (
     <HideableSection show={hasErrors()}>
-      <MessagesForLevel level="error" cssClass="text-red-400" />
+      <MessagesForLevel level="error" cssClass="text-red-600" />
       <MessagesForLevel level="warning" cssClass="text-yellow-600" />
     </HideableSection>
   );

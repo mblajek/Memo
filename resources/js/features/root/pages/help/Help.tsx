@@ -3,12 +3,14 @@ import {createQuery} from "@tanstack/solid-query";
 import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
 import {QueryBarrier, SimpleErrors, useLangFunc} from "components/utils";
-import {JSX, Show, VoidComponent, onMount} from "solid-js";
+import {JSX, Show, VoidComponent, createMemo, onMount} from "solid-js";
 import {resolvePath} from "./markdown_resolver";
 
 interface Props {
-  readonly currentPath?: string;
+  /** The path to the markdown file to show. */
   readonly mdPath: string;
+  /** The path of the docs page being shown, defaults to location.pathname. */
+  readonly currentPath?: string;
   /** Whether the help is included in another document. This causes the component not to set padding etc. Default: false */
   readonly inlined?: boolean;
   readonly offerNewTabLinks?: boolean;
@@ -47,6 +49,10 @@ export const Help: VoidComponent<Props> = (props) => {
       setTimeout(() => document.querySelector(`a[href="${location.hash}"]`)?.scrollIntoView(), 100);
     }
   });
+  const currentPathInfo = createMemo(() => ({
+    path: props.currentPath || location.pathname,
+    isLocationPath: !props.currentPath || props.currentPath === location.pathname,
+  }));
   return (
     <div class={props.inlined ? undefined : "overflow-y-auto p-2 pr-4 max-w-5xl"}>
       <QueryBarrier
@@ -59,15 +65,16 @@ export const Help: VoidComponent<Props> = (props) => {
           >
             <div class="w-fit bg-purple-100 m-2 p-4 rounded-md">
               <h1 class="text-xl text-center mb-2">{t("errors.docs_page_not_found.title")}</h1>
-              <p>{t("errors.docs_page_not_found.body", {url: props.currentPath || location.pathname})}</p>
+              <p>{t("errors.docs_page_not_found.body", {url: currentPathInfo().path})}</p>
             </div>
           </Show>
         )}
       >
         <Markdown
           markdown={processMarkdown(query.data!)}
-          linksRelativeTo={props.currentPath || location.pathname}
+          linksRelativeTo={currentPathInfo().path}
           offerNewTabLinks={props.offerNewTabLinks}
+          allowSelfAnchorLinks={currentPathInfo().isLocationPath}
           components={{
             h1: (h1Props) => {
               const def = () => <h1 {...h1Props} />;
