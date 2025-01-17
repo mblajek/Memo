@@ -1,5 +1,5 @@
 import {createPersistence} from "components/persistence/persistence";
-import {RichJSONValue, richJSONValuesEqual} from "components/persistence/serialiser";
+import {richJSONSerialiser, RichJSONValue, Serialiser} from "components/persistence/serialiser";
 import {userStorageStorage} from "components/persistence/storage";
 import {createConfirmation} from "components/ui/confirmation";
 import {useDocsModalInfoIcon} from "components/ui/docs_modal";
@@ -9,17 +9,14 @@ import {scrollIntoView} from "components/ui/scroll_into_view";
 import {SearchInput} from "components/ui/SearchInput";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {EmptyValueSymbol} from "components/ui/symbols";
-import {ControlState} from "components/ui/Table/tquery_filters/types";
+import {getTableViewDelta, TableView, tableViewsSerialisation} from "components/ui/Table/table_views";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
 import {cx, delayedAccessor, useLangFunc} from "components/utils";
 import {Autofocus} from "components/utils/Autofocus";
-import {arraysEqual, objectsEqual} from "components/utils/object_util";
-import {ColumnView, TableView} from "data-access/memo-api/tquery/table";
-import {ColumnName} from "data-access/memo-api/tquery/types";
 import {VsSave} from "solid-icons/vs";
-import {Accessor, createMemo, createSignal, For, Show, VoidComponent} from "solid-js";
+import {createMemo, createSignal, Index, Show, VoidComponent} from "solid-js";
 import {Button} from "../Button";
 import {PopOver, PopOverControl} from "../PopOver";
 import {useTable} from "./TableContext";
@@ -27,20 +24,45 @@ import {useTable} from "./TableContext";
 type _Directives = typeof scrollIntoView | typeof title;
 
 interface Props {
+  readonly defaultTableView?: TableView;
   readonly getCurrentView: () => TableView;
   readonly onLoad: (view: TableView) => void;
 }
 
-type PersistedState = {
-  readonly st: readonly NamedTableView[];
-};
+interface PersistedState {
+  readonly states: readonly NamedTableView[];
+}
 
-type NamedTableView = {
-  readonly n: string;
-  readonly s: TableView;
-};
+interface NamedTableView {
+  readonly default?: boolean;
+  readonly name: string;
+  readonly state: TableView;
+}
 
-const VERSION = [1];
+function stateSerialiser(): Serialiser<PersistedState> {
+  type SerialisedPersistedState = {
+    readonly st: readonly SerialisedNamedTableView[];
+  };
+  type SerialisedNamedTableView = {
+    readonly n: string;
+    readonly s: RichJSONValue;
+  };
+  const intermediateSerialiser = tableViewsSerialisation.intermediateSerialiser();
+  const jsonSerialiser = richJSONSerialiser<SerialisedPersistedState>();
+  return {
+    serialise(state) {
+      return jsonSerialiser.serialise({
+        st: state.states.map((st) => ({n: st.name, s: intermediateSerialiser.serialise(st.state)})),
+      });
+    },
+    deserialise(value): PersistedState {
+      const deserialised = jsonSerialiser.deserialise(value);
+      return {
+        states: deserialised.st.map((st) => ({name: st.n, state: intermediateSerialiser.deserialise(st.s)})),
+      };
+    },
+  };
+}
 
 export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -51,12 +73,12 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
     return undefined;
   }
   const {DocsModalInfoIcon} = useDocsModalInfoIcon();
-  const [persistedState, setPersistedState] = createSignal<PersistedState>({st: []});
-  createPersistence<PersistedState & RichJSONValue>({
-    value: persistedState as Accessor<PersistedState & RichJSONValue>,
+  const [persistedState, setPersistedState] = createSignal<PersistedState>({states: []});
+  createPersistence<PersistedState>({
+    value: persistedState,
     onLoad: (state) => setPersistedState(state),
+    serialiser: stateSerialiser(),
     storage: userStorageStorage(`table.saves.${persistenceKey}`),
-    version: VERSION,
   });
   const confirmation = createConfirmation();
   let savedPopOver: PopOverControl | undefined;
@@ -64,7 +86,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
   async function confirmAndRename(oldName: string) {
     const [getNewName, setNewName] = createSignal(oldName);
     const newName = () => getNewName().trim();
-    const newNameConflict = () => newName() !== oldName && persistedState().st.some((st) => st.n === newName());
+    const newNameConflict = () => newName() !== oldName && persistedState().states.some((st) => st.name === newName());
     // eslint-disable-next-line solid/reactivity
     const delayedNewNameConflict = delayedAccessor(newNameConflict, {outputImmediately: (c) => !c});
     if (
@@ -100,11 +122,18 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
       const theNewName = newName();
       setPersistedState((s) => ({
         ...s,
-        st: [...s.st.filter((s) => s.n !== oldName), {n: theNewName, s: props.getCurrentView()}],
+        states: [...s.states.filter((st) => st.name !== oldName), {name: theNewName, state: props.getCurrentView()}],
       }));
       savedPopOver?.open();
     }
   }
+
+  const statesToShow = () => [
+    ...(props.defaultTableView
+      ? [{default: true, name: t("tables.saved_views.default_view_name"), state: props.defaultTableView}]
+      : []),
+    ...persistedState().states.toSorted((a, b) => a.name.localeCompare(b.name)),
+  ];
 
   return (
     <PopOver
@@ -123,7 +152,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
         const currentView = createMemo(() => props.getCurrentView());
         const [getNewName, setNewName] = createSignal("");
         const newName = () => getNewName().trim();
-        const newNameConflict = () => persistedState().st.some((st) => st.n === newName());
+        const newNameConflict = () => persistedState().states.some((st) => st.name === newName());
         return (
           <div
             class={cx(
@@ -137,19 +166,17 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
             </div>
             <div class="grow overflow-y-auto">
               <div class="flex flex-col items-stretch gap-1">
-                <For
-                  each={persistedState().st.toSorted((a, b) => a.n.localeCompare(b.n))}
-                  fallback={<EmptyValueSymbol />}
-                >
+                <Index each={statesToShow()} fallback={<EmptyValueSymbol />}>
                   {(state) => {
-                    const deltaSummary = createMemo(() => getViewDelta(currentView(), state.s).deltaSummary);
+                    const deltaSummary = createMemo(() => getTableViewDelta(currentView(), state().state).deltaSummary);
                     return (
-                      <div class="flex items-stretch gap-2 me-2">
-                        <div class="grow max-w-md" use:scrollIntoView={state.n === newName()}>
+                      <div class="flex items-stretch gap-1 me-2">
+                        <div class="grow max-w-md" use:scrollIntoView={state().name === newName()}>
                           <Button
                             class={cx(
                               "w-full minimal !px-1 text-start",
                               deltaSummary().anything ? undefined : "!bg-select",
+                              state().default ? "text-grey-text" : undefined,
                             )}
                             title={[
                               deltaSummary().anything
@@ -159,69 +186,73 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             ]}
                             onClick={() => {
                               const {anything} = deltaSummary();
-                              props.onLoad(state.s as TableView);
+                              props.onLoad(state().state as TableView);
                               if (anything) {
                                 popOver.close();
                               }
                             }}
                           >
-                            {state.n}
-                            <Show when={state.n === newName()}>
+                            {state().name}
+                            <Show when={state().name === newName()}>
                               <span use:title={t("tables.saved_views.save_hint_conflict")}>
                                 <WarningMark />
                               </span>
                             </Show>
                           </Button>
                         </div>
-                        <PopOver
-                          trigger={(popOver) => (
-                            <Button
-                              class={cx(
-                                "rounded border",
-                                popOver.isOpen ? "border border-input-border" : "border-transparent",
-                              )}
-                              onClick={popOver.open}
-                            >
-                              <actionIcons.ThreeDots />
-                            </Button>
-                          )}
-                          parentPopOver={popOver}
-                        >
-                          <SimpleMenu>
-                            <Button
-                              onClick={() =>
-                                setPersistedState((s) => ({
-                                  ...s,
-                                  st: s.st.map((st) => (st.n === state.n ? {...st, s: props.getCurrentView()} : st)),
-                                }))
-                              }
-                            >
-                              {t("tables.saved_views.overwrite_with_current")}
-                            </Button>
-                            <Button
-                              onClick={() => {
-                                popOver.close();
-                                confirmAndRename(state.n);
-                              }}
-                            >
-                              {t("actions.rename")}
-                            </Button>
-                            <Button
-                              onClick={() =>
-                                setPersistedState((s) => ({
-                                  ...s,
-                                  st: s.st.filter((st) => st.n !== state.n),
-                                }))
-                              }
-                            >
-                              {t("actions.delete")}
-                            </Button>
-                          </SimpleMenu>
-                        </PopOver>
+                        <Show when={!state().default}>
+                          <PopOver
+                            trigger={(popOver) => (
+                              <Button
+                                class={cx(
+                                  "rounded border px-1",
+                                  popOver.isOpen ? "border border-input-border" : "border-transparent",
+                                )}
+                                onClick={popOver.open}
+                              >
+                                <actionIcons.ThreeDots />
+                              </Button>
+                            )}
+                            parentPopOver={popOver}
+                          >
+                            <SimpleMenu onClick={popOver.close}>
+                              <Button
+                                onClick={() =>
+                                  setPersistedState((s) => ({
+                                    ...s,
+                                    states: s.states.map((st) =>
+                                      st.name === state().name ? {...st, state: props.getCurrentView()} : st,
+                                    ),
+                                  }))
+                                }
+                              >
+                                {t("tables.saved_views.overwrite_with_current")}
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  popOver.close();
+                                  confirmAndRename(state().name);
+                                }}
+                              >
+                                {t("actions.rename")}
+                              </Button>
+                              <Button
+                                onClick={() =>
+                                  setPersistedState((s) => ({
+                                    ...s,
+                                    states: s.states.filter((st) => st.name !== state().name),
+                                  }))
+                                }
+                              >
+                                {t("actions.delete")}
+                              </Button>
+                            </SimpleMenu>
+                          </PopOver>
+                        </Show>
                       </div>
                     );
                   }}
-                </For>
+                </Index>
               </div>
             </div>
             <div class="flex items-stretch gap-1 pe-2">
@@ -238,7 +269,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 onClick={() => {
                   setPersistedState((s) => ({
                     ...s,
-                    st: [...s.st, {n: newName(), s: props.getCurrentView()}],
+                    states: [...s.states, {name: newName(), state: props.getCurrentView()}],
                   }));
                   setNewName("");
                 }}
@@ -253,61 +284,3 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
     </PopOver>
   );
 };
-
-export function getViewDelta(currentView: TableView, viewToLoad: TableView) {
-  let columnViews: Record<ColumnName, ColumnView> | undefined;
-  if (viewToLoad.c) {
-    columnViews = {};
-    for (const [column, {v, fs}] of Object.entries(viewToLoad.c)) {
-      let deltaV: 1 | 0 | undefined;
-      let deltaFs: ControlState | null | undefined;
-      if (v !== undefined && v !== currentView.c?.[column]?.v) {
-        deltaV = v;
-      }
-      if (fs !== undefined) {
-        const currentFs = currentView.c?.[column]?.fs;
-        if (currentFs === undefined || !richJSONValuesEqual(fs, currentFs)) {
-          deltaFs = fs;
-        }
-      }
-      if (deltaV !== undefined || deltaFs !== undefined) {
-        columnViews[column] = {v: deltaV, fs: deltaFs};
-      }
-    }
-  }
-  const delta: TableView = {
-    c: columnViews && Object.keys(columnViews).length ? columnViews : undefined,
-    gf: viewToLoad.gf === undefined || viewToLoad.gf === currentView.gf ? undefined : viewToLoad.gf,
-    cg: !viewToLoad.cg || (currentView.cg && arraysEqual(currentView.cg, viewToLoad.cg)) ? undefined : viewToLoad.cg,
-    s:
-      !viewToLoad.s || (currentView.s && arraysEqual(currentView.s, viewToLoad.s, objectsEqual))
-        ? undefined
-        : viewToLoad.s,
-  };
-  return {delta, deltaSummary: getTableViewSummary(delta)};
-}
-
-function getTableViewSummary(view: TableView): TableViewSummary {
-  const globalFilter = view.gf !== undefined;
-  const visibility = !!view.c && Object.values(view.c).some((c) => c.v !== undefined);
-  const columnFilters = !!view.c && Object.values(view.c).some((c) => c.fs !== undefined);
-  const columnGroups = !!view.cg;
-  const sort = !!view.s;
-  return {
-    globalFilter,
-    visibility,
-    columnFilters,
-    columnGroups,
-    sort,
-    anything: globalFilter || visibility || columnFilters || columnGroups || sort,
-  };
-}
-
-interface TableViewSummary {
-  readonly globalFilter: boolean;
-  readonly visibility: boolean;
-  readonly columnFilters: boolean;
-  readonly columnGroups: boolean;
-  readonly sort: boolean;
-  readonly anything: boolean;
-}

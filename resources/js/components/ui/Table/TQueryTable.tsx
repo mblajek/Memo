@@ -444,6 +444,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     countColumn,
     miniState,
     resetMiniState,
+    defaultTableView,
     getCompleteTableView,
     loadTableView,
   } = requestController;
@@ -850,7 +851,11 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           <TableColumnGroupSelect />
           <TableColumnVisibilityController />
           <Show when={props.staticPersistenceKey}>
-            <TableSavedViewsManager getCurrentView={getCompleteTableView} onLoad={loadTableView} />
+            <TableSavedViewsManager
+              defaultTableView={defaultTableView()}
+              getCurrentView={getCompleteTableView}
+              onLoad={loadTableView}
+            />
           </Show>
           <Show when={props.pageInfo}>
             {(pageInfo) => (

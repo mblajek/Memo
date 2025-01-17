@@ -3,6 +3,7 @@ import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-ta
 import {AxiosError} from "axios";
 import {TableTranslations} from "components/ui/Table";
 import {ColumnGroup} from "components/ui/Table/column_groups";
+import {TableView} from "components/ui/Table/table_views";
 import {extractFilterState, injectFilterState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {ControlState} from "components/ui/Table/tquery_filters/types";
@@ -43,22 +44,22 @@ export interface ExtraDataColumns {
 export type ColumnFilters = Readonly<Record<ColumnName, Signal<FilterH | undefined>>>;
 
 interface RequestController {
-  readonly columnVisibility: Signal<VisibilityState>;
+  readonly columnVisibility: Signal<Readonly<VisibilityState>>;
   readonly globalFilter: Signal<string>;
   getColumnFilter(column: ColumnName): Signal<FilterH | undefined>;
   readonly columnsWithActiveFilters: Accessor<readonly string[]>;
   clearColumnFilters(): void;
-  readonly sorting: Signal<SortingState>;
-  readonly pagination: Signal<PaginationState>;
+  readonly sorting: Signal<Readonly<SortingState>>;
+  readonly pagination: Signal<Readonly<PaginationState>>;
   readonly activeColumnGroups: Signal<readonly string[]>;
   readonly countColumn: Accessor<ColumnName | undefined>;
 
   readonly miniState: [Accessor<MiniState>, (state: MiniState) => void];
   resetMiniState(): void;
 
+  readonly defaultTableView: Accessor<TableView>;
   getCompleteTableView(): TableView;
   loadTableView(tableView: TableView): void;
-  resetTableView(): void;
 }
 
 /**
@@ -68,36 +69,10 @@ interface RequestController {
 export interface MiniState {
   readonly globalFilter: string;
   readonly columnFilters: ReadonlyMap<string, FilterH | undefined>;
-  readonly sorting: SortingState;
-  readonly pagination: PaginationState;
+  readonly sorting: Readonly<SortingState>;
+  readonly pagination: Readonly<PaginationState>;
   readonly activeColumnGroups: readonly string[];
 }
-
-/**
- * The state of the table that can be saved and restored in another session, or even by another user.
- * All parts of the state are optional, so an "overlay" state can be persisted and then loaded.
- *
- * The page number is not saved, it is not part of the table view.
- *
- * Short names are used to reduce the size of the state. The whole state object is a RichJSONValue.
- */
-export type TableView = {
-  /** Columns information. An empty column view object should be skipped. */
-  readonly c?: Readonly<Record<ColumnName, ColumnView>>;
-  /** Global filter. */
-  readonly gf?: string;
-  /** Active column groups. */
-  readonly cg?: readonly string[];
-  /** Sorting. */
-  readonly s?: SortingState;
-};
-
-export type ColumnView = {
-  /** The column visibility, as number to reduce size. */
-  readonly v?: 1 | 0;
-  /** The column filter state, or null to clear the filter. */
-  readonly fs?: ControlState | null;
-};
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -146,16 +121,19 @@ export function createTableRequestCreator({
   // eslint-disable-next-line solid/reactivity
   return (schema) => {
     const [allInitialisedInternal, setAllInitialisedInternal] = createSignal(false);
-    const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>(
+    const [columnVisibility, setColumnVisibility] = createSignal<Readonly<VisibilityState>>(
       {},
       {equals: (a, b) => objectsEqual(a, b)},
     );
     const [globalFilter, setGlobalFilter] = createSignal<string>("");
     const [columnFilters, setColumnFilters] = createSignal<ColumnFilters>({});
-    const [sorting, setSorting] = createSignal<SortingState>(initialSort, {
+    const [sorting, setSorting] = createSignal<Readonly<SortingState>>(initialSort, {
       equals: (a, b) => arraysEqual(a, b, (ai, bi) => ai.id === bi.id && ai.desc === bi.desc),
     });
-    const [pagination, setPagination] = createSignal<PaginationState>({pageIndex: 0, pageSize: initialPageSize});
+    const [pagination, setPagination] = createSignal<Readonly<PaginationState>>({
+      pageIndex: 0,
+      pageSize: initialPageSize,
+    });
     const [activeColumnGroups, setActiveColumnGroups] = createSignal<readonly string[]>(
       initialColumnGroups.filter((group) => columnGroupsByName().has(group)),
     );
@@ -190,17 +168,24 @@ export function createTableRequestCreator({
     const countColumn = createMemo(() => schema()?.columns.find((c) => c.type === "count")?.name);
     const groupingActive = () => activeColumnGroups().length > 0;
     createComputed(() => {
-      if (groupingActive())
-        // Show the force-show columns.
-        setColumnVisibility((vis) => {
-          vis = {...vis};
+      setColumnVisibility((vis) => {
+        let visCopy: VisibilityState | undefined;
+        // Remove non-existent columns visibility info.
+        for (const col of Object.keys(vis)) {
+          if (col !== countColumn() && !columnsConfigByName().has(col)) {
+            delete (visCopy ||= {...vis})[col];
+          }
+        }
+        if (groupingActive()) {
+          // Show the force-show columns.
           for (const group of activeColumnGroups()) {
             for (const forceShowCol of columnGroupsByName().get(group)?.forceShowColumns || []) {
-              vis[forceShowCol] = true;
+              (visCopy ||= {...vis})[forceShowCol] = true;
             }
           }
-          return vis;
-        });
+        }
+        return visCopy || vis;
+      });
       // Remove column filters for hidden columns.
       for (const {name} of columnsConfig()) {
         if (columnVisibility()[name] === false) {
@@ -370,51 +355,65 @@ export function createTableRequestCreator({
     function resetMiniState() {
       setMiniState(initialMiniState);
     }
+    function withoutCountColumn(vis: Readonly<VisibilityState>): VisibilityState {
+      const countCol = countColumn();
+      if (countCol && Object.hasOwn(vis, countCol)) {
+        const visCopy = {...vis};
+        delete visCopy[countCol];
+        return visCopy;
+      }
+      return vis;
+    }
+    const defaultTableView = (): TableView => ({
+      globalFilter: "",
+      columnVisibility: withoutCountColumn(defaultColumnVisibility()),
+      columnFilterStates: new Map(
+        columnsConfig()
+          .filter((c) => c.name !== countColumn())
+          .map((c) => [c.name, undefined]),
+      ),
+      activeColumnGroups: [],
+      sorting: initialSort,
+    });
     function getCompleteTableView(): TableView {
-      const columnViews: Record<ColumnName, ColumnView> = {};
+      const columnFilterStates = new Map<ColumnName, ControlState | undefined>();
       for (const {name} of columnsConfig()) {
-        columnViews[name] = {
-          v: columnVisibility()[name] ? 1 : 0,
-          fs: extractFilterState(getColumnFilter(name)[0]()) || null,
-        };
+        if (name !== countColumn()) {
+          columnFilterStates.set(
+            name,
+            columnVisibility()[name] ? extractFilterState(getColumnFilter(name)[0]()) : undefined,
+          );
+        }
       }
       return {
-        c: columnViews,
-        gf: globalFilter(),
-        cg: activeColumnGroups(),
-        s: sorting(),
+        globalFilter: globalFilter(),
+        columnVisibility: withoutCountColumn(columnVisibility()),
+        columnFilterStates,
+        activeColumnGroups: activeColumnGroups(),
+        sorting: sorting(),
       };
     }
-    function loadTableView({c, gf, cg, s}: TableView) {
+    function loadTableView(view: TableView) {
       batch(() => {
-        const vis = {...columnVisibility()};
-        for (const [column, {v, fs}] of Object.entries(c || {})) {
-          if (v !== undefined) {
-            vis[column] = !!v;
+        if (view.globalFilter !== undefined) {
+          setGlobalFilter(view.globalFilter);
+        }
+        if (view.columnVisibility) {
+          setColumnVisibility((vis) => ({...vis, ...view.columnVisibility}));
+        }
+        if (view.columnFilterStates) {
+          for (const [name, filterState] of view.columnFilterStates) {
+            if (name !== countColumn()) {
+              getColumnFilter(name)[1]((filter) => injectFilterState(filter, filterState));
+            }
           }
-          if (fs !== undefined) {
-            getColumnFilter(column)[1]((filter) => injectFilterState(filter, fs || undefined));
-          }
         }
-        setColumnVisibility(vis);
-        if (gf !== undefined) {
-          setGlobalFilter(gf);
+        if (view.activeColumnGroups) {
+          setActiveColumnGroups(view.activeColumnGroups);
         }
-        if (cg) {
-          setActiveColumnGroups(cg);
+        if (view.sorting) {
+          setSorting(view.sorting);
         }
-        if (s) {
-          setSorting(s);
-        }
-      });
-    }
-    function resetTableView() {
-      batch(() => {
-        setColumnVisibility(defaultColumnVisibility());
-        setColumnFilters({});
-        setGlobalFilter("");
-        setSorting(initialSort);
-        setActiveColumnGroups(initialColumnGroups.filter((group) => columnGroupsByName().has(group)));
       });
     }
     return {
@@ -431,9 +430,9 @@ export function createTableRequestCreator({
         countColumn,
         miniState: [miniState, setMiniState],
         resetMiniState,
+        defaultTableView,
         getCompleteTableView,
         loadTableView,
-        resetTableView,
       },
     };
   };

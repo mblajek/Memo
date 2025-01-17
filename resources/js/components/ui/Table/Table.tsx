@@ -375,10 +375,10 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
  * or just true to use the defaults. Missing key or false disables the feature.
  */
 export interface TableFeaturesConfig {
-  columnVisibility?: boolean | Signal<VisibilityState> | VisibilityState;
-  sorting?: boolean | Signal<SortingState> | SortingState;
+  columnVisibility?: boolean | Signal<Readonly<VisibilityState>> | Readonly<VisibilityState>;
+  sorting?: boolean | Signal<Readonly<SortingState>> | Readonly<SortingState>;
   globalFilter?: boolean | Signal<string> | string;
-  pagination?: boolean | Signal<PaginationState> | PaginationState;
+  pagination?: boolean | Signal<Readonly<PaginationState>> | Readonly<PaginationState>;
 }
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -401,18 +401,24 @@ export function getBaseTableOptions<T>({
   defaultColumn?: Partial<ColumnDef<T, unknown>>;
 } = {}) {
   const tableCells = useTableCells();
-  const columnVisibilitySignal = getFeatureSignal(columnVisibility, {});
-  const sortingSignal = getFeatureSignal(sorting, []);
+  const columnVisibilitySignal = getFeatureSignal<Readonly<VisibilityState>>(columnVisibility, {});
+  const sortingSignal = getFeatureSignal<Readonly<SortingState>>(sorting, []);
   const globalFilterSignal = getFeatureSignal(globalFilter, "");
-  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE}) || [
-    () => ({pageIndex: 0, pageSize: PAGE_SIZE_WITHOUT_PAGINATION}),
-  ];
+  const paginationSignal =
+    getFeatureSignal<Readonly<PaginationState>>(pagination, {
+      pageIndex: 0,
+      pageSize: DEFAULT_PAGE_SIZE,
+    }) ||
+    ([() => ({pageIndex: 0, pageSize: PAGE_SIZE_WITHOUT_PAGINATION}), () => {}] satisfies Signal<
+      Readonly<PaginationState>
+    >);
   const baseState: Partial<TableState> = {
     get columnVisibility() {
       return columnVisibilitySignal?.[0]();
     },
     get sorting() {
-      return sortingSignal?.[0]();
+      // Un-readonly the type as the caller did not declare it as readonly.
+      return sortingSignal?.[0]() as SortingState;
     },
     get globalFilter() {
       return globalFilterSignal?.[0]();

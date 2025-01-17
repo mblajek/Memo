@@ -276,3 +276,4 @@ saved_views:
   save_hint_conflict: "Ta nazwa jest już użyta, rozwiń opcje aby zastąpić"
   overwrite_with_current: "Zapisz aktualny widok (zastąp)"
   rename_conflict: "Ta nazwa jest już użyta."
+  default_view_name: "Widok domyślny"

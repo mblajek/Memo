@@ -66,7 +66,7 @@ export function arraysEqual<T>(
   b: readonly T[],
   equals: (ai: T, bi: T) => boolean = (ai, bi) => ai === bi,
 ) {
-  return a.length === b.length && a.every((v, i) => equals(v, b[i]!));
+  return a === b || (a.length === b.length && a.every((v, i) => equals(v, b[i]!)));
 }
 
 export function objectsEqual(
@@ -74,6 +74,9 @@ export function objectsEqual(
   b: object,
   equals: (av: unknown, bv: unknown) => boolean = (av, bv) => av === bv,
 ) {
+  if (a === b) {
+    return true;
+  }
   const aKeys = Object.keys(a);
   return (
     Object.keys(b).length === aKeys.length &&
