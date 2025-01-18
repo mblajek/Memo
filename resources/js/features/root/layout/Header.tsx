@@ -10,9 +10,7 @@ export const Header: VoidComponent = () => {
       class="p-2 flex items-center gap-4 border-b border-gray-300"
       style={{"grid-area": "header", ...envInfo.style()}}
     >
-      <div class="text-black">
-        <FacilityControl />
-      </div>
+      <FacilityControl />
       <div class="flex-grow">{envInfo.info()}</div>
       <UserInfo />
     </header>

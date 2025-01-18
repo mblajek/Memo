@@ -51,7 +51,7 @@ export const FacilityControl: VoidComponent = () => {
                 name="activeFacilityId"
                 items={userFacilities().map(({id, name}) => ({
                   value: id,
-                  label: () => <span class="font-semibold">{name}</span>,
+                  label: () => <span class="font-semibold text-black">{name}</span>,
                 }))}
                 nullable={false}
                 value={activeFacilityId()}
