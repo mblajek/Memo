@@ -86,6 +86,7 @@ export default (() => {
         {type: "column", column: "createdAt", desc: true},
         {type: "column", column: "createdAtDate", desc: true},
       ]}
+      savedViews
     />
   );
 }) satisfies VoidComponent;

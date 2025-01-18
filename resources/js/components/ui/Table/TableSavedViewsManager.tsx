@@ -2,7 +2,9 @@ import {createPersistence} from "components/persistence/persistence";
 import {richJSONSerialiser, RichJSONValue, Serialiser} from "components/persistence/serialiser";
 import {userStorageStorage} from "components/persistence/storage";
 import {createConfirmation} from "components/ui/confirmation";
+import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {useDocsModalInfoIcon} from "components/ui/docs_modal";
+import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {HideableSection} from "components/ui/HideableSection";
 import {actionIcons} from "components/ui/icons";
 import {scrollIntoView} from "components/ui/scroll_into_view";
@@ -13,17 +15,19 @@ import {getTableViewDelta, TableView, tableViewsSerialisation} from "components/
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
-import {cx, delayedAccessor, useLangFunc} from "components/utils";
+import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {Autofocus} from "components/utils/Autofocus";
+import {IconTypes} from "solid-icons";
 import {VsSave} from "solid-icons/vs";
-import {createMemo, createSignal, Index, Show, VoidComponent} from "solid-js";
-import {Button} from "../Button";
+import {createEffect, createMemo, createSignal, Index, JSX, Show, splitProps, VoidComponent} from "solid-js";
+import {Dynamic} from "solid-js/web";
+import {Button, ButtonProps} from "../Button";
 import {PopOver, PopOverControl} from "../PopOver";
-import {useTable} from "./TableContext";
 
 type _Directives = typeof scrollIntoView | typeof title;
 
 interface Props {
+  readonly staticPersistenceKey: string;
   readonly defaultTableView?: TableView;
   readonly getCurrentView: () => TableView;
   readonly onLoad: (view: TableView) => void;
@@ -66,20 +70,15 @@ function stateSerialiser(): Serialiser<PersistedState> {
 
 export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const table = useTable();
-  const persistenceKey = table.options.meta?.tquery?.persistenceKey;
-  if (!persistenceKey) {
-    // eslint-disable-next-line solid/components-return-once
-    return undefined;
-  }
   const {DocsModalInfoIcon} = useDocsModalInfoIcon();
   const [persistedState, setPersistedState] = createSignal<PersistedState>({states: []});
   createPersistence<PersistedState>({
     value: persistedState,
     onLoad: (state) => setPersistedState(state),
     serialiser: stateSerialiser(),
-    storage: userStorageStorage(`table.saves.${persistenceKey}`),
+    storage: userStorageStorage(`table.saves.${props.staticPersistenceKey}`),
   });
+  const codeSerialiser = tableViewsSerialisation.codeSerialiser();
   const confirmation = createConfirmation();
   let savedPopOver: PopOverControl | undefined;
 
@@ -110,7 +109,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
               />
             </div>
             <HideableSection show={delayedNewNameConflict()}>
-              <div>{t("tables.saved_views.rename_conflict")}</div>
+              <div class="text-red-600">{t("tables.saved_views.rename_conflict")}</div>
             </HideableSection>
           </Autofocus>
         ),
@@ -122,18 +121,11 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
       const theNewName = newName();
       setPersistedState((s) => ({
         ...s,
-        states: [...s.states.filter((st) => st.name !== oldName), {name: theNewName, state: props.getCurrentView()}],
+        states: [...s.states.map((st) => (st.name === oldName ? {...st, name: theNewName} : st))],
       }));
-      savedPopOver?.open();
+      setTimeout(() => savedPopOver?.open(), 100);
     }
   }
-
-  const statesToShow = () => [
-    ...(props.defaultTableView
-      ? [{default: true, name: t("tables.saved_views.default_view_name"), state: props.defaultTableView}]
-      : []),
-    ...persistedState().states.toSorted((a, b) => a.name.localeCompare(b.name)),
-  ];
 
   return (
     <PopOver
@@ -150,21 +142,55 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
       {(popOver) => {
         savedPopOver = popOver;
         const currentView = createMemo(() => props.getCurrentView());
+        const [currentViewCode, setCurrentViewCode] = createSignal("");
+        createEffect(() =>
+          codeSerialiser
+            .serialise({tableId: props.staticPersistenceKey, tableView: currentView()})
+            .then((code) => setCurrentViewCode(code)),
+        );
         const [getNewName, setNewName] = createSignal("");
         const newName = () => getNewName().trim();
         const newNameConflict = () => persistedState().states.some((st) => st.name === newName());
+
+        const [inputCode, setInputCode] = createSignal("");
+        const [codeErrorMessage, setCodeErrorMessage] = createSignal<string>();
+        createEffect(() => setInputCode(currentViewCode()));
+        createEffect(() => {
+          const onLoad = props.onLoad;
+          const code = inputCode().trim();
+          if (code && code !== currentViewCode()) {
+            codeSerialiser.deserialise(code).then(
+              ({tableId, tableView}) => {
+                if (!tableId || tableId === props.staticPersistenceKey) {
+                  onLoad(tableView);
+                  setCodeErrorMessage(undefined);
+                  if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                  }
+                } else {
+                  setCodeErrorMessage(t("tables.saved_views.code_error.different_table"));
+                }
+              },
+              () => setCodeErrorMessage(t("tables.saved_views.code_error")),
+            );
+          } else {
+            setCodeErrorMessage(undefined);
+          }
+        });
+
+        const statesToShow = () => [
+          ...(props.defaultTableView
+            ? [{default: true, name: t("tables.saved_views.default_view_name"), state: props.defaultTableView}]
+            : []),
+          ...persistedState().states.toSorted((a, b) => a.name.localeCompare(b.name)),
+        ];
         return (
-          <div
-            class={cx(
-              "p-2 pe-0 flex flex-col gap-2 items-stretch min-h-0",
-              confirmation.isShown() ? "hidden" : undefined,
-            )}
-          >
+          <div class="p-2 flex flex-col gap-3 items-stretch min-h-0">
             <div class="font-bold">
               {t("tables.saved_views.title")}{" "}
-              <DocsModalInfoIcon href="/help/table-saved-views" onClick={() => popOver.close()} />
+              <DocsModalInfoIcon href="/help/table-saved-views" onClick={popOver.close} />
             </div>
-            <div class="grow overflow-y-auto">
+            <div class="grow overflow-y-auto -me-2">
               <div class="flex flex-col items-stretch gap-1">
                 <Index each={statesToShow()} fallback={<EmptyValueSymbol />}>
                   {(state) => {
@@ -215,38 +241,62 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             )}
                             parentPopOver={popOver}
                           >
-                            <SimpleMenu onClick={popOver.close}>
-                              <Button
-                                onClick={() =>
-                                  setPersistedState((s) => ({
-                                    ...s,
-                                    states: s.states.map((st) =>
-                                      st.name === state().name ? {...st, state: props.getCurrentView()} : st,
-                                    ),
-                                  }))
-                                }
-                              >
-                                {t("tables.saved_views.overwrite_with_current")}
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  popOver.close();
-                                  confirmAndRename(state().name);
-                                }}
-                              >
-                                {t("actions.rename")}
-                              </Button>
-                              <Button
-                                onClick={() =>
-                                  setPersistedState((s) => ({
-                                    ...s,
-                                    states: s.states.filter((st) => st.name !== state().name),
-                                  }))
-                                }
-                              >
-                                {t("actions.delete")}
-                              </Button>
-                            </SimpleMenu>
+                            {(optionsPopOver) => {
+                              const MenuItem: VoidComponent<ButtonProps & {icon: IconTypes; label: JSX.Element}> = (
+                                allProps,
+                              ) => {
+                                const [props, buttonProps] = splitProps(allProps, ["icon", "label"]);
+                                return (
+                                  <Button {...htmlAttributes.merge(buttonProps, {class: "flex items-center gap-2"})}>
+                                    <Dynamic component={props.icon} size="18" />
+                                    {props.label}
+                                  </Button>
+                                );
+                              };
+                              return (
+                                <SimpleMenu onClick={optionsPopOver.close}>
+                                  <MenuItem
+                                    icon={VsSave}
+                                    label={t("tables.saved_views.overwrite_with_current")}
+                                    onClick={() =>
+                                      setPersistedState((s) => ({
+                                        ...s,
+                                        states: s.states.map((st) =>
+                                          st.name === state().name ? {...st, state: props.getCurrentView()} : st,
+                                        ),
+                                      }))
+                                    }
+                                  />
+                                  <MenuItem
+                                    icon={actionIcons.Copy}
+                                    label={t("tables.saved_views.copy_code")}
+                                    onClick={() =>
+                                      codeSerialiser
+                                        .serialise({tableId: props.staticPersistenceKey, tableView: state().state})
+                                        .then((code) => navigator.clipboard.writeText(code))
+                                    }
+                                  />
+                                  <MenuItem
+                                    icon={actionIcons.Rename}
+                                    label={t("actions.rename")}
+                                    onClick={() => {
+                                      savedPopOver?.close();
+                                      confirmAndRename(state().name);
+                                    }}
+                                  />
+                                  <MenuItem
+                                    icon={actionIcons.Delete}
+                                    label={t("actions.delete")}
+                                    onClick={() =>
+                                      setPersistedState((s) => ({
+                                        ...s,
+                                        states: s.states.filter((st) => st.name !== state().name),
+                                      }))
+                                    }
+                                  />
+                                </SimpleMenu>
+                              );
+                            }}
                           </PopOver>
                         </Show>
                       </div>
@@ -255,7 +305,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 </Index>
               </div>
             </div>
-            <div class="flex items-stretch gap-1 pe-2">
+            <div class="flex items-stretch gap-1">
               <SearchInput
                 divClass="grow"
                 placeholder={t("tables.saved_views.new_placeholder")}
@@ -277,6 +327,35 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
               >
                 {t("actions.save")}
               </Button>
+            </div>
+            <div class="flex flex-col">
+              <div class="flex gap-1 items-center">
+                <div class="grow pe-4">
+                  <StandaloneFieldLabel>{t("tables.saved_views.current_view_code")}</StandaloneFieldLabel>
+                </div>
+                <div class="flex items-center gap-1">
+                  <TextInput
+                    class="grow w-20 min-h-small-input px-1 font-mono text-xs"
+                    aria-invalid={!!codeErrorMessage()}
+                    value={inputCode()}
+                    onFocus={({target}) => target.select()}
+                    onInput={({target}) => setInputCode(target.value)}
+                    onFocusOut={() => {
+                      setInputCode(currentViewCode());
+                      setCodeErrorMessage(undefined);
+                    }}
+                  />
+                  <CopyToClipboard text={currentViewCode()} showDisabledOnEmpty />
+                </div>
+                <DocsModalInfoIcon
+                  href="/help/table-saved-views-codes.part"
+                  fullPageHref="/help/table-saved-views#codes"
+                  onClick={popOver.close}
+                />
+              </div>
+              <HideableSection show={codeErrorMessage()}>
+                <div class="text-red-600">{codeErrorMessage()}</div>
+              </HideableSection>
             </div>
           </div>
         );

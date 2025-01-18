@@ -10,6 +10,12 @@ export interface Serialiser<T, S = string> {
   version?: Version;
 }
 
+export interface AsyncSerialiser<T, S = string> {
+  serialise(value: T): Promise<S>;
+  deserialise(value: S): Promise<T>;
+  version?: Version;
+}
+
 /**
  * A JSON serialiser, supporting only values directly supported by JSON serialisation.
  *

@@ -85,6 +85,7 @@ export default (() => {
           </Button>
         </div>
       }
+      savedViews
     />
   );
 }) satisfies VoidComponent;

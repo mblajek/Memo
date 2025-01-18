@@ -12,7 +12,7 @@ import {
   BsPersonDash,
   BsPersonGear,
 } from "solid-icons/bs";
-import {CgUndo} from "solid-icons/cg";
+import {CgRename, CgUndo} from "solid-icons/cg";
 import {FaRegularBell} from "solid-icons/fa";
 import {FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
@@ -91,6 +91,7 @@ export namespace actionIcons {
     <TbFilterOff {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
   );
   export const ThreeDots = TbPassword;
+  export const Rename = CgRename;
 }
 
 export namespace calendarIcons {

@@ -93,6 +93,7 @@ export default (() => {
           </div>
         ) : undefined
       }
+      savedViews
     />
   );
 }) satisfies VoidComponent;

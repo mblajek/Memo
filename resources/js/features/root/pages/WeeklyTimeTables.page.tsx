@@ -2,7 +2,7 @@ import {A} from "@solidjs/router";
 import {CellContext, createSolidTable, HeaderContext} from "@tanstack/solid-table";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
-import {Button} from "components/ui/Button";
+import {Button, ButtonProps} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {capitalizeString} from "components/ui/Capitalize";
@@ -410,8 +410,8 @@ export default (() => {
                 >
                   {(popOver) => {
                     const MenuItem: VoidComponent<
-                      htmlAttributes.button & {
-                        readonly disabledTitle?: string;
+                      ButtonProps & {
+                        disabledTitle?: string;
                         icon: IconTypes | readonly IconTypes[];
                         label: string;
                       }

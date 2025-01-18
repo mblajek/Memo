@@ -87,6 +87,7 @@ export default (() => {
       ]}
       initialSort={[{id: "date", desc: true}]}
       pageInfo={{href: "/help/reports-meeting-clients.part", fullPageHref: "/help/reports#meeting-clients"}}
+      savedViews
     />
   );
 }) satisfies VoidComponent;

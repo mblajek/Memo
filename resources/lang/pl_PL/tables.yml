@@ -277,3 +277,7 @@ saved_views:
   overwrite_with_current: "Zapisz aktualny widok (zastąp)"
   rename_conflict: "Ta nazwa jest już użyta."
   default_view_name: "Widok domyślny"
+  current_view_code: "Kod aktualnego widoku:"
+  code_error: "Błędny kod widoku."
+  code_error.different_table: "Ten widok przeznaczony jest dla innej tabeli."
+  copy_code: "Kopiuj kod widoku do schowka"

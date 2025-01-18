@@ -38,7 +38,7 @@ export const BackdoorRoutes: VoidComponent = () => {
           path="/get"
           component={() => (
             <FullScreenPre class={cx(DARK_MODE_CLASS, "text-xs")}>
-              <div class="text-red-500">
+              <div class="text-red-600">
                 <p>
                   UWAGA: Upewnij się, że przed przesłaniem komukolwiek poniższej zawartości, usuniesz z niej dane
                   osobowe!

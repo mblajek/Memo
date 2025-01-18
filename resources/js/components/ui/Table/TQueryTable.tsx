@@ -101,7 +101,6 @@ declare module "@tanstack/table-core" {
 }
 
 interface TQueryTableMeta<TData extends RowData> {
-  readonly persistenceKey?: string;
   /** Iterator over all the rows, for export purposes. */
   readonly allRowsExportIterable?: AllRowsExportIterable<TData>;
   readonly cellsPreviewMode?: Signal<CellsPreviewMode | undefined>;
@@ -181,6 +180,8 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly customSectionBelowTable?: JSX.Element;
   readonly staticExportConfig?: TableExportConfig;
   readonly pageInfo?: DocsModalProps;
+  /** Whether to allow saving table views. */
+  readonly savedViews?: boolean;
 }
 
 export interface PartialColumnConfig<TData = DataItem> {
@@ -814,7 +815,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         defaultColumnVisibility,
         exportConfig: props.staticExportConfig,
         tquery: {
-          persistenceKey: props.staticPersistenceKey,
           allRowsExportIterable: {
             [Symbol.asyncIterator]: () =>
               getAllRowsExportIterator({
@@ -850,12 +850,15 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           />
           <TableColumnGroupSelect />
           <TableColumnVisibilityController />
-          <Show when={props.staticPersistenceKey}>
-            <TableSavedViewsManager
-              defaultTableView={defaultTableView()}
-              getCurrentView={getCompleteTableView}
-              onLoad={loadTableView}
-            />
+          <Show when={props.savedViews && props.staticPersistenceKey}>
+            {(persistenceKey) => (
+              <TableSavedViewsManager
+                staticPersistenceKey={persistenceKey()}
+                defaultTableView={defaultTableView()}
+                getCurrentView={getCompleteTableView}
+                onLoad={loadTableView}
+              />
+            )}
           </Show>
           <Show when={props.pageInfo}>
             {(pageInfo) => (

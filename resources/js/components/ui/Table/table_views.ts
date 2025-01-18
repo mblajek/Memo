@@ -1,6 +1,13 @@
 import {SortingState, VisibilityState} from "@tanstack/solid-table";
-import {RichJSONValue, richJSONValuesEqual, Serialiser} from "components/persistence/serialiser";
+import {
+  AsyncSerialiser,
+  richJSONSerialiser,
+  RichJSONValue,
+  richJSONValuesEqual,
+  Serialiser,
+} from "components/persistence/serialiser";
 import {ControlState} from "components/ui/Table/tquery_filters/types";
+import {compressingEncoder} from "components/utils/encoding";
 import {arraysEqual, objectsEqual} from "components/utils/object_util";
 import {ColumnName} from "data-access/memo-api/tquery/types";
 
@@ -19,6 +26,42 @@ export interface TableView {
 }
 
 export namespace tableViewsSerialisation {
+  interface TableViewForTable {
+    readonly tableId?: string;
+    readonly tableView: TableView;
+  }
+
+  export function codeSerialiser(): AsyncSerialiser<TableViewForTable> {
+    const versionHeader = "A";
+    type SerialisedTableViewForTable = {t?: string; v: RichJSONValue};
+    const intermediateSerialiser = tableViewsSerialisation.intermediateSerialiser();
+    const jsonSerialiser = richJSONSerialiser<SerialisedTableViewForTable>();
+    const encoder = compressingEncoder();
+    return {
+      async serialise(view: TableViewForTable) {
+        return (
+          versionHeader +
+          (await encoder.serialise(
+            jsonSerialiser.serialise({
+              t: view.tableId || undefined,
+              v: intermediateSerialiser.serialise(view.tableView),
+            }),
+          ))
+        );
+      },
+      async deserialise(value): Promise<TableViewForTable> {
+        if (!value.startsWith(versionHeader)) {
+          throw new Error(`Bad version header`);
+        }
+        const serialised = jsonSerialiser.deserialise(await encoder.deserialise(value.slice(versionHeader.length)));
+        return {
+          tableId: serialised.t,
+          tableView: intermediateSerialiser.deserialise(serialised.v),
+        };
+      },
+    };
+  }
+
   export function intermediateSerialiser(): Serialiser<TableView, RichJSONValue> {
     return {
       serialise(view) {
@@ -49,7 +92,7 @@ export namespace tableViewsSerialisation {
         } satisfies Serialised as unknown as RichJSONValue;
       },
       deserialise(value): TableView {
-        const {c, gf, cg, s} = upgrade(value as SerialisedAny);
+        const {c, gf, cg, s} = upgrade(value as unknown as SerialisedAny);
         const base = {
           globalFilter: gf,
           activeColumnGroups: cg,
@@ -93,50 +136,14 @@ export namespace tableViewsSerialisation {
   }
 
   type Serialised = SerialisedV2;
-  type SerialisedAny = SerialisedV1 | SerialisedV2;
+  type SerialisedAny = SerialisedV2;
 
   function upgrade(view: SerialisedAny): Serialised {
     if (view.v === 2) {
       return view;
     }
-    let c: Record<ColumnName, SerialisedV2Column> | undefined;
-    if (view.c) {
-      c = {};
-      for (const [name, {v, fs}] of Object.entries(view.c)) {
-        if (v !== undefined || fs !== undefined) {
-          c[name] =
-            fs ||
-            (fs === null
-              ? v
-                ? SerialisedV2ColumnEnum.SHOW_FILTER_CLEAR
-                : SerialisedV2ColumnEnum.HIDE_FILTER_CLEAR
-              : v
-                ? SerialisedV2ColumnEnum.SHOW
-                : SerialisedV2ColumnEnum.HIDE_FILTER_CLEAR);
-        }
-      }
-    }
-    return {...view, v: 2, c};
+    return view;
   }
-
-  type SerialisedV1 = {
-    readonly v?: 1;
-    /** Columns information. An empty column view object should be skipped. */
-    readonly c?: Readonly<Record<ColumnName, SerialisedV1Column>>;
-    /** Global filter. */
-    readonly gf?: string;
-    /** Active column groups. */
-    readonly cg?: readonly string[];
-    /** Sorting. */
-    readonly s?: Readonly<SortingState>;
-  };
-
-  type SerialisedV1Column = {
-    /** The column visibility, as number to reduce size. */
-    readonly v?: 1 | 0;
-    /** The column filter state, or null to clear the filter. */
-    readonly fs?: ControlState | null;
-  };
 
   type SerialisedV2 = {
     readonly v: 2;

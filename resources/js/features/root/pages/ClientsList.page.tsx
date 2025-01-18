@@ -75,6 +75,7 @@ export default (() => {
           </A>
         </div>
       }
+      savedViews
     />
   );
 }) satisfies VoidComponent;
