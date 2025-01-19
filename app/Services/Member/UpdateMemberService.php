@@ -3,11 +3,14 @@
 namespace App\Services\Member;
 
 use App\Exceptions\ExceptionFactory;
+use App\Exceptions\FatalExceptionFactory;
 use App\Models\Client;
 use App\Models\Grant;
 use App\Models\Member;
 use App\Models\StaffMember;
 use Closure;
+use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -43,9 +46,9 @@ class UpdateMemberService
             string $modelField,
             Closure $find,
             Closure $create
-        ) use (&$data, $member): void {
+        ) use (&$data, $member): ?Model {
             if (!array_key_exists($requestField, $data)) {
-                return;
+                return null;
             }
             $itemId = $member->getAttribute($modelField);
             /** @var Grant|Client|StaffMember $item */
@@ -58,6 +61,7 @@ class UpdateMemberService
                 $item = null;
             }
             $data[$modelField] = $item?->id;
+            return $item;
         };
 
         $fillOne(
@@ -75,13 +79,33 @@ class UpdateMemberService
             create: fn() => ExceptionFactory::validation()->throw(),
         );
 
-        $fillOne(
+
+        $staffMember = $fillOne(
             requestField: 'is_facility_staff',
             modelField: 'staff_member_id',
             find: fn(string $id) => StaffMember::query()->find($id),
             create: fn() => new StaffMember(),
         );
 
+        $this->setActiveStaff(
+            dataActiveStaff: $data['is_active_facility_staff'] ?? null,
+            staffMember: $staffMember ?? $member->staffMember
+        );
+
         $member->update($data);
+    }
+
+    private function setActiveStaff(?bool $dataActiveStaff, ?StaffMember $staffMember): void
+    {
+        if ($dataActiveStaff && $staffMember === null) {
+            FatalExceptionFactory::unexpected()->throw();
+        }
+        if ($dataActiveStaff === null || $staffMember === null || $dataActiveStaff === $staffMember->isActive()) {
+            return;
+        }
+
+        $staffMember->deactivated_at = $dataActiveStaff
+            ? null : new DateTimeImmutable();
+        $staffMember->save();
     }
 }

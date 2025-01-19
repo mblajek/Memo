@@ -29,13 +29,21 @@ class AdminMemberController extends ApiController
         summary: 'Create member',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['userId', 'facilityId', 'hasFacilityAdmin', 'isFacilityClient', 'isFacilityStaff'],
+                required: [
+                    'userId',
+                    'facilityId',
+                    'hasFacilityAdmin',
+                    'isFacilityClient',
+                    'isFacilityStaff',
+                    'isActiveFacilityStaff',
+                ],
                 properties: [
                     new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'facilityId', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: true),
                     new OA\Property(property: 'isFacilityClient', type: 'bool', example: true),
                     new OA\Property(property: 'isFacilityStaff', type: 'bool', example: true),
+                    new OA\Property(property: 'isActiveFacilityStaff', type: 'bool', example: true),
                 ]
             )
         ),
@@ -59,9 +67,13 @@ class AdminMemberController extends ApiController
                     Rule::unique('members')->where(fn($query) => //
                     $query->where('user_id', $request['user_id'])->where('facility_id', $request['facility_id'])),
                 ],
-            ] + Member::getInsertValidator(
-                ['facility_id', 'has_facility_admin', 'is_facility_client', 'is_facility_staff']
-            )
+            ] + Member::getInsertValidator([
+                'facility_id',
+                'has_facility_admin',
+                'is_facility_client',
+                'is_facility_staff',
+                'is_active_facility_staff',
+            ])
         );
 
         $result = $service->create($data);
@@ -79,6 +91,7 @@ class AdminMemberController extends ApiController
                     new OA\Property(property: 'hasFacilityAdmin', type: 'bool', example: true),
                     new OA\Property(property: 'isFacilityClient', type: 'bool', example: true),
                     new OA\Property(property: 'isFacilityStaff', type: 'bool', example: true),
+                    new OA\Property(property: 'isActiveFacilityStaff', type: 'bool', example: true),
                 ]
             )
         ),
@@ -100,8 +113,18 @@ class AdminMemberController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function patch(Member $member, Request $request, UpdateMemberService $service): JsonResponse
     {
+        $isStaffAfterSave = (bool)($request['is_facility_staff'] ?? $member->staff_member_id);
+        $isActiveStaffAfterSave = (bool)($request['is_active_facility_staff'] ?? $member->isActiveStaff());
+
         $data = $this->validate(
-            Member::getPatchValidator(['has_facility_admin', 'is_facility_client', 'is_facility_staff'], $member)
+            Member::getPatchValidator([
+                'has_facility_admin',
+                'is_facility_client',
+                'is_active_facility_staff',
+            ], $member)
+            + (($isActiveStaffAfterSave && !$isStaffAfterSave)
+                ? Member::getInsertValidator(['is_facility_staff'])
+                : Member::getPatchValidator(['is_facility_staff'], $member))
         );
 
         $service->update($member, $data);

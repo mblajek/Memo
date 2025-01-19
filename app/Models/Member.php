@@ -42,7 +42,8 @@ class Member extends Model
     {
         return match ($field) {
             'facility_id' => Valid::uuid(['exists:facilities,id']),
-            'has_facility_admin', 'is_facility_client', 'is_facility_staff' => Valid::bool(),
+            'has_facility_admin', 'is_facility_client', 'is_active_facility_staff' => Valid::bool(),
+            'is_facility_staff' => Valid::bool(['accepted_if:is_active_facility_staff,true']),
         };
     }
 
