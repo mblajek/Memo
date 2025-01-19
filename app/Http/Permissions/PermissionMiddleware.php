@@ -6,9 +6,9 @@ use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Exceptions\FatalExceptionFactory;
 use App\Models\Facility;
-use App\Models\Member;
 use App\Models\User;
 use Closure;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,50 +71,48 @@ class PermissionMiddleware
 
     private function requestPermissions(Request $request): PermissionObject
     {
+        $creator = new PermissionObjectCreator();
+
         $session = $request->hasSession() ? $request->session() : null;
 
-        $verified = false;
-        $unverified = false;
-        $globalAdmin = false;
-        $user = User::fromAuthenticatable($request->user());
-        if ($user && $session?->get(self::SESSION_PASSWORD_HASH_HASH) !== $user->passwordHashHash()) {
-            Auth::logout();
-            $user = null;
-        }
-
-        $authorised = ($user !== null);
-        if ($authorised) {
-            $verified = ($user->email_verified_at !== null);
-            $unverified = !$verified;
-        }
-
-        /** @var Member|null $member */
-        $member = null;
-        $facility = null;
-        if ($verified) {
-            $globalAdmin = ($user->global_admin_grant_id !== null);
-            /** @var Facility|null $facility */
-            $facility = $request->route('facility');
-            if (!($facility instanceof Facility)) {
-                $facility = null;
-            }
-            if ($facility) {
-                $member = $user->members->first(fn(Member $member) => $member->facility_id === $facility->id);
+        if ($user = User::fromAuthenticatable($request->user())) {
+            if (self::checkSessionPasswordHashHash($user, $session)) {
+                $creator->user = $user;
+                $creator->verified = ($user->email_verified_at !== null);
+                $creator->unverified = !$creator->verified;
+            } else {
+                Auth::logout();
             }
         }
 
-        return new PermissionObject(
-            user: $user,
-            facility: $facility,
-            unauthorised: !$authorised,
-            unverified: $unverified,
-            verified: $verified,
-            globalAdmin: $globalAdmin,
-            facilityMember: $member && $member->id,
-            facilityClient: $member && $member->client_id,
-            facilityStaff: $member && $member->staff_member_id,
-            facilityAdmin: $member && $member->facility_admin_grant_id,
-            developer: $globalAdmin && $session?->get(self::SESSION_DEVELOPER_MODE),
-        );
+        if ($creator->verified) {
+            $creator->globalAdmin = ($user->global_admin_grant_id !== null);
+            $creator->developer = $creator->globalAdmin && $session?->get(self::SESSION_DEVELOPER_MODE);
+
+            $facility = self::facilityFromRequestRoute($request);
+            $member = $facility ? $user->memberByFacility($facility) : null;
+
+            if ($member) {
+                $creator->facility = $facility;
+                $creator->facilityMember = true;
+                $creator->facilityAdmin = ($member->facility_admin_grant_id !== null);
+                $creator->facilityStaff = ($member->isActiveStaff() === true);
+                $creator->facilityClient = ($member->client_id !== null);
+            }
+        }
+
+        return $creator->getPermissionObject();
+    }
+
+    private static function facilityFromRequestRoute(Request $request): ?Facility
+    {
+        $facility = $request->route('facility');
+        return ($facility instanceof Facility) ? $facility : null;
+    }
+
+    private static function checkSessionPasswordHashHash(User $user, ?Session $session): bool
+    {
+        return $session && $user->password
+            && ($session->get(self::SESSION_PASSWORD_HASH_HASH) === $user->passwordHashHash());
     }
 }

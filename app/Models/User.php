@@ -37,7 +37,7 @@ use Illuminate\Validation\Rules\Password;
  * @property-read bool $has_password
  * @property-read bool $has_email_verified
  * @property-read bool $has_global_admin
- * @property-read Collection<Member> $members
+ * @property-read Collection<array-key, Member> $members
  * @property-read Facility $lastLoginFacility
  * @method static UserBuilder query()
  */
@@ -263,6 +263,18 @@ class User extends Authenticatable
             }
         }
         return false;
+    }
+
+    public function memberByFacility(string|Facility $facility): ?Member
+    {
+        $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
+        return $this->members->first(fn(Member $member) => $member->facility_id === $facilityId);
+    }
+
+    public function activeMembers(): Collection
+    {
+        return $this->members->filter(fn(Member $member): bool => //
+            $member->facility_admin_grant_id || $member->client_id || $member->staffMember?->isActive());
     }
 
     public function passwordHashHash(): string

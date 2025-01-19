@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $facility_admin_grant_id
  * @property-read Facility $facility
  * @property-read User $user
- * @property-read StaffMember staffMember
- * @property-read Client $client
+ * @property-read ?StaffMember staffMember
+ * @property-read ?Client $client
  * @method static MemberBuilder query()
  */
 class Member extends Model
@@ -63,6 +63,11 @@ class Member extends Model
 
     public function staffMember(): BelongsTo
     {
-        return $this->belongsTo(Facility::class);
+        return $this->belongsTo(StaffMember::class);
+    }
+
+    public function isActiveStaff(): ?bool
+    {
+        return $this->staffMember?->isActive();
     }
 }

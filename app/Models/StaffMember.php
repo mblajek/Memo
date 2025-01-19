@@ -32,6 +32,11 @@ class StaffMember extends Model
         'deactivated_at' => 'immutable_datetime',
     ];
 
+    public function isActive(): bool
+    {
+        return ($this->deactivated_at === null);
+    }
+
     public function timetable(): BelongsTo
     {
         return $this->belongsTo(Timetable::class);

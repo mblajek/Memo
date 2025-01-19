@@ -92,11 +92,12 @@ class UserController extends ApiController
     )]
     public function status(): JsonResponse
     {
+        $user = $this->getUserOrFail();
         return new JsonResponse([
             'data' => [
-                'user' => UserResource::make($this->getUserOrFail()),
+                'user' => UserResource::make($user),
                 'permissions' => PermissionResource::make(PermissionMiddleware::permissions()),
-                'members' => MemberResource::collection($this->getUserOrFail()->members),
+                'members' => MemberResource::collection($user->activeMembers()),
             ],
         ]);
     }
