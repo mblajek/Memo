@@ -49,7 +49,7 @@ export namespace User {
   export interface GetStatusData {
     readonly user: UserResource;
     readonly permissions: Partial<PermissionsResource> & Omit<PermissionsResource, PermissionsFacilityKeys>;
-    readonly members: MemberResource[];
+    readonly members: readonly MemberResource[];
   }
 
   export interface LoginRequest {

@@ -13,7 +13,11 @@ export const FacilityControl: VoidComponent = () => {
   const statusQuery = createQuery(User.statusQueryOptions);
   const userFacilities = createMemo(() =>
     facilitiesQuery.data
-      ?.filter((facility) => statusQuery.data?.members.find((member) => member.facilityId === facility.id))
+      ?.filter((facility) =>
+        statusQuery.data?.members.find(
+          (member) => member.facilityId === facility.id && (member.hasFacilityAdmin || member.isActiveFacilityStaff),
+        ),
+      )
       .sort((a, b) => a.name.localeCompare(b.name)),
   );
   createOneTimeEffect({
@@ -23,7 +27,7 @@ export const FacilityControl: VoidComponent = () => {
         return undefined;
       }
       // Use the facility from the URL, if not present (e.g. not on a facility-specific page) use the
-      // last login facility, and finally use any (the first) facility, so that some facility is always
+      // last login facility, and finally use any (the first) facility so that some facility is always
       // selected.
       return (
         facilities.find(({url}) => url === params.facilityUrl) ||

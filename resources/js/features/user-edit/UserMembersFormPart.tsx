@@ -30,6 +30,7 @@ export const getSchema = () =>
       facilityId: z.string(),
       hasFacilityAdmin: z.boolean(),
       isFacilityStaff: z.boolean(),
+      isActiveFacilityStaff: z.boolean(),
       isFacilityClient: z.boolean(),
     }),
   );
@@ -40,7 +41,10 @@ export type Output = z.output<ReturnType<typeof getSchema>>;
 interface MemberRow {
   /** Member information, or undefined for the new member row. */
   readonly member:
-    | Pick<MemberResource, "facilityId" | "hasFacilityAdmin" | "isFacilityStaff" | "isFacilityClient">
+    | Pick<
+        MemberResource,
+        "facilityId" | "hasFacilityAdmin" | "isFacilityStaff" | "isActiveFacilityStaff" | "isFacilityClient"
+      >
     | undefined;
 }
 
@@ -133,6 +137,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
                       facilityId,
                       hasFacilityAdmin: false,
                       isFacilityStaff: false,
+                      isActiveFacilityStaff: false,
                       isFacilityClient: false,
                     };
                     // The form trick causes type problems here, for some reason expecting array as
@@ -147,16 +152,30 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
           </Show>
         ),
       }),
-      ...(["hasFacilityAdmin", "isFacilityStaff", "isFacilityClient"] as const).map((field) =>
+      ...(["hasFacilityAdmin", "isFacilityStaff", "isActiveFacilityStaff", "isFacilityClient"] as const).map((field) =>
         h.accessor((row) => row.member?.[field], {
           id: field,
           cell: (ctx) => (
             <Show when={!ctx.row.getValue("isNewRow")}>
               <PaddedCell class="text-center">
-                <input type="checkbox" name={`${membersPath}.${ctx.row.index}.${field}`} data-felte-keep-on-remove />
+                <input
+                  type="checkbox"
+                  name={`${membersPath}.${ctx.row.index}.${field}`}
+                  data-felte-keep-on-remove
+                  onChange={(e) => {
+                    const {checked} = e.currentTarget;
+                    if (field === "isFacilityStaff" || (field === "isActiveFacilityStaff" && checked)) {
+                      // Update both the staff and the active staff columns.
+                      form.setFields(`${membersPath}.${ctx.row.index}.isFacilityStaff`, checked);
+                      form.setFields(`${membersPath}.${ctx.row.index}.isActiveFacilityStaff`, checked);
+                      e.stopPropagation();
+                    }
+                  }}
+                />
               </PaddedCell>
             </Show>
           ),
+          size: 130,
         }),
       ),
       h.display({
@@ -235,7 +254,7 @@ export function isUpdateDestructive(initialValues: Output, values: Output) {
  * user and facility, only other fields should be compared.
  */
 function isChanged(oldMember: MemberResource, newMember: Output[number]) {
-  return (["hasFacilityAdmin", "isFacilityStaff", "isFacilityClient"] as const).some(
+  return (["hasFacilityAdmin", "isFacilityStaff", "isActiveFacilityStaff", "isFacilityClient"] as const).some(
     (field) => oldMember[field] !== newMember[field],
   );
 }

@@ -18,7 +18,7 @@ export const createUserEditModal = registerGlobalPageElement<FormParams>((args) 
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}
-      style={MODAL_STYLE_PRESETS.medium}
+      style={MODAL_STYLE_PRESETS.wide}
     >
       {(params) => <UserEditForm userId={params().userId} onSuccess={args.clearParams} onCancel={args.clearParams} />}
     </Modal>

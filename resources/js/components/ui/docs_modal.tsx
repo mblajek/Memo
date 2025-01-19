@@ -27,7 +27,7 @@ export const createDocsModal = registerGlobalPageElement<DocsModalProps>((args) 
       open={args.params()}
       closeOn={["escapeKey", "clickOutside", "closeButton"]}
       onClose={args.clearParams}
-      style={MODAL_STYLE_PRESETS.docs}
+      style={MODAL_STYLE_PRESETS.wide}
     >
       {(data) => {
         const fullPageHref = () => {

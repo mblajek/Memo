@@ -40,6 +40,7 @@ user_facility_member:
   facility: "placówka"
   hasFacilityAdmin: "administrator"
   isFacilityStaff: "pracownik"
+  isActiveFacilityStaff: "aktywny pracownik"
   isFacilityClient: "klient"
 
 permissions:

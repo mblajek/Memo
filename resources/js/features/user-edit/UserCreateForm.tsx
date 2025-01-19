@@ -59,11 +59,10 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
     });
     // If the user mutation succeeded, await all the members mutations. Await all even if any of
     // them fails, otherwise invalidation might happen before the final changes.
-    try {
-      await Promise.allSettled(membersUpdater.getCreatePromises(data.data.id, values.members));
-    } catch (e) {
+    const memberPromises = await Promise.allSettled(membersUpdater.getCreatePromises(data.data.id, values.members));
+    if (memberPromises.some((p) => p.status === "rejected")) {
       invalidateData();
-      throw e;
+      return;
     }
     // eslint-disable-next-line solid/reactivity
     return () => {
