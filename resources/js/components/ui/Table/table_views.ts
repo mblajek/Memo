@@ -28,12 +28,13 @@ export interface TableView {
 export namespace tableViewsSerialisation {
   interface TableViewForTable {
     readonly tableId?: string;
-    readonly tableView: TableView;
+    readonly viewName?: string;
+    readonly view: TableView;
   }
 
   export function codeSerialiser(): AsyncSerialiser<TableViewForTable> {
     const versionHeader = "A";
-    type SerialisedTableViewForTable = {t?: string; v: RichJSONValue};
+    type SerialisedTableViewForTable = {t?: string; n?: string; v: RichJSONValue};
     const intermediateSerialiser = tableViewsSerialisation.intermediateSerialiser();
     const jsonSerialiser = richJSONSerialiser<SerialisedTableViewForTable>();
     const encoder = compressingEncoder();
@@ -44,7 +45,8 @@ export namespace tableViewsSerialisation {
           (await encoder.serialise(
             jsonSerialiser.serialise({
               t: view.tableId || undefined,
-              v: intermediateSerialiser.serialise(view.tableView),
+              n: view.viewName || undefined,
+              v: intermediateSerialiser.serialise(view.view),
             }),
           ))
         );
@@ -56,7 +58,8 @@ export namespace tableViewsSerialisation {
         const serialised = jsonSerialiser.deserialise(await encoder.deserialise(value.slice(versionHeader.length)));
         return {
           tableId: serialised.t,
-          tableView: intermediateSerialiser.deserialise(serialised.v),
+          viewName: serialised.n,
+          view: intermediateSerialiser.deserialise(serialised.v),
         };
       },
     };

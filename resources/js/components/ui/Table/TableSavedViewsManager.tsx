@@ -19,7 +19,18 @@ import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils
 import {Autofocus} from "components/utils/Autofocus";
 import {IconTypes} from "solid-icons";
 import {VsSave} from "solid-icons/vs";
-import {createEffect, createMemo, createSignal, Index, JSX, Show, splitProps, VoidComponent} from "solid-js";
+import {
+  createComputed,
+  createEffect,
+  createMemo,
+  createSignal,
+  Index,
+  JSX,
+  Show,
+  splitProps,
+  untrack,
+  VoidComponent,
+} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button, ButtonProps} from "../Button";
 import {PopOver, PopOverControl} from "../PopOver";
@@ -143,34 +154,43 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
         savedPopOver = popOver;
         const currentView = createMemo(() => props.getCurrentView());
         const [currentViewCode, setCurrentViewCode] = createSignal("");
-        createEffect(() =>
-          codeSerialiser
-            .serialise({tableId: props.staticPersistenceKey, tableView: currentView()})
-            .then((code) => setCurrentViewCode(code)),
-        );
         const [getNewName, setNewName] = createSignal("");
         const newName = () => getNewName().trim();
+        createEffect(() =>
+          codeSerialiser
+            .serialise({tableId: props.staticPersistenceKey, viewName: newName(), view: currentView()})
+            .then((code) => setCurrentViewCode(code)),
+        );
         const newNameConflict = () => persistedState().states.some((st) => st.name === newName());
+        const [scrollIntoViewName, setScrollIntoViewName] = createSignal("");
+        createComputed(() => setScrollIntoViewName(newName()));
 
         const [inputCode, setInputCode] = createSignal("");
         const [codeErrorMessage, setCodeErrorMessage] = createSignal<string>();
         createEffect(() => setInputCode(currentViewCode()));
         createEffect(() => {
-          const onLoad = props.onLoad;
           const code = inputCode().trim();
           if (code && code !== currentViewCode()) {
             codeSerialiser.deserialise(code).then(
-              ({tableId, tableView}) => {
-                if (!tableId || tableId === props.staticPersistenceKey) {
-                  onLoad(tableView);
-                  setCodeErrorMessage(undefined);
-                  if (document.activeElement instanceof HTMLElement) {
-                    document.activeElement.blur();
+              ({tableId, viewName, view}) =>
+                untrack(() => {
+                  if (tableId && tableId !== props.staticPersistenceKey) {
+                    setCodeErrorMessage(t("tables.saved_views.code_error.different_table"));
+                  } else {
+                    if (viewName) {
+                      if (persistedState().states.some((st) => st.name === viewName)) {
+                        setScrollIntoViewName(viewName);
+                      } else {
+                        setNewName(viewName);
+                      }
+                    }
+                    props.onLoad(view);
+                    setCodeErrorMessage(undefined);
+                    if (document.activeElement instanceof HTMLElement) {
+                      document.activeElement.blur();
+                    }
                   }
-                } else {
-                  setCodeErrorMessage(t("tables.saved_views.code_error.different_table"));
-                }
-              },
+                }),
               () => setCodeErrorMessage(t("tables.saved_views.code_error")),
             );
           } else {
@@ -197,7 +217,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                     const deltaSummary = createMemo(() => getTableViewDelta(currentView(), state().state).deltaSummary);
                     return (
                       <div class="flex items-stretch gap-1 me-2">
-                        <div class="grow max-w-md" use:scrollIntoView={state().name === newName()}>
+                        <div class="grow max-w-md" use:scrollIntoView={state().name === scrollIntoViewName()}>
                           <Button
                             class={cx(
                               "w-full minimal !px-1 text-start",
@@ -272,7 +292,11 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     label={t("tables.saved_views.copy_code")}
                                     onClick={() =>
                                       codeSerialiser
-                                        .serialise({tableId: props.staticPersistenceKey, tableView: state().state})
+                                        .serialise({
+                                          tableId: props.staticPersistenceKey,
+                                          viewName: state().name,
+                                          view: state().state,
+                                        })
                                         .then((code) => navigator.clipboard.writeText(code))
                                     }
                                   />
