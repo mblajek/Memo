@@ -1,10 +1,10 @@
 import {DetectOverflowOptions, flip, shift} from "@floating-ui/dom";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
+import {buildFuzzyTextualLocalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {hasProp} from "components/utils/props";
-import {fullyLowerNormalise} from "components/utils/text_util";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
 import {ImCross, ImSpinner2} from "solid-icons/im";
@@ -301,21 +301,13 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       }
     }
   });
-  const isInternalFilteringMode = () => props.onFilterChange === "internal";
+  const internalFilter = createMemo(() =>
+    props.onFilterChange === "internal" ? buildFuzzyTextualLocalFilter(filterText()) : undefined,
+  );
   /** The items after filtering, regardless of the filtering mode. */
   const filteredItems = createMemo(() => {
-    if (isInternalFilteringMode()) {
-      const filter = filterText().toLocaleLowerCase();
-      if (!filter) {
-        return props.items;
-      }
-      const filterTerm = fullyLowerNormalise(filter);
-      return props.items.filter((item) => {
-        const itemString = itemToString(item);
-        return itemString.includes(filter) || fullyLowerNormalise(itemString).includes(filterTerm);
-      });
-    }
-    return props.items;
+    const filter = internalFilter();
+    return filter ? props.items.filter((item) => filter(itemToString(item))) : props.items;
   });
   const itemsToShow = createMemo<readonly SelectItem[]>(() => {
     const filtered = filteredItems();
@@ -544,20 +536,20 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       }
     }),
   );
-  const moveKeys: Record<string, number> = {
-    ArrowDown: 1,
-    ArrowUp: -1,
-    PageDown: 10,
-    PageUp: -10,
-    Home: -Infinity,
-    End: Infinity,
+  const MOVE_KEYS: Record<string, {readonly move: number; readonly onlyIfNoText?: boolean}> = {
+    ArrowDown: {move: 1},
+    ArrowUp: {move: -1},
+    PageDown: {move: 10},
+    PageUp: {move: -10},
+    Home: {move: -Infinity, onlyIfNoText: true},
+    End: {move: Infinity, onlyIfNoText: true},
   } as const;
   function handleKey(e: KeyboardEvent) {
-    const move = moveKeys[e.key];
-    if (move) {
+    const moveData = MOVE_KEYS[e.key];
+    if (moveData && !(filterText() && moveData.onlyIfNoText)) {
       e.preventDefault();
       setIsOpen(true);
-      moveKeyboardFocus(move, !e.repeat && Number.isFinite(move));
+      moveKeyboardFocus(moveData.move, !e.repeat && Number.isFinite(moveData.move));
     } else if (e.key === "Enter" || e.key === " ") {
       if (isOpen()) {
         if (focusedItem() && (e.key === "Enter" || isKeyboardFocus())) {
