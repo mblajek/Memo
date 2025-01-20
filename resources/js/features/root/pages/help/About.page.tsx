@@ -1,9 +1,12 @@
 import {A} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
-import {EmptyValueSymbol} from "components/ui/symbols";
-import {currentTimeSecond, DATE_TIME_FORMAT, SilentAccessBarrier, useLangFunc} from "components/utils";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {SilentAccessBarrier} from "components/utils/AccessBarrier";
 import {toggleDEV} from "components/utils/dev_mode";
+import {DATE_TIME_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
+import {currentTimeSecond} from "components/utils/time";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";

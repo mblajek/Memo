@@ -1,11 +1,11 @@
 import {useLocation} from "@solidjs/router";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {resolvePath} from "features/root/pages/help/markdown_resolver";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkCustomHeadingId from "remark-custom-heading-id";
 import remarkGfm from "remark-gfm";
 import {ComponentProps, createEffect, createSignal, Match, splitProps, Switch, VoidComponent} from "solid-js";
 import {SolidMarkdown} from "solid-markdown";
-import {htmlAttributes} from "../utils";
 import {LinkWithNewTabLink} from "./LinkWithNewTabLink";
 import s from "./Markdown.module.scss";
 

@@ -1,5 +1,5 @@
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {JSX, ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 import {title} from "../title";
 import {TranslatedText} from "../TranslatedText";

@@ -1,7 +1,7 @@
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {Select, SelectItem} from "components/ui/form/Select";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {Dictionary, Position} from "data-access/memo-api/dictionaries";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";

@@ -2,7 +2,7 @@ import {Hr} from "components/ui/Hr";
 import {ControlState, FilterHWithState} from "components/ui/Table/tquery_filters/types";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {title} from "components/ui/title";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {SetsOp} from "data-access/memo-api/tquery/types";
 import {VoidComponent} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";

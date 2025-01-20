@@ -1,6 +1,6 @@
 import {createQuery, keepPreviousData} from "@tanstack/solid-query";
-import {delayedAccessor} from "components/utils";
 import {createCached} from "components/utils/cache";
+import {delayedAccessor} from "components/utils/debounce";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
 import {Accessor, createEffect, createSignal, on, onCleanup} from "solid-js";
 

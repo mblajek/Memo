@@ -2,9 +2,10 @@ import {Navigate, Route, RouteProps, Router, useNavigate, useParams} from "@soli
 import {createQuery} from "@tanstack/solid-query";
 import {AppContextProvider} from "app_context";
 import {capitalizeString} from "components/ui/Capitalize";
-import {AccessBarrier, useLangFunc} from "components/utils";
+import {AccessBarrier} from "components/utils/AccessBarrier";
+import {useLangFunc} from "components/utils/lang";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
-import {System} from "data-access/memo-api/groups";
+import {System} from "data-access/memo-api/groups/System";
 import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
 import {DevRoutes} from "dev-pages/DevRoutes";
 import NotFound from "features/not-found/components/NotFound";

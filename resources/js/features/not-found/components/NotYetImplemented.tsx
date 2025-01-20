@@ -1,5 +1,5 @@
 import {useLocation} from "@solidjs/router";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {VoidComponent} from "solid-js";
 
 export default (() => {

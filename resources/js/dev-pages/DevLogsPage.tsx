@@ -1,11 +1,12 @@
+import {createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, ShowCellVal} from "components/ui/Table/table_cells";
+import {useLangFunc} from "components/utils/lang";
+import {System} from "data-access/memo-api/groups/System";
 import {FaSolidTerminal} from "solid-icons/fa";
 import {Show, VoidComponent} from "solid-js";
 import {CopyToClipboard} from "../components/ui/CopyToClipboard";
 import {IconButton} from "../components/ui/IconButton";
-import {cellFunc, createTableTranslations, ShowCellVal} from "../components/ui/Table";
 import {TQueryTable} from "../components/ui/Table/TQueryTable";
-import {useLangFunc} from "../components/utils";
-import {System} from "../data-access/memo-api/groups";
 import {ScrollableCell} from "../data-access/memo-api/tquery/table_columns";
 
 const BASE_HEIGHT = "6rem";

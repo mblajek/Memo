@@ -1,7 +1,9 @@
 import {Button} from "components/ui/Button";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {RichTextView} from "components/ui/RichTextView";
-import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfig} from "components/ui/Table/TQueryTable";
+import {AUTO_SIZE_COLUMN_DEFS} from "components/ui/Table/Table";
+import {PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table/table_cells";
 import {TextExportedCell, exportCellFunc, formatDateTimeForTextExport} from "components/ui/Table/table_export_cells";
 import {DictFilterControl} from "components/ui/Table/tquery_filters/DictFilterControl";
 import {NullFilterControl} from "components/ui/Table/tquery_filters/NullFilterControl";
@@ -10,11 +12,12 @@ import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSe
 import {usePositionsGrouping} from "components/ui/form/DictionarySelect";
 import {actionIcons} from "components/ui/icons";
 import {MeetingResourcesView} from "components/ui/meetings-calendar/MeetingResourcesView";
-import {EM_DASH, EN_DASH, EmptyValueSymbol} from "components/ui/symbols";
+import {EM_DASH, EN_DASH} from "components/ui/symbols";
 import {title} from "components/ui/title";
-import {htmlAttributes, useLangFunc} from "components/utils";
 import {MAX_DAY_MINUTE, dayMinuteToHM, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {DATE_FORMAT} from "components/utils/formatting";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {AlignedTime} from "components/utils/time_formatting";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";

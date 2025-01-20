@@ -12,15 +12,32 @@ import {
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
-import {NON_NULLABLE, NUMBER_FORMAT, delayedAccessor, useLangFunc} from "components/utils";
+import {Header} from "components/ui/Table/Header";
+import {Pagination} from "components/ui/Table/Pagination";
+import {
+  DisplayMode,
+  Table,
+  TableExportConfig,
+  TableTranslations,
+  createTableTranslations,
+  getBaseTableOptions,
+} from "components/ui/Table/Table";
+import {TableColumnVisibilityController} from "components/ui/Table/TableColumnVisibilityController";
+import {TableSearch} from "components/ui/Table/TableSearch";
+import {TableSummary} from "components/ui/Table/TableSummary";
+import {CellComponent, PaddedCell, ShowCellVal, cellFunc, useTableCells} from "components/ui/Table/table_cells";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
   getUnknownFixedAttributes,
   isAttributeSelected,
 } from "components/utils/attributes_selection";
+import {delayedAccessor} from "components/utils/debounce";
 import {isDEV} from "components/utils/dev_mode";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {NUMBER_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
 import {Modifiable} from "components/utils/modifiable";
 import {intersects, objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
@@ -51,24 +68,6 @@ import {
   untrack,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {
-  CellComponent,
-  DisplayMode,
-  Header,
-  PaddedCell,
-  Pagination,
-  ShowCellVal,
-  Table,
-  TableColumnVisibilityController,
-  TableExportConfig,
-  TableSearch,
-  TableSummary,
-  TableTranslations,
-  cellFunc,
-  createTableTranslations,
-  getBaseTableOptions,
-  useTableCells,
-} from ".";
 import {DocsModalInfoIcon, DocsModalProps} from "../docs_modal";
 import {title} from "../title";
 import {TableColumnGroupSelect} from "./TableColumnGroupSelect";

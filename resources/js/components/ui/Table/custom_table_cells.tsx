@@ -1,7 +1,7 @@
 import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
 import {UserLink} from "features/facility-users/UserLink";
 import {Index} from "solid-js";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {cellFunc, ShowCellVal} from "./table_cells";
 
 export function useCustomTableCells() {

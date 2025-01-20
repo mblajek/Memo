@@ -1,6 +1,7 @@
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {ParentComponent, Show, splitProps} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
 import {Button} from "./Button";
 import {PopOver, PopOverControl} from "./PopOver";
 import {ChildrenOrFunc} from "./children_func";

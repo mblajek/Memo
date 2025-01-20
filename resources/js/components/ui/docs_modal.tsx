@@ -1,7 +1,8 @@
 import {AnchorProps} from "@solidjs/router";
 import {Modal, MODAL_STYLE_PRESETS} from "components/ui/Modal";
-import {htmlAttributes, useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {Help} from "features/root/pages/help/Help";
 import {resolveMdFromAppPath} from "features/root/pages/help/markdown_resolver";
 import {Show, splitProps, VoidComponent} from "solid-js";

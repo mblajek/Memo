@@ -1,5 +1,5 @@
 import {SmallSpinner} from "components/ui/Spinner";
-import {EmptyValueSymbol} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {Show, VoidComponent} from "solid-js";
 import {useClientGroupFetcher} from "./client_group_fetcher";
 import {ClientGroupLabel} from "./ClientGroupLabel";

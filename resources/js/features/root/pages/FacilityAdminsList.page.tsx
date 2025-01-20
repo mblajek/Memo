@@ -1,10 +1,11 @@
 import {createQuery} from "@tanstack/solid-query";
 import {Email} from "components/ui/Email";
-import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
+import {createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {NON_NULLABLE} from "components/utils";
-import {User} from "data-access/memo-api/groups";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {Users} from "data-access/memo-api/groups/shared";
+import {User} from "data-access/memo-api/groups/User";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";

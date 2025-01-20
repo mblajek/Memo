@@ -1,6 +1,8 @@
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {FiDelete} from "solid-icons/fi";
 import {Show, VoidComponent, createEffect, createSignal, on, splitProps} from "solid-js";
-import {cx, htmlAttributes, useLangFunc} from "../utils";
 import {Button} from "./Button";
 import {TextInput} from "./TextInput";
 

@@ -1,4 +1,5 @@
-import {cx, htmlAttributes} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {DateTime} from "luxon";
 import {createMemo, For, JSX, splitProps, VoidComponent} from "solid-js";
 import {LoadingPane} from "../LoadingPane";

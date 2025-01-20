@@ -1,6 +1,6 @@
 import {Title} from "@solidjs/meta";
 import {EM_DASH} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {translationsLoaded} from "i18n_loader";
 import {
   Accessor,

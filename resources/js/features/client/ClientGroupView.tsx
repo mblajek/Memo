@@ -1,7 +1,8 @@
 import {Capitalize} from "components/ui/Capitalize";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
-import {EM_DASH, EmptyValueSymbol} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {EM_DASH} from "components/ui/symbols";
+import {useLangFunc} from "components/utils/lang";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {For, Show, VoidComponent} from "solid-js";
 import {CreatedByInfo} from "../facility-users/CreatedByInfo";

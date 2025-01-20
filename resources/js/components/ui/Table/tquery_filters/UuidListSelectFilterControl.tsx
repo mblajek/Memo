@@ -1,6 +1,6 @@
 import {TQuerySelect, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
 import {VoidComponent, createComputed, splitProps} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";

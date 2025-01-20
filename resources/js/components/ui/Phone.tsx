@@ -1,9 +1,10 @@
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {CountryCode, ParseError, parsePhoneNumberWithError} from "libphonenumber-js";
 import {FaSolidPhone} from "solid-icons/fa";
 import {Show, VoidComponent, createMemo, splitProps} from "solid-js";
-import {htmlAttributes, useLangFunc} from "../utils";
 import {WarningMark} from "./WarningMark";
-import {EmptyValueSymbol} from "./symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {title} from "./title";
 
 type _Directives = typeof title;

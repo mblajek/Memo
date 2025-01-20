@@ -6,7 +6,7 @@ import "./init_types";
 
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
-import {InitializeTanstackQuery} from "components/utils";
+import {InitializeTanstackQuery} from "components/utils/InitializeTanstackQuery";
 import {AppTitleProvider} from "features/root/AppTitleProvider";
 import {DEV, ErrorBoundary, Show} from "solid-js";
 import {render} from "solid-js/web";

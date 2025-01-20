@@ -1,5 +1,6 @@
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Show, VoidComponent, splitProps} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
 
 interface Props extends htmlAttributes.span {
   readonly text: string | undefined;

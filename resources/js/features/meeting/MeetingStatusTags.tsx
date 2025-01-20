@@ -1,5 +1,5 @@
 import {Tag, TagsLine} from "components/ui/Tag";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {

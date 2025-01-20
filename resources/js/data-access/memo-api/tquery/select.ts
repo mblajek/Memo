@@ -1,5 +1,6 @@
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
-import {NON_NULLABLE, debouncedFilterTextAccessor} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {debouncedFilterTextAccessor} from "components/utils/debounce";
 import {Signal, createMemo, createSignal, on} from "solid-js";
 import {useDictionaries} from "../dictionaries_and_attributes_context";
 import {FilterH, FilterReductor} from "./filter_utils";

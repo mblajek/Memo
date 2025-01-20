@@ -1,6 +1,6 @@
 import {createMutation} from "@tanstack/solid-query";
 import {FormProps} from "components/felte-form/FelteForm";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useInvalidator} from "data-access/memo-api/invalidator";

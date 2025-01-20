@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {createEffect, createMemo, createSignal, on, onCleanup, splitProps, VoidComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {isDEV} from "../utils/dev_mode";
 import {useResizeObserver} from "../utils/resize_observer";
 

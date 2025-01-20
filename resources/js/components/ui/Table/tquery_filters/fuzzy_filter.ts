@@ -1,4 +1,5 @@
-import {NON_NULLABLE, useLangFunc} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {useLangFunc} from "components/utils/lang";
 import {createTextFilter, TextFilterPredicate} from "components/utils/text_util";
 import {Dictionaries, Dictionary} from "data-access/memo-api/dictionaries";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";

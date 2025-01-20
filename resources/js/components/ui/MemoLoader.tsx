@@ -1,4 +1,5 @@
-import {cx, delayedAccessor} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
 import {Show, VoidComponent, createSignal, onCleanup, onMount} from "solid-js";
 import {Portal} from "solid-js/web";
 import MemoIcon from "./MemoLoader.svg";

@@ -1,4 +1,5 @@
-import {DATE_FORMAT, useLangFunc} from "components/utils";
+import {DATE_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
 import {JSX, Show, VoidComponent} from "solid-js";
 import {useClientsData} from "./clients_data";
 

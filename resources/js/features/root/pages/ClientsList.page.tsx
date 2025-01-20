@@ -1,9 +1,10 @@
 import {A} from "@solidjs/router";
-import {PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {createTableTranslations} from "components/ui/Table/Table";
 import {useCustomTableCells} from "components/ui/Table/custom_table_cells";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
 import {actionIcons} from "components/ui/icons";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {useTableAttributeColumnConfigs} from "features/client/ClientFields";

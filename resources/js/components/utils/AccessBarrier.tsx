@@ -1,6 +1,6 @@
 import {Navigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {User} from "data-access/memo-api/groups";
+import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
 import {BiRegularErrorAlt} from "solid-icons/bi";

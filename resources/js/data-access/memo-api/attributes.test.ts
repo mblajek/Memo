@@ -1,4 +1,4 @@
-import {LangFunc} from "components/utils";
+import {LangFunc} from "components/utils/lang";
 import {NO_FACILITY} from "state/activeFacilityId.state";
 import {describe, expect, test} from "vitest";
 import {makeAttributable} from "./attributable";

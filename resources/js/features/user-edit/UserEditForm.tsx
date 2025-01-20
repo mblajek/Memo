@@ -1,10 +1,12 @@
 import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {QueryBarrier, useLangFunc} from "components/utils";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
+import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {toastSuccess} from "components/utils/toast";
-import {Admin, User} from "data-access/memo-api/groups";
+import {Admin} from "data-access/memo-api/groups/Admin";
+import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {dateTimeToISO} from "data-access/memo-api/utils";

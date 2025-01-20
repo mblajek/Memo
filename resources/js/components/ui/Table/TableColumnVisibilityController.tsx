@@ -1,15 +1,18 @@
 import {VisibilityState} from "@tanstack/solid-table";
-import {cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {ColumnName} from "components/ui/Table/ColumnName";
+import {useTable} from "components/ui/Table/TableContext";
+import {cx} from "components/utils/classnames";
+import {debouncedAccessor} from "components/utils/debounce";
+import {useLangFunc} from "components/utils/lang";
 import {createTextFilter} from "components/utils/text_util";
 import {OcSearch2} from "solid-icons/oc";
 import {RiArrowsContractLeftRightLine, RiSystemEyeCloseFill} from "solid-icons/ri";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
-import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
 import {createHoverSignal, hoverEvents, hoverSignal} from "../hover_signal";
 import {PopOver, PopOverControl} from "../PopOver";
 import {SearchInput} from "../SearchInput";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {title} from "../title";
 
 type _Directives = typeof title | typeof hoverSignal;

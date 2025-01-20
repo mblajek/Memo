@@ -1,4 +1,4 @@
-import {LangFunc} from "components/utils";
+import {LangFunc} from "components/utils/lang";
 import {TOptions} from "i18next";
 
 /**

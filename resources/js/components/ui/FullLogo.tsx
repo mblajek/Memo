@@ -1,8 +1,9 @@
 import {hoverSignal} from "components/ui/hover_signal";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Random} from "components/utils/random";
 import {Timeout} from "components/utils/timeout";
 import {createSignal, VoidComponent} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
 
 const _Directives = typeof hoverSignal;
 

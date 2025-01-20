@@ -2,7 +2,8 @@ import {useNavigate, useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {Select} from "components/ui/form/Select";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
-import {System, User} from "data-access/memo-api/groups";
+import {System} from "data-access/memo-api/groups/System";
+import {User} from "data-access/memo-api/groups/User";
 import {Match, Show, Switch, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 

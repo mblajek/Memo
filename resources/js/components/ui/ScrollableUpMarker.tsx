@@ -1,5 +1,6 @@
-import {cx, htmlAttributes} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {useEventListener} from "components/utils/event_listener";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {createSignal, VoidComponent} from "solid-js";
 
 interface Props extends htmlAttributes.div {

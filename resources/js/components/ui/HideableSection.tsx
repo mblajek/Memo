@@ -1,5 +1,6 @@
+import {delayedAccessor} from "components/utils/debounce";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Accessor, Component, createMemo, mergeProps, Show, splitProps} from "solid-js";
-import {delayedAccessor, htmlAttributes} from "../utils";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
 
 interface Props extends Omit<htmlAttributes.div, "children"> {

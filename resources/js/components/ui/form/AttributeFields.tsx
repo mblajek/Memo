@@ -1,6 +1,7 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {recursiveUnwrapFormValues} from "components/felte-form/wrapped_fields";
-import {DATE_FORMAT, DATE_TIME_FORMAT, NON_NULLABLE, htmlAttributes, useLangFunc} from "components/utils";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
@@ -8,6 +9,9 @@ import {
   isAttributeSelected,
 } from "components/utils/attributes_selection";
 import {isDEV} from "components/utils/dev_mode";
+import {DATE_FORMAT, DATE_TIME_FORMAT} from "components/utils/formatting";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {Attribute, compareRequirementLevels} from "data-access/memo-api/attributes";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -39,7 +43,7 @@ import {InfoIcon} from "../InfoIcon";
 import {SectionWithHeader} from "../SectionWithHeader";
 import {SmallSpinner} from "../Spinner";
 import {ThingsList} from "../ThingsList";
-import {CHECKBOX, EmptyValueSymbol} from "../symbols";
+import {CHECKBOX} from "../symbols";
 import {title} from "../title";
 import {CheckboxField} from "./CheckboxField";
 import {DateField} from "./DateField";

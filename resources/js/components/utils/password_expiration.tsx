@@ -1,5 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
-import {User} from "data-access/memo-api/groups";
+import {User} from "data-access/memo-api/groups/User";
 import {DateTime} from "luxon";
 import {createMemo} from "solid-js";
 import {currentDate} from "./time";

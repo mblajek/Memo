@@ -1,7 +1,7 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
+import {useLangFunc} from "components/utils/lang";
 import {FiExternalLink} from "solid-icons/fi";
 import {mergeProps, ParentComponent, Show, splitProps} from "solid-js";
-import {useLangFunc} from "../utils";
 import {title} from "./title";
 
 type _Directives = typeof title;

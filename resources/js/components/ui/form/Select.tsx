@@ -2,7 +2,6 @@ import {DetectOverflowOptions, flip, shift} from "@floating-ui/dom";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {buildFuzzyTextualLocalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {hasProp} from "components/utils/props";
 import {AiFillCaretDown} from "solid-icons/ai";
@@ -35,6 +34,9 @@ import {SmallSpinner} from "../Spinner";
 import {FieldBox} from "./FieldBox";
 import {PlaceholderField} from "./PlaceholderField";
 import {LabelOverride} from "./labels";
+import {useLangFunc} from "components/utils/lang";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {cx} from "components/utils/classnames";
 
 export interface SelectBaseProps {
   readonly name: string;

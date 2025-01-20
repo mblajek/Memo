@@ -4,24 +4,20 @@ import {AxiosResponse} from "axios";
 import {useFormContext} from "components/felte-form/FelteForm";
 import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
-import {
-  AUTO_SIZE_COLUMN_DEFS,
-  PaddedCell,
-  Table,
-  createTableTranslations,
-  getBaseTableOptions,
-  useTableCells,
-} from "components/ui/Table";
+
 import {Select} from "components/ui/form/Select";
 import {facilityIcons} from "components/ui/icons";
-import {useLangFunc} from "components/utils";
+import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations, getBaseTableOptions, Table} from "components/ui/Table/Table";
+import {PaddedCell, useTableCells} from "components/ui/Table/table_cells";
+import {useLangFunc} from "components/utils/lang";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
-import {Admin, System} from "data-access/memo-api/groups";
+import {Admin} from "data-access/memo-api/groups/Admin";
+import {System} from "data-access/memo-api/groups/System";
 import {AdminUserResource} from "data-access/memo-api/resources/adminUser.resource";
 import {MemberResource} from "data-access/memo-api/resources/member.resource";
 import {Api} from "data-access/memo-api/types";
 import {byId} from "data-access/memo-api/utils";
-import {Show, VoidComponent, createMemo} from "solid-js";
+import {createMemo, Show, VoidComponent} from "solid-js";
 import {z} from "zod";
 
 export const getSchema = () =>

@@ -1,7 +1,7 @@
 import {ButtonLikeProps} from "components/ui/ButtonLike";
 import {actionIcons} from "components/ui/icons";
+import {useLangFunc} from "components/utils/lang";
 import {Show, splitProps, VoidComponent} from "solid-js";
-import {useLangFunc} from "../utils";
 import {IconButton} from "./IconButton";
 
 interface Props extends ButtonLikeProps {

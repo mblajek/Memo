@@ -1,8 +1,8 @@
-import {htmlAttributes} from "components/utils";
+import {useTable} from "components/ui/Table/TableContext";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {FaSolidArrowLeftLong, FaSolidArrowRightLong} from "solid-icons/fa";
 import {IoEllipsisHorizontal} from "solid-icons/io";
 import {Component, For, Show, VoidComponent, createMemo} from "solid-js";
-import {useTable} from ".";
 import {Button} from "../Button";
 import {getPaginationButtonsList} from "./pagination_buttons";
 

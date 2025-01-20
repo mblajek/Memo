@@ -2,7 +2,8 @@ import {useLocation} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
-import {QueryBarrier, SimpleErrors, useLangFunc} from "components/utils";
+import {QueryBarrier, SimpleErrors} from "components/utils/QueryBarrier";
+import {useLangFunc} from "components/utils/lang";
 import {JSX, Show, VoidComponent, createMemo, onMount} from "solid-js";
 import {resolvePath} from "./markdown_resolver";
 

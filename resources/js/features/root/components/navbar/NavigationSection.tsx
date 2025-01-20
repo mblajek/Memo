@@ -1,4 +1,4 @@
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {useNavbarContext} from "features/root/layout/Navbar";
 import {ParentComponent, Show} from "solid-js";
 

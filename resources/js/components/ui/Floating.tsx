@@ -12,9 +12,9 @@ import {
   SizeOptions,
   VirtualElement,
 } from "@floating-ui/dom";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {Accessor, createMemo, createRenderEffect, createSignal, JSX, onCleanup, VoidComponent} from "solid-js";
 import {Portal} from "solid-js/web";
-import {NON_NULLABLE} from "../utils";
 import {GetRef} from "../utils/GetRef";
 import {hasProp} from "../utils/props";
 

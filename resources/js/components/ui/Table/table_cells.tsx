@@ -1,11 +1,13 @@
 import {CellContext, HeaderContext} from "@tanstack/solid-table";
-import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT, htmlAttributes, useLangFunc} from "components/utils";
 import {FormattedDateTime} from "components/utils/date_formatting";
+import {DATE_FORMAT, DATE_TIME_FORMAT, NUMBER_FORMAT} from "components/utils/formatting";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {DateTime} from "luxon";
 import {Accessor, Index, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
 import {ChildrenOrFunc, getChildrenElement} from "../children_func";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {ThingsList} from "../ThingsList";
 import {Header} from "./Header";
 import {IdColumn} from "./IdColumn";

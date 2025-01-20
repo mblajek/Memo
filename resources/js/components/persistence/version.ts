@@ -1,4 +1,4 @@
-import {NON_NULLABLE} from "../utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
 
 /**
  * Version of the stored data. Data with different versions are treated as not compatible in any direction.

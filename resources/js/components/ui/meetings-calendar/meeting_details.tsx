@@ -1,6 +1,6 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {EM_DASH} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource} from "data-access/memo-api/tquery/calendar";
 import {FacilityUserType} from "features/facility-users/user_types";

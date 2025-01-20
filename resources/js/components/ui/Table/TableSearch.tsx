@@ -1,6 +1,8 @@
-import {cx, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
+import {useTable} from "components/ui/Table/TableContext";
+import {cx} from "components/utils/classnames";
+import {debouncedFilterTextAccessor} from "components/utils/debounce";
+import {useLangFunc} from "components/utils/lang";
 import {ParentProps, VoidComponent, createComputed, createSignal} from "solid-js";
-import {useTable} from ".";
 import {SearchInput} from "../SearchInput";
 
 interface Props {

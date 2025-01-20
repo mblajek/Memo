@@ -1,4 +1,5 @@
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
 import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {VsClose} from "solid-icons/vs";
 import {Accessor, createComputed, createMemo, createSignal, createUniqueId, JSX, onCleanup, Show} from "solid-js";

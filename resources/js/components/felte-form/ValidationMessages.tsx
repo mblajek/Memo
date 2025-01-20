@@ -1,6 +1,6 @@
 import {ValidationMessage} from "@felte/reporter-solid";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {Index, VoidComponent, createMemo, on} from "solid-js";
 import {HideableSection} from "../ui/HideableSection";
 

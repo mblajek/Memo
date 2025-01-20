@@ -14,9 +14,15 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
-import {currentTimeSecond, cx, delayedAccessor, useLangFunc} from "components/utils";
+import {getColumns} from "components/ui/Table/columns_iterator";
+import {useTableCells} from "components/ui/Table/table_cells";
+import {TableContext} from "components/ui/Table/TableContext";
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {useLangFunc} from "components/utils/lang";
 import {NonBlocking} from "components/utils/NonBlocking";
+import {currentTimeSecond} from "components/utils/time";
 import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {TOptions} from "i18next";
 import {
@@ -34,10 +40,9 @@ import {
   on,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContext, getColumns, useTableCells} from ".";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
 import {useColumnsByPrefixUtil} from "./tquery_filters/fuzzy_filter";

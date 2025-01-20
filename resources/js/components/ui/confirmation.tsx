@@ -1,5 +1,6 @@
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
 import {Accessor, JSX, createSignal} from "solid-js";
-import {cx, useLangFunc} from "../utils";
 import {registerGlobalPageElement} from "../utils/GlobalPageElements";
 import {focusThis} from "../utils/focus_this";
 import {Button} from "./Button";

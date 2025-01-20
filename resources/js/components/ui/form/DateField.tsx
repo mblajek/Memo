@@ -1,4 +1,4 @@
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {VoidComponent, splitProps} from "solid-js";
 import {DateInput} from "../DateInput";
 import {FieldBox} from "./FieldBox";

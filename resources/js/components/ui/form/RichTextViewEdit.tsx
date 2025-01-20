@@ -1,9 +1,9 @@
 import {useFormContext} from "components/felte-form/FelteForm";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {Show, splitProps, VoidComponent} from "solid-js";
 import {DocsModalInfoIcon} from "../docs_modal";
 import {RichTextView} from "../RichTextView";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {FieldBox} from "./FieldBox";
 import {MultilineTextField, MultilineTextFieldProps} from "./MultilineTextField";
 import {PlaceholderField} from "./PlaceholderField";

@@ -1,13 +1,14 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
 import {AxiosError} from "axios";
-import {TableTranslations} from "components/ui/Table";
 import {ColumnGroup} from "components/ui/Table/column_groups";
+import {TableTranslations} from "components/ui/Table/Table";
 import {TableView} from "components/ui/Table/table_views";
 import {extractFilterState, injectFilterState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {FuzzyGlobalFilterConfig, buildFuzzyGlobalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {ControlState} from "components/ui/Table/tquery_filters/types";
-import {NON_NULLABLE, useLangFunc} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {useLangFunc} from "components/utils/lang";
 import {arraysEqual, intersects, objectsEqual} from "components/utils/object_util";
 import {Accessor, Signal, batch, createComputed, createMemo, createSignal, on} from "solid-js";
 import {useDictionaries} from "../dictionaries_and_attributes_context";

@@ -1,6 +1,6 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {ClientGroupViewEditForm, ClientGroupViewEditFormProps} from "./ClientGroupViewEditForm";
 

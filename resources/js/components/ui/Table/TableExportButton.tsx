@@ -9,7 +9,7 @@ import {ProgressBar} from "components/ui/ProgressBar";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {CHECKBOX} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {WriteCSVOptions, writeCSV} from "components/utils/csv_writer";
 import {isDEV} from "components/utils/dev_mode";
 import {pickSaveFile} from "components/utils/files";

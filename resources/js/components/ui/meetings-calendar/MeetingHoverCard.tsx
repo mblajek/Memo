@@ -1,4 +1,4 @@
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {MeetingDateAndTimeInfo} from "features/meeting/DateAndTimeInfo";

@@ -1,6 +1,6 @@
 import {DocsModal, DocsModalInfoIcon} from "components/ui/docs_modal";
 import {closeAllSelects} from "components/ui/form/Select";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {Show, VoidComponent} from "solid-js";
 

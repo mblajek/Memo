@@ -1,8 +1,8 @@
 import {A, Route, useParams} from "@solidjs/router";
 import {clearAllLocalStorageStorages, setLocalStoragePersistenceVersionComponent} from "components/persistence/storage";
 import {FullScreenPre} from "components/ui/FullScreenPre";
+import {cx} from "components/utils/classnames";
 import {VoidComponent} from "solid-js";
-import {cx} from "../components/utils";
 
 /** A collection of routes for safe backdoor operations, allowed also in prod mode and without any authorisation. */
 export const BackdoorRoutes: VoidComponent = () => {

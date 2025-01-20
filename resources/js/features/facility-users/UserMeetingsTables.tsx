@@ -1,24 +1,25 @@
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {Capitalize} from "components/ui/Capitalize";
 import {BigSpinner} from "components/ui/Spinner";
-import {TableExportConfig, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {createTableTranslations, TableExportConfig} from "components/ui/Table/Table";
 import {Tabs} from "components/ui/Tabs";
 import {EM_DASH} from "components/ui/symbols";
-import {DATE_FORMAT, useLangFunc} from "components/utils";
 import {Recreator} from "components/utils/Recreator";
+import {DATE_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
+import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {Sort} from "data-access/memo-api/tquery/types";
-import {Accessor, ParentComponent, Show, VoidComponent, createComputed, createSignal} from "solid-js";
+import {Accessor, createComputed, createSignal, ParentComponent, Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {useAttendanceStatusesInfo} from "../meeting/attendance_status_info";
 import {useMeetingTableColumns, useMeetingTableFilters} from "../meeting/meeting_tables";
 import {UserMeetingsStats} from "./user_meetings_stats";
 import {FacilityUserType, getFacilityUserTypeName} from "./user_types";
-import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 
 type TableType = "planned" | "completed" | "all";
 

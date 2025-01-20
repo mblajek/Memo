@@ -1,7 +1,7 @@
 import {useLocation} from "@solidjs/router";
 import {createMutation} from "@tanstack/solid-query";
 import {useAppContext} from "app_context";
-import {System} from "data-access/memo-api/groups";
+import {System} from "data-access/memo-api/groups/System";
 import {dateTimeToISO} from "data-access/memo-api/utils";
 import {DateTime, Duration} from "luxon";
 import {createEffect, createSignal, on, Setter} from "solid-js";

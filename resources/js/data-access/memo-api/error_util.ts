@@ -1,4 +1,4 @@
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {Api} from "./types";
 
 export function translateError(error: Api.Error, t = useLangFunc()) {

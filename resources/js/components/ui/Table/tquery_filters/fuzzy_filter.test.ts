@@ -1,4 +1,4 @@
-import {LangFunc} from "components/utils";
+import {LangFunc} from "components/utils/lang";
 import {Dictionaries} from "data-access/memo-api/dictionaries";
 import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
 import {Schema} from "data-access/memo-api/tquery/types";

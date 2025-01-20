@@ -10,12 +10,11 @@ import {actionIcons} from "components/ui/icons";
 import {scrollIntoView} from "components/ui/scroll_into_view";
 import {SearchInput} from "components/ui/SearchInput";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {EmptyValueSymbol} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {getTableViewDelta, TableView, tableViewsSerialisation} from "components/ui/Table/table_views";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
-import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
 import {Autofocus} from "components/utils/Autofocus";
 import {IconTypes} from "solid-icons";
 import {VsSave} from "solid-icons/vs";
@@ -34,6 +33,10 @@ import {
 import {Dynamic} from "solid-js/web";
 import {Button, ButtonProps} from "../Button";
 import {PopOver, PopOverControl} from "../PopOver";
+import {useLangFunc} from "components/utils/lang";
+import {delayedAccessor} from "components/utils/debounce";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 
 type _Directives = typeof scrollIntoView | typeof title;
 

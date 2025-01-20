@@ -1,7 +1,8 @@
 import {ButtonLike, ButtonLikeProps} from "components/ui/ButtonLike";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTypes} from "solid-icons";
 import {createSignal, splitProps, VoidComponent} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
 
 interface Props extends ButtonLikeProps {
   readonly icon: IconTypes;

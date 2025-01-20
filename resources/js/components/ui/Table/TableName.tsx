@@ -1,6 +1,6 @@
-import {htmlAttributes} from "components/utils";
+import {useTable} from "components/ui/Table/TableContext";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Show, VoidComponent} from "solid-js";
-import {useTable} from ".";
 import {Capitalize} from "../Capitalize";
 
 export const TableName: VoidComponent<htmlAttributes.span> = (props) => {

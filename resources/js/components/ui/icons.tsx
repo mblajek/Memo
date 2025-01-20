@@ -1,3 +1,4 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTemplate, IconTypes} from "solid-icons";
 import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
@@ -19,7 +20,6 @@ import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiSystemDeleteBin6Line} from "solid-icons/ri";
 import {TbFilter, TbFilterOff, TbPassword} from "solid-icons/tb";
-import {htmlAttributes} from "../utils";
 
 namespace customIcons {
   export const RepeatFirst: IconTypes = (props) =>

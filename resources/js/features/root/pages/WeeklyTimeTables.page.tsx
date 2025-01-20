@@ -8,6 +8,7 @@ import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calc
 import {capitalizeString} from "components/ui/Capitalize";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {DocsModalInfoIcon} from "components/ui/docs_modal";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -15,31 +16,28 @@ import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {EmptyValueSymbol, EN_DASH} from "components/ui/symbols";
+import {EN_DASH} from "components/ui/symbols";
+import {Header} from "components/ui/Table/Header";
 import {
   AUTO_SIZE_COLUMN_DEFS,
   createTableTranslations,
   getBaseTableOptions,
-  Header,
-  PaddedCell,
   Table,
   TableTranslations,
-} from "components/ui/Table";
+} from "components/ui/Table/Table";
+import {PaddedCell} from "components/ui/Table/table_cells";
 import {TextInput} from "components/ui/TextInput";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {title} from "components/ui/title";
-import {
-  currentDate,
-  cx,
-  DATE_FORMAT,
-  htmlAttributes,
-  NON_NULLABLE,
-  useLangFunc,
-  withNoThrowOnInvalid,
-} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {DATE_FORMAT} from "components/utils/formatting";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
+import {currentDate, withNoThrowOnInvalid} from "components/utils/time";
 import {AlignedTime} from "components/utils/time_formatting";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";

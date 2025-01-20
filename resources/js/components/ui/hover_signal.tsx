@@ -1,4 +1,4 @@
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Accessor, createEffect, createSignal, on, onCleanup} from "solid-js";
 import "tippy.js/animations/shift-toward-subtle.css";
 import "tippy.js/dist/border.css";

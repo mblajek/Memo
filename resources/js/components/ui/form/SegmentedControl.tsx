@@ -1,5 +1,5 @@
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {TrackingMarker} from "components/utils/TrackingMarker";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {hasProp} from "components/utils/props";

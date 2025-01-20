@@ -1,12 +1,14 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {createPersistence} from "components/persistence/persistence";
 import {userStorageStorage} from "components/persistence/storage";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {RiArrowsArrowLeftSLine, RiArrowsArrowRightSLine} from "solid-icons/ri";
 import {Show, VoidComponent, createSignal, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {RichTextView} from "../RichTextView";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {title} from "../title";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";

@@ -1,7 +1,7 @@
 import {Route} from "@solidjs/router";
+import {SilentAccessBarrier} from "components/utils/AccessBarrier";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {DEV, Show, VoidComponent} from "solid-js";
-import {SilentAccessBarrier} from "../components/utils";
 
 const AttributesPage = lazyAutoPreload(() => import("dev-pages/AttributesPage"));
 const CrashPage = lazyAutoPreload(() => import("dev-pages/CrashPage"));

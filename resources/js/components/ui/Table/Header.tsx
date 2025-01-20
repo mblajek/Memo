@@ -1,8 +1,10 @@
 import {HeaderContext} from "@tanstack/solid-table";
-import {cx} from "components/utils";
+import {ColumnName} from "components/ui/Table/ColumnName";
+import {FilterIconButton} from "components/ui/Table/FilterIconButton";
+import {SortMarker} from "components/ui/Table/SortMarker";
+import {cx} from "components/utils/classnames";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {JSX, Show, Signal, VoidComponent, createMemo} from "solid-js";
-import {ColumnName, FilterIconButton, SortMarker} from ".";
 import {Button} from "../Button";
 
 interface Props {

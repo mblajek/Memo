@@ -1,6 +1,7 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {QueryBarrier, useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
 import {useInvalidator} from "data-access/memo-api/invalidator";

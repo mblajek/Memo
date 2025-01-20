@@ -1,7 +1,8 @@
 import {A, AnchorProps} from "@solidjs/router";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {ImInfo} from "solid-icons/im";
 import {Component, JSX, Match, Switch} from "solid-js";
-import {htmlAttributes, useLangFunc} from "../utils";
 import {ButtonProps} from "./Button";
 import {ButtonLike} from "./ButtonLike";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";

@@ -1,11 +1,11 @@
 import {createQuery} from "@tanstack/solid-query";
 import {BaseTQuerySelectProps, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
-import {User} from "data-access/memo-api/groups";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {FacilityUsers} from "data-access/memo-api/groups/FacilityUsers";
 import {Facilities} from "data-access/memo-api/groups/shared";
+import {User} from "data-access/memo-api/groups/User";
 import {ClientBirthDateShortInfo} from "features/client/ClientBirthDateShortInfo";
 import {useClientsData} from "features/client/clients_data";
 import {UserLink} from "features/facility-users/UserLink";

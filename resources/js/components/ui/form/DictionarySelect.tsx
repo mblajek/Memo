@@ -1,4 +1,4 @@
-import {NON_NULLABLE} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";

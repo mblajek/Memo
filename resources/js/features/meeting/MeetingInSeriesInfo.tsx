@@ -2,7 +2,7 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
 import {title} from "components/ui/title";
-import {LangFunc, useLangFunc} from "components/utils";
+import {LangFunc, useLangFunc} from "components/utils/lang";
 import {SeriesNumberAndCount, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {Match, Show, Switch, VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";

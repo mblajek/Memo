@@ -1,4 +1,5 @@
-import {LangFunc, NON_NULLABLE} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {LangFunc} from "components/utils/lang";
 import {FacilityIdOrGlobal} from "state/activeFacilityId.state";
 import {makeAttributable} from "./attributable";
 import {DictionaryResource, PositionResource} from "./resources/dictionary.resource";

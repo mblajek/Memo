@@ -1,4 +1,5 @@
-import {currentDate, useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
+import {currentDate} from "components/utils/time";
 import {DateTime} from "luxon";
 import {VoidComponent} from "solid-js";
 

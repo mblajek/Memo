@@ -1,9 +1,10 @@
 import {actionIcons} from "components/ui/icons";
-import {cx, useLangFunc} from "components/utils";
 import {JSX, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 import {createHoverSignal, hoverEvents} from "../hover_signal";
+import {useLangFunc} from "components/utils/lang";
+import {cx} from "components/utils/classnames";
 
 interface Props {
   readonly class?: string;

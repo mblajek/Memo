@@ -1,6 +1,6 @@
 import {TQuerySelect, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {VoidComponent, createMemo, splitProps} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";

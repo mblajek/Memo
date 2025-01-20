@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {ButtonProps} from "./Button";
 import {mergeTitleDirectiveProps, title} from "./title";
 

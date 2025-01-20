@@ -1,7 +1,7 @@
 import {Button} from "components/ui/Button";
 import {facilityIcons} from "components/ui/icons";
 import {Modal, MODAL_STYLE_PRESETS} from "components/ui/Modal";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {doAndClearParams} from "components/utils/modals";

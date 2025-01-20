@@ -2,7 +2,7 @@ import {createQuery, keepPreviousData} from "@tanstack/solid-query";
 import {AxiosError} from "axios";
 import {Accessor, createComputed, createSignal} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
-import {V1} from "../config";
+import {V1} from "data-access/memo-api/config/v1.instance";
 import {SolidQueryOpts} from "../query_utils";
 import {Api} from "../types";
 import {DataRequest, DataResponse, Schema} from "./types";

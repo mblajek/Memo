@@ -1,5 +1,5 @@
 import {Timeout} from "components/utils/timeout";
-import {User} from "data-access/memo-api/groups";
+import {User} from "data-access/memo-api/groups/User";
 import {OrPromise, asyncThen} from "../utils/async";
 import {
   Version,

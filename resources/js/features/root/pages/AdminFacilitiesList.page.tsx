@@ -1,8 +1,9 @@
 import {Button, EditButton} from "components/ui/Button";
-import {AUTO_SIZE_COLUMN_DEFS, PaddedCell, ShowCellVal, cellFunc, createTableTranslations} from "components/ui/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
 import {facilityIcons} from "components/ui/icons";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {createFacilityCreateModal} from "features/facility-edit/facility_create_modal";

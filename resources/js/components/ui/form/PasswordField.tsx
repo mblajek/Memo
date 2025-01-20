@@ -1,4 +1,4 @@
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Timeout} from "components/utils/timeout";
 import {AiOutlineEye, AiOutlineEyeInvisible} from "solid-icons/ai";
 import {Show, VoidComponent, createComputed, createSignal, splitProps} from "solid-js";

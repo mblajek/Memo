@@ -1,7 +1,7 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Show, VoidComponent, splitProps} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {CopyToClipboard} from "./CopyToClipboard";
-import {EmptyValueSymbol} from "./symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 
 interface Props extends htmlAttributes.span {
   readonly email: string | undefined;

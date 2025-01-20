@@ -1,6 +1,7 @@
 import {Select} from "components/ui/form/Select";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
 import {NullColumnFilter} from "data-access/memo-api/tquery/types";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
