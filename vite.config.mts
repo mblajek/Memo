@@ -53,6 +53,11 @@ export default defineConfig({
     },
   },
   server: {
+    // Added as a workaround for https://github.com/laravel/vite-plugin/issues/316
+    // TODO: Remove when the bug is fixed.
+    origin: "http://localhost",
+    cors: true,
+
     host: "0.0.0.0",
     port: 9082,
     strictPort: true,
