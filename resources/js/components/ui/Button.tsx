@@ -51,7 +51,7 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
   const t = useLangFunc();
   return (
     <Button {...buttonProps}>
-      <actionIcons.Edit class="inlineIcon" /> {props.label === undefined ? t("actions.edit") : props.label}
+      <actionIcons.Edit class="inlineIcon" /> {props.label ?? t("actions.edit")}
     </Button>
   );
 };

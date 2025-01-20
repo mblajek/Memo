@@ -17,6 +17,7 @@ import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {currentTimeSecond, cx, delayedAccessor, useLangFunc} from "components/utils";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {NonBlocking} from "components/utils/NonBlocking";
+import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {TOptions} from "i18next";
 import {
   Accessor,
@@ -279,7 +280,9 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
     <TableContext.Provider value={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
         <div class={cx(s.tableContainer, s[props.mode])}>
-          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
+          <Show_noDoubleEvaluation when={props.aboveTable?.()}>
+            {(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}
+          </Show_noDoubleEvaluation>
           <div class={s.tableMain}>
             <div
               ref={(div) => {
@@ -361,7 +364,9 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
               <LoadingPane isLoading={props.isDimmed} />
             </div>
           </div>
-          <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
+          <Show_noDoubleEvaluation when={props.belowTable?.()}>
+            {(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}
+          </Show_noDoubleEvaluation>
         </div>
       </Show>
     </TableContext.Provider>

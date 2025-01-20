@@ -1,4 +1,5 @@
 import {cx, useLangFunc} from "components/utils";
+import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {VsClose} from "solid-icons/vs";
 import {Accessor, createComputed, createMemo, createSignal, createUniqueId, JSX, onCleanup, Show} from "solid-js";
 import {Portal} from "solid-js/web";
@@ -252,19 +253,21 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
                     "top": `${relativePos()[1]}px`,
                   }}
                 >
-                  <Show when={props.title}>
-                    <h2
-                      class={cx(
-                        "font-bold select-none touch-none pr-4",
-                        canDrag() ? "cursor-grab" : undefined,
-                        closeOn().has("closeButton") ? "pr-8" : undefined,
-                      )}
-                      style={{"font-size": "1.3rem"}}
-                      {...grabHandler}
-                    >
-                      {props.title}
-                    </h2>
-                  </Show>
+                  <Show_noDoubleEvaluation when={props.title}>
+                    {(title) => (
+                      <h2
+                        class={cx(
+                          "font-bold select-none touch-none pr-4",
+                          canDrag() ? "cursor-grab" : undefined,
+                          closeOn().has("closeButton") ? "pr-8" : undefined,
+                        )}
+                        style={{"font-size": "1.3rem"}}
+                        {...grabHandler}
+                      >
+                        {title()}
+                      </h2>
+                    )}
+                  </Show_noDoubleEvaluation>
                   <div
                     // Grab handler covering the top margin of the dialog.
                     class={cx("absolute top-0 right-4 left-4 h-4 touch-none", canDrag() ? "cursor-grab" : undefined)}

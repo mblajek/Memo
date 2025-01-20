@@ -1,5 +1,5 @@
 import {ChildrenOrFunc, getChildrenElement} from "components/ui/children_func";
-import {createMemo, on} from "solid-js";
+import {Show} from "solid-js";
 
 interface Props<T> {
   readonly signal: T;
@@ -7,12 +7,8 @@ interface Props<T> {
 }
 
 /** Recreates the children every time the signal is changed. */
-export const Recreator = <T,>(props: Props<T>) => {
-  const content = createMemo(
-    on(
-      () => props.signal,
-      (signal) => getChildrenElement(props.children, signal),
-    ),
-  );
-  return <>{content()}</>;
-};
+export const Recreator = <T,>(props: Props<T>) => (
+  <Show keyed when={[props.signal] as const}>
+    {([signal]) => getChildrenElement(props.children, signal)}
+  </Show>
+);
