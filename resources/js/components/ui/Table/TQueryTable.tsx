@@ -305,6 +305,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           persistVisibility,
           globalFilterable,
           columnGroups: columnGroupsCollector.column(name, columnGroups),
+          includeInTableView: !metaParams?.devColumn,
         }) satisfies FullColumnConfig,
     );
     const columnGroups = columnGroupsCollector.getColumnGroups(props.columnGroups);

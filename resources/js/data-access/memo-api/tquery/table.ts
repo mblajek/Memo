@@ -26,6 +26,7 @@ export interface ColumnConfig {
   /** Whether the global filter can match this column. Default: depends on the column type. */
   readonly globalFilterable: boolean;
   readonly columnGroups: readonly string[] | undefined;
+  readonly includeInTableView: boolean;
 }
 
 /** The additional tquery data columns needed to construct this table column. */
@@ -355,21 +356,24 @@ export function createTableRequestCreator({
     function resetMiniState() {
       setMiniState(initialMiniState);
     }
-    function withoutCountColumn(vis: Readonly<VisibilityState>): VisibilityState {
-      const countCol = countColumn();
-      if (countCol && Object.hasOwn(vis, countCol)) {
-        const visCopy = {...vis};
-        delete visCopy[countCol];
-        return visCopy;
+    function includeColumnInTableView(column: string) {
+      return column !== countColumn() && columnsConfigByName().get(column)?.includeInTableView;
+    }
+    function visibilityForTableView(vis: Readonly<VisibilityState>): VisibilityState {
+      const result: VisibilityState = {};
+      for (const [column, visibility] of Object.entries(vis)) {
+        if (includeColumnInTableView(column)) {
+          result[column] = visibility;
+        }
       }
-      return vis;
+      return result;
     }
     const defaultTableView = (): TableView => ({
       globalFilter: "",
-      columnVisibility: withoutCountColumn(defaultColumnVisibility()),
+      columnVisibility: visibilityForTableView(defaultColumnVisibility()),
       columnFilterStates: new Map(
         columnsConfig()
-          .filter((c) => c.name !== countColumn())
+          .filter((c) => includeColumnInTableView(c.name))
           .map((c) => [c.name, undefined]),
       ),
       activeColumnGroups: [],
@@ -378,7 +382,7 @@ export function createTableRequestCreator({
     function getCompleteTableView(): TableView {
       const columnFilterStates = new Map<ColumnName, ControlState | undefined>();
       for (const {name} of columnsConfig()) {
-        if (name !== countColumn()) {
+        if (includeColumnInTableView(name)) {
           columnFilterStates.set(
             name,
             columnVisibility()[name] ? extractFilterState(getColumnFilter(name)[0]()) : undefined,
@@ -387,7 +391,7 @@ export function createTableRequestCreator({
       }
       return {
         globalFilter: globalFilter(),
-        columnVisibility: withoutCountColumn(columnVisibility()),
+        columnVisibility: visibilityForTableView(columnVisibility()),
         columnFilterStates,
         activeColumnGroups: activeColumnGroups(),
         sorting: sorting(),

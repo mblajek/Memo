@@ -49,6 +49,7 @@ export default (() => {
       intrinsicFilter={{type: "column", column: "member.hasFacilityAdmin", op: "=", val: true}}
       intrinsicSort={[{type: "column", column: "name", desc: false}]}
       initialSort={[{id: "name", desc: false}]}
+      savedViews
     />
   );
 }) satisfies VoidComponent;
