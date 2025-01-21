@@ -4,39 +4,28 @@ import {userStorageStorage} from "components/persistence/storage";
 import {createConfirmation} from "components/ui/confirmation";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {useDocsModalInfoIcon} from "components/ui/docs_modal";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {HideableSection} from "components/ui/HideableSection";
 import {actionIcons} from "components/ui/icons";
-import {scrollIntoView} from "components/ui/scroll_into_view";
+import {DEFAULT_SCROLL_OPTIONS, scrollIntoView} from "components/ui/scroll_into_view";
 import {SearchInput} from "components/ui/SearchInput";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {getTableViewDelta, TableView, tableViewsSerialisation} from "components/ui/Table/table_views";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
 import {Autofocus} from "components/utils/Autofocus";
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {IconTypes} from "solid-icons";
 import {VsSave} from "solid-icons/vs";
-import {
-  createComputed,
-  createEffect,
-  createMemo,
-  createSignal,
-  Index,
-  JSX,
-  Show,
-  splitProps,
-  untrack,
-  VoidComponent,
-} from "solid-js";
+import {createEffect, createMemo, createSignal, Index, JSX, Show, splitProps, untrack, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button, ButtonProps} from "../Button";
 import {PopOver, PopOverControl} from "../PopOver";
-import {useLangFunc} from "components/utils/lang";
-import {delayedAccessor} from "components/utils/debounce";
-import {cx} from "components/utils/classnames";
-import {htmlAttributes} from "components/utils/html_attributes";
 
 type _Directives = typeof scrollIntoView | typeof title;
 
@@ -165,9 +154,18 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
             .then((code) => setCurrentViewCode(code)),
         );
         const newNameConflict = () => persistedState().states.some((st) => st.name === newName());
-        const [scrollIntoViewName, setScrollIntoViewName] = createSignal("");
-        createComputed(() => setScrollIntoViewName(newName()));
 
+        let container: HTMLDivElement | undefined;
+        function blinkViewName(name: string) {
+          const button = container?.querySelector(`[data-view-name="${name}"]`);
+          button?.scrollIntoView(DEFAULT_SCROLL_OPTIONS);
+          button?.animate([{outlineOffset: "-1px"}, {opacity: "0.6", outlineWidth: "6px", outlineOffset: "-7px"}], {
+            direction: "alternate",
+            easing: "ease-in-out",
+            duration: 230,
+            iterations: 6,
+          });
+        }
         const [inputCode, setInputCode] = createSignal("");
         const [codeErrorMessage, setCodeErrorMessage] = createSignal<string>();
         createEffect(() => setInputCode(currentViewCode()));
@@ -181,8 +179,11 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                     setCodeErrorMessage(t("tables.saved_views.code_error.different_table"));
                   } else {
                     if (viewName) {
-                      if (persistedState().states.some((st) => st.name === viewName)) {
-                        setScrollIntoViewName(viewName);
+                      const state = persistedState().states.find((st) => st.name === viewName);
+                      if (state) {
+                        // TODO: Adjust behaviour for when the state is identical/compatible and
+                        // when it is different.
+                        blinkViewName(viewName);
                       } else {
                         setNewName(viewName);
                       }
@@ -208,7 +209,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
           ...persistedState().states.toSorted((a, b) => a.name.localeCompare(b.name)),
         ];
         return (
-          <div class="p-2 flex flex-col gap-3 items-stretch min-h-0">
+          <div ref={container} class="p-2 flex flex-col gap-3 items-stretch min-h-0">
             <div class="font-bold">
               {t("tables.saved_views.title")}{" "}
               <DocsModalInfoIcon href="/help/table-saved-views" onClick={popOver.close} />
@@ -220,10 +221,11 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                     const deltaSummary = createMemo(() => getTableViewDelta(currentView(), state().state).deltaSummary);
                     return (
                       <div class="flex items-stretch gap-1 me-2">
-                        <div class="grow max-w-md" use:scrollIntoView={state().name === scrollIntoViewName()}>
+                        <div class="grow max-w-md" use:scrollIntoView={state().name === newName()}>
                           <Button
+                            data-view-name={state().name}
                             class={cx(
-                              "w-full minimal !px-1 text-start",
+                              "w-full minimal !px-1 text-start outline outline-0 outline-memo-active",
                               deltaSummary().anything ? undefined : "!bg-select",
                               state().default ? "text-grey-text" : undefined,
                             )}

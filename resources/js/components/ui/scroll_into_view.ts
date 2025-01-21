@@ -12,7 +12,7 @@ declare module "solid-js" {
   }
 }
 
-const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
+export const DEFAULT_SCROLL_OPTIONS: ScrollIntoViewOptions = {
   behavior: "smooth",
   block: "nearest",
 };
