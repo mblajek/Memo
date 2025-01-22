@@ -21,8 +21,9 @@ export function replaceCommonSpecialCharacters(text: string) {
     .replaceAll("‚", `'`)
     .replaceAll("‘", `'`)
     .replaceAll("’", `'`)
-    .replaceAll(/\s/g, " ")
-    .replaceAll("…", "...");
+    .replaceAll("\t", " ");
+  // TODO: Replacing with multicharacter string won't work currently, consider fixing it.
+  // .replaceAll("…", "...")
 }
 
 export function fullyLowerNormalise(text: string) {
@@ -39,22 +40,45 @@ export function createTextFilter(filterText: string, matchType: MatchType = "%v%
   if (!filterText && matchType !== "=") {
     return undefined;
   }
-  // TODO: Improve the filtering, e.g. an uppercase or national character in the filter should only
-  // match the same character in the text, whereas a lowercase or non-national character should match
-  // any character that normalises to it.
-  const normFilterText = fullyLowerNormalise(filterText);
+  const filterArr = Array.from({length: filterText.length}, (_, i) => filterText.codePointAt(i)!);
   switch (matchType) {
     case "%v%":
-      return (text: string) => text.includes(filterText) || fullyLowerNormalise(text).includes(normFilterText);
+      return (text: string) => matchesAtStart(filterArr, text, 0, text.length - filterText.length);
     case "%v":
-      return (text: string) => text.endsWith(filterText) || fullyLowerNormalise(text).endsWith(normFilterText);
+      return (text: string) => matchesAtStart(filterArr, text, text.length - filterText.length);
     case "v%":
-      return (text: string) => text.startsWith(filterText) || fullyLowerNormalise(text).startsWith(normFilterText);
+      return (text: string) => matchesAtStart(filterArr, text, 0);
     case "=":
-      return (text: string) => text === filterText || fullyLowerNormalise(text) === normFilterText;
+      return (text: string) => text.length === filterText.length && matchesAtStart(filterArr, text, 0);
     default:
       return matchType satisfies never;
   }
+}
+
+function matchesAtStart(filterArr: readonly number[], text: string, minStart: number, maxStart = minStart) {
+  const textLower = text.toLocaleLowerCase();
+  const textNorm = replaceCommonSpecialCharacters(removeDiacritics(text));
+  const textNormLower = textNorm.toLocaleLowerCase();
+  function matches(start: number) {
+    for (let i = 0; i < filterArr.length; i++) {
+      const filterCode = filterArr[i];
+      const textIndex = start + i;
+      if (
+        filterCode !== text.charCodeAt(textIndex) &&
+        filterCode !== textLower.charCodeAt(textIndex) &&
+        filterCode !== textNorm.charCodeAt(textIndex) &&
+        filterCode !== textNormLower.charCodeAt(textIndex)
+      )
+        return false;
+    }
+    return true;
+  }
+  for (let start = minStart; start <= maxStart; start++) {
+    if (matches(start)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export interface TextFilterPredicate {
