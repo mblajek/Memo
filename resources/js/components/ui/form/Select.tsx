@@ -841,7 +841,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                           <li
                             id={elemId(item.value)}
                             class={cx(
-                              "px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip text-black",
+                              "max-w-xl px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip text-black",
                               selection().has(item.value) ? "border-s-memo-active bg-select" : undefined,
                               item === focusedItem()
                                 ? ["bg-hover", isKeyboardFocus() ? "border-e-gray-400" : undefined]
