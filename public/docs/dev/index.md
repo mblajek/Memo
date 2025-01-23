@@ -1,6 +1,6 @@
 # Developers help
 
-![Memo logo](memo_logo.png "Memo logo")
+![Memo logo](../memo_logo.png "Memo logo")
 
 This document presents some of the Markdown features that can be used in Memo documentation.
 

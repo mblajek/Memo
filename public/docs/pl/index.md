@@ -1,5 +1,7 @@
 # Strona główna pomocy
 
+![Memo logo](../memo_logo.png "Memo logo")
+
 **$t(app_name)** to system do zarządzania:
 
 - bazą klientów fundacji
