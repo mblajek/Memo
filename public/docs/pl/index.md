@@ -10,16 +10,17 @@
 
 ## Dokumenty pomocy
 
-- Pracownicy
+- `$icon(staffIcons.Staff)` Pracownicy
   - [Role i uprawnienia](staff-roles)
   - [Grafiki pracy](staff-time-tables)
-- Klienci
+- `$icon(clientIcons.Client)` Klienci
   - [Grupy klientów](client-groups)
   - [Usuwanie klientów](client-delete)
 - Spotkania
   - [Statusy](meeting-statuses)
   - [Kontekst — grupy klientów](meeting-client-groups)
 - Tabele
+  - [Kolumny](table-columns)
   - [Filtrowanie](table-filtering)
   - [Eksport danych](table-export)
   - [Grupowanie wierszy](table-grouping)

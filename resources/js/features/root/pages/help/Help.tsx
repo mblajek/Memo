@@ -2,9 +2,11 @@ import {useLocation} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
+import {getIconByName, ICON_SET_NAMES} from "components/ui/icons";
 import {QueryBarrier, SimpleErrors} from "components/utils/QueryBarrier";
 import {useLangFunc} from "components/utils/lang";
-import {JSX, Show, VoidComponent, createMemo, onMount} from "solid-js";
+import {createMemo, JSX, onMount, Show, VoidComponent} from "solid-js";
+import {Dynamic} from "solid-js/web";
 import {resolvePath} from "./markdown_resolver";
 
 interface Props {
@@ -18,6 +20,8 @@ interface Props {
   /** Callback providing the content of the h1 element. By default, a regular `<h1>` element is rendered. */
   readonly onH1?: (h1Props: JSX.IntrinsicElements["h1"], def: () => JSX.Element) => JSX.Element;
 }
+
+const ICON_SET_NAMES_PATTERN = ICON_SET_NAMES.join("|");
 
 /**
  * A component displaying a help page, loaded from the mdPath as markdown.
@@ -105,6 +109,26 @@ export const Help: VoidComponent<Props> = (props) => {
               return (
                 <Show when={includedPath()} fallback={<p {...pProps} />}>
                   {(includedPath) => <Help mdPath={includedPath()} inlined offerNewTabLinks={props.offerNewTabLinks} />}
+                </Show>
+              );
+            },
+            code: (codeProps) => {
+              const icon = createMemo((): JSX.Element | undefined => {
+                if (codeProps.node.children.length === 1 && codeProps.node.children[0]!.type === "text") {
+                  const match = codeProps.node.children[0]!.value.match(
+                    new RegExp(`^\\$icon\\((${ICON_SET_NAMES_PATTERN})\\.(\\w+)\\)$`),
+                  );
+                  if (match) {
+                    const icon = getIconByName(match[1]!, match[2]!);
+                    if (icon) {
+                      return <Dynamic component={icon} class="inlineIcon" />;
+                    }
+                  }
+                }
+              });
+              return (
+                <Show when={icon()} fallback={<code {...codeProps} />}>
+                  {(icon) => icon()}
                 </Show>
               );
             },

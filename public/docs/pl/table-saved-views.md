@@ -1,12 +1,15 @@
-# Zapisane widoki tabeli
+# `$icon(actionIcons.SaveTableView)` Zapisane widoki tabeli
 
 Widok tabeli to zapisany zestaw następujących elementów tabeli:
 
-- pole globalnego wyszukiwania
-- wybrane kolumny
-- filtry kolumn
+- pole wyszukiwania
+- [wybrane kolumny](table-columns)
+- [filtry kolumn](table-filtering)
 - sortowanie
-- grupowanie
+- [grupowanie wierszy](table-grouping)
+
+Do zarządzania widokami tabeli służy panel widoków, otwierany przyciskiem
+`$icon(actionIcons.SaveTableView)` na górze po prawej stronie tabeli.
 
 Widok tabeli można zapisać pod wybraną nazwą, a następnie szybko przywołać klikając odpowiedni widok
 w panelu zapisanych widoków.

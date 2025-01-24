@@ -46,7 +46,6 @@ import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tq
 import {dateToISO} from "data-access/memo-api/utils";
 import {DateTime, WeekdayNumbers} from "luxon";
 import {IconTypes} from "solid-icons";
-import {BsThreeDots} from "solid-icons/bs";
 import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
 import {IoArrowUndoOutline} from "solid-icons/io";
@@ -402,7 +401,7 @@ export default (() => {
                       title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
-                      <BsThreeDots class="text-current" size="20" />
+                      <actionIcons.ThreeDotsSmall class="text-current" size="20" />
                     </Button>
                   )}
                 >

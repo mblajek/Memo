@@ -6,7 +6,7 @@ Osoby w bazie Memo mają przypisane role i uprawnienia. Poniżej znajduje się o
 
 Pracownicy placówki mogą mieć przypisaną **jedną lub obie** poniższe role:
 
-### Pracownik placówki: {#staff-role}
+### `$icon(staffIcons.Staff)` Pracownik placówki {#staff-role}
 
 Osoba posiadająca swój kalendarz i biorąca udział w spotkaniach.
 Również dawni pracownicy placówki muszą nadal mieć przypisaną tę rolę, aby w systemie mogły być
@@ -16,7 +16,7 @@ Zwykle pracownik posiada adres email i hasło umożliwiające logowanie do syste
 utworzyć pracownika, który nie ma możliwości samodzielnego logowania, a jego kalendarzem zarządza
 ktoś inny, np. administrator placówki.
 
-### Administrator placówki {#facility-admin-role}
+### `$icon(adminIcons.Admin)` Administrator placówki {#facility-admin-role}
 
 Osoba posiadająca dostęp do dodatkowych sekcji systemu:
 
