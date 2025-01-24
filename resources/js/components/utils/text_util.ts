@@ -40,7 +40,7 @@ export function createTextFilter(filterText: string, matchType: MatchType = "%v%
   if (!filterText && matchType !== "=") {
     return undefined;
   }
-  const filterArr = Array.from({length: filterText.length}, (_, i) => filterText.codePointAt(i)!);
+  const filterArr = Array.from({length: filterText.length}, (_, i) => filterText.charCodeAt(i)!);
   switch (matchType) {
     case "%v%":
       return (text: string) => matchesAtStart(filterArr, text, 0, text.length - filterText.length);
