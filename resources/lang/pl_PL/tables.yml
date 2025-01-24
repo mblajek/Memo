@@ -22,6 +22,7 @@ tables:
         summary__one: "{{count, number}} uczestnik"
         summary__few: "{{count, number}} uczestników"
         summary__many: "{{count, number}} uczestników"
+        count_column_label_override: "Liczba spotkań"
 
   user:
     summary__zero: "Brak osób"
@@ -45,7 +46,7 @@ tables:
     summary__few: "{{count, number}} klientów"
     summary__many: "{{count, number}} klientów"
     column_prefixes:
-      client.shortCode: "n"
+      client.shortCode: ["nr", "n"]
       client.contactPhone: "tel"
       client.contactEmail: "email"
 
@@ -95,6 +96,9 @@ tables:
     summary__one: "{{count, number}} uczestnictwo"
     summary__few: "{{count, number}} uczestnictwa"
     summary__many: "{{count, number}} uczestnictw"
+    with_column_group:
+      meeting_multicolumn:
+        count_column_label_override: "Liczba uczestników"
 
   meeting_multi_attendant:
     column_names:
@@ -124,6 +128,8 @@ tables:
       client.updatedAt: "zmodyfikowano (klient)"
       client.updatedBy.name: "zmodyfikowano przez (klient)"
       client.updatedBy.id: "$t(tables.tables.meeting_client.column_names.client.updatedBy.id)"
+      completedMeetingsCount: "liczba wszystkich odbytych spotkań"
+      plannedMeetingsCount: "liczba wszystkich zaplanowanych spotkań"
     column_groups:
       attendant_multicolumn: "$t(models.client._name)"
     with_column_group:
@@ -137,6 +143,8 @@ tables:
         summary__one: "{{count, number}} grupa"
         summary__few: "{{count, number}} grupy"
         summary__many: "{{count, number}} grup"
+      meeting_multicolumn:
+        count_column_label_override: "Liczba klientów"
 
   time_table:
     table_name: "Grafiki pracy"
@@ -171,7 +179,7 @@ tables:
       user.id: "id użytkownika"
       user.name: "użytkownik"
 
-choose_columns: "Wybierz kolumny"
+choose_columns: "Kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"
 
@@ -234,6 +242,7 @@ column_groups:
     unknown_count: "Zgrupowane wiersze"
     known_count: "Zgrupowane wiersze ({{count}})"
   count_column_label: "$t(tables.column_groups.grouping_symbol) Liczba zgrupowanych wierszy"
+  count_column_label.with_override: "$t(tables.column_groups.grouping_symbol) {{override}} (l. zgrupowanych wierszy)"
   explicit_group: "Grupowanie bazujące na wielu kolumnach"
   column_status:
     force_shown: "Kolumna grupująca musi być widoczna"
@@ -256,3 +265,19 @@ rows__many: "{{count, number}} wierszy"
 more_info: "Kliknij aby dowiedzieć się więcej o tej tabeli"
 
 scroll_to_column: "Przewiń tabelę aby zobaczyć kolumnę"
+
+saved_views:
+  hint: "Zapisane widoki tabeli"
+  title: "Zapisane widoki"
+  load_hint: "Kliknij aby użyć zapisanego widoku"
+  load_hint_no_change: "Ten widok jest aktualnie wybrany"
+  new_placeholder: "Nowy widok"
+  save_hint: "Zapisz aktualny widok tabeli pod wpisaną nazwą"
+  save_hint_conflict: "Ta nazwa jest już użyta, rozwiń opcje aby zastąpić"
+  overwrite_with_current: "Zapisz aktualny widok (zastąp)"
+  rename_conflict: "Ta nazwa jest już użyta."
+  default_view_name: "Widok domyślny"
+  current_view_code: "Kod aktualnego widoku:"
+  code_error: "Błędny kod widoku."
+  code_error.different_table: "Ten widok przeznaczony jest dla innej tabeli."
+  copy_code: "Kopiuj kod widoku do schowka"

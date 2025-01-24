@@ -1,8 +1,10 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {QueryBarrier, useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {toastSuccess} from "components/utils/toast";
-import {Admin, System} from "data-access/memo-api/groups";
+import {Admin} from "data-access/memo-api/groups/Admin";
+import {System} from "data-access/memo-api/groups/System";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";

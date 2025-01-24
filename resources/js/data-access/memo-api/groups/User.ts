@@ -1,6 +1,6 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
 import {activeFacilityId} from "state/activeFacilityId.state";
-import {V1} from "../config";
+import {V1} from "data-access/memo-api/config/v1.instance";
 import {MemberResource} from "../resources/member.resource";
 import {PermissionsResource} from "../resources/permissions.resource";
 import {UserResource} from "../resources/user.resource";
@@ -49,7 +49,7 @@ export namespace User {
   export interface GetStatusData {
     readonly user: UserResource;
     readonly permissions: Partial<PermissionsResource> & Omit<PermissionsResource, PermissionsFacilityKeys>;
-    readonly members: MemberResource[];
+    readonly members: readonly MemberResource[];
   }
 
   export interface LoginRequest {

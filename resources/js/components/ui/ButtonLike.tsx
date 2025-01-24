@@ -1,11 +1,11 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {ButtonProps} from "./Button";
 import {mergeTitleDirectiveProps, title} from "./title";
 
 type _Directives = typeof title;
 
-interface Props extends Omit<htmlAttributes.div, "title"> {
+export interface ButtonLikeProps extends Omit<htmlAttributes.div, "title"> {
   readonly disabled?: boolean;
   readonly title?: ButtonProps["title"];
 }
@@ -22,7 +22,7 @@ interface Props extends Omit<htmlAttributes.div, "title"> {
  * This component is intended for some specific situations where a button would not work, e.g. inside a
  * fieldset that is disabled.
  */
-export const ButtonLike: ParentComponent<Props> = (props) => {
+export const ButtonLike: ParentComponent<ButtonLikeProps> = (props) => {
   return (
     <div
       {...htmlAttributes.merge(props, {

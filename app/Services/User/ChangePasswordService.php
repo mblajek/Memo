@@ -3,22 +3,35 @@
 namespace App\Services\User;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use App\Services\System\LogService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Psr\Log\LogLevel;
 use Throwable;
 
-class ChangePasswordService
+readonly class ChangePasswordService
 {
+    public function __construct(
+        private LogService $logService,
+    ) {
+    }
+
     /**
      * @throws Throwable
      */
-    public function handle(array $data): void
+    public function handle(Request $request, User $user, string $password): void
     {
-        $loggedUser = User::query()->findOrFail(Auth::user()->id);
+        $user->password = Hash::make($password);
+        $user->password_expire_at = null;
 
-        $loggedUser->password = Hash::make($data['password']);
-        $loggedUser->password_expire_at = null;
+        $user->saveOrFail();
 
-        $loggedUser->saveOrFail();
+        $this->logService->addEntry(
+            request: $request,
+            source: 'user_password_change',
+            logLevel: LogLevel::INFO,
+            message: null,
+            user: $user,
+        );
     }
 }

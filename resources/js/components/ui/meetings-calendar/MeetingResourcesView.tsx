@@ -1,4 +1,4 @@
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {For, JSX, Show, VoidComponent} from "solid-js";
 import {calendarIcons} from "../icons";

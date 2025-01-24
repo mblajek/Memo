@@ -3,8 +3,8 @@ import {EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
 import {facilityIcons} from "components/ui/icons";
 import {title} from "components/ui/title";
-import {useLangFunc} from "components/utils";
-import {User} from "data-access/memo-api/groups";
+import {useLangFunc} from "components/utils/lang";
+import {User} from "data-access/memo-api/groups/User";
 import {UserResource} from "data-access/memo-api/resources/user.resource";
 import {FacilityUserType, getFacilityUserTypeName} from "features/facility-users/user_types";
 import {Show, VoidComponent} from "solid-js";
@@ -31,7 +31,7 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
           <h2 class="flex gap-1 items-center font-medium text-xl">
             <UserLink type={props.type} link={false} userId={props.user.id} name={props.user.name} />
           </h2>
-          <div class="text-xs">
+          <div class="text-xs whitespace-nowrap">
             {getFacilityUserTypeName(t, props.type)}
             <Show when={props.user.managedByFacilityId === activeFacilityId()}>
               {" "}
@@ -48,7 +48,7 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
           </div>
         </Show>
       </div>
-      <div class="flex flex-col items-end gap-0.5">
+      <div class="ml-auto flex flex-col items-end gap-0.5">
         <CreatedByInfo data={props.user} />
         <Show when={status.data?.permissions.globalAdmin}>
           <EditButton

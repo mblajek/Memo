@@ -1,5 +1,5 @@
 import {activeFacilityId} from "state/activeFacilityId.state";
-import {V1} from "../config";
+import {V1} from "data-access/memo-api/config/v1.instance";
 import {SolidQueryOpts} from "../query_utils";
 import {StaffResource, StaffResourceForCreate, StaffResourceForPatch} from "../resources/staff.resource";
 import {Api} from "../types";

@@ -1,32 +1,36 @@
-import {cx, delayedAccessor} from "components/utils";
+import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
 import {NullColumnFilter, UuidColumnFilter} from "data-access/memo-api/tquery/types";
 import {Api} from "data-access/memo-api/types";
 import {createComputed} from "solid-js";
-import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
-import {FilterControl} from "./types";
+import {FilterControl, FilterHWithState} from "./types";
 
-export const UuidFilterControl: FilterControl<NullColumnFilter | UuidColumnFilter> = (props) => {
+type Filter = FilterHWithState<{value: string}, NullColumnFilter | UuidColumnFilter>;
+
+export const UuidFilterControl: FilterControl<Filter> = (props) => {
   const filterFieldNames = useFilterFieldNames();
   const {
-    value: [value, setValue],
-  } = getFilterStateSignal({
-    // eslint-disable-next-line solid/reactivity
-    column: props.column.id,
+    state: {
+      value: [value, setValue],
+    },
+    getState,
+  } = getFilterControlState({
     initial: {value: ""},
     filter: () => props.filter,
   });
-  function buildFilter(value: string): NullColumnFilter | UuidColumnFilter | undefined {
+  function buildFilter(value: string): Filter | undefined {
     switch (value) {
       case "":
         return undefined;
       case "*":
-        return {type: "column", column: props.schema.name, op: "null", inv: true};
+        return {type: "column", column: props.schema.name, op: "null", inv: true, state: getState()};
       case "''":
-        return {type: "column", column: props.schema.name, op: "null"};
+        return {type: "column", column: props.schema.name, op: "null", state: getState()};
       default:
-        return {type: "column", column: props.schema.name, op: "=", val: value};
+        return {type: "column", column: props.schema.name, op: "=", val: value, state: getState()};
     }
   }
   const debouncedValue = delayedAccessor(value, {

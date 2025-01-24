@@ -1,4 +1,4 @@
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {createConfirmation} from "../confirmation";
 
 export function createFormLeaveConfirmation() {

@@ -1,6 +1,6 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
-import {useLangFunc} from "components/utils";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
+import {useLangFunc} from "components/utils/lang";
 import {usePasswordExpiration} from "components/utils/password_expiration";
 import {PasswordChangeForm} from "./PasswordChange.form";
 

@@ -1,18 +1,20 @@
+import {Age} from "components/ui/Age";
 import {Email} from "components/ui/Email";
 import {LinksList} from "components/ui/LinksList";
 import {Phone} from "components/ui/Phone";
 import {RichTextView} from "components/ui/RichTextView";
 import {SmallSpinner} from "components/ui/Spinner";
-import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table";
 import {AttributeColumnsConfig} from "components/ui/Table/TQueryTable";
+import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
 import {NullFilterControl} from "components/ui/Table/tquery_filters/NullFilterControl";
 import {TextualFilterControl} from "components/ui/Table/tquery_filters/TextualFilterControl";
 import {WarningMark} from "components/ui/WarningMark";
 import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
-import {EmptyValueSymbol} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {title} from "components/ui/title";
-import {DATE_FORMAT, useLangFunc} from "components/utils";
+import {DATE_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {ClientResource, SHORT_CODE_EMPTY} from "data-access/memo-api/resources/client.resource";
 import {ScrollableCell} from "data-access/memo-api/tquery/table_columns";
@@ -57,10 +59,22 @@ export const ClientFields: VoidComponent<Props> = (props) => {
             } satisfies AttributeParams<string>,
             notes: false,
             birthDate: {
-              view: (date) => <span>{DateTime.fromISO(date()).toLocaleString(DATE_FORMAT)}</span>,
+              view: (date) => {
+                const d = () => DateTime.fromISO(date());
+                return (
+                  <span>
+                    {d().toLocaleString(DATE_FORMAT)}{" "}
+                    <span class="text-grey-text">
+                      {t("parenthesis.open")}
+                      <Age birthDate={d()} />
+                      {t("parenthesis.close")}
+                    </span>
+                  </span>
+                );
+              },
             } satisfies AttributeParams<string>,
             contactEmail: {
-              view: (email) => <Email email={email()} />,
+              view: (email) => <Email class="w-full" email={email()} />,
             } satisfies AttributeParams<string>,
             contactPhone: {
               view: (phone) => <Phone class="font-semibold" phone={phone()} />,

@@ -2,10 +2,15 @@
 
 namespace App\Services\Member;
 
+use App\Exceptions\ExceptionFactory;
+use App\Exceptions\FatalExceptionFactory;
 use App\Models\Client;
 use App\Models\Grant;
 use App\Models\Member;
 use App\Models\StaffMember;
+use Closure;
+use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -36,44 +41,71 @@ class UpdateMemberService
      */
     private function fill(Member $member, array $data): void
     {
-        if (array_key_exists('has_facility_admin', $data)) {
-            $grant = Grant::query()->find($member->facility_admin_grant_id);
-            if ($data['has_facility_admin']) {
-                if ($grant === null) {
-                    $grant = Grant::create();
-                }
-            } else {
-                $grant?->delete();
+        $fillOne = function (
+            string $requestField,
+            string $modelField,
+            Closure $find,
+            Closure $create
+        ) use (&$data, $member): ?Model {
+            if (!array_key_exists($requestField, $data)) {
+                return null;
             }
-            $data['facility_admin_grant_id'] = $grant?->id;
-        }
+            $itemId = $member->getAttribute($modelField);
+            /** @var Grant|Client|StaffMember $item */
+            $item = $itemId ? $find($itemId) : null;
+            if ($data[$requestField]) {
+                $item ??= $create();
+                $item->exists ?: $item->save();
+            } else {
+                $item?->delete();
+                $item = null;
+            }
+            $data[$modelField] = $item?->id;
+            return $item;
+        };
 
-        if (array_key_exists('is_facility_client', $data)) {
-            $client = Client::query()->find($member->client_id);
-            if ($data['is_facility_client']) {
-                if ($client === null) {
-                    $client = new Client();
-                    $client->save();
-                }
-            } else {
-                $client?->delete();
-            }
-            $data['client_id'] = $client?->id;
-        }
+        $fillOne(
+            requestField: 'has_facility_admin',
+            modelField: 'facility_admin_grant_id',
+            find: fn(string $id): ?Grant => Grant::query()->find($id),
+            create: fn(): Grant => Grant::create(),
+        );
 
-        if (array_key_exists('is_facility_staff', $data)) {
-            $staff = StaffMember::query()->find($member->client_id);
-            if ($data['is_facility_staff']) {
-                if ($staff === null) {
-                    $staff = new StaffMember();
-                    $staff->save();
-                }
-            } else {
-                $staff?->delete();
-            }
-            $data['staff_member_id'] = $staff?->id;
-        }
+        $fillOne(
+            requestField: 'is_facility_client',
+            modelField: 'client_id',
+            find: fn(string $id): ?Client => Client::query()->find($id),
+            // throw exception: client has some required fields
+            create: fn() => ExceptionFactory::validation()->throw(),
+        );
+
+
+        $staffMember = $fillOne(
+            requestField: 'is_facility_staff',
+            modelField: 'staff_member_id',
+            find: fn(string $id) => StaffMember::query()->find($id),
+            create: fn() => new StaffMember(),
+        );
+
+        $this->setActiveStaff(
+            dataActiveStaff: $data['is_active_facility_staff'] ?? null,
+            staffMember: $staffMember ?? $member->staffMember
+        );
 
         $member->update($data);
+    }
+
+    private function setActiveStaff(?bool $dataActiveStaff, ?StaffMember $staffMember): void
+    {
+        if ($dataActiveStaff && $staffMember === null) {
+            FatalExceptionFactory::unexpected()->throw();
+        }
+        if ($dataActiveStaff === null || $staffMember === null || $dataActiveStaff === $staffMember->isActive()) {
+            return;
+        }
+
+        $staffMember->deactivated_at = $dataActiveStaff
+            ? null : new DateTimeImmutable();
+        $staffMember->save();
     }
 }

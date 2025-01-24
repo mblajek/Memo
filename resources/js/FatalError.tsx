@@ -1,16 +1,16 @@
 import {createMutation} from "@tanstack/solid-query";
 import {AxiosError, isAxiosError} from "axios";
+import {withNoThrowOnInvalid} from "components/utils/time";
+import {System} from "data-access/memo-api/groups/System";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {DateTime} from "luxon";
 import {Match, Show, Switch, VoidComponent, createMemo, createSignal, onMount} from "solid-js";
 import {getFullErrorMessage} from "./components/error_util";
 import {Button} from "./components/ui/Button";
 import {FullScreenPre} from "./components/ui/FullScreenPre";
 import {SmallSpinner} from "./components/ui/Spinner";
-import {withNoThrowOnInvalid} from "./components/utils";
 import {isDEV} from "./components/utils/dev_mode";
-import {System} from "./data-access/memo-api/groups";
 import {Api} from "./data-access/memo-api/types";
-import {MemoTitle} from "./features/root/MemoTitle";
 
 interface Props {
   readonly error: unknown;
@@ -73,7 +73,7 @@ export const FatalError: VoidComponent<Props> = (props) => {
   });
   return (
     <>
-      <MemoTitle title="Fatal Error" />
+      <AppTitlePrefix prefix="Fatal Error" />
       <FullScreenPre class="text-red-700">
         <div class="flex flex-col gap-2">
           <div>

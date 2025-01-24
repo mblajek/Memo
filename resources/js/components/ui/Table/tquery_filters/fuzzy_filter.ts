@@ -1,4 +1,6 @@
-import {NON_NULLABLE, useLangFunc} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {useLangFunc} from "components/utils/lang";
+import {createTextFilter, TextFilterPredicate} from "components/utils/text_util";
 import {Dictionaries, Dictionary} from "data-access/memo-api/dictionaries";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {ColumnName, Schema, StringColumnFilter} from "data-access/memo-api/tquery/types";
@@ -89,22 +91,28 @@ export function buildFuzzyTextualColumnFilter(filterText: string, {column}: {col
   };
 }
 
-/** Runs the word filter on the value on frontend. Useful for static values, like dictionary positions. */
-function matchesWordFilter(value: string, wordFilter: WordFilter) {
-  value = value.toLocaleLowerCase();
-  const filterVal = wordFilter.val.toLocaleLowerCase();
-  switch (wordFilter.op) {
-    case "%v%":
-      return value.includes(filterVal);
-    case "%v":
-      return value.endsWith(filterVal);
-    case "v%":
-      return value.startsWith(filterVal);
-    case "=":
-      return value === filterVal;
-    default:
-      return wordFilter.op satisfies never;
+/**
+ * Creates a predicate filter from a filter text. Works the same as buildFuzzyTextualColumnFilter,
+ * but filters on the frontend. Useful e.g. for filtering dictionary positions.
+ * Returns undefined if no filtering is needed (any value would be accepted).
+ */
+export function buildFuzzyTextualLocalFilter(filterText: string): TextFilterPredicate | undefined {
+  filterText = filterText.trim();
+  if (filterText === EMPTY_CODE) {
+    return (text) => !text;
   }
+  if (filterText === NONEMPTY_CODE) {
+    return (text) => !!text;
+  }
+  const filters = Array.from(filterText.matchAll(WORD_REGEXP), ([_match, word]) =>
+    word ? createWordFilter(fuzzyWordFilter(word)) : undefined,
+  ).filter(NON_NULLABLE);
+  return filters.length ? (text) => filters.every((f) => f(text)) : undefined;
+}
+
+/** Runs the word filter on the value on frontend. Useful for static values, like dictionary positions. */
+function createWordFilter({op, val}: WordFilter) {
+  return createTextFilter(val, op);
 }
 
 interface FuzzyGlobalFilterConfigBase {
@@ -179,8 +187,12 @@ export function buildFuzzyGlobalFilter(filterText: string, config: FuzzyGlobalFi
   })();
 
   function matchingDictPositions(dict: Dictionary, wordFilter: WordFilter): string[] | "all" {
-    const matching = dict.allPositions.filter((p) => matchesWordFilter(p.label, wordFilter)).map((p) => p.id);
-    return matching.length === dict.allPositions.length ? "all" : matching;
+    const filter = createWordFilter(wordFilter);
+    if (!filter) {
+      return "all";
+    }
+    const matching = dict.allPositions.filter((p) => filter(p.label));
+    return matching.length === dict.allPositions.length ? "all" : matching.map((p) => p.id);
   }
 
   function columnFilter(column: ColumnName, wordFilter: WordFilter): FilterH | undefined {
@@ -258,8 +270,14 @@ export function useColumnsByPrefixUtil() {
   const t = useLangFunc();
   return {
     fromColumnPrefixes(key: string | readonly string[]): FuzzyGlobalFilterConfig["columnsByPrefix"] {
-      const entries = Object.entries(t.getObjects(key, {mergeObjects: true}));
-      return entries.length ? new Map<string, string>(entries.map(([column, prefix]) => [prefix, column])) : undefined;
+      const entries = Object.entries(t.getObjects<string | readonly string[]>(key, {mergeObjects: true}));
+      return entries.length
+        ? new Map<string, string>(
+            entries.flatMap(([column, prefixes]) =>
+              typeof prefixes === "string" ? [[prefixes, column]] : prefixes.map((prefix) => [prefix, column]),
+            ),
+          )
+        : undefined;
     },
   };
 }

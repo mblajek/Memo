@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -36,7 +37,7 @@ use Illuminate\Validation\Rules\Password;
  * @property-read bool $has_password
  * @property-read bool $has_email_verified
  * @property-read bool $has_global_admin
- * @property-read Collection<Member> $members
+ * @property-read Collection<array-key, Member> $members
  * @property-read Facility $lastLoginFacility
  * @method static UserBuilder query()
  */
@@ -50,7 +51,7 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    public const SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
+    public const string SYSTEM = 'e144ff18-471f-456f-a1c2-971d88b3d213';
 
     /**
      * The attributes that are mass assignable.
@@ -262,5 +263,30 @@ class User extends Authenticatable
             }
         }
         return false;
+    }
+
+    public function memberByFacility(string|Facility $facility): ?Member
+    {
+        $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
+        return $this->members->first(fn(Member $member) => $member->facility_id === $facilityId);
+    }
+
+    public function activeMembers(): Collection
+    {
+        return $this->members->filter(fn(Member $member): bool => //
+            $member->facility_admin_grant_id || $member->client_id || $member->staffMember?->isActive());
+    }
+
+    public function passwordHashHash(): string
+    {
+        return md5($this->id . $this->password);
+    }
+
+    public static function fromAuthenticatable(?AuthenticatableContract $authenticatable): ?self
+    {
+        if ($authenticatable && !($authenticatable instanceof self)) {
+            return self::query()->findOrFail($authenticatable->getAuthIdentifier());
+        }
+        return $authenticatable;
     }
 }

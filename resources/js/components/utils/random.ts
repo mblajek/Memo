@@ -1,6 +1,6 @@
 /** A simple seedable not necessarily cryptographically safe random number generator. */
 export class Random {
-  static readonly RANDOM = new Random(Math.random() * (1 << 32));
+  static readonly RANDOM = new Random(Math.random() * (2 ^ 32));
 
   private state: number;
 

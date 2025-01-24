@@ -1,6 +1,6 @@
 import {A} from "@solidjs/router";
 import {InfoIcon} from "components/ui/InfoIcon";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {TbInfoTriangle} from "solid-icons/tb";
 import {VoidComponent} from "solid-js";
 

@@ -8,8 +8,10 @@ import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons} from "components/ui/icons";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {EmptyValueSymbol} from "components/ui/symbols";
-import {cx, NON_NULLABLE, useLangFunc} from "components/utils";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -57,7 +59,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
       class="flex flex-col gap-4 items-stretch"
       {...formProps}
     >
-      {(form) => {
+      {(form, formContext) => {
         createEffect(
           on(
             [
@@ -142,35 +144,41 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
                                 </Button>
                               )}
                             >
-                              {(popOver) => (
-                                <SimpleMenu onClick={() => popOver.close()}>
-                                  <Switch>
-                                    <Match when={isChild()}>
-                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
-                                        <span class="text-grey-text">{clientTypeDict()?.child.label}</span>
-                                      </Button>
-                                    </Match>
-                                    <Match when="not child">
-                                      <Button onClick={() => form.setFields(`clients.${index}.role`, "")}>
-                                        <span class="text-grey-text">
-                                          {t("facility_user.client_groups.role_preset_empty")}
-                                        </span>
-                                      </Button>
-                                      <For
-                                        each={dictionaries()
-                                          ?.get("clientGroupClientRole")
-                                          .activePositions.map(({label}) => label)}
-                                      >
-                                        {(preset) => (
-                                          <Button onClick={() => form.setFields(`clients.${index}.role`, preset)}>
-                                            {preset}
-                                          </Button>
-                                        )}
-                                      </For>
-                                    </Match>
-                                  </Switch>
-                                </SimpleMenu>
-                              )}
+                              {(popOver) => {
+                                function setRole(role: string) {
+                                  form.setFields(`clients.${index}.role`, role);
+                                  (
+                                    formContext.getElement()?.querySelector(`#clients\\.${index}\\.role`) as
+                                      | HTMLElement
+                                      | undefined
+                                  )?.focus();
+                                }
+                                return (
+                                  <SimpleMenu onClick={() => popOver.close()}>
+                                    <Switch>
+                                      <Match when={isChild()}>
+                                        <Button onClick={() => setRole("")}>
+                                          <span class="text-grey-text">{clientTypeDict()?.child.label}</span>
+                                        </Button>
+                                      </Match>
+                                      <Match when="not child">
+                                        <Button onClick={() => setRole("")}>
+                                          <span class="text-grey-text">
+                                            {t("facility_user.client_groups.role_preset_empty")}
+                                          </span>
+                                        </Button>
+                                        <For
+                                          each={dictionaries()
+                                            ?.get("clientGroupClientRole")
+                                            .activePositions.map(({label}) => label)}
+                                        >
+                                          {(preset) => <Button onClick={() => setRole(preset)}>{preset}</Button>}
+                                        </For>
+                                      </Match>
+                                    </Switch>
+                                  </SimpleMenu>
+                                );
+                              }}
                             </PopOver>
                           </div>
                         </div>

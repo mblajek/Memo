@@ -1,7 +1,7 @@
 import {DetectOverflowOptions, flip, shift} from "@floating-ui/dom";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {buildFuzzyTextualLocalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {hasProp} from "components/utils/props";
 import {AiFillCaretDown} from "solid-icons/ai";
@@ -34,6 +34,9 @@ import {SmallSpinner} from "../Spinner";
 import {FieldBox} from "./FieldBox";
 import {PlaceholderField} from "./PlaceholderField";
 import {LabelOverride} from "./labels";
+import {useLangFunc} from "components/utils/lang";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {cx} from "components/utils/classnames";
 
 export interface SelectBaseProps {
   readonly name: string;
@@ -76,6 +79,7 @@ export interface SelectBaseProps {
   readonly placeholder?: string;
   /** Whether the control should be shown in the small version. */
   readonly small?: boolean;
+  readonly autofocus?: boolean;
 }
 
 export interface SingleSelectPropsPart {
@@ -299,17 +303,13 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       }
     }
   });
-  const isInternalFilteringMode = () => props.onFilterChange === "internal";
+  const internalFilter = createMemo(() =>
+    props.onFilterChange === "internal" ? buildFuzzyTextualLocalFilter(filterText()) : undefined,
+  );
   /** The items after filtering, regardless of the filtering mode. */
   const filteredItems = createMemo(() => {
-    if (isInternalFilteringMode()) {
-      const filter = filterText().toLocaleLowerCase();
-      if (!filter) {
-        return props.items;
-      }
-      return props.items.filter((item) => itemToString(item).toLocaleLowerCase().includes(filter));
-    }
-    return props.items;
+    const filter = internalFilter();
+    return filter ? props.items.filter((item) => filter(itemToString(item))) : props.items;
   });
   const itemsToShow = createMemo<readonly SelectItem[]>(() => {
     const filtered = filteredItems();
@@ -538,20 +538,20 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       }
     }),
   );
-  const moveKeys: Record<string, number> = {
-    ArrowDown: 1,
-    ArrowUp: -1,
-    PageDown: 10,
-    PageUp: -10,
-    Home: -Infinity,
-    End: Infinity,
+  const MOVE_KEYS: Record<string, {readonly move: number; readonly onlyIfNoText?: boolean}> = {
+    ArrowDown: {move: 1},
+    ArrowUp: {move: -1},
+    PageDown: {move: 10},
+    PageUp: {move: -10},
+    Home: {move: -Infinity, onlyIfNoText: true},
+    End: {move: Infinity, onlyIfNoText: true},
   } as const;
   function handleKey(e: KeyboardEvent) {
-    const move = moveKeys[e.key];
-    if (move) {
+    const moveData = MOVE_KEYS[e.key];
+    if (moveData && !(filterText() && moveData.onlyIfNoText)) {
       e.preventDefault();
       setIsOpen(true);
-      moveKeyboardFocus(move, !e.repeat && Number.isFinite(move));
+      moveKeyboardFocus(moveData.move, !e.repeat && Number.isFinite(moveData.move));
     } else if (e.key === "Enter" || e.key === " ") {
       if (isOpen()) {
         if (focusedItem() && (e.key === "Enter" || isKeyboardFocus())) {
@@ -758,6 +758,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         placeholder={selection().size ? undefined : props.placeholder}
                         // Without filtering, the input is used just for the placeholder.
                         bool:inert={!props.onFilterChange}
+                        autofocus={props.autofocus}
                       />
                       <Buttons />
                     </div>
@@ -800,6 +801,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         placeholder={selection().size ? undefined : props.placeholder}
                         // Without filtering, the input is used just for the placeholder.
                         bool:inert={!props.onFilterChange}
+                        autofocus={props.autofocus}
                       />
                       <Buttons />
                     </div>
@@ -839,7 +841,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                           <li
                             id={elemId(item.value)}
                             class={cx(
-                              "px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip text-black",
+                              "max-w-xl px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip text-black",
                               selection().has(item.value) ? "border-s-memo-active bg-select" : undefined,
                               item === focusedItem()
                                 ? ["bg-hover", isKeyboardFocus() ? "border-e-gray-400" : undefined]

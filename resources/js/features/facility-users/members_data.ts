@@ -46,10 +46,7 @@ export const useMembersData = createCached(() => {
     entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user`,
     prefixQueryKey: FacilityUsers.keys.user(),
     requestCreator: staticRequestCreator(request),
-    dataQueryOptions: () => ({
-      enabled: !!activeFacilityId(),
-      staleTime: 3600 * 1000,
-    }),
+    dataQueryOptions: {staleTime: 3600 * 1000},
   });
   const rows = () => dataQuery.data?.data as MemberRow[] | undefined;
   const byId = createMemo(() => {

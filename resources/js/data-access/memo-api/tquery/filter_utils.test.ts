@@ -1,3 +1,4 @@
+import {FilterHWithState} from "components/ui/Table/tquery_filters/types";
 import {describe, expect, test} from "vitest";
 import {FilterH, FilterReductor, invertFilter} from "./filter_utils";
 
@@ -27,6 +28,17 @@ describe("filter_utils", () => {
     });
     expect(invertFilter("always")).toEqual("never");
     expect(invertFilter("never")).toEqual("always");
+  });
+
+  test("const", () => {
+    expect(reductor.reduce("always")).toEqual("always");
+    expect(reductor.reduce("never")).toEqual("never");
+    expect(reductor.reduce({type: "const", val: "always"})).toEqual("always");
+    expect(reductor.reduce({type: "const", val: "never"})).toEqual("never");
+    expect(reductor.reduce({type: "const", val: "always", inv: false})).toEqual("always");
+    expect(reductor.reduce({type: "const", val: "never", inv: false})).toEqual("never");
+    expect(reductor.reduce({type: "const", val: "always", inv: true})).toEqual("never");
+    expect(reductor.reduce({type: "const", val: "never", inv: true})).toEqual("always");
   });
 
   test("op null", () => {
@@ -238,5 +250,27 @@ describe("filter_utils", () => {
         }),
       ).toEqual({type: "op", op: "|", val: [invertFilter(f), invertFilter(g), invertFilter(h)]});
     });
+  });
+
+  test("removes state", () => {
+    type FS = FilterHWithState<{}>;
+    const f: FilterH = {type: "column", column: "c-str", op: "=", val: "f"};
+    const g: FilterH = {type: "column", column: "c-str", op: "=", val: "g"};
+
+    expect(
+      reductor.reduce({
+        type: "op",
+        op: "&",
+        val: [f, g],
+        state: {},
+      } satisfies FS as FS),
+    ).toEqual({type: "op", op: "&", val: [f, g]});
+    expect(
+      reductor.reduce({
+        type: "op",
+        op: "&",
+        val: [{...f, state: {}} satisfies FS as FS],
+      }),
+    ).toEqual(f);
   });
 });

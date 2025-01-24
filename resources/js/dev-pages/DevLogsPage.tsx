@@ -1,11 +1,12 @@
+import {createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, ShowCellVal} from "components/ui/Table/table_cells";
+import {useLangFunc} from "components/utils/lang";
+import {System} from "data-access/memo-api/groups/System";
 import {FaSolidTerminal} from "solid-icons/fa";
 import {Show, VoidComponent} from "solid-js";
 import {CopyToClipboard} from "../components/ui/CopyToClipboard";
 import {IconButton} from "../components/ui/IconButton";
-import {cellFunc, createTableTranslations, ShowCellVal} from "../components/ui/Table";
 import {TQueryTable} from "../components/ui/Table/TQueryTable";
-import {useLangFunc} from "../components/utils";
-import {System} from "../data-access/memo-api/groups";
 import {ScrollableCell} from "../data-access/memo-api/tquery/table_columns";
 
 const BASE_HEIGHT = "6rem";
@@ -29,7 +30,7 @@ export default (() => {
           extraDataColumns: ["source"],
           columnDef: {
             cell: cellFunc<string>((props) => (
-              <ScrollableCell class="pr-0 font-mono text-sm whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
+              <ScrollableCell class="pr-0 text-sm whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
                 <ShowCellVal v={props.v}>
                   {(v) => (
                     <LogText
@@ -49,7 +50,7 @@ export default (() => {
           extraDataColumns: ["source"],
           columnDef: {
             cell: cellFunc<string>((props) => (
-              <ScrollableCell class="pr-0 font-mono text-xs whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
+              <ScrollableCell class="pr-0 text-xs whitespace-pre-wrap" baseHeight={BASE_HEIGHT}>
                 <ShowCellVal v={props.v}>
                   {(v) => (
                     <LogText
@@ -86,6 +87,7 @@ export default (() => {
         {type: "column", column: "createdAt", desc: true},
         {type: "column", column: "createdAtDate", desc: true},
       ]}
+      savedViews
     />
   );
 }) satisfies VoidComponent;
@@ -98,7 +100,7 @@ interface LogTextProps {
 const LogText: VoidComponent<LogTextProps> = (props) => {
   const t = useLangFunc();
   return (
-    <div class="flex gap-1">
+    <div class="flex gap-1 font-mono">
       <div class="basis-0 min-w-0 grow">{props.text}</div>
       <div class="px-0.5 flex flex-col text-base">
         <CopyToClipboard class="bg-white rounded" text={props.text} />

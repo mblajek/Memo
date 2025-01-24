@@ -1,21 +1,23 @@
 import {Button} from "components/ui/Button";
 import {DateInput} from "components/ui/DateInput";
 import {createHoverSignal, hoverEvents, hoverSignal} from "components/ui/hover_signal";
+import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {title} from "components/ui/title";
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {useLangFunc} from "components/utils/lang";
 import {DateColumnFilter, DateTimeColumnFilter} from "data-access/memo-api/tquery/types";
 import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createComputed, createMemo} from "solid-js";
-import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
-import {FilterControlProps} from "./types";
+import {FilterControlProps, FilterHWithState} from "./types";
 
 type _Directives = typeof title | typeof hoverSignal;
 
-type DateTimeRangeFilter =
+type Filter = FilterHWithState<
+  {lower: string; upper: string},
   | {
       type: "op";
       op: "&";
@@ -24,9 +26,10 @@ type DateTimeRangeFilter =
         (DateColumnFilter & DateTimeColumnFilter & {op: "<="}) | "always",
       ];
     }
-  | (DateColumnFilter & {op: "="});
+  | (DateColumnFilter & {op: "="})
+>;
 
-interface Props extends FilterControlProps<DateTimeRangeFilter> {
+interface Props extends FilterControlProps<Filter> {
   /** Whether to use datetime-local inputs for datetime columns. Default: false (use date inputs). */
   readonly useDateTimeInputs?: boolean;
 }
@@ -42,11 +45,12 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   const columnType = () => props.schema.type as "date" | "datetime";
   const inputsType = () => (columnType() === "datetime" && props.useDateTimeInputs ? "datetime-local" : "date");
   const {
-    lower: [lower, setLower],
-    upper: [upper, setUpper],
-  } = getFilterStateSignal({
-    // eslint-disable-next-line solid/reactivity
-    column: props.column.id,
+    state: {
+      lower: [lower, setLower],
+      upper: [upper, setUpper],
+    },
+    getState,
+  } = getFilterControlState({
     initial: {lower: "", upper: ""},
     filter: () => props.filter,
   });
@@ -79,7 +83,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
       uISO = u && dateTimeToISO(u);
     }
     if (columnType() === "date" && lISO && lISO === uISO) {
-      return props.setFilter({type: "column", column: props.schema.name, op: "=", val: lISO});
+      return props.setFilter({type: "column", column: props.schema.name, op: "=", val: lISO, state: getState()});
     }
     return props.setFilter({
       type: "op",
@@ -102,6 +106,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
             }
           : "always",
       ],
+      state: getState(),
     });
   });
   const hoverSignal = createHoverSignal();

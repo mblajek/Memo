@@ -1,4 +1,4 @@
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent} from "solid-js";
 
 export const CLIENT_GROUP_COLOR = "#e6b606";

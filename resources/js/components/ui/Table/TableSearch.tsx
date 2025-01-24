@@ -1,6 +1,8 @@
-import {cx, debouncedFilterTextAccessor, useLangFunc} from "components/utils";
+import {useTable} from "components/ui/Table/TableContext";
+import {cx} from "components/utils/classnames";
+import {debouncedFilterTextAccessor} from "components/utils/debounce";
+import {useLangFunc} from "components/utils/lang";
 import {ParentProps, VoidComponent, createComputed, createSignal} from "solid-js";
-import {useTable} from ".";
 import {SearchInput} from "../SearchInput";
 
 interface Props {
@@ -20,7 +22,7 @@ export const TableSearch: VoidComponent<ParentProps<Props>> = (props) => {
     <SearchInput
       divClass={cx("flex items-stretch", props.divClass)}
       name="table_global_search"
-      class={cx("px-1", filter() ? "border-memo-active" : undefined)}
+      class={filter() ? "border-memo-active" : undefined}
       placeholder={props.placeholder || t("actions.search")}
       value={filter()}
       onValueChange={setFilter}

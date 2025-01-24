@@ -2,7 +2,7 @@ import {createMutation} from "@tanstack/solid-query";
 import {DeleteButton} from "components/ui/Button";
 import {createConfirmation} from "components/ui/confirmation";
 import {userIcons} from "components/ui/icons";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
 import {useInvalidator} from "data-access/memo-api/invalidator";

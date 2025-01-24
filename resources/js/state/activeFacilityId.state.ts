@@ -1,5 +1,5 @@
 import {createQuery} from "@tanstack/solid-query";
-import {System} from "data-access/memo-api/groups";
+import {System} from "data-access/memo-api/groups/System";
 import {FacilityResource} from "data-access/memo-api/resources/facility.resource";
 import {Accessor, createMemo, createSignal} from "solid-js";
 

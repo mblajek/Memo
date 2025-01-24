@@ -1,24 +1,18 @@
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
-import {AccessorKeyColumnDefBase, ColumnHelper, IdentifiedColumnDef, createColumnHelper} from "@tanstack/table-core";
+import {AccessorKeyColumnDefBase, ColumnHelper, createColumnHelper, IdentifiedColumnDef} from "@tanstack/table-core";
+import {CheckboxInput} from "components/ui/CheckboxInput";
 import {BigSpinner} from "components/ui/Spinner";
-import {
-  AUTO_SIZE_COLUMN_DEFS,
-  PaddedCell,
-  Pagination,
-  ShowCellVal,
-  Table,
-  cellFunc,
-  getBaseTableOptions,
-  useTableCells,
-} from "components/ui/Table";
-import {QueryBarrier} from "components/utils";
+import {Pagination} from "components/ui/Table/Pagination";
+import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
+import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {Dictionary, Position} from "data-access/memo-api/dictionaries";
-import {System} from "data-access/memo-api/groups";
-import {Show, VoidComponent, createMemo} from "solid-js";
+import {System} from "data-access/memo-api/groups/System";
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
+import {createMemo, createSignal, Show, VoidComponent} from "solid-js";
 import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
-import {MemoTitle} from "../features/root/MemoTitle";
-import {useAttrValueFormatter} from "./util";
+import {filterByFacility, useAttrValueFormatter} from "./util";
 
 export default (() => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -27,6 +21,7 @@ export default (() => {
   }
   const dictionaries = useAllDictionaries();
   const attributes = useAllAttributes();
+  const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
   const attrValueFormatter = useAttrValueFormatter();
   const tableCells = useTableCells();
   const h = createColumnHelper<Dictionary>();
@@ -78,7 +73,7 @@ export default (() => {
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
       }),
       get data() {
-        return [...(dictionaries() || [])];
+        return filterByFacility(dictionaries(), onlyActiveFacility());
       },
       columns: [
         ...getCommonColumns(h),
@@ -108,7 +103,7 @@ export default (() => {
                 },
                 defaultColumn: AUTO_SIZE_COLUMN_DEFS,
               }),
-              data: positions,
+              data: filterByFacility(positions, onlyActiveFacility()),
               columns: [
                 h.accessor((p) => p.resource.defaultOrder, {
                   id: "Order",
@@ -162,10 +157,20 @@ export default (() => {
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <MemoTitle title="Dictionaries" />
+      <AppTitlePrefix prefix="Dictionaries" />
       <div class="contents text-sm">
         <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
-          <Table table={table()} mode="standalone" />
+          <Table
+            table={table()}
+            mode="standalone"
+            aboveTable={() => (
+              <CheckboxInput
+                checked={onlyActiveFacility()}
+                onChecked={setOnlyActiveFacility}
+                label="Only active facility"
+              />
+            )}
+          />
         </Show>
       </div>
     </QueryBarrier>

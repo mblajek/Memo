@@ -1,5 +1,6 @@
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
 import {Accessor, JSX, createSignal} from "solid-js";
-import {cx, useLangFunc} from "../utils";
 import {registerGlobalPageElement} from "../utils/GlobalPageElements";
 import {focusThis} from "../utils/focus_this";
 import {Button} from "./Button";
@@ -10,12 +11,16 @@ type _Directives = typeof title;
 
 export interface ConfirmParams {
   readonly title: string;
-  readonly body?: JSX.Element | Accessor<JSX.Element>;
+  readonly body?: JSX.Element | ((controller: ConfirmationController) => JSX.Element);
   readonly confirmText?: JSX.Element | Accessor<JSX.Element>;
   readonly cancelText?: JSX.Element | Accessor<JSX.Element>;
   readonly mode?: ConfirmationMode;
   readonly confirmDisabled?: Accessor<boolean>;
   readonly modalStyle?: JSX.CSSProperties;
+}
+
+interface ConfirmationController {
+  readonly resolve: (confirmed: boolean | undefined) => void;
 }
 
 /**
@@ -26,16 +31,15 @@ export interface ConfirmParams {
  */
 type ConfirmationMode = "default" | "warning" | "danger";
 
-interface ConfirmData extends ConfirmParams {
-  readonly resolve: (confirmed: boolean | undefined) => void;
-}
+interface ConfirmData extends ConfirmParams, ConfirmationController {}
 
 const READ_BEFORE_CONFIRM_MILLIS = 5000;
 
 const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args) => {
   const t = useLangFunc();
-  function jsx(element: JSX.Element | Accessor<JSX.Element> | undefined, defaultValue?: JSX.Element) {
-    return element === undefined ? defaultValue : typeof element === "function" ? element() : element;
+  function resolveOuter(confirmed: boolean | undefined) {
+    args.params()?.resolve(confirmed);
+    args.clearParams();
   }
   return (
     <Modal
@@ -43,27 +47,25 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
       open={args.params()}
       style={{...MODAL_STYLE_PRESETS.narrow, ...args.params()?.modalStyle}}
       closeOn={["escapeKey", "closeButton"]}
-      onClose={() => {
-        args.params()?.resolve(undefined);
-        args.clearParams();
-      }}
+      onClose={() => resolveOuter(undefined)}
     >
       {(data) => {
         const [readBeforeConfirm, setReadBeforeConfirm] = createSignal(data().mode === "danger");
+        const disabled = () => data().confirmDisabled?.() || readBeforeConfirm();
+        function resolve(confirmed: boolean | undefined) {
+          if (confirmed && disabled()) {
+            return;
+          }
+          resolveOuter(confirmed);
+        }
         setTimeout(() => setReadBeforeConfirm(false), READ_BEFORE_CONFIRM_MILLIS);
-        const body = () => jsx(data().body);
+        const body = () => jsx({element: data().body, params: [{resolve}]});
         return (
           <div class="flex flex-col gap-1 items-stretch">
             <div>{body()}</div>
             <div class="flex gap-1 justify-center items-stretch">
-              <Button
-                class="flex-grow basis-0 secondary"
-                onClick={() => {
-                  data().resolve(false);
-                  args.clearParams();
-                }}
-              >
-                {jsx(data().cancelText, t("actions.cancel"))}
+              <Button class="flex-grow basis-0 secondary" onClick={[resolve, false]}>
+                {jsx({element: data().cancelText, defaultValue: t("actions.cancel")})}
               </Button>
               <Button
                 ref={(el) => focusThis(el)}
@@ -72,13 +74,10 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
                   data().mode === "danger" ? t("confirmation.read_before_confirm") : undefined,
                   {placement: "bottom"},
                 ]}
-                onClick={() => {
-                  data().resolve(true);
-                  args.clearParams();
-                }}
-                disabled={data().confirmDisabled?.() || readBeforeConfirm()}
+                onClick={[resolve, true]}
+                disabled={disabled()}
               >
-                {jsx(data().confirmText, t("actions.confirm"))}
+                {jsx({element: data().confirmText, defaultValue: t("actions.confirm")})}
               </Button>
             </div>
           </div>
@@ -87,6 +86,24 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
     </Modal>
   );
 });
+
+function jsx<P extends unknown[]>(args: {
+  element: JSX.Element | ((...params: P) => JSX.Element) | undefined;
+  params: P;
+  defaultValue?: JSX.Element;
+}): JSX.Element | undefined;
+function jsx(args: {element: JSX.Element | (() => JSX.Element) | undefined; defaultValue?: JSX.Element}): JSX.Element;
+function jsx<P extends unknown[]>({
+  element,
+  params = [] as unknown as P,
+  defaultValue,
+}: {
+  element: JSX.Element | ((...params: P) => JSX.Element) | undefined;
+  params?: P;
+  defaultValue?: JSX.Element;
+}) {
+  return element === undefined ? defaultValue : typeof element === "function" ? element(...params) : element;
+}
 
 export function createConfirmation() {
   const {show, getValue} = createConfirmationInternal();

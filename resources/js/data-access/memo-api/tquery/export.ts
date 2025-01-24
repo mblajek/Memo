@@ -1,4 +1,4 @@
-import {V1} from "../config";
+import {V1} from "data-access/memo-api/config/v1.instance";
 import {DataItem, DataRequest, DataResponse} from "./types";
 
 /** The number of table cells (columns * rows) to request on a single page. */

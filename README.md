@@ -3,10 +3,13 @@
 **Memo** to system do zarządzania:
 
 - bazą klientów fundacji
-- kalendarzem wizyt klientów
+- kalendarzem spotkań klientów i pracowników
 - grafikami pracy pracowników fundacji
 
-Aktualnie system jest używany w kilku placówkach [Fundacji Dajemy Dzieciom Siłę](http://fdds.pl/).
+Aktualnie system jest używany w kilku placówkach [Fundacji Dajemy Dzieciom Siłę](http://fdds.pl/),
+planowane jest wdrożenie w kolejnych placówkach, również poza Fundacją.
+
+[Polityka prywatności](public/docs/pl/privacy-policy.md)
 
 #### EN:
 
@@ -16,7 +19,10 @@ Aktualnie system jest używany w kilku placówkach [Fundacji Dajemy Dzieciom Si�
 - scheduled visits calendar
 - employee work schedules
 
-The system is deployed in some facilities of the [Empowering Children Foundation](https://fdds.pl/en).
+The system is deployed in some facilities of the [Empowering Children Foundation](https://fdds.pl/en),
+planned to be deployed in other facilities, also outside the Foundation.
+
+[Privacy Policy](public/docs/en/privacy-policy.md)
 
 <img height="60" src="./public/img/memo_joint_logo.png">
 

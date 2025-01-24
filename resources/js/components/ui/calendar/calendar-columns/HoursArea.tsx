@@ -1,4 +1,4 @@
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {DayMinuteRange, dayMinuteToHM, getDayMinuteRange} from "components/utils/day_minute_util";
 import {DateTime} from "luxon";
 import {For, JSX, createMemo, splitProps} from "solid-js";

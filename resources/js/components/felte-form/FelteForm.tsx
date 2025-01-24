@@ -14,14 +14,17 @@ import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
 import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
+import {Autofocus} from "components/utils/Autofocus";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {Api} from "data-access/memo-api/types";
 import {TOptions} from "i18next";
-import {Context, JSX, createContext, createMemo, onMount, splitProps, useContext} from "solid-js";
+import {Context, JSX, createContext, createMemo, createSignal, onMount, splitProps, useContext} from "solid-js";
 import {ZodSchema} from "zod";
 import {LoadingPane} from "../ui/LoadingPane";
 import {ChildrenOrFunc, getChildrenElement} from "../ui/children_func";
 import {createFormLeaveConfirmation} from "../ui/form/form_leave_confirmation";
-import {NON_NULLABLE, htmlAttributes, useLangFunc} from "../utils";
 import {useEventListener} from "../utils/event_listener";
 import {useMutationsTracker} from "../utils/mutations_tracker";
 import {toastError} from "../utils/toast";
@@ -32,6 +35,7 @@ export interface FormContextValue<T extends Obj = Obj> {
   readonly props: FormProps<T>;
   readonly formConfig: FormConfigWithoutTransformFn<T>;
   readonly form: FormType<T>;
+  getElement(): HTMLFormElement | undefined;
   isFormDisabled(): boolean;
   readonly translations: FormTranslations;
 }
@@ -274,35 +278,33 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   props.onFormCreated?.(form);
 
   const TypedFormContext = typedFormContext<T>();
+  const [formElement, setFormElement] = createSignal<HTMLFormElement>();
   const contextValue = {
     props: allProps,
     formConfig,
     form: form as FormType<T>,
+    getElement: formElement,
     isFormDisabled: () => formDisabled(),
     translations,
   } satisfies FormContextValue<T>;
   return (
     <TypedFormContext.Provider value={contextValue}>
-      <form
-        autocomplete="off"
-        ref={(formElem) => {
+      <Autofocus autofocus={!formDisabled()}>
+        <form
+          autocomplete="off"
           // Forward the form element to felte.
-          form.form(formElem);
-          // Focus the autofocus element (as it doesn't happen automatically).
-          onMount(() => {
-            const focusedElem = formElem.querySelector("[autofocus]");
-            if (focusedElem instanceof HTMLElement) {
-              focusedElem.focus();
-            }
-          });
-        }}
-        {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
-      >
-        <fieldset class="contents" disabled={formDisabled()} bool:inert={form.isSubmitting()}>
-          {getChildrenElement(props.children, form, contextValue)}
-        </fieldset>
-        <LoadingPane isLoading={form.isSubmitting() || mutationsTracking.isAnyPending()} />
-      </form>
+          ref={(formElem) => {
+            setFormElement(formElem);
+            form.form(formElem);
+          }}
+          {...htmlAttributes.merge(formProps, {class: "flex flex-col gap-1 relative"})}
+        >
+          <fieldset class="contents" disabled={formDisabled()} bool:inert={form.isSubmitting()}>
+            {getChildrenElement(props.children, form, contextValue)}
+          </fieldset>
+          <LoadingPane isLoading={form.isSubmitting() || mutationsTracking.isAnyPending()} />
+        </form>
+      </Autofocus>
     </TypedFormContext.Provider>
   );
 };

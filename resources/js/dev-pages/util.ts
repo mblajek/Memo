@@ -1,6 +1,7 @@
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {Attribute} from "data-access/memo-api/attributes";
 import {useAllAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {activeFacilityId} from "state/activeFacilityId.state";
 
 export function useAttrValueFormatter() {
   const attributes = useAllAttributes();
@@ -22,4 +23,16 @@ export function useAttrValueFormatter() {
       return formatV(val);
     }
   };
+}
+
+export function filterByFacility<T extends {resource: {facilityId: string | null}}>(
+  collection: Iterable<T> | undefined,
+  onlyActiveFacility: boolean,
+): T[] {
+  if (!collection) {
+    return [];
+  }
+  return onlyActiveFacility
+    ? [...collection].filter((f) => !f.resource.facilityId || f.resource.facilityId === activeFacilityId())
+    : [...collection];
 }

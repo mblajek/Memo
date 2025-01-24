@@ -4,6 +4,7 @@ app_name: "Memo"
 app_version: "𝑣{{version}}"
 app_version_needs_reload: "𝑣{{baseVersion}} ➸ 𝑣{{lastVersion}} (odśwież aby zaktualizować)"
 app_env: "Środowisko: {{env}}"
+privacy_policy: "Polityka prywatności"
 
 exception:
   configuration:
@@ -85,7 +86,7 @@ user_settings: "Opcje użytkownika"
 
 created_by: "Utworzono przez:"
 updated_by: "Zmodyfikowano przez:"
-toggle_created_updated_info: "Przełącz: Utworzono/Zmodyfikowano"
+toggle_created_updated_info: "Kliknij aby przełączyć: Utworzono$t(thin_space)/$t(thin_space)Zmodyfikowano"
 unknown: "nieznany"
 
 open_in_new_tab: "Otwórz w nowej karcie"

@@ -7,5 +7,6 @@ export interface MemberResource {
   readonly facilityId: string;
   readonly hasFacilityAdmin: boolean;
   readonly isFacilityStaff: boolean;
+  readonly isActiveFacilityStaff: boolean;
   readonly isFacilityClient: boolean;
 }

@@ -1,5 +1,5 @@
 import {BigSpinner} from "components/ui/Spinner";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -13,9 +13,9 @@ import {MeetingBasicData} from "./meeting_basic_data";
 import {defaultMeetingSeriesInitialValues} from "./meeting_series_create";
 import {getMeetingTimeFullData, meetingTimePartDayInitialValue} from "./meeting_time_controller";
 import {getClearedSeriesValues, getMeetingSeriesCloneParams, MeetingSeriesFormType} from "./MeetingSeriesForm";
+import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./work_time_form_subtype";
 import {getUnusedMeetingFields, WorkTimeForm, WorkTimeFormType} from "./WorkTimeForm";
 import {WorkTimeStaff} from "./WorkTimeStaff";
-import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./WorkTimeViewEditForm";
 
 export interface WorkTimeCreateFormProps {
   readonly subtype: WorkTimeFormSubtype;

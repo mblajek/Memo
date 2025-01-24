@@ -8,8 +8,8 @@ use DateTimeZone;
 
 class DateHelper
 {
-    private const DB_FORMAT = 'Y-m-d H:i:s';
-    private const API_FORMAT = 'Y-m-d\\TH:i:sp';
+    private const string DB_FORMAT = 'Y-m-d H:i:s';
+    private const string API_FORMAT = 'Y-m-d\\TH:i:sp';
     private static DateTimeZone $utc;
 
     public static function dbToZuluString(string $date): string

@@ -1,6 +1,6 @@
-import {useLangFunc} from "components/utils";
+import {useTable} from "components/ui/Table/TableContext";
+import {useLangFunc} from "components/utils/lang";
 import {Show, VoidComponent} from "solid-js";
-import {useTable} from ".";
 
 interface Props {
   /**

@@ -1,5 +1,5 @@
 import {NavigateOptions, useNavigate} from "@solidjs/router";
-import {onCleanup} from "solid-js";
+import {Timeout} from "components/utils/timeout";
 
 /**
  * Returns a function that performs history.back, or navigates to the specified path if this fails.
@@ -8,12 +8,11 @@ import {onCleanup} from "solid-js";
  */
 export function createHistoryBack() {
   const navigate = useNavigate();
-  let timerId: ReturnType<typeof setTimeout> | undefined;
-  onCleanup(() => clearTimeout(timerId));
+  const timer = new Timeout();
   return (fallbackPath: string, options?: Partial<NavigateOptions>) => {
     const loc = location.href;
     history.back();
-    timerId = setTimeout(() => {
+    timer.set(() => {
       if (location.href === loc) {
         navigate(fallbackPath, options);
       }

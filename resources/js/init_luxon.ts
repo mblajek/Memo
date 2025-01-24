@@ -1,5 +1,5 @@
+import {getWeekInfo} from "components/utils/formatting";
 import {DateTime, Duration, Settings} from "luxon";
-import {getWeekInfo} from "./components/utils";
 
 declare module "luxon" {
   interface TSSettings {

@@ -1,5 +1,7 @@
 import {Boundary, flip, shift} from "@floating-ui/dom";
-import {cx, delayedAccessor, htmlAttributes} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {JSX, Show, VoidComponent, createComputed, createEffect, createMemo, createSignal} from "solid-js";

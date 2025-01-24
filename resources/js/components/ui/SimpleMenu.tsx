@@ -1,5 +1,6 @@
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {JSX, ParentComponent} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
 import s from "./SimpleMenu.module.scss";
 
 export interface MenuItem {

@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $facility_admin_grant_id
  * @property-read Facility $facility
  * @property-read User $user
- * @property-read StaffMember staffMember
- * @property-read Client $client
+ * @property-read ?StaffMember staffMember
+ * @property-read ?Client $client
  * @method static MemberBuilder query()
  */
 class Member extends Model
@@ -42,7 +42,8 @@ class Member extends Model
     {
         return match ($field) {
             'facility_id' => Valid::uuid(['exists:facilities,id']),
-            'has_facility_admin', 'is_facility_client', 'is_facility_staff' => Valid::bool(),
+            'has_facility_admin', 'is_facility_client', 'is_active_facility_staff' => Valid::bool(),
+            'is_facility_staff' => Valid::bool(['accepted_if:is_active_facility_staff,true']),
         };
     }
 
@@ -63,6 +64,11 @@ class Member extends Model
 
     public function staffMember(): BelongsTo
     {
-        return $this->belongsTo(Facility::class);
+        return $this->belongsTo(StaffMember::class);
+    }
+
+    public function isActiveStaff(): ?bool
+    {
+        return $this->staffMember?->isActive();
     }
 }

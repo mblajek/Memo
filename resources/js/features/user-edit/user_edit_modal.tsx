@@ -1,5 +1,5 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {Api} from "data-access/memo-api/types";
@@ -18,7 +18,7 @@ export const createUserEditModal = registerGlobalPageElement<FormParams>((args) 
       open={args.params()}
       closeOn={["escapeKey", "closeButton"]}
       onClose={args.clearParams}
-      style={MODAL_STYLE_PRESETS.medium}
+      style={MODAL_STYLE_PRESETS.wide}
     >
       {(params) => <UserEditForm userId={params().userId} onSuccess={args.clearParams} onCancel={args.clearParams} />}
     </Modal>

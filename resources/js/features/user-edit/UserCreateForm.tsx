@@ -1,6 +1,7 @@
 import {createMutation} from "@tanstack/solid-query";
-import {currentDate, useLangFunc} from "components/utils";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
+import {useLangFunc} from "components/utils/lang";
+import {currentDate} from "components/utils/time";
 import {toastSuccess} from "components/utils/toast";
 import {Admin} from "data-access/memo-api/groups/Admin";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -59,11 +60,10 @@ export const UserCreateForm: VoidComponent<Props> = (props) => {
     });
     // If the user mutation succeeded, await all the members mutations. Await all even if any of
     // them fails, otherwise invalidation might happen before the final changes.
-    try {
-      await Promise.allSettled(membersUpdater.getCreatePromises(data.data.id, values.members));
-    } catch (e) {
+    const memberPromises = await Promise.allSettled(membersUpdater.getCreatePromises(data.data.id, values.members));
+    if (memberPromises.some((p) => p.status === "rejected")) {
       invalidateData();
-      throw e;
+      return;
     }
     // eslint-disable-next-line solid/reactivity
     return () => {

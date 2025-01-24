@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {JSX, splitProps, VoidComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {StandaloneFieldLabel} from "./form/FieldLabel";
 
 interface Props extends htmlAttributes.input {

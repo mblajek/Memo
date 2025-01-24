@@ -1,9 +1,9 @@
-import {LangFunc} from "components/utils";
+import {LangFunc} from "components/utils/lang";
 import {Dictionaries} from "data-access/memo-api/dictionaries";
 import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
 import {Schema} from "data-access/memo-api/tquery/types";
 import {describe, expect, it} from "vitest";
-import {buildFuzzyGlobalFilter, buildFuzzyTextualColumnFilter} from "./fuzzy_filter";
+import {buildFuzzyGlobalFilter, buildFuzzyTextualColumnFilter, buildFuzzyTextualLocalFilter} from "./fuzzy_filter";
 
 describe("buildFuzzyTextualColumnFilter", () => {
   const column = "col1";
@@ -432,6 +432,39 @@ describe("buildFuzzyGlobalFilter", () => {
       expect(filter("c1='ww pozycja a 2'")).toEqual({type: "column", column: "col1", op: "=", val: "dictA2"});
       expect(filter("c1='ww pozycja a 2'*")).toEqual("never");
       expect(filter("c2:poz")).toEqual("never");
+    });
+  });
+
+  describe("local filtering", () => {
+    function checkFilter(filter: string, {match = [], noMatch = []}: {match?: string[]; noMatch?: string[]}) {
+      const predicate = buildFuzzyTextualLocalFilter(filter) || (() => true);
+      for (const matching of match) {
+        expect(predicate(matching), `${JSON.stringify(filter)} matches ${JSON.stringify(matching)}`).toBe(true);
+      }
+      for (const notMatching of noMatch) {
+        expect(predicate(notMatching), `${JSON.stringify(filter)} doesn't match ${JSON.stringify(notMatching)}`).toBe(
+          false,
+        );
+      }
+    }
+
+    it("processes global filters", () => {
+      checkFilter("*", {match: ["qwe", "qweasd", "qwe123", " "], noMatch: [""]});
+      checkFilter("''", {match: [""], noMatch: ["qwe", " "]});
+    });
+
+    it("processes single word filters", () => {
+      checkFilter("abc", {match: ["abc", "qweabcasd", "abc123"], noMatch: ["qwe", "qweasd", "qwe123"]});
+      checkFilter("*abc*", {match: ["abc", "qweabcasd", "abc123"], noMatch: ["qwe", "qweasd", "qwe123"]});
+      checkFilter("abc*", {match: ["abc123"], noMatch: ["qweabcasd", "qwe"]});
+      checkFilter("*abc", {match: ["qweabc", "123abc"], noMatch: ["qwe", "qweabcasd", "abc123"]});
+      checkFilter("'a b'", {match: ["qwea b asd", "qwea b 123"], noMatch: ["a  b", "qweasd", "qwe123"]});
+      checkFilter("*'a b'", {match: ["qwea b", "a b"], noMatch: ["a  b", "qwea basd"]});
+    });
+
+    it("processes multi-word filters", () => {
+      checkFilter("abc def", {match: ["abc def", "defasd qweabc tttt", "zabcdefz"], noMatch: ["abc", "bcdef"]});
+      checkFilter("abc* def", {match: ["abc def"], noMatch: ["defasd qweabc tttt", "zabcdefz", "abc", "bcdef"]});
     });
   });
 });

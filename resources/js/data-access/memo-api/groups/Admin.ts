@@ -1,4 +1,4 @@
-import {V1} from "../config";
+import {V1} from "data-access/memo-api/config/v1.instance";
 import {SolidQueryOpts} from "../query_utils";
 import {AdminUserResource, AdminUserResourceForCreate} from "../resources/adminUser.resource";
 import {FacilityResource, FacilityResourceForCreate} from "../resources/facility.resource";

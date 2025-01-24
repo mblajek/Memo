@@ -31,6 +31,7 @@ const DEFAULT_TIPPY_PROPS = {
   popperOptions: {
     modifiers: [{name: "eventListeners", options: {scroll: false}}],
   },
+  theme: "memo",
 } satisfies Partial<TippyProps>;
 
 /**
@@ -92,9 +93,8 @@ class TippySingletonManager {
         duration: 200,
         animation: "shift-toward-subtle",
         moveTransition: "transform 150ms ease",
-        theme: "memo",
         touch: "hold",
-        overrides: ["placement", "delay", "hideOnClick", "offset", "maxWidth"],
+        overrides: ["placement", "delay", "hideOnClick", "offset", "maxWidth", "theme"],
       });
     return this.tippySingleton;
   }
@@ -158,7 +158,6 @@ export function title(element: HTMLElement, accessor: Accessor<TitleDirectiveTyp
               : Array.isArray(tippyProps?.delay)
                 ? tippyProps.delay.map((d, i) => (d === undefined ? DEFAULT_TITLE_DELAY[i] : d))
                 : tippyProps?.delay) as TippyProps["delay"],
-            theme: "memo",
           });
           tippySingletonManager.add(thisTippy);
         }

@@ -1,10 +1,11 @@
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {JSX, Show, VoidComponent, splitProps} from "solid-js";
 import {Button} from "../ui/Button";
 import {PopOverControl} from "../ui/PopOver";
 import {SmallSpinner} from "../ui/Spinner";
 import {SplitButton} from "../ui/SplitButton";
 import {ChildrenOrFunc} from "../ui/children_func";
-import {htmlAttributes, useLangFunc} from "../utils";
 import {useFormContext} from "./FelteForm";
 import {UnknownValidationMessages} from "./UnknownValidationMessages";
 

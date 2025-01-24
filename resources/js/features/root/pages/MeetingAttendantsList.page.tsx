@@ -1,4 +1,4 @@
-import {createTableTranslations} from "components/ui/Table";
+import {createTableTranslations} from "components/ui/Table/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
@@ -60,6 +60,7 @@ export default (() => {
       ]}
       initialSort={[{id: "date", desc: true}]}
       pageInfo={{href: "/help/reports-meeting-attendants.part", fullPageHref: "/help/reports#meeting-attendants"}}
+      savedViews
     />
   );
 }) satisfies VoidComponent;

@@ -1,6 +1,6 @@
 import {useNavigate} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
-import {User} from "data-access/memo-api/groups";
+import {User} from "data-access/memo-api/groups/User";
 import NotYetImplemented from "features/not-found/components/NotYetImplemented";
 import {VoidComponent, onMount} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";

@@ -1,6 +1,6 @@
 import {SelectItem} from "components/ui/form/Select";
 import {title} from "components/ui/title";
-import {cx} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {JSX, Match, Show, Switch, VoidComponent} from "solid-js";
 
 type _Directives = typeof title;

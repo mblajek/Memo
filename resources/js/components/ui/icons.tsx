@@ -1,3 +1,4 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTemplate, IconTypes} from "solid-icons";
 import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
@@ -11,14 +12,16 @@ import {
   BsPersonBadge,
   BsPersonDash,
   BsPersonGear,
+  BsThreeDots,
 } from "solid-icons/bs";
-import {CgUndo} from "solid-icons/cg";
+import {CgRename, CgUndo} from "solid-icons/cg";
 import {FaRegularBell} from "solid-icons/fa";
 import {FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
-import {RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {htmlAttributes} from "../utils";
+import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
+import {TbFilter, TbFilterOff, TbPassword} from "solid-icons/tb";
+import {VsSave} from "solid-icons/vs";
 
 namespace customIcons {
   export const RepeatFirst: IconTypes = (props) =>
@@ -85,8 +88,37 @@ export namespace actionIcons {
   export const Paste = BiRegularPaste;
   export const Reset = CgUndo;
   export const Notify = FaRegularBell;
+  export const Filter: IconTypes = (props) => <TbFilter {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
+  export const FilterOff: IconTypes = (props) => (
+    <TbFilterOff {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
+  );
+  export const ThreeDotsBig = TbPassword;
+  export const Rename = CgRename;
+  export const ThreeDotsSmall = BsThreeDots;
+  export const FocusHorizontally = RiArrowsContractLeftRightLine;
+  export const SaveTableView = VsSave;
 }
 
 export namespace calendarIcons {
   export const Conflict = BiRegularCalendarX;
+}
+
+const ICON_SETS: ReadonlyMap<string, Readonly<Partial<Record<string, IconTypes>>>> = new Map<
+  string,
+  Readonly<Partial<Record<string, IconTypes>>>
+>([
+  ["userIcons", userIcons],
+  ["staffIcons", staffIcons],
+  ["clientIcons", clientIcons],
+  ["clientGroupIcons", clientGroupIcons],
+  ["adminIcons", adminIcons],
+  ["facilityIcons", facilityIcons],
+  ["actionIcons", actionIcons],
+  ["calendarIcons", calendarIcons],
+]);
+
+export const ICON_SET_NAMES = [...ICON_SETS.keys()] as const;
+
+export function getIconByName(iconSet: string, iconName: string): IconTypes | undefined {
+  return ICON_SETS.get(iconSet)?.[iconName];
 }

@@ -1,7 +1,7 @@
 import {createMutation} from "@tanstack/solid-query";
 import {DeleteButton} from "components/ui/Button";
 import {ConfirmParams, createConfirmation} from "components/ui/confirmation";
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";

@@ -1,8 +1,9 @@
 import {Button} from "components/ui/Button";
-import {htmlAttributes, useLangFunc} from "components/utils";
 import {FormattedDateTime} from "components/utils/date_formatting";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {DATE_TIME_FORMAT} from "components/utils/formatting";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {CreatedUpdatedResource} from "data-access/memo-api/resources/resource";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createSignal, splitProps} from "solid-js";
@@ -25,15 +26,19 @@ export const CreatedByInfo: VoidComponent<Props> = (allProps) => {
             setMode(mode() === "created" ? "updated" : "created");
             featureToggle.justUsed();
           }}
-          title={t("toggle_created_updated_info")}
+          title={[t("toggle_created_updated_info"), {hideOnClick: false}]}
         >
           {t(mode() === "created" ? "created_by" : "updated_by")}
         </Button>{" "}
-        <UserLink userId={mode() === "created" ? props.data.createdBy : props.data.updatedBy} />
+        <UserLink userId={mode() === "created" ? props.data.createdBy : props.data.updatedBy} allowWrap={false} />
       </div>
       <Show when={mode() === "created" ? props.data.createdAt : props.data.updatedAt}>
         {(dateTime) => (
-          <FormattedDateTime dateTime={DateTime.fromISO(dateTime())} format={{...DATE_TIME_FORMAT, weekday: "short"}} />
+          <FormattedDateTime
+            class="whitespace-nowrap"
+            dateTime={DateTime.fromISO(dateTime())}
+            format={{...DATE_TIME_FORMAT, weekday: "short"}}
+          />
         )}
       </Show>
     </div>

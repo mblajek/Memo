@@ -1,4 +1,7 @@
-import {currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
+import {currentDate} from "components/utils/time";
 import {DateTime} from "luxon";
 import {BsCaretDown, BsCaretUp} from "solid-icons/bs";
 import {CgCalendar, CgCalendarToday} from "solid-icons/cg";
@@ -8,11 +11,11 @@ import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 import {PopOver} from "../PopOver";
 import {SimpleMenu} from "../SimpleMenu";
+import {hoverEvents} from "../hover_signal";
 import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {useHolidays} from "./holidays";
 import {getWeekdays} from "./week_days_calculator";
-import {hoverEvents} from "../hover_signal";
 
 interface Props extends htmlAttributes.div {
   /** The current selection visible in the tiny calendar. */

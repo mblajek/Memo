@@ -50,14 +50,19 @@
       animation-iteration-count: 6;
       animation-direction: alternate;
       animation-timing-function: ease-in-out;
-      @apply bg-hover;
+      // Using background-color because animation no longer works with @apply bg-...
+      background-color: var(--tc-hover);
     }
 
     @keyframes blink {
       to {
-        @apply bg-memo-active;
+        background-color: var(--tc-memo-active);
       }
     }
+  }
+
+  a:not([href]) {
+    @apply no-underline;
   }
 
   hr {

@@ -1,3 +1,4 @@
+import {Timeout} from "components/utils/timeout";
 import {
   Component,
   JSX,
@@ -7,6 +8,7 @@ import {
   createRenderEffect,
   createSignal,
   mergeProps,
+  onCleanup,
   splitProps,
 } from "solid-js";
 import {cx} from "./classnames";
@@ -73,14 +75,14 @@ export const TrackingMarker: Component<Props> = (allProps) => {
     }
   }
 
-  let transitionEndTimerId: ReturnType<typeof setTimeout> | undefined;
+  const transitionEndTimer = new Timeout();
   createRenderEffect<string | undefined>((prevActiveId) => {
     if (props.activeId !== prevActiveId) {
-      clearTimeout(transitionEndTimerId);
-      if (prevActiveId) {
+      transitionEndTimer.clear();
+      if (prevActiveId && targets.has(prevActiveId)) {
         setMarkerPos(prevActiveId);
         setIsTransitioning(true);
-        transitionEndTimerId = setTimeout(() => setIsTransitioning(false), props.transitionDurationMillis + 10);
+        transitionEndTimer.set(() => setIsTransitioning(false), props.transitionDurationMillis + 10);
         function loop() {
           setMarkerPos();
           if (isTransitioning()) {
@@ -102,6 +104,7 @@ export const TrackingMarker: Component<Props> = (allProps) => {
     createEffect(() => {
       if (div()) {
         targets.set(targetProps.id, div()!);
+        onCleanup(() => targets.delete(targetProps.id));
       }
     });
     return (

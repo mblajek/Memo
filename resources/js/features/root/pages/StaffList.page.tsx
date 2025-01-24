@@ -2,11 +2,13 @@ import {createQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {Email} from "components/ui/Email";
-import {cellFunc, createTableTranslations, PaddedCell, ShowCellVal} from "components/ui/Table";
+import {createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {useLangFunc} from "components/utils";
-import {User} from "data-access/memo-api/groups";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {useLangFunc} from "components/utils/lang";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {User} from "data-access/memo-api/groups/User";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {UserLink} from "features/facility-users/UserLink";
 import {createSignal, VoidComponent} from "solid-js";
@@ -61,15 +63,14 @@ export default (() => {
             )),
           },
         },
-        {name: "hasEmailVerified", initialVisible: false},
+        isFacilityAdmin() ? {name: "hasEmailVerified", initialVisible: false} : undefined,
         {name: "hasPassword"},
-        {name: "passwordExpireAt", initialVisible: false},
-        ...(isFacilityAdmin()
-          ? [
-              {name: "staff.isActive", initialVisible: false},
-              {name: "staff.deactivatedAt", initialVisible: false},
-            ]
-          : []),
+        isFacilityAdmin() ? {name: "passwordExpireAt", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "lastPasswordChangeAt", initialVisible: false} : undefined,
+        {name: "lastLoginSuccessAt", initialVisible: false},
+        isFacilityAdmin() ? {name: "lastLoginFailureAt", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "staff.isActive", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "staff.deactivatedAt", initialVisible: false} : undefined,
         {name: "staff.hasFacilityAdmin", columnDef: {size: 130}},
         {name: "hasGlobalAdmin", columnDef: {size: 130}, initialVisible: false},
         {name: "firstMeetingDate", initialVisible: false},
@@ -79,7 +80,7 @@ export default (() => {
         {name: "plannedMeetingsCount", initialVisible: false},
         {name: "plannedMeetingsCountNextMonth"},
         ...getCreatedUpdatedColumns({entity: "staff"}),
-      ]}
+      ].filter(NON_NULLABLE)}
       intrinsicFilter={showInactive() ? undefined : {type: "column", column: "staff.isActive", op: "=", val: true}}
       intrinsicSort={[{type: "column", column: "name", desc: false}]}
       initialSort={[{id: "name", desc: false}]}
@@ -94,6 +95,7 @@ export default (() => {
           </div>
         ) : undefined
       }
+      savedViews
     />
   );
 }) satisfies VoidComponent;

@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {VoidComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
 
 export const TextInput: VoidComponent<htmlAttributes.input> = (props) => (
   <input

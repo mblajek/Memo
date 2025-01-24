@@ -1,16 +1,20 @@
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {FiDelete} from "solid-icons/fi";
 import {Show, VoidComponent, createEffect, createSignal, on, splitProps} from "solid-js";
-import {cx, htmlAttributes, useLangFunc} from "../utils";
 import {Button} from "./Button";
 import {TextInput} from "./TextInput";
 
 interface Props extends htmlAttributes.input {
   readonly divClass?: string;
   readonly onValueChange?: (value: string) => void;
+  /** Whether to include the clear button. Default: true */
+  readonly clearButton?: boolean;
 }
 
 export const SearchInput: VoidComponent<Props> = (allProps) => {
-  const [props, inputProps] = splitProps(allProps, ["divClass", "onValueChange"]);
+  const [props, inputProps] = splitProps(allProps, ["divClass", "onValueChange", "clearButton"]);
   const t = useLangFunc();
   let ref: HTMLInputElement | undefined;
   const [value, setValue] = createSignal("");
@@ -33,7 +37,7 @@ export const SearchInput: VoidComponent<Props> = (allProps) => {
         autocapitalize="off"
         spellcheck={false}
         {...htmlAttributes.merge(inputProps, {
-          class: "grow !pr-6",
+          class: cx("px-1 grow", (props.clearButton ?? true) ? "!pr-6" : undefined),
           onInput: setNow,
           onChange: setNow,
         })}
@@ -42,7 +46,7 @@ export const SearchInput: VoidComponent<Props> = (allProps) => {
           (inputProps.ref as (elem: HTMLInputElement) => void)?.(input);
         }}
       />
-      <Show when={value()}>
+      <Show when={(props.clearButton ?? true) && value()}>
         <Button
           class="absolute right-0 top-0 bottom-0 px-2"
           onClick={() => {

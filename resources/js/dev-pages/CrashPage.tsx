@@ -1,5 +1,5 @@
+import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {VoidComponent, createSignal} from "solid-js";
-import {MemoTitle} from "../features/root/MemoTitle";
 
 export default (() => {
   const [getCountdownMillis, setCountdownMillis] = createSignal(3000);
@@ -19,7 +19,7 @@ export default (() => {
   };
   return (
     <>
-      <MemoTitle title="Crash" />
+      <AppTitlePrefix prefix="Crash" />
       <div class="w-fit bg-red-100 m-2 p-4 rounded-md">Crashing the page in {countdown()}...</div>
     </>
   );

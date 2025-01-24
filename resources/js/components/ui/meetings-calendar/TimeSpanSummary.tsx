@@ -1,5 +1,6 @@
-import {LangFunc, NON_NULLABLE, useLangFunc} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {formatDayMinuteHM, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {LangFunc, useLangFunc} from "components/utils/lang";
 import {AlignedTime} from "components/utils/time_formatting";
 import {Match, Switch, VoidComponent} from "solid-js";
 import {TimeSpan} from "../calendar/types";

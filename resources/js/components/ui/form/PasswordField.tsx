@@ -1,4 +1,5 @@
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {Timeout} from "components/utils/timeout";
 import {AiOutlineEye, AiOutlineEyeInvisible} from "solid-icons/ai";
 import {Show, VoidComponent, createComputed, createSignal, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
@@ -25,12 +26,12 @@ export const PasswordField: VoidComponent<PasswordFieldProps> = (allProps) => {
       setShowing(false);
     }
   });
-  let hideTimerId: ReturnType<typeof setTimeout> | undefined = undefined;
+  const hideTimer = new Timeout();
   createComputed(() => {
     if (showing()) {
-      hideTimerId = setTimeout(() => setShowing(false), SHOW_TIME_SECS * 1000);
+      hideTimer.set(() => setShowing(false), SHOW_TIME_SECS * 1000);
     } else {
-      clearTimeout(hideTimerId);
+      hideTimer.clear();
     }
   });
   function released() {

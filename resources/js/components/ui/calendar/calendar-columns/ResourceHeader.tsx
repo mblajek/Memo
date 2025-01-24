@@ -1,4 +1,4 @@
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {JSX, VoidComponent, splitProps} from "solid-js";
 
 interface Props extends htmlAttributes.div {

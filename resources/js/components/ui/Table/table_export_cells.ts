@@ -1,5 +1,6 @@
 import {ColumnDef} from "@tanstack/solid-table";
-import {DATE_FORMAT, DATE_TIME_FORMAT, useLangFunc} from "components/utils";
+import {DATE_FORMAT, DATE_TIME_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {DateTime} from "luxon";
 import {RowDataType} from "./table_cells";

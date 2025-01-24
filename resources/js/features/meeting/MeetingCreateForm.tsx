@@ -1,6 +1,6 @@
 import {BigSpinner} from "components/ui/Spinner";
 import {createConfirmation} from "components/ui/confirmation";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {useAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";

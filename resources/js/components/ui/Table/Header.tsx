@@ -1,8 +1,10 @@
 import {HeaderContext} from "@tanstack/solid-table";
-import {cx} from "components/utils";
+import {ColumnName} from "components/ui/Table/ColumnName";
+import {FilterIconButton} from "components/ui/Table/FilterIconButton";
+import {SortMarker} from "components/ui/Table/SortMarker";
+import {cx} from "components/utils/classnames";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {JSX, Show, Signal, VoidComponent, createMemo} from "solid-js";
-import {ColumnName, FilterIconButton, SortMarker} from ".";
 import {Button} from "../Button";
 
 interface Props {
@@ -55,11 +57,13 @@ export const Header: VoidComponent<Props> = (props) => {
       {props.wrapIn ? props.wrapIn(header) : header}
       <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
         {(filterControl) => (
-          <div class="flex flex-wrap items-end gap-0.5 overflow-y-auto">
-            <div class="flex-grow basis-0">{filterControl()()}</div>
-            <div class="ml-auto">
-              <FilterIconButton isFiltering={!!props.filter![0]()} onClear={() => props.filter![1](undefined)} />
-            </div>
+          <div class="flex items-stretch min-h-0 gap-0.5">
+            <div class="flex-grow basis-0 overflow-y-auto">{filterControl()()}</div>
+            <FilterIconButton
+              class="self-end mb-1"
+              isFiltering={!!props.filter![0]()}
+              onClear={() => props.filter![1](undefined)}
+            />
           </div>
         )}
       </Show>
@@ -70,7 +74,7 @@ export const Header: VoidComponent<Props> = (props) => {
             "absolute top-0 right-0 h-full cursor-col-resize w-[5px] select-none touch-none",
             props.ctx.column.getIsResizing() ? "bg-memo-active" : "hover:bg-gray-400",
           )}
-          onMouseDown={(e) => resizeHandler()(e)}
+          onPointerDown={(e) => resizeHandler()(e)}
         />
       </Show>
     </div>

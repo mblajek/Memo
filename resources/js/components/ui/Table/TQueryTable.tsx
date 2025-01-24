@@ -12,15 +12,32 @@ import {
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
-import {NON_NULLABLE, NUMBER_FORMAT, delayedAccessor, useLangFunc} from "components/utils";
+import {Header} from "components/ui/Table/Header";
+import {Pagination} from "components/ui/Table/Pagination";
+import {
+  DisplayMode,
+  Table,
+  TableExportConfig,
+  TableTranslations,
+  createTableTranslations,
+  getBaseTableOptions,
+} from "components/ui/Table/Table";
+import {TableColumnVisibilityController} from "components/ui/Table/TableColumnVisibilityController";
+import {TableSearch} from "components/ui/Table/TableSearch";
+import {TableSummary} from "components/ui/Table/TableSummary";
+import {CellComponent, PaddedCell, ShowCellVal, cellFunc, useTableCells} from "components/ui/Table/table_cells";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {
   PartialAttributesSelection,
   attributesSelectionFromPartial,
   getUnknownFixedAttributes,
   isAttributeSelected,
 } from "components/utils/attributes_selection";
+import {delayedAccessor} from "components/utils/debounce";
 import {isDEV} from "components/utils/dev_mode";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {NUMBER_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
 import {Modifiable} from "components/utils/modifiable";
 import {intersects, objectRecursiveMerge} from "components/utils/object_util";
 import {ToastMessages, toastError} from "components/utils/toast";
@@ -51,29 +68,12 @@ import {
   untrack,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {
-  CellComponent,
-  DisplayMode,
-  Header,
-  PaddedCell,
-  Pagination,
-  ShowCellVal,
-  Table,
-  TableColumnVisibilityController,
-  TableExportConfig,
-  TableSearch,
-  TableSummary,
-  TableTranslations,
-  cellFunc,
-  createTableTranslations,
-  getBaseTableOptions,
-  useTableCells,
-} from ".";
 import {DocsModalInfoIcon, DocsModalProps} from "../docs_modal";
 import {title} from "../title";
 import {TableColumnGroupSelect} from "./TableColumnGroupSelect";
 import {TableExportButton} from "./TableExportButton";
 import {TableFiltersClearButton} from "./TableFiltersClearButton";
+import {TableSavedViewsManager} from "./TableSavedViewsManager";
 import {ColumnGroup, ColumnGroupParam, ColumnGroupsCollector, ColumnGroupsSelection} from "./column_groups";
 import {ExportCellFunc, useTableTextExportCells} from "./table_export_cells";
 import {BoolFilterControl} from "./tquery_filters/BoolFilterControl";
@@ -83,7 +83,6 @@ import {DictListFilterControl} from "./tquery_filters/DictListFilterControl";
 import {IntFilterControl} from "./tquery_filters/IntFilterControl";
 import {TextualFilterControl} from "./tquery_filters/TextualFilterControl";
 import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
-import {ColumnFilterStates} from "./tquery_filters/column_filter_states";
 import {FilterControl} from "./tquery_filters/types";
 
 type _Directives = typeof title;
@@ -91,7 +90,6 @@ type _Directives = typeof title;
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
     readonly tquery?: TQueryTableMeta<TData>;
-    readonly columnFilterStates?: ColumnFilterStates;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -175,11 +173,14 @@ export interface TQueryTableProps<TData = DataItem> {
   /** The sort that is always applied to the data at the end of the filter specified by the user. */
   readonly intrinsicSort?: Sort;
   readonly initialSort?: SortingState;
+  readonly initialColumnGroups?: readonly string[];
   readonly initialPageSize?: number;
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
   readonly staticExportConfig?: TableExportConfig;
   readonly pageInfo?: DocsModalProps;
+  /** Whether to allow saving table views. */
+  readonly savedViews?: boolean;
 }
 
 export interface PartialColumnConfig<TData = DataItem> {
@@ -303,6 +304,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           persistVisibility,
           globalFilterable,
           columnGroups: columnGroupsCollector.column(name, columnGroups),
+          includeInTableView: !metaParams?.devColumn,
         }) satisfies FullColumnConfig,
     );
     const columnGroups = columnGroupsCollector.getColumnGroups(props.columnGroups);
@@ -384,7 +386,10 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     ...baseTranslations,
     columnName: (column, o) => {
       if (column === countColumn()) {
-        return t("tables.column_groups.count_column_label");
+        const override = baseTranslations.countColumnLabelOverride(effectiveActiveColumnGroups(), o);
+        return override
+          ? t("tables.column_groups.count_column_label.with_override", {...o, override})
+          : t("tables.column_groups.count_column_label");
       }
       const meta = table()?.getColumn(column)?.columnDef.meta?.tquery;
       const attributeId = meta?.attributeId;
@@ -409,6 +414,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     intrinsicFilter: () => props.intrinsicFilter,
     intrinsicSort: () => props.intrinsicSort,
     initialSort: props.initialSort,
+    initialColumnGroups: props.initialColumnGroups,
     initialPageSize:
       props.initialPageSize ||
       // eslint-disable-next-line solid/reactivity
@@ -417,7 +423,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     onColumnPrefixFilterUsed: (prefix) =>
       featureFilterPrefix.justUsed({comp: "table", model: translations.tableName(), prefix}),
   });
-  const columnFilterStates = new ColumnFilterStates();
   const [allInitialised, setAllInitialised] = createSignal(false);
   const {schema, request, requestController, dataQuery} = createTQuery({
     entityURL,
@@ -440,6 +445,9 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     countColumn,
     miniState,
     resetMiniState,
+    defaultTableView,
+    getCompleteTableView,
+    loadTableView,
   } = requestController;
   let persistencesCreated = false;
   createComputed(() => {
@@ -558,16 +566,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
             key: `TQueryTable:${props.staticPersistenceKey || "main"}`,
             value: () => ({
               tquery: miniState[0](),
-              columnFilters: columnFilterStates.getAll(),
             }),
             onLoad: (state) => {
               miniState[1](state.tquery);
-              columnFilterStates.setAll(state.columnFilters);
             },
             onReset: () => {
               resetMiniState();
-              // The columnFilterStates get cleared by each individual filter control when the filters are
-              // reset, which is done above.
             },
           });
           // Allow querying data now that the DEV columns are added and columns visibility is loaded.
@@ -827,7 +831,6 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           effectiveActiveColumnGroups,
           columnGroupingInfo,
         },
-        columnFilterStates,
       },
     }),
   );
@@ -847,6 +850,16 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           />
           <TableColumnGroupSelect />
           <TableColumnVisibilityController />
+          <Show when={props.savedViews && props.staticPersistenceKey}>
+            {(persistenceKey) => (
+              <TableSavedViewsManager
+                staticPersistenceKey={persistenceKey()}
+                defaultTableView={defaultTableView()}
+                getCurrentView={getCompleteTableView}
+                onLoad={loadTableView}
+              />
+            )}
+          </Show>
           <Show when={props.pageInfo}>
             {(pageInfo) => (
               <div class="flex items-center">

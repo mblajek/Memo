@@ -1,7 +1,7 @@
 import {useLocation} from "@solidjs/router";
 import {createMutation} from "@tanstack/solid-query";
 import {useAppContext} from "app_context";
-import {System} from "data-access/memo-api/groups";
+import {System} from "data-access/memo-api/groups/System";
 import {dateTimeToISO} from "data-access/memo-api/utils";
 import {DateTime, Duration} from "luxon";
 import {createEffect, createSignal, on, Setter} from "solid-js";
@@ -49,13 +49,13 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
   const logMutation = createMutation(() => ({mutationFn: System.log}));
   let setData = featureUseSetters.get(featureId);
   if (!setData) {
+    // Make sure the effect is persistent.
     appContext.runInAppContext(() => {
       const [data, dataSetter] = createSignal<FeatureUseData<D>>({count: 0, breakdown: new Map()});
       setData = dataSetter;
       featureUseSetters.set(featureId, setData);
       // eslint-disable-next-line solid/reactivity
       const debouncedData = debouncedAccessor(data, {timeMs: fullOptions.debounce.toMillis(), lazy: true});
-      // Make sure the effect is persistent.
       createEffect(
         on(debouncedData, ({firstTime, lastTime, count, breakdown}) => {
           if (firstTime && lastTime && count) {

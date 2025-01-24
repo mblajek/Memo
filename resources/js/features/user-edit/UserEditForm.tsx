@@ -1,10 +1,12 @@
 import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {QueryBarrier, useLangFunc} from "components/utils";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
+import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {toastSuccess} from "components/utils/toast";
-import {Admin, User} from "data-access/memo-api/groups";
+import {Admin} from "data-access/memo-api/groups/Admin";
+import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {dateTimeToISO} from "data-access/memo-api/utils";
@@ -93,11 +95,10 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
     });
     // If the user mutation succeeded, await all the members mutations. Await all even if any of
     // them fails, otherwise invalidation might happen before the final changes.
-    try {
-      await Promise.allSettled(membersUpdater.getUpdatePromises(oldUser, values.members));
-    } catch (e) {
+    const memberPromises = await Promise.allSettled(membersUpdater.getUpdatePromises(oldUser, values.members));
+    if (memberPromises.some((p) => p.status === "rejected")) {
       invalidateData();
-      throw e;
+      return;
     }
     // eslint-disable-next-line solid/reactivity
     return () => {
@@ -119,12 +120,15 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
       hasPassword: u.hasPassword,
       password: "",
       passwordExpireAt: u.passwordExpireAt ? dateTimeToDateTimeLocalInput(DateTime.fromISO(u.passwordExpireAt)) : "",
-      members: u.members.map(({facilityId, hasFacilityAdmin, isFacilityStaff, isFacilityClient}) => ({
-        facilityId,
-        hasFacilityAdmin,
-        isFacilityStaff,
-        isFacilityClient,
-      })),
+      members: u.members.map(
+        ({facilityId, hasFacilityAdmin, isFacilityStaff, isActiveFacilityStaff, isFacilityClient}) => ({
+          facilityId,
+          hasFacilityAdmin,
+          isFacilityStaff,
+          isActiveFacilityStaff,
+          isFacilityClient,
+        }),
+      ),
       managedByFacilityId: u.managedByFacilityId || "",
       hasGlobalAdmin: u.hasGlobalAdmin,
     } satisfies UserFormType;

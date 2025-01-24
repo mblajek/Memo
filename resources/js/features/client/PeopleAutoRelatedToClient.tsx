@@ -1,9 +1,10 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {SmallSpinner} from "components/ui/Spinner";
-import {EmptyValueSymbol} from "components/ui/symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {title} from "components/ui/title";
-import {QueryBarrier, useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
