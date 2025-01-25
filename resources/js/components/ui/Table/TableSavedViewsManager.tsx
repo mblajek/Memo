@@ -261,7 +261,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                 )}
                                 onClick={popOver.open}
                               >
-                                <actionIcons.ThreeDotsBig />
+                                <actionIcons.ThreeDots />
                               </Button>
                             )}
                             parentPopOver={popOver}

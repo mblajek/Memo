@@ -50,7 +50,7 @@ import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
 import {IoArrowUndoOutline} from "solid-icons/io";
 import {OcArrowdown2, OcMovetobottom2} from "solid-icons/oc";
-import {TbArrowBigRight, TbNotes} from "solid-icons/tb";
+import {TbNotes} from "solid-icons/tb";
 import {
   Accessor,
   batch,
@@ -390,7 +390,7 @@ export default (() => {
                     onClick={[setSelectedWeekDate, undefined]}
                     title={t("facility_user.weekly_time_tables.selected_week_click_to_deselect")}
                   >
-                    <TbArrowBigRight class="text-current" size="20" />
+                    <actionIcons.Check class="text-current" size="14" />
                   </Button>
                 }
               >
@@ -401,7 +401,7 @@ export default (() => {
                       title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
-                      <actionIcons.ThreeDotsSmall class="text-current" size="20" />
+                      <actionIcons.ThreeDots class="text-current" />
                     </Button>
                   )}
                 >
@@ -433,7 +433,7 @@ export default (() => {
                     return (
                       <SimpleMenu class="max-w-80" onClick={() => popOver.close()}>
                         <MenuItem
-                          icon={TbArrowBigRight}
+                          icon={actionIcons.Check}
                           label={t("facility_user.weekly_time_tables.select_week")}
                           onClick={[setSelectedWeekDate, weekDate()]}
                         />

@@ -10,7 +10,7 @@ With this permission, the backend allows the user to execute some of the develop
 The developer permission is obtained by executing `developerLogin(true)` in the browser console, and revoked
 by `developerLogin(false)`.
 
-The permission is visible in the user menu (⋯ next to the user name) as the text _Developer permission_.
+The permission is visible in the user menu (`$icon(actionIcons.ThreeDots)` next to the user name) as the text _Developer permission_.
 
 This mode can be enabled on any environment, including production.
 
@@ -23,7 +23,7 @@ The `DEV` mode affects some behaviours of the app, e.g. the availability of some
 
 ## DEV mode of the UI
 
-This DEV mode can be toggled via a checkbox in the user menu (⋯ next to the user name) whenever the app runs
+This DEV mode can be toggled via a checkbox in the user menu (`$icon(actionIcons.ThreeDots)` next to the user name) whenever the app runs
 in SolidJS DEV mode (see above), or the developer permission is granted (see above).
 
 The DEV mode directly controls some areas of the app, e.g. only in the DEV mode:

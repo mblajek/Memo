@@ -8,10 +8,10 @@ widok tygodniowy pozwala na realizowanie następujących scenariuszy:
 - Przedłużanie grafików na kolejne tygodnie w przyszłości.
 - Usuwanie grafików z określonego tygodnia lub zakresu tygodni (również co drugi tydzień).
 
-Operacje na grafikach są dostępne pod przyciskiem akcji `$icon(actionIcons.ThreeDotsBig)` w poszczególnych wierszach
+Operacje na grafikach są dostępne pod przyciskiem akcji `$icon(actionIcons.ThreeDots)` w poszczególnych wierszach
 tabeli. Niektóre akcje dostępne są bezpośrednio w rozwijanym menu, natomiast inne akcje wymagają
-kliknięcia `$icon(actionIcons.ThreeDotsBig)` w wierszu źródłowym i wybraniu zaznaczenia, a następnie kliknięcia
-`$icon(actionIcons.ThreeDotsBig)` w wierszu docelowym i wybraniu odpowiedniej akcji.
+kliknięcia `$icon(actionIcons.ThreeDots)` w wierszu źródłowym i wybraniu zaznaczenia, a następnie kliknięcia
+`$icon(actionIcons.ThreeDots)` w wierszu docelowym i wybraniu odpowiedniej akcji.
 
 Informacje w pojawiających się oknach dialogowych należy czytać uważnie, ponieważ operacje na
 grafikach nie mogą zostać cofnięte.
