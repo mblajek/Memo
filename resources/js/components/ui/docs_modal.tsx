@@ -37,7 +37,13 @@ export const createDocsModal = registerGlobalPageElement<DocsModalProps>((args) 
         };
         return (
           <div class="flex flex-col items-stretch">
-            <Help mdPath={resolveMdFromAppPath(data().href)} currentPath={data().href} inlined offerNewTabLinks />
+            <Help
+              class="mt-2"
+              mdPath={resolveMdFromAppPath(data().href)}
+              currentPath={data().href}
+              inlined
+              offerNewTabLinks
+            />
             <Show when={fullPageHref()}>
               {(fullPageHref) => (
                 <LinkWithNewTabLink href={fullPageHref()} {...data().linkProps}>

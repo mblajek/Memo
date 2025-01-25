@@ -4,12 +4,13 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
 import {getIconByName, ICON_SET_NAMES} from "components/ui/icons";
 import {QueryBarrier, SimpleErrors} from "components/utils/QueryBarrier";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
-import {createMemo, JSX, onMount, Show, VoidComponent} from "solid-js";
+import {createMemo, JSX, onMount, Show, splitProps, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {resolvePath} from "./markdown_resolver";
 
-interface Props {
+interface Props extends htmlAttributes.div {
   /** The path to the markdown file to show. */
   readonly mdPath: string;
   /** The path of the docs page being shown, defaults to location.pathname. */
@@ -28,7 +29,8 @@ const ICON_SET_NAMES_PATTERN = ICON_SET_NAMES.join("|");
  *
  * The component rewrites image sources to be relative to the mdPath.
  */
-export const Help: VoidComponent<Props> = (props) => {
+export const Help: VoidComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["mdPath", "currentPath", "inlined", "offerNewTabLinks", "onH1"]);
   const t = useLangFunc();
   const location = useLocation();
   const query = createQuery(() => ({
@@ -59,7 +61,7 @@ export const Help: VoidComponent<Props> = (props) => {
     isLocationPath: !props.currentPath || props.currentPath === location.pathname,
   }));
   return (
-    <div class={props.inlined ? undefined : "overflow-y-auto p-2 pr-4 max-w-5xl"}>
+    <div {...divProps}>
       <QueryBarrier
         queries={[query]}
         error={(queries) => (
