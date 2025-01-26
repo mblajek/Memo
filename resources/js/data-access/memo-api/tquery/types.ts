@@ -83,7 +83,7 @@ export type ConstFilter = "always" | "never";
 
 export type Filter = BoolOpFilter | ColumnFilter | CustomFilter;
 
-interface FilterBase {
+export interface FilterBase {
   /** Whether to reverse the result of the filter. This is applicable to all filters. */
   readonly inv?: boolean;
 }

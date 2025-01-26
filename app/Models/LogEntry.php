@@ -38,8 +38,10 @@ class LogEntry extends Model
     //@formatter:off
     public const array LEVELS = [LogLevel::DEBUG, LogLevel::INFO, LogLevel::NOTICE, LogLevel::WARNING,
         LogLevel::ERROR, LogLevel::CRITICAL, LogLevel::ALERT, LogLevel::EMERGENCY];
+    public const array SOURCES = ['api_fe_js_error', 'api_fe_feature_use',
+        'user_login_success', 'user_login_failure', 'user_login_unknown', 'user_password_change',
+    ];
     //@formatter:on
-    public const array SOURCES = ['api_fe_js_error', 'api_fe_feature_use',];
 
     protected $table = 'log_entries';
 
@@ -64,7 +66,7 @@ class LogEntry extends Model
         return match ($field) {
             'source' => Valid::trimmed([Rule::in(self::SOURCES), 'starts_with:api_']),
             'log_level' => Valid::trimmed([Rule::in(self::LEVELS)]),
-            'message' => Valid::text(),
+            'message' => Valid::text(sometimes: true, nullable: true),
             'context' => Valid::text(sometimes: true, nullable: true, max: 150_000),
         };
     }

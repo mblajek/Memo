@@ -7,7 +7,7 @@ import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {HideableSection} from "components/ui/HideableSection";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {title} from "components/ui/title";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";

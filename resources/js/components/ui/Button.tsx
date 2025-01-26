@@ -1,4 +1,5 @@
-import {htmlAttributes, useLangFunc} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {createSignal, JSX, ParentComponent, Show, splitProps, VoidComponent} from "solid-js";
 import {hasProp} from "../utils/props";
 import {SmallSpinner} from "./Spinner";
@@ -51,7 +52,7 @@ export const EditButton: VoidComponent<EditButtonProps> = (allProps) => {
   const t = useLangFunc();
   return (
     <Button {...buttonProps}>
-      <actionIcons.Edit class="inlineIcon" /> {props.label === undefined ? t("actions.edit") : props.label}
+      <actionIcons.Edit class="inlineIcon" /> {props.label ?? t("actions.edit")}
     </Button>
   );
 };

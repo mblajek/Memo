@@ -1,7 +1,6 @@
 import {Boundary} from "@floating-ui/dom";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {RichTextView} from "components/ui/RichTextView";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
 import {crossesDateBoundaries} from "components/utils/day_minute_util";
 import {reactToWindowResize, useResizeObserver} from "components/utils/resize_observer";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -19,6 +18,9 @@ import {MeetingResourcesView} from "./MeetingResourcesView";
 import {TimeSpanSummary} from "./TimeSpanSummary";
 import {coloringToStyle} from "./colors";
 import {AttendantListItem} from "./meeting_details";
+import {useLangFunc} from "components/utils/lang";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {cx} from "components/utils/classnames";
 
 interface CommonProps
   extends Pick<

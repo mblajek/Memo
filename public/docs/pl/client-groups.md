@@ -1,4 +1,4 @@
-# $t(models.client_group._name|cap)
+# `$icon(clientGroupIcons.ClientGroup)` $t(models.client_group._name_plural|cap)
 
 Klienci mogą być przypisani do grup. Jeden klient może należeć do kilku grup, chociaż zazwyczaj należy do jednej.
 Na profilu klienta wyświetlone są grupy, do której należy, wraz z linkami do profilów innych klientów

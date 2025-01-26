@@ -1,9 +1,10 @@
+import {ButtonLike, ButtonLikeProps} from "components/ui/ButtonLike";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTypes} from "solid-icons";
 import {createSignal, splitProps, VoidComponent} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
-import {Button, ButtonProps} from "./Button";
 
-interface Props extends ButtonProps {
+interface Props extends ButtonLikeProps {
   readonly icon: IconTypes;
 }
 
@@ -13,7 +14,7 @@ export const IconButton: VoidComponent<Props> = (allProps) => {
   const [props, buttonProps] = splitProps(allProps, ["icon"]);
   const [active, setActive] = createSignal(false);
   return (
-    <Button
+    <ButtonLike
       {...buttonProps}
       onClick={(e) => {
         htmlAttributes.callHandler(buttonProps.onClick, e);
@@ -24,6 +25,6 @@ export const IconButton: VoidComponent<Props> = (allProps) => {
       }}
     >
       <props.icon class={cx("inlineIcon transition-colors", active() ? undefined : "dimmed")} />
-    </Button>
+    </ButtonLike>
   );
 };

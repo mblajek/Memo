@@ -1,4 +1,4 @@
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {TbColumns3} from "solid-icons/tb";
 import {createUniqueId, Show, VoidComponent} from "solid-js";
 import {Capitalize} from "../Capitalize";

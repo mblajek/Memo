@@ -11,8 +11,8 @@ import {z} from "zod";
 import {AbstractMeetingForm, AbstractMeetingFormProps} from "./AbstractMeetingForm";
 import {MeetingDateAndTime} from "./MeetingDateAndTime";
 import {getMeetingSeriesSchema, MeetingSeriesControls} from "./MeetingSeriesForm";
-import {WorkTimeFormSubtype} from "./WorkTimeViewEditForm";
 import {getMeetingTimeFieldsSchemaPart} from "./meeting_time_controller";
+import {WorkTimeFormSubtype} from "./work_time_form_subtype";
 
 const getSchema = () =>
   z

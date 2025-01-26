@@ -6,13 +6,14 @@ import {actionIcons} from "components/ui/icons";
 import {PopOver} from "components/ui/PopOver";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
-import {QueryBarrier, useLangFunc} from "components/utils";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FaSolidCircleCheck, FaSolidCircleXmark} from "solid-icons/fa";
 import {For, Show, VoidComponent} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {useMeetingAttendantsClients} from "./meeting_attendants_clients";
+import {useLangFunc} from "components/utils/lang";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 
 type _Directives = typeof title;
 

@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Index, JSX, splitProps, VoidComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {SimpleTag, TagsLine} from "./Tag";
 
 interface Props extends htmlAttributes.div {

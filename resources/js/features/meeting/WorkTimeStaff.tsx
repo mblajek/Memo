@@ -1,8 +1,8 @@
 import {facilityIcons} from "components/ui/icons";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {Show, VoidComponent} from "solid-js";
-import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./WorkTimeViewEditForm";
 import {UserLink} from "../facility-users/UserLink";
+import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./work_time_form_subtype";
 
 interface Props {
   readonly staff: WorkTimeFormSubtype["staff"];

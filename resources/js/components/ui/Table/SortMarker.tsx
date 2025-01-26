@@ -1,5 +1,5 @@
 import {Column, SortDirection} from "@tanstack/solid-table";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {IconTypes} from "solid-icons";
 import {FaSolidArrowDownLong, FaSolidArrowsUpDown, FaSolidArrowUpLong} from "solid-icons/fa";
 import {Match, Switch, VoidComponent} from "solid-js";

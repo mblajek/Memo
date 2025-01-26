@@ -1,4 +1,4 @@
-import {NON_NULLABLE} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
 import {Position} from "data-access/memo-api/dictionaries";
 import {useAttributes, useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -7,7 +7,10 @@ import {MultipleSelectPropsPart, Select, SelectBaseProps, SelectItem, SingleSele
 import {mergeSelectProps} from "./select_helper";
 
 interface BaseProps
-  extends Pick<SelectBaseProps, "name" | "label" | "getGroupHeader" | "disabled" | "placeholder" | "small"> {
+  extends Pick<
+    SelectBaseProps,
+    "name" | "label" | "getGroupHeader" | "disabled" | "placeholder" | "small" | "autofocus"
+  > {
   /** The id or name of the dictionary. */
   readonly dictionary: string;
   readonly filterable?: boolean;

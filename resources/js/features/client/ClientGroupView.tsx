@@ -1,7 +1,8 @@
 import {Capitalize} from "components/ui/Capitalize";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
-import {EM_DASH, EmptyValueSymbol} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {EM_DASH} from "components/ui/symbols";
+import {useLangFunc} from "components/utils/lang";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
 import {For, Show, VoidComponent} from "solid-js";
 import {CreatedByInfo} from "../facility-users/CreatedByInfo";
@@ -16,8 +17,8 @@ export interface ClientGroupViewProps {
 export const ClientGroupView: VoidComponent<ClientGroupViewProps> = (props) => {
   const t = useLangFunc();
   return (
-    <div class="flex gap-4 justify-between">
-      <div class="flex flex-col gap-2 items-stretch">
+    <div class="flex flex-col gap-2 items-stretch">
+      <div class="flex gap-4 justify-between">
         <div class="flex flex-col">
           <For each={props.group.clients} fallback={<EmptyValueSymbol />}>
             {(client) => (
@@ -53,14 +54,14 @@ export const ClientGroupView: VoidComponent<ClientGroupViewProps> = (props) => {
             })}
           </div>
         </div>
-        <div class="flex flex-col">
-          <StandaloneFieldLabel>
-            <Capitalize text={t("models.generic.notes")} />
-          </StandaloneFieldLabel>
-          <div class="wrapText">{props.group.notes || <EmptyValueSymbol />} </div>
-        </div>
+        <CreatedByInfo data={props.group} />
       </div>
-      <CreatedByInfo data={props.group} />
+      <div class="flex flex-col">
+        <StandaloneFieldLabel>
+          <Capitalize text={t("models.client_group.notes")} />
+        </StandaloneFieldLabel>
+        <div class="wrapText">{props.group.notes || <EmptyValueSymbol />} </div>
+      </div>
     </div>
   );
 };

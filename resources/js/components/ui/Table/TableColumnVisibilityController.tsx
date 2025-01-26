@@ -1,14 +1,19 @@
 import {VisibilityState} from "@tanstack/solid-table";
-import {cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {actionIcons} from "components/ui/icons";
+import {ColumnName} from "components/ui/Table/ColumnName";
+import {useTable} from "components/ui/Table/TableContext";
+import {cx} from "components/utils/classnames";
+import {debouncedAccessor} from "components/utils/debounce";
+import {useLangFunc} from "components/utils/lang";
+import {createTextFilter} from "components/utils/text_util";
 import {OcSearch2} from "solid-icons/oc";
-import {RiArrowsContractLeftRightLine, RiSystemEyeCloseFill} from "solid-icons/ri";
+import {RiSystemEyeCloseFill} from "solid-icons/ri";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
-import {ColumnName, useTable} from ".";
 import {Button} from "../Button";
-import {createHoverSignal, hoverSignal} from "../hover_signal";
+import {createHoverSignal, hoverEvents, hoverSignal} from "../hover_signal";
 import {PopOver, PopOverControl} from "../PopOver";
 import {SearchInput} from "../SearchInput";
-import {EmptyValueSymbol} from "../symbols";
 import {title} from "../title";
 
 type _Directives = typeof title | typeof hoverSignal;
@@ -21,10 +26,13 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const [search, setSearch] = createSignal("");
   const translations = table.options.meta?.translations;
   let searchInput: HTMLInputElement | undefined;
+  const searchFilter = createMemo(() => createTextFilter(search()));
   function matchesSearch(columnId: string) {
-    return translations && search()
-      ? translations.columnName(columnId).toLowerCase().includes(search().toLowerCase())
-      : true;
+    if (!translations) {
+      return true;
+    }
+    const filter = searchFilter();
+    return !filter || filter(translations.columnName(columnId));
   }
   const displayedColumns = createMemo(() =>
     table.getAllLeafColumns().filter((column) => {
@@ -54,7 +62,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
       table.setColumnVisibility(vis);
     }
   });
-  const [resetHovered, setResetHovered] = createSignal(false);
+  const resetHover = createHoverSignal();
 
   const Content: VoidComponent<{readonly popOver: PopOverControl}> = (props) => {
     setVisibility({...table.getState().columnVisibility});
@@ -68,7 +76,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
             <SearchInput
               ref={searchInput}
               divClass="flex-grow"
-              class="px-1 outline-none"
+              class="outline-none"
               value={search()}
               onValueChange={setSearch}
               placeholder={t("tables.columns_search.placeholder")}
@@ -90,7 +98,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 const groupingInfo = () => columnGroupingInfo?.(column.id);
                 const hover = createHoverSignal();
                 const selectBg = () =>
-                  resetHovered() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];
+                  resetHover() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];
                 return (
                   <label
                     class={cx(
@@ -144,7 +152,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                       }}
                       title={t("tables.scroll_to_column")}
                     >
-                      <RiArrowsContractLeftRightLine class="text-grey-text" size="14" />
+                      <actionIcons.FocusHorizontally class="text-grey-text" size="14" />
                     </Button>
                   </label>
                 );
@@ -171,8 +179,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                 disabled={isDefaultVisibility()}
                 // Use inert to make the parent handle onClick also when disabled.
                 inert={isDefaultVisibility()}
-                onMouseOver={[setResetHovered, true]}
-                onMouseOut={[setResetHovered, false]}
+                {...hoverEvents(resetHover)}
               >
                 {t("actions.restore_default")}
               </Button>

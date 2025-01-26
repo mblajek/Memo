@@ -32,7 +32,7 @@ enum Permission
     // contains: verified, facilityMember
     case facilityClient;
 
-    // facility staff member, for routes with {facility}
+    // facility staff member, for routes with {facility}, active (not deactivated)
     // contains: verified, facilityMember
     case facilityStaff;
 

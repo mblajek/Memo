@@ -201,8 +201,9 @@ class SystemController extends ApiController
             content: new OA\JsonContent(
                 required: ['logLevel', 'message'],
                 properties: [
+                    new OA\Property(property: 'source', type: 'string', example: 'api_fe_js_error'),
                     new OA\Property(property: 'logLevel', type: 'string', enum: LogEntry::LEVELS, example: 'info'),
-                    new OA\Property(property: 'message', type: 'string', example: 'message'),
+                    new OA\Property(property: 'message', type: 'string', example: 'message', nullable: true),
                     new OA\Property(property: 'context', type: 'string', example: null, nullable: true),
                 ]
             )
@@ -227,7 +228,7 @@ class SystemController extends ApiController
             request: $request,
             source: $data['source'],
             logLevel: $data['log_level'],
-            message: $data['message'],
+            message: $data['message'] ?? null,
             context: $data['context'] ?? null,
         );
         return new JsonResponse(['data' => ['id' => $logEntryIsd]], status: 201);

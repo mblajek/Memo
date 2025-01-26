@@ -1,5 +1,5 @@
+import {useLangFunc} from "components/utils/lang";
 import {VoidComponent} from "solid-js";
-import {useLangFunc} from "../utils";
 import {MAX_DAY_MINUTE} from "../utils/day_minute_util";
 
 interface Props {

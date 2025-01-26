@@ -2,7 +2,6 @@
 
 namespace App\Services\Meeting;
 
-use App\Models\Attribute;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;

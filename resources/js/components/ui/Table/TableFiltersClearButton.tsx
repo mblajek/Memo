@@ -1,4 +1,5 @@
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
 import {For, VoidComponent} from "solid-js";
 import {FilterIconButton} from "./FilterIconButton";
 import {useTable} from "./TableContext";

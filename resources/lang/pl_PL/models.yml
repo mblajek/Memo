@@ -40,6 +40,7 @@ user_facility_member:
   facility: "placówka"
   hasFacilityAdmin: "administrator"
   isFacilityStaff: "pracownik"
+  isActiveFacilityStaff: "aktywny pracownik"
   isFacilityClient: "klient"
 
 permissions:
@@ -60,6 +61,9 @@ user:
   password: "hasło"
   hasPassword: "posiada hasło"
   passwordExpireAt: "data wygaśnięcia hasła"
+  lastPasswordChangeAt: "ostatnia zmiana hasła"
+  lastLoginSuccessAt: "ostatnie logowanie"
+  lastLoginFailureAt: "ostatnie nieudane logowanie"
   facilities.*.name: "placówki"
   facilities.count: "placówki$t(models.generic.count_suffix)"
   managedByFacilityId: "placówka zarządzająca"
@@ -68,6 +72,7 @@ user:
   hasGlobalAdmin: "globalny administrator"
   hasFacilityAdmin: "administrator placówki"
   isStaff: "pracownik"
+  isActiveStaff: "aktywny pracownik"
   isClient: "klient"
   members: "przypisane placówki"
 
@@ -75,13 +80,16 @@ facility_user:
   _name: "pracownik/klient"
   _name_plural: "pracownicy/klienci"
   name: "$t(models.user.name)"
-  firstMeetingDate: "pierwsza wizyta"
-  lastMeetingDate: "ostatnia wizyta"
-  completedMeetingsCount: "liczba odbytych wizyt"
-  completedMeetingsCountLastMonth: "liczba wizyt w ost. miesiącu"
-  plannedMeetingsCount: "liczba zaplanowanych wizyt"
-  plannedMeetingsCountNextMonth: "liczba wizyt w nast. miesiącu"
+  firstMeetingDate: "pierwsze spotkanie"
+  lastMeetingDate: "ostatnie spotkanie"
+  completedMeetingsCount: "liczba odbytych spotkań"
+  completedMeetingsCountLastMonth: "liczba spotkań w ost. miesiącu"
+  plannedMeetingsCount: "liczba zaplanowanych spotkań"
+  plannedMeetingsCountNextMonth: "liczba spotkań w nast. miesiącu"
   meetings: "$t(models.meeting._name_plural)"
+  member.isStaff: "$t(models.user.isStaff)"
+  member.isActiveStaff: "$t(models.user.isActiveStaff)"
+  member.isClient: "$t(models.user.isClient)"
 
 staff:
   _name: "pracownik"
@@ -100,7 +108,7 @@ staff:
 client:
   _name: "klient"
   _name_plural: "klienci"
-  shortCode: "numer"
+  shortCode: "nr klienta"
   client:
     shortCode: "$t(models.client.shortCode)"
     createdAt: "$t(models.generic.createdAt)"
@@ -120,6 +128,7 @@ client_group:
   client:
     userId: "osoba"
     role: "rola"
+  notes: "krótki opis"
 
 meeting:
   _name: "spotkanie"

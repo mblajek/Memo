@@ -1,15 +1,16 @@
 import {MutationCache, QueryCache, QueryClient, QueryClientProvider, useQueryClient} from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
-import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config";
+import {useLangFunc} from "components/utils/lang";
+import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config/v1.instance";
 import {translateError} from "data-access/memo-api/error_util";
-import {System, User} from "data-access/memo-api/groups";
+import {System} from "data-access/memo-api/groups/System";
+import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {SolidQueryOpts} from "data-access/memo-api/query_utils";
 import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
 import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
 import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
-import {useLangFunc} from ".";
 import {MemoLoader} from "../ui/MemoLoader";
 import {ToastMessages, toastDismiss, toastError} from "./toast";
 

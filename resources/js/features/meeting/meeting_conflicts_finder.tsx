@@ -1,8 +1,10 @@
 import {calendarIcons} from "components/ui/icons";
 import {SmallSpinner} from "components/ui/Spinner";
 import {title} from "components/ui/title";
-import {cx, debouncedAccessor, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {debouncedAccessor} from "components/utils/debounce";
+import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";

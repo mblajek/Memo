@@ -1,5 +1,6 @@
 import {hoverSignal} from "components/ui/hover_signal";
-import {cx, htmlAttributes} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 
 type _Directives = typeof hoverSignal;

@@ -1,7 +1,7 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {IconProps} from "solid-icons";
 import {ImSpinner2} from "solid-icons/im";
 import {VoidComponent} from "solid-js";
-import {htmlAttributes} from "../utils";
 
 /** The loading spinner used across the app. */
 export const BigSpinner: VoidComponent = () => (

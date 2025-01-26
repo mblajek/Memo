@@ -1,5 +1,7 @@
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {crossesDateBoundaries} from "components/utils/day_minute_util";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {DateTime} from "luxon";
 import {createMemo, JSX, splitProps, VoidComponent} from "solid-js";
 import {TimeSpan} from "../calendar/types";

@@ -1,11 +1,11 @@
 import {createQuery} from "@tanstack/solid-query";
 import {BaseTQuerySelectProps, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
-import {User} from "data-access/memo-api/groups";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {FacilityUsers} from "data-access/memo-api/groups/FacilityUsers";
 import {Facilities} from "data-access/memo-api/groups/shared";
+import {User} from "data-access/memo-api/groups/User";
 import {ClientBirthDateShortInfo} from "features/client/ClientBirthDateShortInfo";
 import {useClientsData} from "features/client/clients_data";
 import {UserLink} from "features/facility-users/UserLink";
@@ -80,14 +80,14 @@ export function useModelQuerySpecs() {
               <UserLink type="clients" userId={row.get("id")} name={row.get("name")} link={false} />
             );
             const Birthday: VoidComponent = () => (
-              <div class="text-grey-text">
+              <div class="text-grey-text whitespace-nowrap">
                 <ClientBirthDateShortInfo clientId={row.get("id")!} />
               </div>
             );
             return {
               ...defItem,
               label: () => (
-                <div class="flex gap-4 justify-between">
+                <div class="flex items-center gap-4 justify-between">
                   <Link />
                   <Show when={showBirthDateWhenSelected}>
                     <Birthday />
@@ -95,7 +95,7 @@ export function useModelQuerySpecs() {
                 </div>
               ),
               labelOnList: () => (
-                <div class="flex gap-4 justify-between">
+                <div class="flex items-center gap-4 justify-between">
                   <Link />
                   <Birthday />
                 </div>

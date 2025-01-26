@@ -27,7 +27,7 @@ facility:
   facility_admin:
     time_tables: "grafiki pracy"
     time_tables_calendar: "kalendarz"
-    time_tables_weekly: "tygodnie"
+    time_tables_weekly: "grafiki tygodniowe"
     reports: "raporty"
 
 help: "pomoc"

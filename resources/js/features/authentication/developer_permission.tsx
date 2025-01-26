@@ -1,7 +1,7 @@
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {toggleDEV} from "components/utils/dev_mode";
 import {toastDismiss, toastError, toastSuccess} from "components/utils/toast";
-import {User} from "data-access/memo-api/groups";
+import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {createEffect, DEV} from "solid-js";
 

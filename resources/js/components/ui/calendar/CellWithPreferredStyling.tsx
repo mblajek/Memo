@@ -1,4 +1,5 @@
-import {cx, htmlAttributes} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {createMemo, Index, ParentComponent, splitProps} from "solid-js";
 import {CellStylingPreference} from "./types";
 

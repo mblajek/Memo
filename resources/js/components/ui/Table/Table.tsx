@@ -13,9 +13,17 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
-import {currentTimeSecond, cx, delayedAccessor, useLangFunc} from "components/utils";
+import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
+import {getColumns} from "components/ui/Table/columns_iterator";
+import {useTableCells} from "components/ui/Table/table_cells";
+import {TableContext} from "components/ui/Table/TableContext";
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {useLangFunc} from "components/utils/lang";
 import {NonBlocking} from "components/utils/NonBlocking";
+import {currentTimeSecond} from "components/utils/time";
+import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {TOptions} from "i18next";
 import {
   Accessor,
@@ -32,10 +40,9 @@ import {
   on,
 } from "solid-js";
 import {Dynamic} from "solid-js/web";
-import {TableContext, getColumns, useTableCells} from ".";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
 import {useColumnsByPrefixUtil} from "./tquery_filters/fuzzy_filter";
@@ -47,6 +54,7 @@ export interface TableTranslations {
   columnNameOverride?(column: string, o?: TOptions): string;
   /** Summary of the table. */
   summary(count: number, activeColumnGroups?: readonly string[], o?: TOptions): string;
+  countColumnLabelOverride(activeColumnGroups?: readonly string[], o?: TOptions): string | undefined;
   columnGroup(group: string, o?: TOptions): string;
   columnsByPrefix?: ReadonlyMap<string, string>;
 }
@@ -99,6 +107,15 @@ export function createTableTranslations(tableName: string | readonly string[]): 
             : summaryKeys,
         {...o, count},
       ),
+    countColumnLabelOverride: (activeColumnGroups: readonly string[], o?: TOptions) =>
+      activeColumnGroups.length === 1
+        ? t(
+            namesWithGeneric.map(
+              (n) => `tables.tables.${n}.with_column_group.${activeColumnGroups[0]}.count_column_label_override`,
+            ),
+            o,
+          )
+        : undefined,
     columnGroup: (group, o) =>
       t(
         columnGroupsKeyPrefixes.map((p) => p + group),
@@ -256,6 +273,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
       },
     ),
   );
+  const {ScrollableUpMarker, scrollableRef} = createScrollableUpMarker();
   const columns = createMemo(
     on(
       () => props.table.getAllLeafColumns(),
@@ -267,12 +285,17 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
     <TableContext.Provider value={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
         <div class={cx(s.tableContainer, s[props.mode])}>
-          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
+          <Show_noDoubleEvaluation when={props.aboveTable?.()}>
+            {(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}
+          </Show_noDoubleEvaluation>
           <div class={s.tableMain}>
             <div
-              ref={setScrollingWrapper}
+              ref={(div) => {
+                setScrollingWrapper(div);
+                scrollableRef(div);
+              }}
               class={s.scrollingWrapper}
-              onScroll={[setLastScrollTimestamp, Date.now()]}
+              onScroll={() => setLastScrollTimestamp(Date.now())}
               onScrollEnd={[setLastScrollTimestamp, 0]}
             >
               <div ref={scrollToTopElement} class={s.scrollToTopElement}>
@@ -307,6 +330,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                           </Show>
                         )}
                       </For>
+                      <ScrollableUpMarker class={s.scrollableUpMarker} />
                     </div>
                     <Dynamic
                       component={{For, Index}[props.rowsIteration]}
@@ -345,7 +369,9 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
               <LoadingPane isLoading={props.isDimmed} />
             </div>
           </div>
-          <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
+          <Show_noDoubleEvaluation when={props.belowTable?.()}>
+            {(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}
+          </Show_noDoubleEvaluation>
         </div>
       </Show>
     </TableContext.Provider>
@@ -359,10 +385,10 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
  * or just true to use the defaults. Missing key or false disables the feature.
  */
 export interface TableFeaturesConfig {
-  columnVisibility?: boolean | Signal<VisibilityState> | VisibilityState;
-  sorting?: boolean | Signal<SortingState> | SortingState;
+  columnVisibility?: boolean | Signal<Readonly<VisibilityState>> | Readonly<VisibilityState>;
+  sorting?: boolean | Signal<Readonly<SortingState>> | Readonly<SortingState>;
   globalFilter?: boolean | Signal<string> | string;
-  pagination?: boolean | Signal<PaginationState> | PaginationState;
+  pagination?: boolean | Signal<Readonly<PaginationState>> | Readonly<PaginationState>;
 }
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -385,18 +411,24 @@ export function getBaseTableOptions<T>({
   defaultColumn?: Partial<ColumnDef<T, unknown>>;
 } = {}) {
   const tableCells = useTableCells();
-  const columnVisibilitySignal = getFeatureSignal(columnVisibility, {});
-  const sortingSignal = getFeatureSignal(sorting, []);
+  const columnVisibilitySignal = getFeatureSignal<Readonly<VisibilityState>>(columnVisibility, {});
+  const sortingSignal = getFeatureSignal<Readonly<SortingState>>(sorting, []);
   const globalFilterSignal = getFeatureSignal(globalFilter, "");
-  const paginationSignal = getFeatureSignal(pagination, {pageIndex: 0, pageSize: DEFAULT_PAGE_SIZE}) || [
-    () => ({pageIndex: 0, pageSize: PAGE_SIZE_WITHOUT_PAGINATION}),
-  ];
+  const paginationSignal =
+    getFeatureSignal<Readonly<PaginationState>>(pagination, {
+      pageIndex: 0,
+      pageSize: DEFAULT_PAGE_SIZE,
+    }) ||
+    ([() => ({pageIndex: 0, pageSize: PAGE_SIZE_WITHOUT_PAGINATION}), () => {}] satisfies Signal<
+      Readonly<PaginationState>
+    >);
   const baseState: Partial<TableState> = {
     get columnVisibility() {
       return columnVisibilitySignal?.[0]();
     },
     get sorting() {
-      return sortingSignal?.[0]();
+      // Un-readonly the type as the caller did not declare it as readonly.
+      return sortingSignal?.[0]() as SortingState;
     },
     get globalFilter() {
       return globalFilterSignal?.[0]();

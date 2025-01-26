@@ -1,3 +1,4 @@
+import {arraysEqual, objectsEqual} from "components/utils/object_util";
 import {JSONValue} from "data-access/memo-api/types";
 import {DateTime, Duration, Interval} from "luxon";
 import {DaysRange} from "../ui/calendar/days_range";
@@ -6,6 +7,12 @@ import {Version} from "./version";
 export interface Serialiser<T, S = string> {
   serialise(value: T): S;
   deserialise(value: S): T;
+  version?: Version;
+}
+
+export interface AsyncSerialiser<T, S = string> {
+  serialise(value: T): Promise<S>;
+  deserialise(value: S): Promise<T>;
   version?: Version;
 }
 
@@ -112,4 +119,20 @@ export function richJSONSerialiser<T extends RichJSONValue>(): Serialiser<T> {
     deserialise: (value: string) => JSON.parse(value, (_key, value) => richJSONFromPlainOneLevel(value, value)),
     version: [2],
   };
+}
+
+export function richJSONValuesEqual(a: RichJSONValue, b: RichJSONValue) {
+  if (a === b) {
+    return true;
+  } else if (Array.isArray(a) && Array.isArray(b)) {
+    return arraysEqual(a, b, richJSONValuesEqual);
+  } else if (a && typeof a === "object" && b && typeof b === "object") {
+    return objectsEqual(
+      richJSONToPlainOneLevel(a, a),
+      richJSONToPlainOneLevel(b, b),
+      richJSONValuesEqual as (a: unknown, b: unknown) => boolean,
+    );
+  } else {
+    return false;
+  }
 }

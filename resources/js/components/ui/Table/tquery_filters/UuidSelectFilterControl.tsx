@@ -1,25 +1,28 @@
 import {TQuerySelect, TQuerySelectProps} from "components/ui/form/TQuerySelect";
-import {cx} from "components/utils";
+import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
+import {cx} from "components/utils/classnames";
 import {VoidComponent, createMemo, splitProps} from "solid-js";
-import {getFilterStateSignal} from "./column_filter_states";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
 import {useSingleSelectFilterHelper} from "./select_filters_helper";
-import {FilterControlProps} from "./types";
+import {FilterControlProps, FilterHWithState} from "./types";
 
 interface Props
-  extends FilterControlProps,
+  extends FilterControlProps<Filter>,
     Pick<TQuerySelectProps, "querySpec" | "priorityQuerySpec" | "separatePriorityItems"> {}
+
+type Filter = FilterHWithState<{value: readonly string[]}>;
 
 export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
   const [props, selectProps] = splitProps(allProps, ["column", "schema", "filter", "setFilter"]);
   const filterFieldNames = useFilterFieldNames();
   const {itemsForNullableColumn, buildFilter, updateValue} = useSingleSelectFilterHelper();
   const {
-    value: [value, setValue],
-  } = getFilterStateSignal({
-    // eslint-disable-next-line solid/reactivity
-    column: props.column.id,
+    state: {
+      value: [value, setValue],
+    },
+    getState,
+  } = getFilterControlState({
     initial: {value: [] as readonly string[]},
     filter: () => props.filter,
   });
@@ -33,7 +36,7 @@ export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
         value={value()}
         onValueChange={(newValue) => {
           setValue(updateValue(value(), newValue));
-          props.setFilter(buildFilter(value(), props.schema.name));
+          props.setFilter(buildFilter(value(), props.schema.name, getState()));
         }}
         multiple
         showClearButton={false}

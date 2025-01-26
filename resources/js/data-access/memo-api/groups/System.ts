@@ -1,5 +1,5 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
-import {V1} from "../config";
+import {V1} from "data-access/memo-api/config/v1.instance";
 import {SystemStatusResource} from "../resources/SystemStatusResource";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
@@ -62,7 +62,7 @@ export namespace System {
   export interface LogRequest {
     readonly logLevel: LogLevel;
     readonly source: LogAPIFrontendSource;
-    readonly message: string;
+    readonly message?: string;
     readonly context?: string;
   }
 

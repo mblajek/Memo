@@ -1,5 +1,6 @@
 import {Button} from "components/ui/Button";
-import {AccessBarrier, useLangFunc} from "components/utils";
+import {AccessBarrier} from "components/utils/AccessBarrier";
+import {useLangFunc} from "components/utils/lang";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {ParentComponent, Show, VoidComponent} from "solid-js";
 import {Container} from "../layout/Container";

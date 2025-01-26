@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {Accessor, JSX, ParentComponent, Show, createSignal, splitProps} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {useResizeObserver} from "../utils/resize_observer";
 
 interface Props extends htmlAttributes.div {

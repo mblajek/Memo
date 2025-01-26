@@ -1,6 +1,9 @@
 import {CreateQueryResult} from "@tanstack/solid-query";
-import {cx, htmlAttributes, NON_NULLABLE, useLangFunc} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createCalendarRequestCreator, TQMeetingResource} from "data-access/memo-api/tquery/calendar";

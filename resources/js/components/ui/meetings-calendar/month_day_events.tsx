@@ -1,6 +1,8 @@
 import {ButtonLike} from "components/ui/ButtonLike";
-import {cx, htmlAttributes, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {UserLink} from "features/facility-users/UserLink";
 import {MeetingStatusTags} from "features/meeting/MeetingStatusTags";

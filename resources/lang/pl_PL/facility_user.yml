@@ -1,7 +1,8 @@
 meetings_lists:
   meetings_for: "Pokaż spotkania:"
   meetings_for.client: "klienta"
-  meetings_for.client_group: "w kontekście grupy klientów"
+  meetings_for.client_group: "grupy klientów"
+  meetings_for.no_client_group: "bez kontekstu grupy"
   planned: "zaplanowane"
   completed: "zrealizowane"
   all: "wszystkie"

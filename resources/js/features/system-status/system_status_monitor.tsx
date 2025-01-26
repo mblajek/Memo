@@ -1,6 +1,6 @@
 import {createQuery} from "@tanstack/solid-query";
 import {createCached} from "components/utils/cache";
-import {System} from "data-access/memo-api/groups";
+import {System} from "data-access/memo-api/groups/System";
 import {SystemStatusResource} from "data-access/memo-api/resources/SystemStatusResource";
 import {createEffect, createSignal} from "solid-js";
 

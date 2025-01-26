@@ -1,12 +1,31 @@
 import {A, AnchorProps, useLocation} from "@solidjs/router";
 import {clearAllHistoryState} from "components/persistence/history_persistence";
+import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
-import {cx, delayedAccessor, htmlAttributes, useLangFunc} from "components/utils";
+import {title} from "components/ui/title";
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
+import {useNavbarContext} from "features/root/layout/Navbar";
 import {IconTypes} from "solid-icons";
 import {FaSolidAngleDown} from "solid-icons/fa";
-import {ParentComponent, Show, children, createMemo, createSignal, on, splitProps} from "solid-js";
+import {
+  Match,
+  ParentComponent,
+  Show,
+  Switch,
+  VoidComponent,
+  children,
+  createMemo,
+  createSignal,
+  on,
+  splitProps,
+} from "solid-js";
 import {Dynamic} from "solid-js/web";
+
+type _Directives = typeof title;
 
 export interface NavigationItemProps extends Omit<AnchorProps, "children"> {
   readonly icon: IconTypes;
@@ -28,6 +47,10 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
   const t = useLangFunc();
   const location = useLocation();
   const [container, setContainer] = createSignal<HTMLDivElement>();
+  const {
+    collapsed: [collapsed],
+  } = useNavbarContext();
+  const [forceExpand, setForceExpand] = createSignal(false);
   /* A signal that changes whenever the active navigation item might change. */
   const activeItemTrigger = () => container() && location.pathname;
   /**
@@ -41,43 +64,76 @@ export const NavigationItem: ParentComponent<NavigationItemProps> = (allProps) =
    */
   const hasActiveItem = createMemo(
     // eslint-disable-next-line solid/reactivity
-    on(delayedAccessor(activeItemTrigger, {timeMs: 20}), () => container()?.querySelector(`a.${ACTIVE_ITEM_CLASS}`)),
+    on(delayedAccessor(activeItemTrigger, {timeMs: 20}), () => {
+      // Side effect: cancel force expanded on any navigation.
+      setForceExpand(false);
+      return container()?.querySelector(`a.${ACTIVE_ITEM_CLASS}`);
+    }),
+  );
+  const RouteLabel: VoidComponent = () => (
+    <Show when={t(`routes.${props.routeKey}`, {defaultValue: ""})} fallback={props.routeKey}>
+      {(text) => <Capitalize text={text()} />}
+    </Show>
+  );
+  const ExpandButton: VoidComponent = () => (
+    <Button
+      onClick={(e) => {
+        setForceExpand(!forceExpand());
+        e.preventDefault();
+      }}
+    >
+      <FaSolidAngleDown
+        size="12"
+        class={cx("text-black text-opacity-40", hasActiveItem() ? "text-opacity-60" : "hover:text-opacity-60")}
+      />
+    </Button>
   );
   const ch = children(() => props.children);
   return (
-    <div ref={setContainer} class="flex flex-col">
-      <A
-        role="button"
-        {...htmlAttributes.merge(aProps, {
-          class: cx(
-            props.small ? "gap-2" : "gap-3 min-h-10",
-            "px-3 py-1 rounded-lg flex flex-row items-center text-black hover:bg-white",
-          ),
-          style: {"line-height": "1.3"},
-        })}
-        activeClass={cx("bg-white", ACTIVE_ITEM_CLASS)}
-        onClick={(event) => {
-          if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS) && location.pathname === aProps.href) {
-            clearAllHistoryState({forceReset: true});
-            event.preventDefault();
-          }
-        }}
-      >
-        <Dynamic component={props.icon} size={props.small ? 18 : 25} />
-        <span>
-          <Show when={t(`routes.${props.routeKey}`, {defaultValue: ""})} fallback={props.routeKey}>
-            {(text) => <Capitalize text={text()} />}
-          </Show>
-          <Show when={ch()}>
-            {" "}
-            <FaSolidAngleDown size="12" class="inlineIcon !mb-0 text-gray-400" />
-          </Show>
-        </span>
-      </A>
+    <div ref={setContainer} class={cx(collapsed() ? "self-center" : undefined, "flex flex-col")}>
+      <div use:title={collapsed() ? [<RouteLabel />, {placement: "right", offset: [0, 4], delay: 100}] : undefined}>
+        <A
+          role="button"
+          {...htmlAttributes.merge(aProps, {
+            class: cx(
+              collapsed() ? "px-4 py-2" : ["px-2 py-1", props.small ? "gap-2" : "gap-3 min-h-10"],
+              "self-center rounded-lg flex flex-row items-center text-black hover:bg-white hover:bg-opacity-50",
+            ),
+            style: {"line-height": "1.3"},
+          })}
+          activeClass={cx("bg-white !bg-opacity-100", ACTIVE_ITEM_CLASS)}
+          onClick={(event) => {
+            if (event.currentTarget.classList.contains(ACTIVE_ITEM_CLASS) && location.pathname === aProps.href) {
+              clearAllHistoryState({forceReset: true});
+              event.preventDefault();
+            }
+          }}
+        >
+          <div class="self-center">
+            <Dynamic component={props.icon} size={props.small ? 18 : 25} />
+          </div>
+          <Switch>
+            <Match when={!collapsed()}>
+              {" "}
+              <div class="flex items-center gap-1">
+                <RouteLabel />
+                <Show when={ch()}>
+                  <ExpandButton />
+                </Show>
+              </div>
+            </Match>
+            <Match when={ch()}>
+              <div class="w-0 relative left-0.5">
+                <ExpandButton />
+              </div>
+            </Match>
+          </Switch>
+        </A>
+      </div>
       <Show when={ch()}>
         {(children) => (
-          <HideableSection show={hasActiveItem()}>
-            <div class="mt-1 ml-3 flex flex-col gap-1">{children()}</div>
+          <HideableSection show={hasActiveItem() || forceExpand()}>
+            <div class={cx(collapsed() ? "ml-1.5" : "mt-1 ml-3 gap-1", "flex flex-col")}>{children()}</div>
           </HideableSection>
         )}
       </Show>

@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {createMemo, For, JSX, mapArray, Match, Show, splitProps, Switch} from "solid-js";
-import {htmlAttributes} from "../utils";
 
 type Mode = "bullets" | "commas";
 

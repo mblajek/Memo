@@ -1,4 +1,14 @@
-import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filter, Schema, isDataColumn} from "./types";
+import {
+  BoolOpFilter,
+  ColumnFilter,
+  ColumnName,
+  ColumnSchema,
+  ConstFilter,
+  Filter,
+  FilterBase,
+  Schema,
+  isDataColumn,
+} from "./types";
 
 /**
  * A helper for constructing filter. If it is a regular Filter, the values inside the filter
@@ -6,7 +16,11 @@ import {BoolOpFilter, ColumnFilter, ColumnName, ColumnSchema, ConstFilter, Filte
  * that the bool op filter can contain FilterH values as sub-filters. These things are fixed
  * by the FilterReductor.
  */
-export type FilterH = ConstFilter | Filter | BoolOpFilterH;
+export type FilterH = ConstFilter | ConstFilterH | Filter | BoolOpFilterH;
+export interface ConstFilterH extends FilterBase {
+  readonly type: "const";
+  readonly val: ConstFilter;
+}
 /** A bool operation filter that accepts FilterH as sub-filters. */
 export type BoolOpFilterH = Omit<BoolOpFilter, "val"> & {readonly val: readonly FilterH[]};
 
@@ -20,7 +34,7 @@ export function invertFilter(filter: FilterH, invert?: boolean): FilterH {
     arguments.length === 1
       ? true
       : // Called with e.g. filter.inv, which is optional and defaults to false.
-        invert ?? false;
+        (invert ?? false);
   if (!invert) {
     return filter;
   }
@@ -205,20 +219,34 @@ export class FilterReductor {
     return reducedIgnoredInv ? invertFilter(reducedIgnoredInv, filter.inv) : filter;
   }
 
+  private removeAdditionalFields(filter: ReducedFilterH): ReducedFilterH {
+    if (typeof filter === "string") {
+      return filter;
+    }
+    // Remove any unrelated fields, e.g. the state of FilterHWithState.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const {type, op, column, val, inv} = filter as any;
+    return {type, op, column, val, inv};
+  }
+
   /** Returns a reduced filter. The returned filter is correct and optimised. */
   reduce(filter: FilterH): ReducedFilterH {
     if (typeof filter === "string") {
       return filter;
-    }
-    switch (filter.type) {
-      case "op":
-        return this.reduceBoolOp(filter);
-      case "column":
-        return this.reduceColumnOp(filter);
-      case "custom":
-        return filter;
-      default:
-        return filter satisfies never;
+    } else if (filter.type === "const") {
+      return (filter.val === "always") !== !!filter.inv ? "always" : "never";
+    } else if (filter.type === "op") {
+      return this.removeAdditionalFields(this.reduceBoolOp(filter));
+    } else if (filter.type === "column") {
+      return this.removeAdditionalFields(this.reduceColumnOp(filter));
+    } else if (filter.type === "custom") {
+      return this.removeAdditionalFields(filter);
+    } else {
+      return filter satisfies never;
     }
   }
+}
+
+export function filterHToObject(filter: FilterH): FilterH & object {
+  return typeof filter === "string" ? {type: "const", val: filter} : filter;
 }

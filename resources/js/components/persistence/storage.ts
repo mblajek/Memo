@@ -1,5 +1,5 @@
-import {User} from "data-access/memo-api/groups";
-import {onCleanup} from "solid-js";
+import {Timeout} from "components/utils/timeout";
+import {User} from "data-access/memo-api/groups/User";
 import {OrPromise, asyncThen} from "../utils/async";
 import {
   Version,
@@ -133,16 +133,14 @@ function getUserStorageCache(key: string) {
   let cache = USER_STORAGE_CACHE_MAP.get(key);
   if (!cache) {
     let cached: {value: string | undefined} | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Timeout();
     function setInvalidationTimeout() {
-      clearTimeout(timeoutId);
-      setTimeout(invalidate, USER_STORAGE_INVALIDATION_INTERVAL_SECS * 1000);
+      timeout.set(invalidate, USER_STORAGE_INVALIDATION_INTERVAL_SECS * 1000);
     }
     function invalidate() {
       cached = undefined;
       setInvalidationTimeout();
     }
-    onCleanup(() => clearTimeout(timeoutId));
     cache = {
       store(value) {
         cached = {value};

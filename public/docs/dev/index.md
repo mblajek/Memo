@@ -1,6 +1,6 @@
 # Developers help
 
-![Memo logo](memo_logo.png "Memo logo")
+![Memo logo](../memo_logo.png "Memo logo")
 
 This document presents some of the Markdown features that can be used in Memo documentation.
 
@@ -19,6 +19,8 @@ This document presents some of the Markdown features that can be used in Memo do
 - Tables are supported (see [below](#files) for an example).
 - Texts from the translations can be inserted by writing `$t(<translation_key>)` (without the `<>` brackets), or `$t(<translation_key>|cap)` to capitalise the text.
   Example: _"$t(models.user._name|cap)"_ is the word for _"user"_ in the language $t(language).
+- An icon can be inserted like this: `$icon(iconSetName.IconName)`, for example `$icon(staffIcons.Staff)`. The icon sets
+  and icons are defined in icons.tsx.
 - The created markdown should pass the configured markdown linter (although the linter rules can be tweaked as needed).
 
 $include(include.part.md)

@@ -1,5 +1,6 @@
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent, createSignal, onMount, splitProps} from "solid-js";
-import {cx, htmlAttributes} from "../utils";
 import {useEventListener} from "../utils/event_listener";
 
 export const FullScreenPre: ParentComponent<htmlAttributes.div> = (allProps) => {

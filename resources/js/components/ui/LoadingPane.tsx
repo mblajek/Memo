@@ -1,5 +1,6 @@
+import {cx} from "components/utils/classnames";
+import {delayedAccessor} from "components/utils/debounce";
 import {Show, VoidComponent} from "solid-js";
-import {cx, delayedAccessor} from "../utils";
 import {useMutationsTracker} from "../utils/mutations_tracker";
 import {BigSpinner} from "./Spinner";
 

@@ -1,4 +1,4 @@
-# Spotkania — grupy klientów
+# Spotkania — `$icon(clientGroupIcons.ClientGroup)` kontekst grupy klientów
 
 Klient, który jest członkiem [grupy klientów](client-groups), może uczestniczyć w spotkaniu _w kontekście_
 tej grupy. Przykłady:

@@ -2,12 +2,13 @@ import {A} from "@solidjs/router";
 import {CellContext, createSolidTable, HeaderContext} from "@tanstack/solid-table";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
-import {Button} from "components/ui/Button";
+import {Button, ButtonProps} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {capitalizeString} from "components/ui/Capitalize";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {DocsModalInfoIcon} from "components/ui/docs_modal";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -15,31 +16,28 @@ import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {EmptyValueSymbol, EN_DASH} from "components/ui/symbols";
+import {EN_DASH} from "components/ui/symbols";
+import {Header} from "components/ui/Table/Header";
 import {
   AUTO_SIZE_COLUMN_DEFS,
   createTableTranslations,
   getBaseTableOptions,
-  Header,
-  PaddedCell,
   Table,
   TableTranslations,
-} from "components/ui/Table";
+} from "components/ui/Table/Table";
+import {PaddedCell} from "components/ui/Table/table_cells";
 import {TextInput} from "components/ui/TextInput";
 import {TimeDuration} from "components/ui/TimeDuration";
 import {title} from "components/ui/title";
-import {
-  currentDate,
-  cx,
-  DATE_FORMAT,
-  htmlAttributes,
-  NON_NULLABLE,
-  useLangFunc,
-  withNoThrowOnInvalid,
-} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
+import {DATE_FORMAT} from "components/utils/formatting";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {useMutationsTracker} from "components/utils/mutations_tracker";
+import {currentDate, withNoThrowOnInvalid} from "components/utils/time";
 import {AlignedTime} from "components/utils/time_formatting";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
@@ -48,12 +46,11 @@ import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tq
 import {dateToISO} from "data-access/memo-api/utils";
 import {DateTime, WeekdayNumbers} from "luxon";
 import {IconTypes} from "solid-icons";
-import {BsThreeDots} from "solid-icons/bs";
 import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
 import {IoArrowUndoOutline} from "solid-icons/io";
 import {OcArrowdown2, OcMovetobottom2} from "solid-icons/oc";
-import {TbArrowBigRight, TbNotes} from "solid-icons/tb";
+import {TbNotes} from "solid-icons/tb";
 import {
   Accessor,
   batch,
@@ -393,7 +390,7 @@ export default (() => {
                     onClick={[setSelectedWeekDate, undefined]}
                     title={t("facility_user.weekly_time_tables.selected_week_click_to_deselect")}
                   >
-                    <TbArrowBigRight class="text-current" size="20" />
+                    <actionIcons.Check class="text-current" size="14" />
                   </Button>
                 }
               >
@@ -404,14 +401,14 @@ export default (() => {
                       title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
-                      <BsThreeDots class="text-current" size="20" />
+                      <actionIcons.ThreeDots class="text-current" />
                     </Button>
                   )}
                 >
                   {(popOver) => {
                     const MenuItem: VoidComponent<
-                      htmlAttributes.button & {
-                        readonly disabledTitle?: string;
+                      ButtonProps & {
+                        disabledTitle?: string;
                         icon: IconTypes | readonly IconTypes[];
                         label: string;
                       }
@@ -436,7 +433,7 @@ export default (() => {
                     return (
                       <SimpleMenu class="max-w-80" onClick={() => popOver.close()}>
                         <MenuItem
-                          icon={TbArrowBigRight}
+                          icon={actionIcons.Check}
                           label={t("facility_user.weekly_time_tables.select_week")}
                           onClick={[setSelectedWeekDate, weekDate()]}
                         />

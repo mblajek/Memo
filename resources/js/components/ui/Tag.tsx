@@ -1,5 +1,5 @@
+import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent, VoidComponent, splitProps} from "solid-js";
-import {htmlAttributes} from "../utils";
 import {applyTextOpacity, bleachColor, randomColor} from "./colors";
 
 interface TagProps extends htmlAttributes.div {

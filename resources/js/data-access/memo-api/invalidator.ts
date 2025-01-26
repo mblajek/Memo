@@ -1,6 +1,7 @@
 import {useQueryClient} from "@tanstack/solid-query";
+import {System} from "data-access/memo-api/groups/System";
+import {User} from "data-access/memo-api/groups/User";
 import {createSignal, untrack} from "solid-js";
-import {System, User} from "./groups";
 import {FacilityClientGroup} from "./groups/FacilityClientGroup";
 import {FacilityMeeting} from "./groups/FacilityMeeting";
 import {FacilityUsers} from "./groups/FacilityUsers";
@@ -25,6 +26,9 @@ export function useInvalidator(queryClient = useQueryClient()) {
       return true;
     },
     isThrottled: throttled,
+    resetEverything: () => {
+      queryClient.resetQueries();
+    },
     // Shared:
     users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
     facilities: () => queryClient.invalidateQueries({queryKey: Facilities.keys.facility()}),

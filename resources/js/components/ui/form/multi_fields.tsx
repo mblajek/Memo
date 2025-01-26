@@ -1,12 +1,13 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {WRAPPED_FIELD_KEY, wrapArrayOfPrimitiveValues} from "components/felte-form/wrapped_fields";
-import {cx, htmlAttributes} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {BsChevronCompactDown, BsChevronCompactUp} from "solid-icons/bs";
 import {Accessor, Index, JSX, Show, VoidComponent, createEffect, createMemo, on, splitProps} from "solid-js";
 import {Button} from "../Button";
 import {actionIcons} from "../icons";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 
 export interface MultiFieldData {
   readonly name: string;

@@ -1,25 +1,30 @@
 # Strona główna pomocy
 
+![Memo logo](../memo_logo.png "Memo logo")
+
 **$t(app_name)** to system do zarządzania:
 
 - bazą klientów fundacji
-- kalendarzem wizyt klientów
+- kalendarzem spotkań klientów i pracowników
 - grafikami pracy pracowników fundacji
 
 ## Dokumenty pomocy
 
-- Pracownicy
+- `$icon(staffIcons.Staff)` Pracownicy
+  - [Role i uprawnienia](staff-roles)
   - [Grafiki pracy](staff-time-tables)
-- Klienci
+- `$icon(clientIcons.Client)` Klienci
   - [Grupy klientów](client-groups)
   - [Usuwanie klientów](client-delete)
 - Spotkania
   - [Statusy](meeting-statuses)
   - [Kontekst — grupy klientów](meeting-client-groups)
 - Tabele
+  - [Kolumny](table-columns)
   - [Filtrowanie](table-filtering)
   - [Eksport danych](table-export)
   - [Grupowanie wierszy](table-grouping)
+  - [Zapisane widoki](table-saved-views)
 - [Raporty](reports)
 - [Tekst z tagami](rich-text)
 - [Sztuczki usprawniające korzystanie z Memo ✨](tricks)
@@ -34,3 +39,5 @@
 - [Mikołaj Błajek](https://github.com/mblajek) — główny programista backendu
 - [Tomasz Błajek](https://github.com/TPReal) — główny programista frontendu
 - [Pozostali programiści](https://github.com/mblajek/Memo/graphs/contributors?type=a)
+
+[Polityka prywatności](privacy-policy)

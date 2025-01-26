@@ -1,7 +1,8 @@
-import {cx, htmlAttributes} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {For, JSX, Show, VoidComponent, createMemo, createRenderEffect, createSignal, splitProps} from "solid-js";
 import {hoverSignal} from "../hover_signal";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 
 type _Directives = typeof hoverSignal;
 

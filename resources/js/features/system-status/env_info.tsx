@@ -1,5 +1,5 @@
 import {SmallSpinner} from "components/ui/Spinner";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {isDEV} from "components/utils/dev_mode";
 import {JSX, Match, Show, Switch} from "solid-js";
 import {useDeveloperPermission} from "../authentication/developer_permission";

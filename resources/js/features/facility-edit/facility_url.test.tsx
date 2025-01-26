@@ -1,5 +1,5 @@
+import {getUrlSuggestion} from "features/facility-edit/facility_url";
 import {expect, test} from "vitest";
-import {getUrlSuggestion} from "./FacilityCreateForm";
 
 test("url suggestions", () => {
   expect(getUrlSuggestion("")).toBe("");

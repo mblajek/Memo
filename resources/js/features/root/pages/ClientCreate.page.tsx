@@ -1,5 +1,5 @@
 import {useNavigate} from "@solidjs/router";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {createHistoryBack} from "components/utils/history_back";
 import ClientCreateForm from "features/client/ClientCreateForm";
 import {VoidComponent} from "solid-js";

@@ -1,6 +1,6 @@
 import {Show, VoidComponent} from "solid-js";
 import {CopyToClipboard} from "../CopyToClipboard";
-import {EmptyValueSymbol} from "../symbols";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 
 interface Props {
   readonly id: string | undefined;

@@ -2,6 +2,7 @@ import {Obj} from "@felte/core";
 import {useFormContext} from "components/felte-form/FelteForm";
 import {Button} from "components/ui/Button";
 import {Capitalize, capitalizeString} from "components/ui/Capitalize";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {HideableSection} from "components/ui/HideableSection";
 import {DocsModalInfoIcon, createDocsModal} from "components/ui/docs_modal";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
@@ -11,9 +12,11 @@ import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {Select} from "components/ui/form/Select";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, clientGroupIcons} from "components/ui/icons";
-import {EMPTY_VALUE_SYMBOL_STRING, EmptyValueSymbol} from "components/ui/symbols";
+import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {title} from "components/ui/title";
-import {NON_NULLABLE, cx, useLangFunc} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {toPlainObject} from "components/utils/object_util";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -256,6 +259,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
           createEffect(
             on(
               [
+                () => props.viewMode,
                 () =>
                   selectedClientsDataQuery.isSuccess &&
                   (!clientGroupFetcher.numSubscribedGroups() || clientGroupFetcher.dataQuery.isSuccess),
@@ -266,7 +270,15 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                 form.data, // to nudge the form and improve reactivity
               ],
               (
-                [querySuccess, sharedGroups, _groupsByClientId, _clientsGroupsMode, _sharedClientsGroupId, formData],
+                [
+                  viewMode,
+                  querySuccess,
+                  sharedGroups,
+                  _groupsByClientId,
+                  _clientsGroupsMode,
+                  _sharedClientsGroupId,
+                  formData,
+                ],
                 _prevInput,
                 prev:
                   | {
@@ -294,51 +306,53 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     )
                   );
                 let clientsChanged = formClientsChanged;
-                for (let i = 0; i < formData.clients.length; i++) {
-                  const {userId, clientGroupId} = formData.clients[i]!;
-                  if (userId) {
-                    if (clientGroupId) {
-                      if (!isClientInGroup(userId, clientGroupId)) {
-                        // Invalid state.
-                        setAttendanceGroup(
-                          formData,
-                          i,
-                          clientsGroupsMode() === "shared" &&
-                            sharedClientsGroupId() &&
-                            isClientInGroup(userId, sharedClientsGroupId())
-                            ? sharedClientsGroupId()
-                            : "",
-                        );
-                        clientsChanged = true;
-                      }
-                    } else if (formClientsChanged) {
-                      if (clientsGroupsMode() === "shared") {
-                        if (sharedClientsGroupId() && isClientInGroup(userId, sharedClientsGroupId())) {
-                          setAttendanceGroup(formData, i, sharedClientsGroupId());
+                if (!viewMode) {
+                  for (let i = 0; i < formData.clients.length; i++) {
+                    const {userId, clientGroupId} = formData.clients[i]!;
+                    if (userId) {
+                      if (clientGroupId) {
+                        if (!isClientInGroup(userId, clientGroupId)) {
+                          // Invalid state.
+                          setAttendanceGroup(
+                            formData,
+                            i,
+                            clientsGroupsMode() === "shared" &&
+                              sharedClientsGroupId() &&
+                              isClientInGroup(userId, sharedClientsGroupId())
+                              ? sharedClientsGroupId()
+                              : "",
+                          );
+                          clientsChanged = true;
                         }
-                      } else if (clientsGroupsMode() === "separate") {
-                        const dupClient = formData.clients.find((c, j) => c.userId === userId && j !== i);
-                        if (dupClient) {
-                          setAttendanceGroup(formData, i, dupClient.clientGroupId);
-                        } else {
-                          const prevClient = prev?.formData.clients.find((c) => c.userId === userId);
-                          if (!prevClient) {
-                            setAttendanceGroup(formData, i, groupsByClientId().get(userId)?.[0] || "");
+                      } else if (formClientsChanged) {
+                        if (clientsGroupsMode() === "shared") {
+                          if (sharedClientsGroupId() && isClientInGroup(userId, sharedClientsGroupId())) {
+                            setAttendanceGroup(formData, i, sharedClientsGroupId());
+                          }
+                        } else if (clientsGroupsMode() === "separate") {
+                          const dupClient = formData.clients.find((c, j) => c.userId === userId && j !== i);
+                          if (dupClient) {
+                            setAttendanceGroup(formData, i, dupClient.clientGroupId);
+                          } else {
+                            const prevClient = prev?.formData.clients.find((c) => c.userId === userId);
+                            if (!prevClient) {
+                              setAttendanceGroup(formData, i, groupsByClientId().get(userId)?.[0] || "");
+                            }
                           }
                         }
+                      } else if (
+                        clientsGroupsMode() === "separate" &&
+                        groupsByClientId().has(userId) &&
+                        !prev?.groupsByClientId.has(userId)
+                      ) {
+                        setAttendanceGroup(formData, i, groupsByClientId().get(userId)![0] || "");
                       }
-                    } else if (
-                      clientsGroupsMode() === "separate" &&
-                      groupsByClientId().has(userId) &&
-                      !prev?.groupsByClientId.has(userId)
-                    ) {
-                      setAttendanceGroup(formData, i, groupsByClientId().get(userId)![0] || "");
                     }
                   }
-                }
-                if (clientsChanged) {
-                  determineClientsGroupsMode(form.data());
-                  formData = form.data();
+                  if (clientsChanged) {
+                    determineClientsGroupsMode(form.data());
+                    formData = form.data();
+                  }
                 }
                 const modeChanged = prev && clientsGroupsMode() !== prev.clientsGroupsMode;
                 if (clientsGroupsMode() === "none") {
@@ -486,24 +500,25 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                         <Button
                           class="min-h-small-input self-start"
                           title={
-                            <div>
-                              <div>
-                                <Show
-                                  when={clientGroupId()}
-                                  fallback={translations.fieldName("attendantClientGroupId.none")}
-                                >
-                                  {(clientGroupId) => (
-                                    <div class="flex flex-col">
-                                      {translations.fieldName("attendantClientGroupId.some")}
+                            <>
+                              <Show
+                                when={clientGroupId()}
+                                fallback={<p>{translations.fieldName("attendantClientGroupId.none")}</p>}
+                              >
+                                {(clientGroupId) => (
+                                  <>
+                                    <p>{translations.fieldName("attendantClientGroupId.some")}</p>
+                                    <p>
+                                      <clientGroupIcons.ClientGroup size="18" class="inlineIcon" />{" "}
                                       <SharedClientGroupLabel groupId={clientGroupId()} />
-                                    </div>
-                                  )}
-                                </Show>
-                              </div>
-                              <Show when={!props.viewMode}>
-                                <div>{translations.fieldName("attendantClientGroupId.click_to_toggle")}</div>
+                                    </p>
+                                  </>
+                                )}
                               </Show>
-                            </div>
+                              <Show when={!props.viewMode}>
+                                <p>{translations.fieldName("attendantClientGroupId.click_to_toggle")}</p>
+                              </Show>
+                            </>
                           }
                           onClick={() =>
                             form.setFields(`clients.${index}.clientGroupId`, clientGroupId() ? "" : clientGroups()[0])

@@ -1,16 +1,13 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {doAndClearParams} from "components/utils/modals";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
-import {
-  SUBTYPE_FACILITY_WIDE,
-  WorkTimeFormSubtype,
-  WorkTimeViewEditFormProps,
-} from "features/meeting/WorkTimeViewEditForm";
+import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "features/meeting/work_time_form_subtype";
+import {WorkTimeViewEditFormProps} from "features/meeting/WorkTimeViewEditForm";
 import {createComputed, createMemo, createSignal} from "solid-js";
 
 const WorkTimeViewEditForm = lazyAutoPreload(() => import("features/meeting/WorkTimeViewEditForm"));

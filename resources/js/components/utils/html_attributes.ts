@@ -1,4 +1,5 @@
-import {JSX} from "solid-js";
+import {hasProp} from "components/utils/props";
+import {JSX, mergeProps, untrack} from "solid-js";
 import {DOMElement} from "solid-js/jsx-runtime";
 import {cx} from "./classnames";
 import {skipUndefinedValues} from "./object_util";
@@ -51,11 +52,15 @@ export namespace htmlAttributes {
     "onChange",
     "onClick",
     "onDblClick",
-    "onMouseMove",
-    "onMouseDown",
-    "onMouseUp",
     "onKeyDown",
     "onKeyUp",
+    "onPointerEnter",
+    "onPointerLeave",
+    "onPointerOver",
+    "onPointerOut",
+    "onPointerDown",
+    "onPointerUp",
+    "onPointerMove",
   ] satisfies (keyof div)[];
   type EventType = (typeof EVENT_HANDLERS)[number];
 
@@ -63,41 +68,55 @@ export namespace htmlAttributes {
     attributes: A | undefined,
     overrides: O,
   ): A & O {
-    if (!attributes || !Object.keys(attributes).length) {
+    if (!attributes) {
       return overrides as A & O;
     }
-    const attribs = attributes as Partial<Record<string, unknown>>;
-    const result = {...attribs, ...overrides};
-    if (attribs.class !== undefined && result.class !== attribs.class) {
-      result.class = cx(attribs.class as string, overrides.class);
-    }
-    if (attribs.style !== undefined && Object.hasOwn(overrides, "style")) {
-      if (overrides.style === undefined) {
-        result.style = attribs.style as JSX.CSSProperties;
-      } else {
-        if (typeof attribs.style !== typeof overrides.style)
-          throw new Error(
-            `Cannot merge style from attributes (${JSON.stringify(
-              attribs.style,
-            )}) and style from overrides (${JSON.stringify(overrides.style)})`,
-          );
-        result.style =
-          typeof attribs.style === "string"
-            ? `${attribs.style} ; ${overrides.style}`
-            : {...attribs.style, ...skipUndefinedValues(overrides.style as JSX.CSSProperties)};
+    return untrack(() => {
+      const attribs = attributes as Partial<Record<string, unknown>>;
+      const combinedProps: Record<string, unknown> = {};
+      if (hasProp(overrides, "class")) {
+        Object.defineProperty(combinedProps, "class", {
+          get: () => cx(attribs.class as string, overrides.class),
+        });
       }
-    }
-    for (const eventHandler of EVENT_HANDLERS) {
-      if (attribs[eventHandler] && overrides[eventHandler]) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        result[eventHandler] = (event: any) => {
+      if (hasProp(overrides, "style")) {
+        Object.defineProperty(combinedProps, "style", {
+          get: () => {
+            if (overrides.style === undefined) {
+              return attribs.style as JSX.CSSProperties;
+            } else if (attribs.style === undefined) {
+              return overrides.style;
+            } else {
+              if (typeof attribs.style !== typeof overrides.style)
+                throw new Error(
+                  `Cannot merge style from attributes (${JSON.stringify(
+                    attribs.style,
+                  )}) and style from overrides (${JSON.stringify(overrides.style)})`,
+                );
+              return typeof attribs.style === "string"
+                ? `${attribs.style} ; ${overrides.style}`
+                : {
+                    ...(attribs.style as JSX.CSSProperties),
+                    ...skipUndefinedValues(overrides.style as JSX.CSSProperties),
+                  };
+            }
+          },
+        });
+      }
+      for (const eventHandler of EVENT_HANDLERS) {
+        if (hasProp(overrides, eventHandler)) {
+          // The event handlers are not reactive, so no need for a getter.
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          callHandler(overrides[eventHandler]! as any, event);
-          callHandler(attribs[eventHandler] as JSX.EventHandlerUnion<HTMLElement, Event>, event);
-        };
+          combinedProps[eventHandler] = (event: any) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            callHandler(overrides[eventHandler]! as any, event);
+            callHandler(attribs[eventHandler] as JSX.EventHandlerUnion<HTMLElement, Event>, event);
+          };
+        }
       }
-    }
-    return result as A & O;
+      const result = mergeProps(attribs, overrides, combinedProps);
+      return result as A & O;
+    });
   }
 
   export function callHandler<T, E extends Event>(

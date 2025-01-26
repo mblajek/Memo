@@ -14,13 +14,12 @@ import {HoursArea} from "components/ui/calendar/calendar-columns/HoursArea";
 import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHeader";
 import {DaysRange} from "components/ui/calendar/days_range";
 import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
-import {NON_NULLABLE, currentDate, cx, htmlAttributes, useLangFunc} from "components/utils";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {toastSuccess} from "components/utils/toast";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
-import {User} from "data-access/memo-api/groups";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
@@ -69,6 +68,11 @@ import {
   coloringToStyle,
   getRandomEventColors,
 } from "./colors";
+import {currentDate} from "components/utils/time";
+import {useLangFunc} from "components/utils/lang";
+import {User} from "data-access/memo-api/groups/User";
+import {cx} from "components/utils/classnames";
+import {NON_NULLABLE} from "components/utils/array_filter";
 
 type _Directives = typeof title;
 

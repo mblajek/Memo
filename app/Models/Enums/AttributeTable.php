@@ -6,6 +6,7 @@ enum AttributeTable: string
 {
     case Attribute = 'attributes';
     case Client = 'clients';
+    case ClientGroup = 'client_groups';
     case Dictionary = 'dictionaries';
     case Facility = 'facilities';
     case Grant = 'grants';

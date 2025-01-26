@@ -1,8 +1,8 @@
-import {PaddedCell, ShowCellVal, cellFunc} from "components/ui/Table";
 import {PartialColumnConfigEntry} from "components/ui/Table/TQueryTable";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
 import {exportCellFunc} from "components/ui/Table/table_export_cells";
 import {UuidSelectFilterControl} from "components/ui/Table/tquery_filters/UuidSelectFilterControl";
-import {htmlAttributes} from "components/utils";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {useModelQuerySpecs} from "components/utils/model_query_specs";
 import {objectRecursiveMerge} from "components/utils/object_util";
 import {ParentComponent, Show, splitProps} from "solid-js";

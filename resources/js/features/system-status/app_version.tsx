@@ -1,5 +1,5 @@
-import {EmptyValueSymbol} from "components/ui/symbols";
-import {useLangFunc} from "components/utils";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {useLangFunc} from "components/utils/lang";
 import {Show, VoidComponent} from "solid-js";
 import {useSystemStatusMonitor} from "./system_status_monitor";
 

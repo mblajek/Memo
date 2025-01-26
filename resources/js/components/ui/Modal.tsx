@@ -1,4 +1,6 @@
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
+import {useLangFunc} from "components/utils/lang";
+import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {VsClose} from "solid-icons/vs";
 import {Accessor, createComputed, createMemo, createSignal, createUniqueId, JSX, onCleanup, Show} from "solid-js";
 import {Portal} from "solid-js/web";
@@ -41,7 +43,7 @@ interface BaseProps<T> {
 export const MODAL_STYLE_PRESETS = {
   narrow: {width: "420px"},
   medium: {width: "min(700px, 80%)"},
-  docs: {width: "min(1000px, 90%)"},
+  wide: {width: "min(1000px, 90%)"},
 } satisfies Partial<Record<string, JSX.CSSProperties>>;
 
 const ESCAPE_REASONS = ["escapeKey", "clickOutside", "modalCleanup"] as const;
@@ -218,15 +220,21 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
             <div
               class="absolute z-modal"
               onPointerMove={(e) => {
-                if (e.buttons === 1) {
-                  if (grabPos()) {
-                    setRelativePos([e.clientX - grabPos()![0], e.clientY - grabPos()![1]]);
+                if (e.isPrimary) {
+                  if (e.buttons === 1) {
+                    if (grabPos()) {
+                      setRelativePos([e.clientX - grabPos()![0], e.clientY - grabPos()![1]]);
+                    }
+                  } else {
+                    setGrabPos(undefined);
                   }
-                } else {
+                }
+              }}
+              onPointerUp={(e) => {
+                if (e.isPrimary) {
                   setGrabPos(undefined);
                 }
               }}
-              onPointerUp={[setGrabPos, undefined]}
             >
               <div
                 class={cx("fixed inset-0", props.backdropClass ?? "bg-black/30")}
@@ -246,19 +254,21 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
                     "top": `${relativePos()[1]}px`,
                   }}
                 >
-                  <Show when={props.title}>
-                    <h2
-                      class={cx(
-                        "font-bold select-none touch-none pr-4",
-                        canDrag() ? "cursor-grab" : undefined,
-                        closeOn().has("closeButton") ? "pr-8" : undefined,
-                      )}
-                      style={{"font-size": "1.3rem"}}
-                      {...grabHandler}
-                    >
-                      {props.title}
-                    </h2>
-                  </Show>
+                  <Show_noDoubleEvaluation when={props.title}>
+                    {(title) => (
+                      <h2
+                        class={cx(
+                          "font-bold select-none touch-none pr-4",
+                          canDrag() ? "cursor-grab" : undefined,
+                          closeOn().has("closeButton") ? "pr-8" : undefined,
+                        )}
+                        style={{"font-size": "1.3rem"}}
+                        {...grabHandler}
+                      >
+                        {title()}
+                      </h2>
+                    )}
+                  </Show_noDoubleEvaluation>
                   <div
                     // Grab handler covering the top margin of the dialog.
                     class={cx("absolute top-0 right-4 left-4 h-4 touch-none", canDrag() ? "cursor-grab" : undefined)}

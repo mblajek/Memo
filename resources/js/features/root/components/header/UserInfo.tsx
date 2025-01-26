@@ -1,6 +1,7 @@
 import {useNavigate} from "@solidjs/router";
 import {createMutation, createQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
+import {actionIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {MemoLoader} from "components/ui/MemoLoader";
 import {PopOver} from "components/ui/PopOver";
@@ -8,15 +9,17 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {CHECKBOX} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
-import {DATE_TIME_FORMAT, currentTimeMinute, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {isDEV, resetDEV, toggleDEV} from "components/utils/dev_mode";
+import {DATE_TIME_FORMAT} from "components/utils/formatting";
+import {useLangFunc} from "components/utils/lang";
 import {usePasswordExpiration} from "components/utils/password_expiration";
-import {User} from "data-access/memo-api/groups";
+import {currentTimeMinute} from "components/utils/time";
+import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
-import {TbPassword} from "solid-icons/tb";
 import {TiWarningOutline} from "solid-icons/ti";
 import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, on} from "solid-js";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
@@ -62,7 +65,7 @@ export const UserInfo: VoidComponent = () => {
 
   const CurrentTime: VoidComponent = () => {
     return (
-      <div class={usesLocalTimeZone() ? undefined : "text-orange-600"}>
+      <div class={cx("text-nowrap", usesLocalTimeZone() ? undefined : "text-orange-600")}>
         <Index
           // Display each part in a separate span to allow selecting the date.
           each={currentTimeMinute().toLocaleParts(FORMAT)}
@@ -98,7 +101,7 @@ export const UserInfo: VoidComponent = () => {
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <CurrentTime />
-          <div class="flex gap-1 items-center">
+          <div class="flex gap-1 items-center text-nowrap">
             {statusQuery.data?.user.name}
             <Show when={developerPermission.enabled()}>
               <PopOver
@@ -125,7 +128,7 @@ export const UserInfo: VoidComponent = () => {
             <PopOver
               trigger={(popOver) => (
                 <Button title={t("user_settings")} onClick={popOver.open}>
-                  <TbPassword class="text-current" />
+                  <actionIcons.ThreeDots class="text-current inlineIcon" />
                   <Show when={passwordExpiration()}>
                     <WarningMark />
                   </Show>

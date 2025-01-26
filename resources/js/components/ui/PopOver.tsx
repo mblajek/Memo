@@ -1,5 +1,5 @@
 import {ComputePositionConfig, DetectOverflowOptions, flip, offset, shift} from "@floating-ui/dom";
-import {Component, JSX, Show, createSignal} from "solid-js";
+import {Component, JSX, Show, createSignal, onCleanup} from "solid-js";
 import {useEventListener} from "../utils/event_listener";
 import {GetRef} from "../utils/GetRef";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
@@ -10,14 +10,21 @@ interface Props {
   readonly trigger: (popOver: PopOverControl) => JSX.Element;
   readonly placement?: Partial<ComputePositionConfig>;
   readonly children: ChildrenOrFunc<[PopOverControl]>;
+  /** The parent pop-ver that should not close when the inside of this pop-over's floating element is clicked. */
+  readonly parentPopOver?: PopOverControl;
 }
 
 export interface PopOverControl {
-  isOpen: boolean;
+  readonly isOpen: boolean;
   setOpen(open?: boolean): void;
   open(): void;
   close(): void;
   toggle(): void;
+  /**
+   * Registers an element that is treated as part of the floating content, even if it's not inside it,
+   * so that clicking it won't close the pop-over. The element is removed in onCleanup.
+   */
+  addExternalContent(content: HTMLElement): void;
 }
 
 const DETECT_OVERFLOW_OPTIONS = {
@@ -36,6 +43,7 @@ const DEFAULT_PLACEMENT: Partial<ComputePositionConfig> = {
 
 export const PopOver: Component<Props> = (props) => {
   const [open, setOpen] = createSignal(false);
+  const externalContent: HTMLElement[] = [];
   const popOver: PopOverControl = {
     get isOpen() {
       return open();
@@ -44,6 +52,10 @@ export const PopOver: Component<Props> = (props) => {
     open: () => setOpen(true),
     close: () => setOpen(false),
     toggle: () => setOpen(!open()),
+    addExternalContent: (content) => {
+      externalContent.push(content);
+      onCleanup(() => externalContent.splice(externalContent.indexOf(content), 1));
+    },
   };
   return (
     <Floating
@@ -54,7 +66,12 @@ export const PopOver: Component<Props> = (props) => {
           document,
           "click",
           (e) => {
-            if (floatingRef && !e.composedPath().includes(floatingRef)) {
+            const composedPath = e.composedPath();
+            if (
+              floatingRef &&
+              !composedPath.includes(floatingRef) &&
+              !externalContent.some((c) => composedPath.includes(c))
+            ) {
               // Use timeout to close even if it is the trigger button that was clicked.
               setTimeout(() => setOpen(false));
             }
@@ -65,6 +82,9 @@ export const PopOver: Component<Props> = (props) => {
           <GetRef
             ref={(v) => {
               floatingRef = v;
+              if (floatingRef) {
+                props.parentPopOver?.addExternalContent(floatingRef);
+              }
             }}
           >
             <Show when={open()}>

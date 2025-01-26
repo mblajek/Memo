@@ -1,12 +1,12 @@
 import {createQuery} from "@tanstack/solid-query";
-import {useLangFunc} from "components/utils";
+import {useLangFunc} from "components/utils/lang";
 import {Modifiable} from "components/utils/modifiable";
+import {System} from "data-access/memo-api/groups/System";
 import {translationsLoaded} from "i18n_loader";
 import {Accessor, ParentComponent, createContext, createMemo, useContext} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {Attributes} from "./attributes";
 import {Dictionaries} from "./dictionaries";
-import {System} from "./groups";
 
 const Context = createContext<ContextValue>();
 

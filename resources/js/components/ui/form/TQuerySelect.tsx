@@ -1,6 +1,7 @@
 import {QueryKey} from "@tanstack/solid-query";
 import {FuzzyGlobalFilterConfig} from "components/ui/Table/tquery_filters/fuzzy_filter";
-import {NON_NULLABLE, useLangFunc} from "components/utils";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {useLangFunc} from "components/utils/lang";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {createSelectRequestCreator} from "data-access/memo-api/tquery/select";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
@@ -19,7 +20,7 @@ import {
 import {mergeSelectProps} from "./select_helper";
 
 export interface BaseTQuerySelectProps
-  extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small"> {
+  extends Pick<SelectBaseProps, "name" | "label" | "disabled" | "placeholder" | "small" | "autofocus"> {
   /**
    * The configuration of how the items are fetched from tquery.
    *

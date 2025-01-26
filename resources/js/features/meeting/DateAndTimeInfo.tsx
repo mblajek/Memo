@@ -1,7 +1,8 @@
 import {TimeDuration} from "components/ui/TimeDuration";
 import {EN_DASH} from "components/ui/symbols";
-import {cx, useLangFunc} from "components/utils";
+import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE, formatDayMinuteHM} from "components/utils/day_minute_util";
+import {useLangFunc} from "components/utils/lang";
 import {MeetingResource} from "data-access/memo-api/resources/meeting.resource";
 import {DateTime} from "luxon";
 import {Match, Show, Switch, VoidComponent} from "solid-js";

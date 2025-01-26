@@ -1,8 +1,10 @@
+import {cx} from "components/utils/classnames";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {DateTime} from "luxon";
 import {createSignal, onCleanup, Show, splitProps, VoidComponent} from "solid-js";
 import {useFormContextIfInForm} from "../felte-form/FelteForm";
-import {cx, htmlAttributes, useLangFunc} from "../utils";
 import {shortWeekdayName} from "../utils/date_formatting";
 import {TextInput} from "./TextInput";
 
