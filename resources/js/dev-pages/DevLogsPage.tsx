@@ -71,12 +71,11 @@ export default (() => {
           name: "userAgent",
           columnDef: {
             cell: cellFunc<string>((props) => (
-              <ScrollableCell class="pr-0" baseHeight={BASE_HEIGHT}>
+              <ScrollableCell class="pr-0 text-xs" baseHeight={BASE_HEIGHT}>
                 <ShowCellVal v={props.v}>{(v) => <LogText text={v()} />}</ShowCellVal>
               </ScrollableCell>
             )),
           },
-          initialVisible: false,
           columnGroups: true,
         },
         {name: "user.id", columnDef: {size: 150}, initialVisible: false, columnGroups: "user.name"},
