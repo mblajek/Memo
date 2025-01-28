@@ -223,16 +223,8 @@ filter:
       regexp: ".*"
 
 export:
-  label: "$t(actions.export)"
-  format:
-    csv: "CSV"
-    excel_csv: "Excel CSV"
   all_pages: "cała tabela"
   current_page: "bieżąca strona"
-  exporting: "Eksportowanie$t(ellipsis)"
-  success: "Zapisano dane do pliku"
-  error: "Nie udało się wyeksportować danych"
-  aborted: "Anulowano eksport"
 
 column_groups:
   grouping_symbol: "✦"

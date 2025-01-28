@@ -1,5 +1,6 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTemplate, IconTypes} from "solid-icons";
+import {AiOutlineFileExcel} from "solid-icons/ai";
 import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
   BsFileEarmarkPerson,
@@ -105,6 +106,7 @@ export namespace actionIcons {
   export const FocusHorizontally = RiArrowsContractLeftRightLine;
   export const SaveTableView = VsSave;
   export const Check = FaSolidCheck;
+  export const ExportCSV = AiOutlineFileExcel;
 }
 
 export namespace calendarIcons {

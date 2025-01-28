@@ -156,7 +156,7 @@ html {
     }
 
     &.primary {
-      @apply p-2 rounded text-white;
+      @apply p-2 min-h-8 rounded text-white;
       background-color: $memo-bg-active-contrasted;
       &[aria-disabled="true"] {
         @apply bg-opacity-50;

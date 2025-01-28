@@ -1,7 +1,9 @@
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {WriteCSVOptions} from "components/utils/csv_writer";
 import {useLangFunc} from "components/utils/lang";
-import {createComputed, onMount, VoidComponent} from "solid-js";
+import {createComputed, createSignal, VoidComponent} from "solid-js";
 
 interface CSVExportModeFragment {
   readonly id: string;
@@ -16,37 +18,58 @@ const CSV_EXPORT_MODES: readonly CSVExportModeFragment[] = [
 
 export interface CSVExportMode extends CSVExportModeFragment {
   readonly label: string;
+  readonly pickerTypes: SaveFilePickerOptions["types"];
 }
 
-interface Props {
-  readonly modeId: string | undefined;
-  readonly onModeChange: (mode: CSVExportMode) => void;
-}
+type PersistentState = {
+  readonly csvMode: string;
+};
 
-export const CSVExportModeSelector: VoidComponent<Props> = (props) => {
+export function useCSVExportModeSelector({persistenceKey}: {persistenceKey?: string} = {}) {
   const t = useLangFunc();
   const modes = new Map<string, CSVExportMode>();
   for (const mode of CSV_EXPORT_MODES) {
-    modes.set(mode.id, {...mode, label: t(`tables.export.format.${mode.id}`)});
+    const label = t(`csv_export.format.${mode.id}`);
+    modes.set(mode.id, {
+      ...mode,
+      label,
+      pickerTypes: [{description: label, accept: {"text/csv": [mode.extension]}}],
+    });
   }
-  function setModeId(modeId: string | undefined) {
-    if (modeId) {
-      props.onModeChange(modes.get(modeId)!);
-    }
+  const [csvModeId, csvModeIdSetter] = createSignal<string>();
+  const [csvMode, setCSVMode] = createSignal<CSVExportMode>();
+  function setCSVModeId(modeId: string) {
+    csvModeIdSetter(modeId);
+    setCSVMode(modes.get(modeId));
   }
-  onMount(() => setModeId(props.modeId));
+  if (persistenceKey) {
+    createPersistence<PersistentState>({
+      storage: localStorageStorage(persistenceKey),
+      value: () => ({csvMode: csvModeId() || ""}),
+      onLoad: (value) => setCSVModeId(value.csvMode),
+      version: [2],
+    });
+  }
   createComputed(() => {
-    if (!props.modeId || !modes.has(props.modeId)) {
-      setModeId(CSV_EXPORT_MODES[0]!.id);
+    const modeId = csvModeId();
+    if (!modeId || !modes.has(modeId)) {
+      setCSVModeId(modes.keys().next().value!);
     }
   });
-  return (
-    <SegmentedControl
-      name="csv_export_mode"
-      value={props.modeId}
-      onValueChange={setModeId}
-      items={[...modes.values()].map(({id, label}) => ({value: id, label: () => label}))}
-      small
-    />
-  );
-};
+  const CSVExportModeSelector: VoidComponent = () => {
+    return (
+      <SegmentedControl
+        name="csv_export_mode"
+        label=""
+        value={csvModeId()}
+        onValueChange={setCSVModeId}
+        items={[...modes.values()].map(({id, label}) => ({value: id, label: () => label}))}
+        small
+      />
+    );
+  };
+  return {
+    CSVExportModeSelector,
+    csvMode,
+  };
+}

@@ -2,11 +2,11 @@ import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {ParentComponent, Show, splitProps} from "solid-js";
-import {Button} from "./Button";
+import {Button, ButtonProps} from "./Button";
 import {PopOver, PopOverControl} from "./PopOver";
 import {ChildrenOrFunc} from "./children_func";
 
-interface Props extends htmlAttributes.button {
+interface Props extends ButtonProps {
   readonly divClass?: string;
   readonly popOver: ChildrenOrFunc<[PopOverControl]>;
 }

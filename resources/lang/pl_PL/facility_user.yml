@@ -22,6 +22,7 @@ birth_date_short: "ur. {{date}}"
 
 client:
   notification_method_requires_contact_data: "Wybrana metoda powiadomień wymaga uzupełnienia danych kontaktowych!"
+  csv_export_label: "Eksportuj dane klienta do pliku"
 
 staff:
   list_show_inactive: "pokaż nieaktywnych"

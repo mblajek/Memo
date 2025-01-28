@@ -27,7 +27,7 @@ export function useTableTextExportCells() {
   return {
     default: def,
     bool: <T>() => exportCellFunc<TextExportedCell, boolean, T>((v) => t(v ? "bool_values.yes" : "bool_values.no")),
-    date: <T>() => exportCellFunc<TextExportedCell, string, T>((v) => DateTime.fromISO(v).toLocaleString(DATE_FORMAT)),
+    date: <T>() => exportCellFunc<TextExportedCell, string, T>((v) => formatDateForTextExport(DateTime.fromISO(v))),
     datetime: <T>() =>
       exportCellFunc<TextExportedCell, string, T>((v) => formatDateTimeForTextExport(DateTime.fromISO(v))),
     int: def,
@@ -46,6 +46,9 @@ export function useTableTextExportCells() {
   };
 }
 
+export function formatDateForTextExport(date: DateTime) {
+  return date.toLocaleString(DATE_FORMAT);
+}
 export function formatDateTimeForTextExport(dateTime: DateTime) {
   return dateTime.toLocaleString(DATE_TIME_FORMAT);
 }
@@ -80,7 +83,7 @@ export function exportCellFunc<R, V, T = RowDataType>(
   return (ctx) => (ctx.value == undefined ? fallback?.() : func(ctx.value as V, ctx));
 }
 
-function defaultFormatTextExportValue(value: unknown): string | undefined {
+export function defaultFormatTextExportValue(value: unknown): string | undefined {
   if (value == undefined) {
     return undefined;
   } else if (Array.isArray(value)) {

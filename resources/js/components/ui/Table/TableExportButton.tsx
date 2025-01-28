@@ -1,13 +1,13 @@
 import {Column, RowData, Table} from "@tanstack/solid-table";
-import {createPersistence} from "components/persistence/persistence";
-import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
-import {CSVExportMode, CSVExportModeSelector} from "components/ui/CSVExportModeSelector";
+import {useCSVExportModeSelector} from "components/ui/CSVExportModeSelector";
+import {CSVExportSupportWarning} from "components/ui/CSVExportSupportWarning";
 import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {Modal} from "components/ui/Modal";
 import {PopOver} from "components/ui/PopOver";
 import {ProgressBar} from "components/ui/ProgressBar";
 import {SimpleMenu} from "components/ui/SimpleMenu";
+import {actionIcons} from "components/ui/icons";
 import {CHECKBOX} from "components/ui/symbols";
 import {writeCSV} from "components/utils/csv_writer";
 import {isDEV} from "components/utils/dev_mode";
@@ -15,7 +15,6 @@ import {pickSaveFile} from "components/utils/files";
 import {useLangFunc} from "components/utils/lang";
 import {toastError, toastSuccess} from "components/utils/toast";
 import {DateTime} from "luxon";
-import {AiOutlineFileExcel} from "solid-icons/ai";
 import {Show, VoidComponent, createMemo, createSignal} from "solid-js";
 import {useDocsModalInfoIcon} from "../docs_modal";
 import {CellsPreviewMode} from "./TQueryTable";
@@ -26,10 +25,6 @@ interface ExportProgress {
   readonly index: number;
   readonly len?: number;
 }
-
-type PersistentState = {
-  readonly csvMode: string;
-};
 
 interface TableExportData {
   readonly table: Table<RowData>;
@@ -45,14 +40,7 @@ export const TableExportButton: VoidComponent = () => {
   const table = useTable();
   const tableExportCells = useTableTextExportCells();
   const {DocsModalInfoIcon} = useDocsModalInfoIcon();
-  const [csvModeId, setCSVModeId] = createSignal<string>();
-  createPersistence<PersistentState>({
-    storage: localStorageStorage("Table:export"),
-    value: () => ({csvMode: csvModeId() || ""}),
-    onLoad: (value) => setCSVModeId(value.csvMode),
-    version: [2],
-  });
-  const [csvMode, setCSVMode] = createSignal<CSVExportMode>();
+  const {CSVExportModeSelector, csvMode} = useCSVExportModeSelector({persistenceKey: "Table:export"});
   const [progress, setProgress] = createSignal<ExportProgress>();
   const [abort, setAbort] = createSignal(false);
 
@@ -68,8 +56,8 @@ export const TableExportButton: VoidComponent = () => {
     ).replaceAll(/\s/g, " ");
     const options: SaveFilePickerOptions = {
       suggestedName: `${tableName}__${DateTime.now().toFormat("yyyy-MM-dd_HHmm")}${mode.extension}`,
-      id: `export_${mode.id}`,
-      types: [{description: mode.label, accept: {"text/csv": [mode.extension]}}],
+      id: `table_export_${mode.id}`,
+      types: mode.pickerTypes,
     };
     setAbort(false);
     try {
@@ -101,10 +89,10 @@ export const TableExportButton: VoidComponent = () => {
         }
       }
       await writeCSV({writer, data: data(), ...mode.writeCSVOptions});
-      toastSuccess(t("tables.export.success"));
+      toastSuccess(t("csv_export.success"));
     } catch (e) {
       console.error("CSV export error:", e);
-      toastError(t(abort() ? "tables.export.aborted" : "tables.export.error"));
+      toastError(t(abort() ? "csv_export.aborted" : "csv_export.error"));
       return;
     } finally {
       setProgress(undefined);
@@ -141,14 +129,14 @@ export const TableExportButton: VoidComponent = () => {
       <PopOver
         trigger={(popOver) => (
           <Button onClick={popOver.open} class="secondary small text-nowrap">
-            <AiOutlineFileExcel class="inlineIcon" /> {t("tables.export.label")}
+            <actionIcons.ExportCSV class="inlineIcon" /> {t("csv_export.label")}
           </Button>
         )}
       >
         {(popOver) => {
-          const ItemLabel: VoidComponent<{readonly labelKey: string; readonly count?: number}> = (props) => (
+          const ItemLabel: VoidComponent<{readonly pages: "all" | "current"; readonly count?: number}> = (props) => (
             <span>
-              <Capitalize text={t(`tables.export.${props.labelKey}`)} />
+              <Capitalize text={t(props.pages === "all" ? "tables.export.all_pages" : "tables.export.current_page")} />
               <Show when={props.count}>
                 {(count) => (
                   <span class="text-grey-text"> {t("parenthesised", {text: t("tables.rows", {count: count()})})}</span>
@@ -158,14 +146,9 @@ export const TableExportButton: VoidComponent = () => {
           );
           return (
             <div class="flex flex-col">
-              <div class="p-1 flex items-center justify-between">
-                <CSVExportModeSelector
-                  modeId={csvModeId()}
-                  onModeChange={(mode) => {
-                    setCSVModeId(mode.id);
-                    setCSVMode(mode);
-                  }}
-                />
+              <CSVExportSupportWarning class="p-1" />
+              <div class="p-1 flex items-center">
+                <CSVExportModeSelector />
                 <div class="px-1">
                   <DocsModalInfoIcon href="/help/table-export" onClick={popOver.close} />
                 </div>
@@ -178,7 +161,7 @@ export const TableExportButton: VoidComponent = () => {
                       exportRows(allRowsExportData()!);
                     }}
                   >
-                    <ItemLabel labelKey="all_pages" count={allRowsExportData()!.numRows} />
+                    <ItemLabel pages="all" count={allRowsExportData()!.numRows} />
                   </Button>
                 </Show>
                 <Button
@@ -188,7 +171,7 @@ export const TableExportButton: VoidComponent = () => {
                   }}
                 >
                   <ItemLabel
-                    labelKey={currentPageHasAllData() ? "all_pages" : "current_page"}
+                    pages={currentPageHasAllData() ? "all" : "current"}
                     count={currentPageExportData().numRows}
                   />
                 </Button>
@@ -208,7 +191,7 @@ export const TableExportButton: VoidComponent = () => {
           );
         }}
       </PopOver>
-      <Modal title={t("tables.export.exporting")} open={progress()}>
+      <Modal title={t("csv_export.exporting")} open={progress()}>
         {(progress) => {
           const progressValuePercent = createMemo(() =>
             progress().len ? Math.round((100 * progress().index) / progress().len!) : progress().len,
