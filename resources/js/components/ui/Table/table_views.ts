@@ -220,7 +220,7 @@ export function getTableViewDelta(currentView: TableView, newView: TableView) {
   return {delta, deltaSummary: getTableViewSummary(delta)};
 }
 
-function getTableViewSummary(view: TableView): TableViewSummary {
+export function getTableViewSummary(view: TableView): TableViewSummary {
   const globalFilter = view.globalFilter !== undefined;
   const columnVisibility = !!view.columnVisibility && Object.values(view.columnVisibility).some((v) => v !== undefined);
   const columnFilters = !!view.columnFilterStates && view.columnFilterStates.size > 0;
@@ -228,19 +228,25 @@ function getTableViewSummary(view: TableView): TableViewSummary {
   const sorting = !!view.sorting;
   return {
     globalFilter,
+    globalFilterClear: view.globalFilter === "",
     columnVisibility,
     columnFilters,
+    columnFiltersClear: columnFilters && [...view.columnFilterStates.values()].every((v) => v === undefined),
     activeColumnGroups,
+    activeColumnGroupsClear: view.activeColumnGroups?.length === 0,
     sorting,
     anything: globalFilter || columnVisibility || columnFilters || activeColumnGroups || sorting,
   };
 }
 
-interface TableViewSummary {
+export interface TableViewSummary {
   readonly globalFilter: boolean;
+  readonly globalFilterClear: boolean;
   readonly columnVisibility: boolean;
   readonly columnFilters: boolean;
+  readonly columnFiltersClear: boolean;
   readonly activeColumnGroups: boolean;
+  readonly activeColumnGroupsClear: boolean;
   readonly sorting: boolean;
   readonly anything: boolean;
 }
