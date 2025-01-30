@@ -175,7 +175,8 @@ tables:
       context: "kontekst"
       appVersion: "wersja aplikacji"
       clientIp: "adres IP"
-      userAgent: "przeglądarka"
+      userAgent: "przeglądarka (user agent)"
+      userAgentSummary: "przeglądarka"
       user.id: "id użytkownika"
       user.name: "użytkownik"
 

@@ -59,6 +59,7 @@
     "@tanstack/solid-query": "^5.64.2",
     "@tanstack/solid-table": "^8.20.5",
     "axios": "^1.7.9",
+    "bowser": "^2.11.0",
     "classnames": "^2.5.1",
     "html-parse-string": "^0.0.9",
     "i18next": "^24.2.1",
