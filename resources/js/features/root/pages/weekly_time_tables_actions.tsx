@@ -200,7 +200,7 @@ export function useWeeklyTimeTablesActions() {
       );
 
       const ActiveWeekdaysInfo: VoidComponent = () => (
-        <Show when={action.weekdaysSelection.values().some((sel) => !sel())}>
+        <Show when={[...action.weekdaysSelection.values()].some((sel) => !sel())}>
           <div class="flex flex-col">
             <div>{tt("active_weekdays")}</div>
             <ThingsList

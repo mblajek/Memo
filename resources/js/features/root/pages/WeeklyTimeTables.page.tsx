@@ -521,9 +521,9 @@ export default (() => {
                     onChecked={setWeekdaySelected}
                     onDblClick={() => {
                       // Select all if no other days are selected.
-                      const selectAll = weekdaysSelection
-                        .entries()
-                        .every(([wkd, [getter]]) => wkd === weekday || !getter());
+                      const selectAll = [...weekdaysSelection.entries()].every(
+                        ([wkd, [getter]]) => wkd === weekday || !getter(),
+                      );
                       for (const [wkd, [_getter, setter]] of weekdaysSelection) {
                         setter(selectAll || wkd === weekday);
                       }
