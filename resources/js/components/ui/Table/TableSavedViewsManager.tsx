@@ -45,8 +45,12 @@ interface Props {
 
 interface StoragePersistedState {
   readonly states: readonly NamedTableView[];
-  readonly advancedView: boolean;
 }
+
+type SettingsPersistedState = {
+  /** Advanced view. */
+  readonly adv: boolean;
+};
 
 interface NamedTableView {
   readonly default?: boolean;
@@ -57,7 +61,6 @@ interface NamedTableView {
 function stateSerialiser(): Serialiser<StoragePersistedState> {
   type SerialisedPersistedState = {
     readonly st: readonly SerialisedNamedTableView[];
-    readonly av: boolean;
   };
   type SerialisedNamedTableView = {
     readonly n: string;
@@ -69,14 +72,12 @@ function stateSerialiser(): Serialiser<StoragePersistedState> {
     serialise(state) {
       return jsonSerialiser.serialise({
         st: state.states.map((st) => ({n: st.name, s: intermediateSerialiser.serialise(st.state)})),
-        av: state.advancedView,
       });
     },
     deserialise(value): StoragePersistedState {
       const deserialised = jsonSerialiser.deserialise(value);
       return {
         states: deserialised.st.map((st) => ({name: st.n, state: intermediateSerialiser.deserialise(st.s)})),
-        advancedView: deserialised.av,
       };
     },
   };
@@ -86,14 +87,24 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {DocsModalInfoIcon} = useDocsModalInfoIcon();
   const indicators = useTableSavedViewIndicators();
-  const [persistedState, setPersistedState] = createSignal<StoragePersistedState>({states: [], advancedView: false});
+  const [persistedState, setPersistedState] = createSignal<StoragePersistedState>({states: []});
   createPersistence<StoragePersistedState>({
     value: persistedState,
     onLoad: (state) => setPersistedState(state),
     serialiser: stateSerialiser(),
     storage: userStorageStorage(`table.saves.${props.staticPersistenceKey}`),
   });
-  const advancedView = () => persistedState().advancedView;
+  const [advancedView, setAdvancedView] = createSignal(false);
+  createPersistence<SettingsPersistedState>({
+    value: () => ({
+      adv: advancedView(),
+    }),
+    onLoad: (state) => {
+      setAdvancedView(state.adv);
+    },
+    storage: userStorageStorage("settings:table.saves"),
+    version: [1],
+  });
   const codeSerialiser = tableViewsSerialisation.codeSerialiser();
   const confirmation = createConfirmation();
   let savedPopOver: PopOverControl | undefined;
@@ -235,7 +246,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 }
                 title={t("tables.saved_views.advanced_view")}
                 checked={advancedView()}
-                onChecked={(checked) => setPersistedState((s) => ({...s, advancedView: checked}))}
+                onChecked={setAdvancedView}
               />
             </div>
             <div class="grow overflow-y-auto -me-2">
