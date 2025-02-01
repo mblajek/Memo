@@ -185,11 +185,11 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     );
   }
   /** The groups that all the selected clients belong to. */
-  const sharedGroups = createMemo((): readonly string[] => [
-    ...allGroups()
-      .keys()
-      .filter((groupId) => selectedClientIds().every((clientId) => isClientInGroup(clientId, groupId))),
-  ]);
+  const sharedGroups = createMemo((): readonly string[] =>
+    [...allGroups().keys()].filter((groupId) =>
+      selectedClientIds().every((clientId) => isClientInGroup(clientId, groupId)),
+    ),
+  );
 
   const [clientsGroupsMode, setClientsGroupsMode] = createSignal<ClientsGroupsMode>();
   const [sharedClientsGroupId, setSharedClientsGroupId] = createSignal<string>("");
