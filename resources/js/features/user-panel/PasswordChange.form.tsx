@@ -73,8 +73,8 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
         value={statusQuery.data?.user.email || undefined}
         class="hidden"
       />
-      <PasswordField name="current" autocomplete="current-password" autofocus />
-      <PasswordField name="password" autocomplete="new-password" allowShow="whileHeld" />
+      <PasswordField name="current" autocomplete="current-password" autofocus allowShow="sensitive" />
+      <PasswordField name="password" autocomplete="new-password" allowShow="sensitive" />
       <PasswordField name="repeat" autocomplete="new-password" />
       <Show when={props.expiration}>
         {(expiration) => <div class="font-semibold text-red-600">{t(`auth.password_expiration.${expiration()}`)}</div>}
