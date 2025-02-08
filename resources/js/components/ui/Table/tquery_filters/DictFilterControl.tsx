@@ -62,6 +62,7 @@ export const DictFilterControl: VoidComponent<DictFilterControlProps> = (props) 
         }}
         onFilterChange="internal"
         multiple
+        headerItemSelectsAll
         showClearButton={false}
         small
       />
