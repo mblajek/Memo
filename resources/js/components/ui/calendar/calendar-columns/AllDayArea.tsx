@@ -37,8 +37,31 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
         objs.map((o) => o.allDayAreaStylingPreference).filter(NON_NULLABLE),
       )}
     >
-      <div class={cx("flex flex-col items-stretch p-px", showAddButton() ? undefined : "mb-2")}>
-        <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
+      <div
+        class={cx("min-h-full flex flex-col items-stretch justify-between p-px", showAddButton() ? undefined : "mb-2")}
+      >
+        <div class="flex flex-col">
+          <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
+          <div
+            class="flex flex-col items-stretch gap-px"
+            style={{
+              // Match the margin of the hours area events.
+              "margin-right": "11px",
+            }}
+          >
+            <For each={events()}>
+              {(event) => (
+                <Show when={event.contentInAllDayArea}>
+                  {(content) => (
+                    <div class="overflow-clip" onClick={(e) => e.stopPropagation()}>
+                      {content()(props.columnViewInfo)}
+                    </div>
+                  )}
+                </Show>
+              )}
+            </For>
+          </div>
+        </div>
         <Show when={showAddButton()}>
           <Button
             class="bg-white hover:bg-hover text-grey-text border border-input-border rounded flex justify-center"
@@ -47,25 +70,6 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
             <actionIcons.Add />
           </Button>
         </Show>
-        <div
-          class="flex flex-col items-stretch gap-px"
-          style={{
-            // Match the margin of the hours area events.
-            "margin-right": "11px",
-          }}
-        >
-          <For each={events()}>
-            {(event) => (
-              <Show when={event.contentInAllDayArea}>
-                {(content) => (
-                  <div class="overflow-clip" onClick={(e) => e.stopPropagation()}>
-                    {content()(props.columnViewInfo)}
-                  </div>
-                )}
-              </Show>
-            )}
-          </For>
-        </div>
       </div>
     </CellWithPreferredStyling>
   );

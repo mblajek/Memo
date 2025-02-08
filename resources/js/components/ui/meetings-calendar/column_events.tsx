@@ -82,7 +82,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
               </div>
               <MeetingStatusTags meeting={meeting()} />
               <Show
-                when={meeting().typeDictId !== meetingTypeDict()?.other.id}
+                when={meeting().typeDictId !== meetingTypeDict()?.other.id || !meeting().notes}
                 fallback={<RichTextView class="overflow-y-clip" text={meeting().notes || undefined} />}
               >
                 <div>{dictionaries()?.getPositionById(meeting().typeDictId).label}</div>
@@ -167,7 +167,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                       {(client) => <AttendantListItem type="clients" attendant={client} />}
                     </For>
                   </ul>
-                  <Show when={meeting().typeDictId !== meetingTypeDict()?.other.id}>
+                  <Show when={meeting().typeDictId !== meetingTypeDict()?.other.id || !meeting().notes}>
                     <div>{dictionaries()?.getPositionById(meeting().typeDictId).label}</div>
                   </Show>
                   <MeetingStatusTags meeting={meeting()} />
