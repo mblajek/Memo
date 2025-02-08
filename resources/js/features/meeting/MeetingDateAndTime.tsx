@@ -32,6 +32,7 @@ interface Props {
   readonly suggestedTimes?: SuggestedTimes;
   readonly viewMode: boolean;
   readonly forceEditable?: boolean;
+  /** Whether to allow all-day meetings. Default: true */
   readonly allowAllDay?: boolean;
   /** The meeting resource, for showing some of the readonly information about the meeting. */
   readonly meeting?: MeetingResource;
@@ -72,9 +73,10 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       }
     }),
   );
+  const allowAllDay = () => props.allowAllDay ?? true;
   onMount(() =>
     createComputed(() => {
-      if (!props.allowAllDay) {
+      if (!allowAllDay()) {
         form.setFields("time.allDay", false);
       }
     }),
@@ -210,7 +212,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                   }}
                 </HideableSection>
               </div>
-              <Show when={props.allowAllDay}>
+              <Show when={allowAllDay()}>
                 <CheckboxField name="time.allDay" />
               </Show>
             </div>
