@@ -82,7 +82,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
           <Button
             class="w-2 flex flex-col items-center rounded hover:bg-hover"
             onClick={() => setShowPreview((v) => !v)}
-            title={t("preview")}
+            title={t("preview.toggle")}
           >
             <Show
               when={showPreview()}
