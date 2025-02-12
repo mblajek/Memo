@@ -1,8 +1,8 @@
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {For, JSX, Show, VoidComponent, createMemo, createRenderEffect, createSignal, splitProps} from "solid-js";
 import {hoverSignal} from "../hover_signal";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 
 type _Directives = typeof hoverSignal;
 
@@ -19,7 +19,6 @@ interface Props extends htmlAttributes.div {
 export interface ResourceGroup {
   readonly label: () => JSX.Element;
   readonly resources: readonly ResourceItem[];
-  readonly footer?: () => JSX.Element;
 }
 
 export interface ResourceItem {
@@ -39,7 +38,7 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
   return (
     <div {...htmlAttributes.merge(divProps, {class: "flex flex-col gap-2"})}>
       <For each={props.resourceGroups}>
-        {({label, resources, footer}, i) => {
+        {({label, resources}, i) => {
           const checkboxId = () => (props.mode === "checkbox" ? `resourceGroup_${i()}` : undefined);
           const [checkbox, setCheckbox] = createSignal<HTMLInputElement>();
           const state = createMemo(() => {
@@ -143,7 +142,6 @@ export const ResourcesSelector: VoidComponent<Props> = (allProps) => {
                     );
                   }}
                 </For>
-                {footer?.()}
               </div>
             </div>
           );

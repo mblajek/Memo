@@ -26,6 +26,7 @@ client:
 
 staff:
   list_show_inactive: "pokaż nieaktywnych"
+  list_alt_sort: "sortowanie alternatywne (według nazwiska)"
   is_inactive:
     label: "Pracownik jest nieaktywny"
     since: "(od {{date}})"
