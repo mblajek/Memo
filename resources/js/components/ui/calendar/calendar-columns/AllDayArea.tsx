@@ -17,11 +17,19 @@ interface Props<C> extends htmlAttributes.div {
   readonly blocks: readonly Block<C, never>[];
   readonly events: readonly Event<C, never>[];
   readonly onEmptyClick?: () => void;
+  readonly marked?: boolean;
 }
 
 /** The all-day events area of a calendar column. */
 export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
-  const [props, divProps] = splitProps(allProps, ["day", "columnViewInfo", "blocks", "events", "onEmptyClick"]);
+  const [props, divProps] = splitProps(allProps, [
+    "day",
+    "columnViewInfo",
+    "blocks",
+    "events",
+    "onEmptyClick",
+    "marked",
+  ]);
   const t = useLangFunc();
   const calendarFunction = useCalendarFunctionContext();
   const blocks = createMemo(() => filterAndSortInDayView(props.day, props.blocks));
@@ -30,7 +38,10 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
   return (
     <CellWithPreferredStyling
       {...htmlAttributes.merge(divProps, {
-        class: "w-full h-full overflow-x-clip overflow-y-auto min-h-6 max-h-16",
+        class: cx(
+          "w-full h-full overflow-x-clip overflow-y-auto min-h-6 max-h-16",
+          props.marked ? "border-x border-dotted border-memo-active" : undefined,
+        ),
         onClick: props.onEmptyClick,
       })}
       preferences={[blocks(), events()].flatMap((objs) =>

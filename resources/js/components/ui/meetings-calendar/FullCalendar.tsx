@@ -853,7 +853,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     );
   }
 
-  function getCalendarColumnPart(day: DateTime, resourceId: string) {
+  function getCalendarColumnPart(day: DateTime, resourceId: string, marked?: boolean) {
     const isStaff = staffById().has(resourceId);
     const relevantBlocks = createMemo(() => blocks().filter(blocksFilter(resourceId, isStaff)));
     const relevantEvents = createMemo(() => events().filter(eventsFilter(resourceId, isStaff)));
@@ -885,6 +885,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               return props.staticCalendarFunction satisfies never;
             }
           }}
+          marked={marked}
         />
       ),
       hoursArea: () => (
@@ -913,6 +914,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               return props.staticCalendarFunction satisfies never;
             }
           }}
+          marked={marked}
         />
       ),
     } satisfies Partial<CalendarColumn>;
@@ -971,9 +973,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                       <span class="line-clamp-3">{text}</span>
                     </Button>
                   )}
+                  marked={id === userStatus.data?.user.id}
                 />
               ),
-              ...getCalendarColumnPart(day, id),
+              ...getCalendarColumnPart(day, id, id === userStatus.data?.user.id),
             };
           })
           .filter(NON_NULLABLE);
@@ -1086,7 +1089,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           <Show when={props.staticCalendarFunction === "work" && userStatus.data?.permissions.facilityStaff}>
             <div class="mx-1 flex gap-1 items-stretch">
               <Button
-                class={cx("grow", selectedResources().size ? "minimal" : "primary small")}
+                class={cx("grow !px-0 overflow-clip", selectedResources().size ? "minimal" : "primary small")}
                 onClick={() => {
                   if (mode() === "day") {
                     setMode("week");
@@ -1097,7 +1100,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   (mode() === "month" || mode() === "week") && selectedResources().has(userStatus.data!.user.id)
                 }
               >
-                {t("calendar.show_my_calendar")}
+                <div class={selectedResources().size ? "border-x-2 border-memo-active" : undefined}>
+                  {t("calendar.show_my_calendar")}
+                </div>
               </Button>
               <div use:title={t("calendar.show_my_details")}>
                 <A
