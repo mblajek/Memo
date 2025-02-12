@@ -25,6 +25,7 @@ import {WarningMark} from "components/ui/WarningMark";
 import {Autofocus} from "components/utils/Autofocus";
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
+import {isDEV} from "components/utils/dev_mode";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {IconTypes} from "solid-icons";
@@ -100,7 +101,10 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
       adv: advancedView(),
     }),
     onLoad: (state) => {
-      setAdvancedView(state.adv);
+      // TODO: Finalise the advanced view and make it public.
+      if (isDEV()) {
+        setAdvancedView(state.adv);
+      }
     },
     storage: userStorageStorage("settings:table.saves"),
     version: [1],
@@ -240,14 +244,16 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 {t("tables.saved_views.title")}{" "}
                 <DocsModalInfoIcon href="/help/table-saved-views" onClick={popOver.close} />
               </div>
-              <CheckboxInput
-                labelBefore={
-                  <span class="font-normal text-xs">{t("tables.saved_views.advanced_view.abbreviation")} </span>
-                }
-                title={t("tables.saved_views.advanced_view")}
-                checked={advancedView()}
-                onChecked={setAdvancedView}
-              />
+              <Show when={isDEV()}>
+                <CheckboxInput
+                  labelBefore={
+                    <span class="font-normal text-xs">{t("tables.saved_views.advanced_view.abbreviation")} </span>
+                  }
+                  title={t("tables.saved_views.advanced_view")}
+                  checked={advancedView()}
+                  onChecked={setAdvancedView}
+                />
+              </Show>
             </div>
             <div class="grow overflow-y-auto -me-2">
               <div class="me-2 max-w-md grid gap-1" style={{"grid-template-columns": "1fr auto"}}>
