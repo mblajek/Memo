@@ -3,16 +3,16 @@ niezależnie, a także niezależne od statusu spotkania (chociaż pewne kombinac
 
 Objaśnienie poszczególnych wartości:
 
-- **status $t(dictionary.attendanceStatus.ok)** (ok) — To jest najczęstszy status uczestnictwa, oznaczający brak szczególnych informacji
-w odniesieniu do tego uczestnika.
-  Dokładne znaczenie tego statusu zależy od statusu spotkania (patrz powyżej):
-  - gdy spotkanie ma status **$t(dictionary.meetingStatus.planned)**,
+- **status $t(dictionary.attendanceStatus.ok)** (ok) — To jest najczęstszy status uczestnictwa, oznaczający
+brak dodatkowych informacji w odniesieniu do tego uczestnika.
+Dokładne znaczenie tego statusu zależy od [statusu spotkania](meeting-statuses#status):
+  - jeżeli spotkanie ma status **$t(dictionary.meetingStatus.planned)**,
     pełny status uczestnika to **$t(dictionary.attendanceStatus.ok) ($t(dictionary.attendanceStatus._ok_extra_info_by_meeting_status.planned))**,
-    oznaczający, że ten uczestnik planuje przybyć na spotkanie.
-  - gdy spotkanie ma status **$t(dictionary.meetingStatus.completed)**,
+    oznaczający, że ten uczestnik planuje wziąć udział w spotkaniu.
+  - jeżeli spotkanie ma status **$t(dictionary.meetingStatus.completed)**,
     pełny status uczestnika to **$t(dictionary.attendanceStatus.ok) ($t(dictionary.attendanceStatus._ok_extra_info_by_meeting_status.completed))**,
     oznaczający, że ten uczestnik wziął udział w spotkaniu (i był punktualny).
-  - gdy spotkanie ma status **$t(dictionary.meetingStatus.cancelled)**,
+  - jeżeli spotkanie ma status **$t(dictionary.meetingStatus.cancelled)**,
     pełny status uczestnika to **$t(dictionary.attendanceStatus.ok) ($t(dictionary.attendanceStatus._ok_extra_info_by_meeting_status.cancelled))**,
     oznaczający, że uczestnik nie wziął udziału w spotkaniu ponieważ zostało ono anulowane, ale nie było to z przyczyny tego uczestnika.
     Spotkanie mogło więc zostać odwołane przez innego uczestnika lub nie odbyć się z dowolnego innego powodu.
@@ -26,10 +26,11 @@ w odniesieniu do tego uczestnika.
 
 ### Nieobecność uczestnika
 
-Brak któregoś z uczestników (status **$t(dictionary.attendanceStatus.too_late)**, **$t(dictionary.attendanceStatus.no_show)** lub
-**$t(dictionary.attendanceStatus.cancelled)**) powoduje różne konsekwencje, zależnie od typu spotkania. Przykładowo:
+Brak któregoś z uczestników (oznaczony przez status **$t(dictionary.attendanceStatus.too_late)**,
+**$t(dictionary.attendanceStatus.no_show)** lub **$t(dictionary.attendanceStatus.cancelled)**) powoduje
+różne konsekwencje, zależnie od typu spotkania. Przykładowo:
 
 - Brak uczestnika na spotkaniu terapii indywidualnej oznacza, że spotkanie nie może się odbyć, i powinno mieć status **$t(dictionary.meetingStatus.cancelled)**.
-- Brak klienta na zajęciach grupowych albo brak pracownika na spotkaniu całego zespołu terapeutów nie powoduje potrzeby odwołania spotkania.
+- Brak klienta na spotkaniu grupy albo brak pracownika na spotkaniu całego zespołu terapeutów nie powoduje potrzeby odwołania spotkania.
   Takie spotkanie może nadal mieć status **$t(dictionary.meetingStatus.planned)** lub **$t(dictionary.meetingStatus.completed)**,
   i tylko konkretny klient będzie miał status mówiący o tym, że nie wziął w tym spotkaniu udziału.

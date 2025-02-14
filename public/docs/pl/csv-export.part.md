@@ -12,8 +12,9 @@ Dostępne są następujące formaty eksportu plików CSV z systemu:
   Plik typu CSV w formacie niestandardowym, ale za to zgodnym z programem Excel.
   Nie można go otworzyć w żadnym innym programie.
 
-  Jeżeli pliki .csv są skojarzone w systemie z programem Excel, plik można otworzyć podwójnym kliknięciem.
+  Jeżeli pliki .csv są skojarzone w systemie z programem Excel, zapisany plik można otworzyć podwójnym kliknięciem.
   Alternatywnie można użyć funkcji _Otwórz_ w programie Excel, lub też kliknąć prawym przyciskiem
   myszy na pliku, wybrać _Otwórz jako…_, a następnie Excel.
 
-**Uwaga:** Eksportowanie plików nie działa obecnie w przeglądarce Firefox, należy użyć Chrome lub Edge.
+**Uwaga:** Eksportowanie plików nie działa obecnie w przeglądarce Firefox. Działa poprawnie w Chrome
+i Edge, a także w mobilnej wersji Chrome na urządzenia z Androidem.
