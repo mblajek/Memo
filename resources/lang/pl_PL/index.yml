@@ -108,7 +108,7 @@ about_page:
   app_env: "Środowisko:"
   commit_info: "Commit:"
   last_dump: "Kopia bezpieczeństwa:"
-  cpu_load: "Obciżenie CPU:"
+  cpu_load: "Obciążenie CPU:"
 
 preview: "Podgląd"
 preview.toggle: "Otwórz$t(thin_space)/$t(thin_space)zamknij podgląd"
