@@ -10,13 +10,15 @@ use App\Models\MeetingResource;
 use App\Models\Member;
 use App\Models\Position;
 use App\Models\UuidEnum\PositionAttributeUuidEnum;
+use App\Notification\Meeting\MeetingNotification;
+use App\Notification\Meeting\MeetingNotificationService;
 use App\Notification\NotificationService;
 use Illuminate\Support\Facades\DB;
 
 readonly class MeetingService
 {
     public function __construct(
-        private NotificationService $notificationService,
+        private MeetingNotificationService $meetingNotificationService,
     ) {
     }
 
@@ -30,7 +32,11 @@ readonly class MeetingService
         $notifications = [];
         foreach ($data['clients'] as $client) {
             foreach (($client['notifications'] ?? []) as $notification) {
-                $notifications[] = ['user_id' => $client['user_id'], ...$notification];
+                $notifications[] = new MeetingNotification(
+                    userId: $client['user_id'],
+                    notificationMethodDictId: $notification['notification_method_dict_id'],
+                    subject: $notification['subject'] ?? null,
+                );
             }
         }
 
@@ -39,29 +45,17 @@ readonly class MeetingService
         $attendants = $staff + $clients;
         $resources = $this->extractResources($data) ?? [];
 
-        DB::transaction(function () use ($meeting, $fromMeeting, $attendants, $resources) {
+        DB::transaction(function () use ($meeting, $fromMeeting, $attendants, $resources, $notifications) {
             $fromMeeting?->save();
             $meeting->save();
             $meeting->attendants()->saveMany($attendants);
             $meeting->resources()->saveMany($resources);
-        });
 
-        $notificationObjects = [];
-        foreach ($notifications as $notification) {
-            $userId = $notification['user_id'];
-            $notificationObjects[]= $this->notificationService->schedule(
-                facilityId: $meeting->facility_id,
-                userId: $userId,
-                clientId: Member::query()->where('user_id', $userId)
-                    ->where('facility_id', $meeting->facility_id)
-                    ->firstOrFail(['client_id'])->offsetGet('client_id'),
-                meetingId: $meeting->id,
-                notificationMethodId: $notification['notification_method_dict_id'],
-                address: null,
-                subject: 'Meeting ...',
-                scheduledAt: null,
+            $this->meetingNotificationService->create(
+                meeting: $meeting,
+                meetingNotifications: $notifications
             );
-        }
+        });
 
         return $meeting->id;
     }

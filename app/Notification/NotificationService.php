@@ -8,7 +8,6 @@ use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\Notification;
 use App\Models\User;
-use App\Models\UuidEnum\ClientAttributeUuidEnum;
 use App\Utils\Nullable;
 use DateTimeImmutable;
 
@@ -57,14 +56,6 @@ class NotificationService
             : Nullable::call($clientId, Client::query()->findOrFail(...));
 
         if ($client) {
-            $clientAttributes = $client->attrValues();
-            if (!in_array(
-                $notificationMethod->value,
-                $clientAttributes[ClientAttributeUuidEnum::NotificationMethods->apiName()] ?? [],
-                strict: true,
-            )) {
-                $warnings[]= 'no notification method';
-            }
             $member = $client->member;
             $facilityId ??= $member->facility;
             $userId ??= $member->user;
@@ -93,8 +84,6 @@ class NotificationService
             'status' => NotificationStatus::scheduled,
             'error_log_entry_id' => null,
         ]);
-
-        $notification->determineAddress();
 
         print_r($notification);
         die;
