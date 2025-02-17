@@ -76,7 +76,6 @@ class Client extends Model
         if ($this->id) {
             $builder->where('clients.id', '!=', $this->id);
         }
-        $builder->lockForUpdate();
         $lastShortCode = $builder->first(['short_code'])?->short_code ?? '0';
         $this->short_code = str_pad($lastShortCode + 1, strlen($lastShortCode), '0', STR_PAD_LEFT);
     }
