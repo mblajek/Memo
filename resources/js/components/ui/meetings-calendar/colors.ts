@@ -20,7 +20,7 @@ function coloringFromColor(baseColor: string): Coloring {
 }
 
 export function getRandomEventColors(seedString: string): Coloring {
-  return coloringFromColor(randomColor({seedString, lightness: [55, 80], chroma: [20, 30]}));
+  return coloringFromColor(randomColor({seedString, lightness: [50, 70], chroma: [20, 55]}));
 }
 
 export const COMPLETED_MEETING_COLORING: Coloring = {
