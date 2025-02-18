@@ -68,7 +68,7 @@ class Client extends Model
             return;
         }
         $builder = Client::query()
-            ->lockForUpdate()
+            // ->lockForUpdate() // causes deadlocks on inserts
             ->join('members', 'members.client_id', 'clients.id')
             ->where('members.facility_id', PermissionMiddleware::facility()->id)
             ->whereRaw("clients.short_code REGEXP '^[0-9]+$'")
