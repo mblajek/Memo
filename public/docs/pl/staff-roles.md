@@ -1,6 +1,8 @@
 # Role i uprawnienia
 
-Osoby w bazie Memo mają przypisane role i uprawnienia. Poniżej znajduje się opis dostępnych ról.
+## Tabela uprawnień {#permissions-table}
+
+$include(staff-roles-permissions-table.part.md)
 
 ## Role pracowników placówki {#facility-roles}
 
