@@ -41,6 +41,8 @@ render(() => {
         load: "currentOnly",
         supportedLngs: ["pl", "testing"],
         pluralSeparator: "__",
+        // The translated texts are always passed through the framework.
+        interpolation: {escapeValue: false},
       }}
     >
       <Show when={!translationsLoaded()}>

@@ -61,14 +61,14 @@ range:
 quotes:
   open: "„"
   close: "”"
-quoted: "$t(quotes.open){{-text}}$t(quotes.close)"
+quoted: "$t(quotes.open){{text}}$t(quotes.close)"
 parenthesis:
   open: "("
   close: ")"
-parenthesised: "$t(parenthesis.open){{-text}}$t(parenthesis.close)"
-with_colon: "{{-text}}:"
+parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
+with_colon: "{{text}}:"
 ellipsis: "…"
-with_ellipsis: "{{-text}}$t(ellipsis)"
+with_ellipsis: "{{text}}$t(ellipsis)"
 
 em_dash: "—"
 en_dash: "–"
