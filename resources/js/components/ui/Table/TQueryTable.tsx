@@ -283,8 +283,8 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         filterControl,
         header = Header,
         metaParams,
-        initialVisible = true,
         persistVisibility = true,
+        initialVisible = persistVisibility,
         globalFilterable = true,
         columnGroups,
       }) =>

@@ -366,7 +366,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     resourceConflictsExist: {
       name: "resourceConflicts.exists",
       columnGroups: "meeting_multicolumn",
-      initialVisible: false,
       persistVisibility: false,
     },
     resourceConflictsResources: {
@@ -381,7 +380,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
       },
       columnGroups: "meeting_multicolumn",
-      initialVisible: false,
       persistVisibility: false,
     },
     actions: {
