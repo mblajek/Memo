@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <link rel="icon" href="/favicon.png" />
   </head>
   <body class="antialiased overflow-hidden">
     <div id="root" class="w-dvw h-dvh"></div>
