@@ -175,7 +175,8 @@ tables:
       context: "kontekst"
       appVersion: "wersja aplikacji"
       clientIp: "adres IP"
-      userAgent: "przeglądarka"
+      userAgent: "przeglądarka (user agent)"
+      userAgentSummary: "przeglądarka"
       user.id: "id użytkownika"
       user.name: "użytkownik"
 
@@ -223,16 +224,8 @@ filter:
       regexp: ".*"
 
 export:
-  label: "$t(actions.export)"
-  format:
-    csv: "CSV"
-    excel_csv: "Excel CSV"
   all_pages: "cała tabela"
   current_page: "bieżąca strona"
-  exporting: "Eksportowanie$t(ellipsis)"
-  success: "Zapisano dane do pliku"
-  error: "Nie udało się wyeksportować danych"
-  aborted: "Anulowano eksport"
 
 column_groups:
   grouping_symbol: "✦"
@@ -269,6 +262,8 @@ scroll_to_column: "Przewiń tabelę aby zobaczyć kolumnę"
 saved_views:
   hint: "Zapisane widoki tabeli"
   title: "Zapisane widoki"
+  advanced_view: "Widok zaawansowany"
+  advanced_view.abbreviation: "zaaw."
   load_hint: "Kliknij aby użyć zapisanego widoku"
   load_hint_no_change: "Ten widok jest aktualnie wybrany"
   new_placeholder: "Nowy widok"
@@ -277,7 +272,20 @@ saved_views:
   overwrite_with_current: "Zapisz aktualny widok (zastąp)"
   rename_conflict: "Ta nazwa jest już użyta."
   default_view_name: "Widok domyślny"
-  current_view_code: "Kod aktualnego widoku:"
+  current_view_code: "Kod aktualnego widoku"
   code_error: "Błędny kod widoku."
   code_error.different_table: "Ten widok przeznaczony jest dla innej tabeli."
   copy_code: "Kopiuj kod widoku do schowka"
+  components:
+    generic:
+      set: "ustaw"
+      clear: "wyczyść"
+      already_set: "(bez zmian)"
+    globalFilter: "szukanie"
+    columnVisibility: "widoczne kolumny"
+    columnVisibility.set: "wybierz"
+    columnFilters: "filtry kolumn"
+    columnFilters.clear: "wyczyść wszystkie"
+    activeColumnGroups: "grupowanie"
+    activeColumnGroups.set: "wybierz"
+    sorting: "sortowanie"

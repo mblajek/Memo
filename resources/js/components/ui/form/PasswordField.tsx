@@ -1,7 +1,7 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {Timeout} from "components/utils/timeout";
 import {AiOutlineEye, AiOutlineEyeInvisible} from "solid-icons/ai";
-import {Show, VoidComponent, createComputed, createSignal, splitProps} from "solid-js";
+import {Show, VoidComponent, createComputed, createSignal, on, splitProps} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {Button} from "../Button";
 import {FieldBox} from "./FieldBox";
@@ -9,10 +9,10 @@ import {TextFieldProps, TextFieldTextInput} from "./TextField";
 
 export interface PasswordFieldProps extends TextFieldProps {
   /**
-   * Whether to show the eye icon to reveal the password. If `"whileHeld"`, the password is only revealed
-   * while the eye icon is held.
+   * Whether to show the eye icon to reveal the password. If `"sensitive"`, showing the password
+   * is safer, this mode is suitable e.g. for the login form. Default: false
    */
-  readonly allowShow?: boolean | "whileHeld";
+  readonly allowShow?: boolean | "sensitive";
 }
 
 const SHOW_TIME_SECS = 10;
@@ -20,12 +20,26 @@ const SHOW_TIME_SECS = 10;
 /** Wrapper for HTML input with type password, optionally with an eye icon to reveal password. */
 export const PasswordField: VoidComponent<PasswordFieldProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["name", "label", "allowShow"]);
+  const [isManualInput, setIsManualInput] = createSignal(false);
+  const [input, setInput] = createSignal("");
+  const showEye = () => !!input() && (props.allowShow === "sensitive" ? isManualInput() : !!props.allowShow);
   const [showing, setShowing] = createSignal(false);
   createComputed(() => {
-    if (!props.allowShow) {
+    if (!showEye()) {
       setShowing(false);
     }
   });
+  createComputed(
+    on(input, (input, prevInput) => {
+      if (input.length > 1) {
+        if (prevInput === undefined || input.length > prevInput.length + 1) {
+          setIsManualInput(false);
+        }
+      } else {
+        setIsManualInput(true);
+      }
+    }),
+  );
   const hideTimer = new Timeout();
   createComputed(() => {
     if (showing()) {
@@ -35,7 +49,7 @@ export const PasswordField: VoidComponent<PasswordFieldProps> = (allProps) => {
     }
   });
   function released() {
-    if (props.allowShow === "whileHeld") {
+    if (props.allowShow === "sensitive") {
       setShowing(false);
     }
   }
@@ -45,16 +59,19 @@ export const PasswordField: VoidComponent<PasswordFieldProps> = (allProps) => {
         <TextFieldTextInput
           name={props.name}
           type={showing() ? "text" : "password"}
-          {...htmlAttributes.merge(inputProps, {class: "!grow !pr-6"})}
+          {...htmlAttributes.merge(inputProps, {
+            class: "!grow !pr-6",
+            onInput: (e) => setInput((e.target as HTMLInputElement).value),
+          })}
         />
-        <Show when={props.allowShow}>
+        <Show when={showEye()}>
           <Button
             class="absolute right-0 top-0 bottom-0 px-2"
             disabled={inputProps.disabled}
-            onPointerDown={() => setShowing(!showing())}
-            onClick={() => setShowing(!showing())}
+            onPointerDown={[setShowing, !showing()]}
+            onClick={[setShowing, !showing()]}
             onPointerUp={released}
-            onPointerOut={released}
+            onPointerLeave={released}
             onBlur={released}
           >
             <Dynamic component={showing() ? AiOutlineEyeInvisible : AiOutlineEye} />

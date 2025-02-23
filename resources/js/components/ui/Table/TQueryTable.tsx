@@ -552,8 +552,12 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
                 const colVis = {...value.colVis};
                 for (const colName of Object.keys(colVis)) {
                   const col = columnsConfig().find((c) => c.name === colName);
-                  if (col && (col.columnDef.enableHiding === false || !col.persistVisibility)) {
-                    delete colVis[colName];
+                  if (col) {
+                    if (col.columnDef.enableHiding === false) {
+                      delete colVis[colName];
+                    } else if (!col.persistVisibility) {
+                      colVis[colName] = col.initialVisible;
+                    }
                   }
                 }
                 columnVisibility[1](colVis);

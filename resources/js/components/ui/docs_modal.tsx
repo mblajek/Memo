@@ -51,7 +51,7 @@ export const createDocsModal = registerGlobalPageElement<DocsModalProps>((args) 
                 </LinkWithNewTabLink>
               )}
             </Show>
-            <Button class="self-center w-80 secondary" onClick={args.clearParams}>
+            <Button class="self-center min-w-80 secondary" onClick={args.clearParams}>
               {t("actions.ok")}
             </Button>
           </div>

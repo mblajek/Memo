@@ -2,7 +2,10 @@ import {DetectOverflowOptions, flip, shift} from "@floating-ui/dom";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {buildFuzzyTextualLocalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
+import {cx} from "components/utils/classnames";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {hasProp} from "components/utils/props";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FiDelete} from "solid-icons/fi";
@@ -34,9 +37,6 @@ import {SmallSpinner} from "../Spinner";
 import {FieldBox} from "./FieldBox";
 import {PlaceholderField} from "./PlaceholderField";
 import {LabelOverride} from "./labels";
-import {useLangFunc} from "components/utils/lang";
-import {htmlAttributes} from "components/utils/html_attributes";
-import {cx} from "components/utils/classnames";
 
 export interface SelectBaseProps {
   readonly name: string;
@@ -101,6 +101,8 @@ export interface MultipleSelectPropsPart {
   /** Whether to show the button to clear all of the selected values. Defaults to true. */
   readonly showClearButton?: boolean;
   readonly closeOnSelect?: boolean;
+  /** Whether activating the header item selects all its child items. Default: false */
+  readonly headerItemSelectsAll?: boolean;
 }
 
 export type SingleSelectProps = SelectBaseProps & SingleSelectPropsPart;
@@ -362,7 +364,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             labelOnList,
             groupName,
             groupHeader: true,
-            disabled: !props.multiple,
+            disabled: !props.multiple || !props.headerItemSelectsAll,
           });
         }
       }
@@ -576,9 +578,11 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
       return;
     }
     if (item.groupHeader) {
-      index ??= itemsToShowWithHeaders().indexOf(item);
-      if (index >= 0) {
-        toggleGroupSelection(index);
+      if (props.multiple && props.headerItemSelectsAll) {
+        index ??= itemsToShowWithHeaders().indexOf(item);
+        if (index >= 0) {
+          toggleGroupSelection(index);
+        }
       }
     } else if (item.value) {
       toggleSelection(item.value);

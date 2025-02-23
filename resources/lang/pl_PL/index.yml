@@ -111,6 +111,7 @@ about_page:
   cpu_load: "Obciążenie CPU:"
 
 preview: "Podgląd"
+preview.toggle: "Otwórz$t(thin_space)/$t(thin_space)zamknij podgląd"
 
 confirmation:
   read_before_confirm: "Przeczytaj uważnie czego dotyczy pytanie"
@@ -137,3 +138,16 @@ browsers:
 
 help:
   open_full_help_page: "Otwórz pełną stronę pomocy"
+
+csv_export:
+  label: "$t(actions.export)"
+  format:
+    csv: "CSV"
+    excel_csv: "Excel CSV"
+  success: "Zapisano dane do pliku"
+  error: "Nie udało się wyeksportować danych"
+  aborted: "Anulowano eksport"
+  exporting: "Eksportowanie$t(ellipsis)"
+  unsupported: "Eksport plików nie jest wspierany w tej przeglądarce. Sugerowana przeglądarka: Chrome lub Edge."
+  show_preview: "Podgląd"
+  preview: "Podgląd eksportu"

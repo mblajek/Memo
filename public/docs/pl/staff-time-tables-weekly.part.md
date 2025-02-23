@@ -4,14 +4,14 @@ Nie jest możliwe edytowanie ani tworzenie wpisów (do tego służy widok
 widok tygodniowy pozwala na realizowanie następujących scenariuszy:
 
 - Przeglądanie godzin pracy pracownika lub placówki w dłuższym okresie, w formie tabeli.
-- Kopiowanie grafików z danego tygodnia na inne tygodnie (również co drugi tydzień).
+- Kopiowanie grafików z danego tygodnia na inne tygodnie (również w układzie co drugi tydzień).
 - Przedłużanie grafików na kolejne tygodnie w przyszłości.
-- Usuwanie grafików z określonego tygodnia lub zakresu tygodni (również co drugi tydzień).
+- Usuwanie grafików z określonego tygodnia lub zakresu tygodni.
 
 Operacje na grafikach są dostępne pod przyciskiem akcji `$icon(actionIcons.ThreeDots)` w poszczególnych wierszach
 tabeli. Niektóre akcje dostępne są bezpośrednio w rozwijanym menu, natomiast inne akcje wymagają
-kliknięcia `$icon(actionIcons.ThreeDots)` w wierszu źródłowym i wybraniu zaznaczenia, a następnie kliknięcia
-`$icon(actionIcons.ThreeDots)` w wierszu docelowym i wybraniu odpowiedniej akcji.
+kliknięcia `$icon(actionIcons.ThreeDots)` w wierszu _źródłowym_ i wybraniu zaznaczenia, a następnie kliknięcia
+`$icon(actionIcons.ThreeDots)` w wierszu _docelowym_ i wybraniu odpowiedniej akcji.
 
 Informacje w pojawiających się oknach dialogowych należy czytać uważnie, ponieważ operacje na
 grafikach nie mogą zostać cofnięte.

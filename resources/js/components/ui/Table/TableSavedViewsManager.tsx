@@ -1,6 +1,7 @@
 import {createPersistence} from "components/persistence/persistence";
 import {richJSONSerialiser, RichJSONValue, Serialiser} from "components/persistence/serialiser";
 import {userStorageStorage} from "components/persistence/storage";
+import {CheckboxInput} from "components/ui/CheckboxInput";
 import {createConfirmation} from "components/ui/confirmation";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {useDocsModalInfoIcon} from "components/ui/docs_modal";
@@ -11,13 +12,20 @@ import {actionIcons} from "components/ui/icons";
 import {DEFAULT_SCROLL_OPTIONS, scrollIntoView} from "components/ui/scroll_into_view";
 import {SearchInput} from "components/ui/SearchInput";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {getTableViewDelta, TableView, tableViewsSerialisation} from "components/ui/Table/table_views";
+import {useTableSavedViewIndicators} from "components/ui/Table/table_saved_view_indicators";
+import {
+  getTableViewDelta,
+  getTableViewSummary,
+  TableView,
+  tableViewsSerialisation,
+} from "components/ui/Table/table_views";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
 import {Autofocus} from "components/utils/Autofocus";
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
+import {isDEV} from "components/utils/dev_mode";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {IconTypes} from "solid-icons";
@@ -36,9 +44,14 @@ interface Props {
   readonly onLoad: (view: TableView) => void;
 }
 
-interface PersistedState {
+interface StoragePersistedState {
   readonly states: readonly NamedTableView[];
 }
+
+type SettingsPersistedState = {
+  /** Advanced view. */
+  readonly adv: boolean;
+};
 
 interface NamedTableView {
   readonly default?: boolean;
@@ -46,7 +59,7 @@ interface NamedTableView {
   readonly state: TableView;
 }
 
-function stateSerialiser(): Serialiser<PersistedState> {
+function stateSerialiser(): Serialiser<StoragePersistedState> {
   type SerialisedPersistedState = {
     readonly st: readonly SerialisedNamedTableView[];
   };
@@ -62,7 +75,7 @@ function stateSerialiser(): Serialiser<PersistedState> {
         st: state.states.map((st) => ({n: st.name, s: intermediateSerialiser.serialise(st.state)})),
       });
     },
-    deserialise(value): PersistedState {
+    deserialise(value): StoragePersistedState {
       const deserialised = jsonSerialiser.deserialise(value);
       return {
         states: deserialised.st.map((st) => ({name: st.n, state: intermediateSerialiser.deserialise(st.s)})),
@@ -74,12 +87,27 @@ function stateSerialiser(): Serialiser<PersistedState> {
 export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {DocsModalInfoIcon} = useDocsModalInfoIcon();
-  const [persistedState, setPersistedState] = createSignal<PersistedState>({states: []});
-  createPersistence<PersistedState>({
+  const indicators = useTableSavedViewIndicators();
+  const [persistedState, setPersistedState] = createSignal<StoragePersistedState>({states: []});
+  createPersistence<StoragePersistedState>({
     value: persistedState,
     onLoad: (state) => setPersistedState(state),
     serialiser: stateSerialiser(),
     storage: userStorageStorage(`table.saves.${props.staticPersistenceKey}`),
+  });
+  const [advancedView, setAdvancedView] = createSignal(false);
+  createPersistence<SettingsPersistedState>({
+    value: () => ({
+      adv: advancedView(),
+    }),
+    onLoad: (state) => {
+      // TODO: Finalise the advanced view and make it public.
+      if (isDEV()) {
+        setAdvancedView(state.adv);
+      }
+    },
+    storage: userStorageStorage("settings:table.saves"),
+    version: [1],
   });
   const codeSerialiser = tableViewsSerialisation.codeSerialiser();
   const confirmation = createConfirmation();
@@ -145,6 +173,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
       {(popOver) => {
         savedPopOver = popOver;
         const currentView = createMemo(() => props.getCurrentView());
+        const currentViewSummary = createMemo(() => getTableViewSummary(currentView()));
         const [currentViewCode, setCurrentViewCode] = createSignal("");
         const [getNewName, setNewName] = createSignal("");
         const newName = () => getNewName().trim();
@@ -210,30 +239,50 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
         ];
         return (
           <div ref={container} class="p-2 flex flex-col gap-3 items-stretch min-h-0">
-            <div class="font-bold">
-              {t("tables.saved_views.title")}{" "}
-              <DocsModalInfoIcon href="/help/table-saved-views" onClick={popOver.close} />
+            <div class="flex gap-2 items-baseline justify-between">
+              <div class="font-bold">
+                {t("tables.saved_views.title")}{" "}
+                <DocsModalInfoIcon href="/help/table-saved-views" onClick={popOver.close} />
+              </div>
+              <Show when={isDEV()}>
+                <CheckboxInput
+                  labelBefore={
+                    <span class="font-normal text-xs">{t("tables.saved_views.advanced_view.abbreviation")} </span>
+                  }
+                  title={t("tables.saved_views.advanced_view")}
+                  checked={advancedView()}
+                  onChecked={setAdvancedView}
+                />
+              </Show>
             </div>
             <div class="grow overflow-y-auto -me-2">
-              <div class="flex flex-col items-stretch gap-1">
+              <div class="me-2 max-w-md grid gap-1" style={{"grid-template-columns": "1fr auto"}}>
                 <Index each={statesToShow()} fallback={<EmptyValueSymbol />}>
                   {(state) => {
+                    const summary = createMemo(() => getTableViewSummary(state().state));
                     const deltaSummary = createMemo(() => getTableViewDelta(currentView(), state().state).deltaSummary);
                     return (
-                      <div class="flex items-stretch gap-1 me-2">
-                        <div class="grow max-w-md" use:scrollIntoView={state().name === newName()}>
+                      <>
+                        <div class="col-start-1" use:scrollIntoView={state().name === newName()}>
                           <Button
                             data-view-name={state().name}
                             class={cx(
-                              "w-full minimal !px-1 text-start outline outline-0 outline-memo-active",
+                              "w-full minimal !px-1 outline outline-0 outline-memo-active flex flex-wrap justify-between gap-x-2",
                               deltaSummary().anything ? undefined : "!bg-select",
                               state().default ? "text-grey-text" : undefined,
                             )}
                             title={[
-                              deltaSummary().anything
-                                ? t("tables.saved_views.load_hint")
-                                : t("tables.saved_views.load_hint_no_change"),
-                              {placement: "left", offset: [0, 4], delay: [1000, undefined]},
+                              <div class="flex flex-col gap-1">
+                                <div>
+                                  {deltaSummary().anything
+                                    ? t("tables.saved_views.load_hint")
+                                    : t("tables.saved_views.load_hint_no_change")}
+                                </div>
+                                <Show when={advancedView()}>
+                                  <indicators.Explanation viewSummary={summary()} deltaSummary={deltaSummary()} />
+                                </Show>
+                              </div>,
+                              {placement: "left", offset: [0, 4], delay: [600, undefined]},
                             ]}
                             onClick={() => {
                               const {anything} = deltaSummary();
@@ -243,11 +292,20 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                               }
                             }}
                           >
-                            {state().name}
-                            <Show when={state().name === newName()}>
-                              <span use:title={t("tables.saved_views.save_hint_conflict")}>
-                                <WarningMark />
-                              </span>
+                            <div>
+                              {state().name}
+                              <Show when={state().name === newName()}>
+                                <span use:title={t("tables.saved_views.save_hint_conflict")}>
+                                  <WarningMark />
+                                </span>
+                              </Show>
+                            </div>
+                            <Show when={advancedView()}>
+                              <indicators.Indicator
+                                class="ms-auto"
+                                viewSummary={summary()}
+                                deltaSummary={deltaSummary()}
+                              />
                             </Show>
                           </Button>
                         </div>
@@ -328,22 +386,21 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             }}
                           </PopOver>
                         </Show>
-                      </div>
+                      </>
                     );
                   }}
                 </Index>
               </div>
             </div>
-            <div class="flex items-stretch gap-1">
+            <div class="grid gap-x-1" style={{"grid-template-columns": "1fr min(5rem)"}}>
               <SearchInput
-                divClass="grow"
                 placeholder={t("tables.saved_views.new_placeholder")}
                 value={newName()}
                 onValueChange={setNewName}
                 clearButton={false}
               />
               <Button
-                class="secondary small min-w-32"
+                class="secondary small"
                 disabled={!newName() || newNameConflict()}
                 onClick={() => {
                   setPersistedState((s) => ({
@@ -356,33 +413,38 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
               >
                 {t("actions.save")}
               </Button>
-            </div>
-            <div class="flex flex-col">
-              <div class="flex gap-1 items-center">
-                <div class="grow pe-4">
-                  <StandaloneFieldLabel>{t("tables.saved_views.current_view_code")}</StandaloneFieldLabel>
-                </div>
-                <div class="flex items-center gap-1">
-                  <TextInput
-                    class="grow w-20 min-h-small-input px-1 font-mono text-xs"
-                    aria-invalid={!!codeErrorMessage()}
-                    value={inputCode()}
-                    onFocus={({target}) => target.select()}
-                    onInput={({target}) => setInputCode(target.value)}
-                    onFocusOut={() => {
-                      setInputCode(currentViewCode());
-                      setCodeErrorMessage(undefined);
-                    }}
+              <Show when={advancedView()}>
+                <div class="col-start-2 flex flex-col items-center">
+                  <indicators.Indicator
+                    viewSummary={currentViewSummary()}
+                    title={[<indicators.Explanation viewSummary={currentViewSummary()} />, {placement: "bottom"}]}
                   />
-                  <CopyToClipboard text={currentViewCode()} showDisabledOnEmpty />
                 </div>
-                <DocsModalInfoIcon
-                  href="/help/table-saved-views-codes.part"
-                  fullPageHref="/help/table-saved-views#codes"
-                  onClick={popOver.close}
-                />
+              </Show>
+              <div class="col-start-1 h-2" />
+              <div class="col-start-1 flex gap-4 items-center justify-between">
+                <div class="flex items-center gap-1">
+                  <StandaloneFieldLabel>{t("tables.saved_views.current_view_code")}</StandaloneFieldLabel>{" "}
+                  <DocsModalInfoIcon
+                    href="/help/table-saved-views-codes.part"
+                    fullPageHref="/help/table-saved-views#codes"
+                    onClick={popOver.close}
+                  />
+                </div>
+                <CopyToClipboard text={currentViewCode()} showDisabledOnEmpty />
               </div>
-              <HideableSection show={codeErrorMessage()}>
+              <TextInput
+                class="grow w-20 min-h-small-input px-1 font-mono text-xs"
+                aria-invalid={!!codeErrorMessage()}
+                value={inputCode()}
+                onFocus={({target}) => target.select()}
+                onInput={({target}) => setInputCode(target.value)}
+                onFocusOut={() => {
+                  setInputCode(currentViewCode());
+                  setCodeErrorMessage(undefined);
+                }}
+              />
+              <HideableSection class="col-span-full" show={codeErrorMessage()}>
                 <div class="text-red-600">{codeErrorMessage()}</div>
               </HideableSection>
             </div>

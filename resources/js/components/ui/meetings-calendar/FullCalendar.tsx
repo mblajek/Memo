@@ -2,7 +2,8 @@ import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createPersistence} from "components/persistence/persistence";
-import {localStorageStorage} from "components/persistence/storage";
+import {localStorageStorage, userStorageStorage} from "components/persistence/storage";
+import {PopOver} from "components/ui/PopOver";
 import {CalendarColumn, ColumnsCalendar} from "components/ui/calendar/ColumnsCalendar";
 import {MonthCalendar, MonthCalendarDay, getMonthCalendarRange} from "components/ui/calendar/MonthCalendar";
 import {MonthCalendarCell} from "components/ui/calendar/MonthCalendarCell";
@@ -14,14 +15,20 @@ import {HoursArea} from "components/ui/calendar/calendar-columns/HoursArea";
 import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHeader";
 import {DaysRange} from "components/ui/calendar/days_range";
 import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
+import {actionIcons} from "components/ui/icons";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {cx} from "components/utils/classnames";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
+import {currentDate} from "components/utils/time";
 import {toastSuccess} from "components/utils/toast";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {User} from "data-access/memo-api/groups/User";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
 import {MeetingBasicData} from "features/meeting/meeting_basic_data";
@@ -68,11 +75,6 @@ import {
   coloringToStyle,
   getRandomEventColors,
 } from "./colors";
-import {currentDate} from "components/utils/time";
-import {useLangFunc} from "components/utils/lang";
-import {User} from "data-access/memo-api/groups/User";
-import {cx} from "components/utils/classnames";
-import {NON_NULLABLE} from "components/utils/array_filter";
 
 type _Directives = typeof title;
 
@@ -170,6 +172,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
 
   const userStatus = createQuery(User.statusQueryOptions);
   const [showInactiveStaff, setShowInactiveStaff] = createSignal(false);
+  const [altStaffSort, setAltStaffSort] = createSignal(false);
   createHistoryPersistence({
     key: "FullCalendar",
     value: () => ({showInactive: showInactiveStaff()}),
@@ -179,6 +182,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     onReset: () => {
       setShowInactiveStaff(false);
     },
+  });
+  createPersistence({
+    value: () => ({altStaffSort: altStaffSort()}),
+    onLoad: (value) => {
+      setAltStaffSort(value.altStaffSort);
+    },
+    storage: userStorageStorage("settings:FullCalendar"),
+    version: [1],
   });
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
@@ -206,9 +217,17 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
     return map;
   });
-  const staffResources = createMemo(
-    () =>
-      staff()
+  const staffResources = createMemo(() => {
+    let staffList = staff();
+    function altSortKey({name}: StaffObj) {
+      const parts = name.split(/\s+/g);
+      return `${parts.at(-1)} ${name}`;
+    }
+    if (altStaffSort()) {
+      staffList = staffList?.toSorted((a, b) => altSortKey(a).localeCompare(altSortKey(b)));
+    }
+    return (
+      staffList
         ?.map((staff) => {
           const coloring = getRandomEventColors(staff.id);
           if (!showInactiveStaff() && !staff["staff.isActive"]) {
@@ -240,8 +259,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             ),
           } satisfies ResourceItem & Record<string, unknown>;
         })
-        .filter(NON_NULLABLE) || [],
-  );
+        .filter(NON_NULLABLE) || []
+    );
+  });
   const staffResourcesById = createMemo(() => {
     const byId = new Map<string, ReturnType<typeof staffResources>[number]>();
     for (const resource of staffResources()) {
@@ -273,20 +293,22 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       : [],
   );
   const allResources = () => [...staffResources(), ...meetingResourceResources()];
-  const resourceGroups = createMemo((): ResourceGroup[] => {
-    const res: ResourceGroup[] = [];
-    res.push({
-      label: () => (
-        <span class="font-bold select-none">
-          <Capitalize text={t("models.staff._name_plural")} />
-        </span>
-      ),
-      resources: staffResources(),
-      footer: () =>
-        userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"]) ? (
-          <div class="px-1 text-center">
+  const staffResourcesLabel = createMemo(() => (
+    <div class="w-full flex items-stretch justify-between gap-1">
+      <span class="font-bold select-none">
+        <Capitalize text={t("models.staff._name_plural")} />
+      </span>
+      <PopOver
+        trigger={(popOver) => (
+          <Button class="my-0.5 !px-1 minimal" onClick={popOver.open}>
+            <actionIcons.ThreeDots size="12" />
+          </Button>
+        )}
+        placement={{placement: "right-start"}}
+      >
+        <div class="px-2 py-1 flex flex-col gap-1">
+          <Show when={userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"])}>
             <CheckboxInput
-              style={{scale: "0.9"}}
               checked={showInactiveStaff()}
               onChecked={(checked) =>
                 batch(() => {
@@ -304,9 +326,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               }
               label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
             />
-          </div>
-        ) : undefined,
-    });
+          </Show>
+          <CheckboxInput
+            checked={altStaffSort()}
+            onChecked={setAltStaffSort}
+            label={<span class="font-normal">{t("facility_user.staff.list_alt_sort")}</span>}
+          />
+        </div>
+      </PopOver>
+    </div>
+  ));
+  const resourceGroups = createMemo((): ResourceGroup[] => {
+    const res: ResourceGroup[] = [];
+    res.push({label: staffResourcesLabel, resources: staffResources()});
     const meetingResources = meetingResourceResources();
     if (meetingResources.length) {
       res.push({
@@ -853,7 +885,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     );
   }
 
-  function getCalendarColumnPart(day: DateTime, resourceId: string) {
+  function getCalendarColumnPart(day: DateTime, resourceId: string, marked?: boolean) {
     const isStaff = staffById().has(resourceId);
     const relevantBlocks = createMemo(() => blocks().filter(blocksFilter(resourceId, isStaff)));
     const relevantEvents = createMemo(() => events().filter(eventsFilter(resourceId, isStaff)));
@@ -885,6 +917,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               return props.staticCalendarFunction satisfies never;
             }
           }}
+          marked={marked}
         />
       ),
       hoursArea: () => (
@@ -913,6 +946,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               return props.staticCalendarFunction satisfies never;
             }
           }}
+          marked={marked}
         />
       ),
     } satisfies Partial<CalendarColumn>;
@@ -971,9 +1005,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                       <span class="line-clamp-3">{text}</span>
                     </Button>
                   )}
+                  marked={id === userStatus.data?.user.id}
                 />
               ),
-              ...getCalendarColumnPart(day, id),
+              ...getCalendarColumnPart(day, id, id === userStatus.data?.user.id),
             };
           })
           .filter(NON_NULLABLE);
@@ -1086,7 +1121,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           <Show when={props.staticCalendarFunction === "work" && userStatus.data?.permissions.facilityStaff}>
             <div class="mx-1 flex gap-1 items-stretch">
               <Button
-                class={cx("grow", selectedResources().size ? "minimal" : "primary small")}
+                class={cx("grow !px-0 overflow-clip", selectedResources().size ? "minimal" : "primary small")}
                 onClick={() => {
                   if (mode() === "day") {
                     setMode("week");
@@ -1097,7 +1132,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                   (mode() === "month" || mode() === "week") && selectedResources().has(userStatus.data!.user.id)
                 }
               >
-                {t("calendar.show_my_calendar")}
+                <div class={selectedResources().size ? "border-x-2 border-memo-active" : undefined}>
+                  {t("calendar.show_my_calendar")}
+                </div>
               </Button>
               <div use:title={t("calendar.show_my_details")}>
                 <A

@@ -13,3 +13,7 @@ export async function pickSaveFile(
   }
   return (await saveHandler.createWritable(openOptions)).getWriter();
 }
+
+export function isPickSaveFileSupported() {
+  return !!window.showSaveFilePicker;
+}

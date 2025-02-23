@@ -68,9 +68,7 @@ class Client extends Model
             return;
         }
         $builder = Client::query()
-            ->selectRaw(
-                "lpad(cast(`clients`.`short_code` as int)+1, length(`clients`.`short_code`), '0') as `new_short_code`"
-            )
+            // ->lockForUpdate() // causes deadlocks on inserts
             ->join('members', 'members.client_id', 'clients.id')
             ->where('members.facility_id', PermissionMiddleware::facility()->id)
             ->whereRaw("clients.short_code REGEXP '^[0-9]+$'")
@@ -78,6 +76,7 @@ class Client extends Model
         if ($this->id) {
             $builder->where('clients.id', '!=', $this->id);
         }
-        $this->short_code = $builder->first(['new_short_code'])?->new_short_code ?? '1';
+        $lastShortCode = $builder->first(['short_code'])?->short_code ?? '0';
+        $this->short_code = str_pad($lastShortCode + 1, strlen($lastShortCode), '0', STR_PAD_LEFT);
     }
 }

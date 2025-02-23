@@ -1,11 +1,11 @@
 # Grupowanie wierszy tabeli
 
 Niektóre tabele w systemie pozwalają na grupowanie danych według określonych kryteriów. Najprościej jest opisać koncept grupowania
-na przykładzie:
+na przykładzie.
 
 ## Przykład
 
-Poniżej pokazana jest przykładowa tabela spotkań, która mogłaby pojawić się w raportach lub na detalach klienta albo pracownika
+Poniżej pokazana jest przykładowa tabela spotkań, która mogłaby pojawić się w raportach
 (pokazano tylko kilka kolumn):
 
 | Data       | Godzina | Kategoria   | Typ                      | Klienci                   |
@@ -20,13 +20,13 @@ Poniżej pokazana jest przykładowa tabela spotkań, która mogłaby pojawić si
 ### Grupowanie po typie
 
 Tabela spotkań może zostać pogrupowana po typie. Powoduje to połączenie wszystkich spotkań o tym samym typie w jeden wiersz —
-przykładowo trzy spotkania typu "Konsultacja indywidualna" zostaną połączone.
+w tym przykładzie trzy spotkania typu "Konsultacja indywidualna" zostaną połączone.
 
 Takie połączone spotkania mają różne daty i godziny, a więc nie można wyświetlić w tych kolumnach żadnych konkretnych wartości
 — zamiast tego pojawi się w nich symbol grupowania $t(tables.column_groups.grouping_symbol).
 Podobnie stanie się z kolumnami pracowników, klientów, opisu itp. Natomiast kolumny typu i kategorii spotkania będą miały konkretne wartości.
 
-Dodatkowo w pogrupowanej tabeli pojawi się kolumna _$t(tables.column_groups.count_column_label)_ mówiąca o tym, ile wierszy pierwotnej
+Dodatkowo w pogrupowanej tabeli pojawi się kolumna _$t(tables.column_groups.count_column_label)_, mówiąca o tym, ile wierszy pierwotnej
 tabeli ma dany typ spotkania.
 
 Wynikowa tabela pogrupowana po typie:

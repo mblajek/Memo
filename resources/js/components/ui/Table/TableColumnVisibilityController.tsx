@@ -221,7 +221,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
           onClick={popOver.open}
           disabled={!table.getAllLeafColumns().length}
         >
-          {t("tables.choose_columns")}
+          <actionIcons.Columns class="inlineIcon" /> {t("tables.choose_columns")}
         </Button>
       )}
     >

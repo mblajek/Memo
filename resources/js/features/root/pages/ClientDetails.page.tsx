@@ -7,6 +7,7 @@ import {DeleteButton, EditButton} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
 import {BigSpinner} from "components/ui/Spinner";
+import {StaticCSVExportButton} from "components/ui/StaticCSVExportButton";
 import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {ATTRIBUTES_SCHEMA} from "components/ui/form/AttributeFields";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
@@ -14,6 +15,7 @@ import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {TextField} from "components/ui/form/TextField";
 import {createAttributesProcessor} from "components/ui/form/attributes_processor";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
+import {actionIcons} from "components/ui/icons";
 import {EM_DASH} from "components/ui/symbols";
 import {Autofocus} from "components/utils/Autofocus";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -26,7 +28,7 @@ import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {ClientResourceForPatch} from "data-access/memo-api/resources/client.resource";
 import {FilterH} from "data-access/memo-api/tquery/filter_utils";
-import {ClientFields} from "features/client/ClientFields";
+import {ClientFields, useClientCSVData} from "features/client/ClientFields";
 import {ClientGroups} from "features/client/ClientGroups";
 import {PeopleAutoRelatedToClient} from "features/client/PeopleAutoRelatedToClient";
 import {createClientDeleteModal} from "features/client/client_delete_modal";
@@ -66,6 +68,7 @@ export default (() => {
   const formLeaveConfirmation = createFormLeaveConfirmation();
   const {UserMeetingsTables, ClientNoGroupMeetingsTable, useClientWithNoGroupMeetingsCount} = useUserMeetingsTables();
   const activeFacility = useActiveFacility();
+  const {getCSVData} = useClientCSVData();
   const clientAttributesProcessor = createAttributesProcessor("client");
   const userId = () => params.userId!;
   const dataQuery = createQuery(() => FacilityClient.clientQueryOptions(userId()));
@@ -203,7 +206,16 @@ export default (() => {
                                         }
                                       />
                                     </Show>
-                                    <EditButton class="secondary small" onClick={[setEditMode, true]} />
+                                    <div class="flex gap-1">
+                                      <EditButton class="secondary small" onClick={[setEditMode, true]} />
+                                      <StaticCSVExportButton
+                                        label={<actionIcons.ExportCSV class="inlineIcon" />}
+                                        title={t("facility_user.client.csv_export_label")}
+                                        class="secondary small"
+                                        baseFileName={`${user().name.replaceAll(" ", "_")}_(${t("models.client._name")})`}
+                                        data={() => getCSVData(userId())}
+                                      />
+                                    </div>
                                   </div>
                                 </Match>
                               </Switch>

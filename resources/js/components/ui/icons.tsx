@@ -1,5 +1,6 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTemplate, IconTypes} from "solid-icons";
+import {AiOutlineFileExcel, AiOutlineSearch} from "solid-icons/ai";
 import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
   BsFileEarmarkPerson,
@@ -15,7 +16,7 @@ import {
 } from "solid-icons/bs";
 import {CgRename, CgUndo} from "solid-icons/cg";
 import {FaRegularBell, FaSolidCheck} from "solid-icons/fa";
-import {FiEdit2} from "solid-icons/fi";
+import {FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
@@ -105,6 +106,9 @@ export namespace actionIcons {
   export const FocusHorizontally = RiArrowsContractLeftRightLine;
   export const SaveTableView = VsSave;
   export const Check = FaSolidCheck;
+  export const ExportCSV = AiOutlineFileExcel;
+  export const Search = AiOutlineSearch;
+  export const Columns: IconTypes = (props) => <FiColumns {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
 }
 
 export namespace calendarIcons {

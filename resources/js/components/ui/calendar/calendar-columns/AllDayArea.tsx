@@ -17,11 +17,19 @@ interface Props<C> extends htmlAttributes.div {
   readonly blocks: readonly Block<C, never>[];
   readonly events: readonly Event<C, never>[];
   readonly onEmptyClick?: () => void;
+  readonly marked?: boolean;
 }
 
 /** The all-day events area of a calendar column. */
 export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
-  const [props, divProps] = splitProps(allProps, ["day", "columnViewInfo", "blocks", "events", "onEmptyClick"]);
+  const [props, divProps] = splitProps(allProps, [
+    "day",
+    "columnViewInfo",
+    "blocks",
+    "events",
+    "onEmptyClick",
+    "marked",
+  ]);
   const t = useLangFunc();
   const calendarFunction = useCalendarFunctionContext();
   const blocks = createMemo(() => filterAndSortInDayView(props.day, props.blocks));
@@ -30,15 +38,41 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
   return (
     <CellWithPreferredStyling
       {...htmlAttributes.merge(divProps, {
-        class: "w-full h-full overflow-x-clip overflow-y-auto min-h-6 max-h-16",
+        class: cx(
+          "w-full h-full overflow-x-clip overflow-y-auto min-h-6 max-h-16",
+          props.marked ? "border-x border-dotted border-memo-active" : undefined,
+        ),
         onClick: props.onEmptyClick,
       })}
       preferences={[blocks(), events()].flatMap((objs) =>
         objs.map((o) => o.allDayAreaStylingPreference).filter(NON_NULLABLE),
       )}
     >
-      <div class={cx("flex flex-col items-stretch p-px", showAddButton() ? undefined : "mb-2")}>
-        <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
+      <div
+        class={cx("min-h-full flex flex-col items-stretch justify-between p-px", showAddButton() ? undefined : "mb-2")}
+      >
+        <div class="flex flex-col">
+          <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
+          <div
+            class="flex flex-col items-stretch gap-px"
+            style={{
+              // Match the margin of the hours area events.
+              "margin-right": "11px",
+            }}
+          >
+            <For each={events()}>
+              {(event) => (
+                <Show when={event.contentInAllDayArea}>
+                  {(content) => (
+                    <div class="overflow-clip" onClick={(e) => e.stopPropagation()}>
+                      {content()(props.columnViewInfo)}
+                    </div>
+                  )}
+                </Show>
+              )}
+            </For>
+          </div>
+        </div>
         <Show when={showAddButton()}>
           <Button
             class="bg-white hover:bg-hover text-grey-text border border-input-border rounded flex justify-center"
@@ -47,25 +81,6 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
             <actionIcons.Add />
           </Button>
         </Show>
-        <div
-          class="flex flex-col items-stretch gap-px"
-          style={{
-            // Match the margin of the hours area events.
-            "margin-right": "11px",
-          }}
-        >
-          <For each={events()}>
-            {(event) => (
-              <Show when={event.contentInAllDayArea}>
-                {(content) => (
-                  <div class="overflow-clip" onClick={(e) => e.stopPropagation()}>
-                    {content()(props.columnViewInfo)}
-                  </div>
-                )}
-              </Show>
-            )}
-          </For>
-        </div>
       </div>
     </CellWithPreferredStyling>
   );

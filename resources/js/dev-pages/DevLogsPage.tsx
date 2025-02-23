@@ -1,3 +1,4 @@
+import Bowser from "bowser";
 import {createTableTranslations} from "components/ui/Table/Table";
 import {cellFunc, ShowCellVal} from "components/ui/Table/table_cells";
 import {useLangFunc} from "components/utils/lang";
@@ -71,13 +72,26 @@ export default (() => {
           name: "userAgent",
           columnDef: {
             cell: cellFunc<string>((props) => (
-              <ScrollableCell class="pr-0" baseHeight={BASE_HEIGHT}>
+              <ScrollableCell class="pr-0 text-xs" baseHeight={BASE_HEIGHT}>
                 <ShowCellVal v={props.v}>{(v) => <LogText text={v()} />}</ShowCellVal>
               </ScrollableCell>
             )),
           },
-          initialVisible: false,
           columnGroups: true,
+          initialVisible: false,
+        },
+        {
+          name: "userAgentSummary",
+          isDataColumn: false,
+          extraDataColumns: ["userAgent"],
+          columnDef: {
+            cell: cellFunc<string>((props) => (
+              <ScrollableCell baseHeight={BASE_HEIGHT}>
+                <ShowCellVal v={props.row.userAgent as string | null}>{(v) => <>{browserSummary(v())}</>}</ShowCellVal>
+              </ScrollableCell>
+            )),
+          },
+          columnGroups: "userAgent",
         },
         {name: "user.id", columnDef: {size: 150}, initialVisible: false, columnGroups: "user.name"},
         {name: "user.name", columnGroups: true},
@@ -91,6 +105,27 @@ export default (() => {
     />
   );
 }) satisfies VoidComponent;
+
+function browserSummary(userAgent: string) {
+  const {browser, os, platform, engine} = Bowser.parse(userAgent);
+  function majorVer(version: string | undefined) {
+    return version?.split(".")[0];
+  }
+  function joinElems(elems: (string | undefined)[]) {
+    return elems.filter(Boolean).join(" ");
+  }
+  const eng = joinElems([engine.name, majorVer(engine.version)]);
+  return (
+    <div>
+      {[joinElems([platform.type, platform.vendor, platform.model]), joinElems([os.name, majorVer(os.version)])]
+        .filter(Boolean)
+        .join(", ")}
+      <br />
+      {joinElems([browser.name, majorVer(browser.version)])}
+      {eng ? ` (${eng})` : ""}
+    </div>
+  );
+}
 
 interface LogTextProps {
   readonly text: string;

@@ -53,11 +53,11 @@ export const useClientsData = createCached(() => {
   });
   return {
     isPending() {
-      return !byId();
+      return !byId() || !dictionaries();
     },
     getById(userId: string): ClientData | undefined {
       const row = byId()?.get(userId);
-      if (!row) {
+      if (!row || !dictionaries()) {
         return undefined;
       }
       return {

@@ -112,7 +112,7 @@ export const Navbar: VoidComponent = () => {
           <Dynamic component={collapsed() ? BiSolidArrowToRight : BiSolidArrowFromRight} size="16" />
         </Button>
         <Show when={!collapsed()}>
-          <FullLogo class="h-16 p-2 mt-2" />
+          <FullLogo class="h-16 p-2 my-2" />
         </Show>
         <ScrollableUpMarker />
         <nav
@@ -121,7 +121,7 @@ export const Navbar: VoidComponent = () => {
           style={{"--sb-track-color": "var(--navbar-color)"}}
         >
           <Show when={collapsed()}>
-            <ShortChangingLogo class="self-center w-12 h-12 p-1 mt-2 mb-2" />
+            <ShortChangingLogo class="self-center w-12 h-12 p-1 my-2" />
           </Show>
           <Show when={facilityUrl()}>
             <NavigationSection>

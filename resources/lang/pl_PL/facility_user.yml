@@ -22,9 +22,11 @@ birth_date_short: "ur. {{date}}"
 
 client:
   notification_method_requires_contact_data: "Wybrana metoda powiadomień wymaga uzupełnienia danych kontaktowych!"
+  csv_export_label: "Eksportuj dane klienta do pliku"
 
 staff:
   list_show_inactive: "pokaż nieaktywnych"
+  list_alt_sort: "sortowanie alternatywne (według nazwiska)"
   is_inactive:
     label: "Pracownik jest nieaktywny"
     since: "(od {{date}})"

@@ -40,6 +40,7 @@ export const DictListFilterControl: FilterControl<Filter> = (props) => {
         value={value()}
         onValueChange={setValue}
         multiple
+        headerItemSelectsAll
         showClearButton={false}
         small
       />

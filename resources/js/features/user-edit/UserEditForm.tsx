@@ -74,14 +74,13 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
         ? {
             email: values.email,
             hasEmailVerified: values.hasEmailVerified,
-            hasPassword: values.hasPassword,
             ...(values.hasPassword
               ? oldUser.hasPassword && !values.password
                 ? // The user has a password already and it is not changed.
-                  {passwordExpireAt}
+                  {hasPassword: true, passwordExpireAt}
                 : // New password or a password change.
-                  {password: values.password, passwordExpireAt}
-              : {password: null, passwordExpireAt}),
+                  {hasPassword: true, password: values.password, passwordExpireAt}
+              : {hasPassword: false, password: null, passwordExpireAt: null}),
           }
         : {
             email: null,

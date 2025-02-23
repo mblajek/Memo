@@ -16,7 +16,7 @@ export async function writeCSV({
   excelMode = false,
 }: {
   writer: WritableStreamDefaultWriter;
-  data: PossiblyAsyncIterable<(string | undefined)[]>;
+  data: PossiblyAsyncIterable<readonly (string | undefined)[]>;
 } & WriteCSVOptions): Promise<void> {
   function writeLine(line: string) {
     if (lineEnd !== "\n") {
