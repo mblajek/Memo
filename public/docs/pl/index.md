@@ -10,7 +10,7 @@
 
 ## Dokumenty pomocy
 
-- `$icon(staffIcons.Staff)` `$icon(adminIcons.Admin)` Pracownicy
+- `$icon(staffIcons.Staff)`$t(thin_space)`$icon(adminIcons.Admin)` Pracownicy
   - [Role i uprawnienia](staff-roles)
   - [Grafiki pracy](staff-time-tables)
 - `$icon(clientIcons.Client)` Klienci
