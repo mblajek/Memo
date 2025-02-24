@@ -40,7 +40,7 @@ export default defineConfig({
       },
     }),
     tsConfigPaths(),
-    eslint(),
+    eslint({include: ["resources/js"]}),
     solidSvg({defaultAsComponent: true}),
     betterHotReload(),
   ],

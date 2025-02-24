@@ -17,7 +17,7 @@ import {ToastMessages, toastDismiss, toastError} from "./toast";
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
 
-declare module "@tanstack/query-core" {
+declare module "@tanstack/solid-query" {
   interface Register {
     readonly queryMeta: QueryMeta;
     readonly mutationMeta: MutationMeta;

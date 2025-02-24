@@ -1,5 +1,7 @@
 FROM php:8.3-apache
 
+SHELL ["/bin/bash", "-c"]
+
 ARG ME_USER_UID=$ME_USER_UID
 ARG XDEBUG=$XDEBUG
 RUN useradd -mU -u $ME_USER_UID -s /bin/bash me
@@ -35,9 +37,12 @@ RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg -
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
 RUN apt update
 RUN apt install nodejs -y
-RUN npm install -g npm
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN curl -fsSL https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
+RUN source "$HOME/.bashrc"
 
-RUN npm install -g vite
+RUN pnpm add -g vite
 
 # mailpit
 
