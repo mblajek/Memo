@@ -39,7 +39,7 @@ export const createDocsModal = registerGlobalPageElement<DocsModalProps>((args) 
           <div class="flex flex-col items-stretch">
             <Help
               class="mt-2"
-              mdPath={resolveMdFromAppPath(data().href)}
+              mdPath={resolveMdFromAppPath(data().href).mdPath}
               currentPath={data().href}
               inlined
               offerNewTabLinks

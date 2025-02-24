@@ -12,12 +12,13 @@ import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
 import {isDEV} from "components/utils/dev_mode";
 import {useLangFunc} from "components/utils/lang";
+import {useNewspaper} from "components/utils/newspaper";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable, BiSolidArrowFromRight, BiSolidArrowToRight} from "solid-icons/bi";
 import {BsCalendar3} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
-import {FaSolidList} from "solid-icons/fa";
+import {FaRegularNewspaper, FaSolidList} from "solid-icons/fa";
 import {FiLoader} from "solid-icons/fi";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {IoReloadSharp} from "solid-icons/io";
@@ -26,6 +27,7 @@ import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
 import {TbCalendarCode, TbCalendarTime, TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
+import {VsChromeClose} from "solid-icons/vs";
 import {createContext, createSignal, DEV, ParentComponent, Show, Signal, useContext, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -55,6 +57,7 @@ export const Navbar: VoidComponent = () => {
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
   const facilityUrl = () => activeFacility()?.url;
+  const newspaper = useNewspaper();
   const [collapsed, setCollapsed] = createSignal(false);
   const navbarHover = createHoverSignal();
   const delayedNavbarHover = delayedAccessor(navbarHover, {timeMs: 1000, outputImmediately: (v) => v});
@@ -237,10 +240,27 @@ export const Navbar: VoidComponent = () => {
         <div
           class={cx("flex", collapsed() ? "flex-col-reverse items-center" : "items-end justify-between", "p-2 gap-1")}
         >
-          <A href="/help/about" class="!text-grey-text">
-            <Show when={!collapsed()}>{t("app_name")} </Show>
-            <BaseAppVersion />
-          </A>
+          <div class={cx("flex flex-col", collapsed() ? "items-center" : undefined)}>
+            <A href="/help/about" class="!text-grey-text">
+              <Show when={!collapsed()}>{t("app_name")} </Show>
+              <BaseAppVersion />
+            </A>
+            <Show when={newspaper.hasNews()}>
+              <div class="flex items-center gap-2">
+                <A href="/help/changelog">
+                  <Show when={!collapsed()}>
+                    <FaRegularNewspaper class="inlineIcon" />
+                  </Show>{" "}
+                  {t("changelog.short_text")}
+                </A>
+                <Show when={!collapsed()}>
+                  <Button onClick={() => newspaper.reportNewsRead()}>
+                    <VsChromeClose size="14" class="mt-1 !text-grey-text" />
+                  </Button>
+                </Show>
+              </div>
+            </Show>
+          </div>
           <Button
             class={cx(
               "p-1 rounded-full active:bg-select transition-colors",

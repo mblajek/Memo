@@ -110,7 +110,7 @@ export default (() => {
           )}
         </Show>
       </div>
-      <A href="/help/changelog">{t("changelog")}</A>
+      <A href="/help/changelog">{t("changelog.long_text")}</A>
       <A href="/help/privacy-policy">{t("privacy_policy")}</A>
     </div>
   );
