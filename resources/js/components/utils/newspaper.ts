@@ -28,6 +28,12 @@ export const useNewspaper = createCached(() => {
     hasNews() {
       return currentVer() && readChangelogAtVer() && currentVer() !== readChangelogAtVer();
     },
+    changelogHref() {
+      if (!this.hasNews()) {
+        return undefined;
+      }
+      return `/help/changelog#v${currentVer()}`;
+    },
     reportNewsRead() {
       setReadChangelogAtVer(currentVer());
     },

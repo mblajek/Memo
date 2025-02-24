@@ -245,20 +245,22 @@ export const Navbar: VoidComponent = () => {
               <Show when={!collapsed()}>{t("app_name")} </Show>
               <BaseAppVersion />
             </A>
-            <Show when={newspaper.hasNews()}>
-              <div class="flex items-center gap-2">
-                <A href="/help/changelog">
+            <Show when={newspaper.changelogHref()}>
+              {(changelogHref) => (
+                <div class="flex items-center gap-2">
+                  <A href={changelogHref()}>
+                    <Show when={!collapsed()}>
+                      <FaRegularNewspaper class="inlineIcon" />
+                    </Show>{" "}
+                    {t("changelog.short_text")}
+                  </A>
                   <Show when={!collapsed()}>
-                    <FaRegularNewspaper class="inlineIcon" />
-                  </Show>{" "}
-                  {t("changelog.short_text")}
-                </A>
-                <Show when={!collapsed()}>
-                  <Button onClick={() => newspaper.reportNewsRead()}>
-                    <VsChromeClose size="14" class="mt-1 !text-grey-text" />
-                  </Button>
-                </Show>
-              </div>
+                    <Button onClick={() => newspaper.reportNewsRead()}>
+                      <VsChromeClose size="14" class="mt-1 !text-grey-text" />
+                    </Button>
+                  </Show>
+                </div>
+              )}
             </Show>
           </div>
           <Button
