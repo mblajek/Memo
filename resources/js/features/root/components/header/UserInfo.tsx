@@ -1,5 +1,4 @@
-import {useNavigate} from "@solidjs/router";
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {createQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
 import {actionIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -10,19 +9,18 @@ import {CHECKBOX} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
 import {cx} from "components/utils/classnames";
-import {isDEV, resetDEV, toggleDEV} from "components/utils/dev_mode";
+import {isDEV, toggleDEV} from "components/utils/dev_mode";
 import {DATE_TIME_FORMAT} from "components/utils/formatting";
 import {useLangFunc} from "components/utils/lang";
+import {useLogOut} from "components/utils/log_out";
 import {usePasswordExpiration} from "components/utils/password_expiration";
 import {currentTimeMinute} from "components/utils/time";
 import {User} from "data-access/memo-api/groups/User";
-import {useInvalidator} from "data-access/memo-api/invalidator";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
 import {TiWarningOutline} from "solid-icons/ti";
 import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, on} from "solid-js";
-import {setActiveFacilityId} from "state/activeFacilityId.state";
 import {usesLocalTimeZone} from "time_zone_controller";
 import {ThemeIcon, useThemeControl} from "../theme_control";
 
@@ -32,28 +30,12 @@ const FORMAT = {...DATE_TIME_FORMAT, second: undefined, weekday: "long"} satisfi
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
-  const navigate = useNavigate();
   const statusQuery = createQuery(User.statusQueryOptions);
   const passwordExpiration = usePasswordExpiration();
   const passwordChangeModal = createPasswordChangeModal();
   const {toggleTheme} = useThemeControl();
-  const invalidate = useInvalidator();
   const developerPermission = useDeveloperPermission();
-  const logout = createMutation(() => ({
-    mutationFn: () => User.logout(),
-    meta: {
-      isFormSubmit: true,
-    },
-    onSuccess() {
-      navigate("/");
-      setTimeout(() => {
-        resetDEV();
-        setActiveFacilityId(undefined);
-        // Invalidate as the last operation to avoid starting unnecessary queries that are later cancelled.
-        invalidate.userStatusAndFacilityPermissions({clearCache: true});
-      });
-    },
-  }));
+  const logOut = useLogOut();
 
   createEffect(
     on(passwordExpiration, (expiration, prevExpiration) => {
@@ -157,14 +139,14 @@ export const UserInfo: VoidComponent = () => {
                       <InfoIcon href="/help/dev/developer-modes" />
                     </Button>
                   </Show>
-                  <Button onClick={() => logout.mutate()}>{t("actions.log_out")}</Button>
+                  <Button onClick={() => logOut.logOut()}>{t("actions.log_out")}</Button>
                 </SimpleMenu>
               )}
             </PopOver>
           </div>
         </div>
       </div>
-      <Show when={logout.isPending}>
+      <Show when={logOut.mutation.isPending}>
         <MemoLoader />
       </Show>
     </div>
