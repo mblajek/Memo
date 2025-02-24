@@ -18,6 +18,8 @@ import {title} from "../title";
 
 type _Directives = typeof title | typeof hoverSignal;
 
+const DEBOUNCE_TIME_MS = 1500;
+
 export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
@@ -55,7 +57,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   };
   const isDefaultSizing = () => !Object.keys(table.getState().columnSizing).some(matchesSearch);
   // eslint-disable-next-line solid/reactivity
-  const debouncedVisibility = debouncedAccessor(visibility, {timeMs: 500});
+  const debouncedVisibility = debouncedAccessor(visibility, {timeMs: DEBOUNCE_TIME_MS});
   createComputed(() => {
     const vis = debouncedVisibility();
     if (vis) {
@@ -141,14 +143,26 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                       class={cx("self-center", hover() ? "opacity-100" : "opacity-0")}
                       onClick={() => {
                         setVisibility((v) => ({...v, [column.id]: true}));
-                        const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
-                        header?.scrollIntoView({inline: "center", behavior: "smooth"});
-                        header?.animate([{}, {backgroundColor: "var(--tc-select)"}], {
-                          direction: "alternate",
-                          duration: 230,
-                          iterations: 6,
-                        });
-                        props.popOver.close();
+                        const tryFindInterval = 100;
+                        let attempts = DEBOUNCE_TIME_MS / tryFindInterval + 1;
+                        function attempt() {
+                          if (!attempts--) {
+                            return;
+                          }
+                          const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
+                          if (!header) {
+                            setTimeout(attempt, tryFindInterval);
+                            return;
+                          }
+                          header.scrollIntoView({inline: "center", behavior: "smooth"});
+                          header.animate([{}, {backgroundColor: "var(--tc-select)"}], {
+                            direction: "alternate",
+                            duration: 230,
+                            iterations: 6,
+                          });
+                          props.popOver.close();
+                        }
+                        attempt();
                       }}
                       title={t("tables.scroll_to_column")}
                     >
