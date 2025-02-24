@@ -8,6 +8,8 @@
 - kalendarzem spotkań klientów i pracowników
 - grafikami pracy pracowników fundacji
 
+[Co nowego w $t(app_name)](changelog) — lista zmian w kolejnych wersjach.
+
 ## Dokumenty pomocy
 
 - `$icon(staffIcons.Staff)`$t(thin_space)`$icon(adminIcons.Admin)` Pracownicy

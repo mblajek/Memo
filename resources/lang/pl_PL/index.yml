@@ -5,6 +5,7 @@ app_version: "𝑣{{version}}"
 app_version_needs_reload: "𝑣{{baseVersion}} ➸ 𝑣{{lastVersion}} (odśwież aby zaktualizować)"
 app_env: "Środowisko: {{env}}"
 privacy_policy: "Polityka prywatności"
+changelog: "Co nowego — lista zmian"
 
 exception:
   configuration:
