@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.11 {#v0.11}
+
 Data wydania: **12 sierpnia 2024**
 
 🟢Dodano możliwość dezaktywowania pracowników, którzy już nie pracują dla placówki. Ich spotkania pozostają

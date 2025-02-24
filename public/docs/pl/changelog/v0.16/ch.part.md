@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.16 {#v0.16}
+
 Data wydania: **10 grudnia 2024**
 
 🟢Na profilu klienta można, tak jak dotąd, zobaczyć wizyty tego klienta, ale dodana została możliwość

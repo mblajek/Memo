@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.17 {#v0.17}
+
 Data wydania: **26 stycznia 2025**
 
 🟢Składany pasek nawigacji. Na górze po prawej stronie paska nawigacji pojawiła się mała strzałka

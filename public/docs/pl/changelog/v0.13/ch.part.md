@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.13 {#v0.13}
+
 Data wydania: **22 września 2024**
 
 🟢Przy wyborze kolumn widocznych w tabeli pojawiło się pole wyszukiwania, pozwalające szybciej znaleźć

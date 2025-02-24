@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.14 {#v0.14}
+
 Data wydania: **10 października 2024**
 
 🟢Można korzystać z Memo w przeglądarce Firefox. Trzeba korzystać z aktualnej wersji (wersja 131 lub nowsza).

@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.8 {#v0.8}
+
 Data wydania: **12 maja 2024**
 
 🟢Pole opisu (spotkania, klienta) ma opcjonalny podgląd, aktualizowany w czasie pisania. Można w nim zobaczyć,

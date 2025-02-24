@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.18 {#v0.18}
+
 Data wydania: **24 lutego 2025**
 
 🟢Eksport danych pojedynczego klienta do pliku CSV — służy do tego nowy przycisk obok przycisku edycji klienta.

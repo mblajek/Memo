@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.12 {#v0.12}
+
 Data wydania: **22 sierpnia 2024**
 
 🟢Dodano grupy klientów, znane też jako rodziny. Informacje o wszystkich członkach grupy można znaleźć

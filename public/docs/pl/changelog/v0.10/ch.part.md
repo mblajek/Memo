@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.10 {#v0.10}
+
 Data wydania: **17 czerwca 2024**
 
 🟢Dla spotkań cyklicznych wyświetlony jest numer spotkania w serii oraz łączna liczba spotkań w serii.

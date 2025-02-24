@@ -1,3 +1,5 @@
+## $t(app_name) $t(app_version.v)0.9 {#v0.9}
+
 Data wydania: **30 maja 2024**
 
 🟢Poprawka łatwości korzystania z tabel: kliknięcie linka w tabeli, a następnie kliknięcie przycisku
