@@ -11,6 +11,7 @@ import {DevRoutes} from "dev-pages/DevRoutes";
 import NotFound from "features/not-found/components/NotFound";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {PageWithTheme} from "features/root/components/theme_control";
+import {Favicon} from "features/root/Favicon";
 import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {clearAllHistoryState} from "./components/persistence/history_persistence";
@@ -64,6 +65,7 @@ const App: VoidComponent = () => {
 
   return (
     <AppContextProvider>
+      <Favicon />
       <Router>
         <Route path="/" component={PageWithTheme}>
           <LeafRoute routeKey="login" path="/login" component={LoginPage} />
