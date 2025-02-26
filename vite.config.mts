@@ -44,6 +44,10 @@ export default defineConfig({
     solidSvg({defaultAsComponent: true}),
     betterHotReload(),
   ],
+  optimizeDeps: {
+    // Based on https://github.com/andi23rosca/solid-markdown/issues/33#issuecomment-2612454745
+    include: ["solid-markdown > micromark", "solid-markdown > unified"],
+  },
   css: {
     preprocessorOptions: {
       scss: {
