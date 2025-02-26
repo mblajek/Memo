@@ -69,7 +69,7 @@ importers:
         specifier: ^2.5.1
         version: 2.5.1
       eslint-config-prettier:
-        specifier: ^10.0.1
+        specifier: ^10.0.2
         version: 10.0.2(eslint@9.21.0(jiti@1.21.7))
       eslint-plugin-solid:
         specifier: ^0.14.5
@@ -135,7 +135,7 @@ importers:
         specifier: ^1.8.1
         version: 1.8.1(eslint@9.21.0(jiti@1.21.7))(vite@6.2.0(@types/node@22.13.5)(jiti@1.21.7)(sass@1.85.1)(yaml@2.7.0))
       vite-plugin-solid:
-        specifier: ^2.11.2
+        specifier: ^2.11.4
         version: 2.11.4(@testing-library/jest-dom@6.6.3)(solid-js@1.9.5)(vite@6.2.0(@types/node@22.13.5)(jiti@1.21.7)(sass@1.85.1)(yaml@2.7.0))
       vite-plugin-solid-svg:
         specifier: ^0.8.1
@@ -1500,8 +1500,8 @@ packages:
   ecc-jsbn@0.1.2:
     resolution: {integrity: sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw==}
 
-  electron-to-chromium@1.5.105:
-    resolution: {integrity: sha512-ccp7LocdXx3yBhwiG0qTQ7XFrK48Ua2pxIxBdJO8cbddp/MvbBtPFzvnTchtyHQTsgqqczO8cdmAIbpMa0u2+g==}
+  electron-to-chromium@1.5.106:
+    resolution: {integrity: sha512-12keJGdXQWPnfVOu6/6ZzZgPPNodiDOSe3LjA8qk2yXTjnCnw2LeGUsAmtlNAmH4UW0K7tOLcz0j9lI2eJCJRA==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -4461,7 +4461,7 @@ snapshots:
   browserslist@4.24.4:
     dependencies:
       caniuse-lite: 1.0.30001701
-      electron-to-chromium: 1.5.105
+      electron-to-chromium: 1.5.106
       node-releases: 2.0.19
       update-browserslist-db: 1.1.3(browserslist@4.24.4)
 
@@ -4802,7 +4802,7 @@ snapshots:
       jsbn: 0.1.1
       safer-buffer: 2.1.2
 
-  electron-to-chromium@1.5.105: {}
+  electron-to-chromium@1.5.106: {}
 
   emoji-regex@8.0.0: {}
 
