@@ -23,6 +23,7 @@ facility:
   client_details: "$t(models.client._name)"
   client_create: "$t(forms.client_create.form_name)"
   admins: "administratorzy"
+  leave_times: "nieobecności"
 
   facility_admin:
     time_tables: "grafiki pracy"

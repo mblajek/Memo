@@ -3,7 +3,7 @@ import {createContext, useContext} from "solid-js";
 export const CALENDAR_MODES = ["month", "week", "day"] as const;
 export type CalendarMode = (typeof CALENDAR_MODES)[number];
 
-export type CalendarFunction = "work" | "timeTables";
+export type CalendarFunction = "work" | "timeTables" | "leaveTimes";
 
 export const CalendarFunctionContext = createContext<CalendarFunction>();
 

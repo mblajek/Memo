@@ -1,18 +1,14 @@
-import {hoverSignal} from "components/ui/hover_signal";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
 
-type _Directives = typeof hoverSignal;
-
 interface PartDayBlockProps extends htmlAttributes.div {
   readonly label?: string;
   readonly hovered?: boolean;
-  readonly onHoverChange?: (hovered: boolean) => void;
 }
 
 export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => {
-  const [props, divProps] = splitProps(allProps, ["label", "hovered", "onHoverChange", "children"]);
+  const [props, divProps] = splitProps(allProps, ["label", "hovered", "children"]);
   return (
     <div
       {...htmlAttributes.merge(divProps, {
@@ -22,7 +18,6 @@ export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => 
         ),
         style: {"outline-offset": "-2px"},
       })}
-      use:hoverSignal={(hovered) => props.onHoverChange?.(hovered)}
     >
       <Show when={props.label}>
         <div

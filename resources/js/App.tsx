@@ -28,11 +28,12 @@ const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHe
 const FacilityAdminsListPage = lazyAutoPreload(() => import("features/root/pages/FacilityAdminsList.page"));
 const FacilityHomePage = lazyAutoPreload(() => import("features/root/pages/FacilityHome.page"));
 const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
+const LeaveTimesPage = lazyAutoPreload(() => import("features/root/pages/LeaveTimes.page"));
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
-const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const MeetingAttendantsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingAttendantsList.page"));
 const MeetingClientsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingClientsList.page"));
 const MeetingSeriesPage = lazyAutoPreload(() => import("features/root/pages/MeetingSeries.page"));
+const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const ReportsPage = lazyAutoPreload(() => import("features/root/pages/Reports.page"));
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
@@ -101,6 +102,19 @@ const App: VoidComponent = () => {
               <LeafRoute routeKey="facility.home" path="/home" component={FacilityHomePage} />
               <Route path="/" component={FacilityAdminOrStaffPages}>
                 <LeafRoute routeKey="facility.calendar" path="/calendar" component={CalendarPage} />
+                <LeafRoute routeKey="System meetings" path="/system-meetings" component={SystemMeetingsListPage} />
+                <Route path="/staff">
+                  <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
+                  <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
+                </Route>
+                <Route path="/clients">
+                  <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
+                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
+                  <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+                </Route>
+                <LeafRoute routeKey="facility.admins" path="/admins" component={FacilityAdminsListPage} />
+                <LeafRoute routeKey="facility.leave_times" path="/absences" component={LeaveTimesPage} />
+                {/* Reports: */}
                 <LeafRoute routeKey="facility.meetings" path="/meetings" component={MeetingsListPage} />
                 <LeafRoute
                   routeKey="facility.meeting_series"
@@ -117,19 +131,6 @@ const App: VoidComponent = () => {
                   path="/meeting-clients"
                   component={MeetingClientsListPage}
                 />
-                <LeafRoute routeKey="System meetings" path="/system-meetings" component={SystemMeetingsListPage} />
-                <Route path="/staff">
-                  <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
-                  <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
-                </Route>
-                <Route path="/clients">
-                  <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
-                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
-                  <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
-                </Route>
-                <Route path="/admins">
-                  <LeafRoute routeKey="facility.admins" path="/" component={FacilityAdminsListPage} />
-                </Route>
               </Route>
               <Route
                 path="/admin"

@@ -538,7 +538,7 @@ export default (() => {
             <Show
               when={ctx.getValue()}
               fallback={
-                <PaddedCell style={{background: CALENDAR_BACKGROUNDS.main}}>
+                <PaddedCell style={{background: CALENDAR_BACKGROUNDS.mainBg}}>
                   <CenteredEmptyValueSymbol />
                 </PaddedCell>
               }
@@ -550,9 +550,9 @@ export default (() => {
                     background: [
                       dayData().isFacilityWorkDay
                         ? dayData().workTimes.length
-                          ? CALENDAR_BACKGROUNDS.staffWorkTime
+                          ? CALENDAR_BACKGROUNDS.mainWorkTime
                           : CALENDAR_BACKGROUNDS.facilityWorkTime
-                        : CALENDAR_BACKGROUNDS.main,
+                        : CALENDAR_BACKGROUNDS.mainBg,
                       dayData().isFacilityLeaveDay ? CALENDAR_BACKGROUNDS.facilityLeaveTime : undefined,
                       dayData().isStaffLeaveDay ? CALENDAR_BACKGROUNDS.staffLeaveTime : undefined,
                       dayData().isHoliday ? CALENDAR_BACKGROUNDS.holiday : undefined,

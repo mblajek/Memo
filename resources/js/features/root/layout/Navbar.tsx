@@ -16,7 +16,7 @@ import {useNewspaper} from "components/utils/newspaper";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable, BiSolidArrowFromRight, BiSolidArrowToRight} from "solid-icons/bi";
-import {BsCalendar3} from "solid-icons/bs";
+import {BsCalendar2X, BsCalendar3} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
 import {FaRegularNewspaper, FaSolidList} from "solid-icons/fa";
 import {FiLoader} from "solid-icons/fi";
@@ -129,12 +129,14 @@ export const Navbar: VoidComponent = () => {
           <Show when={facilityUrl()}>
             <NavigationSection>
               <FacilityAdminOrStaffBarrier>
-                <NavigationItem
-                  icon={BsCalendar3}
-                  href={`/${facilityUrl()}/calendar`}
-                  end
-                  routeKey="facility.calendar"
-                />
+                <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar">
+                  <NavigationItem
+                    icon={BsCalendar2X}
+                    href={`/${facilityUrl()}/absences`}
+                    routeKey="facility.leave_times"
+                    small
+                  />
+                </NavigationItem>
                 <NavigationItem icon={staffIcons.Menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
                 <NavigationItem
                   icon={clientIcons.Menu}

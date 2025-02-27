@@ -15,6 +15,7 @@
 - `$icon(staffIcons.Staff)`$t(thin_space)`$icon(adminIcons.Admin)` Pracownicy
   - [Role i uprawnienia](staff-roles)
   - [Grafiki pracy](staff-time-tables)
+  - [Kalendarz nieobecności](staff-absences)
 - `$icon(clientIcons.Client)` Klienci
   - [Grupy klientów](client-groups)
   - [Usuwanie klientów](client-delete)

@@ -22,7 +22,7 @@ interface Props<M> extends htmlAttributes.div {
   readonly monthViewInfo: M;
   readonly blocks: readonly Block<never, M>[];
   readonly events: readonly Event<never, M>[];
-  readonly onDateClick: () => void;
+  readonly onDateClick?: () => void;
   readonly onEmptyClick?: () => void;
 }
 
@@ -54,20 +54,25 @@ export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
     >
       <div class="flex flex-col items-stretch">
         <div class="bg-inherit flex items-start justify-between">
-          <div class="grow p-px flex flex-col min-w-0">
+          <div class="grow p-px flex flex-col gap-px min-w-0">
             <For each={blocks()}>{(block) => block.contentInMonthCell?.(props.monthViewInfo)}</For>
           </div>
           <Button
             class={cx(
-              "bg-inherit px-0.5 rounded font-semibold flex gap-0.5 items-center text-base -mb-0.5 hover:underline",
+              "bg-inherit px-0.5 rounded font-semibold flex gap-0.5 items-center text-base -mb-0.5",
               props.day.isWeekend || holidays.isHoliday(props.day) ? "text-red-800" : "text-black",
               isThisMonth() ? undefined : "text-opacity-50",
-              holidays.isHoliday(props.day) ? "underline decoration-1 hover:decoration-2" : undefined,
+              holidays.isHoliday(props.day)
+                ? ["underline decoration-1", props.onDateClick ? "hover:decoration-2" : undefined]
+                : props.onDateClick
+                  ? "hover:underline"
+                  : undefined,
             )}
             onClick={(e) => {
               e.stopPropagation();
-              props.onDateClick?.();
+              props.onDateClick!();
             }}
+            disabled={!props.onDateClick}
           >
             <Show when={props.day.hasSame(currentDate(), "day")}>
               <div use:title={capitalizeString(t("calendar.today"))}>

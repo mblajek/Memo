@@ -17,10 +17,10 @@ export interface PartDayTimeSpan {
 export type TimeSpan = AllDayTimeSpan | PartDayTimeSpan;
 
 export interface ContentInHoursArea<C> {
-  readonly contentInHoursArea: (columnViewInfo: C) => JSX.Element;
+  readonly contentInHoursArea?: (columnViewInfo: C) => JSX.Element;
 }
 export interface ContentInAllDayArea<C> {
-  readonly contentInAllDayArea: (columnViewInfo: C) => JSX.Element;
+  readonly contentInAllDayArea?: (columnViewInfo: C) => JSX.Element;
   readonly allDayAreaStylingPreference?: CellStylingPreference;
 }
 export interface ContentInMonthCell<M> {
