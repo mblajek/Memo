@@ -73,6 +73,7 @@ export const MonthCalendarCell = <M,>(allProps: Props<M>): JSX.Element => {
               props.onDateClick!();
             }}
             disabled={!props.onDateClick}
+            title={props.day.toLocaleString({dateStyle: "full"})}
           >
             <Show when={props.day.hasSame(currentDate(), "day")}>
               <div use:title={capitalizeString(t("calendar.today"))}>
