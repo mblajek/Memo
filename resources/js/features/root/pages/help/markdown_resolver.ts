@@ -19,6 +19,6 @@ export function resolveMdFromAppPath(appHelpPath: string) {
   }
   return {
     helpPagePath: match[1],
-    mdPath: `/${isDEV() ? "docs" : "docs-remote"}/${currentLanguage()}/${match[1]}.md`,
+    mdPath: currentLanguage() ? `/${isDEV() ? "docs" : "docs-remote"}/${currentLanguage()}/${match[1]}.md` : undefined,
   };
 }
