@@ -1,0 +1,15 @@
+{
+  "lint": {
+    "include": ["scripts"],
+    "rules": {
+      "tags": ["recommended"],
+      "exclude": [
+        "no-inner-declarations",
+        "no-regex-spaces"
+      ]
+    }
+  },
+  "imports": {
+    "@std/fs": "jsr:@std/fs@^1.0.14"
+  },
+}

@@ -1,10 +1,12 @@
-## $t(app_name) $t(app_version.v)0.ver {#v0.ver}
+## $t(app_name) $t(app_version.v)$VERSION$ {#v$VERSION$}
 
-Data wydania: **data**
+Data wydania: **$DATE$**
+
+$LOG$
 
 …
 
-🟢 — dla wszystkich
-🟣 — dla administratorów placówki
-🔴 — dla administratorów globalnych
-⚫ — inne
+🟢 — dla wszystkich,
+🟣 — dla administratorów placówki,
+🔴 — dla administratorów globalnych,
+⚫ — inne.

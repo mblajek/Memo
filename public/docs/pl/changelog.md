@@ -4,6 +4,8 @@ Poniżej opisane są zmiany widoczne i istotne dla klientów, pojawiające się 
 Każda wersja wiąże się dodatkowo z usuwaniem drobnych i większych błędów, oraz zmianami tak drobnymi,
 że nie są wymienione.
 
+<!-- $ADD_LATEST_BELOW$ -->
+
 $include(changelog/v0.18/ch.part.md)
 
 $include(changelog/v0.17/ch.part.md)
