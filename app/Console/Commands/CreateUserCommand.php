@@ -18,7 +18,7 @@ class CreateUserCommand extends Command
     protected $signature = 'fz:user';
     protected $description = 'Create new user';
 
-    public function handle()
+    public function handle(): void
     {
         PermissionMiddleware::setPermissions(
             new PermissionObject(

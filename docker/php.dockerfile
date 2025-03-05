@@ -1,4 +1,4 @@
-FROM php:8.3-apache
+FROM php:8.4-apache
 
 SHELL ["/bin/bash", "-c"]
 
@@ -9,7 +9,7 @@ RUN useradd -mU -u $ME_USER_UID -s /bin/bash me
 RUN a2enmod rewrite
 
 RUN apt update
-RUN apt install -y unzip nano git htop curl libicu-dev psmisc libzip-dev mc
+RUN apt install -y zip unzip nano git htop curl libicu-dev psmisc libzip-dev mc
 
 RUN git config --global --add safe.directory /var/www
 

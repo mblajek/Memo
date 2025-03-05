@@ -16,7 +16,7 @@ class DatabaseEchoCommand extends Command
     protected $signature = 'fz:db-echo {mode} {password?}';
     protected $description = 'Echo last database dump contents';
 
-    public function handle()
+    public function handle(): void
     {
         $mode = $this->argument('mode');
         $password = $this->argument('password');
