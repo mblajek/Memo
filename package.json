@@ -3,6 +3,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "dev": "pnpm install && node git-version.mjs > storage/app/git-version.txt && vite",
     "build": "pnpm install --prod && vite build --sourcemap && node git-version.mjs > storage/app/git-version.txt",
     "build-debug": "pnpm install --prod && vite build --no-minify --sourcemap=inline && node git-version.mjs > storage/app/git-version.txt",
@@ -14,8 +15,7 @@
     "test-watch": "pnpm install && vitest watch",
     "coverage": "pnpm install && vitest run --coverage",
     "lint": "pnpm install && eslint resources/js",
-    "cy:open": "cypress open --e2e",
-    "preinstall": "npx -y only-allow pnpm"
+    "cy:open": "cypress open --e2e"
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.10",
@@ -93,6 +93,8 @@
   },
   "engines": {
     "node": ">=20",
-    "pnpm": ">=10"
-  }
+    "pnpm": ">=10",
+    "npm": "use-pnpm-instead"
+  },
+  "packageManager": "pnpm"
 }
