@@ -1,4 +1,5 @@
 import {A} from "@solidjs/router";
+import Bowser from "bowser";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
@@ -58,7 +59,7 @@ export const Navbar: VoidComponent = () => {
   const {theme} = useThemeControl();
   const facilityUrl = () => activeFacility()?.url;
   const newspaper = useNewspaper();
-  const [collapsed, setCollapsed] = createSignal(false);
+  const [collapsed, setCollapsed] = createSignal(Bowser.parse(navigator.userAgent).platform.type === "mobile");
   const navbarHover = createHoverSignal();
   const delayedNavbarHover = delayedAccessor(navbarHover, {timeMs: 1000, outputImmediately: (v) => v});
   createPersistence({
