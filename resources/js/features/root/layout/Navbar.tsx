@@ -5,7 +5,7 @@ import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {FullLogo, ShortChangingLogo} from "components/ui/FullLogo";
 import {createHoverSignal, hoverSignal} from "components/ui/hover_signal";
-import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
+import {adminIcons, calendarIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {title} from "components/ui/title";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
@@ -17,7 +17,7 @@ import {useNewspaper} from "components/utils/newspaper";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable, BiSolidArrowFromRight, BiSolidArrowToRight} from "solid-icons/bi";
-import {BsCalendar2X, BsCalendar3} from "solid-icons/bs";
+import {BsCalendar2X} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
 import {FaRegularNewspaper, FaSolidList} from "solid-icons/fa";
 import {FiLoader} from "solid-icons/fi";
@@ -130,7 +130,12 @@ export const Navbar: VoidComponent = () => {
           <Show when={facilityUrl()}>
             <NavigationSection>
               <FacilityAdminOrStaffBarrier>
-                <NavigationItem icon={BsCalendar3} href={`/${facilityUrl()}/calendar`} end routeKey="facility.calendar">
+                <NavigationItem
+                  icon={calendarIcons.Calendar}
+                  href={`/${facilityUrl()}/calendar`}
+                  end
+                  routeKey="facility.calendar"
+                >
                   <NavigationItem
                     icon={BsCalendar2X}
                     href={`/${facilityUrl()}/absences`}

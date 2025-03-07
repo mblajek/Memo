@@ -3,6 +3,7 @@ import {IconTemplate, IconTypes} from "solid-icons";
 import {AiOutlineFileExcel, AiOutlineSearch} from "solid-icons/ai";
 import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
+  BsCalendar3,
   BsFileEarmarkPerson,
   BsHouse,
   BsHouseAdd,
@@ -112,6 +113,7 @@ export namespace actionIcons {
 }
 
 export namespace calendarIcons {
+  export const Calendar = BsCalendar3;
   export const Conflict = BiRegularCalendarX;
 }
 

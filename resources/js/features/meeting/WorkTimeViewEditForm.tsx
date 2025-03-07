@@ -4,6 +4,7 @@ import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
+import {calendarIcons} from "components/ui/icons";
 import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -120,7 +121,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                   <LinkWithNewTabLink
                     {...getCalendarViewLinkData(`/${activeFacility()?.url}/admin/time-tables`, {meeting: workTime()})}
                   >
-                    {t("meetings.show_in_calendar")}
+                    <calendarIcons.Calendar class="inlineIcon" /> {t("meetings.show_in_calendar")}
                   </LinkWithNewTabLink>
                 </Show>
                 <CreatedByInfo class="-mb-2" data={workTime()} />

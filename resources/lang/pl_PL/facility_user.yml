@@ -31,6 +31,8 @@ staff:
     label: "Pracownik jest nieaktywny"
     since: "(od {{date}})"
 
+show_calendar: "Pokaż kalendarz"
+
 client_group__interval: "(0-1)[$t(models.client_group._name)];(2-inf)[$t(models.client_group._name_plural)];"
 client_groups:
   first_client_frozen: "Ten klient musi należeć do grupy"
