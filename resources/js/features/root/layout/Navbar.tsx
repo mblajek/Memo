@@ -255,12 +255,16 @@ export const Navbar: VoidComponent = () => {
             </A>
             <Show when={newspaper.changelogHref()}>
               {(changelogHref) => (
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1">
                   <A href={changelogHref()}>
                     <Show when={!collapsed()}>
-                      <FaRegularNewspaper class="inlineIcon" />
-                    </Show>{" "}
+                      <FaRegularNewspaper class="inlineIcon" />{" "}
+                    </Show>
                     {t("changelog.short_text")}
+                    <Show when={!collapsed()}>
+                      {" "}
+                      <FaRegularNewspaper class="inlineIcon" />
+                    </Show>
                   </A>
                   <Show when={!collapsed()}>
                     <Button onClick={() => newspaper.reportNewsRead()}>

@@ -21,7 +21,7 @@ import {FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {TbFilter, TbFilterOff} from "solid-icons/tb";
+import {TbFilter, TbFilterOff, TbReload} from "solid-icons/tb";
 import {VsSave} from "solid-icons/vs";
 
 namespace customIcons {
@@ -110,6 +110,7 @@ export namespace actionIcons {
   export const ExportCSV = AiOutlineFileExcel;
   export const Search = AiOutlineSearch;
   export const Columns: IconTypes = (props) => <FiColumns {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
+  export const Reload = TbReload;
 }
 
 export namespace calendarIcons {
