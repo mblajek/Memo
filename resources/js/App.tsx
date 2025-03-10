@@ -54,11 +54,13 @@ const App: VoidComponent = () => {
     const params = useParams();
     const navigate = useNavigate();
     createEffect(() => {
-      if (facilitiesQuery.isSuccess && activeFacilityId()) {
-        const activeFacility = facilitiesQuery.data!.find((facility) => facility.id === activeFacilityId());
+      if (activeFacilityId()) {
+        const activeFacility = facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId());
         if (activeFacility) {
           navigate(`/${activeFacility.url}/${params.facilityPath}`);
         }
+      } else {
+        navigate("/");
       }
     });
     return <></>;

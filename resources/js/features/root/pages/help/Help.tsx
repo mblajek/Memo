@@ -35,7 +35,11 @@ export const Help: VoidComponent<Props> = (allProps) => {
   const location = useLocation();
   const query = createQuery(() => ({
     queryFn: async ({signal}) => {
-      const resp = await fetch(props.mdPath!, {cache: "no-cache", signal});
+      const mdPath = props.mdPath!;
+      if (!mdPath.match(/^\/docs(\/\w[\w.-]*)+\.md$/)) {
+        Promise.reject({status: 404, statusText: "Not Found"});
+      }
+      const resp = await fetch(mdPath, {cache: "no-cache", signal});
       const text = await resp.text();
       if (!resp.ok) {
         return Promise.reject({status: resp.status, statusText: resp.statusText, data: text});

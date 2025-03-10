@@ -1,9 +1,7 @@
 import {useParams} from "@solidjs/router";
 import {createTableTranslations} from "components/ui/Table/Table";
 import {TQueryTable} from "components/ui/Table/TQueryTable";
-import {NON_NULLABLE} from "components/utils/array_filter";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
-import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {useMeetingTableColumns, useMeetingTableFilters} from "features/meeting/meeting_tables";
 import {VoidComponent} from "solid-js";
@@ -27,9 +25,11 @@ export default (() => {
         type: "op",
         op: "&",
         val: [
-          meetingTableFilters.isRegularMeeting(),
-          {type: "column", column: "fromMeetingId", op: "=", val: params.fromMeetingId || ""} satisfies FilterH,
-        ].filter(NON_NULLABLE),
+          meetingTableFilters.isRegularMeeting() || "never",
+          params.fromMeetingId
+            ? {type: "column", column: "fromMeetingId", op: "=", val: params.fromMeetingId}
+            : "never",
+        ],
       }}
       columns={[
         cols.meeting.get("seriesNumber", {initialVisible: true}),

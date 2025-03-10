@@ -780,6 +780,8 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
   }
 
   function showResources(resourceIds: string[]) {
+    const allResourcesSet = new Set(allResources().map((r) => r.id));
+    resourceIds = resourceIds.filter((id) => allResourcesSet.has(id));
     if (!resourceIds.length) {
       return;
     }
