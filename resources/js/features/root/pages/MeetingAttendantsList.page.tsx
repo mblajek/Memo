@@ -53,7 +53,7 @@ export default (() => {
         ...getCreatedUpdatedColumns({overrides: {columnGroups: "meeting_multicolumn"}}),
         cols.meeting.actions,
       ]}
-      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
+      intrinsicFilter={meetingTableFilters.isRegularMeeting() || "never"}
       intrinsicSort={[
         {type: "column", column: "date", desc: true},
         {type: "column", column: "startDayminute", desc: true},

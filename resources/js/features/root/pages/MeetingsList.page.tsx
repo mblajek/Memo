@@ -19,7 +19,7 @@ export default (() => {
       staticPersistenceKey="facilityMeetings"
       // This table has multiple heavy to render columns.
       nonBlocking
-      intrinsicFilter={meetingTableFilters.isRegularMeeting()}
+      intrinsicFilter={meetingTableFilters.isRegularMeeting() || "never"}
       intrinsicSort={[
         {type: "column", column: "date", desc: true},
         {type: "column", column: "startDayminute", desc: true},
