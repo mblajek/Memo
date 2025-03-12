@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Csp;
+namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Vite;

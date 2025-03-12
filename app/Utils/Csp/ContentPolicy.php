@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Csp;
+namespace App\Utils\Csp;
 
 use App;
 use Spatie\Csp\Directive;

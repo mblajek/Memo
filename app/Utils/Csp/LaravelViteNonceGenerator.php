@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Csp;
+namespace App\Utils\Csp;
 
 use Illuminate\Support\Facades\Vite;
 use Spatie\Csp\Nonce\NonceGenerator;
