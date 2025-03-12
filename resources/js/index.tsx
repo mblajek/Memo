@@ -6,11 +6,11 @@ import "./init_types";
 
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
+import {Toaster} from "Toaster";
 import {InitializeTanstackQuery} from "components/utils/InitializeTanstackQuery";
 import {AppTitleProvider} from "features/root/AppTitleProvider";
 import {DEV, ErrorBoundary, Show} from "solid-js";
 import {render} from "solid-js/web";
-import {Toaster} from "solid-toast";
 import {TimeZoneController} from "time_zone_controller";
 import App from "./App";
 import {FatalError} from "./FatalError";
@@ -23,8 +23,6 @@ const root = document.getElementById("root");
 if (!(root instanceof HTMLElement)) {
   throw new Error("Root element not found.");
 }
-
-const TOAST_DURATION_SECS = 10;
 
 // Allow setting the language in the session storage, mostly for testing.
 const LANGUAGE_SESSION_STORAGE_KEY = "language";
@@ -62,13 +60,7 @@ render(() => {
               );
             }}
           >
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                className: "mr-4 !pr-0",
-                duration: TOAST_DURATION_SECS * 1000,
-              }}
-            />
+            <Toaster />
             <InitializeTanstackQuery>
               <DictionariesAndAttributesProvider>
                 <TimeZoneController>
