@@ -155,3 +155,10 @@ csv_export:
   unsupported: "Eksport plików nie jest wspierany w tej przeglądarce. Sugerowana przeglądarka: Chrome lub Edge."
   show_preview: "Podgląd"
   preview: "Podgląd eksportu"
+
+anti_self_xss:
+  header: "Uwaga!"
+  message: |
+    Nie wykonuj w tym panelu żadnych operacji, chyba, że dobrze rozumiesz, co robisz!
+    Niczego tutaj nie pisz ani nie wklejaj, możesz w ten sposób udostępnić dane atakującemu.
+    Najlepiej będzie, jeśli zamkniesz ten panel.

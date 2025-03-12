@@ -6,6 +6,7 @@ import "./init_types";
 
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
+import {AntiSelfXSSInfo} from "AntiSelfXSSInfo";
 import {Toaster} from "Toaster";
 import {InitializeTanstackQuery} from "components/utils/InitializeTanstackQuery";
 import {AppTitleProvider} from "features/root/AppTitleProvider";
@@ -43,6 +44,7 @@ render(() => {
         interpolation: {escapeValue: false},
       }}
     >
+      <AntiSelfXSSInfo />
       <Show when={!translationsLoaded()}>
         {/* Show the loader until the translations are loaded. The page is displayed underneath, and
         the strings will get updated reactively when the translations are ready. */}
