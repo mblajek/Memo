@@ -7,6 +7,7 @@ import "./init_types";
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
 import {AntiSelfXSSInfo} from "AntiSelfXSSInfo";
+import {CSPViolationMonitor} from "CSPViolationMonitor";
 import {Toaster} from "Toaster";
 import {InitializeTanstackQuery} from "components/utils/InitializeTanstackQuery";
 import {AppTitleProvider} from "features/root/AppTitleProvider";
@@ -64,6 +65,7 @@ render(() => {
           >
             <Toaster />
             <InitializeTanstackQuery>
+              <CSPViolationMonitor />
               <DictionariesAndAttributesProvider>
                 <TimeZoneController>
                   <App />
