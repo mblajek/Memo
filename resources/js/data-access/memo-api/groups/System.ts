@@ -72,6 +72,8 @@ export namespace System {
     JS_ERROR = "api_fe_js_error",
     // Information about a user making use of a tracked feature (UI analytics).
     FEATURE_USE = "api_fe_feature_use",
+    // Report about Content-Security-Policy violation.
+    CSP_VIOLATION = "api_fe_csp_violation",
   }
 
   export type LogLevel = "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";
