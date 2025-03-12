@@ -32,4 +32,4 @@ Route::get('{any}', function () {
     // throw error on missing database
     App\Models\Facility::query()->count();
     return view('app');
-})->where('any', '.*');
+})->where('any', '[\\w/-]*');
