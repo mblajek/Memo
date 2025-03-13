@@ -8,10 +8,7 @@ export default (() => {
   const t = useLangFunc();
   return (
     <div class="mx-2 my-6 flex flex-col gap-4 items-center">
-      <span>
-        <TbInfoTriangle size={20} class="inlineIcon strokeIcon text-memo-active" />{" "}
-        {t("reports.select_report_from_menu")}
-      </span>
+      <div class="text-xl">{t("reports.select_report_from_menu")}</div>
       <A href="/help/reports">
         {t("reports.more_info")} <InfoIcon title="" />
       </A>
