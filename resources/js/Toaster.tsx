@@ -21,7 +21,7 @@ export const Toaster: VoidComponent = () => {
         position="bottom-right"
         toastOptions={{
           className: "mr-4 !pr-0",
-          duration: 10_1000,
+          duration: 10_000,
         }}
       />
     </GetRef>
