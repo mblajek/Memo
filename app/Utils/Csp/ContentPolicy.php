@@ -19,6 +19,7 @@ class ContentPolicy extends Basic
         $this->addDirective(Directive::STYLE, ['fonts.googleapis.com', 'fonts.gstatic.com']);
         $this->addDirective(Directive::FONT, ['fonts.googleapis.com', 'fonts.gstatic.com']);
         $this->addDirective(Directive::IMG, 'data:');
+        $this->addDirective(Directive::OBJECT,'self');
 
         if (App::hasDebugModeEnabled()) {
             $this->addDirective(Directive::CONNECT, '*');

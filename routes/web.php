@@ -16,6 +16,7 @@ Route::get('/docs-remote/{path}', function (string $path) {
 })->where('path', '([^\\.]+.)+'); // avoid /../
 
 Route::any('/docs/{any}', fn() => ExceptionFactory::notFound()->render())->where('any', '.*');
+Route::any('/img/{any}', fn() => ExceptionFactory::notFound()->render())->where('any', '.*');
 
 /*
 |--------------------------------------------------------------------------

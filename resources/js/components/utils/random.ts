@@ -34,13 +34,21 @@ export class Random {
   }
 
   nextInt(): number;
-  nextInt(max: number): number;
+  nextInt(limit: number): number;
   nextInt(min: number, max: number): number;
   nextInt(...params: [] | [number] | [number, number]) {
     if (!params.length) {
       return this.mulberryInt32();
     }
-    const [min, max] = params.length === 1 ? [0, params[0]] : params;
-    return Math.floor(this.nextFloat(min, max));
+    const [min, limit] = params.length === 1 ? [0, params[0]] : [params[0], params[1] + 1];
+    return Math.floor(this.nextFloat(min, limit));
+  }
+
+  nextBool(): boolean;
+  nextBool(probability: number): boolean;
+  nextBool(probability?: number) {
+    return probability === undefined
+      ? this.mulberryInt32() % 2 === 0
+      : this.mulberryInt32() < 0x100000000 * probability;
   }
 }

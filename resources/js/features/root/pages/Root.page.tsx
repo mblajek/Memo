@@ -1,5 +1,6 @@
 import {Button} from "components/ui/Button";
 import {actionIcons} from "components/ui/icons";
+import {Walkers} from "components/ui/Walkers";
 import {AccessBarrier} from "components/utils/AccessBarrier";
 import {createIdleDetector} from "components/utils/idle_detector";
 import {useLangFunc} from "components/utils/lang";
@@ -24,6 +25,7 @@ export default ((props) => {
         <Header />
         <Main>{props.children}</Main>
       </Container>
+      <Walkers />
     </AccessBarrier>
   );
 }) satisfies ParentComponent;
