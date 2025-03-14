@@ -2,7 +2,13 @@
 
 return [
     'defaults' => [
-        'routes' => ['docs' => 'api/docs' /* changed */, 'oauth2_callback' => 'api/oauth2-callback'],
+        'routes' => [
+            'docs' => 'api/docs' /* changed */,
+            'oauth2_callback' => 'api/oauth2-callback',
+            'middleware' => [
+                'api' => ['api'] /* changed to make CSRF work */,
+            ],
+        ],
         'paths' => [
             'docs' => base_path('storage/api-docs'),
             'views' => base_path('resources/views/vendor/l5-swagger'),

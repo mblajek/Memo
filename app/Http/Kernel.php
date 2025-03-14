@@ -41,7 +41,6 @@ class Kernel extends HttpKernel
         'api' => [
             \App\Http\Middleware\TransformKeysValidate::class,
             \App\Http\Middleware\QueryInfo::class,
-            //\Illuminate\Foundation\Http\Middleware\TrimStrings::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             // seems to be useless complication
@@ -50,8 +49,7 @@ class Kernel extends HttpKernel
             // from web:
             \App\Http\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
-            // todo: check if it should be used
-            // \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
         ],
     ];
 
