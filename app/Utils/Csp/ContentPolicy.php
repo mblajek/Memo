@@ -29,8 +29,7 @@ class ContentPolicy extends Basic
 
     public function shouldBeApplied(Request $request, Response $response): bool
     {
-        if (App::hasDebugModeEnabled() &&
-                ($response->isClientError() || $response->isServerError() || Vite::isRunningHot())) {
+        if (App::hasDebugModeEnabled() && ($response->isClientError() || $response->isServerError())) {
             // Don't apply the policy to the dev error page.
             return false;
         }
