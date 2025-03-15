@@ -7,6 +7,7 @@
         "ext-curl": "*",
         "ext-intl": "*",
         "ext-json": "*",
+        "ext-openssl": "*",
         "ext-pdo": "*",
         "ext-zip": "*",
         "darkaonline/l5-swagger": "^8.6",
