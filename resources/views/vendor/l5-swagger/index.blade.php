@@ -28,7 +28,6 @@
 </head>
 
 <body>
-{{ phpinfo() }}
 <div id="swagger-ui"></div>
 
 <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-bundle.js') }}"></script>
