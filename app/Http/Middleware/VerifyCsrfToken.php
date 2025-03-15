@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
@@ -10,11 +11,18 @@ use Symfony\Component\HttpFoundation\Response;
 
 class VerifyCsrfToken extends Middleware
 {
-    private const string HEADER_REQUEST = 'X-CSRF-TOKEN';
+    public const string HEADER_REQUEST = 'X-CSRF-TOKEN';
     private const string HEADER_RESPONSE = 'X-SET-CSRF-TOKEN';
 
     // Send the token using a header instead of a cookie.
     protected $addHttpCookie = false;
+    private static string $token;
+
+
+    public static function getToken(): string
+    {
+        return self::$token;
+    }
 
     /**
      * @param Request $request
@@ -22,22 +30,28 @@ class VerifyCsrfToken extends Middleware
      */
     public function handle($request, Closure $next): Response
     {
+        self::$token = $this->encrypter->encrypt($request->session()->token(), false);
+
         $response = parent::handle($request, $next);
-        $this->addHeaderToResponse($request, $response);
+        $this->addHeaderToResponse($response);
+
         return $response;
     }
 
-    protected function addHeaderToResponse(Request $request, Response $response): void
+    protected function addHeaderToResponse(Response $response): void
     {
-        $response->headers->set(
-            self::HEADER_RESPONSE,
-            $this->encrypter->encrypt($request->session()->token()),
-        );
+        $response->headers->set(self::HEADER_RESPONSE, self::getToken());
     }
 
     protected function getTokenFromRequest($request): ?string
     {
         $token = $request->header(self::HEADER_REQUEST);
-        return is_string($token) ? $this->encrypter->decrypt($token) : null;
+        if ($token && is_string($token)) {
+            try {
+                return $this->encrypter->decrypt($token, false);
+            } catch (DecryptException) {
+            }
+        }
+        return null;
     }
 }

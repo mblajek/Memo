@@ -2,9 +2,8 @@
 
 namespace App\Utils\Csp;
 
-use App;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Vite;
+use Illuminate\Support\Facades\App;
 use Spatie\Csp\Directive;
 use Spatie\Csp\Policies\Basic;
 use Symfony\Component\HttpFoundation\Response;
