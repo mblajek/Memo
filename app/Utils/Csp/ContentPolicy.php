@@ -4,7 +4,6 @@ namespace App\Utils\Csp;
 
 use App;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Vite;
 use Spatie\Csp\Directive;
 use Spatie\Csp\Policies\Basic;
 use Symfony\Component\HttpFoundation\Response;

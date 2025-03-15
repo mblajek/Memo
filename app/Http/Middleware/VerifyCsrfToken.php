@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Cookie\CookieValuePrefix;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 
 class VerifyCsrfToken extends Middleware
@@ -20,15 +19,18 @@ class VerifyCsrfToken extends Middleware
 
     protected function addHeaderToResponse($request, $response)
     {
-        if ($response instanceof Responsable) {
-            $response = $response->toResponse($request);
-        }
-        $response->headers->set('X-SET-CSRF-TOKEN', csrf_token());
+        $response->headers->set(
+            'X-SET-CSRF-TOKEN',
+            $this->encrypter->encrypt($request->session()->token(), false));
     }
 
     protected function getTokenFromRequest($request)
     {
-        return $request->header('X-CSRF-TOKEN');
+        $header = $request->header('X-CSRF-TOKEN');
+        if ($header && is_string($header)) {
+            return $this->encrypter->decrypt($header, false);
+        }
+        return '';
     }
 
 }
