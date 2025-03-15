@@ -1,11 +1,14 @@
 import axios, {AxiosError} from "axios";
 import {Api, isJSON} from "../types";
+import {installCSRFHandler} from "./csrf_handler";
 
 export const V1 = axios.create({
   baseURL: "/api/v1",
   withCredentials: true,
   timeout: 30_000,
 });
+
+installCSRFHandler(V1);
 
 type UnknownData = Partial<Record<string, unknown>>;
 
