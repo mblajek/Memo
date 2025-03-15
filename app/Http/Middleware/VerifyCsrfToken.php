@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 
 class VerifyCsrfToken extends Middleware
@@ -28,7 +29,11 @@ class VerifyCsrfToken extends Middleware
     {
         $header = $request->header('X-CSRF-TOKEN');
         if ($header && is_string($header)) {
-            return $this->encrypter->decrypt($header, false);
+            try {
+                return $this->encrypter->decrypt($header, false);
+            } catch (DecryptException) {
+                return '';
+            }
         }
         return '';
     }
