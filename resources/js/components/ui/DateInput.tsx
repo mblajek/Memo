@@ -53,6 +53,7 @@ export const DateInput: VoidComponent<Props> = (allProps) => {
               target.value = "";
               target.dispatchEvent(new InputEvent("input"));
               target.dispatchEvent(new Event("change"));
+              formContext?.form.setData(inputProps.name!, "");
               e.preventDefault();
             } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
               featureKeyUpDown.justUsed({type: type()});

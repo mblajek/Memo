@@ -73,8 +73,8 @@ export const WorkTimeForm: VoidComponent<Props> = (allProps) => {
           <Show when={!formProps.viewMode}>
             <FelteSubmit
               cancel={() => {
-                formProps.onCancel?.();
                 form.reset();
+                formProps.onCancel?.();
               }}
             />
           </Show>

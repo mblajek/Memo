@@ -172,8 +172,8 @@ export default (() => {
                           });
                           async function formCancel() {
                             if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
-                              setEditMode(false);
                               form.reset();
+                              setEditMode(false);
                             }
                           }
                           return (
