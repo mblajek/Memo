@@ -34,7 +34,7 @@
         $finalConfig = null;
         foreach (file('.env') as $line) {
             $line = trim($line);
-            if (!preg_match("/^$envConfig=(\\W?)([a-z,]*)(\\W?)(.*)$/", $line, $match)) {
+            if (!preg_match("/^$envConfig=(['\"]?)([a-z,]*)(['\"]?)(.*)$/", $line, $match)) {
                 continue;
             }
             if (is_array($finalConfig)) {
