@@ -36,7 +36,7 @@ if (!gitLog.length) {
   console.log("No entries in git log");
   Deno.exit();
 }
-const setDate = confirm(`Set the release date to today?`);
+const finalise = confirm(`Finalise the changelog?`);
 
 for await (const entry of await fs.expandGlob(`./public/docs/*/changelog/template/${MD_FILE}`)) {
   if (!entry.isFile) {
@@ -70,8 +70,10 @@ for await (const entry of await fs.expandGlob(`./public/docs/*/changelog/templat
           .join("\n\n")}\n\n${pre}${appendLog.at(-1)!.hash}${post}`;
       },
     );
-  if (setDate) {
-    mdContent = mdContent.replaceAll("$$$DATE$$$", new Date().toLocaleDateString(lang, {dateStyle: "long"}));
+  if (finalise) {
+    mdContent = mdContent
+      .replaceAll("$$$DATE$$$", new Date().toLocaleDateString(lang, {dateStyle: "long"}))
+      .replace(/\n+.+?\$\$\$DELETE_BELOW_WHEN_FINAL\$\$\$[\s\S]+$/, "\n");
   }
   await Deno.writeTextFile(mdFile, mdContent);
   const inclusion = `$include(changelog/v${version}/ch.part.md`;
