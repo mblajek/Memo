@@ -4,9 +4,9 @@
   "license": "MIT",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "dev": "pnpm install && node git-version.mjs > storage/app/git-version.txt && vite",
-    "build": "pnpm install --prod && vite build --sourcemap && node git-version.mjs > storage/app/git-version.txt",
-    "build-debug": "pnpm install --prod && vite build --no-minify --sourcemap=inline && node git-version.mjs > storage/app/git-version.txt",
+    "dev": "pnpm install && vite",
+    "build": "pnpm install --prod && vite build --sourcemap",
+    "build-debug": "pnpm install --prod && vite build --no-minify --sourcemap=inline",
     "clean": "rm -rf public/build",
     "format": "prettier resources/js --write",
     "typecheck": "tsc --noEmit",
