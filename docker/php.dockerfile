@@ -1,4 +1,4 @@
-FROM php:8.4.4-apache
+FROM php:8.4-apache
 
 SHELL ["/bin/bash", "-c"]
 
@@ -6,7 +6,7 @@ ARG ME_USER_UID=$ME_USER_UID
 ARG XDEBUG=$XDEBUG
 RUN useradd -mU -u $ME_USER_UID -s /bin/bash me
 
-RUN a2enmod rewrite
+RUN a2enmod rewrite headers
 
 RUN apt update
 RUN apt install -y zip unzip nano git htop curl libicu-dev psmisc libzip-dev mc
@@ -21,13 +21,17 @@ RUN if [ $XDEBUG = 1 ]; then pecl install xdebug && docker-php-ext-enable xdebug
 
 # apache
 
-RUN echo "ServerName memo-php:80">>/etc/apache2/apache2.conf
+RUN echo 'ServerName memo-php:80' >> /etc/apache2/apache2.conf
+RUN sed -i 's/:=www-data/:=me/' /etc/apache2/envvars
+RUN sed -i 's/DocumentRoot \/var\/www\/html/DocumentRoot \/var\/www\/public/' /etc/apache2/sites-enabled/000-default.conf
 
-RUN php -r "\$f='/etc/apache2/sites-enabled/000-default.conf';\$p='DocumentRoot /var/www/';\
-  file_put_contents(\$f,str_replace(\$p.'html',\$p.'public',file_get_contents(\$f)));"
+RUN echo 'AddDefaultCharset utf-8' >> /etc/apache2/conf-enabled/charset.conf
+RUN echo 'AddCharset utf-8 css js md' >> /etc/apache2/conf-enabled/charset.conf
 
-RUN php -r "\$f='/etc/apache2/envvars';\
-  file_put_contents(\$f,str_replace(':=www-data}',':=me}',file_get_contents(\$f)));"
+RUN sed -i 's/ServerTokens OS/ServerTokens Prod/' /etc/apache2/conf-enabled/security.conf
+RUN sed -i 's/ServerSignature On/ServerSignature Off/' /etc/apache2/conf-enabled/security.conf
+RUN echo 'Header always set X-Content-Type-Options "nosniff"' >> /etc/apache2/conf-enabled/security.conf
+RUN echo 'Header always set Strict-Transport-Security "max-age=31536000"' >> /etc/apache2/conf-enabled/security.conf
 
 # node
 
