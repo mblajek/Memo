@@ -26,8 +26,9 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-<!-- $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 480a1044291c0616f09faf4810dbff2d0af285d1 -->
+<!-- $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ faafeecdec6220dfa8af28fd0ead11fcdffeb6f8 -->
 
+<!-- $$$DELETE_BELOW_WHEN_FINAL$$$ -->
 …
 
 🟢 — dla wszystkich,

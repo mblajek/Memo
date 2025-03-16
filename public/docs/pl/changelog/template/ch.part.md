@@ -4,6 +4,7 @@ Data wydania: **$$$DATE$$$**
 
 <!-- $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ null -->
 
+<!-- $$$DELETE_BELOW_WHEN_FINAL$$$ -->
 …
 
 🟢 — dla wszystkich,
