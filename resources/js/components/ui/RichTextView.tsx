@@ -25,9 +25,9 @@ export const RichTextView: VoidComponent<Props> = (allProps) => {
   const content = () => {
     return props.text
       ? props.text.split("\n").map((line) => {
-          if (line.match(/^#\w/)) {
+          if (line.match(/^#\p{L}/u)) {
             const tags = line
-              .split(/(^|\s+)#(?=\w)/)
+              .split(/(^|\s+)#(?=\p{L})/u)
               .map((tag) => tag.trim())
               .filter(Boolean);
             if (tags.every((tag) => tag.length <= MAX_TAG_LENGTH)) {
