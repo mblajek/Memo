@@ -11,11 +11,11 @@ na jednym widoku. (Uwaga: nie ma obecnie możliwości zaznaczenia tam nieobecno�
 nie posiadają własnego kalendarza.)
 ![Nieobecności](absences.png)
 
-🟢Na stronie pracownika dodano link, dzięki któremu można szybko przejść do widoku kalendarza dla tego pracownika.
+🟢Na stronie pracownika dodano link, dzięki któremu można szybko przejść do jego kalendarza.
 ![Link "Pokaż kalendarz"](go-to-calendar.png)
 
 🟤Informacje _Co nowego w Memo_ są teraz dostępne w dokumentacji, na stronie, którą właśnie oglądasz.
-Po wydaniu nowej wersji Memo na dole po lewej stronie pojawi się link do aktualności.
+Po wydaniu nowej wersji Memo w lewym dolnym narożniku pojawi się link do aktualności.
 ![Link do "Co nowego"](changelog-link.png)
 
 🟤Dokumentacja: Dodano tabelkę wyjaśniającą [uprawnienia pracownika](staff-roles#permissions-table).
@@ -26,9 +26,8 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-<!-- $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ faafeecdec6220dfa8af28fd0ead11fcdffeb6f8 -->
-
-<!-- $$$DELETE_BELOW_WHEN_FINAL$$$ -->
+<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 3a531d11fda08c82b6dc4169d16af77e60628f43 -->
+---
 …
 
 🟢 — dla wszystkich,

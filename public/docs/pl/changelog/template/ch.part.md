@@ -2,9 +2,8 @@
 
 Data wydania: **$$$DATE$$$**
 
-<!-- $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ null -->
-
-<!-- $$$DELETE_BELOW_WHEN_FINAL$$$ -->
+<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ null -->
+---
 …
 
 🟢 — dla wszystkich,

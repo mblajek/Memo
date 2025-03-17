@@ -73,7 +73,7 @@ for await (const entry of await fs.expandGlob(`./public/docs/*/changelog/templat
   if (finalise) {
     mdContent = mdContent
       .replaceAll("$$$DATE$$$", new Date().toLocaleDateString(lang, {dateStyle: "long"}))
-      .replace(/\n+.+?\$\$\$DELETE_BELOW_WHEN_FINAL\$\$\$[\s\S]+$/, "\n");
+      .replace(/\n+.+?\$\$\$DELETE_FROM_HERE_WHEN_FINAL\$\$\$[\s\S]+$/, "\n");
   }
   await Deno.writeTextFile(mdFile, mdContent);
   const inclusion = `$include(changelog/v${version}/ch.part.md`;
