@@ -45,8 +45,8 @@ interface MutationMeta {
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
-  /** The ids of error toasts for form submits. They get dismissed when submitting again. */
-  const formErrorToasts: string[] = [];
+  /** The ids of error toasts that should be dismissed when a next form is being submitted. */
+  const transientErrorToasts: string[] = [];
 
   function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
     const invalidate = useInvalidator(queryClient);
@@ -58,8 +58,9 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       const respErrors = error.response?.data.errors;
       let errorsToShow: readonly Api.Error[] = [];
       if (respErrors) {
+        const isUnauthorisedError = respErrors.some((e) => e.code === "exception.unauthorised");
         // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
-        if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {
+        if (!meta?.isFormSubmit && isUnauthorisedError) {
           invalidate.userStatusAndFacilityPermissions({clearCache: true});
         }
         if (meta?.isFormSubmit) {
@@ -79,31 +80,31 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         } else {
           errorsToShow = respErrors;
         }
-      }
-      if (errorsToShow.length) {
-        if (!translationsLoaded()) {
-          for (const e of errorsToShow) {
-            console.warn("Error toast shown (translations not ready):", e);
+        if (errorsToShow.length) {
+          if (!translationsLoaded()) {
+            for (const e of errorsToShow) {
+              console.warn("Error toast shown (translations not ready):", e);
+            }
           }
+          translationsLoadedPromise.then(() => {
+            if (errorsToShow.length) {
+              const messages = errorsToShow.map((e) => translateError(e, t));
+              for (const msg of messages) {
+                console.warn(`Error toast shown: ${msg}`);
+              }
+              // Don't show multiple "unauthorised" toasts, this is an error that typically occurs on all the active queries,
+              // so use id to display just a single toast.
+              let toastId =
+                errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
+                  ? "exception.unauthorised"
+                  : undefined;
+              toastId = toastError(() => <ToastMessages messages={messages} />, {id: toastId});
+              if (isUnauthorisedError || meta?.isFormSubmit) {
+                transientErrorToasts.push(toastId);
+              }
+            }
+          });
         }
-        translationsLoadedPromise.then(() => {
-          if (errorsToShow.length) {
-            const messages = errorsToShow.map((e) => translateError(e, t));
-            for (const msg of messages) {
-              console.warn(`Error toast shown: ${msg}`);
-            }
-            // Don't show multiple "unauthorised" toasts, this is an error that typically occurs on all the active queries,
-            // so use id to display just a single toast.
-            let toastId =
-              errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
-                ? "exception.unauthorised"
-                : undefined;
-            toastId = toastError(() => <ToastMessages messages={messages} />, {id: toastId});
-            if (meta?.isFormSubmit) {
-              formErrorToasts.push(toastId);
-            }
-          }
-        });
       }
     }
   }
@@ -148,10 +149,10 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
           onMutate(variables, mutation) {
             if (mutation.meta?.isFormSubmit) {
               // Clear any earlier validation errors from form submits.
-              for (const id of formErrorToasts) {
+              for (const id of transientErrorToasts) {
                 toastDismiss(id);
               }
-              formErrorToasts.length = 0;
+              transientErrorToasts.length = 0;
             }
           },
           onError(error, variables, context, mutation) {
