@@ -8,14 +8,14 @@
     "build": "pnpm install --prod && vite build --sourcemap",
     "build-debug": "pnpm install --prod && vite build --no-minify --sourcemap=inline",
     "clean": "rm -rf public/build",
-    "format": "prettier resources/js --write",
-    "typecheck": "tsc --noEmit",
-    "typecheck-watch": "tsc --noEmit --watch",
+    "format": "pnpm install && prettier resources/js --write",
+    "typecheck": "pnpm install && tsc --noEmit",
+    "typecheck-watch": "pnpm install && tsc --noEmit --watch",
     "test": "pnpm install && vitest run",
     "test-watch": "pnpm install && vitest watch",
     "coverage": "pnpm install && vitest run --coverage",
     "lint": "pnpm install && eslint resources/js",
-    "cy:open": "cypress open --e2e"
+    "cy:open": "pnpm install && cypress open --e2e"
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.8.10",
