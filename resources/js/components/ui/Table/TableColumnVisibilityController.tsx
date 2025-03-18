@@ -24,7 +24,6 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
-  const columnGroupingInfo = table.options.meta?.tquery?.columnGroupingInfo;
   const [search, setSearch] = createSignal("");
   const translations = table.options.meta?.translations;
   let searchInput: HTMLInputElement | undefined;
@@ -38,7 +37,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   }
   const displayedColumns = createMemo(() =>
     table.getAllLeafColumns().filter((column) => {
-      const groupingInfo = columnGroupingInfo?.(column.id);
+      const groupingInfo = column.columnDef.meta?.tquery?.groupingInfo?.();
       return groupingInfo && !groupingInfo.isCount && matchesSearch(column.id);
     }),
   );
@@ -49,7 +48,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
       !!vis &&
       Object.entries(vis).every(
         ([id, visible]) =>
-          columnGroupingInfo?.(id).isCount ||
+          table.getColumn(id)?.columnDef.meta?.tquery?.groupingInfo?.().isCount ||
           !matchesSearch(id) ||
           visible === (defaultColumnVisibility?.()[id] ?? true),
       )
@@ -97,7 +96,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
               }
             >
               {(column) => {
-                const groupingInfo = () => columnGroupingInfo?.(column.id);
+                const groupingInfo = createMemo(() => column.columnDef.meta?.tquery?.groupingInfo?.());
                 const hover = createHoverSignal();
                 const selectBg = () =>
                   resetHover() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];

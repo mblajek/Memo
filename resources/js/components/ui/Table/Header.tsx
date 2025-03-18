@@ -59,7 +59,10 @@ export const Header: VoidComponent<Props> = (props) => {
 
   const header = (
     <div class="font-bold">
-      <Show when={props.ctx.column.getCanSort()} fallback={<ColNameAndIcon />}>
+      <Show
+        when={props.ctx.column.getCanSort() && !props.ctx.column.columnDef.meta?.tquery?.groupingInfo?.().isGrouped}
+        fallback={<ColNameAndIcon />}
+      >
         <Button
           class="text-start select-text"
           onClick={(e) => {
