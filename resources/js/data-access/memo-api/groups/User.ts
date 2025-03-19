@@ -1,6 +1,6 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
-import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "data-access/memo-api/config/v1.instance";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {MemberResource} from "../resources/member.resource";
 import {PermissionsResource} from "../resources/permissions.resource";
 import {UserResource} from "../resources/user.resource";

@@ -4,6 +4,7 @@ import {resetDEV} from "components/utils/dev_mode";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {setActiveFacilityId} from "state/activeFacilityId.state";
+import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 
 export function useLogOut() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export function useLogOut() {
   return {
     mutation,
     logOut() {
+      setProbablyLoggedIn(false);
       mutation.mutate();
     },
   };

@@ -1,5 +1,6 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "data-access/memo-api/config/v1.instance";
+import {probablyLoggedIn} from "state/probablyLoggedIn.state";
 import {SystemStatusResource} from "../resources/SystemStatusResource";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
@@ -21,6 +22,7 @@ export namespace System {
       // Prevent refetching on every page.
       staleTime: 10 * 60 * 1000,
       refetchOnMount: false,
+      enabled: probablyLoggedIn(),
     }) satisfies SolidQueryOptions;
 
   const getDictionariesList = (config?: Api.Config) =>

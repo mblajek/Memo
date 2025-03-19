@@ -9,6 +9,7 @@ import {TextField} from "components/ui/form/TextField";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {createSignal, VoidComponent} from "solid-js";
+import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 import {z} from "zod";
 
 const getSchema = () =>
@@ -47,6 +48,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
     await mutation.mutateAsync(values);
     // eslint-disable-next-line solid/reactivity
     return () => {
+      setProbablyLoggedIn(true);
       setPersistedEmail(values.email);
       props.onSuccess?.();
       invalidate.userStatusAndFacilityPermissions();

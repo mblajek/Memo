@@ -4,7 +4,8 @@ import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
 import {BiRegularErrorAlt} from "solid-icons/bi";
-import {JSX, ParentComponent, Show, VoidComponent, mergeProps, splitProps} from "solid-js";
+import {JSX, ParentComponent, Show, VoidComponent, createEffect, mergeProps, splitProps} from "solid-js";
+import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 import {MemoLoader} from "../ui/MemoLoader";
 import {QueryBarrier} from "./QueryBarrier";
 import {useLangFunc} from "./lang";
@@ -53,6 +54,13 @@ export const AccessBarrier: ParentComponent<Props> = (allProps) => {
   );
   const [queryBarrierProps, props] = splitProps(defProps, ["error", "pending"]);
   const statusQuery = createQuery(User.statusQueryOptions);
+  createEffect(() => {
+    if (statusQuery.isSuccess) {
+      setProbablyLoggedIn(true);
+    } else if (statusQuery.isError) {
+      setProbablyLoggedIn(false);
+    }
+  });
   const accessGranted = () => {
     if (!statusQuery.isSuccess) {
       return false;

@@ -3,7 +3,6 @@ import {isAxiosError} from "axios";
 import {useLangFunc} from "components/utils/lang";
 import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config/v1.instance";
 import {translateError} from "data-access/memo-api/error_util";
-import {System} from "data-access/memo-api/groups/System";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {SolidQueryOpts} from "data-access/memo-api/query_utils";
@@ -172,7 +171,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
 /** Prefetch some of the required queries beforehand. */
 const InitQueries: VoidComponent = () => {
   const queryClient = useQueryClient();
-  const fetchPromises = [System.facilitiesQueryOptions(), User.statusQueryOptions()].map((opts) =>
+  const fetchPromises = [User.statusQueryOptions()].map((opts) =>
     queryClient.fetchQuery(opts as SolidQueryOpts<unknown>),
   );
   const [isPrefetching, setIsPrefetching] = createSignal(true);

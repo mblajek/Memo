@@ -34,12 +34,12 @@ class SystemController extends ApiController
     {
         $this->permissionOneOf(Permission::any);
 
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('log');
+        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('log', 'facilityList');
     }
 
     #[OA\Get(
         path: '/api/v1/system/translation/{lang}/list',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe(Permission::any),
         summary: 'All translations',
         tags: ['System'],
         parameters: [
@@ -58,7 +58,7 @@ class SystemController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/system/facility/list',
-        description: new PermissionDescribe(Permission::any),
+        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
         summary: 'All facilities',
         tags: ['System'],
         responses: [
