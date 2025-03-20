@@ -119,24 +119,26 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                         use:title={
                           groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
                         }
-                      />{" "}
-                      <ColumnName def={column.columnDef} />
-                      <Show
-                        when={
-                          visibility()?.[column.id] &&
-                          !defaultColumnVisibility?.()[column.id] &&
-                          !column.columnDef.meta?.config?.persistVisibility
-                        }
-                      >
-                        <span use:title={t("tables.no_persist_visibility")}>
-                          <RiSystemEyeCloseFill class="text-grey-text" size="12" />
-                        </span>
-                      </Show>
-                      <Show when={groupingInfo()?.isGrouped}>
-                        <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
-                          {t("tables.column_groups.grouping_symbol")}
-                        </span>
-                      </Show>
+                      />
+                      <div class="flex gap-0.5 items-baseline">
+                        <ColumnName def={column.columnDef} />
+                        <Show
+                          when={
+                            visibility()?.[column.id] &&
+                            !defaultColumnVisibility?.()[column.id] &&
+                            !column.columnDef.meta?.config?.persistVisibility
+                          }
+                        >
+                          <span use:title={t("tables.no_persist_visibility")}>
+                            <RiSystemEyeCloseFill class="text-grey-text" size="12" />
+                          </span>
+                        </Show>
+                        <Show when={groupingInfo()?.isGrouped}>
+                          <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
+                            {t("tables.column_groups.grouping_symbol")}
+                          </span>
+                        </Show>
+                      </div>
                     </div>
                     <Button
                       class={cx("self-center", hover() ? "opacity-100" : "opacity-0")}

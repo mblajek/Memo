@@ -5,6 +5,7 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {AccessBarrier} from "components/utils/AccessBarrier";
 import {useLangFunc} from "components/utils/lang";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {System} from "data-access/memo-api/groups/System";
 import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
 import {DevRoutes} from "dev-pages/DevRoutes";
@@ -96,8 +97,14 @@ const App: VoidComponent = () => {
             <Route path="/__facility/*facilityPath" component={RedirectToFacility} />
             <Route
               path="/:facilityUrl"
-              matchFilters={{facilityUrl: facilitiesQuery.data?.map(({url}) => url) || []}}
-              component={(props) => <AccessBarrier roles={["facilityMember"]}>{props.children}</AccessBarrier>}
+              matchFilters={{
+                facilityUrl: facilitiesQuery.isSuccess ? facilitiesQuery.data?.map(({url}) => url) || [] : undefined,
+              }}
+              component={(props) => (
+                <AccessBarrier roles={["facilityMember"]}>
+                  <QueryBarrier queries={[facilitiesQuery]}>{props.children}</QueryBarrier>
+                </AccessBarrier>
+              )}
             >
               <UnknownNotFound />
               <Route path="/" component={() => <Navigate href="home" />} />

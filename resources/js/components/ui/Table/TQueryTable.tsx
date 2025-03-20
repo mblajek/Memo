@@ -616,36 +616,36 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   });
   const defaultColumnVisibility = createMemo(() => getDefaultColumnVisibility(columnsConfig()));
 
+  // Avoid a dependency cycle between columnsReady and columns.
+  const [columnsReady, setColumnsReady] = createSignal(false);
   const columnGroupingInfos = createMemo<ReadonlyMap<string, ColumnGroupingInfo>>(() => {
-    if (!schema()) {
-      return new Map();
-    }
     const infos = new Map<string, Modifiable<ColumnGroupingInfo>>();
-    for (const col of columns()) {
-      infos.set(col.id!, {
-        isValid: true,
-        isCount: col.id === countColumn(),
-        isGrouping: false,
-        isGrouped: false,
-        isForceShown: false,
-      });
-    }
-    const activeColumnGroups = effectiveActiveColumnGroups();
-    if (!activeColumnGroups.length) {
-      return infos;
-    }
-    for (const group of columnGroups()) {
-      if (activeColumnGroups.includes(group.name)) {
-        for (const col of group.columns) {
-          infos.get(col)!.isGrouping = true;
+    if (columnsReady()) {
+      for (const col of columns()) {
+        infos.set(col.id!, {
+          isValid: true,
+          isCount: col.id === countColumn(),
+          isGrouping: false,
+          isGrouped: false,
+          isForceShown: false,
+        });
+      }
+      const activeColumnGroups = effectiveActiveColumnGroups();
+      if (activeColumnGroups.length) {
+        for (const group of columnGroups()) {
+          if (activeColumnGroups.includes(group.name)) {
+            for (const col of group.columns) {
+              infos.get(col)!.isGrouping = true;
+            }
+            for (const col of group.forceShowColumns) {
+              infos.get(col)!.isForceShown = true;
+            }
+          }
         }
-        for (const col of group.forceShowColumns) {
-          infos.get(col)!.isForceShown = true;
+        for (const info of infos.values()) {
+          info.isGrouped = !info.isGrouping && !info.isCount;
         }
       }
-    }
-    for (const info of infos.values()) {
-      info.isGrouped = !info.isGrouping && !info.isCount;
     }
     return infos;
   });
@@ -778,6 +778,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     }
     return columns;
   });
+  setColumnsReady(true);
   createComputed(() => {
     const countCol = countColumn();
     if (countCol) {

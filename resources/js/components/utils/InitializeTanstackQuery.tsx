@@ -1,15 +1,16 @@
-import {MutationCache, QueryCache, QueryClient, QueryClientProvider, useQueryClient} from "@tanstack/solid-query";
+import {MutationCache, QueryCache, QueryClient, QueryClientProvider, createQuery} from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
 import {useLangFunc} from "components/utils/lang";
 import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config/v1.instance";
 import {translateError} from "data-access/memo-api/error_util";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {SolidQueryOpts} from "data-access/memo-api/query_utils";
 import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
 import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
-import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {ParentComponent, Show, VoidComponent, createEffect, createMemo} from "solid-js";
+import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
+import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 import {MemoLoader} from "../ui/MemoLoader";
 import {ToastMessages, toastDismiss, toastError} from "./toast";
 
@@ -168,16 +169,20 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
   );
 };
 
-/** Prefetch some of the required queries beforehand. */
 const InitQueries: VoidComponent = () => {
-  const queryClient = useQueryClient();
-  const fetchPromises = [User.statusQueryOptions()].map((opts) =>
-    queryClient.fetchQuery(opts as SolidQueryOpts<unknown>),
-  );
-  const [isPrefetching, setIsPrefetching] = createSignal(true);
-  Promise.allSettled(fetchPromises).then(() => setIsPrefetching(false));
+  const statusQuery = createQuery(User.statusQueryOptions);
+  createEffect(() => {
+    if (statusQuery.isSuccess) {
+      setProbablyLoggedIn(true);
+    } else if (statusQuery.isError) {
+      setProbablyLoggedIn(false);
+    }
+    if (!activeFacilityId() && statusQuery.data?.user.lastLoginFacilityId) {
+      setActiveFacilityId(statusQuery.data.user.lastLoginFacilityId);
+    }
+  });
   return (
-    <Show when={isPrefetching()}>
+    <Show when={statusQuery.isPending}>
       <MemoLoader />
     </Show>
   );
