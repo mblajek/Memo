@@ -1,7 +1,9 @@
+import {A} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
-import {createColumnHelper, IdentifiedColumnDef} from "@tanstack/table-core";
+import {createColumnHelper} from "@tanstack/table-core";
 import {CheckboxInput} from "components/ui/CheckboxInput";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {BigSpinner} from "components/ui/Spinner";
 import {Header} from "components/ui/Table/Header";
 import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
@@ -13,9 +15,8 @@ import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {createMemo, createSignal, Setter, Show, VoidComponent} from "solid-js";
 import {Select} from "../components/ui/form/Select";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {useAllAttributes} from "../data-access/memo-api/dictionaries_and_attributes_context";
-import {filterByFacility, useAttrValueFormatter} from "./util";
+import {filterByFacility, textSort, useAttrValueFormatter} from "./util";
 
 export default (() => {
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
@@ -31,18 +32,16 @@ export default (() => {
 
   function getAttributeTypeString(attr: Attribute) {
     if (attr.type === "dict") {
-      return `dict: ${attr.dictionary!.name}`;
+      return (
+        <>
+          dict: <A href={`../dictionaries/${attr.dictionary!.id}`}>{attr.dictionary!.name}</A>
+        </>
+      );
     } else if (attr.typeModel) {
       return `model: ${attr.typeModel}`;
     } else {
       return attr.type;
     }
-  }
-
-  function textSort<T>() {
-    return {
-      sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
-    } satisfies Partial<IdentifiedColumnDef<T>>;
   }
 
   const table = createMemo(() =>
@@ -55,16 +54,16 @@ export default (() => {
         return filterByFacility(attributes(), onlyActiveFacility());
       },
       columns: [
-        h.accessor((p) => p.resource.defaultOrder, {
-          id: "Order",
-          cell: cellFunc<number, Attribute>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
-          sortDescFirst: false,
-        }),
         h.accessor("id", {
           id: "Id",
           cell: tableCells.uuid(),
           enableSorting: false,
           size: 60,
+        }),
+        h.accessor((p) => p.resource.defaultOrder, {
+          id: "Order",
+          cell: cellFunc<number, Attribute>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
+          sortDescFirst: false,
         }),
         h.accessor("name", {
           id: "Name",

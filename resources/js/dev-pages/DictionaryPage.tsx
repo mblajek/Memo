@@ -1,4 +1,4 @@
-import {A} from "@solidjs/router";
+import {useParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {createColumnHelper} from "@tanstack/table-core";
@@ -7,7 +7,7 @@ import {BigSpinner} from "components/ui/Spinner";
 import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
 import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
 import {QueryBarrier} from "components/utils/QueryBarrier";
-import {Dictionary} from "data-access/memo-api/dictionaries";
+import {Position} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups/System";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {createMemo, createSignal, Show, VoidComponent} from "solid-js";
@@ -15,26 +15,26 @@ import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dict
 import {filterByFacility, textSort, useAttrValueFormatter} from "./util";
 
 export default (() => {
+  const params = useParams();
   const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
   function getFacility(facilityId: string) {
     return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
   }
   const dictionaries = useAllDictionaries();
   const attributes = useAllAttributes();
+  const dictionary = () => dictionaries()?.get(params.dictionaryId!);
   const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
   const attrValueFormatter = useAttrValueFormatter();
   const tableCells = useTableCells();
-  const h = createColumnHelper<Dictionary>();
+  const h = createColumnHelper<Position>();
 
   const table = createMemo(() =>
     createSolidTable({
-      ...getBaseTableOptions<Dictionary>({
-        features: {sorting: [{id: "Name", desc: false}]},
+      ...getBaseTableOptions<Position>({
+        features: {sorting: [{id: "Order", desc: false}]},
         defaultColumn: AUTO_SIZE_COLUMN_DEFS,
       }),
-      get data() {
-        return filterByFacility(dictionaries(), onlyActiveFacility());
-      },
+      data: filterByFacility(dictionary()?.allPositions, onlyActiveFacility()),
       columns: [
         h.accessor("id", {
           id: "Id",
@@ -42,23 +42,22 @@ export default (() => {
           enableSorting: false,
           size: 60,
         }),
+        h.accessor((p) => p.resource.defaultOrder, {
+          id: "Order",
+          cell: cellFunc<number, Position>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
+        }),
         h.accessor("resource.name", {
           id: "Name",
-          cell: cellFunc<string, Dictionary>((props) => (
-            <PaddedCell>
-              <A href={`./${props.row.id}`}>{props.v}</A>
-            </PaddedCell>
-          )),
           ...textSort(),
         }),
         h.accessor("label", {
           id: "Label",
-          cell: cellFunc<string, Dictionary>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
+          cell: cellFunc<string, Position>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
           ...textSort(),
         }),
         h.accessor("resource.facilityId", {
           id: "Facility",
-          cell: cellFunc<string, Dictionary>((props) => (
+          cell: cellFunc<string, Position>((props) => (
             <PaddedCell>
               <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
             </PaddedCell>
@@ -68,39 +67,51 @@ export default (() => {
         h.accessor("resource.isFixed", {
           id: "Fixed",
         }),
-        h.accessor("resource.isExtendable", {
-          id: "Extendable",
+        h.accessor("disabled", {
+          id: "Disabled",
         }),
-        ...(attributes()
-          ?.getForModel("dictionary")
-          .map((attr) =>
-            h.accessor((row) => attr.readFrom(row.resource), {
-              id: `@${attr.apiName}`,
-              cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
-            }),
-          ) || []),
-        h.accessor((d) => d.allPositions.length, {
-          id: "Pos. count",
-          cell: cellFunc<number, Dictionary>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
+        h.accessor((p) => p.resource.positionGroupDictId, {
+          id: "Pos. group",
+          cell: cellFunc<string, Position>((props) => (
+            <PaddedCell>
+              <ShowCellVal v={props.v}>{(v) => dictionaries()?.getPositionById(v()).resource.name}</ShowCellVal>
+            </PaddedCell>
+          )),
         }),
+        ...((attributes() &&
+          dictionary()
+            ?.resource.positionRequiredAttributeIds?.map((attrId) => attributes()!.getById(attrId)!)
+            .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
+            .map((attr) =>
+              h.accessor((p) => attr.readFrom(p.resource), {
+                id: `@${attr.apiName}`,
+                cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
+              }),
+            )) ||
+          []),
       ],
     }),
   );
 
   return (
     <QueryBarrier queries={[facilitiesQuery]}>
-      <AppTitlePrefix prefix="Dictionaries" />
+      <AppTitlePrefix prefix="Dictionary" />
       <div class="contents text-sm">
         <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
           <Table
             table={table()}
             mode="standalone"
             aboveTable={() => (
-              <CheckboxInput
-                checked={onlyActiveFacility()}
-                onChecked={setOnlyActiveFacility}
-                label="Only active facility"
-              />
+              <div class="flex gap-2 justify-between">
+                <CheckboxInput
+                  checked={onlyActiveFacility()}
+                  onChecked={setOnlyActiveFacility}
+                  label="Only active facility"
+                />
+                <div>
+                  Dictionary: <b>{dictionary()?.name}</b>
+                </div>
+              </div>
             )}
           />
         </Show>
