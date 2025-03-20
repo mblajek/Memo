@@ -14,6 +14,11 @@ nie posiadają własnego kalendarza.)
 🟢Na stronie pracownika dodano link, dzięki któremu można szybko przejść do jego kalendarza.
 ![Link "Pokaż kalendarz"](go-to-calendar.png)
 
+🟣Administratorzy placówek: Przy edycji istniejącego elementu grafiku pracy należy wybrać go w górnej
+części kalendarza (pokazanym na obrazku). Dotąd działało również wybieranie elementów z obszaru godzinowego,
+ale zostało to zmienione.
+![Edycja grafiku](timetable-edit.png)
+
 🟤Informacje _Co nowego w Memo_ są teraz dostępne w dokumentacji, na stronie, którą właśnie oglądasz.
 Po wydaniu nowej wersji Memo w lewym dolnym narożniku pojawi się link do aktualności.
 ![Link do "Co nowego"](changelog-link.png)
@@ -26,7 +31,7 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 4e63ec30a12b5b72fcdf7a08e27032df767f2cc8 -->
+<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 1ef3f3d7ba0c85380a8df3c488e03a92ab717e77 -->
 ---
 …
 
