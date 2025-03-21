@@ -9,7 +9,7 @@ import {QueryBarrier} from "components/utils/QueryBarrier";
 import {System} from "data-access/memo-api/groups/System";
 import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
 import {DevRoutes} from "dev-pages/DevRoutes";
-import NotFound from "features/not-found/components/NotFound";
+import NotFound from "features/not-found/NotFound";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {PageWithTheme} from "features/root/components/theme_control";
 import {Favicon} from "features/root/Favicon";

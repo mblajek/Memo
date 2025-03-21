@@ -2,10 +2,6 @@ page_not_found:
   title: "404 Nie znaleziono zasobu"
   body: "Strona znajdująca się pod adresem {{url}} nie istnieje. Skontaktuj się z Administratorem w celu uzyskania pomocy."
 
-page_not_yet_implemented:
-  title: "🚧 Strona w budowie 🚧"
-  body: "Strona znajdująca się pod adresem {{url}} nie została jeszcze utworzona."
-
 resource_not_found:
   title: "404 Nie znaleziono zasobu"
   body: "Ten obiekt nie istnieje. Skontaktuj się z Administratorem w celu uzyskania pomocy."
