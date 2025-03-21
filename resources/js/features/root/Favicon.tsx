@@ -40,15 +40,15 @@ export const Favicon: VoidComponent = () => {
                   </Show>
                   <Show when={isDEV || developer}>
                     <circle cx="25" cy="75" r="25" fill={developer ? "#ff0d" : "#fffd"} />
-                    <text
-                      x="2"
-                      y="21.1"
-                      transform="scale(4.5)"
-                      fill="red"
-                      style={{"font-family": "monospace", "font-weight": "bold"}}
-                    >
-                      D
-                    </text>
+                    <path
+                      d="m-5,10 v-20 h5 q5,0 5,5 v10 q0,5 -5,5 z" // Letter D (for Dev)
+                      transform="translate(25,75) scale(1.6)"
+                      vector-effect="non-scaling-stroke"
+                      shape-rendering="crispEdges"
+                      stroke="red"
+                      stroke-width="2"
+                      fill="none"
+                    />
                   </Show>
                 </svg>
               ) as SVGSVGElement

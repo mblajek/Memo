@@ -7,7 +7,7 @@ ją w lewo aż stanie się czerwona, a następnie upuść.
 ![Ukrycie kolumny przez przeciągnięcie](column-drag-hide.png)
 
 🟢Dodano stronę _Nieobecności_, na której można zobaczyć urlopy i zwolnienia wszystkich pracowników
-na jednym widoku. (Uwaga: nie ma obecnie możliwości zaznaczenia tam nieobecności administratorów, którzy
+na jednym widoku. (Uwaga: nie ma obecnie możliwości wpisania nieobecności administratorów, którzy
 nie posiadają własnego kalendarza.)
 ![Nieobecności](absences.png)
 
@@ -31,7 +31,7 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 1ef3f3d7ba0c85380a8df3c488e03a92ab717e77 -->
+<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 7c53ad7ebb05350fcb471d8ff61b833504ce06c3 -->
 ---
 …
 
