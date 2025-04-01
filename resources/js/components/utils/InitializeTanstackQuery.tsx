@@ -181,8 +181,9 @@ const InitQueries: VoidComponent = () => {
       setActiveFacilityId(statusQuery.data.user.lastLoginFacilityId);
     }
   });
+  const isFirstLoading = createMemo((prev) => prev && statusQuery.isLoading, true);
   return (
-    <Show when={statusQuery.isPending}>
+    <Show when={isFirstLoading()}>
       <MemoLoader />
     </Show>
   );
