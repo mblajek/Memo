@@ -4,14 +4,15 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
 import {getIconByName, ICON_SET_NAMES} from "components/ui/icons";
 import {QueryBarrier, SimpleErrors} from "components/utils/QueryBarrier";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
-import {createMemo, JSX, onMount, Show, VoidComponent} from "solid-js";
+import {createMemo, JSX, onMount, Show, splitProps, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {resolvePath} from "./markdown_resolver";
 
-interface Props {
-  /** The path to the markdown file to show. */
-  readonly mdPath: string;
+interface Props extends htmlAttributes.div {
+  /** The path to the markdown file to show. Can be undefined while loading. */
+  readonly mdPath: string | undefined;
   /** The path of the docs page being shown, defaults to location.pathname. */
   readonly currentPath?: string;
   /** Whether the help is included in another document. This causes the component not to set padding etc. Default: false */
@@ -28,12 +29,17 @@ const ICON_SET_NAMES_PATTERN = ICON_SET_NAMES.join("|");
  *
  * The component rewrites image sources to be relative to the mdPath.
  */
-export const Help: VoidComponent<Props> = (props) => {
+export const Help: VoidComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, ["mdPath", "currentPath", "inlined", "offerNewTabLinks", "onH1"]);
   const t = useLangFunc();
   const location = useLocation();
   const query = createQuery(() => ({
     queryFn: async ({signal}) => {
-      const resp = await fetch(props.mdPath, {cache: "no-cache", signal});
+      const mdPath = props.mdPath!;
+      if (!mdPath.match(/^\/docs(-[\w-]+)?(\/\w[\w.-]*)+\.md$/)) {
+        return Promise.reject({status: 404, statusText: "Not Found"});
+      }
+      const resp = await fetch(mdPath, {cache: "no-cache", signal});
       const text = await resp.text();
       if (!resp.ok) {
         return Promise.reject({status: resp.status, statusText: resp.statusText, data: text});
@@ -41,6 +47,7 @@ export const Help: VoidComponent<Props> = (props) => {
       return text;
     },
     queryKey: ["help", props.mdPath],
+    enabled: !!props.mdPath,
   }));
   import.meta.hot?.on("docsFileChange", () => query.refetch());
   function processMarkdown(markdown: string) {
@@ -59,7 +66,7 @@ export const Help: VoidComponent<Props> = (props) => {
     isLocationPath: !props.currentPath || props.currentPath === location.pathname,
   }));
   return (
-    <div class={props.inlined ? undefined : "overflow-y-auto p-2 pr-4 max-w-5xl"}>
+    <div {...divProps}>
       <QueryBarrier
         queries={[query]}
         error={(queries) => (
@@ -91,7 +98,7 @@ export const Help: VoidComponent<Props> = (props) => {
                   {...{
                     ...imgProps,
                     node: undefined,
-                    src: resolvePath(props.mdPath, imgProps.src!),
+                    src: props.mdPath ? resolvePath(props.mdPath, imgProps.src!) : undefined,
                   }}
                 />
               );
@@ -101,14 +108,20 @@ export const Help: VoidComponent<Props> = (props) => {
                 if (pProps.node.children.length === 1 && pProps.node.children[0]!.type === "text") {
                   const match = pProps.node.children[0]!.value.match(/^\$include\(([^)\s]+\.md)\)$/);
                   if (match) {
-                    return resolvePath(props.mdPath, match[1]!);
+                    return match[1]!;
                   }
                 }
                 return undefined;
               };
               return (
                 <Show when={includedPath()} fallback={<p {...pProps} />}>
-                  {(includedPath) => <Help mdPath={includedPath()} inlined offerNewTabLinks={props.offerNewTabLinks} />}
+                  {(includedPath) => (
+                    <Help
+                      mdPath={props.mdPath ? resolvePath(props.mdPath, includedPath()) : undefined}
+                      inlined
+                      offerNewTabLinks={props.offerNewTabLinks}
+                    />
+                  )}
                 </Show>
               );
             },

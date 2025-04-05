@@ -12,7 +12,7 @@ const MAX_TAG_LENGTH = 50;
 
 // Based on https://daringfireball.net/2010/07/improved_regex_for_matching_urls
 const URL_REGEXP =
-  /\b((?:[a-z][\w-]+:(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()[\]{};:'".,<>?«»“”‘’]))/gi;
+  /\b((?:(?:https?|ftp):(?:\/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.-]+[.][a-z]{2,4}\/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()[\]{};:'".,<>?«»“”‘’]))/gi;
 
 /**
  * A viewer for rich text.
@@ -25,9 +25,9 @@ export const RichTextView: VoidComponent<Props> = (allProps) => {
   const content = () => {
     return props.text
       ? props.text.split("\n").map((line) => {
-          if (line.match(/^#\w/)) {
+          if (line.match(/^#\p{L}/u)) {
             const tags = line
-              .split(/(^|\s+)#(?=\w)/)
+              .split(/(^|\s+)#(?=\p{L})/u)
               .map((tag) => tag.trim())
               .filter(Boolean);
             if (tags.every((tag) => tag.length <= MAX_TAG_LENGTH)) {

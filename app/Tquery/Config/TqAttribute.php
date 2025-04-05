@@ -5,8 +5,10 @@ namespace App\Tquery\Config;
 use App\Models\Attribute;
 use App\Models\Enums\AttributeType;
 use App\Models\UuidEnum\AttributeUuidEnum;
+use App\Models\UuidEnum\ClientAttributeUuidEnum;
 use App\Models\Value;
 use BackedEnum;
+use Closure;
 use Illuminate\Support\Str;
 
 trait TqAttribute
@@ -31,6 +33,7 @@ trait TqAttribute
                 table: $table,
                 columnAlias: $columnAlias,
                 attributeId: $attributeId,
+                sorter: $this->getAttributeSorter($attribute),
             );
             return;
         }
@@ -71,5 +74,14 @@ trait TqAttribute
                 attributeId: $attributeId,
             );
         }
+    }
+
+    private function getAttributeSorter(Attribute $attribute): ?Closure
+    {
+        return $attribute->is_fixed ? match ($attribute->id) {
+            ClientAttributeUuidEnum::ShortCode->value // supports only '-' and numeric values
+            => fn(string $query) => "case when ($query regexp '^[0-9]+$') then cast($query as int) end",
+            default => null,
+        } : null;
     }
 }

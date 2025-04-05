@@ -1,5 +1,6 @@
 import {SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "data-access/memo-api/config/v1.instance";
+import {probablyLoggedIn} from "state/probablyLoggedIn.state";
 import {SystemStatusResource} from "../resources/SystemStatusResource";
 import {AttributeResource} from "../resources/attribute.resource";
 import {DictionaryResource} from "../resources/dictionary.resource";
@@ -21,6 +22,7 @@ export namespace System {
       // Prevent refetching on every page.
       staleTime: 10 * 60 * 1000,
       refetchOnMount: false,
+      enabled: probablyLoggedIn(),
     }) satisfies SolidQueryOptions;
 
   const getDictionariesList = (config?: Api.Config) =>
@@ -72,6 +74,8 @@ export namespace System {
     JS_ERROR = "api_fe_js_error",
     // Information about a user making use of a tracked feature (UI analytics).
     FEATURE_USE = "api_fe_feature_use",
+    // Report about Content-Security-Policy violation.
+    CSP_VIOLATION = "api_fe_csp_violation",
   }
 
   export type LogLevel = "debug" | "info" | "notice" | "warning" | "error" | "critical" | "alert" | "emergency";

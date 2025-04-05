@@ -48,8 +48,12 @@ export const DateInput: VoidComponent<Props> = (allProps) => {
                 onChange: ({currentTarget}) => setValue((currentTarget as HTMLInputElement).value),
               }),
           onKeyDown: (e: KeyboardEvent) => {
+            const target = e.currentTarget as HTMLInputElement;
             if (e.key === "Delete") {
-              (e.currentTarget as HTMLInputElement).value = "";
+              target.value = "";
+              target.dispatchEvent(new InputEvent("input"));
+              target.dispatchEvent(new Event("change"));
+              formContext?.form.setData(inputProps.name!, "");
               e.preventDefault();
             } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
               featureKeyUpDown.justUsed({type: type()});

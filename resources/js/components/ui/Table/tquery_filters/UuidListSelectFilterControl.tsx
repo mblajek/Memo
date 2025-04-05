@@ -45,6 +45,7 @@ export const UuidListSelectFilterControl: VoidComponent<Props> = (allProps) => {
         value={value()}
         onValueChange={setValue}
         multiple
+        headerItemSelectsAll
         showClearButton={false}
         small
       />

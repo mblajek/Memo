@@ -18,11 +18,12 @@ import {title} from "../title";
 
 type _Directives = typeof title | typeof hoverSignal;
 
+const DEBOUNCE_TIME_MS = 1500;
+
 export const TableColumnVisibilityController: VoidComponent = () => {
   const t = useLangFunc();
   const table = useTable();
   const defaultColumnVisibility = table.options.meta?.defaultColumnVisibility;
-  const columnGroupingInfo = table.options.meta?.tquery?.columnGroupingInfo;
   const [search, setSearch] = createSignal("");
   const translations = table.options.meta?.translations;
   let searchInput: HTMLInputElement | undefined;
@@ -36,7 +37,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   }
   const displayedColumns = createMemo(() =>
     table.getAllLeafColumns().filter((column) => {
-      const groupingInfo = columnGroupingInfo?.(column.id);
+      const groupingInfo = column.columnDef.meta?.tquery?.groupingInfo?.();
       return groupingInfo && !groupingInfo.isCount && matchesSearch(column.id);
     }),
   );
@@ -47,7 +48,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
       !!vis &&
       Object.entries(vis).every(
         ([id, visible]) =>
-          columnGroupingInfo?.(id).isCount ||
+          table.getColumn(id)?.columnDef.meta?.tquery?.groupingInfo?.().isCount ||
           !matchesSearch(id) ||
           visible === (defaultColumnVisibility?.()[id] ?? true),
       )
@@ -55,7 +56,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
   };
   const isDefaultSizing = () => !Object.keys(table.getState().columnSizing).some(matchesSearch);
   // eslint-disable-next-line solid/reactivity
-  const debouncedVisibility = debouncedAccessor(visibility, {timeMs: 500});
+  const debouncedVisibility = debouncedAccessor(visibility, {timeMs: DEBOUNCE_TIME_MS});
   createComputed(() => {
     const vis = debouncedVisibility();
     if (vis) {
@@ -95,7 +96,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
               }
             >
               {(column) => {
-                const groupingInfo = () => columnGroupingInfo?.(column.id);
+                const groupingInfo = createMemo(() => column.columnDef.meta?.tquery?.groupingInfo?.());
                 const hover = createHoverSignal();
                 const selectBg = () =>
                   resetHover() ? defaultColumnVisibility?.()[column.id] : visibility()?.[column.id];
@@ -118,37 +119,51 @@ export const TableColumnVisibilityController: VoidComponent = () => {
                         use:title={
                           groupingInfo()?.isForceShown ? t("tables.column_groups.column_status.force_shown") : undefined
                         }
-                      />{" "}
-                      <ColumnName def={column.columnDef} />
-                      <Show
-                        when={
-                          visibility()?.[column.id] &&
-                          !defaultColumnVisibility?.()[column.id] &&
-                          !column.columnDef.meta?.config?.persistVisibility
-                        }
-                      >
-                        <span use:title={t("tables.no_persist_visibility")}>
-                          <RiSystemEyeCloseFill class="text-grey-text" size="12" />
-                        </span>
-                      </Show>
-                      <Show when={groupingInfo()?.isGrouped}>
-                        <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
-                          {t("tables.column_groups.grouping_symbol")}
-                        </span>
-                      </Show>
+                      />
+                      <div class="flex gap-0.5 items-baseline">
+                        <ColumnName def={column.columnDef} />
+                        <Show
+                          when={
+                            visibility()?.[column.id] &&
+                            !defaultColumnVisibility?.()[column.id] &&
+                            !column.columnDef.meta?.config?.persistVisibility
+                          }
+                        >
+                          <span use:title={t("tables.no_persist_visibility")}>
+                            <RiSystemEyeCloseFill class="text-grey-text" size="12" />
+                          </span>
+                        </Show>
+                        <Show when={groupingInfo()?.isGrouped}>
+                          <span class="text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
+                            {t("tables.column_groups.grouping_symbol")}
+                          </span>
+                        </Show>
+                      </div>
                     </div>
                     <Button
                       class={cx("self-center", hover() ? "opacity-100" : "opacity-0")}
                       onClick={() => {
                         setVisibility((v) => ({...v, [column.id]: true}));
-                        const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
-                        header?.scrollIntoView({inline: "center", behavior: "smooth"});
-                        header?.animate([{}, {backgroundColor: "var(--tc-select)"}], {
-                          direction: "alternate",
-                          duration: 230,
-                          iterations: 6,
-                        });
-                        props.popOver.close();
+                        const tryFindInterval = 100;
+                        let attempts = DEBOUNCE_TIME_MS / tryFindInterval + 1;
+                        function attempt() {
+                          if (!attempts--) {
+                            return;
+                          }
+                          const header = document.querySelector(`[data-header-for-column="${column.id}"]`);
+                          if (!header) {
+                            setTimeout(attempt, tryFindInterval);
+                            return;
+                          }
+                          header.scrollIntoView({inline: "center", behavior: "smooth"});
+                          header.animate([{}, {backgroundColor: "var(--tc-select)"}], {
+                            direction: "alternate",
+                            duration: 230,
+                            iterations: 6,
+                          });
+                          props.popOver.close();
+                        }
+                        attempt();
                       }}
                       title={t("tables.scroll_to_column")}
                     >
@@ -221,7 +236,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
           onClick={popOver.open}
           disabled={!table.getAllLeafColumns().length}
         >
-          {t("tables.choose_columns")}
+          <actionIcons.Columns class="inlineIcon" /> {t("tables.choose_columns")}
         </Button>
       )}
     >

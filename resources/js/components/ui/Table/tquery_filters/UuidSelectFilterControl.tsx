@@ -39,6 +39,7 @@ export const UuidSelectFilterControl: VoidComponent<Props> = (allProps) => {
           props.setFilter(buildFilter(value(), props.schema.name, getState()));
         }}
         multiple
+        headerItemSelectsAll
         showClearButton={false}
         small
       />

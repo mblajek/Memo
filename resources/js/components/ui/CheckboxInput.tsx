@@ -3,15 +3,17 @@ import {JSX, splitProps, VoidComponent} from "solid-js";
 import {StandaloneFieldLabel} from "./form/FieldLabel";
 
 interface Props extends htmlAttributes.input {
+  readonly labelBefore?: JSX.Element;
   readonly label?: JSX.Element;
   readonly title?: string;
   readonly onChecked?: (checked: boolean) => void;
 }
 
 export const CheckboxInput: VoidComponent<Props> = (allProps) => {
-  const [props, inputProps] = splitProps(allProps, ["label", "title", "onChecked"]);
+  const [props, inputProps] = splitProps(allProps, ["labelBefore", "label", "title", "onChecked"]);
   return (
     <StandaloneFieldLabel title={props.title}>
+      {props.labelBefore}
       <input
         type="checkbox"
         {...htmlAttributes.merge(inputProps, {

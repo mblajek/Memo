@@ -3,10 +3,13 @@ import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
+import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {BigSpinner} from "components/ui/Spinner";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {TextField} from "components/ui/form/TextField";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
+import {calendarIcons} from "components/ui/icons";
+import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
 import {cx} from "components/utils/classnames";
@@ -23,7 +26,7 @@ import {useUserMeetingsTables} from "features/facility-users/UserMeetingsTables"
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {DateTime} from "luxon";
 import {Match, Show, Switch, VoidComponent, createEffect, createSignal} from "solid-js";
-import {activeFacilityId} from "state/activeFacilityId.state";
+import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {z} from "zod";
 
 const getSchema = () =>
@@ -43,6 +46,7 @@ export default (() => {
   const status = createQuery(User.statusQueryOptions);
   const invalidate = useInvalidator();
   const formLeaveConfirmation = createFormLeaveConfirmation();
+  const activeFacility = useActiveFacility();
   const {UserMeetingsTables} = useUserMeetingsTables();
   const userId = () => params.userId!;
   const dataQuery = createQuery(() => FacilityStaff.staffMemberQueryOptions(userId()));
@@ -115,8 +119,8 @@ export default (() => {
                       });
                       async function formCancel() {
                         if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
-                          setEditMode(false);
                           form.reset();
+                          setEditMode(false);
                         }
                       }
                       return (
@@ -156,7 +160,17 @@ export default (() => {
                       );
                     }}
                   </FelteForm>
-                  <div class={cx("flex flex-col items-stretch gap-4", editMode() ? "hidden" : undefined)}>
+                  <div class={cx("flex flex-col items-stretch gap-1", editMode() ? "hidden" : undefined)}>
+                    <div class="self-end">
+                      <LinkWithNewTabLink
+                        {...getCalendarViewLinkData(`/${activeFacility()?.url}/calendar`, {
+                          mode: ["week", "month"],
+                          resources: [userId()],
+                        })}
+                      >
+                        <calendarIcons.Calendar class="inlineIcon" /> {t("facility_user.show_calendar")}
+                      </LinkWithNewTabLink>
+                    </div>
                     <UserMeetingsTables
                       staticUserName={user().name}
                       staticUserType="staff"

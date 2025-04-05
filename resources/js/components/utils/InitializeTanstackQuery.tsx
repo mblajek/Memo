@@ -1,23 +1,23 @@
-import {MutationCache, QueryCache, QueryClient, QueryClientProvider, useQueryClient} from "@tanstack/solid-query";
+import {MutationCache, QueryCache, QueryClient, QueryClientProvider, createQuery} from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
 import {useLangFunc} from "components/utils/lang";
 import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config/v1.instance";
 import {translateError} from "data-access/memo-api/error_util";
-import {System} from "data-access/memo-api/groups/System";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {SolidQueryOpts} from "data-access/memo-api/query_utils";
 import {isFilterValError} from "data-access/memo-api/tquery/table";
 import {Api} from "data-access/memo-api/types";
 import {translationsLoaded, translationsLoadedPromise} from "i18n_loader";
-import {ParentComponent, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {ParentComponent, Show, VoidComponent, createEffect, createMemo} from "solid-js";
+import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
+import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 import {MemoLoader} from "../ui/MemoLoader";
 import {ToastMessages, toastDismiss, toastError} from "./toast";
 
 /** A list of HTTP response status codes for which a toast should not be displayed. */
 type QuietHTTPStatuses = number[];
 
-declare module "@tanstack/query-core" {
+declare module "@tanstack/solid-query" {
   interface Register {
     readonly queryMeta: QueryMeta;
     readonly mutationMeta: MutationMeta;
@@ -45,8 +45,8 @@ interface MutationMeta {
  */
 export const InitializeTanstackQuery: ParentComponent = (props) => {
   const t = useLangFunc();
-  /** The ids of error toasts for form submits. They get dismissed when submitting again. */
-  const formErrorToasts: string[] = [];
+  /** The ids of error toasts that should be dismissed when a next form is being submitted. */
+  const transientErrorToasts: string[] = [];
 
   function toastErrors(queryClient: QueryClient, error: Error, meta?: Partial<QueryMeta & MutationMeta>) {
     const invalidate = useInvalidator(queryClient);
@@ -58,8 +58,9 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
       const respErrors = error.response?.data.errors;
       let errorsToShow: readonly Api.Error[] = [];
       if (respErrors) {
+        const isUnauthorisedError = respErrors.some((e) => e.code === "exception.unauthorised");
         // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
-        if (!meta?.isFormSubmit && respErrors.some((e) => e.code === "exception.unauthorised")) {
+        if (!meta?.isFormSubmit && isUnauthorisedError) {
           invalidate.userStatusAndFacilityPermissions({clearCache: true});
         }
         if (meta?.isFormSubmit) {
@@ -79,31 +80,31 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
         } else {
           errorsToShow = respErrors;
         }
-      }
-      if (errorsToShow.length) {
-        if (!translationsLoaded()) {
-          for (const e of errorsToShow) {
-            console.warn("Error toast shown (translations not ready):", e);
+        if (errorsToShow.length) {
+          if (!translationsLoaded()) {
+            for (const e of errorsToShow) {
+              console.warn("Error toast shown (translations not ready):", e);
+            }
           }
+          translationsLoadedPromise.then(() => {
+            if (errorsToShow.length) {
+              const messages = errorsToShow.map((e) => translateError(e, t));
+              for (const msg of messages) {
+                console.warn(`Error toast shown: ${msg}`);
+              }
+              // Don't show multiple "unauthorised" toasts, this is an error that typically occurs on all the active queries,
+              // so use id to display just a single toast.
+              let toastId =
+                errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
+                  ? "exception.unauthorised"
+                  : undefined;
+              toastId = toastError(() => <ToastMessages messages={messages} />, {id: toastId});
+              if (isUnauthorisedError || meta?.isFormSubmit) {
+                transientErrorToasts.push(toastId);
+              }
+            }
+          });
         }
-        translationsLoadedPromise.then(() => {
-          if (errorsToShow.length) {
-            const messages = errorsToShow.map((e) => translateError(e, t));
-            for (const msg of messages) {
-              console.warn(`Error toast shown: ${msg}`);
-            }
-            // Don't show multiple "unauthorised" toasts, this is an error that typically occurs on all the active queries,
-            // so use id to display just a single toast.
-            let toastId =
-              errorsToShow.length === 1 && errorsToShow[0]!.code === "exception.unauthorised"
-                ? "exception.unauthorised"
-                : undefined;
-            toastId = toastError(() => <ToastMessages messages={messages} />, {id: toastId});
-            if (meta?.isFormSubmit) {
-              formErrorToasts.push(toastId);
-            }
-          }
-        });
       }
     }
   }
@@ -148,10 +149,10 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
           onMutate(variables, mutation) {
             if (mutation.meta?.isFormSubmit) {
               // Clear any earlier validation errors from form submits.
-              for (const id of formErrorToasts) {
+              for (const id of transientErrorToasts) {
                 toastDismiss(id);
               }
-              formErrorToasts.length = 0;
+              transientErrorToasts.length = 0;
             }
           },
           onError(error, variables, context, mutation) {
@@ -168,16 +169,21 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
   );
 };
 
-/** Prefetch some of the required queries beforehand. */
 const InitQueries: VoidComponent = () => {
-  const queryClient = useQueryClient();
-  const fetchPromises = [System.facilitiesQueryOptions(), User.statusQueryOptions()].map((opts) =>
-    queryClient.fetchQuery(opts as SolidQueryOpts<unknown>),
-  );
-  const [isPrefetching, setIsPrefetching] = createSignal(true);
-  Promise.allSettled(fetchPromises).then(() => setIsPrefetching(false));
+  const statusQuery = createQuery(User.statusQueryOptions);
+  createEffect(() => {
+    if (statusQuery.isSuccess) {
+      setProbablyLoggedIn(true);
+    } else if (statusQuery.isError) {
+      setProbablyLoggedIn(false);
+    }
+    if (!activeFacilityId() && statusQuery.data?.user.lastLoginFacilityId) {
+      setActiveFacilityId(statusQuery.data.user.lastLoginFacilityId);
+    }
+  });
+  const isFirstLoading = createMemo((prev) => prev && statusQuery.isLoading, true);
   return (
-    <Show when={isPrefetching()}>
+    <Show when={isFirstLoading()}>
       <MemoLoader />
     </Show>
   );

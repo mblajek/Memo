@@ -1,7 +1,9 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTemplate, IconTypes} from "solid-icons";
+import {AiOutlineFileExcel, AiOutlineSearch} from "solid-icons/ai";
 import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
+  BsCalendar3,
   BsFileEarmarkPerson,
   BsHouse,
   BsHouseAdd,
@@ -12,15 +14,14 @@ import {
   BsPersonBadge,
   BsPersonDash,
   BsPersonGear,
-  BsThreeDots,
 } from "solid-icons/bs";
 import {CgRename, CgUndo} from "solid-icons/cg";
-import {FaRegularBell} from "solid-icons/fa";
-import {FiEdit2} from "solid-icons/fi";
+import {FaRegularBell, FaSolidCheck} from "solid-icons/fa";
+import {FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {TbFilter, TbFilterOff, TbPassword} from "solid-icons/tb";
+import {TbFilter, TbFilterOff, TbReload} from "solid-icons/tb";
 import {VsSave} from "solid-icons/vs";
 
 namespace customIcons {
@@ -37,6 +38,14 @@ namespace customIcons {
       {
         a: {viewBox: "0 0 24 24"},
         c: `<path d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><rect x="16" y="13" width="5" height="5" rx="1"/>`,
+      },
+      props,
+    );
+  export const ThreeDots: IconTypes = (props) =>
+    IconTemplate(
+      {
+        a: {viewBox: "0 0 24 24"},
+        c: `<circle cx="4" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="20" cy="12" r="3"/>`,
       },
       props,
     );
@@ -92,14 +101,19 @@ export namespace actionIcons {
   export const FilterOff: IconTypes = (props) => (
     <TbFilterOff {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
   );
-  export const ThreeDotsBig = TbPassword;
   export const Rename = CgRename;
-  export const ThreeDotsSmall = BsThreeDots;
+  export const ThreeDots = customIcons.ThreeDots;
   export const FocusHorizontally = RiArrowsContractLeftRightLine;
   export const SaveTableView = VsSave;
+  export const Check = FaSolidCheck;
+  export const ExportCSV = AiOutlineFileExcel;
+  export const Search = AiOutlineSearch;
+  export const Columns: IconTypes = (props) => <FiColumns {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
+  export const Reload = TbReload;
 }
 
 export namespace calendarIcons {
+  export const Calendar = BsCalendar3;
   export const Conflict = BiRegularCalendarX;
 }
 

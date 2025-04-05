@@ -2,11 +2,14 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {VoidComponent} from "solid-js";
+import {createSignal, VoidComponent} from "solid-js";
+import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 import {z} from "zod";
 
 const getSchema = () =>
@@ -15,13 +18,12 @@ const getSchema = () =>
     password: z.string(),
   });
 
-const getInitialValues = (): Readonly<Input> => ({
-  email: "",
-  password: "",
-});
-
 type Input = z.input<ReturnType<typeof getSchema>>;
 type Output = z.output<ReturnType<typeof getSchema>>;
+
+type PersistedState = {
+  readonly email?: string;
+};
 
 interface Props {
   readonly onSuccess?: () => void;
@@ -29,6 +31,14 @@ interface Props {
 
 export const LoginForm: VoidComponent<Props> = (props) => {
   const invalidate = useInvalidator();
+  const [persistedEmail, setPersistedEmail] = createSignal<string>();
+  createPersistence<PersistedState>({
+    value: () => ({email: persistedEmail()}),
+    onLoad: (state) => {
+      setPersistedEmail(state.email);
+    },
+    storage: localStorageStorage("Login"),
+  });
   const mutation = createMutation(() => ({
     mutationFn: User.login,
     meta: {isFormSubmit: true},
@@ -38,10 +48,17 @@ export const LoginForm: VoidComponent<Props> = (props) => {
     await mutation.mutateAsync(values);
     // eslint-disable-next-line solid/reactivity
     return () => {
+      setProbablyLoggedIn(true);
+      setPersistedEmail(values.email);
       props.onSuccess?.();
       invalidate.userStatusAndFacilityPermissions();
     };
   };
+
+  const getInitialValues = (): Readonly<Input> => ({
+    email: persistedEmail() || "",
+    password: "",
+  });
 
   return (
     <FelteForm
@@ -53,8 +70,20 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       class="flex flex-col gap-2"
       preventPageLeave={false}
     >
-      <TextField name="email" type="email" autocomplete="username" autofocus />
-      <PasswordField name="password" autocomplete="current-password" allowShow="whileHeld" />
+      <TextField
+        name="email"
+        type="email"
+        autocomplete="username"
+        autofocus={!persistedEmail()}
+        // Remove the persisted email if the email is edited in any way.
+        onInput={[setPersistedEmail, undefined]}
+      />
+      <PasswordField
+        name="password"
+        autocomplete="current-password"
+        allowShow="sensitive"
+        autofocus={!!persistedEmail()}
+      />
       <FelteSubmit />
     </FelteForm>
   );

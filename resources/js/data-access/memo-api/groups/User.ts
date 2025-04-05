@@ -1,6 +1,6 @@
-import {SolidQueryOptions} from "@tanstack/solid-query";
-import {activeFacilityId} from "state/activeFacilityId.state";
+import {keepPreviousData, SolidQueryOptions} from "@tanstack/solid-query";
 import {V1} from "data-access/memo-api/config/v1.instance";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {MemberResource} from "../resources/member.resource";
 import {PermissionsResource} from "../resources/permissions.resource";
 import {UserResource} from "../resources/user.resource";
@@ -12,12 +12,6 @@ import {Users} from "./shared";
  * @see {@link http://localhost:9081/api/documentation#/User local docs}
  */
 export namespace User {
-  const getStatus = (config?: Api.Config) =>
-    V1.get<Api.Response.Get<GetStatusData>>(
-      activeFacilityId() ? `/user/status/${activeFacilityId()}` : "/user/status",
-      config,
-    ).then(parseGetResponse);
-
   export const login = (data: LoginRequest, config?: Api.Config<LoginRequest>) =>
     V1.post<Api.Response.Post>("/user/login", data, config);
   export const developerLogin = (data: DeveloperLoginRequest, config?: Api.Config<DeveloperLoginRequest>) =>
@@ -80,8 +74,12 @@ export namespace User {
     ({
       // Do not allow aborting the request as the non-facility parts of the response are useful in all contexts,
       // and aborting might invalidate the cache.
-      queryFn: (): Promise<GetStatusData> => getStatus(),
+      queryFn: () =>
+        V1.get<Api.Response.Get<GetStatusData>>(
+          activeFacilityId() ? `/user/status/${activeFacilityId()}` : "/user/status",
+        ).then(parseGetResponse),
       queryKey: keys.status(),
+      placeholderData: keepPreviousData,
       // Prevent displaying toast when user is not logged in - the login page will be displayed.
       meta: {quietHTTPStatuses: [401]},
       refetchOnMount: false,

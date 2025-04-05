@@ -5,6 +5,7 @@ import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
 import {createConfirmation} from "components/ui/confirmation";
+import {calendarIcons} from "components/ui/icons";
 import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -137,7 +138,7 @@ export const MeetingViewEditForm: VoidComponent<MeetingViewEditFormProps> = (pro
                   <LinkWithNewTabLink
                     {...getCalendarViewLinkData(`/${activeFacility()?.url}/calendar`, {meeting: meeting()})}
                   >
-                    {t("meetings.show_in_calendar")}
+                    <calendarIcons.Calendar class="inlineIcon" /> {t("meetings.show_in_calendar")}
                   </LinkWithNewTabLink>
                 </Show>
                 <CreatedByInfo class="-mb-2" data={meeting()} />

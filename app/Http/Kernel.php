@@ -14,11 +14,17 @@ class Kernel extends HttpKernel
      * @var array<int, class-string|string>
      */
     protected $middleware = [
+        \App\Http\Middleware\QueryInfo::class,
         // \App\Http\Middleware\TrustHosts::class,
-        \App\Http\Middleware\TrustProxies::class,
-        \Illuminate\Http\Middleware\HandleCors::class,
+        // \App\Http\Middleware\TrustProxies::class,
+        // \Illuminate\Http\Middleware\HandleCors::class, - decreases security
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
+
+        // cookies, session, security
+        \App\Http\Middleware\EncryptCookies::class,
+        \Illuminate\Session\Middleware\StartSession::class,
+        \App\Http\Middleware\VerifyCsrfToken::class,
     ];
 
     /**
@@ -28,28 +34,14 @@ class Kernel extends HttpKernel
      */
     protected $middlewareGroups = [
         'web' => [
-            \App\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\ViteUseNonce::class,
+            \Spatie\Csp\AddCspHeaders::class,
         ],
 
         'api' => [
-            \App\Http\Middleware\TransformKeysValidate::class,
-            \App\Http\Middleware\QueryInfo::class,
-            //\Illuminate\Foundation\Http\Middleware\TrimStrings::class,
-            \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-            // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            // seems to be useless complication
-            // \Illuminate\Routing\Middleware\ThrottleRequests::class . ':500,1,api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            // from web:
-            \App\Http\Middleware\EncryptCookies::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            // todo: check if it should be used
-            // \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\TransformKeysValidate::class,
+            \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         ],
     ];
 

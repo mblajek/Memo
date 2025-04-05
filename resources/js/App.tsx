@@ -5,12 +5,14 @@ import {capitalizeString} from "components/ui/Capitalize";
 import {AccessBarrier} from "components/utils/AccessBarrier";
 import {useLangFunc} from "components/utils/lang";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
+import {QueryBarrier} from "components/utils/QueryBarrier";
 import {System} from "data-access/memo-api/groups/System";
 import {BackdoorRoutes} from "dev-pages/BackdoorRoutes";
 import {DevRoutes} from "dev-pages/DevRoutes";
-import NotFound from "features/not-found/components/NotFound";
+import NotFound from "features/not-found/NotFound";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {PageWithTheme} from "features/root/components/theme_control";
+import {Favicon} from "features/root/Favicon";
 import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {clearAllHistoryState} from "./components/persistence/history_persistence";
@@ -27,11 +29,12 @@ const DevHelpPage = lazyAutoPreload(() => import("features/root/pages/help/DevHe
 const FacilityAdminsListPage = lazyAutoPreload(() => import("features/root/pages/FacilityAdminsList.page"));
 const FacilityHomePage = lazyAutoPreload(() => import("features/root/pages/FacilityHome.page"));
 const HelpPage = lazyAutoPreload(() => import("features/root/pages/help/Help.page"));
+const LeaveTimesPage = lazyAutoPreload(() => import("features/root/pages/LeaveTimes.page"));
 const LoginPage = lazyAutoPreload(() => import("features/authentication/pages/Login.page"));
-const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const MeetingAttendantsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingAttendantsList.page"));
 const MeetingClientsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingClientsList.page"));
 const MeetingSeriesPage = lazyAutoPreload(() => import("features/root/pages/MeetingSeries.page"));
+const MeetingsListPage = lazyAutoPreload(() => import("features/root/pages/MeetingsList.page"));
 const ReportsPage = lazyAutoPreload(() => import("features/root/pages/Reports.page"));
 const RootPage = lazyAutoPreload(() => import("features/root/pages/Root.page"));
 const StaffDetailsPage = lazyAutoPreload(() => import("features/root/pages/StaffDetails.page"));
@@ -52,11 +55,13 @@ const App: VoidComponent = () => {
     const params = useParams();
     const navigate = useNavigate();
     createEffect(() => {
-      if (facilitiesQuery.isSuccess && activeFacilityId()) {
-        const activeFacility = facilitiesQuery.data!.find((facility) => facility.id === activeFacilityId());
+      if (activeFacilityId()) {
+        const activeFacility = facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId());
         if (activeFacility) {
           navigate(`/${activeFacility.url}/${params.facilityPath}`);
         }
+      } else {
+        navigate("/");
       }
     });
     return <></>;
@@ -64,6 +69,7 @@ const App: VoidComponent = () => {
 
   return (
     <AppContextProvider>
+      <Favicon />
       <Router>
         <Route path="/" component={PageWithTheme}>
           <LeafRoute routeKey="login" path="/login" component={LoginPage} />
@@ -91,14 +97,33 @@ const App: VoidComponent = () => {
             <Route path="/__facility/*facilityPath" component={RedirectToFacility} />
             <Route
               path="/:facilityUrl"
-              matchFilters={{facilityUrl: facilitiesQuery.data?.map(({url}) => url) || []}}
-              component={(props) => <AccessBarrier roles={["facilityMember"]}>{props.children}</AccessBarrier>}
+              matchFilters={{
+                facilityUrl: facilitiesQuery.isSuccess ? facilitiesQuery.data?.map(({url}) => url) || [] : undefined,
+              }}
+              component={(props) => (
+                <AccessBarrier roles={["facilityMember"]}>
+                  <QueryBarrier queries={[facilitiesQuery]}>{props.children}</QueryBarrier>
+                </AccessBarrier>
+              )}
             >
               <UnknownNotFound />
               <Route path="/" component={() => <Navigate href="home" />} />
               <LeafRoute routeKey="facility.home" path="/home" component={FacilityHomePage} />
               <Route path="/" component={FacilityAdminOrStaffPages}>
                 <LeafRoute routeKey="facility.calendar" path="/calendar" component={CalendarPage} />
+                <LeafRoute routeKey="System meetings" path="/system-meetings" component={SystemMeetingsListPage} />
+                <Route path="/staff">
+                  <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
+                  <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
+                </Route>
+                <Route path="/clients">
+                  <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
+                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
+                  <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
+                </Route>
+                <LeafRoute routeKey="facility.admins" path="/admins" component={FacilityAdminsListPage} />
+                <LeafRoute routeKey="facility.leave_times" path="/absences" component={LeaveTimesPage} />
+                {/* Reports: */}
                 <LeafRoute routeKey="facility.meetings" path="/meetings" component={MeetingsListPage} />
                 <LeafRoute
                   routeKey="facility.meeting_series"
@@ -115,19 +140,6 @@ const App: VoidComponent = () => {
                   path="/meeting-clients"
                   component={MeetingClientsListPage}
                 />
-                <LeafRoute routeKey="System meetings" path="/system-meetings" component={SystemMeetingsListPage} />
-                <Route path="/staff">
-                  <LeafRoute routeKey="facility.staff" path="/" component={StaffListPage} />
-                  <LeafRoute routeKey="facility.staff_details" path="/:userId" component={StaffDetailsPage} />
-                </Route>
-                <Route path="/clients">
-                  <LeafRoute routeKey="facility.clients" path="/" component={ClientsListPage} />
-                  <LeafRoute routeKey="facility.client_create" path="/create" component={ClientCreatePage} />
-                  <LeafRoute routeKey="facility.client_details" path="/:userId" component={ClientDetailsPage} />
-                </Route>
-                <Route path="/admins">
-                  <LeafRoute routeKey="facility.admins" path="/" component={FacilityAdminsListPage} />
-                </Route>
               </Route>
               <Route
                 path="/admin"

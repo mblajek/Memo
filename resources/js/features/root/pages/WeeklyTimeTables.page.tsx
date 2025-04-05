@@ -50,7 +50,7 @@ import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
 import {IoArrowUndoOutline} from "solid-icons/io";
 import {OcArrowdown2, OcMovetobottom2} from "solid-icons/oc";
-import {TbArrowBigRight, TbNotes} from "solid-icons/tb";
+import {TbNotes} from "solid-icons/tb";
 import {
   Accessor,
   batch,
@@ -386,22 +386,22 @@ export default (() => {
                 when={weekDate().toMillis() !== selectedWeekDate()?.toMillis()}
                 fallback={
                   <Button
-                    class="minimal !px-1 !border-select !bg-memo-active !text-white"
+                    class="minimal !px-1 my-0.5 !border-select !bg-memo-active !text-white"
                     onClick={[setSelectedWeekDate, undefined]}
                     title={t("facility_user.weekly_time_tables.selected_week_click_to_deselect")}
                   >
-                    <TbArrowBigRight class="text-current" size="20" />
+                    <actionIcons.Check class="text-current" size="14" />
                   </Button>
                 }
               >
                 <PopOver
                   trigger={(popOver) => (
                     <Button
-                      class={cx("minimal !px-1", popOver.isOpen ? "!bg-select" : undefined)}
+                      class={cx("minimal !px-1 my-0.5", popOver.isOpen ? "!bg-select" : undefined)}
                       title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
-                      <actionIcons.ThreeDotsSmall class="text-current" size="20" />
+                      <actionIcons.ThreeDots class="text-current" />
                     </Button>
                   )}
                 >
@@ -433,7 +433,7 @@ export default (() => {
                     return (
                       <SimpleMenu class="max-w-80" onClick={() => popOver.close()}>
                         <MenuItem
-                          icon={TbArrowBigRight}
+                          icon={actionIcons.Check}
                           label={t("facility_user.weekly_time_tables.select_week")}
                           onClick={[setSelectedWeekDate, weekDate()]}
                         />
@@ -521,9 +521,9 @@ export default (() => {
                     onChecked={setWeekdaySelected}
                     onDblClick={() => {
                       // Select all if no other days are selected.
-                      const selectAll = weekdaysSelection
-                        .entries()
-                        .every(([wkd, [getter]]) => wkd === weekday || !getter());
+                      const selectAll = [...weekdaysSelection.entries()].every(
+                        ([wkd, [getter]]) => wkd === weekday || !getter(),
+                      );
                       for (const [wkd, [_getter, setter]] of weekdaysSelection) {
                         setter(selectAll || wkd === weekday);
                       }
@@ -538,7 +538,7 @@ export default (() => {
             <Show
               when={ctx.getValue()}
               fallback={
-                <PaddedCell style={{background: CALENDAR_BACKGROUNDS.main}}>
+                <PaddedCell style={{background: CALENDAR_BACKGROUNDS.mainBg}}>
                   <CenteredEmptyValueSymbol />
                 </PaddedCell>
               }
@@ -550,9 +550,9 @@ export default (() => {
                     background: [
                       dayData().isFacilityWorkDay
                         ? dayData().workTimes.length
-                          ? CALENDAR_BACKGROUNDS.staffWorkTime
+                          ? CALENDAR_BACKGROUNDS.mainWorkTime
                           : CALENDAR_BACKGROUNDS.facilityWorkTime
-                        : CALENDAR_BACKGROUNDS.main,
+                        : CALENDAR_BACKGROUNDS.mainBg,
                       dayData().isFacilityLeaveDay ? CALENDAR_BACKGROUNDS.facilityLeaveTime : undefined,
                       dayData().isStaffLeaveDay ? CALENDAR_BACKGROUNDS.staffLeaveTime : undefined,
                       dayData().isHoliday ? CALENDAR_BACKGROUNDS.holiday : undefined,

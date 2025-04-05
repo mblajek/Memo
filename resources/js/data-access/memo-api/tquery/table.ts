@@ -84,7 +84,7 @@ const DEFAULT_PAGE_SIZE = 50;
  * The request itself is a memo combining data from the signals exposed in the RequestController.
  * These signals can be plugged directly into the table state.
  *
- * The allInitialised signal can be used to delay execution of the query if some more externa initialisation
+ * The allInitialised signal can be used to delay execution of the query if some more external initialisation
  * is needed.
  */
 export function createTableRequestCreator({

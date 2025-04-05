@@ -1,10 +1,14 @@
 language: "polski"
 
 app_name: "Memo"
-app_version: "𝑣{{version}}"
-app_version_needs_reload: "𝑣{{baseVersion}} ➸ 𝑣{{lastVersion}} (odśwież aby zaktualizować)"
+app_version.v: "𝑣" # 𝑣 𝒗 ⅴ 𝕧
+app_version: "$t(app_version.v){{version}}"
+app_version_needs_reload: "$t(app_version.v){{baseVersion}} ➸ $t(app_version.v){{lastVersion}} (odśwież aby zaktualizować)"
 app_env: "Środowisko: {{env}}"
 privacy_policy: "Polityka prywatności"
+changelog:
+  short_text: "Co nowego"
+  long_text: "Co nowego — lista zmian"
 
 exception:
   configuration:
@@ -61,14 +65,14 @@ range:
 quotes:
   open: "„"
   close: "”"
-quoted: "$t(quotes.open){{-text}}$t(quotes.close)"
+quoted: "$t(quotes.open){{text}}$t(quotes.close)"
 parenthesis:
   open: "("
   close: ")"
-parenthesised: "$t(parenthesis.open){{-text}}$t(parenthesis.close)"
-with_colon: "{{-text}}:"
+parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
+with_colon: "{{text}}:"
 ellipsis: "…"
-with_ellipsis: "{{-text}}$t(ellipsis)"
+with_ellipsis: "{{text}}$t(ellipsis)"
 
 em_dash: "—"
 en_dash: "–"
@@ -111,6 +115,7 @@ about_page:
   cpu_load: "Obciążenie CPU:"
 
 preview: "Podgląd"
+preview.toggle: "Otwórz$t(thin_space)/$t(thin_space)zamknij podgląd"
 
 confirmation:
   read_before_confirm: "Przeczytaj uważnie czego dotyczy pytanie"
@@ -137,3 +142,23 @@ browsers:
 
 help:
   open_full_help_page: "Otwórz pełną stronę pomocy"
+
+csv_export:
+  label: "$t(actions.export)"
+  format:
+    csv: "CSV"
+    excel_csv: "Excel CSV"
+  success: "Zapisano dane do pliku"
+  error: "Nie udało się wyeksportować danych"
+  aborted: "Anulowano eksport"
+  exporting: "Eksportowanie$t(ellipsis)"
+  unsupported: "Eksport plików nie jest wspierany w tej przeglądarce. Sugerowana przeglądarka: Chrome lub Edge."
+  show_preview: "Podgląd"
+  preview: "Podgląd eksportu"
+
+anti_self_xss:
+  header: "Uwaga!"
+  message: |
+    Nie wykonuj w tym panelu żadnych operacji, chyba, że dobrze rozumiesz, co robisz!
+    Niczego tutaj nie pisz ani nie wklejaj, możesz w ten sposób udostępnić dane atakującemu.
+    Najlepiej będzie, jeśli zamkniesz ten panel.

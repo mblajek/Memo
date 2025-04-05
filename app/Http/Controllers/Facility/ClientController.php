@@ -104,10 +104,13 @@ class ClientController extends ApiController
         $user->fillOnly($userData, ['name']);
         $client = new Client();
         $clientData = $client->fillOnly($clientData);
-        $client->fillShortCode();
         $member = new Member(['facility_id' => $this->getFacilityOrFail()->id]);
 
         DB::transaction(function () use ($user, $client, $member, $clientData) {
+            // temporary solution, use "select for update" on "facilities" as mutex for other tables
+            // todo: use lock or any other standard way to generate unique short_code
+            Facility::query()->lockForUpdate()->count();
+            $client->fillShortCode();
             $user->save();
             $client->attrSave($this->getFacilityOrFail(), $clientData);
             $member->user_id = $user->id;
@@ -167,8 +170,11 @@ class ClientController extends ApiController
             $user->fillOnly($userData, ['name']);
         }
         $clientData = $client->fillOnly($clientData);
-        $client->fillShortCode();
         DB::transaction(function () use ($user, $client, $clientData, $userData) {
+            // temporary solution, use "select for update" on "facilities" as mutex for other tables
+            // todo: use lock or any other standard way to generate unique short_code
+            Facility::query()->lockForUpdate()->count();
+            $client->fillShortCode();
             $user->save();
             $client->attrSave($this->getFacilityOrFail(), $clientData);
         });

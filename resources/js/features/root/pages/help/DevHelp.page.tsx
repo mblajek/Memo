@@ -7,9 +7,10 @@ import {Help} from "./Help";
 export default (() => {
   const params = useParams();
   return (
-    <>
+    <div class="h-full bg-gray-50 overflow-y-auto">
       <AppTitlePrefix prefix="DEV Help" />
       <Help
+        class="min-h-full bg-white p-2 px-4 max-w-5xl"
         mdPath={`/docs/dev/${params.helpPath}.md`}
         onH1={(h1Props, def) => {
           const [h1, setH1] = createSignal<HTMLElement>();
@@ -23,6 +24,6 @@ export default (() => {
           );
         }}
       />
-    </>
+    </div>
   );
 }) satisfies VoidComponent;

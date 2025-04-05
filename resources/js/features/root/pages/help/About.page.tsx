@@ -45,7 +45,7 @@ export default (() => {
                     {(commitHash) => (
                       <>
                         <A class="font-mono" href={`${GITHUB_LINK}/commits/${commitHash()}`} target="_blank">
-                          {commitHash().slice(0, 7)}
+                          {commitHash().slice(0, 8)}
                         </A>
                         <CopyToClipboard text={commitHash()} />
                       </>
@@ -110,6 +110,7 @@ export default (() => {
           )}
         </Show>
       </div>
+      <A href="/help/changelog">{t("changelog.long_text")}</A>
       <A href="/help/privacy-policy">{t("privacy_policy")}</A>
     </div>
   );

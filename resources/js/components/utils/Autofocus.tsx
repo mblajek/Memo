@@ -19,6 +19,9 @@ export const Autofocus: ParentComponent<Props> = (props) => {
                 if (focusElem instanceof HTMLElement) {
                   setTimeout(() => {
                     focusElem.focus();
+                    if (focusElem instanceof HTMLInputElement) {
+                      focusElem.select();
+                    }
                   }, 10);
                 }
                 break;

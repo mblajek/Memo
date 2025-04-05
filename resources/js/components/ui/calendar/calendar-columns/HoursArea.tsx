@@ -1,5 +1,6 @@
-import {htmlAttributes} from "components/utils/html_attributes";
+import {cx} from "components/utils/classnames";
 import {DayMinuteRange, dayMinuteToHM, getDayMinuteRange} from "components/utils/day_minute_util";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {DateTime} from "luxon";
 import {For, JSX, createMemo, splitProps} from "solid-js";
 import {useColumnsCalendar} from "../ColumnsCalendar";
@@ -12,13 +13,21 @@ interface Props<C> extends htmlAttributes.div {
   readonly blocks: readonly Block<C, never>[];
   readonly events: readonly Event<C, never>[];
   readonly onTimeClick?: (time: DateTime, e: MouseEvent) => void;
+  readonly marked?: boolean;
 }
 
 const FULL_WIDTH = {left: "0", right: "0"} satisfies JSX.CSSProperties;
 
 /** The part-day events area of a calendar column. */
 export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
-  const [props, divProps] = splitProps(allProps, ["day", "columnViewInfo", "blocks", "events", "onTimeClick"]);
+  const [props, divProps] = splitProps(allProps, [
+    "day",
+    "columnViewInfo",
+    "blocks",
+    "events",
+    "onTimeClick",
+    "marked",
+  ]);
   const {calProps, dayMinuteToPixelY} = useColumnsCalendar();
   function mapToDayMinuteRange<T extends TimeSpan & Partial<ContentInHoursArea<C>>>(objs: readonly T[]) {
     const res = new Map<T, DayMinuteRange>();
@@ -52,7 +61,10 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
   return (
     <div
       {...htmlAttributes.merge(divProps, {
-        class: "w-full h-full overflow-clip relative",
+        class: cx(
+          "w-full h-full overflow-clip relative",
+          props.marked ? "border-x border-dotted border-memo-active" : undefined,
+        ),
         onClick: (e) => {
           if (!props.onTimeClick) {
             return;

@@ -366,7 +366,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     resourceConflictsExist: {
       name: "resourceConflicts.exists",
       columnGroups: "meeting_multicolumn",
-      initialVisible: false,
       persistVisibility: false,
     },
     resourceConflictsResources: {
@@ -381,7 +380,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
       },
       columnGroups: "meeting_multicolumn",
-      initialVisible: false,
       persistVisibility: false,
     },
     actions: {
@@ -389,7 +387,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       isDataColumn: false,
       // seriesCount, seriesNumber, interval are needed for delete confirmation. Alternatively, they could be fetched
       // when delete is clicked, but this would complicate the confirmation with query barriers
-      extraDataColumns: ["id", "categoryDictId", "typeDictId", "seriesCount", "seriesNumber", "interval"],
+      extraDataColumns: ["id", "typeDictId", "seriesCount", "seriesNumber", "interval"],
       columnDef: {
         cell: (c) => (
           <PaddedCell class="flex gap-1 h-min">

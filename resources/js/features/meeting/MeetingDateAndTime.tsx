@@ -32,6 +32,7 @@ interface Props {
   readonly suggestedTimes?: SuggestedTimes;
   readonly viewMode: boolean;
   readonly forceEditable?: boolean;
+  /** Whether to allow all-day meetings. Default: true */
   readonly allowAllDay?: boolean;
   /** The meeting resource, for showing some of the readonly information about the meeting. */
   readonly meeting?: MeetingResource;
@@ -72,9 +73,10 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
       }
     }),
   );
+  const allowAllDay = () => props.allowAllDay ?? true;
   onMount(() =>
     createComputed(() => {
-      if (!props.allowAllDay) {
+      if (!allowAllDay()) {
         form.setFields("time.allDay", false);
       }
     }),
@@ -210,7 +212,7 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
                   }}
                 </HideableSection>
               </div>
-              <Show when={props.allowAllDay}>
+              <Show when={allowAllDay()}>
                 <CheckboxField name="time.allDay" />
               </Show>
             </div>
@@ -219,12 +221,19 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
         <Show when={!showEditable()}>
           <div class="flex gap-x-2 items-baseline justify-between flex-wrap">
             <div class="flex gap-2 items-baseline">
-              <DateAndTimeInfo
-                date={DateTime.fromISO(form.data("date"))}
-                allDay={allDay()}
-                startDayMinute={timeInputToDayMinute(form.data("time").startTime)}
-                durationMinutes={durationMinutes()}
-              />
+              <Show
+                when={
+                  // This condition could be false for a moment e.g. when cancelling the form.
+                  form.data("date") && form.data("time")
+                }
+              >
+                <DateAndTimeInfo
+                  date={DateTime.fromISO(form.data("date"))}
+                  allDay={allDay()}
+                  startDayMinute={timeInputToDayMinute(form.data("time").startTime)}
+                  durationMinutes={durationMinutes()}
+                />
+              </Show>
               <Show when={!props.viewMode}>
                 <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
               </Show>

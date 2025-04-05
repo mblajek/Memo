@@ -13,6 +13,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/solid-table";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {getColumns} from "components/ui/Table/columns_iterator";
 import {useTableCells} from "components/ui/Table/table_cells";
@@ -23,7 +24,6 @@ import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {useLangFunc} from "components/utils/lang";
 import {NonBlocking} from "components/utils/NonBlocking";
 import {currentTimeSecond} from "components/utils/time";
-import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {TOptions} from "i18next";
 import {
   Accessor,
@@ -42,7 +42,6 @@ import {
 import {Dynamic} from "solid-js/web";
 import {LoadingPane} from "../LoadingPane";
 import {BigSpinner} from "../Spinner";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {CellRenderer} from "./CellRenderer";
 import s from "./Table.module.scss";
 import {useColumnsByPrefixUtil} from "./tquery_filters/fuzzy_filter";
@@ -285,9 +284,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
     <TableContext.Provider value={props.table}>
       <Show when={!props.isLoading} fallback={<BigSpinner />}>
         <div class={cx(s.tableContainer, s[props.mode])}>
-          <Show_noDoubleEvaluation when={props.aboveTable?.()}>
-            {(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}
-          </Show_noDoubleEvaluation>
+          <Show when={props.aboveTable?.()}>{(aboveTable) => <div class={s.aboveTable}>{aboveTable()}</div>}</Show>
           <div class={s.tableMain}>
             <div
               ref={(div) => {
@@ -369,9 +366,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
               <LoadingPane isLoading={props.isDimmed} />
             </div>
           </div>
-          <Show_noDoubleEvaluation when={props.belowTable?.()}>
-            {(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}
-          </Show_noDoubleEvaluation>
+          <Show when={props.belowTable?.()}>{(belowTable) => <div class={s.belowTable}>{belowTable()}</div>}</Show>
         </div>
       </Show>
     </TableContext.Provider>

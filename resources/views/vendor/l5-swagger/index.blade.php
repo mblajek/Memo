@@ -44,7 +44,9 @@
             oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
 
             requestInterceptor: function(request) {
-                request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
+                request.headers["{{
+                    \App\Http\Middleware\VerifyCsrfToken::HEADER_REQUEST
+                }}"] = "{{ \App\Http\Middleware\VerifyCsrfToken::getToken() }}";
                 return request;
             },
 

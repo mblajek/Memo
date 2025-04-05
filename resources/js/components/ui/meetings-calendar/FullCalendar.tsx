@@ -2,7 +2,8 @@ import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createPersistence} from "components/persistence/persistence";
-import {localStorageStorage} from "components/persistence/storage";
+import {localStorageStorage, userStorageStorage} from "components/persistence/storage";
+import {PopOver} from "components/ui/PopOver";
 import {CalendarColumn, ColumnsCalendar} from "components/ui/calendar/ColumnsCalendar";
 import {MonthCalendar, MonthCalendarDay, getMonthCalendarRange} from "components/ui/calendar/MonthCalendar";
 import {MonthCalendarCell} from "components/ui/calendar/MonthCalendarCell";
@@ -14,14 +15,20 @@ import {HoursArea} from "components/ui/calendar/calendar-columns/HoursArea";
 import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHeader";
 import {DaysRange} from "components/ui/calendar/days_range";
 import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
+import {actionIcons} from "components/ui/icons";
+import {NON_NULLABLE} from "components/utils/array_filter";
+import {cx} from "components/utils/classnames";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
+import {currentDate} from "components/utils/time";
 import {toastSuccess} from "components/utils/toast";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
+import {User} from "data-access/memo-api/groups/User";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
 import {MeetingBasicData} from "features/meeting/meeting_basic_data";
@@ -45,7 +52,6 @@ import {
   createEffect,
   createMemo,
   createSignal,
-  mergeProps,
   on,
   onMount,
   splitProps,
@@ -68,34 +74,18 @@ import {
   coloringToStyle,
   getRandomEventColors,
 } from "./colors";
-import {currentDate} from "components/utils/time";
-import {useLangFunc} from "components/utils/lang";
-import {User} from "data-access/memo-api/groups/User";
-import {cx} from "components/utils/classnames";
-import {NON_NULLABLE} from "components/utils/array_filter";
 
 type _Directives = typeof title;
 
 interface Props extends htmlAttributes.div {
   readonly staticCalendarFunction: CalendarFunction;
-  readonly modes?: readonly CalendarMode[];
-  readonly initialMode?: CalendarMode;
-  readonly initialResourcesSelection?: readonly string[];
-  readonly initialDay?: DateTime;
+  readonly staticModes?: readonly CalendarMode[];
   /** The key to use for persisting the resources and days of the displayed page. If not present, selection is not persisted. */
   readonly staticSelectionPersistenceKey?: string;
   /** The key to use for persisting the presentation (view) settings. If not present, presentation settings are not persisted. */
   readonly staticPresentationPersistenceKey?: string;
   readonly pageInfo?: DocsModalInfoIconProps;
 }
-
-const defaultProps = () =>
-  ({
-    modes: CALENDAR_MODES,
-    initialMode: "week",
-    initialResourcesSelection: [],
-    initialDay: currentDate(),
-  }) satisfies Partial<Props>;
 
 const PIXELS_PER_HOUR_RANGE_WORK = {min: 40, max: 400, def: 120};
 const PIXELS_PER_HOUR_RANGE_TIME_TABLES = {min: 20, max: 100, def: 40};
@@ -138,14 +128,10 @@ const PERSISTENCE_PRESENTATION_VERSION = 3;
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people and meeting resources),
  * calendar mode switcher, and a large calendar with either month view, or hours view.
  */
-export const FullCalendar: VoidComponent<Props> = (propsArg) => {
-  const mProps = mergeProps(defaultProps(), propsArg);
-  const [props, divProps] = splitProps(mProps, [
+export const FullCalendar: VoidComponent<Props> = (allProps) => {
+  const [props, divProps] = splitProps(allProps, [
     "staticCalendarFunction",
-    "modes",
-    "initialMode",
-    "initialResourcesSelection",
-    "initialDay",
+    "staticModes",
     "staticSelectionPersistenceKey",
     "staticPresentationPersistenceKey",
     "pageInfo",
@@ -166,10 +152,12 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const PIXELS_PER_HOUR_RANGE = {
     work: PIXELS_PER_HOUR_RANGE_WORK,
     timeTables: PIXELS_PER_HOUR_RANGE_TIME_TABLES,
+    leaveTimes: {min: 0, max: 0, def: 0}, // No hours area in this mode.
   }[props.staticCalendarFunction];
 
   const userStatus = createQuery(User.statusQueryOptions);
   const [showInactiveStaff, setShowInactiveStaff] = createSignal(false);
+  const [altStaffSort, setAltStaffSort] = createSignal(false);
   createHistoryPersistence({
     key: "FullCalendar",
     value: () => ({showInactive: showInactiveStaff()}),
@@ -179,6 +167,14 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     onReset: () => {
       setShowInactiveStaff(false);
     },
+  });
+  createPersistence({
+    value: () => ({altStaffSort: altStaffSort()}),
+    onLoad: (value) => {
+      setAltStaffSort(value.altStaffSort);
+    },
+    storage: userStorageStorage("settings:FullCalendar"),
+    version: [1],
   });
   const {dataQuery: staffDataQuery} = createTQuery({
     prefixQueryKey: FacilityStaff.keys.staff(),
@@ -206,9 +202,17 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     }
     return map;
   });
-  const staffResources = createMemo(
-    () =>
-      staff()
+  const staffResources = createMemo(() => {
+    let staffList = staff();
+    function altSortKey({name}: StaffObj) {
+      const parts = name.split(/\s+/g);
+      return `${parts.at(-1)} ${name}`;
+    }
+    if (altStaffSort()) {
+      staffList = staffList?.toSorted((a, b) => altSortKey(a).localeCompare(altSortKey(b)));
+    }
+    return (
+      staffList
         ?.map((staff) => {
           const coloring = getRandomEventColors(staff.id);
           if (!showInactiveStaff() && !staff["staff.isActive"]) {
@@ -240,8 +244,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             ),
           } satisfies ResourceItem & Record<string, unknown>;
         })
-        .filter(NON_NULLABLE) || [],
-  );
+        .filter(NON_NULLABLE) || []
+    );
+  });
   const staffResourcesById = createMemo(() => {
     const byId = new Map<string, ReturnType<typeof staffResources>[number]>();
     for (const resource of staffResources()) {
@@ -273,20 +278,22 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       : [],
   );
   const allResources = () => [...staffResources(), ...meetingResourceResources()];
-  const resourceGroups = createMemo((): ResourceGroup[] => {
-    const res: ResourceGroup[] = [];
-    res.push({
-      label: () => (
-        <span class="font-bold select-none">
-          <Capitalize text={t("models.staff._name_plural")} />
-        </span>
-      ),
-      resources: staffResources(),
-      footer: () =>
-        userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"]) ? (
-          <div class="px-1 text-center">
+  const staffResourcesLabel = createMemo(() => (
+    <div class="w-full flex items-stretch justify-between gap-1">
+      <span class="font-bold select-none">
+        <Capitalize text={t("models.staff._name_plural")} />
+      </span>
+      <PopOver
+        trigger={(popOver) => (
+          <Button class="my-0.5 !px-1 minimal" onClick={popOver.open}>
+            <actionIcons.ThreeDots size="12" />
+          </Button>
+        )}
+        placement={{placement: "right-start"}}
+      >
+        <div class="px-2 py-1 flex flex-col gap-1">
+          <Show when={userStatus.data?.permissions.facilityAdmin && staff()?.some((staff) => !staff["staff.isActive"])}>
             <CheckboxInput
-              style={{scale: "0.9"}}
               checked={showInactiveStaff()}
               onChecked={(checked) =>
                 batch(() => {
@@ -304,9 +311,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               }
               label={<span class="font-normal">{t("facility_user.staff.list_show_inactive")}</span>}
             />
-          </div>
-        ) : undefined,
-    });
+          </Show>
+          <CheckboxInput
+            checked={altStaffSort()}
+            onChecked={setAltStaffSort}
+            label={<span class="font-normal">{t("facility_user.staff.list_alt_sort")}</span>}
+          />
+        </div>
+      </PopOver>
+    </div>
+  ));
+  const resourceGroups = createMemo((): ResourceGroup[] => {
+    const res: ResourceGroup[] = [];
+    res.push({label: staffResourcesLabel, resources: staffResources()});
     const meetingResources = meetingResourceResources();
     if (meetingResources.length) {
       res.push({
@@ -321,7 +338,17 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     return res;
   });
 
-  const [mode, setMode] = createSignal(props.initialMode);
+  const modes = CALENDAR_MODES.filter((m) => props.staticModes?.includes(m) ?? true);
+  if (!modes.length) {
+    throw new Error("Empty modes list");
+  }
+  const initialMode = (["week", "day", "month"] as const).find((m) => modes.includes(m))!;
+  const [mode, modeSetter] = createSignal<CalendarMode>(initialMode);
+  function setMode(mode: CalendarMode) {
+    if (modes.includes(mode)) {
+      modeSetter(mode);
+    }
+  }
   function getRange(day: DateTime, m = mode()) {
     switch (m) {
       case "month":
@@ -334,17 +361,15 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
         return m satisfies never;
     }
   }
-  const [tinyCalMonth, setTinyCalMonth] = createSignal(props.initialDay);
+  const [tinyCalMonth, setTinyCalMonth] = createSignal(currentDate());
   // Initialise to whatever range, it will be immediately updated by the calendar.
-  const [tinyCalVisibleRange, setTinyCalVisibleRange] = createSignal(DaysRange.oneDay(props.initialDay));
+  const [tinyCalVisibleRange, setTinyCalVisibleRange] = createSignal(DaysRange.oneDay(currentDate()));
   const [visibleDayMinuteRange, setVisibleDayMinuteRange] = createSignal<DayMinuteRange>([0, 0]);
 
   /** The resources selection view, allowing multiple selection only in the day mode. */
   const resourcesSelectionMode = () => (mode() === "day" ? "checkbox" : "radio");
 
-  const [selectedResourcesCheckbox, setSelectedResourcesCheckbox] = createSignal<ReadonlySet<string>>(
-    new Set(props.initialResourcesSelection),
-  );
+  const [selectedResourcesCheckbox, setSelectedResourcesCheckbox] = createSignal<ReadonlySet<string>>(new Set());
   /** Returns the first resource from the specified set, in the order specified in props. */
   function getFirstResource(ids: ReadonlySet<string>) {
     if (!ids.size) {
@@ -394,7 +419,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   /** The last days selection in each of the modes. */
   const daysSelectionByMode = new Map<CalendarMode, Signal<DaysRange>>();
   for (const mode of CALENDAR_MODES) {
-    const [daysRange, setDaysRange] = createSignal(getRange(props.initialDay, mode));
+    const [daysRange, setDaysRange] = createSignal(getRange(currentDate(), mode));
     // eslint-disable-next-line solid/reactivity
     daysSelectionByMode.set(mode, [daysRange, setDaysRange]);
   }
@@ -439,6 +464,9 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   const [allDayEventsHeight, setAllDayEventsHeight] = createSignal(ALL_DAY_EVENTS_HEIGHT_RANGE.def);
   const [monthEventsHeight, setMonthEventsHeight] = createSignal(MONTH_EVENTS_HEIGHT_RANGE.def);
   function wheelWithAlt(e: WheelEvent, area: "allDay" | "hours" | "month") {
+    if (props.staticCalendarFunction === "leaveTimes") {
+      return;
+    }
     if (area === "allDay") {
       setAllDayEventsHeight((v) =>
         Math.min(Math.max(v - 0.015 * e.deltaY, ALL_DAY_EVENTS_HEIGHT_RANGE.min), ALL_DAY_EVENTS_HEIGHT_RANGE.max),
@@ -471,9 +499,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       }),
       onLoad: (state) => {
         batch(() => {
-          if (props.modes?.includes(state.mode)) {
-            setMode(state.mode);
-          }
+          setMode(state.mode);
           for (const [mode, daysSelection] of state.daysSel) {
             // Don't restore the selection if it contained the previous date, but not the current date.
             // In this situation the user probably prefers to see the current date.
@@ -754,6 +780,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
   }
 
   function showResources(resourceIds: string[]) {
+    const allResourcesSet = new Set(allResources().map((r) => r.id));
+    resourceIds = resourceIds.filter((id) => allResourcesSet.has(id));
     if (!resourceIds.length) {
       return;
     }
@@ -853,7 +881,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     );
   }
 
-  function getCalendarColumnPart(day: DateTime, resourceId: string) {
+  function getCalendarColumnPart(day: DateTime, resourceId: string, marked?: boolean) {
     const isStaff = staffById().has(resourceId);
     const relevantBlocks = createMemo(() => blocks().filter(blocksFilter(resourceId, isStaff)));
     const relevantEvents = createMemo(() => events().filter(eventsFilter(resourceId, isStaff)));
@@ -861,7 +889,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
       day,
       allDayArea: () => (
         <AllDayArea
-          style={{background: CALENDAR_BACKGROUNDS.main}}
+          style={{background: CALENDAR_BACKGROUNDS.mainBg}}
           day={day}
           columnViewInfo={{day, resourceId}}
           blocks={relevantBlocks()}
@@ -881,15 +909,18 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 initialValues: meetingTimeFullDayInitialValue(day),
                 availableStaff: resourceId,
               });
+            } else if (props.staticCalendarFunction === "leaveTimes") {
+              throw new Error("Internal error");
             } else {
               return props.staticCalendarFunction satisfies never;
             }
           }}
+          marked={marked}
         />
       ),
       hoursArea: () => (
         <HoursArea
-          style={{background: CALENDAR_BACKGROUNDS.main}}
+          style={{background: CALENDAR_BACKGROUNDS.mainBg}}
           day={day}
           columnViewInfo={{day, resourceId}}
           blocks={relevantBlocks()}
@@ -909,10 +940,13 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 initialValues: meetingTimePartDayInitialValue(time),
                 availableStaff: resourceId,
               });
+            } else if (props.staticCalendarFunction === "leaveTimes") {
+              throw new Error("Internal error");
             } else {
               return props.staticCalendarFunction satisfies never;
             }
           }}
+          marked={marked}
         />
       ),
     } satisfies Partial<CalendarColumn>;
@@ -971,9 +1005,10 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                       <span class="line-clamp-3">{text}</span>
                     </Button>
                   )}
+                  marked={id === userStatus.data?.user.id}
                 />
               ),
-              ...getCalendarColumnPart(day, id),
+              ...getCalendarColumnPart(day, id, id === userStatus.data?.user.id),
             };
           })
           .filter(NON_NULLABLE);
@@ -987,12 +1022,24 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     if (mode() !== "month") {
       return [];
     }
-    const resourceId = allResources().find(({id}) => selectedResources().has(id))?.id;
-    if (!resourceId) {
-      return [];
-    }
-    const isStaff = staffById().has(resourceId);
     const daysRange = getMonthCalendarRange(daysSelection().start);
+    let resourceId: string | undefined;
+    let blFilter: (bl: WithOrigMeetingInfo) => boolean;
+    let evFilter: (ev: WithOrigMeetingInfo) => boolean;
+    if (props.staticCalendarFunction === "leaveTimes") {
+      resourceId = undefined;
+      blFilter = () => true;
+      evFilter = () => false;
+    } else {
+      const resId = allResources().find(({id}) => selectedResources().has(id))?.id;
+      if (!resId) {
+        return [];
+      }
+      const isStaff = staffById().has(resId);
+      blFilter = blocksFilter(resId, isStaff);
+      evFilter = eventsFilter(resId, isStaff);
+      resourceId = resId;
+    }
     return Array.from(daysRange, (day) => ({
       day,
       content: () => (
@@ -1000,19 +1047,28 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
           month={daysSelection().start}
           day={day}
           monthViewInfo={{day, resourceId}}
-          blocks={blocks().filter(blocksFilter(resourceId, isStaff))}
-          events={events().filter(eventsFilter(resourceId, isStaff))}
-          style={{background: CALENDAR_BACKGROUNDS.main}}
-          onDateClick={() => {
-            setMode("week");
-            setDaysSelectionAndMonthFromDay(day);
-          }}
+          blocks={blocks().filter(blFilter)}
+          events={events().filter(evFilter)}
+          style={{background: CALENDAR_BACKGROUNDS.mainBg}}
+          onDateClick={
+            modes.includes("week")
+              ? () => {
+                  setMode("week");
+                  setDaysSelectionAndMonthFromDay(day);
+                }
+              : undefined
+          }
           onEmptyClick={() => {
             if (props.staticCalendarFunction === "work") {
+              if (!resourceId) {
+                throw new Error("Internal error");
+              }
               meetingCreateModal.show({
                 initialValues: {
                   date: day.toISODate(),
-                  ...(isStaff ? attendantsInitialValueForCreate([resourceId]) : {resources: [resourceId]}),
+                  ...(staffById().has(resourceId)
+                    ? attendantsInitialValueForCreate([resourceId])
+                    : {resources: [resourceId]}),
                 },
                 onSuccess: onMeetingsCreated,
                 showToast: false,
@@ -1022,6 +1078,8 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 initialValues: meetingTimeFullDayInitialValue(day),
                 availableStaff: resourceId,
               });
+            } else if (props.staticCalendarFunction === "leaveTimes") {
+              // No action.
             } else {
               return props.staticCalendarFunction satisfies never;
             }
@@ -1057,67 +1115,71 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
     <CalendarFunctionContext.Provider value={props.staticCalendarFunction}>
       <div {...htmlAttributes.merge(divProps, {class: "flex items-stretch gap-1"})}>
         <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
-          <TinyCalendar
-            showWeekdayNames
-            selection={daysSelection()}
-            month={tinyCalMonth()}
-            setMonth={setTinyCalMonth}
-            getHoverRange={getRange}
-            onDayClick={(day, range) => {
-              setTinyCalMonth(day);
-              setDaysSelection(range!);
-            }}
-            onDayDoubleClick={(day) => {
-              // Switch between day and week modes.
-              batch(() => {
-                setMode(mode() === "day" ? "week" : "day");
-                setDaysSelectionAndMonthFromDay(day);
-              });
-              featureTinyCalDoubleClick.justUsed();
-            }}
-            onMonthNameClick={() => {
-              batch(() => {
-                setMode("month");
-                setDaysSelection(getRange(tinyCalMonth()));
-              });
-            }}
-            onVisibleRangeChange={setTinyCalVisibleRange}
-          />
-          <Show when={props.staticCalendarFunction === "work" && userStatus.data?.permissions.facilityStaff}>
-            <div class="mx-1 flex gap-1 items-stretch">
-              <Button
-                class={cx("grow", selectedResources().size ? "minimal" : "primary small")}
-                onClick={() => {
-                  if (mode() === "day") {
-                    setMode("week");
+          <Show when={props.staticCalendarFunction !== "leaveTimes"}>
+            <TinyCalendar
+              showWeekdayNames
+              selection={daysSelection()}
+              month={tinyCalMonth()}
+              setMonth={setTinyCalMonth}
+              getHoverRange={getRange}
+              onDayClick={(day, range) => {
+                setTinyCalMonth(day);
+                setDaysSelection(range!);
+              }}
+              onDayDoubleClick={(day) => {
+                // Switch between day and week modes.
+                batch(() => {
+                  setMode(mode() === "day" ? "week" : "day");
+                  setDaysSelectionAndMonthFromDay(day);
+                });
+                featureTinyCalDoubleClick.justUsed();
+              }}
+              onMonthNameClick={() => {
+                batch(() => {
+                  setMode("month");
+                  setDaysSelection(getRange(tinyCalMonth()));
+                });
+              }}
+              onVisibleRangeChange={setTinyCalVisibleRange}
+            />
+            <Show when={props.staticCalendarFunction === "work" && userStatus.data?.permissions.facilityStaff}>
+              <div class="mx-1 flex gap-1 items-stretch">
+                <Button
+                  class={cx("grow !px-0 overflow-clip", selectedResources().size ? "minimal" : "primary small")}
+                  onClick={() => {
+                    if (mode() === "day") {
+                      setMode("week");
+                    }
+                    setSelectedResourceRadio(userStatus.data!.user.id);
+                  }}
+                  disabled={
+                    (mode() === "month" || mode() === "week") && selectedResources().has(userStatus.data!.user.id)
                   }
-                  setSelectedResourceRadio(userStatus.data!.user.id);
-                }}
-                disabled={
-                  (mode() === "month" || mode() === "week") && selectedResources().has(userStatus.data!.user.id)
-                }
-              >
-                {t("calendar.show_my_calendar")}
-              </Button>
-              <div use:title={t("calendar.show_my_details")}>
-                <A
-                  href={`/${activeFacility()?.url}/staff/${userStatus.data?.user.id}`}
-                  role="button"
-                  class="w-full h-full minimal flex items-center"
                 >
-                  <staffIcons.Staff class="text-gray-700" />
-                </A>
+                  <div class={selectedResources().size ? "border-x-2 border-memo-active" : undefined}>
+                    {t("calendar.show_my_calendar")}
+                  </div>
+                </Button>
+                <div use:title={t("calendar.show_my_details")}>
+                  <A
+                    href={`/${activeFacility()?.url}/staff/${userStatus.data?.user.id}`}
+                    role="button"
+                    class="w-full h-full minimal flex items-center"
+                  >
+                    <staffIcons.Staff class="text-gray-700" />
+                  </A>
+                </div>
               </div>
-            </div>
+            </Show>
+            <ResourcesSelector
+              class="overflow-y-auto"
+              resourceGroups={resourceGroups()}
+              mode={resourcesSelectionMode()}
+              selection={selectedResources()}
+              onSelectionChange={setSelectedResources}
+              onHover={setHoveredResource}
+            />
           </Show>
-          <ResourcesSelector
-            class="overflow-y-auto"
-            resourceGroups={resourceGroups()}
-            mode={resourcesSelectionMode()}
-            selection={selectedResources()}
-            onSelectionChange={setSelectedResources}
-            onHover={setHoveredResource}
-          />
         </div>
         <div class="min-w-0 grow flex flex-col items-stretch gap-3">
           <div class="pt-1 pr-1 flex items-stretch gap-1">
@@ -1134,18 +1196,20 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
               </Button>
             </div>
             <Button class="secondary small" onClick={goToToday} disabled={daysSelection().contains(currentDate())}>
-              <Capitalize text={t("calendar.today")} />
+              <Capitalize text={t(mode() === "month" ? "calendar.this_month" : "calendar.today")} />
             </Button>
             <div class="grow self-center text-center text-lg text-ellipsis">
               <Capitalize text={getDaysSelectionText()} />
             </div>
-            <SegmentedControl
-              name="calendarMode"
-              value={mode()}
-              onValueChange={setMode}
-              items={props.modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
-              small
-            />
+            <Show when={modes.length > 1}>
+              <SegmentedControl
+                name="calendarMode"
+                value={mode()}
+                onValueChange={(mode) => setMode(mode as CalendarMode)}
+                items={modes.map((m) => ({value: m, label: () => t(`calendar.units.${m}`)}))}
+                small
+              />
+            </Show>
             <Show when={props.pageInfo}>
               {(pageInfo) => (
                 <div class="flex items-center">
@@ -1155,7 +1219,7 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
             </Show>
           </div>
           <Switch>
-            <Match when={!selectedResources().size}>
+            <Match when={props.staticCalendarFunction !== "leaveTimes" && !selectedResources().size}>
               <div class="mx-2 my-6 flex justify-center gap-1">
                 <TbInfoTriangle size={20} class="text-memo-active" />
                 {t("calendar.select_resource_to_show_calendar")}
@@ -1170,13 +1234,19 @@ export const FullCalendar: VoidComponent<Props> = (propsArg) => {
                 onWheelWithAlt={(e) => wheelWithAlt(e, "month")}
               />
             </Match>
-            <Match when="fallback">
+            <Match when="week or day">
               <ColumnsCalendar
                 class="h-full min-h-0"
                 isLoading={isCalendarLoading()}
                 columns={calendarColumns()}
                 pixelsPerHour={pixelsPerHour()}
-                gridCellMinutes={{work: 15, timeTables: 60}[props.staticCalendarFunction]}
+                gridCellMinutes={
+                  {
+                    work: 15,
+                    timeTables: 60,
+                    leaveTimes: 0, // Not supported in this mode.
+                  }[props.staticCalendarFunction]
+                }
                 onVisibleRangeChange={setVisibleDayMinuteRange}
                 scrollToDayMinute={scrollToDayMinute()}
                 onWheelWithAlt={wheelWithAlt}

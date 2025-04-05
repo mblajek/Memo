@@ -1,11 +1,14 @@
 import axios, {AxiosError} from "axios";
-import {Api} from "../types";
+import {Api, isJSON} from "../types";
+import {installCSRFHandler} from "./csrf_handler";
 
 export const V1 = axios.create({
   baseURL: "/api/v1",
   withCredentials: true,
   timeout: 30_000,
 });
+
+installCSRFHandler(V1);
 
 type UnknownData = Partial<Record<string, unknown>>;
 
@@ -26,29 +29,48 @@ export function getOriginalResponseForUnexpectedError(
   return (data as unknown as UnknownData).original as OriginalResponseForUnexpectedError;
 }
 
-V1.interceptors.response.use(undefined, (error: AxiosError) => {
-  const {response} = error;
-  if (response) {
-    const {headers, data} = response;
-    const isWellFormed = Array.isArray(asUnknownData(data)?.errors);
-    if ((response.status >= 500 && response.status < 600) || !isWellFormed)
-      console.error("Bad response from backend:", JSON.stringify(asUnknownData(data)?.message || data), error);
-    if (!isWellFormed) {
-      const unknownData = asUnknownData(data);
-      if (unknownData) {
-        unknownData.errors = [...UNEXPECTED_ERROR_DATA.errors];
-      } else {
-        response.data = {
-          ...UNEXPECTED_ERROR_DATA,
-          original: {
-            contentType: String(
-              typeof headers.getContentType === "function" ? headers.getContentType() : headers.getContentType,
-            ),
-            data: response.data,
-          } satisfies OriginalResponseForUnexpectedError,
-        };
+V1.interceptors.request.use((value) => {
+  const data = value.data;
+  if (!isJSON(data, true)) {
+    console.error("Bad request to backend, expected JSON, got:", data);
+    throw new Error("Bad request to backend, expected JSON");
+  }
+  return value;
+});
+
+V1.interceptors.response.use(
+  (value) => {
+    const data = value.data;
+    if (!isJSON(data)) {
+      console.error("Bad response from backend, expected JSON, got:", data);
+      throw new Error("Bad response from backend, expected JSON");
+    }
+    return value;
+  },
+  (error: AxiosError) => {
+    const {response} = error;
+    if (response) {
+      const {headers, data} = response;
+      const isWellFormed = Array.isArray(asUnknownData(data)?.errors);
+      if ((response.status >= 500 && response.status < 600) || !isWellFormed)
+        console.error("Bad response from backend:", JSON.stringify(asUnknownData(data)?.message || data), error);
+      if (!isWellFormed) {
+        const unknownData = asUnknownData(data);
+        if (unknownData) {
+          unknownData.errors = [...UNEXPECTED_ERROR_DATA.errors];
+        } else {
+          response.data = {
+            ...UNEXPECTED_ERROR_DATA,
+            original: {
+              contentType: String(
+                typeof headers.getContentType === "function" ? headers.getContentType() : headers.getContentType,
+              ),
+              data: response.data,
+            } satisfies OriginalResponseForUnexpectedError,
+          };
+        }
       }
     }
-  }
-  return Promise.reject(error);
-});
+    return Promise.reject(error);
+  },
+);

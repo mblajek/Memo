@@ -1,10 +1,11 @@
 import {A} from "@solidjs/router";
+import Bowser from "bowser";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {FullLogo, ShortChangingLogo} from "components/ui/FullLogo";
 import {createHoverSignal, hoverSignal} from "components/ui/hover_signal";
-import {adminIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
+import {adminIcons, calendarIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {title} from "components/ui/title";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
@@ -12,12 +13,13 @@ import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
 import {isDEV} from "components/utils/dev_mode";
 import {useLangFunc} from "components/utils/lang";
+import {useNewspaper} from "components/utils/newspaper";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
 import {BiRegularErrorAlt, BiRegularTable, BiSolidArrowFromRight, BiSolidArrowToRight} from "solid-icons/bi";
-import {BsCalendar3} from "solid-icons/bs";
+import {BsCalendar2X} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
-import {FaSolidList} from "solid-icons/fa";
+import {FaRegularNewspaper, FaSolidList} from "solid-icons/fa";
 import {FiLoader} from "solid-icons/fi";
 import {HiOutlineClipboardDocumentList} from "solid-icons/hi";
 import {IoReloadSharp} from "solid-icons/io";
@@ -26,6 +28,7 @@ import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
 import {TbCalendarCode, TbCalendarTime, TbHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
+import {VsChromeClose} from "solid-icons/vs";
 import {createContext, createSignal, DEV, ParentComponent, Show, Signal, useContext, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {useActiveFacility} from "state/activeFacilityId.state";
@@ -55,7 +58,8 @@ export const Navbar: VoidComponent = () => {
   const activeFacility = useActiveFacility();
   const {theme} = useThemeControl();
   const facilityUrl = () => activeFacility()?.url;
-  const [collapsed, setCollapsed] = createSignal(false);
+  const newspaper = useNewspaper();
+  const [collapsed, setCollapsed] = createSignal(Bowser.parse(navigator.userAgent).platform.type === "mobile");
   const navbarHover = createHoverSignal();
   const delayedNavbarHover = delayedAccessor(navbarHover, {timeMs: 1000, outputImmediately: (v) => v});
   createPersistence({
@@ -112,7 +116,7 @@ export const Navbar: VoidComponent = () => {
           <Dynamic component={collapsed() ? BiSolidArrowToRight : BiSolidArrowFromRight} size="16" />
         </Button>
         <Show when={!collapsed()}>
-          <FullLogo class="h-16 p-2 mt-2" />
+          <FullLogo class="h-16 p-2 my-2" />
         </Show>
         <ScrollableUpMarker />
         <nav
@@ -121,17 +125,24 @@ export const Navbar: VoidComponent = () => {
           style={{"--sb-track-color": "var(--navbar-color)"}}
         >
           <Show when={collapsed()}>
-            <ShortChangingLogo class="self-center w-12 h-12 p-1 mt-2 mb-2" />
+            <ShortChangingLogo class="self-center w-12 h-12 p-1 my-2" />
           </Show>
           <Show when={facilityUrl()}>
             <NavigationSection>
               <FacilityAdminOrStaffBarrier>
                 <NavigationItem
-                  icon={BsCalendar3}
+                  icon={calendarIcons.Calendar}
                   href={`/${facilityUrl()}/calendar`}
                   end
                   routeKey="facility.calendar"
-                />
+                >
+                  <NavigationItem
+                    icon={BsCalendar2X}
+                    href={`/${facilityUrl()}/absences`}
+                    routeKey="facility.leave_times"
+                    small
+                  />
+                </NavigationItem>
                 <NavigationItem icon={staffIcons.Menu} href={`/${facilityUrl()}/staff`} routeKey="facility.staff" />
                 <NavigationItem
                   icon={clientIcons.Menu}
@@ -237,10 +248,33 @@ export const Navbar: VoidComponent = () => {
         <div
           class={cx("flex", collapsed() ? "flex-col-reverse items-center" : "items-end justify-between", "p-2 gap-1")}
         >
-          <A href="/help/about" class="!text-grey-text">
-            <Show when={!collapsed()}>{t("app_name")} </Show>
-            <BaseAppVersion />
-          </A>
+          <div class={cx("flex flex-col", collapsed() ? "items-center" : undefined)}>
+            <A href="/help/about" class="!text-grey-text">
+              <Show when={!collapsed()}>{t("app_name")} </Show>
+              <BaseAppVersion />
+            </A>
+            <Show when={newspaper.changelogHref()}>
+              {(changelogHref) => (
+                <div class="flex items-center gap-1">
+                  <A href={changelogHref()}>
+                    <Show when={!collapsed()}>
+                      <FaRegularNewspaper class="inlineIcon" />{" "}
+                    </Show>
+                    {t("changelog.short_text")}
+                    <Show when={!collapsed()}>
+                      {" "}
+                      <FaRegularNewspaper class="inlineIcon" />
+                    </Show>
+                  </A>
+                  <Show when={!collapsed()}>
+                    <Button onClick={() => newspaper.reportNewsRead()}>
+                      <VsChromeClose size="14" class="mt-1 !text-grey-text" />
+                    </Button>
+                  </Show>
+                </div>
+              )}
+            </Show>
+          </div>
           <Button
             class={cx(
               "p-1 rounded-full active:bg-select transition-colors",

@@ -1,6 +1,6 @@
 Status spotkania jest jednym z następujących wartości:
 
-- **$t(dictionary.meetingStatus.planned)** — Spotkanie jest dodane do kalendarza i (zgodnie z aktualnymi wiedzą) ma się odbyć.
+- **$t(dictionary.meetingStatus.planned)** — Spotkanie jest dodane do kalendarza i (zgodnie z aktualną wiedzą) ma się odbyć.
   Taki status powinny mieć tylko spotkania w przyszłości, potem ich status powinien zostać zaktualizowany
   (zwykle zmieniony na "$t(dictionary.meetingStatus.completed)").
 - **$t(dictionary.meetingStatus.completed)** — Spotkanie się odbyło. Możliwe jest, że niektórzy z uczestników nie wzięli

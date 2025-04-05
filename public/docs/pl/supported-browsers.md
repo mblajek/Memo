@@ -12,5 +12,6 @@ Memo jest wspierane na następujących przeglądarkach desktopowych (uruchamiany
     które działają gorzej lub na przykład wolniej, niż w innych przeglądarkach.
 
 Duża część systemu działa również na przeglądarce mobilnej Google Chrome na telefonach i tabletach z systemem Android,
-przy czym najlepiej jest włączyć tryb _Wersja na komputer_. (Pewne funkcjonalności systemu nie będą działały,
-np. eksport danych z tabel.) Inne przeglądarki i systemy mobilne nie zostały przetestowane.
+przy czym najlepiej jest włączyć tryb _Wersja na komputer_. Inne przeglądarki i systemy mobilne nie zostały przetestowane
+i nie są oficjalnie wspierane, chociaż w praktyce z systemu można korzystać przynajmniej częściowo również w przeglądarce
+Safari oraz Google Chrome na urządzeniach firmy Apple.

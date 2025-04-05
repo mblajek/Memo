@@ -1,10 +1,11 @@
-import {HeaderContext} from "@tanstack/solid-table";
+import {ColumnSizingInfoState, HeaderContext} from "@tanstack/solid-table";
 import {ColumnName} from "components/ui/Table/ColumnName";
 import {FilterIconButton} from "components/ui/Table/FilterIconButton";
 import {SortMarker} from "components/ui/Table/SortMarker";
 import {cx} from "components/utils/classnames";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
-import {JSX, Show, Signal, VoidComponent, createMemo} from "solid-js";
+import {BsArrowsCollapse} from "solid-icons/bs";
+import {JSX, Show, Signal, VoidComponent, createEffect, createMemo, on} from "solid-js";
 import {Button} from "../Button";
 
 interface Props {
@@ -24,6 +25,31 @@ export const Header: VoidComponent<Props> = (props) => {
   const featureSecondarySort = featureUseTrackers.tableSecondarySort();
   const resizeHandler = createMemo(() => props.ctx.header.getResizeHandler());
 
+  const thisColSizingInfo = createMemo(() => {
+    const sizingInfo = props.ctx.table.getState().columnSizingInfo;
+    return sizingInfo.isResizingColumn === props.ctx.column.id ? sizingInfo : undefined;
+  });
+  function isCollapsing(sizing: ColumnSizingInfoState | undefined) {
+    return (
+      props.ctx.column.getCanHide() &&
+      !!sizing?.startSize &&
+      !!sizing.deltaOffset &&
+      sizing.startSize + sizing.deltaOffset < 10
+    );
+  }
+  const collapsing = () => isCollapsing(thisColSizingInfo());
+  createEffect(
+    on(thisColSizingInfo, (sizingInfo, prevSizingInfo) => {
+      if (!sizingInfo && isCollapsing(prevSizingInfo)) {
+        props.ctx.column.toggleVisibility(false);
+        // eslint-disable-next-line solid/reactivity
+        props.ctx.table.setColumnSizing((old) =>
+          prevSizingInfo?.startSize ? {...old, [props.ctx.column.id]: prevSizingInfo.startSize} : old,
+        );
+      }
+    }),
+  );
+
   const ColNameAndIcon: VoidComponent = () => (
     <div class="flex items-center">
       <ColumnName def={props.ctx.column.columnDef} />
@@ -33,7 +59,10 @@ export const Header: VoidComponent<Props> = (props) => {
 
   const header = (
     <div class="font-bold">
-      <Show when={props.ctx.column.getCanSort()} fallback={<ColNameAndIcon />}>
+      <Show
+        when={props.ctx.column.getCanSort() && !props.ctx.column.columnDef.meta?.tquery?.groupingInfo?.().isGrouped}
+        fallback={<ColNameAndIcon />}
+      >
         <Button
           class="text-start select-text"
           onClick={(e) => {
@@ -71,11 +100,20 @@ export const Header: VoidComponent<Props> = (props) => {
         <div
           on:touchstart={{handleEvent: (e) => resizeHandler()(e), passive: true}}
           class={cx(
-            "absolute top-0 right-0 h-full cursor-col-resize w-[5px] select-none touch-none",
-            props.ctx.column.getIsResizing() ? "bg-memo-active" : "hover:bg-gray-400",
+            "absolute top-0 right-0 h-full w-[5px] select-none touch-none",
+            props.ctx.column.getIsResizing()
+              ? "cursor-col-resize bg-memo-active"
+              : props.ctx.table.getState().columnSizingInfo.isResizingColumn
+                ? undefined
+                : "cursor-col-resize hover:bg-gray-400",
+            collapsing() ? "bg-red-400" : "",
           )}
           onPointerDown={(e) => resizeHandler()(e)}
-        />
+        >
+          <Show when={collapsing()}>
+            <BsArrowsCollapse size="30" class="rotate-90 absolute top-2 right-2 text-red-400 bg-white rounded-lg" />
+          </Show>
+        </div>
       </Show>
     </div>
   );

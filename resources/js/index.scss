@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&family=PT+Mono&display=swap");
-
 // Colour Contrast Checker: https://colourcontrast.cc/
 
 html {
@@ -156,7 +154,7 @@ html {
     }
 
     &.primary {
-      @apply p-2 rounded text-white;
+      @apply p-2 min-h-8 rounded text-white;
       background-color: $memo-bg-active-contrasted;
       &[aria-disabled="true"] {
         @apply bg-opacity-50;

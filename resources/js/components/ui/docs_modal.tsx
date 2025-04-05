@@ -37,7 +37,13 @@ export const createDocsModal = registerGlobalPageElement<DocsModalProps>((args) 
         };
         return (
           <div class="flex flex-col items-stretch">
-            <Help mdPath={resolveMdFromAppPath(data().href)} currentPath={data().href} inlined offerNewTabLinks />
+            <Help
+              class="mt-2"
+              mdPath={resolveMdFromAppPath(data().href).mdPath}
+              currentPath={data().href}
+              inlined
+              offerNewTabLinks
+            />
             <Show when={fullPageHref()}>
               {(fullPageHref) => (
                 <LinkWithNewTabLink href={fullPageHref()} {...data().linkProps}>
@@ -45,7 +51,7 @@ export const createDocsModal = registerGlobalPageElement<DocsModalProps>((args) 
                 </LinkWithNewTabLink>
               )}
             </Show>
-            <Button class="self-center w-80 secondary" onClick={args.clearParams}>
+            <Button class="self-center min-w-80 secondary" onClick={args.clearParams}>
               {t("actions.ok")}
             </Button>
           </div>

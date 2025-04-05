@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class QueryInfo
 {
+    private const string HEADER = 'X-QUERY-LOG';
+
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
@@ -18,7 +20,7 @@ class QueryInfo
             // print_r($queryLog);die;
             $count = count($queryLog);
             $time = sprintf('%.1fms', array_reduce($queryLog, fn($a, $b) => $a + $b['time'], 0));
-            $response->headers->set('x-query-log', "$count / $time");
+            $response->headers->set(self::HEADER, "$count / $time");
         }
         return $response;
     }

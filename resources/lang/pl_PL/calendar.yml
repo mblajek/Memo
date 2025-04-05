@@ -38,6 +38,7 @@ duration:
 
 today: "dzisiaj"
 this_week: "bieżący tydzień"
+this_month: "bieżący miesiąc"
 
 select_resource_to_show_calendar: "Wybierz pracownika lub zasób aby wyświetlić kalendarz"
 
