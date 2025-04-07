@@ -198,6 +198,12 @@ work_time_series_create:
   submit: "Utwórz serię"
   success: "Utworzono serię"
 
+staff:
+
+staff_edit:
+  form_name: "Edycja pracownika"
+  success: "Zmodyfikowano dane pracownika"
+
 client:
   field_names:
     client.notes: "$t(models.generic.notes)"

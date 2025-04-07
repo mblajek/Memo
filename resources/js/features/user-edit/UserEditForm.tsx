@@ -1,6 +1,5 @@
 import {SubmitContext} from "@felte/core";
 import {createMutation, createQuery} from "@tanstack/solid-query";
-import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
@@ -9,8 +8,7 @@ import {Admin} from "data-access/memo-api/groups/Admin";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
-import {dateTimeToISO} from "data-access/memo-api/utils";
-import {DateTime} from "luxon";
+import {getUserBaseInfoValues, userBaseInfoInitialValues} from "features/user-edit/UserBaseInfoFields";
 import {VoidComponent} from "solid-js";
 import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
@@ -64,31 +62,9 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
       }
     }
     // First mutate the user fields (without the members).
-    const passwordExpireAt = values.passwordExpireAt
-      ? dateTimeToISO(dateTimeLocalInputToDateTime(values.passwordExpireAt))
-      : null;
     await userMutation.mutateAsync({
       id: oldUser.id,
-      name: values.name,
-      ...(values.email
-        ? {
-            email: values.email,
-            hasEmailVerified: values.hasEmailVerified,
-            ...(values.hasPassword
-              ? oldUser.hasPassword && !values.password
-                ? // The user has a password already and it is not changed.
-                  {hasPassword: true, passwordExpireAt}
-                : // New password or a password change.
-                  {hasPassword: true, password: values.password, passwordExpireAt}
-              : {hasPassword: false, password: null, passwordExpireAt: null}),
-          }
-        : {
-            email: null,
-            hasEmailVerified: false,
-            hasPassword: false,
-            password: null,
-            passwordExpireAt: null,
-          }),
+      ...getUserBaseInfoValues(values, oldUser),
       managedByFacilityId: values.managedByFacilityId,
       hasGlobalAdmin: values.hasGlobalAdmin,
     });
@@ -113,12 +89,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
   const initialValues = () => {
     const u = user()!;
     return {
-      name: u.name,
-      email: u.email || "",
-      hasEmailVerified: u.hasEmailVerified,
-      hasPassword: u.hasPassword,
-      password: "",
-      passwordExpireAt: u.passwordExpireAt ? dateTimeToDateTimeLocalInput(DateTime.fromISO(u.passwordExpireAt)) : "",
+      ...userBaseInfoInitialValues(u),
       members: u.members.map(
         ({facilityId, hasFacilityAdmin, isFacilityStaff, isActiveFacilityStaff, isFacilityClient}) => ({
           facilityId,

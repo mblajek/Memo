@@ -1,3 +1,4 @@
+import {AdminUserResourceForCreate} from "data-access/memo-api/resources/adminUser.resource";
 import {AttributableMarker} from "../attributable";
 import {CreatedUpdatedResource} from "./resource";
 import {UserResource} from "./user.resource";
@@ -16,6 +17,11 @@ export type StaffResourceForCreate = Pick<StaffResource, "id" | "name"> & {
 };
 
 export type StaffResourceForPatch = Pick<StaffResource, "id"> &
-  Partial<Pick<StaffResource, "name">> & {
-    readonly staff: Partial<StaffSpecificFields>;
+  Partial<
+    Pick<
+      AdminUserResourceForCreate,
+      "name" | "email" | "hasEmailVerified" | "hasPassword" | "password" | "passwordExpireAt"
+    >
+  > & {
+    readonly staff: Partial<Pick<StaffSpecificFields, "deactivatedAt">>;
   };

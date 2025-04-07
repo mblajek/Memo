@@ -1,6 +1,10 @@
 import {V1} from "data-access/memo-api/config/v1.instance";
 import {SolidQueryOpts} from "../query_utils";
-import {AdminUserResource, AdminUserResourceForCreate} from "../resources/adminUser.resource";
+import {
+  AdminUserResource,
+  AdminUserResourceForCreate,
+  AdminUserResourceForPatch,
+} from "../resources/adminUser.resource";
 import {FacilityResource, FacilityResourceForCreate} from "../resources/facility.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
@@ -18,7 +22,7 @@ export namespace Admin {
 
   export const createUser = (user: AdminUserResourceForCreate, config?: Api.Config) =>
     V1.post<Api.Response.Post>("/admin/user", user, config);
-  export const updateUser = (user: Api.Request.Patch<AdminUserResource>, config?: Api.Config) =>
+  export const updateUser = (user: Api.Request.Patch<AdminUserResourceForPatch>, config?: Api.Config) =>
     V1.patch(`/admin/user/${user.id}`, user, config);
   export const deleteUser = (userId: Api.Id, config?: Api.Config) => V1.delete(`/admin/user/${userId}`, config);
 

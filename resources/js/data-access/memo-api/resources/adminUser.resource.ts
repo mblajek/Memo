@@ -12,5 +12,7 @@ export interface AdminUserResource extends UserResource {
 /** The user resource used for creation. */
 export type AdminUserResourceForCreate = Pick<
   AdminUserResource,
-  "name" | "email" | "hasEmailVerified" | "passwordExpireAt" | "managedByFacilityId" | "hasGlobalAdmin"
+  "name" | "email" | "hasEmailVerified" | "passwordExpireAt" | "managedByFacilityId" | "hasGlobalAdmin" | "hasPassword"
 > & {readonly password: string | null};
+
+export type AdminUserResourceForPatch = Pick<AdminUserResource, "id"> & AdminUserResourceForCreate;
