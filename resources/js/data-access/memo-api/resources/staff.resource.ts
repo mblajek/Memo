@@ -13,7 +13,7 @@ interface StaffSpecificFields extends AttributableMarker<"staff"> {
 }
 
 export type StaffResourceForCreate = Pick<StaffResource, "id" | "name"> & {
-  readonly staff: Partial<StaffSpecificFields>;
+  readonly staff: StaffSpecificFields;
 };
 
 export type StaffResourceForPatch = Pick<StaffResource, "id"> &
@@ -23,5 +23,5 @@ export type StaffResourceForPatch = Pick<StaffResource, "id"> &
       "name" | "email" | "hasEmailVerified" | "hasPassword" | "password" | "passwordExpireAt"
     >
   > & {
-    readonly staff: Partial<Pick<StaffSpecificFields, "deactivatedAt">>;
+    staff?: Partial<StaffSpecificFields>;
   };

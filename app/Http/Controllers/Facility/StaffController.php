@@ -12,6 +12,7 @@ use App\Models\Member;
 use App\Models\StaffMember;
 use App\Models\User;
 use App\Rules\Valid;
+use App\Services\Member\UpdateMemberService;
 use App\Services\User\UpdateUserService;
 use App\Utils\OpenApi\FacilityParameter;
 use Illuminate\Http\JsonResponse;
@@ -77,7 +78,10 @@ class StaffController extends ApiController
                     new OA\Property(property: 'hasEmailVerified', type: 'bool', example: false),
                     new OA\Property(property: 'password', type: 'string', example: 'password'),
                     new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
-                    new OA\Property(property: 'staff', type: 'object', example: ['deactivatedAt' => '2012-12-20T00:00:00Z']),
+                    new OA\Property(property: 'staff', type: 'object', example: [
+                        'deactivatedAt' => '2012-12-20T00:00:00Z',
+                        'hasFacilityAdmin' => true,
+                    ]),
                 ]
             )
         ),
@@ -102,7 +106,8 @@ class StaffController extends ApiController
         /** @noinspection PhpUnusedParameterInspection */
         Facility $facility,
         User $user,
-        UpdateUserService $service,
+        UpdateUserService $userService,
+        UpdateMemberService $memberService,
     ): JsonResponse {
         $member = $user->belongsToFacilityOrFail($facility, isStaff: true, isManagedByFacility: true);
         $staff = $member->staffMember;
@@ -112,21 +117,26 @@ class StaffController extends ApiController
         foreach (User::getPatchResourceValidator($user) as $field => $rule) {
             $rules[$field] = in_array($field, $userKeys) ? $rule : 'missing';
         }
-        $rules['staff'] = Valid::array(keys: ['deactivated_at'], sometimes:true);
+        $rules['staff'] = Valid::array(keys: ['deactivated_at', 'has_facility_admin'], sometimes:true);
         $rules['staff.deactivated_at'] = Valid::datetime(nullable: true, sometimes: true);
+        $rules['staff.has_facility_admin'] = Member::getPatchValidator(['has_facility_admin'], $member)['has_facility_admin'];
         $userData = $this->validate($rules);
+        $hasFacilityAdmin = $userData['staff']['has_facility_admin'] ?? null;
         $staffData = $userData['staff'] ?? [];
-        $userAttributes = $service->getAttributesAfterPatch($user, $userData);
+        unset($staffData['has_facility_admin']);
+        $userAttributes = $userService->getAttributesAfterPatch($user, $userData);
         Validator::validate($userAttributes, User::getResourceValidator());
 
-        DB::transaction(function () use ($service, $user, $staff, $staffData, $userAttributes) {
+        DB::transaction(function () use ($userService, $memberService, $user, $member, $staff, $staffData, $userAttributes, $hasFacilityAdmin) {
             // temporary solution, use "select for update" on "facilities" as mutex for other tables
             // todo: use lock or any other standard way to generate unique short_code
             Facility::query()->lockForUpdate()->count();
-            $service->update($user, $userAttributes);
+            $userService->update($user, $userAttributes);
             $staff->update($staffData);
+            if ($hasFacilityAdmin !== null) {
+                $memberService->update($member, ['has_facility_admin' => $hasFacilityAdmin]);
+            }
         });
         return new JsonResponse();
     }
-
 }

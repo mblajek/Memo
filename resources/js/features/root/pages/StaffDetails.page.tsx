@@ -6,6 +6,7 @@ import {EditButton} from "components/ui/Button";
 import {HideableSection} from "components/ui/HideableSection";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {BigSpinner} from "components/ui/Spinner";
+import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DateField} from "components/ui/form/DateField";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
@@ -33,7 +34,7 @@ import {
   userBaseInfoInitialValues,
 } from "features/user-edit/UserBaseInfoFields";
 import {DateTime} from "luxon";
-import {createEffect, createSignal, Match, Show, Switch, VoidComponent} from "solid-js";
+import {createComputed, createEffect, createSignal, Match, Show, Switch, VoidComponent} from "solid-js";
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {z} from "zod";
 
@@ -43,6 +44,7 @@ const getSchema = () =>
       staff: z.object({
         isActive: z.boolean(),
         deactivatedAt: z.string(),
+        hasFacilityAdmin: z.boolean(),
       }),
     }),
   );
@@ -76,6 +78,7 @@ export default (() => {
                 ...getUserBaseInfoValues(values, user()),
                 staff: {
                   deactivatedAt: values.staff.isActive ? null : dateTimeLocalToISO(values.staff.deactivatedAt),
+                  hasFacilityAdmin: values.staff.hasFacilityAdmin,
                 },
               };
               await staffMutation.mutateAsync(patch);
@@ -119,9 +122,16 @@ export default (() => {
                             deactivatedAt: u.staff.deactivatedAt
                               ? isoToDateTimeLocal(u.staff.deactivatedAt!)
                               : dateTimeToDateTimeLocal(DateTime.now()),
+                            hasFacilityAdmin: u.staff.hasFacilityAdmin,
                           },
                         });
                         form.reset();
+                      });
+                      const canBeFacilityAdmin = () => form.data("hasPassword") && form.data("staff.isActive");
+                      createComputed(() => {
+                        if (!canBeFacilityAdmin()) {
+                          form.setFields("staff.hasFacilityAdmin", false);
+                        }
                       });
                       async function formCancel() {
                         if (!form.isDirty() || (await formLeaveConfirmation.confirm())) {
@@ -146,6 +156,15 @@ export default (() => {
                                       <DateField name="staff.deactivatedAt" type="datetime-local" showWeekday />
                                     </HideableSection>
                                   </div>
+                                  <HideableSection show={canBeFacilityAdmin()}>
+                                    <div class="flex gap-1">
+                                      <CheckboxField name="staff.hasFacilityAdmin" />
+                                      <DocsModalInfoIcon
+                                        href="/help/staff-roles-facility-admin-role.part"
+                                        fullPageHref="/help/staff-roles"
+                                      />
+                                    </div>
+                                  </HideableSection>
                                 </fieldset>
                               </Autofocus>
                             </Match>
