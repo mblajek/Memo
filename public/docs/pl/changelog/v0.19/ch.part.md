@@ -19,6 +19,12 @@ części kalendarza (pokazanym na obrazku). Dotąd działało również wybieran
 ale zostało to zmienione.
 ![Edycja grafiku](timetable-edit.png)
 
+🟣Administratorzy placówek mają teraz możliwość wykonywania następujących operacji:
+
+- edycja danych pracowników i administratorów placówki, w tym resetowanie hasła,
+- aktywowanie i dezaktywowanie pracowników,
+- zarządzanie uprawnieniami administratora placówki.
+
 🟤Informacje _Co nowego w Memo_ są teraz dostępne w dokumentacji, na stronie, którą właśnie oglądasz.
 Po wydaniu nowej wersji Memo w lewym dolnym narożniku pojawi się link do aktualności.
 ![Link do "Co nowego"](changelog-link.png)
@@ -31,8 +37,10 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 7c53ad7ebb05350fcb471d8ff61b833504ce06c3 -->
+## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 813c63c376ae179b453717e2ad9eeb61fc2bbad1 -->
+
 ---
+
 …
 
 🟢 — dla wszystkich,
