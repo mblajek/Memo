@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+
 use OpenApi\Attributes as OA;
 
 class StaffController extends ApiController
@@ -109,13 +110,14 @@ class StaffController extends ApiController
         UpdateUserService $userService,
         UpdateMemberService $memberService,
     ): JsonResponse {
-        $member = $user->belongsToFacilityOrFail($facility, isStaff: true, isManagedByFacility: true);
+        $member = $user->belongsToFacilityOrFail($facility, isStaff: true);
         $staff = $member->staffMember;
+        $isManagedByFacility = $user->managed_by_facility_id === $facility->id;
 
         $userKeys = ['name', 'email', 'has_email_verified', 'has_password', 'password', 'password_expire_at'];
         $rules = [];
         foreach (User::getPatchResourceValidator($user) as $field => $rule) {
-            $rules[$field] = in_array($field, $userKeys) ? $rule : 'missing';
+            $rules[$field] = $isManagedByFacility && in_array($field, $userKeys) ? $rule : 'missing';
         }
         $rules['staff'] = Valid::array(keys: ['deactivated_at', 'has_facility_admin'], sometimes:true);
         $rules['staff.deactivated_at'] = Valid::datetime(nullable: true, sometimes: true);
@@ -123,15 +125,19 @@ class StaffController extends ApiController
         $userData = $this->validate($rules);
         $hasFacilityAdmin = $userData['staff']['has_facility_admin'] ?? null;
         $staffData = $userData['staff'] ?? [];
+        unset($userData['staff']);
         unset($staffData['has_facility_admin']);
         $userAttributes = $userService->getAttributesAfterPatch($user, $userData);
         Validator::validate($userAttributes, User::getResourceValidator());
 
-        DB::transaction(function () use ($userService, $memberService, $user, $member, $staff, $staffData, $userAttributes, $hasFacilityAdmin) {
+        DB::transaction(function () use (
+            $isManagedByFacility, $userService, $memberService, $user, $member, $staff, $staffData, $userAttributes, $hasFacilityAdmin) {
             // temporary solution, use "select for update" on "facilities" as mutex for other tables
             // todo: use lock or any other standard way to generate unique short_code
             Facility::query()->lockForUpdate()->count();
-            $userService->update($user, $userAttributes);
+            if ($isManagedByFacility) {
+                $userService->update($user, $userAttributes);
+            }
             $staff->update($staffData);
             if ($hasFacilityAdmin !== null) {
                 $memberService->update($member, ['has_facility_admin' => $hasFacilityAdmin]);

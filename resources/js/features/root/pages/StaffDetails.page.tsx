@@ -10,7 +10,7 @@ import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DateField} from "components/ui/form/DateField";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
-import {calendarIcons} from "components/ui/icons";
+import {calendarIcons, facilityIcons} from "components/ui/icons";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {Autofocus} from "components/utils/Autofocus";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -72,10 +72,11 @@ export default (() => {
       <QueryBarrier queries={[dataQuery]} ignoreCachedData {...notFoundError()}>
         <Show when={dataQuery.data} fallback={<BigSpinner />}>
           {(user) => {
+            const isManagedByCurrentFacility = () => user().managedByFacilityId === activeFacilityId();
             async function updateStaff(values: FormType) {
               const patch: StaffResourceForPatch = {
                 id: userId(),
-                ...getUserBaseInfoValues(values, user()),
+                ...(isManagedByCurrentFacility() ? getUserBaseInfoValues(values, user()) : undefined),
                 staff: {
                   deactivatedAt: values.staff.isActive ? null : dateTimeLocalToISO(values.staff.deactivatedAt),
                   hasFacilityAdmin: values.staff.hasFacilityAdmin,
@@ -127,7 +128,7 @@ export default (() => {
                         });
                         form.reset();
                       });
-                      const canBeFacilityAdmin = () => form.data("hasPassword") && form.data("staff.isActive");
+                      const canBeFacilityAdmin = () => form.data("hasPassword");
                       createComputed(() => {
                         if (!canBeFacilityAdmin()) {
                           form.setFields("staff.hasFacilityAdmin", false);
@@ -149,22 +150,37 @@ export default (() => {
                                   disabled={!editMode()}
                                   data-felte-keep-on-remove
                                 >
-                                  <UserBaseInfoFields origUser={user()} />
+                                  <Show
+                                    when={isManagedByCurrentFacility()}
+                                    fallback={<div>{t("facility_user.not_managed_by_current_facility")}</div>}
+                                  >
+                                    <div>
+                                      <facilityIcons.Facility class="inlineIcon" />{" "}
+                                      {t("facility_user.managed_by_current_facility")}
+                                    </div>
+                                    <UserBaseInfoFields origUser={user()} />
+                                  </Show>
                                   <div class="flex flex-col">
                                     <CheckboxField name="staff.isActive" />
                                     <HideableSection show={!form.data("staff.isActive")}>
                                       <DateField name="staff.deactivatedAt" type="datetime-local" showWeekday />
                                     </HideableSection>
                                   </div>
-                                  <HideableSection show={canBeFacilityAdmin()}>
-                                    <div class="flex gap-1">
-                                      <CheckboxField name="staff.hasFacilityAdmin" />
-                                      <DocsModalInfoIcon
-                                        href="/help/staff-roles-facility-admin-role.part"
-                                        fullPageHref="/help/staff-roles"
-                                      />
-                                    </div>
-                                  </HideableSection>
+                                  <div class="flex gap-1">
+                                    <CheckboxField
+                                      name="staff.hasFacilityAdmin"
+                                      disabled={!canBeFacilityAdmin()}
+                                      title={
+                                        canBeFacilityAdmin()
+                                          ? undefined
+                                          : t("forms.facility_admin.facility_admin_requirements_not_met")
+                                      }
+                                    />
+                                    <DocsModalInfoIcon
+                                      href="/help/staff-roles-facility-admin-role.part"
+                                      fullPageHref="/help/staff-roles"
+                                    />
+                                  </div>
                                 </fieldset>
                               </Autofocus>
                             </Match>
@@ -183,12 +199,7 @@ export default (() => {
                             <Match when={editMode()}>
                               <FelteSubmit cancel={formCancel} />
                             </Match>
-                            <Match
-                              when={
-                                status.data?.permissions.facilityAdmin &&
-                                user().managedByFacilityId === activeFacilityId()
-                              }
-                            >
+                            <Match when={status.data?.permissions.facilityAdmin}>
                               <div class="flex">
                                 <EditButton class="secondary small" onClick={[setEditMode, true]} />
                               </div>

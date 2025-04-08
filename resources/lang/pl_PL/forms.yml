@@ -204,6 +204,13 @@ staff_edit:
   form_name: "Edycja pracownika"
   success: "Zmodyfikowano dane pracownika"
 
+facility_admin:
+  facility_admin_requirements_not_met: "Administrator placówki musi być użytkownikiem Memo."
+
+facility_admin_edit:
+  form_name: "Edycja administratora"
+  success: "Zmodyfikowano dane administratora"
+
 client:
   field_names:
     client.notes: "$t(models.generic.notes)"
