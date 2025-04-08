@@ -21,10 +21,7 @@ user:
   password_expire_never: "Hasło nie wygaśnie."
   set_password_expire_in_7d: "Wygaś za 7 dni"
   set_password_expired: "Wygaś natychmiast"
-  members_destructive_update_warning:
-    header: "UWAGA!"
-    line1: "Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki."
-    line2: "Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
+  members_destructive_update_warning: "UWAGA! Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki. Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
 
 user_edit:
   form_name: "Zmiana danych"
@@ -205,7 +202,10 @@ staff_edit:
   success: "Zmodyfikowano dane pracownika"
 
 facility_admin:
+  field_names:
+    member.hasFacilityAdmin: "$t(models.permissions.facilityAdmin)"
   facility_admin_requirements_not_met: "Administrator placówki musi być użytkownikiem Memo."
+  facility_admin_deactivation_warning: "UWAGA: Odebranie uprawnienia administratora placówki usunie tę osobę całkowicie z placówki. Przywrócenie jej będzie wymagało uprawnień administratora globalnego."
 
 facility_admin_edit:
   form_name: "Edycja administratora"

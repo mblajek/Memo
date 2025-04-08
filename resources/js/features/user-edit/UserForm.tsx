@@ -43,7 +43,7 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
     >
       {(form) => (
         <>
-          <UserBaseInfoFields />
+          <UserBaseInfoFields autofocus />
           <userMembersFormPart.UserMembersFormPart membersPath="members" />
           <TQuerySelect name="managedByFacilityId" {...modelQuerySpecs.facility()!} nullable />
           <CheckboxField
@@ -52,11 +52,7 @@ export const UserForm: VoidComponent<Props> = (allProps) => {
             title={!form.data("hasPassword") ? t("forms.user_edit.global_admin_requires_password") : undefined}
           />
           <Show when={userMembersFormPart.isUpdateDestructive(initialValues()?.members, form.data("members"))}>
-            <div class="text-red-600 font-medium">
-              <p>{t("forms.user.members_destructive_update_warning.header")}</p>
-              <p>{t("forms.user.members_destructive_update_warning.line1")}</p>
-              <p>{t("forms.user.members_destructive_update_warning.line2")}</p>
-            </div>
+            <div class="text-red-600 font-bold">{t("forms.user.members_destructive_update_warning")}</div>
           </Show>
           <FelteSubmit cancel={props.onCancel} />
         </>

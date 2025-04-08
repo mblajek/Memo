@@ -40,9 +40,6 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
     invalidate.users();
     // Invalidate facility admins.
     invalidate.facilities();
-    if (user()!.id === statusQuery.data?.user.id) {
-      invalidate.userStatusAndFacilityPermissions();
-    }
   }
 
   async function updateUser(values: UserFormType, ctx: SubmitContext<UserFormType>) {

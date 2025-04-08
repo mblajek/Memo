@@ -33,6 +33,7 @@ interface Props {
    * if it cannot be obtained from the form initial values.
    */
   readonly origUser?: UserResource;
+  readonly autofocus?: boolean;
 }
 
 export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
@@ -60,7 +61,7 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
   return (
     <>
       <div class="flex flex-col gap-1">
-        <TextField name="name" type="text" autofocus />
+        <TextField name="name" type="text" autofocus={props.autofocus} />
         <TextField name="email" type="email" />
         <CheckboxField name="hasEmailVerified" disabled={!form.data("email")} />
       </div>
@@ -150,7 +151,7 @@ export function userBaseInfoInitialValues(user: UserResource) {
   };
 }
 
-export function getUserBaseInfoValues(values: UserBaseInfoFormType, oldUser: UserResource) {
+export function getUserBaseInfoValues(values: UserBaseInfoFormType, oldUser: {hasPassword: boolean}) {
   const passwordExpireAt = values.passwordExpireAt
     ? dateTimeToISO(dateTimeLocalInputToDateTime(values.passwordExpireAt))
     : null;

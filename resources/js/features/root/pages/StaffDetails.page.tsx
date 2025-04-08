@@ -87,6 +87,8 @@ export default (() => {
                 toastSuccess(t("forms.staff_edit.success"));
                 setEditMode(false);
                 invalidate.users();
+                // Invalidate facility admins.
+                invalidate.facilities();
               };
             }
 
