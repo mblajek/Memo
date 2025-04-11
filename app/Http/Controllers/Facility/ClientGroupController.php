@@ -102,7 +102,7 @@ class ClientGroupController extends ApiController
     public function list(Facility $facility): JsonResource
     {
         $clientGroupsQuery = ClientGroup::query()->where('facility_id', $facility->id);
-        $this->applyRequestIn($clientGroupsQuery);
+        $this->applyRequestIn($clientGroupsQuery, required: true);
         $this->getRequestIn();
         $clientGroupsQuery->select('client_groups.*')->selectSub(
             'select count(1) from `meeting_attendants`'

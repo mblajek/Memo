@@ -19,7 +19,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-
 use OpenApi\Attributes as OA;
 
 class StaffController extends ApiController
@@ -54,7 +53,7 @@ class StaffController extends ApiController
             ->join('members', 'members.user_id', 'users.id')
             ->join('staff_members', 'staff_members.id', 'members.staff_member_id')
             ->where('members.facility_id', $this->getFacilityOrFail()->id);
-        $this->applyRequestIn($query, 'users.id');
+        $this->applyRequestIn($query, 'users.id', required: true);
 
         $users = User::query()->from($query->clone()->addSelect('users.*'))->get();
         $members = Member::query()->from($query->clone()->select('members.*'))->get()->keyBy('id');

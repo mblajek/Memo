@@ -24,7 +24,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-
 use OpenApi\Attributes as OA;
 
 class FacilityAdminController extends ApiController
