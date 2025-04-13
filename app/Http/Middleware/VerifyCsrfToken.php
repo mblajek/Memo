@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\ExceptionFactory;
 use Closure;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
@@ -31,10 +32,12 @@ class VerifyCsrfToken extends Middleware
     public function handle($request, Closure $next): Response
     {
         self::$token = $this->encrypter->encrypt($request->session()->token(), false);
-
-        $response = parent::handle($request, $next);
+        try {
+            $response = parent::handle($request, $next);
+        } catch (TokenMismatchException) {
+            ExceptionFactory::csrfTokenMismatch()->throw();
+        }
         $this->addHeaderToResponse($response);
-
         return $response;
     }
 
