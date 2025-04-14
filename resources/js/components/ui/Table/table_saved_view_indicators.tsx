@@ -120,7 +120,7 @@ export function useTableSavedViewIndicators() {
     };
     return (
       <Show when={props.viewSummary.modifiesSummary.any} fallback={<EmptyValueSymbol />}>
-        <div class="grid gap-x-1" style={{"grid-template-columns": "auto auto auto auto"}}>
+        <div class="grid gap-x-1" style={{"grid-template-columns": "auto auto auto 1fr"}}>
           <For each={TABLE_SAVED_VIEW_PARTS}>{(part) => <IconWithDesc {...props} staticPartName={part} />}</For>
         </div>
       </Show>

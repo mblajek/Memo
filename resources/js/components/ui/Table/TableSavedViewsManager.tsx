@@ -572,7 +572,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 </Index>
               </div>
             </div>
-            <div class="grid gap-x-1" style={{"grid-template-columns": "1fr min(5rem)"}}>
+            <div class="grid gap-x-1" style={{"grid-template-columns": "1fr min(6rem)"}}>
               <SearchInput
                 placeholder={t("tables.saved_views.new_placeholder")}
                 value={newName()}
@@ -607,7 +607,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 {t("actions.save")}
               </SplitButton>
               <Show when={advancedView()}>
-                <div class="col-start-2 flex flex-col items-center">
+                <div class="col-start-2 flex flex-col items-end">
                   <indicators.Indicator
                     viewSummary={currentViewSummary()}
                     title={[<indicators.Explanation viewSummary={currentViewSummary()} />, {placement: "bottom"}]}
@@ -627,7 +627,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 <CopyToClipboard text={currentViewCode()} showDisabledOnEmpty />
               </div>
               <TextInput
-                class="grow w-20 min-h-small-input px-1 font-mono text-xs"
+                class="grow w-full min-h-small-input px-1 font-mono text-xs"
                 aria-invalid={!!codeErrorMessage()}
                 value={inputCode()}
                 onFocus={({target}) => target.select()}
