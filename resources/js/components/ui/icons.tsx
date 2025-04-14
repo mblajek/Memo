@@ -1,7 +1,14 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTemplate, IconTypes} from "solid-icons";
 import {AiOutlineFileExcel, AiOutlineSearch} from "solid-icons/ai";
-import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
+import {
+  BiRegularCalendarX,
+  BiRegularCopy,
+  BiRegularDuplicate,
+  BiRegularPaste,
+  BiRegularPlus,
+  BiRegularRepeat,
+} from "solid-icons/bi";
 import {
   BsCalendar3,
   BsFileEarmarkPerson,
@@ -110,6 +117,7 @@ export namespace actionIcons {
   export const Search = AiOutlineSearch;
   export const Columns: IconTypes = (props) => <FiColumns {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
   export const Reload = TbReload;
+  export const Duplicate = BiRegularDuplicate;
 }
 
 export namespace calendarIcons {

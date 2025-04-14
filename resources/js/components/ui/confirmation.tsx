@@ -10,7 +10,7 @@ import {title} from "./title";
 type _Directives = typeof title;
 
 export interface ConfirmParams {
-  readonly title: string;
+  readonly title?: JSX.Element;
   readonly body?: JSX.Element | ((controller: ConfirmationController) => JSX.Element);
   readonly confirmText?: JSX.Element | Accessor<JSX.Element>;
   readonly cancelText?: JSX.Element | Accessor<JSX.Element>;

@@ -275,3 +275,15 @@ add_to_client_group:
     add_to_group: "Dodaj do grupy$t(ellipsis)"
     create_group: "Utwórz grupę$t(ellipsis)"
   success: "Dodano do grupy klientów"
+
+table_saved_view_edit:
+  form_name: "Edycja zapisanego widoku"
+  submit: "$t(actions.save)"
+
+table_saved_view_create:
+  form_name: "Nowy zapisany widok"
+  submit: "$t(actions.create)"
+
+table_saved_view_delete:
+  form_name: "Usunięcie zapisanego widoku"
+  confirmation_text: "Czy na pewno usunąć zapisany widok?"

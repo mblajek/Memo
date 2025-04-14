@@ -157,3 +157,12 @@ meeting:
   resources.count: "$t(models.meeting.resources)$t(models.generic.count_suffix)"
   resourceConflicts.exists: "konflikt zasobów"
   resourceConflicts.*.resourceDictId: "konflikt$t(thin_n_thin)zasoby"
+
+table_saved_view:
+  _name: "widok tabeli"
+  _name_plural: "widoki tabeli"
+  globalFilter: "szukanie"
+  columnVisibility: "kolumny"
+  columnFilters: "filtrowanie"
+  activeColumnGroups: "grupowanie"
+  sorting: "sortowanie"

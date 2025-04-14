@@ -372,19 +372,19 @@ export function createTableRequestCreator({
     const defaultTableView = (): TableView => ({
       globalFilter: "",
       columnVisibility: visibilityForTableView(defaultColumnVisibility()),
-      columnFilterStates: new Map(
+      columnFilters: new Map(
         columnsConfig()
           .filter((c) => includeColumnInTableView(c.name))
           .map((c) => [c.name, undefined]),
       ),
-      activeColumnGroups: [],
+      activeColumnGroups: initialColumnGroups,
       sorting: initialSort,
     });
     function getCompleteTableView(): TableView {
-      const columnFilterStates = new Map<ColumnName, ControlState | undefined>();
+      const columnFilters = new Map<ColumnName, ControlState | undefined>();
       for (const {name} of columnsConfig()) {
         if (includeColumnInTableView(name)) {
-          columnFilterStates.set(
+          columnFilters.set(
             name,
             columnVisibility()[name] ? extractFilterState(getColumnFilter(name)[0]()) : undefined,
           );
@@ -393,7 +393,7 @@ export function createTableRequestCreator({
       return {
         globalFilter: globalFilter(),
         columnVisibility: visibilityForTableView(columnVisibility()),
-        columnFilterStates,
+        columnFilters,
         activeColumnGroups: activeColumnGroups(),
         sorting: sorting(),
       };
@@ -406,10 +406,13 @@ export function createTableRequestCreator({
         if (view.columnVisibility) {
           setColumnVisibility((vis) => ({...vis, ...view.columnVisibility}));
         }
-        if (view.columnFilterStates) {
-          for (const [name, filterState] of view.columnFilterStates) {
+        if (view.columnFilters) {
+          for (const [name, filterState] of view.columnFilters) {
             if (name !== countColumn()) {
               getColumnFilter(name)[1]((filter) => injectFilterState(filter, filterState));
+              if (filterState !== undefined) {
+                setColumnVisibility((vis) => ({...vis, [name]: true}));
+              }
             }
           }
         }

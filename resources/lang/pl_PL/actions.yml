@@ -26,6 +26,7 @@ export: "Eksportuj"
 pick: "Wybierz"
 ok: "OK"
 rename: "Zmień nazwę"
+duplicate: "Utwórz kopię"
 
 details: "Szczegóły"
 
