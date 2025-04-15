@@ -281,4 +281,10 @@ saved_views:
     ignore: "(pomiń)"
     set: "ustaw"
     clear: "wyczyść"
+    show: "pokaż"
+    hide: "ukryj"
     already_set: "(bez zmian)"
+    all:
+      ignore: "Resetuj (pomiń) wszystkie elementy"
+  no_column_filter_to_set: "Aby móc zapisać filtr, ustaw go najpierw w kolumnie tabeli"
+  action_ignore_explanation: "Wartość $t(quotes.open)$t(tables.saved_views.component_actions.ignore)$t(quotes.close) przy elemencie oznacza, że w momencie przełączenia tabeli na ten widok, wartość tego elementu nie zostanie zmieniona."

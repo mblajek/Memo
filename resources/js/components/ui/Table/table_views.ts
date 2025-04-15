@@ -211,7 +211,7 @@ export function getTableViewDelta({baseView, newView}: {baseView: TableView; new
         ? undefined
         : newView.activeColumnGroups,
     sorting:
-      !newView.sorting || (baseView.sorting && arraysEqual(baseView.sorting, newView.sorting, objectsEqual))
+      !newView.sorting?.length || (baseView.sorting && arraysEqual(baseView.sorting, newView.sorting, objectsEqual))
         ? undefined
         : newView.sorting,
   };
@@ -224,7 +224,7 @@ export function getTableViewModifiesSummary(view: TableView): TableViewSummary {
     columnVisibility: !!view.columnVisibility && Object.values(view.columnVisibility).some((v) => v !== undefined),
     columnFilters: !!view.columnFilters && view.columnFilters.size > 0,
     activeColumnGroups: !!view.activeColumnGroups,
-    sorting: !!view.sorting,
+    sorting: !!view.sorting?.length,
   });
 }
 
@@ -301,4 +301,14 @@ export function getStencilledTableView({view, stencil}: {view: TableView; stenci
     activeColumnGroups: stencilSummary.activeColumnGroups ? view.activeColumnGroups : undefined,
     sorting: stencilSummary.sorting ? view.sorting : undefined,
   };
+}
+
+export function isPartialTableViewSummary(summary: TableViewSummary) {
+  return (
+    !summary.globalFilter ||
+    !summary.columnVisibility ||
+    !summary.columnFilters ||
+    !summary.activeColumnGroups ||
+    !summary.sorting
+  );
 }

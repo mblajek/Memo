@@ -1,0 +1,6 @@
+.row {
+  @apply contents;
+  &:hover .rowItem {
+    @apply bg-hover;
+  }
+}

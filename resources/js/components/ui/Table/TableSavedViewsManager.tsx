@@ -1,3 +1,4 @@
+import {Column} from "@tanstack/table-core";
 import {createPersistence} from "components/persistence/persistence";
 import {richJSONSerialiser, RichJSONValue, Serialiser} from "components/persistence/serialiser";
 import {userStorageStorage} from "components/persistence/storage";
@@ -16,6 +17,7 @@ import {DEFAULT_SCROLL_OPTIONS, scrollIntoView} from "components/ui/scroll_into_
 import {SearchInput} from "components/ui/SearchInput";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {SplitButton} from "components/ui/SplitButton";
+import {ColumnName} from "components/ui/Table/ColumnName";
 import {
   PartName,
   TABLE_SAVED_VIEW_PARTS,
@@ -24,18 +26,21 @@ import {
 import {
   getStencilledTableView,
   getTableViewFullSummary,
+  isPartialTableViewSummary,
   TableView,
   tableViewsSerialisation,
 } from "components/ui/Table/table_views";
+import {useTable} from "components/ui/Table/TableContext";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
 import {Autofocus} from "components/utils/Autofocus";
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
-import {isDEV} from "components/utils/dev_mode";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
+import {createTextFilter} from "components/utils/text_util";
+import {DataItem} from "data-access/memo-api/tquery/types";
 import {IconTypes} from "solid-icons";
 import {VsSave} from "solid-icons/vs";
 import {
@@ -55,6 +60,7 @@ import {
 import {Dynamic} from "solid-js/web";
 import {Button, ButtonProps} from "../Button";
 import {PopOver} from "../PopOver";
+import s from "./TableSavedViewsManager.module.scss";
 
 type _Directives = typeof scrollIntoView | typeof title;
 
@@ -109,7 +115,11 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {DocsModalInfoIcon} = useDocsModalInfoIcon();
   const owner = getOwner();
+  const table = useTable();
+  const translations = table.options.meta?.translations;
+  const confirmation = createConfirmation();
   const indicators = useTableSavedViewIndicators();
+  const codeSerialiser = tableViewsSerialisation.codeSerialiser();
   const [persistedState, setPersistedState] = createSignal<StoragePersistedState>({states: []});
   createPersistence<StoragePersistedState>({
     value: persistedState,
@@ -123,16 +133,24 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
       adv: advancedView(),
     }),
     onLoad: (state) => {
-      // TODO: Finalise the advanced view and make it public.
-      if (isDEV()) {
-        setAdvancedView(state.adv);
-      }
+      setAdvancedView(state.adv);
     },
     storage: userStorageStorage("settings:table.saves"),
     version: [1],
   });
-  const codeSerialiser = tableViewsSerialisation.codeSerialiser();
-  const confirmation = createConfirmation();
+  function columnSupports(column: Column<DataItem>) {
+    const includeInTableView = column.columnDef.meta?.config?.includeInTableView;
+    return {
+      visibility: includeInTableView?.visibility && column.getCanHide(),
+      filter: includeInTableView?.filter && column.getCanFilter(),
+    };
+  }
+  const allColumns = createMemo(() =>
+    table.getAllLeafColumns().filter((col) => {
+      const support = columnSupports(col);
+      return support.visibility || support.filter;
+    }),
+  );
 
   return (
     <PopOver
@@ -192,14 +210,11 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
             function fieldName(field: string) {
               return t([`models.table_saved_view.${field}`, `models.generic.${field}`]);
             }
-            const defaultViewSummary = props.defaultTableView
-              ? getTableViewFullSummary({newView: props.defaultTableView})
-              : undefined;
             const confirmed = await confirmation.confirm({
               title: t(editing ? "forms.table_saved_view_edit.form_name" : "forms.table_saved_view_create.form_name"),
               body: (controller) => (
                 <Autofocus>
-                  <div class="flex flex-col gap-2 mb-2">
+                  <div class="flex flex-col gap-3 mb-3">
                     <div class="flex flex-col">
                       <div class="flex justify-between gap-1">
                         <StandaloneFieldLabel>
@@ -250,9 +265,11 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     value: "modify",
                                     label: () =>
                                       t(
-                                        (oldViewSummary.modifiesSummary[partName]
-                                          ? oldViewSummary
-                                          : defaultViewSummary || currentViewSummary()
+                                        (newViewSummary().modifiesSummary[partName]
+                                          ? newViewSummary()
+                                          : oldViewSummary.modifiesSummary[partName]
+                                            ? oldViewSummary
+                                            : currentViewSummary()
                                         ).modifiesClearedSummary[partName]
                                           ? "tables.saved_views.component_actions.set"
                                           : "tables.saved_views.component_actions.clear",
@@ -265,7 +282,9 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     ...s,
                                     [partName]:
                                       value === "modify"
-                                        ? oldView.state[partName] || (props.defaultTableView || currentView())[partName]
+                                        ? oldViewSummary.modifiesSummary[partName]
+                                          ? oldView.state[partName]
+                                          : currentView()[partName]
                                         : undefined,
                                   }))
                                 }
@@ -274,6 +293,156 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             </>
                           );
                         };
+                        function isColumnFilterAvailable(column: string) {
+                          return oldView.state.columnFilters?.get(column) || currentView().columnFilters?.get(column);
+                        }
+                        const ColumnsRowSel: VoidComponent<{readonly column: Column<DataItem>}> = (colProps) => {
+                          const supports = createMemo(() => columnSupports(colProps.column));
+                          const visibilityMap = {
+                            "-": undefined,
+                            "true": true,
+                            "false": false,
+                          };
+                          const filterValue = () => {
+                            const {columnFilters} = newViewState();
+                            if (!columnFilters?.has(colProps.column.id)) {
+                              return "-";
+                            }
+                            return columnFilters.get(colProps.column.id) ? "set" : "clear";
+                          };
+                          const isColumnFilterSetDisabled = createMemo(
+                            () => !isColumnFilterAvailable(colProps.column.id),
+                          );
+                          return (
+                            <div class={s.row}>
+                              <div
+                                class={cx(s.rowItem, "col-start-1 px-1 flex flex-col justify-center pe-1")}
+                                style={{"line-height": "1.1"}}
+                              >
+                                <ColumnName def={colProps.column} />
+                              </div>
+                              <div class={cx(s.rowItem, "flex flex-col justify-center pe-1")}>
+                                <Show when={supports().visibility} fallback={<EmptyValueSymbol class="text-center" />}>
+                                  <SegmentedControl
+                                    name="columnVisibility"
+                                    label=""
+                                    items={[
+                                      {value: "-", label: () => t("tables.saved_views.component_actions.ignore")},
+                                      {value: "false", label: () => t("tables.saved_views.component_actions.hide")},
+                                      {value: "true", label: () => t("tables.saved_views.component_actions.show")},
+                                    ]}
+                                    value={String(newViewState().columnVisibility?.[colProps.column.id] ?? "-")}
+                                    onValueChange={(value) =>
+                                      setNewViewState((s) => {
+                                        const columnVisibility = {...s.columnVisibility};
+                                        let columnFilters = s.columnFilters;
+                                        const newVis = visibilityMap[value as keyof typeof visibilityMap];
+                                        if (newVis === undefined) {
+                                          delete columnVisibility[colProps.column.id];
+                                        } else {
+                                          columnVisibility[colProps.column.id] = newVis;
+                                          if (!newVis && columnFilters?.get(colProps.column.id) && supports().filter) {
+                                            // Hiding column forces a filter change, so remove a filter set.
+                                            const colFilters = new Map(columnFilters);
+                                            colFilters.delete(colProps.column.id);
+                                            columnFilters = colFilters;
+                                          }
+                                        }
+                                        return {...s, columnVisibility, columnFilters};
+                                      })
+                                    }
+                                    small
+                                  />
+                                </Show>
+                              </div>
+                              <div class={cx(s.rowItem, "flex flex-col justify-center pe-1")}>
+                                <Show when={supports().filter} fallback={<EmptyValueSymbol class="text-center" />}>
+                                  <SegmentedControl
+                                    name="columnFilters"
+                                    label=""
+                                    items={[
+                                      {value: "-", label: () => t("tables.saved_views.component_actions.ignore")},
+                                      {value: "clear", label: () => t("tables.saved_views.component_actions.clear")},
+                                      {
+                                        value: "set",
+                                        label: () => (
+                                          <div
+                                            use:title={
+                                              isColumnFilterSetDisabled()
+                                                ? t("tables.saved_views.no_column_filter_to_set")
+                                                : undefined
+                                            }
+                                          >
+                                            {t("tables.saved_views.component_actions.set")}
+                                          </div>
+                                        ),
+                                        disabled: isColumnFilterSetDisabled(),
+                                      },
+                                    ]}
+                                    value={filterValue()}
+                                    onValueChange={(value) =>
+                                      setNewViewState((s) => {
+                                        const columnFilters = new Map(s.columnFilters);
+                                        let columnVisibility = s.columnVisibility;
+                                        if (value === "-") {
+                                          columnFilters.delete(colProps.column.id);
+                                        } else if (value === "clear") {
+                                          columnFilters.set(colProps.column.id, undefined);
+                                        } else if (value === "set") {
+                                          columnFilters.set(
+                                            colProps.column.id,
+                                            oldView.state.columnFilters?.get(colProps.column.id) ||
+                                              currentView().columnFilters?.get(colProps.column.id),
+                                          );
+                                          // Setting the filter forces the column to be shown, so remove the column hiding.
+                                          if (
+                                            columnVisibility?.[colProps.column.id] === false &&
+                                            supports().visibility
+                                          ) {
+                                            const colVisibility = {...columnVisibility};
+                                            delete colVisibility[colProps.column.id];
+                                            columnVisibility = colVisibility;
+                                          }
+                                        } else {
+                                          throw new Error(`Unexpected value: ${value}`);
+                                        }
+                                        return {...s, columnFilters, columnVisibility};
+                                      })
+                                    }
+                                    small
+                                  />
+                                </Show>
+                              </div>
+                            </div>
+                          );
+                        };
+                        const [search, setSearch] = createSignal("");
+                        const matchingColumns = createMemo(() => {
+                          const columnsTop: Column<DataItem>[] = [];
+                          const columnsBottom: Column<DataItem>[] = [];
+                          const searchFilter = createTextFilter(search());
+                          for (const col of allColumns()) {
+                            if (searchFilter && translations && !searchFilter(translations.columnName(col.id))) {
+                              continue;
+                            }
+                            const supports = columnSupports(col);
+                            if (!supports.visibility && !supports.filter) {
+                              continue;
+                            }
+                            const isFilterAvailable = isColumnFilterAvailable(col.id);
+                            if (isFilterAvailable) {
+                              columnsTop.push(col);
+                            }
+                            if (!isFilterAvailable || !searchFilter) {
+                              columnsBottom.push(col);
+                            }
+                          }
+                          const columns: (Column<DataItem> | "sep")[] = [...columnsTop];
+                          if (columnsTop.length && columnsBottom.length) {
+                            columns.push("sep");
+                          }
+                          return [...columns, ...columnsBottom];
+                        });
                         return (
                           <>
                             <div
@@ -282,7 +451,65 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             >
                               <For each={TABLE_SAVED_VIEW_PARTS}>{(part) => <SingleSel staticPartName={part} />}</For>
                             </div>
-                            {/* TODO: Add a section to manage individual columns. */}
+                            <Button
+                              class="secondary small"
+                              onClick={[setNewViewState, {}]}
+                              disabled={!newViewSummary().modifiesSummary.any}
+                            >
+                              {t("tables.saved_views.component_actions.all.ignore")}
+                            </Button>
+                            <div class="flex flex-col gap-1">
+                              <div class="flex items-center">
+                                <actionIcons.Search class="px-0.5" size="24" />
+                                <SearchInput
+                                  divClass="grow"
+                                  placeholder={t("tables.columns_search.placeholder")}
+                                  value={search()}
+                                  onValueChange={setSearch}
+                                />
+                              </div>
+                              <div class="h-60 border border-1 border-gray-400 rounded">
+                                <Show
+                                  when={matchingColumns().length}
+                                  fallback={
+                                    <div class="px-1 text-grey-text">{t("tables.columns_search.no_results")}</div>
+                                  }
+                                >
+                                  <div
+                                    class="max-h-full grid"
+                                    style={{
+                                      "grid-template-columns": "1fr auto auto var(--sb-size)",
+                                      "grid-template-rows": "auto 1fr",
+                                    }}
+                                  >
+                                    <div class="col-span-full grid grid-cols-subgrid">
+                                      <div />
+                                      <div class="text-center font-semibold">
+                                        <Capitalize text={t("models.table_saved_view.columnVisibility")} />
+                                      </div>
+                                      <div class="text-center font-semibold">
+                                        <Capitalize text={t("models.table_saved_view.columnFilters")} />
+                                      </div>
+                                    </div>
+                                    <div class="col-span-full overflow-x-clip overflow-y-auto grid grid-cols-subgrid">
+                                      <div class="col-span-3 grid grid-cols-subgrid gap-y-1 mb-1">
+                                        <For each={matchingColumns()}>
+                                          {(col) => (
+                                            <Show
+                                              when={col !== "sep" && col}
+                                              fallback={<hr class="col-span-full mx-2 border-gray-400" />}
+                                            >
+                                              {(col) => <ColumnsRowSel column={col()} />}
+                                            </Show>
+                                          )}
+                                        </For>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </Show>
+                              </div>
+                              <div class="text-grey-text">{t("tables.saved_views.action_ignore_explanation")}</div>
+                            </div>
                           </>
                         );
                       }}
@@ -317,7 +544,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                   <div>{t("forms.table_saved_view_delete.confirmation_text")}</div>
                   <div class="px-1 flex gap-2 justify-between rounded border border-gray-300">
                     {view.name}
-                    <Show when={advancedView()}>
+                    <Show when={advancedView() || isPartialTableViewSummary(summary.modifiesSummary)}>
                       <indicators.Indicator
                         viewSummary={summary}
                         title={[<indicators.Explanation viewSummary={summary} />, {placement: "right"}]}
@@ -346,6 +573,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
             iterations: 6,
           });
         }
+        // TODO: Make it possible to save a partial view from a pasted code.
         const [inputCode, setInputCode] = createSignal("");
         const [codeErrorMessage, setCodeErrorMessage] = createSignal<string>();
         createEffect(() => setInputCode(currentViewCode()));
@@ -395,16 +623,14 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                 {t("tables.saved_views.title")}{" "}
                 <DocsModalInfoIcon href="/help/table-saved-views" onClick={popOver.close} />
               </div>
-              <Show when={isDEV()}>
-                <CheckboxInput
-                  labelBefore={
-                    <span class="font-normal text-xs">{t("tables.saved_views.advanced_view.abbreviation")} </span>
-                  }
-                  title={t("tables.saved_views.advanced_view")}
-                  checked={advancedView()}
-                  onChecked={setAdvancedView}
-                />
-              </Show>
+              <CheckboxInput
+                labelBefore={
+                  <span class="font-normal text-xs">{t("tables.saved_views.advanced_view.abbreviation")} </span>
+                }
+                title={t("tables.saved_views.advanced_view")}
+                checked={advancedView()}
+                onChecked={setAdvancedView}
+              />
             </div>
             <div class="grow overflow-y-auto -me-2">
               <div class="me-2 max-w-md grid gap-1" style={{"grid-template-columns": "1fr auto"}}>
@@ -430,7 +656,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     ? t("tables.saved_views.load_hint")
                                     : t("tables.saved_views.load_hint_no_change")}
                                 </div>
-                                <Show when={advancedView()}>
+                                <Show when={advancedView() || isPartialTableViewSummary(summary().modifiesSummary)}>
                                   <indicators.Explanation viewSummary={summary()} />
                                 </Show>
                               </div>,
@@ -452,7 +678,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                 </span>
                               </Show>
                             </div>
-                            <Show when={advancedView()}>
+                            <Show when={advancedView() || isPartialTableViewSummary(summary().modifiesSummary)}>
                               <indicators.Indicator class="ms-auto" viewSummary={summary()} />
                             </Show>
                           </Button>
