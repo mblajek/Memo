@@ -60,7 +60,6 @@ import {
 import {Dynamic} from "solid-js/web";
 import {Button, ButtonProps} from "../Button";
 import {PopOver} from "../PopOver";
-import s from "./TableSavedViewsManager.module.scss";
 
 type _Directives = typeof scrollIntoView | typeof title;
 
@@ -221,10 +220,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                           <Capitalize text={fieldName("name")} />
                         </StandaloneFieldLabel>
                         <Show when={advancedView()}>
-                          <indicators.Indicator
-                            viewSummary={newViewSummary()}
-                            title={[<indicators.Explanation viewSummary={newViewSummary()} />, {placement: "right"}]}
-                          />
+                          <indicators.Indicator viewSummary={newViewSummary()} />
                         </Show>
                       </div>
                       <TextInput
@@ -314,14 +310,14 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             () => !isColumnFilterAvailable(colProps.column.id),
                           );
                           return (
-                            <div class={s.row}>
+                            <div class="contents group">
                               <div
-                                class={cx(s.rowItem, "col-start-1 px-1 flex flex-col justify-center pe-1")}
+                                class="col-start-1 px-1 flex flex-col justify-center pe-1 group-hover:bg-hover"
                                 style={{"line-height": "1.1"}}
                               >
                                 <ColumnName def={colProps.column} />
                               </div>
-                              <div class={cx(s.rowItem, "flex flex-col justify-center pe-1")}>
+                              <div class="flex flex-col justify-center pe-1 group-hover:bg-hover">
                                 <Show when={supports().visibility} fallback={<EmptyValueSymbol class="text-center" />}>
                                   <SegmentedControl
                                     name="columnVisibility"
@@ -355,7 +351,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                   />
                                 </Show>
                               </div>
-                              <div class={cx(s.rowItem, "flex flex-col justify-center pe-1")}>
+                              <div class="flex flex-col justify-center pe-1 group-hover:bg-hover">
                                 <Show when={supports().filter} fallback={<EmptyValueSymbol class="text-center" />}>
                                   <SegmentedControl
                                     name="columnFilters"
