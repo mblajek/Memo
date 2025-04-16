@@ -25,6 +25,10 @@ ale zostało to zmienione.
 - aktywowanie i dezaktywowanie pracowników,
 - zarządzanie uprawnieniami administratora placówki.
 
+🟣[Zapisane widoki tabeli](table-saved-views) pozwalają teraz na przełączenie w tryb zaawansowany,
+w którym można tworzyć widoki częściowe, które np. ustawiają filtry na niektórych kolumnach, a
+pozostałych filtrów ani innych parametrów tabeli nie zmieniają.
+
 🟤Informacje _Co nowego w Memo_ są teraz dostępne w dokumentacji, na stronie, którą właśnie oglądasz.
 Po wydaniu nowej wersji Memo w lewym dolnym narożniku pojawi się link do aktualności.
 ![Link do "Co nowego"](changelog-link.png)
@@ -37,7 +41,7 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 813c63c376ae179b453717e2ad9eeb61fc2bbad1 -->
+## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 43ef1b317668783980c7128031593f0e4d2cb3fa -->
 
 ---
 
