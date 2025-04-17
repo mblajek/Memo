@@ -8,12 +8,12 @@ import {useFormContextIfInForm} from "../felte-form/FelteForm";
 import {shortWeekdayName} from "../utils/date_formatting";
 import {TextInput} from "./TextInput";
 
-interface Props extends htmlAttributes.input {
+export interface DateInputProps extends htmlAttributes.input {
   readonly outerClass?: string;
   readonly showWeekday?: boolean;
 }
 
-export const DateInput: VoidComponent<Props> = (allProps) => {
+export const DateInput: VoidComponent<DateInputProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["outerClass", "showWeekday"]);
   const t = useLangFunc();
   const featureKeyUpDown = featureUseTrackers.dateTimeInputKeyUpDown();

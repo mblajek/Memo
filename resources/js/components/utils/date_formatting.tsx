@@ -49,7 +49,7 @@ export const FormattedDateTime: VoidComponent<Props> = (allProps) => {
   const [props, spanProps] = splitProps(allProps, ["dateTime", "format", "alignWeekday"]);
   const t = useLangFunc();
   return (
-    <span {...spanProps}>
+    <span {...htmlAttributes.merge(spanProps, {style: {"text-decoration": "inherit"}})}>
       <For each={props.dateTime.toLocaleParts(props.format)}>
         {(part) => (
           <Show when={part.type === "weekday"} fallback={part.value}>
@@ -101,7 +101,7 @@ const AlignedWeekday: VoidComponent<{value: string; format: Intl.DateTimeFormatO
   const weekdayNamesSignal = () => getWeekdayNames(t, props.format);
   const weekdayNames = () => weekdayNamesSignal()[0]();
   return (
-    <span class="inline-grid text-right">
+    <span class="inline-grid text-right" style={{"text-decoration": "inherit"}}>
       <span
         class="contents invisible"
         ref={(span) => {

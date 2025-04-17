@@ -28,7 +28,7 @@ readonly class UpdateUserService
     /**
      * @throws Throwable
      */
-    private function update(User $user, array $userAttributes): void
+    public function update(User $user, array $userAttributes): void
     {
         if (array_key_exists('has_email_verified', $userAttributes)) {
             if ($userAttributes['has_email_verified']) {

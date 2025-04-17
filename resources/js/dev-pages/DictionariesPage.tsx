@@ -2,6 +2,8 @@ import {A} from "@solidjs/router";
 import {createQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {createColumnHelper} from "@tanstack/table-core";
+import {createPersistence} from "components/persistence/persistence";
+import {localStorageStorage} from "components/persistence/storage";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {BigSpinner} from "components/ui/Spinner";
 import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
@@ -22,6 +24,11 @@ export default (() => {
   const dictionaries = useAllDictionaries();
   const attributes = useAllAttributes();
   const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
+  createPersistence({
+    value: onlyActiveFacility,
+    onLoad: setOnlyActiveFacility,
+    storage: localStorageStorage("DEVPages:onlyActiveFacility"),
+  });
   const attrValueFormatter = useAttrValueFormatter();
   const tableCells = useTableCells();
   const h = createColumnHelper<Dictionary>();

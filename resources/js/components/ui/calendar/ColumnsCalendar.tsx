@@ -22,7 +22,6 @@ import {
   useContext,
 } from "solid-js";
 import {LoadingPane} from "../LoadingPane";
-import s from "./ColumnsCalendar.module.scss";
 
 interface GlobalParameters {
   readonly pixelsPerHour?: number;
@@ -148,18 +147,27 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
   return (
     <div
       {...htmlAttributes.merge(divProps, {
-        class: s.columnsCalendar,
+        class: "grid gap-y-1.5 gap-x-px relative text-sm",
         style: {
-          "--num-columns": props.columns.length,
-          "--pixels-per-hour": props.pixelsPerHour,
+          "grid-template-rows": `\
+            [header-start] auto [header-end
+            all-day-area-start] auto [all-day-area-end
+            hours-area-start] 1fr [hours-area-end]`,
+          "grid-template-columns": `\
+            [time-track-start] 2.5rem [time-track-end
+            columns-start] repeat(max(1, ${props.columns.length}), minmax(0, 1fr)) [columns-end
+            scroll-start] var(--sb-size) [scroll-end]`,
+          "line-height": "1.1",
         },
       })}
     >
       <Context.Provider value={context}>
-        <div class={s.columnsHeader}>
-          <For each={props.columns}>{(col) => <div class={s.cell}>{col.header()}</div>}</For>
+        <div class="grid grid-cols-subgrid" style={{"grid-area": "header / columns"}}>
+          <For each={props.columns}>{(col) => <div>{col.header()}</div>}</For>
         </div>
         <div
+          class="grid grid-cols-subgrid"
+          style={{"grid-area": "all-day-area / columns"}}
           on:wheel={{
             handleEvent: (e) => {
               if (e.altKey) {
@@ -169,12 +177,19 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
             },
             passive: false,
           }}
-          class={s.columnsAllDayArea}
         >
-          <For each={props.columns}>{(col) => <div class={s.cell}>{col.allDayArea()}</div>}</For>
+          <For each={props.columns}>
+            {(col) => <div class="outline outline-1 outline-gray-300">{col.allDayArea()}</div>}
+          </For>
         </div>
         <GetRef ref={setHoursArea} waitForMount>
           <div
+            class="grid grid-cols-subgrid overflow-y-scroll border-t border-gray-300 relative"
+            style={{
+              "grid-area": "hours-area",
+              "grid-column": "1 / -1",
+              "grid-template-rows": `${24 * props.pixelsPerHour + 1}px`,
+            }}
             on:wheel={{
               handleEvent: (e) => {
                 if (e.altKey) {
@@ -184,14 +199,16 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
               },
               passive: false,
             }}
-            class={s.hoursArea}
             onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}
           >
-            <div class={s.timeTrack}>
+            <div class="relative" style={{"grid-column": "time-track"}}>
               <Index each={timeTrackLabelDayMinutes()}>
                 {(dayMinute) => (
                   <div
-                    class={cx(s.label, dayMinute() % 60 ? undefined : s.fullHour)}
+                    class={cx(
+                      "absolute w-full px-1 text-right text-xs text-grey-text",
+                      dayMinute() % 60 ? "text-opacity-60" : undefined,
+                    )}
                     style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
                   >
                     {formatDayMinuteHM(dayMinute())}
@@ -199,26 +216,32 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                 )}
               </Index>
               <Show when={props.columns.some(({day}) => isToday(day))}>
-                <div class={s.nowLine} style={{top: `${nowPixelY()}px`}} />
+                <div class="absolute w-full h-0 border-b-2 border-red-500 z-50" style={{top: `${nowPixelY()}px`}} />
               </Show>
             </div>
-            <div class={s.columnsHoursArea}>
+            <div class="grid grid-cols-subgrid" style={{"grid-column": "columns"}}>
               <For each={props.columns}>
                 {(col) => (
-                  <div class={s.cell}>
+                  <div class="outline outline-1 outline-gray-300 relative">
                     {col.hoursArea()}
                     <Show when={isToday(col.day)}>
-                      <div class={s.nowLine} style={{top: `${nowPixelY()}px`}} />
+                      <div
+                        class="absolute w-full h-0 border-b-2 border-red-500 z-50"
+                        style={{top: `${nowPixelY()}px`}}
+                      />
                     </Show>
                   </div>
                 )}
               </For>
             </div>
-            <div class={s.gridRowLines}>
+            <div class="contents z-10 pointer-events-none">
               <Index each={[...dayMinutes(), MAX_DAY_MINUTE]}>
                 {(dayMinute) => (
                   <div
-                    class={cx(s.gridRowLine, dayMinute() % 60 ? undefined : s.fullHour)}
+                    class={cx(
+                      "absolute w-full h-0 border-b border-gray-600",
+                      dayMinute() % 60 ? "border-dotted border-opacity-20" : "border-solid border-opacity-30",
+                    )}
                     style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
                   />
                 )}

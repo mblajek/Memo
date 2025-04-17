@@ -13,7 +13,7 @@ if (!match) {
   throw new Error(`Cannot find version info in ${API_CONTROLLER_PATH}`);
 }
 const version = match[1];
-console.log(`New version: ${version}`);
+console.log(`Current version: ${version}`);
 
 const gitLogRes = await new Deno.Command("git", {
   args: ["log", "origin/master..HEAD", "--reverse", "--no-merges", "--format=%H %at %an%n%s%n"],

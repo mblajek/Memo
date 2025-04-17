@@ -7,7 +7,6 @@ import {cx} from "components/utils/classnames";
 import {debouncedAccessor} from "components/utils/debounce";
 import {useLangFunc} from "components/utils/lang";
 import {createTextFilter} from "components/utils/text_util";
-import {OcSearch2} from "solid-icons/oc";
 import {RiSystemEyeCloseFill} from "solid-icons/ri";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, onMount} from "solid-js";
 import {Button} from "../Button";
@@ -73,7 +72,7 @@ export const TableColumnVisibilityController: VoidComponent = () => {
       <div class="flex flex-col min-h-0 items-stretch" onClick={() => searchInput?.focus()}>
         <Show when={translations}>
           <div class="flex items-center">
-            <OcSearch2 class="shrink-0 px-1" size="24" />
+            <actionIcons.Search class="shrink-0 px-0.5" size="24" />
             <SearchInput
               ref={searchInput}
               divClass="flex-grow"

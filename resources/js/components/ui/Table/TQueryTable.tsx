@@ -304,7 +304,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
           persistVisibility,
           globalFilterable,
           columnGroups: columnGroupsCollector.column(name, columnGroups),
-          includeInTableView: !metaParams?.devColumn,
+          includeInTableView: {
+            visibility: !metaParams?.devColumn && (columnDef.enableHiding ?? true),
+            // At this point it's not certain whether the column is filterable or not, this will be
+            // determined when the type arrives from schema. The final information can be obtained
+            // from columnDef.meta.hasFilter.
+            filter: !metaParams?.devColumn,
+          },
         }) satisfies FullColumnConfig,
     );
     const columnGroups = columnGroupsCollector.getColumnGroups(props.columnGroups);
@@ -707,6 +713,11 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         // be mutated, and wrapping it would be complicated.
         defColumnConfig.columnDef,
         col.columnDef,
+        {
+          enableColumnFilter:
+            (defColumnConfig.columnDef?.enableColumnFilter ?? col.columnDef.enableColumnFilter ?? true) &&
+            !!filterControl,
+        },
         {meta: {tquery: schemaCol, config: col}},
         {meta: {tquery: defColumnConfig.metaParams}},
         {meta: {tquery: col.metaParams}},

@@ -30,6 +30,7 @@ exception:
   invalid_json: "Zapytanie nie ma formatu JSON"
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
   user_not_managed_by_facility: "Osoba nie jest zarządzana przez tę placówkę"
+  csrf_token_mismatch: "Błąd tokena sesji"
   _unknown: "Błąd konfiguracji ({{text}})"
 
 passwords:

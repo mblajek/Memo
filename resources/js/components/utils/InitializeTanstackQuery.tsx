@@ -56,14 +56,19 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
     const status = error.response?.status;
     if (!status || !meta?.quietHTTPStatuses?.includes(status)) {
       const respErrors = error.response?.data.errors;
-      let errorsToShow: readonly Api.Error[] = [];
       if (respErrors) {
+        let errorsToShow = respErrors;
         const isUnauthorisedError = respErrors.some((e) => e.code === "exception.unauthorised");
         // Make sure user status is refreshed if any query reports unauthorised. Don't do this for forms though.
         if (!meta?.isFormSubmit && isUnauthorisedError) {
           invalidate.userStatusAndFacilityPermissions({clearCache: true});
         }
-        if (meta?.isFormSubmit) {
+        const csrfTokenMismatchError = respErrors.find((e) => e.code === "exception.csrf_token_mismatch");
+        if (csrfTokenMismatchError) {
+          errorsToShow = [csrfTokenMismatchError];
+          // Fetch the new token.
+          invalidate.systemStatus();
+        } else if (meta?.isFormSubmit) {
           // Validation errors will be handled by the form.
           errorsToShow = respErrors.filter((e) => !Api.isValidationError(e));
         } else if (meta?.tquery?.isTable) {
@@ -77,8 +82,6 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             // Include the exception.validation error again.
             errorsToShow = respErrors.filter((e) => !isFilterValError(e));
           }
-        } else {
-          errorsToShow = respErrors;
         }
         if (errorsToShow.length) {
           if (!translationsLoaded()) {

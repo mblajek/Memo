@@ -92,8 +92,12 @@ Route::prefix('/v1')->group(function () {
             });
             Route::prefix('/staff')->group(function () {
                 Route::get('/list', [StaffController::class, 'list']);
+                Route::patch('/{user}', [StaffController::class, 'patch']);
                 Route::get('/tquery', [StaffTqueryController::class, 'get']);
                 Route::post('/tquery', [StaffTqueryController::class, 'post']);
+            });
+            Route::prefix('/admin')->group(function () {
+                Route::patch('/{user}', [FacilityAdminController::class, 'patch']);
             });
             Route::get('/tquery', [MemberTqueryController::class, 'get']);
             Route::post('/tquery', [MemberTqueryController::class, 'post']);

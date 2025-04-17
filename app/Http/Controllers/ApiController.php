@@ -68,8 +68,11 @@ abstract class ApiController extends Controller
         return $this->requestIn;
     }
 
-    protected function applyRequestIn(EloquentBuilder|Builder $query, string $column = 'id'): void
+    protected function applyRequestIn(EloquentBuilder|Builder $query, string $column = 'id', bool $required = false): void
     {
+        if ($required) {
+            $this->request->validate(['in' => 'required']);
+        }
         if (($in = $this->getRequestIn())) {
             $query->whereIn($column, $in);
         }

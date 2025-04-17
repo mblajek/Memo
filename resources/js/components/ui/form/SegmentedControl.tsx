@@ -42,11 +42,6 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
       const inputValue = () =>
         hasProp(props, "value") ? props.value : formContext ? (formContext.form.data(props.name) as string) : undefined;
       createComputed(() => setValue(inputValue() ?? props.items[0]?.value));
-      createComputed(() => {
-        if (value() !== undefined) {
-          props.onValueChange?.(value()!);
-        }
-      });
       const isFormMode = formContext && !hasProp(props, "value");
 
       return (
@@ -77,6 +72,9 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
                     function activate() {
                       if (!isItemDisabled()) {
                         setValue(itemValue);
+                        if (itemValue !== undefined) {
+                          props.onValueChange?.(itemValue);
+                        }
                       }
                     }
                     let input: HTMLInputElement | undefined;

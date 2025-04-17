@@ -44,7 +44,7 @@ class AdminUserController extends ApiController
     public function list(): JsonResource
     {
         $userQuery = User::query();
-        $this->applyRequestIn($userQuery);
+        $this->applyRequestIn($userQuery, required: true);
         return AdminUserResource::collection($userQuery->with(['members'])->get());
     }
 
