@@ -51,7 +51,7 @@ const App: VoidComponent = () => {
    *
    * Such links make sense in places like documentation, where the actual facility URL is not known.
    */
-  const RedirectToFacility = (() => {
+  const RedirectFacilityPlaceholderToFacility = (() => {
     const params = useParams();
     const navigate = useNavigate();
     createEffect(() => {
@@ -59,10 +59,25 @@ const App: VoidComponent = () => {
         const activeFacility = facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId());
         if (activeFacility) {
           navigate(`/${activeFacility.url}/${params.facilityPath}`);
+          return;
         }
-      } else {
-        navigate("/");
       }
+      navigate("/");
+    });
+    return <></>;
+  }) satisfies VoidComponent;
+
+  const RedirectRootToFacilityRoot = (() => {
+    const navigate = useNavigate();
+    createEffect(() => {
+      if (activeFacilityId()) {
+        const activeFacility = facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId());
+        if (activeFacility) {
+          navigate(`/${activeFacility.url}`);
+          return;
+        }
+      }
+      navigate("/help");
     });
     return <></>;
   }) satisfies VoidComponent;
@@ -75,7 +90,7 @@ const App: VoidComponent = () => {
           <LeafRoute routeKey="login" path="/login" component={LoginPage} />
           <Route path="/" component={RootPage}>
             <UnknownNotFound />
-            <Route path="/" component={() => <Navigate href="/help" />} />
+            <Route path="/" component={RedirectRootToFacilityRoot} />
             <DevRoutes />
             <Route path="/help">
               <LeafRoute routeKey="help_pages.about" path="/about" component={AboutPage} />
@@ -94,7 +109,7 @@ const App: VoidComponent = () => {
               <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
               <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
             </Route>
-            <Route path="/__facility/*facilityPath" component={RedirectToFacility} />
+            <Route path="/__facility/*facilityPath" component={RedirectFacilityPlaceholderToFacility} />
             <Route
               path="/:facilityUrl"
               matchFilters={{
