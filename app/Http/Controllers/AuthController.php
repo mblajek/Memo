@@ -22,7 +22,7 @@ class AuthController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->except(['login', 'logout']);
+        $this->permissionOneOf(Permission::loggedIn)->except(['login', 'logout']);
     }
 
     #[OA\Post(
@@ -31,10 +31,11 @@ class AuthController extends ApiController
         summary: 'User login',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['email', 'password'], properties: [
-                new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
-                new OA\Property(property: 'password', type: 'string', example: '123456'),
-            ]
+                required: ['email', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
+                    new OA\Property(property: 'password', type: 'string', example: '123456'),
+                ]
             )
         ),
         tags: ['User'],
@@ -60,7 +61,7 @@ class AuthController extends ApiController
         $logService->addEntry(
             request: $request,
             source: ($user === null) ? 'user_login_unknown'
-                : ($authValid ? 'user_login_success' : 'user_login_failure'),
+            : ($authValid ? 'user_login_success' : 'user_login_failure'),
             logLevel: LogLevel::INFO,
             message: $authData['email'],
             user: $user,
@@ -68,7 +69,7 @@ class AuthController extends ApiController
 
         if ($authValid) {
             Auth::login($user);
-            $request->session()->forget('developer_mode');
+            $request->session()->forget(PermissionMiddleware::SESSION_DEVELOPER_MODE);
             $request->session()->regenerate();
             $this->setSessionHashHash($request, $user);
             return new JsonResponse();
@@ -95,7 +96,7 @@ class AuthController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/password',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'Change user password',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(

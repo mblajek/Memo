@@ -21,12 +21,12 @@ class UserController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->except(['login', 'logout']);
+        $this->permissionOneOf(Permission::loggedIn)->except(['login', 'logout']);
     }
 
     #[OA\Patch(
         path: '/api/v1/user',
-        description: new PermissionDescribe([Permission::verified, Permission::unverified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'Update logged user',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
@@ -55,7 +55,7 @@ class UserController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/user/status/{facility}',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'User status',
         tags: ['User'],
         parameters: [
@@ -69,22 +69,29 @@ class UserController extends ApiController
         ],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(
-                        property: 'data', type: 'array', items: new OA\Items(properties: [
-                        new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(
+                    properties: [
                         new OA\Property(
-                            property: 'permissions', ref: '#/components/schemas/PermissionsResource', type: 'object'
+                            property: 'data',
+                            type: 'array',
+                            items: new OA\Items(properties: [
+                                new OA\Property(property: 'user', ref: '#/components/schemas/UserResource', type: 'object'),
+                                new OA\Property(
+                                    property: 'permissions',
+                                    ref: '#/components/schemas/PermissionsResource',
+                                    type: 'object'
+                                ),
+                                new OA\Property(
+                                    property: 'members',
+                                    type: 'array',
+                                    items: new OA\Items(ref: '#/components/schemas/MemberResource')
+                                ),
+                            ])
                         ),
-                        new OA\Property(
-                            property: 'members', type: 'array',
-                            items: new OA\Items(ref: '#/components/schemas/MemberResource')
-                        ),
-                    ])
-                    ),
-                ]
-            )
+                    ]
+                )
             ),
             new OA\Response(response: 401, description: 'Unauthorised'),
             new OA\Response(response: 404, description: 'Not found'),
@@ -104,7 +111,7 @@ class UserController extends ApiController
 
     #[OA\Put(
         path: '/api/v1/user/storage/{key}',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'Update user storage, send null value to unset key',
         requestBody: new OA\RequestBody(content: new OA\JsonContent(example: '{}')),
         tags: ['User'],
@@ -130,7 +137,7 @@ class UserController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/user/storage/{key}',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'Read user storage, send empty key to list keys',
         tags: ['User'],
         parameters: [

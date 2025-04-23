@@ -15,12 +15,12 @@ class MailController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::verified, Permission::unverified);
+        $this->permissionOneOf(Permission::loggedIn);
     }
 
     #[OA\Post(
         path: '/api/v1/mail/test',
-        description: new PermissionDescribe([Permission::verified, Permission::unverified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'Mail test',
         tags: ['Mail'],
         responses: [

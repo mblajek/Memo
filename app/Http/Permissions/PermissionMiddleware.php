@@ -77,6 +77,7 @@ class PermissionMiddleware
 
         if ($user = User::fromAuthenticatable($request->user())) {
             if (self::checkSessionPasswordHashHash($user, $session)) {
+                $creator->loggedIn = true;
                 $creator->user = $user;
                 $creator->verified = ($user->email_verified_at !== null);
                 $creator->unverified = !$creator->verified;

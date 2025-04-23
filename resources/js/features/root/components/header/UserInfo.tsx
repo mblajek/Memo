@@ -75,18 +75,18 @@ export const UserInfo: VoidComponent = () => {
     <div class="pr-2 text-sm flex justify-between items-center gap-4">
       <div class="flex justify-between items-center gap-2">
         <div>
-          <Switch>
-            <Match when={statusQuery.data?.permissions.verified}>
-              <div use:title={t("verified_user")}>
-                <HiOutlineCheckCircle class="text-memo-active" size="30" />
-              </div>
-            </Match>
-            <Match when={statusQuery.data?.permissions.unverified}>
+          <Show
+            when={statusQuery.data?.permissions.verified}
+            fallback={
               <div use:title={t("unverified_user")}>
                 <HiOutlineXCircle class="text-red-500" size="30" />
               </div>
-            </Match>
-          </Switch>
+            }
+          >
+            <div use:title={t("verified_user")}>
+              <HiOutlineCheckCircle class="text-memo-active" size="30" />
+            </div>
+          </Show>
         </div>
         <div class="flex flex-col justify-between items-stretch">
           <CurrentTime />

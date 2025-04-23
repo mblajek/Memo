@@ -25,6 +25,7 @@ class CreateUserCommand extends Command
                 user: User::query()->findOrFail(User::SYSTEM),
                 facility: null,
                 unauthorised: false,
+                loggedIn: true,
                 unverified: true,
                 verified: true,
                 globalAdmin: true,
