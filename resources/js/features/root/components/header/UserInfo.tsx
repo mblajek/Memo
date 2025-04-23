@@ -20,7 +20,7 @@ import {useDeveloperPermission} from "features/authentication/developer_permissi
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
 import {TiWarningOutline} from "solid-icons/ti";
-import {DEV, Index, Match, Show, Switch, VoidComponent, createEffect, on} from "solid-js";
+import {DEV, Index, Show, VoidComponent, createEffect, on} from "solid-js";
 import {usesLocalTimeZone} from "time_zone_controller";
 import {ThemeIcon, useThemeControl} from "../theme_control";
 
@@ -28,7 +28,7 @@ type _Directives = typeof title;
 
 const FORMAT = {...DATE_TIME_FORMAT, second: undefined, weekday: "long"} satisfies Intl.DateTimeFormatOptions;
 
-const PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE = 14;
+const PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE = 20;
 const PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE = 7;
 
 export const UserInfo: VoidComponent = () => {
@@ -43,7 +43,7 @@ export const UserInfo: VoidComponent = () => {
 
   createEffect(
     on(suggestPasswordChange, (suggestChange) => {
-      if (suggestChange) {
+      if (suggestChange && !passwordChangeModal.isShown()) {
         passwordChangeModal.show({
           expirationSoon: true,
           forceChange: passwordExpirationDays() <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,

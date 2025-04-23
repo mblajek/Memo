@@ -16,6 +16,7 @@ interface Props extends htmlAttributes.button {
    */
   readonly cancel?: () => void;
   readonly submitLabel?: (defaultLabel: string) => JSX.Element;
+  readonly cancelLabel?: JSX.Element;
   /** Whether to include the unknown validation messages above the button. Default: true. */
   readonly includeUnknownValidationMessages?: boolean;
   /** Pop-over to show under the submit button's arrow. The submit button is a split button if specified. */
@@ -32,6 +33,7 @@ export const FelteSubmit: VoidComponent<Props> = (allProps) => {
   const [props, buttonProps] = splitProps(allProps, [
     "cancel",
     "submitLabel",
+    "cancelLabel",
     "includeUnknownValidationMessages",
     "splitSubmitPopOver",
     "children",
@@ -45,7 +47,7 @@ export const FelteSubmit: VoidComponent<Props> = (allProps) => {
       <div class="grid auto-cols-fr grid-flow-col gap-1">
         <Show when={props.cancel}>
           <Button class="secondary" disabled={form.isSubmitting()} onClick={props.cancel}>
-            {t("actions.cancel")}
+            {props.cancelLabel || t("actions.cancel")}
           </Button>
         </Show>
         <SplitButton

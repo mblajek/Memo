@@ -25,13 +25,14 @@ const getInitialValues = (): Readonly<Input> => ({
 type Input = z.input<ReturnType<typeof getSchema>>;
 type Output = z.output<ReturnType<typeof getSchema>>;
 
-interface Props {
+export interface PasswordChangeFormProps {
   readonly expirationSoon?: boolean;
+  readonly forceChange?: boolean;
   readonly onSuccess?: () => void;
   readonly onCancel?: () => void;
 }
 
-export const PasswordChangeForm: VoidComponent<Props> = (props) => {
+export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
   const statusQuery = createQuery(User.statusQueryOptions);
@@ -78,7 +79,7 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
       <Show when={props.expirationSoon}>
         <div class="font-semibold text-red-600">{t(`auth.password_expiration_soon`)}</div>
       </Show>
-      <FelteSubmit cancel={props.onCancel} />
+      <FelteSubmit cancel={props.onCancel} cancelLabel={props.forceChange ? t("actions.log_out") : undefined} />
     </FelteForm>
   );
 };

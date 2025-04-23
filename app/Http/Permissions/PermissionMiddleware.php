@@ -43,6 +43,11 @@ class PermissionMiddleware
         return PermissionMiddleware::permissions()->user ?? ExceptionFactory::unauthorised()->throw();
     }
 
+    public static function recalculatePermissions(Request $request): void
+    {
+        self::$permissionObject = self::requestPermissions($request);
+    }
+
     /**
      * Handle an incoming request.
      *
@@ -55,7 +60,7 @@ class PermissionMiddleware
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
         if (!self::$permissionObject) {
-            self::$permissionObject = $this->requestPermissions($request);
+            self::$permissionObject = self::requestPermissions($request);
         }
         foreach ($permissions as $permissionCode) {
             $permission = Permission::fromName($permissionCode);
@@ -69,7 +74,7 @@ class PermissionMiddleware
         ExceptionFactory::forbidden()->throw();
     }
 
-    private function requestPermissions(Request $request): PermissionObject
+    private static function requestPermissions(Request $request): PermissionObject
     {
         $creator = new PermissionObjectCreator();
 

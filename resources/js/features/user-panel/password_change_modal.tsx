@@ -1,15 +1,13 @@
 import {MODAL_STYLE_PRESETS, Modal} from "components/ui/Modal";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
 import {useLangFunc} from "components/utils/lang";
-import {PasswordChangeForm} from "./PasswordChange.form";
+import {useLogOut} from "components/utils/log_out";
+import {doAndClearParams} from "components/utils/modals";
+import {PasswordChangeForm, PasswordChangeFormProps} from "./PasswordChange.form";
 
-interface Params {
-  readonly expirationSoon?: boolean;
-  readonly forceChange?: boolean;
-}
-
-export const createPasswordChangeModal = registerGlobalPageElement<Params>((args) => {
+export const createPasswordChangeModal = registerGlobalPageElement<PasswordChangeFormProps>((args) => {
   const t = useLangFunc();
+  const logOut = useLogOut();
   return (
     <Modal
       title={t("forms.password_change.form_name")}
@@ -21,8 +19,14 @@ export const createPasswordChangeModal = registerGlobalPageElement<Params>((args
       {(params) => (
         <PasswordChangeForm
           expirationSoon={params().expirationSoon}
-          onSuccess={args.clearParams}
-          onCancel={params().forceChange ? undefined : args.clearParams}
+          forceChange={params().forceChange}
+          onSuccess={doAndClearParams(args, params().onSuccess)}
+          onCancel={doAndClearParams(args, () => {
+            params().onCancel?.();
+            if (params().forceChange) {
+              logOut.logOut();
+            }
+          })}
         />
       )}
     </Modal>
