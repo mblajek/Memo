@@ -3,7 +3,6 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {useLangFunc} from "components/utils/lang";
-import {PasswordExpirationState} from "components/utils/password_expiration";
 import {toastSuccess} from "components/utils/toast";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -27,7 +26,7 @@ type Input = z.input<ReturnType<typeof getSchema>>;
 type Output = z.output<ReturnType<typeof getSchema>>;
 
 interface Props {
-  readonly expiration?: PasswordExpirationState;
+  readonly expirationSoon?: boolean;
   readonly onSuccess?: () => void;
   readonly onCancel?: () => void;
 }
@@ -76,8 +75,8 @@ export const PasswordChangeForm: VoidComponent<Props> = (props) => {
       <PasswordField name="current" autocomplete="current-password" autofocus allowShow="sensitive" />
       <PasswordField name="password" autocomplete="new-password" allowShow="sensitive" />
       <PasswordField name="repeat" autocomplete="new-password" />
-      <Show when={props.expiration}>
-        {(expiration) => <div class="font-semibold text-red-600">{t(`auth.password_expiration.${expiration()}`)}</div>}
+      <Show when={props.expirationSoon}>
+        <div class="font-semibold text-red-600">{t(`auth.password_expiration_soon`)}</div>
       </Show>
       <FelteSubmit cancel={props.onCancel} />
     </FelteForm>

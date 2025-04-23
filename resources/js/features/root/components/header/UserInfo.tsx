@@ -13,7 +13,7 @@ import {isDEV, toggleDEV} from "components/utils/dev_mode";
 import {DATE_TIME_FORMAT} from "components/utils/formatting";
 import {useLangFunc} from "components/utils/lang";
 import {useLogOut} from "components/utils/log_out";
-import {usePasswordExpiration} from "components/utils/password_expiration";
+import {usePasswordExpirationDays} from "components/utils/password_expiration";
 import {currentTimeMinute} from "components/utils/time";
 import {User} from "data-access/memo-api/groups/User";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
@@ -28,19 +28,26 @@ type _Directives = typeof title;
 
 const FORMAT = {...DATE_TIME_FORMAT, second: undefined, weekday: "long"} satisfies Intl.DateTimeFormatOptions;
 
+const PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE = 14;
+const PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE = 7;
+
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
   const statusQuery = createQuery(User.statusQueryOptions);
-  const passwordExpiration = usePasswordExpiration();
+  const passwordExpirationDays = usePasswordExpirationDays();
   const passwordChangeModal = createPasswordChangeModal();
   const {toggleTheme} = useThemeControl();
   const developerPermission = useDeveloperPermission();
   const logOut = useLogOut();
+  const suggestPasswordChange = () => passwordExpirationDays() <= PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE;
 
   createEffect(
-    on(passwordExpiration, (expiration, prevExpiration) => {
-      if (expiration && expiration !== prevExpiration) {
-        passwordChangeModal.show();
+    on(suggestPasswordChange, (suggestChange) => {
+      if (suggestChange) {
+        passwordChangeModal.show({
+          expirationSoon: true,
+          forceChange: passwordExpirationDays() <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
+        });
       }
     }),
   );
@@ -109,9 +116,9 @@ export const UserInfo: VoidComponent = () => {
             </Show>
             <PopOver
               trigger={(popOver) => (
-                <Button class="flex flex-col items-center p-0.5" title={t("user_settings")} onClick={popOver.open}>
+                <Button class="p-0.5 flex items-center gap-0.5" title={t("user_settings")} onClick={popOver.open}>
                   <actionIcons.ThreeDots class="text-current" />
-                  <Show when={passwordExpiration()}>
+                  <Show when={suggestPasswordChange()}>
                     <WarningMark />
                   </Show>
                 </Button>
@@ -122,11 +129,11 @@ export const UserInfo: VoidComponent = () => {
                   <Button
                     onClick={() => {
                       popOver.close();
-                      passwordChangeModal.show();
+                      passwordChangeModal.show({expirationSoon: suggestPasswordChange()});
                     }}
                   >
                     {t("actions.change_password")}
-                    <Show when={passwordExpiration()}>
+                    <Show when={suggestPasswordChange()}>
                       <WarningMark />
                     </Show>
                   </Button>

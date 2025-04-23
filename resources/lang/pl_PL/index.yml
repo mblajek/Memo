@@ -43,9 +43,7 @@ passwords:
 auth:
   failed: "Błędny login lub hasło."
   password: "Hasło jest nieprawidłowe."
-  password_expiration:
-    soon: "Hasło wkrótce wygaśnie, należy je zmienić."
-    expired: "Hasło wygasło. Zmiana hasła jest wymagana."
+  password_expiration_soon: "Hasło wkrótce wygaśnie, należy je zmienić."
   throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds, number}} sekund."
 
 verified_user: "Użytkownik zweryfikowany"
