@@ -1,7 +1,7 @@
 import {A} from "@solidjs/router";
 import {CellContext, createSolidTable, HeaderContext} from "@tanstack/solid-table";
 import {createPersistence} from "components/persistence/persistence";
-import {localStorageStorage} from "components/persistence/storage";
+import {sessionStorageStorage} from "components/persistence/storage";
 import {Button, ButtonProps} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calculator";
@@ -136,7 +136,7 @@ export default (() => {
     }
   });
   createPersistence<PersistentState>({
-    storage: localStorageStorage(`WeeklyTimeTables:facility.${activeFacilityId()}`),
+    storage: sessionStorageStorage(`WeeklyTimeTables:facility.${activeFacilityId()}`),
     value: () => ({
       selection: selection(),
       fromMonth: fromMonth(),
