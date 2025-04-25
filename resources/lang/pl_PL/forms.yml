@@ -17,10 +17,14 @@ password_change:
 user:
   field_names:
     hasPassword: "posiada hasło logowania do Memo"
-  clear_password_expire_at: "Anuluj wygasanie hasła"
+  clear_password_expire_at: "Anuluj wygasanie"
   password_expire_never: "Hasło nie wygaśnie."
-  set_password_expire_in_7d: "Wygaś za 7 dni"
-  set_password_expired: "Wygaś natychmiast"
+  password_expired: "Użytkownik nie ma dostępu do systemu, ponieważ jego hasło wygasło!"
+  otp_required_expired: "Użytkownik nie ma dostępu do systemu, ponieważ minął czas na aktywację OTP!"
+  otp_configured_info:
+    when_configured.true: "Ten użytkownik ma aktywne OTP"
+    when_configured.false: "Zresetuj OTP tego użytkownika"
+    when_not_configured: "Użytkownik musi samodzielnie aktywować OTP na swoim koncie."
   members_destructive_update_warning: "UWAGA! Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki. Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
 
 user_edit:

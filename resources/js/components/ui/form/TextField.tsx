@@ -27,6 +27,7 @@ interface TextFieldTextInputProps
     | "class"
     | "type"
     | "required"
+    | "value"
     | "min"
     | "max"
     | "step"
