@@ -33,6 +33,9 @@ use Illuminate\Validation\Rules\Password;
  * @property ?string $last_login_facility_id
  * @property ?string $managed_by_facility_id
  * @property ?string $global_admin_grant_id
+ * @property ?CarbonImmutable $otp_required_at
+ * @property ?string $otp_secret
+ * @property ?CarbonImmutable $otp_used_at
  * @property ?CarbonImmutable $password_expire_at
  * @property-read bool $has_password
  * @property-read bool $has_email_verified
@@ -66,6 +69,9 @@ class User extends Authenticatable
         'managed_by_facility_id',
         'global_admin_grant_id',
         'password_expire_at',
+        'otp_required_at',
+        'otp_secret',
+        'otp_used_at',
     ];
 
     /**
@@ -76,6 +82,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'created_by',
+        'otp_secret',
     ];
 
     /**
@@ -87,6 +94,8 @@ class User extends Authenticatable
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
         'password_expire_at' => 'immutable_datetime',
+        'otp_required_at' => 'immutable_datetime',
+        'otp_used_at' => 'immutable_datetime',
     ];
 
     protected $appends = [
@@ -168,11 +177,14 @@ class User extends Authenticatable
                     [
                         $isInsert,
                         'required_with:password_expire_at',
+                        'required_with:otp_required_at',
                     ],
                     [
                         $isInsert || $isResource,
                         'required_if_accepted:has_password',
                         'required_if_accepted:has_global_admin',
+                        'required_unless:otp_required_at,null',
+                        'required_if_accepted:has_otp_configured',
                     ],
                     ...array_filter(Valid::string([
                         [
@@ -183,7 +195,6 @@ class User extends Authenticatable
                             // When we update the password, we must also specify expiration time, but it can be null, it
                             // just has to be said explicitly (in the request).
                             // new RequirePresentRule('password_expire_at')
-                            // TODO: Learn if we should use it. UI sends null at the moment.
                         ],
                     ], nullable: true), fn(mixed $rule) => $rule !== 'present'),
                 ],
@@ -194,7 +205,14 @@ class User extends Authenticatable
             ],
             'has_password' => [
                 // It must be true if the user is a global admin.
-                [$isResource, 'accepted_if:has_global_admin,true', Valid::bool()],
+                [
+                    $isResource,
+                    Valid::bool([
+                        'accepted_if:has_global_admin,true',
+                        $original && !blank($original->otp_required_at) ? 'accepted' : null,
+                        'accepted_if:has_otp_configured,true',
+                    ]),
+                ],
             ],
             // A valid boolean
             'has_global_admin' => Valid::bool(sometimes: $isInsert || $isPatch, nullable: true),
@@ -203,6 +221,20 @@ class User extends Authenticatable
                 sometimes: $isInsert || $isPatch,
                 nullable: true,
             ),
+            'otp_required_at' => [
+                // TODO: Figure out how to implement an "implicit" custom validation rule (same as password_expire_at)
+                ...Valid::datetime(sometimes: $isPatch, nullable: true),
+            ],
+            'has_otp_configured' => [
+                [$isInsert, 'missing'],
+                [
+                    $isPatch,
+                    Valid::bool(
+                        [$original && blank($original->otp_secret) ? 'declined' : null],
+                        sometimes: true,
+                    )
+                ],
+            ],
         ];
     }
 

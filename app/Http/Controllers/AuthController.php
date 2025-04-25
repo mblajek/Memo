@@ -10,16 +10,14 @@ use App\Models\User;
 use App\Rules\Valid;
 use App\Services\System\LogService;
 use App\Services\User\ChangePasswordService;
-use App\Services\User\UpdateUserService;
 use App\Utils\Date\DateHelper;
-use DateInterval;
 use DateTimeImmutable;
-use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
+use PragmaRX\Google2FA\Google2FA;
 use Psr\Log\LogLevel;
 use Throwable;
 
@@ -40,7 +38,8 @@ class AuthController extends ApiController
                 required: ['email', 'password'],
                 properties: [
                     new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
-                    new OA\Property(property: 'password', type: 'string', example: '123456'),
+                    new OA\Property(property: 'password', type: 'string', example: 'Pass123'),
+                    new OA\Property(property: 'otp', type: 'string', example: '123456'),
                 ]
             )
         ),
@@ -48,14 +47,15 @@ class AuthController extends ApiController
         responses: [
             new OA\Response(response: 200, description: 'OK'),
             new OA\Response(response: 400, description: 'Bad Request'),
-            new OA\Response(response: 401, description: 'Unauthorised'),
+            new OA\Response(response: 401, description: 'Unauthorised', content: new OA\JsonContent(properties: [
+                new OA\Property(property: 'data', properties: [
+                    new OA\Property(property: 'otp_required', type: 'bool', example: 'true'),
+                ]),
+            ])),
         ]
     )]
-    public function login(
-        Request $request,
-        LogService $logService,
-        UpdateUserService $userService,
-    ): JsonResponse {
+    public function login(Request $request, LogService $logService): JsonResponse
+    {
         if (PermissionMiddleware::permissions()->globalAdmin) {
             $developer = $this->validate(['developer' => Valid::bool(sometimes: true)])['developer'] ?? null;
             if (is_bool($developer)) {
@@ -63,23 +63,77 @@ class AuthController extends ApiController
                 return new JsonResponse();
             }
         }
-        $authData = $this->validate(['email' => Valid::string(['email']), 'password' => Valid::string()]);
-        $authDataValid = Auth::validate($authData);
+        $authData = $this->validate([
+            'email' => Valid::string(['email']),
+            'password' => Valid::string(),
+        ]);
+        $validateResult = Auth::validate($authData);
         $user = User::fromAuthenticatable(Auth::getLastAttempted());
+        $now = new DateTimeImmutable();
         // An expired password is treated as wrong password.
-        $authValid = $authDataValid && $user !== null &&
-            ($user->password_expire_at === null || $user->password_expire_at > new DateTimeImmutable());
+        $isPasswordValid = $validateResult && $user !== null &&
+            ($user->password_expire_at === null || $user->password_expire_at > $now);
+
+        if ($isPasswordValid) {
+            if (Validator::make($authData, ['password' => User::getPasswordRules()])->fails()) {
+                // The password does not pass validation, i.e. it became leaked, or no longer satisfies the requirements that changed.
+                // Log in correctly but set password expiration time.
+                $maxPasswordExpireAt = $now->modify('+2week');
+                if ($user->password_expire_at === null || $user->password_expire_at > $maxPasswordExpireAt) {
+                    $user->fill([
+                        'password_expire_at' => DateHelper::toDbString($maxPasswordExpireAt)
+                    ])->saveQuietly();
+                }
+            }
+
+            $google2fa = new Google2FA();
+            $otp = $this->validate(['otp' => Valid::string(sometimes: true)])['otp'] ?? null;
+            if ($user->otp_secret !== null) {
+                // OTP is configured.
+                if ($otp === null) {
+                    $exception = ExceptionFactory::unauthorised();
+                    return new JsonResponse([
+                        'data' => ['otp_required' => true],
+                        'errors' => $exception->renderContent()['errors']
+                    ], $exception->httpCode);
+                }
+                $otpVerifyResult = $google2fa->verifyKeyNewer(
+                    $user->otp_secret,
+                    $otp,
+                    $user->otp_used_at?->getTimestamp()
+                );
+                if ($otpVerifyResult === false) {
+                    $isAuthValid = false;
+                } else {
+                    $isAuthValid = true;
+                    $user->fill(['otp_used_at' => DateHelper::toDbString($now)])->saveQuietly();
+                }
+            } else if ($user->otp_required_at !== null) {
+                // OTP is required, but not yet configured.
+                if ($user->otp_required_at < $now) {
+                    // The deadline for setting up OTP has passed - do not allow to log in.
+                    $isAuthValid = false;
+                } else {
+                    // Setting up OTP is required soon, but the login is successful.
+                    $isAuthValid = true;
+                }
+            } else {
+                // OTP is not required and not configured.
+                $isAuthValid = true;
+            }
+        } else {
+            $isAuthValid = false;
+        }
 
         $logService->addEntry(
             request: $request,
-            source: ($user === null) ? 'user_login_unknown'
-            : ($authValid ? 'user_login_success' : 'user_login_failure'),
+            source: ($user === null) ? 'user_login_unknown' : ($isAuthValid ? 'user_login_success' : 'user_login_failure'),
             logLevel: LogLevel::INFO,
             message: $authData['email'],
             user: $user,
         );
 
-        if (!$authValid) {
+        if (!$isAuthValid) {
             Auth::logout();
             return ExceptionFactory::badCredentials()->render();
         }
@@ -87,20 +141,7 @@ class AuthController extends ApiController
         $request->session()->forget(PermissionMiddleware::SESSION_DEVELOPER_MODE);
         $request->session()->regenerate();
         $this->setSessionHashHash($request, $user);
-        if (Validator::make($authData, ['password' => User::getPasswordRules()])->fails()) {
-            // The password does not pass validation, i.e. it became leaked, or no longer satisfies the requirements that changed.
-            // Log in correctly but set password expiration time.
-            $maxPasswordExpireAt = new DateTimeImmutable()->add(new DateInterval('P14D'));
-            PermissionMiddleware::recalculatePermissions($request);
-            if ($user->password_expire_at === null || $user->password_expire_at > $maxPasswordExpireAt) {
-                DB::transaction(function () use ($userService, $user, $maxPasswordExpireAt) {
-                    $userService->update($user, [
-                        'password_expire_at' => DateHelper::toDbString($maxPasswordExpireAt)
-                    ]);
-                });
-            }
-        }
-        return new JsonResponse();
+        return new JsonResponse(['data' => ['otp_required' => false]]);
     }
 
     #[OA\Post(

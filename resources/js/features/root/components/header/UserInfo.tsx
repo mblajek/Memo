@@ -30,6 +30,7 @@ const FORMAT = {...DATE_TIME_FORMAT, second: undefined, weekday: "long"} satisfi
 
 const PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE = 20;
 const PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE = 7;
+const OTP_CONFIGURE_DAYS_FORCE = 7;
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
@@ -40,10 +41,12 @@ export const UserInfo: VoidComponent = () => {
   const developerPermission = useDeveloperPermission();
   const logOut = useLogOut();
   const suggestPasswordChange = () => passwordExpirationDays() <= PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE;
+  const suggestConfigureOTP = () => statusQuery.data?.user.otpRequiredAt && !statusQuery.data?.user.hasOtpConfigured;
 
   createEffect(
-    on(suggestPasswordChange, (suggestChange) => {
-      if (suggestChange && !passwordChangeModal.isShown()) {
+    on([suggestPasswordChange, suggestConfigureOTP], ([suggestPasswordChange, suggestConfigureOTP]) => {
+      // TODO: Handle suggestConfigureOTP
+      if (suggestPasswordChange && !passwordChangeModal.isShown()) {
         passwordChangeModal.show({
           expirationSoon: true,
           forceChange: passwordExpirationDays() <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
@@ -118,7 +121,7 @@ export const UserInfo: VoidComponent = () => {
               trigger={(popOver) => (
                 <Button class="p-0.5 flex items-center gap-0.5" title={t("user_settings")} onClick={popOver.open}>
                   <actionIcons.ThreeDots class="text-current" />
-                  <Show when={suggestPasswordChange()}>
+                  <Show when={suggestPasswordChange() || suggestConfigureOTP()}>
                     <WarningMark />
                   </Show>
                 </Button>
@@ -137,6 +140,17 @@ export const UserInfo: VoidComponent = () => {
                       <WarningMark />
                     </Show>
                   </Button>
+                  <Show when={suggestConfigureOTP()}>
+                    <Button
+                      onClick={() => {
+                        popOver.close();
+                        // TODO: Add OTP configuration modal
+                      }}
+                    >
+                      {t("actions.configure_otp")}
+                      <WarningMark />
+                    </Button>
+                  </Show>
                   <Button onClick={toggleTheme}>
                     {t("switch_theme")} <ThemeIcon class="inlineIcon" />
                   </Button>

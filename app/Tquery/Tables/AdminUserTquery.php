@@ -78,6 +78,21 @@ readonly class AdminUserTquery extends TqService
             );
         }
 
+        $config->addSimple(
+            TqDataTypeEnum::is_not_null,
+            'otp_required_at',
+            'is_otp_required',
+        );
+        $config->addSimple(
+            TqDataTypeEnum::datetime_nullable,
+            'otp_required_at',
+        );
+        $config->addSimple(
+            TqDataTypeEnum::is_not_null,
+            'otp_secret',
+            'has_otp_configured',
+        );
+
         $config->addCount();
         return $config;
     }
