@@ -2,13 +2,17 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {createMutation} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
+import {HideableSection} from "components/ui/HideableSection";
+import {MutationMeta} from "components/utils/InitializeTanstackQuery";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
-import {createSignal, VoidComponent} from "solid-js";
+import {Api} from "data-access/memo-api/types";
+import {createEffect, createSignal, VoidComponent} from "solid-js";
 import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 import {z} from "zod";
 
@@ -16,6 +20,7 @@ const getSchema = () =>
   z.object({
     email: z.string(),
     password: z.string(),
+    otp: z.string(),
   });
 
 type Input = z.input<ReturnType<typeof getSchema>>;
@@ -32,6 +37,7 @@ interface Props {
 export const LoginForm: VoidComponent<Props> = (props) => {
   const invalidate = useInvalidator();
   const [persistedEmail, setPersistedEmail] = createSignal<string>();
+  const [showOTP, setShowOTP] = createSignal(false);
   createPersistence<PersistedState>({
     value: () => ({email: persistedEmail()}),
     onLoad: (state) => {
@@ -41,7 +47,18 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   });
   const mutation = createMutation(() => ({
     mutationFn: User.login,
-    meta: {isFormSubmit: true},
+    meta: {
+      isFormSubmit: true,
+      getErrorsToShow: (errorsToShow, error) =>
+        !showOTP() &&
+        errorsToShow.length === 1 &&
+        errorsToShow[0]!.code === "exception.validation" &&
+        error.response?.data.errors.some(
+          (e) => Api.isValidationError(e) && e.field === "otp" && e.code === "validation.required",
+        )
+          ? []
+          : errorsToShow,
+    } satisfies MutationMeta,
   }));
 
   const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
@@ -58,6 +75,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   const getInitialValues = (): Readonly<Input> => ({
     email: persistedEmail() || "",
     password: "",
+    otp: "",
   });
 
   return (
@@ -70,21 +88,52 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       class="flex flex-col gap-2"
       preventPageLeave={false}
     >
-      <TextField
-        name="email"
-        type="email"
-        autocomplete="username"
-        autofocus={!persistedEmail()}
-        // Remove the persisted email if the email is edited in any way.
-        onInput={[setPersistedEmail, undefined]}
-      />
-      <PasswordField
-        name="password"
-        autocomplete="current-password"
-        allowShow="sensitive"
-        autofocus={!!persistedEmail()}
-      />
-      <FelteSubmit />
+      {(form) => {
+        createEffect(() => {
+          if (!showOTP()) {
+            if (isValidationMessageEmpty(form.errors("otp"))) {
+              setTimeout(() => form.setFields("otp", ""));
+            } else {
+              setShowOTP(true);
+              form.setErrors("otp", undefined);
+              setTimeout(() => {
+                const otpField = document.querySelector("#otp");
+                if (otpField instanceof HTMLElement) {
+                  otpField.focus();
+                }
+              }, 100);
+            }
+          }
+        });
+        return (
+          <>
+            <TextField
+              name="email"
+              type="email"
+              autocomplete="username"
+              autofocus={!persistedEmail() && !showOTP()}
+              onInput={() => {
+                // Remove the persisted email if the email is edited in any way.
+                setPersistedEmail(undefined);
+                setShowOTP(false);
+              }}
+            />
+            <PasswordField
+              name="password"
+              autocomplete="current-password"
+              allowShow="sensitive"
+              autofocus={!!persistedEmail() && !showOTP()}
+              disabled={showOTP()}
+            />
+            <HideableSection class="-mt-2" show={showOTP()}>
+              <div class="mt-2">
+                <TextField name="otp" autocomplete="one-time-code" autofocus />
+              </div>
+            </HideableSection>
+            <FelteSubmit />
+          </>
+        );
+      }}
     </FelteForm>
   );
 };

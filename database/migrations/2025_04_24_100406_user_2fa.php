@@ -14,7 +14,7 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             $table->dateTime('otp_required_at')->nullable();
             $table->char('otp_secret', 32)->nullable();
-            $table->dateTime('otp_used_at')->nullable();
+            $table->integer('otp_used_ts')->nullable();
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('otp_required_at');
             $table->dropColumn('otp_secret');
-            $table->dropColumn('otp_used_at');
+            $table->dropColumn('otp_used_ts');
         });
     }
 };

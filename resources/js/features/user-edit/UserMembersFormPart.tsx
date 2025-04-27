@@ -226,7 +226,9 @@ export function useMembersUpdater(): MembersUpdater {
         if (oldMember) {
           if (isChanged(oldMember, member))
             promises.push(updateMemberMutation.mutateAsync({id: oldMember.id, ...member}));
-        } else promises.push(createMemberMutation.mutateAsync({userId: oldUser.id, ...member}));
+        } else {
+          promises.push(createMemberMutation.mutateAsync({userId: oldUser.id, ...member}));
+        }
       }
       for (const oldMember of oldUser.members)
         if (!values.some(({facilityId}) => facilityId === oldMember.facilityId))

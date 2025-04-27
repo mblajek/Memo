@@ -35,7 +35,7 @@ use Illuminate\Validation\Rules\Password;
  * @property ?string $global_admin_grant_id
  * @property ?CarbonImmutable $otp_required_at
  * @property ?string $otp_secret
- * @property ?CarbonImmutable $otp_used_at
+ * @property ?int $otp_used_ts
  * @property ?CarbonImmutable $password_expire_at
  * @property-read bool $has_password
  * @property-read bool $has_email_verified
@@ -71,7 +71,7 @@ class User extends Authenticatable
         'password_expire_at',
         'otp_required_at',
         'otp_secret',
-        'otp_used_at',
+        'otp_used_ts',
     ];
 
     /**
@@ -95,7 +95,6 @@ class User extends Authenticatable
         'updated_at' => 'immutable_datetime',
         'password_expire_at' => 'immutable_datetime',
         'otp_required_at' => 'immutable_datetime',
-        'otp_used_at' => 'immutable_datetime',
     ];
 
     protected $appends = [

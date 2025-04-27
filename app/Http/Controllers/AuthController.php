@@ -16,7 +16,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules\Email;
 use OpenApi\Attributes as OA;
 use PragmaRX\Google2FA\Google2FA;
 use Psr\Log\LogLevel;
@@ -93,26 +92,29 @@ class AuthController extends ApiController
                 $otpVerifyResult = $google2fa->verifyKeyNewer(
                     $user->otp_secret,
                     $otpData['otp'],
-                    $user->otp_used_at?->getTimestamp()
+                    $user->otp_used_ts,
                 );
                 if ($otpVerifyResult === false) {
                     $isAuthValid = false;
                 } else {
                     $isAuthValid = true;
-                    $user->fill(['otp_used_at' => DateHelper::toDbString($now)])->saveQuietly();
-                }
-            } else if ($user->otp_required_at !== null) {
-                // OTP is required, but not yet configured.
-                if ($user->otp_required_at < $now) {
-                    // The deadline for setting up OTP has passed - do not allow to log in.
-                    $isAuthValid = false;
-                } else {
-                    // Setting up OTP is required soon, but the login is successful.
-                    $isAuthValid = true;
+                    $user->fill(['otp_used_ts' => $otpVerifyResult])->saveQuietly();
                 }
             } else {
-                // OTP is not required and not configured.
-                $isAuthValid = true;
+                $this->validate(['otp' => 'prohibited']);
+                if ($user->otp_required_at !== null) {
+                    // OTP is required, but not yet configured.
+                    if ($user->otp_required_at < $now) {
+                        // The deadline for setting up OTP has passed - do not allow to log in.
+                        $isAuthValid = false;
+                    } else {
+                        // Setting up OTP is required soon, but the login is successful.
+                        $isAuthValid = true;
+                    }
+                } else {
+                    // OTP is not required and not configured.
+                    $isAuthValid = true;
+                }
             }
         } else {
             $isAuthValid = false;
@@ -275,13 +277,14 @@ class AuthController extends ApiController
             return ExceptionFactory::forbidden()->render();
         }
         $google2fa = new Google2FA();
-        if (!$google2fa->verifyKey($storedData['otp_secret'], $otp)) {
+        $otpVerifyResult = $google2fa->verifyKey($storedData['otp_secret'], $otp);
+        if ($otpVerifyResult === false) {
             // Don't remove the values from session, give the user another chance.
             return ExceptionFactory::badCredentials()->render();
         }
         $user->fill([
             'otp_secret' => $storedData['otp_secret'],
-            'otp_used_at' => DateHelper::toDbString($now),
+            'otp_used_ts' => $otpVerifyResult,
         ])->saveQuietly();
         $logService->addEntry(
             request: $request,

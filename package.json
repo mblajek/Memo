@@ -57,6 +57,7 @@
     "classnames": "^2.5.1",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-solid": "^0.14.5",
+    "headless-qr": "^1.0.3",
     "html-parse-string": "^0.0.9",
     "i18next": "^24.2.3",
     "i18next-http-backend": "^3.0.2",

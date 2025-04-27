@@ -14,6 +14,15 @@ password_change:
   submit: "$t(actions.change_password)"
   success: "Hasło zostało zmienione"
 
+otp_generate:
+  form_name: "Generowanie OTP"
+  submit: "Pobierz kod QR"
+
+otp_configure:
+  form_name: "Aktywacja OTP"
+  submit: "Aktywuj OTP"
+  success: "OTP zostało aktywowane"
+
 user:
   field_names:
     hasPassword: "posiada hasło logowania do Memo"

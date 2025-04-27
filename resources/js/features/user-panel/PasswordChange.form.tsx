@@ -3,6 +3,7 @@ import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {useLangFunc} from "components/utils/lang";
+import {useLogOut} from "components/utils/log_out";
 import {toastSuccess} from "components/utils/toast";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -34,6 +35,7 @@ export interface PasswordChangeFormProps {
 
 export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props) => {
   const t = useLangFunc();
+  const logOut = useLogOut();
   const invalidate = useInvalidator();
   const statusQuery = createQuery(User.statusQueryOptions);
   const mutation = createMutation(() => ({
@@ -63,6 +65,9 @@ export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props
       class="flex flex-col gap-2"
       preventPageLeave={false}
     >
+      <Show when={props.expirationSoon}>
+        <div class="font-semibold text-red-600">{t(`auth.password_expiration_soon`)}</div>
+      </Show>
       <input
         // For better integration with password managers.
         // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
@@ -76,10 +81,15 @@ export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props
       <PasswordField name="current" autocomplete="current-password" autofocus allowShow="sensitive" />
       <PasswordField name="password" autocomplete="new-password" allowShow="sensitive" />
       <PasswordField name="repeat" autocomplete="new-password" />
-      <Show when={props.expirationSoon}>
-        <div class="font-semibold text-red-600">{t(`auth.password_expiration_soon`)}</div>
-      </Show>
-      <FelteSubmit cancel={props.onCancel} cancelLabel={props.forceChange ? t("actions.log_out") : undefined} />
+      <FelteSubmit
+        cancel={() => {
+          props.onCancel?.();
+          if (props.forceChange) {
+            logOut.logOut();
+          }
+        }}
+        cancelLabel={props.forceChange ? t("actions.log_out") : undefined}
+      />
     </FelteForm>
   );
 };

@@ -59,6 +59,7 @@ user:
   name: "imię i nazwisko"
   hasEmailVerified: "e-mail zweryfikowany"
   password: "hasło"
+  otp: "kod OTP"
   hasPassword: "posiada hasło"
   passwordExpireAt: "data wygaśnięcia hasła"
   lastPasswordChangeAt: "ostatnia zmiana hasła"
