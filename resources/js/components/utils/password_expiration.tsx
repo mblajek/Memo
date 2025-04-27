@@ -4,18 +4,14 @@ import {DateTime} from "luxon";
 import {createMemo} from "solid-js";
 import {currentDate} from "./time";
 
-export type PasswordExpirationState = "expired" | "soon" | undefined;
-
-export const PASSWORD_EXPIRATION_SOON_DAYS = 14;
-
-export function usePasswordExpiration() {
+/** Returns the number of days left until the password expires, or infinity if it won't expire. */
+export function usePasswordExpirationDays() {
   const statusQuery = createQuery(User.statusQueryOptions);
-  const expiration = createMemo((): PasswordExpirationState => {
+  const expiration = createMemo((): number => {
     if (!statusQuery.data?.user.passwordExpireAt) {
-      return undefined;
+      return Number.POSITIVE_INFINITY;
     }
-    const daysToExpire = DateTime.fromISO(statusQuery.data.user.passwordExpireAt).diff(currentDate(), "days").days;
-    return daysToExpire <= 0 ? "expired" : daysToExpire <= PASSWORD_EXPIRATION_SOON_DAYS ? "soon" : undefined;
+    return DateTime.fromISO(statusQuery.data.user.passwordExpireAt).diff(currentDate(), "days").days;
   });
   return expiration;
 }

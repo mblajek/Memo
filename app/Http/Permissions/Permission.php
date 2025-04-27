@@ -10,6 +10,9 @@ enum Permission
     // only unauthorised user
     case unauthorised;
 
+    // logged in user
+    case loggedIn;
+
     // logged user, with unverified email
     case unverified;
 

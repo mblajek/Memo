@@ -11,6 +11,7 @@ readonly class PermissionObject
         public ?User $user,
         public ?Facility $facility,
         public bool $unauthorised,
+        public bool $loggedIn,
         public bool $unverified,
         public bool $verified,
         public bool $globalAdmin,
@@ -27,6 +28,7 @@ readonly class PermissionObject
         return match ($permission) {
             Permission::any => true,
             Permission::unauthorised => $this->unauthorised,
+            Permission::loggedIn => $this->loggedIn,
             Permission::unverified => $this->unverified,
             Permission::verified => $this->verified,
             Permission::globalAdmin => $this->globalAdmin,

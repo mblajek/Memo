@@ -12,7 +12,7 @@ import {User} from "data-access/memo-api/groups/User";
 import {QueryBarrier} from "components/utils/QueryBarrier";
 import {currentTimeMinute} from "components/utils/time";
 
-const INITIAL_PAGE = "/help";
+const INITIAL_PAGE = "/";
 
 /**
  * The login page.

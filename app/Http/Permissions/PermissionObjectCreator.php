@@ -9,6 +9,7 @@ class PermissionObjectCreator
 {
     public ?User $user = null;
     public ?Facility $facility = null;
+    public bool $loggedIn = false;
     public bool $unverified = false;
     public bool $verified = false;
     public bool $globalAdmin = false;
@@ -24,6 +25,7 @@ class PermissionObjectCreator
             user: $this->user,
             facility: $this->facility,
             unauthorised: !$this->user,
+            loggedIn: $this->loggedIn,
             unverified: $this->unverified,
             verified: $this->verified,
             globalAdmin: $this->globalAdmin,

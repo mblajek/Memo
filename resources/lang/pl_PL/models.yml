@@ -45,7 +45,7 @@ user_facility_member:
 
 permissions:
   _name: "uprawienia"
-  unverified: "e-mail niezweryfikowany"
+  loggedIn: "zalogowany"
   verified: "e-mail zweryfikowany"
   globalAdmin: "globalny administrator"
   facilityMember: "przynależność do placówki"

@@ -10,7 +10,6 @@ use OpenApi\Attributes as OA;
     properties: [
         new OA\Property(property: 'userId', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'facilityId', type: 'string', format: 'uuid', example: 'UUID'),
-        new OA\Property(property: 'unverified', type: 'bool', example: 'false'),
         new OA\Property(property: 'verified', type: 'bool', example: 'true'),
         new OA\Property(property: 'globalAdmin', type: 'bool', example: 'false'),
         new OA\Property(property: 'facilityMember', type: 'bool', example: 'false'),
@@ -19,7 +18,8 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'facilityAdmin', type: 'bool', example: 'false'),
         new OA\Property(property: 'developer', type: 'bool', example: 'false'),
     ],
-)] /**
+)]
+/**
  * @method __construct(PermissionObject $resource)
  * @mixin PermissionObject
  */
@@ -30,7 +30,6 @@ class PermissionResource extends AbstractJsonResource
         return [
             'userId' => fn(self $permission) => $permission->user?->id,
             'facilityId' => fn(self $permission) => $permission->facility?->id,
-            'unverified' => false,
             'verified' => false,
             'globalAdmin' => false,
             'facilityMember' => false,

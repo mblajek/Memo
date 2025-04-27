@@ -10,9 +10,15 @@ use App\Models\User;
 use App\Rules\Valid;
 use App\Services\System\LogService;
 use App\Services\User\ChangePasswordService;
+use App\Services\User\UpdateUserService;
+use App\Utils\Date\DateHelper;
+use DateInterval;
+use DateTimeImmutable;
+use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 use Psr\Log\LogLevel;
 use Throwable;
@@ -22,7 +28,7 @@ class AuthController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->except(['login', 'logout']);
+        $this->permissionOneOf(Permission::loggedIn)->except(['login', 'logout']);
     }
 
     #[OA\Post(
@@ -31,10 +37,11 @@ class AuthController extends ApiController
         summary: 'User login',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(
-                required: ['email', 'password'], properties: [
-                new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
-                new OA\Property(property: 'password', type: 'string', example: '123456'),
-            ]
+                required: ['email', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', example: 'test@test.pl'),
+                    new OA\Property(property: 'password', type: 'string', example: '123456'),
+                ]
             )
         ),
         tags: ['User'],
@@ -44,8 +51,11 @@ class AuthController extends ApiController
             new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )]
-    public function login(Request $request, LogService $logService): JsonResponse
-    {
+    public function login(
+        Request $request,
+        LogService $logService,
+        UpdateUserService $userService,
+    ): JsonResponse {
         if (PermissionMiddleware::permissions()->globalAdmin) {
             $developer = $this->validate(['developer' => Valid::bool(sometimes: true)])['developer'] ?? null;
             if (is_bool($developer)) {
@@ -54,28 +64,43 @@ class AuthController extends ApiController
             }
         }
         $authData = $this->validate(['email' => Valid::string(['email']), 'password' => Valid::string()]);
-        $authValid = Auth::validate($authData);
+        $authDataValid = Auth::validate($authData);
         $user = User::fromAuthenticatable(Auth::getLastAttempted());
+        // An expired password is treated as wrong password.
+        $authValid = $authDataValid && $user !== null &&
+            ($user->password_expire_at === null || $user->password_expire_at > new DateTimeImmutable());
 
         $logService->addEntry(
             request: $request,
             source: ($user === null) ? 'user_login_unknown'
-                : ($authValid ? 'user_login_success' : 'user_login_failure'),
+            : ($authValid ? 'user_login_success' : 'user_login_failure'),
             logLevel: LogLevel::INFO,
             message: $authData['email'],
             user: $user,
         );
 
-        if ($authValid) {
-            Auth::login($user);
-            $request->session()->forget('developer_mode');
-            $request->session()->regenerate();
-            $this->setSessionHashHash($request, $user);
-            return new JsonResponse();
-        } else {
+        if (!$authValid) {
             Auth::logout();
             return ExceptionFactory::badCredentials()->render();
         }
+        Auth::login($user);
+        $request->session()->forget(PermissionMiddleware::SESSION_DEVELOPER_MODE);
+        $request->session()->regenerate();
+        $this->setSessionHashHash($request, $user);
+        if (Validator::make($authData, ['password' => User::getPasswordRules()])->fails()) {
+            // The password does not pass validation, i.e. it became leaked, or no longer satisfies the requirements that changed.
+            // Log in correctly but set password expiration time.
+            $maxPasswordExpireAt = new DateTimeImmutable()->add(new DateInterval('P14D'));
+            PermissionMiddleware::recalculatePermissions($request);
+            if ($user->password_expire_at === null || $user->password_expire_at > $maxPasswordExpireAt) {
+                DB::transaction(function () use ($userService, $user, $maxPasswordExpireAt) {
+                    $userService->update($user, [
+                        'password_expire_at' => DateHelper::toDbString($maxPasswordExpireAt)
+                    ]);
+                });
+            }
+        }
+        return new JsonResponse();
     }
 
     #[OA\Post(
@@ -95,7 +120,7 @@ class AuthController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/user/password',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'Change user password',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(

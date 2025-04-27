@@ -18,6 +18,7 @@ trait UserTrait
                 user: User::query()->findOrFail(User::SYSTEM),
                 facility: $facility,
                 unauthorised: false,
+                loggedIn: true,
                 unverified: true,
                 verified: true,
                 globalAdmin: true,
