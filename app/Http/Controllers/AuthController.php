@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Email;
 use OpenApi\Attributes as OA;
 use PragmaRX\Google2FA\Google2FA;
 use Psr\Log\LogLevel;
@@ -24,6 +25,9 @@ use Throwable;
 /** System endpoints without authorisation */
 class AuthController extends ApiController
 {
+
+    private const string SESSION_OTP_SECRET_CANDIDATE = 'otp_secret_candidate';
+
     protected function initPermissions(): void
     {
         $this->permissionOneOf(Permission::loggedIn)->except(['login', 'logout']);
@@ -47,11 +51,7 @@ class AuthController extends ApiController
         responses: [
             new OA\Response(response: 200, description: 'OK'),
             new OA\Response(response: 400, description: 'Bad Request'),
-            new OA\Response(response: 401, description: 'Unauthorised', content: new OA\JsonContent(properties: [
-                new OA\Property(property: 'data', properties: [
-                    new OA\Property(property: 'otp_required', type: 'bool', example: 'true'),
-                ]),
-            ])),
+            new OA\Response(response: 401, description: 'Unauthorised'),
         ]
     )]
     public function login(Request $request, LogService $logService): JsonResponse
@@ -87,19 +87,12 @@ class AuthController extends ApiController
             }
 
             $google2fa = new Google2FA();
-            $otp = $this->validate(['otp' => Valid::string(sometimes: true)])['otp'] ?? null;
             if ($user->otp_secret !== null) {
                 // OTP is configured.
-                if ($otp === null) {
-                    $exception = ExceptionFactory::unauthorised();
-                    return new JsonResponse([
-                        'data' => ['otp_required' => true],
-                        'errors' => $exception->renderContent()['errors']
-                    ], $exception->httpCode);
-                }
+                $otpData = $this->validate(['otp' => Valid::string()]);
                 $otpVerifyResult = $google2fa->verifyKeyNewer(
                     $user->otp_secret,
-                    $otp,
+                    $otpData['otp'],
                     $user->otp_used_at?->getTimestamp()
                 );
                 if ($otpVerifyResult === false) {
@@ -141,7 +134,7 @@ class AuthController extends ApiController
         $request->session()->forget(PermissionMiddleware::SESSION_DEVELOPER_MODE);
         $request->session()->regenerate();
         $this->setSessionHashHash($request, $user);
-        return new JsonResponse(['data' => ['otp_required' => false]]);
+        return new JsonResponse();
     }
 
     #[OA\Post(
@@ -199,4 +192,105 @@ class AuthController extends ApiController
     {
         $request->session()->put(PermissionMiddleware::SESSION_PASSWORD_HASH_HASH, $user->passwordHashHash());
     }
+
+    #[OA\Post(
+        path: '/api/v1/user/otp/generate',
+        description: new PermissionDescribe([Permission::loggedIn]),
+        summary: 'Generate OTP secret to configure OTP',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['password'],
+                properties: [
+                    new OA\Property(property: 'password', type: 'string', example: 'password123'),
+                ]
+            )
+        ),
+        tags: ['User'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'data', properties: [
+                            new OA\Property(property: 'otpSecret', type: 'string', example: 'AAAAAAAAAAAA'),
+                            new OA\Property(property: 'validUntil', type: 'string', format: 'date-time', example: '2023-10-01T12:00:00Z'),
+                        ]),
+                    ]
+                )
+            ),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ],
+    )]
+    public function otpGenerate(Request $request): JsonResponse
+    {
+        $this->validate(['password' => 'bail|required|string|current_password']);
+        $user = $this->getUserOrFail();
+        if ($user->otp_secret !== null) {
+            return ExceptionFactory::forbidden()->render();
+        }
+        $google2fa = new Google2FA();
+        $otpSecret = $google2fa->generateSecretKey(32);
+        $validUntil = new DateTimeImmutable()->modify('+1minute');
+        $request->session()->put(self::SESSION_OTP_SECRET_CANDIDATE, [
+            'otp_secret' => $otpSecret,
+            'valid_until' => $validUntil,
+        ]);
+        return new JsonResponse([
+            'data' => [
+                'otpSecret' => $otpSecret,
+                'validUntil' => DateHelper::toZuluString($validUntil),
+            ],
+        ]);
+    }
+
+    #[OA\Post(
+        path: '/api/v1/user/otp/configure',
+        description: new PermissionDescribe([Permission::loggedIn]),
+        summary: 'Configure OTP',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                required: ['otp'],
+                properties: [
+                    new OA\Property(property: 'otp', type: 'string', example: '123456'),
+                ]
+            )
+        ),
+        tags: ['User'],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 400, description: 'Bad Request'),
+            new OA\Response(response: 401, description: 'Unauthorised'),
+        ],
+    )]
+    public function otpConfigure(Request $request, LogService $logService): JsonResponse
+    {
+        $otp = $this->validate(['otp' => Valid::string()])['otp'];
+        $user = $this->getUserOrFail();
+        $storedData = $request->session()->get(self::SESSION_OTP_SECRET_CANDIDATE);
+        $now = new DateTimeImmutable();
+        if ($storedData === null || $now > $storedData['valid_until']) {
+            $request->session()->forget(self::SESSION_OTP_SECRET_CANDIDATE);
+            return ExceptionFactory::forbidden()->render();
+        }
+        $google2fa = new Google2FA();
+        if (!$google2fa->verifyKey($storedData['otp_secret'], $otp)) {
+            // Don't remove the values from session, give the user another chance.
+            return ExceptionFactory::badCredentials()->render();
+        }
+        $user->fill([
+            'otp_secret' => $storedData['otp_secret'],
+            'otp_used_at' => DateHelper::toDbString($now),
+        ])->saveQuietly();
+        $logService->addEntry(
+            request: $request,
+            source: 'user_otp_configure',
+            logLevel: LogLevel::INFO,
+            message: null,
+            user: $user,
+        );
+        return new JsonResponse();
+    }
+
 }
