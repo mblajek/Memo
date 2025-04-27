@@ -7,12 +7,10 @@ use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
 use App\Models\MeetingResource;
-use App\Models\Member;
 use App\Models\Position;
 use App\Models\UuidEnum\PositionAttributeUuidEnum;
 use App\Notification\Meeting\MeetingNotification;
 use App\Notification\Meeting\MeetingNotificationService;
-use App\Notification\NotificationService;
 use Illuminate\Support\Facades\DB;
 
 readonly class MeetingService
@@ -51,9 +49,11 @@ readonly class MeetingService
             $meeting->attendants()->saveMany($attendants);
             $meeting->resources()->saveMany($resources);
 
-            $this->meetingNotificationService->create(
-                meeting: $meeting,
-                meetingNotifications: $notifications
+            $meeting->notifications()->saveMany(
+                $this->meetingNotificationService->create(
+                    meeting: $meeting,
+                    meetingNotifications: $notifications
+                )
             );
         });
 

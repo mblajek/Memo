@@ -4,6 +4,7 @@ namespace App\Http\Resources\Meeting;
 
 use App\Http\Resources\AbstractJsonResource;
 use App\Models\MeetingAttendant;
+use App\Models\Notification;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -36,6 +37,14 @@ class MeetingClientResource extends AbstractJsonResource
             'userId' => true,
             'attendanceStatusDictId' => true,
             'clientGroupId' => true,
+            'notifications' => fn(self $meetingAttendant) => $meetingAttendant->meeting->notifications
+                ->where('user_id', $meetingAttendant->user_id)
+                ->toBase()->map(fn(Notification $notification): array
+                    => [
+                    'subject' => $notification->subject,
+                    'status' => $notification->status->baseStatus()->name,
+                    'notificationMethodDictId' => $notification->notification_method_dict_id,
+                ])->values()->all()
         ];
     }
 }

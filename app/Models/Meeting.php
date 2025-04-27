@@ -30,8 +30,9 @@ use Illuminate\Validation\Rule;
  * @property string $status_dict_id
  * @property ?string $from_meeting_id
  * @property ?string $interval
- * @property-read Collection|MeetingAttendant[] $attendants
- * @property-read Collection|MeetingResource[] $resources
+ * @property-read Collection<array-key, MeetingAttendant> $attendants
+ * @property-read Collection<array-key, MeetingResource> $resources
+ * @property-read Collection<array-key, Notification> $notifications
  * @method static MeetingBuilder query()
  */
 class Meeting extends Model
@@ -82,7 +83,7 @@ class Meeting extends Model
             'staff.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
             'clients.*' => Valid::array(
                 keys: ['user_id', 'attendance_status_dict_id', 'client_group_id', 'notifications'],
-                rules: [new MeetingClientGroupRule()]
+                rules: [new MeetingClientGroupRule()],
             ),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
             Valid::dict(DictionaryUuidEnum::AttendanceStatus),
@@ -120,12 +121,19 @@ class Meeting extends Model
     {
         return $this->attendants->filter(
             fn(MeetingAttendant $attendant) => $attendant->attendance_type_dict_id === $attendanceType->value,
+        )->each(
+            fn(MeetingAttendant $attendant) => $attendant->setRelation('meeting', $this),
         );
     }
 
     public function resources(): HasMany
     {
         return $this->hasMany(MeetingResource::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
     }
 
     public function resetStatus(): void

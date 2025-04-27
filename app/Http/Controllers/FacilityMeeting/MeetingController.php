@@ -161,7 +161,7 @@ class MeetingController extends ApiController
     {
         $meetingsQuery = Meeting::query()->where('facility_id', $facility->id);
         $this->applyRequestIn($meetingsQuery);
-        return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources'])->get());
+        return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources', 'notifications'])->get());
     }
 
     #[OA\Patch(

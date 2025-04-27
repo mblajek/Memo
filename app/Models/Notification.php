@@ -66,8 +66,17 @@ class Notification extends Model
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {
+            'subject' => Valid::trimmed(),
             'message' => Valid::text(),
         };
+    }
+
+    public function resetStatus(): void
+    {
+        $this->address = null;
+        $this->service = null;
+        $this->status = NotificationStatus::scheduled;
+        $this->error_log_entry_id = null;
     }
 
     public function determineAddress(): bool

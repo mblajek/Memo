@@ -13,25 +13,22 @@ use DateTimeImmutable;
 
 class NotificationService
 {
-    public function scheduleSms(
-        null|Facility|string|true $facilityId,
-        string|User|null $userId,
-        string|Client|null $clientId,
-        string|Meeting|null $meetingId,
-        ?string $address,
-        string $subject,
+    public function setScheduledAt(
+        Notification $notification,
         ?DateTimeImmutable $scheduledAt,
     ): void {
-        $this->schedule(
-            facilityId: $facilityId,
-            userId: $userId,
-            clientId: $clientId,
-            meetingId: $meetingId,
-            notificationMethodId: NotificationMethod::Sms,
-            address: $address,
-            subject: $subject,
-            scheduledAt: $scheduledAt,
-        );
+        $status = $notification->status ?? NotificationStatus::scheduled;
+        $now = new DateTimeImmutable();
+        if (!$scheduledAt) {
+            $scheduledAt = $now;
+        } /** @noinspection PhpUnhandledExceptionInspection */ elseif (
+            $status->isScheduled()
+            && ($scheduledAt->modify('+1day') < $now)
+        ) {
+            $status = NotificationStatus::skipped;
+        }
+        $notification->status = $status;
+        $notification->scheduled_at = $scheduledAt;
     }
 
     public function schedule(
@@ -42,12 +39,10 @@ class NotificationService
         string|NotificationMethod $notificationMethodId,
         ?string $address,
         string $subject,
+        ?DateTimeImmutable $scheduledAt,
         ?string $message = null,
         ?string $messageHtml = null,
-        ?DateTimeImmutable $scheduledAt = null,
     ): Notification {
-        $warnings = [];
-
         $notificationMethod = ($notificationMethodId instanceof NotificationMethod)
             ? $notificationMethodId : NotificationMethod::from($notificationMethodId);
 
@@ -79,13 +74,14 @@ class NotificationService
             'subject' => $subject,
             'message' => $message,
             'message_html' => $messageHtml,
-            'scheduled_at' => $scheduledAt ?? new DateTimeImmutable(),
+            'scheduled_at' => null, // overridden in self::setScheduledAt()
             'service' => null,
-            'status' => NotificationStatus::scheduled,
+            'status' => null, // overridden in self::setScheduledAt()
             'error_log_entry_id' => null,
         ]);
 
-        print_r($notification);
-        die;
+        $this->setScheduledAt($notification, $scheduledAt);
+
+        return $notification;
     }
 }

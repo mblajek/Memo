@@ -23,6 +23,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Throwable;
@@ -143,6 +144,12 @@ class SystemController extends ApiController
                     new OA\Property(property: 'appEnvFgColor', type: 'string', example: '#FFFFFF', nullable: true),
                     new OA\Property(property: 'randomUuid', type: 'string', format: 'uuid', example: 'UUID'),
                     new OA\Property(property: 'currentDate', type: 'datetime'),
+                    new OA\Property(
+                        property: 'userTimezone',
+                        description: 'Region/City',
+                        type: 'string',
+                        example: 'Europe/Warsaw',
+                    ),
                     new OA\Property(property: 'commitHash', type: 'string', nullable: true),
                     new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
                     new OA\Property(property: 'lastDump', type: 'datetime', nullable: true),
@@ -180,11 +187,12 @@ class SystemController extends ApiController
         return new JsonResponse([
             'data' => [
                 'version' => self::VERSION . ($isRc ? ' RC' : ''),
-                'appEnv' => env('APP_ENV'),
+                'appEnv' => Config::string('app.env'),
                 'appEnvColor' => env('APP_ENV_COLOR') ?: null,
                 'appEnvFgColor' => env('APP_ENV_FG_COLOR') ?: null,
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
+                'userTimezone' => DateHelper::getUserTimezone(),
                 'commitHash' => $commitHash,
                 'commitDate' => $commitDateZulu,
                 'lastDump' => $lastDump,
