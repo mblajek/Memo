@@ -146,9 +146,6 @@ importers:
       vitest:
         specifier: ^3.1.1
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.13.16)(jiti@1.21.7)(jsdom@26.0.0)(sass@1.86.1)(yaml@2.7.1)
-      windows-1250:
-        specifier: ^3.0.4
-        version: 3.0.4
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -3447,9 +3444,6 @@ packages:
     resolution: {integrity: sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==}
     engines: {node: '>=8'}
     hasBin: true
-
-  windows-1250@3.0.4:
-    resolution: {integrity: sha512-DoHOT9o9N/TwKoLkLWe/pedZvZqhif3GY5YagTK/c8ONbu6K8tzt7lnH6do7oACmwU+q+6f2IwUjGyBzRZJXbA==}
 
   word-wrap@1.2.5:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
@@ -7198,8 +7192,6 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
-
-  windows-1250@3.0.4: {}
 
   word-wrap@1.2.5: {}
 
