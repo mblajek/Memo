@@ -1,11 +1,11 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useServerLog} from "components/utils/server_logging";
 import {System} from "data-access/memo-api/groups/System";
 import {JSONValue} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
 
 /** Logs Content-Security-Policy violations to backend. Note that not all violations will be logged this way. */
 export const CSPViolationMonitor: VoidComponent = () => {
-  const logMutation = createMutation(() => ({mutationFn: System.log}));
+  const serverLog = useServerLog();
   document.addEventListener("securitypolicyviolation", (violation) => {
     // Extract the specific fields as JSON.
     const contextJSON: Partial<Record<string, JSONValue>> = {};
@@ -15,7 +15,7 @@ export const CSPViolationMonitor: VoidComponent = () => {
     >[]) {
       contextJSON[field] = violation[field];
     }
-    logMutation.mutate({
+    serverLog({
       logLevel: "critical",
       source: System.LogAPIFrontendSource.CSP_VIOLATION,
       message: `${violation.documentURI}\nURI ${JSON.stringify(violation.blockedURI)} violates ${violation.violatedDirective}`,
