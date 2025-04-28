@@ -81,7 +81,6 @@
     "vite-plugin-solid-svg": "^0.8.1",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.1.1",
-    "windows-1250": "^3.0.4",
     "zod": "^3.24.2"
   },
   "pnpm": {

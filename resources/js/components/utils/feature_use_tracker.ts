@@ -1,6 +1,6 @@
 import {useLocation} from "@solidjs/router";
-import {createMutation} from "@tanstack/solid-query";
 import {useAppContext} from "app_context";
+import {useServerLog} from "components/utils/server_logging";
 import {System} from "data-access/memo-api/groups/System";
 import {dateTimeToISO} from "data-access/memo-api/utils";
 import {DateTime, Duration} from "luxon";
@@ -46,7 +46,7 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
   const appContext = useAppContext();
   const location = useLocation();
   const serialiser = richJSONSerialiser();
-  const logMutation = createMutation(() => ({mutationFn: System.log}));
+  const serverLog = useServerLog();
   let setData = featureUseSetters.get(featureId);
   if (!setData) {
     // Make sure the effect is persistent.
@@ -67,7 +67,7 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
             ) {
               contextBreakdown = undefined;
             }
-            logMutation.mutate(
+            serverLog(
               {
                 logLevel: "info",
                 source: System.LogAPIFrontendSource.FEATURE_USE,

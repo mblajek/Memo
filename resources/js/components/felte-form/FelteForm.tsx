@@ -1,16 +1,6 @@
-import {
-  AssignableErrors,
-  Form,
-  FormConfigWithoutTransformFn,
-  KnownHelpers,
-  Obj,
-  Paths,
-  SubmitContext,
-  Touched,
-} from "@felte/core";
+import {AssignableErrors, FormConfigWithoutTransformFn, Obj, SubmitContext, Touched} from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
-import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
 import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
@@ -40,7 +30,7 @@ export interface FormContextValue<T extends Obj = Obj> {
   readonly translations: FormTranslations;
 }
 
-export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+export type FormType<T extends Obj = Obj> = ReturnType<typeof createForm<T>>;
 
 /** User strings for parts of the form. */
 export interface FormTranslations {

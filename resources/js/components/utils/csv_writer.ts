@@ -1,5 +1,5 @@
-import * as windows1250 from "windows-1250";
 import {PossiblyAsyncIterable} from "./async";
+import * as windows1250 from "./windows-1250";
 
 export interface WriteCSVOptions {
   readonly separator?: string;
