@@ -15,6 +15,7 @@ import {PageWithTheme} from "features/root/components/theme_control";
 import {Favicon} from "features/root/Favicon";
 import {ParentComponent, VoidProps, createEffect, splitProps, type VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
+import {probablyLoggedIn} from "state/probablyLoggedIn.state";
 import {clearAllHistoryState} from "./components/persistence/history_persistence";
 import {activeFacilityId} from "./state/activeFacilityId.state";
 
@@ -70,7 +71,7 @@ const App: VoidComponent = () => {
   const RedirectRootToFacilityRoot = (() => {
     const navigate = useNavigate();
     createEffect(() => {
-      if (activeFacilityId()) {
+      if (activeFacilityId() && probablyLoggedIn()) {
         const activeFacility = facilitiesQuery.data?.find((facility) => facility.id === activeFacilityId());
         if (activeFacility) {
           navigate(`/${activeFacility.url}`);
