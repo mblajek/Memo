@@ -5,6 +5,7 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
+import {OTPField} from "components/ui/form/OTPField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
 import {HideableSection} from "components/ui/HideableSection";
@@ -127,7 +128,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
             />
             <HideableSection class="-mt-2" show={showOTP()}>
               <div class="mt-2">
-                <TextField name="otp" autocomplete="one-time-code" autofocus />
+                <OTPField name="otp" autofocus showInfo />
               </div>
             </HideableSection>
             <FelteSubmit />

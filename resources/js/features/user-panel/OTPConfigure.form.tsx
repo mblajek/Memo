@@ -3,8 +3,8 @@ import {createMutation, createQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {CheckboxInput} from "components/ui/CheckboxInput";
+import {OTPField} from "components/ui/form/OTPField";
 import {PasswordField} from "components/ui/form/PasswordField";
-import {TextField} from "components/ui/form/TextField";
 import {HideableSection} from "components/ui/HideableSection";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {Markdown} from "components/ui/Markdown";
@@ -150,7 +150,7 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
           initialValues={otpConfigure.initialValues()}
           class="flex flex-col gap-2"
         >
-          <TextField name="otp" autofocus />
+          <OTPField name="otp" autofocus />
           <FelteSubmit cancel={props.onCancel} />
         </FelteForm>
       </HideableSection>

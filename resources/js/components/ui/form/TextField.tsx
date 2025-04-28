@@ -30,6 +30,7 @@ interface TextFieldTextInputProps
     | "value"
     | "min"
     | "max"
+    | "maxLength"
     | "step"
     | "autofocus"
     | "autocomplete"
