@@ -5,12 +5,14 @@ import {User} from "data-access/memo-api/groups/User";
 import {useEnvInfo} from "features/system-status/env_info";
 import {Base64} from "js-base64";
 import {createMemo, createSignal, on, Show, VoidComponent} from "solid-js";
+import bowser from "bowser";
 
 const FAVICON_PATH = "/favicon.png";
 
 export const Favicon: VoidComponent = () => {
   const envInfo = useEnvInfo();
   const status = createQuery(User.statusQueryOptions);
+  const browserInfo = bowser.parse(navigator.userAgent);
   // First remove the original link from the head.
   document.querySelector("head > link[rel='icon'][href]")?.remove();
   const fill = () => {
@@ -46,7 +48,8 @@ export const Favicon: VoidComponent = () => {
                       vector-effect="non-scaling-stroke"
                       shape-rendering="crispEdges"
                       stroke="red"
-                      stroke-width="2"
+                      // For some reason width of 1 looks much better on Firefox.
+                      stroke-width={browserInfo.browser.name === "Firefox" ? 1 : 2}
                       fill="none"
                     />
                   </Show>

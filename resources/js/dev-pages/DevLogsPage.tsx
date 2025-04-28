@@ -1,4 +1,4 @@
-import Bowser from "bowser";
+import bowser from "bowser";
 import {createTableTranslations} from "components/ui/Table/Table";
 import {cellFunc, ShowCellVal} from "components/ui/Table/table_cells";
 import {useLangFunc} from "components/utils/lang";
@@ -107,7 +107,7 @@ export default (() => {
 }) satisfies VoidComponent;
 
 function browserSummary(userAgent: string) {
-  const {browser, os, platform, engine} = Bowser.parse(userAgent);
+  const {browser, os, platform, engine} = bowser.parse(userAgent);
   function majorVer(version: string | undefined) {
     return version?.split(".")[0];
   }
