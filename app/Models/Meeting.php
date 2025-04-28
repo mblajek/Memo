@@ -79,7 +79,7 @@ class Meeting extends Model
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
             'is_remote' => Valid::bool(),
-            'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
+            'staff', 'clients', 'resources', 'clients.*.notifications' => Valid::list(sometimes: true, min: 0),
             'staff.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
             'clients.*' => Valid::array(
                 keys: ['user_id', 'attendance_status_dict_id', 'client_group_id', 'notifications'],
@@ -98,7 +98,6 @@ class Meeting extends Model
             ]),
             // validated as client.* with MeetingClientGroupRule
             'clients.*.client_group_id' => Valid::uuid(nullable: true),
-            'clients.*.notifications' => Valid::list(sometimes: true),
             'clients.*.notifications.*' => Valid::array(keys: ['notification_method_dict_id']),
             'clients.*.notifications.*.notification_method_dict_id'
             => Valid::dict(DictionaryUuidEnum::NotificationMethod),

@@ -18,11 +18,6 @@ enum NotificationStatus
 
     case skipped;
 
-    public function isScheduled(): bool
-    {
-        return $this === self::scheduled;
-    }
-
     public function baseStatus(): self
     {
         return match ($this) {

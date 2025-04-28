@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Enums\NotificationMethod;
-use App\Models\QueryBuilders\LogEntryBuilder;
+use App\Models\QueryBuilders\NotificationBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasUuid;
 use App\Models\Traits\HasValidator;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $service
  * @property NotificationStatus $status
  * @property ?string $error_log_entry_id
- * @method static LogEntryBuilder query()
+ * @method static NotificationBuilder query()
  * @mixin Model
  */
 class Notification extends Model
@@ -77,20 +77,5 @@ class Notification extends Model
         $this->service = null;
         $this->status = NotificationStatus::scheduled;
         $this->error_log_entry_id = null;
-    }
-
-    public function determineAddress(): bool
-    {
-        if ($this->address) {
-            return true;
-        }
-        if($this->notification_method_dict_id === NotificationMethod::Sms){
-            if(!$this->client_id){
-                throw new \Exception();
-            }
-            Client::query()->findOrFail($this->client_id)->attrValues($this->facility_id);
-            return true;
-        }
-        return false;
     }
 }

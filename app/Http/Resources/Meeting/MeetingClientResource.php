@@ -24,6 +24,24 @@ use OpenApi\Attributes as OA;
             example: 'UUID',
             nullable: true,
         ),
+        new OA\Property(
+            property: 'notifications', type: 'array', items: new OA\Items(
+            required: ['notificationMethodDictId'],
+            properties: [
+                new OA\Property(
+                    property: 'status',
+                    type: 'string',
+                    example: 'scheduled',
+                ),
+                new OA\Property(
+                    property: 'notificationMethodDictId',
+                    type: 'string',
+                    format: 'uuid',
+                    example: 'UUID',
+                ),
+            ],
+        ),
+        ),
     ]
 )] /**
  * @method __construct(MeetingAttendant $resource)
@@ -41,10 +59,11 @@ class MeetingClientResource extends AbstractJsonResource
                 ->where('user_id', $meetingAttendant->user_id)
                 ->toBase()->map(fn(Notification $notification): array
                     => [
-                    'subject' => $notification->subject,
+                    'scheduledAt' => $notification->scheduled_at, // todo: not documented
+                    'subject' => $notification->subject, // todo: not documented
                     'status' => $notification->status->baseStatus()->name,
                     'notificationMethodDictId' => $notification->notification_method_dict_id,
-                ])->values()->all()
+                ])->values()->all(),
         ];
     }
 }

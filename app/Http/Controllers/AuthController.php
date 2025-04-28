@@ -14,10 +14,10 @@ use App\Services\User\UpdateUserService;
 use App\Utils\Date\DateHelper;
 use DateInterval;
 use DateTimeImmutable;
-use DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
 use Psr\Log\LogLevel;
@@ -95,7 +95,7 @@ class AuthController extends ApiController
             if ($user->password_expire_at === null || $user->password_expire_at > $maxPasswordExpireAt) {
                 DB::transaction(function () use ($userService, $user, $maxPasswordExpireAt) {
                     $userService->update($user, [
-                        'password_expire_at' => DateHelper::toDbString($maxPasswordExpireAt)
+                        'password_expire_at' => DateHelper::toDbString($maxPasswordExpireAt),
                     ]);
                 });
             }

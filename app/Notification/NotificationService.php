@@ -19,13 +19,12 @@ class NotificationService
     ): void {
         $status = $notification->status ?? NotificationStatus::scheduled;
         $now = new DateTimeImmutable();
-        if (!$scheduledAt) {
-            $scheduledAt = $now;
-        } /** @noinspection PhpUnhandledExceptionInspection */ elseif (
-            $status->isScheduled()
-            && ($scheduledAt->modify('+1day') < $now)
-        ) {
-            $status = NotificationStatus::skipped;
+        $scheduledAt ??= $now;
+
+        if ($status === NotificationStatus::scheduled || $status === NotificationStatus::skipped) {
+            /** @noinspection PhpUnhandledExceptionInspection */
+            $status = ($scheduledAt->modify('+1day') < $now)
+                ? NotificationStatus::skipped : NotificationStatus::scheduled;
         }
         $notification->status = $status;
         $notification->scheduled_at = $scheduledAt;

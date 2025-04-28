@@ -82,7 +82,7 @@ class MeetingController extends ApiController
                                     ),
                                 ]
                             )
-                            )
+                            ),
                         ]
                     )
                     ),
@@ -223,7 +223,7 @@ class MeetingController extends ApiController
                                 ],
                                 nullable: true
                             )
-                            )
+                            ),
                         ]
                     )
                     ),
