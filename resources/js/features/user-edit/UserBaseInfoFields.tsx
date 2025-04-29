@@ -201,15 +201,10 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
                 </HideableSection>
               </div>
               <div class="flex flex-col">
-                <CheckboxField
-                  name="isOtpRequired"
-                  label={(label) => (
-                    <>
-                      {label}{" "}
-                      <DocsModalInfoIcon href="/help/staff-2fa-configuration.part" fullPageHref="/help/staff-2fa" />
-                    </>
-                  )}
-                />
+                <div class="flex gap-1">
+                  <CheckboxField name="isOtpRequired" />
+                  <DocsModalInfoIcon href="/help/staff-2fa-configuration.part" fullPageHref="/help/staff-2fa" />
+                </div>
                 <HideableSection class="ps-3 border-s-2 border-input-border" show={form.data("isOtpRequired")}>
                   <DateFieldWithDaysLeft name="otpRequiredAt" />
                   <HideableSection

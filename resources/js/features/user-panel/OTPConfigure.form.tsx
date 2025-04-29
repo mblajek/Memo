@@ -131,7 +131,7 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
         </FelteForm>
       </HideableSection>
       <div class="py-3 flex flex-col items-center">
-        <QRCode size="250px" content={hideQRCode() ? undefined : qrCodeURL()} />
+        <QRCode size={250} content={hideQRCode() ? undefined : qrCodeURL()} />
       </div>
       <HideableSection show={otpData()} destroyWhenFullyCollapsed>
         <div class="flex justify-between gap-2">

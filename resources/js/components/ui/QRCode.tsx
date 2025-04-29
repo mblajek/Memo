@@ -1,87 +1,361 @@
-import {Recreator} from "components/utils/Recreator";
 import * as headlessQr from "headless-qr";
-import {createComputed, createMemo, createSignal, Index, JSX, Show, VoidComponent} from "solid-js";
+import {createMemo, createSignal, onCleanup, VoidComponent} from "solid-js";
 
 interface Props {
-  readonly size: JSX.CSSProperties["width"];
+  readonly size: number;
   readonly content: string | undefined;
-  readonly predictedContentLength?: number;
 }
 
-const SVG_VIEWBOX_SIZE = 200;
-const PADDING_FRAC = 0.01;
+const MAX_FPS = 60;
+const MAX_STEP_DT_MILLIS = 20;
+const MAX_FRAME_DT_MILLIS = 200;
+
+const ORBITING_DARKNESS = 0.4;
+const BALL_RADIUS_COEFF = 0.53;
+const NUM_ORBITING_BALLS = 250;
+
+const PADDING_FRAC = 0.015;
 const LOGO_SIZE_FRAC = 0.2;
 const LOGO_FRAME_SIZE_FRAC = 0.25;
 
 export const QRCode: VoidComponent<Props> = (props) => {
-  const [predictedContentLength, setPredictedContentLength] = createSignal(100);
-  createComputed(() => {
-    if (props.content !== undefined) {
-      setPredictedContentLength(props.content.length);
-    } else if (props.predictedContentLength !== undefined) {
-      setPredictedContentLength(props.predictedContentLength);
+  const qrData = createMemo(() => (props.content ? headlessQr.qr(props.content, {correction: "H"}) : undefined));
+  const [logoLoaded, setLogoLoaded] = createSignal(false);
+  const [rawMode, setRawMode] = createSignal(false);
+  const logo = new Image();
+  logo.onload = () => setLogoLoaded(true);
+  logo.src = "/img/memo_logo_short.svg";
+  let context: CanvasRenderingContext2D | undefined;
+  const geom = createMemo(() => {
+    const outerSize = props.size;
+    const padding = PADDING_FRAC * outerSize;
+    const innerSize = outerSize - 2 * padding;
+    const posCenter = outerSize / 2;
+    const stepSize = innerSize / (qrData()?.length || 60);
+    const ballRadius = BALL_RADIUS_COEFF * stepSize;
+    const posZero = padding + stepSize / 2;
+    const maxOrbitR = (innerSize - stepSize) / 2;
+    const logoSize = LOGO_SIZE_FRAC * innerSize;
+    const logoFrameSize = LOGO_FRAME_SIZE_FRAC * innerSize;
+    const minOrbitR = (1.1 * logoFrameSize) / 2;
+    let logoSizeX = logoSize;
+    let logoSizeY = logoSize;
+    if (logoLoaded()) {
+      if (logo.width < logo.height) {
+        logoSizeX *= logo.width / logo.height;
+      } else {
+        logoSizeY *= logo.height / logo.width;
+      }
+    }
+    const logoPosX = posCenter - logoSizeX / 2;
+    const logoPosY = posCenter - logoSizeY / 2;
+    const logoOverlapMinInd = (innerSize - logoFrameSize) / 2 / stepSize;
+    const logoOverlapMaxInd = qrData() ? qrData()!.length - 1 - logoOverlapMinInd : 0;
+
+    return {
+      outerSize,
+      padding,
+      innerSize,
+      posCenter,
+      stepSize,
+      ballRadius,
+      posZero,
+      orbit: {
+        maxR: maxOrbitR,
+        minR: minOrbitR,
+      },
+      logo: {
+        loaded: logoLoaded(),
+        posX: logoPosX,
+        posY: logoPosY,
+        sizeX: logoSizeX,
+        sizeY: logoSizeY,
+      },
+      logoFrameSize,
+      logoOverlap: {
+        minInd: logoOverlapMinInd,
+        maxInd: logoOverlapMaxInd,
+      },
+    };
+  });
+  let rafId: number | undefined = undefined;
+  onCleanup(() => {
+    if (rafId) {
+      cancelAnimationFrame(rafId);
     }
   });
-  const qrData = createMemo(() => ({
-    qr: headlessQr.qr(props.content ?? "x".repeat(predictedContentLength()), {correction: "H"}),
-    real: props.content !== undefined,
-  }));
+
+  interface DynValue {
+    value: number;
+    target: number;
+    vel: number;
+    spring: number;
+    visc: number;
+  }
+
+  function tickVal(v: DynValue, dt: number) {
+    v.vel = (v.vel + (v.target - v.value) * v.spring * dt) * (1 - v.visc);
+    v.value += v.vel * dt;
+  }
+
+  interface Ball {
+    x: DynValue;
+    y: DynValue;
+    orbit: {
+      rFrac: number;
+      angle: number;
+      angleVel: number;
+    };
+    numTrackers: number;
+  }
+
+  const ballRadiusV: DynValue = {
+    value: 0,
+    target: 0,
+    vel: 0,
+    spring: 0.00003,
+    visc: 0.15,
+  };
+  const ballDarknessV: DynValue = {
+    value: 0,
+    target: ORBITING_DARKNESS,
+    vel: 0,
+    spring: 0.0003,
+    visc: 0.4,
+  };
+  const balls: Ball[] = [];
+  const destroyedBalls = new Set<{ball: Ball; target: Ball}>();
+
+  let prevTime: DOMHighResTimeStamp | undefined;
+  let prevQR: ReturnType<typeof qrData> | undefined;
+  let first = true;
+  function frame(time: DOMHighResTimeStamp) {
+    try {
+      const qr = qrData();
+      const g = geom();
+      const ctx = context!;
+      if (qr && rawMode()) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, g.outerSize, g.outerSize);
+        ctx.fillStyle = "black";
+        for (let y = 0; y < qr.length; y++) {
+          const row = qr[y]!;
+          for (let x = 0; x < row.length; x++) {
+            if (row[x]) {
+              ctx.fillRect(g.padding + x * g.stepSize, g.padding + y * g.stepSize, g.stepSize + 0.4, g.stepSize + 0.4);
+            }
+          }
+        }
+        return;
+      }
+      if (prevTime === undefined) {
+        prevTime = time;
+        prevQR = qr;
+        return;
+      }
+      let dt = time - prevTime;
+      if (dt < 1000 / MAX_FPS) {
+        return;
+      }
+      if (dt > MAX_FRAME_DT_MILLIS) {
+        dt = MAX_FRAME_DT_MILLIS;
+      }
+      prevTime = time;
+      const prQR = prevQR!;
+      prevQR = qr;
+
+      function randomOrbitRFrac() {
+        return (Math.random() * (g.orbit.maxR - g.orbit.minR) + g.orbit.minR) / g.orbit.maxR;
+      }
+
+      function makeRandomOrbit(): Ball["orbit"] {
+        const orbitRFrac = randomOrbitRFrac();
+        return {
+          rFrac: orbitRFrac,
+          angle: Math.random() * 2 * Math.PI,
+          angleVel: 0.0002 * orbitRFrac ** -1.5,
+        };
+      }
+
+      function makeRandomBall(base?: Ball): Ball {
+        const comp = (): DynValue => ({
+          value: g.posCenter,
+          target: g.posCenter,
+          vel: 0,
+          spring: 0.00003,
+          visc: 0.18,
+        });
+        return {
+          x: base ? {...base.x} : comp(),
+          y: base ? {...base.y} : comp(),
+          orbit: makeRandomOrbit(),
+          numTrackers: 0,
+        };
+      }
+
+      function destroyBallAt(index: number) {
+        const ball = balls.splice(index, 1)[0]!;
+        let minDist = Number.POSITIVE_INFINITY;
+        let closestBall: Ball | undefined = undefined;
+        for (const b of balls) {
+          const dist = Math.abs(b.x.value - ball.x.value) + Math.abs(b.y.value - ball.y.value);
+          if (dist < minDist) {
+            minDist = dist;
+            closestBall = b;
+          }
+        }
+        if (closestBall) {
+          closestBall.numTrackers++;
+          destroyedBalls.add({ball, target: closestBall});
+        }
+      }
+
+      if (qr !== prQR || first) {
+        if (qr) {
+          const desiredDots: (readonly [number, number])[] = [];
+          for (let y = 0; y < qr.length; y++) {
+            const yLogoOverlap = y >= g.logoOverlap.minInd && y <= g.logoOverlap.maxInd;
+            const row = qr[y]!;
+            for (let x = 0; x < row.length; x++) {
+              if (row[x] && !(yLogoOverlap && x >= g.logoOverlap.minInd && x <= g.logoOverlap.maxInd)) {
+                desiredDots.push([x, y]);
+              }
+            }
+          }
+          const initialBallIndices = balls.map((b, i) => i);
+          const ballIndices = new Set(balls.map((b, i) => i));
+          desiredDots.sort(() => Math.random() - 0.5);
+          for (const [x, y] of desiredDots) {
+            const xp = g.posZero + x * g.stepSize;
+            const yp = g.posZero + y * g.stepSize;
+            let minDist = Number.POSITIVE_INFINITY;
+            let closestBallIndex = -1;
+            let closestBall: Ball | undefined = undefined;
+            const useExisting = ballIndices.size > 0;
+            const assumedTravelMs = 1000;
+            for (const ballInd of useExisting ? ballIndices : initialBallIndices) {
+              const ball = balls[ballInd]!;
+              const dist =
+                Math.abs(ball.x.value + ball.x.vel * assumedTravelMs - xp) +
+                Math.abs(ball.y.value + ball.y.vel * assumedTravelMs - yp);
+              if (dist < minDist) {
+                minDist = dist;
+                closestBallIndex = ballInd;
+                closestBall = ball;
+              }
+            }
+            ballIndices.delete(closestBallIndex);
+            let ball;
+            if (useExisting) {
+              ball = closestBall!;
+            } else {
+              ball = makeRandomBall(closestBall);
+              if (first) {
+                ball.x.value = xp;
+                ball.y.value = yp;
+              }
+              balls.push(ball);
+            }
+            ball.x.target = xp;
+            ball.y.target = yp;
+          }
+          for (const ballIndex of [...ballIndices].sort((a, b) => b - a)) {
+            destroyBallAt(ballIndex);
+          }
+        } else {
+          for (let i = 0; i < Math.min(balls.length, NUM_ORBITING_BALLS); i++) {
+            const ball = balls[i]!;
+            ball.orbit = makeRandomOrbit();
+            ball.orbit.angle =
+              Math.atan2(ball.y.value - g.posCenter, ball.x.value - g.posCenter) +
+              Math.random() * 0.2 +
+              ball.orbit.angleVel * 500;
+          }
+          for (let i = balls.length - 1; i >= NUM_ORBITING_BALLS; i--) {
+            destroyBallAt(i);
+          }
+          for (let i = balls.length; i < NUM_ORBITING_BALLS; i++) {
+            balls.push(makeRandomBall());
+          }
+        }
+      }
+
+      function tick(dt: number) {
+        ballRadiusV.target = g.ballRadius;
+        tickVal(ballRadiusV, dt);
+        if (qr) {
+          let totalDist = 0;
+          for (const ball of balls) {
+            totalDist += Math.abs(ball.x.value - ball.x.target) + Math.abs(ball.y.value - ball.y.target);
+          }
+          const avgDist = totalDist / balls.length;
+          ballDarknessV.target = Math.max(ORBITING_DARKNESS, 1 - 0.1 * avgDist);
+        } else {
+          ballDarknessV.target = ORBITING_DARKNESS;
+        }
+        tickVal(ballDarknessV, dt);
+        for (const ball of balls) {
+          if (!qr) {
+            ball.orbit.angle = (ball.orbit.angle + ball.orbit.angleVel * dt) % (Math.PI * 2);
+            ball.x.target = g.posCenter + g.orbit.maxR * Math.cos(ball.orbit.angle) * ball.orbit.rFrac;
+            ball.y.target = g.posCenter + g.orbit.maxR * Math.sin(ball.orbit.angle) * ball.orbit.rFrac;
+          }
+          tickVal(ball.x, dt);
+          tickVal(ball.y, dt);
+        }
+        for (const dBall of [...destroyedBalls].reverse()) {
+          const {ball, target} = dBall;
+          ball.x.target = target.x.target;
+          ball.y.target = target.y.target;
+          tickVal(ball.x, dt);
+          tickVal(ball.y, dt);
+          const dist = Math.abs(ball.x.value - target.x.value) + Math.abs(ball.y.value - target.y.value);
+          if (!ball.numTrackers && dist < 0.05) {
+            target.numTrackers--;
+            destroyedBalls.delete(dBall);
+          }
+        }
+      }
+
+      while (dt > MAX_STEP_DT_MILLIS) {
+        tick(MAX_STEP_DT_MILLIS);
+        dt -= MAX_STEP_DT_MILLIS;
+      }
+      tick(dt);
+
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, g.outerSize, g.outerSize);
+      ctx.fillStyle = `lch(${(1 - ballDarknessV.value) * 100}% 0 0)`;
+      const ballR = Math.max(0, ballRadiusV.value);
+      function drawBall(ball: Ball) {
+        ctx.beginPath();
+        ctx.ellipse(ball.x.value, ball.y.value, ballR, ballR, 0, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      for (const {ball} of destroyedBalls) {
+        drawBall(ball);
+      }
+      for (const ball of balls) {
+        drawBall(ball);
+      }
+      if (g.logo.loaded) {
+        ctx.drawImage(logo, g.logo.posX, g.logo.posY, g.logo.sizeX, g.logo.sizeY);
+      }
+      first = false;
+    } finally {
+      rafId = requestAnimationFrame(frame);
+    }
+  }
+
   return (
-    <svg
-      viewBox={`0 0 ${SVG_VIEWBOX_SIZE} ${SVG_VIEWBOX_SIZE}`}
-      style={{width: props.size, height: props.size}}
-      vector-effect="non-scaling-stroke"
-    >
-      <Recreator signal={qrData()}>
-        {(qrData) => {
-          if (!qrData) {
-            return undefined;
-          }
-          const {qr, real} = qrData;
-          const padding = SVG_VIEWBOX_SIZE * PADDING_FRAC;
-          const dotSize = (SVG_VIEWBOX_SIZE * (1 - 2 * PADDING_FRAC)) / qr.length;
-          const overlapMin = ((SVG_VIEWBOX_SIZE * (1 - LOGO_FRAME_SIZE_FRAC)) / 2 - padding) / dotSize;
-          const overlapMax = qr.length - 1 - overlapMin;
-          function overlapsLogo(index: number) {
-            return index >= overlapMin && index <= overlapMax;
-          }
-          return (
-            <>
-              <defs>
-                <circle id="b" r={0.53 * dotSize} fill="black" />
-              </defs>
-              <g
-                transform={`translate(${padding + dotSize / 2}, ${padding + dotSize / 2})`}
-                opacity={real ? undefined : 0.1}
-              >
-                <Index each={qr}>
-                  {(row, y) => {
-                    const yOverlapsLogo = overlapsLogo(y);
-                    return (
-                      <Index each={row()}>
-                        {(cell, x) =>
-                          yOverlapsLogo && overlapsLogo(x) ? undefined : (
-                            <Show when={real ? cell() : Math.random() < 0.3}>
-                              <use href="#b" x={x * dotSize} y={y * dotSize} />
-                            </Show>
-                          )
-                        }
-                      </Index>
-                    );
-                  }}
-                </Index>
-              </g>
-            </>
-          );
-        }}
-      </Recreator>
-      <image
-        x={(SVG_VIEWBOX_SIZE * (1 - LOGO_SIZE_FRAC)) / 2}
-        y={(SVG_VIEWBOX_SIZE * (1 - LOGO_SIZE_FRAC)) / 2}
-        width={SVG_VIEWBOX_SIZE * LOGO_SIZE_FRAC}
-        height={SVG_VIEWBOX_SIZE * LOGO_SIZE_FRAC}
-        href="/img/memo_logo_short.svg"
-      />
-    </svg>
+    <canvas
+      ref={(elem) => {
+        context = elem.getContext("2d")!;
+        rafId = requestAnimationFrame(frame);
+      }}
+      width={props.size}
+      height={props.size}
+      onClick={() => setRawMode((r) => !r && !!qrData())}
+    />
   );
 };
