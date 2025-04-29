@@ -68,6 +68,7 @@ const getAttendantsSchema = () =>
       userId: z.string(),
       clientGroupId: z.string(),
       attendanceStatusDictId: z.string(),
+      notifications: z.array(z.object({notificationMethodDictId: z.string()})).optional(),
     }),
   );
 
@@ -90,10 +91,12 @@ interface FormAttendantsData extends Obj {
 
 type ClientsGroupsMode = "none" | "shared" | "separate";
 
-type FormAttendantData = Pick<
-  MeetingStaffResource & MeetingClientResource,
-  "userId" | "clientGroupId" | "attendanceStatusDictId"
->;
+interface FormAttendantData
+  extends Pick<MeetingStaffResource & MeetingClientResource, "userId" | "clientGroupId" | "attendanceStatusDictId"> {
+  notifications?: {
+    notificationMethodDictId: string;
+  }[];
+}
 
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
@@ -820,10 +823,16 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 export function useAttendantsCreator() {
   const {attendanceStatusDict} = useFixedDictionaries();
 
-  function createAttendant({userId = "", clientGroupId, attendanceStatusDictId}: Partial<FormAttendantData> = {}) {
+  function createAttendant({
+    userId = "",
+    clientGroupId,
+    notifications,
+    attendanceStatusDictId,
+  }: Partial<FormAttendantData> = {}) {
     return {
       userId,
       clientGroupId: clientGroupId || "",
+      notifications,
       attendanceStatusDictId: attendanceStatusDictId || attendanceStatusDict()!.ok.id,
     } satisfies FormAttendantData;
   }
@@ -841,7 +850,13 @@ export function useAttendantsCreator() {
   ) {
     function getAttendants(attendantsFromMeeting: readonly (MeetingStaffResource | MeetingClientResource)[]) {
       const attendants = attendantsFromMeeting.map((attendant) =>
-        createAttendant({...attendant, ...attendanceStatusOverride}),
+        createAttendant({
+          ...attendant,
+          notifications: (attendant as Partial<MeetingClientResource>).notifications?.map((n) => ({
+            notificationMethodDictId: n.notificationMethodDictId,
+          })),
+          ...attendanceStatusOverride,
+        }),
       );
       if (attendants.length > 1) {
         // Start in multiple mode, make additional empty row.
@@ -873,8 +888,12 @@ export function useAttendantsCreator() {
 
 export function getAttendantsValuesForEdit(values: Partial<FormAttendantsData>) {
   return {
-    staff: values.staff?.filter(({userId}) => userId).map((staff) => ({...staff, clientGroupId: undefined})),
-    clients: values.clients?.filter(({userId}) => userId),
+    staff: values.staff
+      ?.filter(({userId}) => userId)
+      .map((staff) => ({...staff, clientGroupId: undefined, notifications: undefined})),
+    clients: values.clients
+      ?.filter(({userId}) => userId)
+      .map((client) => ({...client, notifications: client.notifications || []})),
   } satisfies Partial<MeetingResourceForPatch>;
 }
 

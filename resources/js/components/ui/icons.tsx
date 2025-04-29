@@ -23,7 +23,7 @@ import {
   BsPersonGear,
 } from "solid-icons/bs";
 import {CgRename, CgUndo} from "solid-icons/cg";
-import {FaRegularBell, FaSolidCheck} from "solid-icons/fa";
+import {FaRegularBell, FaRegularBellSlash, FaSolidCheck} from "solid-icons/fa";
 import {FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
@@ -118,6 +118,7 @@ export namespace actionIcons {
   export const Columns: IconTypes = (props) => <FiColumns {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
   export const Reload = TbReload;
   export const Duplicate = BiRegularDuplicate;
+  export const NotifyOff = FaRegularBellSlash;
 }
 
 export namespace calendarIcons {
