@@ -208,7 +208,7 @@ class SystemController extends ApiController
                 'appEnvFgColor' => env('APP_ENV_FG_COLOR') ?: null,
                 'randomUuid' => Str::uuid()->toString(),
                 'currentDate' => DateHelper::toZuluString(new DateTimeImmutable()),
-                'userTimezone' => DateHelper::getUserTimezone(),
+                'userTimezone' => DateHelper::getUserTimezone()->getName(),
                 'commitHash' => $commitHash,
                 'commitDate' => $commitDateZulu,
                 'lastDump' => $lastDump,
