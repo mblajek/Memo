@@ -17,6 +17,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * avoid invalid parameter type invalid inspection - Collection<A,B> is already iterable<A>
+ * @psalm-type notificationCollectionAndIterable = Collection<array-key,Notification>&iterable<Notification>
+ */
 readonly class MeetingService
 {
     public function __construct(
@@ -44,7 +48,7 @@ readonly class MeetingService
             $meeting->attendants()->saveMany($attendants);
             $meeting->resources()->saveMany($resources);
 
-            /** @var iterable<Notification> $notifications - avoid invalid parameter type invalid inspection */
+            /** @var notificationCollectionAndIterable $notifications */
             $notifications = $this->meetingNotificationService
                 ->create(meeting: $meeting, meetingNotifications: $meetingNotifications);
 
@@ -102,13 +106,16 @@ readonly class MeetingService
                 }
             }
 
+            /** @var notificationCollectionAndIterable $updatedNotifications */
             $updatedNotifications = Collection::make($notificationsToUpdate);
             $this->meetingNotificationService->updateScheduledAt($meeting, $updatedNotifications);
 
+            /** @var notificationCollectionAndIterable $createdNotifications */
             $createdNotifications = $this->meetingNotificationService
                 ->create(meeting: $meeting, meetingNotifications: $meetingNotificationsToCreate);
 
-            $meeting->notifications()->saveMany($updatedNotifications->merge($createdNotifications));
+            $meeting->notifications()->saveMany($updatedNotifications);
+            $meeting->notifications()->saveMany($createdNotifications);
 
             if ($notificationsToDelete) {
                 Collection::make($notificationsToDelete)->toQuery()->delete();
