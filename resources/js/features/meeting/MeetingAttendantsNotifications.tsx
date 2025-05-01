@@ -108,6 +108,7 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
                           form.setData(`clients.${index()}.notifications`, notifications);
                         }}
                         disabled={props.viewMode}
+                        aria-checked={value()}
                       >
                         <Show when={clientValue() !== undefined && value() !== clientValue()}>
                           <div class="w-0 relative right-3">
