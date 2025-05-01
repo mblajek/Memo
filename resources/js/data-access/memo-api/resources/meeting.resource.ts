@@ -33,7 +33,25 @@ export interface MeetingStaffResource extends MeetingAttendantResourceBase {}
 
 export interface MeetingClientResource extends MeetingAttendantResourceBase {
   readonly clientGroupId: string | null;
+  readonly notifications: readonly MeetingNotificationResource[];
 }
+
+export interface MeetingNotificationResource {
+  readonly status: MeetingNotificationStatus;
+  readonly notificationMethodDictId: string;
+}
+
+export type MeetingNotificationStatus =
+  | "scheduled"
+  | "prepared"
+  | "sent"
+  | "deduplicated"
+  | "sending"
+  | "error_address"
+  | "error_try1"
+  | "error_try2"
+  | "error"
+  | "skipped";
 
 export interface MeetingResourceResource {
   readonly resourceDictId: string;
@@ -61,6 +79,10 @@ export type MeetingStaffResourceForCreate = Pick<MeetingStaffResource, "userId" 
 export type MeetingClientResourceForCreate = Pick<
   MeetingClientResource,
   "userId" | "clientGroupId" | "attendanceStatusDictId"
->;
+> & {
+  readonly notifications: readonly MeetingNotificationResourceForCreate[];
+};
+
+export type MeetingNotificationResourceForCreate = Pick<MeetingNotificationResource, "notificationMethodDictId">;
 
 export type MeetingResourceForPatch = Api.Entity & MeetingResourceForCreate;

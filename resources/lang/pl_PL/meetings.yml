@@ -56,3 +56,7 @@ resource_conflicts:
   conflicting_resource: "Inne spotkanie korzysta w tym czasie z tego zasobu"
   meeting_has_conflicts: "Konflikt: inne spotkanie korzysta w tym czasie z tego samego zasobu!"
   show_conflicts: "Pokaż konflikt w kalendarzu"
+
+notification_methods:
+  non_standard: "Ustawienie różni się od domyślnego ustawienia dla tego klienta"
+  edit_meeting_to_modify: "Edytuj spotkanie aby zmodyfikować opcje powiadomień."
