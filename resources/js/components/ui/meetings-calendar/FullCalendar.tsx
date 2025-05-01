@@ -30,6 +30,7 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {FacilityStaff} from "data-access/memo-api/groups/FacilityStaff";
 import {User} from "data-access/memo-api/groups/User";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
+import {useUserHrefs} from "features/facility-users/UserLink";
 import {useAttendantsCreator} from "features/meeting/MeetingAttendantsFields";
 import {MeetingBasicData} from "features/meeting/meeting_basic_data";
 import {createMeetingCreateModal} from "features/meeting/meeting_create_modal";
@@ -56,7 +57,7 @@ import {
   onMount,
   splitProps,
 } from "solid-js";
-import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {Button} from "../Button";
 import {Capitalize} from "../Capitalize";
 import {CheckboxInput} from "../CheckboxInput";
@@ -144,7 +145,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
   const workTimeCreateModal = createWorkTimeCreateModal();
   const workTimeModal = createWorkTimeModal();
   const location = useLocation<CalendarLocationState>();
-  const activeFacility = useActiveFacility();
+  const userHrefs = useUserHrefs();
   const featureWheelWithAlt = featureUseTrackers.calendarWheelWithAlt();
   const featureTinyCalDoubleClick = featureUseTrackers.calendarTinyCalendarDoubleClick();
   const [searchParams, setSearchParams] = useSearchParams<CalendarSearchParams>();
@@ -1162,7 +1163,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
                 </Button>
                 <div use:title={t("calendar.show_my_details")}>
                   <A
-                    href={`/${activeFacility()?.url}/staff/${userStatus.data?.user.id}`}
+                    href={userHrefs.staffHref(userStatus.data!.user.id)}
                     role="button"
                     class="w-full h-full minimal flex items-center"
                   >

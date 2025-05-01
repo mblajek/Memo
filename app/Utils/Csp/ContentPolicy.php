@@ -17,7 +17,7 @@ class ContentPolicy extends Basic
         $this->addDirective(Directive::FRAME_ANCESTORS, 'none');
         $this->addDirective(Directive::STYLE, ['fonts.googleapis.com', 'fonts.gstatic.com']);
         // Add unsafe-inline because for some reason toasts violate the CSP in the toast code.
-        // TODO: Fox this.
+        // TODO: Fix this.
         $this->addDirective(Directive::STYLE_ATTR, ['unsafe-inline']);
         $this->addDirective(Directive::FONT, ['fonts.googleapis.com', 'fonts.gstatic.com']);
         $this->addDirective(Directive::IMG, 'data:');
