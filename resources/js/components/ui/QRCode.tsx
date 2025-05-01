@@ -12,14 +12,14 @@ const MAX_FRAME_DT_MILLIS = 200;
 
 const ORBITING_DARKNESS = 0.4;
 const BALL_RADIUS_COEFF = 0.53;
-const NUM_ORBITING_BALLS = 250;
+const NUM_ORBITING_BALLS = 300;
 
 const PADDING_FRAC = 0.015;
 const LOGO_SIZE_FRAC = 0.2;
 const LOGO_FRAME_SIZE_FRAC = 0.25;
 
 export const QRCode: VoidComponent<Props> = (props) => {
-  const qrData = createMemo(() => (props.content ? headlessQr.qr(props.content, {correction: "H"}) : undefined));
+  const qrData = createMemo(() => (props.content ? headlessQr.qr(props.content, {correction: "Q"}) : undefined));
   const [logoLoaded, setLogoLoaded] = createSignal(false);
   const [rawMode, setRawMode] = createSignal(false);
   const logo = new Image();
@@ -164,15 +164,28 @@ export const QRCode: VoidComponent<Props> = (props) => {
       const prQR = prevQR!;
       prevQR = qr;
 
-      function randomOrbitRFrac() {
-        return (Math.random() * (g.orbit.maxR - g.orbit.minR) + g.orbit.minR) / g.orbit.maxR;
+      function randomOrbitRFrac(base?: Ball) {
+        const randR = Math.random() * (g.orbit.maxR - g.orbit.minR) + g.orbit.minR;
+        if (base) {
+          const baseFrac = 0.8;
+          const baseR = Math.max(Math.abs(base.x.value - g.posCenter), Math.abs(base.y.value - g.posCenter));
+          return (
+            Math.min(Math.max(baseFrac * baseR + (1 - baseFrac) * randR, g.orbit.minR), g.orbit.maxR) / g.orbit.maxR
+          );
+        } else {
+          return randR / g.orbit.maxR;
+        }
       }
 
-      function makeRandomOrbit(): Ball["orbit"] {
-        const orbitRFrac = randomOrbitRFrac();
+      function makeRandomOrbit(base?: Ball): Ball["orbit"] {
+        const orbitRFrac = randomOrbitRFrac(base);
         return {
           rFrac: orbitRFrac,
-          angle: Math.random() * 2 * Math.PI,
+          angle: base
+            ? Math.atan2(base.y.value - g.posCenter, base.x.value - g.posCenter) +
+              Math.random() * 0.2 +
+              base.orbit.angleVel * 1000
+            : Math.random() * 2 * Math.PI,
           angleVel: 0.0002 * orbitRFrac ** -1.5,
         };
       }
@@ -263,19 +276,22 @@ export const QRCode: VoidComponent<Props> = (props) => {
             destroyBallAt(ballIndex);
           }
         } else {
-          for (let i = 0; i < Math.min(balls.length, NUM_ORBITING_BALLS); i++) {
-            const ball = balls[i]!;
-            ball.orbit = makeRandomOrbit();
-            ball.orbit.angle =
-              Math.atan2(ball.y.value - g.posCenter, ball.x.value - g.posCenter) +
-              Math.random() * 0.2 +
-              ball.orbit.angleVel * 500;
-          }
-          for (let i = balls.length - 1; i >= NUM_ORBITING_BALLS; i--) {
-            destroyBallAt(i);
-          }
-          for (let i = balls.length; i < NUM_ORBITING_BALLS; i++) {
-            balls.push(makeRandomBall());
+          if (!balls.length) {
+            for (let i = 0; i < NUM_ORBITING_BALLS; i++) {
+              balls.push(makeRandomBall());
+            }
+          } else {
+            for (let i = balls.length; i < NUM_ORBITING_BALLS; i++) {
+              const initialNumBalls = balls.length;
+              balls.push(makeRandomBall(balls[Math.floor(Math.random() * initialNumBalls)]));
+            }
+            for (let i = 0; i < NUM_ORBITING_BALLS; i++) {
+              const ball = balls[i]!;
+              ball.orbit = makeRandomOrbit(ball);
+            }
+            for (let i = balls.length - 1; i >= NUM_ORBITING_BALLS; i--) {
+              destroyBallAt(i);
+            }
           }
         }
       }

@@ -116,6 +116,9 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
         {t("otp.more_info")} <InfoIcon title="" />
       </A>
       <Markdown class="mt-2" markdown={t("otp.intro_md")} linksRelativeTo="/help" />
+      <div class="py-1 flex flex-col items-center">
+        <QRCode size={250} content={hideQRCode() ? undefined : qrCodeURL()} />
+      </div>
       <HideableSection show={!otpData()} destroyWhenFullyCollapsed>
         <FelteForm
           id="otp_generate"
@@ -130,9 +133,6 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
           <FelteSubmit cancel={props.onCancel} />
         </FelteForm>
       </HideableSection>
-      <div class="py-3 flex flex-col items-center">
-        <QRCode size={250} content={hideQRCode() ? undefined : qrCodeURL()} />
-      </div>
       <HideableSection show={otpData()} destroyWhenFullyCollapsed>
         <div class="flex justify-between gap-2">
           <div>{t("otp.configure.time_left", {time: qrCodeTimeLeft()?.toFormat("m:ss")})}</div>
