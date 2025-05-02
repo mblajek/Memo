@@ -141,8 +141,8 @@ readonly class MeetingService
 
     private function fillMeetingCategory(Meeting $meeting): void
     {
-        $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
-            ->attrValues()[PositionAttributeUuidEnum::Category->apiName()]);
+        $meeting->category_dict_id = Position::query()->findOrFail($meeting->type_dict_id)
+            ->attrValue(PositionAttributeUuidEnum::Category);
     }
 
     /**

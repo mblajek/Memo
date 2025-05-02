@@ -117,9 +117,12 @@ trait HasValues
             : array_map(fn(ValueValue $value) => $value->valueScalar, $value), $this->attrValuesObjects($facility));
     }
 
-    public function attrValue(AttributeUuidEnum $attribute, null|Facility|string|true $facility = null): array
-    {
-        return $this->attrValues($facility)[$attribute->apiName()];
+    /** @return null|list<Carbon|bool|int|string>|Carbon|bool|int|string */
+    public function attrValue(
+        AttributeUuidEnum $attribute,
+        null|Facility|string|true $facility = null,
+    ): null|array|Carbon|bool|int|string {
+        return $this->attrValues($facility)[$attribute->apiName()] ?? null;
     }
 
     public function attrSave(null|Facility|string|true $facility, array $data): void
