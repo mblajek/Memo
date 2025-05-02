@@ -3,10 +3,8 @@
 namespace App\Providers;
 
 use App\Http\Permissions\PermissionMiddleware;
-use App\Models\Facility;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -40,10 +38,6 @@ class AppServiceProvider extends ServiceProvider
             }
             Vite::useHotFile($hot2FilePath);
         }
-
-        Route::bind('facility', function ($value) {
-            return Facility::query()->findOrFail($value);
-        });
 
         if (App::hasDebugModeEnabled()) {
             DB::enableQueryLog();

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Facility;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Http\Request;
@@ -24,6 +25,8 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Route::bind('facility', fn($id): Facility => Facility::query()->findOrFail($id));
+
         $this->configureRateLimiting();
 
         $this->routes(function () {

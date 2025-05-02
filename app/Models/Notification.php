@@ -12,6 +12,7 @@ use App\Rules\Valid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property ?string $facility_id
@@ -27,8 +28,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?string $service
  * @property NotificationStatus $status
  * @property ?string $error_log_entry_id
+ * @property-read ?Facility $facility
+ * @property-read ?User $user
+ * @property-read ?Client $client
+ * @property-read ?Meeting $meeting
  * @method static NotificationBuilder query()
- * @mixin Model
  */
 class Notification extends Model
 {
@@ -77,5 +81,25 @@ class Notification extends Model
         $this->service = null;
         $this->status = NotificationStatus::scheduled;
         $this->error_log_entry_id = null;
+    }
+
+    public function facility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
+    }
+
+    public function meeting(): BelongsTo
+    {
+        return $this->belongsTo(Meeting::class);
     }
 }

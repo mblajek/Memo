@@ -25,7 +25,6 @@ use Psr\Log\LogLevel;
  * @property string $message
  * @property ?string $context_text_id
  * @method static LogEntryBuilder query()
- * @mixin Model
  */
 class LogEntry extends Model
 {

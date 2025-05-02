@@ -129,7 +129,7 @@ class User extends Authenticatable
         bool $isResource,
         bool $isInsert,
         bool $isPatch,
-        Model $original = null
+        ?Model $original = null
     ): array {
         return [
             'name' => Valid::trimmed(['required'], sometimes: $isPatch),
@@ -279,7 +279,7 @@ class User extends Authenticatable
 
     public function passwordHashHash(): string
     {
-        return md5($this->id . $this->password);
+        return hash('sha256', $this->id . $this->password); // low complexity hash of password hash
     }
 
     public static function fromAuthenticatable(?AuthenticatableContract $authenticatable): ?self

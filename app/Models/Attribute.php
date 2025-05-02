@@ -8,12 +8,11 @@ use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\QueryBuilders\AttributeBuilder;
 use App\Models\Traits\BaseModel;
+use App\Models\Traits\HasCache;
 use App\Models\Traits\HasValidator;
-use App\Models\UuidEnum\AttributeUuidEnum;
 use App\Rules\Valid;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
-use BackedEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
 
@@ -35,6 +34,7 @@ class Attribute extends Model
 {
     use BaseModel;
     use HasValidator;
+    use HasCache;
 
     protected $table = 'attributes';
 
@@ -81,8 +81,6 @@ class Attribute extends Model
         };
     }
 
-    private static ?array $all = null;
-
     public function getTqueryDataType(): TqDataTypeEnum|TqDictDef
     {
         return $this->type->getTqueryDataType(
@@ -92,14 +90,6 @@ class Attribute extends Model
         );
     }
 
-    public static function getAll(): array
-    {
-        if (self::$all === null) {
-            self::$all = self::query()->orderBy('default_order')->get()->keyBy('id')->all();
-        }
-        return self::$all;
-    }
-
     /** @return array<non-falsy-string, self> */
     public static function getBy(
         null|Facility|string|true $facility = null,
@@ -107,14 +97,9 @@ class Attribute extends Model
     ): array {
         $facility = ($facility === true) ? PermissionMiddleware::permissions()->facility : $facility;
         $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
-        return array_filter(self::getAll(), fn(self $attribute) => //
+        return array_filter(self::getCacheAll(), fn(self $attribute) => //
             ($facilityId === null || $attribute->facility_id === null || $attribute->facility_id === $facilityId)
             && ($table === null || $attribute->getAttributeValue('table') === $table));
-    }
-
-    public static function getById((AttributeUuidEnum&BackedEnum)|string $id): self
-    {
-        return Attribute::getAll()[is_string($id) ? $id : $id->value];
     }
 
     public function getSingleValidator(): string|array

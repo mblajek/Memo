@@ -8,6 +8,7 @@ use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
 use App\Models\Facility;
 use App\Models\Traits\BaseModel;
+use App\Models\UuidEnum\AttributeUuidEnum;
 use App\Models\Value;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -41,7 +42,7 @@ trait HasValues
         };
     }
 
-    private function attrCastDb(Carbon|bool|int|string $value, AttributeType $type): Carbon|bool|int|string
+    private function attrCastDb(Carbon|bool|int|string $value, AttributeType $type): Carbon|int|string
     {
         return match ($type) {
             AttributeType::Bool, AttributeType::Int => (int)$value,
@@ -56,7 +57,7 @@ trait HasValues
         return AttributeTable::from(self::getInstanceField('table'));
     }
 
-    /** @return array<string, Attribute> */
+    /** @return array<non-falsy-string, Attribute> */
     public static function attrMap(null|Facility|string|true $facility = null): array
     {
         $attrMap = []; // todo: can be moved to static variable facility_id => list<Attribute>
@@ -66,8 +67,11 @@ trait HasValues
         return $attrMap;
     }
 
+    /** @return array<non-falsy-string, list<ValueValue>|ValueValue> */
     public function attrValuesObjects(null|Facility|string|true $facility = null): array
     {
+        // todo: check facilityId for cached $this->attrValues
+
         $attributes = self::attrMap(facility: $facility);
         $modelAttributes = $this->getAttributes();
 
@@ -106,10 +110,16 @@ trait HasValues
         return $this->attrValues;
     }
 
+    /** @return array<non-falsy-string, list<Carbon|bool|int|string>|Carbon|bool|int|string> */
     public function attrValues(null|Facility|string|true $facility = null): array
     {
         return array_map(fn(ValueValue|array $value) => ($value instanceof ValueValue) ? $value->valueScalar
             : array_map(fn(ValueValue $value) => $value->valueScalar, $value), $this->attrValuesObjects($facility));
+    }
+
+    public function attrValue(AttributeUuidEnum $attribute, null|Facility|string|true $facility = null): array
+    {
+        return $this->attrValues($facility)[$attribute->apiName()];
     }
 
     public function attrSave(null|Facility|string|true $facility, array $data): void
