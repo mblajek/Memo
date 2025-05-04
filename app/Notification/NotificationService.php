@@ -8,11 +8,21 @@ use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\Notification;
 use App\Models\User;
+use App\Services\System\LogService;
 use App\Utils\Nullable;
 use DateTimeImmutable;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use Psr\Log\LogLevel;
+use Throwable;
 
-class NotificationService
+readonly class NotificationService
 {
+    public function __construct(
+        private LogService $logService,
+    ) {
+    }
+
     public function setScheduledAt(
         Notification $notification,
         ?DateTimeImmutable $scheduledAt,
@@ -82,5 +92,38 @@ class NotificationService
         $this->setScheduledAt($notification, $scheduledAt);
 
         return $notification;
+    }
+
+    public function send(Notification $notification): int
+    {
+        /** @var AbstractNotificationSendService $service */
+        $service = App::make($notification->notification_method_dict_id->service());
+        try {
+            $notification->service = $service->sendNotification($notification);
+            DB::transaction(function () use ($notification) {
+                $notification->status = NotificationStatus::sent;
+                $notification->save();
+                foreach ($notification->getDeduplicated() as $deduplicated) {
+                    $deduplicated->status = NotificationStatus::deduplicated;
+                    $deduplicated->save();
+                }
+            });
+        } catch (Throwable $error) {
+            $notification->status = match ($notification->status) {
+                NotificationStatus::error_try1 => NotificationStatus::error_try2,
+                NotificationStatus::error_try2 => NotificationStatus::error,
+                default => NotificationStatus::error_try1,
+            };
+            if ($notification->status === NotificationStatus::error) {
+                $notification->error_log_entry_id = $this->logService->addEntry(
+                    request: null,
+                    source: 'notification_send_error',
+                    logLevel: LogLevel::ERROR,
+                    message: $error->getMessage(),
+                );
+            }
+            $notification->save();
+        }
+        return ($notification->status === NotificationStatus::sent) ? 1 : 0;
     }
 }

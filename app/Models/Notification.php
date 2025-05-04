@@ -10,6 +10,7 @@ use App\Models\Traits\HasValidator;
 use App\Notification\NotificationStatus;
 use App\Rules\Valid;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,6 +41,8 @@ class Notification extends Model
     use HasUuid;
     use BaseModel;
     use HasValidator;
+
+    private Collection $deduplicated; // todo?: relation
 
     protected $table = 'notifications';
 
@@ -101,5 +104,18 @@ class Notification extends Model
     public function meeting(): BelongsTo
     {
         return $this->belongsTo(Meeting::class);
+    }
+
+    public function addDeduplicated(self $notification): void
+    {
+        $this->deduplicated ??= new Collection();
+        $this->deduplicated->add($notification);
+    }
+
+    /** @return Collection<array-key,self> */
+    public function getDeduplicated(): Collection
+    {
+        $this->deduplicated ??= new Collection();
+        return $this->deduplicated;
     }
 }

@@ -10,22 +10,14 @@ use App\Utils\Date\DateHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Env;
 use IntlDateFormatter;
 
 readonly class MeetingNotificationService
 {
-    // todo: in facility or env
-    private const string MESSAGE_TEMPLATE = 'Spotkanie będzie {datetime}';
-
     public function __construct(
         private NotificationService $notificationService,
     ) {
-    }
-
-    public function update(
-        Meeting $meeting,
-    ) {
-        throw new \Exception('Not implemented');
     }
 
     /**
@@ -66,7 +58,7 @@ readonly class MeetingNotificationService
                     meetingId: $meeting->id,
                     notificationMethodId: $meetingNotification->notificationMethodDictId,
                     address: null,
-                    subject: self::MESSAGE_TEMPLATE,
+                    subject: Env::getOrFail('TMP_MEETING_NOTIFICATION_SUBJECT'),
                     scheduledAt: $scheduledAt,
                 ),
             );
@@ -74,7 +66,7 @@ readonly class MeetingNotificationService
         return $notifications;
     }
 
-    private function meetingDatetimeLocale(Meeting $meeting): DateTimeImmutable
+    public function meetingDatetimeLocale(Meeting $meeting): DateTimeImmutable
     {
         /** @noinspection PhpNamedArgumentMightBeUnresolvedInspection */
         return DateTimeImmutable::createFromFormat(
@@ -84,7 +76,7 @@ readonly class MeetingNotificationService
         )->setTime(hour: 0, minute: $meeting->start_dayminute);
     }
 
-    private function formatDateTimeLocale(Meeting $meeting): string
+    public function formatDateTimeLocale(Meeting $meeting): string
     {
         return IntlDateFormatter::formatObject(
             datetime: $this->meetingDatetimeLocale($meeting),

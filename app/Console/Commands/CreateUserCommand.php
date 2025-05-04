@@ -5,7 +5,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Permissions\PermissionMiddleware;
-use App\Http\Permissions\PermissionObject;
+use App\Http\Permissions\PermissionObjectCreator;
 use App\Models\Grant;
 use App\Models\User;
 use DateTimeImmutable;
@@ -20,22 +20,8 @@ class CreateUserCommand extends Command
 
     public function handle(): void
     {
-        PermissionMiddleware::setPermissions(
-            new PermissionObject(
-                user: User::query()->findOrFail(User::SYSTEM),
-                facility: null,
-                unauthorised: false,
-                loggedIn: true,
-                unverified: true,
-                verified: true,
-                globalAdmin: true,
-                facilityMember: false,
-                facilityClient: false,
-                facilityStaff: false,
-                facilityAdmin: false,
-                developer: false,
-            )
-        );
+        PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
+
         $user = User::query()->newModelInstance();
         $user->created_by = User::SYSTEM;
         $globalAdminGrant = null;
