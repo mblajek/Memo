@@ -8,7 +8,7 @@ type _Directives = typeof hoverSignal;
 
 export type ResourcesSelectionMode = "radio" | "checkbox";
 
-interface Props extends htmlAttributes.div {
+interface Props extends Omit<htmlAttributes.div, "onSelectionChange"> {
   readonly resourceGroups?: readonly ResourceGroup[];
   readonly mode: ResourcesSelectionMode;
   readonly selection: ReadonlySet<string>;

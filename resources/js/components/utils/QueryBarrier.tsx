@@ -17,7 +17,7 @@ export interface QueryBarrierProps {
 }
 
 /**
- * Default handler for tanstack/solid-query's `createQuery` result
+ * Default handler for tanstack/solid-query's `useQuery` result
  *
  * @todo better looking Error
  */
@@ -35,7 +35,7 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
       // that didn't start their first fetch yet.
       for (const query of props.queries) {
         if (!query.isFetchedAfterMount && query.fetchStatus === "idle") {
-          query.refetch();
+          void query.refetch();
         }
       }
     }

@@ -389,7 +389,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
               >
                 <For each={group.attributeIds}>
                   {(attributeId) => {
-                    const {attribute, selected} = relevantAttributes()!.get(attributeId)!;
+                    const {attribute, selected} = relevantAttributes().get(attributeId)!;
                     const isEmpty = () => getIsEmpty(form.data(fieldName(attribute)), selected.override?.isEmpty);
                     return (
                       <HideableSection

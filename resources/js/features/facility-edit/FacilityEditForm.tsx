@@ -1,4 +1,4 @@
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
@@ -23,11 +23,11 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   // If there ever will be editable admin fields in facility, we should add /admin/facility/list endpoint.
   // For now, it's just public name & url, so we can take it from System which we always fetch anyway.
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const oldFacility = () => facilitiesQuery.data?.find((facility) => facility.id === props.id);
 
   const invalidate = useInvalidator();
-  const facilityMutation = createMutation(() => ({
+  const facilityMutation = useMutation(() => ({
     mutationFn: Admin.updateFacility,
     meta: {isFormSubmit: true},
   }));

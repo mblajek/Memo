@@ -107,7 +107,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const userHrefs = useUserHrefs();
   const {form, translations, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
-  const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
+  const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()) : undefined);
   const showConflicts = createMemo(() => props.name === "staff" && (props.showConflicts ?? true));
   const conflictsFinder = createMemo(
     on(showConflicts, (showConflicts) =>
@@ -151,7 +151,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const groupsByClientId = createMemo((): ReadonlyMap<string, readonly string[]> => {
     const map = new Map<string, readonly string[]>();
     for (const client of selectedClients()) {
-      map.set(client.id as string, client.groupIds);
+      map.set(client.id, client.groupIds);
     }
     return map;
   });
@@ -228,7 +228,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             if (attendanceGroups.length === 0 || (attendanceGroups.length === 1 && !attendanceGroups[0])) {
               setMode("none");
             } else if (attendanceGroups.length === 1) {
-              setMode("shared", attendanceGroups[0]!);
+              setMode("shared", attendanceGroups[0]);
             } else {
               setMode("separate");
             }

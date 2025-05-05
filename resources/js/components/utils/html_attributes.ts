@@ -94,7 +94,7 @@ export namespace htmlAttributes {
                   )}) and style from overrides (${JSON.stringify(overrides.style)})`,
                 );
               return typeof attribs.style === "string"
-                ? `${attribs.style} ; ${overrides.style}`
+                ? `${attribs.style} ; ${overrides.style as string}`
                 : {
                     ...(attribs.style as JSX.CSSProperties),
                     ...skipUndefinedValues(overrides.style as JSX.CSSProperties),

@@ -1,5 +1,5 @@
 import {Navigate} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {PermissionsResource} from "data-access/memo-api/resources/permissions.resource";
@@ -52,12 +52,12 @@ export const AccessBarrier: ParentComponent<Props> = (allProps) => {
     allProps,
   );
   const [queryBarrierProps, props] = splitProps(defProps, ["error", "pending"]);
-  const statusQuery = createQuery(User.statusQueryOptions);
+  const statusQuery = useQuery(User.statusQueryOptions);
   const accessGranted = () => {
     if (!statusQuery.isSuccess) {
       return false;
     }
-    const permissions = statusQuery.data!.permissions as Partial<Record<PermissionKey, boolean>>;
+    const permissions = statusQuery.data.permissions as Partial<Record<PermissionKey, boolean>>;
     return props.roles?.every((role) => permissions[role]);
   };
   return (

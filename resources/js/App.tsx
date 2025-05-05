@@ -1,5 +1,5 @@
 import {Navigate, Route, RouteProps, Router, useNavigate, useParams} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {AppContextProvider} from "app_context";
 import {capitalizeString} from "components/ui/Capitalize";
 import {AccessBarrier} from "components/utils/AccessBarrier";
@@ -45,7 +45,7 @@ const TimeTables = lazyAutoPreload(() => import("features/root/pages/TimeTables.
 const WeeklyTimeTables = lazyAutoPreload(() => import("features/root/pages/WeeklyTimeTables.page"));
 
 const App: VoidComponent = () => {
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
 
   /**
    * A component for redirecting the __facility links to an actual facility.

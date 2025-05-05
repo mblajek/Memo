@@ -158,7 +158,7 @@ export const TableExportButton: VoidComponent = () => {
                   <Button
                     onClick={() => {
                       popOver.close();
-                      exportRows(allRowsExportData()!);
+                      void exportRows(allRowsExportData()!);
                     }}
                   >
                     <ItemLabel pages="all" count={allRowsExportData()!.numRows} />
@@ -167,7 +167,7 @@ export const TableExportButton: VoidComponent = () => {
                 <Button
                   onClick={() => {
                     popOver.close();
-                    exportRows(currentPageExportData());
+                    void exportRows(currentPageExportData());
                   }}
                 >
                   <ItemLabel

@@ -1,5 +1,5 @@
 import {useNavigate} from "@solidjs/router";
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {resetDEV} from "components/utils/dev_mode";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -9,7 +9,7 @@ import {setProbablyLoggedIn} from "state/probablyLoggedIn.state";
 export function useLogOut() {
   const navigate = useNavigate();
   const invalidate = useInvalidator();
-  const mutation = createMutation(() => ({
+  const mutation = useMutation(() => ({
     mutationFn: () => User.logout(),
     meta: {
       isFormSubmit: true,

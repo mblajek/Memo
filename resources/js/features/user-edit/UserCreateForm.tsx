@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useLangFunc} from "components/utils/lang";
 import {currentDate} from "components/utils/time";
@@ -18,7 +18,7 @@ interface Props {
 export const UserCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
-  const userMutation = createMutation(() => ({
+  const userMutation = useMutation(() => ({
     mutationFn: Admin.createUser,
     meta: {isFormSubmit: true},
   }));

@@ -1,4 +1,4 @@
-import {CreateQueryResult} from "@tanstack/solid-query";
+import {UseQueryResult} from "@tanstack/solid-query";
 import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -96,7 +96,7 @@ export function useCalendarBlocksAndEvents({
   viewMeeting: (params: MeetingModalParams) => void;
   viewWorkTime: (params: WorkTimeModalParams) => void;
 }): {
-  meetingsDataQuery: CreateQueryResult;
+  meetingsDataQuery: UseQueryResult;
   blocks: () => readonly Bl[];
   events: () => readonly Ev[];
 } {

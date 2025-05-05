@@ -36,7 +36,7 @@ export const RichTextViewEdit: VoidComponent<Props> = (allProps) => {
     >
       <FieldBox name={props.name}>
         <PlaceholderField name={props.name} />
-        <RichTextView class="max-h-60" text={form.data(props.name) as string} fallback={<EmptyValueSymbol />} />
+        <RichTextView class="max-h-60" text={form.data(props.name)} fallback={<EmptyValueSymbol />} />
       </FieldBox>
     </Show>
   );

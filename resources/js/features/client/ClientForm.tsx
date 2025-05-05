@@ -43,7 +43,7 @@ export const ClientForm: VoidComponent<Props> = (allProps) => {
           <>
             <TextField name="name" autofocus />
             <ClientFields editMode />
-            <FelteSubmit cancel={props.onCancel ? cancel : undefined} />
+            <FelteSubmit cancel={props.onCancel ? () => void cancel() : undefined} />
           </>
         );
       }}

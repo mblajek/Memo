@@ -18,7 +18,7 @@ export const AttendantListItem: VoidComponent<AttendantListItemProps> = (props) 
   const {attendanceStatusDict} = useFixedDictionaries();
   return (
     <li>
-      <UserLink type={props.type} link={false} userId={props.attendant.userId} name={props.attendant.name} />
+      <UserLink type={props.type} link={false} userId={props.attendant.userId} userName={props.attendant.name} />
       <Show when={props.showAttendance && props.attendant.attendanceStatusDictId !== attendanceStatusDict()?.ok.id}>
         {" "}
         <span class="text-grey-text">

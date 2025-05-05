@@ -1,5 +1,5 @@
 import {useParams} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {createColumnHelper} from "@tanstack/table-core";
 import {createPersistence} from "components/persistence/persistence";
@@ -18,7 +18,7 @@ import {filterByFacility, textSort, useAttrValueFormatter} from "./util";
 
 export default (() => {
   const params = useParams();
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   function getFacility(facilityId: string) {
     return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
   }
@@ -87,7 +87,7 @@ export default (() => {
         }),
         ...((attributes() &&
           dictionary()
-            ?.resource.positionRequiredAttributeIds?.map((attrId) => attributes()!.getById(attrId)!)
+            ?.resource.positionRequiredAttributeIds?.map((attrId) => attributes()!.getById(attrId))
             .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
             .map((attr) =>
               h.accessor((p) => attr.readFrom(p.resource), {

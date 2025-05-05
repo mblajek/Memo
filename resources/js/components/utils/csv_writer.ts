@@ -41,7 +41,7 @@ export async function writeCSV({
       await writeLine(row.map((cell) => (cell === undefined ? "" : format(cell))).join(separator));
     await writer.close();
   } catch (e) {
-    writer.abort();
+    void writer.abort();
     throw e;
   }
 }

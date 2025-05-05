@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
@@ -33,7 +33,7 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
   const clientGroupCreateModal = createClientGroupCreateModal();
   const addToClientGroupModal = createAddToClientGroupModal();
   const groupIds = () => props.client.client.groupIds || [];
-  const dataQuery = createQuery(() => ({
+  const dataQuery = useQuery(() => ({
     ...FacilityClientGroup.clientGroupsQueryOptions(groupIds()),
     enabled: groupIds().length > 0,
   }));

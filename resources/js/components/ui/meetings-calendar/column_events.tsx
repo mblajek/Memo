@@ -75,7 +75,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
                 <For each={meeting().clients.slice(0, MAX_NUM_CLIENTS + 1)}>
                   {(client, ind) => (
                     <Show when={ind() < MAX_NUM_CLIENTS} fallback={t("ellipsis")}>
-                      <UserLink icon="tiny" type="clients" link={false} userId={client.userId} name={client.name} />
+                      <UserLink icon="tiny" type="clients" link={false} userId={client.userId} userName={client.name} />
                     </Show>
                   )}
                 </For>

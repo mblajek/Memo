@@ -54,7 +54,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
     version: [1],
   });
   const text = () => {
-    const value = form.data(props.name) as string | undefined;
+    const value: string | undefined = form.data(props.name);
     return value ? trimInput(value) : undefined;
   };
   return (

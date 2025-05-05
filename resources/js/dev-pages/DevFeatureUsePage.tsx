@@ -182,7 +182,8 @@ function getKeyStr({path, details}: BreakdownKey) {
     } else if (v && typeof v === "object") {
       return `{${Object.entries(v)
         .sort((a, b) => b[1] - a[1])
-        .map(([k, v]) => `${k}:${shortJSONString(v)}`)}}`;
+        .map(([k, v]) => `${k}:${shortJSONString(v)}`)
+        .join(", ")}}`;
     } else {
       return String(v);
     }

@@ -1,5 +1,5 @@
 import {useNavigate, useParams} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {Select} from "components/ui/form/Select";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
 import {System} from "data-access/memo-api/groups/System";
@@ -10,8 +10,8 @@ import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.stat
 export const FacilityControl: VoidComponent = () => {
   const navigate = useNavigate();
   const params = useParams();
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
-  const statusQuery = createQuery(User.statusQueryOptions);
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
+  const statusQuery = useQuery(User.statusQueryOptions);
   const userFacilities = createMemo(() =>
     facilitiesQuery.data
       ?.filter((facility) =>
@@ -32,14 +32,14 @@ export const FacilityControl: VoidComponent = () => {
       // selected.
       return (
         facilities.find(({url}) => url === params.facilityUrl) ||
-        facilities.find(({id}) => id === statusQuery.data!.user.lastLoginFacilityId) ||
+        facilities.find(({id}) => id === statusQuery.data.user.lastLoginFacilityId) ||
         facilities[0]
       )?.id;
     },
     effect: (facilityId) => {
       setActiveFacilityId(facilityId);
       if (facilityId !== statusQuery.data!.user.lastLoginFacilityId) {
-        User.setLastLoginFacilityId(facilityId);
+        void User.setLastLoginFacilityId(facilityId);
       }
     },
   });
@@ -72,7 +72,7 @@ export const FacilityControl: VoidComponent = () => {
                         navigate(`/${url}`);
                       });
                     }
-                    User.setLastLoginFacilityId(facilityId);
+                    void User.setLastLoginFacilityId(facilityId);
                   }
                 }}
               />
