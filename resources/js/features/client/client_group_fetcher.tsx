@@ -1,4 +1,4 @@
-import {createQuery, keepPreviousData} from "@tanstack/solid-query";
+import {useQuery, keepPreviousData} from "@tanstack/solid-query";
 import {createCached} from "components/utils/cache";
 import {delayedAccessor} from "components/utils/debounce";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
@@ -8,7 +8,7 @@ export const useClientGroupFetcher = createCached(() => {
   const [clientGroupsCounts, setClientGroupsCounts] = createSignal<ReadonlyMap<string, number>>(new Map());
   // eslint-disable-next-line solid/reactivity
   const delayedClientGroups = delayedAccessor((): readonly string[] => [...clientGroupsCounts().keys()], {timeMs: 100});
-  const dataQuery = createQuery(() => ({
+  const dataQuery = useQuery(() => ({
     ...FacilityClientGroup.clientGroupsQueryOptions(delayedClientGroups()),
     enabled: delayedClientGroups().length > 0,
     placeholderData: keepPreviousData,

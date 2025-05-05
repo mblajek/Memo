@@ -18,7 +18,7 @@ interface Props extends Partial<AnchorProps> {
   /** The user's type, if known (otherwise it is fetched). */
   readonly type?: FacilityUserType;
   /** The user's display name, if known (otherwise it is fetched). */
-  readonly name?: string;
+  readonly userName?: string;
   /** Whether to display the staff/client icon. Default: true. */
   readonly icon?: boolean | "tiny";
   /** Whether to show the name as text or link (if false, just the icon is shown). Default: true. */
@@ -46,16 +46,17 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     "newTabLink",
     "allowWrap",
     "userId",
-    "name",
+    "userName",
   ]);
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
   const invalidate = useInvalidator();
   const membersData = useMembersData();
+  const userHrefs = useUserHrefs();
   const memberData = createMemo(() =>
     props.userId
       ? membersData.getById(props.userId) || {
-          name: props.name,
+          name: props.userName,
           isStaff: props.type === "staff",
           // Initially assume staff is active.
           isActiveStaff: props.type === "staff",
@@ -89,12 +90,12 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     }
   };
   const linkHref = () => {
-    if (props.newTabLink || (props.link ?? true)) {
+    if (allProps.userId && (props.newTabLink || (props.link ?? true))) {
       const mData = memberData()!;
       if (mData.isStaff) {
-        return `/${activeFacility()?.url}/staff/${allProps.userId}`;
+        return userHrefs.staffHref(allProps.userId);
       } else if (mData.isClient) {
-        return `/${activeFacility()?.url}/clients/${allProps.userId}`;
+        return userHrefs.clientHref(allProps.userId);
       }
     }
   };
@@ -148,3 +149,15 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     </Show>
   );
 };
+
+export function useUserHrefs() {
+  const activeFacility = useActiveFacility();
+  return {
+    staffHref(userId: string) {
+      return `/${activeFacility()?.url}/staff/${userId}`;
+    },
+    clientHref(userId: string) {
+      return `/${activeFacility()?.url}/clients/${userId}`;
+    },
+  };
+}

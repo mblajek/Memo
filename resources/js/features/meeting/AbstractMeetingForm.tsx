@@ -49,7 +49,7 @@ export const AbstractMeetingForm = <MeetingFormType extends Obj>(allProps: Props
       class="flex flex-col gap-3"
       {...formProps}
       onError={(errorResp, ctx) => {
-        formProps.onError?.(errorResp, ctx);
+        void formProps.onError?.(errorResp, ctx);
         if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
           const errors = errorResp.response.data.errors;
           // If duration is missing, but type is also missing, ignore the missing duration error. Selecting a type

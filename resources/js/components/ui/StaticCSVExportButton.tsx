@@ -99,7 +99,7 @@ export const StaticCSVExportButton: VoidComponent<Props> = (allProps) => {
       <SplitButton
         {...buttonProps}
         divClass={props.divClass}
-        onClick={exportData}
+        onClick={() => void exportData()}
         popOver={(popOver) => (
           <div class="p-1 flex flex-col gap-1">
             <CSVExportSupportWarning />
@@ -155,7 +155,7 @@ export const StaticCSVExportButton: VoidComponent<Props> = (allProps) => {
               <Button class="min-w-60 secondary" onClick={[setPreviewOpen, false]}>
                 {t("actions.close")}
               </Button>
-              <Button class="min-w-60 primary" onClick={exportData}>
+              <Button class="min-w-60 primary" onClick={() => void exportData()}>
                 <actionIcons.ExportCSV class="inlineIcon" /> {t("csv_export.label")}
               </Button>
             </div>

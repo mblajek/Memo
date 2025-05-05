@@ -1,4 +1,4 @@
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {PasswordField} from "components/ui/form/PasswordField";
@@ -37,8 +37,8 @@ export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props
   const t = useLangFunc();
   const logOut = useLogOut();
   const invalidate = useInvalidator();
-  const statusQuery = createQuery(User.statusQueryOptions);
-  const mutation = createMutation(() => ({
+  const statusQuery = useQuery(User.statusQueryOptions);
+  const mutation = useMutation(() => ({
     mutationFn: User.changePassword,
     meta: {isFormSubmit: true},
   }));

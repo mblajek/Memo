@@ -4,6 +4,7 @@ import {Button} from "components/ui/Button";
 import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {HideableSection} from "components/ui/HideableSection";
+import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {DocsModalInfoIcon, createDocsModal} from "components/ui/docs_modal";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
@@ -46,7 +47,7 @@ import {z} from "zod";
 import {ClientGroupBox} from "../client/ClientGroupBox";
 import {SharedClientGroupLabel} from "../client/SharedClientGroupLabel";
 import {useClientGroupFetcher} from "../client/client_group_fetcher";
-import {UserLink} from "../facility-users/UserLink";
+import {UserLink, useUserHrefs} from "../facility-users/UserLink";
 import {useAutoRelatedClients} from "../facility-users/auto_releated_clients";
 import {MeetingFormType} from "./MeetingForm";
 import {MeetingAttendanceStatus, MeetingAttendanceStatusInfoIcon} from "./attendance_status_info";
@@ -103,9 +104,10 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const autoRelatedClients = useAutoRelatedClients();
   const clientGroupFetcher = useClientGroupFetcher();
   const docsModal = createDocsModal();
+  const userHrefs = useUserHrefs();
   const {form, translations, isFormDisabled} = useFormContext<MeetingFormType>();
   const meetingStatusId = () => form.data("statusDictId");
-  const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()!) : undefined);
+  const meetingStatus = () => (meetingStatusId() ? dictionaries()?.getPositionById(meetingStatusId()) : undefined);
   const showConflicts = createMemo(() => props.name === "staff" && (props.showConflicts ?? true));
   const conflictsFinder = createMemo(
     on(showConflicts, (showConflicts) =>
@@ -149,7 +151,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
   const groupsByClientId = createMemo((): ReadonlyMap<string, readonly string[]> => {
     const map = new Map<string, readonly string[]>();
     for (const client of selectedClients()) {
-      map.set(client.id as string, client.groupIds);
+      map.set(client.id, client.groupIds);
     }
     return map;
   });
@@ -226,7 +228,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             if (attendanceGroups.length === 0 || (attendanceGroups.length === 1 && !attendanceGroups[0])) {
               setMode("none");
             } else if (attendanceGroups.length === 1) {
-              setMode("shared", attendanceGroups[0]!);
+              setMode("shared", attendanceGroups[0]);
             } else {
               setMode("separate");
             }
@@ -481,6 +483,21 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                             small
                           />
                         </div>
+                        <Show when={userId()}>
+                          {(userId) => (
+                            <div class="py-0.5">
+                              <LinkWithNewTabLink
+                                href={
+                                  props.name === "staff"
+                                    ? userHrefs.staffHref(userId())
+                                    : userHrefs.clientHref(userId())
+                                }
+                                sameTabLink={false}
+                                newTabLink
+                              />
+                            </div>
+                          )}
+                        </Show>
                       </Match>
                     </Switch>
                     <Switch>

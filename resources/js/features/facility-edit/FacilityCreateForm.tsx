@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {FormType} from "components/felte-form/FelteForm";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
@@ -16,7 +16,7 @@ interface Props {
 export const FacilityCreateForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
-  const facilityMutation = createMutation(() => ({
+  const facilityMutation = useMutation(() => ({
     mutationFn: Admin.createFacility,
     meta: {isFormSubmit: true},
   }));

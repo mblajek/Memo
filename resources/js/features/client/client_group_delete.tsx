@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {DeleteButton} from "components/ui/Button";
 import {createConfirmation} from "components/ui/confirmation";
 import {userIcons} from "components/ui/icons";
@@ -20,7 +20,7 @@ export const ClientGroupDeleteButton: VoidComponent<ClientGroupDeleteButtonProps
   const t = useLangFunc();
   const confirmation = createConfirmation();
   const invalidate = useInvalidator();
-  const deleteMutation = createMutation(() => ({
+  const deleteMutation = useMutation(() => ({
     mutationFn: FacilityClientGroup.deleteClientGroup,
     meta: {isFormSubmit: true},
   }));
@@ -61,7 +61,7 @@ export const ClientGroupDeleteClientButton: VoidComponent<ClientGroupDeleteClien
   const t = useLangFunc();
   const confirmation = createConfirmation();
   const invalidate = useInvalidator();
-  const clientGroupPatchMutation = createMutation(() => ({
+  const clientGroupPatchMutation = useMutation(() => ({
     mutationFn: FacilityClientGroup.updateClientGroup,
     meta: {isFormSubmit: true},
   }));

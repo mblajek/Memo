@@ -1,4 +1,4 @@
-import {CreateQueryResult} from "@tanstack/solid-query";
+import {UseQueryResult} from "@tanstack/solid-query";
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
 import {AxiosError} from "axios";
 import {ColumnGroup} from "components/ui/Table/column_groups";
@@ -494,7 +494,7 @@ export function tableHelper({
   translations,
 }: {
   requestController: RequestController;
-  dataQuery: CreateQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>;
+  dataQuery: UseQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>;
   translations?: TableTranslations;
 }): TableHelperInterface {
   const t = useLangFunc();

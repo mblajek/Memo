@@ -1,5 +1,5 @@
 import {A} from "@solidjs/router";
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {CheckboxInput} from "components/ui/CheckboxInput";
@@ -54,12 +54,12 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
   const t = useLangFunc();
   const envInfo = useEnvInfo();
   const invalidate = useInvalidator();
-  const statusQuery = createQuery(User.statusQueryOptions);
-  const generateMutation = createMutation(() => ({
+  const statusQuery = useQuery(User.statusQueryOptions);
+  const generateMutation = useMutation(() => ({
     mutationFn: User.generateOTP,
     meta: {isFormSubmit: true},
   }));
-  const configureMutation = createMutation(() => ({
+  const configureMutation = useMutation(() => ({
     mutationFn: User.configureOTP,
     meta: {isFormSubmit: true},
   }));

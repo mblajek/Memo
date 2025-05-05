@@ -1,5 +1,5 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
@@ -48,7 +48,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
     },
     storage: localStorageStorage("Login"),
   });
-  const mutation = createMutation(() => ({
+  const mutation = useMutation(() => ({
     mutationFn: User.login,
     meta: {
       isFormSubmit: true,

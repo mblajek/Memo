@@ -4,7 +4,7 @@ import {describe, expect, test} from "vitest";
 import {Dictionaries} from "./dictionaries";
 
 describe("Dictionaries", () => {
-  const dictionaries = Dictionaries.fromResources(((key) => `t(${key})`) as LangFunc, [
+  const dictionaries = Dictionaries.fromResources(((key) => `t(${key as string})`) as LangFunc, [
     {
       id: "d1",
       name: "dict1-global",

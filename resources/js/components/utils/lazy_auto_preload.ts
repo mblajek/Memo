@@ -22,11 +22,10 @@ const PRELOAD_INTERVAL_MILLIS = 2000;
 
 /** Wait the interval, then preload one component, and repeat. */
 function schedulePreload() {
-  preloadTimer.set(async () => {
+  preloadTimer.set(() => {
     const preload = componentPreloadFuncs.shift();
     if (preload) {
-      await preload();
-      schedulePreload();
+      void preload().then(schedulePreload);
     }
   }, PRELOAD_INTERVAL_MILLIS);
 }
@@ -49,7 +48,7 @@ export function lazyAutoPreload<T extends Component<any>>(fn: () => Promise<{def
     updateInfo({preloaded: true});
     return await lazyComponent.preload();
   };
-  updateInfo({preload});
+  updateInfo({preload: () => void preload()});
   const lazyAutoPreloadComponent = Object.assign(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (props: any) => {

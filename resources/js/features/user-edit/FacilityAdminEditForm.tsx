@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {CheckboxField} from "components/ui/form/CheckboxField";
@@ -92,7 +92,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
   });
   const isManagedByCurrentFacility = () => user()?.managedByFacilityId === activeFacilityId();
   const invalidate = useInvalidator();
-  const userMutation = createMutation(() => ({
+  const userMutation = useMutation(() => ({
     mutationFn: FacilityAdmin.updateFacilityAdmin,
     meta: {isFormSubmit: true},
   }));

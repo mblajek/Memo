@@ -13,11 +13,11 @@ interface Props {
 export const TableSearch: VoidComponent<ParentProps<Props>> = (props) => {
   const t = useLangFunc();
   const table = useTable();
-  const [filter, setFilter] = createSignal(table.getState().globalFilter);
+  const [filter, setFilter] = createSignal(table.getState().globalFilter as string);
   // eslint-disable-next-line solid/reactivity
   const debouncedFilter = debouncedFilterTextAccessor(filter);
   createComputed(() => table.setGlobalFilter(debouncedFilter()));
-  createComputed(() => setFilter(table.getState().globalFilter));
+  createComputed(() => setFilter(table.getState().globalFilter as string));
   return (
     <SearchInput
       divClass={cx("flex items-stretch", props.divClass)}

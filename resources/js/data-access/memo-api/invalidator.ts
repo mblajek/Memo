@@ -14,7 +14,7 @@ const [throttled, setThrottled] = createSignal(false);
 export function useInvalidator(queryClient = useQueryClient()) {
   const invalidate = {
     everything: () => {
-      queryClient.invalidateQueries();
+      void queryClient.invalidateQueries();
       setThrottled(true);
       setTimeout(() => setThrottled(false), INVALIDATE_EVERYTHING_LOOP_INTERVAL_MILLIS);
     },
@@ -27,33 +27,33 @@ export function useInvalidator(queryClient = useQueryClient()) {
     },
     isThrottled: throttled,
     resetEverything: () => {
-      queryClient.resetQueries();
+      void queryClient.resetQueries();
     },
     // Shared:
-    users: () => queryClient.invalidateQueries({queryKey: Users.keys.user()}),
-    facilities: () => queryClient.invalidateQueries({queryKey: Facilities.keys.facility()}),
+    users: () => void queryClient.invalidateQueries({queryKey: Users.keys.user()}),
+    facilities: () => void queryClient.invalidateQueries({queryKey: Facilities.keys.facility()}),
     // User status:
     userStatusAndFacilityPermissions: ({clearCache = false} = {}) => {
       if (clearCache) {
-        queryClient.resetQueries({queryKey: User.keys.statusAll()});
+        void queryClient.resetQueries({queryKey: User.keys.statusAll()});
       } else {
-        queryClient.invalidateQueries({queryKey: User.keys.statusAll()});
+        void queryClient.invalidateQueries({queryKey: User.keys.statusAll()});
       }
     },
     // System status:
-    systemStatus: () => queryClient.invalidateQueries({queryKey: System.keys.status()}),
+    systemStatus: () => void queryClient.invalidateQueries({queryKey: System.keys.status()}),
     // Facility resources:
     facility: {
-      meetings: () => queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
-      users: () => queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()}),
+      meetings: () => void queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
+      users: () => void queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()}),
       clientGroups: () => {
-        invalidate.facility.users();
-        queryClient.invalidateQueries({queryKey: FacilityClientGroup.keys.clientGroup()});
+        void invalidate.facility.users();
+        void queryClient.invalidateQueries({queryKey: FacilityClientGroup.keys.clientGroup()});
       },
     },
     // Global:
-    dictionaries: () => queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),
-    attributes: () => queryClient.invalidateQueries({queryKey: System.keys.attribute()}),
+    dictionaries: () => void queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),
+    attributes: () => void queryClient.invalidateQueries({queryKey: System.keys.attribute()}),
   };
   return invalidate;
 }

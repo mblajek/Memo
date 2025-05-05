@@ -118,7 +118,7 @@ export const Floating: VoidComponent<Props> = (props) => {
       const refElement = referenceElement()!;
       const floatElement = floatingElement()!;
       function updatePosition() {
-        computePosition(refElement, floatElement, props.options).then(setComputed);
+        void computePosition(refElement, floatElement, props.options).then(setComputed);
       }
       if (props.autoUpdate === false) {
         updatePosition();

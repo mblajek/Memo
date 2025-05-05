@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {System} from "data-access/memo-api/groups/System";
 import {FacilityResource} from "data-access/memo-api/resources/facility.resource";
 import {Accessor, createMemo, createSignal} from "solid-js";
@@ -13,7 +13,7 @@ export type FacilityIdOrGlobal = string | typeof NO_FACILITY;
 export const [activeFacilityId, setActiveFacilityId] = createSignal<FacilityIdOrGlobal>();
 
 export function useActiveFacility(): Accessor<FacilityResource | undefined> {
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const activeFacility = createMemo(() => facilitiesQuery.data?.find(({id}) => id === activeFacilityId()));
   return activeFacility;
 }

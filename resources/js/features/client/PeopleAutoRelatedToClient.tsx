@@ -101,7 +101,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
                     <For each={relatedPeople()![type]}>
                       {(user) => (
                         <span>
-                          <UserLink type={type} userId={user.id} name={user.name} />{" "}
+                          <UserLink type={type} userId={user.id} userName={user.name} />{" "}
                           <span class="text-grey-text" use:title={t("facility_user.related_user_meetings_count")}>
                             {t("parenthesised", {text: user.meetingsCount})}
                           </span>

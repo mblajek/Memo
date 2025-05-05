@@ -117,7 +117,7 @@ export const DeleteButton = <ConfirmResult,>(allProps: Props<ConfirmResult>) => 
     }
   }
   return (
-    <Button onClick={onClick} {...buttonProps} disabled={buttonProps.disabled || isDeleting()}>
+    <Button onClick={(e) => void onClick(e)} {...buttonProps} disabled={buttonProps.disabled || isDeleting()}>
       <Show when={isDeleting()}>
         <SmallSpinner />
       </Show>{" "}

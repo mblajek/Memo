@@ -1,4 +1,4 @@
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {toggleDEV} from "components/utils/dev_mode";
 import {toastDismiss, toastError, toastSuccess} from "components/utils/toast";
 import {User} from "data-access/memo-api/groups/User";
@@ -12,8 +12,8 @@ export interface WindowWithDeveloperLogin extends Window {
 /* eslint-disable no-console */
 export function useDeveloperPermission() {
   const invalidate = useInvalidator();
-  const statusQuery = createQuery(User.statusQueryOptions);
-  const developerLoginMutation = createMutation(() => ({
+  const statusQuery = useQuery(User.statusQueryOptions);
+  const developerLoginMutation = useMutation(() => ({
     mutationFn: User.developerLogin,
     onSuccess() {
       invalidate.userStatusAndFacilityPermissions();
@@ -49,7 +49,7 @@ export function useDeveloperPermission() {
     if (args.length !== 1 || typeof args[0] !== "boolean") {
       throw new Error("Expected boolean argument");
     }
-    enable(args[0]);
+    void enable(args[0]);
   }
 
   createEffect(() => {

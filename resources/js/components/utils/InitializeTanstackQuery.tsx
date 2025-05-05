@@ -1,4 +1,4 @@
-import {MutationCache, QueryCache, QueryClient, QueryClientProvider, createQuery} from "@tanstack/solid-query";
+import {MutationCache, QueryCache, QueryClient, QueryClientProvider, useQuery} from "@tanstack/solid-query";
 import {AxiosError, isAxiosError} from "axios";
 import {useLangFunc} from "components/utils/lang";
 import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config/v1.instance";
@@ -96,7 +96,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
               console.warn("Error toast shown (translations not ready):", e);
             }
           }
-          translationsLoadedPromise.then(() => {
+          void translationsLoadedPromise.then(() => {
             if (errorsToShow.length) {
               const messages = errorsToShow.map((e) => translateError(e, t));
               for (const msg of messages) {
@@ -180,7 +180,7 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
 };
 
 const InitQueries: VoidComponent = () => {
-  const statusQuery = createQuery(User.statusQueryOptions);
+  const statusQuery = useQuery(User.statusQueryOptions);
   createEffect(() => {
     if (statusQuery.isSuccess) {
       setProbablyLoggedIn(true);

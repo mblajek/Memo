@@ -1,4 +1,4 @@
-import {createQuery, keepPreviousData} from "@tanstack/solid-query";
+import {useQuery, keepPreviousData} from "@tanstack/solid-query";
 import {AxiosError} from "axios";
 import {Accessor, createComputed, createSignal} from "solid-js";
 import {SetStoreFunction, createStore} from "solid-js/store";
@@ -83,7 +83,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   const extraDataQueryOptions: Accessor<ExtraDataQueryOptions<K>> =
     typeof dataQueryOptions === "function" ? dataQueryOptions : () => dataQueryOptions || {};
   const entityURLFunc = typeof entityURL === "function" ? entityURL : () => entityURL;
-  const schemaQuery = createQuery(() => ({
+  const schemaQuery = useQuery(() => ({
     queryKey: ["tquery-schema", entityURLFunc()] satisfies SchemaQueryKey,
     queryFn: () => V1.get<Schema>(`${entityURLFunc()}/tquery`).then((res) => res.data),
     staleTime: 3600 * 1000,
@@ -92,7 +92,7 @@ export function createTQuery<C, K extends PrefixQueryKey>({
   }));
   const schema = () => schemaQuery.data;
   const {request, requestController} = requestCreator(schema);
-  const dataQuery = createQuery<DataResponse, AxiosError<Api.ErrorResponse>, DataResponse, DataQueryKey<K>>(() => ({
+  const dataQuery = useQuery<DataResponse, AxiosError<Api.ErrorResponse>, DataResponse, DataQueryKey<K>>(() => ({
     queryKey: [
       ...(typeof prefixQueryKey === "function" ? prefixQueryKey() : prefixQueryKey),
       "tquery",

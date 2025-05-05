@@ -28,7 +28,7 @@ export const translationsLoadedPromise = new Promise<void>((resolve) =>
 );
 
 const [getTranslationsLoaded, setTranslationsLoaded] = createSignal(false);
-translationsLoadedPromise.then(() => setTranslationsLoaded(true));
+void translationsLoadedPromise.then(() => setTranslationsLoaded(true));
 
 export const translationsLoaded = getTranslationsLoaded;
 
@@ -40,7 +40,7 @@ i18next.on("languageChanged", (lang) => {
 
 export const currentLanguage = getCurrentLanguage;
 
-import.meta.hot?.on("translationsFileChange", () => i18next.reloadResources());
+import.meta.hot?.on("translationsFileChange", () => void i18next.reloadResources());
 
 // Make i18n available on window for testing.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {DeleteButton} from "components/ui/Button";
 import {ConfirmParams, createConfirmation} from "components/ui/confirmation";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -35,7 +35,7 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
         ? "work_time_delete"
         : "meeting_delete",
   );
-  const meetingDeleteMutation = createMutation(() => ({
+  const meetingDeleteMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.deleteMeeting,
     meta: {isFormSubmit: true},
   }));

@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {BaseTQuerySelectProps, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
@@ -14,7 +14,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 import {useColumnsByPrefixUtil} from "../ui/Table/tquery_filters/fuzzy_filter";
 
 export function useModelQuerySpecs() {
-  const userStatus = createQuery(User.statusQueryOptions);
+  const userStatus = useQuery(User.statusQueryOptions);
   const featureFilterPrefix = featureUseTrackers.fuzzyGlobalFilterColumnPrefix();
   const columnsByPrefixUtil = useColumnsByPrefixUtil();
   const permissions = () => userStatus.data?.permissions;
@@ -56,7 +56,7 @@ export function useModelQuerySpecs() {
         onColumnPrefixFilterUsed: (prefix) => featureFilterPrefix.justUsed({comp: "select", model: "staff", prefix}),
         itemFunc: (row, defItem) => ({
           ...defItem,
-          label: () => <UserLink type="staff" userId={row.get("id")} name={row.get("name")} link={false} />,
+          label: () => <UserLink type="staff" userId={row.get("id")} userName={row.get("name")} link={false} />,
         }),
       },
     }),
@@ -77,7 +77,7 @@ export function useModelQuerySpecs() {
           onColumnPrefixFilterUsed: (prefix) => featureFilterPrefix.justUsed({comp: "select", model: "client", prefix}),
           itemFunc: (row, defItem) => {
             const Link: VoidComponent = () => (
-              <UserLink type="clients" userId={row.get("id")} name={row.get("name")} link={false} />
+              <UserLink type="clients" userId={row.get("id")} userName={row.get("name")} link={false} />
             );
             const Birthday: VoidComponent = () => (
               <div class="text-grey-text whitespace-nowrap">
@@ -119,7 +119,7 @@ export function useModelQuerySpecs() {
         },
         itemFunc: (row, defItem) => ({
           ...defItem,
-          label: () => <UserLink userId={row.get("id")} name={row.get("name")} link={false} />,
+          label: () => <UserLink userId={row.get("id")} userName={row.get("name")} link={false} />,
         }),
       },
     }),

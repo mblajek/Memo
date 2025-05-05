@@ -168,14 +168,14 @@ export function userStorageStorage(key: string): Storage {
     createCachingStorage(
       {
         store(value) {
-          User.storagePut(fullKey, value);
+          void User.storagePut(fullKey, value);
         },
         async load() {
           const stored = await User.storageGet(fullKey);
           return typeof stored === "string" ? stored : undefined;
         },
         clear() {
-          User.storagePut(fullKey, null);
+          void User.storagePut(fullKey, null);
         },
       },
       getUserStorageCache(key),
