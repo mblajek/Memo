@@ -19,5 +19,10 @@ const DEFAULT_WEEK_INFO = {
 } satisfies WeekSettings;
 
 export function getWeekInfo(locale: Locale) {
-  return locale.getWeekInfo?.() || locale.weekInfo || DEFAULT_WEEK_INFO;
+  return {
+    // Include the defaults, as some Android Chrome version is known to return an incomplete object,
+    // which makes luxon fail.
+    ...DEFAULT_WEEK_INFO,
+    ...(locale.getWeekInfo?.() || locale.weekInfo),
+  };
 }
