@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {Recreator} from "components/utils/Recreator";
 import {System} from "data-access/memo-api/groups/System";
 import {IANAZone, Settings, SystemZone, Zone} from "luxon";
@@ -12,7 +12,7 @@ export const timeZone = getTimeZone;
  * Sets time timeZone signal based on the current facility time zone,
  * sets the default luxon time zone, and recreates children when the time zone changes. */
 export const TimeZoneController: ParentComponent = (props) => {
-  const systemStatus = createQuery(System.statusQueryOptions);
+  const systemStatus = useQuery(System.statusQueryOptions);
   createEffect(() => {
     const desiredTimeZone = systemStatus.data?.userTimezone
       ? IANAZone.create(systemStatus.data.userTimezone)
