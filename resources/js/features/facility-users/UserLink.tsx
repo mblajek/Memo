@@ -18,7 +18,7 @@ interface Props extends Partial<AnchorProps> {
   /** The user's type, if known (otherwise it is fetched). */
   readonly type?: FacilityUserType;
   /** The user's display name, if known (otherwise it is fetched). */
-  readonly name?: string;
+  readonly userName?: string;
   /** Whether to display the staff/client icon. Default: true. */
   readonly icon?: boolean | "tiny";
   /** Whether to show the name as text or link (if false, just the icon is shown). Default: true. */
@@ -46,7 +46,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     "newTabLink",
     "allowWrap",
     "userId",
-    "name",
+    "userName",
   ]);
   const t = useLangFunc();
   const activeFacility = useActiveFacility();
@@ -56,7 +56,7 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
   const memberData = createMemo(() =>
     props.userId
       ? membersData.getById(props.userId) || {
-          name: props.name,
+          name: props.userName,
           isStaff: props.type === "staff",
           // Initially assume staff is active.
           isActiveStaff: props.type === "staff",

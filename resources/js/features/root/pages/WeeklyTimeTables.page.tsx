@@ -442,17 +442,17 @@ export default (() => {
                           <MenuItem
                             icon={[actionIcons.Repeat, OcArrowdown2]}
                             label={t("facility_user.weekly_time_tables.paste_this_until_end")}
-                            onClick={() => confirmAndExecute(weekDate(), [weekDate().plus({weeks: 1}), toDate()!])}
+                            onClick={() => void confirmAndExecute(weekDate(), [weekDate().plus({weeks: 1}), toDate()!])}
                           />
                           <MenuItem
                             icon={actionIcons.Delete}
                             label={t("facility_user.weekly_time_tables.delete_week.this")}
-                            onClick={() => confirmAndExecute(undefined, weekDate())}
+                            onClick={() => void confirmAndExecute(undefined, weekDate())}
                           />
                           <MenuItem
                             icon={[actionIcons.Delete, OcArrowdown2]}
                             label={t("facility_user.weekly_time_tables.delete_week.from_this")}
-                            onClick={() => confirmAndExecute(undefined, [weekDate(), toDate()!])}
+                            onClick={() => void confirmAndExecute(undefined, [weekDate(), toDate()!])}
                           />
                         </Show>
                         <Show when={selectedWeekDate()}>
@@ -471,7 +471,7 @@ export default (() => {
                               <MenuItem
                                 icon={actionIcons.Paste}
                                 label={t("facility_user.weekly_time_tables.paste_here")}
-                                onClick={() => confirmAndExecute(selectedWeekDate(), weekDate())}
+                                onClick={() => void confirmAndExecute(selectedWeekDate(), weekDate())}
                               />
                               <MenuItem
                                 icon={[actionIcons.Repeat, OcMovetobottom2]}
@@ -479,7 +479,7 @@ export default (() => {
                                 disabled={selectedWeekDate().toMillis() > weekDate().toMillis()}
                                 disabledTitle={t("facility_user.weekly_time_tables.disabled_title_only_works_forward")}
                                 onClick={() =>
-                                  confirmAndExecute(selectedWeekDate(), [
+                                  void confirmAndExecute(selectedWeekDate(), [
                                     selectedWeekDate().plus({weeks: 1}),
                                     weekDate(),
                                   ])
@@ -490,7 +490,7 @@ export default (() => {
                                 label={t("facility_user.weekly_time_tables.delete_until_here")}
                                 disabled={selectedWeekDate().toMillis() > weekDate().toMillis()}
                                 disabledTitle={t("facility_user.weekly_time_tables.disabled_title_only_works_forward")}
-                                onClick={() => confirmAndExecute(undefined, [selectedWeekDate(), weekDate()])}
+                                onClick={() => void confirmAndExecute(undefined, [selectedWeekDate(), weekDate()])}
                               />
                             </>
                           )}

@@ -12,4 +12,5 @@ Data wydania: **$$$DATE$$$**
 🟣 — dla administratorów placówki,
 🔴 — dla administratorów globalnych,
 🟤 — dokumentacja,
-⚫ — inne.
+🟡 — bezpieczeństwo,
+🟠🔵⚪⚫ — inne.

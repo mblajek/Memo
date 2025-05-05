@@ -1,5 +1,5 @@
 import {A} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {createColumnHelper} from "@tanstack/table-core";
 import {createPersistence} from "components/persistence/persistence";
@@ -17,7 +17,7 @@ import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dict
 import {filterByFacility, textSort, useAttrValueFormatter} from "./util";
 
 export default (() => {
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   function getFacility(facilityId: string) {
     return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
   }

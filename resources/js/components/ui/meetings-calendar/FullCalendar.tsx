@@ -1,5 +1,5 @@
 import {A, useLocation, useSearchParams} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage, userStorageStorage} from "components/persistence/storage";
@@ -156,7 +156,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
     leaveTimes: {min: 0, max: 0, def: 0}, // No hours area in this mode.
   }[props.staticCalendarFunction];
 
-  const userStatus = createQuery(User.statusQueryOptions);
+  const userStatus = useQuery(User.statusQueryOptions);
   const [showInactiveStaff, setShowInactiveStaff] = createSignal(false);
   const [altStaffSort, setAltStaffSort] = createSignal(false);
   createHistoryPersistence({
@@ -843,7 +843,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
       }
       if (searchParams.meetingId) {
         const meetingToShowFromLocationState = () => location.state?.meetingToShow;
-        const meetingToShowQuery = createQuery(() => ({
+        const meetingToShowQuery = useQuery(() => ({
           enabled: !!searchParams.meetingId && !meetingToShowFromLocationState(),
           ...FacilityMeeting.meetingQueryOptions(searchParams.meetingId || ""),
         }));

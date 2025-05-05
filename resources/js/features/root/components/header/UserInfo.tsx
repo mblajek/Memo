@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
 import {actionIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -33,7 +33,7 @@ const PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE = 7;
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
-  const statusQuery = createQuery(User.statusQueryOptions);
+  const statusQuery = useQuery(User.statusQueryOptions);
   const passwordExpirationDays = usePasswordExpirationDays();
   const passwordChangeModal = createPasswordChangeModal();
   const {toggleTheme} = useThemeControl();
@@ -105,7 +105,7 @@ export const UserInfo: VoidComponent = () => {
                     <Button
                       onClick={() => {
                         popOver.close();
-                        developerPermission.enable(false);
+                        void developerPermission.enable(false);
                       }}
                     >
                       Developer logout

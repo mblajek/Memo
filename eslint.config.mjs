@@ -2,12 +2,13 @@ import js from "@eslint/js";
 import typescriptParser from "@typescript-eslint/parser";
 import prettierConfig from "eslint-config-prettier";
 import solid from "eslint-plugin-solid";
+import {defineConfig} from "eslint/config";
 import typescript from "typescript-eslint";
 
-export default [
+export default defineConfig([
   js.configs.recommended,
   solid.configs["flat/recommended"],
-  ...typescript.configs.recommended,
+  typescript.configs.recommendedTypeChecked,
   prettierConfig,
   {
     files: ["**/*.ts", "**/*.tsx", "**/*.mts", "**/*.js", "**/*.mjs"],
@@ -15,6 +16,7 @@ export default [
       parser: typescriptParser,
       ecmaVersion: "latest",
       sourceType: "module",
+      parserOptions: {projectService: true},
     },
     rules: {
       "@typescript-eslint/no-empty-function": "off",
@@ -32,6 +34,16 @@ export default [
           destructuredArrayIgnorePattern: "^_",
         },
       ],
+      "@typescript-eslint/no-redundant-type-constituents": "off",
+      "@typescript-eslint/no-duplicate-type-constituents": "off",
+      "@typescript-eslint/unbound-method": "off",
+      "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
+      "@typescript-eslint/no-unsafe-return": "off",
+      "@typescript-eslint/no-base-to-string": "off",
+      "@typescript-eslint/no-unnecessary-type-assertion": "warn",
+      "@typescript-eslint/no-deprecated": "warn",
       "no-console": ["warn", {allow: ["info", "warn", "error"]}],
       "no-constant-condition": "warn",
       "no-constant-binary-expression": "off",
@@ -93,4 +105,4 @@ export default [
       reportUnusedDisableDirectives: "error",
     },
   },
-];
+]);

@@ -1,5 +1,5 @@
 import {Link} from "@solidjs/meta";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {isDEV} from "components/utils/dev_mode";
 import {User} from "data-access/memo-api/groups/User";
 import {useEnvInfo} from "features/system-status/env_info";
@@ -11,7 +11,7 @@ const FAVICON_PATH = "/favicon.png";
 
 export const Favicon: VoidComponent = () => {
   const envInfo = useEnvInfo();
-  const status = createQuery(User.statusQueryOptions);
+  const status = useQuery(User.statusQueryOptions);
   const browserInfo = bowser.parse(navigator.userAgent);
   // First remove the original link from the head.
   document.querySelector("head > link[rel='icon'][href]")?.remove();
@@ -21,7 +21,7 @@ export const Favicon: VoidComponent = () => {
     return bg ? (bg.length > 30 ? "#bcbd" : bg) : undefined;
   };
   const [faviconDataURI, setFaviconDataURI] = createSignal<string>();
-  fetch(FAVICON_PATH)
+  void fetch(FAVICON_PATH)
     .then((resp) => resp.bytes())
     .then((favicon) => setFaviconDataURI(`data:image/png;base64,${Base64.fromUint8Array(favicon)}`));
   const iconURI = createMemo(

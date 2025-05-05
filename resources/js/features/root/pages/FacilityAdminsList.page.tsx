@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
 import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui/Table/Table";
@@ -15,7 +15,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 export default (() => {
   const {getCreatedUpdatedColumns} = useTableColumns();
   const facilityAdminEditModal = createFacilityAdminEditModal();
-  const status = createQuery(User.statusQueryOptions);
+  const status = useQuery(User.statusQueryOptions);
   const isFacilityAdmin = () => status.data?.permissions.facilityAdmin;
   return (
     <TQueryTable

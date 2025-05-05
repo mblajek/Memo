@@ -297,8 +297,8 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
         ctx.lineWidth = outerR - innerR;
         ctx.beginPath();
         ctx.arc(
-          x0 + blockData.uPlacePos![0] * bw,
-          y0 - blockData.uPlacePos![1] * bh,
+          x0 + blockData.uPlacePos[0] * bw,
+          y0 - blockData.uPlacePos[1] * bh,
           (innerR + outerR) / 2,
           0,
           Math.PI * 2,

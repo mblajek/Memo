@@ -34,7 +34,7 @@ export default (() => {
             cell: cellFunc<string>((props) => (
               <PaddedCell>
                 <ShowCellVal v={props.v}>
-                  {(v) => <UserLink type="clients" userId={props.row.id as string} name={v()} />}
+                  {(v) => <UserLink type="clients" userId={props.row.id as string} userName={v()} />}
                 </ShowCellVal>
               </PaddedCell>
             )),

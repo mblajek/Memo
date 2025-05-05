@@ -1,5 +1,5 @@
 import {SubmitContext} from "@felte/core";
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
@@ -24,11 +24,11 @@ interface Props extends FormParams {
 
 export const UserEditForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const statusQuery = createQuery(User.statusQueryOptions);
-  const userQuery = createQuery(() => Admin.userQueryOptions(props.userId));
+  const statusQuery = useQuery(User.statusQueryOptions);
+  const userQuery = useQuery(() => Admin.userQueryOptions(props.userId));
   const user = () => userQuery.data;
   const invalidate = useInvalidator();
-  const userMutation = createMutation(() => ({
+  const userMutation = useMutation(() => ({
     mutationFn: Admin.updateUser,
     meta: {isFormSubmit: true},
   }));

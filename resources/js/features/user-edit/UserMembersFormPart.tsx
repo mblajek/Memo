@@ -1,4 +1,4 @@
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {createColumnHelper, createSolidTable} from "@tanstack/solid-table";
 import {AxiosResponse} from "axios";
 import {useFormContext} from "components/felte-form/FelteForm";
@@ -57,7 +57,7 @@ export const UserMembersFormPart: VoidComponent<Props> = (props) => {
   const {form} = useFormContext<Record<typeof membersPath, Input>>();
   const t = useLangFunc();
   const translations = createTableTranslations("user_facility_member");
-  const facilitiesQuery = createQuery(System.facilitiesQueryOptions);
+  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const facilitiesById = createMemo(() => byId(facilitiesQuery.data));
   /** A list of facilities that are not yet present in any row. Only those can be added. */
   const freeFacilities = createMemo(() => {
@@ -215,9 +215,9 @@ interface MembersUpdater {
 }
 
 export function useMembersUpdater(): MembersUpdater {
-  const createMemberMutation = createMutation(() => ({mutationFn: Admin.createMember, meta: {isFormSubmit: true}}));
-  const updateMemberMutation = createMutation(() => ({mutationFn: Admin.updateMember, meta: {isFormSubmit: true}}));
-  const deleteMemberMutation = createMutation(() => ({mutationFn: Admin.deleteMember, meta: {isFormSubmit: true}}));
+  const createMemberMutation = useMutation(() => ({mutationFn: Admin.createMember, meta: {isFormSubmit: true}}));
+  const updateMemberMutation = useMutation(() => ({mutationFn: Admin.updateMember, meta: {isFormSubmit: true}}));
+  const deleteMemberMutation = useMutation(() => ({mutationFn: Admin.deleteMember, meta: {isFormSubmit: true}}));
   return {
     getUpdatePromises: (oldUser, values) => {
       const promises = [];

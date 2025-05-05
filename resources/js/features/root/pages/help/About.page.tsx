@@ -95,7 +95,7 @@ export default (() => {
                           toggleDEV();
                           sel.empty();
                         } else if (range === "2..3") {
-                          developerPermission.enable(!developerPermission.enabled());
+                          void developerPermission.enable(!developerPermission.enabled());
                           sel.empty();
                         }
                       }

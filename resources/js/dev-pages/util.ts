@@ -40,6 +40,8 @@ export function filterByFacility<T extends {resource: {facilityId: string | null
 
 export function textSort<T>() {
   return {
-    sortingFn: (a, b, colId) => ((a.getValue(colId) || "") as string).localeCompare(b.getValue(colId) || ""),
+    sortingFn: (a, b, colId) =>
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      ((a.getValue(colId) as string | undefined) || "").localeCompare(b.getValue(colId) || ""),
   } satisfies Partial<IdentifiedColumnDef<T>>;
 }

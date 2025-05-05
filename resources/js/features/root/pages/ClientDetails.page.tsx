@@ -1,5 +1,5 @@
 import {useNavigate, useParams} from "@solidjs/router";
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
@@ -61,7 +61,7 @@ type FormType = z.infer<ReturnType<typeof getSchema>>;
 export default (() => {
   const t = useLangFunc();
   const params = useParams();
-  const status = createQuery(User.statusQueryOptions);
+  const status = useQuery(User.statusQueryOptions);
   const navigate = useNavigate();
   const invalidate = useInvalidator();
   const clientDeleteModal = createClientDeleteModal();
@@ -71,12 +71,12 @@ export default (() => {
   const {getCSVData} = useClientCSVData();
   const clientAttributesProcessor = createAttributesProcessor("client");
   const userId = () => params.userId!;
-  const dataQuery = createQuery(() => FacilityClient.clientQueryOptions(userId()));
+  const dataQuery = useQuery(() => FacilityClient.clientQueryOptions(userId()));
   const meetingsStats = useUserMeetingsStats("clients", userId);
   /** Whether we can be sure this client has meetings. If false, there might still be some. */
   const hasMeetings = () => !!meetingsStats()?.completedMeetingsCount || !!meetingsStats()?.plannedMeetingsCount;
   const [editMode, setEditMode] = createSignal(false);
-  const updateClientMutation = createMutation(() => ({
+  const updateClientMutation = useMutation(() => ({
     mutationFn: FacilityClient.updateClient,
     meta: {isFormSubmit: true},
   }));
@@ -118,6 +118,7 @@ export default (() => {
               } else if (mode === "clientGroup") {
                 return {type: "column", column: "attendant.clientGroupId", op: "=", val: selectedGroupId()!};
               } else {
+                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
                 throw new Error(`Bad mode: ${mode}`);
               }
             };
@@ -186,7 +187,7 @@ export default (() => {
                               </Autofocus>
                               <Switch>
                                 <Match when={editMode()}>
-                                  <FelteSubmit cancel={formCancel} />
+                                  <FelteSubmit cancel={() => void formCancel()} />
                                 </Match>
                                 <Match when={!editMode()}>
                                   <div class="flex justify-between gap-1">

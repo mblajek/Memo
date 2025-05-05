@@ -1,4 +1,4 @@
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {createCached} from "components/utils/cache";
 import {Modifiable} from "components/utils/modifiable";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -44,7 +44,7 @@ export interface MeetingWithExtraInfo extends MeetingResource {
 
 export function useMeetingWithExtraInfo(meetingId: string) {
   const {meetingTypeDict} = useFixedDictionaries();
-  const meetingQuery = createQuery(() => FacilityMeeting.meetingQueryOptions(meetingId));
+  const meetingQuery = useQuery(() => FacilityMeeting.meetingQueryOptions(meetingId));
   const meetingsCache = useMeetingsCache();
   const cachedMeeting = () => meetingsCache.get(meetingId);
   const {dataQuery: meetingTQuery} = createTQuery({
@@ -90,11 +90,11 @@ export function useMeetingWithExtraInfo(meetingId: string) {
 }
 
 export const useMeetingAPI = createCached(() => {
-  const meetingCreateMutation = createMutation(() => ({
+  const meetingCreateMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.createMeeting,
     meta: {isFormSubmit: true},
   }));
-  const meetingCloneMutation = createMutation(() => ({
+  const meetingCloneMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.cloneMeeting,
     meta: {isFormSubmit: true},
   }));

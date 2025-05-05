@@ -6,7 +6,7 @@ import {Attributes} from "./attributes";
 import {Dictionaries} from "./dictionaries";
 
 describe("Attributes", () => {
-  const langFunc = ((key: unknown) => `t(${key})`) as LangFunc;
+  const langFunc = ((key: unknown) => `t(${key as string})`) as LangFunc;
   const dictionaries = Dictionaries.fromResources(langFunc, [
     {
       id: "dd",

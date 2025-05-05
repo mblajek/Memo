@@ -1,4 +1,4 @@
-import {WeekSettings} from "luxon";
+import {WeekdayNumbers, WeekSettings} from "luxon";
 
 export const DATE_FORMAT = {year: "numeric", month: "2-digit", day: "2-digit"} satisfies Intl.DateTimeFormatOptions;
 export const TIME_FORMAT = {hour: "2-digit", minute: "2-digit", second: "2-digit"} satisfies Intl.DateTimeFormatOptions;
@@ -8,21 +8,26 @@ export const NUMBER_FORMAT = new Intl.NumberFormat();
 
 /** Polyfill. */
 interface Locale extends Intl.Locale {
-  getWeekInfo?: () => WeekSettings;
-  weekInfo?: WeekSettings;
+  readonly getWeekInfo?: () => WeekInfo;
+  readonly weekInfo?: WeekInfo;
 }
 
-const DEFAULT_WEEK_INFO = {
+interface WeekInfo {
+  readonly firstDay: WeekdayNumbers;
+  readonly weekend: WeekdayNumbers[];
+  // Note that minimalDays was removed.
+}
+
+const DEFAULT_WEEK_SETTINGS = {
   firstDay: 1,
   weekend: [6, 7],
   minimalDays: 4,
-} satisfies WeekSettings;
+} as const satisfies WeekSettings;
 
-export function getWeekInfo(locale: Locale) {
+export function getWeekSettings(locale: Locale): WeekSettings {
+  const weekInfo = locale.getWeekInfo?.() || locale.weekInfo;
   return {
-    // Include the defaults, as some Android Chrome version is known to return an incomplete object,
-    // which makes luxon fail.
-    ...DEFAULT_WEEK_INFO,
-    ...(locale.getWeekInfo?.() || locale.weekInfo),
+    ...DEFAULT_WEEK_SETTINGS,
+    ...weekInfo,
   };
 }
