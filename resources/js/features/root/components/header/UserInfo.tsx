@@ -48,28 +48,41 @@ export const UserInfo: VoidComponent = () => {
       ? undefined
       : passwordExpirationDays()! <= PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE;
   const suggestConfigureOTP = () =>
-    statusQuery.data ? statusQuery.data.user.otpRequiredAt && !statusQuery.data.user.hasOtpConfigured : undefined;
+    statusQuery.data ? !!statusQuery.data.user.otpRequiredAt && !statusQuery.data.user.hasOtpConfigured : undefined;
 
   createEffect(
-    on([suggestPasswordChange, suggestConfigureOTP], ([suggestPasswordChange, suggestConfigureOTP], prevInput) => {
-      const [prevSuggestPasswordChange = false, prevSuggestConfigureOTP = false] = prevInput || [];
-      if (
-        passwordChangeModal.isShown() ||
-        otpConfigureModal.isShown() ||
-        suggestPasswordChange === undefined ||
-        suggestConfigureOTP === undefined
-      ) {
-        return;
-      }
-      if (suggestPasswordChange && !prevSuggestPasswordChange) {
-        passwordChangeModal.show({
-          expirationSoon: true,
-          forceChange: (passwordExpirationDays() || 0) <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
-        });
-      } else if (suggestConfigureOTP && !prevSuggestConfigureOTP) {
-        otpConfigureModal.show({});
-      }
-    }),
+    on(
+      [suggestPasswordChange, suggestConfigureOTP],
+      (
+        [suggestPasswordChange, suggestConfigureOTP],
+        _prevInput,
+        {
+          prevSuggestPasswordChange,
+          prevSuggestConfigureOTP,
+        }: {prevSuggestPasswordChange: boolean; prevSuggestConfigureOTP: boolean} | undefined = {
+          prevSuggestPasswordChange: false,
+          prevSuggestConfigureOTP: false,
+        },
+      ) => {
+        if (suggestPasswordChange === undefined || suggestConfigureOTP === undefined) {
+          return {prevSuggestPasswordChange, prevSuggestConfigureOTP};
+        }
+        if (!passwordChangeModal.isShown() && !otpConfigureModal.isShown()) {
+          if (suggestPasswordChange && !prevSuggestPasswordChange) {
+            passwordChangeModal.show({
+              expirationSoon: true,
+              forceChange: (passwordExpirationDays() || 0) <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
+            });
+          } else if (suggestConfigureOTP && !prevSuggestConfigureOTP) {
+            otpConfigureModal.show({});
+          }
+        }
+        return {
+          prevSuggestPasswordChange: suggestPasswordChange,
+          prevSuggestConfigureOTP: suggestConfigureOTP,
+        };
+      },
+    ),
   );
 
   const CurrentTime: VoidComponent = () => {

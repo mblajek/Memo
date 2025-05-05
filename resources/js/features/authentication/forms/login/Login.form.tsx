@@ -39,6 +39,8 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   const invalidate = useInvalidator();
   const [persistedEmail, setPersistedEmail] = createSignal<string>();
   const [showOTP, setShowOTP] = createSignal(false);
+  /** Password to be used when showOTP is true instead of the one from the form. */
+  const [password, setPassword] = createSignal("");
   createPersistence<PersistedState>({
     value: () => ({email: persistedEmail()}),
     onLoad: (state) => {
@@ -63,7 +65,10 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   }));
 
   const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
-    await mutation.mutateAsync(values);
+    await mutation.mutateAsync({
+      ...values,
+      password: showOTP() ? password() : values.password,
+    });
     // eslint-disable-next-line solid/reactivity
     return () => {
       setProbablyLoggedIn(true);
@@ -96,6 +101,8 @@ export const LoginForm: VoidComponent<Props> = (props) => {
               setTimeout(() => form.setFields("otp", ""));
             } else {
               setShowOTP(true);
+              setPassword(form.data("password"));
+              form.setFields("password", "*".repeat(password().length));
               form.setErrors("otp", undefined);
               setTimeout(() => {
                 const otpField = document.querySelector("#otp");
@@ -117,12 +124,13 @@ export const LoginForm: VoidComponent<Props> = (props) => {
                 // Remove the persisted email if the email is edited in any way.
                 setPersistedEmail(undefined);
                 setShowOTP(false);
+                setTimeout(() => form.setFields("password", ""));
               }}
             />
             <PasswordField
               name="password"
               autocomplete="current-password"
-              allowShow="sensitive"
+              allowShow={showOTP() ? false : "sensitive"}
               autofocus={!!persistedEmail() && !showOTP()}
               disabled={showOTP()}
             />
