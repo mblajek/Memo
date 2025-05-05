@@ -9,6 +9,7 @@ import {OTPField} from "components/ui/form/OTPField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
 import {HideableSection} from "components/ui/HideableSection";
+import {createIdleDetector} from "components/utils/idle_detector";
 import {MutationMeta} from "components/utils/InitializeTanstackQuery";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -94,7 +95,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       class="flex flex-col gap-2"
       preventPageLeave={false}
     >
-      {(form) => {
+      {(form, formCtx) => {
         createEffect(() => {
           if (!showOTP()) {
             if (isValidationMessageEmpty(form.errors("otp"))) {
@@ -104,14 +105,19 @@ export const LoginForm: VoidComponent<Props> = (props) => {
               setPassword(form.data("password"));
               form.setFields("password", "*".repeat(password().length));
               form.setErrors("otp", undefined);
-              setTimeout(() => {
-                const otpField = document.querySelector("#otp");
-                if (otpField instanceof HTMLElement) {
-                  otpField.focus();
-                }
-              }, 100);
+              formCtx.focusField("otp");
             }
           }
+        });
+        createIdleDetector({
+          timeSecs: 2 * 60,
+          func: () => {
+            setShowOTP(false);
+            setTimeout(() => form.setFields("password", ""));
+            if (form.data("password")) {
+              formCtx.focusField("password");
+            }
+          },
         });
         return (
           <>
