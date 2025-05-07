@@ -40,7 +40,7 @@ class LogEntry extends Model
         LogLevel::ERROR, LogLevel::CRITICAL, LogLevel::ALERT, LogLevel::EMERGENCY];
     public const array SOURCES = [
         'api_fe_js_error', 'api_fe_feature_use', 'api_fe_csp_violation',
-        'user_login_success', 'user_login_failure', 'user_login_unknown', 'user_password_change',
+        'user_login_success', 'user_login_failure', 'user_login_unknown', 'user_password_change', 'user_otp_configure',
     ];
     //@formatter:on
 

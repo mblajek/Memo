@@ -8,7 +8,7 @@ import {Admin} from "data-access/memo-api/groups/Admin";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
-import {getUserBaseInfoValues, userBaseInfoInitialValues} from "features/user-edit/UserBaseInfoFields";
+import {getUserBaseInfoValues, userBaseInfoInitialValuesForEdit} from "features/user-edit/UserBaseInfoFields";
 import {VoidComponent} from "solid-js";
 import {UserForm, UserFormType} from "./UserForm";
 import {useMembersUpdater} from "./UserMembersFormPart";
@@ -86,7 +86,7 @@ export const UserEditForm: VoidComponent<Props> = (props) => {
   const initialValues = () => {
     const u = user()!;
     return {
-      ...userBaseInfoInitialValues(u),
+      ...userBaseInfoInitialValuesForEdit(u),
       members: u.members.map(
         ({facilityId, hasFacilityAdmin, isFacilityStaff, isActiveFacilityStaff, isFacilityClient}) => ({
           facilityId,

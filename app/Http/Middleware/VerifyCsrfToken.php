@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 class VerifyCsrfToken extends Middleware
 {
     public const string HEADER_REQUEST = 'X-CSRF-TOKEN';
-    private const string HEADER_RESPONSE = 'X-SET-CSRF-TOKEN';
+    public const string HEADER_RESPONSE = 'X-SET-CSRF-TOKEN';
 
     // Send the token using a header instead of a cookie.
     protected $addHttpCookie = false;

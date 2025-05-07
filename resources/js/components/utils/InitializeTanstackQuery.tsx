@@ -1,5 +1,5 @@
 import {MutationCache, QueryCache, QueryClient, QueryClientProvider, useQuery} from "@tanstack/solid-query";
-import {isAxiosError} from "axios";
+import {AxiosError, isAxiosError} from "axios";
 import {useLangFunc} from "components/utils/lang";
 import {getOriginalResponseForUnexpectedError} from "data-access/memo-api/config/v1.instance";
 import {translateError} from "data-access/memo-api/error_util";
@@ -24,7 +24,7 @@ declare module "@tanstack/solid-query" {
   }
 }
 
-interface QueryMeta {
+export interface QueryMeta {
   readonly quietHTTPStatuses?: QuietHTTPStatuses;
   readonly tquery?: TQueryMeta;
 }
@@ -33,9 +33,13 @@ export interface TQueryMeta {
   readonly isTable?: boolean;
 }
 
-interface MutationMeta {
+export interface MutationMeta {
   readonly quietHTTPStatuses?: QuietHTTPStatuses;
   readonly isFormSubmit?: boolean;
+  readonly getErrorsToShow?: (
+    errorsToShow: readonly Api.Error[],
+    errorResp: AxiosError<Api.ErrorResponse>,
+  ) => readonly Api.Error[];
 }
 
 /**
@@ -82,6 +86,9 @@ export const InitializeTanstackQuery: ParentComponent = (props) => {
             // Include the exception.validation error again.
             errorsToShow = respErrors.filter((e) => !isFilterValError(e));
           }
+        }
+        if (meta?.getErrorsToShow) {
+          errorsToShow = meta.getErrorsToShow(errorsToShow, error);
         }
         if (errorsToShow.length) {
           if (!translationsLoaded()) {

@@ -10,6 +10,8 @@ export interface UserResource extends CreatedUpdatedResource {
   readonly hasEmailVerified: boolean;
   readonly hasPassword: boolean;
   readonly passwordExpireAt: string | null;
+  readonly otpRequiredAt: string | null;
+  readonly hasOtpConfigured: boolean;
   readonly lastLoginFacilityId: string | null;
   readonly managedByFacilityId: string | null;
 }

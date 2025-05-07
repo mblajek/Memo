@@ -46,6 +46,8 @@ class FacilityAdminController extends ApiController
                     new OA\Property(property: 'hasEmailVerified', type: 'bool', example: false),
                     new OA\Property(property: 'password', type: 'string', example: 'password'),
                     new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+                    new OA\Property(property: 'otpRequiredAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+                    new OA\Property(property: 'hasOtpConfigured', type: 'bool', example: false),
                     new OA\Property(property: 'member', type: 'object', example: ['hasFacilityAdmin' => false]),
                 ]
             )
@@ -77,12 +79,12 @@ class FacilityAdminController extends ApiController
         $member = $user->belongsToFacilityOrFail($facility, isFacilityAdmin: true);
         $isManagedByFacility = $user->managed_by_facility_id === $facility->id;
 
-        $userKeys = ['name', 'email', 'has_email_verified', 'has_password', 'password', 'password_expire_at'];
+        $userKeys = ['name', 'email', 'has_email_verified', 'has_password', 'password', 'password_expire_at', 'otp_required_at', 'has_otp_configured'];
         $rules = [];
         foreach (User::getPatchResourceValidator($user) as $field => $rule) {
             $rules[$field] = $isManagedByFacility && in_array($field, $userKeys) ? $rule : 'missing';
         }
-        $rules['member'] = Valid::array(keys: ['has_facility_admin'], sometimes:true);
+        $rules['member'] = Valid::array(keys: ['has_facility_admin'], sometimes: true);
         $rules['member.has_facility_admin'] = Member::getPatchValidator(['has_facility_admin'], $member)['has_facility_admin'];
         $userData = $this->validate($rules);
         $hasFacilityAdmin = $userData['member']['has_facility_admin'] ?? null;
@@ -90,8 +92,7 @@ class FacilityAdminController extends ApiController
         $userAttributes = $userService->getAttributesAfterPatch($user, $userData);
         Validator::validate($userAttributes, User::getResourceValidator());
 
-        DB::transaction(function () use (
-            $isManagedByFacility, $userService, $memberService, $user, $member, $userAttributes, $hasFacilityAdmin) {
+        DB::transaction(function () use ($isManagedByFacility, $userService, $memberService, $user, $member, $userAttributes, $hasFacilityAdmin) {
             // temporary solution, use "select for update" on "facilities" as mutex for other tables
             // todo: use lock or any other standard way to generate unique short_code
             Facility::query()->lockForUpdate()->count();

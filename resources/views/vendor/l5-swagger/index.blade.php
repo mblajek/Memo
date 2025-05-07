@@ -34,6 +34,7 @@
 <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js') }}"></script>
 <script>
     window.onload = function() {
+        let csrfToken = "{{ \App\Http\Middleware\VerifyCsrfToken::getToken() }}";
         // Build a system
         const ui = SwaggerUIBundle({
             dom_id: '#swagger-ui',
@@ -43,10 +44,12 @@
             validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
             oauth2RedirectUrl: "{{ route('l5-swagger.'.$documentation.'.oauth2_callback', [], $useAbsolutePath) }}",
 
+            responseInterceptor: function(response) {
+                csrfToken = response.headers["{{\App\Http\Middleware\VerifyCsrfToken::HEADER_RESPONSE}}"] || csrfToken;
+                return response;
+            },
             requestInterceptor: function(request) {
-                request.headers["{{
-                    \App\Http\Middleware\VerifyCsrfToken::HEADER_REQUEST
-                }}"] = "{{ \App\Http\Middleware\VerifyCsrfToken::getToken() }}";
+                request.headers["{{\App\Http\Middleware\VerifyCsrfToken::HEADER_REQUEST}}"] = csrfToken;
                 return request;
             },
 

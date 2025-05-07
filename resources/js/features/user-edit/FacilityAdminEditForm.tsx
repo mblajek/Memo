@@ -18,7 +18,7 @@ import {
   getUserBaseInfoSchema,
   getUserBaseInfoValues,
   UserBaseInfoFields,
-  userBaseInfoInitialValues,
+  userBaseInfoInitialValuesForEdit,
 } from "features/user-edit/UserBaseInfoFields";
 import {createComputed, createMemo, Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -57,6 +57,8 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
         {type: "column", column: "hasEmailVerified"},
         {type: "column", column: "hasPassword"},
         {type: "column", column: "passwordExpireAt"},
+        {type: "column", column: "otpRequiredAt"},
+        {type: "column", column: "hasOtpConfigured"},
         {type: "column", column: "managedByFacility.id"},
         {type: "column", column: "member.isStaff"},
       ],
@@ -82,9 +84,11 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
       hasEmailVerified: user.hasEmailVerified as boolean,
       hasPassword: user.hasPassword as boolean,
       passwordExpireAt: user.passwordExpireAt as string | null,
+      otpRequiredAt: user.otpRequiredAt as string | null,
+      hasOtpConfigured: user.hasOtpConfigured as boolean,
       managedByFacilityId: user["managedByFacility.id"] as Api.Id | null,
       isStaff: user["member.isStaff"] as boolean,
-    };
+    } satisfies Partial<UserResource> & {isStaff: boolean};
   });
   const isManagedByCurrentFacility = () => user()?.managedByFacilityId === activeFacilityId();
   const invalidate = useInvalidator();
@@ -118,7 +122,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
   const initialValues = () => {
     const u = user()! as unknown as UserResource;
     return {
-      ...userBaseInfoInitialValues(u),
+      ...userBaseInfoInitialValuesForEdit(u),
       member: {
         hasFacilityAdmin: true,
       },

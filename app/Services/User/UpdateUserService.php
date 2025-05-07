@@ -54,6 +54,10 @@ readonly class UpdateUserService
             $userAttributes['global_admin_grant_id'] = $grant?->id;
         }
 
+        if (array_key_exists('has_otp_configured', $userAttributes)) {
+            $userAttributes['otp_secret'] = $userAttributes['has_otp_configured'] ? $user->otp_secret : null;
+        }
+
         $user->update($userAttributes);
     }
 
@@ -78,6 +82,9 @@ readonly class UpdateUserService
         }
         if (!isset($requestData['has_global_admin'])) {
             $patchedAttributes['has_global_admin'] = $patchedAttributes['global_admin_grant_id'] !== null;
+        }
+        if (!isset($requestData['has_otp_configured'])) {
+            $patchedAttributes['has_otp_configured'] = $patchedAttributes['otp_secret'] !== null;
         }
         return $patchedAttributes;
     }

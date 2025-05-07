@@ -43,11 +43,6 @@ class PermissionMiddleware
         return PermissionMiddleware::permissions()->user ?? ExceptionFactory::unauthorised()->throw();
     }
 
-    public static function recalculatePermissions(Request $request): void
-    {
-        self::$permissionObject = self::requestPermissions($request);
-    }
-
     /**
      * Handle an incoming request.
      *

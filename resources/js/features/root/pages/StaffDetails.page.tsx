@@ -31,7 +31,7 @@ import {
   getUserBaseInfoSchema,
   getUserBaseInfoValues,
   UserBaseInfoFields,
-  userBaseInfoInitialValues,
+  userBaseInfoInitialValuesForEdit,
 } from "features/user-edit/UserBaseInfoFields";
 import {DateTime} from "luxon";
 import {createComputed, createEffect, createSignal, Match, Show, Switch, VoidComponent} from "solid-js";
@@ -119,7 +119,7 @@ export default (() => {
                       createEffect(() => {
                         const u = user();
                         form.setInitialValues({
-                          ...userBaseInfoInitialValues(u),
+                          ...userBaseInfoInitialValuesForEdit(u),
                           staff: {
                             isActive: !u.staff.deactivatedAt,
                             deactivatedAt: u.staff.deactivatedAt
@@ -164,7 +164,10 @@ export default (() => {
                                   </Show>
                                   <div class="flex flex-col">
                                     <CheckboxField name="staff.isActive" />
-                                    <HideableSection show={!form.data("staff.isActive")}>
+                                    <HideableSection
+                                      class="ps-3 border-s-2 border-input-border"
+                                      show={!form.data("staff.isActive")}
+                                    >
                                       <DateField name="staff.deactivatedAt" type="datetime-local" showWeekday />
                                     </HideableSection>
                                   </div>

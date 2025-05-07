@@ -12,7 +12,15 @@ export interface AdminUserResource extends UserResource {
 /** The user resource used for creation. */
 export type AdminUserResourceForCreate = Pick<
   AdminUserResource,
-  "name" | "email" | "hasEmailVerified" | "passwordExpireAt" | "managedByFacilityId" | "hasGlobalAdmin" | "hasPassword"
+  | "name"
+  | "email"
+  | "hasEmailVerified"
+  | "hasPassword"
+  | "passwordExpireAt"
+  | "otpRequiredAt"
+  | "managedByFacilityId"
+  | "hasGlobalAdmin"
 > & {readonly password: string | null};
 
-export type AdminUserResourceForPatch = Pick<AdminUserResource, "id"> & AdminUserResourceForCreate;
+export type AdminUserResourceForPatch = Pick<AdminUserResource, "id"> &
+  Partial<AdminUserResourceForCreate & Pick<AdminUserResource, "hasOtpConfigured">>;

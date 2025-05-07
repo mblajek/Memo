@@ -1,5 +1,6 @@
 import {useQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
+import {useDocsModalInfoIcon} from "components/ui/docs_modal";
 import {actionIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
 import {MemoLoader} from "components/ui/MemoLoader";
@@ -17,8 +18,10 @@ import {usePasswordExpirationDays} from "components/utils/password_expiration";
 import {currentTimeMinute} from "components/utils/time";
 import {User} from "data-access/memo-api/groups/User";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
+import {createOTPConfigureModal} from "features/user-panel/otp_configure_modal";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
+import {TbLockCheck} from "solid-icons/tb";
 import {TiWarningOutline} from "solid-icons/ti";
 import {DEV, Index, Show, VoidComponent, createEffect, on} from "solid-js";
 import {usesLocalTimeZone} from "time_zone_controller";
@@ -36,20 +39,51 @@ export const UserInfo: VoidComponent = () => {
   const statusQuery = useQuery(User.statusQueryOptions);
   const passwordExpirationDays = usePasswordExpirationDays();
   const passwordChangeModal = createPasswordChangeModal();
+  const otpConfigureModal = createOTPConfigureModal();
+  const {DocsModalInfoIcon} = useDocsModalInfoIcon();
   const {toggleTheme} = useThemeControl();
   const developerPermission = useDeveloperPermission();
   const logOut = useLogOut();
-  const suggestPasswordChange = () => passwordExpirationDays() <= PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE;
+  const suggestPasswordChange = () =>
+    passwordExpirationDays() === undefined
+      ? undefined
+      : passwordExpirationDays()! <= PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE;
+  const suggestConfigureOTP = () =>
+    statusQuery.data ? !!statusQuery.data.user.otpRequiredAt && !statusQuery.data.user.hasOtpConfigured : undefined;
 
   createEffect(
-    on(suggestPasswordChange, (suggestChange) => {
-      if (suggestChange && !passwordChangeModal.isShown()) {
-        passwordChangeModal.show({
-          expirationSoon: true,
-          forceChange: passwordExpirationDays() <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
-        });
-      }
-    }),
+    on(
+      [suggestPasswordChange, suggestConfigureOTP],
+      (
+        [suggestPasswordChange, suggestConfigureOTP],
+        _prevInput,
+        {
+          prevSuggestPasswordChange,
+          prevSuggestConfigureOTP,
+        }: {prevSuggestPasswordChange: boolean; prevSuggestConfigureOTP: boolean} | undefined = {
+          prevSuggestPasswordChange: false,
+          prevSuggestConfigureOTP: false,
+        },
+      ) => {
+        if (suggestPasswordChange === undefined || suggestConfigureOTP === undefined) {
+          return {prevSuggestPasswordChange, prevSuggestConfigureOTP};
+        }
+        if (!passwordChangeModal.isShown() && !otpConfigureModal.isShown()) {
+          if (suggestPasswordChange && !prevSuggestPasswordChange) {
+            passwordChangeModal.show({
+              expirationSoon: true,
+              forceChange: (passwordExpirationDays() || 0) <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
+            });
+          } else if (suggestConfigureOTP && !prevSuggestConfigureOTP) {
+            otpConfigureModal.show({});
+          }
+        }
+        return {
+          prevSuggestPasswordChange: suggestPasswordChange,
+          prevSuggestConfigureOTP: suggestConfigureOTP,
+        };
+      },
+    ),
   );
 
   const CurrentTime: VoidComponent = () => {
@@ -118,7 +152,7 @@ export const UserInfo: VoidComponent = () => {
               trigger={(popOver) => (
                 <Button class="p-0.5 flex items-center gap-0.5" title={t("user_settings")} onClick={popOver.open}>
                   <actionIcons.ThreeDots class="text-current" />
-                  <Show when={suggestPasswordChange()}>
+                  <Show when={suggestPasswordChange() || suggestConfigureOTP()}>
                     <WarningMark />
                   </Show>
                 </Button>
@@ -134,14 +168,47 @@ export const UserInfo: VoidComponent = () => {
                   >
                     {t("actions.change_password")}
                     <Show when={suggestPasswordChange()}>
-                      <WarningMark />
+                      <WarningMark class="ms-0.5" />
                     </Show>
                   </Button>
-                  <Button onClick={toggleTheme}>
-                    {t("switch_theme")} <ThemeIcon class="inlineIcon" />
+                  <Button
+                    class="flex items-center justify-between gap-2"
+                    onClick={() => {
+                      popOver.close();
+                      otpConfigureModal.show({});
+                    }}
+                    disabled={statusQuery.data?.user.hasOtpConfigured}
+                  >
+                    <Show
+                      when={!statusQuery.data?.user.hasOtpConfigured}
+                      fallback={
+                        <div class="flex items-center gap-0.5">
+                          <div>{t("otp.otp_is_configured")}</div>
+                          <TbLockCheck class="text-green-600" />
+                        </div>
+                      }
+                    >
+                      <div>
+                        {t("actions.configure_otp")}
+                        <Show when={suggestConfigureOTP()}>
+                          <WarningMark class="ms-0.5" />
+                        </Show>
+                      </div>
+                    </Show>
+                    <DocsModalInfoIcon
+                      href="/help/staff-2fa"
+                      onClick={(e) => {
+                        popOver.close();
+                        e.stopPropagation();
+                      }}
+                    />
+                  </Button>
+                  <Button class="flex items-center justify-between gap-2" onClick={toggleTheme}>
+                    {t("switch_theme")}
+                    <ThemeIcon />
                   </Button>
                   <Show when={DEV || isDEV() || developerPermission.enabled()}>
-                    <Button class="flex gap-2 items-center justify-between" onClick={() => toggleDEV()}>
+                    <Button class="flex items-center justify-between gap-2" onClick={() => toggleDEV()}>
                       {CHECKBOX(isDEV())} DEV mode
                       <InfoIcon href="/help/dev/developer-modes" />
                     </Button>

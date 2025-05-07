@@ -1,11 +1,11 @@
 import {A, AnchorProps} from "@solidjs/router";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
-import {ImInfo} from "solid-icons/im";
 import {Component, JSX, Match, Switch} from "solid-js";
 import {ButtonProps} from "./Button";
 import {ButtonLike} from "./ButtonLike";
 import {ChildrenOrFunc, getChildrenElement} from "./children_func";
+import {actionIcons} from "./icons";
 import {title} from "./title";
 
 type _Directives = typeof title;
@@ -47,7 +47,7 @@ function isTitleProps(pr: InfoIconProps): pr is TitleVariantProps {
  */
 export const InfoIcon: Component<InfoIconProps> = (props) => {
   const t = useLangFunc();
-  const icon = <ImInfo class="inlineIcon !mb-0.5 text-blue-500" size="16" />;
+  const icon = <actionIcons.Info class="inlineIcon !mb-0.5 text-blue-500" size="16" />;
   const titleContent = () => props.title ?? t("more_info");
   return (
     <Switch>
