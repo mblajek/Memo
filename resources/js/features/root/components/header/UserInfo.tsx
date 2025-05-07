@@ -21,6 +21,7 @@ import {useDeveloperPermission} from "features/authentication/developer_permissi
 import {createOTPConfigureModal} from "features/user-panel/otp_configure_modal";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
+import {TbLockCheck} from "solid-icons/tb";
 import {TiWarningOutline} from "solid-icons/ti";
 import {DEV, Index, Show, VoidComponent, createEffect, on} from "solid-js";
 import {usesLocalTimeZone} from "time_zone_controller";
@@ -180,7 +181,12 @@ export const UserInfo: VoidComponent = () => {
                   >
                     <Show
                       when={!statusQuery.data?.user.hasOtpConfigured}
-                      fallback={<div>{t("otp.otp_is_configured")}</div>}
+                      fallback={
+                        <div class="flex items-center gap-0.5">
+                          <div>{t("otp.otp_is_configured")}</div>
+                          <TbLockCheck class="text-green-600" />
+                        </div>
+                      }
                     >
                       <div>
                         {t("actions.configure_otp")}

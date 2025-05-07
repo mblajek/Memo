@@ -422,7 +422,10 @@ export default (() => {
                           <div class="flex flex-col">
                             <For each={Array.isArray(props.icon) ? props.icon : [props.icon]}>
                               {(icon: IconTypes, index) => (
-                                <Dynamic class={index() ? "-mt-px" : undefined} component={icon} />
+                                <Dynamic
+                                  class={cx(index() ? "-mt-px" : undefined, buttonProps.disabled ? "opacity-50" : "")}
+                                  component={icon}
+                                />
                               )}
                             </For>
                           </div>
