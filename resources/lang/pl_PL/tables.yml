@@ -269,7 +269,8 @@ saved_views:
   new_placeholder: "Nowy widok"
   save_hint: "Zapisz aktualny widok tabeli pod wpisaną nazwą"
   save_hint_conflict: "Ta nazwa jest już użyta, rozwiń opcje aby zastąpić"
-  edit_and_save: "Edytuj i zapisz"
+  edit: "Edytuj aktualny widok częściowy"
+  edit_and_save: "Edytuj widok częściowy i zapisz"
   overwrite_with_current: "Zapisz aktualny widok (zastąp)"
   rename_conflict: "Ta nazwa jest już użyta."
   default_view_name: "Widok domyślny"
@@ -277,6 +278,7 @@ saved_views:
   code_error: "Błędny kod widoku."
   code_error.different_table: "Ten widok przeznaczony jest dla innej tabeli."
   copy_code: "Kopiuj kod widoku do schowka"
+  current_view_header: "Aktualny widok:"
   component_actions:
     ignore: "(pomiń)"
     set: "ustaw"
@@ -288,3 +290,7 @@ saved_views:
       ignore: "Resetuj (pomiń) wszystkie elementy"
   no_column_filter_to_set: "Aby móc zapisać filtr, ustaw go najpierw w kolumnie tabeli"
   action_ignore_explanation: "Wartość $t(quotes.open)$t(tables.saved_views.component_actions.ignore)$t(quotes.close) przy elemencie oznacza, że w momencie przełączenia tabeli na ten widok, wartość tego elementu nie zostanie zmieniona."
+  current_view_set_complete: "Przywróć kompletny widok"
+  edit_current:
+    form_name: "Edycja częściowego widoku"
+    submit: "$t(actions.ok)"

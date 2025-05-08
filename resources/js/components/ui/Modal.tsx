@@ -37,6 +37,7 @@ interface BaseProps<T> {
    * open prop to false.
    */
   readonly onEscape?: (reason: EscapeReason) => void;
+  readonly mountPoint?: HTMLElement;
 }
 
 export const MODAL_STYLE_PRESETS = {
@@ -215,7 +216,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
         );
         onCleanup(() => modalsStack.splice(modalsStack.indexOf(modalId), 1));
         return (
-          <Portal>
+          <Portal mount={props.mountPoint}>
             <div
               class="absolute z-modal"
               onPointerMove={(e) => {
