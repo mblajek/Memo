@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {createCached} from "components/utils/cache";
 import {System} from "data-access/memo-api/groups/System";
 import {SystemStatusResource} from "data-access/memo-api/resources/SystemStatusResource";
@@ -6,7 +6,7 @@ import {createEffect, createSignal} from "solid-js";
 
 export const useSystemStatusMonitor = createCached(() => {
   const [needsReload, setNeedsReload] = createSignal(false);
-  const systemStatusQuery = createQuery(System.statusQueryOptions);
+  const systemStatusQuery = useQuery(System.statusQueryOptions);
   const [baseStatus, setBaseStatus] = createSignal<SystemStatusResource>();
   const [lastStatus, setLastStatus] = createSignal<SystemStatusResource>();
   createEffect(() => {

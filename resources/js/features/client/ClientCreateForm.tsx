@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {currentDate} from "components/utils/time";
 import {toastSuccess} from "components/utils/toast";
@@ -16,7 +16,7 @@ export interface ClientCreateFormProps {
 export const ClientCreateForm: VoidComponent<ClientCreateFormProps> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
-  const clientCreateMutation = createMutation(() => ({
+  const clientCreateMutation = useMutation(() => ({
     mutationFn: FacilityClient.createClient,
     meta: {isFormSubmit: true},
   }));

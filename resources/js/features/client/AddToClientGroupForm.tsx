@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
@@ -31,7 +31,7 @@ export const AddToClientGroupForm: VoidComponent<AddToClientGroupFormProps> = (p
   const priorityQueryParams = autoRelatedClients.selectParamsExtension(() => [props.clientId]);
   const [groupMember, setGroupMember] = createSignal<string | undefined>();
   const validGroupMember = () => (groupMember() === props.clientId ? undefined : groupMember());
-  const clientDataQuery = createQuery(() => ({
+  const clientDataQuery = useQuery(() => ({
     ...FacilityClient.clientQueryOptions(validGroupMember() || ""),
     enabled: !!validGroupMember(),
   }));

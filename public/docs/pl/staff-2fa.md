@@ -9,7 +9,7 @@ generowanego przez aplikację na telefonie.
 
 W praktyce oznacza to, że logując się do systemu należy wpisać adres e-mail oraz hasło,
 a następnie, jeżeli OTP jest włączone dla danego użytkownika, uruchomić na swoim telefonie aplikację
-(więcej szczegółów w sekcji [poniżej](#app)) i wpisać pokazany w niej sześciocyfrowy kod na stronie
+(więcej szczegółów w sekcji poniżej) i wpisać pokazany w niej sześciocyfrowy kod na stronie
 logowania Memo.
 
 ## Konfiguracja OTP {#admin-configuration}

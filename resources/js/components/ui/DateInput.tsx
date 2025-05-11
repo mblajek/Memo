@@ -3,7 +3,7 @@ import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {DateTime} from "luxon";
-import {createSignal, onCleanup, Show, splitProps, VoidComponent} from "solid-js";
+import {Accessor, createSignal, onCleanup, Show, splitProps, VoidComponent} from "solid-js";
 import {useFormContextIfInForm} from "../felte-form/FelteForm";
 import {shortWeekdayName} from "../utils/date_formatting";
 import {TextInput} from "./TextInput";
@@ -21,10 +21,10 @@ export const DateInput: VoidComponent<DateInputProps> = (allProps) => {
   const showWeekday = () => props.showWeekday ?? type() === "date";
   const formContext = useFormContextIfInForm();
   const [getValue, setValue] = createSignal("");
-  let value;
+  let value: Accessor<string>;
   if (formContext) {
     // eslint-disable-next-line solid/reactivity
-    value = () => formContext.form.data(inputProps.name!) as string;
+    value = () => formContext.form.data(inputProps.name!);
   } else {
     value = getValue;
   }

@@ -42,7 +42,7 @@ export function createPersistence<T, S = string>({
   if (isDisabledVersion(fullVersion)) {
     return;
   }
-  asyncThen(storage.load(fullVersion), (loaded) => {
+  void asyncThen(storage.load(fullVersion), (loaded) => {
     const stored = deserialise<T, S>(serialiser, loaded);
     if (stored !== undefined) {
       try {

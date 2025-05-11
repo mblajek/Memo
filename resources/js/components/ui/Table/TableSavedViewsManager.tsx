@@ -660,7 +660,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             ]}
                             onClick={() => {
                               const any = summary().modifiesBaseSummary?.any;
-                              props.onLoad(state().state as TableView);
+                              props.onLoad(state().state);
                               if (any) {
                                 popOver.close();
                               }
@@ -732,7 +732,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     icon={actionIcons.Copy}
                                     label={t("tables.saved_views.copy_code")}
                                     onClick={() =>
-                                      codeSerialiser
+                                      void codeSerialiser
                                         .serialise({
                                           tableId: props.staticPersistenceKey,
                                           viewName: state().name,
@@ -745,7 +745,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     icon={advancedView() ? actionIcons.Edit : actionIcons.Rename}
                                     label={t(advancedView() ? "actions.edit" : "actions.rename")}
                                     onClick={() =>
-                                      withClosedPopOver(
+                                      void withClosedPopOver(
                                         // eslint-disable-next-line solid/reactivity
                                         () => editView(state()),
                                       )
@@ -767,7 +767,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                         suffix++;
                                       }
                                       popOver.close();
-                                      withClosedPopOver(
+                                      void withClosedPopOver(
                                         // eslint-disable-next-line solid/reactivity
                                         () => editView({...state(), name: newName}),
                                       );
@@ -777,7 +777,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     icon={actionIcons.Delete}
                                     label={t("actions.delete")}
                                     onClick={() =>
-                                      withClosedPopOver(
+                                      void withClosedPopOver(
                                         // eslint-disable-next-line solid/reactivity
                                         () => confirmAndDelete(state()),
                                       )
@@ -813,7 +813,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                     <SimpleMenu>
                       <Button
                         onClick={() =>
-                          withClosedPopOver(
+                          void withClosedPopOver(
                             // eslint-disable-next-line solid/reactivity
                             () => editView(getNamedCurrentView()),
                           )

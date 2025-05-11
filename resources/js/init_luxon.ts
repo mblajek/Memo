@@ -1,4 +1,4 @@
-import {getWeekInfo} from "components/utils/formatting";
+import {getWeekSettings} from "components/utils/formatting";
 import {DateTime, Duration, Settings} from "luxon";
 
 declare module "luxon" {
@@ -10,7 +10,7 @@ declare module "luxon" {
 Settings.throwOnInvalid = true;
 
 Settings.defaultLocale = navigator.language;
-Settings.defaultWeekSettings = getWeekInfo(new Intl.Locale(navigator.language));
+Settings.defaultWeekSettings = getWeekSettings(new Intl.Locale(navigator.language));
 
 // Prevent the luxon classes from serialising as strings, to make it possible to write a custom
 // serialiser that retains the class information.

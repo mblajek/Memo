@@ -1,5 +1,5 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {isAxiosError} from "axios";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
@@ -44,7 +44,7 @@ export const ClientDeleteForm: VoidComponent<ClientDeleteFormProps> = (allProps)
   const [requiresDuplicateOf, setRequiresDuplicateOf] = createSignal(props.initialRequiresDuplicateOf);
   const [readBeforeConfirm, setReadBeforeConfirm] = createSignal(true);
   setTimeout(() => setReadBeforeConfirm(false), READ_BEFORE_CONFIRM_MILLIS);
-  const deleteClientMutation = createMutation(() => ({
+  const deleteClientMutation = useMutation(() => ({
     mutationFn: FacilityClient.deleteClient,
     meta: {isFormSubmit: true},
   }));

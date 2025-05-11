@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {Modifiable} from "components/utils/modifiable";
 import {System} from "data-access/memo-api/groups/System";
@@ -41,7 +41,7 @@ export const DictionariesAndAttributesProvider: ParentComponent<Props> = (props)
     thisContext.allDictionaries = parentContext.allDictionaries;
     thisContext.dictionaries = parentContext.dictionaries;
   } else {
-    const dictionariesQuery = createQuery(System.dictionariesQueryOptions);
+    const dictionariesQuery = useQuery(System.dictionariesQueryOptions);
     thisContext.allDictionaries = createMemo(() => {
       if (!dictionariesQuery.isSuccess) {
         return undefined;
@@ -62,7 +62,7 @@ export const DictionariesAndAttributesProvider: ParentComponent<Props> = (props)
     thisContext.allAttributes = parentContext.allAttributes;
     thisContext.attributes = parentContext.attributes;
   } else {
-    const attributesQuery = createQuery(System.attributesQueryOptions);
+    const attributesQuery = useQuery(System.attributesQueryOptions);
     thisContext.allAttributes = createMemo(() => {
       const dicts = thisContext.allDictionaries!();
       if (!attributesQuery.isSuccess || !dicts) {

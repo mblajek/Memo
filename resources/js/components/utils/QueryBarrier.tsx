@@ -1,23 +1,23 @@
-import {CreateQueryResult} from "@tanstack/solid-query";
+import {UseQueryResult} from "@tanstack/solid-query";
 import {For, JSX, Match, ParentProps, Show, Switch, VoidComponent, createEffect, mergeProps} from "solid-js";
 import {BigSpinner} from "../ui/Spinner";
 
 export interface QueryBarrierProps {
   /** List of queries to handle. */
-  readonly queries: readonly CreateQueryResult<unknown, unknown>[];
+  readonly queries: readonly UseQueryResult<unknown, unknown>[];
   /**
    * If set, the barrier waits until the first fetch is done, even if data was available in the cache.
    * See `Query.isFetchedAfterMount`.
    */
   readonly ignoreCachedData?: boolean;
   /** Elements to show when query is in error state. */
-  readonly error?: (queries: readonly CreateQueryResult<unknown, unknown>[]) => JSX.Element;
+  readonly error?: (queries: readonly UseQueryResult<unknown, unknown>[]) => JSX.Element;
   /** Elements to show when query is in pending state. */
   readonly pending?: () => JSX.Element;
 }
 
 /**
- * Default handler for tanstack/solid-query's `createQuery` result
+ * Default handler for tanstack/solid-query's `useQuery` result
  *
  * @todo better looking Error
  */
@@ -35,7 +35,7 @@ export function QueryBarrier(allProps: ParentProps<QueryBarrierProps>) {
       // that didn't start their first fetch yet.
       for (const query of props.queries) {
         if (!query.isFetchedAfterMount && query.fetchStatus === "idle") {
-          query.refetch();
+          void query.refetch();
         }
       }
     }

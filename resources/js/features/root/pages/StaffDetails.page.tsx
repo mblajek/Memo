@@ -1,5 +1,5 @@
 import {useParams} from "@solidjs/router";
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {EditButton} from "components/ui/Button";
@@ -54,15 +54,15 @@ type FormType = z.infer<ReturnType<typeof getSchema>>;
 export default (() => {
   const t = useLangFunc();
   const params = useParams();
-  const status = createQuery(User.statusQueryOptions);
+  const status = useQuery(User.statusQueryOptions);
   const invalidate = useInvalidator();
   const formLeaveConfirmation = createFormLeaveConfirmation();
   const activeFacility = useActiveFacility();
   const {UserMeetingsTables} = useUserMeetingsTables();
   const userId = () => params.userId!;
-  const dataQuery = createQuery(() => FacilityStaff.staffMemberQueryOptions(userId()));
+  const dataQuery = useQuery(() => FacilityStaff.staffMemberQueryOptions(userId()));
   const [editMode, setEditMode] = createSignal(false);
-  const staffMutation = createMutation(() => ({
+  const staffMutation = useMutation(() => ({
     mutationFn: FacilityStaff.updateStaff,
     meta: {isFormSubmit: true},
   }));
@@ -123,7 +123,7 @@ export default (() => {
                           staff: {
                             isActive: !u.staff.deactivatedAt,
                             deactivatedAt: u.staff.deactivatedAt
-                              ? isoToDateTimeLocal(u.staff.deactivatedAt!)
+                              ? isoToDateTimeLocal(u.staff.deactivatedAt)
                               : dateTimeToDateTimeLocal(DateTime.now()),
                             hasFacilityAdmin: u.staff.hasFacilityAdmin,
                           },
@@ -202,7 +202,7 @@ export default (() => {
                           </Switch>
                           <Switch>
                             <Match when={editMode()}>
-                              <FelteSubmit cancel={formCancel} />
+                              <FelteSubmit cancel={() => void formCancel()} />
                             </Match>
                             <Match when={status.data?.permissions.facilityAdmin}>
                               <div class="flex">

@@ -1,5 +1,5 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
@@ -9,6 +9,7 @@ import {OTPField} from "components/ui/form/OTPField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
 import {HideableSection} from "components/ui/HideableSection";
+import {createIdleDetector} from "components/utils/idle_detector";
 import {MutationMeta} from "components/utils/InitializeTanstackQuery";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -39,6 +40,8 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   const invalidate = useInvalidator();
   const [persistedEmail, setPersistedEmail] = createSignal<string>();
   const [showOTP, setShowOTP] = createSignal(false);
+  /** Password to be used when showOTP is true instead of the one from the form. */
+  const [password, setPassword] = createSignal("");
   createPersistence<PersistedState>({
     value: () => ({email: persistedEmail()}),
     onLoad: (state) => {
@@ -46,7 +49,7 @@ export const LoginForm: VoidComponent<Props> = (props) => {
     },
     storage: localStorageStorage("Login"),
   });
-  const mutation = createMutation(() => ({
+  const mutation = useMutation(() => ({
     mutationFn: User.login,
     meta: {
       isFormSubmit: true,
@@ -63,7 +66,10 @@ export const LoginForm: VoidComponent<Props> = (props) => {
   }));
 
   const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
-    await mutation.mutateAsync(values);
+    await mutation.mutateAsync({
+      ...values,
+      password: showOTP() ? password() : values.password,
+    });
     // eslint-disable-next-line solid/reactivity
     return () => {
       setProbablyLoggedIn(true);
@@ -89,22 +95,29 @@ export const LoginForm: VoidComponent<Props> = (props) => {
       class="flex flex-col gap-2"
       preventPageLeave={false}
     >
-      {(form) => {
+      {(form, formCtx) => {
         createEffect(() => {
           if (!showOTP()) {
             if (isValidationMessageEmpty(form.errors("otp"))) {
               setTimeout(() => form.setFields("otp", ""));
             } else {
               setShowOTP(true);
+              setPassword(form.data("password"));
+              form.setFields("password", "*".repeat(password().length));
               form.setErrors("otp", undefined);
-              setTimeout(() => {
-                const otpField = document.querySelector("#otp");
-                if (otpField instanceof HTMLElement) {
-                  otpField.focus();
-                }
-              }, 100);
+              formCtx.focusField("otp");
             }
           }
+        });
+        createIdleDetector({
+          timeSecs: 2 * 60,
+          func: () => {
+            setShowOTP(false);
+            setTimeout(() => form.setFields("password", ""));
+            if (form.data("password")) {
+              formCtx.focusField("password");
+            }
+          },
         });
         return (
           <>
@@ -117,12 +130,13 @@ export const LoginForm: VoidComponent<Props> = (props) => {
                 // Remove the persisted email if the email is edited in any way.
                 setPersistedEmail(undefined);
                 setShowOTP(false);
+                setTimeout(() => form.setFields("password", ""));
               }}
             />
             <PasswordField
               name="password"
               autocomplete="current-password"
-              allowShow="sensitive"
+              allowShow={showOTP() ? false : "sensitive"}
               autofocus={!!persistedEmail() && !showOTP()}
               disabled={showOTP()}
             />

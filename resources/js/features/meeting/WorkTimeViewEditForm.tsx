@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {Button, EditButton} from "components/ui/Button";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SimpleMenu} from "components/ui/SimpleMenu";
@@ -56,7 +56,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   const workTimeCreateModal = createWorkTimeCreateModal();
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const {meetingQuery, meeting: workTime} = useMeetingWithExtraInfo(props.staticMeetingId);
-  const meetingUpdateMutation = createMutation(() => ({
+  const meetingUpdateMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.updateMeeting,
     meta: {isFormSubmit: true},
   }));

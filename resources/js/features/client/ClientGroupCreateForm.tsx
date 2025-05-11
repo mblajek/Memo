@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
@@ -21,7 +21,7 @@ export interface ClientGroupCreateFormProps {
 export const ClientGroupCreateForm: VoidComponent<ClientGroupCreateFormProps> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
-  const clientGroupCreateMutation = createMutation(() => ({
+  const clientGroupCreateMutation = useMutation(() => ({
     mutationFn: FacilityClientGroup.createClientGroup,
     meta: {isFormSubmit: true},
   }));

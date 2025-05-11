@@ -1,5 +1,5 @@
 import {useLocation} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
 import {getIconByName, ICON_SET_NAMES} from "components/ui/icons";
@@ -33,15 +33,17 @@ export const Help: VoidComponent<Props> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["mdPath", "currentPath", "inlined", "offerNewTabLinks", "onH1"]);
   const t = useLangFunc();
   const location = useLocation();
-  const query = createQuery(() => ({
+  const query = useQuery(() => ({
     queryFn: async ({signal}) => {
       const mdPath = props.mdPath!;
       if (!mdPath.match(/^\/docs(-[\w-]+)?(\/\w[\w.-]*)+\.md$/)) {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         return Promise.reject({status: 404, statusText: "Not Found"});
       }
       const resp = await fetch(mdPath, {cache: "no-cache", signal});
       const text = await resp.text();
       if (!resp.ok) {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         return Promise.reject({status: resp.status, statusText: resp.statusText, data: text});
       }
       return text;
@@ -49,7 +51,7 @@ export const Help: VoidComponent<Props> = (allProps) => {
     queryKey: ["help", props.mdPath],
     enabled: !!props.mdPath,
   }));
-  import.meta.hot?.on("docsFileChange", () => query.refetch());
+  import.meta.hot?.on("docsFileChange", () => void query.refetch());
   function processMarkdown(markdown: string) {
     return markdown.replaceAll(/\$t\((\w[\w.]+)(\|cap)?\)/g, (match, key, cap) => {
       const text = t(key);

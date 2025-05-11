@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
 import {useDocsModalInfoIcon} from "components/ui/docs_modal";
 import {actionIcons} from "components/ui/icons";
@@ -21,6 +21,7 @@ import {useDeveloperPermission} from "features/authentication/developer_permissi
 import {createOTPConfigureModal} from "features/user-panel/otp_configure_modal";
 import {createPasswordChangeModal} from "features/user-panel/password_change_modal";
 import {HiOutlineCheckCircle, HiOutlineXCircle, HiSolidWrenchScrewdriver} from "solid-icons/hi";
+import {TbLockCheck} from "solid-icons/tb";
 import {TiWarningOutline} from "solid-icons/ti";
 import {DEV, Index, Show, VoidComponent, createEffect, on} from "solid-js";
 import {usesLocalTimeZone} from "time_zone_controller";
@@ -35,7 +36,7 @@ const PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE = 7;
 
 export const UserInfo: VoidComponent = () => {
   const t = useLangFunc();
-  const statusQuery = createQuery(User.statusQueryOptions);
+  const statusQuery = useQuery(User.statusQueryOptions);
   const passwordExpirationDays = usePasswordExpirationDays();
   const passwordChangeModal = createPasswordChangeModal();
   const otpConfigureModal = createOTPConfigureModal();
@@ -48,28 +49,41 @@ export const UserInfo: VoidComponent = () => {
       ? undefined
       : passwordExpirationDays()! <= PASSWORD_EXPIRATION_DAYS_SUGGEST_CHANGE;
   const suggestConfigureOTP = () =>
-    statusQuery.data ? statusQuery.data.user.otpRequiredAt && !statusQuery.data.user.hasOtpConfigured : undefined;
+    statusQuery.data ? !!statusQuery.data.user.otpRequiredAt && !statusQuery.data.user.hasOtpConfigured : undefined;
 
   createEffect(
-    on([suggestPasswordChange, suggestConfigureOTP], ([suggestPasswordChange, suggestConfigureOTP], prevInput) => {
-      const [prevSuggestPasswordChange = false, prevSuggestConfigureOTP = false] = prevInput || [];
-      if (
-        passwordChangeModal.isShown() ||
-        otpConfigureModal.isShown() ||
-        suggestPasswordChange === undefined ||
-        suggestConfigureOTP === undefined
-      ) {
-        return;
-      }
-      if (suggestPasswordChange && !prevSuggestPasswordChange) {
-        passwordChangeModal.show({
-          expirationSoon: true,
-          forceChange: (passwordExpirationDays() || 0) <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
-        });
-      } else if (suggestConfigureOTP && !prevSuggestConfigureOTP) {
-        otpConfigureModal.show({});
-      }
-    }),
+    on(
+      [suggestPasswordChange, suggestConfigureOTP],
+      (
+        [suggestPasswordChange, suggestConfigureOTP],
+        _prevInput,
+        {
+          prevSuggestPasswordChange,
+          prevSuggestConfigureOTP,
+        }: {prevSuggestPasswordChange: boolean; prevSuggestConfigureOTP: boolean} | undefined = {
+          prevSuggestPasswordChange: false,
+          prevSuggestConfigureOTP: false,
+        },
+      ) => {
+        if (suggestPasswordChange === undefined || suggestConfigureOTP === undefined) {
+          return {prevSuggestPasswordChange, prevSuggestConfigureOTP};
+        }
+        if (!passwordChangeModal.isShown() && !otpConfigureModal.isShown()) {
+          if (suggestPasswordChange && !prevSuggestPasswordChange) {
+            passwordChangeModal.show({
+              expirationSoon: true,
+              forceChange: (passwordExpirationDays() || 0) <= PASSWORD_EXPIRATION_DAYS_FORCE_CHANGE,
+            });
+          } else if (suggestConfigureOTP && !prevSuggestConfigureOTP) {
+            otpConfigureModal.show({});
+          }
+        }
+        return {
+          prevSuggestPasswordChange: suggestPasswordChange,
+          prevSuggestConfigureOTP: suggestConfigureOTP,
+        };
+      },
+    ),
   );
 
   const CurrentTime: VoidComponent = () => {
@@ -125,7 +139,7 @@ export const UserInfo: VoidComponent = () => {
                     <Button
                       onClick={() => {
                         popOver.close();
-                        developerPermission.enable(false);
+                        void developerPermission.enable(false);
                       }}
                     >
                       Developer logout
@@ -167,7 +181,12 @@ export const UserInfo: VoidComponent = () => {
                   >
                     <Show
                       when={!statusQuery.data?.user.hasOtpConfigured}
-                      fallback={<div>{t("otp.otp_is_configured")}</div>}
+                      fallback={
+                        <div class="flex items-center gap-0.5">
+                          <div>{t("otp.otp_is_configured")}</div>
+                          <TbLockCheck class="text-green-600" />
+                        </div>
+                      }
                     >
                       <div>
                         {t("actions.configure_otp")}

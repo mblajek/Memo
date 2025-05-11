@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {Email} from "components/ui/Email";
@@ -17,7 +17,7 @@ import {activeFacilityId} from "state/activeFacilityId.state";
 export default (() => {
   const t = useLangFunc();
   const {getCreatedUpdatedColumns} = useTableColumns();
-  const status = createQuery(User.statusQueryOptions);
+  const status = useQuery(User.statusQueryOptions);
   const isFacilityAdmin = () => status.data?.permissions.facilityAdmin;
   const [showInactive, setShowInactive] = createSignal(false);
   createHistoryPersistence({
@@ -46,7 +46,7 @@ export default (() => {
             cell: cellFunc<string>((props) => (
               <PaddedCell>
                 <ShowCellVal v={props.v}>
-                  {(v) => <UserLink type="staff" userId={props.row.id as string} name={v()} />}
+                  {(v) => <UserLink type="staff" userId={props.row.id as string} userName={v()} />}
                 </ShowCellVal>
               </PaddedCell>
             )),
