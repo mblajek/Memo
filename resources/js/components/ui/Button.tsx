@@ -10,6 +10,7 @@ type _Directives = typeof title;
 
 export interface ButtonProps extends Omit<htmlAttributes.button, "title"> {
   readonly title?: TitleDirectiveType;
+  readonly titleTriggerTarget?: HTMLElement;
 }
 
 /**
@@ -22,7 +23,7 @@ export interface ButtonProps extends Omit<htmlAttributes.button, "title"> {
 export const Button: ParentComponent<ButtonProps> = (allProps) => {
   const hasTitle = hasProp(allProps, "title");
   if (hasTitle) {
-    const [props, buttonProps] = splitProps(allProps, ["title"]);
+    const [props, buttonProps] = splitProps(allProps, ["title", "titleTriggerTarget"]);
     let titleTriggerTarget: HTMLSpanElement | undefined;
     // eslint-disable-next-line solid/components-return-once
     return (
@@ -31,7 +32,10 @@ export const Button: ParentComponent<ButtonProps> = (allProps) => {
         <button
           type="button"
           {...buttonProps}
-          use:title={mergeTitleDirectiveProps(props.title, {hideOnClick: true, triggerTarget: titleTriggerTarget})}
+          use:title={mergeTitleDirectiveProps(props.title, {
+            hideOnClick: true,
+            triggerTarget: props.titleTriggerTarget || titleTriggerTarget,
+          })}
           aria-disabled={buttonProps.disabled}
           bool:inert={buttonProps.inert}
         />

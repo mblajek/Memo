@@ -46,4 +46,4 @@ przestawić tylko wybrane z nich z powrotem na inną pozycję.
 
 Jeżeli użyjesz opcji kopiowania kodu widoku częściowego do schowka, skopiowany kod będzie działał również
 u użytkownika, który nie ma włączonego trybu zaawansowanego, natomiast zapisanie otrzymanego widoku
-stworzy widok standardowy, a nie częściowy (być może zostanie to zmienione w przyszłości).
+stworzy dla takiego użytkownika widok standardowy, a nie częściowy.

@@ -17,6 +17,7 @@ export interface ConfirmParams {
   readonly mode?: ConfirmationMode;
   readonly confirmDisabled?: Accessor<boolean>;
   readonly modalStyle?: JSX.CSSProperties;
+  readonly mountPoint?: HTMLElement;
 }
 
 interface ConfirmationController {
@@ -48,6 +49,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
       style={{...MODAL_STYLE_PRESETS.narrow, ...args.params()?.modalStyle}}
       closeOn={["escapeKey", "closeButton"]}
       onClose={() => resolveOuter(undefined)}
+      mountPoint={args.params()?.mountPoint}
     >
       {(data) => {
         const [readBeforeConfirm, setReadBeforeConfirm] = createSignal(data().mode === "danger");
