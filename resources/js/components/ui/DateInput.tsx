@@ -29,7 +29,7 @@ export const DateInput: VoidComponent<DateInputProps> = (allProps) => {
     value = getValue;
   }
   return (
-    <div class={cx(props.outerClass, "grid")}>
+    <div class={cx(props.outerClass, "grid min-w-56")}>
       <TextInput
         ref={(input) => {
           if (!formContext) {
