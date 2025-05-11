@@ -36,6 +36,8 @@ units:
 duration:
   hours_minutes: "{{hours}} godz. {{minutes}} min."
 
+days_left: "pozostało dni:"
+
 today: "dzisiaj"
 this_week: "bieżący tydzień"
 this_month: "bieżący miesiąc"

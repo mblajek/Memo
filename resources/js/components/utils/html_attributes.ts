@@ -44,6 +44,8 @@ export namespace htmlAttributes {
 
   export type pre = JSX.HTMLElementTags["pre"];
 
+  export type canvas = JSX.HTMLElementTags["canvas"];
+
   export type progress = JSX.HTMLElementTags["progress"];
 
   /** The events that can be overridden in a merge. Add more elements as needed. */
