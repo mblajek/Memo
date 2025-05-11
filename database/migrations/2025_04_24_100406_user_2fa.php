@@ -13,8 +13,8 @@ return new class extends Migration {
     {
         Schema::table('users', function (Blueprint $table) {
             $table->dateTime('otp_required_at')->nullable();
-            $table->char('otp_secret', 32)->nullable();
-            $table->integer('otp_used_ts')->nullable();
+            $table->char('otp_secret', 32)->collation('ascii_bin')->nullable();
+            $table->bigInteger('otp_used_ts')->nullable();
         });
     }
 

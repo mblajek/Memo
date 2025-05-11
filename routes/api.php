@@ -50,7 +50,8 @@ Route::prefix('/v1')->group(function () {
         Route::post('/password', [AuthController::class, 'password']);
         Route::prefix('/otp')->group(function () {
             Route::post('/generate', [AuthController::class, 'otpGenerate']);
-            Route::post('/configure', [AuthController::class, 'otpConfigure'])->middleware(['throttle:5,1,api_otp_configure']);
+            Route::post('/configure', [AuthController::class, 'otpConfigure'])
+                ->middleware(['throttle:5,1,api_otp_configure']);
         });
         Route::put('/storage/{key}', [UserController::class, 'storagePut']);
         Route::get('/storage/{key?}', [UserController::class, 'storageGet']);

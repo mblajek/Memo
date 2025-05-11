@@ -63,7 +63,7 @@ class AuthController extends ApiController
             }
         }
         $authData = $this->validate([
-            'email' => Valid::string(['email']),
+            'email' => Valid::trimmed(['email']),
             'password' => Valid::string(),
         ]);
         $validateResult = Auth::validate($authData);
@@ -75,33 +75,32 @@ class AuthController extends ApiController
 
         if ($isPasswordValid) {
             if (Validator::make($authData, ['password' => User::getPasswordRules()])->fails()) {
-                // The password does not pass validation, i.e. it became leaked, or no longer satisfies the requirements that changed.
+                // The password does not pass validation, i.e. it became leaked,
+                // or no longer satisfies the requirements that changed.
                 // Log in correctly but set password expiration time.
                 $maxPasswordExpireAt = $now->modify('+2week');
                 if ($user->password_expire_at === null || $user->password_expire_at > $maxPasswordExpireAt) {
-                    $user->fill([
-                        'password_expire_at' => DateHelper::toDbString($maxPasswordExpireAt)
-                    ])->saveQuietly();
+                    $user->fill(['password_expire_at' => $maxPasswordExpireAt])->saveQuietly();
                 }
             }
 
-            $google2fa = new Google2FA();
             if ($user->otp_secret !== null) {
+                ['otp' => $otpData] = $this->validate(['otp' => Valid::trimmed()]);
+
+                $google2fa = new Google2FA();
                 // OTP is configured.
-                $otpData = $this->validate(['otp' => Valid::string()]);
                 $otpVerifyResult = $google2fa->verifyKeyNewer(
-                    $user->otp_secret,
-                    $otpData['otp'],
-                    $user->otp_used_ts,
+                    secret: $user->otp_secret,
+                    key: $otpData,
+                    oldTimestamp: $user->otp_used_ts,
                 );
-                if ($otpVerifyResult === false) {
-                    $isAuthValid = false;
-                } else {
-                    $isAuthValid = true;
+                if (is_int($otpVerifyResult)) {
                     $user->fill(['otp_used_ts' => $otpVerifyResult])->saveQuietly();
                 }
+                $isAuthValid = ($otpVerifyResult !== false);
             } else {
                 $this->validate(['otp' => 'prohibited']);
+
                 if ($user->otp_required_at !== null) {
                     // OTP is required, but not yet configured.
                     if ($user->otp_required_at < $now) {
@@ -122,7 +121,8 @@ class AuthController extends ApiController
 
         $logService->addEntry(
             request: $request,
-            source: ($user === null) ? 'user_login_unknown' : ($isAuthValid ? 'user_login_success' : 'user_login_failure'),
+            source: ($user === null) ? 'user_login_unknown'
+                : ($isAuthValid ? 'user_login_success' : 'user_login_failure'),
             logLevel: LogLevel::INFO,
             message: $authData['email'],
             user: $user,
@@ -178,9 +178,9 @@ class AuthController extends ApiController
     public function password(Request $request, ChangePasswordService $changePasswordService): JsonResponse
     {
         $data = $this->validate([
-            'current' => 'bail|required|string|current_password',
-            'repeat' => 'bail|required|string|same:password',
-            'password' => ['bail', 'required', 'string', 'different:current', User::getPasswordRules()],
+            'current' => Valid::string(['current_password']),
+            'repeat' => Valid::string(['same:password']),
+            'password' =>  Valid::string(['different:current', User::getPasswordRules()]),
         ]);
 
         $user = $this->getUserOrFail();
@@ -227,7 +227,7 @@ class AuthController extends ApiController
     )]
     public function otpGenerate(Request $request): JsonResponse
     {
-        $this->validate(['password' => 'bail|required|string|current_password']);
+        $this->validate(['password' => Valid::string(['current_password'])]);
         $user = $this->getUserOrFail();
         if ($user->otp_secret !== null) {
             return ExceptionFactory::forbidden()->render();
