@@ -14,9 +14,13 @@ granicę kolumn i przeciągnij ją w lewo aż stanie się czerwona, a następnie
 🟢Na stronie pracownika dodano link, dzięki któremu można szybko przejść do jego kalendarza.
 ![Link "Pokaż kalendarz"](go-to-calendar.png)
 
+🟡Bezpieczeństwo aplikacji: dodano możliwość skonfigurowania logowania do systemu z użyciem kodów
+jednorazowych (OTP). Instrukcja znajduje się na stronie pomocy: [Uwierzytelnianie dwuskładnikowe](staff-2fa),
+można też przeprowadzić na ten temat dodatkowe szkolenie.
+
 🟣Administratorzy placówek mają teraz możliwość wykonywania następujących operacji:
 
-- edycja danych pracowników i administratorów placówki, w tym resetowanie haseł,
+- edycja danych pracowników i administratorów placówki, w tym resetowanie hasła i OTP,
 - aktywowanie i dezaktywowanie pracowników,
 - zarządzanie uprawnieniami administratora placówki.
 
@@ -44,7 +48,7 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 42e4c40afb1d65fc0c8854a43008a12938386d1b -->
+## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ ea2c7659c3bb8ddddaaee3d5a6ebb2b06b11835b -->
 
 ---
 
