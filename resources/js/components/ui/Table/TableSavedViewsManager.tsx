@@ -571,148 +571,166 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
       const code = inputCode().trim();
       if (code && code !== currentInputViewCode()) {
         const codeParts = code.split(/[,;\s]+/);
-        Promise.all(codeParts.map((codePart) => codeSerialiser.deserialise(codePart))).then(
-          (deserialisedParts) =>
-            runWithOwner(owner, () =>
-              untrack(() => {
-                if (deserialisedParts.length === 1) {
-                  const {tableId, viewName, view} = deserialisedParts[0]!;
-                  if (tableId && tableId !== props.staticPersistenceKey) {
-                    setCodeErrorMessage(t("tables.saved_views.code_error.different_table"));
-                    return;
-                  }
-                  if (viewName) {
-                    setNewName(viewName);
-                  }
-                  props.onLoad(view);
-                  if (advancedView()) {
-                    setCurrentInputView(view);
-                  }
-                } else {
-                  for (let i = 0; i < deserialisedParts.length; i++) {
-                    const {tableId, viewName} = deserialisedParts[i]!;
+        if (codeParts.length) {
+          void Promise.allSettled(codeParts.map((codePart) => codeSerialiser.deserialise(codePart))).then(
+            (deserialisedPartsResults) =>
+              runWithOwner(owner, () =>
+                untrack(() => {
+                  if (deserialisedPartsResults.length === 1) {
+                    const deserialised = deserialisedPartsResults[0]!;
+                    if (deserialised.status === "rejected") {
+                      setCodeErrorMessage(t("tables.saved_views.code_error.single.invalid"));
+                      return;
+                    }
+                    const {tableId, viewName, view} = deserialised.value;
                     if (tableId && tableId !== props.staticPersistenceKey) {
-                      setCodeErrorMessage(t("tables.saved_views.code_error.multiple.different_table", {index: i + 1}));
+                      setCodeErrorMessage(t("tables.saved_views.code_error.single.different_table"));
                       return;
                     }
-                    if (!viewName) {
-                      setCodeErrorMessage(t("tables.saved_views.code_error.multiple.no_view_name", {index: i + 1}));
-                      return;
+                    if (viewName) {
+                      setNewName(viewName);
                     }
-                  }
-                  deserialisedParts.sort((a, b) => a.viewName!.localeCompare(b.viewName!));
-                  const deserialisedPartsMap = new Map<string, NamedTableView>();
-                  for (let i = 0; i < deserialisedParts.length; i++) {
-                    const {viewName, view} = deserialisedParts[i]!;
-                    if (deserialisedPartsMap.has(viewName!)) {
-                      setCodeErrorMessage(
-                        t("tables.saved_views.code_error.multiple.duplicate_view_name", {
-                          index1: deserialisedParts.findIndex((p) => p.viewName === viewName) + 1,
-                          index2: i + 1,
-                          viewName,
-                        }),
-                      );
-                      return;
+                    props.onLoad(view);
+                    if (advancedView()) {
+                      setCurrentInputView(view);
                     }
-                    deserialisedPartsMap.set(viewName!, {name: viewName!, state: view});
-                  }
-                  const [getIncluded, setIncluded] = createSignal<ReadonlyMap<string, boolean>>(new Map());
-                  function isIncluded(viewName: string) {
-                    return getIncluded().get(viewName) ?? true;
-                  }
-                  const selectedPartsMap = createMemo(
-                    () => new Map([...deserialisedPartsMap.entries()].filter(([viewName]) => isIncluded(viewName))),
-                  );
-                  void confirmation
-                    .confirm({
-                      title: t("tables.saved_views.code_multiple_confirmation.title"),
-                      body: () => (
-                        <div class="mb-2">
-                          <div>{t("tables.saved_views.code_multiple_confirmation.desc")}</div>
-                          <div class="flex flex-col gap-1">
-                            <For each={[...deserialisedPartsMap.values()]}>
-                              {(view) => {
-                                const summary = getTableViewFullSummary({newView: view.state});
-                                const overwrites = createMemo(() =>
-                                  persistedState().states.some((st) => st.name === view.name),
-                                );
-                                return (
-                                  <div class="flex items-center gap-1">
-                                    <CheckboxInput
-                                      checked={isIncluded(view.name)}
-                                      onChecked={(checked) => setIncluded((i) => new Map(i).set(view.name, checked))}
-                                    />
-                                    <div
-                                      class={cx(
-                                        "flex-grow px-1 flex gap-2 justify-between rounded border border-gray-300",
-                                        isIncluded(view.name) ? undefined : "text-gray-400",
-                                      )}
-                                    >
+                  } else {
+                    const deserialisedParts = [];
+                    for (let i = 0; i < deserialisedPartsResults.length; i++) {
+                      const deserialisedPartResult = deserialisedPartsResults[i]!;
+                      if (deserialisedPartResult.status === "rejected") {
+                        setCodeErrorMessage(t("tables.saved_views.code_error.multiple.invalid", {index: i + 1}));
+                        return;
+                      }
+                      deserialisedParts.push(deserialisedPartResult.value);
+                      const {tableId, viewName} = deserialisedPartResult.value;
+                      if (tableId && tableId !== props.staticPersistenceKey) {
+                        setCodeErrorMessage(
+                          t("tables.saved_views.code_error.multiple.different_table", {index: i + 1}),
+                        );
+                        return;
+                      }
+                      if (!viewName) {
+                        setCodeErrorMessage(t("tables.saved_views.code_error.multiple.no_view_name", {index: i + 1}));
+                        return;
+                      }
+                    }
+                    const deserialisedPartsMap = new Map<string, NamedTableView>();
+                    for (let i = 0; i < deserialisedParts.length; i++) {
+                      const {viewName, view} = deserialisedParts[i]!;
+                      if (deserialisedPartsMap.has(viewName!)) {
+                        setCodeErrorMessage(
+                          t("tables.saved_views.code_error.multiple.duplicate_view_name", {
+                            index1: deserialisedParts.findIndex((p) => p.viewName === viewName) + 1,
+                            index2: i + 1,
+                            viewName,
+                          }),
+                        );
+                        return;
+                      }
+                      deserialisedPartsMap.set(viewName!, {name: viewName!, state: view});
+                    }
+                    const [getIncluded, setIncluded] = createSignal<ReadonlyMap<string, boolean>>(new Map());
+                    function isIncluded(viewName: string) {
+                      return getIncluded().get(viewName) ?? true;
+                    }
+                    const selectedPartsMap = createMemo(
+                      () => new Map([...deserialisedPartsMap.entries()].filter(([viewName]) => isIncluded(viewName))),
+                    );
+                    void confirmation
+                      .confirm({
+                        title: t("tables.saved_views.code_multiple_confirmation.title"),
+                        body: () => (
+                          <div class="mb-2">
+                            <div>{t("tables.saved_views.code_multiple_confirmation.desc")}</div>
+                            <div class="flex flex-col gap-1">
+                              <For each={[...deserialisedPartsMap.values()]}>
+                                {(view) => {
+                                  const summary = getTableViewFullSummary({newView: view.state});
+                                  const overwrites = createMemo(() =>
+                                    persistedState().states.some((st) => st.name === view.name),
+                                  );
+                                  return (
+                                    <div class="flex items-center gap-1">
+                                      <CheckboxInput
+                                        checked={isIncluded(view.name)}
+                                        onChecked={(checked) => setIncluded((i) => new Map(i).set(view.name, checked))}
+                                      />
                                       <div
-                                        use:title={
-                                          overwrites()
-                                            ? t("tables.saved_views.code_multiple_confirmation.conflict")
-                                            : undefined
-                                        }
+                                        class={cx(
+                                          "flex-grow px-1 flex gap-2 justify-between rounded border border-gray-300",
+                                          isIncluded(view.name) ? undefined : "text-gray-400",
+                                        )}
                                       >
-                                        {view.name}
-                                        <Show when={overwrites()}>
-                                          <WarningMark class={isIncluded(view.name) ? undefined : "text-opacity-40"} />
+                                        <div
+                                          use:title={
+                                            overwrites()
+                                              ? t("tables.saved_views.code_multiple_confirmation.conflict")
+                                              : undefined
+                                          }
+                                        >
+                                          {view.name}
+                                          <Show when={overwrites()}>
+                                            <WarningMark
+                                              class={isIncluded(view.name) ? undefined : "text-opacity-40"}
+                                            />
+                                          </Show>
+                                        </div>
+                                        <Show
+                                          when={advancedView() || isPartialTableViewSummary(summary.modifiesSummary)}
+                                        >
+                                          <indicators.Indicator
+                                            viewSummary={summary}
+                                            title={[
+                                              <indicators.Explanation viewSummary={summary} />,
+                                              {placement: "right"},
+                                            ]}
+                                          />
                                         </Show>
                                       </div>
-                                      <Show when={advancedView() || isPartialTableViewSummary(summary.modifiesSummary)}>
-                                        <indicators.Indicator
-                                          viewSummary={summary}
-                                          title={[
-                                            <indicators.Explanation viewSummary={summary} />,
-                                            {placement: "right"},
-                                          ]}
-                                        />
-                                      </Show>
                                     </div>
-                                  </div>
-                                );
-                              }}
-                            </For>
+                                  );
+                                }}
+                              </For>
+                            </div>
                           </div>
-                        </div>
-                      ),
-                      confirmText: t("tables.saved_views.code_multiple_confirmation.confirm"),
-                      confirmDisabled: () => !selectedPartsMap().size,
-                      mountPoint,
-                    })
-                    .then((confirmed) =>
-                      // eslint-disable-next-line solid/reactivity
-                      runWithOwner(owner, () => {
-                        if (confirmed) {
-                          setPersistedState((s) => ({
-                            ...s,
-                            states: [
-                              ...s.states.filter((st) => !selectedPartsMap().has(st.name)),
-                              ...selectedPartsMap().values(),
-                            ],
-                          }));
-                        }
-                      }),
-                    )
-                    .finally(() =>
-                      // eslint-disable-next-line solid/reactivity
-                      runWithOwner(owner, () => {
-                        setInputCode(currentInputViewCode());
-                      }),
-                    );
-                }
-                setCodeErrorMessage(undefined);
-                if (document.activeElement instanceof HTMLElement) {
-                  document.activeElement.blur();
-                }
-              }),
-            ),
-          () => setCodeErrorMessage(t("tables.saved_views.code_error.invalid")),
-        );
-      } else {
-        setCodeErrorMessage(undefined);
+                        ),
+                        confirmText: t("tables.saved_views.code_multiple_confirmation.confirm"),
+                        confirmDisabled: () => !selectedPartsMap().size,
+                        mountPoint,
+                      })
+                      .then((confirmed) =>
+                        // eslint-disable-next-line solid/reactivity
+                        runWithOwner(owner, () => {
+                          if (confirmed) {
+                            setPersistedState((s) => ({
+                              ...s,
+                              states: [
+                                ...s.states.filter((st) => !selectedPartsMap().has(st.name)),
+                                ...selectedPartsMap().values(),
+                              ],
+                            }));
+                          }
+                        }),
+                      )
+                      .finally(() =>
+                        // eslint-disable-next-line solid/reactivity
+                        runWithOwner(owner, () => {
+                          setInputCode(currentInputViewCode());
+                        }),
+                      );
+                  }
+                  setCodeErrorMessage(undefined);
+                  if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                  }
+                }),
+              ),
+          );
+          return;
+        }
       }
+      setCodeErrorMessage(undefined);
     });
 
     const statesToShow = () => [
@@ -970,12 +988,12 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
               value={inputCode()}
               onFocus={({target}) => target.select()}
               onInput={({target}) => setInputCode(target.value)}
-              // onFocusOut={() => {
-              //   if (!advancedView() || codeErrorMessage()) {
-              //     setInputCode(currentInputViewCode());
-              //   }
-              //   setCodeErrorMessage(undefined);
-              // }}
+              onFocusOut={() => {
+                if (!advancedView() || codeErrorMessage()) {
+                  setInputCode(currentInputViewCode());
+                }
+                setCodeErrorMessage(undefined);
+              }}
             />
             <HideableSection class="col-span-full" show={codeErrorMessage()}>
               <div class="text-red-600">{codeErrorMessage()}</div>

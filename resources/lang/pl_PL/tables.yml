@@ -276,9 +276,11 @@ saved_views:
   default_view_name: "Widok domyślny"
   current_view_code: "Kod aktualnego widoku"
   code_error:
-    invalid: "Błędny kod widoku."
-    different_table: "Ten widok przeznaczony jest dla innej tabeli."
+    single:
+      invalid: "Błędny kod widoku."
+      different_table: "Ten widok przeznaczony jest dla innej tabeli."
     multiple:
+      invalid: "Błędny kod widoku numer {{index}}."
       no_view_name: "Widok numer {{index}} nie ma nazwy."
       different_table: "Widok numer {{index}} przeznaczony jest dla innej tabeli."
       duplicate_view_name: "Widoki numer {{index1}} i {{index2}} mają tę samą nazwę: $t(quotes.open){{viewName}}$t(quotes.close)."
