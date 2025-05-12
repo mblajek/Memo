@@ -275,8 +275,18 @@ saved_views:
   rename_conflict: "Ta nazwa jest już użyta."
   default_view_name: "Widok domyślny"
   current_view_code: "Kod aktualnego widoku"
-  code_error: "Błędny kod widoku."
-  code_error.different_table: "Ten widok przeznaczony jest dla innej tabeli."
+  code_error:
+    invalid: "Błędny kod widoku."
+    different_table: "Ten widok przeznaczony jest dla innej tabeli."
+    multiple:
+      no_view_name: "Widok numer {{index}} nie ma nazwy."
+      different_table: "Widok numer {{index}} przeznaczony jest dla innej tabeli."
+      duplicate_view_name: "Widoki numer {{index1}} i {{index2}} mają tę samą nazwę: $t(quotes.open){{viewName}}$t(quotes.close)."
+  code_multiple_confirmation:
+    title: "Zapisać widoki?"
+    desc: "Wklejone kody reprezentują następujące widoki:"
+    conflict: "Widok o tej nazwie istnieje. Zapisanie go zastąpi istniejący widok."
+    confirm: "$t(actions.save)"
   copy_code: "Kopiuj kod widoku do schowka"
   current_view_header: "Aktualny widok:"
   component_actions:
