@@ -1,8 +1,7 @@
 import {A, useLocation, useSearchParams} from "@solidjs/router";
 import {useQuery} from "@tanstack/solid-query";
-import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {createPersistence} from "components/persistence/persistence";
-import {localStorageStorage, userStorageStorage} from "components/persistence/storage";
+import {localStorageStorage, sessionStorageStorage, userStorageStorage} from "components/persistence/storage";
 import {PopOver} from "components/ui/PopOver";
 import {CalendarColumn, ColumnsCalendar} from "components/ui/calendar/ColumnsCalendar";
 import {MonthCalendar, MonthCalendarDay, getMonthCalendarRange} from "components/ui/calendar/MonthCalendar";
@@ -125,6 +124,10 @@ type PersistentPresentationState = {
 };
 const PERSISTENCE_PRESENTATION_VERSION = 3;
 
+type PersistentSessionState = {
+  readonly showInactiveStaff: boolean;
+};
+
 /**
  * A full-page calendar, consisting of a tiny calendar, a list of resources (people and meeting resources),
  * calendar mode switcher, and a large calendar with either month view, or hours view.
@@ -159,15 +162,12 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
   const userStatus = useQuery(User.statusQueryOptions);
   const [showInactiveStaff, setShowInactiveStaff] = createSignal(false);
   const [altStaffSort, setAltStaffSort] = createSignal(false);
-  createHistoryPersistence({
-    key: "FullCalendar",
-    value: () => ({showInactive: showInactiveStaff()}),
+  createPersistence<PersistentSessionState>({
+    value: () => ({showInactiveStaff: showInactiveStaff()}),
     onLoad: (value) => {
-      setShowInactiveStaff(value.showInactive);
+      setShowInactiveStaff(value.showInactiveStaff);
     },
-    onReset: () => {
-      setShowInactiveStaff(false);
-    },
+    storage: sessionStorageStorage("settings:FullCalendar"),
   });
   createPersistence({
     value: () => ({altStaffSort: altStaffSort()}),
@@ -403,20 +403,6 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
     }
   }
 
-  // Show inactive staff if an inactive staff member is selected.
-  createComputed(() => {
-    if (showInactiveStaff() || !staff()) {
-      return;
-    }
-    for (const selectedResource of selectedResources()) {
-      const staff = staffById().get(selectedResource);
-      if (staff && !staff["staff.isActive"]) {
-        setShowInactiveStaff(true);
-        return;
-      }
-    }
-  });
-
   /** The last days selection in each of the modes. */
   const daysSelectionByMode = new Map<CalendarMode, Signal<DaysRange>>();
   for (const mode of CALENDAR_MODES) {
@@ -519,11 +505,18 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
         // Once resources are loaded, make sure there aren't any selected resources that don't really exist.
         createOneTimeEffect({
           input: staff,
-          effect: () => {
+          effect: (staff) => {
             const validResourceIds = new Set<string>();
             for (const group of resourceGroups()) {
               for (const {id} of group.resources) {
                 validResourceIds.add(id);
+              }
+            }
+            if (!showInactiveStaff()) {
+              for (const staffMember of staff) {
+                if (!staffMember["staff.isActive"]) {
+                  validResourceIds.delete(staffMember.id);
+                }
               }
             }
             if (selectedResourceRadio() && !validResourceIds.has(selectedResourceRadio()!)) {
