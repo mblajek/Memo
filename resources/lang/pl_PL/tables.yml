@@ -276,6 +276,7 @@ saved_views:
   default_view_name: "Widok domyślny"
   current_view_code: "Kod aktualnego widoku"
   code_error:
+    no_codes: "Wklejony tekst nie jest kodem widoku."
     single:
       invalid: "Błędny kod widoku."
       different_table: "Ten widok przeznaczony jest dla innej tabeli."
@@ -290,6 +291,7 @@ saved_views:
     conflict: "Widok o tej nazwie istnieje. Zapisanie go zastąpi istniejący widok."
     confirm: "$t(actions.save)"
   copy_code: "Kopiuj kod widoku do schowka"
+  copy_all_codes: "Kopiuj kody wszystkich widoków"
   current_view_header: "Aktualny widok:"
   component_actions:
     ignore: "(pomiń)"
