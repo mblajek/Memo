@@ -46,6 +46,8 @@ export default (() => {
         isFacilityAdmin() ? {name: "isOtpRequired", initialVisible: false} : undefined,
         isFacilityAdmin() ? {name: "otpRequiredAt", initialVisible: false} : undefined,
         isFacilityAdmin() ? {name: "hasOtpConfigured", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "isManagedByThisFacility", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "managedByFacility.name", initialVisible: false} : undefined,
         {name: "lastLoginSuccessAt", initialVisible: false},
         isFacilityAdmin() ? {name: "lastLoginFailureAt", initialVisible: false} : undefined,
         {name: "member.isStaff", columnDef: {size: 130}},

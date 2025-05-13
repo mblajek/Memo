@@ -59,7 +59,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
         {type: "column", column: "passwordExpireAt"},
         {type: "column", column: "otpRequiredAt"},
         {type: "column", column: "hasOtpConfigured"},
-        {type: "column", column: "managedByFacility.id"},
+        {type: "column", column: "isManagedByThisFacility"},
         {type: "column", column: "member.isStaff"},
       ],
       filter: {type: "column", column: "id", op: "=", val: props.userId},
@@ -86,11 +86,13 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
       passwordExpireAt: user.passwordExpireAt as string | null,
       otpRequiredAt: user.otpRequiredAt as string | null,
       hasOtpConfigured: user.hasOtpConfigured as boolean,
-      managedByFacilityId: user["managedByFacility.id"] as Api.Id | null,
+      isManagedByThisFacility: user.isManagedByThisFacility as boolean,
       isStaff: user["member.isStaff"] as boolean,
-    } satisfies Partial<UserResource> & {isStaff: boolean};
+    } satisfies Partial<UserResource> & {
+      readonly isStaff: boolean;
+      readonly isManagedByThisFacility: boolean;
+    };
   });
-  const isManagedByCurrentFacility = () => user()?.managedByFacilityId === activeFacilityId();
   const invalidate = useInvalidator();
   const userMutation = useMutation(() => ({
     mutationFn: FacilityAdmin.updateFacilityAdmin,
@@ -101,7 +103,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
     const oldUser = user()!;
     await userMutation.mutateAsync({
       id: oldUser.id,
-      ...(isManagedByCurrentFacility() ? getUserBaseInfoValues(values, oldUser) : undefined),
+      ...(oldUser.isManagedByThisFacility ? getUserBaseInfoValues(values, oldUser) : undefined),
       member: {
         hasFacilityAdmin: values.member.hasFacilityAdmin,
       },
@@ -151,7 +153,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
           return (
             <>
               <Show
-                when={isManagedByCurrentFacility()}
+                when={user()!.isManagedByThisFacility}
                 fallback={<div>{t("facility_user.not_managed_by_current_facility")}</div>}
               >
                 <div>

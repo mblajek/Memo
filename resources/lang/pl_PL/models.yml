@@ -84,6 +84,7 @@ facility_user:
   _name: "pracownik/klient"
   _name_plural: "pracownicy/klienci"
   name: "$t(models.user.name)"
+  isManagedByThisFacility: "zarządzany przez tę placówkę"
   firstMeetingDate: "pierwsze spotkanie"
   lastMeetingDate: "ostatnie spotkanie"
   completedMeetingsCount: "liczba odbytych spotkań"

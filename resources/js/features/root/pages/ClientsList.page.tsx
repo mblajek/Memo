@@ -49,6 +49,8 @@ export default (() => {
           columnDef: {cell: customTableCells.facilityUsers()},
           initialVisible: false,
         },
+        {name: "isManagedByThisFacility", initialVisible: false},
+        {name: "managedByFacility.name", initialVisible: false},
         {name: "firstMeetingDate", initialVisible: false},
         {name: "lastMeetingDate"},
         {name: "completedMeetingsCount"},
