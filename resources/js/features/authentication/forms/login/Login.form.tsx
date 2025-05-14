@@ -5,7 +5,7 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
-import {OTPField} from "components/ui/form/OTPField";
+import {getOTPFromFormValue, OTPField} from "components/ui/form/OTPField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField} from "components/ui/form/TextField";
 import {HideableSection} from "components/ui/HideableSection";
@@ -67,8 +67,9 @@ export const LoginForm: VoidComponent<Props> = (props) => {
 
   const onSubmit: FormConfigWithoutTransformFn<Output>["onSubmit"] = async (values) => {
     await mutation.mutateAsync({
-      ...values,
+      email: values.email,
       password: showOTP() ? password() : values.password,
+      otp: getOTPFromFormValue(values.otp),
     });
     // eslint-disable-next-line solid/reactivity
     return () => {

@@ -21,7 +21,12 @@ export const OTPField: VoidComponent<OTPFieldProps> = (allProps) => {
         </div>
       )}
       autocomplete="one-time-code"
-      maxLength="6"
+      // Allow the format "000 000", because some authenticators show the digits in two groups.
+      maxLength="7"
     />
   );
 };
+
+export function getOTPFromFormValue(otp: string) {
+  return otp.replaceAll(" ", "");
+}

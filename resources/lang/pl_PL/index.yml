@@ -46,15 +46,11 @@ otp:
   intro_md: |-
     Aby skonfigurować zabezpieczenie OTP:
 
-    1. Zainstaluj aplikację do haseł jednorazowych na telefonie (rekomendowana aplikacja:
-        [Ente Auth](https://ente.io/auth/) dostępna na
-        [Android](https://play.google.com/store/apps/details?id=io.ente.auth&hl=pl) i
-        [iOS](https://apps.apple.com/us/app/ente-auth-2fa-authenticator/id6444121398)), a następnie
-        ją uruchom.
+    1. Zainstaluj aplikację do haseł jednorazowych na telefonie (w razie wątpliwości co do wyboru
+        aplikacji, skontaktuj się z administratorem), a następnie ją uruchom.
     1. Potwierdź swoje aktualne hasło poniżej, aby wygenerować kod QR. Upewnij się, że osoby
         niepowołane nie mają w tym czasie dostępu do twojego ekranu.
-    1. W aplikacji na telefonie wybierz _$t(quotes.open)Zeskanuj kod QR$t(quotes.close)_, a następnie
-        zeskanuj wygenerowany kod.
+    1. W aplikacji na telefonie wybierz opcję skanowania kodu QR, a następnie zeskanuj wygenerowany kod.
     1. Wpisz sześciocyfrowy kod z aplikacji w polu _$t(quotes.open)$t(models.user.otp)$t(quotes.close)_
         poniżej i potwierdź.
   issuer:

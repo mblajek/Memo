@@ -20,6 +20,7 @@ export namespace User {
   export interface LoginRequest {
     readonly email: string;
     readonly password: string;
+    readonly otp?: string;
   }
 
   export interface DeveloperLoginRequest {

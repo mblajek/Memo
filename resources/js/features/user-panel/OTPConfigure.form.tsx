@@ -3,7 +3,7 @@ import {useMutation, useQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {CheckboxInput} from "components/ui/CheckboxInput";
-import {OTPField} from "components/ui/form/OTPField";
+import {getOTPFromFormValue, OTPField} from "components/ui/form/OTPField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {HideableSection} from "components/ui/HideableSection";
 import {InfoIcon} from "components/ui/InfoIcon";
@@ -98,7 +98,7 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
   }
 
   async function configureOTP(values: otpConfigure.FormType) {
-    await configureMutation.mutateAsync(values);
+    await configureMutation.mutateAsync({otp: getOTPFromFormValue(values.otp)});
     // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.otp_configure.success"));
