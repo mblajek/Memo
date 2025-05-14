@@ -16,7 +16,7 @@ import {AdminUserResourceForPatch} from "data-access/memo-api/resources/adminUse
 import {UserResource} from "data-access/memo-api/resources/user.resource";
 import {dateTimeToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
-import {createComputed, JSX, Match, on, Show, Switch, VoidComponent} from "solid-js";
+import {createComputed, createMemo, JSX, Match, on, Show, Switch, VoidComponent} from "solid-js";
 import {z} from "zod";
 
 export const getUserBaseInfoSchema = () =>
@@ -46,6 +46,10 @@ interface Props {
 export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {form, formConfig} = useFormContext();
+  const initialValues = createMemo(() => ({
+    ...formConfig.initialValues,
+    ...(props.origUser ? userBaseInfoInitialValuesForEdit(props.origUser) : undefined),
+  }));
   createComputed(() => {
     if (!form.data("email")) {
       form.setFields("hasPassword", false);
@@ -61,6 +65,22 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
       (email, prevEmail) => {
         if (prevEmail !== undefined) {
           form.setFields("hasEmailVerified", false);
+        }
+      },
+    ),
+  );
+  createComputed(
+    on(
+      () => form.data("password"),
+      (password, prevPassword) => {
+        if (prevPassword !== undefined) {
+          if (password) {
+            if (!form.data("passwordExpireAt")) {
+              form.setFields("passwordExpireAt", dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: 7})));
+            }
+          } else {
+            form.setFields("passwordExpireAt", initialValues()?.passwordExpireAt);
+          }
         }
       },
     ),
@@ -133,8 +153,6 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
     );
   };
 
-  const origHasOtpConfigured = () => formConfig.initialValues?.hasOtpConfigured ?? props.origUser?.hasOtpConfigured;
-
   return (
     <>
       <div class="flex flex-col gap-1">
@@ -166,11 +184,11 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
                   // Prevent password autocomplete. Just autocomplete="off" does not work.
                   autocomplete="off"
                   readonly
-                  disabled={!show()}
-                  allowShow
                   onClick={(e) => {
                     e.currentTarget.readOnly = false;
                   }}
+                  disabled={!show()}
+                  allowShow
                 />
                 <DateFieldWithDaysLeft
                   name="passwordExpireAt"
@@ -219,10 +237,10 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
                     {t("forms.user.otp_required_expired")}
                   </HideableSection>
                 </HideableSection>
-                <HideableSection show={form.data("isOtpRequired") || origHasOtpConfigured()}>
+                <HideableSection show={form.data("isOtpRequired") || initialValues()?.hasOtpConfigured}>
                   <div class="pt-1 flex">
                     <Show
-                      when={origHasOtpConfigured()}
+                      when={initialValues()?.hasOtpConfigured}
                       fallback={<div>{t("forms.user.otp_configured_info.when_not_configured")}</div>}
                     >
                       <SegmentedControl
