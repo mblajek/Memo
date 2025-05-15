@@ -40,9 +40,7 @@ export interface FormTranslations {
   submit(o?: TOptions): string;
 }
 
-const FormContext = createContext<FormContextValue>(undefined, {
-  name: "FormContext",
-});
+const FormContext = createContext<FormContextValue>(undefined, {name: "FormContext"});
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 

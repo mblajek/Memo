@@ -120,6 +120,14 @@ export const LoginForm: VoidComponent<Props> = (props) => {
             }
           },
         });
+        createEffect(() => {
+          if (showOTP()) {
+            const otp = getOTPFromFormValue(form.data("otp"));
+            if (otp.length === 6) {
+              setTimeout(() => form.handleSubmit());
+            }
+          }
+        });
         return (
           <>
             <TextField
