@@ -49,7 +49,8 @@ Route::prefix('/v1')->group(function () {
         Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout']);
         Route::post('/password', [AuthController::class, 'password']);
         Route::prefix('/otp')->group(function () {
-            Route::post('/generate', [AuthController::class, 'otpGenerate']);
+            Route::post('/generate', [AuthController::class, 'otpGenerate'])
+                ->middleware(['throttle:5,1,api_otp_generate']);
             Route::post('/configure', [AuthController::class, 'otpConfigure'])
                 ->middleware(['throttle:5,1,api_otp_configure']);
         });

@@ -85,7 +85,7 @@ class AuthController extends ApiController
             }
 
             if ($user->otp_secret !== null) {
-                ['otp' => $otpData] = $this->validate(['otp' => Valid::trimmed()]);
+                ['otp' => $otpData] = $this->validate(['otp' => Valid::trimmed(['digits:6'])]);
 
                 $google2fa = new Google2FA();
                 // OTP is configured.
@@ -180,7 +180,7 @@ class AuthController extends ApiController
         $data = $this->validate([
             'current' => Valid::string(['current_password']),
             'repeat' => Valid::string(['same:password']),
-            'password' =>  Valid::string(['different:current', User::getPasswordRules()]),
+            'password' => Valid::string(['different:current', User::getPasswordRules()]),
         ]);
 
         $user = $this->getUserOrFail();
@@ -268,7 +268,7 @@ class AuthController extends ApiController
     )]
     public function otpConfigure(Request $request, LogService $logService): JsonResponse
     {
-        $otp = $this->validate(['otp' => Valid::string()])['otp'];
+        ['otp' => $otp] = $this->validate(['otp' => Valid::trimmed(['digits:6'])]);
         $user = $this->getUserOrFail();
         $storedData = $request->session()->get(self::SESSION_OTP_SECRET_CANDIDATE);
         $now = new DateTimeImmutable();
