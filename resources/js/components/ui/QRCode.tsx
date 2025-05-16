@@ -20,11 +20,7 @@ const LOGO_FRAME_SIZE_FRAC = 0.25;
 
 export const QRCode: VoidComponent<Props> = (props) => {
   const qrData = createMemo(() => (props.content ? headlessQr.qr(props.content, {correction: "Q"}) : undefined));
-  const [logoLoaded, setLogoLoaded] = createSignal(false);
   const [rawMode, setRawMode] = createSignal(false);
-  const logo = new Image();
-  logo.onload = () => setLogoLoaded(true);
-  logo.src = "/img/memo_logo_short.svg";
   let context: CanvasRenderingContext2D | undefined;
   const geom = createMemo(() => {
     const outerSize = props.size;
@@ -38,20 +34,8 @@ export const QRCode: VoidComponent<Props> = (props) => {
     const logoSize = LOGO_SIZE_FRAC * innerSize;
     const logoFrameSize = LOGO_FRAME_SIZE_FRAC * innerSize;
     const minOrbitR = (1.1 * logoFrameSize) / 2;
-    let logoSizeX = logoSize;
-    let logoSizeY = logoSize;
-    if (logoLoaded()) {
-      if (logo.width < logo.height) {
-        logoSizeX *= logo.width / logo.height;
-      } else {
-        logoSizeY *= logo.height / logo.width;
-      }
-    }
-    const logoPosX = posCenter - logoSizeX / 2;
-    const logoPosY = posCenter - logoSizeY / 2;
     const logoOverlapMinInd = (innerSize - logoFrameSize) / 2 / stepSize;
     const logoOverlapMaxInd = qrData() ? qrData()!.length - 1 - logoOverlapMinInd : 0;
-
     return {
       outerSize,
       padding,
@@ -64,13 +48,7 @@ export const QRCode: VoidComponent<Props> = (props) => {
         maxR: maxOrbitR,
         minR: minOrbitR,
       },
-      logo: {
-        loaded: logoLoaded(),
-        posX: logoPosX,
-        posY: logoPosY,
-        sizeX: logoSizeX,
-        sizeY: logoSizeY,
-      },
+      logoSize,
       logoFrameSize,
       logoOverlap: {
         minInd: logoOverlapMinInd,
@@ -354,9 +332,6 @@ export const QRCode: VoidComponent<Props> = (props) => {
       for (const ball of balls) {
         drawBall(ball);
       }
-      if (g.logo.loaded) {
-        ctx.drawImage(logo, g.logo.posX, g.logo.posY, g.logo.sizeX, g.logo.sizeY);
-      }
       first = false;
     } finally {
       rafId = requestAnimationFrame(frame);
@@ -364,14 +339,22 @@ export const QRCode: VoidComponent<Props> = (props) => {
   }
 
   return (
-    <canvas
-      ref={(elem) => {
-        context = elem.getContext("2d")!;
-        rafId = requestAnimationFrame(frame);
-      }}
-      width={props.size}
-      height={props.size}
-      onClick={() => setRawMode((r) => !r && !!qrData())}
-    />
+    <div class="grid">
+      <canvas
+        class="col-start-1 row-start-1"
+        ref={(elem) => {
+          context = elem.getContext("2d")!;
+          rafId = requestAnimationFrame(frame);
+        }}
+        width={props.size}
+        height={props.size}
+        onClick={() => setRawMode((r) => !r && !!qrData())}
+      />
+      <img
+        class="col-start-1 row-start-1 m-auto pointer-events-none"
+        style={{width: `${geom().logoSize}px`, height: `${geom().logoSize}px`}}
+        src="/img/memo_logo_short.svg"
+      />
+    </div>
   );
 };
