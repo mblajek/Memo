@@ -29,9 +29,14 @@ części kalendarza (pokazanym na obrazku). Dotąd działało również wybieran
 ale zostało to zmienione.
 ![Edycja grafiku](timetable-edit.png)
 
-🟣[Zapisane widoki tabeli](table-saved-views) pozwalają teraz na przełączenie w tryb zaawansowany,
-w którym można tworzyć widoki częściowe. Widok częściowy pozwala np. ustawić filtry na niektórych
-kolumnach bez zmiany pozostałych filtrów i innych parametrów tabeli.
+🟣[Zapisane widoki tabeli](table-saved-views) pozwalają teraz na przełączenie w
+[tryb zaawansowany](table-saved-views#advanced-view), w którym można tworzyć widoki częściowe.
+Widok częściowy pozwala np. ustawić filtry na niektórych kolumnach bez zmiany pozostałych filtrów
+i innych parametrów tabeli.
+
+🟣Możliwe jest [wyeksportowanie wszystkich widoków tabeli](table-saved-views#codes-multiple)
+z danej tabeli, a następnie wklejenie wielu kodów w polu kodu, aby w ten sposób udostępnić wszystkie widoki,
+na przykład innej osobie.
 
 🟤Informacje _Co nowego w Memo_ są teraz dostępne w dokumentacji, na stronie, którą właśnie oglądasz.
 Po wydaniu nowej wersji Memo w lewym dolnym narożniku pojawi się link do aktualności.
@@ -48,7 +53,7 @@ na ewentualne ataki, m.in. skonfigurowano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
 
-## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ ea2c7659c3bb8ddddaaee3d5a6ebb2b06b11835b -->
+## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 047bfb9a0fa46c8cd03205156a400a46888aec62 -->
 
 ---
 
