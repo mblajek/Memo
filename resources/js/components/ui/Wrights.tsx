@@ -1,4 +1,5 @@
 import {htmlAttributes} from "components/utils/html_attributes";
+import {shuffle} from "components/utils/object_util";
 import {createEffect, createMemo, createSignal, on, onCleanup, splitProps, VoidComponent} from "solid-js";
 import {isDEV} from "../utils/dev_mode";
 import {useResizeObserver} from "../utils/resize_observer";
@@ -34,7 +35,7 @@ const PAUSES = {
 const MAX_FPS = 30;
 const MAX_TICKS_INTERVAL = 1000;
 
-const MEMO_COLORS = ["#cdd500", "#009dc5", "#62358c", "#009f98", "#af1615"];
+const MEMO_COLORS = ["#cdd500", "#009dc5", "#62358c", "#009f98", "#af1615"] as const;
 const COLORS_ALPHA = 0.2;
 
 type Vec = readonly [number, number];
@@ -51,7 +52,7 @@ export const Wrights: VoidComponent<Props> = (allProps) => {
   // eslint-disable-next-line solid/reactivity
   const houseSize = props.houseSize ?? 2;
   const colorsRot = Math.random();
-  const colors = MEMO_COLORS.toSorted(() => Math.random() - 0.5);
+  const colors = shuffle([...MEMO_COLORS]);
   const data = createMemo(() => {
     if (!canvasSize()) {
       return undefined;

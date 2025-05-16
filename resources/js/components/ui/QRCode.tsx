@@ -1,3 +1,4 @@
+import {shuffle} from "components/utils/object_util";
 import * as headlessQr from "headless-qr";
 import {createMemo, createSignal, onCleanup, VoidComponent} from "solid-js";
 
@@ -215,7 +216,7 @@ export const QRCode: VoidComponent<Props> = (props) => {
           }
           const initialBallIndices = balls.map((b, i) => i);
           const ballIndices = new Set(balls.map((b, i) => i));
-          desiredDots.sort(() => Math.random() - 0.5);
+          shuffle(desiredDots);
           for (const [x, y] of desiredDots) {
             const xp = g.posZero + x * g.stepSize;
             const yp = g.posZero + y * g.stepSize;

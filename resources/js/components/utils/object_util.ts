@@ -98,3 +98,14 @@ export function jsonValuesEqual(a: JSONValue, b: JSONValue) {
     return false;
   }
 }
+
+/** Shuffles the array in place and returns it. */
+export function shuffle<T>(array: T[]): T[] {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const k = array[i]!;
+    array[i] = array[j]!;
+    array[j] = k;
+  }
+  return array;
+}
