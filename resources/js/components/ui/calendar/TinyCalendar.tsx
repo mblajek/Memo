@@ -137,7 +137,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
   }
 
   return (
-    <div {...htmlAttributes.merge(divProps, {class: "flex flex-col items-stretch gap-1 m-1 font-medium text-sm"})}>
+    <div {...htmlAttributes.merge(divProps, {class: "flex flex-col items-stretch gap-1 font-medium text-sm"})}>
       <div class="w-full flex items-stretch uppercase">
         <Button
           class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"

@@ -1111,6 +1111,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
         <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
           <Show when={props.staticCalendarFunction !== "leaveTimes"}>
             <TinyCalendar
+              class="ms-1"
               showWeekdayNames
               selection={daysSelection()}
               month={tinyCalMonth()}
