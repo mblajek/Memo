@@ -1,6 +1,7 @@
-import {useMutation, useQuery} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {HiddenUsernameField} from "components/ui/form/HiddenUsernameField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {useLangFunc} from "components/utils/lang";
 import {useLogOut} from "components/utils/log_out";
@@ -37,7 +38,6 @@ export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props
   const t = useLangFunc();
   const logOut = useLogOut();
   const invalidate = useInvalidator();
-  const statusQuery = useQuery(User.statusQueryOptions);
   const mutation = useMutation(() => ({
     mutationFn: User.changePassword,
     meta: {isFormSubmit: true},
@@ -68,16 +68,7 @@ export const PasswordChangeForm: VoidComponent<PasswordChangeFormProps> = (props
       <Show when={props.expirationSoon}>
         <div class="font-semibold text-red-600">{t(`auth.password_expiration_soon`)}</div>
       </Show>
-      <input
-        // For better integration with password managers.
-        // https://www.chromium.org/developers/design-documents/create-amazing-password-forms/
-        // TODO: Integration with Chrome password manager is still not good, investigate and fix.
-        id="username"
-        autocomplete="username"
-        type="email"
-        value={statusQuery.data?.user.email || undefined}
-        class="hidden"
-      />
+      <HiddenUsernameField />
       <PasswordField name="current" autocomplete="current-password" autofocus allowShow="sensitive" />
       <PasswordField name="password" autocomplete="new-password" allowShow="sensitive" />
       <PasswordField name="repeat" autocomplete="new-password" />

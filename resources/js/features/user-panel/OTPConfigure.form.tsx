@@ -3,6 +3,7 @@ import {useMutation, useQuery} from "@tanstack/solid-query";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {CheckboxInput} from "components/ui/CheckboxInput";
+import {HiddenUsernameField} from "components/ui/form/HiddenUsernameField";
 import {getOTPFromFormValue, OTPField} from "components/ui/form/OTPField";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {HideableSection} from "components/ui/HideableSection";
@@ -80,7 +81,12 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
     );
   });
   const qrCodeTimeLeft = createMemo(() =>
-    otpData() ? DateTime.fromISO(otpData()!.validUntil).diff(currentTimeSecond(), ["minutes", "seconds"]) : undefined,
+    otpData()
+      ? DateTime.fromISO(otpData()!.validUntil)
+          // Avoid random rounding.
+          .minus({seconds: 0.5})
+          .diff(currentTimeSecond(), ["minutes", "seconds"])
+      : undefined,
   );
   createEffect(() => {
     const timeLeft = qrCodeTimeLeft();
@@ -129,6 +135,7 @@ export const OTPConfigureForm: VoidComponent<OTPConfigureFormProps> = (props) =>
           class="flex flex-col gap-2"
           preventPageLeave={false}
         >
+          <HiddenUsernameField />
           <PasswordField name="password" autocomplete="current-password" autofocus allowShow="sensitive" />
           <FelteSubmit cancel={props.onCancel} />
         </FelteForm>
