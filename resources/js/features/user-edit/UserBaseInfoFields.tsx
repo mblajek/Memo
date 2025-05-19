@@ -12,11 +12,12 @@ import {cx} from "components/utils/classnames";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useLangFunc} from "components/utils/lang";
 import {currentTimeMinute} from "components/utils/time";
+import {Timeout} from "components/utils/timeout";
 import {AdminUserResourceForPatch} from "data-access/memo-api/resources/adminUser.resource";
 import {UserResource} from "data-access/memo-api/resources/user.resource";
 import {dateTimeToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
-import {createComputed, createMemo, JSX, Match, on, Show, Switch, VoidComponent} from "solid-js";
+import {createComputed, createEffect, createMemo, JSX, Match, on, Show, Switch, VoidComponent} from "solid-js";
 import {z} from "zod";
 
 export const getUserBaseInfoSchema = () =>
@@ -30,6 +31,9 @@ export const getUserBaseInfoSchema = () =>
     isOtpRequired: z.boolean(),
     otpRequiredAt: z.string(),
     hasOtpConfigured: z.boolean(),
+    /** Helper fields, not part of the API. These are number fields. */
+    passwordExpireAt_daysLeft: z.unknown(),
+    otpRequiredAt_daysLeft: z.unknown(),
   });
 
 export type UserBaseInfoFormType = z.infer<ReturnType<typeof getUserBaseInfoSchema>>;
@@ -107,6 +111,40 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
   );
 
   const DateFieldWithDaysLeft: VoidComponent<{readonly name: string; readonly suffix?: JSX.Element}> = (dProps) => {
+    const timeout = new Timeout();
+    const daysLeftFieldName = () => `${dProps.name}_daysLeft`;
+    createEffect(() => {
+      form.setFields(
+        daysLeftFieldName(),
+        form.data(dProps.name)
+          ? Math.max(
+              0,
+              Math.floor(
+                dateTimeLocalInputToDateTime(form.data(dProps.name)).diff(currentTimeMinute(), "days").days +
+                  // Add one hour to avoid bad rounding.
+                  1 / 24,
+              ),
+            )
+          : "",
+      );
+    });
+    createEffect(
+      on(
+        () => form.data(daysLeftFieldName()),
+        (value) => {
+          if (value == undefined || value === "") {
+            timeout.set(
+              // eslint-disable-next-line solid/reactivity
+              () => form.setFields(dProps.name, ""),
+              1000,
+            );
+          } else {
+            timeout.clear();
+            form.setFields(dProps.name, dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)})));
+          }
+        },
+      ),
+    );
     return (
       <div class="flex flex-col">
         <FieldLabel fieldName={dProps.name} />
@@ -117,35 +155,13 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
             label=""
             type="datetime-local"
             showWeekday
+            small
           />
           <div>
             {t("parenthesis.open")}
             {t("calendar.days_left")}
           </div>
-          <TextFieldTextInput
-            class="w-20"
-            name={`${dProps.name}-daysLeft`}
-            type="number"
-            value={
-              form.data(dProps.name)
-                ? Math.max(
-                    0,
-                    Math.floor(
-                      dateTimeLocalInputToDateTime(form.data(dProps.name)).diff(currentTimeMinute(), "days").days +
-                        // Add one hour to avoid bad rounding.
-                        1 / 24,
-                    ),
-                  )
-                : ""
-            }
-            onChange={({target: {value}}) =>
-              form.setFields(
-                dProps.name,
-                value ? dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)})) : "",
-              )
-            }
-            min="0"
-          />
+          <TextFieldTextInput class="w-16" name={daysLeftFieldName()} type="number" min="0" small />
           <div>{t("parenthesis.close")}</div>
           {dProps.suffix}
         </div>

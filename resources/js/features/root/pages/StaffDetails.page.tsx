@@ -108,7 +108,7 @@ export default (() => {
                   />
                   <FelteForm
                     id="staff_edit"
-                    translationsFormNames={["staff_edit", "staff", "facility_user"]}
+                    translationsFormNames={["staff_edit", "staff", "facility_user", "user"]}
                     translationsModel={["staff", "facility_user", "user"]}
                     class="flex flex-col items-stretch gap-4"
                     style={{"min-width": "400px", "max-width": "600px"}}
