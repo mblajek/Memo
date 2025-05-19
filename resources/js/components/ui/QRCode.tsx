@@ -1,4 +1,5 @@
 import {shuffle} from "components/utils/object_util";
+import {NoDarkTheme} from "features/root/components/theme_control";
 import * as headlessQr from "headless-qr";
 import {createMemo, createSignal, onCleanup, VoidComponent} from "solid-js";
 
@@ -15,7 +16,7 @@ const ORBITING_DARKNESS = 0.4;
 const BALL_RADIUS_COEFF = 0.53;
 const NUM_ORBITING_BALLS = 300;
 
-const PADDING_FRAC = 0.015;
+const PADDING_FRAC = 0.02;
 const LOGO_SIZE_FRAC = 0.2;
 const LOGO_FRAME_SIZE_FRAC = 0.25;
 
@@ -340,7 +341,7 @@ export const QRCode: VoidComponent<Props> = (props) => {
   }
 
   return (
-    <div class="grid">
+    <NoDarkTheme class="rounded overflow-clip grid">
       <canvas
         class="col-start-1 row-start-1"
         ref={(elem) => {
@@ -356,6 +357,6 @@ export const QRCode: VoidComponent<Props> = (props) => {
         style={{width: `${geom().logoSize}px`, height: `${geom().logoSize}px`}}
         src="/img/memo_logo_short.svg"
       />
-    </div>
+    </NoDarkTheme>
   );
 };
