@@ -1,7 +1,7 @@
 import {shuffle} from "components/utils/object_util";
 import {NoDarkTheme} from "features/root/components/theme_control";
 import * as headlessQr from "headless-qr";
-import {createMemo, createSignal, onCleanup, VoidComponent} from "solid-js";
+import {createMemo, createSignal, onCleanup, Show, VoidComponent} from "solid-js";
 
 interface Props {
   readonly size: number;
@@ -352,11 +352,13 @@ export const QRCode: VoidComponent<Props> = (props) => {
         height={props.size}
         onClick={() => setRawMode((r) => !r && !!qrData())}
       />
-      <img
-        class="col-start-1 row-start-1 m-auto pointer-events-none"
-        style={{width: `${geom().logoSize}px`, height: `${geom().logoSize}px`}}
-        src="/img/memo_logo_short.svg"
-      />
+      <Show when={!rawMode() || !qrData()}>
+        <img
+          class="col-start-1 row-start-1 m-auto pointer-events-none"
+          style={{width: `${geom().logoSize}px`, height: `${geom().logoSize}px`}}
+          src="/img/memo_logo_short.svg"
+        />
+      </Show>
     </NoDarkTheme>
   );
 };
