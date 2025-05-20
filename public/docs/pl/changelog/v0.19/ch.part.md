@@ -1,6 +1,6 @@
 ## $t(app_name) $t(app_version.v)0.19 {#v0.19}
 
-Data wydania: **$$$DATE$$$**
+Data wydania: **21 maja 2025**
 
 🟢Dodano stronę [_Nieobecności_](/__facility/absences), na której można zobaczyć urlopy i zwolnienia
 chorobowe wszystkich pracowników na jednym widoku. (Uwaga: nie ma obecnie możliwości wpisania
@@ -52,16 +52,3 @@ na ewentualne ataki, m.in. skonfigurowano
 [CSP (Content Security Policy)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP) oraz dodano
 ochronę przed
 [CSRF (Cross-site request forgery)](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSRF_prevention).
-
-## <!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ d1edf1ddf07f98b2dd9e17797e1ce6b519df74d2 -->
-
----
-
-…
-
-🟢 — dla wszystkich,
-🟣 — dla administratorów placówki,
-🔴 — dla administratorów globalnych,
-🟤 — dokumentacja,
-🟡 — bezpieczeństwo,
-🟠🔵⚪⚫ — inne.
