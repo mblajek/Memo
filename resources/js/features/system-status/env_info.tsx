@@ -11,14 +11,18 @@ export function useEnvInfo() {
   const developerPermission = useDeveloperPermission();
   const isDeveloper = () => isDEV() || developerPermission.enabled();
   return {
-    style: (): Pick<JSX.CSSProperties, "background" | "color"> | undefined => {
+    appEnv: () => status()?.appEnv,
+    isProd: () => status()?.appEnv === PROD_ENV_NAME,
+    style: () => {
       const st = status();
       if (!st) {
         return undefined;
       }
       const background = st.appEnvColor || (st.appEnv === PROD_ENV_NAME && isDeveloper() ? PROD_DEV_BG : undefined);
       const color = st.appEnvFgColor || undefined;
-      return background || color ? {background, color} : undefined;
+      return background || color
+        ? ({background, color} satisfies Pick<JSX.CSSProperties, "background" | "color">)
+        : undefined;
     },
     info: () => (
       <Show when={status()} fallback={<SmallSpinner />}>

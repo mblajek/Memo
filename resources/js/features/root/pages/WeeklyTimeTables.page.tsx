@@ -1,7 +1,7 @@
 import {A} from "@solidjs/router";
 import {CellContext, createSolidTable, HeaderContext} from "@tanstack/solid-table";
 import {createPersistence} from "components/persistence/persistence";
-import {localStorageStorage} from "components/persistence/storage";
+import {sessionStorageStorage} from "components/persistence/storage";
 import {Button, ButtonProps} from "components/ui/Button";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {getWeekdays, getWeekFromDay} from "components/ui/calendar/week_days_calculator";
@@ -136,7 +136,7 @@ export default (() => {
     }
   });
   createPersistence<PersistentState>({
-    storage: localStorageStorage(`WeeklyTimeTables:facility.${activeFacilityId()}`),
+    storage: sessionStorageStorage(`WeeklyTimeTables:facility.${activeFacilityId()}`),
     value: () => ({
       selection: selection(),
       fromMonth: fromMonth(),
@@ -386,7 +386,7 @@ export default (() => {
                 when={weekDate().toMillis() !== selectedWeekDate()?.toMillis()}
                 fallback={
                   <Button
-                    class="minimal !px-1 !border-select !bg-memo-active !text-white"
+                    class="minimal !px-1 my-0.5 !border-select !bg-memo-active !text-white"
                     onClick={[setSelectedWeekDate, undefined]}
                     title={t("facility_user.weekly_time_tables.selected_week_click_to_deselect")}
                   >
@@ -397,7 +397,7 @@ export default (() => {
                 <PopOver
                   trigger={(popOver) => (
                     <Button
-                      class={cx("minimal !px-1", popOver.isOpen ? "!bg-select" : undefined)}
+                      class={cx("minimal !px-1 my-0.5", popOver.isOpen ? "!bg-select" : undefined)}
                       title={t("facility_user.weekly_time_tables.click_to_see_actions")}
                       onClick={popOver.open}
                     >
@@ -422,7 +422,10 @@ export default (() => {
                           <div class="flex flex-col">
                             <For each={Array.isArray(props.icon) ? props.icon : [props.icon]}>
                               {(icon: IconTypes, index) => (
-                                <Dynamic class={index() ? "-mt-px" : undefined} component={icon} />
+                                <Dynamic
+                                  class={cx(index() ? "-mt-px" : undefined, buttonProps.disabled ? "opacity-50" : "")}
+                                  component={icon}
+                                />
                               )}
                             </For>
                           </div>
@@ -442,17 +445,17 @@ export default (() => {
                           <MenuItem
                             icon={[actionIcons.Repeat, OcArrowdown2]}
                             label={t("facility_user.weekly_time_tables.paste_this_until_end")}
-                            onClick={() => confirmAndExecute(weekDate(), [weekDate().plus({weeks: 1}), toDate()!])}
+                            onClick={() => void confirmAndExecute(weekDate(), [weekDate().plus({weeks: 1}), toDate()!])}
                           />
                           <MenuItem
                             icon={actionIcons.Delete}
                             label={t("facility_user.weekly_time_tables.delete_week.this")}
-                            onClick={() => confirmAndExecute(undefined, weekDate())}
+                            onClick={() => void confirmAndExecute(undefined, weekDate())}
                           />
                           <MenuItem
                             icon={[actionIcons.Delete, OcArrowdown2]}
                             label={t("facility_user.weekly_time_tables.delete_week.from_this")}
-                            onClick={() => confirmAndExecute(undefined, [weekDate(), toDate()!])}
+                            onClick={() => void confirmAndExecute(undefined, [weekDate(), toDate()!])}
                           />
                         </Show>
                         <Show when={selectedWeekDate()}>
@@ -471,7 +474,7 @@ export default (() => {
                               <MenuItem
                                 icon={actionIcons.Paste}
                                 label={t("facility_user.weekly_time_tables.paste_here")}
-                                onClick={() => confirmAndExecute(selectedWeekDate(), weekDate())}
+                                onClick={() => void confirmAndExecute(selectedWeekDate(), weekDate())}
                               />
                               <MenuItem
                                 icon={[actionIcons.Repeat, OcMovetobottom2]}
@@ -479,7 +482,7 @@ export default (() => {
                                 disabled={selectedWeekDate().toMillis() > weekDate().toMillis()}
                                 disabledTitle={t("facility_user.weekly_time_tables.disabled_title_only_works_forward")}
                                 onClick={() =>
-                                  confirmAndExecute(selectedWeekDate(), [
+                                  void confirmAndExecute(selectedWeekDate(), [
                                     selectedWeekDate().plus({weeks: 1}),
                                     weekDate(),
                                   ])
@@ -490,7 +493,7 @@ export default (() => {
                                 label={t("facility_user.weekly_time_tables.delete_until_here")}
                                 disabled={selectedWeekDate().toMillis() > weekDate().toMillis()}
                                 disabledTitle={t("facility_user.weekly_time_tables.disabled_title_only_works_forward")}
-                                onClick={() => confirmAndExecute(undefined, [selectedWeekDate(), weekDate()])}
+                                onClick={() => void confirmAndExecute(undefined, [selectedWeekDate(), weekDate()])}
                               />
                             </>
                           )}
@@ -538,7 +541,7 @@ export default (() => {
             <Show
               when={ctx.getValue()}
               fallback={
-                <PaddedCell style={{background: CALENDAR_BACKGROUNDS.main}}>
+                <PaddedCell style={{background: CALENDAR_BACKGROUNDS.mainBg}}>
                   <CenteredEmptyValueSymbol />
                 </PaddedCell>
               }
@@ -550,9 +553,9 @@ export default (() => {
                     background: [
                       dayData().isFacilityWorkDay
                         ? dayData().workTimes.length
-                          ? CALENDAR_BACKGROUNDS.staffWorkTime
+                          ? CALENDAR_BACKGROUNDS.mainWorkTime
                           : CALENDAR_BACKGROUNDS.facilityWorkTime
-                        : CALENDAR_BACKGROUNDS.main,
+                        : CALENDAR_BACKGROUNDS.mainBg,
                       dayData().isFacilityLeaveDay ? CALENDAR_BACKGROUNDS.facilityLeaveTime : undefined,
                       dayData().isStaffLeaveDay ? CALENDAR_BACKGROUNDS.staffLeaveTime : undefined,
                       dayData().isHoliday ? CALENDAR_BACKGROUNDS.holiday : undefined,

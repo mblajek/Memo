@@ -18,7 +18,7 @@ use OpenApi\Attributes as OA;
 #[OA\Info(version: ApiController::VERSION, title: 'Memo API')]
 abstract class ApiController extends Controller
 {
-    final public const string VERSION = '0.18.1';
+    final public const string VERSION = '0.19.0';
     private readonly array $requestIn;
 
     public function __construct(private readonly Request $request)
@@ -68,8 +68,11 @@ abstract class ApiController extends Controller
         return $this->requestIn;
     }
 
-    protected function applyRequestIn(EloquentBuilder|Builder $query, string $column = 'id'): void
+    protected function applyRequestIn(EloquentBuilder|Builder $query, string $column = 'id', bool $required = false): void
     {
+        if ($required) {
+            $this->request->validate(['in' => 'required']);
+        }
         if (($in = $this->getRequestIn())) {
             $query->whereIn($column, $in);
         }

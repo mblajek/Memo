@@ -9,12 +9,16 @@ const DevFeatureUsePage = lazyAutoPreload(() => import("dev-pages/DevFeatureUseP
 const DevLogsPage = lazyAutoPreload(() => import("dev-pages/DevLogsPage"));
 const DevPreloadStatusesPage = lazyAutoPreload(() => import("dev-pages/DevPreloadStatusesPage"));
 const DictionariesPage = lazyAutoPreload(() => import("dev-pages/DictionariesPage"));
+const DictionaryPage = lazyAutoPreload(() => import("dev-pages/DictionaryPage"));
 const TestPage = lazyAutoPreload(() => import("dev-pages/TestPage"));
 
 export const DevRoutes: VoidComponent = () => (
   <Route path="/dev">
     <Route path="/attributes" component={AttributesPage} />
-    <Route path="/dictionaries" component={DictionariesPage} />
+    <Route path="/dictionaries">
+      <Route path="/" component={DictionariesPage} />
+      <Route path="/:dictionaryId" component={DictionaryPage} />
+    </Route>
     <SilentAccessBarrier roles={["developer"]}>
       <Route path="/logs" component={DevLogsPage} />
       <Route path="/feature-use" component={DevFeatureUsePage} />

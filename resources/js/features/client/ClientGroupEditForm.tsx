@@ -1,4 +1,4 @@
-import {createMutation, createQuery} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {useLangFunc} from "components/utils/lang";
 import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
@@ -26,9 +26,9 @@ export interface ClientGroupEditFormProps {
 export const ClientGroupEditForm: VoidComponent<ClientGroupEditFormProps> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
-  const clientGroupQuery = createQuery(() => FacilityClientGroup.clientGroupQueryOptions(props.staticGroupId));
+  const clientGroupQuery = useQuery(() => FacilityClientGroup.clientGroupQueryOptions(props.staticGroupId));
   const clientGroup = () => clientGroupQuery.data;
-  const clientGroupPatchMutation = createMutation(() => ({
+  const clientGroupPatchMutation = useMutation(() => ({
     mutationFn: FacilityClientGroup.updateClientGroup,
     meta: {isFormSubmit: true},
   }));

@@ -1,18 +1,21 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
+import {EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
-import {createTableTranslations} from "components/ui/Table/Table";
+import {AUTO_SIZE_COLUMN_DEFS, createTableTranslations} from "components/ui/Table/Table";
 import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
-import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {PartialColumnConfig, TQueryTable} from "components/ui/Table/TQueryTable";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {Users} from "data-access/memo-api/groups/shared";
 import {User} from "data-access/memo-api/groups/User";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
+import {createFacilityAdminEditModal} from "features/user-edit/facility_admin_edit_modal";
 import {VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
 export default (() => {
   const {getCreatedUpdatedColumns} = useTableColumns();
-  const status = createQuery(User.statusQueryOptions);
+  const facilityAdminEditModal = createFacilityAdminEditModal();
+  const status = useQuery(User.statusQueryOptions);
   const isFacilityAdmin = () => status.data?.permissions.facilityAdmin;
   return (
     <TQueryTable
@@ -40,12 +43,37 @@ export default (() => {
         isFacilityAdmin() ? {name: "hasEmailVerified", initialVisible: false} : undefined,
         isFacilityAdmin() ? {name: "passwordExpireAt", initialVisible: false} : undefined,
         isFacilityAdmin() ? {name: "lastPasswordChangeAt", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "isOtpRequired", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "otpRequiredAt", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "hasOtpConfigured", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "isManagedByThisFacility", initialVisible: false} : undefined,
+        isFacilityAdmin() ? {name: "managedByFacility.name", initialVisible: false} : undefined,
         {name: "lastLoginSuccessAt", initialVisible: false},
         isFacilityAdmin() ? {name: "lastLoginFailureAt", initialVisible: false} : undefined,
         {name: "member.isStaff", columnDef: {size: 130}},
         {name: "member.isActiveStaff", columnDef: {size: 130}, initialVisible: false},
         {name: "hasGlobalAdmin", columnDef: {size: 130}},
         ...getCreatedUpdatedColumns(),
+        isFacilityAdmin()
+          ? ({
+              name: "actions",
+              isDataColumn: false,
+              extraDataColumns: ["id"],
+              columnDef: {
+                cell: (c) => (
+                  <PaddedCell>
+                    <EditButton
+                      class="minimal -my-px"
+                      onClick={() => facilityAdminEditModal.show({userId: c.row.original.id as string})}
+                    />
+                  </PaddedCell>
+                ),
+                enableSorting: false,
+                enableHiding: false,
+                ...AUTO_SIZE_COLUMN_DEFS,
+              },
+            } satisfies PartialColumnConfig)
+          : undefined,
       ].filter(NON_NULLABLE)}
       intrinsicFilter={{type: "column", column: "member.hasFacilityAdmin", op: "=", val: true}}
       intrinsicSort={[{type: "column", column: "name", desc: false}]}

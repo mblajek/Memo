@@ -34,17 +34,21 @@ class SystemController extends ApiController
     {
         $this->permissionOneOf(Permission::any);
 
-        $this->permissionOneOf(Permission::unverified, Permission::verified)->only('log');
+        $this->permissionOneOf(Permission::loggedIn)->only('log', 'facilityList');
     }
 
     #[OA\Get(
         path: '/api/v1/system/translation/{lang}/list',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe(Permission::any),
         summary: 'All translations',
         tags: ['System'],
         parameters: [
             new OA\Parameter(
-                name: 'lang', in: 'path', required: true, schema: new OA\Schema(schema: 'string'), example: 'pl-pl'
+                name: 'lang',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(schema: 'string'),
+                example: 'pl-pl'
             ),
         ],
         responses: [
@@ -58,16 +62,20 @@ class SystemController extends ApiController
 
     #[OA\Get(
         path: '/api/v1/system/facility/list',
-        description: new PermissionDescribe(Permission::any),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'All facilities',
         tags: ['System'],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', type: 'array', items: new OA\Items(ref: '#/components/schemas/FacilityResource'),
-                ),
-            ])
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(ref: '#/components/schemas/FacilityResource'),
+                    ),
+                ])
             ),
         ]
     )]
@@ -84,13 +92,17 @@ class SystemController extends ApiController
         parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', type: 'array', items: new OA\Items(
-                    ref: '#/components/schemas/DictionaryResource'
-                ),
-                ),
-            ])
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            ref: '#/components/schemas/DictionaryResource'
+                        ),
+                    ),
+                ])
             ),
         ]
     )]
@@ -111,13 +123,17 @@ class SystemController extends ApiController
         parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', type: 'array', items: new OA\Items(
-                    ref: '#/components/schemas/AttributeResource'
-                ),
-                ),
-            ])
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            ref: '#/components/schemas/AttributeResource'
+                        ),
+                    ),
+                ])
             ),
         ]
     )]
@@ -195,7 +211,7 @@ class SystemController extends ApiController
 
     #[OA\Post(
         path: '/api/v1/system/log',
-        description: new PermissionDescribe([Permission::unverified, Permission::verified]),
+        description: new PermissionDescribe([Permission::loggedIn]),
         summary: 'Add log entry',
         requestBody: new OA\RequestBody(
             content: new OA\JsonContent(

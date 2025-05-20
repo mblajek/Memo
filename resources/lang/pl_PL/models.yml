@@ -45,7 +45,7 @@ user_facility_member:
 
 permissions:
   _name: "uprawienia"
-  unverified: "e-mail niezweryfikowany"
+  loggedIn: "zalogowany"
   verified: "e-mail zweryfikowany"
   globalAdmin: "globalny administrator"
   facilityMember: "przynależność do placówki"
@@ -59,9 +59,13 @@ user:
   name: "imię i nazwisko"
   hasEmailVerified: "e-mail zweryfikowany"
   password: "hasło"
+  otp: "kod OTP"
   hasPassword: "posiada hasło"
   passwordExpireAt: "data wygaśnięcia hasła"
   lastPasswordChangeAt: "ostatnia zmiana hasła"
+  isOtpRequired: "OTP wymagane"
+  otpRequiredAt: "OTP wymagane od"
+  hasOtpConfigured: "OTP aktywne"
   lastLoginSuccessAt: "ostatnie logowanie"
   lastLoginFailureAt: "ostatnie nieudane logowanie"
   facilities.*.name: "placówki"
@@ -80,6 +84,7 @@ facility_user:
   _name: "pracownik/klient"
   _name_plural: "pracownicy/klienci"
   name: "$t(models.user.name)"
+  isManagedByThisFacility: "zarządzany przez tę placówkę"
   firstMeetingDate: "pierwsze spotkanie"
   lastMeetingDate: "ostatnie spotkanie"
   completedMeetingsCount: "liczba odbytych spotkań"
@@ -157,3 +162,12 @@ meeting:
   resources.count: "$t(models.meeting.resources)$t(models.generic.count_suffix)"
   resourceConflicts.exists: "konflikt zasobów"
   resourceConflicts.*.resourceDictId: "konflikt$t(thin_n_thin)zasoby"
+
+table_saved_view:
+  _name: "widok tabeli"
+  _name_plural: "widoki tabeli"
+  globalFilter: "szukanie"
+  columnVisibility: "kolumny"
+  columnFilters: "filtrowanie"
+  activeColumnGroups: "grupowanie"
+  sorting: "sortowanie"

@@ -1,6 +1,6 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {VoidComponent, splitProps} from "solid-js";
-import {DateInput} from "../DateInput";
+import {DateInput, DateInputProps} from "../DateInput";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
 import {LabelOverride} from "./labels";
@@ -23,7 +23,9 @@ export const DateField: VoidComponent<DateFieldProps> = (allProps) => {
 
 interface DateFieldDateInputProps
   extends Pick<
-    htmlAttributes.input,
+    DateInputProps,
+    | "outerClass"
+    | "showWeekday"
     | "class"
     | "type"
     | "min"

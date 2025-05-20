@@ -5,7 +5,8 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import remarkCustomHeadingId from "remark-custom-heading-id";
 import remarkGfm from "remark-gfm";
 import {ComponentProps, createEffect, createSignal, Match, splitProps, Switch, VoidComponent} from "solid-js";
-import {SolidMarkdown} from "solid-markdown";
+import {Dynamic} from "solid-js/web";
+import {SolidMarkdown, SolidMarkdownComponents} from "solid-markdown";
 import {LinkWithNewTabLink} from "./LinkWithNewTabLink";
 import s from "./Markdown.module.scss";
 
@@ -40,6 +41,14 @@ export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
       heading.classList.toggle(s.activeHeader!, heading.id === currentHash);
     }
   });
+  const TableCell: SolidMarkdownComponents["th"] & SolidMarkdownComponents["td"] = (cellProps) => (
+    <Dynamic
+      component={cellProps.node.tagName}
+      {...cellProps}
+      // Fix the align style. The automatically applied style uses the `textAlign` key which does not work.
+      style={{"text-align": cellProps.node.properties.align}}
+    />
+  );
   return (
     <div ref={setElement}>
       <SolidMarkdown
@@ -78,6 +87,8 @@ export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
               </Match>
             </Switch>
           ),
+          th: TableCell,
+          td: TableCell,
           ...markdownProps.components,
         }}
         children={props.markdown}

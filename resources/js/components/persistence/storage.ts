@@ -80,28 +80,31 @@ export function createCachingStorage(base: NonVersioningStorage, cache: StorageC
   };
 }
 
+/** The prefix of all the persistence values in the local storage. */
+const STORAGE_BASED_STORAGE_KEY_PREFIX = "persistence:";
+
+function createStorageBasedStorage(storage: globalThis.Storage, key: string): NonVersioningStorage {
+  const fullKey = STORAGE_BASED_STORAGE_KEY_PREFIX + key;
+  return {
+    store(value) {
+      storage.setItem(fullKey, value);
+    },
+    load() {
+      return storage.getItem(fullKey) ?? undefined;
+    },
+    clear() {
+      storage.removeItem(fullKey);
+    },
+  };
+}
+
 /** The local storage key for a version component that is used in the local storage storages. */
 const LOCAL_STORAGE_STORAGE_VERSION_KEY = "localStoragePersistenceVersionComp";
 
-/** The prefix of all the persistence values in the local storage. */
-const LOCAL_STORAGE_KEY_PREFIX = "persistence:";
-
 export function localStorageStorage(key: string): Storage {
-  const fullKey = LOCAL_STORAGE_KEY_PREFIX + key;
-  return createVersioningStorage(
-    {
-      store(value) {
-        localStorage.setItem(fullKey, value);
-      },
-      load() {
-        return localStorage.getItem(fullKey) ?? undefined;
-      },
-      clear() {
-        localStorage.removeItem(fullKey);
-      },
-    },
-    [Number(localStorage.getItem(LOCAL_STORAGE_STORAGE_VERSION_KEY) ?? 1)],
-  );
+  return createVersioningStorage(createStorageBasedStorage(localStorage, key), [
+    Number(localStorage.getItem(LOCAL_STORAGE_STORAGE_VERSION_KEY) ?? 1),
+  ]);
 }
 
 /**
@@ -110,7 +113,7 @@ export function localStorageStorage(key: string): Storage {
 export function clearAllLocalStorageStorages() {
   const keys = Array.from(localStorage, (_v, i) => localStorage.key(i));
   for (const key of keys) {
-    if (key?.startsWith(LOCAL_STORAGE_KEY_PREFIX)) {
+    if (key?.startsWith(STORAGE_BASED_STORAGE_KEY_PREFIX)) {
       localStorage.removeItem(key);
     }
   }
@@ -122,6 +125,10 @@ export function clearAllLocalStorageStorages() {
  */
 export function setLocalStoragePersistenceVersionComponent(versionComponent: number) {
   localStorage.setItem(LOCAL_STORAGE_STORAGE_VERSION_KEY, String(versionComponent));
+}
+
+export function sessionStorageStorage(key: string) {
+  return createStorageBasedStorage(sessionStorage, key);
 }
 
 const USER_STORAGE_KEY_PREFIX = "persistence:";
@@ -161,14 +168,14 @@ export function userStorageStorage(key: string): Storage {
     createCachingStorage(
       {
         store(value) {
-          User.storagePut(fullKey, value);
+          void User.storagePut(fullKey, value);
         },
         async load() {
           const stored = await User.storageGet(fullKey);
           return typeof stored === "string" ? stored : undefined;
         },
         clear() {
-          User.storagePut(fullKey, null);
+          void User.storagePut(fullKey, null);
         },
       },
       getUserStorageCache(key),

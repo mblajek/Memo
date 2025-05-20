@@ -106,26 +106,27 @@ export function createCalendarRequestCreator({
                 op: "in",
                 val: [meetingTypeDict()!.work_time.id, meetingTypeDict()!.leave_time.id],
               }
-            : (calendarFunction satisfies never);
-      let staffAndMeetingResourcesFilter: FilterH;
-      // Fetch for all staff and resources if showing a single day.
-      if (daysRange().length() <= 1) {
-        staffAndMeetingResourcesFilter = "always";
-      } else {
-        if (staff().length || meetingResources().length) {
-          staffAndMeetingResourcesFilter = {
-            type: "op",
-            op: "|",
-            val: [
-              {type: "column", column: "isFacilityWide", op: "=", val: true},
-              {type: "column", column: "staff.*.userId", op: "has_any", val: staff().toSorted()},
-              {type: "column", column: "resources.*.dictId", op: "has_any", val: meetingResources().toSorted()},
-            ],
-          };
-        } else {
-          // No staff and no resources requested, so nothing to show.
-          staffAndMeetingResourcesFilter = "never";
-        }
+            : calendarFunction === "leaveTimes"
+              ? {
+                  type: "op",
+                  op: "|",
+                  val: [
+                    {type: "column", column: "isFacilityWide", op: "=", val: true},
+                    {type: "column", column: "typeDictId", op: "=", val: meetingTypeDict()!.leave_time.id},
+                  ],
+                }
+              : (calendarFunction satisfies never);
+      let staffAndMeetingResourcesFilter: FilterH = "always";
+      if (calendarFunction !== "leaveTimes" && daysRange().length() > 1) {
+        staffAndMeetingResourcesFilter = {
+          type: "op",
+          op: "|",
+          val: [
+            {type: "column", column: "isFacilityWide", op: "=", val: true},
+            {type: "column", column: "staff.*.userId", op: "has_any", val: staff().toSorted()},
+            {type: "column", column: "resources.*.dictId", op: "has_any", val: meetingResources().toSorted()},
+          ],
+        };
       }
       return filterReductor()!.reduce({
         type: "op",

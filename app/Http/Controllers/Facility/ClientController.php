@@ -56,7 +56,7 @@ class ClientController extends ApiController
             ->join('members', 'members.user_id', 'users.id')
             ->join('clients', 'clients.id', 'members.client_id')
             ->where('members.facility_id', $this->getFacilityOrFail()->id);
-        $this->applyRequestIn($query, 'users.id');
+        $this->applyRequestIn($query, 'users.id', required: true);
 
         $users = User::query()->from($query->clone()->addSelect('users.*'))->get();
         $clients = Client::query()->from($query->clone()->addSelect('clients.*'))

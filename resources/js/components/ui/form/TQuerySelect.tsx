@@ -146,8 +146,8 @@ function makeQuery(
     if (!dataQuery.isSuccess) {
       return [];
     }
-    return dataQuery
-      .data!.data.map((rowData) => {
+    return dataQuery.data.data
+      .map((rowData) => {
         const defItem: DefaultTQuerySelectItem = {
           value: rowData[valueColumn] as string,
           text: textColumns.map((column) => rowData[column]).join(" "),

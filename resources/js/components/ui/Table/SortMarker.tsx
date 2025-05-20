@@ -30,11 +30,13 @@ export const SortMarker: VoidComponent<Props> = (props) => {
       .sorting.some(
         ({id}, index) => index < props.column.getSortIndex() && table.getState().columnVisibility[id] !== false,
       );
-  const groupingInfo = () => table.options.meta?.tquery?.columnGroupingInfo?.(props.column.id);
   return (
     <Switch>
-      <Match when={groupingInfo()?.isGrouped}>
-        <span class="px-0.5 text-memo-active" use:title={t("tables.column_groups.column_status.grouped")}>
+      <Match when={props.column.columnDef.meta?.tquery?.groupingInfo?.().isGrouped}>
+        <span
+          class="px-0.5 text-memo-active cursor-default select-none"
+          use:title={t("tables.column_groups.column_status.grouped")}
+        >
           {t("tables.column_groups.grouping_symbol")}
         </span>
       </Match>

@@ -221,12 +221,19 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
         <Show when={!showEditable()}>
           <div class="flex gap-x-2 items-baseline justify-between flex-wrap">
             <div class="flex gap-2 items-baseline">
-              <DateAndTimeInfo
-                date={DateTime.fromISO(form.data("date"))}
-                allDay={allDay()}
-                startDayMinute={timeInputToDayMinute(form.data("time").startTime)}
-                durationMinutes={durationMinutes()}
-              />
+              <Show
+                when={
+                  // This condition could be false for a moment e.g. when cancelling the form.
+                  form.data("date") && form.data("time")
+                }
+              >
+                <DateAndTimeInfo
+                  date={DateTime.fromISO(form.data("date"))}
+                  allDay={allDay()}
+                  startDayMinute={timeInputToDayMinute(form.data("time").startTime)}
+                  durationMinutes={durationMinutes()}
+                />
+              </Show>
               <Show when={!props.viewMode}>
                 <EditButton class="secondary small" onClick={() => setForceEditable(true)} />
               </Show>

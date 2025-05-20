@@ -1,5 +1,5 @@
 import {useLocation} from "@solidjs/router";
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
 import {getIconByName, ICON_SET_NAMES} from "components/ui/icons";
@@ -11,8 +11,8 @@ import {Dynamic} from "solid-js/web";
 import {resolvePath} from "./markdown_resolver";
 
 interface Props extends htmlAttributes.div {
-  /** The path to the markdown file to show. */
-  readonly mdPath: string;
+  /** The path to the markdown file to show. Can be undefined while loading. */
+  readonly mdPath: string | undefined;
   /** The path of the docs page being shown, defaults to location.pathname. */
   readonly currentPath?: string;
   /** Whether the help is included in another document. This causes the component not to set padding etc. Default: false */
@@ -33,18 +33,25 @@ export const Help: VoidComponent<Props> = (allProps) => {
   const [props, divProps] = splitProps(allProps, ["mdPath", "currentPath", "inlined", "offerNewTabLinks", "onH1"]);
   const t = useLangFunc();
   const location = useLocation();
-  const query = createQuery(() => ({
+  const query = useQuery(() => ({
     queryFn: async ({signal}) => {
-      const resp = await fetch(props.mdPath, {cache: "no-cache", signal});
+      const mdPath = props.mdPath!;
+      if (!mdPath.match(/^\/docs(-[\w-]+)?(\/\w[\w.-]*)+\.md$/)) {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+        return Promise.reject({status: 404, statusText: "Not Found"});
+      }
+      const resp = await fetch(mdPath, {cache: "no-cache", signal});
       const text = await resp.text();
       if (!resp.ok) {
+        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
         return Promise.reject({status: resp.status, statusText: resp.statusText, data: text});
       }
       return text;
     },
     queryKey: ["help", props.mdPath],
+    enabled: !!props.mdPath,
   }));
-  import.meta.hot?.on("docsFileChange", () => query.refetch());
+  import.meta.hot?.on("docsFileChange", () => void query.refetch());
   function processMarkdown(markdown: string) {
     return markdown.replaceAll(/\$t\((\w[\w.]+)(\|cap)?\)/g, (match, key, cap) => {
       const text = t(key);
@@ -93,7 +100,7 @@ export const Help: VoidComponent<Props> = (allProps) => {
                   {...{
                     ...imgProps,
                     node: undefined,
-                    src: resolvePath(props.mdPath, imgProps.src!),
+                    src: props.mdPath ? resolvePath(props.mdPath, imgProps.src!) : undefined,
                   }}
                 />
               );
@@ -103,14 +110,20 @@ export const Help: VoidComponent<Props> = (allProps) => {
                 if (pProps.node.children.length === 1 && pProps.node.children[0]!.type === "text") {
                   const match = pProps.node.children[0]!.value.match(/^\$include\(([^)\s]+\.md)\)$/);
                   if (match) {
-                    return resolvePath(props.mdPath, match[1]!);
+                    return match[1]!;
                   }
                 }
                 return undefined;
               };
               return (
                 <Show when={includedPath()} fallback={<p {...pProps} />}>
-                  {(includedPath) => <Help mdPath={includedPath()} inlined offerNewTabLinks={props.offerNewTabLinks} />}
+                  {(includedPath) => (
+                    <Help
+                      mdPath={props.mdPath ? resolvePath(props.mdPath, includedPath()) : undefined}
+                      inlined
+                      offerNewTabLinks={props.offerNewTabLinks}
+                    />
+                  )}
                 </Show>
               );
             },

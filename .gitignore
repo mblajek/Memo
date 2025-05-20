@@ -1,5 +1,6 @@
 /.phpunit.cache
 /node_modules
+/.pnpm-store
 /public/build
 /public/hot
 /public/storage
@@ -14,13 +15,14 @@ Homestead.yaml
 auth.json
 npm-debug.log
 yarn-error.log
-pnpm-lock.yaml
 /.fleet
 /.idea
 /.vscode/*
 !/.vscode/extensions.json
+/.vite
 
 /storage/api-docs/*.json
 
 /public/hot!
 /database/dumps/*.zip
+/release

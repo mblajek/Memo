@@ -8,11 +8,15 @@
 - kalendarzem spotkań klientów i pracowników
 - grafikami pracy pracowników fundacji
 
+[Co nowego w $t(app_name)](changelog) — lista zmian w kolejnych wersjach.
+
 ## Dokumenty pomocy
 
-- `$icon(staffIcons.Staff)` Pracownicy
+- `$icon(staffIcons.Staff)`$t(thin_space)`$icon(adminIcons.Admin)` Pracownicy
   - [Role i uprawnienia](staff-roles)
+  - [Uwierzytelnianie dwuskładnikowe (2FA / MFA / OTP)](staff-2fa)
   - [Grafiki pracy](staff-time-tables)
+  - [Kalendarz nieobecności](staff-absences)
 - `$icon(clientIcons.Client)` Klienci
   - [Grupy klientów](client-groups)
   - [Usuwanie klientów](client-delete)

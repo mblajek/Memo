@@ -12,7 +12,6 @@ import {Button} from "../Button";
 import {PopOver} from "../PopOver";
 import {SimpleMenu} from "../SimpleMenu";
 import {hoverEvents} from "../hover_signal";
-import s from "./TinyCalendar.module.scss";
 import {DaysRange} from "./days_range";
 import {useHolidays} from "./holidays";
 import {getWeekdays} from "./week_days_calculator";
@@ -49,9 +48,11 @@ const DEFAULT_PROPS = {
 } satisfies Partial<Props>;
 
 interface DayInfo {
-  day: DateTime;
-  isToday: boolean;
-  classes: string;
+  readonly day: DateTime;
+  readonly isToday: boolean;
+  readonly isStartOfWeek: boolean;
+  readonly isEndOfWeek: boolean;
+  readonly classes: string;
 }
 
 export const TinyCalendar: VoidComponent<Props> = (allProps) => {
@@ -103,17 +104,19 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
     // eslint-disable-next-line solid/reactivity
     Array.from(range(), (day): DayInfo => {
       const isToday = day.hasSame(currentDate(), "day");
+      const isStartOfWeek = day.startOf("week", {useLocaleWeeks: true}).hasSame(day, "day");
+      const isEndOfWeek = day.endOf("week", {useLocaleWeeks: true}).hasSame(day, "day");
       return {
         day,
         isToday,
-        classes: cx({
-          [s.today!]: isToday,
-          [s.weekend!]: day.isWeekend,
-          [s.startOfWeek!]: day.startOf("week", {useLocaleWeeks: true}).hasSame(day, "day"),
-          [s.endOfWeek!]: day.endOf("week", {useLocaleWeeks: true}).hasSame(day, "day"),
-          [s.holiday!]: holidays.isHoliday(day),
-          [s.otherMonth!]: day.month !== monthStart().month,
-        }),
+        isStartOfWeek,
+        isEndOfWeek,
+        classes: cx(
+          day.isWeekend || holidays.isHoliday(day) ? "text-red-800" : "text-gray-900",
+          holidays.isHoliday(day) ? "underline" : undefined,
+          isStartOfWeek ? "rounded-s" : isEndOfWeek ? "rounded-e" : undefined,
+          day.month === monthStart().month ? undefined : "text-opacity-50",
+        ),
       };
     }),
   );
@@ -125,28 +128,45 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
    */
   function rangeClasses(day: DateTime, range: DaysRange | undefined, rangeClass: string | undefined) {
     return range && rangeClass
-      ? {
-          [rangeClass]: range.contains(day),
-          [s.start!]: day.hasSame(range.start, "day"),
-          [s.end!]: day.hasSame(range.end, "day"),
-        }
+      ? [
+          range.contains(day) ? rangeClass : undefined,
+          day.hasSame(range.start, "day") ? "rounded-s" : undefined,
+          day.hasSame(range.end, "day") ? "rounded-e" : undefined,
+        ]
       : undefined;
   }
 
   return (
-    <div {...htmlAttributes.merge(divProps, {class: s.tinyCalendar})}>
-      <div class={s.header}>
-        <Button onClick={() => props.setMonth(props.month.minus({months: 1}))}>
+    <div {...htmlAttributes.merge(divProps, {class: "flex flex-col items-stretch gap-1 font-medium text-sm"})}>
+      <div class="w-full flex items-stretch uppercase">
+        <Button
+          class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
+          onClick={() => props.setMonth(props.month.minus({months: 1}))}
+        >
           <FaSolidArrowLeft />
         </Button>
-        <Button onClick={() => props.setMonth(props.month.plus({months: 1}))}>
+        <Button
+          class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
+          onClick={() => props.setMonth(props.month.plus({months: 1}))}
+        >
           <FaSolidArrowRight />
         </Button>
-        <div class={s.monthYear}>
+        <div class="grow px-1 flex items-center align-middle gap-1 justify-between uppercase">
           <Show when={props.onMonthNameClick} fallback={<div>{props.month.monthLong}</div>}>
-            <Button onClick={() => props.onMonthNameClick?.()}>{props.month.monthLong}</Button>
+            <Button
+              class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
+              onClick={() => props.onMonthNameClick?.()}
+            >
+              {props.month.monthLong}
+            </Button>
           </Show>
-          <PopOver trigger={(popOver) => <Button onClick={popOver.open}>{props.month.year}</Button>}>
+          <PopOver
+            trigger={(popOver) => (
+              <Button class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover" onClick={popOver.open}>
+                {props.month.year}
+              </Button>
+            )}
+          >
             {(popOver) => {
               const yearsRadius = 5;
               const [centerYear, setCenterYear] = createSignal(props.month.year);
@@ -182,6 +202,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           </PopOver>
         </div>
         <Button
+          class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
           disabled={!retButtonAction()}
           onClick={() =>
             props.setMonth((retButtonAction() === "toSelection" && props.selection?.center()) || currentDate())
@@ -196,11 +217,16 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           />
         </Button>
       </div>
-      <div class={s.days}>
+      <div class="grid" style={{"grid-template-columns": "repeat(7, 1fr)"}}>
         <Show when={props.showWeekdayNames}>
           <For each={getWeekdays()}>
             {({exampleDay, isWeekend}) => (
-              <div class={cx(s.weekday, {[s.weekend!]: isWeekend})}>
+              <div
+                class={cx(
+                  "w-full text-center text-xs text-opacity-70 uppercase",
+                  isWeekend ? "text-red-800" : "text-gray-900",
+                )}
+              >
                 {exampleDay.toLocaleString({weekday: "narrow"})}
               </div>
             )}
@@ -209,15 +235,19 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
         <For each={days()}>
           {(di) => (
             <Button
-              class={cx(s.day, di.classes, rangeClasses(di.day, hoverRange(), s.hover))}
+              class={cx("w-full text-center relative", di.classes, rangeClasses(di.day, hoverRange(), "bg-hover"))}
               onClick={() => props.onDayClick?.(di.day, getHoverRange()(di.day))}
               onDblClick={() => props.onDayDoubleClick?.(di.day, getHoverRange()(di.day))}
               {...hoverEvents((hovered) => setHover(hovered ? di.day : undefined))}
             >
               <Show when={di.isToday}>
-                <div class={s.todayMark} />
+                <div class="absolute w-full h-full border-2 border-red-700" style={{"border-radius": "100%"}} />
               </Show>
-              <div class={cx(s.inner, rangeClasses(di.day, props.selection, s.selected))}>{di.day.day}</div>
+              <div
+                class={cx("w-full h-full px-1.5 pt-[3px] pb-px", rangeClasses(di.day, props.selection, "bg-select"))}
+              >
+                {di.day.day}
+              </div>
             </Button>
           )}
         </For>

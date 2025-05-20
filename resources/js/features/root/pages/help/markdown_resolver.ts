@@ -17,5 +17,8 @@ export function resolveMdFromAppPath(appHelpPath: string) {
   if (!match) {
     throw new Error(`Unexpected help path: ${appHelpPath}`);
   }
-  return `/${isDEV() ? "docs" : "docs-remote"}/${currentLanguage()}/${match[1]}.md`;
+  return {
+    helpPagePath: match[1],
+    mdPath: currentLanguage() ? `/${isDEV() ? "docs" : "docs-remote"}/${currentLanguage()}/${match[1]}.md` : undefined,
+  };
 }

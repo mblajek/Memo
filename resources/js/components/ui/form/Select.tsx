@@ -594,29 +594,40 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
 
   let lastPopOverPointerPos: readonly [number, number] | undefined;
 
-  function onFocusIn(e: FocusEvent) {
-    if (input && e.target !== input) {
-      input.focus();
-    }
-  }
-  function onFocusOut(e: FocusEvent) {
-    if (
-      !e.relatedTarget ||
-      !(e.relatedTarget instanceof Node) ||
-      !(e.currentTarget instanceof Node) ||
-      (!control?.contains(e.relatedTarget) && !list()?.contains(e.relatedTarget))
-    ) {
-      setFilterText("");
-      setIsOpen(false);
-    }
+  function installFocusHandlers(elem: HTMLElement) {
+    let clicked = false;
+    elem.addEventListener("mousedown", () => {
+      clicked = true;
+    });
+    elem.addEventListener("focusin", (e) => {
+      if (clicked) {
+        clicked = false;
+        if (input && e.target !== input) {
+          input.focus();
+        }
+      }
+      // Move focus out, but only on click (not on Tab);
+    });
+    elem.addEventListener("focusout", (e) => {
+      if (
+        !e.relatedTarget ||
+        !(e.relatedTarget instanceof Node) ||
+        !(e.currentTarget instanceof Node) ||
+        (!control?.contains(e.relatedTarget) && !list()?.contains(e.relatedTarget))
+      ) {
+        setFilterText("");
+        setIsOpen(false);
+      }
+    });
   }
 
   return (
     <FieldsetDisabledTracker
-      ref={control}
+      ref={(elem) => {
+        control = elem;
+        installFocusHandlers(elem);
+      }}
       class="outline-none"
-      onFocusIn={onFocusIn}
-      onFocusOut={onFocusOut}
       tabindex="0"
       onKeyDown={handleKey}
     >
@@ -696,7 +707,8 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
             <div class="absolute top-0.5 bottom-0.5 right-0.5 flex items-stretch gap-0.5 bg-inherit">
               {clearButton()}
               <Button
-              // The onClick handler from the whole component is used to open/close.
+                // The onClick handler from the whole component is used to open/close, as well as Up/Down arrows.
+                tabindex="-1"
               >
                 <AiFillCaretDown class={cx("text-black", isDisabled() ? "text-opacity-30" : undefined)} />
               </Button>
@@ -820,7 +832,10 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                   <Show when={isOpen()}>
                     <ul
                       id={`${props.name}__dropdown`}
-                      ref={setList}
+                      ref={(elem) => {
+                        setList(elem);
+                        installFocusHandlers(elem);
+                      }}
                       class={cx(
                         "z-dropdown max-w-fit border rounded overflow-x-clip overflow-y-auto shadow-xl",
                         props.isLoading ? "bg-gray-200" : "bg-popup-bg",
@@ -837,15 +852,13 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                       onPointerLeave={() => {
                         lastPopOverPointerPos = undefined;
                       }}
-                      onFocusIn={onFocusIn}
-                      onFocusOut={onFocusOut}
                     >
                       <For each={itemsToShowWithHeaders()}>
                         {(item, i) => (
                           <li
                             id={elemId(item.value)}
                             class={cx(
-                              "max-w-xl px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip text-black",
+                              "px-0.5 border-x-2 border-transparent wrapTextAnywhere overflow-x-clip text-black",
                               selection().has(item.value) ? "border-s-memo-active bg-select" : undefined,
                               item === focusedItem()
                                 ? ["bg-hover", isKeyboardFocus() ? "border-e-gray-400" : undefined]
@@ -895,7 +908,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                   middleware.reactiveSize({
                     ...DETECT_OVERFLOW_OPTIONS,
                     getFloatingStyle: (state) => ({
-                      ...middleware.reactiveSize.getMaxSizeStyle(state),
+                      ...middleware.reactiveSize.getMaxSizeStyle(state, {maxWidth: 600}),
                       ...middleware.reactiveSize.getMatchWidthStyle(state),
                     }),
                   }),

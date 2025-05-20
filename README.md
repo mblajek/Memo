@@ -6,8 +6,8 @@
 - kalendarzem spotkań klientów i pracowników
 - grafikami pracy pracowników fundacji
 
-Aktualnie system jest użytkowany w czterech placówkach [Fundacji Dajemy Dzieciom Siłę](http://fdds.pl/),
-planowane jest wdrożenie w kolejnej placówce poza Fundacją.
+Aktualnie system jest użytkowany w czterech placówkach [Fundacji Dajemy Dzieciom Siłę](http://fdds.pl/)
+oraz w jednej placówce należącej do innego podmiotu.
 
 [Polityka prywatności](public/docs/pl/privacy-policy.md)
 
@@ -19,8 +19,8 @@ planowane jest wdrożenie w kolejnej placówce poza Fundacją.
 - scheduled visits calendar
 - employee work schedules
 
-The system is deployed in four facilities of the [Empowering Children Foundation](https://fdds.pl/en),
-planned to be deployed in another facility outside the Foundation.
+The system is deployed in four facilities of the [Empowering Children Foundation](https://fdds.pl/en)
+and in one facility belonging to another entity.
 
 [Privacy Policy](public/docs/en/privacy-policy.md)
 

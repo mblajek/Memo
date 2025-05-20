@@ -1,4 +1,4 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {EditButton} from "components/ui/Button";
 import {Email} from "components/ui/Email";
 import {facilityIcons} from "components/ui/icons";
@@ -22,14 +22,14 @@ interface Props {
 
 export const UserDetailsHeader: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  const status = createQuery(User.statusQueryOptions);
+  const status = useQuery(User.statusQueryOptions);
   const userEditModal = createUserEditModal();
   return (
     <div class="flex justify-between flex-wrap gap-2">
       <div class="flex flex-col gap-0.5">
         <div class="flex items-baseline gap-1.5">
           <h2 class="flex gap-1 items-center font-medium text-xl">
-            <UserLink type={props.type} link={false} userId={props.user.id} name={props.user.name} />
+            <UserLink type={props.type} link={false} userId={props.user.id} userName={props.user.name} />
           </h2>
           <div class="text-xs whitespace-nowrap">
             {getFacilityUserTypeName(t, props.type)}

@@ -11,18 +11,18 @@ import {timeSpanSummary, TimeSpanSummary} from "./TimeSpanSummary";
 
 type _Directives = typeof title | typeof hoverSignal;
 
-interface TimeBlockSummaryProps extends Omit<htmlAttributes.span, "title"> {
+interface TimeBlockSummaryProps extends Omit<htmlAttributes.div, "title"> {
   readonly day: DateTime;
   readonly timeSpan: TimeSpan;
   readonly label?: (time: JSX.Element) => JSX.Element;
-  readonly title?: (time: string) => string;
+  readonly title?: (time: string) => JSX.Element;
   readonly hovered?: boolean;
   readonly onHoverChange?: (hovered: boolean) => void;
   readonly onEditClick?: () => void;
 }
 
 export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps) => {
-  const [props, spanProps] = splitProps(allProps, [
+  const [props, divProps] = splitProps(allProps, [
     "day",
     "timeSpan",
     "label",
@@ -34,10 +34,10 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
   const t = useLangFunc();
   const crosses = createMemo(() => crossesDateBoundaries(props.day, props.timeSpan));
   return (
-    <span
-      {...htmlAttributes.merge(spanProps, {
+    <div
+      {...htmlAttributes.merge(divProps, {
         class: cx(
-          "whitespace-nowrap rounded overflow-clip text-ellipsis",
+          "whitespace-nowrap rounded overflow-clip text-ellipsis cursor-default",
           props.hovered ? "outline outline-2 outline-memo-active cursor-pointer" : undefined,
         ),
         style: {"outline-offset": "-2px"},
@@ -52,10 +52,9 @@ export const TimeBlockSummary: VoidComponent<TimeBlockSummaryProps> = (allProps)
           : undefined),
       })}
       use:hoverSignal={(hovered) => props.onHoverChange?.(hovered)}
+      use:title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}
     >
-      <span use:title={props.title?.(timeSpanSummary(t, props.timeSpan, crosses()))}>
-        {(props.label || ((time) => time))(<TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />)}
-      </span>
-    </span>
+      {(props.label || ((time) => time))(<TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />)}
+    </div>
   );
 };

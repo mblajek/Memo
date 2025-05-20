@@ -366,7 +366,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     resourceConflictsExist: {
       name: "resourceConflicts.exists",
       columnGroups: "meeting_multicolumn",
-      initialVisible: false,
       persistVisibility: false,
     },
     resourceConflictsResources: {
@@ -381,7 +380,6 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         )),
       },
       columnGroups: "meeting_multicolumn",
-      initialVisible: false,
       persistVisibility: false,
     },
     actions: {
@@ -389,7 +387,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       isDataColumn: false,
       // seriesCount, seriesNumber, interval are needed for delete confirmation. Alternatively, they could be fetched
       // when delete is clicked, but this would complicate the confirmation with query barriers
-      extraDataColumns: ["id", "categoryDictId", "typeDictId", "seriesCount", "seriesNumber", "interval"],
+      extraDataColumns: ["id", "typeDictId", "seriesCount", "seriesNumber", "interval"],
       columnDef: {
         cell: (c) => (
           <PaddedCell class="flex gap-1 h-min">
@@ -461,7 +459,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
         <PaddedCell>
           <ShowCellVal v={props.v}>
-            {(v) => <UserLink userId={v()} name={props.row["attendant.name"] as string | undefined} />}
+            {(v) => <UserLink userId={v()} userName={props.row["attendant.name"]} />}
           </ShowCellVal>
         </PaddedCell>
       )),
@@ -508,12 +506,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
         cell: cellFunc<string, TQMeetingAttendanceResource>((props) => (
           <PaddedCell>
             <ShowCellVal v={props.v}>
-              {(v) => (
-                <MeetingAttendanceStatus
-                  attendanceStatusId={v()}
-                  meetingStatusId={props.row.statusDictId as string | undefined}
-                />
-              )}
+              {(v) => <MeetingAttendanceStatus attendanceStatusId={v()} meetingStatusId={props.row.statusDictId} />}
             </ShowCellVal>
           </PaddedCell>
         )),
@@ -541,7 +534,7 @@ const UserLinks: VoidComponent<UserLinksProps> = (props) => {
         <Index each={props.users}>
           {(user) => (
             <li>
-              <UserLink type={props.type} icon userId={user().userId} name={user().name} />
+              <UserLink type={props.type} icon userId={user().userId} userName={user().name} />
               <Show when={user().attendanceStatusDictId !== attendanceStatusDict()?.ok.id}>
                 {" "}
                 <span class="text-grey-text">

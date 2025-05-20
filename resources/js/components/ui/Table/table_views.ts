@@ -20,7 +20,7 @@ import {ColumnName} from "data-access/memo-api/tquery/types";
 export interface TableView {
   readonly globalFilter?: string;
   readonly columnVisibility?: Readonly<VisibilityState>;
-  readonly columnFilterStates?: ReadonlyMap<ColumnName, ControlState | undefined>;
+  readonly columnFilters?: ReadonlyMap<ColumnName, ControlState | undefined>;
   readonly activeColumnGroups?: readonly string[];
   readonly sorting?: Readonly<SortingState>;
 }
@@ -70,8 +70,8 @@ export namespace tableViewsSerialisation {
       serialise(view) {
         const c: Record<ColumnName, SerialisedV2Column> = {};
         for (const [name, visibility] of Object.entries(view.columnVisibility || {})) {
-          if (view.columnFilterStates?.has(name)) {
-            const filterState = view.columnFilterStates.get(name);
+          if (view.columnFilters?.has(name)) {
+            const filterState = view.columnFilters.get(name);
             c[name] =
               filterState ||
               (visibility ? SerialisedV2ColumnEnum.SHOW_FILTER_CLEAR : SerialisedV2ColumnEnum.HIDE_FILTER_CLEAR);
@@ -79,8 +79,8 @@ export namespace tableViewsSerialisation {
             c[name] = visibility ? SerialisedV2ColumnEnum.SHOW : SerialisedV2ColumnEnum.HIDE_FILTER_CLEAR;
           }
         }
-        if (view.columnFilterStates) {
-          for (const [name, filterState] of view.columnFilterStates) {
+        if (view.columnFilters) {
+          for (const [name, filterState] of view.columnFilters) {
             if (!Object.hasOwn(c, name)) {
               c[name] = filterState || SerialisedV2ColumnEnum.FILTER_CLEAR;
             }
@@ -105,34 +105,29 @@ export namespace tableViewsSerialisation {
           return base;
         }
         const visibility: VisibilityState = {};
-        const columnFilterStates = new Map<ColumnName, ControlState | undefined>();
+        const columnFilters = new Map<ColumnName, ControlState | undefined>();
         for (const [name, state] of Object.entries(c)) {
           if (state !== undefined) {
             const filterState = typeof state === "number" ? undefined : state;
-            if (
-              filterState ||
-              state === SerialisedV2ColumnEnum.SHOW ||
-              state === SerialisedV2ColumnEnum.SHOW_FILTER_CLEAR
-            ) {
+            if (state === SerialisedV2ColumnEnum.SHOW || state === SerialisedV2ColumnEnum.SHOW_FILTER_CLEAR) {
               visibility[name] = true;
             } else if (state === SerialisedV2ColumnEnum.HIDE_FILTER_CLEAR) {
               visibility[name] = false;
             }
             if (filterState) {
-              columnFilterStates.set(name, filterState);
+              columnFilters.set(name, filterState);
             } else if (
               state === SerialisedV2ColumnEnum.FILTER_CLEAR ||
-              state === SerialisedV2ColumnEnum.HIDE_FILTER_CLEAR ||
               state === SerialisedV2ColumnEnum.SHOW_FILTER_CLEAR
             ) {
-              columnFilterStates.set(name, undefined);
+              columnFilters.set(name, undefined);
             }
           }
         }
         return {
           ...base,
           columnVisibility: Object.keys(visibility).length ? visibility : undefined,
-          columnFilterStates: columnFilterStates.size ? columnFilterStates : undefined,
+          columnFilters: columnFilters.size ? columnFilters : undefined,
         };
       },
     };
@@ -178,75 +173,142 @@ export namespace tableViewsSerialisation {
   }
 }
 
-export function getTableViewDelta(currentView: TableView, newView: TableView) {
+/**
+ * Returns a minimal set of changes needed to change the view from the base to the new. Components that
+ * do not need to be modified (are compatible) are skipped.
+ */
+export function getTableViewDelta({baseView, newView}: {baseView: TableView; newView: TableView}): TableView {
   let columnVisibility: VisibilityState | undefined;
   if (newView.columnVisibility) {
     columnVisibility = {};
     for (const [name, visibility] of Object.entries(newView.columnVisibility)) {
-      if (visibility !== undefined && visibility !== currentView.columnVisibility?.[name]) {
+      if (visibility !== undefined && visibility !== baseView.columnVisibility?.[name]) {
         columnVisibility[name] = visibility;
       }
     }
   }
-  let columnFilterStates: Map<ColumnName, ControlState | undefined> | undefined;
-  if (newView.columnFilterStates) {
-    columnFilterStates = new Map();
-    for (const [name, filterState] of newView.columnFilterStates) {
+  let columnFilters: Map<ColumnName, ControlState | undefined> | undefined;
+  if (newView.columnFilters) {
+    columnFilters = new Map();
+    for (const [name, filterState] of newView.columnFilters) {
       if (
-        !currentView.columnFilterStates?.has(name) ||
-        !richJSONValuesEqual(filterState ?? null, currentView.columnFilterStates.get(name) ?? null)
-      ) {
-        columnFilterStates.set(name, filterState);
-      }
+        !baseView.columnFilters?.has(name) ||
+        !richJSONValuesEqual(filterState ?? null, baseView.columnFilters.get(name) ?? null)
+      )
+        columnFilters.set(name, filterState);
     }
   }
-  const delta: TableView = {
+  return {
     globalFilter:
-      newView.globalFilter === undefined || newView.globalFilter === currentView.globalFilter
+      newView.globalFilter === undefined || newView.globalFilter === baseView.globalFilter
         ? undefined
         : newView.globalFilter,
     columnVisibility: columnVisibility && Object.keys(columnVisibility).length ? columnVisibility : undefined,
-    columnFilterStates: columnFilterStates?.size ? columnFilterStates : undefined,
+    columnFilters: columnFilters?.size ? columnFilters : undefined,
     activeColumnGroups:
       !newView.activeColumnGroups ||
-      (currentView.activeColumnGroups && arraysEqual(currentView.activeColumnGroups, newView.activeColumnGroups))
+      (baseView.activeColumnGroups && arraysEqual(baseView.activeColumnGroups, newView.activeColumnGroups))
         ? undefined
         : newView.activeColumnGroups,
     sorting:
-      !newView.sorting || (currentView.sorting && arraysEqual(currentView.sorting, newView.sorting, objectsEqual))
+      !newView.sorting?.length || (baseView.sorting && arraysEqual(baseView.sorting, newView.sorting, objectsEqual))
         ? undefined
         : newView.sorting,
   };
-  return {delta, deltaSummary: getTableViewSummary(delta)};
 }
 
-export function getTableViewSummary(view: TableView): TableViewSummary {
-  const globalFilter = view.globalFilter !== undefined;
-  const columnVisibility = !!view.columnVisibility && Object.values(view.columnVisibility).some((v) => v !== undefined);
-  const columnFilters = !!view.columnFilterStates && view.columnFilterStates.size > 0;
-  const activeColumnGroups = !!view.activeColumnGroups;
-  const sorting = !!view.sorting;
-  return {
-    globalFilter,
-    globalFilterClear: view.globalFilter === "",
-    columnVisibility,
-    columnFilters,
-    columnFiltersClear: columnFilters && [...view.columnFilterStates.values()].every((v) => v === undefined),
-    activeColumnGroups,
-    activeColumnGroupsClear: view.activeColumnGroups?.length === 0,
-    sorting,
-    anything: globalFilter || columnVisibility || columnFilters || activeColumnGroups || sorting,
-  };
+/** Returns a summary of what is modified by this view. */
+export function getTableViewModifiesSummary(view: TableView): TableViewSummary {
+  return fillAny({
+    globalFilter: view.globalFilter !== undefined,
+    columnVisibility: !!view.columnVisibility && Object.values(view.columnVisibility).some((v) => v !== undefined),
+    columnFilters: !!view.columnFilters && view.columnFilters.size > 0,
+    activeColumnGroups: !!view.activeColumnGroups,
+    sorting: !!view.sorting?.length,
+  });
+}
+
+/** Returns a summary of whether the view would modify a cleared state. */
+export function getTableViewModifiesClearedStateSummary(view: TableView): TableViewSummary {
+  return fillAny({
+    globalFilter: !!view.globalFilter,
+    columnVisibility: true, // There is no such thing as cleared column visibility.
+    columnFilters: !!view.columnFilters && [...view.columnFilters.values()].some((v) => v),
+    activeColumnGroups: !!view.activeColumnGroups?.length,
+    sorting: !!view.sorting?.length,
+  });
+}
+
+function fillAny(view: Omit<TableViewSummary, "any">): TableViewSummary {
+  return Object.assign(view, {any: Object.values(view).some((v) => v)});
 }
 
 export interface TableViewSummary {
   readonly globalFilter: boolean;
-  readonly globalFilterClear: boolean;
   readonly columnVisibility: boolean;
   readonly columnFilters: boolean;
-  readonly columnFiltersClear: boolean;
   readonly activeColumnGroups: boolean;
-  readonly activeColumnGroupsClear: boolean;
   readonly sorting: boolean;
-  readonly anything: boolean;
+  readonly any: boolean;
+}
+
+export function getTableViewFullSummary({
+  baseView,
+  newView,
+}: {
+  baseView?: TableView;
+  newView: TableView;
+}): TableViewFullSummary {
+  return {
+    modifiesSummary: getTableViewModifiesSummary(newView),
+    modifiesClearedSummary: getTableViewModifiesClearedStateSummary(newView),
+    modifiesBaseSummary: baseView ? getTableViewModifiesSummary(getTableViewDelta({baseView, newView})) : undefined,
+  };
+}
+
+export interface TableViewFullSummary {
+  readonly modifiesSummary: TableViewSummary;
+  readonly modifiesClearedSummary: TableViewSummary;
+  readonly modifiesBaseSummary?: TableViewSummary;
+}
+
+export function getStencilledTableView({view, stencil}: {view: TableView; stencil: TableView}): TableView {
+  const viewSummary = getTableViewModifiesSummary(view);
+  const stencilSummary = getTableViewModifiesSummary(stencil);
+  let columnVisibility: VisibilityState | undefined;
+  let columnFilters: Map<ColumnName, ControlState | undefined> | undefined;
+  if (viewSummary.columnVisibility && stencilSummary.columnVisibility) {
+    columnVisibility = {};
+    for (const column of Object.keys(stencil.columnVisibility!)) {
+      const viewVisibility = view.columnVisibility![column];
+      if (viewVisibility !== undefined) {
+        columnVisibility[column] = viewVisibility;
+      }
+    }
+  }
+  if (viewSummary.columnFilters && stencilSummary.columnFilters) {
+    columnFilters = new Map();
+    for (const column of stencil.columnFilters!.keys()) {
+      if (view.columnFilters!.has(column)) {
+        columnFilters.set(column, view.columnFilters!.get(column));
+      }
+    }
+  }
+  return {
+    globalFilter: stencilSummary.globalFilter ? view.globalFilter : undefined,
+    columnVisibility: columnVisibility && Object.keys(columnVisibility).length ? columnVisibility : undefined,
+    columnFilters: columnFilters?.size ? columnFilters : undefined,
+    activeColumnGroups: stencilSummary.activeColumnGroups ? view.activeColumnGroups : undefined,
+    sorting: stencilSummary.sorting ? view.sorting : undefined,
+  };
+}
+
+export function isPartialTableViewSummary(summary: TableViewSummary) {
+  return (
+    !summary.globalFilter ||
+    !summary.columnVisibility ||
+    !summary.columnFilters ||
+    !summary.activeColumnGroups ||
+    !summary.sorting
+  );
 }

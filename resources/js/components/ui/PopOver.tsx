@@ -10,7 +10,7 @@ interface Props {
   readonly trigger: (popOver: PopOverControl) => JSX.Element;
   readonly placement?: Partial<ComputePositionConfig>;
   readonly children: ChildrenOrFunc<[PopOverControl]>;
-  /** The parent pop-ver that should not close when the inside of this pop-over's floating element is clicked. */
+  /** The parent pop-over that should not close when the inside of this pop-over's floating element is clicked. */
   readonly parentPopOver?: PopOverControl;
 }
 

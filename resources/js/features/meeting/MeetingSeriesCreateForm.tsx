@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {FormProps} from "components/felte-form/FelteForm";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
@@ -23,7 +23,7 @@ export interface MeetingSeriesCreateFormProps extends Pick<FormProps, "id" | "tr
 export const MeetingSeriesCreateForm: VoidComponent<MeetingSeriesCreateFormProps> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
-  const meetingMutation = createMutation(() => ({
+  const meetingMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.cloneMeeting,
     meta: {isFormSubmit: true},
   }));

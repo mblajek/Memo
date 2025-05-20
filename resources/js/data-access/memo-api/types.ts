@@ -74,3 +74,15 @@ export type JSONValue<ExtraTypes = never> =
   | readonly JSONValue<ExtraTypes>[]
   | Readonly<{[key: string]: JSONValue<ExtraTypes>}>
   | ExtraTypes;
+
+export function isJSON(object: unknown, allowUndefined = false): object is JSONValue {
+  return (
+    typeof object === "string" ||
+    typeof object === "number" ||
+    typeof object === "boolean" ||
+    object === null ||
+    (Array.isArray(object) && object.every((item) => isJSON(item, false /* don't allow undefined in array */))) ||
+    (!!object && typeof object === "object" && Object.values(object).every((item) => isJSON(item, allowUndefined))) ||
+    (allowUndefined && object === undefined)
+  );
+}

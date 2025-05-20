@@ -1,4 +1,4 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {useHolidays} from "components/ui/calendar/holidays";
 import {getWeekdays} from "components/ui/calendar/week_days_calculator";
 import {CheckboxInput} from "components/ui/CheckboxInput";
@@ -65,11 +65,11 @@ export function useWeeklyTimeTablesActions() {
   const holidays = useHolidays();
   const confirmation = createConfirmation();
   const owner = getOwner();
-  const deleteMutation = createMutation(() => ({
+  const deleteMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.deleteMeeting,
     meta: {isFormSubmit: true},
   }));
-  const cloneMutation = createMutation(() => ({
+  const cloneMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.cloneMeeting,
     meta: {isFormSubmit: true},
   }));

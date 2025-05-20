@@ -1,21 +1,20 @@
-import {createQuery} from "@tanstack/solid-query";
+import {useQuery} from "@tanstack/solid-query";
 import {User} from "data-access/memo-api/groups/User";
 import {DateTime} from "luxon";
 import {createMemo} from "solid-js";
 import {currentDate} from "./time";
 
-export type PasswordExpirationState = "expired" | "soon" | undefined;
-
-export const PASSWORD_EXPIRATION_SOON_DAYS = 14;
-
-export function usePasswordExpiration() {
-  const statusQuery = createQuery(User.statusQueryOptions);
-  const expiration = createMemo((): PasswordExpirationState => {
-    if (!statusQuery.data?.user.passwordExpireAt) {
+/** Returns the number of days left until the password expires, or infinity if it won't expire. */
+export function usePasswordExpirationDays() {
+  const statusQuery = useQuery(User.statusQueryOptions);
+  const expiration = createMemo((): number | undefined => {
+    if (!statusQuery.data) {
       return undefined;
     }
-    const daysToExpire = DateTime.fromISO(statusQuery.data.user.passwordExpireAt).diff(currentDate(), "days").days;
-    return daysToExpire <= 0 ? "expired" : daysToExpire <= PASSWORD_EXPIRATION_SOON_DAYS ? "soon" : undefined;
+    if (!statusQuery.data.user.passwordExpireAt) {
+      return Number.POSITIVE_INFINITY;
+    }
+    return DateTime.fromISO(statusQuery.data.user.passwordExpireAt).diff(currentDate(), "days").days;
   });
   return expiration;
 }

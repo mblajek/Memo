@@ -1,9 +1,10 @@
-import {createMutation} from "@tanstack/solid-query";
+import {useMutation} from "@tanstack/solid-query";
 import {Button, EditButton} from "components/ui/Button";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SimpleMenu} from "components/ui/SimpleMenu";
 import {BigSpinner} from "components/ui/Spinner";
 import {SplitButton} from "components/ui/SplitButton";
+import {calendarIcons} from "components/ui/icons";
 import {MeetingRepeatIcon} from "components/ui/meetings-calendar/MeetingRepeatIcon";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -55,7 +56,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
   const workTimeCreateModal = createWorkTimeCreateModal();
   const seriesCreateModal = createMeetingSeriesCreateModal();
   const {meetingQuery, meeting: workTime} = useMeetingWithExtraInfo(props.staticMeetingId);
-  const meetingUpdateMutation = createMutation(() => ({
+  const meetingUpdateMutation = useMutation(() => ({
     mutationFn: FacilityMeeting.updateMeeting,
     meta: {isFormSubmit: true},
   }));
@@ -120,7 +121,7 @@ export const WorkTimeViewEditForm: VoidComponent<WorkTimeViewEditFormProps> = (p
                   <LinkWithNewTabLink
                     {...getCalendarViewLinkData(`/${activeFacility()?.url}/admin/time-tables`, {meeting: workTime()})}
                   >
-                    {t("meetings.show_in_calendar")}
+                    <calendarIcons.Calendar class="inlineIcon" /> {t("meetings.show_in_calendar")}
                   </LinkWithNewTabLink>
                 </Show>
                 <CreatedByInfo class="-mb-2" data={workTime()} />

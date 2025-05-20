@@ -1,4 +1,4 @@
-import {CreateQueryResult} from "@tanstack/solid-query";
+import {UseQueryResult} from "@tanstack/solid-query";
 import {PaginationState, SortingState, VisibilityState} from "@tanstack/solid-table";
 import {AxiosError} from "axios";
 import {ColumnGroup} from "components/ui/Table/column_groups";
@@ -27,7 +27,13 @@ export interface ColumnConfig {
   /** Whether the global filter can match this column. Default: depends on the column type. */
   readonly globalFilterable: boolean;
   readonly columnGroups: readonly string[] | undefined;
-  readonly includeInTableView: boolean;
+  readonly includeInTableView: IncludeInTableView;
+}
+
+/** Information whether a column should be included in the components of the table views. */
+interface IncludeInTableView {
+  readonly visibility: boolean;
+  readonly filter: boolean;
 }
 
 /** The additional tquery data columns needed to construct this table column. */
@@ -84,7 +90,7 @@ const DEFAULT_PAGE_SIZE = 50;
  * The request itself is a memo combining data from the signals exposed in the RequestController.
  * These signals can be plugged directly into the table state.
  *
- * The allInitialised signal can be used to delay execution of the query if some more externa initialisation
+ * The allInitialised signal can be used to delay execution of the query if some more external initialisation
  * is needed.
  */
 export function createTableRequestCreator({
@@ -358,12 +364,12 @@ export function createTableRequestCreator({
       setMiniState(initialMiniState);
     }
     function includeColumnInTableView(column: string) {
-      return column !== countColumn() && columnsConfigByName().get(column)?.includeInTableView;
+      return column !== countColumn();
     }
     function visibilityForTableView(vis: Readonly<VisibilityState>): VisibilityState {
       const result: VisibilityState = {};
       for (const [column, visibility] of Object.entries(vis)) {
-        if (includeColumnInTableView(column)) {
+        if (includeColumnInTableView(column) && columnsConfigByName().get(column)?.includeInTableView.visibility) {
           result[column] = visibility;
         }
       }
@@ -372,19 +378,19 @@ export function createTableRequestCreator({
     const defaultTableView = (): TableView => ({
       globalFilter: "",
       columnVisibility: visibilityForTableView(defaultColumnVisibility()),
-      columnFilterStates: new Map(
+      columnFilters: new Map(
         columnsConfig()
-          .filter((c) => includeColumnInTableView(c.name))
+          .filter((c) => includeColumnInTableView(c.name) && c.includeInTableView.filter)
           .map((c) => [c.name, undefined]),
       ),
-      activeColumnGroups: [],
+      activeColumnGroups: initialColumnGroups,
       sorting: initialSort,
     });
     function getCompleteTableView(): TableView {
-      const columnFilterStates = new Map<ColumnName, ControlState | undefined>();
+      const columnFilters = new Map<ColumnName, ControlState | undefined>();
       for (const {name} of columnsConfig()) {
-        if (includeColumnInTableView(name)) {
-          columnFilterStates.set(
+        if (includeColumnInTableView(name) && columnsConfigByName().get(name)?.includeInTableView.filter) {
+          columnFilters.set(
             name,
             columnVisibility()[name] ? extractFilterState(getColumnFilter(name)[0]()) : undefined,
           );
@@ -393,7 +399,7 @@ export function createTableRequestCreator({
       return {
         globalFilter: globalFilter(),
         columnVisibility: visibilityForTableView(columnVisibility()),
-        columnFilterStates,
+        columnFilters,
         activeColumnGroups: activeColumnGroups(),
         sorting: sorting(),
       };
@@ -406,17 +412,20 @@ export function createTableRequestCreator({
         if (view.columnVisibility) {
           setColumnVisibility((vis) => ({...vis, ...view.columnVisibility}));
         }
-        if (view.columnFilterStates) {
-          for (const [name, filterState] of view.columnFilterStates) {
+        if (view.columnFilters) {
+          for (const [name, filterState] of view.columnFilters) {
             if (name !== countColumn()) {
               getColumnFilter(name)[1]((filter) => injectFilterState(filter, filterState));
+              if (filterState !== undefined) {
+                setColumnVisibility((vis) => ({...vis, [name]: true}));
+              }
             }
           }
         }
         if (view.activeColumnGroups) {
           setActiveColumnGroups(view.activeColumnGroups);
         }
-        if (view.sorting) {
+        if (view.sorting?.length) {
           setSorting(view.sorting);
         }
       });
@@ -485,7 +494,7 @@ export function tableHelper({
   translations,
 }: {
   requestController: RequestController;
-  dataQuery: CreateQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>;
+  dataQuery: UseQueryResult<DataResponse, AxiosError<Api.ErrorResponse>>;
   translations?: TableTranslations;
 }): TableHelperInterface {
   const t = useLangFunc();

@@ -34,7 +34,7 @@ export default (() => {
             cell: cellFunc<string>((props) => (
               <PaddedCell>
                 <ShowCellVal v={props.v}>
-                  {(v) => <UserLink type="clients" userId={props.row.id as string} name={v()} />}
+                  {(v) => <UserLink type="clients" userId={props.row.id as string} userName={v()} />}
                 </ShowCellVal>
               </PaddedCell>
             )),
@@ -46,9 +46,14 @@ export default (() => {
         {name: "client.groups.*.role", initialVisible: false},
         {
           name: "client.groups.*.clients.*.userId",
-          columnDef: {cell: customTableCells.facilityUsers()},
+          columnDef: {
+            cell: customTableCells.facilityUsers(),
+            size: 250,
+          },
           initialVisible: false,
         },
+        {name: "isManagedByThisFacility", initialVisible: false},
+        {name: "managedByFacility.name", initialVisible: false},
         {name: "firstMeetingDate", initialVisible: false},
         {name: "lastMeetingDate"},
         {name: "completedMeetingsCount"},

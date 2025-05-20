@@ -14,6 +14,7 @@ is_memo_user_note: "(użytkownik Memo)"
 
 edit_as_global_administrator: "Edytuj jako globalny administrator"
 managed_by_current_facility: "Osoba jest zarządzana przez tę placówkę"
+not_managed_by_current_facility: "Osoba nie jest zarządzana przez tę placówkę"
 
 related_user_meetings_count: "Liczba wspólnych spotkań"
 related_users: "Powiązane osoby"
@@ -30,6 +31,8 @@ staff:
   is_inactive:
     label: "Pracownik jest nieaktywny"
     since: "(od {{date}})"
+
+show_calendar: "Pokaż kalendarz"
 
 client_group__interval: "(0-1)[$t(models.client_group._name)];(2-inf)[$t(models.client_group._name_plural)];"
 client_groups:

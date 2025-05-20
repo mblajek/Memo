@@ -10,13 +10,14 @@ import {title} from "./title";
 type _Directives = typeof title;
 
 export interface ConfirmParams {
-  readonly title: string;
+  readonly title?: JSX.Element;
   readonly body?: JSX.Element | ((controller: ConfirmationController) => JSX.Element);
   readonly confirmText?: JSX.Element | Accessor<JSX.Element>;
   readonly cancelText?: JSX.Element | Accessor<JSX.Element>;
   readonly mode?: ConfirmationMode;
   readonly confirmDisabled?: Accessor<boolean>;
   readonly modalStyle?: JSX.CSSProperties;
+  readonly mountPoint?: HTMLElement;
 }
 
 interface ConfirmationController {
@@ -48,6 +49,7 @@ const createConfirmationInternal = registerGlobalPageElement<ConfirmData>((args)
       style={{...MODAL_STYLE_PRESETS.narrow, ...args.params()?.modalStyle}}
       closeOn={["escapeKey", "closeButton"]}
       onClose={() => resolveOuter(undefined)}
+      mountPoint={args.params()?.mountPoint}
     >
       {(data) => {
         const [readBeforeConfirm, setReadBeforeConfirm] = createSignal(data().mode === "danger");

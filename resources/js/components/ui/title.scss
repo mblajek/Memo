@@ -1,5 +1,5 @@
 .tippy-box[data-theme^="memo"] {
-  --bg-color: var(--tc-select);
+  --bg-color: color-mix(in srgb, var(--tc-select), white 30%);
 
   @apply text-black border-solid border-memo-active;
   background-color: var(--bg-color);

@@ -18,7 +18,7 @@ export default (() => {
       staticEntityURL={`facility/${activeFacilityId()}/meeting`}
       staticTranslations={createTableTranslations("meeting")}
       staticPersistenceKey="systemMeetings"
-      intrinsicFilter={meetingTableFilters.isSystemMeeting()}
+      intrinsicFilter={meetingTableFilters.isSystemMeeting() || "never"}
       intrinsicSort={[
         {type: "column", column: "date", desc: false},
         {type: "column", column: "startDayminute", desc: false},

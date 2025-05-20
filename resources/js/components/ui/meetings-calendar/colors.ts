@@ -72,16 +72,16 @@ export function coloringToStyle(
 }
 
 export const CALENDAR_BACKGROUNDS = (() => {
-  const main = "#e2e3e7";
+  const mainBg = "#e2e3e7";
   const facilityWorkTime = "#ecedf1";
-  const staffWorkTime = "#ffffff";
+  const mainWorkTime = "#ffffff";
   const leaveTimeLines = "#cdcfd1";
   return {
-    main,
+    mainBg,
     facilityWorkTime,
-    staffWorkTime,
-    facilityLeaveTime: `repeating-linear-gradient(-30deg, ${main}c0, ${staffWorkTime}40 8px, ${main}c0 16px, ${leaveTimeLines} 17px, ${main}c0 18px)`,
-    staffLeaveTime: `repeating-linear-gradient(-45deg, ${main}c0, ${staffWorkTime}40 4px, ${main}c0 8px, ${leaveTimeLines} 9px, ${main}c0 10px)`,
+    mainWorkTime,
+    facilityLeaveTime: `repeating-linear-gradient(-30deg, ${mainBg}c0, ${mainWorkTime}40 8px, ${mainBg}c0 16px, ${leaveTimeLines} 17px, ${mainBg}c0 18px)`,
+    staffLeaveTime: `repeating-linear-gradient(-45deg, ${mainBg}c0, ${mainWorkTime}40 4px, ${mainBg}c0 8px, ${leaveTimeLines}a0 9px, ${mainBg}c0 10px)`,
     holiday: `repeating-linear-gradient(to left, #f0101050 0 1px, transparent 2px 10px, #f0101050 11px)`,
   } as const;
 })();

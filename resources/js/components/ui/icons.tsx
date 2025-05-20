@@ -1,8 +1,16 @@
 import {htmlAttributes} from "components/utils/html_attributes";
 import {IconTemplate, IconTypes} from "solid-icons";
 import {AiOutlineFileExcel, AiOutlineSearch} from "solid-icons/ai";
-import {BiRegularCalendarX, BiRegularCopy, BiRegularPaste, BiRegularPlus, BiRegularRepeat} from "solid-icons/bi";
 import {
+  BiRegularCalendarX,
+  BiRegularCopy,
+  BiRegularDuplicate,
+  BiRegularPaste,
+  BiRegularPlus,
+  BiRegularRepeat,
+} from "solid-icons/bi";
+import {
+  BsCalendar3,
   BsFileEarmarkPerson,
   BsHouse,
   BsHouseAdd,
@@ -17,10 +25,10 @@ import {
 import {CgRename, CgUndo} from "solid-icons/cg";
 import {FaRegularBell, FaSolidCheck} from "solid-icons/fa";
 import {FiColumns, FiEdit2} from "solid-icons/fi";
-import {ImCircleRight} from "solid-icons/im";
+import {ImCircleRight, ImInfo} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {TbFilter, TbFilterOff} from "solid-icons/tb";
+import {TbFilter, TbFilterOff, TbReload} from "solid-icons/tb";
 import {VsSave} from "solid-icons/vs";
 
 namespace customIcons {
@@ -44,8 +52,7 @@ namespace customIcons {
     IconTemplate(
       {
         a: {viewBox: "0 0 24 24"},
-        c: `
-    <circle cx="4" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="20" cy="12" r="3"/>`,
+        c: `<circle cx="4" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="20" cy="12" r="3"/>`,
       },
       props,
     );
@@ -109,9 +116,13 @@ export namespace actionIcons {
   export const ExportCSV = AiOutlineFileExcel;
   export const Search = AiOutlineSearch;
   export const Columns: IconTypes = (props) => <FiColumns {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
+  export const Reload = TbReload;
+  export const Duplicate = BiRegularDuplicate;
+  export const Info = ImInfo;
 }
 
 export namespace calendarIcons {
+  export const Calendar = BsCalendar3;
   export const Conflict = BiRegularCalendarX;
 }
 

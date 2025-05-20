@@ -1,10 +1,14 @@
 language: "polski"
 
 app_name: "Memo"
-app_version: "𝑣{{version}}"
-app_version_needs_reload: "𝑣{{baseVersion}} ➸ 𝑣{{lastVersion}} (odśwież aby zaktualizować)"
+app_version.v: "𝑣" # 𝑣 𝒗 ⅴ 𝕧
+app_version: "$t(app_version.v){{version}}"
+app_version_needs_reload: "$t(app_version.v){{baseVersion}} ➸ $t(app_version.v){{lastVersion}} (odśwież aby zaktualizować)"
 app_env: "Środowisko: {{env}}"
 privacy_policy: "Polityka prywatności"
+changelog:
+  short_text: "Co nowego"
+  long_text: "Co nowego — lista zmian"
 
 exception:
   configuration:
@@ -26,6 +30,7 @@ exception:
   invalid_json: "Zapytanie nie ma formatu JSON"
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
   user_not_managed_by_facility: "Osoba nie jest zarządzana przez tę placówkę"
+  csrf_token_mismatch: "Błąd tokena sesji"
   _unknown: "Błąd konfiguracji ({{text}})"
 
 passwords:
@@ -35,12 +40,30 @@ passwords:
   token: "Token resetowania hasła jest nieprawidłowy."
   user: "Nie znaleziono osoby z takim adresem e-mail."
 
+otp:
+  otp_is_configured: "OTP aktywne"
+  more_info: "Więcej informacji na temat OTP"
+  intro_md: |-
+    Aby skonfigurować zabezpieczenie OTP:
+
+    1. Zainstaluj aplikację do haseł jednorazowych na telefonie (w razie wątpliwości co do wyboru
+        aplikacji, skontaktuj się z administratorem), a następnie ją uruchom.
+    1. Potwierdź swoje aktualne hasło poniżej, aby wygenerować kod QR. Upewnij się, że osoby
+        niepowołane nie mają w tym czasie dostępu do twojego ekranu.
+    1. W aplikacji na telefonie wybierz opcję skanowania kodu QR, a następnie zeskanuj wygenerowany kod.
+    1. Wpisz sześciocyfrowy kod z aplikacji w polu _$t(quotes.open)$t(models.user.otp)$t(quotes.close)_
+        poniżej i potwierdź.
+  issuer:
+    prod: "$t(app_name)"
+    other: "$t(app_name) ({{appEnv}})"
+  configure:
+    time_left: "Pozostały czas: {{time}}"
+
 auth:
   failed: "Błędny login lub hasło."
   password: "Hasło jest nieprawidłowe."
-  password_expiration:
-    soon: "Hasło wkrótce wygaśnie, należy je zmienić."
-    expired: "Hasło wygasło. Zmiana hasła jest wymagana."
+  password_expiration_soon: "Hasło wkrótce wygaśnie, należy je zmienić."
+  otp_required: "Aktywacja OTP jest wymagana dla tego konta."
   throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds, number}} sekund."
 
 verified_user: "Użytkownik zweryfikowany"
@@ -61,14 +84,14 @@ range:
 quotes:
   open: "„"
   close: "”"
-quoted: "$t(quotes.open){{-text}}$t(quotes.close)"
+quoted: "$t(quotes.open){{text}}$t(quotes.close)"
 parenthesis:
   open: "("
   close: ")"
-parenthesised: "$t(parenthesis.open){{-text}}$t(parenthesis.close)"
-with_colon: "{{-text}}:"
+parenthesised: "$t(parenthesis.open){{text}}$t(parenthesis.close)"
+with_colon: "{{text}}:"
 ellipsis: "…"
-with_ellipsis: "{{-text}}$t(ellipsis)"
+with_ellipsis: "{{text}}$t(ellipsis)"
 
 em_dash: "—"
 en_dash: "–"
@@ -151,3 +174,10 @@ csv_export:
   unsupported: "Eksport plików nie jest wspierany w tej przeglądarce. Sugerowana przeglądarka: Chrome lub Edge."
   show_preview: "Podgląd"
   preview: "Podgląd eksportu"
+
+anti_self_xss:
+  header: "Uwaga!"
+  message: |
+    Nie wykonuj w tym panelu żadnych operacji, chyba, że dobrze rozumiesz, co robisz!
+    Niczego tutaj nie pisz ani nie wklejaj, możesz w ten sposób udostępnić dane atakującemu.
+    Najlepiej będzie, jeśli zamkniesz ten panel.

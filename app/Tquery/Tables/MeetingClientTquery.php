@@ -46,7 +46,7 @@ final readonly class MeetingClientTquery extends MeetingTquery
     protected function getConfig(): TqConfig
     {
         $config = parent::getConfig();
-        $config->uniqueTable = TqTableAliasEnum::users;
+        $config->uniqueTable = TqTableAliasEnum::meeting_attendants;
 
         $config->addJoined(
             TqDataTypeEnum::uuid,

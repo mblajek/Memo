@@ -18,13 +18,14 @@ class CreateUserCommand extends Command
     protected $signature = 'fz:user';
     protected $description = 'Create new user';
 
-    public function handle()
+    public function handle(): void
     {
         PermissionMiddleware::setPermissions(
             new PermissionObject(
                 user: User::query()->findOrFail(User::SYSTEM),
                 facility: null,
                 unauthorised: false,
+                loggedIn: true,
                 unverified: true,
                 verified: true,
                 globalAdmin: true,

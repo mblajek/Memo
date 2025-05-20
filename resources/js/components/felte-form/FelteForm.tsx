@@ -1,16 +1,6 @@
-import {
-  AssignableErrors,
-  Form,
-  FormConfigWithoutTransformFn,
-  KnownHelpers,
-  Obj,
-  Paths,
-  SubmitContext,
-  Touched,
-} from "@felte/core";
+import {AssignableErrors, FormConfigWithoutTransformFn, Obj, SubmitContext, Touched} from "@felte/core";
 import {reporter} from "@felte/reporter-solid";
 import {createForm} from "@felte/solid";
-import {type KnownStores} from "@felte/solid/dist/esm/create-accessor";
 import {validator} from "@felte/validator-zod";
 import {BeforeLeaveEventArgs, useBeforeLeave} from "@solidjs/router";
 import {isAxiosError} from "axios";
@@ -36,11 +26,12 @@ export interface FormContextValue<T extends Obj = Obj> {
   readonly formConfig: FormConfigWithoutTransformFn<T>;
   readonly form: FormType<T>;
   getElement(): HTMLFormElement | undefined;
+  focusField(name: string): void;
   isFormDisabled(): boolean;
   readonly translations: FormTranslations;
 }
 
-export type FormType<T extends Obj = Obj> = Form<T> & KnownHelpers<T, Paths<T>> & KnownStores<T>;
+export type FormType<T extends Obj = Obj> = ReturnType<typeof createForm<T>>;
 
 /** User strings for parts of the form. */
 export interface FormTranslations {
@@ -49,9 +40,7 @@ export interface FormTranslations {
   submit(o?: TOptions): string;
 }
 
-const FormContext = createContext<FormContextValue>(undefined, {
-  name: "FormContext",
-});
+const FormContext = createContext<FormContextValue>(undefined, {name: "FormContext"});
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
@@ -156,12 +145,12 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     },
     onSuccess: async (response, ctx) => {
       if (typeof response === "function") {
-        await response();
+        await (response as () => void | Promise<void>)();
       }
       await createFormOptions.onSuccess?.(response, ctx);
     },
-    onError: (errorResp, ctx) => {
-      createFormOptions.onError?.(errorResp, ctx);
+    onError: async (errorResp, ctx) => {
+      await createFormOptions.onError?.(errorResp, ctx);
       if (isAxiosError<Api.ErrorResponse>(errorResp) && errorResp.response) {
         for (const error of errorResp.response.data.errors) {
           if (Api.isValidationError(error)) {
@@ -174,6 +163,12 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
                 attribute: getQuotedFieldName(error.field, {skipIfMissing: true}),
                 ...error.data,
                 ...(typeof error.data?.other === "string" ? {other: getQuotedFieldName(error.data.other)} : undefined),
+                ...(error.data?.value === "true"
+                  ? {value: t("validation.quoted_field_name", {text: t("bool_values.yes")})}
+                  : undefined),
+                ...(error.data?.value === "false"
+                  ? {value: t("validation.quoted_field_name", {text: t("bool_values.no")})}
+                  : undefined),
                 ...(Array.isArray(error.data?.values)
                   ? {values: error.data.values.map((v) => (typeof v === "string" ? getQuotedFieldName(v) : v))}
                   : undefined),
@@ -251,7 +246,7 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
       }
     },
   };
-  const form = createForm<T>(formConfig) as FormType<T>;
+  const form = createForm<T>(formConfig);
 
   onMount(() => {
     function shouldConfirmPageLeave(e: BeforeUnloadEvent | BeforeLeaveEventArgs) {
@@ -262,12 +257,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
         e.preventDefault();
       }
     });
-    useBeforeLeave(async (e) => {
+    useBeforeLeave((e) => {
       if (shouldConfirmPageLeave(e)) {
         e.preventDefault();
-        if (await confirmation.confirm()) {
-          e.retry(true);
-        }
+        void confirmation.confirm().then((confirmed) => {
+          if (confirmed) {
+            e.retry(true);
+          }
+        });
       }
     });
   });
@@ -282,8 +279,14 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
   const contextValue = {
     props: allProps,
     formConfig,
-    form: form as FormType<T>,
+    form,
     getElement: formElement,
+    focusField(name: string) {
+      const field = formElement()?.querySelector(`#${name}`);
+      if (field instanceof HTMLElement) {
+        setTimeout(() => field.focus(), 100);
+      }
+    },
     isFormDisabled: () => formDisabled(),
     translations,
   } satisfies FormContextValue<T>;

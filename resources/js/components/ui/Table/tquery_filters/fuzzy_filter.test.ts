@@ -304,7 +304,7 @@ describe("buildFuzzyGlobalFilter", () => {
   });
 
   describe("for dict columns", () => {
-    const dictionaries = Dictionaries.fromResources(((key) => `t(${key})`) as LangFunc, [
+    const dictionaries = Dictionaries.fromResources(((key) => `t(${key as string})`) as LangFunc, [
       {
         id: "dictA",
         name: "dictA",

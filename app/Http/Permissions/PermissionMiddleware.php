@@ -55,7 +55,7 @@ class PermissionMiddleware
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
         if (!self::$permissionObject) {
-            self::$permissionObject = $this->requestPermissions($request);
+            self::$permissionObject = self::requestPermissions($request);
         }
         foreach ($permissions as $permissionCode) {
             $permission = Permission::fromName($permissionCode);
@@ -69,7 +69,7 @@ class PermissionMiddleware
         ExceptionFactory::forbidden()->throw();
     }
 
-    private function requestPermissions(Request $request): PermissionObject
+    private static function requestPermissions(Request $request): PermissionObject
     {
         $creator = new PermissionObjectCreator();
 
@@ -77,6 +77,7 @@ class PermissionMiddleware
 
         if ($user = User::fromAuthenticatable($request->user())) {
             if (self::checkSessionPasswordHashHash($user, $session)) {
+                $creator->loggedIn = true;
                 $creator->user = $user;
                 $creator->verified = ($user->email_verified_at !== null);
                 $creator->unverified = !$creator->verified;

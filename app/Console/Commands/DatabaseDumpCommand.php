@@ -15,7 +15,7 @@ class DatabaseDumpCommand extends Command
     protected $signature = 'fz:db-dump {chown} {password?}';
     protected $description = 'Make zipped database dump with password';
 
-    public function handle()
+    public function handle(): void
     {
         $chown = $this->argument('chown');
         $password = $this->argument('password');

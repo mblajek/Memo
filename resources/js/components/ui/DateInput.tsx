@@ -3,17 +3,17 @@ import {featureUseTrackers} from "components/utils/feature_use_trackers";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {DateTime} from "luxon";
-import {createSignal, onCleanup, Show, splitProps, VoidComponent} from "solid-js";
+import {Accessor, createSignal, onCleanup, Show, splitProps, VoidComponent} from "solid-js";
 import {useFormContextIfInForm} from "../felte-form/FelteForm";
 import {shortWeekdayName} from "../utils/date_formatting";
 import {TextInput} from "./TextInput";
 
-interface Props extends htmlAttributes.input {
+export interface DateInputProps extends htmlAttributes.input {
   readonly outerClass?: string;
   readonly showWeekday?: boolean;
 }
 
-export const DateInput: VoidComponent<Props> = (allProps) => {
+export const DateInput: VoidComponent<DateInputProps> = (allProps) => {
   const [props, inputProps] = splitProps(allProps, ["outerClass", "showWeekday"]);
   const t = useLangFunc();
   const featureKeyUpDown = featureUseTrackers.dateTimeInputKeyUpDown();
@@ -21,15 +21,15 @@ export const DateInput: VoidComponent<Props> = (allProps) => {
   const showWeekday = () => props.showWeekday ?? type() === "date";
   const formContext = useFormContextIfInForm();
   const [getValue, setValue] = createSignal("");
-  let value;
+  let value: Accessor<string>;
   if (formContext) {
     // eslint-disable-next-line solid/reactivity
-    value = () => formContext.form.data(inputProps.name!) as string;
+    value = () => formContext.form.data(inputProps.name!);
   } else {
     value = getValue;
   }
   return (
-    <div class={cx(props.outerClass, "grid")}>
+    <div class={cx(props.outerClass, "grid", inputProps.type === "datetime-local" ? "min-w-56" : "min-w-40")}>
       <TextInput
         ref={(input) => {
           if (!formContext) {
@@ -48,8 +48,12 @@ export const DateInput: VoidComponent<Props> = (allProps) => {
                 onChange: ({currentTarget}) => setValue((currentTarget as HTMLInputElement).value),
               }),
           onKeyDown: (e: KeyboardEvent) => {
+            const target = e.currentTarget as HTMLInputElement;
             if (e.key === "Delete") {
-              (e.currentTarget as HTMLInputElement).value = "";
+              target.value = "";
+              target.dispatchEvent(new InputEvent("input"));
+              target.dispatchEvent(new Event("change"));
+              formContext?.form.setData(inputProps.name!, "");
               e.preventDefault();
             } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
               featureKeyUpDown.justUsed({type: type()});

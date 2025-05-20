@@ -4,7 +4,6 @@
 export interface PermissionsResource {
   readonly userId: string;
   readonly facilityId: string;
-  readonly unverified: boolean;
   readonly verified: boolean;
   readonly globalAdmin: boolean;
   readonly facilityMember: boolean;

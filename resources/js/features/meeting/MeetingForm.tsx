@@ -1,4 +1,4 @@
-import {createQuery, keepPreviousData} from "@tanstack/solid-query";
+import {useQuery, keepPreviousData} from "@tanstack/solid-query";
 import {FormType} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
@@ -74,7 +74,7 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
     });
     // eslint-disable-next-line solid/reactivity
     const delayedDateAndTime = delayedAccessor(dateAndTime);
-    const conflictsDataQuery = createQuery(() => {
+    const conflictsDataQuery = useQuery(() => {
       const {startDayMinute, durationMinutes} = getMeetingTimeDurationData(delayedDateAndTime().time);
       return {
         ...FacilityMeeting.conflictsQueryOptions({
@@ -225,8 +225,8 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
           edit={
             <FelteSubmit
               cancel={() => {
-                props.onCancel?.();
                 form.reset();
+                props.onCancel?.();
               }}
             />
           }

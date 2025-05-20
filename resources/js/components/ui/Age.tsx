@@ -10,5 +10,10 @@ interface Props {
 export const Age: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const diff = () => currentDate().diff(props.birthDate, "years");
-  return <span>{diff().toMillis() < 0 ? "?" : t("calendar.units.years", {count: Math.floor(diff().years)})}</span>;
+  return (
+    <span>
+      {t("calendar.age_with_colon")}{" "}
+      {diff().toMillis() < 0 ? "?" : t("calendar.units.years", {count: Math.floor(diff().years)})}
+    </span>
+  );
 };

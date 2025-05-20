@@ -1,3 +1,4 @@
+import {IdentifiedColumnDef} from "@tanstack/table-core";
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {Attribute} from "data-access/memo-api/attributes";
 import {useAllAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
@@ -35,4 +36,12 @@ export function filterByFacility<T extends {resource: {facilityId: string | null
   return onlyActiveFacility
     ? [...collection].filter((f) => !f.resource.facilityId || f.resource.facilityId === activeFacilityId())
     : [...collection];
+}
+
+export function textSort<T>() {
+  return {
+    sortingFn: (a, b, colId) =>
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      ((a.getValue(colId) as string | undefined) || "").localeCompare(b.getValue(colId) || ""),
+  } satisfies Partial<IdentifiedColumnDef<T>>;
 }

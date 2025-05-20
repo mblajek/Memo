@@ -31,20 +31,24 @@ class AdminUserController extends ApiController
         parameters: [new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', type: 'array', items: new OA\Items(
-                    ref: '#/components/schemas/AdminUserResource'
-                )
-                ),
-            ])
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            ref: '#/components/schemas/AdminUserResource'
+                        )
+                    ),
+                ])
             ),
         ]
     )]
     public function list(): JsonResource
     {
         $userQuery = User::query();
-        $this->applyRequestIn($userQuery);
+        $this->applyRequestIn($userQuery, required: true);
         return AdminUserResource::collection($userQuery->with(['members'])->get());
     }
 
@@ -98,6 +102,8 @@ class AdminUserController extends ApiController
                     new OA\Property(property: 'hasEmailVerified', type: 'bool', example: false),
                     new OA\Property(property: 'password', type: 'string', example: 'password'),
                     new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+                    new OA\Property(property: 'otpRequiredAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+                    new OA\Property(property: 'hasOtpConfigured', type: 'bool', example: false),
                     new OA\Property(property: 'hasGlobalAdmin', type: 'bool', example: false),
                     new OA\Property(property: 'managedByFacilityId', type: 'string', format: 'uuid', example: 'UUID'),
                 ]

@@ -45,13 +45,13 @@ export default (() => {
                     {(commitHash) => (
                       <>
                         <A class="font-mono" href={`${GITHUB_LINK}/commits/${commitHash()}`} target="_blank">
-                          {commitHash().slice(0, 7)}
+                          {commitHash().slice(0, 8)}
                         </A>
                         <CopyToClipboard text={commitHash()} />
                       </>
                     )}
                   </Show>
-                  <Show when={status().commitDate} fallback={<EmptyValueSymbol />}>
+                  <Show when={status().commitDate}>
                     {(commitDate) => (
                       <span>
                         {t("parenthesised", {
@@ -95,7 +95,7 @@ export default (() => {
                           toggleDEV();
                           sel.empty();
                         } else if (range === "2..3") {
-                          developerPermission.enable(!developerPermission.enabled());
+                          void developerPermission.enable(!developerPermission.enabled());
                           sel.empty();
                         }
                       }
@@ -103,13 +103,16 @@ export default (() => {
                   >
                     {t("about_page.cpu_load")}
                   </label>
-                  <div>{status().cpu15m.toFixed(2)}</div>
+                  <Show when={status().cpu15m?.toFixed(2)} fallback={<EmptyValueSymbol />}>
+                    {(cpu15m) => <div>{cpu15m()}</div>}
+                  </Show>
                 </SilentAccessBarrier>
               </div>
             </div>
           )}
         </Show>
       </div>
+      <A href="/help/changelog">{t("changelog.long_text")}</A>
       <A href="/help/privacy-policy">{t("privacy_policy")}</A>
     </div>
   );

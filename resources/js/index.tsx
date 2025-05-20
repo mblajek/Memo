@@ -6,11 +6,13 @@ import "./init_types";
 
 import {TransProvider} from "@mbarzda/solid-i18next";
 import {MetaProvider} from "@solidjs/meta";
+import {AntiSelfXSSInfo} from "AntiSelfXSSInfo";
+import {CSPViolationMonitor} from "CSPViolationMonitor";
+import {Toaster} from "Toaster";
 import {InitializeTanstackQuery} from "components/utils/InitializeTanstackQuery";
 import {AppTitleProvider} from "features/root/AppTitleProvider";
 import {DEV, ErrorBoundary, Show} from "solid-js";
 import {render} from "solid-js/web";
-import {Toaster} from "solid-toast";
 import {TimeZoneController} from "time_zone_controller";
 import App from "./App";
 import {FatalError} from "./FatalError";
@@ -23,8 +25,6 @@ const root = document.getElementById("root");
 if (!(root instanceof HTMLElement)) {
   throw new Error("Root element not found.");
 }
-
-const TOAST_DURATION_SECS = 10;
 
 // Allow setting the language in the session storage, mostly for testing.
 const LANGUAGE_SESSION_STORAGE_KEY = "language";
@@ -41,8 +41,11 @@ render(() => {
         load: "currentOnly",
         supportedLngs: ["pl", "testing"],
         pluralSeparator: "__",
+        // The translated texts are always passed through the framework.
+        interpolation: {escapeValue: false},
       }}
     >
+      <AntiSelfXSSInfo />
       <Show when={!translationsLoaded()}>
         {/* Show the loader until the translations are loaded. The page is displayed underneath, and
         the strings will get updated reactively when the translations are ready. */}
@@ -60,14 +63,9 @@ render(() => {
               );
             }}
           >
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                className: "mr-4 !pr-0",
-                duration: TOAST_DURATION_SECS * 1000,
-              }}
-            />
+            <Toaster />
             <InitializeTanstackQuery>
+              <CSPViolationMonitor />
               <DictionariesAndAttributesProvider>
                 <TimeZoneController>
                   <App />

@@ -48,6 +48,12 @@ Route::prefix('/v1')->group(function () {
         Route::get('/status/{facility?}', [UserController::class, 'status']);
         Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout']);
         Route::post('/password', [AuthController::class, 'password']);
+        Route::prefix('/otp')->group(function () {
+            Route::post('/generate', [AuthController::class, 'otpGenerate'])
+                ->middleware(['throttle:5,1,api_otp_generate']);
+            Route::post('/configure', [AuthController::class, 'otpConfigure'])
+                ->middleware(['throttle:5,1,api_otp_configure']);
+        });
         Route::put('/storage/{key}', [UserController::class, 'storagePut']);
         Route::get('/storage/{key?}', [UserController::class, 'storageGet']);
     });
@@ -92,8 +98,12 @@ Route::prefix('/v1')->group(function () {
             });
             Route::prefix('/staff')->group(function () {
                 Route::get('/list', [StaffController::class, 'list']);
+                Route::patch('/{user}', [StaffController::class, 'patch']);
                 Route::get('/tquery', [StaffTqueryController::class, 'get']);
                 Route::post('/tquery', [StaffTqueryController::class, 'post']);
+            });
+            Route::prefix('/admin')->group(function () {
+                Route::patch('/{user}', [FacilityAdminController::class, 'patch']);
             });
             Route::get('/tquery', [MemberTqueryController::class, 'get']);
             Route::post('/tquery', [MemberTqueryController::class, 'post']);

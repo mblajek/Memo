@@ -10,7 +10,7 @@ import {DATE_FORMAT} from "components/utils/formatting";
 import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
-import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {FilterH, FilterReductor} from "data-access/memo-api/tquery/filter_utils";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {Sort} from "data-access/memo-api/tquery/types";
@@ -52,7 +52,7 @@ export function useUserMeetingsTables() {
     const intrinsicFilter = (): FilterH => ({
       type: "op",
       op: "&",
-      val: [meetingTableFilters.isRegularMeeting()!, props.intrinsicFilter],
+      val: [meetingTableFilters.isRegularMeeting() || "never", props.intrinsicFilter],
     });
     const tableTranslations = () =>
       createTableTranslations([
@@ -470,7 +470,7 @@ export function useUserMeetingsTables() {
               type: "op",
               op: "&",
               val: [
-                meetingTableFilters.isRegularMeeting()!,
+                meetingTableFilters.isRegularMeeting() || "never",
                 props.intrinsicFilter,
                 {type: "column", column: "attendant.clientGroupId", op: "null"},
               ],
@@ -492,24 +492,26 @@ export function useUserMeetingsTables() {
     const {dataQuery} = createTQuery({
       prefixQueryKey: FacilityMeeting.keys.meeting(),
       entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting/attendant`,
-      requestCreator: staticRequestCreator(() =>
-        userId()
-          ? ({
-              columns: [{type: "column", column: "id"}],
-              filter: {
-                type: "op",
-                op: "&",
-                val: [
-                  meetingTableFilters.isRegularMeeting()!,
-                  {type: "column", column: "attendant.userId", op: "=", val: userId()!},
-                  {type: "column", column: "attendant.clientGroupId", op: "null"},
-                ],
-              },
-              sort: [],
-              paging: {size: 1},
-            } as const)
-          : undefined,
-      ),
+      requestCreator: staticRequestCreator((schema) => {
+        if (!schema || !userId()) {
+          return undefined;
+        }
+        const reductor = new FilterReductor(schema);
+        return {
+          columns: [{type: "column", column: "id"}],
+          filter: reductor.reduce({
+            type: "op",
+            op: "&",
+            val: [
+              meetingTableFilters.isRegularMeeting() || "never",
+              {type: "column", column: "attendant.userId", op: "=", val: userId()!},
+              {type: "column", column: "attendant.clientGroupId", op: "null"},
+            ],
+          }),
+          sort: [],
+          paging: {size: 1},
+        };
+      }),
     });
     return () => (dataQuery.data ? dataQuery.data.meta.totalDataSize : undefined);
   }

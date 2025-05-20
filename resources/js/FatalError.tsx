@@ -1,5 +1,5 @@
-import {createMutation} from "@tanstack/solid-query";
 import {AxiosError, isAxiosError} from "axios";
+import {useServerLog} from "components/utils/server_logging";
 import {withNoThrowOnInvalid} from "components/utils/time";
 import {System} from "data-access/memo-api/groups/System";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
@@ -39,12 +39,11 @@ export const FatalError: VoidComponent<Props> = (props) => {
     };
   });
   const [loggingSkipped, setLoggingSkipped] = createSignal(false);
-  const logMutation = createMutation(() => ({
-    mutationFn: System.log,
+  const serverLog = useServerLog({
     onSettled: () => {
       reloadIfNotRepetitive();
     },
-  }));
+  });
   function reloadIfNotRepetitive() {
     const lastReloadStr = localStorage.getItem(LAST_RELOAD_KEY);
     if (lastReloadStr) {
@@ -64,7 +63,7 @@ export const FatalError: VoidComponent<Props> = (props) => {
       reloadIfNotRepetitive();
       return;
     }
-    logMutation.mutate({
+    serverLog({
       logLevel: "critical",
       source: System.LogAPIFrontendSource.JS_ERROR,
       message: head,
@@ -85,10 +84,10 @@ export const FatalError: VoidComponent<Props> = (props) => {
             <div>
               <Switch fallback="?">
                 <Match when={loggingSkipped()}>skipped</Match>
-                <Match when={logMutation.isPending}>
+                <Match when={serverLog.mutation.isPending}>
                   pending <SmallSpinner />
                 </Match>
-                <Match when={logMutation.error}>
+                <Match when={serverLog.mutation.error}>
                   {(error) => (
                     <div>
                       <div>logging request failed:</div>
@@ -103,7 +102,7 @@ export const FatalError: VoidComponent<Props> = (props) => {
                     </div>
                   )}
                 </Match>
-                <Match when={logMutation.data}>
+                <Match when={serverLog.mutation.data}>
                   {(data) => <div>success: {JSON.stringify(data().data.data)}</div>}
                 </Match>
               </Switch>

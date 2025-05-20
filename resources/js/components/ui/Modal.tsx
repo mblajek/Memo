@@ -1,6 +1,5 @@
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
-import {Show_noDoubleEvaluation} from "components/utils/workarounds";
 import {VsClose} from "solid-icons/vs";
 import {Accessor, createComputed, createMemo, createSignal, createUniqueId, JSX, onCleanup, Show} from "solid-js";
 import {Portal} from "solid-js/web";
@@ -38,6 +37,7 @@ interface BaseProps<T> {
    * open prop to false.
    */
   readonly onEscape?: (reason: EscapeReason) => void;
+  readonly mountPoint?: HTMLElement;
 }
 
 export const MODAL_STYLE_PRESETS = {
@@ -216,7 +216,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
         );
         onCleanup(() => modalsStack.splice(modalsStack.indexOf(modalId), 1));
         return (
-          <Portal>
+          <Portal mount={props.mountPoint}>
             <div
               class="absolute z-modal"
               onPointerMove={(e) => {
@@ -254,7 +254,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
                     "top": `${relativePos()[1]}px`,
                   }}
                 >
-                  <Show_noDoubleEvaluation when={props.title}>
+                  <Show when={props.title}>
                     {(title) => (
                       <h2
                         class={cx(
@@ -268,7 +268,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
                         {title()}
                       </h2>
                     )}
-                  </Show_noDoubleEvaluation>
+                  </Show>
                   <div
                     // Grab handler covering the top margin of the dialog.
                     class={cx("absolute top-0 right-4 left-4 h-4 touch-none", canDrag() ? "cursor-grab" : undefined)}

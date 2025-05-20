@@ -14,7 +14,6 @@ import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {DateTime} from "luxon";
 import {For, Show, VoidComponent, createComputed, createMemo, createSignal, on, onMount, splitProps} from "solid-js";
 import {z} from "zod";
-import s from "./MeetingSeriesForm.module.scss";
 import {MeetingWithExtraInfo} from "./meeting_api";
 
 export const getMeetingSeriesSchema = () =>
@@ -178,7 +177,7 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
                 <label class="flex items-baseline gap-2 select-none px-1 hover:bg-hover">
                   <MeetingDate
                     date={date}
-                    class={cx({[s.meetingDateSkip!]: !form.data("seriesIncludeDate")[dateISO]})}
+                    class={form.data("seriesIncludeDate")[dateISO] ? undefined : "text-opacity-60 line-through"}
                   />
                   <CheckboxField name={`seriesIncludeDate.${dateISO}`} label="" data-felte-keep-on-remove />
                 </label>

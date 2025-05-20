@@ -44,6 +44,8 @@ export namespace htmlAttributes {
 
   export type pre = JSX.HTMLElementTags["pre"];
 
+  export type canvas = JSX.HTMLElementTags["canvas"];
+
   export type progress = JSX.HTMLElementTags["progress"];
 
   /** The events that can be overridden in a merge. Add more elements as needed. */
@@ -94,7 +96,7 @@ export namespace htmlAttributes {
                   )}) and style from overrides (${JSON.stringify(overrides.style)})`,
                 );
               return typeof attribs.style === "string"
-                ? `${attribs.style} ; ${overrides.style}`
+                ? `${attribs.style} ; ${overrides.style as string}`
                 : {
                     ...(attribs.style as JSX.CSSProperties),
                     ...skipUndefinedValues(overrides.style as JSX.CSSProperties),

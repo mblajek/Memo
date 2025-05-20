@@ -118,7 +118,7 @@ export const Floating: VoidComponent<Props> = (props) => {
       const refElement = referenceElement()!;
       const floatElement = floatingElement()!;
       function updatePosition() {
-        computePosition(refElement, floatElement, props.options).then(setComputed);
+        void computePosition(refElement, floatElement, props.options).then(setComputed);
       }
       if (props.autoUpdate === false) {
         updatePosition();
@@ -210,12 +210,22 @@ export namespace middleware {
   reactiveSize.getData = (data: MiddlewareData) => data[REACTIVE_SIZE_NAME] as ReactiveSizeData | undefined;
 
   /** A function for `getFloatingStyle` limiting the maximum size of the floating element. */
-  reactiveSize.getMaxSizeStyle = ({rects, availableWidth, availableHeight}: SizeStateArg): JSX.CSSProperties => ({
-    "box-sizing": "border-box",
-    // Use some margin of error to avoid infinite loops caused by rounding.
-    "max-width": availableWidth < rects.floating.width + 1 ? `${Math.max(0, availableWidth)}px` : undefined,
-    "max-height": availableHeight < rects.floating.height + 1 ? `${Math.max(0, availableHeight)}px` : undefined,
-  });
+  reactiveSize.getMaxSizeStyle = (
+    {rects, availableWidth, availableHeight}: SizeStateArg,
+    {
+      maxWidth = Number.POSITIVE_INFINITY,
+      maxHeight = Number.POSITIVE_INFINITY,
+    }: {maxWidth?: number; maxHeight?: number} = {},
+  ): JSX.CSSProperties => {
+    const availW = Math.min(availableWidth, maxWidth);
+    const availH = Math.min(availableHeight, maxHeight);
+    return {
+      "box-sizing": "border-box",
+      // Use some margin of error to avoid infinite loops caused by rounding.
+      "max-width": availW < rects.floating.width + 1 ? `${Math.max(0, availW)}px` : undefined,
+      "max-height": availH < rects.floating.height + 1 ? `${Math.max(0, availH)}px` : undefined,
+    };
+  };
 
   /** A function for `getFloatingStyle` setting the minimum floating width to the reference width. */
   reactiveSize.getMatchWidthStyle = ({rects}: SizeStateArg): JSX.CSSProperties => ({

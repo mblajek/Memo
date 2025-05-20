@@ -14,17 +14,28 @@ password_change:
   submit: "$t(actions.change_password)"
   success: "Hasło zostało zmienione"
 
+otp_generate:
+  form_name: "Generowanie OTP"
+  submit: "Pobierz kod QR"
+
+otp_configure:
+  form_name: "Aktywacja OTP"
+  submit: "Aktywuj OTP"
+  success: "OTP zostało aktywowane"
+
 user:
   field_names:
     hasPassword: "posiada hasło logowania do Memo"
-  clear_password_expire_at: "Anuluj wygasanie hasła"
+    otpRequiredAt: "OTP musi zostać aktywowane do"
+  clear_password_expire_at: "Anuluj wygasanie"
   password_expire_never: "Hasło nie wygaśnie."
-  set_password_expire_in_7d: "Wygaś za 7 dni"
-  set_password_expired: "Wygaś natychmiast"
-  members_destructive_update_warning:
-    header: "UWAGA!"
-    line1: "Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki."
-    line2: "Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
+  password_expired: "Ustaw datę w przyszłości, w przeciwnym razie ta osoba nie będzie miała dostępu do systemu."
+  otp_required_expired: "Ustaw datę w przyszłości, w przeciwnym razie ta osoba nie będzie miała dostępu do systemu."
+  otp_configured_info:
+    when_configured.true: "Ten użytkownik ma aktywne OTP"
+    when_configured.false: "Zresetuj OTP tego użytkownika"
+    when_not_configured: "Użytkownik musi samodzielnie aktywować OTP na swoim koncie nie później niż w podanym terminie."
+  members_destructive_update_warning: "UWAGA! Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki. Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
 
 user_edit:
   form_name: "Zmiana danych"
@@ -198,6 +209,22 @@ work_time_series_create:
   submit: "Utwórz serię"
   success: "Utworzono serię"
 
+staff:
+
+staff_edit:
+  form_name: "Edycja pracownika"
+  success: "Zmodyfikowano dane pracownika"
+
+facility_admin:
+  field_names:
+    member.hasFacilityAdmin: "$t(models.permissions.facilityAdmin)"
+  facility_admin_requirements_not_met: "Administrator placówki musi być użytkownikiem Memo."
+  facility_admin_deactivation_warning: "UWAGA: Odebranie uprawnienia administratora placówki usunie tę osobę całkowicie z placówki. Przywrócenie jej będzie wymagało uprawnień administratora globalnego."
+
+facility_admin_edit:
+  form_name: "Edycja administratora"
+  success: "Zmodyfikowano dane administratora"
+
 client:
   field_names:
     client.notes: "$t(models.generic.notes)"
@@ -262,3 +289,15 @@ add_to_client_group:
     add_to_group: "Dodaj do grupy$t(ellipsis)"
     create_group: "Utwórz grupę$t(ellipsis)"
   success: "Dodano do grupy klientów"
+
+table_saved_view_edit:
+  form_name: "Edycja zapisanego widoku"
+  submit: "$t(actions.save)"
+
+table_saved_view_create:
+  form_name: "Nowy zapisany widok"
+  submit: "$t(actions.create)"
+
+table_saved_view_delete:
+  form_name: "Usunięcie zapisanego widoku"
+  confirmation_text: "Czy na pewno usunąć zapisany widok?"
