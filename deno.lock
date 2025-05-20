@@ -16,6 +16,13 @@
       "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
     }
   },
+  "redirects": {
+    "https://esm.sh/luxon@latest": "https://esm.sh/luxon@3.5.0"
+  },
+  "remote": {
+    "https://esm.sh/luxon@3.5.0": "6aff462d280b897956ca86d9e98b975e8829e0caa77bd8aed3e1db41119f0609",
+    "https://esm.sh/v135/luxon@3.5.0/denonext/luxon.mjs": "1b02fd2c3624b02462336a1d4e9f197159f60082a5fc5813e72a42833a03bcef"
+  },
   "workspace": {
     "dependencies": [
       "jsr:@std/fs@^1.0.14"
