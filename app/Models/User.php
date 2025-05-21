@@ -231,7 +231,7 @@ class User extends Authenticatable
                     Valid::bool(
                         [$original && blank($original->otp_secret) ? 'declined' : null],
                         sometimes: true,
-                    )
+                    ),
                 ],
             ],
         ];
