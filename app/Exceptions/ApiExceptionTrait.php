@@ -28,7 +28,7 @@ trait ApiExceptionTrait
     }
 
     /** @param array<ApiExceptionTrait> $addErrors */
-    public function renderMany(array $addErrors = []): JsonResponse
+    public function renderContent(array $addErrors = []): array
     {
         $errors = [];
         foreach (array_merge([$this], $addErrors, $this->validationErrors) as $error) {
@@ -43,7 +43,13 @@ trait ApiExceptionTrait
             }
             $errors[] = array_filter($errorData, fn($field) => $field !== [] && $field !== '' && $field !== null);
         }
-        return new JsonResponse(['errors' => $errors], $this->httpCode);
+        return ['errors' => $errors];
+    }
+
+    /** @param array<ApiExceptionTrait> $addErrors */
+    public function renderMany(array $addErrors = []): JsonResponse
+    {
+        return new JsonResponse($this->renderContent($addErrors), $this->httpCode);
     }
 
     /** called by framework */

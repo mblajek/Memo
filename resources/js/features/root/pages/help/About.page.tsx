@@ -51,7 +51,7 @@ export default (() => {
                       </>
                     )}
                   </Show>
-                  <Show when={status().commitDate} fallback={<EmptyValueSymbol />}>
+                  <Show when={status().commitDate}>
                     {(commitDate) => (
                       <span>
                         {t("parenthesised", {
@@ -103,7 +103,9 @@ export default (() => {
                   >
                     {t("about_page.cpu_load")}
                   </label>
-                  <div>{status().cpu15m.toFixed(2)}</div>
+                  <Show when={status().cpu15m?.toFixed(2)} fallback={<EmptyValueSymbol />}>
+                    {(cpu15m) => <div>{cpu15m()}</div>}
+                  </Show>
                 </SilentAccessBarrier>
               </div>
             </div>

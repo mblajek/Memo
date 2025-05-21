@@ -17,10 +17,35 @@ export namespace User {
   export const developerLogin = (data: DeveloperLoginRequest, config?: Api.Config<DeveloperLoginRequest>) =>
     V1.post<Api.Response.Post>("/user/login", data, config);
 
+  export interface LoginRequest {
+    readonly email: string;
+    readonly password: string;
+    readonly otp?: string;
+  }
+
+  export interface DeveloperLoginRequest {
+    readonly developer: boolean;
+  }
+
   export const logout = (config?: Api.Config) => V1.post<Api.Response.Post>("/user/logout", {}, config);
 
   export const changePassword = (data: ChangePasswordRequest, config?: Api.Config) =>
     V1.post<Api.Response.Post>("/user/password", data, config);
+  export const generateOTP = (data: {password: string}, config?: Api.Config) =>
+    V1.post<Api.Response.Post<GenerateOTPResponse>>("/user/otp/generate", data, config);
+  export const configureOTP = (data: {otp: string}, config?: Api.Config) =>
+    V1.post<Api.Response.Post>("/user/otp/configure", data, config);
+
+  export interface ChangePasswordRequest {
+    readonly current: string;
+    readonly password: string;
+    readonly repeat: string;
+  }
+
+  export interface GenerateOTPResponse {
+    readonly otpSecret: string;
+    readonly validUntil: string;
+  }
 
   export const setLastLoginFacilityId = (lastLoginFacilityId: Api.Id, config?: Api.Config) =>
     V1.patch("/user", {lastLoginFacilityId}, config);
@@ -44,21 +69,6 @@ export namespace User {
     readonly user: UserResource;
     readonly permissions: Partial<PermissionsResource> & Omit<PermissionsResource, PermissionsFacilityKeys>;
     readonly members: readonly MemberResource[];
-  }
-
-  export interface LoginRequest {
-    readonly email: string;
-    readonly password: string;
-  }
-
-  export interface DeveloperLoginRequest {
-    readonly developer: boolean;
-  }
-
-  export interface ChangePasswordRequest {
-    readonly current: string;
-    readonly password: string;
-    readonly repeat: string;
   }
 
   export const keys = {

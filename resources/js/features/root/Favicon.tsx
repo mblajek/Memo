@@ -38,10 +38,17 @@ export const Favicon: VoidComponent = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
                   <image width="100" height="100" href={faviconDataURI} />
                   <Show when={fill}>
-                    <circle cx="75" cy="75" r="25" fill={fill} />
+                    <circle cx="75" cy="75" r="25" fill={fill} stroke="black" stroke-width="2" />
                   </Show>
                   <Show when={isDEV || developer}>
-                    <circle cx="25" cy="75" r="25" fill={developer ? "#ff0d" : "#fffd"} />
+                    <circle
+                      cx="25"
+                      cy="75"
+                      r="25"
+                      fill={developer ? "#ff0d" : "#fffd"}
+                      stroke="black"
+                      stroke-width="1"
+                    />
                     <path
                       d="m-5,10 v-20 h5 q5,0 5,5 v10 q0,5 -5,5 z" // Letter D (for Dev)
                       transform="translate(25,75) scale(1.6)"

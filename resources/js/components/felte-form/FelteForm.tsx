@@ -26,6 +26,7 @@ export interface FormContextValue<T extends Obj = Obj> {
   readonly formConfig: FormConfigWithoutTransformFn<T>;
   readonly form: FormType<T>;
   getElement(): HTMLFormElement | undefined;
+  focusField(name: string): void;
   isFormDisabled(): boolean;
   readonly translations: FormTranslations;
 }
@@ -39,9 +40,7 @@ export interface FormTranslations {
   submit(o?: TOptions): string;
 }
 
-const FormContext = createContext<FormContextValue>(undefined, {
-  name: "FormContext",
-});
+const FormContext = createContext<FormContextValue>(undefined, {name: "FormContext"});
 
 const typedFormContext = <T extends Obj>() => FormContext as Context<FormContextValue<T> | undefined>;
 
@@ -282,6 +281,12 @@ export const FelteForm = <T extends Obj = Obj>(allProps: FormProps<T>): JSX.Elem
     formConfig,
     form,
     getElement: formElement,
+    focusField(name: string) {
+      const field = formElement()?.querySelector(`#${name}`);
+      if (field instanceof HTMLElement) {
+        setTimeout(() => field.focus(), 100);
+      }
+    },
     isFormDisabled: () => formDisabled(),
     translations,
   } satisfies FormContextValue<T>;

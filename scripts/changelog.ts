@@ -2,6 +2,9 @@
 
 import * as fs from "jsr:@std/fs";
 import * as path from "jsr:@std/path";
+import luxon from "./luxon.ts";
+
+const {DateTime} = luxon;
 
 const API_CONTROLLER_PATH = "./app/Http/Controllers/ApiController.php";
 const MD_FILE = "ch.part.md";
@@ -27,7 +30,7 @@ const gitLog = Array.from(
     .matchAll(/^(?<hash>[0-9a-f]{40}) (?<timestamp>\d+) (?<author>.+?)\n(?<title>.+?)\n\n/gm),
   (match) => ({
     hash: match.groups!.hash,
-    date: new Date(Number(match.groups!.timestamp) * 1000),
+    date: DateTime.fromSeconds(Number(match.groups!.timestamp)),
     author: match.groups!.author,
     title: match.groups!.title,
   }),
@@ -64,7 +67,7 @@ for await (const entry of await fs.expandGlob(`./public/docs/*/changelog/templat
         return `${appendLog
           .map(
             ({hash, date, author, title}) =>
-              `🟢${title} \\\n${date.toISOString().replace("T", " ")} ${author} ` +
+              `⚪${title} \\\n${date.toFormat("yyyy-MM-dd HH:mm:ss")} ${author} ` +
               `([${hash.slice(0, 8)}](https://github.com/${GITHUB_REPO}/commits/${hash}))`,
           )
           .join("\n\n")}\n\n${pre}${appendLog.at(-1)!.hash}${post}`;
@@ -72,7 +75,7 @@ for await (const entry of await fs.expandGlob(`./public/docs/*/changelog/templat
     );
   if (finalise) {
     mdContent = mdContent
-      .replaceAll("$$$DATE$$$", new Date().toLocaleDateString(lang, {dateStyle: "long"}))
+      .replaceAll("$$$DATE$$$", DateTime.now().plus({hours: 10}).toLocaleString({dateStyle: "long"}, {locale: lang}))
       .replace(/\n+.+?\$\$\$DELETE_FROM_HERE_WHEN_FINAL\$\$\$[\s\S]+$/, "\n");
   }
   await Deno.writeTextFile(mdFile, mdContent);

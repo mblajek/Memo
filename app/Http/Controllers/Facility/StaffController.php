@@ -37,13 +37,17 @@ class StaffController extends ApiController
         parameters: [new FacilityParameter(), new OA\Parameter(name: 'in', in: 'query')],
         responses: [
             new OA\Response(
-                response: 200, description: 'OK', content: new OA\JsonContent(properties: [
-                new OA\Property(
-                    property: 'data', type: 'array', items: new OA\Items(
-                    ref: '#/components/schemas/FacilityUserStaffResource'
-                )
-                ),
-            ])
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(
+                            ref: '#/components/schemas/FacilityUserStaffResource'
+                        )
+                    ),
+                ])
             ),
         ]
     )]
@@ -78,6 +82,8 @@ class StaffController extends ApiController
                     new OA\Property(property: 'hasEmailVerified', type: 'bool', example: false),
                     new OA\Property(property: 'password', type: 'string', example: 'password'),
                     new OA\Property(property: 'passwordExpireAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+                    new OA\Property(property: 'otpRequiredAt', type: 'datetime', example: '2023-05-10T20:46:43Z'),
+                    new OA\Property(property: 'hasOtpConfigured', type: 'bool', example: false),
                     new OA\Property(property: 'staff', type: 'object', example: [
                         'deactivatedAt' => '2012-12-20T00:00:00Z',
                         'hasFacilityAdmin' => true,
@@ -113,12 +119,12 @@ class StaffController extends ApiController
         $staff = $member->staffMember;
         $isManagedByFacility = $user->managed_by_facility_id === $facility->id;
 
-        $userKeys = ['name', 'email', 'has_email_verified', 'has_password', 'password', 'password_expire_at'];
+        $userKeys = ['name', 'email', 'has_email_verified', 'has_password', 'password', 'password_expire_at', 'otp_required_at', 'has_otp_configured'];
         $rules = [];
         foreach (User::getPatchResourceValidator($user) as $field => $rule) {
             $rules[$field] = $isManagedByFacility && in_array($field, $userKeys) ? $rule : 'missing';
         }
-        $rules['staff'] = Valid::array(keys: ['deactivated_at', 'has_facility_admin'], sometimes:true);
+        $rules['staff'] = Valid::array(keys: ['deactivated_at', 'has_facility_admin'], sometimes: true);
         $rules['staff.deactivated_at'] = Valid::datetime(nullable: true, sometimes: true);
         $rules['staff.has_facility_admin'] = Member::getPatchValidator(['has_facility_admin'], $member)['has_facility_admin'];
         $userData = $this->validate($rules);
@@ -129,8 +135,7 @@ class StaffController extends ApiController
         $userAttributes = $userService->getAttributesAfterPatch($user, $userData);
         Validator::validate($userAttributes, User::getResourceValidator());
 
-        DB::transaction(function () use (
-            $isManagedByFacility, $userService, $memberService, $user, $member, $staff, $staffData, $userAttributes, $hasFacilityAdmin) {
+        DB::transaction(function () use ($isManagedByFacility, $userService, $memberService, $user, $member, $staff, $staffData, $userAttributes, $hasFacilityAdmin) {
             // temporary solution, use "select for update" on "facilities" as mutex for other tables
             // todo: use lock or any other standard way to generate unique short_code
             Facility::query()->lockForUpdate()->count();

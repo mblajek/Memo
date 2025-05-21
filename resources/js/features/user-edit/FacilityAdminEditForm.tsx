@@ -18,7 +18,7 @@ import {
   getUserBaseInfoSchema,
   getUserBaseInfoValues,
   UserBaseInfoFields,
-  userBaseInfoInitialValues,
+  userBaseInfoInitialValuesForEdit,
 } from "features/user-edit/UserBaseInfoFields";
 import {createComputed, createMemo, Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
@@ -57,7 +57,9 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
         {type: "column", column: "hasEmailVerified"},
         {type: "column", column: "hasPassword"},
         {type: "column", column: "passwordExpireAt"},
-        {type: "column", column: "managedByFacility.id"},
+        {type: "column", column: "otpRequiredAt"},
+        {type: "column", column: "hasOtpConfigured"},
+        {type: "column", column: "isManagedByThisFacility"},
         {type: "column", column: "member.isStaff"},
       ],
       filter: {type: "column", column: "id", op: "=", val: props.userId},
@@ -82,11 +84,15 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
       hasEmailVerified: user.hasEmailVerified as boolean,
       hasPassword: user.hasPassword as boolean,
       passwordExpireAt: user.passwordExpireAt as string | null,
-      managedByFacilityId: user["managedByFacility.id"] as Api.Id | null,
+      otpRequiredAt: user.otpRequiredAt as string | null,
+      hasOtpConfigured: user.hasOtpConfigured as boolean,
+      isManagedByThisFacility: user.isManagedByThisFacility as boolean,
       isStaff: user["member.isStaff"] as boolean,
+    } satisfies Partial<UserResource> & {
+      readonly isStaff: boolean;
+      readonly isManagedByThisFacility: boolean;
     };
   });
-  const isManagedByCurrentFacility = () => user()?.managedByFacilityId === activeFacilityId();
   const invalidate = useInvalidator();
   const userMutation = useMutation(() => ({
     mutationFn: FacilityAdmin.updateFacilityAdmin,
@@ -97,7 +103,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
     const oldUser = user()!;
     await userMutation.mutateAsync({
       id: oldUser.id,
-      ...(isManagedByCurrentFacility() ? getUserBaseInfoValues(values, oldUser) : undefined),
+      ...(oldUser.isManagedByThisFacility ? getUserBaseInfoValues(values, oldUser) : undefined),
       member: {
         hasFacilityAdmin: values.member.hasFacilityAdmin,
       },
@@ -118,7 +124,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
   const initialValues = () => {
     const u = user()! as unknown as UserResource;
     return {
-      ...userBaseInfoInitialValues(u),
+      ...userBaseInfoInitialValuesForEdit(u),
       member: {
         hasFacilityAdmin: true,
       },
@@ -147,7 +153,7 @@ export const FacilityAdminEditForm: VoidComponent<Props> = (props) => {
           return (
             <>
               <Show
-                when={isManagedByCurrentFacility()}
+                when={user()!.isManagedByThisFacility}
                 fallback={<div>{t("facility_user.not_managed_by_current_facility")}</div>}
               >
                 <div>

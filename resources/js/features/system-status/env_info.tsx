@@ -11,6 +11,8 @@ export function useEnvInfo() {
   const developerPermission = useDeveloperPermission();
   const isDeveloper = () => isDEV() || developerPermission.enabled();
   return {
+    appEnv: () => status()?.appEnv,
+    isProd: () => status()?.appEnv === PROD_ENV_NAME,
     style: () => {
       const st = status();
       if (!st) {

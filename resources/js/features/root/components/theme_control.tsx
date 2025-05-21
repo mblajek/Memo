@@ -1,6 +1,7 @@
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {createCached} from "components/utils/cache";
+import {htmlAttributes} from "components/utils/html_attributes";
 import {IconProps, IconTypes} from "solid-icons";
 import {IoMoonOutline, IoSunnyOutline} from "solid-icons/io";
 import {ParentComponent, VoidComponent, createEffect, createSignal, onCleanup} from "solid-js";
@@ -52,3 +53,16 @@ export const useThemeControl = createCached(() => {
     toggleTheme: () => setTheme((t) => (t === "light" ? "dark" : "light")),
   };
 });
+
+export const NoDarkTheme: ParentComponent<htmlAttributes.div> = (props) => {
+  const themeControl = useThemeControl();
+  return (
+    <div
+      {...htmlAttributes.merge(props, {
+        style: {filter: themeControl.theme() === "dark" ? "invert() hue-rotate(0.5turn)" : undefined},
+      })}
+    >
+      {props.children}
+    </div>
+  );
+};

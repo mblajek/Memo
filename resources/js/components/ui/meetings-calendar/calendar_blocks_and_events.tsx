@@ -253,10 +253,10 @@ export function useCalendarBlocksAndEvents({
             day={props.day}
             timeSpan={timeSpan}
             // Skip the background if there is a background preference already as it will set the cell background anyway.
-            class={cx(shouldStyleCell ? undefined : "border border-gray-300", "text-red-900")}
+            class={cx(shouldStyleCell ? undefined : "border border-gray-300", "text-red-900 px-0.5")}
             style={shouldStyleCell ? undefined : style}
             label={(time) => (
-              <>
+              <div style={{"line-height": "1.05"}}>
                 <Show when={calendarFunction === "leaveTimes" && !meeting.isFacilityWide}>
                   <UserLink
                     class="!text-black whitespace-nowrap"
@@ -272,7 +272,7 @@ export function useCalendarBlocksAndEvents({
                   </Show>{" "}
                   {meeting.notes?.replaceAll("\n", ", ") || genericName}
                 </div>
-              </>
+              </div>
             )}
             title={(time) => (
               <>

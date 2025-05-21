@@ -14,6 +14,7 @@
 
 - `$icon(staffIcons.Staff)`$t(thin_space)`$icon(adminIcons.Admin)` Pracownicy
   - [Role i uprawnienia](staff-roles)
+  - [Uwierzytelnianie dwuskładnikowe (2FA / MFA / OTP)](staff-2fa)
   - [Grafiki pracy](staff-time-tables)
   - [Kalendarz nieobecności](staff-absences)
 - `$icon(clientIcons.Client)` Klienci

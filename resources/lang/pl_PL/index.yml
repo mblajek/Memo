@@ -40,10 +40,30 @@ passwords:
   token: "Token resetowania hasła jest nieprawidłowy."
   user: "Nie znaleziono osoby z takim adresem e-mail."
 
+otp:
+  otp_is_configured: "OTP aktywne"
+  more_info: "Więcej informacji na temat OTP"
+  intro_md: |-
+    Aby skonfigurować zabezpieczenie OTP:
+
+    1. Zainstaluj aplikację do haseł jednorazowych na telefonie (w razie wątpliwości co do wyboru
+        aplikacji, skontaktuj się z administratorem), a następnie ją uruchom.
+    1. Potwierdź swoje aktualne hasło poniżej, aby wygenerować kod QR. Upewnij się, że osoby
+        niepowołane nie mają w tym czasie dostępu do twojego ekranu.
+    1. W aplikacji na telefonie wybierz opcję skanowania kodu QR, a następnie zeskanuj wygenerowany kod.
+    1. Wpisz sześciocyfrowy kod z aplikacji w polu _$t(quotes.open)$t(models.user.otp)$t(quotes.close)_
+        poniżej i potwierdź.
+  issuer:
+    prod: "$t(app_name)"
+    other: "$t(app_name) ({{appEnv}})"
+  configure:
+    time_left: "Pozostały czas: {{time}}"
+
 auth:
   failed: "Błędny login lub hasło."
   password: "Hasło jest nieprawidłowe."
   password_expiration_soon: "Hasło wkrótce wygaśnie, należy je zmienić."
+  otp_required: "Aktywacja OTP jest wymagana dla tego konta."
   throttle: "Za dużo nieudanych prób logowania. Proszę spróbować za {{seconds, number}} sekund."
 
 verified_user: "Użytkownik zweryfikowany"

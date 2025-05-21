@@ -1,4 +1,4 @@
-import {useNavigate, useParams} from "@solidjs/router";
+import {useParams} from "@solidjs/router";
 import {useQuery} from "@tanstack/solid-query";
 import {Select} from "components/ui/form/Select";
 import {createOneTimeEffect} from "components/utils/one_time_effect";
@@ -8,7 +8,6 @@ import {Match, Show, Switch, VoidComponent, createMemo} from "solid-js";
 import {activeFacilityId, setActiveFacilityId} from "state/activeFacilityId.state";
 
 export const FacilityControl: VoidComponent = () => {
-  const navigate = useNavigate();
   const params = useParams();
   const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
   const statusQuery = useQuery(User.statusQueryOptions);
@@ -66,11 +65,7 @@ export const FacilityControl: VoidComponent = () => {
                     if (url) {
                       // Facility pages might assume that the active facility id never changes, because changing the facility
                       // always recreates the whole page by performing this navigation.
-                      navigate("/");
-                      setTimeout(() => {
-                        setActiveFacilityId(facilityId);
-                        navigate(`/${url}`);
-                      });
+                      location.assign(`/${url}`);
                     }
                     void User.setLastLoginFacilityId(facilityId);
                   }
