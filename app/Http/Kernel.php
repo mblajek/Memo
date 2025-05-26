@@ -24,7 +24,6 @@ class Kernel extends HttpKernel
         // cookies, session, security
         \App\Http\Middleware\EncryptCookies::class,
         \Illuminate\Session\Middleware\StartSession::class,
-        \App\Http\Middleware\VerifyCsrfToken::class,
     ];
 
     /**
@@ -36,12 +35,14 @@ class Kernel extends HttpKernel
         'web' => [
             \App\Http\Middleware\ViteUseNonce::class,
             \Spatie\Csp\AddCspHeaders::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
         ],
 
         'api' => [
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\TransformKeysValidate::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+            \App\Http\Middleware\VerifyCsrfToken::class,
         ],
     ];
 
