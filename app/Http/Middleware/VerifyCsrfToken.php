@@ -41,6 +41,16 @@ class VerifyCsrfToken extends Middleware
         return $response;
     }
 
+    /**
+     * @param Request $request
+     * @return bool
+     */
+    protected function isReading($request)
+    {
+        return parent::isReading($request) ||
+            ($request->method() === 'POST' && str_ends_with($request->path(), '/tquery'));
+    }
+
     protected function addHeaderToResponse(Response $response): void
     {
         $response->headers->set(self::HEADER_RESPONSE, self::getToken());
