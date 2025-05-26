@@ -6,7 +6,7 @@ Memo jest wspierane na następujących przeglądarkach desktopowych (uruchamiany
 
 - [Google Chrome](https://www.google.com/chrome/), wersja 122 i nowsze
 - [Microsoft Edge](https://www.microsoft.com/edge), wersja 122 i nowsze
-- [Mozilla Firefox](https://www.mozilla.org/firefox/), wersja 131 i nowsze
+- [Mozilla Firefox](https://www.mozilla.org/firefox/), wersja 138 i nowsze
   - Uwaga: W przeglądarce Firefox nie działa eksport danych z tabel.
   - Wsparcie dla przeglądarki Firefox nie jest tak pełne, jak dla Chrome i Edge. Mogą zdarzyć się funkcje,
     które działają gorzej lub na przykład wolniej, niż w innych przeglądarkach.
