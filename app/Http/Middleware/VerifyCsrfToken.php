@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Illuminate\Session\TokenMismatchException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -39,6 +40,22 @@ class VerifyCsrfToken extends Middleware
         }
         $this->addHeaderToResponse($response);
         return $response;
+    }
+
+    /**
+     * @param Request $request
+     */
+    protected function isReading($request): bool
+    {
+        if (parent::isReading($request)) {
+            return true;
+        }
+        /** @var Route $route */
+        $route = $request->getRouteResolver()();
+        if ($request->method() === 'POST' && str_ends_with($route->uri(), '/tquery')) {
+            return true;
+        }
+        return false;
     }
 
     protected function addHeaderToResponse(Response $response): void
