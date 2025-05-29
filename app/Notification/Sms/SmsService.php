@@ -19,6 +19,8 @@ readonly class SmsService extends AbstractNotificationSendService
     protected const int SMS_MAX_LENGTH = 255;
 
     protected const string ENV_SERVICES = 'SMS_SERVICES';
+    private const string SMS_NO_PROD_ADDR = 'SMS_NO_PROD_ADDR';
+
     private const array SERVICES = [
         'dev' => SmsDevService::class,
         'play' => SmsPlayService::class,
@@ -40,7 +42,7 @@ readonly class SmsService extends AbstractNotificationSendService
     ): ?string {
         ['number' => $number, 'message' => $message] = self::prepareSms($number, $message, $ascii);
 
-        $serviceShortNames =  explode(',', Env::get(self::ENV_SERVICES));
+        $serviceShortNames = explode(',', Env::get(self::ENV_SERVICES));
         $serviceShortNames = array_combine($serviceShortNames, $serviceShortNames);
 
         $serviceClasses = array_map(
@@ -86,11 +88,13 @@ readonly class SmsService extends AbstractNotificationSendService
     ): array {
         $number = trim($number);
         $numberDigits = preg_replace('/^\+|[-\s]/', '', $number);
-        $number = match (ctype_digit($numberDigits) ? strlen($numberDigits) : -1) {
-            9 => "48$numberDigits",
-            11 => $numberDigits,
-            default => ExceptionFactory::smsInvalidNumberFormat($number)->throw(),
-        };
+
+        if (!ctype_digit($numberDigits)) {
+            ExceptionFactory::smsInvalidNumberFormat($number)->throw();
+        }
+        if (strlen($numberDigits) === 9) {
+            $number = "48$numberDigits";
+        }
 
         $message = trim($message);
         $message = ($ascii ?? (mb_strlen($message) > self::SMS_UNICODE_LENGTH))
@@ -98,6 +102,11 @@ readonly class SmsService extends AbstractNotificationSendService
         $messageLength = mb_strlen($message);
         if ($messageLength > self::SMS_MAX_LENGTH) {
             ExceptionFactory::smsMessageTooLong(self::SMS_MAX_LENGTH, $messageLength)->throw();
+        }
+
+        if (!App::isProduction()) {
+            $message = "$number> $message";
+            $number = Env::getOrFail(self::SMS_NO_PROD_ADDR);
         }
 
         return ['number' => $number, 'message' => $message];

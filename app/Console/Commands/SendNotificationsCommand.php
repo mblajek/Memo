@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace App\Console\Commands;
 
 use App\Http\Permissions\PermissionMiddleware;
@@ -20,10 +18,14 @@ use Throwable;
 
 class SendNotificationsCommand extends Command
 {
-    protected $signature = 'fz:send-notifications';
+    public const string SIGNATURE = 'fz:send-notifications';
+
+    protected $signature = self::SIGNATURE;
     protected $description = 'Send notifications';
 
-    private const int BATCH_COUNT = 25;
+    // increase when retry after fail will be delayed
+    private const int BATCH_COUNT = 1;
+
     private const array STATUS_TO_SEND = [
         NotificationStatus::scheduled,
         NotificationStatus::error_try1,
@@ -42,11 +44,14 @@ class SendNotificationsCommand extends Command
         PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
 
         $sentCount = 0;
-        do {
+        for ($i = 0; $i < self::BATCH_COUNT; $i++) {
             $batchSentCount = $this->handleBatch();
-            $sentCount += $batchSentCount ?: 0;
-            break; // todo: restore loop when retry will be delayed
-        } while (($batchSentCount !== null) && $sentCount < self::BATCH_COUNT);
+            if ($batchSentCount === null) {
+                break;
+            }
+            $sentCount += $batchSentCount;
+        };
+
         $this->line("Sent $sentCount notifications");
     }
 
@@ -184,9 +189,6 @@ class SendNotificationsCommand extends Command
             $replacement = '<?>';
         }
 
-        return match ($preparedNotification->notification_method_dict_id) {
-            NotificationMethod::Sms => preg_replace('/(\W) /', '$1', $replacement),
-            default => $replacement,
-        };
+        return $replacement;
     }
 }
