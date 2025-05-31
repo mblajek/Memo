@@ -99,5 +99,7 @@
     $exec('rm -rf release/memo/database/dumps/*.zip', $config['release']);
 
     $exec('cd release && zip -r4 memo.zip memo/', $config['zip']);
+
+    $exec('composer install -n -q', $config['prod']); // install dev after no-dev
     echo "\n\n";
 })();
