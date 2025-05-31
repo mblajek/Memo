@@ -205,10 +205,12 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
             }
             if (e.key === "Escape") {
               tryClose("escapeKey");
-              e.stopImmediatePropagation();
-              e.preventDefault();
-              if (document.activeElement !== document.body && document.activeElement instanceof HTMLElement) {
-                document.activeElement.blur();
+              if (!props.open) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                if (document.activeElement !== document.body && document.activeElement instanceof HTMLElement) {
+                  document.activeElement.blur();
+                }
               }
             }
           },
