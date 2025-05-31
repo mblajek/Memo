@@ -13,7 +13,11 @@ return [
     /* used by the console to properly generate URLs when using the Artisan command */
     'url' => Env::getOrFail('APP_URL'),
 
+    /* for internal datetime functions and api - must be UTC */
     'timezone' => 'UTC',
+    /* for communication with user - user interface, notifications */
+    'user_timezone' => Env::get('APP_USER_TIMEZONE', 'Europe/Warsaw'),
+
     'locale' => 'pl_PL',
     'available_locales' => ['pl_PL'],
     'fallback_locale' => 'pl_PL',

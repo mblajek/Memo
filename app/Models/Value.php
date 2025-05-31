@@ -43,7 +43,7 @@ class Value extends Model
 
     public function attribute(): Attribute
     {
-        return Attribute::getById($this->attribute_id);
+        return Attribute::getCacheById($this->attribute_id);
     }
 
     public static function getTypeColumn(AttributeType $type): string

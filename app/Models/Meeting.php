@@ -30,8 +30,9 @@ use Illuminate\Validation\Rule;
  * @property string $status_dict_id
  * @property ?string $from_meeting_id
  * @property ?string $interval
- * @property-read Collection|MeetingAttendant[] $attendants
- * @property-read Collection|MeetingResource[] $resources
+ * @property-read Collection<array-key, MeetingAttendant> $attendants
+ * @property-read Collection<array-key, MeetingResource> $resources
+ * @property-read Collection<array-key, Notification> $notifications
  * @method static MeetingBuilder query()
  */
 class Meeting extends Model
@@ -78,11 +79,11 @@ class Meeting extends Model
             'duration_minutes' => Valid::int(['min:' . (5), 'max:' . (24 * 60)]),
             'status_dict_id' => Valid::dict(DictionaryUuidEnum::MeetingStatus),
             'is_remote' => Valid::bool(),
-            'staff', 'clients', 'resources' => Valid::list(sometimes: true, min: 0),
+            'staff', 'clients', 'resources', 'clients.*.notifications' => Valid::list(sometimes: true, min: 0),
             'staff.*' => Valid::array(keys: ['user_id', 'attendance_status_dict_id']),
             'clients.*' => Valid::array(
-                keys: ['user_id', 'attendance_status_dict_id', 'client_group_id'],
-                rules: [new MeetingClientGroupRule()]
+                keys: ['user_id', 'attendance_status_dict_id', 'client_group_id', 'notifications'],
+                rules: [new MeetingClientGroupRule()],
             ),
             'staff.*.attendance_status_dict_id', 'clients.*.attendance_status_dict_id' =>
             Valid::dict(DictionaryUuidEnum::AttendanceStatus),
@@ -97,6 +98,9 @@ class Meeting extends Model
             ]),
             // validated as client.* with MeetingClientGroupRule
             'clients.*.client_group_id' => Valid::uuid(nullable: true),
+            'clients.*.notifications.*' => Valid::array(keys: ['notification_method_dict_id']),
+            'clients.*.notifications.*.notification_method_dict_id'
+            => Valid::dict(DictionaryUuidEnum::NotificationMethod),
             'resources.*' => Valid::array(keys: ['resource_dict_id']),
             'resources.*.resource_dict_id' => Valid::dict(
                 DictionaryUuidEnum::MeetingResource,
@@ -116,12 +120,19 @@ class Meeting extends Model
     {
         return $this->attendants->filter(
             fn(MeetingAttendant $attendant) => $attendant->attendance_type_dict_id === $attendanceType->value,
+        )->each(
+            fn(MeetingAttendant $attendant) => $attendant->setRelation('meeting', $this),
         );
     }
 
     public function resources(): HasMany
     {
         return $this->hasMany(MeetingResource::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
     }
 
     public function resetStatus(): void

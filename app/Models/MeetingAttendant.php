@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\QueryBuilders\MeetingAttendantBuilder;
 use App\Models\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property string $meeting_id
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $attendance_type_dict_id
  * @property string $attendance_status_dict_id
  * @property string $client_group_id
+ * @property-read Meeting $meeting
  * @method static MeetingAttendantBuilder query()
  */
 class MeetingAttendant extends Model
@@ -35,6 +37,11 @@ class MeetingAttendant extends Model
         'created_at' => 'immutable_datetime',
         'updated_at' => 'immutable_datetime',
     ];
+
+    public function meeting(): BelongsTo
+    {
+        return $this->belongsTo(Meeting::class);
+    }
 
     public function resetAttendanceStatus(): void
     {

@@ -36,4 +36,22 @@ class PermissionObjectCreator
             developer: $this->developer,
         );
     }
+
+    public static function makeSystem(?Facility $facility = null): PermissionObject
+    {
+        return new PermissionObject(
+            user: User::query()->findOrFail(User::SYSTEM),
+            facility: $facility,
+            unauthorised: false,
+            loggedIn: true,
+            unverified: false,
+            verified: true,
+            globalAdmin: true,
+            facilityMember: false,
+            facilityClient: false,
+            facilityStaff: false,
+            facilityAdmin: false,
+            developer: false,
+        );
+    }
 }

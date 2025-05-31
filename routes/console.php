@@ -1,7 +1,9 @@
 <?php
 
+use App\Console\Commands\SendNotificationsCommand;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schedule;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +19,5 @@ use Illuminate\Support\Facades\Hash;
 Artisan::command('fz:hash', function (): void {
     $this->line(Hash::make($this->secret('Password to be hashed')));
 })->purpose('Make password hash');
+
+Schedule::command(SendNotificationsCommand::SIGNATURE)->everyMinute();

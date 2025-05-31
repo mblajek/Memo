@@ -1,7 +1,5 @@
 export interface SystemStatusResource {
   readonly version: string;
-  readonly randomUuid: string;
-  readonly currentDate: string;
   readonly commitHash: string | null;
   readonly commitDate: string | null;
   /** The CPU average load over the last 15 minutes. */
@@ -9,5 +7,8 @@ export interface SystemStatusResource {
   readonly appEnv: string;
   readonly appEnvColor: string | null;
   readonly appEnvFgColor: string | null;
+  readonly randomUuid: string;
+  readonly currentDate: string;
+  readonly userTimezone: string;
   readonly lastDump: string | null;
 }

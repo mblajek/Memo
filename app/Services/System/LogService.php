@@ -15,7 +15,7 @@ class LogService
 {
     /** @throws Throwable */
     public function addEntry(
-        Request $request,
+        ?Request $request,
         string $source,
         string $logLevel,
         ?string $message,
@@ -29,8 +29,8 @@ class LogService
             'app_version' => ApiController::VERSION,
             'user_id' => ($user ?? PermissionMiddleware::permissions()->user)?->id,
             'source' => $source,
-            'client_ip' => $request->ip(),
-            'user_agent_text_id' => Texts::getId($request->userAgent()),
+            'client_ip' => $request?->ip(),
+            'user_agent_text_id' => $request ? Texts::getId($request->userAgent()) : null,
             'log_level' => $logLevel,
             'message' => $message,
             'context_text_id' => Texts::getId($context),

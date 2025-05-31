@@ -2,8 +2,10 @@
 
 namespace App\Models\UuidEnum;
 
-enum DictionaryUuidEnum: string
+enum DictionaryUuidEnum: string implements UuidEnum
 {
+    use UuidEnumTrait;
+
     case MeetingStatus = '3865a3c3-0038-4668-9d55-5d05b79d7fcd';
     case MeetingType = '4cc5d6b5-5913-4e07-9fcb-09b6f3d3d2a0';
     case AttendanceStatus = 'a2874757-aca7-4c16-a0dc-2fc368f795fb';

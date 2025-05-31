@@ -3,16 +3,31 @@
 namespace App\Services\Meeting;
 
 use App\Models\Enums\AttendanceType;
+use App\Models\Enums\NotificationMethod;
 use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
 use App\Models\MeetingResource;
+use App\Models\Notification;
 use App\Models\Position;
 use App\Models\UuidEnum\PositionAttributeUuidEnum;
+use App\Notification\Meeting\MeetingNotification;
+use App\Notification\Meeting\MeetingNotificationService;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
-class MeetingService
+/**
+ * avoid invalid parameter type invalid inspection - Collection<A,B> is already iterable<A>
+ * @psalm-type notificationCollectionAndIterable = Collection<array-key,Notification>&iterable<Notification>
+ */
+readonly class MeetingService
 {
+    public function __construct(
+        private MeetingNotificationService $meetingNotificationService,
+    ) {
+    }
+
     public function create(Facility $facility, array $data): string
     {
         $meeting = new Meeting($data);
@@ -25,11 +40,19 @@ class MeetingService
         $attendants = $staff + $clients;
         $resources = $this->extractResources($data) ?? [];
 
-        DB::transaction(function () use ($meeting, $fromMeeting, $attendants, $resources) {
+        ['create' => $meetingNotifications] = $this->extractMeetingNotifications($data, meeting: null);
+
+        DB::transaction(function () use ($meeting, $fromMeeting, $attendants, $resources, $meetingNotifications) {
             $fromMeeting?->save();
             $meeting->save();
             $meeting->attendants()->saveMany($attendants);
             $meeting->resources()->saveMany($resources);
+
+            /** @var notificationCollectionAndIterable $notifications */
+            $notifications = $this->meetingNotificationService
+                ->create(meeting: $meeting, meetingNotifications: $meetingNotifications);
+
+            $meeting->notifications()->saveMany($notifications);
         });
 
         return $meeting->id;
@@ -38,7 +61,7 @@ class MeetingService
     public function patch(Meeting $meeting, array $data): void
     {
         $meeting->fill($data);
-        if (array_key_exists('type_dict_id', $meeting->getDirty())) {
+        if ($meeting->isDirty(['type_dict_id'])) {
             $this->fillMeetingCategory($meeting);
             $meeting->from_meeting_id = null;
             $meeting->interval = null;
@@ -47,7 +70,21 @@ class MeetingService
         $finalAttendants = $this->extractPatchAttendants($data, $meeting);
         $finalResources = $this->extractResources($data);
 
-        DB::transaction(function () use ($meeting, $finalAttendants, $finalResources) {
+        [
+            'create' => $meetingNotificationsToCreate,
+            'update' => $notificationsToUpdate,
+            'delete' => $notificationsToDelete,
+        ] = $this->extractMeetingNotifications($data, $meeting);
+
+        DB::transaction(function () use (
+            $meeting,
+            $finalAttendants,
+            $finalResources,
+            $meetingNotificationsToCreate,
+            $notificationsToUpdate,
+            $notificationsToDelete,
+        ) {
+            $isDatetimeChange = $meeting->isDirty(['date', 'start_dayminute']);
             $meeting->save();
             if ($finalAttendants !== null) {
                 /** @var array<non-falsy-string, MeetingAttendant> $currentAttendants */
@@ -68,6 +105,21 @@ class MeetingService
                 if (count($finalResources) > 0) {
                     $meeting->resources()->saveMany($finalResources);
                 }
+            }
+
+            /** @var notificationCollectionAndIterable $updatedNotifications */
+            $updatedNotifications = Collection::make($notificationsToUpdate);
+            $this->meetingNotificationService->update($meeting, $updatedNotifications, $isDatetimeChange);
+
+            /** @var notificationCollectionAndIterable $createdNotifications */
+            $createdNotifications = $this->meetingNotificationService
+                ->create(meeting: $meeting, meetingNotifications: $meetingNotificationsToCreate);
+
+            $meeting->notifications()->saveMany($updatedNotifications);
+            $meeting->notifications()->saveMany($createdNotifications);
+
+            if ($notificationsToDelete) {
+                Collection::make($notificationsToDelete)->toQuery()->delete();
             }
         });
     }
@@ -90,8 +142,70 @@ class MeetingService
 
     private function fillMeetingCategory(Meeting $meeting): void
     {
-        $meeting->category_dict_id = (Position::query()->findOrFail($meeting->type_dict_id)
-            ->attrValues()[PositionAttributeUuidEnum::Category->apiName()]);
+        $meeting->category_dict_id = Position::query()->findOrFail($meeting->type_dict_id)
+            ->attrValue(PositionAttributeUuidEnum::Category);
+    }
+
+    /**
+     * @return array{create: list<MeetingNotification>, unpdate: list<Notification>, delete: list<Notification>}
+     */
+    private function extractMeetingNotifications($data, ?Meeting $meeting): array
+    {
+        $newClientsNotifications = $this->extract($data, 'clients');
+        if ($newClientsNotifications === null) {
+            return ['create' => [], 'update' => $meeting?->notifications->all() ?: [], 'delete' => []];
+        }
+
+        /** @var array<non-falsy-string, array<int, MeetingNotification>> $meetingNotifications */
+        $meetingNotifications = [];
+        foreach ($newClientsNotifications as $newClientData) {
+            $newClientNotificationsData = $this->extract($newClientData, 'notifications');
+            if ($newClientNotificationsData === null) {
+                continue;
+            }
+
+            $userId = $newClientData['user_id'];
+            $meetingNotifications[$userId] ??= [];
+            foreach (($newClientData['notifications'] ?? []) as $notification) {
+                $meetingNotifications[$userId][] = new MeetingNotification(
+                    userId: $newClientData['user_id'],
+                    notificationMethodDictId: NotificationMethod::from($notification['notification_method_dict_id']),
+                );
+            }
+        }
+
+        $notificationsToDelete = [];
+        $notificationsToUpdate = [];
+        foreach (($meeting?->notifications ?: []) as $oldNotification) {
+            $userId = $oldNotification->user_id;
+            $oldNotificationMethodDictId = $oldNotification->notification_method_dict_id;
+
+            if (array_key_exists($userId, $meetingNotifications)) {
+                $matchedMeetingNotification = null;
+                foreach ($meetingNotifications[$userId] as $k => $meetingNotification) {
+                    if (
+                        $meetingNotification->notificationMethodDictId === $oldNotificationMethodDictId
+                    ) {
+                        $matchedMeetingNotification = $meetingNotification;
+                        unset($meetingNotifications[$userId][$k]);
+                    }
+                }
+
+                if ($matchedMeetingNotification) {
+                    $notificationsToUpdate[] = $oldNotification;
+                } else {
+                    $notificationsToDelete[] = $oldNotification;
+                }
+            } else {
+                $notificationsToUpdate[] = $oldNotification;
+            }
+        }
+
+        return [
+            'create' => Arr::flatten($meetingNotifications),
+            'update' => $notificationsToUpdate,
+            'delete' => $notificationsToDelete,
+        ];
     }
 
     private function extract(array $data, string $key)

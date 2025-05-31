@@ -70,6 +70,19 @@ class MeetingController extends ApiController
                                 example: null,
                                 nullable: true,
                             ),
+                            new OA\Property(
+                                property: 'notifications', type: 'array', items: new OA\Items(
+                                required: ['notificationMethodDictId'],
+                                properties: [
+                                    new OA\Property(
+                                        property: 'notificationMethodDictId',
+                                        type: 'string',
+                                        format: 'uuid',
+                                        example: 'UUID',
+                                    ),
+                                ]
+                            )
+                            ),
                         ]
                     )
                     ),
@@ -113,6 +126,9 @@ class MeetingController extends ApiController
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
                 'clients.*.client_group_id',
+                'clients.*.notifications',
+                'clients.*.notifications.*',
+                'clients.*.notifications.*.notification_method_dict_id',
                 'resources',
                 'resources.*',
                 'resources.*.resource_dict_id',
@@ -145,7 +161,7 @@ class MeetingController extends ApiController
     {
         $meetingsQuery = Meeting::query()->where('facility_id', $facility->id);
         $this->applyRequestIn($meetingsQuery);
-        return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources'])->get());
+        return MeetingResource::collection($meetingsQuery->with(['attendants', 'resources', 'notifications'])->get());
     }
 
     #[OA\Patch(
@@ -193,6 +209,20 @@ class MeetingController extends ApiController
                                 format: 'uuid',
                                 example: null,
                                 nullable: true,
+                            ),
+                            new OA\Property(
+                                property: 'notifications', type: 'array', items: new OA\Items(
+                                required: ['notificationMethodDictId'],
+                                properties: [
+                                    new OA\Property(
+                                        property: 'notificationMethodDictId',
+                                        type: 'string',
+                                        format: 'uuid',
+                                        example: 'UUID',
+                                    ),
+                                ],
+                                nullable: true
+                            )
                             ),
                         ]
                     )
@@ -249,6 +279,9 @@ class MeetingController extends ApiController
                 'clients.*.user_id',
                 'clients.*.attendance_status_dict_id',
                 'clients.*.client_group_id',
+                'clients.*.notifications',
+                'clients.*.notifications.*',
+                'clients.*.notifications.*.notification_method_dict_id',
                 'resources.*',
                 'resources.*.resource_dict_id',
             ])

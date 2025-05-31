@@ -2,6 +2,7 @@
 
 namespace App\Models\UuidEnum;
 
-interface AttributeUuidEnum
+interface AttributeUuidEnum extends UuidEnum
 {
+    public function apiName(): string;
 }

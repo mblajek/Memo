@@ -5,19 +5,32 @@ namespace App\Utils\Date;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Support\Facades\Config;
 
 class DateHelper
 {
     private const string DB_FORMAT = 'Y-m-d H:i:s';
     private const string API_FORMAT = 'Y-m-d\\TH:i:sp';
-    private static DateTimeZone $utc;
+    private static DateTimeZone $systemTimezone;
+    private static DateTimeZone $userTimezone;
+
+    public static function getSystemTimezone(): DateTimeZone
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        return (self::$systemTimezone ??= new DateTimeZone(Config::string('app.timezone')));
+    }
+
+    public static function getUserTimezone(): DateTimeZone
+    {
+        /** @noinspection PhpUnhandledExceptionInspection */
+        return (self::$userTimezone ??= new DateTimeZone(Config::string('app.user_timezone')));
+    }
 
     public static function dbToZuluString(string $date): string
     {
-        if (!isset(self::$utc)) {
-            self::$utc = new DateTimeZone('UTC');
-        }
-        return self::toZuluString(DateTimeImmutable::createFromFormat(self::DB_FORMAT, $date, self::$utc));
+        return self::toZuluString(
+            DateTimeImmutable::createFromFormat(self::DB_FORMAT, $date, self::getSystemTimezone()),
+        );
     }
 
     public static function zuluToDbString(string $date): string

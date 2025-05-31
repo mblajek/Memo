@@ -104,5 +104,11 @@ trait BaseModel
                 $model->save();
             });
         }
+        if (method_exists(static::class, 'clearCacheAll')) {
+            static::saving(function (Model $model) {
+                /** @var $model HasCache */
+                $model::clearCacheAll();
+            });
+        }
     }
 }

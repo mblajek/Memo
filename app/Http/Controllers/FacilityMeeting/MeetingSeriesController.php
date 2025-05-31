@@ -11,6 +11,7 @@ use App\Models\Facility;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
 use App\Models\MeetingResource as MeetingResourceModel;
+use App\Models\Notification;
 use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
 use App\Services\Meeting\MeetingCloneService;
@@ -30,7 +31,6 @@ class MeetingSeriesController extends ApiController
     {
         $this->permissionOneOf(Permission::facilityAdmin, Permission::facilityStaff);
     }
-
 
     #[OA\Delete(
         path: '/api/v1/facility/{facility}/meeting/{meeting}',
@@ -120,6 +120,8 @@ class MeetingSeriesController extends ApiController
         DB::transaction(function () use ($ids) {
             MeetingAttendant::query()->whereIn('meeting_id', $ids)->delete();
             MeetingResourceModel::query()->whereIn('meeting_id', $ids)->delete();
+            // todo: set null for 'sent' (?)
+            Notification::query()->whereIn('meeting_id', $ids)->delete();
             Meeting::query()->whereIn('id', $ids)->delete();
         });
         return new JsonResponse(['data' => ['count' => count($ids)]]);
