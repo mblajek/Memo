@@ -2,9 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use Closure;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\Session\Session;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -20,25 +22,25 @@ class VerifyCsrfToken extends Middleware
     protected $addHttpCookie = false;
     private static string $token;
 
-
-    public static function getToken(): string
+    public function getToken(Session $session): string
     {
-        return self::$token;
+        return self::$token ??= $this->encrypter->encrypt($session->token(), false);
     }
 
     /**
      * @param Request $request
-     * @throws TokenMismatchException
+     * @throws ApiException
      */
-    public function handle($request, Closure $next): Response
+    public function handle($request, Closure $next, string ...$permissions): Response
     {
-        self::$token = $this->encrypter->encrypt($request->session()->token(), false);
         try {
             $response = parent::handle($request, $next);
         } catch (TokenMismatchException) {
             ExceptionFactory::csrfTokenMismatch()->throw();
         }
-        $this->addHeaderToResponse($response);
+
+        $response->headers->set(self::HEADER_RESPONSE, self::getToken($request->session()));
+
         return $response;
     }
 
@@ -56,11 +58,6 @@ class VerifyCsrfToken extends Middleware
             return true;
         }
         return false;
-    }
-
-    protected function addHeaderToResponse(Response $response): void
-    {
-        $response->headers->set(self::HEADER_RESPONSE, self::getToken());
     }
 
     protected function getTokenFromRequest($request): ?string

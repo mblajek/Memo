@@ -34,7 +34,8 @@
 <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js') }}"></script>
 <script>
     window.onload = function() {
-        let csrfToken = "{{ \App\Http\Middleware\VerifyCsrfToken::getToken() }}";
+        let csrfToken = "{{ \Illuminate\Support\Facades\App::make(\App\Http\Middleware\VerifyCsrfToken::class)
+            ->getToken(\Illuminate\Support\Facades\Request::session()) }}";
         // Build a system
         const ui = SwaggerUIBundle({
             dom_id: '#swagger-ui',
