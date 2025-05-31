@@ -13,7 +13,6 @@ use App\Utils\Date\DateHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config;
 use IntlDateFormatter;
 
@@ -42,7 +41,11 @@ readonly class MeetingNotificationService
                 $notification->user_id,
             );
             if ($isDatetimeChange) {
-                $notification->subject = Env::getOrFail('TMP_MEETING_NOTIFICATION_SUBJECT');
+                $facility = $meeting->facility;
+                $notification->subject = $facility->meeting_notification_template_subject;
+                if ($notification->message !== null) {
+                    $notification->message = $facility->meeting_notification_template_message;
+                }
             }
         }
     }
@@ -74,6 +77,7 @@ readonly class MeetingNotificationService
         array $meetingNotifications,
     ): EloquentCollection {
         $notifications = new EloquentCollection();
+        $facility = $meeting->facility;
         foreach ($meetingNotifications as $meetingNotification) {
             $userId = $meetingNotification->userId;
             $notifications->add(
@@ -86,8 +90,9 @@ readonly class MeetingNotificationService
                     meetingId: $meeting->id,
                     notificationMethodId: $meetingNotification->notificationMethodDictId,
                     address: null,
-                    subject: Env::getOrFail('TMP_MEETING_NOTIFICATION_SUBJECT'),
+                    subject: $facility->meeting_notification_template_subject,
                     scheduledAt: $this->determineScheduledAt($meeting),
+                    message: $facility->meeting_notification_template_message,
                     status: $this->determineStatus(
                         $meeting,
                         NotificationStatus::scheduled,
@@ -113,7 +118,7 @@ readonly class MeetingNotificationService
     {
         return IntlDateFormatter::formatObject(
             datetime: $this->meetingDatetimeLocale($meeting),
-            format: IntlDateFormatter::SHORT,
+            format: "eee dd.MM.y, 'godz.' H:mm",
             locale: Config::string('app.locale'),
         );
     }

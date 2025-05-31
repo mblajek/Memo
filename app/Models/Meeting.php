@@ -16,6 +16,7 @@ use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Validation\Rule;
 
@@ -30,6 +31,7 @@ use Illuminate\Validation\Rule;
  * @property string $status_dict_id
  * @property ?string $from_meeting_id
  * @property ?string $interval
+ * @property-read Facility $facility
  * @property-read Collection<array-key, MeetingAttendant> $attendants
  * @property-read Collection<array-key, MeetingResource> $resources
  * @property-read Collection<array-key, Notification> $notifications
@@ -123,6 +125,11 @@ class Meeting extends Model
         )->each(
             fn(MeetingAttendant $attendant) => $attendant->setRelation('meeting', $this),
         );
+    }
+
+    public function facility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
     }
 
     public function resources(): HasMany

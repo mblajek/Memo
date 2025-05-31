@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use App\Models\Facility;
-use App\Utils\Date\DateHelper;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -12,6 +11,7 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'name', type: 'string', example: 'Test'),
         new OA\Property(property: 'url', type: 'string', example: 'test'),
+        new OA\Property(property: 'hasMeetingNotification', type: 'bool'),
     ],
 )]
 /**
@@ -22,11 +22,12 @@ class FacilityResource extends AbstractOpenApiResource
 {
     protected static function getMappedFields(): array
     {
-        $timezone = DateHelper::getUserTimezone()->getName();
         return [
             'id' => true,
             'name' => true,
             'url' => true,
+            'hasMeetingNotification' => fn(self $facility)
+                => ($facility->meeting_notification_template_subject !== null),
         ];
     }
 }

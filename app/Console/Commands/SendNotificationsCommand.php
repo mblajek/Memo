@@ -145,7 +145,7 @@ class SendNotificationsCommand extends Command
             $preparedNotification->message_html,
         ];
         foreach (NotificationTemplate::cases() as $template) {
-            $templateString = '{' . $template->name . '}';
+            $templateString = $template->templateString();
             $contains = false;
             foreach ($strings as $string) {
                 if (is_string($string) && str_contains($string, $templateString)) {
@@ -190,6 +190,9 @@ class SendNotificationsCommand extends Command
                     }
                 }
                 return $names ? implode(', ', $names) : null;
+            },
+            NotificationTemplate::facility_name => function () use ($preparedNotification) {
+                return $preparedNotification->facility?->name;
             },
         };
         try {

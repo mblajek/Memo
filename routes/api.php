@@ -75,6 +75,7 @@ Route::prefix('/v1')->group(function () {
             Route::post('/tquery', [AdminUserTqueryController::class, 'post']);
         });
         Route::prefix('/facility')->group(function () {
+            Route::get('/list', [AdminFacilityController::class, 'list']);
             Route::post('/', [AdminFacilityController::class, 'post']);
             Route::patch('/{facility}', [AdminFacilityController::class, 'patch']);
             Route::get('/tquery', [AdminFacilityTqueryController::class, 'get']);

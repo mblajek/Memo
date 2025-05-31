@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\QueryBuilders\FacilityBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
+use App\Rules\NotificationTemplateRule;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,8 @@ use Illuminate\Validation\Rule;
  * @property string $name
  * @property string $url
  * @property ?string $timetable_id
+ * @property ?string $meeting_notification_template_subject
+ * @property ?string $meeting_notification_template_message
  * @property-read Timetable $timetable
  * @method static FacilityBuilder query()
  */
@@ -28,6 +31,8 @@ class Facility extends Model
         'name',
         'url',
         'timetable_id',
+        'meeting_notification_template_subject',
+        'meeting_notification_template_message',
     ];
 
     protected $casts = self::BASE_CASTS;
@@ -42,6 +47,12 @@ class Facility extends Model
                 'not_in:admin,user,api,system,login,help,home,dev,docs',
                 Rule::unique('facilities', 'url'),
             ], max: 30),
+            'meeting_notification_template_subject' => Valid::trimmed([
+                new NotificationTemplateRule(),
+            ], sometimes: true, nullable: true),
+            'meeting_notification_template_message' => Valid::text([
+                new NotificationTemplateRule(),
+            ], sometimes: true, nullable: true),
         };
     }
 

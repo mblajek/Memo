@@ -57,6 +57,10 @@ readonly class NotificationService
         $user = ($userId instanceof User) ? $userId
             : Nullable::call($userId, User::query()->findOrFail(...));
 
+        if ($notificationMethod === NotificationMethod::Sms) {
+            $message = null;
+        }
+
         return new Notification([
             'facility_id' => $facility?->id,
             'user_id' => $user?->id,
