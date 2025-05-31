@@ -61,7 +61,7 @@ readonly class MeetingService
     public function patch(Meeting $meeting, array $data): void
     {
         $meeting->fill($data);
-        if (array_key_exists('type_dict_id', $meeting->getDirty())) {
+        if ($meeting->isDirty(['type_dict_id'])) {
             $this->fillMeetingCategory($meeting);
             $meeting->from_meeting_id = null;
             $meeting->interval = null;
@@ -84,6 +84,7 @@ readonly class MeetingService
             $notificationsToUpdate,
             $notificationsToDelete,
         ) {
+            $isDatetimeChange = $meeting->isDirty(['date', 'start_dayminute']);
             $meeting->save();
             if ($finalAttendants !== null) {
                 /** @var array<non-falsy-string, MeetingAttendant> $currentAttendants */
@@ -108,7 +109,7 @@ readonly class MeetingService
 
             /** @var notificationCollectionAndIterable $updatedNotifications */
             $updatedNotifications = Collection::make($notificationsToUpdate);
-            $this->meetingNotificationService->updateScheduledAt($meeting, $updatedNotifications);
+            $this->meetingNotificationService->update($meeting, $updatedNotifications, $isDatetimeChange);
 
             /** @var notificationCollectionAndIterable $createdNotifications */
             $createdNotifications = $this->meetingNotificationService
@@ -152,7 +153,7 @@ readonly class MeetingService
     {
         $newClientsNotifications = $this->extract($data, 'clients');
         if ($newClientsNotifications === null) {
-            return ['create' => [], 'update' => [], 'delete' => []];
+            return ['create' => [], 'update' => $meeting?->notifications->all() ?: [], 'delete' => []];
         }
 
         /** @var array<non-falsy-string, array<int, MeetingNotification>> $meetingNotifications */

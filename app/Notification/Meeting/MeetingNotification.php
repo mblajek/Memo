@@ -4,7 +4,7 @@ namespace App\Notification\Meeting;
 
 use App\Models\Enums\NotificationMethod;
 
-class MeetingNotification
+readonly class MeetingNotification
 {
     public function __construct(
         public string $userId,

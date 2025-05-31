@@ -54,7 +54,11 @@ readonly class MeetingCloneService
                     $meetingCopy->resources()->saveMany($resources->map(fn($resource) => $resource->replicate()));
 
                     $notificationsCopy = $notifications->map(fn($notification) => $notification->replicate());
-                    $this->meetingNotificationService->updateScheduledAt($meetingCopy, $notificationsCopy);
+                    $this->meetingNotificationService->update(
+                        $meetingCopy,
+                        $notificationsCopy,
+                        isDatetimeChange: true,
+                    );
                     $meetingCopy->notifications()->saveMany($notificationsCopy);
 
                     $ids[] = $meetingCopy->id;

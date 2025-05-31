@@ -57,8 +57,10 @@ class SendNotificationsCommand extends Command
 
     public function handleBatch(): ?int
     {
+        $now = new DateTimeImmutable();
+
         $baseQuery = Notification::query()->whereIn('status', self::STATUS_TO_SEND)
-            ->where('scheduled_at', '<=', new DateTimeImmutable())->orderBy('scheduled_at');
+            ->where('scheduled_at', '<=', $now)->orderBy('scheduled_at');
 
         /** @var ?Notification $firstNotification */
         $firstNotification = $baseQuery->clone()->first();
@@ -71,14 +73,21 @@ class SendNotificationsCommand extends Command
             ? $baseQuery->clone()->where('meeting_id', $firstNotification->meeting_id)->get()
             : $baseQuery->clone()->whereNull('meeting_id')->limit(25)->get();
 
-        // scheduled,error_try1,error_try2 + error_address
+        // scheduled,error_try1,error_try2 + skipped
+        foreach ($notificationsToSend as $notificationToSend) {
+            if ($notificationToSend->scheduled_at < $now->modify('-1day')) {
+                $notificationToSend->status = NotificationStatus::skipped;
+            }
+        }
+
+        // scheduled,error_try1,error_try2 / skipped + error_address
         foreach ($notificationsToSend as $notificationToSend) {
             if ($notificationToSend->status === NotificationStatus::scheduled) {
                 $this->fillAddress($notificationToSend);
             }
         }
 
-        // scheduled,error_try1,error_try2,error_address + deduplicated
+        // scheduled,error_try1,error_try2 / skipped,error_address + deduplicated
         foreach ($notificationsToSend as $preparedNotification) {
             if ($preparedNotification->status !== NotificationStatus::scheduled) {
                 continue;

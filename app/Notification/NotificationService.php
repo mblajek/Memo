@@ -23,23 +23,6 @@ readonly class NotificationService
     ) {
     }
 
-    public function setScheduledAt(
-        Notification $notification,
-        ?DateTimeImmutable $scheduledAt,
-    ): void {
-        $status = $notification->status ?? NotificationStatus::scheduled;
-        $now = new DateTimeImmutable();
-        $scheduledAt ??= $now;
-
-        if ($status === NotificationStatus::scheduled || $status === NotificationStatus::skipped) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $status = ($scheduledAt->modify('+1day') < $now)
-                ? NotificationStatus::skipped : NotificationStatus::scheduled;
-        }
-        $notification->status = $status;
-        $notification->scheduled_at = $scheduledAt;
-    }
-
     public function schedule(
         null|Facility|string|true $facilityId,
         string|User|null $userId,
@@ -51,6 +34,7 @@ readonly class NotificationService
         ?DateTimeImmutable $scheduledAt,
         ?string $message = null,
         ?string $messageHtml = null,
+        ?NotificationStatus $status = null,
     ): Notification {
         $notificationMethod = ($notificationMethodId instanceof NotificationMethod)
             ? $notificationMethodId : NotificationMethod::from($notificationMethodId);
@@ -73,7 +57,7 @@ readonly class NotificationService
         $user = ($userId instanceof User) ? $userId
             : Nullable::call($userId, User::query()->findOrFail(...));
 
-        $notification = new Notification([
+        return new Notification([
             'facility_id' => $facility?->id,
             'user_id' => $user?->id,
             'client_id' => $client->id,
@@ -83,15 +67,11 @@ readonly class NotificationService
             'subject' => $subject,
             'message' => $message,
             'message_html' => $messageHtml,
-            'scheduled_at' => null, // overridden in self::setScheduledAt()
+            'scheduled_at' => $scheduledAt ?: (new DateTimeImmutable()),
             'service' => null,
-            'status' => null, // overridden in self::setScheduledAt()
+            'status' => $status ?: NotificationStatus::scheduled,
             'error_log_entry_id' => null,
         ]);
-
-        $this->setScheduledAt($notification, $scheduledAt);
-
-        return $notification;
     }
 
     public function send(Notification $notification): int

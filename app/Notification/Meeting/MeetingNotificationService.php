@@ -2,15 +2,19 @@
 
 namespace App\Notification\Meeting;
 
+use App\Models\Enums\AttendanceType;
 use App\Models\Meeting;
+use App\Models\MeetingAttendant;
 use App\Models\Member;
 use App\Models\Notification;
 use App\Notification\NotificationService;
+use App\Notification\NotificationStatus;
 use App\Utils\Date\DateHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Config;
 use IntlDateFormatter;
 
 readonly class MeetingNotificationService
@@ -23,15 +27,41 @@ readonly class MeetingNotificationService
     /**
      * @param EloquentCollection<array-key, Notification> $notifications
      */
-    public function updateScheduledAt(
+    public function update(
         Meeting $meeting,
         EloquentCollection $notifications,
+        bool $isDatetimeChange,
     ): void {
         $scheduledAt = $this->determineScheduledAt($meeting);
 
         foreach ($notifications as $notification) {
-            $this->notificationService->setScheduledAt($notification, $scheduledAt);
+            $notification->scheduled_at = $scheduledAt;
+            $notification->status = $this->determineStatus(
+                $meeting,
+                $isDatetimeChange ? NotificationStatus::scheduled : $notification->status,
+                $notification->user_id,
+            );
+            if ($isDatetimeChange) {
+                $notification->subject = Env::getOrFail('TMP_MEETING_NOTIFICATION_SUBJECT');
+            }
         }
+    }
+
+    private function determineStatus(
+        Meeting $meeting,
+        NotificationStatus $notificationStatus,
+        string $userId,
+    ): NotificationStatus {
+        if ($notificationStatus->baseStatus() === NotificationStatus::sent) {
+            return $notificationStatus;
+        }
+
+        return ($meeting->status_dict_id === Meeting::STATUS_PLANNED) && $meeting->attendants->contains(
+            fn(MeetingAttendant $meetingAttendant)
+                => $meetingAttendant->user_id === $userId
+                && $meetingAttendant->attendance_type_dict_id === AttendanceType::Client->value
+                && $meetingAttendant->attendance_status_dict_id === MeetingAttendant::ATTENDANCE_STATUS_OK,
+        ) ? NotificationStatus::scheduled : NotificationStatus::skipped;
     }
 
     /**
@@ -43,8 +73,6 @@ readonly class MeetingNotificationService
         Meeting $meeting,
         array $meetingNotifications,
     ): EloquentCollection {
-        $scheduledAt = $this->determineScheduledAt($meeting);
-
         $notifications = new EloquentCollection();
         foreach ($meetingNotifications as $meetingNotification) {
             $userId = $meetingNotification->userId;
@@ -59,7 +87,12 @@ readonly class MeetingNotificationService
                     notificationMethodId: $meetingNotification->notificationMethodDictId,
                     address: null,
                     subject: Env::getOrFail('TMP_MEETING_NOTIFICATION_SUBJECT'),
-                    scheduledAt: $scheduledAt,
+                    scheduledAt: $this->determineScheduledAt($meeting),
+                    status: $this->determineStatus(
+                        $meeting,
+                        NotificationStatus::scheduled,
+                        $meetingNotification->userId,
+                    ),
                 ),
             );
         }
@@ -81,7 +114,7 @@ readonly class MeetingNotificationService
         return IntlDateFormatter::formatObject(
             datetime: $this->meetingDatetimeLocale($meeting),
             format: IntlDateFormatter::SHORT,
-            locale: 'PL_pl',
+            locale: Config::string('app.locale'),
         );
     }
 
