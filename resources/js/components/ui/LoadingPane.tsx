@@ -1,6 +1,6 @@
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
-import {Show, VoidComponent} from "solid-js";
+import {VoidComponent} from "solid-js";
 import {useMutationsTracker} from "../utils/mutations_tracker";
 import {BigSpinner} from "./Spinner";
 
@@ -23,12 +23,11 @@ export const LoadingPane: VoidComponent<LoadingPaneProps> = (props) => {
       class={cx(
         "absolute inset-0 z-50 flex items-center justify-center bg-white pointer-events-none",
         props.isLoading ? "opacity-70" : "opacity-0",
+        shown() ? undefined : "hidden",
       )}
       style={{transition: "opacity 0.4s"}}
     >
-      <Show when={shown()}>
-        <BigSpinner />
-      </Show>
+      <BigSpinner />
     </div>
   );
 };
