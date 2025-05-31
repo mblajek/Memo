@@ -11,6 +11,7 @@ use App\Http\Controllers\Facility\ClientGroupController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\FacilityAdminController;
 use App\Http\Controllers\Facility\MemberTqueryController;
+use App\Http\Controllers\Facility\NotificationTqueryController;
 use App\Http\Controllers\Facility\StaffController;
 use App\Http\Controllers\Facility\StaffTqueryController;
 use App\Http\Controllers\FacilityMeeting\MeetingAttendantTqueryController;
@@ -122,6 +123,10 @@ Route::prefix('/v1')->group(function () {
             Route::post('/attendant/tquery', [MeetingAttendantTqueryController::class, 'post']);
             Route::get('/client/tquery', [MeetingClientTqueryController::class, 'get']);
             Route::post('/client/tquery', [MeetingClientTqueryController::class, 'post']);
+        });
+        Route::prefix('/notification')->group(function () {
+            Route::get('/tquery', [NotificationTqueryController::class, 'get']);
+            Route::post('/tquery', [NotificationTqueryController::class, 'post']);
         });
         Route::prefix('/client-group')->group(function () {
             Route::post('/', [ClientGroupController::class, 'post']);

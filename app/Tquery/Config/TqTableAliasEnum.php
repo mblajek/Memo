@@ -20,6 +20,7 @@ enum TqTableAliasEnum
     case staff_members;
     case managed_by_facility;
 
+    case error_log_entry;
     case log_entries;
     case notifications;
 
@@ -28,12 +29,13 @@ enum TqTableAliasEnum
         return self::{$table};
     }
 
-    public function baseTable(): string
+    public function baseTable(): self
     {
         return match ($this) {
-            self::created_by, self::updated_by => 'users',
-            self::last_login_facility, self::managed_by_facility => 'facilities',
-            default => $this->name,
+            self::created_by, self::updated_by => self::users,
+            self::last_login_facility, self::managed_by_facility => self::facilities,
+            self::error_log_entry => self::log_entries,
+            default => $this,
             /* self::members => TqTableEnum::members,
             self::meetings => TqTableEnum::meetings,
             self::meeting_attendants => TqTableEnum::meeting_attendants,

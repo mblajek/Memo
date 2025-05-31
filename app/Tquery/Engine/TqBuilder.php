@@ -47,7 +47,7 @@ class TqBuilder
         [$tableColumn, $baseColumn] = $inv ? [$joinColumn, 'id'] : ['id', $joinColumn];
         $this->joins[] = $table;
         $this->builder->join(
-            "{$table->baseTable()} as {$table->name}",
+            "{$table->baseTable()->name} as {$table->name}",
             function (JoinClause $join) use ($table, $tableColumn, $joinBase, $baseColumn, $condition) {
                 $join->on("{$table->name}.$tableColumn", '=', "{$joinBase->name}.$baseColumn");
                 if ($condition !== null) {
