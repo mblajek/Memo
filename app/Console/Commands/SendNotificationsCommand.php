@@ -77,7 +77,7 @@ class SendNotificationsCommand extends Command
         foreach ($notificationsToSend as $notificationToSend) {
             if (
                 $notificationToSend->facility?->hasMeetingNotification() === false
-                || $notificationToSend->scheduled_at < $now->modify('-1day')
+                || $notificationToSend->scheduled_at < $now->modify('-2hour')
             ) {
                 $notificationToSend->status = NotificationStatus::skipped;
             }
@@ -116,8 +116,7 @@ class SendNotificationsCommand extends Command
         foreach ($notificationsToSend as $notificationToSend) {
             if (in_array($notificationToSend->status, self::STATUS_TO_SEND)) {
                 $sentCount += $this->notificationService->send($notificationToSend);
-            } elseif ($notificationToSend->status !== NotificationStatus::deduplicated) {
-                // "deduplicated" notifications are saved only with saving "sent"
+            } else {
                 $notificationToSend->save();
             }
         }

@@ -87,10 +87,6 @@ readonly class NotificationService
             DB::transaction(function () use ($notification) {
                 $notification->status = NotificationStatus::sent;
                 $notification->save();
-                foreach ($notification->getDeduplicated() as $deduplicated) {
-                    $deduplicated->status = NotificationStatus::deduplicated;
-                    $deduplicated->save();
-                }
             });
         } catch (Throwable $error) {
             $notification->status = match ($notification->status) {

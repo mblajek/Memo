@@ -18,9 +18,6 @@ use IntlDateFormatter;
 
 readonly class MeetingNotificationService
 {
-    public const string FACILITY_TEMPLATE_SUBJECT = '{{meeting_facility_template_subject}}';
-    public const string FACILITY_TEMPLATE_MESSAGE = '{{meeting_facility_template_message}}';
-
     public function __construct(
         private NotificationService $notificationService,
     ) {
