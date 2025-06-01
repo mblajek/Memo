@@ -15,6 +15,7 @@ use Illuminate\Validation\Rule;
  * @property string $name
  * @property string $url
  * @property ?string $timetable_id
+ * @property ?string $contact_phone
  * @property ?string $meeting_notification_template_subject
  * @property ?string $meeting_notification_template_message
  * @property-read Timetable $timetable
@@ -31,6 +32,7 @@ class Facility extends Model
         'name',
         'url',
         'timetable_id',
+        'contact_phone',
         'meeting_notification_template_subject',
         'meeting_notification_template_message',
     ];
@@ -47,13 +49,19 @@ class Facility extends Model
                 'not_in:admin,user,api,system,login,help,home,dev,docs',
                 Rule::unique('facilities', 'url'),
             ], max: 30),
+            'contact_phone' => Valid::trimmed(sometimes: true, nullable: true),
             'meeting_notification_template_subject' => Valid::trimmed([
-                new NotificationTemplateRule(),
+                new NotificationTemplateRule(acceptOuterTemplate: false),
             ], sometimes: true, nullable: true),
             'meeting_notification_template_message' => Valid::text([
-                new NotificationTemplateRule(),
+                new NotificationTemplateRule(acceptOuterTemplate: false),
             ], sometimes: true, nullable: true),
         };
+    }
+
+    public function hasMeetingNotification(): bool
+    {
+        return $this->meeting_notification_template_subject !== null;
     }
 
     public function timetable(): BelongsTo

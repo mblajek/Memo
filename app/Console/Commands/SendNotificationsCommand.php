@@ -75,7 +75,10 @@ class SendNotificationsCommand extends Command
 
         // scheduled,error_try1,error_try2 + skipped
         foreach ($notificationsToSend as $notificationToSend) {
-            if ($notificationToSend->scheduled_at < $now->modify('-1day')) {
+            if (
+                $notificationToSend->facility?->hasMeetingNotification() === false
+                || $notificationToSend->scheduled_at < $now->modify('-1day')
+            ) {
                 $notificationToSend->status = NotificationStatus::skipped;
             }
         }
@@ -108,6 +111,7 @@ class SendNotificationsCommand extends Command
             $this->prepareMessage($preparedNotification);
         }
 
+        // scheduled,error_try1,error_try2 / skipped,error_address,deduplicated + sent,error
         $sentCount = 0;
         foreach ($notificationsToSend as $notificationToSend) {
             if (in_array($notificationToSend->status, self::STATUS_TO_SEND)) {
@@ -150,6 +154,7 @@ class SendNotificationsCommand extends Command
             foreach ($strings as $string) {
                 if (is_string($string) && str_contains($string, $templateString)) {
                     $contains = true;
+                    break;
                 }
             }
             if (!$contains) {
@@ -175,12 +180,18 @@ class SendNotificationsCommand extends Command
         Notification $preparedNotification,
     ): string {
         $getReplacement = match ($template) {
-            NotificationTemplate::datetime => function () use ($preparedNotification) {
+            NotificationTemplate::meeting_facility_template_subject => function () use ($preparedNotification) {
+                return $preparedNotification->facility?->meeting_notification_template_subject;
+            },
+            NotificationTemplate::meeting_facility_template_message => function () use ($preparedNotification) {
+                return $preparedNotification->facility?->meeting_notification_template_message;
+            },
+            NotificationTemplate::meeting_datetime => function () use ($preparedNotification) {
                 return $preparedNotification->meeting
                     ? $this->meetingNotificationService->formatDateTimeLocale($preparedNotification->meeting)
                     : null;
             },
-            NotificationTemplate::names => function () use ($preparedNotification) {
+            NotificationTemplate::user_names => function () use ($preparedNotification) {
                 $names = [];
                 /** @var Notification $notification */
                 foreach ([$preparedNotification, ...$preparedNotification->getDeduplicated()] as $notification) {
@@ -193,6 +204,9 @@ class SendNotificationsCommand extends Command
             },
             NotificationTemplate::facility_name => function () use ($preparedNotification) {
                 return $preparedNotification->facility?->name;
+            },
+            NotificationTemplate::facility_contact_phone => function () use ($preparedNotification) {
+                return $preparedNotification->facility?->contact_phone;
             },
         };
         try {

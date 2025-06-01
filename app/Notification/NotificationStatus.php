@@ -8,8 +8,6 @@ enum NotificationStatus
     case sent;
 
     case scheduled;
-    case prepared;
-    case sending;
 
     case error_address;
     case error_try1;
@@ -24,13 +22,22 @@ enum NotificationStatus
             self::deduplicated,
             self::sent => self::sent,
             self::scheduled => self::scheduled,
-            self::prepared,
-            self::sending => self::sending,
             self::error_address => self::error_address,
             self::error_try1,
             self::error_try2,
             self::error => self::error,
             self::skipped => self::skipped,
+        };
+    }
+
+    public function isInterpolated(): bool
+    {
+        return match ($this) {
+            self::error_try1,
+            self::error_try2,
+            self::error,
+            self::sent => true,
+            default => false,
         };
     }
 }

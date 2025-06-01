@@ -18,6 +18,9 @@ use IntlDateFormatter;
 
 readonly class MeetingNotificationService
 {
+    public const string FACILITY_TEMPLATE_SUBJECT = '{{meeting_facility_template_subject}}';
+    public const string FACILITY_TEMPLATE_MESSAGE = '{{meeting_facility_template_message}}';
+
     public function __construct(
         private NotificationService $notificationService,
     ) {
@@ -34,17 +37,18 @@ readonly class MeetingNotificationService
         $scheduledAt = $this->determineScheduledAt($meeting);
 
         foreach ($notifications as $notification) {
+            $oldStatus = $notification->status;
             $notification->scheduled_at = $scheduledAt;
             $notification->status = $this->determineStatus(
                 $meeting,
-                $isDatetimeChange ? NotificationStatus::scheduled : $notification->status,
+                $isDatetimeChange ? NotificationStatus::scheduled : $oldStatus,
                 $notification->user_id,
             );
-            if ($isDatetimeChange) {
-                $facility = $meeting->facility;
-                $notification->subject = $facility->meeting_notification_template_subject;
+
+            if ($isDatetimeChange && $oldStatus->isInterpolated()) {
+                $notification->subject = NotificationTemplate::meeting_facility_template_subject->templateString();
                 if ($notification->message !== null) {
-                    $notification->message = $facility->meeting_notification_template_message;
+                    $notification->message = NotificationTemplate::meeting_facility_template_message->templateString();
                 }
             }
         }
@@ -77,7 +81,6 @@ readonly class MeetingNotificationService
         array $meetingNotifications,
     ): EloquentCollection {
         $notifications = new EloquentCollection();
-        $facility = $meeting->facility;
         foreach ($meetingNotifications as $meetingNotification) {
             $userId = $meetingNotification->userId;
             $notifications->add(
@@ -90,9 +93,9 @@ readonly class MeetingNotificationService
                     meetingId: $meeting->id,
                     notificationMethodId: $meetingNotification->notificationMethodDictId,
                     address: null,
-                    subject: $facility->meeting_notification_template_subject,
+                    subject: NotificationTemplate::meeting_facility_template_subject->templateString(),
                     scheduledAt: $this->determineScheduledAt($meeting),
-                    message: $facility->meeting_notification_template_message,
+                    message: NotificationTemplate::meeting_facility_template_message->templateString(),
                     status: $this->determineStatus(
                         $meeting,
                         NotificationStatus::scheduled,

@@ -27,7 +27,7 @@ class FacilityResource extends AbstractOpenApiResource
             'name' => true,
             'url' => true,
             'hasMeetingNotification' => fn(self $facility)
-                => ($facility->meeting_notification_template_subject !== null),
+                => $facility->hasMeetingNotification(),
         ];
     }
 }

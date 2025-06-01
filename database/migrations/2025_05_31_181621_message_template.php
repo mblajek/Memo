@@ -12,6 +12,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('facilities', function (Blueprint $table) {
+            $table->string('contact_phone')->nullable();
             $table->string('meeting_notification_template_subject')->nullable();
             $table->string('meeting_notification_template_message', 4096)->nullable();
         });
@@ -20,6 +21,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('facilities', function (Blueprint $table) {
+            $table->dropColumn('contact_phone');
             $table->dropColumn('meeting_notification_template_subject');
             $table->dropColumn('meeting_notification_template_message');
         });

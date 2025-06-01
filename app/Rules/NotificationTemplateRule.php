@@ -7,10 +7,18 @@ use Closure;
 
 final class NotificationTemplateRule extends AbstractRule
 {
+    public function __construct(
+        private readonly bool $acceptOuterTemplate,
+    ) {
+    }
+
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $names = [];
         foreach (NotificationTemplate::cases() as $template) {
+            if ($template->isOuterTemplate() && !$this->acceptOuterTemplate) {
+                continue;
+            }
             $value = str_replace($template->templateString(), '', $value);
             $names[] = $template->name;
         }

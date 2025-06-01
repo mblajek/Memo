@@ -56,6 +56,7 @@ class AdminFacilityController extends ApiController
                 properties: [
                     new OA\Property(property: 'name', type: 'string', example: 'Test'),
                     new OA\Property(property: 'url', type: 'string', example: 'test-123'),
+                    new OA\Property(property: 'contactPhone', type: 'string'),
                     new OA\Property(property: 'meetingNotificationTemplateSubject', type: 'string'),
                     new OA\Property(property: 'meetingNotificationTemplateMessage', type: 'string'),
                 ],
@@ -77,6 +78,7 @@ class AdminFacilityController extends ApiController
         $data = $this->validate(Facility::getInsertValidator([
             'name',
             'url',
+            'contact_phone',
             'meeting_notification_template_subject',
             'meeting_notification_template_message',
         ]));
@@ -95,6 +97,7 @@ class AdminFacilityController extends ApiController
                 properties: [
                     new OA\Property(property: 'name', type: 'string', example: 'Test'),
                     new OA\Property(property: 'url', type: 'string', example: 'test-123'),
+                    new OA\Property(property: 'contactPhone', type: 'string'),
                     new OA\Property(property: 'meetingNotificationTemplateSubject', type: 'string'),
                     new OA\Property(property: 'meetingNotificationTemplateMessage', type: 'string'),
                 ],
@@ -122,6 +125,7 @@ class AdminFacilityController extends ApiController
         $data = $this->validate(Facility::getPatchValidator([
             'name',
             'url',
+            'contact_phone',
             'meeting_notification_template_subject',
             'meeting_notification_template_message',
         ], $facility));
