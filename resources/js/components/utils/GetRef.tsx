@@ -1,4 +1,4 @@
-import {children, createComputed, createEffect, ParentComponent} from "solid-js";
+import {children, createComputed, onMount, ParentComponent} from "solid-js";
 import {NON_NULLABLE} from "./array_filter";
 
 interface GetRefsProps {
@@ -22,11 +22,15 @@ export const GetRefs: ParentComponent<GetRefsProps> = (props) => {
       props.refs([]);
       return;
     }
-    props.refs(childrenArr);
+    if (props.waitForMount) {
+      setTimeout(() => props.refs(childrenArr));
+    } else {
+      props.refs(childrenArr);
+    }
   };
   // eslint-disable-next-line solid/reactivity
   if (props.waitForMount) {
-    createEffect(effectFunc);
+    onMount(() => createComputed(effectFunc));
   } else {
     createComputed(effectFunc);
   }

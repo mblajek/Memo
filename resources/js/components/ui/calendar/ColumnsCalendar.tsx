@@ -222,7 +222,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
             <div class="grid grid-cols-subgrid" style={{"grid-column": "columns"}}>
               <For each={props.columns}>
                 {(col) => (
-                  <div class="h-full outline outline-1 outline-gray-300 relative">
+                  <div class="outline outline-1 outline-gray-300 relative">
                     {col.hoursArea()}
                     <Show when={isToday(col.day)}>
                       <div
