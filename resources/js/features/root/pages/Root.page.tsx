@@ -11,12 +11,21 @@ import {Container} from "../layout/Container";
 import {Header} from "../layout/Header";
 import {Main} from "../layout/Main";
 import {Navbar} from "../layout/Navbar";
+import {Timeout} from "components/utils/timeout";
 
 const IDLE_LOGOUT_TIME_SECS = 8 * 3600;
 
 export default ((props) => {
   const logOut = useLogOut();
-  createIdleDetector({timeSecs: IDLE_LOGOUT_TIME_SECS, func: () => logOut.logOut()});
+  const timeout = new Timeout();
+  createIdleDetector({
+    timeSecs: IDLE_LOGOUT_TIME_SECS,
+    func: () =>
+      // The timeout is to prevent calling the logout endpoint when opening the tab in the morning,
+      // as the server would log out the user anyway. With the timeout, the user is navigated to
+      // the login page, which cancels the timeout.
+      timeout.set(() => logOut.logOut(), 10000),
+  });
   return (
     <AccessBarrier>
       <SystemStatusUpdateNotification />
