@@ -53,7 +53,8 @@ export const Help: VoidComponent<Props> = (allProps) => {
   }));
   import.meta.hot?.on("docsFileChange", () => void query.refetch());
   function processMarkdown(markdown: string) {
-    return markdown.replaceAll(/\$t\((\w[\w.]+)(\|cap)?\)/g, (match, key, cap) => {
+    return markdown.replaceAll(/\$t\((\w[\\\w.]+)(\|cap)?\)/g, (match, key: string, cap) => {
+      key = key.replaceAll("\\_", "_");
       const text = t(key);
       return cap ? capitalizeString(text) : text;
     });

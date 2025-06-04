@@ -9,7 +9,7 @@ enum NotificationTemplate
     case meeting_facility_template_message;
 
     // inner
-    case user_names;
+    case client_names;
     case meeting_date;
     case meeting_time;
     case meeting_datetime;

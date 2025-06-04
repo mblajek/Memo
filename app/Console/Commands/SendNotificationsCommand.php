@@ -200,7 +200,7 @@ class SendNotificationsCommand extends Command
                     ? $this->meetingNotificationService->formatBestTime($preparedNotification->meeting)
                     : null;
             },
-            NotificationTemplate::user_names => function () use ($preparedNotification) {
+            NotificationTemplate::client_names => function () use ($preparedNotification) {
                 $names = [];
                 /** @var Notification $notification */
                 foreach ([$preparedNotification, ...$preparedNotification->getDeduplicated()] as $notification) {

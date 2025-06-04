@@ -1,6 +1,7 @@
 import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
+import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {TextField} from "components/ui/form/TextField";
 import {VoidComponent, splitProps} from "solid-js";
 import {z} from "zod";
@@ -32,7 +33,18 @@ export const FacilityForm: VoidComponent<Props> = (allProps) => {
       <div class="flex flex-col gap-1">
         <TextField name="name" autofocus />
         <TextField name="url" />
-        <TextField name="meetingNotificationTemplateSubject" />
+        <TextField
+          name="meetingNotificationTemplateSubject"
+          label={(label) => (
+            <>
+              {label}{" "}
+              <DocsModalInfoIcon
+                href="/help/meeting-notifications-template.part"
+                fullPageHref="/help/meeting-notifications"
+              />
+            </>
+          )}
+        />
       </div>
       <FelteSubmit cancel={props.onCancel} />
     </FelteForm>
