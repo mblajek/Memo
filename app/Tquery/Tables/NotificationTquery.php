@@ -35,6 +35,9 @@ final readonly class NotificationTquery extends TqService
         $config = new TqConfig(table: TqTableAliasEnum::notifications);
         $config->addBase();
 
+        $config->addSimple(TqDataTypeEnum::uuid_nullable, 'user_id', 'user.id');
+        $config->addQuery(TqDataTypeEnum::string_nullable, fn(string $tableName) => //
+            "select `users`.`name` from `users` where `users`.`id` = `$tableName`.`user_id`", "user.name");
         $config->addSimple(TqDataTypeEnum::string_nullable, 'address');
         $config->addSimple(TqDataTypeEnum::string, 'subject');
         $config->addSimple(TqDataTypeEnum::text_nullable, 'message');

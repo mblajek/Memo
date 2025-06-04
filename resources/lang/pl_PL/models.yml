@@ -171,7 +171,8 @@ notification:
   scheduledAt: "termin wysłania"
   service: "serwis"
   errorMessage: "komunikat błędu"
-  address: "adresat"
+  user.id: "adresat"
+  address: "adres"
   subject: "treść"
 
 table_saved_view:
