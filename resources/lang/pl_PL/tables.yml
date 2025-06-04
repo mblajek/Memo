@@ -164,6 +164,13 @@ tables:
       totalWorkTime: "łączny czas pracy"
       totalWorkTime.desc: "Bazowy czas pracy. Nieobecności i dni wolne placówki nie są odliczane od sumy godzin pracy."
 
+  notification:
+    table_name: "$t(models.notification._name_plural)"
+    summary__zero: "Brak powiadomień"
+    summary__one: "{{count, number}} powiadomienie"
+    summary__few: "{{count, number}} powiadomienia"
+    summary__many: "{{count, number}} powiadomień"
+
   logs:
     table_name: "Logi"
     column_names:

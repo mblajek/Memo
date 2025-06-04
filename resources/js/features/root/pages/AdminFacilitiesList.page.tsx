@@ -39,6 +39,7 @@ export default (() => {
           },
         },
         {name: "facilityAdmins.*.name"},
+        {name: "meetingNotificationTemplateSubject", initialVisible: false},
         ...getCreatedUpdatedColumns({globalAdmin: true}),
         {
           name: "actions",

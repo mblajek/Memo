@@ -10,6 +10,8 @@ enum NotificationTemplate
 
     // inner
     case user_names;
+    case meeting_date;
+    case meeting_time;
     case meeting_datetime;
     case facility_name;
     case facility_contact_phone;

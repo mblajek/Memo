@@ -8,6 +8,7 @@ import {PopOver} from "components/ui/PopOver";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
 import {cx} from "components/utils/classnames";
+import {isDEV} from "components/utils/dev_mode";
 import {useLangFunc} from "components/utils/lang";
 import {QueryBarrier} from "components/utils/QueryBarrier";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -15,6 +16,7 @@ import {MeetingFormType} from "features/meeting/MeetingForm";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FaSolidAsterisk, FaSolidCircleCheck, FaSolidCircleXmark} from "solid-icons/fa";
 import {createEffect, createMemo, For, Show, VoidComponent} from "solid-js";
+import {useActiveFacility} from "state/activeFacilityId.state";
 import {UserLink} from "../facility-users/UserLink";
 import {useMeetingAttendantsClients} from "./meeting_attendants_clients";
 
@@ -26,6 +28,7 @@ interface Props {
 
 export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
+  const facility = useActiveFacility();
   const {form} = useFormContext<MeetingFormType>();
   const {notificationMethodDict} = useFixedDictionaries();
   const {translations} = useFormContext();
@@ -44,7 +47,7 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
     });
   });
   return (
-    <Show when={meetingClients().length || !props.viewMode}>
+    <Show when={(facility()?.hasMeetingNotification || isDEV()) && (meetingClients().length || !props.viewMode)}>
       <div class="flex gap-2 justify-between items-center">
         <PopOver
           trigger={(popOver) => (

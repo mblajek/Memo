@@ -6,7 +6,7 @@ import {Admin} from "data-access/memo-api/groups/Admin";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {getUrlSuggestion} from "features/facility-edit/facility_url";
 import {VoidComponent, createComputed} from "solid-js";
-import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
+import {FacilityForm, FacilityFormType} from "./FacilityForm";
 
 interface Props {
   readonly onSuccess?: () => void;
@@ -21,11 +21,8 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
     meta: {isFormSubmit: true},
   }));
 
-  async function createFacility(values: FacilityFormOutput) {
-    await facilityMutation.mutateAsync({
-      name: values.name,
-      url: values.url,
-    });
+  async function createFacility(values: FacilityFormType) {
+    await facilityMutation.mutateAsync(values);
     // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.facility_create.success"));
@@ -37,7 +34,7 @@ export const FacilityCreateForm: VoidComponent<Props> = (props) => {
     };
   }
 
-  function initForm(form: FormType<FacilityFormInput>) {
+  function initForm(form: FormType<FacilityFormType>) {
     createComputed((lastSuggestion: string | undefined) => {
       const suggestion = getUrlSuggestion(form.data("name") || "");
       if (form.data("url") === lastSuggestion) {

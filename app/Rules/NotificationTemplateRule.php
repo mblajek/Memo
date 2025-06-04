@@ -20,11 +20,11 @@ final class NotificationTemplateRule extends AbstractRule
                 continue;
             }
             $value = str_replace($template->templateString(), '', $value);
-            $names[] = $template->name;
+            $names[] = $template->templateString();
         }
 
         if (NotificationTemplate::containsTemplateChars($value)) {
-            $this->validator->addFailure($attribute, 'custom.notification_template', ['templates' => $names]);
+            $this->validator->addFailure($attribute, 'custom.notification_template', $names);
         }
     }
 }

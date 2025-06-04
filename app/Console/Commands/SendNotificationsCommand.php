@@ -190,6 +190,16 @@ class SendNotificationsCommand extends Command
                     ? $this->meetingNotificationService->formatDateTimeLocale($preparedNotification->meeting)
                     : null;
             },
+            NotificationTemplate::meeting_date => function () use ($preparedNotification) {
+                return $preparedNotification->meeting
+                    ? $this->meetingNotificationService->formatBestDate($preparedNotification->meeting)
+                    : null;
+            },
+            NotificationTemplate::meeting_time => function () use ($preparedNotification) {
+                return $preparedNotification->meeting
+                    ? $this->meetingNotificationService->formatBestTime($preparedNotification->meeting)
+                    : null;
+            },
             NotificationTemplate::user_names => function () use ($preparedNotification) {
                 $names = [];
                 /** @var Notification $notification */

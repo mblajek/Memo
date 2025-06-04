@@ -15,6 +15,7 @@ use DateTimeZone;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Config;
 use IntlDateFormatter;
+use IntlDatePatternGenerator;
 
 readonly class MeetingNotificationService
 {
@@ -121,6 +122,36 @@ readonly class MeetingNotificationService
             format: "eee dd.MM.y, 'godz.' H:mm",
             locale: Config::string('app.locale'),
         );
+    }
+
+    /**
+     * @see \IntlDatePatternGenerator::getBestPattern()
+     */
+    public function formatBestDateTimePattern(Meeting $meeting, string $skeleton): string
+    {
+        $locale = Config::string('app.locale');
+        return IntlDateFormatter::formatObject(
+            datetime: $this->meetingDatetimeLocale($meeting),
+            format: IntlDatePatternGenerator::create($locale)->getBestPattern($skeleton),
+            locale: $locale,
+        );
+    }
+
+    public function formatBestDateTime(Meeting $meeting): string
+    {
+        return $this->formatBestDateTimePattern($meeting, 'yMd eee Hm');
+    }
+
+    public function formatBestDate(Meeting $meeting): string
+    {
+        return $this->formatBestDateTimePattern($meeting, 'yMd eee');
+    }
+
+    public function formatBestTime(Meeting $meeting): string
+    {
+        // Should actually be 'jm' if 'j' was properly supported. Same above.
+        // https://unicode-org.github.io/icu/userguide/format_parse/datetime/#datetimepatterngenerator
+        return $this->formatBestDateTimePattern($meeting, 'Hm');
     }
 
     private function determineScheduledAt(Meeting $meeting): DateTimeImmutable

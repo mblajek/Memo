@@ -22,6 +22,8 @@ class CreateFacilityService
             'meeting_notification_template_message',
         ]);
 
+        $facility->saveOrFail();
+
         return $facility->id;
     }
 }

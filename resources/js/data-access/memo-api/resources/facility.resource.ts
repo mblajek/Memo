@@ -5,6 +5,5 @@ export interface FacilityResource {
   readonly id: string;
   readonly name: string;
   readonly url: string;
+  readonly hasMeetingNotification: boolean;
 }
-
-export type FacilityResourceForCreate = Pick<FacilityResource, "id" | "name" | "url">;
