@@ -5,7 +5,15 @@ import {localStorageStorage} from "components/persistence/storage";
 import {Button} from "components/ui/Button";
 import {FullLogo, ShortChangingLogo} from "components/ui/FullLogo";
 import {createHoverSignal, hoverSignal} from "components/ui/hover_signal";
-import {adminIcons, calendarIcons, clientIcons, facilityIcons, staffIcons, userIcons} from "components/ui/icons";
+import {
+  actionIcons,
+  adminIcons,
+  calendarIcons,
+  clientIcons,
+  facilityIcons,
+  staffIcons,
+  userIcons,
+} from "components/ui/icons";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {title} from "components/ui/title";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
@@ -207,6 +215,13 @@ export const Navbar: VoidComponent = () => {
                     />
                   </Show>
                 </NavigationItem>
+                <Show when={activeFacility()?.hasMeetingNotification || isDEV()}>
+                  <NavigationItem
+                    icon={actionIcons.Notify}
+                    href={`/${facilityUrl()}/admin/notifications`}
+                    routeKey="facility.facility_admin.notifications"
+                  />
+                </Show>
               </NavigationSection>
             </SilentAccessBarrier>
           </Show>
