@@ -24,6 +24,19 @@ interface Props extends htmlAttributes.div {
 
 const ICON_SET_NAMES_PATTERN = ICON_SET_NAMES.join("|");
 
+/** Mapping of colorful bullet emojis to their fill/stroke colors, to make them nicer. */
+const BULLET_COLORS: ReadonlyMap<string, {fill: string; stroke?: string}> = new Map([
+  ["🟢", {fill: "#00d26a"}],
+  ["🟣", {fill: "#8d65c5"}],
+  ["🔴", {fill: "#f8212f"}],
+  ["🟤", {fill: "#6d4534"}],
+  ["🟡", {fill: "#fcd53f"}],
+  ["🟠", {fill: "#ff7723"}],
+  ["🔵", {fill: "#0074ba"}],
+  ["⚪", {fill: "white", stroke: "#888"}],
+  ["⚫", {fill: "black"}],
+]);
+
 /**
  * A component displaying a help page, loaded from the mdPath as markdown.
  *
@@ -129,11 +142,32 @@ export const Help: VoidComponent<Props> = (allProps) => {
               );
             },
             code: (codeProps) => {
-              const icon = createMemo((): JSX.Element | undefined => {
+              const replacement = createMemo((): JSX.Element | undefined => {
                 if (codeProps.node.children.length === 1 && codeProps.node.children[0]!.type === "text") {
-                  const match = codeProps.node.children[0]!.value.match(
-                    new RegExp(`^\\$icon\\((${ICON_SET_NAMES_PATTERN})\\.(\\w+)\\)$`),
-                  );
+                  const contents = codeProps.node.children[0]!.value;
+                  const bulletColors = BULLET_COLORS.get(contents);
+                  if (bulletColors) {
+                    const strokeWidth = 0.08;
+                    return (
+                      <>
+                        <svg width="1.0em" height="1.0em" viewBox="0 0 1 1" class="mb-0.5 inline-block">
+                          <circle
+                            cx="0.5"
+                            cy="0.5"
+                            r={(1 - strokeWidth) / 2}
+                            fill={bulletColors.fill}
+                            stroke={bulletColors.stroke || `color-mix(in srgb, ${bulletColors.fill}, black 20%)`}
+                            stroke-width={strokeWidth}
+                          />
+                        </svg>
+                        {/* Include the original icon as invisible, so that it can be copied. */}
+                        <span class="inline-block w-0" style={{"font-size": 0}}>
+                          {contents}
+                        </span>
+                      </>
+                    );
+                  }
+                  const match = contents.match(new RegExp(`^\\$icon\\((${ICON_SET_NAMES_PATTERN})\\.(\\w+)\\)$`));
                   if (match) {
                     const icon = getIconByName(match[1]!, match[2]!);
                     if (icon) {
@@ -143,8 +177,8 @@ export const Help: VoidComponent<Props> = (allProps) => {
                 }
               });
               return (
-                <Show when={icon()} fallback={<code {...codeProps} />}>
-                  {(icon) => icon()}
+                <Show when={replacement()} fallback={<code {...codeProps} />}>
+                  {(replacement) => replacement()}
                 </Show>
               );
             },

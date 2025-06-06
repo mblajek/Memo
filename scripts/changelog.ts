@@ -67,7 +67,7 @@ for await (const entry of await fs.expandGlob(`./public/docs/*/changelog/templat
         return `${appendLog
           .map(
             ({hash, date, author, title}) =>
-              `⚪${title} \\\n${date.toFormat("yyyy-MM-dd HH:mm:ss")} ${author} ` +
+              `\`⚪\` ${title} \\\n${date.toFormat("yyyy-MM-dd HH:mm:ss")} ${author} ` +
               `([${hash.slice(0, 8)}](https://github.com/${GITHUB_REPO}/commits/${hash}))`,
           )
           .join("\n\n")}\n\n${pre}${appendLog.at(-1)!.hash}${post}`;

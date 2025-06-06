@@ -8,9 +8,9 @@ Data wydania: **$$$DATE$$$**
 
 …
 
-🟢 — dla wszystkich,
-🟣 — dla administratorów placówki,
-🔴 — dla administratorów globalnych,
-🟤 — dokumentacja,
-🟡 — bezpieczeństwo,
-🟠🔵⚪⚫ — inne.
+`🟢` — dla wszystkich,
+`🟣` — dla administratorów placówki,
+`🔴` — dla administratorów globalnych,
+`🟤` — dokumentacja,
+`🟡` — bezpieczeństwo,
+`🟠` `🔵` `⚪` `⚫` — inne.

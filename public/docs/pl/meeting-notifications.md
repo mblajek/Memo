@@ -27,3 +27,10 @@ W przyszłości być może będzie opcja aby działo się to automatycznie.
 Podczas tworzenia spotkania, domyślnie zostają włączone powiadomienia dla klientów, którzy mają je
 skonfigurowane na swoim profilu. Można jednak zmienić to ustawienie dla pojedynczego spotkania,
 włączając lub wyłączając powiadomienia dla poszczególnych klientów.
+
+## Tabela powiadomień
+
+Administratorzy placówki mogą sprawdzić listę istniejących w systemie powiadomień pod adresem
+[/«placówka»/admin/notifications](/__facility/admin/notifications). Są tam zarówno powiadomienia
+wysłane, jak i te, które mają być wysłane w przyszłości, a także te, których wysłanie się nie powiodło,
+razem z komunikatem błędu.
