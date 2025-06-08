@@ -27,6 +27,13 @@ return [
     'key' => Env::getOrFail('APP_KEY'),
     'cipher' => 'AES-256-CBC',
 
+    'db' => [
+        'dump_password' => Env::get('APP_DB_DUMP_PASSWORD'),
+        'rc_password' => Env::get('APP_DB_RC_PASSWORD'),
+        'backup_url' => Env::get('APP_DB_BACKUP_URL'),
+        'backup_auth' => Env::get('APP_BD_BACKUP_AUTH'),
+    ],
+
     'maintenance' => ['driver' => 'file'],
 
     'providers' => [

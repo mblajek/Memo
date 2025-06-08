@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Services\Database\DatabaseDumpService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
@@ -13,20 +14,22 @@ use ZipArchive;
 
 class DatabaseEchoCommand extends Command
 {
-    protected $signature = 'fz:db-echo {mode} {password?}';
+    protected $signature = 'fz:db-echo {mode}';
     protected $description = 'Echo last database dump contents';
 
     public function handle(): void
     {
         $mode = $this->argument('mode');
-        $password = $this->argument('password');
 
         if ($mode !== 'path' && $mode !== 'sql') {
             Log::error("Invalid mode '$mode', options: 'path', 'sql'");
             return;
         }
+
         $dbName = DatabaseDumpService::getDatabaseName();
         $dumpsPath = DatabaseDumpService::getDatabaseDumpsPath();
+        $dumpPassword = Config::string('app.db.dump_password');
+
         $nameBase = DatabaseDumpService::lastDumpName($dbName, $dumpsPath);
         $innerFile = "$nameBase.sql";
         $zipPath = "$dumpsPath/$nameBase.zip";
@@ -38,10 +41,9 @@ class DatabaseEchoCommand extends Command
         $zip->open($zipPath);
 
         try {
-            if ($password !== null) {
-                $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
-                $zip->setPassword($password);
-            }
+            $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
+            $zip->setPassword($dumpPassword);
+
             $sql = $zip->getFromName($innerFile);
             $zip->close();
             if (is_string($sql)) {

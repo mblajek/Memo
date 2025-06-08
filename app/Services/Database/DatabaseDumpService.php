@@ -5,6 +5,7 @@ namespace App\Services\Database;
 use App\Exceptions\FatalExceptionFactory;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class DatabaseDumpService
@@ -60,8 +61,21 @@ class DatabaseDumpService
         return App::databasePath('dumps');
     }
 
-    public static function getDatabaseName(): string
+    public static function getDatabaseName(bool $rc = false): string
     {
-        return DB::getDatabaseName();
+        return ($rc ? 'rc_' : '') . DB::getDatabaseName();
+    }
+
+    public static function getDatabaseUsername(bool $rc = false): string
+    {
+        return ($rc ? 'rc_' : '')
+            . Config::string('database.connections.' . Config::string('database.default') . '.username');
+    }
+
+    public static function getDatabasePassword(bool $rc = false): string
+    {
+        return $rc
+            ? Config::string('app.db.rc_password')
+            : Config::string('database.connections.' . Config::string('database.default') . '.password');
     }
 }
