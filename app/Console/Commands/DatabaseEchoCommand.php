@@ -17,13 +17,13 @@ class DatabaseEchoCommand extends Command
     protected $signature = 'fz:db-echo {mode}';
     protected $description = 'Echo last database dump contents';
 
-    public function handle(): void
+    public function handle(): int
     {
         $mode = $this->argument('mode');
 
         if ($mode !== 'path' && $mode !== 'sql') {
             Log::error("Invalid mode '$mode', options: 'path', 'sql'");
-            return;
+            return self::INVALID;
         }
 
         $dbName = DatabaseDumpService::getDatabaseName();
@@ -35,7 +35,7 @@ class DatabaseEchoCommand extends Command
         $zipPath = "$dumpsPath/$nameBase.zip";
         if ($mode === 'path') {
             $this->line($zipPath);
-            return;
+            return self::SUCCESS;
         }
         $zip = new ZipArchive();
         $zip->open($zipPath);
@@ -50,9 +50,12 @@ class DatabaseEchoCommand extends Command
                 $this->output->write($sql, false, OutputInterface::OUTPUT_RAW | OutputInterface::VERBOSITY_QUIET);
             } else {
                 Log::error("Cannot read item, maybe invalid password");
+                return self::FAILURE;
             }
         } catch (Throwable $e) {
             Log::error("Cannot read file '{$innerFile}' inside '{$zipPath}': {$e->getMessage()}");
+            return self::FAILURE;
         }
+        return self::SUCCESS;
     }
 }

@@ -14,13 +14,13 @@ class DatabaseRestoreCommand extends Command
     protected $signature = 'fz:db-restore {env}';
     protected $description = 'Restore zipped database dump';
 
-    public function handle(): void
+    public function handle(): int
     {
         $env = $this->argument('env');
 
         if ($env !== 'rc' && $env !== 'prod') {
             Log::error("Invalid mode '$env', options: 'rc', 'prod'");
-            return;
+            return self::INVALID;
         }
         $rc = ($env === 'rc');
 
@@ -33,6 +33,8 @@ class DatabaseRestoreCommand extends Command
         system("$dbEchoCommand | mariadb $dbName --user=$dbUser --password=$dbPassword", $result);
         if ($result) {
             Log::error("Cannot restore database");
+            return self::FAILURE;
         }
+        return self::SUCCESS;
     }
 }

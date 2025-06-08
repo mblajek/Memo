@@ -16,7 +16,7 @@ class DatabaseDumpCommand extends Command
     protected $signature = 'fz:db-dump';
     protected $description = 'Make zipped database dump with password';
 
-    public function handle(): void
+    public function handle(): int
     {
         $dbName = DatabaseDumpService::getDatabaseName();
         $dbUser = DatabaseDumpService::getDatabaseUsername();
@@ -30,7 +30,7 @@ class DatabaseDumpCommand extends Command
 
         if ($result) {
             Log::error("db-dump error code: $result");
-            return;
+            return self::INVALID;
         }
 
         $nameBase = DatabaseDumpService::newDumpName($dbName);
@@ -59,5 +59,6 @@ class DatabaseDumpCommand extends Command
                 ->post(Config::string('app.db.backup_url'));
             $this->line($response->body());
         }
+        return self::SUCCESS;
     }
 }

@@ -28,7 +28,9 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'db' => [
+        'dump_at' => Env::get('APP_DB_DUMP_AT'),
         'dump_password' => Env::get('APP_DB_DUMP_PASSWORD'),
+        'rc_restore' => Env::get('APP_DB_RC_RESTORE'),
         'rc_password' => Env::get('APP_DB_RC_PASSWORD'),
         'backup_url' => Env::get('APP_DB_BACKUP_URL'),
         'backup_auth' => Env::get('APP_BD_BACKUP_AUTH'),
