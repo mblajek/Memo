@@ -35,8 +35,5 @@ if (Config::has('app.db.dump_at')) {
             FatalExceptionFactory::unexpected()->throw();
         }
         return $status;
-    })->dailyAt(
-        DateTimeImmutable::createFromFormat('H:i', Config::string('app.db.dump_at'), DateHelper::getUserTimezone())
-            ->setTimezone(DateHelper::getSystemTimezone())->format('H:i'),
-    );
+    })->timezone(DateHelper::getUserTimezone())->dailyAt(Config::string('app.db.dump_at'));
 }
