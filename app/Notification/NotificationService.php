@@ -2,7 +2,6 @@
 
 namespace App\Notification;
 
-use App\Models\Client;
 use App\Models\Enums\NotificationMethod;
 use App\Models\Facility;
 use App\Models\Meeting;
@@ -26,7 +25,6 @@ readonly class NotificationService
     public function schedule(
         null|Facility|string|true $facilityId,
         string|User|null $userId,
-        string|Client|null $clientId,
         string|Meeting|null $meetingId,
         string|NotificationMethod $notificationMethodId,
         ?string $address,
@@ -38,16 +36,6 @@ readonly class NotificationService
     ): Notification {
         $notificationMethod = ($notificationMethodId instanceof NotificationMethod)
             ? $notificationMethodId : NotificationMethod::from($notificationMethodId);
-
-        /** @var ?Client $client */
-        $client = ($clientId instanceof Client) ? $clientId
-            : Nullable::call($clientId, Client::query()->findOrFail(...));
-
-        if ($client) {
-            $member = $client->member;
-            $facilityId ??= $member->facility;
-            $userId ??= $member->user;
-        }
 
         /** @var ?Facility $facility */
         $facility = ($facilityId instanceof Facility) ? $facilityId
@@ -64,7 +52,6 @@ readonly class NotificationService
         return new Notification([
             'facility_id' => $facility?->id,
             'user_id' => $user?->id,
-            'client_id' => $client->id,
             'meeting_id' => $meetingId,
             'notification_method_dict_id' => $notificationMethod,
             'address' => $address,

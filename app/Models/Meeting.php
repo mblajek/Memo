@@ -127,6 +127,14 @@ class Meeting extends Model
         );
     }
 
+    public function getAttendant(AttendanceType $attendanceType, string $userId): MeetingAttendant
+    {
+        return $this->attendants->firstOrFail(
+            fn(MeetingAttendant $attendant): bool
+                => $attendant->user_id === $userId && $attendant->attendance_type_dict_id === $attendanceType->value
+        )->setRelation('meeting', $this);
+    }
+
     public function facility(): BelongsTo
     {
         return $this->belongsTo(Facility::class);

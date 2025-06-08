@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property ?string $facility_id
  * @property ?string $user_id
- * @property ?string $client_id
+ * // todo remove client_id fom database
  * @property ?string $meeting_id
  * @property NotificationMethod $notification_method_dict_id
  * @property ?string $address
@@ -31,7 +31,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?string $error_log_entry_id
  * @property-read ?Facility $facility
  * @property-read ?User $user
- * @property-read ?Client $client
  * @property-read ?Meeting $meeting
  * @method static NotificationBuilder query()
  */
@@ -49,7 +48,6 @@ class Notification extends Model
     protected $fillable = [
         'facility_id',
         'user_id',
-        'client_id',
         'meeting_id',
         'notification_method_dict_id',
         'address',

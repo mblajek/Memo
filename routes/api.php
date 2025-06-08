@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DeveloperController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Facility\ClientController;
 use App\Http\Controllers\Facility\ClientGroupController;
+use App\Http\Controllers\Facility\ClientNotificationController;
 use App\Http\Controllers\Facility\ClientTqueryController;
 use App\Http\Controllers\Facility\FacilityAdminController;
 use App\Http\Controllers\Facility\MemberTqueryController;
@@ -97,6 +98,7 @@ Route::prefix('/v1')->group(function () {
                 Route::get('/list', [ClientController::class, 'list']);
                 Route::get('/tquery', [ClientTqueryController::class, 'get']);
                 Route::post('/tquery', [ClientTqueryController::class, 'post']);
+                Route::patch('/{user}/notification/method', [ClientNotificationController::class, 'patch']);
             });
             Route::prefix('/staff')->group(function () {
                 Route::get('/list', [StaffController::class, 'list']);

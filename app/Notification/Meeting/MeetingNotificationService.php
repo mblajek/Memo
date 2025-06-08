@@ -5,7 +5,6 @@ namespace App\Notification\Meeting;
 use App\Models\Enums\AttendanceType;
 use App\Models\Meeting;
 use App\Models\MeetingAttendant;
-use App\Models\Member;
 use App\Models\Notification;
 use App\Notification\NotificationService;
 use App\Notification\NotificationStatus;
@@ -13,9 +12,6 @@ use App\Utils\Date\DateHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Facades\Config;
-use IntlDateFormatter;
-use IntlDatePatternGenerator;
 
 readonly class MeetingNotificationService
 {
@@ -37,10 +33,13 @@ readonly class MeetingNotificationService
         foreach ($notifications as $notification) {
             $oldStatus = $notification->status;
             $notification->scheduled_at = $scheduledAt;
+
+            $meetingAttendant = $meeting->getAttendant(AttendanceType::Client, $notification->user_id);
+
             $notification->status = $this->determineStatus(
                 $meeting,
+                $meetingAttendant,
                 $isDatetimeChange ? NotificationStatus::scheduled : $oldStatus,
-                $notification->user_id,
             );
 
             if ($isDatetimeChange && $oldStatus->isInterpolated()) {
@@ -54,25 +53,23 @@ readonly class MeetingNotificationService
 
     private function determineStatus(
         Meeting $meeting,
+        MeetingAttendant $meetingAttendant,
         NotificationStatus $notificationStatus,
-        string $userId,
     ): NotificationStatus {
         if ($notificationStatus->baseStatus() === NotificationStatus::sent) {
             return $notificationStatus;
         }
 
-        return ($meeting->status_dict_id === Meeting::STATUS_PLANNED) && $meeting->attendants->contains(
-            fn(MeetingAttendant $meetingAttendant)
-                => $meetingAttendant->user_id === $userId
-                && $meetingAttendant->attendance_type_dict_id === AttendanceType::Client->value
-                && $meetingAttendant->attendance_status_dict_id === MeetingAttendant::ATTENDANCE_STATUS_OK,
-        ) ? NotificationStatus::scheduled : NotificationStatus::skipped;
+        return (($meeting->status_dict_id === Meeting::STATUS_PLANNED)
+            && ($meetingAttendant->attendance_status_dict_id === MeetingAttendant::ATTENDANCE_STATUS_OK))
+            ? NotificationStatus::scheduled : NotificationStatus::skipped;
     }
 
     /**
      * @param Meeting $meeting
      * @param list<MeetingNotification> $meetingNotifications
-     * @return EloquentCollection<array-key, Notification>
+     * // avoid invalid parameter type invalid inspection - Collection<A,B> is already iterable<A>
+     * @return EloquentCollection<array-key, Notification>&iterable<Notification>
      */
     public function create(
         Meeting $meeting,
@@ -81,13 +78,13 @@ readonly class MeetingNotificationService
         $notifications = new EloquentCollection();
         foreach ($meetingNotifications as $meetingNotification) {
             $userId = $meetingNotification->userId;
+            $meetingAttendant = $meetingNotification->meetingAttendant
+                ?: $meeting->getAttendant(AttendanceType::Client, $userId);
+
             $notifications->add(
                 $this->notificationService->schedule(
-                    facilityId: $meeting->facility_id,
+                    facilityId: $meeting->facility,
                     userId: $userId,
-                    clientId: Member::query()->where('user_id', $userId)
-                        ->where('facility_id', $meeting->facility_id)
-                        ->firstOrFail(['client_id'])->offsetGet('client_id'),
                     meetingId: $meeting->id,
                     notificationMethodId: $meetingNotification->notificationMethodDictId,
                     address: null,
@@ -96,8 +93,8 @@ readonly class MeetingNotificationService
                     message: NotificationTemplate::meeting_facility_template_message->templateString(),
                     status: $this->determineStatus(
                         $meeting,
+                        $meetingAttendant,
                         NotificationStatus::scheduled,
-                        $meetingNotification->userId,
                     ),
                 ),
             );
@@ -115,43 +112,13 @@ readonly class MeetingNotificationService
         )->setTime(hour: 0, minute: $meeting->start_dayminute);
     }
 
-    public function formatDateTimeLocale(Meeting $meeting): string
+    public function formatBestDateTime(Meeting $meeting, NotificationTemplate $template): string
     {
-        return IntlDateFormatter::formatObject(
-            datetime: $this->meetingDatetimeLocale($meeting),
-            format: "eee dd.MM.y, 'godz.' H:mm",
-            locale: Config::string('app.locale'),
-        );
-    }
+        $datetime = $template === NotificationTemplate::meeting_datetime;
+        $date = $datetime || $template === NotificationTemplate::meeting_date;
+        $time = $datetime || $template === NotificationTemplate::meeting_time;
 
-    /**
-     * @see \IntlDatePatternGenerator::getBestPattern()
-     */
-    public function formatBestDateTimePattern(Meeting $meeting, string $skeleton): string
-    {
-        $locale = Config::string('app.locale');
-        return IntlDateFormatter::formatObject(
-            datetime: $this->meetingDatetimeLocale($meeting),
-            format: IntlDatePatternGenerator::create($locale)->getBestPattern($skeleton),
-            locale: $locale,
-        );
-    }
-
-    public function formatBestDateTime(Meeting $meeting): string
-    {
-        return $this->formatBestDateTimePattern($meeting, 'yMd eee Hm');
-    }
-
-    public function formatBestDate(Meeting $meeting): string
-    {
-        return $this->formatBestDateTimePattern($meeting, 'yMd eee');
-    }
-
-    public function formatBestTime(Meeting $meeting): string
-    {
-        // Should actually be 'jm' if 'j' was properly supported. Same above.
-        // https://unicode-org.github.io/icu/userguide/format_parse/datetime/#datetimepatterngenerator
-        return $this->formatBestDateTimePattern($meeting, 'Hm');
+        return DateHelper::formatBestDateTime($this->meetingDatetimeLocale($meeting), date: $date, time: $time);
     }
 
     private function determineScheduledAt(Meeting $meeting): DateTimeImmutable

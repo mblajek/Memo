@@ -9,10 +9,10 @@ enum NotificationTemplate
     case meeting_facility_template_message;
 
     // inner
-    case client_names;
+    case recipient_names;
+    case meeting_datetime;
     case meeting_date;
     case meeting_time;
-    case meeting_datetime;
     case facility_name;
     case facility_contact_phone;
 

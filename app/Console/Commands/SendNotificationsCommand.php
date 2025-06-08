@@ -127,8 +127,7 @@ class SendNotificationsCommand extends Command
     {
         $address = null;
         if ($notification->notification_method_dict_id === NotificationMethod::Sms) {
-            $client = $notification->client;
-            if ($client) {
+            if ($client = $notification->user?->memberByFacility($notification->facility)?->client) {
                 $address = $client->attrValue(ClientAttributeUuidEnum::ContactPhone);
             }
         }
@@ -185,22 +184,13 @@ class SendNotificationsCommand extends Command
             NotificationTemplate::meeting_facility_template_message => function () use ($preparedNotification) {
                 return $preparedNotification->facility?->meeting_notification_template_message;
             },
-            NotificationTemplate::meeting_datetime => function () use ($preparedNotification) {
+            NotificationTemplate::meeting_date, NotificationTemplate::meeting_time,
+            NotificationTemplate::meeting_datetime => function () use ($preparedNotification, $template) {
                 return $preparedNotification->meeting
-                    ? $this->meetingNotificationService->formatDateTimeLocale($preparedNotification->meeting)
+                    ? $this->meetingNotificationService->formatBestDateTime($preparedNotification->meeting, $template)
                     : null;
             },
-            NotificationTemplate::meeting_date => function () use ($preparedNotification) {
-                return $preparedNotification->meeting
-                    ? $this->meetingNotificationService->formatBestDate($preparedNotification->meeting)
-                    : null;
-            },
-            NotificationTemplate::meeting_time => function () use ($preparedNotification) {
-                return $preparedNotification->meeting
-                    ? $this->meetingNotificationService->formatBestTime($preparedNotification->meeting)
-                    : null;
-            },
-            NotificationTemplate::client_names => function () use ($preparedNotification) {
+            NotificationTemplate::recipient_names => function () use ($preparedNotification) {
                 $names = [];
                 /** @var Notification $notification */
                 foreach ([$preparedNotification, ...$preparedNotification->getDeduplicated()] as $notification) {

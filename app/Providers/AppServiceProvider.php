@@ -41,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
 
         if (App::hasDebugModeEnabled()) {
             DB::enableQueryLog();
+            // Illuminate\Database\Eloquent\Model::preventLazyLoading();
         }
 
         PermissionMiddleware::setPermissions(null);
