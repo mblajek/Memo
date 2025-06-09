@@ -13,7 +13,7 @@ import {UserLink} from "features/facility-users/UserLink";
 import {Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
-const DEFAULT_MEETING_SMS_TEMPLATE = "{{default_meeting_template_subject}}";
+const DEFAULT_MEETING_SMS_TEMPLATE = "{{meeting_facility_template_subject}}";
 
 export default (() => {
   const t = useLangFunc();
