@@ -168,7 +168,7 @@ tables:
     table_name: "$t(models.notification._name_plural)"
     no_address_hint: "Adres jest wypełniany na podstawie danych klienta w momencie wysłania powiadomienia."
     default_subject: "(treść domyślna)"
-    default_subject_hint: "Treść jest ustalana na podstawie ustawień placówki w momencie wysłania powiadomienia."
+    default_subject_hint: "Treść jest ustalana na podstawie ustawień placówki w momencie wysłania powiadomienia.\n(Wartość tymczasowa: $t(quotes.open){{text}}$t(quotes.close))"
     summary__zero: "Brak powiadomień"
     summary__one: "{{count, number}} powiadomienie"
     summary__few: "{{count, number}} powiadomienia"

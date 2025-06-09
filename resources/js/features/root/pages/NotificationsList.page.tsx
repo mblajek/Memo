@@ -91,7 +91,7 @@ export default (() => {
                       fallback={
                         <div class="text-grey-text flex gap-1 justify-between">
                           {t("tables.tables.notification.default_subject")}
-                          <InfoIcon title={t("tables.tables.notification.default_subject_hint")} />
+                          <InfoIcon title={t("tables.tables.notification.default_subject_hint", {text: v()})} />
                         </div>
                       }
                     >
