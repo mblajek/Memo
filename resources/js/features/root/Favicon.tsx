@@ -1,11 +1,11 @@
 import {Link} from "@solidjs/meta";
 import {useQuery} from "@tanstack/solid-query";
+import bowser from "bowser";
 import {isDEV} from "components/utils/dev_mode";
 import {User} from "data-access/memo-api/groups/User";
 import {useEnvInfo} from "features/system-status/env_info";
 import {Base64} from "js-base64";
 import {createMemo, createSignal, on, Show, VoidComponent} from "solid-js";
-import bowser from "bowser";
 
 const FAVICON_PATH = "/favicon.png";
 
@@ -15,18 +15,13 @@ export const Favicon: VoidComponent = () => {
   const browserInfo = bowser.parse(navigator.userAgent);
   // First remove the original link from the head.
   document.querySelector("head > link[rel='icon'][href]")?.remove();
-  const fill = () => {
-    const bg = envInfo.style()?.background;
-    // Return some color for long background, which might be e.g. `url(...)` which would not work.
-    return bg ? (bg.length > 30 ? "#bcbd" : bg) : undefined;
-  };
   const [faviconDataURI, setFaviconDataURI] = createSignal<string>();
   void fetch(FAVICON_PATH)
     .then((resp) => resp.bytes())
     .then((favicon) => setFaviconDataURI(`data:image/png;base64,${Base64.fromUint8Array(favicon)}`));
   const iconURI = createMemo(
     on(
-      [faviconDataURI, fill, isDEV, () => status.data?.permissions.developer],
+      [faviconDataURI, envInfo.faviconBadgeFill, isDEV, () => status.data?.permissions.developer],
       ([faviconDataURI, fill, isDEV, developer]) => {
         if (!faviconDataURI) {
           return undefined;
