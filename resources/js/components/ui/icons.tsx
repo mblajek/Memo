@@ -28,7 +28,7 @@ import {FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight, ImInfo} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {TbFilter, TbFilterOff, TbReload} from "solid-icons/tb";
+import {TbFilter, TbFilterOff, TbLockCheck, TbReload} from "solid-icons/tb";
 import {VsSave} from "solid-icons/vs";
 
 namespace customIcons {
@@ -120,6 +120,7 @@ export namespace actionIcons {
   export const Duplicate = BiRegularDuplicate;
   export const NotifyOff = FaRegularBellSlash;
   export const Info = ImInfo;
+  export const OTPConfigured = TbLockCheck;
 }
 
 export namespace calendarIcons {

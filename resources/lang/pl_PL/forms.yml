@@ -27,13 +27,13 @@ user:
   field_names:
     hasPassword: "posiada hasło logowania do Memo"
     otpRequiredAt: "OTP musi zostać aktywowane do"
+    resetOtp: "Zresetuj OTP użytkownika"
   clear_password_expire_at: "Anuluj wygasanie"
   password_expire_never: "Hasło nie wygaśnie."
   password_expired: "Ustaw datę w przyszłości, w przeciwnym razie ta osoba nie będzie miała dostępu do systemu."
   otp_required_expired: "Ustaw datę w przyszłości, w przeciwnym razie ta osoba nie będzie miała dostępu do systemu."
   otp_configured_info:
-    when_configured.true: "Ten użytkownik ma aktywne OTP"
-    when_configured.false: "Zresetuj OTP tego użytkownika"
+    when_configured: "Ten użytkownik ma obecnie aktywne OTP"
     when_not_configured: "Użytkownik musi samodzielnie aktywować OTP na swoim koncie nie później niż w podanym terminie."
   members_destructive_update_warning: "UWAGA! Ta zmiana spowoduje bezpowrotne usunięcie danych klienta lub pracownika placówki. Jeżeli nie masz pewności, że to właśnie chcesz zrobić, anuluj tę zmianę."
 

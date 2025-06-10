@@ -6,8 +6,8 @@ import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DateField} from "components/ui/form/DateField";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PasswordField} from "components/ui/form/PasswordField";
-import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {TextField, TextFieldTextInput} from "components/ui/form/TextField";
+import {actionIcons} from "components/ui/icons";
 import {cx} from "components/utils/classnames";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useLangFunc} from "components/utils/lang";
@@ -31,9 +31,10 @@ export const getUserBaseInfoSchema = () =>
     isOtpRequired: z.boolean(),
     otpRequiredAt: z.string(),
     hasOtpConfigured: z.boolean(),
-    /** Helper fields, not part of the API. These are number fields. */
-    passwordExpireAt_daysLeft: z.unknown(),
-    otpRequiredAt_daysLeft: z.unknown(),
+    /** Helper fields, not part of the API. The type is unknown to avoid form validator errors. */
+    passwordExpireAt_daysLeft: z.unknown(), // number
+    otpRequiredAt_daysLeft: z.unknown(), // number
+    resetOtp: z.unknown(), //boolean
   });
 
 export type UserBaseInfoFormType = z.infer<ReturnType<typeof getUserBaseInfoSchema>>;
@@ -107,6 +108,12 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
           form.setFields("isOtpRequired", false);
         }
       },
+    ),
+  );
+  createComputed(
+    on(
+      () => form.data("resetOtp"),
+      (resetOtp) => form.setFields("hasOtpConfigured", !resetOtp),
     ),
   );
 
@@ -254,21 +261,16 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
                   </HideableSection>
                 </HideableSection>
                 <HideableSection show={form.data("isOtpRequired") || initialValues()?.hasOtpConfigured}>
-                  <div class="pt-1 flex">
+                  <div class="pt-1 flex flex-col">
                     <Show
                       when={initialValues()?.hasOtpConfigured}
                       fallback={<div>{t("forms.user.otp_configured_info.when_not_configured")}</div>}
                     >
-                      <SegmentedControl
-                        name="hasOtpConfigured"
-                        label=""
-                        items={[
-                          {value: "true", label: () => t("forms.user.otp_configured_info.when_configured.true")},
-                          {value: "false", label: () => t("forms.user.otp_configured_info.when_configured.false")},
-                        ]}
-                        value={String(form.data("hasOtpConfigured"))}
-                        onValueChange={(v) => form.setFields("hasOtpConfigured", v === "true")}
-                      />
+                      <div class="font-semibold text-green-700 flex items-center gap-0.5">
+                        <actionIcons.OTPConfigured class="text-current" />
+                        <div>{t("forms.user.otp_configured_info.when_configured")}</div>
+                      </div>
+                      <CheckboxField name="resetOtp" />
                     </Show>
                   </div>
                 </HideableSection>
