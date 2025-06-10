@@ -67,7 +67,7 @@ export const FatalError: VoidComponent<Props> = (props) => {
       logLevel: "critical",
       source: System.LogAPIFrontendSource.JS_ERROR,
       message: head,
-      context: full.slice(0, MAX_CONTEXT_LENGTH).trimEnd(),
+      context: `${location.href}\n${full}`.slice(0, MAX_CONTEXT_LENGTH).trimEnd(),
     });
   });
   return (
