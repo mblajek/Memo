@@ -102,53 +102,39 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
   );
   createComputed(
     on(
-      () => form.data("otpRequiredAt"),
-      (otpRequiredAt) => {
-        if (!otpRequiredAt) {
-          form.setFields("isOtpRequired", false);
-        }
-      },
-    ),
-  );
-  createComputed(
-    on(
       () => form.data("resetOtp"),
-      (resetOtp) => form.setFields("hasOtpConfigured", !resetOtp),
+      (resetOtp) => form.setFields("hasOtpConfigured", initialValues()?.hasOtpConfigured && !resetOtp),
     ),
   );
 
   const DateFieldWithDaysLeft: VoidComponent<{readonly name: string; readonly suffix?: JSX.Element}> = (dProps) => {
-    const timeout = new Timeout();
     const daysLeftFieldName = () => `${dProps.name}_daysLeft`;
+    const timeout = new Timeout();
     createEffect(() => {
-      form.setFields(
-        daysLeftFieldName(),
-        form.data(dProps.name)
-          ? Math.max(
-              0,
-              Math.floor(
-                dateTimeLocalInputToDateTime(form.data(dProps.name)).diff(currentTimeMinute(), "days").days +
-                  // Add one hour to avoid bad rounding.
-                  1 / 24,
-              ),
-            )
-          : "",
-      );
+      if (form.data(dProps.name)) {
+        form.setFields(
+          daysLeftFieldName(),
+          Math.max(
+            0,
+            Math.floor(
+              dateTimeLocalInputToDateTime(form.data(dProps.name)).diff(currentTimeMinute(), "days").days +
+                // Add one hour to avoid bad rounding.
+                1 / 24,
+            ),
+          ),
+        );
+      }
     });
     createEffect(
       on(
         () => form.data(daysLeftFieldName()),
         (value) => {
-          if (value == undefined || value === "") {
-            timeout.set(
-              // eslint-disable-next-line solid/reactivity
-              () => form.setFields(dProps.name, ""),
-              1000,
-            );
-          } else {
-            timeout.clear();
-            form.setFields(dProps.name, dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)})));
-          }
+          const dateTime =
+            value == undefined || value === ""
+              ? ""
+              : dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)}));
+          // eslint-disable-next-line solid/reactivity
+          timeout.set(() => form.setFields(dProps.name, dateTime));
         },
       ),
     );
@@ -332,10 +318,11 @@ export function getUserBaseInfoValues(values: UserBaseInfoFormType, oldUser: {ha
                 passwordExpireAt: values.passwordExpireAt
                   ? dateTimeToISO(dateTimeLocalInputToDateTime(values.passwordExpireAt))
                   : null,
-                otpRequiredAt:
-                  values.isOtpRequired && values.otpRequiredAt
+                otpRequiredAt: values.isOtpRequired
+                  ? values.otpRequiredAt
                     ? dateTimeToISO(dateTimeLocalInputToDateTime(values.otpRequiredAt))
-                    : null,
+                    : "-" // Specify a bad format to cause a validation error - the otpRequiredAt is required.
+                  : null,
                 hasOtpConfigured: values.hasOtpConfigured,
               }
             : {
