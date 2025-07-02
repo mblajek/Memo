@@ -99,7 +99,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
     id: {name: "id", initialVisible: false, columnGroups: ":meeting_multicolumn"},
     date: {
       name: "date",
-      columnDef: {size: 220, sortDescFirst: true, enableHiding: false},
+      columnDef: {size: 230, sortDescFirst: true, enableHiding: false},
       columnGroups: ["meeting_multicolumn", true],
     },
     time: {
