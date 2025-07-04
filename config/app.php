@@ -28,6 +28,7 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'db' => [
+        'auto_migrate' => Env::get('APP_DB_ALWAYS_MIGRATE', false),
         'dump_at' => Env::get('APP_DB_DUMP_AT'),
         'dump_password' => Env::get('APP_DB_DUMP_PASSWORD'),
         'rc_restore' => Env::get('APP_DB_RC_RESTORE'),

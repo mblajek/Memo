@@ -28,6 +28,7 @@ readonly class SmsService extends AbstractNotificationSendService
 
     public function sendNotification(Notification $notification): ?string
     {
+        self::prepareForSms($notification);
         return $this->sendSms(number: $notification->address, message: $notification->subject);
     }
 
@@ -38,10 +39,7 @@ readonly class SmsService extends AbstractNotificationSendService
     public function sendSms(
         string $number,
         string $message,
-        ?bool $ascii = null,
     ): ?string {
-        ['number' => $number, 'message' => $message] = self::prepareSms($number, $message, $ascii);
-
         $serviceShortNames = explode(',', Env::get(self::ENV_SERVICES));
         $serviceShortNames = array_combine($serviceShortNames, $serviceShortNames);
 
@@ -81,12 +79,11 @@ readonly class SmsService extends AbstractNotificationSendService
     }
 
     /** @throws ApiException */
-    public static function prepareSms(
-        string $number,
-        string $message,
+    public static function prepareForSms(
+        Notification $notification,
         ?bool $ascii = null,
-    ): array {
-        $number = trim($number);
+    ): void {
+        $number = trim($notification->address);
         $numberDigits = preg_replace('/^\+|[-\s]/', '', $number);
 
         if (!ctype_digit($numberDigits)) {
@@ -96,7 +93,7 @@ readonly class SmsService extends AbstractNotificationSendService
             $number = "48$numberDigits";
         }
 
-        $message = trim($message);
+        $message = trim($notification->subject);
         $message = ($ascii ?? (mb_strlen($message) > self::SMS_UNICODE_LENGTH))
             ? Str::ascii($message) : $message;
         $messageLength = mb_strlen($message);
@@ -109,6 +106,7 @@ readonly class SmsService extends AbstractNotificationSendService
             $number = Env::getOrFail(self::SMS_NO_PROD_ADDR);
         }
 
-        return ['number' => $number, 'message' => $message];
+        $notification->address = $number;
+        $notification->subject = $message;
     }
 }

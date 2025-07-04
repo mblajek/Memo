@@ -97,6 +97,7 @@
     $exec('cp -r vendor/ artisan composer.json release/memo/', $config['release']);
     $exec('rm -rf release/memo/storage/logs/*.log', $config['release']);
     $exec('rm -rf release/memo/database/dumps/*.zip', $config['release']);
+    $exec('rm -rf release/memo/public/storage/*', $config['release']);
 
     $exec('cd release && zip -r4 memo.zip memo/', $config['zip']);
 
