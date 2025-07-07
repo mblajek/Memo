@@ -25,7 +25,7 @@ Artisan::command('fz:hash', function (): void {
 
 Schedule::command(SendNotificationsCommand::SIGNATURE)->everyMinute();
 
-if (Config::has('app.db.dump_at')) {
+if (Config::get('app.db.dump_at')) {
     Schedule::call(function (): int {
         $status = Artisan::call('fz:db-dump');
         if (!$status && Config::boolean('app.db.rc_restore')) {
