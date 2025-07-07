@@ -1,4 +1,5 @@
 import {useQueryClient} from "@tanstack/solid-query";
+import {FacilityNotification} from "data-access/memo-api/groups/FacilityNotification";
 import {System} from "data-access/memo-api/groups/System";
 import {User} from "data-access/memo-api/groups/User";
 import {createSignal, untrack} from "solid-js";
@@ -44,7 +45,11 @@ export function useInvalidator(queryClient = useQueryClient()) {
     systemStatus: () => void queryClient.invalidateQueries({queryKey: System.keys.status()}),
     // Facility resources:
     facility: {
-      meetings: () => void queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()}),
+      meetings: () => {
+        void queryClient.invalidateQueries({queryKey: FacilityMeeting.keys.meeting()});
+        // Also invalidate the notifications as they might be created from meetings.
+        void queryClient.invalidateQueries({queryKey: FacilityNotification.keys.notification()});
+      },
       users: () => void queryClient.invalidateQueries({queryKey: FacilityUsers.keys.user()}),
       clientGroups: () => {
         void invalidate.facility.users();
