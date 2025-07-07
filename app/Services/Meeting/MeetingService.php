@@ -44,6 +44,8 @@ readonly class MeetingService
             $meeting->attendants()->saveMany($attendants);
             $meeting->resources()->saveMany($resources);
 
+            $meeting->unsetRelations();
+
             $notifications = $this->meetingNotificationService
                 ->create(meeting: $meeting, meetingNotifications: $meetingNotifications);
 
@@ -101,6 +103,8 @@ readonly class MeetingService
                     $meeting->resources()->saveMany($finalResources);
                 }
             }
+
+            $meeting->unsetRelations();
 
             /** @var Collection<Notification>&iterable<Notification> $updatedNotifications */
             $updatedNotifications = Collection::make($notificationsToUpdate);
