@@ -46,6 +46,7 @@ final readonly class NotificationTquery extends TqService
         $config->addSimple(TqDataTypeEnum::datetime, 'scheduled_at');
         $config->addSimple(TqDataTypeEnum::string, 'service');
         $config->addSimple(TqDataTypeEnum::string, 'status');
+        $config->addSimple(TqDataTypeEnum::uuid_nullable, 'meeting_id');
 
         $config->addJoined(TqDataTypeEnum::text_nullable, TqTableAliasEnum::error_log_entry, 'message', 'error_message');
 

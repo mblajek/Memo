@@ -37,6 +37,7 @@ export interface MeetingClientResource extends MeetingAttendantResourceBase {
 }
 
 export interface MeetingNotificationResource {
+  readonly id: string;
   readonly status: MeetingNotificationStatus;
   readonly notificationMethodDictId: string;
 }

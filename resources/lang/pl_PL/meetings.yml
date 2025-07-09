@@ -60,3 +60,5 @@ resource_conflicts:
 notification_methods:
   non_standard: "Ustawienie różni się od domyślnego ustawienia dla tego klienta"
   edit_meeting_to_modify: "Edytuj spotkanie aby zmodyfikować opcje powiadomień."
+
+notification_info: "Status powiadomienia: {{status}}"

@@ -25,25 +25,28 @@ use OpenApi\Attributes as OA;
             nullable: true,
         ),
         new OA\Property(
-            property: 'notifications', type: 'array', items: new OA\Items(
-            required: ['notificationMethodDictId'],
-            properties: [
-                new OA\Property(
-                    property: 'status',
-                    type: 'string',
-                    example: 'scheduled',
-                ),
-                new OA\Property(
-                    property: 'notificationMethodDictId',
-                    type: 'string',
-                    format: 'uuid',
-                    example: 'UUID',
-                ),
-            ],
-        ),
+            property: 'notifications',
+            type: 'array',
+            items: new OA\Items(
+                required: ['notificationMethodDictId'],
+                properties: [
+                    new OA\Property(
+                        property: 'status',
+                        type: 'string',
+                        example: 'scheduled',
+                    ),
+                    new OA\Property(
+                        property: 'notificationMethodDictId',
+                        type: 'string',
+                        format: 'uuid',
+                        example: 'UUID',
+                    ),
+                ],
+            ),
         ),
     ]
-)] /**
+)]
+/**
  * @method __construct(MeetingAttendant $resource)
  * @mixin MeetingAttendant
  */
@@ -59,11 +62,12 @@ class MeetingClientResource extends AbstractJsonResource
                 ->where('user_id', $meetingAttendant->user_id)
                 ->toBase()->map(fn(Notification $notification): array
                     => [
-                    'scheduledAt' => $notification->scheduled_at, // todo: not documented
-                    'subject' => $notification->subject, // todo: not documented
-                    'status' => $notification->status->baseStatus()->name,
-                    'notificationMethodDictId' => $notification->notification_method_dict_id,
-                ])->values()->all(),
+                        'id' => $notification->id, // todo: not documented
+                        'scheduledAt' => $notification->scheduled_at, // todo: not documented
+                        'subject' => $notification->subject, // todo: not documented
+                        'status' => $notification->status->baseStatus()->name,
+                        'notificationMethodDictId' => $notification->notification_method_dict_id,
+                    ])->values()->all(),
         ];
     }
 }

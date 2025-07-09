@@ -63,13 +63,21 @@ export const getAttendantsSchemaPart = () =>
     clients: getAttendantsSchema(),
   });
 
+export const getNotificationSchema = () =>
+  z.object({
+    notificationMethodDictId: z.string(),
+    id: z.string().optional(),
+    status: z.string().optional(),
+    scheduledAt: z.string().optional(),
+  });
+
 const getAttendantsSchema = () =>
   z.array(
     z.object({
       userId: z.string(),
       clientGroupId: z.string(),
       attendanceStatusDictId: z.string(),
-      notifications: z.array(z.object({notificationMethodDictId: z.string()})).optional(),
+      notifications: z.array(getNotificationSchema()).optional(),
     }),
   );
 
@@ -94,9 +102,7 @@ type ClientsGroupsMode = "none" | "shared" | "separate";
 
 interface FormAttendantData
   extends Pick<MeetingStaffResource & MeetingClientResource, "userId" | "clientGroupId" | "attendanceStatusDictId"> {
-  notifications?: {
-    notificationMethodDictId: string;
-  }[];
+  notifications?: z.infer<ReturnType<typeof getNotificationSchema>>[];
 }
 
 export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
@@ -869,9 +875,7 @@ export function useAttendantsCreator() {
       const attendants = attendantsFromMeeting.map((attendant) =>
         createAttendant({
           ...attendant,
-          notifications: (attendant as Partial<MeetingClientResource>).notifications?.map((n) => ({
-            notificationMethodDictId: n.notificationMethodDictId,
-          })),
+          notifications: [...((attendant as Partial<MeetingClientResource>).notifications || [])],
           ...attendanceStatusOverride,
         }),
       );
@@ -910,7 +914,12 @@ export function getAttendantsValuesForEdit(values: Partial<FormAttendantsData>) 
       .map((staff) => ({...staff, clientGroupId: undefined, notifications: undefined})),
     clients: values.clients
       ?.filter(({userId}) => userId)
-      .map((client) => ({...client, notifications: client.notifications || []})),
+      .map((client) => ({
+        ...client,
+        notifications: (client.notifications || []).map((n) => ({
+          notificationMethodDictId: n.notificationMethodDictId,
+        })),
+      })),
   } satisfies Partial<MeetingResourceForPatch>;
 }
 

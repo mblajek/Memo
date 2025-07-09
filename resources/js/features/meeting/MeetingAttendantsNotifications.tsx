@@ -13,6 +13,7 @@ import {useLangFunc} from "components/utils/lang";
 import {QueryBarrier} from "components/utils/QueryBarrier";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {MeetingFormType} from "features/meeting/MeetingForm";
+import {NotificationStatusIndicator} from "features/meeting/NotificationStatusIndicator";
 import {AiFillCaretDown} from "solid-icons/ai";
 import {FaSolidAsterisk, FaSolidCircleCheck, FaSolidCircleXmark} from "solid-icons/fa";
 import {createEffect, createMemo, For, Show, VoidComponent} from "solid-js";
@@ -72,7 +73,7 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
           placement={{placement: "bottom-start"}}
         >
           <QueryBarrier queries={[selectedClientsDataQuery]}>
-            <div class="px-2 py-1 grid gap-x-4 gap-y-0.5 min-w-80" style={{"grid-template-columns": "auto auto"}}>
+            <div class="px-2 py-1 grid gap-x-1 gap-y-0.5 min-w-80" style={{"grid-template-columns": "auto auto auto"}}>
               <div />
               <StandaloneFieldLabel class="flex flex-col items-center">
                 {notificationMethodDict()?.sms.label}
@@ -80,19 +81,19 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
               <For each={meetingClients()}>
                 {(meetingClient, index) => {
                   const client = createMemo(() => selectedClients()?.find(({id}) => id === meetingClient.userId));
-                  const value = () =>
+                  const notification = () =>
                     notificationMethodDict()
-                      ? meetingClient.notifications?.some(
+                      ? meetingClient.notifications?.find(
                           (n) => n.notificationMethodDictId === notificationMethodDict()!.sms.id,
                         )
                       : undefined;
-                  const clientValue = () =>
+                  const clientHasNotificationMethod = () =>
                     notificationMethodDict() && client()
                       ? client()!.notificationMethods.includes(notificationMethodDict()!.sms.id)
                       : undefined;
                   return (
                     <>
-                      <div class="col-start-1">
+                      <div class="col-start-1 me-4">
                         <UserLink type="clients" userId={meetingClient.userId} />
                       </div>
                       <Button
@@ -105,15 +106,15 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
                             meetingClient.notifications?.filter(
                               (n) => n.notificationMethodDictId !== notificationMethodDict()!.sms.id,
                             ) || [];
-                          if (!value()) {
+                          if (!notification()) {
                             notifications.push({notificationMethodDictId: notificationMethodDict()!.sms.id});
                           }
                           form.setData(`clients.${index()}.notifications`, notifications);
                         }}
                         disabled={props.viewMode}
-                        aria-checked={value()}
+                        aria-checked={!!notification()}
                       >
-                        <Show when={clientValue() !== undefined && value() !== clientValue()}>
+                        <Show when={clientHasNotificationMethod() === !notification()}>
                           <div class="w-0 relative right-3">
                             <div class="w-3" use:title={t("meetings.notification_methods.non_standard")}>
                               <FaSolidAsterisk class="inline-block mb-2 text-gray-600" size="12" />
@@ -121,7 +122,7 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
                           </div>
                         </Show>
                         <Show
-                          when={value()}
+                          when={notification()}
                           fallback={<FaSolidCircleXmark class="text-black text-opacity-30 scale-75" />}
                         >
                           <FaSolidCircleCheck class="text-memo-active" />
@@ -137,6 +138,9 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
                           </Show>
                         </Show>
                       </Button>
+                      <Show when={props.viewMode}>
+                        <NotificationStatusIndicator notification={notification()} />
+                      </Show>
                     </>
                   );
                 }}
