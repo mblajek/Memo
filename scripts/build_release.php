@@ -1,8 +1,11 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 (function () {
     $exit = function (string $error): never {
-        echo "\n\n$error\n\n";
+        echo "\n\e[0;31m\n$error\e[0m\n\n";
         die(1);
     };
 
@@ -67,7 +70,7 @@
                     $exit(
                         "For env $envConfig parameters:"
                         . ($condValue ? '' : ' no') . " \"$condParam\" requires"
-                        . ($ruleValue ? '' : ' no') . " \"$ruleParam\""
+                        . ($ruleValue ? '' : ' no') . " \"$ruleParam\"",
                     );
                 }
             }
@@ -75,6 +78,45 @@
         }
         return $finalConfig ?? $exit("Missing env $envConfig");
     })();
+
+    $knownPublicFiles = array_fill_keys([
+        'public/.htaccess',
+        'public/build/manifest.json',
+        'public/docs/.markdownlint.json',
+        'public/index.php',
+        'public/robots.txt',
+    ], true);
+    $scanPublic = function (\Closure $scanPublic, string $dirPath = 'public') use (&$knownPublicFiles, $exit) {
+        foreach (scandir($dirPath) as $fileName) {
+            if ($fileName === '.' || $fileName === '..') {
+                continue;
+            }
+            $filePath = "$dirPath/$fileName";
+
+            if (is_dir($filePath)) {
+                $scanPublic($scanPublic, $filePath);
+                continue;
+            }
+            if (array_key_exists($filePath, $knownPublicFiles)) {
+                $knownPublicFiles[$filePath] = false;
+                continue;
+            }
+            if (!in_array(
+                pathinfo($filePath, PATHINFO_EXTENSION),
+                ['css', 'js', 'map', 'md', 'png', 'svg'],
+            )) {
+                $exit("Unexpected public file: $filePath");
+            }
+        }
+        if (str_contains($dirPath, '/')) {
+            return;
+        }
+        if ($missingPublicFiles = array_filter($knownPublicFiles)) {
+            $exit('Missing public files: ' . implode(', ', array_keys($missingPublicFiles)));
+        }
+    };
+
+  //  $scanPublic($scanPublic);
 
     $exec('rm -rf release');
     $exec('mkdir -p release/memo/', $config['release']);
@@ -91,6 +133,8 @@
     $exec('touch storage/app/fresh-release.txt');
     $exec('git log -1 --format="%H%n%ci" > storage/app/git-version.txt');
     $exec('git status -b --porcelain >> storage/app/git-version.txt');
+
+    $scanPublic($scanPublic);
 
     $exec('cp -r app/ bootstrap/ config/ database/ release/memo/', $config['release']);
     $exec('cp -r public/ resources/ routes/ storage/ release/memo/', $config['release']);
