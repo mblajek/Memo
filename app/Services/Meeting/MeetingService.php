@@ -106,9 +106,8 @@ readonly class MeetingService
 
             $meeting->unsetRelations();
 
-            /** @var Collection<Notification>&iterable<Notification> $updatedNotifications */
-            $updatedNotifications = Collection::make($notificationsToUpdate);
-            $this->meetingNotificationService->update($meeting, $updatedNotifications, $isDatetimeChange);
+            $updatedNotifications = $this->meetingNotificationService
+                ->updateOrDelete($meeting,  Collection::make($notificationsToUpdate), $isDatetimeChange);
 
             $createdNotifications = $this->meetingNotificationService
                 ->create(meeting: $meeting, meetingNotifications: $meetingNotificationsToCreate);

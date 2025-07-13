@@ -83,15 +83,15 @@ readonly class SmsService extends AbstractNotificationSendService
         Notification $notification,
         ?bool $ascii = null,
     ): void {
-        $number = trim($notification->address);
-        $numberDigits = preg_replace('/^\+|[-\s]/', '', $number);
+        $number = preg_replace('/^\+|[-\s]/', '', trim($notification->address));
 
-        if (!ctype_digit($numberDigits)) {
+        if (!ctype_digit($number)) {
             ExceptionFactory::smsInvalidNumberFormat($number)->throw();
         }
-        if (strlen($numberDigits) === 9) {
-            $number = "48$numberDigits";
-        }
+        $number = match (strlen($number)) {
+            9 => "48$number",
+            default => $number,
+        };
 
         $message = trim($notification->subject);
         $message = ($ascii ?? (mb_strlen($message) > self::SMS_UNICODE_LENGTH))

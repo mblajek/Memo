@@ -12,6 +12,7 @@ use App\Utils\Date\DateHelper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\ItemNotFoundException;
 
 readonly class MeetingNotificationService
 {
@@ -22,12 +23,15 @@ readonly class MeetingNotificationService
 
     /**
      * @param EloquentCollection<array-key, Notification> $notifications
+     * // avoid invalid parameter type invalid inspection - Collection<A,B> is already iterable<A>
+     * @return EloquentCollection<array-key, Notification>&iterable<Notification>
      */
-    public function update(
+    public function updateOrDelete(
         Meeting $meeting,
         EloquentCollection $notifications,
         bool $isDatetimeChange,
-    ): void {
+    ): EloquentCollection {
+        $updatedNotifications = new EloquentCollection();
         $scheduledAt = $this->determineScheduledAt($meeting);
 
         foreach ($notifications as $notification) {
@@ -35,6 +39,11 @@ readonly class MeetingNotificationService
             $notification->scheduled_at = $scheduledAt;
 
             $meetingAttendant = $meeting->getAttendant(AttendanceType::Client, $notification->user_id);
+
+            if (!$meetingAttendant) {
+                $notification->delete();
+                continue;
+            }
 
             $notification->status = $this->determineStatus(
                 $meeting,
@@ -48,7 +57,9 @@ readonly class MeetingNotificationService
                     $notification->message = NotificationTemplate::meeting_facility_template_message->templateString();
                 }
             }
+            $updatedNotifications->add($notification);
         }
+        return $updatedNotifications;
     }
 
     private function determineStatus(
@@ -66,7 +77,6 @@ readonly class MeetingNotificationService
     }
 
     /**
-     * @param Meeting $meeting
      * @param list<MeetingNotification> $meetingNotifications
      * // avoid invalid parameter type invalid inspection - Collection<A,B> is already iterable<A>
      * @return EloquentCollection<array-key, Notification>&iterable<Notification>
@@ -79,7 +89,8 @@ readonly class MeetingNotificationService
         foreach ($meetingNotifications as $meetingNotification) {
             $userId = $meetingNotification->userId;
             $meetingAttendant = $meetingNotification->meetingAttendant
-                ?: $meeting->getAttendant(AttendanceType::Client, $userId);
+                ?: $meeting->getAttendant(AttendanceType::Client, $userId)
+                    ?: (throw new ItemNotFoundException());
 
             $notifications->add(
                 $this->notificationService->schedule(
