@@ -4,8 +4,14 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 (function () {
-    $exit = function (string $error): never {
-        echo "\n\e[0;31m\n$error\e[0m\n\n";
+    $startTime = microtime(true);
+
+    $formatTime = fn(float $time): string => number_format(microtime(true) - $time, 2) . 's';
+
+    $color = fn(string $message, bool $ok = false): string => "\e[0;" . ($ok ? 32 : 31) . "m$message\e[0m";
+
+    $exit = function (string $error) use ($color): never {
+        echo "\n{$color("\n$error")}\n\n";
         die(1);
     };
 
@@ -13,25 +19,26 @@ ini_set('display_errors', 1);
         $exit('Cannot change working directory');
     }
 
-    $exec = function (string $command, bool $noSkip = true, bool $echoOutput = false) use ($exit): void {
+
+    $exec = function (string $command, bool $noSkip = true, bool $echoOutput = false) use ($exit, $formatTime): void {
         echo str_pad("\n> $command ", 75, '.') . ' ';
         if (!$noSkip) {
             echo '(skipped)';
             return;
         }
-        $time = microtime(true);
-        exec("$command", $output, $code);
+        $execStartTime = microtime(true);
+        exec($command, $output, $code);
         if ($code !== 0) {
             $exit("\n" . implode("\n", $output));
         }
-        echo 'OK ' . str_pad('(' . number_format(microtime(true) - $time, 2) . 's)', 8, ' ', STR_PAD_LEFT);
+        echo 'OK ' . str_pad("({$formatTime($execStartTime)})", 8, ' ', STR_PAD_LEFT);
         if ($echoOutput) {
             echo "\n" . implode("\n", array_map(fn(string $line) => "| $line", $output ?: ['(no output)']));
         }
     };
 
     /** @var array{pull:bool,dev:bool,prod:bool,release:bool,zip:bool} $config */
-    $config = (function () use ($exit) {
+    $config = (function () use ($exit): array {
         $envConfig = 'APP_BUILD_RELEASE';
         $config = array_fill_keys(['pull', 'dev', 'prod', 'release', 'zip'], false);
         $finalConfig = null;
@@ -86,7 +93,7 @@ ini_set('display_errors', 1);
         'public/index.php',
         'public/robots.txt',
     ], true);
-    $scanPublic = function (\Closure $scanPublic, string $dirPath = 'public') use (&$knownPublicFiles, $exit) {
+    $scanPublic = function (\Closure $scanPublic, string $dirPath = 'public') use (&$knownPublicFiles, $exit): void {
         foreach (scandir($dirPath) as $fileName) {
             if ($fileName === '.' || $fileName === '..') {
                 continue;
@@ -116,7 +123,23 @@ ini_set('display_errors', 1);
         }
     };
 
-  //  $scanPublic($scanPublic);
+    $verifyGit = function () use ($exit): string {
+        $branch = null;
+        $changes = [];
+        foreach (file('storage/app/git-version.txt', FILE_IGNORE_NEW_LINES) as $line) {
+            if ($branch) {
+                $changes[] = trim($line);
+            } elseif (preg_match('/^## (.+)\.\.\./', $line, $matches)) {
+                $branch = $matches[1];
+            }
+        }
+        if (!$branch) {
+            $exit('Unknown git branch in git-version.txt');
+        } elseif ($changes) {
+            $exit('Changed git tracked files: ' . implode(', ', $changes));
+        }
+        return $branch;
+    };
 
     $exec('rm -rf release');
     $exec('mkdir -p release/memo/', $config['release']);
@@ -135,6 +158,7 @@ ini_set('display_errors', 1);
     $exec('git status -b --porcelain >> storage/app/git-version.txt');
 
     $scanPublic($scanPublic);
+    $branch = $verifyGit();
 
     $exec('cp -r app/ bootstrap/ config/ database/ release/memo/', $config['release']);
     $exec('cp -r public/ resources/ routes/ storage/ release/memo/', $config['release']);
@@ -142,9 +166,11 @@ ini_set('display_errors', 1);
     $exec('rm -rf release/memo/storage/logs/*.log', $config['release']);
     $exec('rm -rf release/memo/database/dumps/*.zip', $config['release']);
     $exec('rm -rf release/memo/public/storage/*', $config['release']);
+    $exec('rm -f release/memo/app/Console/Commands/DevCommand.php', $config['release']);
 
     $exec('cd release && zip -r4 memo.zip memo/', $config['zip']);
 
     $exec('composer install -n -q', $config['prod']); // install dev after no-dev
-    echo "\n\n";
+
+    echo "\n\nBuild finished for branch {$color($branch, $branch === 'master')} ({$formatTime($startTime)})\n\n";
 })();
