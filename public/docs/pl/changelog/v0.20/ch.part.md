@@ -5,7 +5,9 @@ Data wydania: **$$$DATE$$$**
 `🟠` Wysyłanie do klientów powiadomień SMS przed nadchodzącymi spotkaniami.
 [Więcej informacji o powiadomieniach](meeting-notifications).
 
-<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 4c77786da516b34c6895c6928b66a0cc2c91ca3f -->
+`🟡` Wprowadzono poprawki bezpieczeństwa rekomendowane w zakończonym właśnie audycie.
+
+<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ 4f95dbc825d2a2dede2fa1ec870d7ae00a7bfd36 -->
 
 ---
 
