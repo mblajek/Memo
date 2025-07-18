@@ -20,7 +20,7 @@ const version = match[1];
 console.log(`Current version: ${version}`);
 
 const gitLog = Array.from(
-  (await run("git", "log", "origin/master..HEAD", "--reverse", "--no-merges", "--format=%H %at %an%n%s%n")).matchAll(
+  (await run(["git", "log", "origin/master..HEAD", "--reverse", "--no-merges", "--format=%H %at %an%n%s%n"])).matchAll(
     /^(?<hash>[0-9a-f]{40}) (?<timestamp>\d+) (?<author>.+?)\n(?<title>.+?)\n\n/gm,
   ),
   (match) => ({
