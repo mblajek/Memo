@@ -27,11 +27,12 @@ await run([
 await run(["git", "commit", "-m", "Finalise changelog."]);
 await gitPush();
 await run(["git", "switch", "rc-docs"]);
-console.log(`Old hash of rc-docs: ${await run(["git", "rev-parse", "HEAD"])}`);
+console.log(`Old hash of rc-docs: ${(await run(["git", "rev-parse", "HEAD"])).trim()}`);
 await run(["git", "merge", "--ff-only", "develop"]);
 await gitPush();
 await run(["git", "switch", "master-docs"]);
-console.log(`Old hash of master-docs: ${await run(["git", "rev-parse", "HEAD"])}`);
+console.log(`Old hash of master-docs: ${(await run(["git", "rev-parse", "HEAD"])).trim()}`);
 await run(["git", "merge", "--ff-only", "develop"]);
 await gitPush();
+await run(["git", "switch", "develop"]);
 console.log("Done");
