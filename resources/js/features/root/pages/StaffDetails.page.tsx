@@ -12,6 +12,7 @@ import {DateField} from "components/ui/form/DateField";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
 import {calendarIcons, facilityIcons} from "components/ui/icons";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
+import {title} from "components/ui/title";
 import {Autofocus} from "components/utils/Autofocus";
 import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
@@ -37,6 +38,8 @@ import {DateTime} from "luxon";
 import {createComputed, createEffect, createSignal, Match, Show, Switch, VoidComponent} from "solid-js";
 import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
 import {z} from "zod";
+
+type _Directives = typeof title;
 
 const getSchema = () =>
   getUserBaseInfoSchema().merge(
@@ -215,7 +218,10 @@ export default (() => {
                     }}
                   </FelteForm>
                   <div class={cx("flex flex-col items-stretch gap-1", editMode() ? "hidden" : undefined)}>
-                    <div class="self-end">
+                    <div
+                      class="self-end"
+                      use:title={[t("facility_user.show_calendar.title.staff"), {placement: "left"}]}
+                    >
                       <LinkWithNewTabLink
                         {...getCalendarViewLinkData(`/${activeFacility()?.url}/calendar`, {
                           mode: ["week", "month"],

@@ -32,7 +32,9 @@ staff:
     label: "Pracownik jest nieaktywny"
     since: "(od {{date}})"
 
-show_calendar: "Pokaż kalendarz"
+show_calendar: "Kalendarz"
+show_calendar.title:
+  staff: "Przejdź do kalendarza tego pracownika"
 
 client_group__interval: "(0-1)[$t(models.client_group._name)];(2-inf)[$t(models.client_group._name_plural)];"
 client_groups:

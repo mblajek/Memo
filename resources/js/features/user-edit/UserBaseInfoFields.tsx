@@ -125,19 +125,6 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
         );
       }
     });
-    createEffect(
-      on(
-        () => form.data(daysLeftFieldName()),
-        (value) => {
-          const dateTime =
-            value == undefined || value === ""
-              ? ""
-              : dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)}));
-          // eslint-disable-next-line solid/reactivity
-          timeout.set(() => form.setFields(dProps.name, dateTime));
-        },
-      ),
-    );
     return (
       <div class="flex flex-col">
         <FieldLabel fieldName={dProps.name} />
@@ -154,7 +141,20 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
             {t("parenthesis.open")}
             {t("calendar.days_left")}
           </div>
-          <TextFieldTextInput class="w-16" name={daysLeftFieldName()} type="number" min="0" small />
+          <TextFieldTextInput
+            class="w-16"
+            name={daysLeftFieldName()}
+            type="number"
+            min="0"
+            small
+            onInput={({target: {value}}) => {
+              const dateTime = value
+                ? dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)}))
+                : "";
+              // eslint-disable-next-line solid/reactivity
+              timeout.set(() => form.setFields(dProps.name, dateTime));
+            }}
+          />
           <div>{t("parenthesis.close")}</div>
           {dProps.suffix}
         </div>
