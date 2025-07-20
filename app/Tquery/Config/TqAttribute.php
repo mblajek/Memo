@@ -17,7 +17,7 @@ trait TqAttribute
         Attribute|(AttributeUuidEnum&BackedEnum) $attribute,
         ?string $prefix = null,
     ): void {
-        $attribute = ($attribute instanceof Attribute) ? $attribute : Attribute::getById($attribute);
+        $attribute = ($attribute instanceof Attribute) ? $attribute : Attribute::getCacheById($attribute);
         if ($attribute->type === AttributeType::Separator) {
             return; // todo: maybe tquery separator
         }

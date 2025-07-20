@@ -1,6 +1,6 @@
 import {SmallSpinner} from "components/ui/Spinner";
-import {useLangFunc} from "components/utils/lang";
 import {isDEV} from "components/utils/dev_mode";
+import {useLangFunc} from "components/utils/lang";
 import {JSX, Match, Show, Switch} from "solid-js";
 import {useDeveloperPermission} from "../authentication/developer_permission";
 import {useSystemStatusMonitor} from "./system_status_monitor";
@@ -23,6 +23,14 @@ export function useEnvInfo() {
       return background || color
         ? ({background, color} satisfies Pick<JSX.CSSProperties, "background" | "color">)
         : undefined;
+    },
+    faviconBadgeFill: () => {
+      const st = status();
+      if (!st || !st.appEnvColor) {
+        return undefined;
+      }
+      // Return some color for long background, which might be e.g. `url(...)` which would not work.
+      return st.appEnvColor.length > 30 ? "#bcbd" : st.appEnvColor;
     },
     info: () => (
       <Show when={status()} fallback={<SmallSpinner />}>

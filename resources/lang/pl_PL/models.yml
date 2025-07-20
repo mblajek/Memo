@@ -7,6 +7,7 @@ generic:
   updatedBy.id: "$t(models.generic.updatedBy.name)"
   name: "nazwa"
   email: "adres e-mail"
+  status: "status"
   notes: "opis"
   count_suffix: "$t(thin_n_thin)liczba"
 
@@ -29,6 +30,7 @@ facility:
   _name: "placówka"
   _name_plural: "placówki"
   url: "adres Memo"
+  meetingNotificationTemplateSubject: "treść powiadomienia SMS"
   members: "osoby przypisane do placówki"
   userCount: "liczba osób"
   facilityAdmins.*.name: "administratorzy"
@@ -162,6 +164,16 @@ meeting:
   resources.count: "$t(models.meeting.resources)$t(models.generic.count_suffix)"
   resourceConflicts.exists: "konflikt zasobów"
   resourceConflicts.*.resourceDictId: "konflikt$t(thin_n_thin)zasoby"
+
+notification:
+  _name: "powiadomienie"
+  _name_plural: "powiadomienia"
+  scheduledAt: "termin wysłania"
+  service: "serwis"
+  errorMessage: "komunikat błędu"
+  user.id: "adresat"
+  address: "adres"
+  subject: "treść"
 
 table_saved_view:
   _name: "widok tabeli"

@@ -6,10 +6,12 @@ use App\Exceptions\ApiException;
 use App\Http\Controllers\ApiController;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Http\Resources\Admin\AdminFacilityResource;
 use App\Models\Facility;
 use App\Services\Facility\CreateFacilityService;
 use App\Services\Facility\UpdateFacilityService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
 use Throwable;
 
@@ -18,6 +20,30 @@ class AdminFacilityController extends ApiController
     protected function initPermissions(): void
     {
         $this->permissionOneOf(Permission::globalAdmin);
+    }
+
+    #[OA\Get(
+        path: '/api/v1/admin/facility/list',
+        description: new PermissionDescribe([Permission::globalAdmin]),
+        summary: 'All facilities',
+        tags: ['Admin'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'OK',
+                content: new OA\JsonContent(properties: [
+                    new OA\Property(
+                        property: 'data',
+                        type: 'array',
+                        items: new OA\Items(ref: '#/components/schemas/AdminFacilityResource'),
+                    ),
+                ]),
+            ),
+        ]
+    )]
+    public function list(): JsonResource
+    {
+        return AdminFacilityResource::collection(Facility::query()->get());
     }
 
     #[OA\Post(
@@ -30,8 +56,11 @@ class AdminFacilityController extends ApiController
                 properties: [
                     new OA\Property(property: 'name', type: 'string', example: 'Test'),
                     new OA\Property(property: 'url', type: 'string', example: 'test-123'),
-                ]
-            )
+                    new OA\Property(property: 'contactPhone', type: 'string'),
+                    new OA\Property(property: 'meetingNotificationTemplateSubject', type: 'string'),
+                    new OA\Property(property: 'meetingNotificationTemplateMessage', type: 'string'),
+                ],
+            ),
         ),
         tags: ['Admin'],
         responses: [
@@ -46,7 +75,13 @@ class AdminFacilityController extends ApiController
     )] /** @throws Throwable|ApiException */
     public function post(CreateFacilityService $service): JsonResponse
     {
-        $data = $this->validate(Facility::getInsertValidator(['name', 'url']));
+        $data = $this->validate(Facility::getInsertValidator([
+            'name',
+            'url',
+            'contact_phone',
+            'meeting_notification_template_subject',
+            'meeting_notification_template_message',
+        ]));
 
         $result = $service->handle($data);
 
@@ -62,8 +97,11 @@ class AdminFacilityController extends ApiController
                 properties: [
                     new OA\Property(property: 'name', type: 'string', example: 'Test'),
                     new OA\Property(property: 'url', type: 'string', example: 'test-123'),
-                ]
-            )
+                    new OA\Property(property: 'contactPhone', type: 'string'),
+                    new OA\Property(property: 'meetingNotificationTemplateSubject', type: 'string'),
+                    new OA\Property(property: 'meetingNotificationTemplateMessage', type: 'string'),
+                ],
+            ),
         ),
         tags: ['Admin'],
         parameters: [
@@ -73,7 +111,8 @@ class AdminFacilityController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(type: 'string', format: 'uuid', example: 'UUID'),
-            )],
+            ),
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Updated'),
             new OA\Response(response: 400, description: 'Bad Request'),
@@ -83,7 +122,13 @@ class AdminFacilityController extends ApiController
     public function patch(UpdateFacilityService $service): JsonResponse
     {
         $facility = $this->getFacilityOrFail();
-        $data = $this->validate(Facility::getPatchValidator(['name', 'url'], $facility));
+        $data = $this->validate(Facility::getPatchValidator([
+            'name',
+            'url',
+            'contact_phone',
+            'meeting_notification_template_subject',
+            'meeting_notification_template_message',
+        ], $facility));
 
         $service->handle($facility, $data);
 

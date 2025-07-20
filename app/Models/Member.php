@@ -38,6 +38,8 @@ class Member extends Model
 
     protected $casts = self::BASE_CASTS;
 
+    protected $with = ['staffMember'];
+
     protected static function fieldValidator(string $field): string|array
     {
         return match ($field) {

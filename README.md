@@ -7,7 +7,7 @@
 - grafikami pracy pracowników fundacji
 
 Aktualnie system jest użytkowany w czterech placówkach [Fundacji Dajemy Dzieciom Siłę](http://fdds.pl/)
-oraz w jednej placówce należącej do innego podmiotu.
+oraz w dwóch placówkach prowadzonych przez inne podmioty.
 
 [Polityka prywatności](public/docs/pl/privacy-policy.md)
 
@@ -20,7 +20,7 @@ oraz w jednej placówce należącej do innego podmiotu.
 - employee work schedules
 
 The system is deployed in four facilities of the [Empowering Children Foundation](https://fdds.pl/en)
-and in one facility belonging to another entity.
+and in two facilities run by other organisations.
 
 [Privacy Policy](public/docs/en/privacy-policy.md)
 

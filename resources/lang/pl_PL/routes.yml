@@ -30,6 +30,7 @@ facility:
     time_tables_calendar: "kalendarz"
     time_tables_weekly: "grafiki tygodniowe"
     reports: "raporty"
+    notifications: "powiadomienia"
 
 help: "pomoc"
 help_pages:

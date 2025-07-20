@@ -44,6 +44,7 @@ export default defineConfig([
       "@typescript-eslint/no-base-to-string": "off",
       "@typescript-eslint/no-unnecessary-type-assertion": "warn",
       "@typescript-eslint/no-deprecated": "warn",
+      "@typescript-eslint/ban-ts-comment": "off",
       "no-console": ["warn", {allow: ["info", "warn", "error"]}],
       "no-constant-condition": "warn",
       "no-constant-binary-expression": "off",

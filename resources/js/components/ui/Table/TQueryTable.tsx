@@ -1,3 +1,4 @@
+import {UseQueryResult} from "@tanstack/solid-query";
 import {
   ColumnDef,
   ColumnSizingState,
@@ -52,7 +53,14 @@ import {
   tableHelper,
 } from "data-access/memo-api/tquery/table";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
-import {ColumnType, DataColumnSchema, DataItem, Sort, isDataColumn} from "data-access/memo-api/tquery/types";
+import {
+  ColumnType,
+  DataColumnSchema,
+  DataItem,
+  DataResponse,
+  Sort,
+  isDataColumn,
+} from "data-access/memo-api/tquery/types";
 import {
   Accessor,
   JSX,
@@ -64,6 +72,7 @@ import {
   createEffect,
   createMemo,
   createSignal,
+  onCleanup,
   onMount,
   untrack,
 } from "solid-js";
@@ -86,6 +95,15 @@ import {UuidFilterControl} from "./tquery_filters/UuidFilterControl";
 import {FilterControl} from "./tquery_filters/types";
 
 type _Directives = typeof title;
+
+interface WindowWithTQueryDataAccess extends Window {
+  tquery?: TQueryDataHelper;
+}
+
+interface TQueryDataHelper {
+  readonly dataQuery: UseQueryResult<DataResponse>;
+  rows(): DataResponse[];
+}
 
 declare module "@tanstack/table-core" {
   interface TableMeta<TData extends RowData> {
@@ -858,57 +876,73 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     }),
   );
 
+  const MakeDataAccessibleOnWindow: VoidComponent = () => {
+    onMount(() => {
+      (window as WindowWithTQueryDataAccess).tquery = {
+        dataQuery,
+        rows: () => (dataQuery.data ? JSON.parse(JSON.stringify(dataQuery.data.data)) : undefined),
+      };
+    });
+    onCleanup(() => delete (window as WindowWithTQueryDataAccess).tquery);
+    return <></>;
+  };
+
   return (
-    <Table
-      table={table()!}
-      mode={props.mode}
-      rowsIteration="Index"
-      nonBlocking={props.nonBlocking}
-      aboveTable={() => (
-        <div class="min-h-small-input flex items-stretch gap-1">
-          <TableSearch divClass="flex-grow" />
-          <TableFiltersClearButton
-            columnsWithActiveFilters={columnsWithActiveFilters()}
-            clearColumnFilters={clearColumnFilters}
-          />
-          <TableColumnGroupSelect />
-          <TableColumnVisibilityController />
-          <Show when={props.savedViews && props.staticPersistenceKey}>
-            {(persistenceKey) => (
-              <TableSavedViewsManager
-                staticPersistenceKey={persistenceKey()}
-                defaultTableView={defaultTableView()}
-                getCurrentView={getCompleteTableView}
-                onLoad={loadTableView}
-              />
-            )}
-          </Show>
-          <Show when={props.pageInfo}>
-            {(pageInfo) => (
-              <div class="flex items-center">
-                <DocsModalInfoIcon title={t("tables.more_info")} {...pageInfo()} />
-              </div>
-            )}
-          </Show>
-        </div>
-      )}
-      belowTable={() => (
-        <div class="flex items-start justify-between gap-2 text-base flex-wrap">
-          <div class="min-h-small-input flex items-stretch gap-2">
-            <Pagination />
-            <Show when={!dataQuery.isFetching || rowsCount()}>
-              <TableSummary rowsCount={rowsCount()} />
-              {props.customSectionBelowTable}
+    <>
+      <Show when={props.mode === "standalone"}>
+        <MakeDataAccessibleOnWindow />
+      </Show>
+      <Table
+        table={table()!}
+        mode={props.mode}
+        rowsIteration="Index"
+        nonBlocking={props.nonBlocking}
+        aboveTable={() => (
+          <div class="min-h-small-input flex items-stretch gap-1">
+            <TableSearch divClass="flex-grow" />
+            <TableFiltersClearButton
+              columnsWithActiveFilters={columnsWithActiveFilters()}
+              clearColumnFilters={clearColumnFilters}
+            />
+            <TableColumnGroupSelect />
+            <TableColumnVisibilityController />
+            <Show when={props.savedViews && props.staticPersistenceKey}>
+              {(persistenceKey) => (
+                <TableSavedViewsManager
+                  staticPersistenceKey={persistenceKey()}
+                  defaultTableView={defaultTableView()}
+                  getCurrentView={getCompleteTableView}
+                  onLoad={loadTableView}
+                />
+              )}
+            </Show>
+            <Show when={props.pageInfo}>
+              {(pageInfo) => (
+                <div class="flex items-center">
+                  <DocsModalInfoIcon title={t("tables.more_info")} {...pageInfo()} />
+                </div>
+              )}
             </Show>
           </div>
-          <div class="ml-auto">
-            <TableExportButton />
+        )}
+        belowTable={() => (
+          <div class="flex items-start justify-between gap-2 text-base flex-wrap">
+            <div class="min-h-small-input flex items-stretch gap-2">
+              <Pagination />
+              <Show when={!dataQuery.isFetching || rowsCount()}>
+                <TableSummary rowsCount={rowsCount()} />
+                {props.customSectionBelowTable}
+              </Show>
+            </div>
+            <div class="ml-auto">
+              <TableExportButton />
+            </div>
           </div>
-        </div>
-      )}
-      isLoading={!schema()}
-      isDimmed={dataQuery.isFetching}
-      scrollToTopSignal={scrollToTopSignal}
-    />
+        )}
+        isLoading={!schema()}
+        isDimmed={dataQuery.isFetching}
+        scrollToTopSignal={scrollToTopSignal}
+      />
+    </>
   );
 };

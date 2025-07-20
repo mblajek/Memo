@@ -6,8 +6,8 @@ import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DateField} from "components/ui/form/DateField";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PasswordField} from "components/ui/form/PasswordField";
-import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {TextField, TextFieldTextInput} from "components/ui/form/TextField";
+import {actionIcons} from "components/ui/icons";
 import {cx} from "components/utils/classnames";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useLangFunc} from "components/utils/lang";
@@ -31,9 +31,10 @@ export const getUserBaseInfoSchema = () =>
     isOtpRequired: z.boolean(),
     otpRequiredAt: z.string(),
     hasOtpConfigured: z.boolean(),
-    /** Helper fields, not part of the API. These are number fields. */
-    passwordExpireAt_daysLeft: z.unknown(),
-    otpRequiredAt_daysLeft: z.unknown(),
+    /** Helper fields, not part of the API. The type is unknown to avoid form validator errors. */
+    passwordExpireAt_daysLeft: z.unknown(), // number
+    otpRequiredAt_daysLeft: z.unknown(), // number
+    resetOtp: z.unknown(), //boolean
   });
 
 export type UserBaseInfoFormType = z.infer<ReturnType<typeof getUserBaseInfoSchema>>;
@@ -101,50 +102,29 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
   );
   createComputed(
     on(
-      () => form.data("otpRequiredAt"),
-      (otpRequiredAt) => {
-        if (!otpRequiredAt) {
-          form.setFields("isOtpRequired", false);
-        }
-      },
+      () => form.data("resetOtp"),
+      (resetOtp) => form.setFields("hasOtpConfigured", initialValues()?.hasOtpConfigured && !resetOtp),
     ),
   );
 
   const DateFieldWithDaysLeft: VoidComponent<{readonly name: string; readonly suffix?: JSX.Element}> = (dProps) => {
-    const timeout = new Timeout();
     const daysLeftFieldName = () => `${dProps.name}_daysLeft`;
+    const timeout = new Timeout();
     createEffect(() => {
-      form.setFields(
-        daysLeftFieldName(),
-        form.data(dProps.name)
-          ? Math.max(
-              0,
-              Math.floor(
-                dateTimeLocalInputToDateTime(form.data(dProps.name)).diff(currentTimeMinute(), "days").days +
-                  // Add one hour to avoid bad rounding.
-                  1 / 24,
-              ),
-            )
-          : "",
-      );
+      if (form.data(dProps.name)) {
+        form.setFields(
+          daysLeftFieldName(),
+          Math.max(
+            0,
+            Math.floor(
+              dateTimeLocalInputToDateTime(form.data(dProps.name)).diff(currentTimeMinute(), "days").days +
+                // Add one hour to avoid bad rounding.
+                1 / 24,
+            ),
+          ),
+        );
+      }
     });
-    createEffect(
-      on(
-        () => form.data(daysLeftFieldName()),
-        (value) => {
-          if (value == undefined || value === "") {
-            timeout.set(
-              // eslint-disable-next-line solid/reactivity
-              () => form.setFields(dProps.name, ""),
-              1000,
-            );
-          } else {
-            timeout.clear();
-            form.setFields(dProps.name, dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)})));
-          }
-        },
-      ),
-    );
     return (
       <div class="flex flex-col">
         <FieldLabel fieldName={dProps.name} />
@@ -161,7 +141,20 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
             {t("parenthesis.open")}
             {t("calendar.days_left")}
           </div>
-          <TextFieldTextInput class="w-16" name={daysLeftFieldName()} type="number" min="0" small />
+          <TextFieldTextInput
+            class="w-16"
+            name={daysLeftFieldName()}
+            type="number"
+            min="0"
+            small
+            onInput={({target: {value}}) => {
+              const dateTime = value
+                ? dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: Number(value)}))
+                : "";
+              // eslint-disable-next-line solid/reactivity
+              timeout.set(() => form.setFields(dProps.name, dateTime));
+            }}
+          />
           <div>{t("parenthesis.close")}</div>
           {dProps.suffix}
         </div>
@@ -254,21 +247,16 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
                   </HideableSection>
                 </HideableSection>
                 <HideableSection show={form.data("isOtpRequired") || initialValues()?.hasOtpConfigured}>
-                  <div class="pt-1 flex">
+                  <div class="pt-1 flex flex-col">
                     <Show
                       when={initialValues()?.hasOtpConfigured}
                       fallback={<div>{t("forms.user.otp_configured_info.when_not_configured")}</div>}
                     >
-                      <SegmentedControl
-                        name="hasOtpConfigured"
-                        label=""
-                        items={[
-                          {value: "true", label: () => t("forms.user.otp_configured_info.when_configured.true")},
-                          {value: "false", label: () => t("forms.user.otp_configured_info.when_configured.false")},
-                        ]}
-                        value={String(form.data("hasOtpConfigured"))}
-                        onValueChange={(v) => form.setFields("hasOtpConfigured", v === "true")}
-                      />
+                      <div class="font-semibold text-green-700 flex items-center gap-0.5">
+                        <actionIcons.OTPConfigured class="text-current" />
+                        <div>{t("forms.user.otp_configured_info.when_configured")}</div>
+                      </div>
+                      <CheckboxField name="resetOtp" />
                     </Show>
                   </div>
                 </HideableSection>
@@ -330,10 +318,11 @@ export function getUserBaseInfoValues(values: UserBaseInfoFormType, oldUser: {ha
                 passwordExpireAt: values.passwordExpireAt
                   ? dateTimeToISO(dateTimeLocalInputToDateTime(values.passwordExpireAt))
                   : null,
-                otpRequiredAt:
-                  values.isOtpRequired && values.otpRequiredAt
+                otpRequiredAt: values.isOtpRequired
+                  ? values.otpRequiredAt
                     ? dateTimeToISO(dateTimeLocalInputToDateTime(values.otpRequiredAt))
-                    : null,
+                    : "-" // Specify a bad format to cause a validation error - the otpRequiredAt is required.
+                  : null,
                 hasOtpConfigured: values.hasOtpConfigured,
               }
             : {

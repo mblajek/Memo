@@ -1,11 +1,11 @@
 import {V1} from "data-access/memo-api/config/v1.instance";
 import {SolidQueryOpts} from "../query_utils";
+import {AdminFacilityResource, AdminFacilityResourceForCreate} from "../resources/adminFacility.resource";
 import {
   AdminUserResource,
   AdminUserResourceForCreate,
   AdminUserResourceForPatch,
 } from "../resources/adminUser.resource";
-import {FacilityResource, FacilityResourceForCreate} from "../resources/facility.resource";
 import {MemberResource} from "../resources/member.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
@@ -15,9 +15,17 @@ import {Facilities, Users} from "./shared";
  * @see {@link http://localhost:9081/api/documentation#/Admin local docs}
  */
 export namespace Admin {
-  export const createFacility = (facility: Api.Request.Create<FacilityResourceForCreate>, config?: Api.Config) =>
+  const getFacilitiesList = (config?: Api.Config) =>
+    V1.get<Api.Response.GetList<AdminFacilityResource>>("/admin/facility/list", config).then(parseListResponse);
+  export const facilitiesQueryOptions = () =>
+    ({
+      queryFn: ({signal}) => getFacilitiesList({signal}),
+      queryKey: keys.facilityList(),
+    }) satisfies SolidQueryOpts<readonly AdminFacilityResource[]>;
+
+  export const createFacility = (facility: Api.Request.Create<AdminFacilityResourceForCreate>, config?: Api.Config) =>
     V1.post<Api.Response.Post>("/admin/facility", facility, config);
-  export const updateFacility = (facility: Api.Request.Patch<FacilityResource>, config?: Api.Config) =>
+  export const updateFacility = (facility: Api.Request.Patch<AdminFacilityResource>, config?: Api.Config) =>
     V1.patch(`/admin/facility/${facility.id}`, facility, config);
 
   export const createUser = (user: AdminUserResourceForCreate, config?: Api.Config) =>
@@ -43,6 +51,7 @@ export namespace Admin {
     userList: (request?: Api.Request.GetListParams) => [...keys.user(), "list", request] as const,
     userGet: (id: Api.Id) => [...keys.user(), "get", id] as const,
     facility: () => [...Facilities.keys.facility(), "admin"] as const,
+    facilityList: () => [...keys.facility(), "list"] as const,
   };
 
   export const usersQueryOptions = (ids?: ListInParam) => {
@@ -50,7 +59,7 @@ export namespace Admin {
     return {
       queryFn: ({signal}) => getUsersList(request, {signal}),
       queryKey: keys.userList(request),
-    } satisfies SolidQueryOpts<AdminUserResource[]>;
+    } satisfies SolidQueryOpts<readonly AdminUserResource[]>;
   };
 
   export const userQueryOptions = (id: Api.Id) =>

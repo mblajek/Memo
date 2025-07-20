@@ -23,6 +23,7 @@
 - Spotkania
   - [Statusy](meeting-statuses)
   - [Kontekst — grupy klientów](meeting-client-groups)
+  - [Powiadomienia](meeting-notifications)
 - Tabele
   - [Kolumny](table-columns)
   - [Filtrowanie](table-filtering)

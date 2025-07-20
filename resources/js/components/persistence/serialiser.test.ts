@@ -11,7 +11,9 @@ describe("serialiser", () => {
   const DATE1 = DateTime.fromISO("2015-09-09T17:40:00");
 
   function testRichJSON(rich: RichJSONValue, plain: JSONValue) {
+    // @ts-ignore: Some complaints about type being too complex (TS2589).
     expect(richJSONConverter.toPlain(rich)).toEqual(plain);
+    // @ts-ignore
     expect(richJSONConverter.fromPlain(plain)).toEqual(rich);
 
     expect(JSON.parse(SERIALISER.serialise(rich))).toEqual(plain);

@@ -3,10 +3,11 @@
 namespace App\Providers;
 
 use App\Http\Permissions\PermissionMiddleware;
-use App\Models\Facility;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -41,12 +42,17 @@ class AppServiceProvider extends ServiceProvider
             Vite::useHotFile($hot2FilePath);
         }
 
-        Route::bind('facility', function ($value) {
-            return Facility::query()->findOrFail($value);
-        });
-
         if (App::hasDebugModeEnabled()) {
             DB::enableQueryLog();
+            // Illuminate\Database\Eloquent\Model::preventLazyLoading();
+        }
+
+        // todo: find better way to detect if RC database should be migrates
+        if (Config::boolean('app.db.auto_migrate')) {
+            Cache::remember('db_auto_migrate_interval', 90, function () {
+                Artisan::call('migrate', array_fill_keys(['--step', '--force'], true));
+                return true;
+            });
         }
 
         PermissionMiddleware::setPermissions(null);

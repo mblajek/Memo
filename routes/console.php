@@ -1,7 +1,12 @@
 <?php
 
+use App\Console\Commands\SendNotificationsCommand;
+use App\Exceptions\FatalExceptionFactory;
+use App\Utils\Date\DateHelper;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schedule;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +22,18 @@ use Illuminate\Support\Facades\Hash;
 Artisan::command('fz:hash', function (): void {
     $this->line(Hash::make($this->secret('Password to be hashed')));
 })->purpose('Make password hash');
+
+Schedule::command(SendNotificationsCommand::SIGNATURE)->everyMinute();
+
+if (Config::get('app.db.dump_at')) {
+    Schedule::call(function (): int {
+        $status = Artisan::call('fz:db-dump');
+        if (!$status && Config::boolean('app.db.rc_restore')) {
+            $status = Artisan::call('fz:db-restore rc');
+        }
+        if ($status) {
+            FatalExceptionFactory::unexpected()->throw();
+        }
+        return $status;
+    })->timezone(DateHelper::getUserTimezone())->dailyAt(Config::string('app.db.dump_at'));
+}

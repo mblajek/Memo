@@ -8,7 +8,7 @@ import {useLangFunc} from "./lang";
 const EXPECTED_BROWSER_VERSIONS = [
   ["Chrome", 122], // Needed separately from Chromium for mobile.
   ["Chromium", 122],
-  ["Firefox", 131],
+  ["Firefox", 138],
 ] as const;
 const REPORTED_BROWSERS = ["Google Chrome", "Microsoft Edge", "Chromium"];
 const REPORTED_BROWSERS_IN_USER_AGENT_STRING = ["Chrome", "Edg" /* sic! */, "Firefox"];

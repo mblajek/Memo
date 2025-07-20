@@ -13,7 +13,11 @@ return [
     /* used by the console to properly generate URLs when using the Artisan command */
     'url' => Env::getOrFail('APP_URL'),
 
+    /* for internal datetime functions and api - must be UTC */
     'timezone' => 'UTC',
+    /* for communication with user - user interface, notifications */
+    'user_timezone' => Env::get('APP_USER_TIMEZONE', 'Europe/Warsaw'),
+
     'locale' => 'pl_PL',
     'available_locales' => ['pl_PL'],
     'fallback_locale' => 'pl_PL',
@@ -22,6 +26,16 @@ return [
     /* encryption Key */
     'key' => Env::getOrFail('APP_KEY'),
     'cipher' => 'AES-256-CBC',
+
+    'db' => [
+        'auto_migrate' => Env::get('APP_DB_ALWAYS_MIGRATE', false),
+        'dump_at' => Env::get('APP_DB_DUMP_AT'),
+        'dump_password' => Env::get('APP_DB_DUMP_PASSWORD'),
+        'rc_restore' => Env::get('APP_DB_RC_RESTORE'),
+        'rc_password' => Env::get('APP_DB_RC_PASSWORD'),
+        'backup_url' => Env::get('APP_DB_BACKUP_URL'),
+        'backup_auth' => Env::get('APP_BD_BACKUP_AUTH'),
+    ],
 
     'maintenance' => ['driver' => 'file'],
 

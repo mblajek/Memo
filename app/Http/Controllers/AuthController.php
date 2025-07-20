@@ -24,7 +24,6 @@ use Throwable;
 /** System endpoints without authorisation */
 class AuthController extends ApiController
 {
-
     private const string SESSION_OTP_SECRET_CANDIDATE = 'otp_secret_candidate';
 
     protected function initPermissions(): void
@@ -295,5 +294,4 @@ class AuthController extends ApiController
         );
         return new JsonResponse();
     }
-
 }

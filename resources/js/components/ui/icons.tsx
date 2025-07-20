@@ -23,12 +23,12 @@ import {
   BsPersonGear,
 } from "solid-icons/bs";
 import {CgRename, CgUndo} from "solid-icons/cg";
-import {FaRegularBell, FaSolidCheck} from "solid-icons/fa";
-import {FiColumns, FiEdit2} from "solid-icons/fi";
+import {FaSolidCheck} from "solid-icons/fa";
+import {FiBell, FiBellOff, FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight, ImInfo} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {TbFilter, TbFilterOff, TbReload} from "solid-icons/tb";
+import {TbFilter, TbFilterOff, TbLockCheck, TbReload} from "solid-icons/tb";
 import {VsSave} from "solid-icons/vs";
 
 namespace customIcons {
@@ -103,7 +103,8 @@ export namespace actionIcons {
   export const Copy = BiRegularCopy;
   export const Paste = BiRegularPaste;
   export const Reset = CgUndo;
-  export const Notify = FaRegularBell;
+  export const Notify = FiBell;
+  export const NotifyOff = FiBellOff;
   export const Filter: IconTypes = (props) => <TbFilter {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
   export const FilterOff: IconTypes = (props) => (
     <TbFilterOff {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
@@ -119,6 +120,7 @@ export namespace actionIcons {
   export const Reload = TbReload;
   export const Duplicate = BiRegularDuplicate;
   export const Info = ImInfo;
+  export const OTPConfigured = TbLockCheck;
 }
 
 export namespace calendarIcons {

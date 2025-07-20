@@ -34,13 +34,18 @@ class PermissionMiddleware
 
     public static function facility(): Facility
     {
-        return PermissionMiddleware::permissions()->facility ?? FatalExceptionFactory::unexpected()->throw();
+        return self::permissions()->facility ?? FatalExceptionFactory::unexpected()->throw();
+    }
+
+    public static function initialized(): bool
+    {
+        return (bool)(self::$permissionObject);
     }
 
     /** @throws ApiException */
     public static function user(): User
     {
-        return PermissionMiddleware::permissions()->user ?? ExceptionFactory::unauthorised()->throw();
+        return self::permissions()->user ?? ExceptionFactory::unauthorised()->throw();
     }
 
     /**
@@ -54,9 +59,8 @@ class PermissionMiddleware
      */
     public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
-        if (!self::$permissionObject) {
-            self::$permissionObject = self::requestPermissions($request);
-        }
+        self::$permissionObject ??= self::requestPermissions($request);
+
         foreach ($permissions as $permissionCode) {
             $permission = Permission::fromName($permissionCode);
             if (self::$permissionObject->getByPermission($permission)) {
@@ -90,11 +94,10 @@ class PermissionMiddleware
             $creator->globalAdmin = ($user->global_admin_grant_id !== null);
             $creator->developer = $creator->globalAdmin && $session?->get(self::SESSION_DEVELOPER_MODE);
 
-            $facility = self::facilityFromRequestRoute($request);
-            $member = $facility ? $user->memberByFacility($facility) : null;
+            $creator->facility = self::facilityFromRequestRoute($request);
+            $member = $creator->facility ? $user->memberByFacility($creator->facility) : null;
 
             if ($member) {
-                $creator->facility = $facility;
                 $creator->facilityMember = true;
                 $creator->facilityAdmin = ($member->facility_admin_grant_id !== null);
                 $creator->facilityStaff = ($member->isActiveStaff() === true);
@@ -107,13 +110,13 @@ class PermissionMiddleware
 
     private static function facilityFromRequestRoute(Request $request): ?Facility
     {
-        $facility = $request->route('facility');
-        return ($facility instanceof Facility) ? $facility : null;
+        /** @var ?Facility */
+        return $request->route('facility');
     }
 
     private static function checkSessionPasswordHashHash(User $user, ?Session $session): bool
     {
         return $session && $user->password
-            && ($session->get(self::SESSION_PASSWORD_HASH_HASH) === $user->passwordHashHash());
+            && hash_equals($user->passwordHashHash(), $session->get(self::SESSION_PASSWORD_HASH_HASH));
     }
 }

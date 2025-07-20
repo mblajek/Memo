@@ -2,9 +2,9 @@
 
 Data wydania: **17 czerwca 2024**
 
-🟢Dla spotkań cyklicznych wyświetlony jest numer spotkania w serii oraz łączna liczba spotkań w serii.
+`🟢` Dla spotkań cyklicznych wyświetlony jest numer spotkania w serii oraz łączna liczba spotkań w serii.
 
-🟣Administrator placówki ma teraz możliwość samodzielnego dodawania urlopów i chorób. W menu pojawiła
+`🟣` Administrator placówki ma teraz możliwość samodzielnego dodawania urlopów i chorób. W menu pojawiła
 się nowa pozycja: Grafiki pracy. Jest to widok podobny do kalendarza, ale w tym widoku nie są pokazane spotkania,
 a tylko bloki czasu pracy pracownika i placówki, oraz czasu wolnego (choroby, urlopy itp).
 Bloki są oznaczone kolorami w taki sam sposób jak na głównym kalendarzu.

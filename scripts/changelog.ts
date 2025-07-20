@@ -3,6 +3,7 @@
 import * as fs from "jsr:@std/fs";
 import * as path from "jsr:@std/path";
 import luxon from "./luxon.ts";
+import {run} from "./util.ts";
 
 const {DateTime} = luxon;
 
@@ -18,16 +19,10 @@ if (!match) {
 const version = match[1];
 console.log(`Current version: ${version}`);
 
-const gitLogRes = await new Deno.Command("git", {
-  args: ["log", "origin/master..HEAD", "--reverse", "--no-merges", "--format=%H %at %an%n%s%n"],
-}).output();
-if (!gitLogRes.success) {
-  throw new Error(`git log failure:\n${new TextDecoder().decode(gitLogRes.stderr)}`);
-}
 const gitLog = Array.from(
-  new TextDecoder()
-    .decode(gitLogRes.stdout)
-    .matchAll(/^(?<hash>[0-9a-f]{40}) (?<timestamp>\d+) (?<author>.+?)\n(?<title>.+?)\n\n/gm),
+  (await run(["git", "log", "origin/master..HEAD", "--reverse", "--no-merges", "--format=%H %at %an%n%s%n"])).matchAll(
+    /^(?<hash>[0-9a-f]{40}) (?<timestamp>\d+) (?<author>.+?)\n(?<title>.+?)\n\n/gm,
+  ),
   (match) => ({
     hash: match.groups!.hash,
     date: DateTime.fromSeconds(Number(match.groups!.timestamp)),
@@ -67,7 +62,7 @@ for await (const entry of await fs.expandGlob(`./public/docs/*/changelog/templat
         return `${appendLog
           .map(
             ({hash, date, author, title}) =>
-              `⚪${title} \\\n${date.toFormat("yyyy-MM-dd HH:mm:ss")} ${author} ` +
+              `\`⚪\` ${title} \\\n${date.toFormat("yyyy-MM-dd HH:mm:ss")} ${author} ` +
               `([${hash.slice(0, 8)}](https://github.com/${GITHUB_REPO}/commits/${hash}))`,
           )
           .join("\n\n")}\n\n${pre}${appendLog.at(-1)!.hash}${post}`;

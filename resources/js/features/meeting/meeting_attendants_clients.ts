@@ -16,12 +16,13 @@ interface SelectedClientData {
 
 export function useMeetingAttendantsClients() {
   const {form} = useFormContext<MeetingFormType>();
-  const selectedClientIds = createMemo(
+  const meetingClients = createMemo(
     on(
       form.data, // to nudge the form and improve reactivity
-      (formData) => formData.clients.map(({userId}) => userId).filter(Boolean),
+      (formData) => formData.clients.filter(({userId}) => userId),
     ),
   );
+  const selectedClientIds = createMemo(() => meetingClients().map(({userId}) => userId));
   const {dataQuery: selectedClientsDataQuery} = createTQuery({
     prefixQueryKey: FacilityClient.keys.client(),
     entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/user/client`,
@@ -54,5 +55,5 @@ export function useMeetingAttendantsClients() {
       groupIds: (client["client.groups.*.id"] as readonly string[]) || [],
     }));
   });
-  return {selectedClientIds, selectedClientsDataQuery, selectedClients};
+  return {meetingClients, selectedClientIds, selectedClientsDataQuery, selectedClients};
 }

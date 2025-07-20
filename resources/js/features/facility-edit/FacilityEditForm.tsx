@@ -4,11 +4,10 @@ import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
 import {toastSuccess} from "components/utils/toast";
 import {Admin} from "data-access/memo-api/groups/Admin";
-import {System} from "data-access/memo-api/groups/System";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {Api} from "data-access/memo-api/types";
 import {VoidComponent} from "solid-js";
-import {FacilityForm, FacilityFormInput, FacilityFormOutput} from "./FacilityForm";
+import {FacilityForm, FacilityFormType} from "./FacilityForm";
 
 interface FormParams {
   readonly id: Api.Id;
@@ -21,9 +20,7 @@ interface Props extends FormParams {
 
 export const FacilityEditForm: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
-  // If there ever will be editable admin fields in facility, we should add /admin/facility/list endpoint.
-  // For now, it's just public name & url, so we can take it from System which we always fetch anyway.
-  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
+  const facilitiesQuery = useQuery(Admin.facilitiesQueryOptions);
   const oldFacility = () => facilitiesQuery.data?.find((facility) => facility.id === props.id);
 
   const invalidate = useInvalidator();
@@ -32,11 +29,10 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
     meta: {isFormSubmit: true},
   }));
 
-  async function updateFacility(values: FacilityFormOutput) {
+  async function updateFacility(values: FacilityFormType) {
     await facilityMutation.mutateAsync({
       id: props.id,
-      name: values.name,
-      url: values.url,
+      ...values,
     });
     // eslint-disable-next-line solid/reactivity
     return () => {
@@ -55,7 +51,8 @@ export const FacilityEditForm: VoidComponent<Props> = (props) => {
       ? ({
           name: facility.name,
           url: facility.url,
-        } satisfies FacilityFormInput)
+          meetingNotificationTemplateSubject: facility.meetingNotificationTemplateSubject || "",
+        } satisfies FacilityFormType)
       : {};
   };
 

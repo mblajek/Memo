@@ -11,9 +11,10 @@ use OpenApi\Attributes as OA;
         new OA\Property(property: 'id', type: 'string', format: 'uuid', example: 'UUID'),
         new OA\Property(property: 'name', type: 'string', example: 'Test'),
         new OA\Property(property: 'url', type: 'string', example: 'test'),
-        new OA\Property(property: 'timezone', description: 'Region/City', type: 'string', example: 'Europe/Warsaw'),
+        new OA\Property(property: 'hasMeetingNotification', type: 'bool'),
     ],
-)] /**
+)]
+/**
  * @method __construct(Facility $resource)
  * @mixin Facility
  */
@@ -25,7 +26,8 @@ class FacilityResource extends AbstractOpenApiResource
             'id' => true,
             'name' => true,
             'url' => true,
-            'timezone' => fn(self $facility) => 'Europe/Warsaw',
+            'hasMeetingNotification' => fn(self $facility)
+                => $facility->hasMeetingNotification(),
         ];
     }
 }

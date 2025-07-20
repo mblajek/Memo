@@ -14,8 +14,13 @@ class CreateFacilityService
     {
         $facility = new Facility();
 
-        $facility->name = $data['name'];
-        $facility->url = $data['url'];
+        $facility->fillOnly($data, [
+            'name',
+            'url',
+            'contact_phone',
+            'meeting_notification_template_subject',
+            'meeting_notification_template_message',
+        ]);
 
         $facility->saveOrFail();
 

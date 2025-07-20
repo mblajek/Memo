@@ -3,13 +3,14 @@
 namespace App\Models\UuidEnum;
 
 use App\Models\Attribute;
-use StringBackedEnum;
 
-/** @mixin StringBackedEnum */
+/** @mixin AttributeUuidEnum */
 trait AttributeUuidEnumTrait
 {
+    use UuidEnumTrait;
+
     public function apiName(): string
     {
-        return Attribute::getById($this->value)->api_name;
+        return Attribute::getCacheById($this->value)->api_name;
     }
 }
