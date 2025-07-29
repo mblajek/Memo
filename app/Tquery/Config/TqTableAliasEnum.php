@@ -23,6 +23,7 @@ enum TqTableAliasEnum
     case error_log_entry;
     case log_entries;
     case notifications;
+    case db_dumps_copy;
 
     public static function fromTableName(string $table): self
     {

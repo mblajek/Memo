@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\ExceptionFactory;
+use App\Http\Controllers\Admin\AdminDatabaseController;
 use App\Http\Controllers\Admin\AdminFacilityController;
 use App\Http\Controllers\Admin\AdminMemberController;
 use App\Http\Controllers\Admin\AdminUserController;
@@ -60,6 +61,12 @@ Route::prefix('/v1')->group(function () {
         Route::get('/storage/{key?}', [UserController::class, 'storageGet']);
     });
     Route::prefix('/admin')->group(function () {
+        Route::prefix('/db-dump')->group(function () {
+            Route::post('/create', [AdminDatabaseController::class, 'create']);
+            Route::post('/restore/{dbDump}', [AdminDatabaseController::class, 'restore']);
+            Route::get('/tquery', [AdminDatabaseController::class, 'dbDumpsTqueryGet']);
+            Route::post('/tquery', [AdminDatabaseController::class, 'dbDumpsTqueryPost']);
+        });
         Route::prefix('/developer')->group(function () {
             Route::get('/migrate/{hash?}', [DeveloperController::class, 'migrate']);
             Route::post('/overwrite-metadata', [DeveloperController::class, 'overwriteMetadata']);

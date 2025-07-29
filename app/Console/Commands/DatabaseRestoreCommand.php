@@ -1,39 +1,82 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace App\Console\Commands;
 
-use App\Services\Database\DatabaseDumpService;
-use Illuminate\Console\Application;
+use App\Exceptions\ApiException;
+use App\Http\Permissions\PermissionMiddleware;
+use App\Http\Permissions\PermissionObjectCreator;
+use App\Models\DbDump;
+use App\Services\Database\DatabaseDumpsService;
+use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Bus;
 
 class DatabaseRestoreCommand extends Command
 {
-    protected $signature = 'fz:db-restore {env}';
+    protected $signature = 'fz:db-restore';
     protected $description = 'Restore zipped database dump';
 
-    public function handle(): int
-    {
-        $env = $this->argument('env');
+    public function handle(
+        DatabaseDumpsService $service,
+    ): int {
+        PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
 
-        if ($env !== 'rc' && $env !== 'prod') {
-            Log::error("Invalid mode '$env', options: 'rc', 'prod'");
-            return self::INVALID;
-        }
-        $rc = ($env === 'rc');
+        do {
+            $isFromRc = 'b' === $this->choice('Use dump from', ['a' => 'prod', 'b' => 'rc'], 'a');
+            $dumpsPage = 1;
+            $dumpChoice = null;
+            do {
+                $lastDumps = DbDump::query()
+                    ->where('is_from_rc', '=', $isFromRc)
+                    ->orderByDesc('created_at')
+                    ->whereIn('status', DatabaseDumpStatus::CREATE_OK)
+                    ->forPage($dumpsPage, perPage: 20)
+                    ->get()
+                    ->mapWithKeys(fn(mixed $value, int $key) => [chr(ord('a') + $key) => $value]);
 
-        $dbName = DatabaseDumpService::getDatabaseName($rc);
-        $dbUser = DatabaseDumpService::getDatabaseUsername($rc);
-        $dbPassword = DatabaseDumpService::getDatabasePassword($rc);
+                if ($lastDumps->isEmpty()) {
+                    $this->warn('There are no dumps');
+                    break;
+                }
 
-        $dbEchoCommand = Application::formatCommandString('fz:db-echo sql');
+                $dumpChoice = $this->choice(
+                    'Select dump',
+                    $lastDumps->toBase()->map(fn(DbDump $value): string => $value->name)->all()
+                    + ['z' => '(show older dumps)'],
+                    default: ($dumpsPage === 1) ? 'a' : 'z',
+                );
+                $dumpsPage++;
+            } while ($dumpChoice === 'z');
+        } while ($lastDumps->isEmpty());
+        /** @var DbDump $dbDump */
+        $dbDump = $lastDumps[$dumpChoice];
 
-        system("$dbEchoCommand | mariadb $dbName --user=$dbUser --password=$dbPassword", $result);
-        if ($result) {
-            Log::error("Cannot restore database");
-            return self::FAILURE;
+        $confirmed = false;
+        do {
+            $isToRc = 'b' === $this->choice('Restore to:', ['a' => 'prod', 'b' => 'rc'], 'b');
+            if (!$isToRc) {
+                $confirmed = $this->confirm('Are you sure to overwrite PROD?');
+            }
+        } while (!$isToRc && !$confirmed);
+
+        $this->warn('Restore (overwrite) ' . ($isToRc ? 'RC' : 'PROD') . ' from ' . $dbDump->name);
+
+        do {
+            $confirmed = $this->confirm('Are you sure?');
+        } while (!$confirmed);
+
+        try {
+            Bus::dispatchSync($service->restore($dbDump, $isToRc));
+        } /** @noinspection PhpRedundantCatchClauseInspection */ catch (ApiException $exception) {
+            if ($exception->errorCode === 'exception.db.no_fresh_prod_db_dumps') {
+                $this->warn('Cannot restore PROD - no fresh database dump');
+                if ($this->confirm('Create dump and retry?', true)) {
+                    Bus::dispatchSync($service->create(isFromRc: false));
+                    Bus::dispatchSync($service->restore($dbDump, $isToRc));
+                }
+            } else {
+                throw $exception;
+            }
         }
         return self::SUCCESS;
     }

@@ -31,6 +31,10 @@ exception:
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
   user_not_managed_by_facility: "Osoba nie jest zarządzana przez tę placówkę"
   csrf_token_mismatch: "Błąd tokena sesji"
+  db:
+    no_fresh_prod_db_dumps: "Żeby nadpisać bazę produkcyjną, musi istnieć świeża kopia danych (ostatnie {{minutes, number}} minut)"
+    invalid_db_dump_status: "Kopia bazy nie może zostać przywrócona, spróbuj ponownie później (status:{{status}})"
+    db_dumps_disabled: "Funkcjonalność tworzenia, przywracanie i przeglądanie kopii bazy danych jest wyłączona"
   _unknown: "Błąd konfiguracji ({{text}})"
 
 passwords:

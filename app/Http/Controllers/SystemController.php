@@ -11,7 +11,7 @@ use App\Models\Attribute;
 use App\Models\Dictionary;
 use App\Models\Facility;
 use App\Models\LogEntry;
-use App\Services\Database\DatabaseDumpService;
+use App\Services\Database\DatabaseDumpHelper;
 use App\Services\System\LogService;
 use App\Services\System\TranslationsService;
 use App\Utils\Date\DateHelper;
@@ -194,7 +194,7 @@ class SystemController extends ApiController
                 system('uptime');
                 $cpu15m = Str::match('/[.0-9]+$/', trim(ob_get_clean() ?? ''));
                 $cpu15m = strlen($cpu15m) ? floatval($cpu15m) : null;
-                $lastDump = Nullable::call(DatabaseDumpService::lastDumpDatetime(), DateHelper::toZuluString(...));
+                $lastDump = Nullable::call(DatabaseDumpHelper::lastDumpDatetime(), DateHelper::toZuluString(...));
             } catch (Throwable) {
                 [$commitHash, $commitDateZulu, $cpu15m, $lastDump, $isRc] = [null, null, null, null, null];
             }
