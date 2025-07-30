@@ -2,7 +2,6 @@
 
 namespace App\Services\Database;
 
-use App\Exceptions\FatalExceptionFactory;
 use App\Models\DbDump;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Config;
@@ -21,7 +20,7 @@ class DatabaseDumpHelper
         $dbDump = null;
         if (self::dumpsEnabled()) {
             $dbDump = DbDump::query()
-                ->where('is_from_c', false)
+                ->where('is_from_rc', false)
                 ->whereIn('status', DatabaseDumpStatus::CREATE_OK)
                 ->orderByDesc('created_at')
                 ->first();
