@@ -32,6 +32,7 @@ class DbDump extends Model
     protected $table = 'db_dumps';
 
     protected $fillable = [
+        'status',
         'name',
         'file_size',
         'app_version',
