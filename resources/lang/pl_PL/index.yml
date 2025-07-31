@@ -185,3 +185,10 @@ anti_self_xss:
     Nie wykonuj w tym panelu żadnych operacji, chyba, że dobrze rozumiesz, co robisz!
     Niczego tutaj nie pisz ani nie wklejaj, możesz w ten sposób udostępnić dane atakującemu.
     Najlepiej będzie, jeśli zamkniesz ten panel.
+
+byte_size:
+  bytes: "{{count, number}} B"
+  kilobytes: "{{count, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}} kB"
+  megabytes: "{{count, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}} MB"
+  gigabytes: "{{count, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}} GB"
+  terabytes: "{{count, number(minimumFractionDigits: 1; maximumFractionDigits: 1)}} TB"

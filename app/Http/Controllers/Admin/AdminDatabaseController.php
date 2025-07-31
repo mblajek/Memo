@@ -35,7 +35,7 @@ class AdminDatabaseController extends ApiController
     }
 
     #[OA\Post(
-        path: '/api/v1/admin/db-dump/create',
+        path: '/api/v1/admin/db-dump',
         description: new PermissionDescribe([Permission::globalAdmin]),
         summary: 'Create database dump',
         requestBody: new OA\RequestBody(
@@ -67,7 +67,7 @@ class AdminDatabaseController extends ApiController
     }
 
     #[OA\Post(
-        path: '/api/v1/admin/db-dump/restore/{dbDump}',
+        path: '/api/v1/admin/db-dump/{dbDump}/restore',
         description: new PermissionDescribe([Permission::globalAdmin]),
         summary: 'Restore database dump',
         requestBody: new OA\RequestBody(

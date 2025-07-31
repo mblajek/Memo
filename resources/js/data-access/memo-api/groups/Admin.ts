@@ -46,12 +46,18 @@ export namespace Admin {
     V1.patch(`/admin/member/${member.id}`, member, config);
   export const deleteMember = (memberId: Api.Id, config?: Api.Config) => V1.delete(`/admin/member/${memberId}`, config);
 
+  export const createDbDump = (dump: {isFromRc: boolean}, config?: Api.Config) =>
+    V1.post("/admin/db-dump", dump, config);
+  export const restoreDbDump = (dump: {id: Api.Id; isToRc: boolean}, config?: Api.Config) =>
+    V1.post(`/admin/db-dump/${dump.id}/restore`, {isToRc: dump.isToRc}, config);
+
   export const keys = {
     user: () => [...Users.keys.user(), "admin"] as const,
     userList: (request?: Api.Request.GetListParams) => [...keys.user(), "list", request] as const,
     userGet: (id: Api.Id) => [...keys.user(), "get", id] as const,
     facility: () => [...Facilities.keys.facility(), "admin"] as const,
     facilityList: () => [...keys.facility(), "list"] as const,
+    dbDump: () => ["dbDump"] as const,
   };
 
   export const usersQueryOptions = (ids?: ListInParam) => {

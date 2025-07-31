@@ -24,6 +24,7 @@ import {useLangFunc} from "components/utils/lang";
 import {useNewspaper} from "components/utils/newspaper";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {BaseAppVersion} from "features/system-status/app_version";
+import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {BiRegularErrorAlt, BiRegularTable, BiSolidArrowFromRight, BiSolidArrowToRight} from "solid-icons/bi";
 import {BsCalendar2X} from "solid-icons/bs";
 import {CgTrack} from "solid-icons/cg";
@@ -67,6 +68,7 @@ export const Navbar: VoidComponent = () => {
   const {theme} = useThemeControl();
   const facilityUrl = () => activeFacility()?.url;
   const newspaper = useNewspaper();
+  const systemStatusMonitor = useSystemStatusMonitor();
   const [collapsed, setCollapsed] = createSignal(bowser.parse(navigator.userAgent).platform.type === "mobile");
   const navbarHover = createHoverSignal();
   const delayedNavbarHover = delayedAccessor(navbarHover, {timeMs: 1000, outputImmediately: (v) => v});
@@ -229,6 +231,9 @@ export const Navbar: VoidComponent = () => {
             <NavigationSection name={t("routes.menu_sections.global_admin")}>
               <NavigationItem icon={facilityIcons.AdminMenu} href="/admin/facilities" routeKey="admin.facilities" />
               <NavigationItem icon={userIcons.AdminMenu} href="/admin/users" routeKey="admin.users" />
+              <Show when={systemStatusMonitor.lastStatus()?.dumpsEnabled}>
+                <NavigationItem icon={actionIcons.DB} href="/admin/db-dumps" routeKey="admin.db_dumps" />
+              </Show>
             </NavigationSection>
           </SilentAccessBarrier>
           <NavigationSection name={t("routes.menu_sections.other")}>

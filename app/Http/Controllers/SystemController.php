@@ -211,6 +211,7 @@ class SystemController extends ApiController
                 'userTimezone' => DateHelper::getUserTimezone()->getName(),
                 'commitHash' => $commitHash,
                 'commitDate' => $commitDateZulu,
+                'dumpsEnabled' => DatabaseDumpHelper::dumpsEnabled(),
                 'lastDump' => $lastDump,
                 'cpu15m' => $cpu15m,
             ],

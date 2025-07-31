@@ -62,8 +62,8 @@ Route::prefix('/v1')->group(function () {
     });
     Route::prefix('/admin')->group(function () {
         Route::prefix('/db-dump')->group(function () {
-            Route::post('/create', [AdminDatabaseController::class, 'create']);
-            Route::post('/restore/{dbDump}', [AdminDatabaseController::class, 'restore']);
+            Route::post('/', [AdminDatabaseController::class, 'create']);
+            Route::post('/{dbDump}/restore', [AdminDatabaseController::class, 'restore']);
             Route::get('/tquery', [AdminDatabaseController::class, 'dbDumpsTqueryGet']);
             Route::post('/tquery', [AdminDatabaseController::class, 'dbDumpsTqueryPost']);
         });

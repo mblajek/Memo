@@ -190,6 +190,13 @@ tables:
       user.id: "id użytkownika"
       user.name: "użytkownik"
 
+  db_dump:
+    table_name: "Zrzuty bazy danych"
+    summary__zero: "Brak zrzutów"
+    summary__one: "{{count, number}} zrzut"
+    summary__few: "{{count, number}} zrzuty"
+    summary__many: "{{count, number}} zrzutów"
+
 choose_columns: "Kolumny"
 reset_column_sizes: "Resetuj szerokości kolumn"
 sort_tooltip: "$t(actions.sort)"

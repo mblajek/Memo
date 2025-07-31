@@ -10,5 +10,6 @@ export interface SystemStatusResource {
   readonly randomUuid: string;
   readonly currentDate: string;
   readonly userTimezone: string;
+  readonly dumpsEnabled: boolean;
   readonly lastDump: string | null;
 }

@@ -183,3 +183,15 @@ table_saved_view:
   columnFilters: "filtrowanie"
   activeColumnGroups: "grupowanie"
   sorting: "sortowanie"
+
+db_dump:
+  _name: "zrzut bazy danych"
+  _name_plural: "zrzuty bazy danych"
+  createStatus: "status tworzenia"
+  lastRestoreStatus: "status ostatniego przywracania"
+  fileSize: "rozmiar"
+  appVersion: "wersja aplikacji"
+  fromEnv: "środowisko źródłowe"
+  isBackedUp: "kopia bezpieczeństwa"
+  restoredSelfAt: "przywrócono"
+  restoredRcAt: "przywrócono na środowisko rc"
