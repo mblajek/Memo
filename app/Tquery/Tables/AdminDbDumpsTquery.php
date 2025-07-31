@@ -20,7 +20,7 @@ final readonly class AdminDbDumpsTquery extends TqService
         $config->addSimple(TqDataTypeEnum::datetime_nullable, 'restored_rc_at');
         $config->addSimple(TqDataTypeEnum::datetime_nullable, 'restored_prod_at', 'restored_self_at');
         $config->addSimple(TqDataTypeEnum::bool, 'is_from_rc');
-        $config->addSimple(TqDataTypeEnum::bool, 'status');
+        $config->addSimple(TqDataTypeEnum::string, 'status');
 
         $config->addQuery(
             TqDataTypeEnum::bool_nullable,

@@ -314,10 +314,11 @@ db_dump_restore:
   success: "Uruchomiono przywracanie zrzutu bazy danych (sprawdź status zrzutu)"
   form_info:
     dump_info: "Wybrany zrzut bazy:\n\t$t(models.db_dump.fromEnv): {{fromEnv}}\n\t$t(models.generic.createdAt): {{createdAt}} ({{createdAtRelative}})"
-    dump_info.rc_to_self_warning: "Uwaga: zrzut pochodzący ze środowiska rc zostanie wgrany na obecne środowisko ({{env}})!"
+    dump_info.rc_to_self_warning: "Uwaga: zrzut pochodzący ze środowiska rc zostanie załadowany na obecne środowisko ({{env}})!"
     env:
-      rc: "Przywróć zrzut na środowisko rc"
-      self: "Przywróć zrzut na obecne środowisko ({{env}})"
+      rc_only: "Środowisko docelowe: rc."
+      rc: "Załaduj zrzut na środowisko rc"
+      self: "Załaduj zrzut na obecne środowisko ({{env}})"
     warn:
       self: "Uwaga: wszystkie dane w tym systemie ({{env}}) zostaną usunięte i zastąpione danymi pochodzącymi z wybranego zrzutu bazy danych."
       rc: "Uwaga: wszystkie dane na środowisku rc zostaną usunięte i zastąpione danymi pochodzącymi z wybranego zrzutu bazy danych."

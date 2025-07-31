@@ -1,4 +1,4 @@
-import {useMutation} from "@tanstack/solid-query";
+import {useMutation, useQuery} from "@tanstack/solid-query";
 import {Button} from "components/ui/Button";
 import {ByteSize} from "components/ui/ByteSize";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
@@ -19,21 +19,24 @@ import {currentTimeSecond} from "components/utils/time";
 import {Timeout} from "components/utils/timeout";
 import {toastSuccess} from "components/utils/toast";
 import {Admin} from "data-access/memo-api/groups/Admin";
+import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
-import {Component, createSignal, Show} from "solid-js";
+import {Component, createEffect, createSignal, getOwner, runWithOwner, Show} from "solid-js";
 
-const INVALIDATE_AFTER_OPERATION_TIME_MS = 5000;
+const PENDING_INVALIDATE_INTERVAL_MS = 5000;
 
 export default (() => {
   const t = useLangFunc();
   const {getCreatedUpdatedColumns} = useTableColumns();
+  const status = useQuery(User.statusQueryOptions);
   const systemStatusMonitor = useSystemStatusMonitor();
   const selfEnvName = () => systemStatusMonitor.lastStatus()?.appEnv;
   const invalidate = useInvalidator();
   const confirmation = createConfirmation();
+  const owner = getOwner();
   const timeout = new Timeout();
   const dumpCreateMutation = useMutation(() => ({
     mutationFn: Admin.createDbDump,
@@ -54,7 +57,6 @@ export default (() => {
       try {
         await dumpCreateMutation.mutateAsync({isFromRc: sourceEnv === "rc"});
         toastSuccess(t("forms.db_dump_create.success"));
-        timeout.set(() => invalidate.dbDumps(), INVALIDATE_AFTER_OPERATION_TIME_MS);
       } finally {
         invalidate.dbDumps();
       }
@@ -62,63 +64,68 @@ export default (() => {
   }
 
   async function confirmAndRestore(dump: DumpInfo) {
-    const [env, setEnv] = createSignal<"self" | "rc">("rc");
-    const createdAt = DateTime.fromISO(dump.createdAt);
-    if (
-      await confirmation.confirm({
-        title: t("forms.db_dump_restore.form_name"),
-        body: () => (
-          <div class="flex flex-col gap-2">
-            <div class="whitespace-pre-wrap">
-              {t("forms.db_dump_restore.form_info.dump_info", {
-                fromEnv: dump.fromEnv,
-                createdAt: createdAt.toLocaleString({...DATE_TIME_FORMAT, weekday: "long"}),
-                createdAtRelative: createdAt.toRelative({base: currentTimeSecond()}),
-              })}
-            </div>
-            <SegmentedControl
-              name="toEnv"
-              items={[
-                {value: "rc", label: () => t("forms.db_dump_restore.form_info.env.rc")},
-                {
-                  value: "self",
-                  label: () => t("forms.db_dump_restore.form_info.env.self", {env: selfEnvName()}),
-                },
-              ]}
-              value={env()}
-              onValueChange={setEnv}
-            />
-            <HideableSection show={dump.isFromRc && env() === "self"}>
-              <div class="font-semibold text-red-700">
-                {t("forms.db_dump_restore.form_info.dump_info.rc_to_self_warning", {env: selfEnvName()})}
+    await runWithOwner(owner, async () => {
+      const [env, setEnv] = createSignal<"self" | "rc">("rc");
+      createEffect(() => {
+        if (status.data && !status.data.permissions.developer) {
+          setEnv("rc");
+        }
+      });
+      const createdAt = DateTime.fromISO(dump.createdAt);
+      if (
+        await confirmation.confirm({
+          title: t("forms.db_dump_restore.form_name"),
+          body: () => (
+            <div class="flex flex-col gap-2">
+              <div class="whitespace-pre-wrap">
+                {t("forms.db_dump_restore.form_info.dump_info", {
+                  fromEnv: dump.fromEnv,
+                  createdAt: createdAt.toLocaleString({...DATE_TIME_FORMAT, weekday: "long"}),
+                  createdAtRelative: createdAt.toRelative({base: currentTimeSecond()}),
+                })}
               </div>
-            </HideableSection>
-            <div class={cx("font-bold", env() === "self" ? "text-red-700" : undefined)}>
-              {t(`forms.db_dump_restore.form_info.warn.${env()}`, {env: selfEnvName()})}
+              <Show
+                when={status.data?.permissions.developer}
+                fallback={<div>{t("forms.db_dump_restore.form_info.env.rc_only")}</div>}
+              >
+                <SegmentedControl
+                  name="toEnv"
+                  items={[
+                    {value: "rc", label: () => t("forms.db_dump_restore.form_info.env.rc")},
+                    {
+                      value: "self",
+                      label: () => t("forms.db_dump_restore.form_info.env.self", {env: selfEnvName()}),
+                    },
+                  ]}
+                  value={env()}
+                  onValueChange={setEnv}
+                />
+                <HideableSection show={dump.isFromRc && env() === "self"}>
+                  <div class="font-semibold text-red-700">
+                    {t("forms.db_dump_restore.form_info.dump_info.rc_to_self_warning", {env: selfEnvName()})}
+                  </div>
+                </HideableSection>
+              </Show>
+              <div class={cx("font-bold", env() === "self" ? "text-red-700" : undefined)}>
+                {t(`forms.db_dump_restore.form_info.warn.${env()}`, {env: selfEnvName()})}
+              </div>
+              <div>{t("forms.db_dump_restore.form_info.question")}</div>
             </div>
-            <div>{t("forms.db_dump_restore.form_info.question")}</div>
-          </div>
-        ),
-        modalStyle: MODAL_STYLE_PRESETS.medium,
-        mode: "danger",
-      })
-    ) {
-      try {
-        // eslint-disable-next-line solid/reactivity
-        const isToRc = env() === "rc";
-        await dumpRestoreMutation.mutateAsync({id: dump.id, isToRc});
-        toastSuccess(t("forms.db_dump_restore.success"));
-        timeout.set(() => {
-          if (isToRc) {
-            invalidate.dbDumps();
-          } else {
-            invalidate.everything();
-          }
-        }, INVALIDATE_AFTER_OPERATION_TIME_MS);
-      } finally {
-        invalidate.dbDumps();
+          ),
+          modalStyle: MODAL_STYLE_PRESETS.medium,
+          mode: "danger",
+        })
+      ) {
+        try {
+          // eslint-disable-next-line solid/reactivity
+          const isToRc = env() === "rc";
+          await dumpRestoreMutation.mutateAsync({id: dump.id, isToRc});
+          toastSuccess(t("forms.db_dump_restore.success"));
+        } finally {
+          invalidate.dbDumps();
+        }
       }
-    }
+    });
   }
 
   interface DumpInfo {
@@ -134,14 +141,14 @@ export default (() => {
       staticPrefixQueryKey={Admin.keys.dbDump()}
       staticEntityURL="admin/db-dump"
       staticTranslations={createTableTranslations("db_dump")}
-      staticPersistenceKey="adminDB"
+      staticPersistenceKey="adminDBDumps"
       intrinsicSort={[{type: "column", column: "createdAt", desc: true}]}
       columns={[
         {name: "id", initialVisible: false},
         ...getCreatedUpdatedColumns({globalAdmin: true, overrides: {initialVisible: true}}).slice(0, 2),
         {name: "fromEnv", columnDef: {size: 150}},
         {name: "createStatus", columnDef: {size: 150}},
-        {name: "name"},
+        {name: "name", initialVisible: false},
         {
           name: "fileSize",
           columnDef: {
@@ -161,17 +168,23 @@ export default (() => {
         {
           name: "actions",
           isDataColumn: false,
-          extraDataColumns: ["id", "createStatus", "isFromRc", "fromEnv", "createdAt"],
+          extraDataColumns: ["id", "createStatus", "lastRestoreStatus", "isFromRc", "fromEnv", "createdAt"],
           columnDef: {
-            cell: (c) => (
-              <PaddedCell>
-                <Show when={c.row.original.createStatus === "ok"} fallback={<EmptyValueSymbol />}>
-                  <Button class="minimal" onClick={() => void confirmAndRestore(c.row.original)}>
-                    <actionIcons.DB class="inlineIcon" /> {t("actions.db_dump.restore")}
-                  </Button>
-                </Show>
-              </PaddedCell>
-            ),
+            cell: (c) => {
+              // A somewhat ugly way to refresh the pending operations periodically.
+              if (c.row.original.createStatus === "pending" || c.row.original.lastRestoreStatus === "pending") {
+                timeout.set(() => invalidate.dbDumps(), PENDING_INVALIDATE_INTERVAL_MS);
+              }
+              return (
+                <PaddedCell>
+                  <Show when={c.row.original.createStatus === "ok"} fallback={<EmptyValueSymbol />}>
+                    <Button class="minimal" onClick={() => void confirmAndRestore(c.row.original)}>
+                      <actionIcons.DB class="inlineIcon" /> {t("actions.db_dump.restore")}
+                    </Button>
+                  </Show>
+                </PaddedCell>
+              );
+            },
             enableSorting: false,
             enableHiding: false,
             ...AUTO_SIZE_COLUMN_DEFS,
