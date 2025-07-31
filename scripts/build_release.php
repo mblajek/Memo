@@ -164,7 +164,7 @@ ini_set('display_errors', 1);
     $exec('cp -r public/ resources/ routes/ storage/ release/memo/', $config['release']);
     $exec('cp -r vendor/ artisan composer.json release/memo/', $config['release']);
     $exec('rm -rf release/memo/storage/logs/*.log', $config['release']);
-    $exec('rm -rf release/memo/database/dumps/*.zip', $config['release']);
+    $exec('rm -rf release/memo/database/dumps', $config['release']);
     $exec('rm -rf release/memo/public/storage/*', $config['release']);
     $exec('rm -f release/memo/app/Console/Commands/DevCommand.php', $config['release']);
 
