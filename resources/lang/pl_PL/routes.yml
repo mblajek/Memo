@@ -9,7 +9,7 @@ login: "logowanie"
 admin:
   facilities: "$t(models.facility._name_plural)"
   users: "$t(models.user._name_plural)"
-  db_dumps: "Zrzuty bazy"
+  db_dumps: "zrzuty bazy"
 
 facility:
   home: "placówka"

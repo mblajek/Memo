@@ -25,5 +25,5 @@ $include(staff-roles-facility-admin-role.part.md)
 ## Administrator globalny {#global-admin-role}
 
 Administrator globalny ma uprawnienia na poziomie systemu, w tym zarządzanie placówkami oraz nadawanie
-i modyfikowanie uprawnień poszczególnych osób. Wykonując operacje jako administrator globalny należy
-zachować _szczególną_ ostrożność.
+i modyfikowanie uprawnień poszczególnych osób. Może też tworzyć [zrzuty bazy danych](db-dumps).
+Wykonując operacje jako administrator globalny należy zachować _szczególną_ ostrożność.
