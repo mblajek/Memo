@@ -18,6 +18,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use OpenApi\Attributes as OA;
@@ -58,9 +59,11 @@ class AdminDatabaseController extends ApiController
     public function create(
         DatabaseDumpsService $service,
     ): JsonResponse {
-        $isFromRc = $this->validate(['is_from_rc' => Valid::bool()])['is_from_rc'];
-        $dbDumpJob = $service->create(isFromRc: $isFromRc);
+        $isFromRc = $this->validate([
+            'is_from_rc' => Valid::bool(Config::get('app.db.rc_password') ? [] : ['declined']),
+        ])['is_from_rc'];
 
+        $dbDumpJob = $service->create(isFromRc: $isFromRc);
         Bus::dispatchAfterResponse($dbDumpJob);
 
         return new JsonResponse(['data' => ['id' => $dbDumpJob->dbDump->id]]);
@@ -96,9 +99,11 @@ class AdminDatabaseController extends ApiController
         DatabaseDumpsService $service,
         DbDump $dbDump,
     ): JsonResponse {
-        $isToRc = $this->validate(['is_to_rc' => Valid::bool()])['is_to_rc'];
-        $dbRestoreJob = $service->restore($dbDump, isToRc: $isToRc);
+        $isToRc = $this->validate([
+            'is_to_rc' => Valid::bool(Config::get('app.db.rc_password') ? [] : ['declined']),
+        ])['is_to_rc'];
 
+        $dbRestoreJob = $service->restore($dbDump, isToRc: $isToRc);
         Bus::dispatchAfterResponse($dbRestoreJob);
 
         return new JsonResponse();

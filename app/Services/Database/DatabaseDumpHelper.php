@@ -11,7 +11,7 @@ class DatabaseDumpHelper
 {
     public static function dumpsEnabled(): bool
     {
-        return (bool)Config::get('app.db.dump_at');
+        return ($path = Config::get('database.connections.db_dumps.database')) && file_exists($path);
     }
 
     public static function lastDumpDatetime(): ?DateTimeImmutable
