@@ -20,6 +20,7 @@ import {clearAllHistoryState} from "./components/persistence/history_persistence
 import {activeFacilityId} from "./state/activeFacilityId.state";
 
 const AboutPage = lazyAutoPreload(() => import("features/root/pages/help/About.page"));
+const AdminDB = lazyAutoPreload(() => import("features/root/pages/AdminDB.page"));
 const AdminFacilitiesListPage = lazyAutoPreload(() => import("features/root/pages/AdminFacilitiesList.page"));
 const AdminUsersListPage = lazyAutoPreload(() => import("features/root/pages/AdminUsersList.page"));
 const CalendarPage = lazyAutoPreload(() => import("features/root/pages/Calendar.page"));
@@ -110,6 +111,7 @@ const App: VoidComponent = () => {
               <UnknownNotFound />
               <LeafRoute routeKey="admin.facilities" path="/facilities" component={AdminFacilitiesListPage} />
               <LeafRoute routeKey="admin.users" path="/users" component={AdminUsersListPage} />
+              <LeafRoute routeKey="admin.db_dumps" path="/db-dumps" component={AdminDB} />
             </Route>
             <Route path="/__facility/*facilityPath" component={RedirectFacilityPlaceholderToFacility} />
             <Route

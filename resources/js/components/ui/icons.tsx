@@ -11,6 +11,8 @@ import {
 } from "solid-icons/bi";
 import {
   BsCalendar3,
+  BsDatabase,
+  BsDatabaseAdd,
   BsFileEarmarkPerson,
   BsHouse,
   BsHouseAdd,
@@ -121,6 +123,8 @@ export namespace actionIcons {
   export const Duplicate = BiRegularDuplicate;
   export const Info = ImInfo;
   export const OTPConfigured = TbLockCheck;
+  export const DB = BsDatabase;
+  export const DBDump = BsDatabaseAdd;
 }
 
 export namespace calendarIcons {

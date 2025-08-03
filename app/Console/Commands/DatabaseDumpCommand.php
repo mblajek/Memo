@@ -4,61 +4,59 @@
 
 namespace App\Console\Commands;
 
-use App\Services\Database\DatabaseDumpService;
+use App\Http\Permissions\PermissionMiddleware;
+use App\Http\Permissions\PermissionObjectCreator;
+use App\Services\Database\DatabaseDumpsService;
+use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use ZipArchive;
 
 class DatabaseDumpCommand extends Command
 {
-    protected $signature = 'fz:db-dump';
+    protected $signature = 'fz:db-dump {mode}';
     protected $description = 'Make zipped database dump with password';
 
-    public function handle(): int
+    public function handle(DatabaseDumpsService $databaseDumpService): int
     {
-        $dbName = DatabaseDumpService::getDatabaseName();
-        $dbUser = DatabaseDumpService::getDatabaseUsername();
-        $dbPassword = DatabaseDumpService::getDatabasePassword();
-        $dumpsPath = DatabaseDumpService::getDatabaseDumpsPath();
-        $dumpPassword = Config::string('app.db.dump_password');
+        PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
 
-        ob_start();
-        system("mariadb-dump $dbName --user=$dbUser --password=$dbPassword", $result);
-        $sql = ob_get_clean();
-
-        if ($result) {
-            Log::error("db-dump error code: $result");
+        $env = $this->argument('mode');
+        if ($env !== 'rc' && $env !== 'prod' && $env !== 'std' && $env !== 'auto') {
+            $this->warn(
+                "Invalid mode '$env', options:"
+                . "\n  'rc', 'prod', 'std' (dump prod and restore to rc),"
+                . "\n  'auto' (dump prod and restore to rc if configured)",
+            );
             return self::INVALID;
         }
+        $restoreRc = ($env === 'std') || ($env === 'auto' && Config::boolean('app.db.rc_restore'));
+        $isFromRc = ($env === 'rc');
 
-        $nameBase = DatabaseDumpService::newDumpName($dbName);
-        $innerFile = "$nameBase.sql";
-        $zipPath = "$dumpsPath/$nameBase.zip";
-        $zip = new ZipArchive();
-        $zip->open($zipPath, ZipArchive::CREATE);
+        $dbDumpJob = $databaseDumpService->create(isFromRc: $isFromRc);
+        Bus::dispatchSync($dbDumpJob);
+        $dbDump = $dbDumpJob->dbDump;
 
-        $zip->addFromString($innerFile, $sql);
-
-        $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
-        $zip->setPassword($dumpPassword);
-
-        $zip->setCompressionName($innerFile, ZipArchive::CM_DEFLATE, 9);
-        $zip->close();
-        chmod($zipPath, 0400);
-        $this->line($zip->getStatusString());
-
-        if (($backupAuth = Config::string('app.db.backup_auth'))) {
-            $response = Http::asMultipart()
-                ->withHeaders([
-                    'x-memo-auth' => $backupAuth,
-                    'x-memo-name' => Config::string('app.name'),
-                ])
-                ->attach('backup', file_get_contents($zipPath), 'backup.zip')
-                ->post(Config::string('app.db.backup_url'));
-            $this->line($response->body());
+        if ($dbDump->status !== DatabaseDumpStatus::created) {
+            $this->error($dbDump->status->name);
+            return self::FAILURE;
         }
+        $this->line(
+            "{$dbDump->name} {$dbDump->status->name}"
+            . ($dbDump->is_backuped ? ' and backuped' : ''),
+        );
+
+        if ($restoreRc) {
+            $dbRestoreJob = $databaseDumpService->restore($dbDump, isToRc: true);
+            Bus::dispatchSync($dbRestoreJob);
+
+            if ($dbDump->status !== DatabaseDumpStatus::created) {
+                $this->error($dbDump->status->name);
+                return self::FAILURE;
+            }
+            $this->line(' ... and restored to rc');
+        }
+
         return self::SUCCESS;
     }
 }

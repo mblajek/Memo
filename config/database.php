@@ -6,6 +6,11 @@ return [
     'default' => 'mysql',
     'migrations' => 'migrations',
     'connections' => [
+        'db_dumps' => [
+            'driver' => 'sqlite',
+            'database' => Env::get('APP_DB_DUMP_PATH')
+                ? (Env::getOrFail('APP_DB_DUMP_PATH') . '/db_dumps.db') : null,
+        ],
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),

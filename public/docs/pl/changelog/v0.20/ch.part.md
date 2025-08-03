@@ -6,3 +6,6 @@ Data wydania: **21 lipca 2025**
 [Więcej informacji o powiadomieniach](meeting-notifications).
 
 `🟡` Wprowadzono poprawki bezpieczeństwa rekomendowane w zakończonym właśnie audycie.
+
+`🔴` Administrator globalny może utworzyć [zrzut bazy danych](db-dumps), przeglądać listę istniejących zrzutów oraz
+ładować zrzuty na środowisko _rc_.

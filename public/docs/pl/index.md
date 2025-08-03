@@ -30,7 +30,10 @@
   - [Eksport danych](table-export)
   - [Grupowanie wierszy](table-grouping)
   - [Zapisane widoki](table-saved-views)
-- [Raporty](reports)
+- Administracyjne:
+  - [Środowisko _rc_](rc-environment)
+  - [$t(routes.admin.db_dumps|cap)](db-dumps)
+- [$t(routes.facility.facility_admin.reports|cap)](reports)
 - [Tekst z tagami](rich-text)
 - [Sztuczki usprawniające korzystanie z Memo ✨](tricks)
 - [Wspierane przeglądarki](supported-browsers)

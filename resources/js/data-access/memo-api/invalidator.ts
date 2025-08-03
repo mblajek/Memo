@@ -1,4 +1,5 @@
 import {useQueryClient} from "@tanstack/solid-query";
+import {Admin} from "data-access/memo-api/groups/Admin";
 import {FacilityNotification} from "data-access/memo-api/groups/FacilityNotification";
 import {System} from "data-access/memo-api/groups/System";
 import {User} from "data-access/memo-api/groups/User";
@@ -59,6 +60,8 @@ export function useInvalidator(queryClient = useQueryClient()) {
     // Global:
     dictionaries: () => void queryClient.invalidateQueries({queryKey: System.keys.dictionary()}),
     attributes: () => void queryClient.invalidateQueries({queryKey: System.keys.attribute()}),
+    // Admin:
+    dbDumps: () => void queryClient.invalidateQueries({queryKey: Admin.keys.dbDump()}),
   };
   return invalidate;
 }

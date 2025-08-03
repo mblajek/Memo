@@ -2,6 +2,8 @@
 
 namespace App\Exceptions;
 
+use App\Services\Database\DatabaseDumpStatus;
+
 class ExceptionFactory
 {
     public static function validation(): ApiValidationException
@@ -80,5 +82,20 @@ class ExceptionFactory
             'exception.notification.sms.message_too_long',
             ['max' => $max, 'length' => $length],
         );
+    }
+
+    public static function noFreshProdDbDumps(int $minutes): ApiException
+    {
+        return new ApiException(409, 'exception.db.no_fresh_prod_db_dumps', ['minutes' => $minutes]);
+    }
+
+    public static function invalidDbDumpStatus(DatabaseDumpStatus $status): ApiException
+    {
+        return new ApiException(409, 'exception.db.invalid_db_dump_status', ['status' => $status->name]);
+    }
+
+    public static function dbDumpsDisabled(): ApiException
+    {
+        return new ApiException(409, 'exception.db.db_dumps_disabled');
     }
 }

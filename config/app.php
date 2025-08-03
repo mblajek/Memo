@@ -30,11 +30,12 @@ return [
     'db' => [
         'auto_migrate' => Env::get('APP_DB_ALWAYS_MIGRATE', false),
         'dump_at' => Env::get('APP_DB_DUMP_AT'),
+        'dump_path' => Env::get('APP_DB_DUMP_PATH'),
         'dump_password' => Env::get('APP_DB_DUMP_PASSWORD'),
         'rc_restore' => Env::get('APP_DB_RC_RESTORE'),
         'rc_password' => Env::get('APP_DB_RC_PASSWORD'),
         'backup_url' => Env::get('APP_DB_BACKUP_URL'),
-        'backup_auth' => Env::get('APP_BD_BACKUP_AUTH'),
+        'backup_auth' => Env::get('APP_DB_BACKUP_AUTH'),
     ],
 
     'maintenance' => ['driver' => 'file'],
@@ -43,7 +44,7 @@ return [
         /* Laravel Framework Service Providers... */
         Illuminate\Auth\AuthServiceProvider::class,
         // Illuminate\Broadcasting\BroadcastServiceProvider::class,
-        // Illuminate\Bus\BusServiceProvider::class,
+        Illuminate\Bus\BusServiceProvider::class,
         Illuminate\Cache\CacheServiceProvider::class,
         Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
         Illuminate\Cookie\CookieServiceProvider::class,

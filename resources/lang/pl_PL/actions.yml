@@ -44,3 +44,8 @@ client_group:
   add_another: "Utwórz kolejną grupę klientów"
   delete: "Usuń grupę"
   add_to: "Dodaj do istniejącej grupy"
+db_dump:
+  create: "Utwórz zrzut bazy danych"
+  create.from_self: "Utwórz zrzut bazy danych obecnego środowiska ({{env}})"
+  create.from_rc: "Utwórz zrzut bazy danych środowiska rc"
+  restore: "Przywróć$t(ellipsis)"

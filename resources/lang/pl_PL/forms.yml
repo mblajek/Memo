@@ -301,3 +301,25 @@ table_saved_view_create:
 table_saved_view_delete:
   form_name: "Usunięcie zapisanego widoku"
   confirmation_text: "Czy na pewno usunąć zapisany widok?"
+
+db_dump_create:
+  form_name: "Utworzenie zrzutu bazy danych"
+  body:
+    self: "Czy na pewno chcesz utworzyć zrzut bazy danych obecnego środowiska ({{env}})?"
+    rc: "Czy na pewno chcesz utworzyć zrzut bazy danych środowiska rc skonfigurowanego dla obecnego środowiska?"
+  success: "Uruchomiono tworzenie zrzutu bazy danych (sprawdź status zrzutu)"
+
+db_dump_restore:
+  form_name: "Przywracanie zrzutu bazy danych"
+  success: "Uruchomiono przywracanie zrzutu bazy danych (sprawdź status zrzutu)"
+  form_info:
+    dump_info: "Wybrany zrzut bazy:\n\t$t(models.db_dump.fromEnv): {{fromEnv}}\n\t$t(models.generic.createdAt): {{createdAt}} ({{createdAtRelative}})"
+    dump_info.rc_to_self_warning: "Uwaga: zrzut pochodzący ze środowiska rc zostanie załadowany na obecne środowisko ({{env}})!"
+    env:
+      rc_only: "Środowisko docelowe: rc."
+      rc: "Załaduj zrzut na środowisko rc"
+      self: "Załaduj zrzut na obecne środowisko ({{env}})"
+    warn:
+      self: "Uwaga: wszystkie dane w tym systemie ({{env}}) zostaną usunięte i zastąpione danymi pochodzącymi z wybranego zrzutu bazy danych."
+      rc: "Uwaga: wszystkie dane na środowisku rc zostaną usunięte i zastąpione danymi pochodzącymi z wybranego zrzutu bazy danych."
+    question: "Czy na pewno chcesz wykonać opisaną powyżej operację?"

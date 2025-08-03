@@ -25,5 +25,5 @@ yarn-error.log
 /storage/api-docs/*.json
 
 /public/hot!
-/database/dumps/*.zip
+/database/dumps/*.*
 /release
