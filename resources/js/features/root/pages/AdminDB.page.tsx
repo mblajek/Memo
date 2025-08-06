@@ -192,6 +192,7 @@ export default (() => {
         },
       ]}
       initialSort={[{id: "createdAt", desc: true}]}
+      pageInfo={{href: "/help/db-dumps"}}
       customSectionBelowTable={
         <div class="ml-2 flex gap-1">
           <PopOver

@@ -1,5 +1,5 @@
 import {isDEV} from "components/utils/dev_mode";
-import {currentLanguage} from "i18n_loader";
+import {currentLanguage, TESTING_LANGUAGE} from "i18n_loader";
 
 const ABSOLUTE_PATH_PATTERN = /^(\/|https?:)/;
 
@@ -19,6 +19,11 @@ export function resolveMdFromAppPath(appHelpPath: string) {
   }
   return {
     helpPagePath: match[1],
-    mdPath: currentLanguage() ? `/${isDEV() ? "docs" : "docs-remote"}/${currentLanguage()}/${match[1]}.md` : undefined,
+    mdPath:
+      currentLanguage() === TESTING_LANGUAGE
+        ? `/docs/dev/testing-language-docs.md`
+        : currentLanguage()
+          ? `/${isDEV() ? "docs" : "docs-remote"}/${currentLanguage()}/${match[1]}.md`
+          : undefined,
   };
 }

@@ -19,7 +19,7 @@ import {FatalError} from "./FatalError";
 import {LoaderInPortal, MemoLoader} from "./components/ui/MemoLoader";
 import {GlobalPageElements} from "./components/utils/GlobalPageElements";
 import {DictionariesAndAttributesProvider} from "./data-access/memo-api/dictionaries_and_attributes_context";
-import {translationsLoaded} from "./i18n_loader";
+import {TESTING_LANGUAGE, translationsLoaded} from "./i18n_loader";
 
 const root = document.getElementById("root");
 if (!(root instanceof HTMLElement)) {
@@ -39,7 +39,7 @@ render(() => {
         initImmediate: false,
         fallbackLng: "pl",
         load: "currentOnly",
-        supportedLngs: ["pl", "testing"],
+        supportedLngs: ["pl", TESTING_LANGUAGE],
         pluralSeparator: "__",
         // The translated texts are always passed through the framework.
         interpolation: {escapeValue: false},
