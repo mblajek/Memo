@@ -193,6 +193,8 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly initialSort?: SortingState;
   readonly initialColumnGroups?: readonly string[];
   readonly initialPageSize?: number;
+  /** Additional element to put above table and the controls. */
+  readonly header?: JSX.Element;
   /** Element to put below table, after the summary. */
   readonly customSectionBelowTable?: JSX.Element;
   readonly staticExportConfig?: TableExportConfig;
@@ -876,28 +878,27 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     }),
   );
 
-  const MakeDataAccessibleOnWindow: VoidComponent = () => {
-    onMount(() => {
-      (window as WindowWithTQueryDataAccess).tquery = {
-        dataQuery,
-        rows: () => (dataQuery.data ? JSON.parse(JSON.stringify(dataQuery.data.data)) : undefined),
-      };
-    });
-    onCleanup(() => delete (window as WindowWithTQueryDataAccess).tquery);
-    return <></>;
-  };
+  createEffect(() => {
+    if (props.mode === "standalone") {
+      onMount(() => {
+        (window as WindowWithTQueryDataAccess).tquery = {
+          dataQuery,
+          rows: () => (dataQuery.data ? JSON.parse(JSON.stringify(dataQuery.data.data)) : undefined),
+        };
+      });
+      onCleanup(() => delete (window as WindowWithTQueryDataAccess).tquery);
+    }
+  });
 
   return (
-    <>
-      <Show when={props.mode === "standalone"}>
-        <MakeDataAccessibleOnWindow />
-      </Show>
-      <Table
-        table={table()!}
-        mode={props.mode}
-        rowsIteration="Index"
-        nonBlocking={props.nonBlocking}
-        aboveTable={() => (
+    <Table
+      table={table()!}
+      mode={props.mode}
+      rowsIteration="Index"
+      nonBlocking={props.nonBlocking}
+      aboveTable={() => (
+        <div class="flex flex-col items-stretch">
+          {props.header}
           <div class="min-h-small-input flex items-stretch gap-1">
             <TableSearch divClass="flex-grow" />
             <TableFiltersClearButton
@@ -924,25 +925,25 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
               )}
             </Show>
           </div>
-        )}
-        belowTable={() => (
-          <div class="flex items-start justify-between gap-2 text-base flex-wrap">
-            <div class="min-h-small-input flex items-stretch gap-2">
-              <Pagination />
-              <Show when={!dataQuery.isFetching || rowsCount()}>
-                <TableSummary rowsCount={rowsCount()} />
-                {props.customSectionBelowTable}
-              </Show>
-            </div>
-            <div class="ml-auto">
-              <TableExportButton />
-            </div>
+        </div>
+      )}
+      belowTable={() => (
+        <div class="flex items-start justify-between gap-2 text-base flex-wrap">
+          <div class="min-h-small-input flex items-stretch gap-2">
+            <Pagination />
+            <Show when={!dataQuery.isFetching || rowsCount()}>
+              <TableSummary rowsCount={rowsCount()} />
+              {props.customSectionBelowTable}
+            </Show>
           </div>
-        )}
-        isLoading={!schema()}
-        isDimmed={dataQuery.isFetching}
-        scrollToTopSignal={scrollToTopSignal}
-      />
-    </>
+          <div class="ml-auto">
+            <TableExportButton />
+          </div>
+        </div>
+      )}
+      isLoading={!schema()}
+      isDimmed={dataQuery.isFetching}
+      scrollToTopSignal={scrollToTopSignal}
+    />
   );
 };
