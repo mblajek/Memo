@@ -22,7 +22,7 @@ class VerifyCsrfToken extends Middleware
     protected $addHttpCookie = false;
     private static string $token;
 
-    public function getToken(Session $session): string
+    private function getToken(Session $session): string
     {
         return self::$token ??= $this->encrypter->encrypt($session->token(), false);
     }
