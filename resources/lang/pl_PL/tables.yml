@@ -147,7 +147,7 @@ tables:
         count_column_label_override: "Liczba klientów"
 
   time_table:
-    table_name: "Grafiki pracy"
+    table_name: "grafiki pracy"
     column_names:
       attendant.userId: "$t(models.staff._name)"
       id: "$t(tables.tables.generic.column_names.id)"
@@ -158,7 +158,7 @@ tables:
     summary__many: "$t(tables.tables.generic.summary__many)"
 
   time_table_weekly:
-    table_name: "Tygodniowe grafiki pracy"
+    table_name: "tygodniowe grafiki pracy"
     column_names:
       weekDate: "początek tyg."
       totalWorkTime: "łączny czas pracy"
@@ -179,7 +179,7 @@ tables:
     summary__many: "{{count, number}} powiadomień"
 
   logs:
-    table_name: "Logi"
+    table_name: "logi"
     column_names:
       createdAtDate: "data"
       createdAt: "czas"
@@ -195,7 +195,7 @@ tables:
       user.name: "użytkownik"
 
   db_dump:
-    table_name: "Zrzuty bazy danych"
+    table_name: "zrzuty bazy danych"
     summary__zero: "Brak zrzutów"
     summary__one: "{{count, number}} zrzut"
     summary__few: "{{count, number}} zrzuty"

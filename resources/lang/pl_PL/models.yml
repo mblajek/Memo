@@ -169,7 +169,7 @@ notification:
   _name: "powiadomienie"
   _name_plural: "powiadomienia"
   scheduledAt: "termin wysłania"
-  service: "serwis"
+  service: "usługa"
   errorMessage: "komunikat błędu"
   user.id: "adresat"
   address: "adres"
