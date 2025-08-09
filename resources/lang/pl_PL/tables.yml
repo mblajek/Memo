@@ -92,6 +92,7 @@ tables:
       attendant.userId: "$t(models.meeting.attendant)"
       attendant.attendanceStatusDictId: "$t(dictionary.attendanceStatus._name)"
       attendant.clientGroupId: "$t(models.client_group._name)"
+      attendant.notifications.*.notificationMethodDictId: "$t(dictionary.notificationMethod._name)"
     summary__zero: "Brak uczestnictw"
     summary__one: "{{count, number}} uczestnictwo"
     summary__few: "{{count, number}} uczestnictwa"
@@ -166,6 +167,8 @@ tables:
 
   notification:
     table_name: "$t(models.notification._name_plural)"
+    column_names:
+      meetingId: "$t(models.meeting._name)"
     no_address_hint: "Adres jest wypełniany na podstawie danych klienta w momencie wysłania powiadomienia."
     default_subject: "(treść domyślna)"
     default_subject_hint: "Treść jest ustalana na podstawie ustawień placówki w momencie wysłania powiadomienia.\n(Wartość tymczasowa: $t(quotes.open){{text}}$t(quotes.close))"

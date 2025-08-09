@@ -50,6 +50,7 @@ export default (() => {
         ...getCreatedUpdatedColumns({entity: "client", overrides: {columnGroups: "attendant_multicolumn"}}),
         cols.attendant.get("attendantClientGroup", {initialVisible: true}),
         cols.attendant.attendanceStatus,
+        cols.attendant.notifications,
         cols.meeting.id,
         cols.meeting.date,
         cols.meeting.time,

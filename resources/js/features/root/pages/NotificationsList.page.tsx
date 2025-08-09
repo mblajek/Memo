@@ -16,6 +16,7 @@ import {FacilityNotification} from "data-access/memo-api/groups/FacilityNotifica
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {dateTimeToISO} from "data-access/memo-api/utils";
 import {UserLink} from "features/facility-users/UserLink";
+import {useMeetingTableColumns} from "features/meeting/meeting_tables";
 import {createComputed, createSignal, on, Show, VoidComponent} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
@@ -28,6 +29,7 @@ export default (() => {
   const t = useLangFunc();
   const {getCreatedUpdatedColumns} = useTableColumns();
   const modelQuerySpecs = useModelQuerySpecs();
+  const cols = useMeetingTableColumns();
   const [mode, setMode] = createSignal<Mode>("all");
   createHistoryPersistence({
     key: "NotificationsList",
@@ -157,6 +159,7 @@ export default (() => {
             size: 300,
           },
         },
+        cols.foreign.meetingId,
         ...getCreatedUpdatedColumns(),
       ]}
       initialSort={[{id: "scheduledAt", desc: defaultScheduledAtDesc()}]}

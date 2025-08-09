@@ -90,6 +90,14 @@ final readonly class MeetingClientTquery extends MeetingTquery
         FacilityUserTquery::addAttendantFields($this->facility, $config);
         ClientTquery::addClientFields($this->facility, $config);
 
+        $config->addListQuery(
+            new TqDictDef(TqDataTypeEnum::dict_list, DictionaryUuidEnum::NotificationMethod),
+            select: '`notifications`.`notification_method_dict_id`',
+            from: '`notifications` where `notifications`.`user_id` = `meeting_attendants`.`user_id`'
+            . ' and `notifications`.`meeting_id` = `meeting_attendants`.`meeting_id`',
+            columnAlias: 'attendant.notifications.*.notification_method_dict_id',
+        );
+
         return $config;
     }
 }
