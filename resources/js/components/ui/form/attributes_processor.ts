@@ -7,7 +7,14 @@ export function createAttributesProcessor(model: string) {
       const result: Record<string, unknown> = {};
       for (const attribute of attributes()?.getForModel(model) || []) {
         if (Object.hasOwn(formValues, attribute.apiName)) {
-          result[attribute.apiName] = formValues[attribute.apiName] ?? null;
+          let value = formValues[attribute.apiName] ?? null;
+          if (attribute.multiple && Array.isArray(value)) {
+            // Remove the last value if it's empty.
+            if (value.length && (value.at(-1) == undefined || value.at(-1) === "")) {
+              value = value.slice(0, -1);
+            }
+          }
+          result[attribute.apiName] = value;
         }
       }
       return result;

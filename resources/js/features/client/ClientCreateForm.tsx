@@ -1,4 +1,5 @@
 import {useMutation} from "@tanstack/solid-query";
+import {createAttributesProcessor} from "components/ui/form/attributes_processor";
 import {useLangFunc} from "components/utils/lang";
 import {currentDate} from "components/utils/time";
 import {toastSuccess} from "components/utils/toast";
@@ -16,13 +17,19 @@ export interface ClientCreateFormProps {
 export const ClientCreateForm: VoidComponent<ClientCreateFormProps> = (props) => {
   const t = useLangFunc();
   const invalidate = useInvalidator();
+  const clientAttributesProcessor = createAttributesProcessor("client");
   const clientCreateMutation = useMutation(() => ({
     mutationFn: FacilityClient.createClient,
     meta: {isFormSubmit: true},
   }));
 
   async function createClient(values: ClientFormType) {
-    const {id} = (await clientCreateMutation.mutateAsync(values)).data.data;
+    const {id} = (
+      await clientCreateMutation.mutateAsync({
+        ...values,
+        client: clientAttributesProcessor.extract(values.client),
+      })
+    ).data.data;
     // eslint-disable-next-line solid/reactivity
     return () => {
       toastSuccess(t("forms.client_create.success"));
