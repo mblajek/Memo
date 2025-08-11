@@ -5,6 +5,7 @@ import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {HideableSection} from "components/ui/HideableSection";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
+import {UrgentNotes} from "components/ui/UrgentNotes";
 import {DocsModalInfoIcon, createDocsModal} from "components/ui/docs_modal";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
@@ -447,6 +448,9 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         <Index each={form.data(props.name)} fallback={<EmptyValueSymbol class="col-span-full" />}>
           {(_attendant, index) => {
             const userId = () => form.data(`${props.name}.${index}.userId`);
+            const selectedClient = createMemo(() =>
+              props.name === "clients" ? selectedClients().find(({id}) => id === userId()) : undefined,
+            );
             const priorityQueryParams = createMemo(() =>
               props.name === "clients"
                 ? // eslint-disable-next-line solid/reactivity
@@ -652,6 +656,9 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     </Show>
                   </div>
                   <Show when={props.name === "clients"}>
+                    <HideableSection class="col-span-full" show={userId() && selectedClient()?.urgentNotes?.length}>
+                      <UrgentNotes class="ml-6 mt-px mb-1" notes={selectedClient()?.urgentNotes} showInfoIcon />
+                    </HideableSection>
                     <HideableSection
                       class="col-span-full"
                       show={
