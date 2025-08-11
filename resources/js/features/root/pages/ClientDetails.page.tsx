@@ -5,6 +5,7 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {DeleteButton, EditButton} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
+import {ClientUrgentNotes} from "components/ui/ClientUrgentNotes";
 import {HideableSection} from "components/ui/HideableSection";
 import {BigSpinner} from "components/ui/Spinner";
 import {StaticCSVExportButton} from "components/ui/StaticCSVExportButton";
@@ -23,6 +24,7 @@ import {QueryBarrier} from "components/utils/QueryBarrier";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
+import {makeAttributable, readAttribute} from "data-access/memo-api/attributable";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -96,14 +98,15 @@ export default (() => {
       <QueryBarrier queries={[dataQuery]} ignoreCachedData {...notFoundError()}>
         <Show when={dataQuery.data} fallback={<BigSpinner />}>
           {(user) => {
+            const client = createMemo(() => makeAttributable(user().client, "client"));
             const [selectedGroupId, setSelectedGroupId] = createSignal<string>();
             const noGroupMeetingsCount = useClientWithNoGroupMeetingsCount(() =>
-              user().client.groupIds?.length ? userId() : undefined,
+              client().groupIds?.length ? userId() : undefined,
             );
             onMount(() => {
               createComputed(() => {
                 if (
-                  !user().client.groupIds?.length ||
+                  !client().groupIds?.length ||
                   !selectedGroupId() ||
                   (meetingTablesMode() === "clientNoClientGroup" && !noGroupMeetingsCount())
                 ) {
@@ -145,13 +148,16 @@ export default (() => {
                     type="clients"
                     user={{
                       ...user(),
-                      createdAt: user().client.createdAt,
-                      createdBy: user().client.createdBy,
-                      updatedAt: user().client.updatedAt,
-                      updatedBy: user().client.updatedBy,
+                      createdAt: client().createdAt,
+                      createdBy: client().createdBy,
+                      updatedAt: client().updatedAt,
+                      updatedBy: client().updatedBy,
                     }}
                   />
                   <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
+                    <HideableSection show={!editMode()}>
+                      <ClientUrgentNotes notes={readAttribute<readonly string[]>(client(), "urgentNotes")} />
+                    </HideableSection>
                     <div style={{"min-width": "400px", "flex-basis": "600px"}}>
                       <FelteForm
                         id="client_edit"
@@ -240,7 +246,7 @@ export default (() => {
                         <StandaloneFieldLabel>
                           <Capitalize text={t("models.meeting._name_plural")} />
                         </StandaloneFieldLabel>
-                        <Show when={user().client.groupIds?.length}>
+                        <Show when={client().groupIds?.length}>
                           {(_) => {
                             const items = createMemo(() => [
                               {
