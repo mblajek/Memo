@@ -56,7 +56,7 @@ export const MeetingHoverCard: VoidComponent<Props> = (props) => {
         <Show when={props.meeting.clients.length}>
           <ul>
             <For each={props.meeting.clients}>
-              {(client) => <AttendantListItem type="clients" attendant={client} showAttendance />}
+              {(client) => <AttendantListItem type="clients" attendant={client} showAttendance showUrgentNotes />}
             </For>
           </ul>
         </Show>

@@ -1,5 +1,6 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {EM_DASH} from "components/ui/symbols";
+import {UrgentNotes} from "components/ui/UrgentNotes";
 import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {TQMeetingAttendantResource} from "data-access/memo-api/tquery/calendar";
@@ -12,6 +13,7 @@ interface AttendantListItemProps {
   readonly type: FacilityUserType;
   readonly attendant: TQMeetingAttendantResource;
   readonly showAttendance?: boolean;
+  readonly showUrgentNotes?: boolean;
 }
 
 export const AttendantListItem: VoidComponent<AttendantListItemProps> = (props) => {
@@ -25,6 +27,11 @@ export const AttendantListItem: VoidComponent<AttendantListItemProps> = (props) 
           {EM_DASH} <MeetingAttendanceStatus attendanceStatusId={props.attendant.attendanceStatusDictId} />
         </span>
       </Show>
+      <UrgentNotes
+        class="ms-4"
+        notes={(props.showUrgentNotes && props.attendant.urgentNotes) || undefined}
+        showInfoIcon={false}
+      />
     </li>
   );
 };

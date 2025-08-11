@@ -5,6 +5,7 @@ namespace App\Tquery\Tables;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
+use App\Models\UuidEnum\ClientAttributeUuidEnum;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Models\UuidEnum\MeetingAttributeUuidEnum;
 use App\Tquery\Config\TqConfig;
@@ -95,16 +96,34 @@ readonly class MeetingTquery extends TqService
                 "`meeting_attendants` $attendantWhere",
                 "$attendanceName.*.attendance_status_dict_id",
             );
-            $config->addQuery(
-                TqDataTypeEnum::list,
-                fn(string $tableName) => //
-                    "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
-                    . "'attendanceTypeDictId', `meeting_attendants`.`attendance_type_dict_id`,"
-                    . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
-                    . ")) from `meeting_attendants`"
-                    . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
-                $attendanceName,
-            );
+            if ($attendanceType === AttendanceType::Client) {
+                $config->addQuery(
+                    TqDataTypeEnum::list,
+                    fn(string $tableName) => //
+                        "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
+                        . "'attendanceTypeDictId', `meeting_attendants`.`attendance_type_dict_id`,"
+                        . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`,"
+                        . "'urgentNotes', (select json_arrayagg(`string_value` order by `default_order`)"
+                        . "from `values` where `object_id` = `members`.`client_id` and `attribute_id` = '"
+                        . ClientAttributeUuidEnum::UrgentNotes->value . "')"
+                        . " )) from `meeting_attendants`"
+                        . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id`"
+                        . " inner join `members` on `members`.`user_id` = `users`.`id`"
+                        . " $attendantWhere",
+                    $attendanceName,
+                );
+            } else {
+                $config->addQuery(
+                    TqDataTypeEnum::list,
+                    fn(string $tableName) => //
+                        "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
+                        . "'attendanceTypeDictId', `meeting_attendants`.`attendance_type_dict_id`,"
+                        . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
+                        . ")) from `meeting_attendants`"
+                        . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
+                    $attendanceName,
+                );
+            }
         }
 
         $resourceFromWhere = '`meeting_resources` where `meeting_resources`.`meeting_id` = `meetings`.`id`';

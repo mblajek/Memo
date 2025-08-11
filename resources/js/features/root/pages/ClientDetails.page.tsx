@@ -5,10 +5,10 @@ import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {DeleteButton, EditButton} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
-import {ClientUrgentNotes} from "components/ui/ClientUrgentNotes";
 import {HideableSection} from "components/ui/HideableSection";
 import {BigSpinner} from "components/ui/Spinner";
 import {StaticCSVExportButton} from "components/ui/StaticCSVExportButton";
+import {UrgentNotes} from "components/ui/UrgentNotes";
 import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {ATTRIBUTES_SCHEMA} from "components/ui/form/AttributeFields";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
@@ -156,7 +156,7 @@ export default (() => {
                   />
                   <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
                     <HideableSection show={!editMode()}>
-                      <ClientUrgentNotes notes={readAttribute<readonly string[]>(client(), "urgentNotes")} />
+                      <UrgentNotes notes={readAttribute<readonly string[]>(client(), "urgentNotes")} />
                     </HideableSection>
                     <div style={{"min-width": "400px", "flex-basis": "600px"}}>
                       <FelteForm
