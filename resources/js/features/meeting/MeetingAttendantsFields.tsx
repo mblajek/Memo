@@ -30,6 +30,7 @@ import {
   MeetingResourceForPatch,
   MeetingStaffResource,
 } from "data-access/memo-api/resources/meeting.resource";
+import {MeetingWithExtraInfo} from "features/meeting/meeting_api";
 import {
   Accessor,
   Index,
@@ -84,8 +85,8 @@ const getAttendantsSchema = () =>
 
 interface Props {
   readonly name: "staff" | "clients";
-  /** The id of this meeting, if it already exists. */
-  readonly meetingId?: string;
+  /** This meeting object, if it already exists. */
+  readonly meeting?: MeetingWithExtraInfo;
   /** Whether to show the attendance status label. Default: true. */
   readonly showAttendanceStatusLabel?: boolean;
   readonly viewMode: boolean;
@@ -123,7 +124,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     on(showConflicts, (showConflicts) =>
       showConflicts
         ? useMeetingConflictsFinder(() => ({
-            id: props.meetingId,
+            id: props.meeting?.id,
             ...getMeetingTimeFullData(form.data()),
           }))
         : undefined,
@@ -451,6 +452,16 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             const selectedClient = createMemo(() =>
               props.name === "clients" ? selectedClients().find(({id}) => id === userId()) : undefined,
             );
+            const clientUrgentNotes = createMemo(() => {
+              if (props.name !== "clients") {
+                return undefined;
+              }
+              return (
+                selectedClient()?.urgentNotes ||
+                props.meeting?.clientsExtraInfo?.find((client) => client.userId === userId())?.urgentNotes ||
+                undefined
+              );
+            });
             const priorityQueryParams = createMemo(() =>
               props.name === "clients"
                 ? // eslint-disable-next-line solid/reactivity
@@ -656,8 +667,8 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     </Show>
                   </div>
                   <Show when={props.name === "clients"}>
-                    <HideableSection class="col-span-full" show={userId() && selectedClient()?.urgentNotes?.length}>
-                      <UrgentNotes class="ml-6 mt-px mb-1" notes={selectedClient()?.urgentNotes} showInfoIcon />
+                    <HideableSection class="col-span-full" show={userId() && clientUrgentNotes()?.length}>
+                      <UrgentNotes class="ml-6 mt-px mb-1" notes={clientUrgentNotes()} showInfoIcon />
                     </HideableSection>
                     <HideableSection
                       class="col-span-full"
