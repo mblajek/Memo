@@ -108,7 +108,7 @@ readonly class MeetingTquery extends TqService
                         . ClientAttributeUuidEnum::UrgentNotes->value . "')"
                         . " )) from `meeting_attendants`"
                         . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id`"
-                        . " inner join `members` on `members`.`user_id` = `users`.`id`"
+                        . " inner join `members` on `members`.`user_id` = `users`.`id` and `members`.`facility_id` = '{$this->facility->id}'"
                         . " $attendantWhere",
                     $attendanceName,
                 );
