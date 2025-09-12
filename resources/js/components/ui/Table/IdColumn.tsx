@@ -6,7 +6,7 @@ interface Props {
   readonly id: string | undefined;
 }
 
-/** A component for displaying a copiable id, truncated to take less space. */
+/** A component for displaying a copyable id, truncated to take less space. */
 export const IdColumn: VoidComponent<Props> = (props) => (
   <Show when={props.id} fallback={<EmptyValueSymbol />}>
     <div class="w-full flex items-center">

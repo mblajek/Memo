@@ -1,4 +1,3 @@
-import {A} from "@solidjs/router";
 import {useQuery} from "@tanstack/solid-query";
 import {createSolidTable} from "@tanstack/solid-table";
 import {createColumnHelper} from "@tanstack/table-core";
@@ -14,6 +13,7 @@ import {QueryBarrier} from "components/utils/QueryBarrier";
 import {Attribute} from "data-access/memo-api/attributes";
 import {System} from "data-access/memo-api/groups/System";
 import {AttributeType} from "data-access/memo-api/resources/attribute.resource";
+import {AttributeTypeView} from "dev-pages/AttributeTypeView";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {createMemo, createSignal, Setter, Show, VoidComponent} from "solid-js";
 import {Select} from "../components/ui/form/Select";
@@ -36,20 +36,6 @@ export default (() => {
   const attrValueFormatter = useAttrValueFormatter();
   const tableCells = useTableCells();
   const h = createColumnHelper<Attribute>();
-
-  function getAttributeTypeString(attr: Attribute) {
-    if (attr.type === "dict") {
-      return (
-        <>
-          dict: <A href={`../dictionaries/${attr.dictionary!.id}`}>{attr.dictionary!.name}</A>
-        </>
-      );
-    } else if (attr.typeModel) {
-      return `model: ${attr.typeModel}`;
-    } else {
-      return attr.type;
-    }
-  }
 
   const table = createMemo(() =>
     createSolidTable({
@@ -121,7 +107,9 @@ export default (() => {
         h.accessor("type", {
           id: "Type",
           cell: cellFunc<AttributeType, Attribute>((props) => (
-            <PaddedCell>{getAttributeTypeString(props.row as Attribute)}</PaddedCell>
+            <PaddedCell>
+              <AttributeTypeView attr={props.row as Attribute} />
+            </PaddedCell>
           )),
           ...textSort(),
         }),
