@@ -2,15 +2,11 @@
 
 namespace App\Services\Database\Jobs;
 
-use App\Exceptions\FatalExceptionFactory;
 use App\Models\DbDump;
-use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
 use DateTimeImmutable;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Process;
+use Illuminate\Console\Application;
 use Throwable;
-use ZipArchive;
 
 final readonly class DatabaseRestoreJob extends AbstractDatabaseJob
 {
@@ -35,32 +31,10 @@ final readonly class DatabaseRestoreJob extends AbstractDatabaseJob
 
     private function restore(): void
     {
-        $dumpName = $this->dbDump->name;
-        $innerFile = DbDump::innerFileName($dumpName);
-        $zipPath = DbDump::fullPath($dumpName);
-
-        $zip = new ZipArchive();
-        $zip->open($zipPath);
-
-        try {
-            $zip->setEncryptionName($innerFile, ZipArchive::EM_AES_256);
-            $zip->setPassword(DatabaseDumpHelper::getDatabaseDumpPassword());
-            $sql = $zip->getFromName($innerFile);
-            $zip->close();
-            if (!is_string($sql)) {
-                Log::error("Cannot read item, maybe invalid password");
-                FatalExceptionFactory::unexpected()->throw();
-            }
-        } catch (Throwable $e) {
-            Log::error("Cannot read file '{$innerFile}' inside '{$zipPath}': {$e->getMessage()}");
-            FatalExceptionFactory::unexpected()->throw();
-        }
-
-        $processResult = Process::input($sql)->run($this->getCommand(isDump: false, isRc: $this->isToRc));
-
-        if ($processResult->failed()) {
-            FatalExceptionFactory::unexpected()->throw();
-        }
+        $this->executeCommand(
+            command: Application::formatCommandString("fz:db-echo {$this->dbDump->id}")
+            . ' | ' . $this->getRestoreCommand(isToRc: $this->isToRc),
+        );
 
         $this->dbDump->status = DatabaseDumpStatus::created;
         if ($this->isToRc) {

@@ -2,6 +2,7 @@
 
 namespace App\Services\Database;
 
+use App\Exceptions\ExceptionFactory;
 use App\Models\DbDump;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Config;
@@ -12,6 +13,13 @@ class DatabaseDumpHelper
     public static function dumpsEnabled(): bool
     {
         return ($path = Config::get('database.connections.db_dumps.database')) && file_exists($path);
+    }
+
+    public static function checkDumpsEnabled(): void
+    {
+        if (!self::dumpsEnabled()) {
+            ExceptionFactory::dbDumpsDisabled()->throw();
+        }
     }
 
     public static function lastDumpDatetime(): ?DateTimeImmutable
