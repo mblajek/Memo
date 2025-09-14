@@ -1,11 +1,14 @@
 <?php
 
+/** @noinspection PhpUnused */
+
 namespace App\Console\Commands;
 
 use App\Exceptions\ApiException;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObjectCreator;
 use App\Models\DbDump;
+use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpsService;
 use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Console\Command;
@@ -19,6 +22,7 @@ class DatabaseRestoreCommand extends Command
     public function handle(
         DatabaseDumpsService $service,
     ): int {
+        DatabaseDumpHelper::checkDumpsEnabled();
         PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
 
         do {

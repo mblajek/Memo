@@ -93,6 +93,8 @@ html {
   input[type="checkbox"],
   input[type="radio"] {
     transform: scale(1.2);
+    margin-left: 2px;
+
     &:checked,
     &:indeterminate {
       // Make it similar to the memo-active color on Chrome.

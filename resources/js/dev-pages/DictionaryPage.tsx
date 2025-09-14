@@ -5,12 +5,14 @@ import {createColumnHelper} from "@tanstack/table-core";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {CheckboxInput} from "components/ui/CheckboxInput";
+import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {BigSpinner} from "components/ui/Spinner";
 import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
 import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
 import {QueryBarrier} from "components/utils/QueryBarrier";
 import {Position} from "data-access/memo-api/dictionaries";
 import {System} from "data-access/memo-api/groups/System";
+import {AttributeTypeView} from "dev-pages/AttributeTypeView";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
 import {createMemo, createSignal, Show, VoidComponent} from "solid-js";
 import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
@@ -93,6 +95,18 @@ export default (() => {
               h.accessor((p) => attr.readFrom(p.resource), {
                 id: `@${attr.apiName}`,
                 cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
+                meta: {
+                  columnName: () => (
+                    <div>
+                      <div>
+                        @{attr.apiName} <CopyToClipboard text={attr.id} textInTitle />
+                      </div>
+                      <div>
+                        <AttributeTypeView attr={attr} />
+                      </div>
+                    </div>
+                  ),
+                },
               }),
             )) ||
           []),
@@ -116,7 +130,11 @@ export default (() => {
                   label="Only active facility"
                 />
                 <div>
-                  Dictionary: <b>{dictionary()?.name}</b>
+                  Dictionary: <b>{dictionary()?.name}</b>{" "}
+                  <span class="text-xs">
+                    (<span class="font-mono">{dictionary()?.id}</span>
+                    <CopyToClipboard text={dictionary()?.id} />)
+                  </span>
                 </div>
               </div>
             )}
