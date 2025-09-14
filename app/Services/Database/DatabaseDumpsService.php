@@ -12,7 +12,7 @@ class DatabaseDumpsService
 {
     public function create(bool $isFromRc): DatabaseDumpJob
     {
-        $this->checkDumpsEnabled();
+        DatabaseDumpHelper::checkDumpsEnabled();
 
         $dbDump = new DbDump();
         $dbDump->status = DatabaseDumpStatus::creating;
@@ -26,7 +26,7 @@ class DatabaseDumpsService
 
     public function restore(DbDump $dbDump, bool $isToRc): DatabaseRestoreJob
     {
-        $this->checkDumpsEnabled();
+        DatabaseDumpHelper::checkDumpsEnabled();
 
         if (!in_array($dbDump->status, DatabaseDumpStatus::CREATE_OK, strict: true)) {
             ExceptionFactory::invalidDbDumpStatus(status: $dbDump->status)->throw();
@@ -45,12 +45,5 @@ class DatabaseDumpsService
         $dbDump->saveOrFail();
 
         return new DatabaseRestoreJob($dbDump, $isToRc);
-    }
-
-    private function checkDumpsEnabled(): void
-    {
-        if (!DatabaseDumpHelper::dumpsEnabled()) {
-            ExceptionFactory::dbDumpsDisabled()->throw();
-        }
     }
 }

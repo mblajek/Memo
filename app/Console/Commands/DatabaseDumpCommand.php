@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObjectCreator;
+use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpsService;
 use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Console\Command;
@@ -19,6 +20,7 @@ class DatabaseDumpCommand extends Command
 
     public function handle(DatabaseDumpsService $databaseDumpService): int
     {
+        DatabaseDumpHelper::checkDumpsEnabled();
         PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
 
         $env = $this->argument('mode');
