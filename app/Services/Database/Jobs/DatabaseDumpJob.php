@@ -2,13 +2,11 @@
 
 namespace App\Services\Database\Jobs;
 
-use App\Exceptions\FatalExceptionFactory;
 use App\Models\DbDump;
 use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Process;
 use Throwable;
 use ZipArchive;
 
@@ -34,14 +32,12 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
 
     private function createDump(): void
     {
-        $isRc = $this->dbDump->is_from_rc;
+        $isFromRc = $this->dbDump->is_from_rc;
         $newDumpName = $this->dbDump->getNewDumpName();
 
-        $processResult = Process::run($this->getCommand(isDump: true, isRc: $isRc));
-        if ($processResult->failed()) {
-            FatalExceptionFactory::unexpected()->throw();
-        }
-        $sql = $processResult->output();
+        $sql = $this->executeCommand(
+            command: $this->getDumpCommand(isFromRc: $isFromRc),
+        );
 
         $zipPath = DbDump::fullPath($newDumpName);
         if (!is_dir(dirname($zipPath))) {
@@ -62,7 +58,7 @@ final readonly class DatabaseDumpJob extends AbstractDatabaseJob
         $this->dbDump->file_size = filesize($zipPath);
         $this->dbDump->status = DatabaseDumpStatus::created;
 
-        if (!$isRc && ($backupAuth = Config::get('app.db.backup_auth'))) {
+        if (!$isFromRc && ($backupAuth = Config::get('app.db.backup_auth'))) {
             $response = Http::asMultipart()
                 ->withHeaders([
                     'x-memo-auth' => $backupAuth,
