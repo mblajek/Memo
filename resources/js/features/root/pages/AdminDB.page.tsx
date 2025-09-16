@@ -27,6 +27,7 @@ import {DateTime} from "luxon";
 import {Component, createEffect, createSignal, getOwner, runWithOwner, Show} from "solid-js";
 
 const PENDING_INVALIDATE_INTERVAL_MS = 5000;
+const NO_PENDING_INVALIDATE_AFTER_SECS = 65;
 
 export default (() => {
   const t = useLangFunc();
@@ -168,12 +169,15 @@ export default (() => {
         {
           name: "actions",
           isDataColumn: false,
-          extraDataColumns: ["id", "createStatus", "lastRestoreStatus", "isFromRc", "fromEnv", "createdAt"],
+          extraDataColumns: ["id", "createStatus", "lastRestoreStatus", "isFromRc", "fromEnv", "updatedAt"],
           columnDef: {
             cell: (c) => {
               // A somewhat ugly way to refresh the pending operations periodically.
               if (c.row.original.createStatus === "pending" || c.row.original.lastRestoreStatus === "pending") {
-                timeout.set(() => invalidate.dbDumps(), PENDING_INVALIDATE_INTERVAL_MS);
+                const updatedAt = DateTime.fromISO(c.row.original.updatedAt);
+                if (currentTimeSecond().diff(updatedAt, "seconds").seconds <= NO_PENDING_INVALIDATE_AFTER_SECS) {
+                  timeout.set(() => invalidate.dbDumps(), PENDING_INVALIDATE_INTERVAL_MS);
+                }
               }
               return (
                 <PaddedCell>
