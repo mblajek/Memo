@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use Closure;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +21,8 @@ use Throwable;
 
 class HttpHandler extends ExceptionHandler
 {
+    private array $fatalErrorHandlers = [];
+
     /**
      * A list of exception types with their corresponding custom log levels.
      *
@@ -49,6 +52,11 @@ class HttpHandler extends ExceptionHandler
         'password_confirmation',
     ];
 
+    public function registerFatalErrorHandler(Closure $handler): void
+    {
+        $this->fatalErrorHandlers[] = $handler;
+    }
+
     /**
      * Register the exception handling callbacks for the application.
      */
@@ -60,8 +68,10 @@ class HttpHandler extends ExceptionHandler
             return $route && str_starts_with($route->uri(), 'api/');
         });
 
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->reportable(function (FatalError $e) {
+            foreach ($this->fatalErrorHandlers as $fatalErrorHandler) {
+                $fatalErrorHandler($e);
+            }
         });
     }
 
