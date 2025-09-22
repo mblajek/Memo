@@ -3,14 +3,18 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\App;
 use Illuminate\Validation\ValidationException;
 use Psr\Log\LogLevel;
+use Symfony\Component\ErrorHandler\Error\FatalError;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Throwable;
 
@@ -23,7 +27,6 @@ class HttpHandler extends ExceptionHandler
      */
     protected $levels = [
         ApiFatalException::class => LogLevel::CRITICAL,
-        //
     ];
 
     /**
@@ -33,7 +36,6 @@ class HttpHandler extends ExceptionHandler
      */
     protected $dontReport = [
         ApiException::class,
-        //
     ];
 
     /**
@@ -52,30 +54,48 @@ class HttpHandler extends ExceptionHandler
      */
     public function register(): void
     {
+        $this->shouldRenderJsonWhen(function (Request $request) {
+            /** @var ?Route $route */
+            $route = $request->route();
+            return $route && str_starts_with($route->uri(), 'api/');
+        });
+
         $this->reportable(function (Throwable $e) {
             //
         });
-        $this->renderable(function (ValidationException|HttpExceptionInterface $e): ?JsonResponse {
-            if ($e instanceof ThrottleRequestsException) {
-                return ExceptionFactory::tooManyRequests()->render();
-            }
-            if ($e instanceof NotFoundHttpException) {
-                return ExceptionFactory::notFound()->render();
-            }
-            if ($e instanceof UnauthorizedHttpException) {
-                return ExceptionFactory::unauthorised()->render();
-            }
-            if ($e instanceof AccessDeniedHttpException) {
-                return ExceptionFactory::forbidden()->render();
-            }
-            if ($e instanceof BadRequestHttpException) {
-                return ExceptionFactory::validation()->render();
-            }
-            if ($e instanceof ValidationException) {
-                return (new ValidationExceptionRenderer($e))->render();
-            }
+    }
 
-            return null;
-        });
+    /** @inheritdoc */
+    protected function prepareException(Throwable $e): Throwable
+    {
+        $e = parent::prepareException($e);
+
+        return match (true) {
+            App::hasDebugModeEnabled(), ($e instanceof ValidationException) => $e,
+            ($e instanceof TooManyRequestsHttpException) => ExceptionFactory::tooManyRequests(),
+            ($e instanceof NotFoundHttpException) => ExceptionFactory::notFound(),
+            ($e instanceof UnauthorizedHttpException) => ExceptionFactory::unauthorised(),
+            ($e instanceof AccessDeniedHttpException) => ExceptionFactory::forbidden(),
+            ($e instanceof BadRequestHttpException) => ExceptionFactory::validation(),
+            ($e instanceof HttpExceptionInterface) => match ($e->getStatusCode()) {
+                500 => FatalExceptionFactory::internal(),
+                default => ExceptionFactory::unknownHttp($e->getStatusCode()),
+            },
+            ($e instanceof FatalError) => FatalExceptionFactory::fatal(),
+            true => FatalExceptionFactory::unknown($e),
+        };
+    }
+
+    /** @inheritdoc */
+    protected function prepareJsonResponse($request, Throwable $e): JsonResponse
+    {
+        return ($e instanceof ApiExceptionInterface) ? $e->render()
+            : parent::prepareJsonResponse($request, $e);
+    }
+
+    /** @inheritdoc */
+    protected function invalidJson($request, ValidationException $exception): JsonResponse
+    {
+        return (new ValidationExceptionRenderer($exception))->render();
     }
 }

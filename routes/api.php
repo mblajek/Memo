@@ -159,6 +159,5 @@ Route::prefix('/v1')->group(function () {
     Route::prefix('/mail')->group(function () {
         Route::post('/test', [MailController::class, 'test']);
     });
+    Route::any('{any}', fn() => throw ExceptionFactory::routeNotFound())->where('any', '.*');
 });
-
-Route::any('{any}', fn() => ExceptionFactory::routeNotFound()->render())->where('any', '.*');
