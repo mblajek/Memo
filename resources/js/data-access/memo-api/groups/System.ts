@@ -58,8 +58,7 @@ export namespace System {
       refetchInterval: 60 * 1000,
     }) satisfies SolidQueryOptions;
 
-  export const log = (req: LogRequest, config?: Api.Config) =>
-    V1.post<Api.Response.Post<LogResponse>>("/system/log", req, config);
+  export const log = (req: LogRequest) => V1.post<Api.Response.Post<LogResponse>>("/system/log", req);
 
   export interface LogRequest {
     readonly logLevel: LogLevel;

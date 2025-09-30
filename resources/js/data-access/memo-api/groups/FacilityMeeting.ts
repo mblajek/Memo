@@ -1,5 +1,5 @@
-import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "data-access/memo-api/config/v1.instance";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {SolidQueryOpts} from "../query_utils";
 import {MeetingResource, MeetingResourceForCreate, MeetingResourceForPatch} from "../resources/meeting.resource";
 import {Api} from "../types";
@@ -18,16 +18,13 @@ export namespace FacilityMeeting {
     getMeetingsListBase(request, config).then(parseListResponse);
   const getMeeting = createGetFromList(getMeetingsListBase);
 
-  export const createMeeting = (meeting: MeetingResourceForCreate, config?: Api.Config) =>
-    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/meeting`, meeting, config);
-  export const updateMeeting = (meeting: Api.Request.Patch<MeetingResourceForPatch>, config?: Api.Config) =>
-    V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting, config);
+  export const createMeeting = (meeting: MeetingResourceForCreate) =>
+    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/meeting`, meeting);
+  export const updateMeeting = (meeting: Api.Request.Patch<MeetingResourceForPatch>) =>
+    V1.patch(`/facility/${activeFacilityId()}/meeting/${meeting.id}`, meeting);
 
-  export const deleteMeeting = ({id, request}: {id: Api.Id; request?: DeleteRequest}, config?: Api.Config) =>
-    V1.delete<Api.Response.Delete<DeleteResponse>>(`/facility/${activeFacilityId()}/meeting/${id}`, {
-      ...config,
-      data: request,
-    });
+  export const deleteMeeting = ({id, request}: {id: Api.Id; request?: DeleteRequest}) =>
+    V1.delete<Api.Response.Delete<DeleteResponse>>(`/facility/${activeFacilityId()}/meeting/${id}`, {data: request});
 
   export interface DeleteRequest {
     readonly series?: SeriesDeleteOption;
@@ -38,8 +35,8 @@ export namespace FacilityMeeting {
     readonly count: number;
   }
 
-  export const cloneMeeting = ({id, request}: {id: Api.Id; request: CloneRequest}, config?: Api.Config) =>
-    V1.post<Api.Response.Post<CloneResponse>>(`/facility/${activeFacilityId()}/meeting/${id}/clone`, request, config);
+  export const cloneMeeting = ({id, request}: {id: Api.Id; request: CloneRequest}) =>
+    V1.post<Api.Response.Post<CloneResponse>>(`/facility/${activeFacilityId()}/meeting/${id}/clone`, request);
 
   export type CloneInterval = "1d" | "7d" | "14d";
 
