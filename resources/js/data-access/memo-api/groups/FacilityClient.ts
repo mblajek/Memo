@@ -1,5 +1,5 @@
-import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "data-access/memo-api/config/v1.instance";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {SolidQueryOpts} from "../query_utils";
 import {ClientResource, ClientResourceForCreate, ClientResourceForPatch} from "../resources/client.resource";
 import {Api} from "../types";
@@ -10,18 +10,13 @@ import {FacilityUsers} from "./FacilityUsers";
  * @see {@link http://localhost:9081/api/documentation#/Facility%20client local docs}
  */
 export namespace FacilityClient {
-  export const createClient = (client: Api.Request.Create<ClientResourceForCreate>, config?: Api.Config) =>
-    V1.post<Api.Response.Post<UpdateResponse>>(`/facility/${activeFacilityId()}/user/client`, client, config);
-  export const updateClient = (client: Api.Request.Patch<ClientResourceForPatch>, config?: Api.Config) =>
-    V1.patch<Api.Response.Post<UpdateResponse>>(
-      `/facility/${activeFacilityId()}/user/client/${client.id}`,
-      client,
-      config,
-    );
-  export const deleteClient = (data: DeleteParams, config?: Api.Config) =>
+  export const createClient = (client: Api.Request.Create<ClientResourceForCreate>) =>
+    V1.post<Api.Response.Post<UpdateResponse>>(`/facility/${activeFacilityId()}/user/client`, client);
+  export const updateClient = (client: Api.Request.Patch<ClientResourceForPatch>) =>
+    V1.patch<Api.Response.Post<UpdateResponse>>(`/facility/${activeFacilityId()}/user/client/${client.id}`, client);
+  export const deleteClient = (data: DeleteParams) =>
     V1.delete<Api.Response.Delete<DeleteResponse>>(`/facility/${activeFacilityId()}/user/client/${data.id}`, {
       data: data.duplicateOf ? {duplicateOf: data.duplicateOf} : undefined,
-      ...config,
     });
 
   interface DeleteParams {

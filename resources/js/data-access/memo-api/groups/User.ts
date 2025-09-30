@@ -12,10 +12,8 @@ import {Users} from "./shared";
  * @see {@link http://localhost:9081/api/documentation#/User local docs}
  */
 export namespace User {
-  export const login = (data: LoginRequest, config?: Api.Config<LoginRequest>) =>
-    V1.post<Api.Response.Post>("/user/login", data, config);
-  export const developerLogin = (data: DeveloperLoginRequest, config?: Api.Config<DeveloperLoginRequest>) =>
-    V1.post<Api.Response.Post>("/user/login", data, config);
+  export const login = (data: LoginRequest) => V1.post<Api.Response.Post>("/user/login", data);
+  export const developerLogin = (data: DeveloperLoginRequest) => V1.post<Api.Response.Post>("/user/login", data);
 
   export interface LoginRequest {
     readonly email: string;
@@ -27,14 +25,12 @@ export namespace User {
     readonly developer: boolean;
   }
 
-  export const logout = (config?: Api.Config) => V1.post<Api.Response.Post>("/user/logout", {}, config);
+  export const logout = () => V1.post<Api.Response.Post>("/user/logout");
 
-  export const changePassword = (data: ChangePasswordRequest, config?: Api.Config) =>
-    V1.post<Api.Response.Post>("/user/password", data, config);
-  export const generateOTP = (data: {password: string}, config?: Api.Config) =>
-    V1.post<Api.Response.Post<GenerateOTPResponse>>("/user/otp/generate", data, config);
-  export const configureOTP = (data: {otp: string}, config?: Api.Config) =>
-    V1.post<Api.Response.Post>("/user/otp/configure", data, config);
+  export const changePassword = (data: ChangePasswordRequest) => V1.post<Api.Response.Post>("/user/password", data);
+  export const generateOTP = (data: {password: string}) =>
+    V1.post<Api.Response.Post<GenerateOTPResponse>>("/user/otp/generate", data);
+  export const configureOTP = (data: {otp: string}) => V1.post<Api.Response.Post>("/user/otp/configure", data);
 
   export interface ChangePasswordRequest {
     readonly current: string;
@@ -47,16 +43,14 @@ export namespace User {
     readonly validUntil: string;
   }
 
-  export const setLastLoginFacilityId = (lastLoginFacilityId: Api.Id, config?: Api.Config) =>
-    V1.patch("/user", {lastLoginFacilityId}, config);
+  export const setLastLoginFacilityId = (lastLoginFacilityId: Api.Id) => V1.patch("/user", {lastLoginFacilityId});
 
   export const storageList = (config?: Api.Config) =>
     V1.get<readonly string[]>("/user/storage", config).then((res) => res.data);
   export const storageGet = (key: string, config?: Api.Config) =>
     V1.get<JSONValue>(`/user/storage/${key}`, config).then((res) => res.data);
-  export const storagePut = (key: string, value: JSONValue, config?: Api.Config) =>
+  export const storagePut = (key: string, value: JSONValue) =>
     V1.put<readonly string[]>(`/user/storage/${key}`, value, {
-      ...config,
       headers: {"Content-Type": "application/json"},
       transformRequest: (data) => JSON.stringify(data),
     });

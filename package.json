@@ -45,7 +45,7 @@
     "@mbarzda/solid-i18next": "^1.4.1",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.3",
-    "@tanstack/solid-query": "5.87.4",
+    "@tanstack/solid-query": "^5.90.3",
     "@tanstack/solid-table": "^8.21.3",
     "@tanstack/table-core": "^8.21.3",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
