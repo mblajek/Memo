@@ -64,4 +64,14 @@ trait ApiExceptionTrait
         $this->message = $this->getJson();
         return $this;
     }
+
+    public function getStatusCode(): int
+    {
+        return $this->httpCode;
+    }
+
+    public function getHeaders(): array
+    {
+        return [];
+    }
 }

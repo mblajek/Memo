@@ -52,9 +52,9 @@ class VerifyCsrfToken extends Middleware
         if (parent::isReading($request)) {
             return true;
         }
-        /** @var Route $route */
-        $route = $request->getRouteResolver()();
-        if ($request->method() === 'POST' && str_ends_with($route->uri(), '/tquery')) {
+        /** @var ?Route $route */
+        $route = $request->route();
+        if ($route && $request->isMethod('POST') && str_ends_with($route->uri(), '/tquery')) {
             return true;
         }
         return false;

@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use RuntimeException;
 
-class ApiFatalException extends RuntimeException
+class ApiFatalException extends RuntimeException implements ApiExceptionInterface
 {
     use ApiExceptionTrait;
 
