@@ -7,30 +7,17 @@ use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
-use Throwable;
 use ZipArchive;
 
 final readonly class DatabaseDumpJob extends AbstractDatabaseJob
 {
     public function __construct(
-        public DbDump $dbDump,
+        DbDump $dbDump,
     ) {
+        parent::__construct($dbDump, errorStatus: DatabaseDumpStatus::create_error);
     }
 
-    /** @throws Throwable */
-    public function handle(): void
-    {
-        try {
-            $this->createDump();
-        } catch (Throwable $exception) {
-            $this->dbDump->status = DatabaseDumpStatus::create_error;
-            throw $exception;
-        } finally {
-            $this->dbDump->saveOrFail();
-        }
-    }
-
-    private function createDump(): void
+    protected function run(): void
     {
         $isFromRc = $this->dbDump->is_from_rc;
         $newDumpName = $this->dbDump->getNewDumpName();

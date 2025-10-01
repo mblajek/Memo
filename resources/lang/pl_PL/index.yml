@@ -12,6 +12,8 @@ changelog:
 
 exception:
   configuration:
+    fatal: "Wewnętrzny błąd konfiguracji serwera"
+    unknown: "Nieokreślony błąd konfiguracji serwera"
     translation: "Błędna konfiguracja tłumaczeń"
     tquery: "Błędna konfiguracja tabel"
     unexpected: "Błąd konfiguracji"
@@ -26,6 +28,9 @@ exception:
   forbidden: "Brak dostępu"
   not_found: "Nie znaleziono strony"
   route_not_found: "Błędny adres"
+  http:
+    internal_server_error: "Wewnętrzny błąd serwera"
+    unknown_http: "Nieokreślony błąd komunikacji"
   unexpected: "Nieoczekiwany błąd serwera"
   invalid_json: "Zapytanie nie ma formatu JSON"
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
