@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class ApiException extends Exception
+class ApiException extends Exception implements ApiExceptionInterface
 {
     use ApiExceptionTrait;
 

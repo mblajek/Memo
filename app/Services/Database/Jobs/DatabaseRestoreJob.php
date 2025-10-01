@@ -6,30 +6,17 @@ use App\Models\DbDump;
 use App\Services\Database\DatabaseDumpStatus;
 use DateTimeImmutable;
 use Illuminate\Console\Application;
-use Throwable;
 
 final readonly class DatabaseRestoreJob extends AbstractDatabaseJob
 {
     public function __construct(
-        private DbDump $dbDump,
+        DbDump $dbDump,
         private bool $isToRc,
     ) {
+        parent::__construct($dbDump, errorStatus: DatabaseDumpStatus::restore_error);
     }
 
-    /** @throws Throwable */
-    public function handle(): void
-    {
-        try {
-            $this->restore();
-        } catch (Throwable $exception) {
-            $this->dbDump->status = DatabaseDumpStatus::restore_error;
-            throw $exception;
-        } finally {
-            $this->dbDump->saveOrFail();
-        }
-    }
-
-    private function restore(): void
+    protected function run(): void
     {
         $this->executeCommand(
             command: Application::formatCommandString("fz:db-echo {$this->dbDump->id}")

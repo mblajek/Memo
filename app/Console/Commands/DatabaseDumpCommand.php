@@ -6,6 +6,7 @@ namespace App\Console\Commands;
 
 use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Permissions\PermissionObjectCreator;
+use App\Models\DbDump;
 use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpsService;
 use App\Services\Database\DatabaseDumpStatus;
@@ -22,6 +23,13 @@ class DatabaseDumpCommand extends Command
     {
         DatabaseDumpHelper::checkDumpsEnabled();
         PermissionMiddleware::setPermissions(PermissionObjectCreator::makeSystem());
+
+        DbDump::query()
+            ->where('status', DatabaseDumpStatus::creating)
+            ->update(['status' => DatabaseDumpStatus::create_error]);
+        DbDump::query()
+            ->where('status', DatabaseDumpStatus::restoring)
+            ->update(['status' => DatabaseDumpStatus::restore_error]);
 
         $env = $this->argument('mode');
         if ($env !== 'rc' && $env !== 'prod' && $env !== 'std' && $env !== 'auto') {

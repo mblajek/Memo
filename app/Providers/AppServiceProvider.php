@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Http\Permissions\PermissionMiddleware;
+use App\Services\System\Translator;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -19,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton('translator', Translator::class);
     }
 
     /**
