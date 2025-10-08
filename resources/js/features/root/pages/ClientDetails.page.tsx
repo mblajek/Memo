@@ -103,6 +103,7 @@ export default (() => {
             const noGroupMeetingsCount = useClientWithNoGroupMeetingsCount(() =>
               client().groupIds?.length ? userId() : undefined,
             );
+            const urgentNotes = createMemo(() => readAttribute<readonly string[]>(client(), "urgentNotes"));
             onMount(() => {
               createComputed(() => {
                 if (
@@ -137,6 +138,7 @@ export default (() => {
                 toastSuccess(t("forms.client_edit.success"));
                 setEditMode(false);
                 invalidate.users();
+                invalidate.facility.meetings();
               };
             }
 
@@ -154,10 +156,18 @@ export default (() => {
                       updatedBy: client().updatedBy,
                     }}
                   />
+                  <Show when={urgentNotes()?.length}>
+                    <UrgentNotes
+                      class={editMode() ? "cursor-pointer" : undefined}
+                      notes={urgentNotes()}
+                      onClick={() => {
+                        if (editMode()) {
+                          document.getElementById("client.urgentNotes.0.__wrapped_value")?.focus();
+                        }
+                      }}
+                    />
+                  </Show>
                   <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
-                    <HideableSection show={!editMode()}>
-                      <UrgentNotes notes={readAttribute<readonly string[]>(client(), "urgentNotes")} />
-                    </HideableSection>
                     <div style={{"min-width": "400px", "flex-basis": "600px"}}>
                       <FelteForm
                         id="client_edit"
@@ -186,10 +196,14 @@ export default (() => {
                           return (
                             <>
                               <Autofocus autofocus={editMode()}>
-                                <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
-                                  {({show}) => <TextField name="name" autofocus disabled={!show()} />}
-                                </HideableSection>
-                                <ClientFields editMode={editMode()} client={user()} />
+                                <div class="flex flex-col">
+                                  <HideableSection
+                                    show={editMode() && user().managedByFacilityId === activeFacilityId()}
+                                  >
+                                    {({show}) => <TextField class="mb-4" name="name" autofocus disabled={!show()} />}
+                                  </HideableSection>
+                                  <ClientFields editMode={editMode()} client={user()} />
+                                </div>
                               </Autofocus>
                               <Switch>
                                 <Match when={editMode()}>

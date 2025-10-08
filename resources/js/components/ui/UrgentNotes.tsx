@@ -15,7 +15,7 @@ export const UrgentNotes: VoidComponent<Props> = (allProps) => {
     <Show when={props.notes}>
       <div {...htmlAttributes.merge(divProps, {class: "flex flex-wrap gap-1"})}>
         <For each={props.notes}>
-          {(note) => <span class="px-1 border border-s-4 border-purple-600 bg-purple-50 rounded-md">{note}</span>}
+          {(note) => <span class="px-1 border border-s-8 border-purple-600 bg-purple-50 rounded-md">{note}</span>}
         </For>
         <Show when={props.showInfoIcon ?? true}>
           <InfoIcon title={t("facility_user.client_urgent_notes.info")} />
