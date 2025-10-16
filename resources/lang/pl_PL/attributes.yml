@@ -17,6 +17,7 @@ attributes:
   client:
     documentsLinks.desc: "Linki do zewnętrznych dokumentów powiązanych z tym klientem.\n$t(attributes.attributes.generic.documentsLinks.desc.format_info)"
     shortCode.desc: "Numer klienta $t(em_dash) identyfikator. Pozostaw pusty aby nadać kolejny numer automatycznie. Wstaw znak minus aby nie nadawać numeru."
+    urgentNotes.desc: "Pilne uwagi dotyczące klienta widoczne w kalendarzu przy każdym jego spotkaniu."
     contactStartAt: "data zgłoszenia"
     contactEndAt: "zakończenie kontaktu"
 

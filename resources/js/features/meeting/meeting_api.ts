@@ -4,12 +4,16 @@ import {Modifiable} from "components/utils/modifiable";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {MeetingResource, MeetingResourceForCreate} from "data-access/memo-api/resources/meeting.resource";
-import {TQMeetingResource} from "data-access/memo-api/tquery/calendar";
+import {TQMeetingAttendantResource, TQMeetingResource} from "data-access/memo-api/tquery/calendar";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
 import {Api} from "data-access/memo-api/types";
 import {Accessor, createMemo, createSignal, onCleanup, onMount} from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 
+/**
+ * The cache to store the meetings fetched via tquery when the calendar page is opened.
+ * The data can then be reused when accessing details of a meeting, e.g. on its view page.
+ */
 export const useMeetingsCache = createCached(() => {
   const [accessors, setAccessors] = createSignal<readonly Accessor<readonly TQMeetingResource[] | undefined>[]>([]);
   const meetingsById = createMemo((): ReadonlyMap<Api.Id, TQMeetingResource> => {
@@ -40,8 +44,13 @@ export interface MeetingWithExtraInfo extends MeetingResource {
   readonly "seriesNumber"?: number;
   readonly "seriesCount"?: number;
   readonly "resourceConflicts.*.resourceDictId"?: readonly string[];
+  readonly "clientsExtraInfo"?: readonly TQMeetingAttendantResource[];
 }
 
+/**
+ * Gives access to meeting details. The details are composed from the get query, with some
+ * fields added from the tquery - either from the meetings cache, or from a new fetch.
+ */
 export function useMeetingWithExtraInfo(meetingId: string) {
   const {meetingTypeDict} = useFixedDictionaries();
   const meetingQuery = useQuery(() => FacilityMeeting.meetingQueryOptions(meetingId));
@@ -55,6 +64,7 @@ export function useMeetingWithExtraInfo(meetingId: string) {
         {type: "column", column: "seriesNumber"},
         {type: "column", column: "seriesCount"},
         {type: "column", column: "resourceConflicts.*.resourceDictId"},
+        {type: "column", column: "clients"},
       ],
       filter: {type: "column", column: "id", op: "=", val: meetingId},
       sort: [],
@@ -73,6 +83,7 @@ export function useMeetingWithExtraInfo(meetingId: string) {
       fullMeeting.seriesNumber = extraInfo.seriesNumber ?? undefined;
       fullMeeting.seriesCount = extraInfo.seriesCount ?? undefined;
       fullMeeting["resourceConflicts.*.resourceDictId"] = extraInfo["resourceConflicts.*.resourceDictId"];
+      fullMeeting.clientsExtraInfo = extraInfo.clients;
     }
     // Remove any series info for work time.
     if (fullMeeting.typeDictId === meetingTypeDict()?.work_time.id) {

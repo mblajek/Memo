@@ -1,4 +1,4 @@
-import {useQuery, keepPreviousData} from "@tanstack/solid-query";
+import {keepPreviousData, useQuery} from "@tanstack/solid-query";
 import {FormType} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {HideableSection} from "components/ui/HideableSection";
@@ -167,10 +167,10 @@ export const MeetingForm: VoidComponent<AbstractMeetingFormProps<MeetingFormType
           </div>
         </div>
         <div class="flex flex-col gap-1">
-          <MeetingAttendantsFields name="staff" meetingId={props.meeting?.id} viewMode={props.viewMode} />
+          <MeetingAttendantsFields name="staff" meeting={props.meeting} viewMode={props.viewMode} />
           <MeetingAttendantsFields
             name="clients"
-            meetingId={props.meeting?.id}
+            meeting={props.meeting}
             showAttendanceStatusLabel={false}
             viewMode={props.viewMode}
           />

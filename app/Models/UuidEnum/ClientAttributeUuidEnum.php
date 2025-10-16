@@ -10,6 +10,7 @@ enum ClientAttributeUuidEnum: string implements AttributeUuidEnum
     case Type = 'b9685bc6-ab47-42bd-99e8-68badf0c1291';
     case Gender = '0e56d086-5bf7-46c0-8359-38e9edf8c627';
     case Notes = 'a8f3fc00-cda2-4ce0-8bd4-12c223944191';
+    case UrgentNotes = '3217bb30-58a3-40c0-8f02-313f195cd459';
     case BirthDate = '7a678df3-c9b1-4133-9520-d388c823a186';
     case ContactEmail = '50e76d71-bcad-473f-983b-3e9f5e00d6f7';
     case ContactPhone = '9722feb5-f804-4ac9-8d8d-6ebc319da50d';

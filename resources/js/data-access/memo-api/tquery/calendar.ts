@@ -54,6 +54,8 @@ export type TQMeetingResource = Pick<MeetingResource, Exclude<(typeof RESOURCE_C
 export interface TQMeetingAttendantResource extends MeetingStaffResource, MeetingClientResource {
   readonly name: string;
   readonly attendanceTypeDictId: string;
+  /** The client urgent notes, present in clients only. */
+  readonly urgentNotes?: readonly string[] | null;
 }
 
 export function createCalendarRequestCreator({

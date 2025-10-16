@@ -5,6 +5,7 @@ import {Capitalize, capitalizeString} from "components/ui/Capitalize";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {HideableSection} from "components/ui/HideableSection";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
+import {UrgentNotes} from "components/ui/UrgentNotes";
 import {DocsModalInfoIcon, createDocsModal} from "components/ui/docs_modal";
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {FieldLabel} from "components/ui/form/FieldLabel";
@@ -29,6 +30,7 @@ import {
   MeetingResourceForPatch,
   MeetingStaffResource,
 } from "data-access/memo-api/resources/meeting.resource";
+import {MeetingWithExtraInfo} from "features/meeting/meeting_api";
 import {
   Accessor,
   Index,
@@ -83,8 +85,8 @@ const getAttendantsSchema = () =>
 
 interface Props {
   readonly name: "staff" | "clients";
-  /** The id of this meeting, if it already exists. */
-  readonly meetingId?: string;
+  /** This meeting object, if it already exists. */
+  readonly meeting?: MeetingWithExtraInfo;
   /** Whether to show the attendance status label. Default: true. */
   readonly showAttendanceStatusLabel?: boolean;
   readonly viewMode: boolean;
@@ -122,7 +124,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
     on(showConflicts, (showConflicts) =>
       showConflicts
         ? useMeetingConflictsFinder(() => ({
-            id: props.meetingId,
+            id: props.meeting?.id,
             ...getMeetingTimeFullData(form.data()),
           }))
         : undefined,
@@ -447,6 +449,19 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
         <Index each={form.data(props.name)} fallback={<EmptyValueSymbol class="col-span-full" />}>
           {(_attendant, index) => {
             const userId = () => form.data(`${props.name}.${index}.userId`);
+            const selectedClient = createMemo(() =>
+              props.name === "clients" ? selectedClients().find(({id}) => id === userId()) : undefined,
+            );
+            const clientUrgentNotes = createMemo(() => {
+              if (props.name !== "clients") {
+                return undefined;
+              }
+              return (
+                selectedClient()?.urgentNotes ||
+                props.meeting?.clientsExtraInfo?.find((client) => client.userId === userId())?.urgentNotes ||
+                undefined
+              );
+            });
             const priorityQueryParams = createMemo(() =>
               props.name === "clients"
                 ? // eslint-disable-next-line solid/reactivity
@@ -652,6 +667,9 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                     </Show>
                   </div>
                   <Show when={props.name === "clients"}>
+                    <HideableSection class="col-span-full" show={userId() && clientUrgentNotes()?.length}>
+                      <UrgentNotes class="ml-6 mt-px mb-1" notes={clientUrgentNotes()} showInfoIcon />
+                    </HideableSection>
                     <HideableSection
                       class="col-span-full"
                       show={
