@@ -23,7 +23,7 @@ class Translator implements \Illuminate\Contracts\Translation\Translator
         foreach ($replace as $replaceKey => $replaceValue) {
             $line = str_replace("{{{$replaceKey}}}", $replaceValue, $line);
         }
-        return mb_ucfirst($line);
+        return $line;
     }
 
     public function choice($key, $number, array $replace = [], $locale = null)

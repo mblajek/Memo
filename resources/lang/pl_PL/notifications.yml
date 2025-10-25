@@ -1,0 +1,3 @@
+template:
+  is_remote: "zdalne"
+  is_not_remote: "w placówce"

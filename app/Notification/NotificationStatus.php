@@ -32,12 +32,24 @@ enum NotificationStatus
 
     public function isInterpolated(): bool
     {
-        return match ($this) {
-            self::error_try1,
-            self::error_try2,
-            self::error,
-            self::sent => true,
+        return match ($this->baseStatus()) {
+            self::error, self::sent => true,
             default => false,
         };
+    }
+
+    public function isStatusToSend(): bool
+    {
+        return match ($this) {
+            self::scheduled,
+            self::error_try1,
+            self::error_try2 => true,
+            default => false,
+        };
+    }
+
+    public static function statusesToSend(): array
+    {
+        return array_values(array_filter(self::cases(), fn(self $status): bool => $status->isStatusToSend()));
     }
 }

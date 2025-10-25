@@ -76,14 +76,6 @@ class Notification extends Model
         };
     }
 
-    public function resetStatus(): void
-    {
-        $this->address = null;
-        $this->service = null;
-        $this->status = NotificationStatus::scheduled;
-        $this->error_log_entry_id = null;
-    }
-
     public function facility(): BelongsTo
     {
         return $this->belongsTo(Facility::class);

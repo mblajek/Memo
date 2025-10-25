@@ -13,6 +13,7 @@ enum NotificationTemplate
     case meeting_datetime;
     case meeting_date;
     case meeting_time;
+    case meeting_is_remote;
     case facility_name;
     case facility_contact_phone;
 
