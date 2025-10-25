@@ -29,6 +29,7 @@ use Illuminate\Validation\Rule;
  * @property int $start_dayminute
  * @property int $duration_minutes
  * @property string $status_dict_id
+ * @property bool $is_remote
  * @property ?string $from_meeting_id
  * @property ?string $interval
  * @property-read Facility $facility

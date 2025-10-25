@@ -35,11 +35,8 @@ readonly class MeetingCloneService
         $resources = $meeting->resources
             ->map(fn(MeetingResource $resource): MeetingResource => $resource->withoutRelations());
 
-        $notifications = $meeting->notifications->map(function (Notification $notification): Notification {
-            $notificationCopy = $notification->withoutRelations();
-            $notificationCopy->resetStatus();
-            return $notificationCopy;
-        });
+        $notifications = $meeting->notifications
+            ->map(fn(Notification $notification): Notification => $notification->withoutRelations());
 
         return DB::transaction(
             function () use ($meeting, $dates, $meetingWithoutRelations, $attendants, $resources, $notifications) {
@@ -50,8 +47,10 @@ readonly class MeetingCloneService
                     $meetingCopy->date = $date;
                     $meetingCopy->save();
 
-                    $meetingCopy->attendants()->saveMany($attendants->map(fn($attendant) => $attendant->replicate()));
-                    $meetingCopy->resources()->saveMany($resources->map(fn($resource) => $resource->replicate()));
+                    $meetingCopy->attendants()
+                        ->saveMany($attendants->map(fn(MeetingAttendant $attendant) => $attendant->replicate()));
+                    $meetingCopy->resources()
+                        ->saveMany($resources->map(fn(MeetingResource $resource) => $resource->replicate()));
 
                     $notificationsCopy = $notifications->map(fn($notification) => $notification->replicate());
                     $this->meetingNotificationService->updateOrDelete(

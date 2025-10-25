@@ -7,7 +7,7 @@
 
     /** @var HttpExceptionInterface|ApiExceptionInterface $exception */
     $title = ($exception instanceof ApiExceptionInterface)
-        ? trans($exception->errorCode) : View::yieldContent('title');
+        ? mb_ucfirst(trans($exception->errorCode)) : View::yieldContent('title');
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>

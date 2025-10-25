@@ -35,7 +35,6 @@ readonly class MeetingNotificationService
         $scheduledAt = $this->determineScheduledAt($meeting);
 
         foreach ($notifications as $notification) {
-            $oldStatus = $notification->status;
             $notification->scheduled_at = $scheduledAt;
 
             $meetingAttendant = $meeting->getAttendant(AttendanceType::Client, $notification->user_id);
@@ -45,32 +44,40 @@ readonly class MeetingNotificationService
                 continue;
             }
 
-            $notification->status = $this->determineStatus(
-                $meeting,
-                $meetingAttendant,
-                $isDatetimeChange ? NotificationStatus::scheduled : $oldStatus,
-            );
+            $determinedStatus = $this->determineStatus($meeting, $meetingAttendant);
 
-            if ($isDatetimeChange && $oldStatus->isInterpolated()) {
-                $notification->subject = NotificationTemplate::meeting_facility_template_subject->templateString();
-                if ($notification->message !== null) {
-                    $notification->message = NotificationTemplate::meeting_facility_template_message->templateString();
-                }
+            if ($isDatetimeChange && $notification->status->isInterpolated()) {
+                $this->resetMessage($notification, $determinedStatus);
+            } elseif ($determinedStatus->isStatusToSend() !== $notification->status->isStatusToSend()) {
+                $notification->status = match ($notification->status) {
+                    NotificationStatus::skipped, NotificationStatus::scheduled => $determinedStatus,
+                    NotificationStatus::error_try1, NotificationStatus::error_try2 => NotificationStatus::error,
+                    default => $notification->status, // keep: sent, deduplicated, error, error_address
+                };
             }
+
             $updatedNotifications->add($notification);
         }
         return $updatedNotifications;
     }
 
+    private function resetMessage(Notification $notification, NotificationStatus $status): void
+    {
+        $notification->status = $status;
+        $notification->address = null;
+        $notification->service = null;
+        $notification->error_log_entry_id = null;
+
+        $notification->subject = NotificationTemplate::meeting_facility_template_subject->templateString();
+        if ($notification->message !== null) {
+            $notification->message = NotificationTemplate::meeting_facility_template_message->templateString();
+        }
+    }
+
     private function determineStatus(
         Meeting $meeting,
         MeetingAttendant $meetingAttendant,
-        NotificationStatus $notificationStatus,
     ): NotificationStatus {
-        if ($notificationStatus->baseStatus() === NotificationStatus::sent) {
-            return $notificationStatus;
-        }
-
         return (($meeting->status_dict_id === Meeting::STATUS_PLANNED)
             && ($meetingAttendant->attendance_status_dict_id === MeetingAttendant::ATTENDANCE_STATUS_OK))
             ? NotificationStatus::scheduled : NotificationStatus::skipped;
@@ -102,11 +109,7 @@ readonly class MeetingNotificationService
                     subject: NotificationTemplate::meeting_facility_template_subject->templateString(),
                     scheduledAt: $this->determineScheduledAt($meeting),
                     message: NotificationTemplate::meeting_facility_template_message->templateString(),
-                    status: $this->determineStatus(
-                        $meeting,
-                        $meetingAttendant,
-                        NotificationStatus::scheduled,
-                    ),
+                    status: $this->determineStatus($meeting, $meetingAttendant),
                 ),
             );
         }

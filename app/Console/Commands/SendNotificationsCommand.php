@@ -26,12 +26,6 @@ class SendNotificationsCommand extends Command
     // increase when retry after fail will be delayed
     private const int BATCH_COUNT = 1;
 
-    private const array STATUS_TO_SEND = [
-        NotificationStatus::scheduled,
-        NotificationStatus::error_try1,
-        NotificationStatus::error_try2,
-    ];
-
     public function __construct(
         private readonly MeetingNotificationService $meetingNotificationService,
         private readonly NotificationService $notificationService,
@@ -59,7 +53,8 @@ class SendNotificationsCommand extends Command
     {
         $now = new DateTimeImmutable();
 
-        $baseQuery = Notification::query()->whereIn('status', self::STATUS_TO_SEND)
+        $baseQuery = Notification::query()
+            ->whereIn('status', NotificationStatus::statusesToSend())
             ->where('scheduled_at', '<=', $now)->orderBy('scheduled_at');
 
         /** @var ?Notification $firstNotification */
@@ -114,7 +109,7 @@ class SendNotificationsCommand extends Command
         // scheduled,error_try1,error_try2 / skipped,error_address,deduplicated + sent,error
         $sentCount = 0;
         foreach ($notificationsToSend as $notificationToSend) {
-            if (in_array($notificationToSend->status, self::STATUS_TO_SEND)) {
+            if ($notificationToSend->status->isStatusToSend()) {
                 $sentCount += $this->notificationService->send($notificationToSend);
             } else {
                 $notificationToSend->save();
@@ -170,7 +165,7 @@ class SendNotificationsCommand extends Command
         /** @var Notification $notification */
         foreach ([$preparedNotification, ...$preparedNotification->getDeduplicated()] as $notification) {
             [$notification->subject, $notification->message, $notification->message_html] = $strings;
-        };
+        }
     }
 
     private function getReplacement(
@@ -189,6 +184,12 @@ class SendNotificationsCommand extends Command
                 return $preparedNotification->meeting
                     ? $this->meetingNotificationService->formatBestDateTime($preparedNotification->meeting, $template)
                     : null;
+            },
+            NotificationTemplate::meeting_is_remote => function () use ($preparedNotification) {
+                return trans(
+                    $preparedNotification->meeting->is_remote
+                        ? 'notifications.template.is_remote' : 'notifications.template.is_not_remote',
+                );
             },
             NotificationTemplate::recipient_names => function () use ($preparedNotification) {
                 $names = [];
