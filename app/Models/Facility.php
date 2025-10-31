@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\FacilityBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\NotificationTemplateRule;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
  * @property ?string $meeting_notification_template_subject
  * @property ?string $meeting_notification_template_message
  * @property-read Timetable $timetable
- * @method static FacilityBuilder query()
+ * @method static Builder<self> query()
  */
 class Facility extends Model
 {

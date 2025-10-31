@@ -10,16 +10,6 @@ use Spatie\Csp\Preset;
 
 class CspPreset implements Preset
 {
-    private const array STYLE_UNSAFE_HASHES = [
-        'sha256-NYqDJarbgj8BrDt9c9SCVZ96KOekLHkpVHkkTi7OW4o=',
-        'sha256-DEHVuKvTsAFAl1apZgCAMZJPsHH82YsDKDBLdy7wJSo=',
-        'sha256-zc3R/9/nOrGYXcWw3GqG8kSUiPQSVq2sL5EDC1mw4Oc=',
-        'sha256-nqvFJWr/1jSSenq5XABoZvgJO2nJraCjerZhSWtS1oU=',
-        'sha256-/jefX6LiWiVz6n6JT8ZNFjxkLfY5+l9z2szBYOBbgEg=',
-        'sha256-NRuk9EmhV4oCLLupvcti9O8lJ98iBkUKL5KDCqnj5Vw=',
-        'sha256-PACCo2laKlFRMk8YLd7g5Fq+RjD7KsayOIkbOGDD/gs=',
-    ];
-
     public function configure(Policy $policy): void
     {
         $policy
@@ -30,7 +20,13 @@ class CspPreset implements Preset
         // Firefox reports CSP violation originating from the toast library. The reason for this
         // problem is unknown. // TODO: Investigate and find a different fix.
         $policy->add(Directive::STYLE, Keyword::UNSAFE_INLINE);
-        $policy->add(Directive::STYLE_ATTR, [ Keyword::UNSAFE_HASHES, ...self::STYLE_UNSAFE_HASHES]);
+        $policy->add(Directive::STYLE_ATTR, [
+            Keyword::UNSAFE_HASHES,
+            'sha256-X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7V+k=',
+            'sha256-a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s=',
+            'sha256-GVgeJ9587QD/HOULIEfnpWfHaxy666vl7wP3wwF7tbc=',
+            'sha256-eF8+x+sy8wuQzQ/PNlfTiLX/Qpfy+XFv9m6bacBd3Qk='
+        ]);
 
 
         if (App::hasDebugModeEnabled()) {
