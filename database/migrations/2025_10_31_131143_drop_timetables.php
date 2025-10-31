@@ -16,12 +16,15 @@ return new class extends Migration {
     {
         if (Schema::hasTable('timetables')) {
             Schema::table('facilities', function (Blueprint $table) {
+                $table->dropForeign(['timetable_id']);
                 $table->dropColumn('timetable_id');
             });
             Schema::table('staff_members', function (Blueprint $table) {
+                $table->dropForeign(['timetable_id']);
                 $table->dropColumn('timetable_id');
             });
             Schema::table('notifications', function (Blueprint $table) {
+                $table->dropForeign(['client_id']);
                 $table->dropColumn('client_id');
             });
             Schema::dropIfExists('timetables');
