@@ -8,17 +8,14 @@ use App\Rules\NotificationTemplateRule;
 use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
 
 /**
  * @property string $name
  * @property string $url
- * @property ?string $timetable_id
  * @property ?string $contact_phone
  * @property ?string $meeting_notification_template_subject
  * @property ?string $meeting_notification_template_message
- * @property-read Timetable $timetable
  * @method static Builder<self> query()
  */
 class Facility extends Model
@@ -31,7 +28,6 @@ class Facility extends Model
     protected $fillable = [
         'name',
         'url',
-        'timetable_id',
         'contact_phone',
         'meeting_notification_template_subject',
         'meeting_notification_template_message',
@@ -62,10 +58,5 @@ class Facility extends Model
     public function hasMeetingNotification(): bool
     {
         return $this->meeting_notification_template_subject !== null;
-    }
-
-    public function timetable(): BelongsTo
-    {
-        return $this->belongsTo(Timetable::class);
     }
 }

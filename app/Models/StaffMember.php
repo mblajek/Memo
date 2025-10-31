@@ -5,13 +5,10 @@ namespace App\Models;
 use App\Models\QueryBuilders\StaffMemberBuilder;
 use App\Models\Traits\BaseModel;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * @property string $timetable_id
  * @property string $deactivated_at
- * @property-read Timetable $timetable
  * @property-read Member $member
  * @method static StaffMemberBuilder query()
  */
@@ -22,7 +19,6 @@ class StaffMember extends Model
     protected $table = 'staff_members';
 
     protected $fillable = [
-        'timetable_id',
         'deactivated_at',
     ];
 
@@ -35,11 +31,6 @@ class StaffMember extends Model
     public function isActive(): bool
     {
         return ($this->deactivated_at === null);
-    }
-
-    public function timetable(): BelongsTo
-    {
-        return $this->belongsTo(Timetable::class);
     }
 
     public function member(): HasOne
