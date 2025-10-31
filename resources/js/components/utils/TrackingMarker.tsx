@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {Timeout} from "components/utils/timeout";
 import {
   Component,
@@ -129,15 +130,15 @@ export const TrackingMarker: Component<Props> = (allProps) => {
           props.markerClass({static: false, sliding: true, active: isSliding()}),
           isSliding() ? undefined : "invisible",
         )}
-        style={
+        {...style(
           isTransitioning()
             ? {
                 "transition-property": "left, top, width, height",
                 "transition-duration": `${props.transitionDurationMillis}ms`,
                 "transition-timing-function": props.transitionTimingFunction,
               }
-            : undefined
-        }
+            : undefined,
+        )}
       />
       {props.children(MarkerTarget)}
     </div>

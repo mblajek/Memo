@@ -1,6 +1,7 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {recursiveUnwrapFormValues} from "components/felte-form/wrapped_fields";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {style} from "components/ui/inline_styles";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {
   PartialAttributesSelection,
@@ -360,7 +361,7 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
         </label>
       </Show>
       <fieldset data-felte-keep-on-remove disabled={!props.editMode}>
-        <div class="grid gap-x-1" style={{"grid-template-columns": "minmax(8em, 1fr) minmax(8em, 2fr) auto"}}>
+        <div class="grid gap-x-1" {...style({"grid-template-columns": "minmax(8em, 1fr) minmax(8em, 2fr) auto"})}>
           <For each={attributeGroups()} fallback={t("attributes.no_attributes")}>
             {(group) => (
               <SectionWithHeader

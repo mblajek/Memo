@@ -1,8 +1,8 @@
 import {Button} from "components/ui/Button";
 import {facilityIcons} from "components/ui/icons";
 import {Modal, MODAL_STYLE_PRESETS} from "components/ui/Modal";
-import {useLangFunc} from "components/utils/lang";
 import {registerGlobalPageElement} from "components/utils/GlobalPageElements";
+import {useLangFunc} from "components/utils/lang";
 import {lazyAutoPreload} from "components/utils/lazy_auto_preload";
 import {doAndClearParams} from "components/utils/modals";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -10,6 +10,7 @@ import {WorkTimeCreateFormProps} from "features/meeting/WorkTimeCreateForm";
 import {createComputed, createMemo, createSignal, Match, on, Show, Switch} from "solid-js";
 import {UserLink} from "../facility-users/UserLink";
 import {SUBTYPE_FACILITY_WIDE, WorkTimeFormSubtype} from "./work_time_form_subtype";
+import {style} from "components/ui/inline_styles";
 
 const WorkTimeCreateForm = lazyAutoPreload(() => import("features/meeting/WorkTimeCreateForm"));
 
@@ -94,7 +95,7 @@ export const createWorkTimeCreateModal = registerGlobalPageElement<Params>((args
                     </div>
                   </label>
                 </div>
-                <div class="grid auto-cols-fr grid-flow-col gap-1 min-h-16" style={{"line-height": "1.1"}}>
+                <div class="grid auto-cols-fr grid-flow-col gap-1 min-h-16" {...style({"line-height": "1.1"})}>
                   <Button class="secondary" onClick={[openForm, meetingTypeDict()!.work_time.id]}>
                     {t("forms.work_time_create.form_name")}
                   </Button>

@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {DateTime} from "luxon";
@@ -34,14 +35,14 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
     <div {...htmlAttributes.merge(divProps, {class: "relative"})}>
       <div
         class="h-full p-px grid gap-px"
-        style={{
+        {...style({
           "grid-template-columns": `[content-start] ${weekdays
             .map(({isWeekend}) => `minmax(0, ${isWeekend ? "0.75" : "1"}fr)`)
             .join(" ")} [content-end] var(--sb-size)`,
           "grid-template-rows": "min-content 1fr",
-        }}
+        })}
       >
-        <div class="bg-gray-300 row-span-full rounded-xs -m-px" style={{"grid-column": "content"}} />
+        <div class="bg-gray-300 row-span-full rounded-xs -m-px" {...style({"grid-column": "content"})} />
         <div class="col-span-full row-start-1 grid grid-rows-subgrid grid-cols-subgrid">
           <For each={weekdays}>
             {({exampleDay, isWeekend}) => (
@@ -67,7 +68,7 @@ export const MonthCalendar: VoidComponent<Props> = (allProps) => {
             passive: false,
           }}
           class="col-span-full row-start-2 grid grid-cols-subgrid gap-px overflow-x-clip overflow-y-auto"
-          style={{"grid-auto-rows": "1fr"}}
+          {...style({"grid-auto-rows": "1fr"})}
         >
           <For each={[...daysRange()]}>
             {(day, index) => (

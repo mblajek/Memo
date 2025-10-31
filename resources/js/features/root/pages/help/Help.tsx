@@ -3,6 +3,7 @@ import {useQuery} from "@tanstack/solid-query";
 import {capitalizeString} from "components/ui/Capitalize";
 import {Markdown} from "components/ui/Markdown";
 import {getIconByName, ICON_SET_NAMES} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {QueryBarrier, SimpleErrors} from "components/utils/QueryBarrier";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
@@ -161,7 +162,7 @@ export const Help: VoidComponent<Props> = (allProps) => {
                           />
                         </svg>
                         {/* Include the original icon as invisible, so that it can be copied. */}
-                        <span class="inline-block w-0" style={{"font-size": 0}}>
+                        <span class="inline-block w-0" {...style({"font-size": 0})}>
                           {contents}
                         </span>
                       </>

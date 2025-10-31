@@ -2,13 +2,14 @@ import {FormConfigWithoutTransformFn} from "@felte/core";
 import {FelteForm} from "components/felte-form/FelteForm";
 import {FelteSubmit} from "components/felte-form/FelteSubmit";
 import {Button} from "components/ui/Button";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {FieldLabel} from "components/ui/form/FieldLabel";
 import {TextField} from "components/ui/form/TextField";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {PopOver} from "components/ui/PopOver";
 import {SimpleMenu} from "components/ui/SimpleMenu";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
@@ -97,7 +98,7 @@ export const ClientGroupForm: VoidComponent<Props> = (allProps) => {
         return (
           <>
             <ClientGroupBox>
-              <div class="grid gap-1" style={{"grid-template-columns": "2fr 1fr auto"}}>
+              <div class="grid gap-1" {...style({"grid-template-columns": "2fr 1fr auto"})}>
                 <FieldLabel fieldName="client.userId" umbrella />
                 <FieldLabel fieldName="client.role" umbrella />
                 <Index each={form.data("clients")} fallback={<EmptyValueSymbol />}>

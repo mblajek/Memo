@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {useEventListener} from "components/utils/event_listener";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -12,7 +13,7 @@ export const ScrollableUpMarker: VoidComponent<Props> = (props) => {
     <div {...htmlAttributes.merge(props, {class: "h-0"})}>
       <div
         class={cx("h-4 transition-opacity pointer-events-none", props.scrollableUp ? "opacity-30" : "opacity-0")}
-        style={{background: "radial-gradient(70% 100% ellipse at top, black, transparent)"}}
+        {...style({background: "radial-gradient(70% 100% ellipse at top, black, transparent)"})}
       />
     </div>
   );

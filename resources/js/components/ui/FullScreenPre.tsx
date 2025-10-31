@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent, createSignal, onMount, splitProps} from "solid-js";
@@ -31,7 +32,7 @@ export const FullScreenPre: ParentComponent<htmlAttributes.div> = (allProps) => 
       </div>
       <div
         class="fixed top-2 right-4 text-sm bg-white border border-gray-500 text-gray-500 rounded-lg p-2 opacity-0"
-        style={{transition: "opacity 2s", opacity: wrapInfoOpacity()}}
+        {...style({transition: "opacity 2s", opacity: wrapInfoOpacity()})}
       >
         Press W to toggle text wrapping
       </div>

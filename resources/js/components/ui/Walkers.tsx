@@ -1,5 +1,6 @@
 import {createPersistence} from "components/persistence/persistence";
 import {userStorageStorage} from "components/persistence/storage";
+import {style} from "components/ui/inline_styles";
 import {Random} from "components/utils/random";
 import {Timeout} from "components/utils/timeout";
 import {createEffect, createSignal, For, getOwner, JSX, onMount, runWithOwner, Show, VoidComponent} from "solid-js";
@@ -32,7 +33,7 @@ const WalkerC1: VoidComponent<WalkerProps> = (props) => {
         })
       }
       class="h-20 absolute bottom-0 pointer-events-auto"
-      style={{transform: props.dir > 0 ? undefined : "scaleX(-1)"}}
+      {...style({transform: props.dir > 0 ? undefined : "scaleX(-1)"})}
       type="image/svg+xml"
       data="/img/walkers/c1.svg"
     />

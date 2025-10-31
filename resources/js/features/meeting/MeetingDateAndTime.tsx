@@ -5,6 +5,7 @@ import {TimeDuration} from "components/ui/TimeDuration";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {FieldBox} from "components/ui/form/FieldBox";
 import {PlaceholderField} from "components/ui/form/PlaceholderField";
+import {style} from "components/ui/inline_styles";
 import {EN_DASH} from "components/ui/symbols";
 import {cx} from "components/utils/classnames";
 import {
@@ -159,7 +160,10 @@ export const MeetingDateAndTime: VoidComponent<Props> = (props) => {
             <div
               // This is a grid mainly to set the correct tab order: the all day checkbox should go after the end time.
               class="grid gap-1"
-              style={{"grid-template-rows": "auto auto", "grid-template-columns": `1fr ${allDay() ? "" : "auto"} 1fr`}}
+              {...style({
+                "grid-template-rows": "auto auto",
+                "grid-template-columns": `1fr ${allDay() ? "" : "auto"} 1fr`,
+              })}
             >
               <div class="flex items-center gap-0.5">
                 <DateInput id="date" name="date" outerClass="basis-40 grow" class="min-h-big-input px-2" />

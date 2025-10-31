@@ -14,6 +14,7 @@ import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {Select} from "components/ui/form/Select";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, clientGroupIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {title} from "components/ui/title";
 import {NON_NULLABLE} from "components/utils/array_filter";
@@ -418,7 +419,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
 
   return (
     <div class="flex flex-col items-stretch">
-      <div class="grid gap-1" style={{"grid-template-columns": "1.5fr 1fr"}}>
+      <div class="grid gap-1" {...style({"grid-template-columns": "1.5fr 1fr"})}>
         <div>
           <FieldLabel
             fieldName={props.name}
@@ -795,7 +796,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
             </Show>
             <HideableSection show={clientsGroupsMode() === "shared"}>
               {({show}) => (
-                <div class="mt-1 grid gap-x-1" style={{"grid-template-columns": "auto 1fr"}}>
+                <div class="mt-1 grid gap-x-1" {...style({"grid-template-columns": "auto 1fr"})}>
                   <div
                     class="flex items-center"
                     use:title={capitalizeString(translations.fieldName("sharedClientsGroupId"))}

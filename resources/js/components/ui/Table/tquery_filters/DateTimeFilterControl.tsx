@@ -1,6 +1,7 @@
 import {Button} from "components/ui/Button";
 import {DateInput} from "components/ui/DateInput";
 import {createHoverSignal, hoverEvents, hoverSignal} from "components/ui/hover_signal";
+import {style} from "components/ui/inline_styles";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {title} from "components/ui/title";
 import {cx} from "components/utils/classnames";
@@ -126,7 +127,7 @@ export const DateTimeFilterControl: VoidComponent<Props> = (props) => {
   return (
     <div
       class={cx(s.filter, "grid gap-0.5 items-baseline")}
-      style={{"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`}}
+      {...style({"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`})}
     >
       <div>{t("range.from")}</div>
       <Show when={canSyncRange()}>

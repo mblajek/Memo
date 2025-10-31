@@ -1,6 +1,7 @@
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {style} from "components/ui/inline_styles";
 import {Show, VoidComponent} from "solid-js";
 import {CopyToClipboard} from "../CopyToClipboard";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 
 interface Props {
   readonly id: string | undefined;
@@ -10,7 +11,7 @@ interface Props {
 export const IdColumn: VoidComponent<Props> = (props) => (
   <Show when={props.id} fallback={<EmptyValueSymbol />}>
     <div class="w-full flex items-center">
-      <span class="overflow-hidden whitespace-nowrap text-ellipsis font-mono" style={{direction: "rtl"}}>
+      <span class="overflow-hidden whitespace-nowrap text-ellipsis font-mono" {...style({direction: "rtl"})}>
         {props.id}
       </span>
       <CopyToClipboard text={props.id} textInTitle />

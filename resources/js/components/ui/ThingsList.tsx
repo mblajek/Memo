@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {createMemo, For, JSX, mapArray, Match, Show, splitProps, Switch} from "solid-js";
 
@@ -45,7 +46,7 @@ export const ThingsList = <T,>(allProps: Props<T>) => {
         >
           <For each={items()}>
             {(item, i) => (
-              <li class="inline-block" style={{"text-decoration": "inherit"}}>
+              <li class="inline-block" {...style({"text-decoration": "inherit"})}>
                 {item}
                 <Show when={i() < items().length - 1}>
                   <span class="whitespace-pre text-grey-text font-bold mr-0.5">, </span>
@@ -64,7 +65,7 @@ export const ThingsList = <T,>(allProps: Props<T>) => {
         >
           <For each={items()}>
             {(item) => (
-              <li class="whitespace-nowrap pr-1" style={{"text-decoration": "inherit"}}>
+              <li class="whitespace-nowrap pr-1" {...style({"text-decoration": "inherit"})}>
                 <div class="align-top inline-block wrapTextAnywhere">{item}</div>
               </li>
             )}

@@ -1,4 +1,5 @@
 import {UseQueryResult} from "@tanstack/solid-query";
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -177,7 +178,7 @@ export function useCalendarBlocksAndEvents({
       }
       if (meeting.typeDictId === meetingTypeDict()?.work_time.id) {
         if (meeting.isFacilityWide || calendarFunction !== "leaveTimes") {
-          const style: JSX.CSSProperties = {
+          const meetingStyle: JSX.CSSProperties = {
             background:
               CALENDAR_BACKGROUNDS[
                 meeting.isFacilityWide && calendarFunction !== "leaveTimes" ? "facilityWorkTime" : "mainWorkTime"
@@ -186,13 +187,13 @@ export function useCalendarBlocksAndEvents({
           const timeSpan = partDayTimeSpan();
           const stylingPreference: CellStylingPreference = {
             strength: BACKGROUND_PREFERENCE_STRENGTHS.workTime[meeting.isFacilityWide ? "facility" : "staff"],
-            style,
+            style: meetingStyle,
           };
           const WorkTimeSummary: VoidComponent<htmlAttributes.div & {readonly day: DateTime}> = (props) => (
             <TimeBlockSummary
               {...props}
               timeSpan={timeSpan}
-              style={style}
+              style={meetingStyle}
               label={(time) =>
                 meeting.isFacilityWide ? (
                   <>
@@ -216,7 +217,7 @@ export function useCalendarBlocksAndEvents({
             meeting,
             ...timeSpan,
             contentInHoursArea: () => (
-              <TimeBlock style={style} label={meeting.notes || undefined} hovered={hovered()} />
+              <TimeBlock style={meetingStyle} label={meeting.notes || undefined} hovered={hovered()} />
             ),
             contentInAllDayArea: meeting.isFacilityWide
               ? calendarFunction === "timeTables"
@@ -234,7 +235,7 @@ export function useCalendarBlocksAndEvents({
           });
         }
       } else if (meeting.typeDictId === meetingTypeDict()?.leave_time.id) {
-        const style: JSX.CSSProperties = {
+        const meetingStyle: JSX.CSSProperties = {
           background: CALENDAR_BACKGROUNDS[meeting.isFacilityWide ? "facilityLeaveTime" : "staffLeaveTime"],
         };
         const timeSpan = matchingTimeSpan();
@@ -242,7 +243,7 @@ export function useCalendarBlocksAndEvents({
         const stylingPreference: CellStylingPreference | undefined = shouldStyleCell
           ? {
               strength: BACKGROUND_PREFERENCE_STRENGTHS.allDayLeaveTime[meeting.isFacilityWide ? "facility" : "staff"],
-              style,
+              style: meetingStyle,
             }
           : undefined;
         const genericName = meeting.isFacilityWide
@@ -254,9 +255,9 @@ export function useCalendarBlocksAndEvents({
             timeSpan={timeSpan}
             // Skip the background if there is a background preference already as it will set the cell background anyway.
             class={cx(shouldStyleCell ? undefined : "border border-gray-300", "text-red-900 px-0.5")}
-            style={shouldStyleCell ? undefined : style}
+            style={shouldStyleCell ? undefined : meetingStyle}
             label={(time) => (
-              <div style={{"line-height": "1.05"}}>
+              <div {...style({"line-height": "1.05"})}>
                 <Show when={calendarFunction === "leaveTimes" && !meeting.isFacilityWide}>
                   <UserLink
                     class="!text-black whitespace-nowrap"
@@ -310,7 +311,12 @@ export function useCalendarBlocksAndEvents({
           meeting,
           ...timeSpan,
           contentInHoursArea: () => (
-            <TimeBlock class="text-red-900" style={style} label={meeting.notes || genericName} hovered={hovered()} />
+            <TimeBlock
+              class="text-red-900"
+              style={meetingStyle}
+              label={meeting.notes || genericName}
+              hovered={hovered()}
+            />
           ),
           contentInAllDayArea: (colInfo) => <LeaveTimeSummary day={colInfo.day} />,
           allDayAreaStylingPreference: stylingPreference,
