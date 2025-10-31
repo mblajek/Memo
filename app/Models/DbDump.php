@@ -3,11 +3,11 @@
 namespace App\Models;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Models\QueryBuilders\DbDumpBuilder;
 use App\Models\Traits\BaseModel;
 use App\Services\Database\DatabaseDumpHelper;
 use App\Services\Database\DatabaseDumpStatus;
 use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
  * @property DateTimeImmutable $restored_prod_at
  * @property bool $is_from_rc
  * @property bool $is_backuped
- * @method static DbDumpBuilder query()
+ * @method static Builder<self> query()
  */
 class DbDump extends Model
 {

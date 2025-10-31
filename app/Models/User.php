@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\PermissionMiddleware;
-use App\Models\QueryBuilders\UserBuilder;
 use App\Models\Traits\HasResourceValidator;
 use App\Models\Traits\HasValidator;
 use App\Rules\DataTypeRule;
@@ -13,6 +12,7 @@ use App\Rules\Valid;
 use App\Utils\Date\SerializeDate;
 use App\Models\Traits\BaseModel;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -42,7 +42,7 @@ use Illuminate\Validation\Rules\Password;
  * @property-read bool $has_global_admin
  * @property-read Collection<array-key, Member> $members
  * @property-read Facility $lastLoginFacility
- * @method static UserBuilder query()
+ * @method static Builder<self> query()
  */
 class User extends Authenticatable
 {
@@ -277,7 +277,7 @@ class User extends Authenticatable
         // todo: maybe do not use Schema in this way
         $omit = array_fill_keys($omit, true);
         $id = $this->id;
-        foreach (Schema::getTableListing() as $table) {
+        foreach (Schema::getTableListing(DB::getDatabaseName()) as $table) {
             $query = DB::table($table);
             $ready = false;
             foreach (Schema::getColumns($table) as ['name' => $name, 'type' => $type]) {

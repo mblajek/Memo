@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\MemberBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read User $user
  * @property-read ?StaffMember staffMember
  * @property-read ?Client $client
- * @method static MemberBuilder query()
+ * @method static Builder<self> query()
  */
 class Member extends Model
 {

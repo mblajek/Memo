@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\StaffMemberBuilder;
 use App\Models\Traits\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $deactivated_at
  * @property-read Member $member
- * @method static StaffMemberBuilder query()
+ * @method static Builder<self> query()
  */
 class StaffMember extends Model
 {

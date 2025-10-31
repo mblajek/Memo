@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\MeetingAttendantBuilder;
 use App\Models\Traits\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $attendance_status_dict_id
  * @property string $client_group_id
  * @property-read Meeting $meeting
- * @method static MeetingAttendantBuilder query()
+ * @method static Builder<self> query()
  */
 class MeetingAttendant extends Model
 {

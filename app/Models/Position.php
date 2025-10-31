@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use App\Models\Attributes\HasValues;
-use App\Models\QueryBuilders\PositionBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Validation\Rule;
@@ -19,7 +19,7 @@ use Illuminate\Validation\Rule;
  * @property bool $is_disabled
  * @property int $default_order
  * @property-read Dictionary $dictionary
- * @method static PositionBuilder query()
+ * @method static Builder<self> query()
  */
 class Position extends Model
 {

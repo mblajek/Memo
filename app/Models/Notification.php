@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Models\Enums\NotificationMethod;
-use App\Models\QueryBuilders\NotificationBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasUuid;
 use App\Models\Traits\HasValidator;
 use App\Notification\NotificationStatus;
 use App\Rules\Valid;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read ?Facility $facility
  * @property-read ?User $user
  * @property-read ?Meeting $meeting
- * @method static NotificationBuilder query()
+ * @method static Builder<self> query()
  */
 class Notification extends Model
 {

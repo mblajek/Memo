@@ -6,7 +6,6 @@ use App\Exceptions\ApiException;
 use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Enums\AttendanceType;
-use App\Models\QueryBuilders\MeetingBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Models\UuidEnum\DictionaryUuidEnum;
@@ -14,6 +13,7 @@ use App\Rules\MeetingClientGroupRule;
 use App\Rules\MemberExistsRule;
 use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,7 +36,7 @@ use Illuminate\Validation\Rule;
  * @property-read Collection<array-key, MeetingAttendant> $attendants
  * @property-read Collection<array-key, MeetingResource> $resources
  * @property-read Collection<array-key, Notification> $notifications
- * @method static MeetingBuilder query()
+ * @method static Builder<self> query()
  */
 class Meeting extends Model
 {

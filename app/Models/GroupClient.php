@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\GroupClientBuilder;
 use App\Models\Traits\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $client_group_id
  * @property string $user_id
  * @property string $role
- * @method static GroupClientBuilder query()
+ * @method static Builder<self> query()
  */
 class GroupClient extends Model
 {

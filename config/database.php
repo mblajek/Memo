@@ -3,7 +3,7 @@
 use Illuminate\Support\Env;
 
 return [
-    'default' => 'mysql',
+    'default' => 'mariadb',
     'migrations' => 'migrations',
     'connections' => [
         'db_dumps' => [
@@ -11,25 +11,24 @@ return [
             'database' => Env::get('APP_DB_DUMP_PATH')
                 ? (Env::getOrFail('APP_DB_DUMP_PATH') . '/db_dumps.db') : null,
         ],
-        'mysql' => [
-            'driver' => 'mysql',
-            'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
+        'mariadb' => [
+            'driver' => 'mariadb',
+            'host' => Env::get('DB_HOST'),
+            'port' => Env::get('DB_PORT'),
             'database' => Env::getOrFail('DB_DATABASE'),
             'username' => Env::getOrFail('DB_USERNAME'),
             'password' => Env::getOrFail('DB_PASSWORD'),
-            'unix_socket' => env('DB_SOCKET', ''),
+            'unix_socket' => Env::get('DB_SOCKET'),
             'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
+            'collation' => Env::get('DB_COLLATION', 'utf8mb4_0900_ai_ci'),
             'prefix' => '',
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => (env('DB_HOST') && extension_loaded('pdo_mysql')) ? [ // no array_filter
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => !!env('DB_SSL_VERIFY'),
-                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-            ] : [], // no encryption for unix socket connection
+            'options' => (Env::get('DB_HOST') && extension_loaded('pdo_mysql')) ? [ // no array_filter
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => (bool)Env::get('DB_SSL_VERIFY', true),
+                PDO::MYSQL_ATTR_SSL_CA => null,
+            ] : [/* no encryption for unix socket connection */],
         ],
     ],
 ];

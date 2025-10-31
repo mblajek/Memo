@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Exceptions\FatalExceptionFactory;
-use App\Models\QueryBuilders\GrantBuilder;
 use App\Models\Traits\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
 /**
- * @method static GrantBuilder query()
+ * @method static Builder<self> query()
  */
 class Grant extends Model
 {

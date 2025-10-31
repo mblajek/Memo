@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\LogEntryBuilder;
 use App\Models\Traits\HasUuid;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
@@ -24,7 +24,7 @@ use Psr\Log\LogLevel;
  * @property string $log_level
  * @property string $message
  * @property ?string $context_text_id
- * @method static LogEntryBuilder query()
+ * @method static Builder<self> query()
  */
 class LogEntry extends Model
 {

@@ -4,11 +4,11 @@ namespace App\Models;
 
 use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Attributes\HasValues;
-use App\Models\QueryBuilders\ClientBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\ClientShortCodeRule;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $short_code
  * @property-read Member $member
  * @property-read Collection<array-key, GroupClient> $groupClients
- * @method static ClientBuilder query()
+ * @method static Builder<self> query()
  */
 class Client extends Model
 {
