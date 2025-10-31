@@ -12,6 +12,7 @@ import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {TQuerySelect} from "components/ui/form/TQuerySelect";
 import {actionIcons, calendarIcons, facilityIcons} from "components/ui/icons";
 import {InfoIcon} from "components/ui/InfoIcon";
+import {style} from "components/ui/inline_styles";
 import {getCalendarViewLinkData} from "components/ui/meetings-calendar/calendar_link";
 import {CALENDAR_BACKGROUNDS} from "components/ui/meetings-calendar/colors";
 import {PopOver} from "components/ui/PopOver";
@@ -613,13 +614,13 @@ export default (() => {
                         ? "text-grey-text"
                         : "text-gray-300",
                     )}
-                    style={{
+                    {...style({
                       // Use negative margins instead of absolute position to avoid overlapping the fixed table header.
                       "height": "10px",
                       "margin-bottom": "-2px",
                       "margin-top": "-8px",
                       "margin-right": "-4px",
-                    }}
+                    })}
                     use:title={[
                       capitalizeString(dayData().day.toLocaleString({...DATE_FORMAT, weekday: "long"})) +
                         (dayData().day.hasSame(currentDate(), "day")

@@ -1,6 +1,7 @@
 import {useMutation} from "@tanstack/solid-query";
 import {DeleteButton} from "components/ui/Button";
 import {ConfirmParams, createConfirmation} from "components/ui/confirmation";
+import {style} from "components/ui/inline_styles";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
@@ -81,7 +82,7 @@ export const MeetingDeleteButton: VoidComponent<Props> = (allProps) => {
           checked={deleteOption() === props.option}
           onChange={() => setDeleteOption(props.option)}
         />
-        <span style={{"line-height": "1.2"}}>{tt(props.option)}</span>
+        <span {...style({"line-height": "1.2"})}>{tt(props.option)}</span>
       </label>
     );
 

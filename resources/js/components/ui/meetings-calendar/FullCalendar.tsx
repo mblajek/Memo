@@ -15,6 +15,7 @@ import {ResourceHeader} from "components/ui/calendar/calendar-columns/ResourceHe
 import {DaysRange} from "components/ui/calendar/days_range";
 import {getWeekFromDay, getWorkWeekFromDay} from "components/ui/calendar/week_days_calculator";
 import {actionIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {cx} from "components/utils/classnames";
 import {DayMinuteRange, MAX_DAY_MINUTE} from "components/utils/day_minute_util";
@@ -227,18 +228,18 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
               <div class="w-full py-1 flex justify-between gap-1 select-none">
                 <span
                   class={cx("line-clamp-2", staff["staff.isActive"] ? undefined : "text-grey-text")}
-                  style={{"font-size": "0.92rem", "line-height": "1.15"}}
+                  {...style({"font-size": "0.92rem", "line-height": "1.15"})}
                 >
                   {staff.name}
                 </span>
                 <Show when={props.staticCalendarFunction === "work"}>
                   <span
                     class="shrink-0 self-center border rounded"
-                    style={{
+                    {...style({
                       width: "14px",
                       height: "14px",
                       ...coloringToStyle(coloring, {part: "colorMarker"}),
-                    }}
+                    })}
                   />
                 </Show>
               </div>
@@ -268,7 +269,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
                   <div class="w-full py-1 select-none">
                     <span
                       class="line-clamp-2 text-teal-700 font-semibold"
-                      style={{"font-size": "0.92rem", "line-height": "1.15"}}
+                      {...style({"font-size": "0.92rem", "line-height": "1.15"})}
                     >
                       {pos.label}
                     </span>
@@ -1108,7 +1109,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
   return (
     <CalendarFunctionContext.Provider value={props.staticCalendarFunction}>
       <div {...htmlAttributes.merge(divProps, {class: "flex items-stretch gap-1"})}>
-        <div class="flex flex-col items-stretch gap-1" style={{"flex-basis": "min-content"}}>
+        <div class="flex flex-col items-stretch gap-1" {...style({"flex-basis": "min-content"})}>
           <Show when={props.staticCalendarFunction !== "leaveTimes"}>
             <TinyCalendar
               class="ms-1"

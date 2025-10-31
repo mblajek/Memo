@@ -1,6 +1,7 @@
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {TableViewFullSummary} from "components/ui/Table/table_views";
 import {actionIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {EM_DASH} from "components/ui/symbols";
 import {title, TitleDirectiveType} from "components/ui/title";
 import {cx} from "components/utils/classnames";
@@ -34,7 +35,7 @@ export function useTableSavedViewIndicators() {
     },
     activeColumnGroups: {
       icon: () => (
-        <span class="select-none" style={{"font-size": "1.2em"}}>
+        <span class="select-none" {...style({"font-size": "1.2em"})}>
           {t("tables.column_groups.grouping_symbol")}
         </span>
       ),
@@ -65,7 +66,7 @@ export function useTableSavedViewIndicators() {
               ]
             : "text-white",
         )}
-        style={{
+        {...style({
           width: "1em",
           height: "1em",
           ...(props.viewSummary.modifiesSummary[props.staticPartName]
@@ -74,7 +75,7 @@ export function useTableSavedViewIndicators() {
                 filter: "drop-shadow(0.1em 0.1em 0.1em #666)",
                 transform: "scale(0.8)",
               }),
-        }}
+        })}
       >
         {part.icon()}
       </div>
@@ -120,7 +121,7 @@ export function useTableSavedViewIndicators() {
     };
     return (
       <Show when={props.viewSummary.modifiesSummary.any} fallback={<EmptyValueSymbol />}>
-        <div class="grid gap-x-1" style={{"grid-template-columns": "auto auto auto 1fr"}}>
+        <div class="grid gap-x-1" {...style({"grid-template-columns": "auto auto auto 1fr"})}>
           <For each={TABLE_SAVED_VIEW_PARTS}>{(part) => <IconWithDesc {...props} staticPartName={part} />}</For>
         </div>
       </Show>

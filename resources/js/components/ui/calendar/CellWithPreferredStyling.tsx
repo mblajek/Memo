@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {createMemo, Index, ParentComponent, splitProps} from "solid-js";
@@ -27,7 +28,9 @@ export const CellWithPreferredStyling: ParentComponent<Props> = (allProps) => {
   return (
     <div {...htmlAttributes.merge(divProps, {class: "grid"})}>
       <Index each={preferencesByStrength()}>
-        {(preference) => <div class={cx("col-start-1 row-start-1", preference().class)} style={preference().style} />}
+        {(preference) => (
+          <div class={cx("col-start-1 row-start-1", preference().class)} {...style(preference().style)} />
+        )}
       </Index>
       <div class="col-start-1 row-start-1 min-w-0">{props.children}</div>
     </div>

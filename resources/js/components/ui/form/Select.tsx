@@ -2,6 +2,7 @@ import {DetectOverflowOptions, flip, shift} from "@floating-ui/dom";
 import {useFormContextIfInForm} from "components/felte-form/FelteForm";
 import {isValidationMessageEmpty} from "components/felte-form/ValidationMessages";
 import {buildFuzzyTextualLocalFilter} from "components/ui/Table/tquery_filters/fuzzy_filter";
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -738,7 +739,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         isDisabled() ? "bg-disabled" : "bg-white",
                         isInvalid() ? "border-red-400" : undefined,
                       )}
-                      style={{padding: paddingStyle()}}
+                      {...style({padding: paddingStyle()})}
                       {...selectAriaProps()}
                       onClick={[setIsOpen, !isOpen()]}
                       bool:inert={isDisabled()}
@@ -799,7 +800,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         {(selValue) => (
                           <div
                             class="col-start-1 row-start-1 my-auto overflow-hidden wrapTextAnywhere"
-                            style={{padding: paddingStyle()}}
+                            {...style({padding: paddingStyle()})}
                           >
                             {getValueLabel(selValue())}
                           </div>
@@ -811,7 +812,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         // This is just for user entry, and not the actual form value.
                         name=""
                         class="col-start-1 row-start-1 min-w-0 bg-transparent rounded"
-                        style={{padding: paddingStyle()}}
+                        {...style({padding: paddingStyle()})}
                         value={filterText()}
                         onInput={(e) => setFilterText(e.currentTarget.value)}
                         placeholder={selection().size ? undefined : props.placeholder}
@@ -840,7 +841,7 @@ export const Select: VoidComponent<SelectProps> = (allProps) => {
                         "z-dropdown max-w-fit border rounded overflow-x-clip overflow-y-auto shadow-xl",
                         props.isLoading ? "bg-gray-200" : "bg-popup-bg",
                       )}
-                      style={posStyle()}
+                      {...style(posStyle())}
                       role="listbox"
                       aria-activedescendant={focusedItem() ? elemId(focusedItem()!.value) : undefined}
                       onPointerMove={(e) => {

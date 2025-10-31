@@ -1,4 +1,5 @@
 import {Button} from "components/ui/Button";
+import {style} from "components/ui/inline_styles";
 import {EN_DASH} from "components/ui/symbols";
 import {getPreloadedModulesInfo} from "components/utils/lazy_auto_preload";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
@@ -8,7 +9,7 @@ export default (() => {
   return (
     <>
       <AppTitlePrefix prefix="Preload statuses" />
-      <div class="p-2 grid gap-x-1 text-sm" style={{"grid-template-columns": "auto auto auto"}}>
+      <div class="p-2 grid gap-x-1 text-sm" {...style({"grid-template-columns": "auto auto auto"})}>
         <div class="font-bold contents">
           <div>Module</div>
           <div>Loaded?</div>

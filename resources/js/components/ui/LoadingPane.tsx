@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
 import {VoidComponent} from "solid-js";
@@ -25,7 +26,7 @@ export const LoadingPane: VoidComponent<LoadingPaneProps> = (props) => {
         props.isLoading ? "opacity-70" : "opacity-0",
         shown() ? undefined : "hidden",
       )}
-      style={{transition: "opacity 0.4s"}}
+      {...style({transition: "opacity 0.4s"})}
     >
       <BigSpinner />
     </div>

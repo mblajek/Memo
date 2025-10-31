@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {ParentComponent, Show, VoidComponent, splitProps} from "solid-js";
@@ -22,7 +23,7 @@ export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => 
       <Show when={props.label}>
         <div
           class="text-xs py-0.5 -mx-0.5 float-right text-nowrap rounded-se bg-white bg-opacity-50"
-          style={{"writing-mode": "vertical-lr"}}
+          {...style({"writing-mode": "vertical-lr"})}
         >
           {props.label}
         </div>

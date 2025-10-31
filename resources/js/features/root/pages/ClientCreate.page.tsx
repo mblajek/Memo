@@ -1,9 +1,10 @@
 import {useNavigate} from "@solidjs/router";
-import {useLangFunc} from "components/utils/lang";
 import {createHistoryBack} from "components/utils/history_back";
+import {useLangFunc} from "components/utils/lang";
 import ClientCreateForm from "features/client/ClientCreateForm";
 import {VoidComponent} from "solid-js";
 import {useActiveFacility} from "state/activeFacilityId.state";
+import {style} from "components/ui/inline_styles";
 
 export default (() => {
   const t = useLangFunc();
@@ -11,7 +12,7 @@ export default (() => {
   const activeFacility = useActiveFacility();
   const historyBackOr = createHistoryBack();
   return (
-    <div class="p-2 flex flex-col gap-2" style={{width: "min(600px, 100%)"}}>
+    <div class="p-2 flex flex-col gap-2" {...style({width: "min(600px, 100%)"})}>
       <h2 class="font-bold text-xl">{t("forms.client_create.form_name")}</h2>
       <ClientCreateForm
         onSuccess={(clientId) => navigate(`/${activeFacility()?.url}/clients/${clientId}`)}

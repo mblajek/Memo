@@ -13,11 +13,7 @@ export function compressingEncoder(): AsyncSerialiser<string> {
   return {
     async serialise(value: string) {
       return Base64.fromUint8Array(
-        await readAll(
-          new Blob([enc.encode(value)]).stream().pipeThrough(new CompressionStream("deflate-raw")) as ReadableStream<
-            Uint8Array<ArrayBuffer>
-          >,
-        ),
+        await readAll(new Blob([enc.encode(value)]).stream().pipeThrough(new CompressionStream("deflate-raw"))),
         true,
       );
     },
@@ -26,7 +22,7 @@ export function compressingEncoder(): AsyncSerialiser<string> {
         await readAll(
           new Blob([Base64.toUint8Array(value) as Uint8Array<ArrayBuffer>])
             .stream()
-            .pipeThrough(new DecompressionStream("deflate-raw")) as ReadableStream<Uint8Array<ArrayBuffer>>,
+            .pipeThrough(new DecompressionStream("deflate-raw")),
         ),
       );
     },

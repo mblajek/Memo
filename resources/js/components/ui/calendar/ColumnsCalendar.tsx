@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {DayMinuteRange, MAX_DAY_MINUTE, formatDayMinuteHM, getDayMinute} from "components/utils/day_minute_util";
 import {GetRef} from "components/utils/GetRef";
@@ -162,12 +163,12 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
       })}
     >
       <Context.Provider value={context}>
-        <div class="grid grid-cols-subgrid" style={{"grid-area": "header / columns"}}>
+        <div class="grid grid-cols-subgrid" {...style({"grid-area": "header / columns"})}>
           <For each={props.columns}>{(col) => <div>{col.header()}</div>}</For>
         </div>
         <div
           class="grid grid-cols-subgrid"
-          style={{"grid-area": "all-day-area / columns"}}
+          {...style({"grid-area": "all-day-area / columns"})}
           on:wheel={{
             handleEvent: (e) => {
               if (e.altKey) {
@@ -185,11 +186,11 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
         <GetRef ref={setHoursArea} waitForMount>
           <div
             class="grid grid-cols-subgrid overflow-y-scroll border-t border-gray-300 relative"
-            style={{
+            {...style({
               "grid-area": "hours-area",
               "grid-column": "1 / -1",
               "grid-template-rows": `${24 * props.pixelsPerHour + 1}px`,
-            }}
+            })}
             on:wheel={{
               handleEvent: (e) => {
                 if (e.altKey) {
@@ -199,9 +200,13 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
               },
               passive: false,
             }}
-            onScroll={() => setHoursAreaScrollOffset(hoursArea()!.scrollTop)}
+            onScroll={() => {
+              if (hoursArea()) {
+                setHoursAreaScrollOffset(hoursArea()!.scrollTop);
+              }
+            }}
           >
-            <div class="relative" style={{"grid-column": "time-track"}}>
+            <div class="relative" {...style({"grid-column": "time-track"})}>
               <Index each={timeTrackLabelDayMinutes()}>
                 {(dayMinute) => (
                   <div
@@ -209,17 +214,17 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                       "absolute w-full px-1 text-right text-xs text-grey-text",
                       dayMinute() % 60 ? "text-opacity-60" : undefined,
                     )}
-                    style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
+                    {...style({top: `${dayMinuteToPixelY(dayMinute())}px`})}
                   >
                     {formatDayMinuteHM(dayMinute())}
                   </div>
                 )}
               </Index>
               <Show when={props.columns.some(({day}) => isToday(day))}>
-                <div class="absolute w-full h-0 border-b-2 border-red-500 z-50" style={{top: `${nowPixelY()}px`}} />
+                <div class="absolute w-full h-0 border-b-2 border-red-500 z-50" {...style({top: `${nowPixelY()}px`})} />
               </Show>
             </div>
-            <div class="grid grid-cols-subgrid" style={{"grid-column": "columns"}}>
+            <div class="grid grid-cols-subgrid" {...style({"grid-column": "columns"})}>
               <For each={props.columns}>
                 {(col) => (
                   <div class="outline outline-1 outline-gray-300 relative">
@@ -227,7 +232,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                     <Show when={isToday(col.day)}>
                       <div
                         class="absolute w-full h-0 border-b-2 border-red-500 z-50"
-                        style={{top: `${nowPixelY()}px`}}
+                        {...style({top: `${nowPixelY()}px`})}
                       />
                     </Show>
                   </div>
@@ -242,7 +247,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                       "absolute w-full h-0 border-b border-gray-600",
                       dayMinute() % 60 ? "border-dotted border-opacity-20" : "border-solid border-opacity-30",
                     )}
-                    style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
+                    {...style({top: `${dayMinuteToPixelY(dayMinute())}px`})}
                   />
                 )}
               </Index>

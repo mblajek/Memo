@@ -14,6 +14,7 @@ import {
   staffIcons,
   userIcons,
 } from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {title} from "components/ui/title";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
@@ -104,11 +105,11 @@ export const Navbar: VoidComponent = () => {
           collapsed() ? "text-xs" : undefined,
         )}
         use:hoverSignal={navbarHover}
-        style={{
+        {...style({
           "background-color": "var(--navbar-color)",
           "grid-area": "sidebar",
           ...themeStyle(),
-        }}
+        })}
       >
         <Button
           class={cx(
@@ -132,7 +133,7 @@ export const Navbar: VoidComponent = () => {
         <nav
           ref={scrollableRef}
           class={cx(collapsed() ? "pl-1" : "pl-2 pr-1", "col-start-1 row-start-1 overflow-y-auto flex flex-col gap-1")}
-          style={{"--sb-track-color": "var(--navbar-color)"}}
+          {...style({"--sb-track-color": "var(--navbar-color)"})}
         >
           <Show when={collapsed()}>
             <ShortChangingLogo class="self-center w-12 h-12 p-1 my-2" />
@@ -300,7 +301,7 @@ export const Navbar: VoidComponent = () => {
               "p-1 rounded-full active:bg-select transition-colors",
               invalidate.isThrottled() ? "text-gray-300" : "text-grey-text hover:text-memo-active",
             )}
-            style={{"transition-duration": "300ms"}}
+            {...style({"transition-duration": "300ms"})}
             disabled={invalidate.isThrottled()}
             onClick={() => invalidate.everythingThrottled()}
             title={`${t("refresh_button")}${invalidate.isThrottled() ? `\n${t("refresh_button.disabled")}` : ""}`}

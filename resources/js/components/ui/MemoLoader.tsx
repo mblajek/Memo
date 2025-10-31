@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
 import {Show, VoidComponent, createSignal, onCleanup, onMount} from "solid-js";
@@ -37,7 +38,7 @@ export const LoaderInPortal: VoidComponent = () => {
             // Pass through pointer events when not visible or fading.
             "pointer-events-none": !isVisible(),
           })}
-          style={{transition: "opacity 300ms ease"}}
+          {...style({transition: "opacity 300ms ease"})}
         >
           <div class="animate-pulse">
             <MemoIcon height={300} class="dark:brightness-150" />

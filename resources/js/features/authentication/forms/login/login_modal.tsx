@@ -1,5 +1,6 @@
 import {Button} from "components/ui/Button";
 import {FullLogo} from "components/ui/FullLogo";
+import {style} from "components/ui/inline_styles";
 import {Modal, MODAL_STYLE_PRESETS} from "components/ui/Modal";
 import {title} from "components/ui/title";
 import {BrowserWarning} from "components/utils/BrowserWarning";
@@ -43,7 +44,7 @@ export const createLoginModal = registerGlobalPageElement<Params | true>((args) 
         <div class="flex flex-col gap-4">
           <div
             class={cx("flex gap-2 justify-between rounded", envInfo.style() ? "px-1" : "text-grey-text")}
-            style={envInfo.style()}
+            {...style(envInfo.style())}
           >
             <div>{envInfo.info()}</div>
             <div

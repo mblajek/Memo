@@ -4,6 +4,7 @@ import {ButtonLike} from "components/ui/ButtonLike";
 import {Capitalize} from "components/ui/Capitalize";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {actionIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {PopOver} from "components/ui/PopOver";
 import {title} from "components/ui/title";
 import {WarningMark} from "components/ui/WarningMark";
@@ -73,7 +74,10 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
           placement={{placement: "bottom-start"}}
         >
           <QueryBarrier queries={[selectedClientsDataQuery]}>
-            <div class="px-2 py-1 grid gap-x-1 gap-y-0.5 min-w-80" style={{"grid-template-columns": "auto auto auto"}}>
+            <div
+              class="px-2 py-1 grid gap-x-1 gap-y-0.5 min-w-80"
+              {...style({"grid-template-columns": "auto auto auto"})}
+            >
               <div />
               <StandaloneFieldLabel class="flex flex-col items-center">
                 {notificationMethodDict()?.sms.label}

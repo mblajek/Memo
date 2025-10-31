@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {DayMinuteRange, dayMinuteToHM, getDayMinuteRange} from "components/utils/day_minute_util";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -79,7 +80,7 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
     >
       <For each={[...blocksToDayMinuteRange()]}>
         {([block, dayMinuteRange]) => (
-          <div class="absolute overflow-clip" style={{...getStyleYSize(dayMinuteRange), ...FULL_WIDTH}}>
+          <div class="absolute overflow-clip" {...style({...getStyleYSize(dayMinuteRange), ...FULL_WIDTH})}>
             {block.contentInHoursArea?.(props.columnViewInfo)}
           </div>
         )}
@@ -87,7 +88,7 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
       <div
         class="h-full ml-px relative z-10 pointer-events-none"
         // Leave enough room on the right for labeled blocks.
-        style={{"margin-right": "11px"}}
+        {...style({"margin-right": "11px"})}
       >
         <For each={[...eventsToDayMinuteRange()]}>
           {([event, dayMinuteRange]) => {
@@ -103,12 +104,12 @@ export const HoursArea = <C,>(allProps: Props<C>): JSX.Element => {
             return (
               <div
                 class="absolute overflow-clip pt-px pointer-events-auto"
-                style={{
+                {...style({
                   ...styleXSize(),
                   ...getStyleYSize(dayMinuteRange),
                   // For some reason this value sometimes gives better rounding than 1px.
                   "padding-right": "1.05px",
-                }}
+                })}
                 onClick={(e) => e.stopPropagation()}
               >
                 {event.contentInHoursArea?.(props.columnViewInfo)}
