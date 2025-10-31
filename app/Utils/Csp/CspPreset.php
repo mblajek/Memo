@@ -19,7 +19,6 @@ class CspPreset implements Preset
 
         // Firefox reports CSP violation originating from the toast library. The reason for this
         // problem is unknown. // TODO: Investigate and find a different fix.
-        $policy->add(Directive::STYLE, Keyword::UNSAFE_INLINE);
         $policy->add(Directive::STYLE_ATTR, [
             Keyword::UNSAFE_HASHES,
             'sha256-X+zrZv/IbzjZUnhsbWlsecLbwjndTpG0ZynXOif7V+k=',
@@ -27,7 +26,6 @@ class CspPreset implements Preset
             'sha256-GVgeJ9587QD/HOULIEfnpWfHaxy666vl7wP3wwF7tbc=',
             'sha256-eF8+x+sy8wuQzQ/PNlfTiLX/Qpfy+XFv9m6bacBd3Qk=',
         ]);
-
 
         if (App::hasDebugModeEnabled()) {
             $policy->add(Directive::CONNECT, '*');
