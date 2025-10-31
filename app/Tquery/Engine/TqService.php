@@ -47,7 +47,7 @@ abstract readonly class TqService
             getBuilder: $this->getBuilder(...),
             request: TqRequest::fromHttpRequest($this->config, $httpRequest),
             hasDebugMode: App::hasDebugModeEnabled(),
-            sortCollation: Config::string('app.db.collation.sort'),
+            sortCollation: Config::string('app.db.sort_collation'),
         )->run();
     }
 }
