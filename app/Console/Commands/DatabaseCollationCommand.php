@@ -8,9 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class DatabaseCollationCommand extends Command
 {
-    public const string SIGNATURE = 'fz:db-collation';
-
-    protected $signature = self::SIGNATURE;
+    protected $signature = 'fz:db-collation';
     protected $description = 'Set utf8 database columns collation from config';
 
     public function handle(): int

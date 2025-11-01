@@ -13,7 +13,7 @@ return [
         ],
         'mariadb' => [
             'driver' => 'mariadb',
-            'host' => Env::get('DB_HOST'),
+            'host' => Env::get('DB_HOST', 'localhost'),
             'port' => Env::get('DB_PORT'),
             'database' => Env::getOrFail('DB_DATABASE'),
             'username' => Env::getOrFail('DB_USERNAME'),

@@ -28,7 +28,7 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'db' => [
-        'sort_collation' => Env::get('APP_DB_SORT_COLLATION', 'utf8mb4_pl_0900_ai_ci'),
+        'sort_collation' => Env::get('APP_DB_SORT_COLLATION', 'utf8mb4_pl_0900_as_cs'),
         'auto_migrate' => Env::get('APP_DB_ALWAYS_MIGRATE', false),
         'dump_at' => Env::get('APP_DB_DUMP_AT'),
         'dump_path' => Env::get('APP_DB_DUMP_PATH'),

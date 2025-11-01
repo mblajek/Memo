@@ -5,6 +5,7 @@ use App\Console\Commands\DatabaseCollationCommand;
 use App\Utils\DatabaseMigrationHelper\DatabaseMigrationHelper as DMH;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ return new class extends Migration {
             Schema::dropIfExists('timetables');
         }
 
-        Artisan::call(DatabaseCollationCommand::SIGNATURE);
+        App::make(DatabaseCollationCommand::class)->handle();
     }
 
 
