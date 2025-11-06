@@ -8,7 +8,7 @@ Data wydania: **$$$DATE$$$**
 każdym jego spotkaniu w kalendarzu.
 ![$t(models.client.urgentNotes|cap)](urgent-notes.png)
 
-<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ c3d128680dbc39dffed16edd605716bdf799b1e6 -->
+<!-- $$$DELETE_FROM_HERE_WHEN_FINAL$$$, $$$ADD_LOG_ABOVE_SINCE_COMMIT$$$ f467de52a16d0661ef69055f6616b67344def02e -->
 
 ---
 
