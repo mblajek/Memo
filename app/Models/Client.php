@@ -11,11 +11,16 @@ use App\Rules\Valid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * @property string $short_code
+ * @property non-falsy-string $user_id
+ * @property non-falsy-string $facility_id
+ * @property non-empty-string $short_code
+ * @property-read User $user
+ * @property-read Facility $facility
  * @property-read Member $member
  * @property-read Collection<array-key, GroupClient> $groupClients
  * @method static Builder<self> query()
@@ -45,6 +50,16 @@ class Client extends Model
                 new ClientShortCodeRule(),
             ], sometimes: true, nullable: true, max: 7),
         };
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function facility(): BelongsTo
+    {
+        return $this->belongsTo(Facility::class);
     }
 
     public function member(): HasOne

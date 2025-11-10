@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property ?string $facility_id
  * @property ?string $user_id
- * // todo remove client_id fom database
  * @property ?string $meeting_id
  * @property NotificationMethod $notification_method_dict_id
  * @property ?string $address
@@ -84,11 +83,6 @@ class Notification extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function client(): BelongsTo
-    {
-        return $this->belongsTo(Client::class);
     }
 
     public function meeting(): BelongsTo

@@ -62,7 +62,7 @@ class ClientController extends ApiController
         $clients = Client::query()->from($query->clone()->addSelect('clients.*'))
             ->with(['values', 'groupClients'])->get()->keyBy('member_id');
         foreach ($users as $user) {
-            $user->client = $clients->offsetGet($user->member_id);
+            $user->offsetSet('client', $clients->offsetGet($user->member_id));
         }
         return FacilityUserClientResource::collection($users);
     }
@@ -112,6 +112,8 @@ class ClientController extends ApiController
             Facility::query()->lockForUpdate()->count();
             $client->fillShortCode();
             $user->save();
+            $client->facility_id = $this->getFacilityOrFail()->id;
+            $client->user_id = $user->id;
             $client->attrSave($this->getFacilityOrFail(), $clientData);
             $member->user_id = $user->id;
             $member->client_id = $client->id;
