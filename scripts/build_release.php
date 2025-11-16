@@ -27,7 +27,7 @@ ini_set('display_errors', 1);
             return;
         }
         $execStartTime = microtime(true);
-        exec($command, $output, $code);
+        exec("$command 2>&1", $output, $code);
         if ($code !== 0) {
             $exit("\n" . implode("\n", $output));
         }
@@ -171,6 +171,10 @@ ini_set('display_errors', 1);
     $exec('cd release && zip -r4 memo.zip memo/', $config['zip']);
 
     $exec('composer install -n -q', $config['prod']); // install dev after no-dev
+
+    echo "\n";
+    $exec('pnpm audit',  echoOutput: true);
+    $exec('composer audit -f plain --abandoned=report',  echoOutput: true);
 
     echo "\n\nBuild finished for branch {$color($branch, $branch === 'master')} ({$formatTime($startTime)})\n\n";
 })();
