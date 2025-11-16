@@ -4,6 +4,7 @@ import {FilterIconButton} from "components/ui/Table/FilterIconButton";
 import {SortMarker} from "components/ui/Table/SortMarker";
 import {cx} from "components/utils/classnames";
 import {featureUseTrackers} from "components/utils/feature_use_trackers";
+import {currentTimeSecond} from "components/utils/time";
 import {BsArrowsCollapse} from "solid-icons/bs";
 import {JSX, Show, Signal, VoidComponent, createEffect, createMemo, on} from "solid-js";
 import {Button} from "../Button";
@@ -79,42 +80,50 @@ export const Header: VoidComponent<Props> = (props) => {
   );
 
   return (
-    <div
-      class="h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1 relative"
-      data-header-for-column={props.ctx.column.id}
-    >
-      {props.wrapIn ? props.wrapIn(header) : header}
-      <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
-        {(filterControl) => (
-          <div class="flex items-stretch min-h-0 gap-0.5">
-            <div class="flex-grow basis-0 overflow-y-auto">{filterControl()()}</div>
-            <FilterIconButton
-              class="self-end mb-1"
-              isFiltering={!!props.filter![0]()}
-              onClear={() => props.filter![1](undefined)}
-            />
-          </div>
-        )}
-      </Show>
-      <Show when={props.ctx.column.getCanResize()}>
-        <div
-          on:touchstart={{handleEvent: (e) => resizeHandler()(e), passive: true}}
-          class={cx(
-            "absolute top-0 right-0 h-full w-[5px] select-none touch-none",
-            props.ctx.column.getIsResizing()
-              ? "cursor-col-resize bg-memo-active"
-              : props.ctx.table.getState().columnSizingInfo.isResizingColumn
-                ? undefined
-                : "cursor-col-resize hover:bg-gray-400",
-            collapsing() ? "bg-red-400" : "",
+    <>
+      <div
+        class="h-full w-full flex flex-col items-stretch gap-0.5 justify-between overflow-clip px-1.5 py-1 relative"
+        data-header-for-column={props.ctx.column.id}
+      >
+        {props.wrapIn ? props.wrapIn(header) : header}
+        <Show when={props.ctx.column.getCanFilter() && props.filter && props.filterControl}>
+          {(filterControl) => (
+            <div class="flex items-stretch min-h-0 gap-0.5">
+              <div class="flex-grow basis-0 overflow-y-auto">{filterControl()()}</div>
+              <FilterIconButton
+                class="self-end mb-1"
+                isFiltering={!!props.filter![0]()}
+                onClear={() => props.filter![1](undefined)}
+              />
+            </div>
           )}
-          onPointerDown={(e) => resizeHandler()(e)}
-        >
-          <Show when={collapsing()}>
-            <BsArrowsCollapse size="30" class="rotate-90 absolute top-2 right-2 text-red-400 bg-white rounded-lg" />
-          </Show>
-        </div>
+        </Show>
+        <Show when={props.ctx.column.getCanResize()}>
+          <div
+            on:touchstart={{handleEvent: (e) => resizeHandler()(e), passive: true}}
+            class={cx(
+              "absolute top-0 right-0 h-full w-[5px] select-none touch-none",
+              props.ctx.column.getIsResizing()
+                ? "cursor-col-resize bg-memo-active"
+                : props.ctx.table.getState().columnSizingInfo.isResizingColumn
+                  ? undefined
+                  : "cursor-col-resize hover:bg-gray-400",
+              collapsing() ? "bg-red-400" : "",
+            )}
+            onPointerDown={(e) => resizeHandler()(e)}
+          >
+            <Show when={collapsing()}>
+              <BsArrowsCollapse size="30" class="rotate-90 absolute top-2 right-2 text-red-400 bg-white rounded-lg" />
+            </Show>
+          </div>
+        </Show>
+      </div>
+      <Show when={currentTimeSecond().second % 2}>
+        {/* TODO: This is an ugly workaround for what seems to be a browser bug, that the contents of the header cell is
+        sometimes overflowing the cell borders. The Select contents can go below the header row and hide the data. This
+        is a heisenbug - it disappears when trying to inspect it. */}
+        <div />
       </Show>
-    </div>
+    </>
   );
 };

@@ -16,7 +16,6 @@ enum AttributeTable: string
     case Member = 'members';
     case Position = 'positions';
     case StaffMember = 'staff_members';
-    case Timetable = 'timetables';
     case User = 'users';
     case Value = 'Values';
 }

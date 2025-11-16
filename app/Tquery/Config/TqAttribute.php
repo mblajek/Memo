@@ -51,7 +51,7 @@ trait TqAttribute
         if ($multi) {
             $this->addColumn(
                 type: $type,
-                columnOrQuery: fn(string $tableName) => "select json_arrayagg(`$valueColumn`) from $from",
+                columnOrQuery: fn(string $tableName) => "select json_arrayagg(`$valueColumn` order by `default_order`) from $from",
                 table: $table,
                 columnAlias: Str::camel($columnAlias),
                 attributeId: $attributeId,

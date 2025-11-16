@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use App\Models\Enums\AttributeType;
-use App\Models\QueryBuilders\ValueBuilder;
 use App\Models\Traits\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property ?int $int_value
  * @property ?string $datetime_value // no cast
  * @property int $default_order
- * @method static ValueBuilder query()
+ * @method static Builder<self> query()
  */
 class Value extends Model
 {

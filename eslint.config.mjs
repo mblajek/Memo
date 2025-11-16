@@ -39,6 +39,7 @@ export default defineConfig([
       "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
       "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-base-to-string": "off",
@@ -81,6 +82,11 @@ export default defineConfig([
         {
           selector: "Identifier[name=/_onlyDEV$/], JSXIdentifier[name=/_onlyDEV$/]",
           message: "Do not submit usage of the *_onlyDEV helpers.",
+        },
+        {
+          selector: "JSXOpeningElement[name.name=/^[a-z]+/] > JSXAttribute > JSXIdentifier[name='style']",
+          message:
+            "Do not use `style=` on native elements, it causes CSP issues. Use `{...style(...)}` helper instead.",
         },
       ],
       "no-unused-expressions": "warn",

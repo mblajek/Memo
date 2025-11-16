@@ -5,83 +5,81 @@ namespace App\Tquery\Engine;
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Request\TqRequest;
 use Closure;
-use Illuminate\Support\Facades\App;
 use stdClass;
 use Throwable;
 
 readonly class TqEngine
 {
-    // readonly, but mutable
-    private TqBuilder $builder;
-
     public function __construct(
-        Closure $getBuilder,
+        private Closure $getBuilder,
         private TqRequest $request,
+        private bool $hasDebugMode,
+        private string $sortCollation,
     ) {
-        $this->builder = $getBuilder();
     }
 
     public function run(): array
     {
-        $this->applyMutators();
-        $this->applyJoin();
-        $this->applySelect();
-        $this->applyFilter();
-        $this->applySort();
-        $this->applyPaging();
-        $this->builder->finish();
-        $debug = (App::hasDebugModeEnabled() ? ['sql' => $this->builder->getSql(true)] : []);
+        $builder = ($this->getBuilder)();
+        $this->applyMutators($builder);
+        $this->applyJoin($builder);
+        $this->applySelect($builder);
+        $this->applyFilter($builder);
+        $this->applySort($builder);
+        $this->applyPaging($builder);
+        $builder->finish();
+        $debug = ($this->hasDebugMode ? ['sql' => $builder->getSql(true)] : []);
         try {
-            return array_merge($debug, ['meta' => $this->getMeta(), 'data' => $this->getData()]);
+            return array_merge($debug, ['meta' => $this->getMeta($builder), 'data' => $this->getData($builder)]);
         } catch (Throwable $error) {
             throw FatalExceptionFactory::tquery($debug ? (['message' => $error->getMessage()] + $debug) : []);
         }
     }
 
-    private function applyMutators(): void
+    private function applyMutators(TqBuilder $builder): void
     {
         if ($this->request->isDistinct) {
-            $this->builder->distinct();
+            $builder->distinct();
         }
     }
 
-    private function applyJoin(): void
+    private function applyJoin(TqBuilder $builder): void
     {
         foreach ($this->request->allColumns as $columnConfig) {
-            $columnConfig->applyJoin($this->builder);
+            $columnConfig->applyJoin($builder);
         }
     }
 
-    private function applySelect(): void
+    private function applySelect(TqBuilder $builder): void
     {
         foreach ($this->request->selectColumns as $requestColumn) {
-            $requestColumn->applySelect($this->builder);
+            $requestColumn->applySelect($builder);
         }
     }
 
-    private function applyFilter(): void
+    private function applyFilter(TqBuilder $builder): void
     {
         match ($this->request->filter) {
             true => null,
-            false => $this->builder->where(fn(null $bind) => 'false', false, null, false, false),
-            default => $this->request->filter->applyFilter($this->builder, false, false)
+            false => $builder->where(fn(null $bind) => 'false', false, null, false, false),
+            default => $this->request->filter->applyFilter($builder, false, false)
         };
     }
 
-    private function applySort(): void
+    private function applySort(TqBuilder $builder): void
     {
         foreach ($this->request->sortColumns as $requestSort) {
-            $requestSort->applySort($this->builder);
+            $requestSort->applySort($builder, $this->sortCollation);
         }
-        $this->builder->orderBy("`{$this->request->config->uniqueTable->name}`.`id`", desc: false);
+        $builder->orderBy("`{$this->request->config->uniqueTable->name}`.`id`", desc: false);
     }
 
-    private function applyPaging(): void
+    private function applyPaging(TqBuilder $builder): void
     {
-        $this->builder->applyPaging(offset: $this->request->pageOffset, limit: $this->request->pageSize);
+        $builder->applyPaging(offset: $this->request->pageOffset, limit: $this->request->pageSize);
     }
 
-    private function getData(): array
+    private function getData(TqBuilder $builder): array
     {
         return array_map(function (stdClass $row) {
             $array = [];
@@ -90,12 +88,12 @@ readonly class TqEngine
                 $array[$columnAlias] = $requestColumn->column->render($row->{$columnAlias});
             }
             return $array;
-        }, $this->builder->getData());
+        }, $builder->getData());
     }
 
-    private function getMeta(): array
+    private function getMeta(TqBuilder $builder): array
     {
-        $dataCount = $this->builder->getCount();
+        $dataCount = $builder->getCount();
         return [
             'totalDataSize' => $dataCount,
             'totalDataPages' => intdiv($dataCount - 1, $this->request->pageSize) + 1,

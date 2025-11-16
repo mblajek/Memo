@@ -1,5 +1,5 @@
 import {useTransContext} from "@mbarzda/solid-i18next";
-import {dependOnTranslationsVersion} from "i18n_loader";
+import {dependOnTranslationsVersion, TESTING_LANGUAGE} from "i18n_loader";
 import i18next, {TOptions} from "i18next";
 import {isDEV} from "./dev_mode";
 
@@ -34,7 +34,7 @@ export function useLangFunc(): LangFunc {
     }
     const t = transContext[0];
     const langFuncBase: LangFuncBase = (key, options) => {
-      if (i18next.language === "testing") {
+      if (i18next.language === TESTING_LANGUAGE) {
         const entries = Object.entries({
           ...options,
           defaultValue: undefined,

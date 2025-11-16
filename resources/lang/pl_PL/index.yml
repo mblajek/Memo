@@ -35,7 +35,7 @@ exception:
   invalid_json: "Zapytanie nie ma formatu JSON"
   too_many_requests: "Przekroczono liczbę prób, spróbuj ponownie za kilka minut"
   user_not_managed_by_facility: "Osoba nie jest zarządzana przez tę placówkę"
-  csrf_token_mismatch: "Błąd tokena sesji"
+  csrf_token_mismatch: "Błąd tokena sesji, spróbuj ponownie"
   db:
     no_fresh_prod_db_dumps: "Aby możliwe było załadowanie (nadpisanie) bazy produkcyjnej, musi istnieć aktualny zrzut bazy, utworzony nie dawniej niż {{minutes, number}} min. temu"
     invalid_db_dump_status: "Zrzut bazy nie może zostać załadowany, spróbuj ponownie później (status: {{status}})"
@@ -187,7 +187,7 @@ csv_export:
 anti_self_xss:
   header: "Uwaga!"
   message: |
-    Nie wykonuj w tym panelu żadnych operacji, chyba, że dobrze rozumiesz, co robisz!
+    Nie wykonuj w tym panelu żadnych operacji, chyba że dobrze rozumiesz, co robisz!
     Niczego tutaj nie pisz ani nie wklejaj, możesz w ten sposób udostępnić dane atakującemu.
     Najlepiej będzie, jeśli zamkniesz ten panel.
 

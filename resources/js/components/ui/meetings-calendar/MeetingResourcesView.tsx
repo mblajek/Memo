@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {useDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
 import {For, JSX, Show, VoidComponent} from "solid-js";
@@ -13,7 +14,7 @@ export const MeetingResourcesView: VoidComponent<Props> = (props) => {
   const dictionaries = useDictionaries();
   return (
     <Show when={props.resourceIds.length} fallback={props.fallback}>
-      <div class="flex flex-wrap gap-0.5" style={{"line-height": "initial"}}>
+      <div class="flex flex-wrap gap-0.5" {...style({"line-height": "initial"})}>
         <For each={props.resourceIds}>
           {(id) => {
             const hasConflict = () => props.conflictingResourceIds?.includes(id);

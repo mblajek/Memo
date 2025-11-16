@@ -6,6 +6,7 @@ import {Match, Switch, VoidComponent} from "solid-js";
 import {Dynamic} from "solid-js/web";
 import {title} from "../title";
 import {useTable} from "./TableContext";
+import {style} from "components/ui/inline_styles";
 
 type _Directives = typeof title;
 
@@ -46,7 +47,7 @@ export const SortMarker: VoidComponent<Props> = (props) => {
             component={ICONS.get(props.column.getIsSorted())}
             class="inlineIcon"
             classList={{dimmed: !props.column.getIsSorted()}}
-            style={{scale: isSecondarySort() ? 0.6 : undefined}}
+            {...style({scale: isSecondarySort() ? 0.6 : undefined})}
           />
         </div>
       </Match>

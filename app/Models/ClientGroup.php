@@ -7,12 +7,12 @@ use App\Exceptions\ExceptionFactory;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\ClientGroup\GroupClientResource;
 use App\Models\Enums\AttendanceType;
-use App\Models\QueryBuilders\ClientGroupBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\MemberExistsRule;
 use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,7 +22,7 @@ use Illuminate\Validation\Rule;
  * @property string $facility_id
  * @property string $notes
  * @property-read Collection<array-key, GroupClientResource> $groupClients
- * @method static ClientGroupBuilder query()
+ * @method static Builder<self> query()
  */
 class ClientGroup extends Model
 {

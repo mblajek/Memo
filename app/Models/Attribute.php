@@ -6,13 +6,13 @@ use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Enums\AttributeRequirementLevel;
 use App\Models\Enums\AttributeTable;
 use App\Models\Enums\AttributeType;
-use App\Models\QueryBuilders\AttributeBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasCache;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
 use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Config\TqDictDef;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rule;
 
@@ -28,7 +28,7 @@ use Illuminate\Validation\Rule;
  * @property bool $is_fixed
  * @property AttributeRequirementLevel $requirement_level
  * @property string $description
- * @method static AttributeBuilder query()
+ * @method static Builder<self> query()
  */
 class Attribute extends Model
 {
@@ -67,7 +67,7 @@ class Attribute extends Model
         return match ($field) {
             'facility_id' => Valid::uuid([Rule::exists('facilities', 'id')], nullable: true),
             'model' => Valid::trimmed(
-                [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))]
+                [Rule::in(array_map(fn(AttributeTable $table) => lcfirst($table->name), AttributeTable::cases()))],
             ),
             'name' => Valid::trimmed(),
             'api_name' => Valid::trimmed(['regex:/^[a-z][A-Za-z0-9]+$/']),
@@ -97,8 +97,8 @@ class Attribute extends Model
     ): array {
         $facility = ($facility === true) ? PermissionMiddleware::permissions()->facility : $facility;
         $facilityId = ($facility instanceof Facility) ? $facility->id : $facility;
-        return array_filter(self::getCacheAll(), fn(self $attribute) => //
-            ($facilityId === null || $attribute->facility_id === null || $attribute->facility_id === $facilityId)
+        return array_filter(self::getCacheAll(), fn(self $attribute)
+            => ($facilityId === null || $attribute->facility_id === null || $attribute->facility_id === $facilityId)
             && ($table === null || $attribute->getAttributeValue('table') === $table));
     }
 

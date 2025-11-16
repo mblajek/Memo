@@ -12,6 +12,7 @@ import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {SegmentedControl} from "components/ui/form/SegmentedControl";
 import {HideableSection} from "components/ui/HideableSection";
 import {actionIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {MODAL_STYLE_PRESETS} from "components/ui/Modal";
 import {scrollIntoView} from "components/ui/scroll_into_view";
 import {SearchInput} from "components/ui/SearchInput";
@@ -308,7 +309,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                         <div class="contents group">
                           <div
                             class="col-start-1 px-1 flex flex-col justify-center pe-1 group-hover:bg-hover"
-                            style={{"line-height": "1.1"}}
+                            {...style({"line-height": "1.1"})}
                           >
                             <ColumnName def={colProps.column} />
                           </div>
@@ -435,7 +436,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                       <>
                         <div
                           class="grid gap-x-3 gap-y-1 me-auto align-baseline"
-                          style={{"grid-template-columns": "auto auto auto 1fr"}}
+                          {...style({"grid-template-columns": "auto auto auto 1fr"})}
                         >
                           <For each={TABLE_SAVED_VIEW_PARTS}>{(part) => <SingleSel staticPartName={part} />}</For>
                         </div>
@@ -463,10 +464,10 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             >
                               <div
                                 class="max-h-full grid"
-                                style={{
+                                {...style({
                                   "grid-template-columns": "1fr auto auto var(--sb-size)",
                                   "grid-template-rows": "auto 1fr",
-                                }}
+                                })}
                               >
                                 <div class="col-span-full grid grid-cols-subgrid">
                                   <div />
@@ -755,7 +756,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
             />
           </div>
           <div class="grow overflow-y-auto -me-2">
-            <div class="me-2 max-w-md grid gap-1" style={{"grid-template-columns": "1fr auto"}}>
+            <div class="me-2 max-w-md grid gap-1" {...style({"grid-template-columns": "1fr auto"})}>
               <Index each={statesToShow()} fallback={<EmptyValueSymbol />}>
                 {(state) => {
                   const summary = createMemo(() =>
@@ -925,7 +926,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
               </Index>
             </div>
           </div>
-          <div class="max-w-md grid gap-x-1" style={{"grid-template-columns": "1fr min(6rem)"}}>
+          <div class="max-w-md grid gap-x-1" {...style({"grid-template-columns": "1fr min(6rem)"})}>
             <SearchInput
               placeholder={t("tables.saved_views.new_placeholder")}
               value={newName()}

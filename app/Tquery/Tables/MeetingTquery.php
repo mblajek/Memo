@@ -5,6 +5,7 @@ namespace App\Tquery\Tables;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
+use App\Models\UuidEnum\ClientAttributeUuidEnum;
 use App\Models\UuidEnum\DictionaryUuidEnum;
 use App\Models\UuidEnum\MeetingAttributeUuidEnum;
 use App\Tquery\Config\TqConfig;
@@ -95,16 +96,7 @@ readonly class MeetingTquery extends TqService
                 "`meeting_attendants` $attendantWhere",
                 "$attendanceName.*.attendance_status_dict_id",
             );
-            $config->addQuery(
-                TqDataTypeEnum::list,
-                fn(string $tableName) => //
-                    "select json_arrayagg(json_object('userId', `users`.`id`, 'name', `users`.`name`,"
-                    . "'attendanceTypeDictId', `meeting_attendants`.`attendance_type_dict_id`,"
-                    . "'attendanceStatusDictId', `meeting_attendants`.`attendance_status_dict_id`"
-                    . ")) from `meeting_attendants`"
-                    . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
-                $attendanceName,
-            );
+            $this->addAttendanceJsonColumn($config, $attendanceName, $attendanceType, $attendantWhere);
         }
 
         $resourceFromWhere = '`meeting_resources` where `meeting_resources`.`meeting_id` = `meetings`.`id`';
@@ -150,6 +142,43 @@ readonly class MeetingTquery extends TqService
 
         $config->addCount();
         return $config;
+    }
+
+    private function addAttendanceJsonColumn(
+        TqConfig $config,
+        string $attendanceName,
+        ?AttendanceType $attendanceType,
+        string $attendantWhere,
+    ): void {
+        $jsonFields = [
+            'userId' => '`users`.`id`',
+            'name' => '`users`.`name`',
+            'attendanceTypeDictId' => '`meeting_attendants`.`attendance_type_dict_id`',
+            'attendanceStatusDictId' => '`meeting_attendants`.`attendance_status_dict_id`',
+        ];
+        $from = "from `meeting_attendants` inner join `users` on `users`.`id` = `meeting_attendants`.`user_id`";
+
+        if ($attendanceType === AttendanceType::Client) {
+            $urgentNotesAttrId = ClientAttributeUuidEnum::UrgentNotes->value;
+            $jsonFields ['urgentNotes'] = "(select json_arrayagg(`string_value` order by `default_order`)"
+                . " from `values` where `object_id` = `clients`.`id` and `attribute_id` = '$urgentNotesAttrId')";
+            $from .= ' inner join `clients` on `clients`.`user_id` = `users`.`id`'
+                . ' and `clients`.`facility_id` = `meetings`.`facility_id`';
+        }
+
+        $jsonFields = array_map(
+            fn($name, $sql): string => "'$name', $sql",
+            array_keys($jsonFields),
+            array_values($jsonFields),
+        );
+        $jsonFields = implode(', ', $jsonFields);
+
+        $config->addQuery(
+            TqDataTypeEnum::list,
+            fn(string $tableName): string
+                => "select json_arrayagg(json_object($jsonFields)) $from $attendantWhere",
+            columnAlias: $attendanceName,
+        );
     }
 
     private function addConflictColumns(TqConfig $config): void
@@ -199,7 +228,6 @@ readonly class MeetingTquery extends TqService
             columnOrQuery: fn(string $tableName) => //
             "select IF(`meetings`.`date` > '$date', exists (select 1 from $fromSql), null)",
             columnAlias: 'resource_conflicts.exists',
-
         );
     }
 }

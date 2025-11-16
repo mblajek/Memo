@@ -1,5 +1,6 @@
 import {Button} from "components/ui/Button";
 import {actionIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {useCalendarFunctionContext} from "components/ui/meetings-calendar/calendar_modes";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {cx} from "components/utils/classnames";
@@ -55,10 +56,10 @@ export const AllDayArea = <C,>(allProps: Props<C>): JSX.Element => {
           <For each={blocks()}>{(block) => block.contentInAllDayArea?.(props.columnViewInfo)}</For>
           <div
             class="flex flex-col items-stretch gap-px"
-            style={{
+            {...style({
               // Match the margin of the hours area events.
               "margin-right": "11px",
-            }}
+            })}
           >
             <For each={events()}>
               {(event) => (

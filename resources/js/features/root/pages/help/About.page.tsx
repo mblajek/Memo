@@ -2,6 +2,7 @@ import {A} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {style} from "components/ui/inline_styles";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
 import {toggleDEV} from "components/utils/dev_mode";
 import {DATE_TIME_FORMAT} from "components/utils/formatting";
@@ -28,7 +29,7 @@ export default (() => {
         <Show when={systemStatusMonitor.lastStatus()}>
           {(status) => (
             <div class="flex flex-col gap-2 items-stretch">
-              <div class="grid gap-x-3 gap-y-1 self-start" style={{"grid-template-columns": "auto auto"}}>
+              <div class="grid gap-x-3 gap-y-1 self-start" {...style({"grid-template-columns": "auto auto"})}>
                 <label class="font-semibold">{t("about_page.app_version")}</label>
                 <div>
                   <FullAppVersion />

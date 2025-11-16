@@ -3,10 +3,10 @@
 namespace App\Models;
 
 use App\Models\Attributes\HasValues;
-use App\Models\QueryBuilders\DictionaryBuilder;
 use App\Models\Traits\BaseModel;
 use App\Models\Traits\HasValidator;
 use App\Rules\Valid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,7 +18,7 @@ use Illuminate\Validation\Rule;
  * @property bool $is_fixed
  * @property bool $is_extendable
  * @property-read Collection $positions
- * @method static DictionaryBuilder query()
+ * @method static Builder<self> query()
  */
 class Dictionary extends Model
 {

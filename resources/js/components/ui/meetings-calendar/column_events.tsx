@@ -1,7 +1,12 @@
 import {Boundary} from "@floating-ui/dom";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {RichTextView} from "components/ui/RichTextView";
+import {eventBlockAlertFrameClass} from "components/ui/calendar/calendar-columns/event_block_alert_frame";
+import {style} from "components/ui/inline_styles";
+import {cx} from "components/utils/classnames";
 import {crossesDateBoundaries} from "components/utils/day_minute_util";
+import {htmlAttributes} from "components/utils/html_attributes";
+import {useLangFunc} from "components/utils/lang";
 import {reactToWindowResize, useResizeObserver} from "components/utils/resize_observer";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {UserLink} from "features/facility-users/UserLink";
@@ -18,9 +23,6 @@ import {MeetingResourcesView} from "./MeetingResourcesView";
 import {TimeSpanSummary} from "./TimeSpanSummary";
 import {coloringToStyle} from "./colors";
 import {AttendantListItem} from "./meeting_details";
-import {useLangFunc} from "components/utils/lang";
-import {htmlAttributes} from "components/utils/html_attributes";
-import {cx} from "components/utils/classnames";
 
 interface CommonProps
   extends Pick<
@@ -56,7 +58,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
             {...htmlAttributes.merge(divProps, {
               class: cx(
                 "px-0.5 border rounded flex flex-col items-stretch min-h-0 cursor-pointer select-none relative",
-                meeting()["resourceConflicts.*.resourceDictId"].length ? "!border-l-4 !border-red-600" : undefined,
+                eventBlockAlertFrameClass(meeting()),
               ),
               style: {
                 height: `${props.height || DEFAULT_HEIGHT}px`,
@@ -139,7 +141,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                 "w-full h-full border rounded flex flex-col items-stretch cursor-pointer select-none",
                 crosses().fromPrevDay ? "border-t-0 rounded-t-none" : undefined,
                 crosses().toNextDay ? "border-b-0 rounded-b-none" : undefined,
-                meeting()["resourceConflicts.*.resourceDictId"].length ? "!border-l-4 !border-red-600" : undefined,
+                eventBlockAlertFrameClass(meeting()),
               ),
               style: coloringToStyle(contentsProps.coloring, {hover: contentsProps.hovered}),
             })}
@@ -150,7 +152,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
               }
             }}
           >
-            <div class="px-0.5 whitespace-nowrap" style={coloringToStyle(contentsProps.coloring, {part: "header"})}>
+            <div class="px-0.5 whitespace-nowrap" {...style(coloringToStyle(contentsProps.coloring, {part: "header"}))}>
               <TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />
             </div>
             <Show when={dictionaries()}>
@@ -158,7 +160,10 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                 <SeparatedSections
                   separator={(show) => (
                     <Show when={show()}>
-                      <hr class="-mx-1 my-px" style={coloringToStyle(contentsProps.coloring, {part: "separator"})} />
+                      <hr
+                        class="-mx-1 my-px"
+                        {...style(coloringToStyle(contentsProps.coloring, {part: "separator"}))}
+                      />
                     </Show>
                   )}
                 >

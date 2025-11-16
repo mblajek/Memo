@@ -5,6 +5,7 @@ namespace App\Tquery\Request;
 use App\Exceptions\FatalExceptionFactory;
 use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
+use App\Tquery\Config\TqDataTypeEnum;
 use App\Tquery\Engine\TqBuilder;
 
 readonly class TqRequestSort
@@ -18,9 +19,13 @@ readonly class TqRequestSort
         );
     }
 
-    public function applySort(TqBuilder $builder): void
+    public function applySort(TqBuilder $builder, string $collation): void
     {
-        $builder->orderBy($this->column->getSortQuery(), $this->desc);
+        $sortQuery = $this->column->getSortQuery();
+        if ($this->column->type->notNullBaseType() === TqDataTypeEnum::string) {
+            $sortQuery = "convert($sortQuery using utf8mb4) collate $collation";
+        }
+        $builder->orderBy($sortQuery, $this->desc);
     }
 
     private function __construct(

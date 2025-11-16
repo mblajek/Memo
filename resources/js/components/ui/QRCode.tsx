@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {shuffle} from "components/utils/object_util";
 import {NoDarkTheme} from "features/root/components/theme_control";
 import * as headlessQr from "headless-qr";
@@ -355,7 +356,7 @@ export const QRCode: VoidComponent<Props> = (props) => {
       <Show when={!rawMode() || !qrData()}>
         <img
           class="col-start-1 row-start-1 m-auto pointer-events-none"
-          style={{width: `${geom().logoSize}px`, height: `${geom().logoSize}px`}}
+          {...style({width: `${geom().logoSize}px`, height: `${geom().logoSize}px`})}
           src="/img/memo_logo_short.svg"
         />
       </Show>

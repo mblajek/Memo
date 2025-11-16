@@ -1,17 +1,17 @@
-import {activeFacilityId} from "state/activeFacilityId.state";
 import {V1} from "data-access/memo-api/config/v1.instance";
+import {activeFacilityId} from "state/activeFacilityId.state";
 import {SolidQueryOpts} from "../query_utils";
 import {ClientGroupResource, ClientGroupResourceForCreate} from "../resources/clientGroup.resource";
 import {Api} from "../types";
 import {ListInParam, createGetFromList, createListRequest, parseListResponse} from "../utils";
 
 export namespace FacilityClientGroup {
-  export const createClientGroup = (group: Api.Request.Create<ClientGroupResourceForCreate>, config?: Api.Config) =>
-    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/client-group`, group, config);
-  export const updateClientGroup = (group: Api.Request.Patch<ClientGroupResource>, config?: Api.Config) =>
-    V1.patch(`/facility/${activeFacilityId()}/client-group/${group.id}`, group, config);
-  export const deleteClientGroup = (groupId: string, config?: Api.Config) =>
-    V1.delete(`/facility/${activeFacilityId()}/client-group/${groupId}`, config);
+  export const createClientGroup = (group: Api.Request.Create<ClientGroupResourceForCreate>) =>
+    V1.post<Api.Response.Post>(`/facility/${activeFacilityId()}/client-group`, group);
+  export const updateClientGroup = (group: Api.Request.Patch<ClientGroupResource>) =>
+    V1.patch(`/facility/${activeFacilityId()}/client-group/${group.id}`, group);
+  export const deleteClientGroup = (groupId: string) =>
+    V1.delete(`/facility/${activeFacilityId()}/client-group/${groupId}`);
 
   const getClientGroupsListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<ClientGroupResource>>(`/facility/${activeFacilityId()}/client-group/list`, {

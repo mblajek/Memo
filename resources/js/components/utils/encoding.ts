@@ -9,6 +9,7 @@ export function compressingEncoder(): AsyncSerialiser<string> {
   const enc = new TextEncoder();
   const dec = new TextDecoder();
   // TODO: Use Uint8Array.toBase64 when available: https://caniuse.com/mdn-javascript_builtins_uint8array_tobase64
+  // TODO: Clean up the casts caused by typed array generic types.
   return {
     async serialise(value: string) {
       return Base64.fromUint8Array(
@@ -19,7 +20,9 @@ export function compressingEncoder(): AsyncSerialiser<string> {
     async deserialise(value: string) {
       return dec.decode(
         await readAll(
-          new Blob([Base64.toUint8Array(value)]).stream().pipeThrough(new DecompressionStream("deflate-raw")),
+          new Blob([Base64.toUint8Array(value) as Uint8Array<ArrayBuffer>])
+            .stream()
+            .pipeThrough(new DecompressionStream("deflate-raw")),
         ),
       );
     },
@@ -27,7 +30,7 @@ export function compressingEncoder(): AsyncSerialiser<string> {
   };
 }
 
-export async function readAll(stream: ReadableStream<Uint8Array>) {
+export async function readAll(stream: ReadableStream<Uint8Array<ArrayBuffer>>) {
   const chunks = [];
   for await (const chunk of stream) {
     chunks.push(chunk);

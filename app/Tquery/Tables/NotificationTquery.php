@@ -50,6 +50,7 @@ final readonly class NotificationTquery extends TqService
 
         $config->addJoined(TqDataTypeEnum::text_nullable, TqTableAliasEnum::error_log_entry, 'message', 'error_message');
 
+        $config->addCount();
         return $config;
     }
 }

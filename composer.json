@@ -10,20 +10,20 @@
         "ext-openssl": "*",
         "ext-pdo": "*",
         "ext-zip": "*",
-        "darkaonline/l5-swagger": "^8.6",
-        "laravel/framework": "^11.20",
-        "pragmarx/google2fa": "^8.0",
-        "spatie/laravel-csp": "^2.10"
+        "darkaonline/l5-swagger": "^9.0",
+        "laravel/framework": "^12.36",
+        "pragmarx/google2fa": "^9.0",
+        "spatie/laravel-csp": "^3.21"
     },
     "require-dev": {
         "ext-xdebug": "*",
-        "fakerphp/faker": "^1.23",
-        "laravel/pint": "^1.17",
-        "laravel/tinker": "^2.9",
+        "fakerphp/faker": "^1.24",
+        "laravel/pint": "^1.25",
+        "laravel/tinker": "^2.10",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.5",
-        "phpunit/phpunit": "^10.5",
-        "spatie/laravel-ignition": "^2.8"
+        "nunomaduro/collision": "^8.8",
+        "phpunit/phpunit": "^12.4",
+        "spatie/laravel-ignition": "^2.9"
     },
     "autoload": {
         "psr-4": {

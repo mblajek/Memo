@@ -23,16 +23,15 @@ export namespace Admin {
       queryKey: keys.facilityList(),
     }) satisfies SolidQueryOpts<readonly AdminFacilityResource[]>;
 
-  export const createFacility = (facility: Api.Request.Create<AdminFacilityResourceForCreate>, config?: Api.Config) =>
-    V1.post<Api.Response.Post>("/admin/facility", facility, config);
-  export const updateFacility = (facility: Api.Request.Patch<AdminFacilityResource>, config?: Api.Config) =>
-    V1.patch(`/admin/facility/${facility.id}`, facility, config);
+  export const createFacility = (facility: Api.Request.Create<AdminFacilityResourceForCreate>) =>
+    V1.post<Api.Response.Post>("/admin/facility", facility);
+  export const updateFacility = (facility: Api.Request.Patch<AdminFacilityResource>) =>
+    V1.patch(`/admin/facility/${facility.id}`, facility);
 
-  export const createUser = (user: AdminUserResourceForCreate, config?: Api.Config) =>
-    V1.post<Api.Response.Post>("/admin/user", user, config);
-  export const updateUser = (user: Api.Request.Patch<AdminUserResourceForPatch>, config?: Api.Config) =>
-    V1.patch(`/admin/user/${user.id}`, user, config);
-  export const deleteUser = (userId: Api.Id, config?: Api.Config) => V1.delete(`/admin/user/${userId}`, config);
+  export const createUser = (user: AdminUserResourceForCreate) => V1.post<Api.Response.Post>("/admin/user", user);
+  export const updateUser = (user: Api.Request.Patch<AdminUserResourceForPatch>) =>
+    V1.patch(`/admin/user/${user.id}`, user);
+  export const deleteUser = (userId: Api.Id) => V1.delete(`/admin/user/${userId}`);
 
   const getUsersListBase = (request?: Api.Request.GetListParams, config?: Api.Config) =>
     V1.get<Api.Response.GetList<AdminUserResource>>("/admin/user/list", {...config, params: request});
@@ -40,16 +39,14 @@ export namespace Admin {
     getUsersListBase(request, config).then(parseListResponse);
   const getUser = createGetFromList(getUsersListBase);
 
-  export const createMember = (member: Api.Request.Create<MemberResource>, config?: Api.Config) =>
-    V1.post("/admin/member", member, config);
-  export const updateMember = (member: Api.Request.Patch<MemberResource>, config?: Api.Config) =>
-    V1.patch(`/admin/member/${member.id}`, member, config);
-  export const deleteMember = (memberId: Api.Id, config?: Api.Config) => V1.delete(`/admin/member/${memberId}`, config);
+  export const createMember = (member: Api.Request.Create<MemberResource>) => V1.post("/admin/member", member);
+  export const updateMember = (member: Api.Request.Patch<MemberResource>) =>
+    V1.patch(`/admin/member/${member.id}`, member);
+  export const deleteMember = (memberId: Api.Id) => V1.delete(`/admin/member/${memberId}`);
 
-  export const createDbDump = (dump: {isFromRc: boolean}, config?: Api.Config) =>
-    V1.post("/admin/db-dump", dump, config);
-  export const restoreDbDump = (dump: {id: Api.Id; isToRc: boolean}, config?: Api.Config) =>
-    V1.post(`/admin/db-dump/${dump.id}/restore`, {isToRc: dump.isToRc}, config);
+  export const createDbDump = (dump: {isFromRc: boolean}) => V1.post("/admin/db-dump", dump);
+  export const restoreDbDump = (dump: {id: Api.Id; isToRc: boolean}) =>
+    V1.post(`/admin/db-dump/${dump.id}/restore`, {isToRc: dump.isToRc});
 
   export const keys = {
     user: () => [...Users.keys.user(), "admin"] as const,

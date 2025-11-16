@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use App\Models\QueryBuilders\MeetingResourceBuilder;
 use App\Models\Traits\BaseModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property string $meeting_id
  * @property string $resource_dict_id
- * @method static MeetingResourceBuilder query()
+ * @method static Builder<self> query()
  */
 class MeetingResource extends Model
 {

@@ -1,5 +1,6 @@
-import {Show, VoidComponent} from "solid-js";
-import {formatDayMinuteHM} from "./day_minute_util";
+import {DateTimeFormatOptions} from "luxon";
+import {createMemo, Show, VoidComponent} from "solid-js";
+import {formatDayMinuteHM, MAX_DAY_MINUTE} from "./day_minute_util";
 
 interface Props {
   readonly dayMinute: number;
@@ -7,11 +8,13 @@ interface Props {
 }
 
 export const AlignedTime: VoidComponent<Props> = (props) => {
-  const formatted = () => formatDayMinuteHM(props.dayMinute, props.seconds ? {second: "2-digit"} : undefined);
+  const format = (): DateTimeFormatOptions | undefined => (props.seconds ? {second: "2-digit"} : undefined);
+  const maxLen = createMemo(() => formatDayMinuteHM(MAX_DAY_MINUTE - 1, format()).length);
+  const formatted = createMemo(() => formatDayMinuteHM(props.dayMinute, format()));
   return (
     <span>
       <Show when={props.dayMinute < 10 * 60}>
-        <span class="invisible">0</span>
+        <span class="invisible">{"0".repeat(maxLen() - formatted().length)}</span>
       </Show>
       {formatted()}
     </span>

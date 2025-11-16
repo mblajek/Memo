@@ -6,6 +6,8 @@ use App\Tquery\Config\TqColumnConfig;
 use App\Tquery\Config\TqConfig;
 use App\Tquery\Request\TqRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Config;
 use stdClass;
 
 abstract readonly class TqService
@@ -41,8 +43,11 @@ abstract readonly class TqService
 
     public function query(Request $httpRequest): array
     {
-        $request = TqRequest::fromHttpRequest($this->config, $httpRequest);
-        $engine = new TqEngine($this->getBuilder(...), $request);
-        return $engine->run();
+        return new TqEngine(
+            getBuilder: $this->getBuilder(...),
+            request: TqRequest::fromHttpRequest($this->config, $httpRequest),
+            hasDebugMode: App::hasDebugModeEnabled(),
+            sortCollation: Config::string('app.db.sort_collation'),
+        )->run();
     }
 }

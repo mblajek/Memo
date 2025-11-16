@@ -12,6 +12,7 @@ interface SelectedClientData {
   readonly contactEmail: string | undefined;
   readonly notificationMethods: readonly string[];
   readonly groupIds: readonly string[];
+  readonly urgentNotes: readonly string[] | undefined;
 }
 
 export function useMeetingAttendantsClients() {
@@ -35,6 +36,7 @@ export function useMeetingAttendantsClients() {
           {type: "column", column: "client.contactEmail"},
           {type: "column", column: "client.notificationMethodDictIds"},
           {type: "column", column: "client.groups.*.id"},
+          {type: "column", column: "client.urgentNotes"},
         ],
         filter: reductor.reduce({type: "column", column: "id", op: "in", val: selectedClientIds()}),
         sort: [],
@@ -53,6 +55,7 @@ export function useMeetingAttendantsClients() {
       contactEmail: (client["client.contactEmail"] as string | null) || undefined,
       notificationMethods: (client["client.notificationMethodDictIds"] as readonly string[]) || [],
       groupIds: (client["client.groups.*.id"] as readonly string[]) || [],
+      urgentNotes: (client["client.urgentNotes"] as readonly string[]) || undefined,
     }));
   });
   return {meetingClients, selectedClientIds, selectedClientsDataQuery, selectedClients};

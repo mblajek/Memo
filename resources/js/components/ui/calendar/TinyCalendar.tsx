@@ -1,3 +1,4 @@
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
@@ -217,7 +218,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           />
         </Button>
       </div>
-      <div class="grid" style={{"grid-template-columns": "repeat(7, 1fr)"}}>
+      <div class="grid" {...style({"grid-template-columns": "repeat(7, 1fr)"})}>
         <Show when={props.showWeekdayNames}>
           <For each={getWeekdays()}>
             {({exampleDay, isWeekend}) => (
@@ -241,7 +242,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
               {...hoverEvents((hovered) => setHover(hovered ? di.day : undefined))}
             >
               <Show when={di.isToday}>
-                <div class="absolute w-full h-full border-2 border-red-700" style={{"border-radius": "100%"}} />
+                <div class="absolute w-full h-full border-2 border-red-700" {...style({"border-radius": "100%"})} />
               </Show>
               <div
                 class={cx("w-full h-full px-1.5 pt-[3px] pb-px", rangeClasses(di.day, props.selection, "bg-select"))}

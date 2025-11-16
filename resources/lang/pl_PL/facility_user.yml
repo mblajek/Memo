@@ -51,6 +51,9 @@ client_groups:
   clients_count__few: "{{count, number}} członków"
   clients_count__many: "{{count, number}} członków"
 
+client_urgent_notes:
+  info: "To są pilne uwagi dotyczące klienta, wyświetlane przy każdym jego spotkaniu. Edytuj dane klienta aby je zmienić lub usunąć."
+
 weekly_time_tables:
   reset_dates: "Ustaw domyślny zakres dat"
   weekday_active_checkbox: "Akcje zostaną wykonane tylko na zaznaczonych dniach tygodnia.\nKliknij podwójnie aby zaznaczyć tylko ten dzień tygodnia."

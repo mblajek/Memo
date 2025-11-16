@@ -1,4 +1,5 @@
 import {Boundary, flip, shift} from "@floating-ui/dom";
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {delayedAccessor} from "components/utils/debounce";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -121,10 +122,10 @@ export const HoverableMeetingEventBlock: VoidComponent<HoverableMeetingEventBloc
         <Show when={dictionaries() && props.hoverCard && floatVisible()}>
           <div
             class={cx("pointer-events-none z-modal overflow-clip max-w-fit", shouldShow() ? undefined : "opacity-0")}
-            style={{
+            {...style({
               transition: `opacity ${DISAPPEAR_MILLIS}ms ease`,
               ...posStyle(),
-            }}
+            })}
           >
             {props.hoverCard!(() => setFloatHovered(true))}
           </div>

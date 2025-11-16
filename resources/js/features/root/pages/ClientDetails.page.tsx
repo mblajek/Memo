@@ -8,6 +8,7 @@ import {Capitalize} from "components/ui/Capitalize";
 import {HideableSection} from "components/ui/HideableSection";
 import {BigSpinner} from "components/ui/Spinner";
 import {StaticCSVExportButton} from "components/ui/StaticCSVExportButton";
+import {UrgentNotes} from "components/ui/UrgentNotes";
 import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {ATTRIBUTES_SCHEMA} from "components/ui/form/AttributeFields";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
@@ -16,6 +17,7 @@ import {TextField} from "components/ui/form/TextField";
 import {createAttributesProcessor} from "components/ui/form/attributes_processor";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
 import {actionIcons} from "components/ui/icons";
+import {style} from "components/ui/inline_styles";
 import {EM_DASH} from "components/ui/symbols";
 import {Autofocus} from "components/utils/Autofocus";
 import {notFoundError} from "components/utils/NotFoundError";
@@ -23,6 +25,7 @@ import {QueryBarrier} from "components/utils/QueryBarrier";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
 import {toastSuccess} from "components/utils/toast";
+import {makeAttributable, readAttribute} from "data-access/memo-api/attributable";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {User} from "data-access/memo-api/groups/User";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -96,14 +99,16 @@ export default (() => {
       <QueryBarrier queries={[dataQuery]} ignoreCachedData {...notFoundError()}>
         <Show when={dataQuery.data} fallback={<BigSpinner />}>
           {(user) => {
+            const client = createMemo(() => makeAttributable(user().client, "client"));
             const [selectedGroupId, setSelectedGroupId] = createSignal<string>();
             const noGroupMeetingsCount = useClientWithNoGroupMeetingsCount(() =>
-              user().client.groupIds?.length ? userId() : undefined,
+              client().groupIds?.length ? userId() : undefined,
             );
+            const urgentNotes = createMemo(() => readAttribute<readonly string[]>(client(), "urgentNotes"));
             onMount(() => {
               createComputed(() => {
                 if (
-                  !user().client.groupIds?.length ||
+                  !client().groupIds?.length ||
                   !selectedGroupId() ||
                   (meetingTablesMode() === "clientNoClientGroup" && !noGroupMeetingsCount())
                 ) {
@@ -134,6 +139,7 @@ export default (() => {
                 toastSuccess(t("forms.client_edit.success"));
                 setEditMode(false);
                 invalidate.users();
+                invalidate.facility.meetings();
               };
             }
 
@@ -145,14 +151,25 @@ export default (() => {
                     type="clients"
                     user={{
                       ...user(),
-                      createdAt: user().client.createdAt,
-                      createdBy: user().client.createdBy,
-                      updatedAt: user().client.updatedAt,
-                      updatedBy: user().client.updatedBy,
+                      createdAt: client().createdAt,
+                      createdBy: client().createdBy,
+                      updatedAt: client().updatedAt,
+                      updatedBy: client().updatedBy,
                     }}
                   />
+                  <Show when={urgentNotes()?.length}>
+                    <UrgentNotes
+                      class={editMode() ? "cursor-pointer" : undefined}
+                      notes={urgentNotes()}
+                      onClick={() => {
+                        if (editMode()) {
+                          document.getElementById("client.urgentNotes.0.__wrapped_value")?.focus();
+                        }
+                      }}
+                    />
+                  </Show>
                   <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
-                    <div style={{"min-width": "400px", "flex-basis": "600px"}}>
+                    <div {...style({"min-width": "400px", "flex-basis": "600px"})}>
                       <FelteForm
                         id="client_edit"
                         translationsFormNames={["client_edit", "client", "facility_user"]}
@@ -180,10 +197,14 @@ export default (() => {
                           return (
                             <>
                               <Autofocus autofocus={editMode()}>
-                                <HideableSection show={editMode() && user().managedByFacilityId === activeFacilityId()}>
-                                  {({show}) => <TextField name="name" autofocus disabled={!show()} />}
-                                </HideableSection>
-                                <ClientFields editMode={editMode()} client={user()} />
+                                <div class="flex flex-col">
+                                  <HideableSection
+                                    show={editMode() && user().managedByFacilityId === activeFacilityId()}
+                                  >
+                                    {({show}) => <TextField class="mb-4" name="name" autofocus disabled={!show()} />}
+                                  </HideableSection>
+                                  <ClientFields editMode={editMode()} client={user()} />
+                                </div>
                               </Autofocus>
                               <Switch>
                                 <Match when={editMode()}>
@@ -225,7 +246,7 @@ export default (() => {
                         }}
                       </FelteForm>
                     </div>
-                    <div class={hiddenInEditModeClass()} style={{"min-width": "400px", "flex-basis": "800px"}}>
+                    <div class={hiddenInEditModeClass()} {...style({"min-width": "400px", "flex-basis": "800px"})}>
                       <ClientGroups
                         client={user()}
                         onGroupChange={(group) => setSelectedGroupId(group?.id)}
@@ -240,7 +261,7 @@ export default (() => {
                         <StandaloneFieldLabel>
                           <Capitalize text={t("models.meeting._name_plural")} />
                         </StandaloneFieldLabel>
-                        <Show when={user().client.groupIds?.length}>
+                        <Show when={client().groupIds?.length}>
                           {(_) => {
                             const items = createMemo(() => [
                               {

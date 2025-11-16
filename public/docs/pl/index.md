@@ -20,6 +20,7 @@
 - `$icon(clientIcons.Client)` Klienci
   - [Grupy klientów](client-groups)
   - [Usuwanie klientów](client-delete)
+  - [$t(models.client.urgentNotes|cap)](client-urgent-notes)
 - Spotkania
   - [Statusy](meeting-statuses)
   - [Kontekst — grupy klientów](meeting-client-groups)

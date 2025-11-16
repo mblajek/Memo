@@ -3,6 +3,8 @@ import I18NextHttpBackend from "i18next-http-backend";
 import intervalPlural from "i18next-intervalplural-postprocessor";
 import {createSignal} from "solid-js";
 
+export const TESTING_LANGUAGE = "testing";
+
 const [getTranslationsVersion, setTranslationsVersion] = createSignal(0);
 
 /**

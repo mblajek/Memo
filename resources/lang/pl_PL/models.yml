@@ -115,6 +115,7 @@ staff:
 client:
   _name: "klient"
   _name_plural: "klienci"
+  urgentNotes: "pilne uwagi"
   shortCode: "nr klienta"
   client:
     shortCode: "$t(models.client.shortCode)"
@@ -169,7 +170,7 @@ notification:
   _name: "powiadomienie"
   _name_plural: "powiadomienia"
   scheduledAt: "termin wysłania"
-  service: "serwis"
+  service: "usługa"
   errorMessage: "komunikat błędu"
   user.id: "adresat"
   address: "adres"

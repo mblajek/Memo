@@ -14,8 +14,11 @@ interface Props {
 interface Tab {
   readonly id: string;
   readonly label: JSX.Element;
-  /** The contents of the tab. This function is called immediately and only once for every tab. */
-  readonly contents: (isActive: Accessor<boolean>) => JSX.Element;
+  /**
+   * The contents of the tab. This function is called immediately and only once for every tab.
+   * It might be omitted if the tab should only act as a header.
+   */
+  readonly contents?: (isActive: Accessor<boolean>) => JSX.Element;
 }
 
 export const Tabs: VoidComponent<Props> = (props) => {
@@ -82,7 +85,7 @@ export const Tabs: VoidComponent<Props> = (props) => {
               timeMs: 0,
               outputImmediately: (active) => active,
             });
-            return <div class={cx(isActive() ? undefined : "hidden")}>{tab.contents(isActive)}</div>;
+            return <div class={isActive() ? undefined : "hidden"}>{tab.contents?.(isActive)}</div>;
           }}
         </For>
       </div>

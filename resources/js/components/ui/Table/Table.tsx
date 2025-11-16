@@ -14,6 +14,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {style} from "components/ui/inline_styles";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {getColumns} from "components/ui/Table/columns_iterator";
 import {useTableCells} from "components/ui/Table/table_cells";
@@ -239,11 +240,15 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
   // to it when no scrolling is taking place at the moment.
   const [scrollingWrapper, setScrollingWrapper] = createSignal<HTMLDivElement>();
   const [lastScrollTimestamp, setLastScrollTimestamp] = createSignal(0);
-  // Whether the table is currently scrolling. This is true after setting lastScrollTimestamp to 0
-  // in onScrollEnd, but also after enough time is elapsed since the last onScroll event, because in some
-  // situations the onScrollEnd event is not reliable, and we don't want to get stuck thinking the table
-  // is still scrolling when it's not.
+  /**
+   * Whether the table is currently scrolling. This is true after setting lastScrollTimestamp to 0
+   * in onScrollEnd, but also after enough time is elapsed since the last onScroll event, because in some
+   * situations the onScrollEnd event is not reliable, and we don't want to get stuck thinking the table
+   * is still scrolling when it's not.
+   */
   const isScrolling = createMemo(() => currentTimeSecond().toMillis() - lastScrollTimestamp() < 100);
+  // eslint-disable-next-line solid/reactivity
+  const isHorizScrollingState = delayedAccessor(isScrolling, {timeMs: 250, outputImmediately: (v) => v});
   const [desiredScrollX, setDesiredScrollX] = createSignal<number>();
   createEffect(
     on(
@@ -297,7 +302,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
             >
               <div ref={scrollToTopElement} class={s.scrollToTopElement}>
                 <div class={s.tableBg}>
-                  <div class={s.table} style={{"grid-template-columns": gridTemplateColumns()}}>
+                  <div class={s.table} {...style({"grid-template-columns": gridTemplateColumns()})}>
                     <div
                       on:wheel={{
                         handleEvent: (e) => {
@@ -308,6 +313,17 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
                           }
                           const scrWrapper = scrollingWrapper();
                           if (scrWrapper && !e.shiftKey && e.deltaY) {
+                            if (!isHorizScrollingState()) {
+                              // Don't scroll horizontally if there is a vertically scrollable target.
+                              let elem = e.target as HTMLElement | null;
+                              while (elem && elem !== e.currentTarget) {
+                                if (elem.scrollHeight > elem.clientHeight) {
+                                  // Allow the default scrolling.
+                                  return;
+                                }
+                                elem = elem.parentElement;
+                              }
+                            }
                             setDesiredScrollX((l = scrWrapper.scrollLeft) =>
                               Math.min(Math.max(l + e.deltaY, 0), scrWrapper.scrollWidth - scrWrapper.clientWidth),
                             );

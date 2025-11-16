@@ -514,10 +514,33 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
       },
       columnGroups: true,
     },
+    notifications: {
+      name: "attendant.notifications.*.notificationMethodDictId",
+      columnDef: {
+        size: 200,
+      },
+      initialVisible: false,
+    },
   } satisfies Partial<Record<string, PartialColumnConfig<TQMeetingAttendanceResource>>>;
+  const foreign = {
+    meetingId: {
+      name: "meetingId",
+      columnDef: {
+        cell: cellFunc((props) => (
+          <PaddedCell>
+            <ShowCellVal v={props.v as string | undefined}>
+              {(v) => <DetailsButton class="minimal" meetingId={v()} />}
+            </ShowCellVal>
+          </PaddedCell>
+        )),
+        size: 150,
+      },
+    },
+  } satisfies Partial<Record<string, PartialColumnConfig<{readonly meetingId: string}>>>;
   return {
     meeting: createTableColumnsSet(meetingColumns),
     attendant: createTableColumnsSet(attendantsColumns),
+    foreign: createTableColumnsSet(foreign),
   };
 }
 

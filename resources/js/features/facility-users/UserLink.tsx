@@ -1,8 +1,9 @@
 import {AnchorProps} from "@solidjs/router";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {LinkWithNewTabLink} from "components/ui/LinkWithNewTabLink";
 import {SmallSpinner} from "components/ui/Spinner";
 import {adminIcons, clientIcons, staffIcons} from "components/ui/icons";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
 import {useInvalidator} from "data-access/memo-api/invalidator";
@@ -100,17 +101,17 @@ export const UserLink: VoidComponent<Props> = (allProps) => {
     }
   };
   return (
-    <Show when={props.userId} fallback={<EmptyValueSymbol class="inline-block" style={{"min-height": "1.45em"}} />}>
+    <Show when={props.userId} fallback={<EmptyValueSymbol class="inline-block" {...style({"min-height": "1.45em"})} />}>
       {/* Allow wrapping the name, but not just after the icon. */}
       <span
         class="inline-block whitespace-nowrap text-black"
-        style={{"min-height": icon() === true ? "1.45em" : undefined}}
+        {...style({"min-height": icon() === true ? "1.45em" : undefined})}
       >
         {typeIcon()}
         <Show when={props.showName ?? true}>
           <span
             class={isInactive() ? "text-grey-text" : undefined}
-            style={{"white-space": (props.allowWrap ?? true) ? "initial" : undefined}}
+            {...style({"white-space": (props.allowWrap ?? true) ? "initial" : undefined})}
           >
             <Switch>
               <Match when={activeFacility() && memberData()?.name}>
