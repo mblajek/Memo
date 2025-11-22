@@ -51,7 +51,7 @@
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "autoprefixer": "^10.4.21",
-    "axios": "^1.12.2",
+    "axios": "^1.13.1",
     "bowser": "^2.12.1",
     "classnames": "^2.5.1",
     "eslint-config-prettier": "^10.1.8",
