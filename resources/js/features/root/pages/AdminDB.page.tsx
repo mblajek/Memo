@@ -24,10 +24,10 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
-import {Component, createEffect, createSignal, getOwner, runWithOwner, Show} from "solid-js";
+import {Component, createEffect, createSignal, getOwner, runWithOwner, Show, untrack} from "solid-js";
 
 const PENDING_INVALIDATE_INTERVAL_MS = 5000;
-const NO_PENDING_INVALIDATE_AFTER_SECS = 65;
+const NO_PENDING_INVALIDATE_AFTER_SECS = 5 * 60;
 
 export default (() => {
   const t = useLangFunc();
@@ -173,12 +173,14 @@ export default (() => {
           columnDef: {
             cell: (c) => {
               // A somewhat ugly way to refresh the pending operations periodically.
-              if (c.row.original.createStatus === "pending" || c.row.original.lastRestoreStatus === "pending") {
-                const updatedAt = DateTime.fromISO(c.row.original.updatedAt);
-                if (currentTimeSecond().diff(updatedAt, "seconds").seconds <= NO_PENDING_INVALIDATE_AFTER_SECS) {
-                  timeout.set(() => invalidate.dbDumps(), PENDING_INVALIDATE_INTERVAL_MS);
+              untrack(() => {
+                if (c.row.original.createStatus === "pending" || c.row.original.lastRestoreStatus === "pending") {
+                  const updatedAt = DateTime.fromISO(c.row.original.updatedAt);
+                  if (currentTimeSecond().diff(updatedAt, "seconds").seconds <= NO_PENDING_INVALIDATE_AFTER_SECS) {
+                    timeout.set(() => invalidate.dbDumps(), PENDING_INVALIDATE_INTERVAL_MS);
+                  }
                 }
-              }
+              });
               return (
                 <PaddedCell>
                   <Show when={c.row.original.createStatus === "ok"} fallback={<EmptyValueSymbol />}>
