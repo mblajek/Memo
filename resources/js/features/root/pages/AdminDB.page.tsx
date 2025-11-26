@@ -212,6 +212,7 @@ export default (() => {
       }
       // Fields needed by the data handler.
       extraDataColumns={["createStatus", "lastRestoreStatus", "updatedAt"]}
+      savedViews
       dataHandler={({table}) => {
         // Refresh data periodically if there are pending operations.
         createEffect(
