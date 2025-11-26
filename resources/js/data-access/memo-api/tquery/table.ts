@@ -95,6 +95,7 @@ const DEFAULT_PAGE_SIZE = 50;
  */
 export function createTableRequestCreator({
   columnsConfig,
+  extraDataColumns,
   columnGroups,
   intrinsicFilter = () => undefined,
   intrinsicSort = () => undefined,
@@ -104,6 +105,7 @@ export function createTableRequestCreator({
   ...partialFuzzyGlobalFilterConfig
 }: {
   columnsConfig: Accessor<readonly ColumnConfig[]>;
+  extraDataColumns?: Accessor<readonly ColumnName[] | undefined>;
   columnGroups?: Accessor<readonly ColumnGroup[] | undefined>;
   intrinsicFilter?: Accessor<FilterH | undefined>;
   intrinsicSort?: Accessor<Sort | undefined>;
@@ -255,7 +257,7 @@ export function createTableRequestCreator({
           }
         }
       }
-      const dataColumns = new Set<string>();
+      const dataColumns = new Set<string>(extraDataColumns?.());
       for (const tableColumn of tableColumns) {
         const {name, isDataColumn, extraDataColumns} = columnsConfigByName().get(tableColumn)!;
         if (isDataColumn) {

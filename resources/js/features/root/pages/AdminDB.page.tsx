@@ -24,7 +24,7 @@ import {useInvalidator} from "data-access/memo-api/invalidator";
 import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
-import {Component, createEffect, createSignal, getOwner, runWithOwner, Show, untrack} from "solid-js";
+import {Component, createEffect, createSignal, getOwner, on, runWithOwner, Show} from "solid-js";
 
 const PENDING_INVALIDATE_INTERVAL_MS = 5000;
 const NO_PENDING_INVALIDATE_AFTER_SECS = 5 * 60;
@@ -134,6 +134,7 @@ export default (() => {
     readonly isFromRc: boolean;
     readonly fromEnv: string;
     readonly createdAt: string;
+    readonly createStatus: string;
   }
 
   return (
@@ -169,28 +170,18 @@ export default (() => {
         {
           name: "actions",
           isDataColumn: false,
-          extraDataColumns: ["id", "createStatus", "lastRestoreStatus", "isFromRc", "fromEnv", "updatedAt"],
+          // Fields of DumpInfo.
+          extraDataColumns: ["id", "isFromRc", "fromEnv", "createdAt", "createStatus"],
           columnDef: {
-            cell: (c) => {
-              // A somewhat ugly way to refresh the pending operations periodically.
-              untrack(() => {
-                if (c.row.original.createStatus === "pending" || c.row.original.lastRestoreStatus === "pending") {
-                  const updatedAt = DateTime.fromISO(c.row.original.updatedAt);
-                  if (currentTimeSecond().diff(updatedAt, "seconds").seconds <= NO_PENDING_INVALIDATE_AFTER_SECS) {
-                    timeout.set(() => invalidate.dbDumps(), PENDING_INVALIDATE_INTERVAL_MS);
-                  }
-                }
-              });
-              return (
-                <PaddedCell>
-                  <Show when={c.row.original.createStatus === "ok"} fallback={<EmptyValueSymbol />}>
-                    <Button class="minimal" onClick={() => void confirmAndRestore(c.row.original)}>
-                      <actionIcons.DB class="inlineIcon" /> {t("actions.db_dump.restore")}
-                    </Button>
-                  </Show>
-                </PaddedCell>
-              );
-            },
+            cell: (c) => (
+              <PaddedCell>
+                <Show when={c.row.original.createStatus === "ok"} fallback={<EmptyValueSymbol />}>
+                  <Button class="minimal" onClick={() => void confirmAndRestore(c.row.original)}>
+                    <actionIcons.DB class="inlineIcon" /> {t("actions.db_dump.restore")}
+                  </Button>
+                </Show>
+              </PaddedCell>
+            ),
             enableSorting: false,
             enableHiding: false,
             ...AUTO_SIZE_COLUMN_DEFS,
@@ -219,6 +210,27 @@ export default (() => {
           </PopOver>
         </div>
       }
+      // Fields needed by the data handler.
+      extraDataColumns={["createStatus", "lastRestoreStatus", "updatedAt"]}
+      dataHandler={({table}) => {
+        // Refresh data periodically if there are pending operations.
+        createEffect(
+          on(
+            () => table.getRowModel().rows,
+            (rows) => {
+              for (const row of rows) {
+                if (row.original.createStatus === "pending" || row.original.lastRestoreStatus === "pending") {
+                  const updatedAt = DateTime.fromISO(row.original.updatedAt as string);
+                  if (currentTimeSecond().diff(updatedAt, "seconds").seconds <= NO_PENDING_INVALIDATE_AFTER_SECS) {
+                    timeout.set(() => invalidate.dbDumps(), PENDING_INVALIDATE_INTERVAL_MS);
+                    return;
+                  }
+                }
+              }
+            },
+          ),
+        );
+      }}
     />
   );
 }) satisfies Component;
