@@ -1,5 +1,6 @@
 import {Capitalize} from "components/ui/Capitalize";
 import {EM_DASH} from "components/ui/symbols";
+import {getUrgentNotesData} from "components/ui/urgent_notes";
 import {UrgentNotes} from "components/ui/UrgentNotes";
 import {useLangFunc} from "components/utils/lang";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
@@ -27,11 +28,9 @@ export const AttendantListItem: VoidComponent<AttendantListItemProps> = (props) 
           {EM_DASH} <MeetingAttendanceStatus attendanceStatusId={props.attendant.attendanceStatusDictId} />
         </span>
       </Show>
-      <UrgentNotes
-        class="ms-4"
-        notes={(props.showUrgentNotes && props.attendant.urgentNotes) || undefined}
-        showInfoIcon={false}
-      />
+      <Show when={props.showUrgentNotes}>
+        <UrgentNotes class="ms-4" notes={getUrgentNotesData(props.attendant.urgentNotes)} showInfoIcon={false} />
+      </Show>
     </li>
   );
 };

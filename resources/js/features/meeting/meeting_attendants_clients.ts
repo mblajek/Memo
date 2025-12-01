@@ -1,4 +1,5 @@
 import {useFormContext} from "components/felte-form/FelteForm";
+import {UrgentNoteData, getUrgentNotesData} from "components/ui/urgent_notes";
 import {FacilityClient} from "data-access/memo-api/groups/FacilityClient";
 import {FilterReductor} from "data-access/memo-api/tquery/filter_utils";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
@@ -12,7 +13,7 @@ interface SelectedClientData {
   readonly contactEmail: string | undefined;
   readonly notificationMethods: readonly string[];
   readonly groupIds: readonly string[];
-  readonly urgentNotes: readonly string[] | undefined;
+  readonly urgentNotes: readonly UrgentNoteData[];
 }
 
 export function useMeetingAttendantsClients() {
@@ -55,7 +56,7 @@ export function useMeetingAttendantsClients() {
       contactEmail: (client["client.contactEmail"] as string | null) || undefined,
       notificationMethods: (client["client.notificationMethodDictIds"] as readonly string[]) || [],
       groupIds: (client["client.groups.*.id"] as readonly string[]) || [],
-      urgentNotes: (client["client.urgentNotes"] as readonly string[]) || undefined,
+      urgentNotes: getUrgentNotesData(client["client.urgentNotes"] as readonly string[]),
     }));
   });
   return {meetingClients, selectedClientIds, selectedClientsDataQuery, selectedClients};

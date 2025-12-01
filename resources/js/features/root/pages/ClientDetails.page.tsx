@@ -19,6 +19,7 @@ import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirm
 import {actionIcons} from "components/ui/icons";
 import {style} from "components/ui/inline_styles";
 import {EM_DASH} from "components/ui/symbols";
+import {getUrgentNotesData} from "components/ui/urgent_notes";
 import {Autofocus} from "components/utils/Autofocus";
 import {notFoundError} from "components/utils/NotFoundError";
 import {QueryBarrier} from "components/utils/QueryBarrier";
@@ -104,7 +105,9 @@ export default (() => {
             const noGroupMeetingsCount = useClientWithNoGroupMeetingsCount(() =>
               client().groupIds?.length ? userId() : undefined,
             );
-            const urgentNotes = createMemo(() => readAttribute<readonly string[]>(client(), "urgentNotes"));
+            const urgentNotes = createMemo(() =>
+              getUrgentNotesData(readAttribute<readonly string[]>(client(), "urgentNotes")),
+            );
             onMount(() => {
               createComputed(() => {
                 if (
@@ -157,7 +160,7 @@ export default (() => {
                       updatedBy: client().updatedBy,
                     }}
                   />
-                  <Show when={urgentNotes()?.length}>
+                  <Show when={urgentNotes().length}>
                     <UrgentNotes
                       class={editMode() ? "cursor-pointer" : undefined}
                       notes={urgentNotes()}
