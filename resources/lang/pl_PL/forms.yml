@@ -42,6 +42,7 @@ user_edit:
   field_names:
     # Alternative to "password", if the password is changed:
     newPassword: "Nowe hasło"
+  email_not_verified_info: "Użytkownik z niezweryfikowanym adresem e-mail nie ma dostępu do żadnych danych w systemie."
   password_empty_to_leave_unchanged: "Puste $t(em_dash) brak zmiany hasła"
   global_admin_requires_password: "Globalny administrator musi posiadać hasło (być użytkownikiem Memo)"
   has_password_requires_email: "Użytkownik Memo musi posiadać adres e-mail"
