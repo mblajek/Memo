@@ -1,4 +1,4 @@
-import {InfoIcon} from "components/ui/InfoIcon";
+import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {title} from "components/ui/title";
 import {URGENT_NOTE_LOW_PRIORITY_PREFIX, UrgentNoteData} from "components/ui/urgent_notes";
 import {cx} from "components/utils/classnames";
@@ -40,7 +40,7 @@ export const UrgentNotes: VoidComponent<Props> = (allProps) => {
           )}
         </For>
         <Show when={props.showInfoIcon ?? true}>
-          <InfoIcon title={t("facility_user.client_urgent_notes.info")} />
+          <DocsModalInfoIcon href="/help/client-urgent-notes" title={t("facility_user.client_urgent_notes.info")} />
         </Show>
       </div>
     </Show>
