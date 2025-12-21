@@ -115,7 +115,7 @@ staff:
 client:
   _name: "klient"
   _name_plural: "klienci"
-  urgentNotes: "pilne uwagi"
+  urgentNotes: "uwagi"
   shortCode: "nr klienta"
   client:
     shortCode: "$t(models.client.shortCode)"

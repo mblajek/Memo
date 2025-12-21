@@ -17,6 +17,7 @@ import {actionIcons, clientGroupIcons} from "components/ui/icons";
 import {style} from "components/ui/inline_styles";
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {title} from "components/ui/title";
+import {getUrgentNotesData} from "components/ui/urgent_notes";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
@@ -457,10 +458,12 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
               if (props.name !== "clients") {
                 return undefined;
               }
-              return (
-                selectedClient()?.urgentNotes ||
-                props.meeting?.clientsExtraInfo?.find((client) => client.userId === userId())?.urgentNotes ||
-                undefined
+              const selectedClientUrgentNotes = selectedClient()?.urgentNotes;
+              if (selectedClientUrgentNotes) {
+                return selectedClientUrgentNotes;
+              }
+              return getUrgentNotesData(
+                props.meeting?.clientsExtraInfo?.find((client) => client.userId === userId())?.urgentNotes,
               );
             });
             const priorityQueryParams = createMemo(() =>
@@ -669,7 +672,7 @@ export const MeetingAttendantsFields: VoidComponent<Props> = (props) => {
                   </div>
                   <Show when={props.name === "clients"}>
                     <HideableSection class="col-span-full" show={userId() && clientUrgentNotes()?.length}>
-                      <UrgentNotes class="ml-6 mt-px mb-1" notes={clientUrgentNotes()} showInfoIcon />
+                      <UrgentNotes class="ml-6 mt-px mb-1" notes={clientUrgentNotes()!} showInfoIcon />
                     </HideableSection>
                     <HideableSection
                       class="col-span-full"

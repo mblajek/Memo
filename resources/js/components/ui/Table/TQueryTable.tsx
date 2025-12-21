@@ -54,6 +54,7 @@ import {
 } from "data-access/memo-api/tquery/table";
 import {createTQuery} from "data-access/memo-api/tquery/tquery";
 import {
+  ColumnName,
   ColumnType,
   DataColumnSchema,
   DataItem,
@@ -181,6 +182,7 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly nonBlocking?: boolean;
   /** The definition of the columns in the table, in their correct order. */
   readonly columns: readonly PartialColumnConfigEntry<TData>[];
+  readonly extraDataColumns?: readonly ColumnName[];
   readonly columnGroups?: ColumnGroupsSelection;
   /**
    * The filter that is always applied to the data, regardless of other filtering.
@@ -201,6 +203,7 @@ export interface TQueryTableProps<TData = DataItem> {
   readonly pageInfo?: DocsModalProps;
   /** Whether to allow saving table views. */
   readonly savedViews?: boolean;
+  readonly dataHandler?: (data: {dataQuery: UseQueryResult<DataResponse>; table: SolidTable<DataItem>}) => void;
 }
 
 export interface PartialColumnConfig<TData = DataItem> {
@@ -436,6 +439,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
   };
   const requestCreator = createTableRequestCreator({
     columnsConfig,
+    extraDataColumns: () => props.extraDataColumns,
     columnGroups,
     intrinsicFilter: () => props.intrinsicFilter,
     intrinsicSort: () => props.intrinsicSort,
@@ -887,6 +891,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         };
       });
       onCleanup(() => delete (window as WindowWithTQueryDataAccess).tquery);
+    }
+  });
+
+  createEffect(() => {
+    const tableValue = table();
+    if (tableValue) {
+      props.dataHandler?.({dataQuery, table: tableValue});
     }
   });
 

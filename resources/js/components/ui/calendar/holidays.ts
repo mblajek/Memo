@@ -36,6 +36,7 @@ export const SIMPLE_HOLIDAYS = [
   "2025-08-15", // Assumption of Mary
   "2025-11-01", // All Saints' Day
   "2025-11-11", // Independence Day
+  "2025-12-24", // Christmas Eve
   "2025-12-25", // Christmas Day
   "2025-12-26", // Second Day of Christmas
   "2026-01-01", // New Year's Day
@@ -48,6 +49,7 @@ export const SIMPLE_HOLIDAYS = [
   "2026-08-15", // Assumption of Mary
   "2026-11-01", // All Saints' Day
   "2026-11-11", // Independence Day
+  "2026-12-24", // Christmas Eve
   "2026-12-25", // Christmas Day
   "2026-12-26", // Second Day of Christmas
   "2027-01-01", // New Year's Day
@@ -60,6 +62,7 @@ export const SIMPLE_HOLIDAYS = [
   "2027-08-15", // Assumption of Mary
   "2027-11-01", // All Saints' Day
   "2027-11-11", // Independence Day
+  "2027-12-24", // Christmas Eve
   "2027-12-25", // Christmas Day
   "2027-12-26", // Second Day of Christmas
 ];

@@ -1,27 +1,35 @@
 {
   "version": "5",
   "specifiers": {
-    "jsr:@std/fs@*": "1.0.14",
-    "jsr:@std/path@*": "1.0.8",
-    "jsr:@std/path@^1.0.8": "1.0.8"
+    "jsr:@std/fs@*": "1.0.20",
+    "jsr:@std/internal@^1.0.12": "1.0.12",
+    "jsr:@std/path@*": "1.1.3",
+    "jsr:@std/path@^1.1.3": "1.1.3"
   },
   "jsr": {
-    "@std/fs@1.0.14": {
-      "integrity": "1e84bf0b95fe08f41f1f4aea9717bbf29f45408a56ce073b0114474ce1c9fccf",
+    "@std/fs@1.0.20": {
+      "integrity": "e953206aae48d46ee65e8783ded459f23bec7dd1f3879512911c35e5484ea187",
       "dependencies": [
-        "jsr:@std/path@^1.0.8"
+        "jsr:@std/internal",
+        "jsr:@std/path@^1.1.3"
       ]
     },
-    "@std/path@1.0.8": {
-      "integrity": "548fa456bb6a04d3c1a1e7477986b6cffbce95102d0bb447c67c4ee70e0364be"
+    "@std/internal@1.0.12": {
+      "integrity": "972a634fd5bc34b242024402972cd5143eac68d8dffaca5eaa4dba30ce17b027"
+    },
+    "@std/path@1.1.3": {
+      "integrity": "b015962d82a5e6daea980c32b82d2c40142149639968549c649031a230b1afb3",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
     }
   },
   "redirects": {
-    "https://esm.sh/luxon@latest": "https://esm.sh/luxon@3.5.0"
+    "https://esm.sh/luxon@latest": "https://esm.sh/luxon@3.7.2"
   },
   "remote": {
-    "https://esm.sh/luxon@3.5.0": "6aff462d280b897956ca86d9e98b975e8829e0caa77bd8aed3e1db41119f0609",
-    "https://esm.sh/v135/luxon@3.5.0/denonext/luxon.mjs": "1b02fd2c3624b02462336a1d4e9f197159f60082a5fc5813e72a42833a03bcef"
+    "https://esm.sh/luxon@3.7.2": "e06813ae450626f1e2e2b25d38d77a9a2e47bcecc838e5be2fbd6e83eff97482",
+    "https://esm.sh/luxon@3.7.2/denonext/luxon.mjs": "1167deb8e994c8613fc857ca59603773dde98b93dd3bbab3eaa217f8ad1f556c"
   },
   "workspace": {
     "dependencies": [
@@ -29,7 +37,7 @@
     ],
     "packageJson": {
       "dependencies": [
-        "npm:@eslint/js@^9.38.0",
+        "npm:@eslint/js@^9.39.2",
         "npm:@felte/core@^1.4.4",
         "npm:@felte/reporter-solid@^1.2.11",
         "npm:@felte/solid@^1.2.14",
@@ -38,57 +46,57 @@
         "npm:@floating-ui/dom@^1.7.4",
         "npm:@mbarzda/solid-i18next@^1.4.1",
         "npm:@solidjs/meta@~0.29.4",
-        "npm:@solidjs/router@~0.15.3",
+        "npm:@solidjs/router@~0.15.4",
         "npm:@solidjs/testing-library@~0.8.10",
-        "npm:@tanstack/solid-query@^5.90.6",
+        "npm:@tanstack/solid-query@^5.90.15",
         "npm:@tanstack/solid-table@^8.21.3",
         "npm:@tanstack/table-core@^8.21.3",
         "npm:@testing-library/jest-dom@^6.9.1",
         "npm:@types/luxon@^3.7.1",
         "npm:@types/wicg-file-system-access@^2023.10.7",
-        "npm:@typescript-eslint/eslint-plugin@^8.46.2",
-        "npm:@typescript-eslint/parser@^8.46.2",
-        "npm:autoprefixer@^10.4.21",
-        "npm:axios@^1.12.2",
-        "npm:bowser@^2.12.1",
+        "npm:@typescript-eslint/eslint-plugin@^8.50.0",
+        "npm:@typescript-eslint/parser@^8.50.0",
+        "npm:autoprefixer@^10.4.23",
+        "npm:axios@^1.13.2",
+        "npm:bowser@^2.13.1",
         "npm:classnames@^2.5.1",
-        "npm:cypress@^15.5.0",
-        "npm:eslint-config-love@133",
+        "npm:cypress@^15.8.0",
+        "npm:eslint-config-love@137",
         "npm:eslint-config-prettier@^10.1.8",
         "npm:eslint-plugin-import@^2.32.0",
         "npm:eslint-plugin-n@^17.23.1",
         "npm:eslint-plugin-promise@^7.2.1",
         "npm:eslint-plugin-solid@~0.14.5",
-        "npm:eslint@^9.38.0",
+        "npm:eslint@^9.39.2",
         "npm:headless-qr@^1.0.3",
         "npm:html-parse-string@^0.0.9",
         "npm:i18next-http-backend@^3.0.2",
         "npm:i18next-intervalplural-postprocessor@3",
-        "npm:i18next@^25.6.0",
+        "npm:i18next@^25.7.3",
         "npm:js-base64@^3.7.8",
-        "npm:jsdom@^27.0.1",
+        "npm:jsdom@^27.3.0",
         "npm:laravel-vite-plugin@^2.0.1",
-        "npm:libphonenumber-js@^1.12.26",
+        "npm:libphonenumber-js@^1.12.31",
         "npm:luxon@^3.7.2",
         "npm:postcss@^8.5.6",
-        "npm:prettier@^3.6.2",
+        "npm:prettier@^3.7.4",
         "npm:rehype-autolink-headings@^7.1.0",
         "npm:remark-custom-heading-id@2",
         "npm:remark-gfm@^4.0.1",
-        "npm:sass@^1.93.2",
+        "npm:sass@^1.97.0",
         "npm:solid-icons@^1.1.0",
-        "npm:solid-js@^1.9.9",
-        "npm:solid-markdown@^2.0.14",
+        "npm:solid-js@^1.9.10",
+        "npm:solid-markdown@^2.1.1",
         "npm:solid-toast@0.5",
-        "npm:tailwindcss@^3.4.18",
+        "npm:tailwindcss@^3.4.19",
         "npm:tippy.js@^6.3.7",
-        "npm:typescript-eslint@^8.46.2",
+        "npm:typescript-eslint@^8.50.0",
         "npm:typescript@^5.9.3",
         "npm:vite-plugin-eslint@^1.8.1",
         "npm:vite-plugin-solid-svg@~0.8.1",
         "npm:vite-plugin-solid@^2.11.10",
         "npm:vite-tsconfig-paths@^5.1.4",
-        "npm:vite@^7.1.12",
+        "npm:vite@^7.3.0",
         "npm:vitest@^3.2.4",
         "npm:zod@^3.25.76"
       ]

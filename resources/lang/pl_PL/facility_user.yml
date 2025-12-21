@@ -52,7 +52,12 @@ client_groups:
   clients_count__many: "{{count, number}} członków"
 
 client_urgent_notes:
-  info: "To są pilne uwagi dotyczące klienta, wyświetlane przy każdym jego spotkaniu. Edytuj dane klienta aby je zmienić lub usunąć."
+  info: "To są uwagi dotyczące klienta wyświetlane przy każdym jego spotkaniu.
+    \nEdytuj dane klienta aby je zmienić lub usunąć.
+    \nKliknij aby uzyskać więcej informacji."
+  low_priority_info: "Uwagi zaczynające się znakiem
+    $t(quotes.open)$t(thin_space)*$t(thin_space)$t(quotes.close)
+    są traktowane jako mniej istotne i nie powodują wyróżnienia spotkania w kalendarzu (ale nadal są wyświetlane w detalach spotkania)."
 
 weekly_time_tables:
   reset_dates: "Ustaw domyślny zakres dat"

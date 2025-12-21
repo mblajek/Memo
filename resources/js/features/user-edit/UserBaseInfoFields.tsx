@@ -1,6 +1,7 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {Button} from "components/ui/Button";
 import {HideableSection} from "components/ui/HideableSection";
+import {WarningMark} from "components/ui/WarningMark";
 import {DocsModalInfoIcon} from "components/ui/docs_modal";
 import {CheckboxField} from "components/ui/form/CheckboxField";
 import {DateField} from "components/ui/form/DateField";
@@ -8,6 +9,7 @@ import {FieldLabel} from "components/ui/form/FieldLabel";
 import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField, TextFieldTextInput} from "components/ui/form/TextField";
 import {actionIcons} from "components/ui/icons";
+import {title} from "components/ui/title";
 import {cx} from "components/utils/classnames";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useLangFunc} from "components/utils/lang";
@@ -19,6 +21,8 @@ import {dateTimeToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {createComputed, createEffect, createMemo, JSX, Match, on, Show, Switch, VoidComponent} from "solid-js";
 import {z} from "zod";
+
+type _Directives = typeof title;
 
 export const getUserBaseInfoSchema = () =>
   z.object({
@@ -167,7 +171,20 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
       <div class="flex flex-col gap-1">
         <TextField name="name" type="text" autofocus={props.autofocus} />
         <TextField name="email" type="email" />
-        <CheckboxField name="hasEmailVerified" disabled={!form.data("email")} />
+        <CheckboxField
+          name="hasEmailVerified"
+          disabled={!form.data("email")}
+          label={(origLabel) => (
+            <span>
+              {origLabel}
+              <Show when={!form.data("hasEmailVerified")}>
+                <span use:title={t("forms.user_edit.email_not_verified_info")}>
+                  <WarningMark />
+                </span>
+              </Show>
+            </span>
+          )}
+        />
       </div>
       <div class="flex flex-col">
         <CheckboxField

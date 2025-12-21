@@ -11,10 +11,12 @@ import {createTableTranslations} from "components/ui/Table/Table";
 import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
 import {NullFilterControl} from "components/ui/Table/tquery_filters/NullFilterControl";
 import {TextualFilterControl} from "components/ui/Table/tquery_filters/TextualFilterControl";
+import {UrgentNotes} from "components/ui/UrgentNotes";
 import {WarningMark} from "components/ui/WarningMark";
 import {AttributeFields, AttributeParams} from "components/ui/form/AttributeFields";
 import {RichTextViewEdit} from "components/ui/form/RichTextViewEdit";
 import {title} from "components/ui/title";
+import {getUrgentNotesData} from "components/ui/urgent_notes";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {attributesSelectionFromPartial, isAttributeSelected} from "components/utils/attributes_selection";
 import {DATE_FORMAT} from "components/utils/formatting";
@@ -205,6 +207,17 @@ export function useTableAttributeColumnConfigs() {
                 cell: cellFunc<string>((props) => (
                   <ScrollableCell>
                     <ShowCellVal v={props.v}>{(v) => <RichTextView text={v()} />}</ShowCellVal>
+                  </ScrollableCell>
+                )),
+              },
+            },
+            "urgentNotes": {
+              columnDef: {
+                cell: cellFunc<string[]>((props) => (
+                  <ScrollableCell>
+                    <ShowCellVal v={props.v}>
+                      {(v) => <UrgentNotes notes={getUrgentNotesData(v())} showInfoIcon={false} />}
+                    </ShowCellVal>
                   </ScrollableCell>
                 )),
               },
