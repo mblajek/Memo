@@ -6,8 +6,6 @@ Każda wersja wiąże się dodatkowo z usuwaniem drobnych i większych błędów
 
 <!-- $$$ADD_LATEST_BELOW$$$ -->
 
-$include(changelog/v0.22/ch.part.md)
-
 $include(changelog/v0.21/ch.part.md)
 
 $include(changelog/v0.20/ch.part.md)
