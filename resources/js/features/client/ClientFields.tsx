@@ -216,7 +216,7 @@ export function useTableAttributeColumnConfigs() {
                 cell: cellFunc<string[]>((props) => (
                   <ScrollableCell>
                     <ShowCellVal v={props.v}>
-                      {(v) => <UrgentNotes notes={getUrgentNotesData(v())} showInfoIcon={false} />}
+                      {(v) => <UrgentNotes class="text-sm" notes={getUrgentNotesData(v())} showInfoIcon={false} />}
                     </ShowCellVal>
                   </ScrollableCell>
                 )),
