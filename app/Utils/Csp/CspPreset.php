@@ -25,6 +25,7 @@ class CspPreset implements Preset
             'sha256-a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s=',
             'sha256-GVgeJ9587QD/HOULIEfnpWfHaxy666vl7wP3wwF7tbc=',
             'sha256-eF8+x+sy8wuQzQ/PNlfTiLX/Qpfy+XFv9m6bacBd3Qk=',
+            'sha256-zUvboUXnJS+nTowylb2WxQfpww6CTI8lSE0jqvC0yxk=',
         ]);
 
         if (App::hasDebugModeEnabled()) {
