@@ -60,6 +60,9 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 9082,
     strictPort: true,
+    watch: {
+      ignored: ["**/.pnpm-store"],
+    },
   },
   test: {
     environment: "jsdom",
