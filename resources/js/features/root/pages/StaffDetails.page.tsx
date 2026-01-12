@@ -108,6 +108,7 @@ export default (() => {
                       updatedAt: user().staff.updatedAt,
                       updatedBy: user().staff.updatedBy,
                     }}
+                    editAsGlobalAdminDisabled={editMode()}
                   />
                   <FelteForm
                     id="staff_edit"

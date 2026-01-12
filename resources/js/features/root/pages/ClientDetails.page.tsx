@@ -159,6 +159,7 @@ export default (() => {
                       updatedAt: client().updatedAt,
                       updatedBy: client().updatedBy,
                     }}
+                    editAsGlobalAdminDisabled={editMode()}
                   />
                   <Show when={urgentNotes().length}>
                     <UrgentNotes
