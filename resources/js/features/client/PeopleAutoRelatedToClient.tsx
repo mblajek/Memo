@@ -1,14 +1,20 @@
+import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
-import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
-import {SmallSpinner} from "components/ui/Spinner";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
+import {style} from "components/ui/inline_styles";
+import {SmallSpinner} from "components/ui/Spinner";
 import {title} from "components/ui/title";
+import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
 import {QueryBarrier} from "components/utils/QueryBarrier";
+import {useResizeObserver} from "components/utils/resize_observer";
 import {useFixedDictionaries} from "data-access/memo-api/fixed_dictionaries";
 import {FacilityMeeting} from "data-access/memo-api/groups/FacilityMeeting";
 import {createTQuery, staticRequestCreator} from "data-access/memo-api/tquery/tquery";
-import {For, Show, VoidComponent, createMemo} from "solid-js";
+import {IoChevronCollapse, IoChevronExpand} from "solid-icons/io";
+import {For, Show, VoidComponent, createMemo, createSignal} from "solid-js";
+import {Dynamic} from "solid-js/web";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {UserLink} from "../facility-users/UserLink";
 
@@ -22,6 +28,7 @@ interface Props {
 export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
   const t = useLangFunc();
   const {attendanceTypeDict} = useFixedDictionaries();
+  const resizeObserver = useResizeObserver();
   let countColumn: string | undefined;
   const relatedUsersQuery = createTQuery({
     entityURL: () => activeFacilityId() && `facility/${activeFacilityId()}/meeting/attendant`,
@@ -45,7 +52,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
           {type: "column", column: countColumn, desc: true},
           {type: "column", column: "attendant.name", desc: false},
         ],
-        paging: {size: 50},
+        paging: {size: 200},
         distinct: true,
       };
     }),
@@ -64,16 +71,11 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
       return undefined;
     }
     function getUsers(attendanceTypeId: string): readonly RelatedUser[] {
-      const usersOfType = relatedUsersQuery.dataQuery.data!.data.filter(
-        (user) =>
-          user["attendant.userId"] !== props.clientId && user["attendant.attendanceTypeDictId"] === attendanceTypeId,
-      );
-      if (!usersOfType.length) {
-        return [];
-      }
-      const maxCount = usersOfType[0]![countColumn!] as number;
-      return usersOfType
-        .filter((user) => (user[countColumn!] as number) >= 0.2 * maxCount)
+      return relatedUsersQuery.dataQuery
+        .data!.data.filter(
+          (user) =>
+            user["attendant.userId"] !== props.clientId && user["attendant.attendanceTypeDictId"] === attendanceTypeId,
+        )
         .map((user) => ({
           id: user["attendant.userId"] as string,
           name: user["attendant.name"] as string,
@@ -81,8 +83,8 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
         }));
     }
     return {
-      staff: getUsers(attendanceTypeDict()!.staff.id).slice(0, 8),
-      clients: getUsers(attendanceTypeDict()!.client.id).slice(0, 10),
+      staff: getUsers(attendanceTypeDict()!.staff.id),
+      clients: getUsers(attendanceTypeDict()!.client.id),
     };
   });
 
@@ -96,19 +98,57 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
           <div class="flex flex-col gap-1">
             <For each={["staff", "clients"] as const}>
               {(type) => (
-                <Show when={relatedPeople()![type].length}>
-                  <div class="flex flex-wrap gap-x-2 text-sm">
-                    <For each={relatedPeople()![type]}>
-                      {(user) => (
-                        <span>
-                          <UserLink type={type} userId={user.id} userName={user.name} />{" "}
-                          <span class="text-grey-text" use:title={t("facility_user.related_user_meetings_count")}>
-                            {t("parenthesised", {text: user.meetingsCount})}
-                          </span>
-                        </span>
-                      )}
-                    </For>
-                  </div>
+                <Show when={relatedPeople()![type].length ? relatedPeople()![type] : undefined}>
+                  {(relatedUsers) => {
+                    const [expanded, setExpanded] = createSignal(false);
+                    const [container, setContainer] = createSignal<HTMLDivElement>();
+                    // eslint-disable-next-line solid/reactivity
+                    const isOverflowing = resizeObserver.observeTarget(
+                      container,
+                      (target) => target.scrollWidth > target.parentElement!.clientWidth,
+                    );
+                    return (
+                      <div class="w-full flex justify-between text-sm">
+                        <div
+                          ref={setContainer}
+                          class={cx("flex gap-x-2 overflow-clip min-w-0", expanded() ? "flex-wrap" : undefined)}
+                        >
+                          <For each={relatedUsers()}>
+                            {(user) => (
+                              <span class="whitespace-nowrap">
+                                <UserLink type={type} userId={user.id} userName={user.name} allowWrap={false} />{" "}
+                                <span class="text-grey-text" use:title={t("facility_user.related_user_meetings_count")}>
+                                  {t("parenthesised", {text: user.meetingsCount})}
+                                </span>
+                              </span>
+                            )}
+                          </For>
+                        </div>
+                        <Show when={expanded() || isOverflowing()}>
+                          <div class="flex">
+                            <Show when={!expanded()}>
+                              <div class="relative w-0 -left-12 h-full pointer-events-none">
+                                <div
+                                  class="w-12 h-full"
+                                  {...style({background: "linear-gradient(to right, transparent, white)"})}
+                                />
+                              </div>
+                            </Show>
+                            <Button
+                              class="minimal !px-1"
+                              onClick={() => setExpanded(!expanded())}
+                              title={expanded() ? undefined : t("actions.expand")}
+                            >
+                              <Dynamic
+                                component={expanded() ? IoChevronCollapse : IoChevronExpand}
+                                class="inlineIcon text-current text-gray-800"
+                              />
+                            </Button>
+                          </div>
+                        </Show>
+                      </div>
+                    );
+                  }}
                 </Show>
               )}
             </For>
