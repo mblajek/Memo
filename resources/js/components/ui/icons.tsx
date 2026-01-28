@@ -1,5 +1,5 @@
 import {htmlAttributes} from "components/utils/html_attributes";
-import {IconTemplate, IconTypes} from "solid-icons";
+import {IconProps, IconTemplate, IconTree, IconTypes} from "solid-icons";
 import {AiOutlineFileExcel, AiOutlineSearch} from "solid-icons/ai";
 import {
   BiRegularCalendarX,
@@ -30,33 +30,36 @@ import {FiBell, FiBellOff, FiColumns, FiEdit2} from "solid-icons/fi";
 import {ImCircleRight, ImInfo} from "solid-icons/im";
 import {IoPeopleCircleOutline, IoPersonCircleOutline} from "solid-icons/io";
 import {RiArrowsContractLeftRightLine, RiSystemDeleteBin6Line} from "solid-icons/ri";
-import {TbFilter, TbFilterOff, TbLockCheck, TbReload} from "solid-icons/tb";
-import {VsSave} from "solid-icons/vs";
+import {TbOutlineFilter, TbOutlineFilterOff, TbOutlineLockCheck, TbOutlineReload} from "solid-icons/tb";
+import {JSX, mergeProps} from "solid-js";
+
+function createCustomIcon(attributes: JSX.SVGElementTags["svg"], contents: string): IconTypes {
+  const src: IconTree = {a: attributes, c: contents};
+  return (props: IconProps) => {
+    // Workaround for a strange requirement that props is of type IconBaseProps.
+    const iconBaseProps = mergeProps({src}, props);
+    return IconTemplate(src, iconBaseProps);
+  };
+}
 
 namespace customIcons {
-  export const RepeatFirst: IconTypes = (props) =>
-    IconTemplate(
-      {
-        a: {viewBox: "0 0 24 24"},
-        c: `<path d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><rect x="3" y="13" width="5" height="5" rx="1"/>`,
-      },
-      props,
-    );
-  export const RepeatLast: IconTypes = (props) =>
-    IconTemplate(
-      {
-        a: {viewBox: "0 0 24 24"},
-        c: `<path d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><rect x="16" y="13" width="5" height="5" rx="1"/>`,
-      },
-      props,
-    );
-  export const ThreeDots: IconTypes = (props) =>
-    IconTemplate(
-      {
-        a: {viewBox: "0 0 24 24"},
-        c: `<circle cx="4" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="20" cy="12" r="3"/>`,
-      },
-      props,
+  export const RepeatFirst = createCustomIcon(
+    {viewBox: "0 0 24 24"},
+    `<path d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><rect x="3" y="13" width="5" height="5" rx="1"/>`,
+  );
+  export const RepeatLast = createCustomIcon(
+    {viewBox: "0 0 24 24"},
+    `<path d="M21 6h-5v2h4v9H4V8h5v3l5-4-5-4v3H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1z"/><rect x="16" y="13" width="5" height="5" rx="1"/>`,
+  );
+  export const ThreeDots = createCustomIcon(
+    {viewBox: "0 0 24 24"},
+    `<circle cx="4" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><circle cx="20" cy="12" r="3"/>`,
+  );
+  export const Save =
+    // Copy of the old VsSave.
+    createCustomIcon(
+      {viewBox: "0 0 16 16"},
+      `<path fill-rule="evenodd" d="m13.353 1.146 1.5 1.5L15 3v11.5l-.5.5h-13l-.5-.5v-13l.5-.5H13l.353.146zM2 2v12h12V3.208L12.793 2H11v4H4V2H2zm6 0v3h2V2H8z" clip-rule="evenodd"/>`,
     );
 }
 
@@ -107,22 +110,24 @@ export namespace actionIcons {
   export const Reset = CgUndo;
   export const Notify = FiBell;
   export const NotifyOff = FiBellOff;
-  export const Filter: IconTypes = (props) => <TbFilter {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
+  export const Filter: IconTypes = (props) => (
+    <TbOutlineFilter {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
+  );
   export const FilterOff: IconTypes = (props) => (
-    <TbFilterOff {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
+    <TbOutlineFilterOff {...htmlAttributes.merge(props, {class: "strokeIcon"})} />
   );
   export const Rename = CgRename;
   export const ThreeDots = customIcons.ThreeDots;
   export const FocusHorizontally = RiArrowsContractLeftRightLine;
-  export const SaveTableView = VsSave;
+  export const SaveTableView = customIcons.Save;
   export const Check = FaSolidCheck;
   export const ExportCSV = AiOutlineFileExcel;
   export const Search = AiOutlineSearch;
   export const Columns: IconTypes = (props) => <FiColumns {...htmlAttributes.merge(props, {class: "strokeIcon"})} />;
-  export const Reload = TbReload;
+  export const Reload = TbOutlineReload;
   export const Duplicate = BiRegularDuplicate;
   export const Info = ImInfo;
-  export const OTPConfigured = TbLockCheck;
+  export const OTPConfigured = TbOutlineLockCheck;
   export const DB = BsDatabase;
   export const DBDump = BsDatabaseAdd;
 }

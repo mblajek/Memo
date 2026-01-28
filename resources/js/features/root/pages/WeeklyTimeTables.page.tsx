@@ -51,7 +51,7 @@ import {FaSolidCircleDot} from "solid-icons/fa";
 import {ImInfo} from "solid-icons/im";
 import {IoArrowUndoOutline} from "solid-icons/io";
 import {OcArrowdown2, OcMovetobottom2} from "solid-icons/oc";
-import {TbNotes} from "solid-icons/tb";
+import {TbOutlineNotes} from "solid-icons/tb";
 import {
   Accessor,
   batch,
@@ -590,7 +590,7 @@ export default (() => {
                               />
                               <Show when={meeting.notes}>
                                 <span use:title={meeting.notes}>
-                                  <TbNotes class="inlineIcon strokeIcon" size="12" />
+                                  <TbOutlineNotes class="inlineIcon strokeIcon" size="12" />
                                 </span>
                               </Show>
                               <Show when={conflict()}>

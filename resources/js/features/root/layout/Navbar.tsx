@@ -36,7 +36,7 @@ import {IoReloadSharp} from "solid-icons/io";
 import {OcLog3, OcTable3} from "solid-icons/oc";
 import {RiDevelopmentCodeBoxLine} from "solid-icons/ri";
 import {SiSwagger} from "solid-icons/si";
-import {TbCalendarCode, TbCalendarTime, TbHelp} from "solid-icons/tb";
+import {TbOutlineCalendarCode, TbOutlineCalendarTime, TbOutlineHelp} from "solid-icons/tb";
 import {TiSortAlphabetically} from "solid-icons/ti";
 import {VsChromeClose} from "solid-icons/vs";
 import {createContext, createSignal, DEV, ParentComponent, Show, Signal, useContext, VoidComponent} from "solid-js";
@@ -168,19 +168,19 @@ export const Navbar: VoidComponent = () => {
             <SilentAccessBarrier roles={["facilityAdmin"]}>
               <NavigationSection name={t("routes.menu_sections.facility_admin")}>
                 <NavigationItem
-                  icon={TbCalendarTime}
+                  icon={TbOutlineCalendarTime}
                   href={`/${facilityUrl()}/admin/time-tables`}
                   routeKey="facility.facility_admin.time_tables"
                 >
                   <NavigationItem
-                    icon={TbCalendarTime}
+                    icon={TbOutlineCalendarTime}
                     href={`/${facilityUrl()}/admin/time-tables`}
                     routeKey="facility.facility_admin.time_tables_calendar"
                     small
                     end
                   />
                   <NavigationItem
-                    icon={TbCalendarCode}
+                    icon={TbOutlineCalendarCode}
                     href={`/${facilityUrl()}/admin/time-tables/weekly`}
                     routeKey="facility.facility_admin.time_tables_weekly"
                     small
@@ -238,7 +238,7 @@ export const Navbar: VoidComponent = () => {
             </NavigationSection>
           </SilentAccessBarrier>
           <NavigationSection name={t("routes.menu_sections.other")}>
-            <NavigationItem icon={TbHelp} href="/help" routeKey="help" />
+            <NavigationItem icon={TbOutlineHelp} href="/help" routeKey="help" />
           </NavigationSection>
           <Show when={isDEV()}>
             <NavigationSection name="DEV" compact>
@@ -261,7 +261,7 @@ export const Navbar: VoidComponent = () => {
               </SilentAccessBarrier>
               <NavigationItem icon={FiLoader} href="/dev/preload-statuses" routeKey="Preload" small />
               <NavigationItem icon={BiRegularErrorAlt} href="/dev/crash" routeKey="Crash" small />
-              <NavigationItem icon={TbHelp} href="/help/dev" routeKey="Help" small />
+              <NavigationItem icon={TbOutlineHelp} href="/help/dev" routeKey="Help" small />
             </NavigationSection>
           </Show>
         </nav>
