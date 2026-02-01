@@ -40,7 +40,7 @@ import {createWorkTimeCreateModal} from "features/meeting/work_time_create_modal
 import {createWorkTimeModal} from "features/meeting/work_time_modal";
 import {DateTime} from "luxon";
 import {IoArrowBackOutline, IoArrowForwardOutline} from "solid-icons/io";
-import {TbInfoTriangle} from "solid-icons/tb";
+import {TbOutlineInfoTriangle} from "solid-icons/tb";
 import {
   JSX,
   Match,
@@ -1217,7 +1217,7 @@ export const FullCalendar: VoidComponent<Props> = (allProps) => {
           <Switch>
             <Match when={props.staticCalendarFunction !== "leaveTimes" && !selectedResources().size}>
               <div class="mx-2 my-6 flex justify-center gap-1">
-                <TbInfoTriangle size={20} class="text-memo-active" />
+                <TbOutlineInfoTriangle size={20} class="text-memo-active" />
                 {t("calendar.select_resource_to_show_calendar")}
               </div>
             </Match>

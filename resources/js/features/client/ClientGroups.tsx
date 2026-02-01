@@ -2,18 +2,18 @@ import {useQuery} from "@tanstack/solid-query";
 import {createHistoryPersistence} from "components/persistence/history_persistence";
 import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
+import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
 import {Select} from "components/ui/form/Select";
 import {actionIcons, clientGroupIcons} from "components/ui/icons";
 import {SmallSpinner} from "components/ui/Spinner";
-import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
 import {QueryBarrier} from "components/utils/QueryBarrier";
 import {FacilityClientGroup} from "data-access/memo-api/groups/FacilityClientGroup";
 import {ClientResource} from "data-access/memo-api/resources/client.resource";
 import {ClientGroupResource} from "data-access/memo-api/resources/clientGroup.resource";
-import {TbArrowBadgeRight} from "solid-icons/tb";
+import {TbOutlineArrowBadgeRight} from "solid-icons/tb";
 import {createComputed, createSignal, JSX, ParentComponent, Show, VoidComponent} from "solid-js";
 import {createAddToClientGroupModal} from "./add_to_client_group_modal";
 import {createClientGroupCreateModal} from "./client_group_create_modal";
@@ -60,7 +60,7 @@ export const ClientGroups: VoidComponent<Props> = (props) => {
       {...htmlAttributes.merge(buttonProps, {class: "secondary small"})}
       onClick={() => addToClientGroupModal.show({clientId: props.client.id})}
     >
-      <TbArrowBadgeRight class="inlineIcon strokeIcon" />
+      <TbOutlineArrowBadgeRight class="inlineIcon strokeIcon" />
       <clientGroupIcons.ClientGroup class="inlineIcon -ml-0.5" /> {buttonProps.children}
     </Button>
   );

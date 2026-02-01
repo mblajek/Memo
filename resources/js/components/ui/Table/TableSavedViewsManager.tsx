@@ -45,7 +45,6 @@ import {createTextFilter} from "components/utils/text_util";
 import {DataItem} from "data-access/memo-api/tquery/types";
 import {IconTypes} from "solid-icons";
 import {BiRegularCopyAlt} from "solid-icons/bi";
-import {VsSave} from "solid-icons/vs";
 import {
   createEffect,
   createMemo,
@@ -836,7 +835,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                             return (
                               <SimpleMenu onClick={optionsPopOver.close}>
                                 <MenuItem
-                                  icon={VsSave}
+                                  icon={actionIcons.SaveTableView}
                                   label={t("tables.saved_views.overwrite_with_current")}
                                   onClick={() => {
                                     const stencilledState = getStencilledTableView({

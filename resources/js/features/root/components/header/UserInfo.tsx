@@ -129,7 +129,7 @@ export const UserInfo: VoidComponent = () => {
               <PopOver
                 trigger={(popOver) => (
                   <Button title="Developer permission" onClick={popOver.open}>
-                    <HiSolidWrenchScrewdriver class="text-current" />
+                    <HiSolidWrenchScrewdriver class="text-current stroke-none" />
                   </Button>
                 )}
               >
@@ -150,7 +150,7 @@ export const UserInfo: VoidComponent = () => {
             <PopOver
               trigger={(popOver) => (
                 <Button class="p-0.5 flex items-center gap-0.5" title={t("user_settings")} onClick={popOver.open}>
-                  <actionIcons.ThreeDots class="text-current" />
+                  <actionIcons.ThreeDots class="text-current fill-current" />
                   <Show when={suggestPasswordChange() || suggestConfigureOTP()}>
                     <WarningMark />
                   </Show>

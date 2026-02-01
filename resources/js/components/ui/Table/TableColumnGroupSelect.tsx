@@ -1,5 +1,5 @@
 import {useLangFunc} from "components/utils/lang";
-import {TbColumns3} from "solid-icons/tb";
+import {TbOutlineColumns3} from "solid-icons/tb";
 import {createUniqueId, Show, VoidComponent} from "solid-js";
 import {Capitalize} from "../Capitalize";
 import {useDocsModalInfoIcon} from "../docs_modal";
@@ -47,7 +47,7 @@ export const TableColumnGroupSelect: VoidComponent = () => {
                   <span>
                     <Show when={!isFromColumn}>
                       <span use:title={t("tables.column_groups.explicit_group")}>
-                        <TbColumns3 class="inlineIcon strokeIcon" />
+                        <TbOutlineColumns3 class="inlineIcon strokeIcon" />
                       </span>{" "}
                     </Show>
                     <Capitalize text={table.options.meta?.translations?.columnGroup(name)} />

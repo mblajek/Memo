@@ -18,6 +18,7 @@ type _Directives = typeof title;
 interface Props {
   readonly type: FacilityUserType;
   readonly user: UserResource;
+  readonly editAsGlobalAdminDisabled?: boolean;
 }
 
 export const UserDetailsHeader: VoidComponent<Props> = (props) => {
@@ -55,6 +56,7 @@ export const UserDetailsHeader: VoidComponent<Props> = (props) => {
             onClick={() => userEditModal.show({userId: props.user.id})}
             class="secondary small text-sm"
             label={t("facility_user.edit_as_global_administrator")}
+            disabled={props.editAsGlobalAdminDisabled}
           />
         </Show>
       </div>
