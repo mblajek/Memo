@@ -128,12 +128,15 @@ final class TqConfig
         string $from,
         string $columnAlias,
         bool $selectDistinct = false,
+        ?string $orderBy = null,
     ): void {
         self::assertStringOrUuidList($type, true);
         $selectDistinct = $selectDistinct ? 'distinct ' : '';
+        $orderByClause = ($orderBy === null) ? '' : " order by $orderBy";
         $this->addColumn(
             type: $type,
-            columnOrQuery: fn(string $tableName) => "select json_arrayagg({$selectDistinct}{$select}) from $from",
+            columnOrQuery: fn(string $tableName)
+                => "select json_arrayagg({$selectDistinct}{$select}{$orderByClause}) from $from",
             table: null,
             columnAlias: Str::camel($columnAlias),
             filter: fn(string $query) => "select count(distinct {$select}) from $from and ($select",

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $attendance_type_dict_id
  * @property string $attendance_status_dict_id
  * @property string $client_group_id
+ * @property int $default_order
  * @property-read Meeting $meeting
  * @method static Builder<self> query()
  */
@@ -31,6 +32,7 @@ class MeetingAttendant extends Model
         'attendance_type_dict_id',
         'attendance_status_dict_id',
         'client_group_id',
+        'default_order',
     ];
 
     protected $casts = [

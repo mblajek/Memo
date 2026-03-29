@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Database\Factories\FacilityFactory;
-use Database\Factories\TimetableFactory;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\Helpers\UserTrait;
 use Tests\TestCase;
@@ -26,8 +25,7 @@ class GetFacilityListTest extends TestCase
     {
         $startCount = count($this->get(static::URL)->json('data'));
 
-        $timetable = TimetableFactory::new()->create();
-        FacilityFactory::new()->count(5)->create(['timetable_id' => $timetable->id]);
+        FacilityFactory::new()->count(5)->create();
 
         $result = $this->get(static::URL);
 

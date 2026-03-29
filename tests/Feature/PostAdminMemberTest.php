@@ -29,7 +29,6 @@ class PostAdminMemberTest extends TestCase
         $facility = Facility::factory()->create([
             'name' => 'Test',
             'url' => 'test-123',
-            'timetable_id' => null,
         ]);
         /** @var User $user */
         $user = User::factory()->create();
@@ -55,7 +54,6 @@ class PostAdminMemberTest extends TestCase
         $facility = Facility::factory()->create([
             'name' => 'Test',
             'url' => 'test-123',
-            'timetable_id' => null,
         ]);
         /** @var User $user */
         $user = User::factory()->create();

@@ -27,7 +27,6 @@ class UpdateAdminFacilityTest extends TestCase
         $facility = Facility::factory()->create([
             'name' => 'Test',
             'url' => 'test-123',
-            'timetable_id' => null,
         ]);
         $this->prepareAdminUser($facility);
 
@@ -51,7 +50,6 @@ class UpdateAdminFacilityTest extends TestCase
         $facility = Facility::factory()->create([
             'name' => 'Test',
             'url' => 'test-456',
-            'timetable_id' => null,
         ]);
         $this->prepareAdminUser($facility);
 
@@ -74,7 +72,6 @@ class UpdateAdminFacilityTest extends TestCase
         $facility = Facility::factory()->create([
             'name' => 'Test',
             'url' => 'test-456',
-            'timetable_id' => null,
         ]);
 
         $this->prepareAdminUser($facility);

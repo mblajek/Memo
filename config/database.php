@@ -26,8 +26,8 @@ return [
             'strict' => true,
             'engine' => null,
             'options' => (Env::get('DB_HOST') && extension_loaded('pdo_mysql')) ? [ // no array_filter
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => (bool)Env::get('DB_SSL_VERIFY', true),
-                PDO::MYSQL_ATTR_SSL_CA => null,
+                \Pdo\Mysql::ATTR_SSL_VERIFY_SERVER_CERT => (bool)Env::get('DB_SSL_VERIFY', true),
+                \Pdo\Mysql::ATTR_SSL_CA => null,
             ] : [/* no encryption for unix socket connection */],
         ],
     ],

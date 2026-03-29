@@ -123,7 +123,7 @@ class Meeting extends Model
     {
         return $this->attendants->filter(
             fn(MeetingAttendant $attendant) => $attendant->attendance_type_dict_id === $attendanceType->value,
-        )->each(
+        )->sortBy('default_order')->each(
             fn(MeetingAttendant $attendant) => $attendant->setRelation('meeting', $this),
         );
     }

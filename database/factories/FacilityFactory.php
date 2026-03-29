@@ -23,7 +23,6 @@ class FacilityFactory extends Factory
         return [
             'name' => fake()->name(),
             'url' => Str::random(5),
-            'timetable_id' => Str::uuid(),
         ];
     }
 }
