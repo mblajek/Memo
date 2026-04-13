@@ -13,14 +13,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Throwable;
 
 /**
- * @property string id
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
+ * @property string $id
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
  *
- * @property string created_by
- * @property User createdBy
- * @property string updated_by
- * @property User updatedBy
+ * @property string $created_by
+ * @property User $createdBy
+ * @property string $updated_by
+ * @property User $updatedBy
  *
  * @mixin Model
  */

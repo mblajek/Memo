@@ -5,7 +5,7 @@ namespace Tests\Tquery\Tables;
 use App\Models\Facility;
 use App\Tquery\Tables\StaffTquery;
 
-class StaffTqueryTest extends TqueryConfigTest
+class StaffTqueryTest extends TqueryConfigTestAbstract
 {
     protected function createTqService(): StaffTquery
     {

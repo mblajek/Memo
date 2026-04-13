@@ -28,7 +28,7 @@ use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Throwable;
 
-/** System endpoints without authorisation */
+/** System endpoints without authorization */
 class SystemController extends ApiController
 {
     protected function initPermissions(): void

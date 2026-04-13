@@ -16,7 +16,6 @@ use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 use Throwable;
 
-/** System endpoints without authorisation */
 class UserController extends ApiController
 {
     protected function initPermissions(): void

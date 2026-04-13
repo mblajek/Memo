@@ -1,0 +1,7 @@
+parameters:
+  level: 0
+  paths:
+    - app
+    - tests
+  ignoreErrors:
+    - {identifier: property.uninitializedReadonly}

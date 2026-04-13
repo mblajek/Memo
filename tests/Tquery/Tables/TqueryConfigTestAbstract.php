@@ -5,7 +5,7 @@ namespace Tests\Tquery\Tables;
 use App\Tquery\Engine\TqService;
 use PHPUnit\Framework\TestCase;
 
-abstract class TqueryConfigTest extends TestCase
+abstract class TqueryConfigTestAbstract extends TestCase
 {
     private TqService $tquery;
 

@@ -5,10 +5,10 @@ namespace App\Utils\Date;
 use DateTimeZone;
 use RuntimeException;
 
-class TimezoneException extends RuntimeException
+final class TimezoneException extends RuntimeException
 {
     public static function fromTimezone(DateTimeZone $timeZone): static
     {
-        return new static('Timezone ' . $timeZone->getName() . ' is not UTC');
+        return new self('Timezone ' . $timeZone->getName() . ' is not UTC');
     }
 }

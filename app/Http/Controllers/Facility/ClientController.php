@@ -172,7 +172,7 @@ class ClientController extends ApiController
             $user->fillOnly($userData, ['name']);
         }
         $clientData = $client->fillOnly($clientData);
-        DB::transaction(function () use ($user, $client, $clientData, $userData) {
+        DB::transaction(function () use ($user, $client, $clientData) {
             // temporary solution, use "select for update" on "facilities" as mutex for other tables
             // todo: use lock or any other standard way to generate unique short_code
             Facility::query()->lockForUpdate()->count();
