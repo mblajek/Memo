@@ -11,6 +11,11 @@ return [
             'database' => Env::get('APP_DB_DUMP_PATH')
                 ? (Env::getOrFail('APP_DB_DUMP_PATH') . '/db_dumps.db') : null,
         ],
+        'integration_events' => [
+            'driver' => 'sqlite',
+            'database' => Env::get('APP_EVENTS_DB_PATH')
+                ? (Env::getOrFail('APP_EVENTS_DB_PATH') . '/integration_events.db') : null,
+        ],
         'mariadb' => [
             'driver' => 'mariadb',
             'host' => Env::get('DB_HOST', 'localhost'),
