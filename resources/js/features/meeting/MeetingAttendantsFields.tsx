@@ -104,8 +104,10 @@ interface FormAttendantsData extends Obj {
 
 type ClientsGroupsMode = "none" | "shared" | "separate";
 
-interface FormAttendantData
-  extends Pick<MeetingStaffResource & MeetingClientResource, "userId" | "clientGroupId" | "attendanceStatusDictId"> {
+interface FormAttendantData extends Pick<
+  MeetingStaffResource & MeetingClientResource,
+  "userId" | "clientGroupId" | "attendanceStatusDictId"
+> {
   notifications?: z.infer<ReturnType<typeof getNotificationSchema>>[];
 }
 

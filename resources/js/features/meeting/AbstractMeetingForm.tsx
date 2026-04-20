@@ -6,8 +6,9 @@ import {splitProps} from "solid-js";
 import {ZodSchema} from "zod";
 import {MeetingWithExtraInfo} from "./meeting_api";
 
-export interface AbstractMeetingFormProps<MeetingFormType extends Obj>
-  extends FormConfigWithoutTransformFn<MeetingFormType> {
+export interface AbstractMeetingFormProps<
+  MeetingFormType extends Obj,
+> extends FormConfigWithoutTransformFn<MeetingFormType> {
   readonly id: string;
   readonly extraTranslationsFormNames?: readonly string[];
   readonly viewMode: boolean;

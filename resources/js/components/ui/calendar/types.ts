@@ -39,13 +39,10 @@ export interface CellStylingPreference {
 }
 
 export interface AllDayBlock<C, M>
-  extends AllDayTimeSpan,
-    Partial<ContentInHoursArea<C>>,
-    ContentInAllDayArea<C>,
-    ContentInMonthCell<M>,
-    Ordered {}
+  extends AllDayTimeSpan, Partial<ContentInHoursArea<C>>, ContentInAllDayArea<C>, ContentInMonthCell<M>, Ordered {}
 export interface PartDayBlock<C, M>
-  extends PartDayTimeSpan,
+  extends
+    PartDayTimeSpan,
     ContentInHoursArea<C>,
     Partial<ContentInAllDayArea<C>>,
     Partial<ContentInMonthCell<M>>,
@@ -58,17 +55,9 @@ export interface PartDayBlock<C, M>
 export type Block<C, M> = AllDayBlock<C, M> | PartDayBlock<C, M>;
 
 export interface AllDayEvent<C, M>
-  extends AllDayTimeSpan,
-    Partial<ContentInHoursArea<C>>,
-    ContentInAllDayArea<C>,
-    ContentInMonthCell<M>,
-    Ordered {}
+  extends AllDayTimeSpan, Partial<ContentInHoursArea<C>>, ContentInAllDayArea<C>, ContentInMonthCell<M>, Ordered {}
 export interface PartDayEvent<C, M>
-  extends PartDayTimeSpan,
-    ContentInHoursArea<C>,
-    Partial<ContentInAllDayArea<C>>,
-    ContentInMonthCell<M>,
-    Ordered {}
+  extends PartDayTimeSpan, ContentInHoursArea<C>, Partial<ContentInAllDayArea<C>>, ContentInMonthCell<M>, Ordered {}
 
 export type Event<C, M> = AllDayEvent<C, M> | PartDayEvent<C, M>;
 

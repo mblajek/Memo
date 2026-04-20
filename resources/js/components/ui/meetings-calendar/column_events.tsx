@@ -24,11 +24,10 @@ import {TimeSpanSummary} from "./TimeSpanSummary";
 import {coloringToStyle} from "./colors";
 import {AttendantListItem} from "./meeting_details";
 
-interface CommonProps
-  extends Pick<
-    HoverableMeetingEventBlockProps,
-    "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
-  > {
+interface CommonProps extends Pick<
+  HoverableMeetingEventBlockProps,
+  "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
+> {
   readonly day: DateTime;
   readonly timeSpan: TimeSpan;
   readonly height?: number;

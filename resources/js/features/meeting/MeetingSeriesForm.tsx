@@ -29,8 +29,7 @@ export const getMeetingSeriesSchema = () =>
 export type MeetingSeriesFormType = z.infer<ReturnType<typeof getMeetingSeriesSchema>>;
 
 interface Props
-  extends FormConfigWithoutTransformFn<MeetingSeriesFormType>,
-    Pick<FormProps, "id" | "translationsFormNames"> {
+  extends FormConfigWithoutTransformFn<MeetingSeriesFormType>, Pick<FormProps, "id" | "translationsFormNames"> {
   readonly startMeeting: MeetingWithExtraInfo;
   readonly onCancel?: () => void;
 }

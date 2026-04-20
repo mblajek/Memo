@@ -18,11 +18,10 @@ import {TRIM_ON_BLUR, trimInput} from "./util";
 
 type _Directives = typeof title;
 
-export interface MultilineTextFieldProps
-  extends Pick<
-    htmlAttributes.textarea,
-    "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
-  > {
+export interface MultilineTextFieldProps extends Pick<
+  htmlAttributes.textarea,
+  "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
+> {
   readonly name: string;
   readonly label?: LabelOverride;
   readonly small?: boolean;

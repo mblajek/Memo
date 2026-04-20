@@ -9,7 +9,8 @@ import {SelectFilterMode, SelectFilterModeControl} from "./select_filters_helper
 import {FilterControlProps, FilterHWithState} from "./types";
 
 interface Props
-  extends FilterControlProps<Filter>,
+  extends
+    FilterControlProps<Filter>,
     Pick<TQuerySelectProps, "querySpec" | "priorityQuerySpec" | "separatePriorityItems"> {}
 
 type Filter = FilterHWithState<{mode: SelectFilterMode; value: readonly string[]}>;

@@ -36,7 +36,6 @@ render(() => {
       options={{
         backend: {loadPath: "/api/v1/system/translation/{{lng}}/list"},
         debug: !!DEV,
-        initImmediate: false,
         fallbackLng: "pl",
         load: "currentOnly",
         supportedLngs: ["pl", TESTING_LANGUAGE],

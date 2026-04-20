@@ -18,11 +18,10 @@ import {MeetingHoverCard} from "./MeetingHoverCard";
 import {MeetingRepeatIcon} from "./MeetingRepeatIcon";
 import {MIDNIGHT_CROSSING_SYMBOL, coloringToStyle} from "./colors";
 
-interface Props
-  extends Pick<
-    HoverableMeetingEventBlockProps,
-    "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
-  > {
+interface Props extends Pick<
+  HoverableMeetingEventBlockProps,
+  "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
+> {
   readonly day: DateTime;
   readonly timeSpan: TimeSpan;
   readonly height?: number;
