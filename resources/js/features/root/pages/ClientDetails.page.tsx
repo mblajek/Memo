@@ -17,7 +17,6 @@ import {TextField} from "components/ui/form/TextField";
 import {createAttributesProcessor} from "components/ui/form/attributes_processor";
 import {createFormLeaveConfirmation} from "components/ui/form/form_leave_confirmation";
 import {actionIcons} from "components/ui/icons";
-import {style} from "components/ui/inline_styles";
 import {EM_DASH} from "components/ui/symbols";
 import {getUrgentNotesData} from "components/ui/urgent_notes";
 import {Autofocus} from "components/utils/Autofocus";
@@ -173,7 +172,7 @@ export default (() => {
                     />
                   </Show>
                   <div class="flex flex-wrap justify-between gap-y-4 gap-x-8">
-                    <div {...style({"min-width": "400px", "flex-basis": "600px"})}>
+                    <div style={{"min-width": "400px", "flex-basis": "600px"}}>
                       <FelteForm
                         id="client_edit"
                         translationsFormNames={["client_edit", "client", "facility_user"]}
@@ -250,7 +249,7 @@ export default (() => {
                         }}
                       </FelteForm>
                     </div>
-                    <div class={hiddenInEditModeClass()} {...style({"min-width": "400px", "flex-basis": "800px"})}>
+                    <div class={hiddenInEditModeClass()} style={{"min-width": "400px", "flex-basis": "800px"}}>
                       <ClientGroups
                         client={user()}
                         onGroupChange={(group) => setSelectedGroupId(group?.id)}

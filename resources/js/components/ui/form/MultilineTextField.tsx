@@ -2,7 +2,6 @@ import {useFormContext} from "components/felte-form/FelteForm";
 import {createPersistence} from "components/persistence/persistence";
 import {userStorageStorage} from "components/persistence/storage";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
-import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
@@ -61,10 +60,10 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
     <FieldBox {...props}>
       <div
         class="grid"
-        {...style({
+        style={{
           "grid-template-columns": `1fr auto ${props.richTextPreview && showPreview() ? "1fr" : "0fr"}`,
           "transition": "grid-template-columns 200ms",
-        })}
+        }}
       >
         <textarea
           id={props.name}

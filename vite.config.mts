@@ -37,6 +37,9 @@ export default defineConfig({
         omitNestedClosingTags: true,
         // Allow stopping propagation of events (see https://github.com/solidjs/solid/issues/1786#issuecomment-1694589801).
         delegateEvents: false,
+        // Prevent CSP violations (see https://github.com/ryansolid/dom-expressions/pull/470).
+        // @ts-expect-error Type not yet updated in vite-plugin-solid.
+        inlineStyles: false,
       },
     }),
     tsConfigPaths(),

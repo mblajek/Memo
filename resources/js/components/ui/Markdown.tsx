@@ -1,5 +1,4 @@
 import {useLocation} from "@solidjs/router";
-import {style} from "components/ui/inline_styles";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {resolvePath} from "features/root/pages/help/markdown_resolver";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
@@ -47,7 +46,7 @@ export const Markdown: VoidComponent<MarkdownProps> = (allProps) => {
       component={cellProps.node.tagName}
       {...cellProps}
       // Fix the align style. The automatically applied style uses the `textAlign` key which does not work.
-      {...style({"text-align": cellProps.node.properties.align as JSX.CSSProperties["text-align"] | undefined})}
+      style={{"text-align": cellProps.node.properties.align as JSX.CSSProperties["text-align"] | undefined}}
     />
   );
   return (

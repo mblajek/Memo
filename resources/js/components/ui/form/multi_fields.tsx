@@ -1,7 +1,6 @@
 import {useFormContext} from "components/felte-form/FelteForm";
 import {WRAPPED_FIELD_KEY, wrapArrayOfPrimitiveValues} from "components/felte-form/wrapped_fields";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
-import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {FieldsetDisabledTracker} from "components/utils/fieldset_disabled_tracker";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -153,9 +152,9 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
                     <Show when={!isFieldsetDisabled()}>
                       <div
                         class="grid gap-px"
-                        {...style({
+                        style={{
                           "grid-template-columns": `repeat(${numButtonCols()}, ${BUTTON_WIDTH})`,
-                        })}
+                        }}
                       >
                         <Show when={props.moveButtons}>
                           <div class="flex flex-col min-h-small-input">

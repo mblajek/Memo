@@ -1,4 +1,3 @@
-import {style} from "components/ui/inline_styles";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {DateTime, WeekdayNumbers} from "luxon";
 import {For, Show, Signal, VoidComponent, createSignal, onMount, splitProps} from "solid-js";
@@ -102,7 +101,7 @@ const AlignedWeekday: VoidComponent<{value: string; format: Intl.DateTimeFormatO
   const weekdayNamesSignal = () => getWeekdayNames(t, props.format);
   const weekdayNames = () => weekdayNamesSignal()[0]();
   return (
-    <span class="inline-grid text-right" {...style({"text-decoration": "inherit"})}>
+    <span class="inline-grid text-right" style={{"text-decoration": "inherit"}}>
       <span
         class="contents invisible"
         ref={(span) => {
@@ -122,13 +121,13 @@ const AlignedWeekday: VoidComponent<{value: string; format: Intl.DateTimeFormatO
       >
         <For each={weekdayNames()}>
           {(n) => (
-            <span {...style({"grid-column": 1, "grid-row": 1})}>
+            <span style={{"grid-column": 1, "grid-row": 1}}>
               <span>{n}</span>
             </span>
           )}
         </For>
       </span>
-      <span {...style({"grid-column": 1, "grid-row": 1})}>{weekdayNameFromString(t, props.value)}</span>
+      <span style={{"grid-column": 1, "grid-row": 1}}>{weekdayNameFromString(t, props.value)}</span>
     </span>
   );
 };

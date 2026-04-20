@@ -1,4 +1,3 @@
-import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
 import {VsClose} from "solid-icons/vs";
@@ -250,12 +249,12 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
                 <div
                   ref={setContentElement}
                   class="overflow-clip max-w-full max-h-full mx-10 relative bg-white rounded-lg shadow-xl pl-4 pt-4 flex flex-col gap-1 pointer-events-auto"
-                  {...style({
+                  style={{
                     "min-width": "400px",
                     ...props.style,
                     "left": `${relativePos()[0]}px`,
                     "top": `${relativePos()[1]}px`,
-                  })}
+                  }}
                 >
                   <Show when={props.title}>
                     {(title) => (
@@ -265,7 +264,7 @@ export const Modal = <T, C extends CloseReason>(props: Props<T, C>): JSX.Element
                           canDrag() ? "cursor-grab" : undefined,
                           closeOn().has("closeButton") ? "pr-8" : undefined,
                         )}
-                        {...style({"font-size": "1.3rem"})}
+                        style={{"font-size": "1.3rem"}}
                         {...grabHandler}
                       >
                         {title()}

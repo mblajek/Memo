@@ -2,7 +2,6 @@ import {Button} from "components/ui/Button";
 import {Capitalize} from "components/ui/Capitalize";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {StandaloneFieldLabel} from "components/ui/form/FieldLabel";
-import {style} from "components/ui/inline_styles";
 import {SmallSpinner} from "components/ui/Spinner";
 import {title} from "components/ui/title";
 import {cx} from "components/utils/classnames";
@@ -130,7 +129,7 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
                               <div class="relative w-0 -left-12 h-full pointer-events-none">
                                 <div
                                   class="w-12 h-full"
-                                  {...style({background: "linear-gradient(to right, transparent, white)"})}
+                                  style={{background: "linear-gradient(to right, transparent, white)"}}
                                 />
                               </div>
                             </Show>
