@@ -6,6 +6,8 @@ import {defineConfig} from "eslint/config";
 import typescript from "typescript-eslint";
 
 export default defineConfig([
+  // Deno projects with their own toolchain; not part of the main TS project.
+  {ignores: ["custom-scripts/**"]},
   js.configs.recommended,
   solid.configs["flat/recommended"],
   typescript.configs.recommendedTypeChecked,

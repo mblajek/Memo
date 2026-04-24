@@ -80,22 +80,6 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
   );
   createComputed(
     on(
-      () => form.data("password"),
-      (password, prevPassword) => {
-        if (prevPassword !== undefined) {
-          if (password) {
-            if (!form.data("passwordExpireAt")) {
-              form.setFields("passwordExpireAt", dateTimeToDateTimeLocalInput(currentTimeMinute().plus({days: 7})));
-            }
-          } else {
-            form.setFields("passwordExpireAt", initialValues()?.passwordExpireAt);
-          }
-        }
-      },
-    ),
-  );
-  createComputed(
-    on(
       () => form.data("isOtpRequired"),
       (isOtpRequired) => {
         if (isOtpRequired && !form.data("otpRequiredAt")) {
@@ -127,6 +111,8 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
             ),
           ),
         );
+      } else {
+        form.setFields(daysLeftFieldName(), "");
       }
     });
     return (
