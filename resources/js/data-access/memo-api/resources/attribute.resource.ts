@@ -63,4 +63,11 @@ export interface AttributeResource {
 export interface AttributeMetadataResource {
   // For string and text:
   readonly isMultiLine?: boolean;
+  // For separator:
+  readonly groupFolding?: AttributeGroupFolding;
+}
+
+export interface AttributeGroupFolding {
+  readonly enabled: boolean;
+  readonly initialFolded: boolean;
 }

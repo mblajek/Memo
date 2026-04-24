@@ -3,11 +3,13 @@ import {recursiveUnwrapFormValues} from "components/felte-form/wrapped_fields";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {NON_NULLABLE} from "components/utils/array_filter";
 import {
+  AttributeSelection,
   PartialAttributesSelection,
   attributesSelectionFromPartial,
   getUnknownFixedAttributes,
   isAttributeSelected,
 } from "components/utils/attributes_selection";
+import {cx} from "components/utils/classnames";
 import {isDEV} from "components/utils/dev_mode";
 import {DATE_FORMAT, DATE_TIME_FORMAT} from "components/utils/formatting";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -22,6 +24,7 @@ import {
 } from "data-access/memo-api/resources/attribute.resource";
 import {UserLink} from "features/facility-users/UserLink";
 import {DateTime} from "luxon";
+import {AiFillCaretDown} from "solid-icons/ai";
 import {
   Accessor,
   For,
@@ -37,6 +40,7 @@ import {
 } from "solid-js";
 import {activeFacilityId} from "state/activeFacilityId.state";
 import {z} from "zod";
+import {ButtonLike} from "../ButtonLike";
 import {Capitalize} from "../Capitalize";
 import {HideableSection} from "../HideableSection";
 import {InfoIcon} from "../InfoIcon";
@@ -312,15 +316,21 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       );
     }
   });
+
+  interface AttributeInfo {
+    readonly attribute: Attribute;
+    readonly selected: AttributeSelection<AttributeParams<unknown>>;
+  }
+
   const relevantAttributes = createMemo(
     () =>
-      new Map(
+      new Map<string, AttributeInfo>(
         attributes()
           ?.getForModel(props.model)
           .map((attribute) => {
             const selected =
               attribute.type === "separator"
-                ? {selected: true, override: undefined}
+                ? ({selected: true, explicit: false, override: undefined} as const)
                 : isAttributeSelected(selection(), attribute);
             return selected && ([attribute.id, {attribute, selected}] as const);
           })
@@ -362,76 +372,112 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
       <fieldset data-felte-keep-on-remove disabled={!props.editMode}>
         <div class="grid gap-x-1" style={{"grid-template-columns": "minmax(8em, 1fr) minmax(8em, 2fr) auto"}}>
           <For each={attributeGroups()} fallback={t("attributes.no_attributes")}>
-            {(group) => (
-              <SectionWithHeader
-                header={(show) => (
-                  <Show when={group.separatorBeforeId}>
-                    {(separatorBeforeId) => (
-                      <HideableSection
-                        class="col-span-full"
-                        show={show()}
-                        transitionTimeMs={50}
-                        transitionTimingFunction="ease-out"
-                      >
-                        <div class="font-bold pt-6">
-                          <Capitalize text={relevantAttributes().get(separatorBeforeId())?.attribute.label} />
-                        </div>
-                      </HideableSection>
-                    )}
-                  </Show>
-                )}
-                footer={(show) => (
-                  <Show when={show()}>
-                    <div class="col-span-full -mt-px border-b border-memo-active" />
-                  </Show>
-                )}
-                class="col-span-full grid grid-cols-subgrid"
-              >
-                <For each={group.attributeIds}>
-                  {(attributeId) => {
-                    const {attribute, selected} = relevantAttributes().get(attributeId)!;
-                    const isEmpty = () => getIsEmpty(form.data(fieldName(attribute)), selected.override?.isEmpty);
-                    return (
-                      <HideableSection
-                        show={
-                          !isEmpty() ||
-                          !minRequirementLevel() ||
-                          compareRequirementLevels(attribute.requirementLevel, minRequirementLevel()!) >= 0
-                        }
-                        class="col-span-full grid grid-cols-subgrid"
-                      >
-                        <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
-                          <label
-                            class="font-semibold flex items-center gap-1"
-                            for={
-                              attribute.multiple && attribute.basicType !== "dict" ? undefined : fieldName(attribute)
-                            }
-                          >
-                            <div class="wrapTextAnywhere">
-                              <Capitalize text={attribute.label} />
-                            </div>
-                            <Show when={attribute.description}>
-                              {(description) => <InfoIcon title={description()} />}
+            {(group) => {
+              const headerSeparator = group.separatorBeforeId
+                ? relevantAttributes().get(group.separatorBeforeId)?.attribute
+                : undefined;
+              const groupFolding = headerSeparator?.metadata.groupFolding;
+              const [isFolded, setIsFolded] = createSignal(!!(groupFolding?.enabled && groupFolding.initialFolded));
+
+              function isAttributeEmpty({attribute, selected}: AttributeInfo) {
+                return getIsEmpty(form.data(fieldName(attribute)), selected.override?.isEmpty);
+              }
+              function isAttributeShown(attributeInfo: AttributeInfo) {
+                return (
+                  !isAttributeEmpty(attributeInfo) ||
+                  !minRequirementLevel() ||
+                  compareRequirementLevels(attributeInfo.attribute.requirementLevel, minRequirementLevel()!) >= 0
+                );
+              }
+
+              const isAnyAttributeShown = createMemo(() =>
+                group.attributeIds.some((id) => isAttributeShown(relevantAttributes().get(id)!)),
+              );
+              const forceEmptyHeaderVisible = () => !minRequirementLevel() || (props.editMode && groupFolding?.enabled);
+              return (
+                <SectionWithHeader
+                  header={(show) => (
+                    <Show when={group.separatorBeforeId}>
+                      {(separatorBeforeId) => (
+                        <HideableSection
+                          class="col-span-full"
+                          show={show()}
+                          transitionTimeMs={50}
+                          transitionTimingFunction="ease-out"
+                        >
+                          <div class="font-bold pt-6 flex justify-between items-center gap-2">
+                            <Capitalize text={relevantAttributes().get(separatorBeforeId())?.attribute.label} />
+                            <Show when={groupFolding?.enabled}>
+                              <ButtonLike
+                                class="minimal !p-1"
+                                onClick={() => setIsFolded((f) => !f)}
+                                title={isFolded() ? t("actions.expand") : t("actions.collapse")}
+                              >
+                                <AiFillCaretDown size="0.75em" />
+                              </ButtonLike>
                             </Show>
-                          </label>
-                          <div class="flex flex-col justify-center">
-                            <Show
-                              when={props.editMode}
-                              fallback={<AttributeView attribute={attribute} params={selected.override} />}
+                          </div>
+                        </HideableSection>
+                      )}
+                    </Show>
+                  )}
+                  footer={(show) => (
+                    <Show when={show()}>
+                      <div class="col-span-full -mt-px border-b border-memo-active" />
+                    </Show>
+                  )}
+                  class={cx("col-span-full grid grid-cols-subgrid", forceEmptyHeaderVisible() ? "min-h-px" : undefined)}
+                >
+                  <Show when={groupFolding?.enabled}>
+                    <HideableSection show={!isFolded() && !isAnyAttributeShown()} class="col-span-full">
+                      <div class="italic text-grey-text p-1">{t("attributes.no_attributes")}</div>
+                    </HideableSection>
+                  </Show>
+                  <For each={group.attributeIds}>
+                    {(attributeId) => {
+                      const attributeInfo = relevantAttributes().get(attributeId)!;
+                      const {attribute, selected} = attributeInfo;
+                      return (
+                        <HideableSection
+                          show={!isFolded() && isAttributeShown(attributeInfo)}
+                          class="col-span-full grid grid-cols-subgrid"
+                        >
+                          <div class="col-span-full grid grid-cols-subgrid grid-flow-col py-0.5 border-b border-gray-300 border-dotted">
+                            <label
+                              class="font-semibold flex items-center gap-1"
+                              for={
+                                attribute.multiple && attribute.basicType !== "dict" ? undefined : fieldName(attribute)
+                              }
                             >
-                              <AttributeField attribute={attribute} />
-                            </Show>
+                              <div class="wrapTextAnywhere">
+                                <Capitalize text={attribute.label} />
+                              </div>
+                              <Show when={attribute.description}>
+                                {(description) => <InfoIcon title={description()} />}
+                              </Show>
+                            </label>
+                            <div class="flex flex-col justify-center">
+                              <Show
+                                when={props.editMode}
+                                fallback={<AttributeView attribute={attribute} params={selected.override} />}
+                              >
+                                <AttributeField attribute={attribute} />
+                              </Show>
+                            </div>
+                            <div class="flex items-center justify-center">
+                              <RequirementLevelMarker
+                                level={attribute.requirementLevel}
+                                isEmpty={isAttributeEmpty(attributeInfo)}
+                              />
+                            </div>
                           </div>
-                          <div class="flex items-center justify-center">
-                            <RequirementLevelMarker level={attribute.requirementLevel} isEmpty={isEmpty()} />
-                          </div>
-                        </div>
-                      </HideableSection>
-                    );
-                  }}
-                </For>
-              </SectionWithHeader>
-            )}
+                        </HideableSection>
+                      );
+                    }}
+                  </For>
+                </SectionWithHeader>
+              );
+            }}
           </For>
         </div>
       </fieldset>

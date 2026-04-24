@@ -200,7 +200,7 @@ export default (() => {
                           return (
                             <>
                               <Autofocus autofocus={editMode()}>
-                                <div class="flex flex-col">
+                                <div class="flex flex-col gap-4">
                                   <HideableSection
                                     show={editMode() && user().managedByFacilityId === activeFacilityId()}
                                   >
