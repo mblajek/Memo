@@ -393,7 +393,8 @@ export const AttributeFields: VoidComponent<Props> = (props) => {
               const isAnyAttributeShown = createMemo(() =>
                 group.attributeIds.some((id) => isAttributeShown(relevantAttributes().get(id)!)),
               );
-              const forceEmptyHeaderVisible = () => !minRequirementLevel() || (props.editMode && groupFolding?.enabled);
+              const forceEmptyHeaderVisible = () =>
+                groupFolding?.enabled && (!minRequirementLevel() || props.editMode || isAnyAttributeShown());
               return (
                 <SectionWithHeader
                   header={(show) => (

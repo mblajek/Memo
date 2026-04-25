@@ -68,6 +68,6 @@ export interface AttributeMetadataResource {
 }
 
 export interface AttributeGroupFolding {
-  readonly enabled: boolean;
-  readonly initialFolded: boolean;
+  readonly enabled?: boolean;
+  readonly initialFolded?: boolean;
 }

@@ -64,7 +64,7 @@ export const ThingsList = <T,>(allProps: Props<T>) => {
         >
           <For each={items()}>
             {(item) => (
-              <li class="whitespace-nowrap pr-1" style={{"text-decoration": "inherit"}}>
+              <li class="whitespace-nowrap pr-3" style={{"text-decoration": "inherit"}}>
                 <div class="align-top inline-block wrapTextAnywhere">{item}</div>
               </li>
             )}
