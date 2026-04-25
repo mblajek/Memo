@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 
-class CreateIntegrationEventsDb extends Command
+class CreateIntegrationEventsDbCommand extends Command
 {
     protected $signature = 'fz:create-integration-events-db';
     protected $description = 'Create sqlite database for integration events';
@@ -37,6 +37,9 @@ class CreateIntegrationEventsDb extends Command
 
             $connection->statement(
                 'create index "events_out_facility_id_index" on "events_out"("facility_id")',
+            );
+            $connection->statement(
+                'create index "events_out_created_at_index" on "events_out"("created_at")',
             );
             $connection->statement(
                 'create index "events_out_type_object_id_index" on "events_out"("type", "object_id")',
