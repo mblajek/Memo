@@ -2,6 +2,7 @@ import {Select} from "components/ui/form/Select";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {cx} from "components/utils/classnames";
 import {useLangFunc} from "components/utils/lang";
+import {typed} from "components/utils/typed";
 import {NullColumnFilter} from "data-access/memo-api/tquery/types";
 import {useFilterFieldNames} from "./filter_field_names";
 import s from "./filters.module.scss";
@@ -20,7 +21,7 @@ export const NullFilterControl: FilterControl<Filter> = (props) => {
     },
     getState,
   } = getFilterControlState({
-    initial: {value: "-" satisfies Value as Value},
+    initial: {value: typed<Value>("-")},
     filter: () => props.filter,
   });
   function buildFilter(): Filter | undefined {

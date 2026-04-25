@@ -6,6 +6,7 @@ import {closeAllSelects, Select, SelectItem} from "components/ui/form/Select";
 import {cx} from "components/utils/classnames";
 import {debouncedFilterTextAccessor} from "components/utils/debounce";
 import {useLangFunc} from "components/utils/lang";
+import {typed} from "components/utils/typed";
 import {FilterH, filterHToObject} from "data-access/memo-api/tquery/filter_utils";
 import {createComputed, createMemo, createSignal, VoidComponent} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
@@ -37,7 +38,7 @@ export const TextualFilterControl: VoidComponent<Props> = (props) => {
     },
     getState,
   } = getFilterControlState({
-    initial: {mode: "~" satisfies Mode as Mode, text: ""},
+    initial: {mode: typed<Mode>("~"), text: ""},
     filter: () => props.filter,
   });
   const [inputText, setInputText] = createSignal(text());

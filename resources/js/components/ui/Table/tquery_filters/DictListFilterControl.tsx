@@ -1,6 +1,7 @@
 import {DictionarySelect} from "components/ui/form/DictionarySelect";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {cx} from "components/utils/classnames";
+import {typed} from "components/utils/typed";
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
 import {createComputed} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
@@ -20,7 +21,7 @@ export const DictListFilterControl: FilterControl<Filter> = (props) => {
     },
     getState,
   } = getFilterControlState({
-    initial: {mode: "has_all" satisfies SelectFilterMode as SelectFilterMode, value: [] satisfies readonly string[]},
+    initial: {mode: typed<SelectFilterMode>("has_all"), value: [] satisfies readonly string[]},
     filter: () => props.filter,
   });
   function buildFilter(): Filter | undefined {

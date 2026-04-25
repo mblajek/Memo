@@ -26,8 +26,8 @@ export function createHoverSignal() {
 
 type HoverSignalInput = HoverSetter | HoverSignal | undefined;
 
-function getSetterFunc(input: HoverSignalInput) {
-  return (input as HoverSignal | undefined)?.setHover || (input as HoverSetter | undefined);
+function getSetterFunc(input: HoverSignalInput): HoverSetter | undefined {
+  return input ? ("setHover" in input ? input.setHover : input) : undefined;
 }
 
 /**
