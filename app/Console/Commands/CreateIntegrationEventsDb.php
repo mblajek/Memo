@@ -24,7 +24,8 @@ class CreateIntegrationEventsDb extends Command
             chmod($databaseFile, 0600);
 
             $connection->getSchemaBuilder()->create('events_out', function (Blueprint $table) {
-                DMH::charUuid($table, 'id')->collation('binary');
+                DMH::charUuid($table, 'id')->unique()->collation('binary');
+                $table->integerIncrements('seq');
                 $table->dateTime('created_at');
                 $table->dateTime('updated_at');
                 DMH::charUuid($table, 'created_by')->collation('binary');
@@ -32,7 +33,6 @@ class CreateIntegrationEventsDb extends Command
                 DMH::charUuid($table, 'facility_id')->collation('binary');
                 DMH::ascii($table, 'type')->collation('binary');
                 DMH::charUuid($table, 'object_id')->collation('binary');
-                DMH::ascii($table, 'status')->collation('binary');
             });
 
             $connection->statement(
@@ -41,6 +41,14 @@ class CreateIntegrationEventsDb extends Command
             $connection->statement(
                 'create index "events_out_type_object_id_index" on "events_out"("type", "object_id")',
             );
+
+            $connection->getSchemaBuilder()->create('listeners', function (Blueprint $table) {
+                DMH::charUuid($table, 'id')->primary()->collation('binary');
+                $table->dateTime('created_at');
+                $table->dateTime('updated_at');
+                DMH::ascii($table, 'listener_code', 50)->unique()->collation('binary');
+                $table->unsignedInteger('last_processed_event_seq')->nullable();
+            });
         }
     }
 }

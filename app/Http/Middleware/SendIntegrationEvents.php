@@ -10,7 +10,6 @@ use App\Models\IntegrationEventOut;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Models\Value;
-use App\Services\IntegrationEvents\IntegrationEventStatus;
 use App\Services\IntegrationEvents\IntegrationEventType;
 use App\Utils\Date\DateHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -84,7 +83,6 @@ class SendIntegrationEvents
             $event->facility_id = $facilityId;
             $event->type = IntegrationEventType::user;
             $event->object_id = $userId;
-            $event->status = IntegrationEventStatus::created;
 
             self::$events[$facilityId][IntegrationEventType::user->name][$userId] = $event;
         }
