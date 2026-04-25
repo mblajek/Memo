@@ -12,9 +12,11 @@ use App\Models\User;
 use App\Models\Value;
 use App\Services\IntegrationEvents\IntegrationEventStatus;
 use App\Services\IntegrationEvents\IntegrationEventType;
+use App\Utils\Date\DateHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Nette\Utils\DateTime;
 use Symfony\Component\HttpFoundation\Response;
 
 class SendIntegrationEvents
@@ -69,7 +71,7 @@ class SendIntegrationEvents
         if ($facilityId = PermissionMiddleware::permissions()->facility?->id) {
             $facilityIds = [$facilityId];
         } else {
-            $facilityIds = User::findOrFail($userId)->members()->pluck('facility_id')->all();
+            $facilityIds = User::find($userId)?->members()->pluck('facility_id')->all() ?? [];
         }
 
         foreach ($facilityIds as $facilityId) {
@@ -90,6 +92,12 @@ class SendIntegrationEvents
 
     private function flushEvents(): void
     {
+        if (self::$events) {
+            IntegrationEventOut::query()
+                ->where('created_at', '<', new DateTime('1 week ago midnight'))
+                ->delete();
+        }
+
         foreach (self::$events as $facilityEvents) {
             foreach ($facilityEvents as $typeEvents) {
                 /** @var IntegrationEventOut $event */
