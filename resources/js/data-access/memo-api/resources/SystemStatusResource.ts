@@ -12,4 +12,15 @@ export interface SystemStatusResource {
   readonly userTimezone: string;
   readonly dumpsEnabled: boolean;
   readonly lastDump: string | null;
+  readonly integrationEvents?: IntegrationEventsStatus;
+}
+
+export interface IntegrationEventsStatus {
+  readonly lastSeq: number | null;
+  readonly listeners: readonly IntegrationEventsListenerStatus[];
+}
+
+export interface IntegrationEventsListenerStatus {
+  readonly listenerCode: string;
+  readonly lastProcessedEventSeq: number | null;
 }

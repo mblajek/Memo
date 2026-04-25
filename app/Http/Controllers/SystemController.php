@@ -174,6 +174,26 @@ class SystemController extends ApiController
                     new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
                     new OA\Property(property: 'lastDump', type: 'datetime', nullable: true),
                     new OA\Property(property: 'cpu15m', type: 'float', nullable: true),
+                    new OA\Property(
+                        property: 'integrationEvents',
+                        description: 'Present only when integration events are initialized.',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(property: 'lastSeq', type: 'integer', nullable: true),
+                            new OA\Property(
+                                property: 'listeners',
+                                type: 'array',
+                                items: new OA\Items(properties: [
+                                    new OA\Property(property: 'listenerCode', type: 'string'),
+                                    new OA\Property(
+                                        property: 'lastProcessedEventSeq',
+                                        type: 'integer',
+                                        nullable: true,
+                                    ),
+                                ]),
+                            ),
+                        ],
+                    ),
                 ])),
             ])),
         ]

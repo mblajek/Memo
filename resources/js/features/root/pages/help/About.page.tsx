@@ -2,8 +2,9 @@ import {A} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
+import {WarningMark} from "components/ui/WarningMark";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
-import {toggleDEV} from "components/utils/dev_mode";
+import {isDEV, toggleDEV} from "components/utils/dev_mode";
 import {DATE_TIME_FORMAT} from "components/utils/formatting";
 import {useLangFunc} from "components/utils/lang";
 import {currentTimeSecond} from "components/utils/time";
@@ -11,9 +12,11 @@ import {useDeveloperPermission} from "features/authentication/developer_permissi
 import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
-import {Show, VoidComponent} from "solid-js";
+import {For, Show, VoidComponent} from "solid-js";
 
 const GITHUB_LINK = "https://github.com/mblajek/Memo";
+
+const INTEGRATION_EVENTS_SEQ_LAG_WARNING_THRESHOLD = 5;
 
 export default (() => {
   const t = useLangFunc();
@@ -105,6 +108,47 @@ export default (() => {
                   </label>
                   <Show when={status().cpu15m?.toFixed(2)} fallback={<EmptyValueSymbol />}>
                     {(cpu15m) => <div>{cpu15m()}</div>}
+                  </Show>
+                  <Show when={isDEV() && status().integrationEvents}>
+                    {(integrationEvents) => (
+                      <>
+                        <label class="font-semibold">{t("about_page.integration_events")}</label>
+                        <div class="flex flex-col">
+                          <div>
+                            {t("about_page.integration_events_last_seq")}{" "}
+                            <Show when={integrationEvents().lastSeq} fallback={<EmptyValueSymbol />}>
+                              {(lastSeq) => <span>{lastSeq()}</span>}
+                            </Show>
+                          </div>
+                          <ul class="list-disc list-inside">
+                            <For each={integrationEvents().listeners}>
+                              {(listener) => (
+                                <li>
+                                  <span class="font-mono text-sm">{listener.listenerCode}</span>:{" "}
+                                  <Show when={listener.lastProcessedEventSeq} fallback={<EmptyValueSymbol />}>
+                                    {(lastProcessedEventSeq) => (
+                                      <span>
+                                        {lastProcessedEventSeq()}
+                                        <Show
+                                          when={
+                                            integrationEvents().lastSeq &&
+                                            lastProcessedEventSeq() <
+                                              integrationEvents().lastSeq! -
+                                                INTEGRATION_EVENTS_SEQ_LAG_WARNING_THRESHOLD
+                                          }
+                                        >
+                                          <WarningMark />
+                                        </Show>
+                                      </span>
+                                    )}
+                                  </Show>
+                                </li>
+                              )}
+                            </For>
+                          </ul>
+                        </div>
+                      </>
+                    )}
                   </Show>
                 </SilentAccessBarrier>
               </div>
