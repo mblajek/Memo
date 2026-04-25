@@ -77,4 +77,5 @@ jobs:
       - run: composer install --prefer-dist --no-progress --no-interaction
       - run: php artisan key:generate
       - run: php artisan migrate --force
+      - run: php artisan fz:create-integration-events-db
       - run: php artisan test

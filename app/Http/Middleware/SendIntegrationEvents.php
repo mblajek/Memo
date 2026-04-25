@@ -25,10 +25,7 @@ class SendIntegrationEvents
 
     public function handle(Request $request, \Closure $next): Response
     {
-        if (
-            !Config::offsetExists('database.connections.integration_events.database')
-            || App::runningUnitTests()
-        ) {
+        if (!Config::offsetExists('database.connections.integration_events.database')) {
             return $next($request);
         }
 
