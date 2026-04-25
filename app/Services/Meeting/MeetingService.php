@@ -88,7 +88,7 @@ readonly class MeetingService
                 $currentAttendants = $meeting->attendants->keyBy('user_id')->all();
                 /** @var array<non-falsy-string, MeetingAttendant> $newAttendants */
                 [$userIdsToRemove, $newAttendants] = $finalAttendants;
-                foreach ($meeting->attendants->whereIn('user_id', $userIdsToRemove) as $attendantToRemove){
+                foreach ($meeting->attendants->whereIn('user_id', $userIdsToRemove) as $attendantToRemove) {
                     $attendantToRemove->delete();
                 }
                 foreach ($newAttendants as $userId => $newAttendant) {
@@ -262,7 +262,7 @@ readonly class MeetingService
     }
 
     /**
-     * @return array{0: list<non-falsy-string>, 1: array<non-falsy-string, MeetingAttendant>}
+     * @return ?array{0: list<non-falsy-string>, 1: array<non-falsy-string, MeetingAttendant>}
      */
     public function extractPatchAttendants(array $data, Meeting $meeting): ?array
     {

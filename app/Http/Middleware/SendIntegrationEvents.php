@@ -11,9 +11,9 @@ use App\Models\Meeting;
 use App\Models\User;
 use App\Models\Value;
 use App\Services\IntegrationEvents\IntegrationEventType;
-use App\Utils\Date\DateHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Nette\Utils\DateTime;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,7 +25,10 @@ class SendIntegrationEvents
 
     public function handle(Request $request, \Closure $next): Response
     {
-        if (!Config::offsetExists('database.connections.integration_events.database')) {
+        if (
+            !Config::offsetExists('database.connections.integration_events.database')
+            || App::runningUnitTests()
+        ) {
             return $next($request);
         }
 
