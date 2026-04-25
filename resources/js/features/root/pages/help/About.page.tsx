@@ -5,7 +5,7 @@ import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
 import {WarningMark} from "components/ui/WarningMark";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
 import {isDEV, toggleDEV} from "components/utils/dev_mode";
-import {DATE_TIME_FORMAT} from "components/utils/formatting";
+import {DATE_TIME_FORMAT, NUMBER_FORMAT} from "components/utils/formatting";
 import {useLangFunc} from "components/utils/lang";
 import {currentTimeSecond} from "components/utils/time";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
@@ -117,7 +117,7 @@ export default (() => {
                           <div>
                             {t("about_page.integration_events_last_seq")}{" "}
                             <Show when={integrationEvents().lastSeq} fallback={<EmptyValueSymbol />}>
-                              {(lastSeq) => <span>{lastSeq()}</span>}
+                              {(lastSeq) => <span>{NUMBER_FORMAT.format(lastSeq())}</span>}
                             </Show>
                           </div>
                           <ul class="list-disc list-inside">
@@ -128,7 +128,7 @@ export default (() => {
                                   <Show when={listener.lastProcessedEventSeq} fallback={<EmptyValueSymbol />}>
                                     {(lastProcessedEventSeq) => (
                                       <span>
-                                        {lastProcessedEventSeq()}
+                                        {NUMBER_FORMAT.format(lastProcessedEventSeq())}
                                         <Show
                                           when={
                                             integrationEvents().lastSeq &&
