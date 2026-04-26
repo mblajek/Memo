@@ -58,6 +58,9 @@ export function useTrackFeatureUse<D extends RichJSONValue = null>(
       const debouncedData = debouncedAccessor(data, {timeMs: fullOptions.debounce.toMillis(), lazy: true});
       createEffect(
         on(debouncedData, ({firstTime, lastTime, count, breakdown}) => {
+          if (serverLog.mutation.isPending) {
+            return;
+          }
           if (firstTime && lastTime && count) {
             let contextBreakdown: BreakdownItem<D>[] | undefined = [...breakdown.values()];
             if (
