@@ -142,7 +142,7 @@ about_page:
   last_dump: "Kopia bezpieczeństwa:"
   cpu_load: "Obciążenie CPU:"
   integration_events: "Baza zdarzeń:"
-  integration_events_last_seq: "Max seq:"
+  integration_events_last_seq: "Ostatnie zdarzenie:"
 
 preview: "Podgląd"
 preview.toggle: "Otwórz$t(thin_space)/$t(thin_space)zamknij podgląd"

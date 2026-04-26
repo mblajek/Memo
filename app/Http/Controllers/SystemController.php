@@ -18,7 +18,6 @@ use App\Services\System\LogService;
 use App\Services\System\TranslationsService;
 use App\Utils\Date\DateHelper;
 use App\Utils\Nullable;
-use App\Utils\Transformer\StringTransformer;
 use DateTimeImmutable;
 use DateTimeZone;
 use Illuminate\Http\JsonResponse;
@@ -179,7 +178,15 @@ class SystemController extends ApiController
                         description: 'Present only when integration events are initialized.',
                         type: 'object',
                         properties: [
-                            new OA\Property(property: 'lastSeq', type: 'integer', nullable: true),
+                            new OA\Property(
+                                property: 'last',
+                                type: 'object',
+                                nullable: true,
+                                properties: [
+                                    new OA\Property(property: 'seq', type: 'integer'),
+                                    new OA\Property(property: 'createdAt', type: 'datetime'),
+                                ],
+                            ),
                             new OA\Property(
                                 property: 'listeners',
                                 type: 'array',
@@ -190,6 +197,8 @@ class SystemController extends ApiController
                                         type: 'integer',
                                         nullable: true,
                                     ),
+                                    new OA\Property(property: 'createdAt', type: 'datetime'),
+                                    new OA\Property(property: 'updatedAt', type: 'datetime'),
                                 ]),
                             ),
                         ],
@@ -243,19 +252,29 @@ class SystemController extends ApiController
         ]);
     }
 
-    private function eventsDbStatus()
+    private function eventsDbStatus(): array
     {
         if (!SendIntegrationEvents::isInitialized() || !PermissionMiddleware::permissions()->developer) {
             return [];
         }
         $integrationEventsDb = DB::connection('integration_events');
+        $lastEvent = $integrationEventsDb->table('events_out')
+            ->orderByDesc('seq')->first(['seq', 'created_at']);
 
         return [
             'integrationEvents' => [
-                'lastSeq' => $integrationEventsDb->table('events_out')->orderByDesc('seq')->first('seq')?->seq,
+                'last' => $lastEvent ? [
+                    'seq' => $lastEvent->seq,
+                    'createdAt' => DateHelper::dbToZuluString($lastEvent->created_at),
+                ] : null,
                 'listeners' => $integrationEventsDb->table('listeners')
-                    ->get(['listener_code', 'last_processed_event_seq'])
-                    ->map(fn(object $listener): array => StringTransformer::camelKeys((array)$listener)),
+                    ->get(['listener_code', 'last_processed_event_seq', 'created_at', 'updated_at'])
+                    ->map(fn(object $listener): array => [
+                        'listenerCode' => $listener->listener_code,
+                        'lastProcessedEventSeq' => $listener->last_processed_event_seq,
+                        'createdAt' => DateHelper::dbToZuluString($listener->created_at),
+                        'updatedAt' => DateHelper::dbToZuluString($listener->updated_at),
+                    ]),
             ],
         ];
     }

@@ -2,7 +2,6 @@ import {A} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
-import {WarningMark} from "components/ui/WarningMark";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
 import {isDEV, toggleDEV} from "components/utils/dev_mode";
 import {DATE_TIME_FORMAT, NUMBER_FORMAT} from "components/utils/formatting";
@@ -15,8 +14,6 @@ import {DateTime} from "luxon";
 import {For, Show, VoidComponent} from "solid-js";
 
 const GITHUB_LINK = "https://github.com/mblajek/Memo";
-
-const INTEGRATION_EVENTS_SEQ_LAG_WARNING_THRESHOLD = 5;
 
 export default (() => {
   const t = useLangFunc();
@@ -110,45 +107,57 @@ export default (() => {
                     {(cpu15m) => <div>{cpu15m()}</div>}
                   </Show>
                   <Show when={isDEV() && status().integrationEvents}>
-                    {(integrationEvents) => (
-                      <>
-                        <label class="font-semibold">{t("about_page.integration_events")}</label>
-                        <div class="flex flex-col">
-                          <div>
-                            {t("about_page.integration_events_last_seq")}{" "}
-                            <Show when={integrationEvents().lastSeq} fallback={<EmptyValueSymbol />}>
-                              {(lastSeq) => <span>{NUMBER_FORMAT.format(lastSeq())}</span>}
+                    {(integrationEvents) => {
+                      const SeqAndDateCells: VoidComponent<{
+                        seq: number | undefined;
+                        isoDate: string | undefined;
+                      }> = (props) => (
+                        <>
+                          <div class="text-end">
+                            <Show when={props.seq != null} fallback={<EmptyValueSymbol />}>
+                              {NUMBER_FORMAT.format(props.seq!)}
                             </Show>
                           </div>
-                          <ul class="list-disc list-inside">
+                          <div class="text-grey-text">
+                            <Show when={props.seq != null && props.isoDate}>
+                              {(isoDate) =>
+                                t("parenthesised", {
+                                  text: DateTime.fromISO(isoDate()).toLocaleString(DATE_TIME_FORMAT),
+                                })
+                              }
+                            </Show>
+                          </div>
+                        </>
+                      );
+                      return (
+                        <>
+                          <label class="font-semibold">{t("about_page.integration_events")}</label>
+                          <div
+                            class="grid items-baseline gap-x-3 gap-y-1 self-start"
+                            style={{"grid-template-columns": "auto auto auto"}}
+                          >
+                            <div>{t("about_page.integration_events_last_seq")}</div>
+                            <SeqAndDateCells
+                              seq={integrationEvents().last?.seq}
+                              isoDate={integrationEvents().last?.createdAt}
+                            />
                             <For each={integrationEvents().listeners}>
                               {(listener) => (
-                                <li>
-                                  <span class="font-mono text-sm">{listener.listenerCode}</span>:{" "}
-                                  <Show when={listener.lastProcessedEventSeq} fallback={<EmptyValueSymbol />}>
-                                    {(lastProcessedEventSeq) => (
-                                      <span>
-                                        {NUMBER_FORMAT.format(lastProcessedEventSeq())}
-                                        <Show
-                                          when={
-                                            integrationEvents().lastSeq &&
-                                            lastProcessedEventSeq() <
-                                              integrationEvents().lastSeq! -
-                                                INTEGRATION_EVENTS_SEQ_LAG_WARNING_THRESHOLD
-                                          }
-                                        >
-                                          <WarningMark />
-                                        </Show>
-                                      </span>
-                                    )}
-                                  </Show>
-                                </li>
+                                <>
+                                  <div>
+                                    ⦁ <span class="font-mono text-sm">{listener.listenerCode}</span>
+                                  </div>
+                                  <SeqAndDateCells
+                                    seq={listener.lastProcessedEventSeq || undefined}
+                                    isoDate={listener.updatedAt}
+                                  />
+                                </>
                               )}
                             </For>
-                          </ul>
-                        </div>
-                      </>
-                    )}
+                          </div>
+                        </>
+                      );
+                    }}
                   </Show>
                 </SilentAccessBarrier>
               </div>
