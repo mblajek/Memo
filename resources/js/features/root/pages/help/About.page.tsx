@@ -19,6 +19,29 @@ export default (() => {
   const t = useLangFunc();
   const systemStatusMonitor = useSystemStatusMonitor();
   const developerPermission = useDeveloperPermission();
+
+  const SeqAndDateCells: VoidComponent<{
+    seq: number | undefined;
+    isoDate: string | undefined;
+  }> = (props) => {
+    return (
+      <>
+        <div class="text-end">
+          <Show when={props.seq != null} fallback={<EmptyValueSymbol />}>
+            {NUMBER_FORMAT.format(props.seq!)}
+          </Show>
+        </div>
+        <div class="text-grey-text">
+          <Show when={props.seq != null && props.isoDate}>
+            {t("parenthesised", {
+              text: DateTime.fromISO(props.isoDate!).toLocaleString(DATE_TIME_FORMAT),
+            })}
+          </Show>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div class="p-2 flex flex-col gap-4">
       <div>
@@ -107,57 +130,34 @@ export default (() => {
                     {(cpu15m) => <div>{cpu15m()}</div>}
                   </Show>
                   <Show when={isDEV() && status().integrationEvents}>
-                    {(integrationEvents) => {
-                      const SeqAndDateCells: VoidComponent<{
-                        seq: number | undefined;
-                        isoDate: string | undefined;
-                      }> = (props) => (
-                        <>
-                          <div class="text-end">
-                            <Show when={props.seq != null} fallback={<EmptyValueSymbol />}>
-                              {NUMBER_FORMAT.format(props.seq!)}
-                            </Show>
-                          </div>
-                          <div class="text-grey-text">
-                            <Show when={props.seq != null && props.isoDate}>
-                              {(isoDate) =>
-                                t("parenthesised", {
-                                  text: DateTime.fromISO(isoDate()).toLocaleString(DATE_TIME_FORMAT),
-                                })
-                              }
-                            </Show>
-                          </div>
-                        </>
-                      );
-                      return (
-                        <>
-                          <label class="font-semibold">{t("about_page.integration_events")}</label>
-                          <div
-                            class="grid items-baseline gap-x-3 gap-y-1 self-start"
-                            style={{"grid-template-columns": "auto auto auto"}}
-                          >
-                            <div>{t("about_page.integration_events_last_seq")}</div>
-                            <SeqAndDateCells
-                              seq={integrationEvents().last?.seq}
-                              isoDate={integrationEvents().last?.createdAt}
-                            />
-                            <For each={integrationEvents().listeners}>
-                              {(listener) => (
-                                <>
-                                  <div>
-                                    ⦁ <span class="font-mono text-sm">{listener.listenerCode}</span>
-                                  </div>
-                                  <SeqAndDateCells
-                                    seq={listener.lastProcessedEventSeq || undefined}
-                                    isoDate={listener.updatedAt}
-                                  />
-                                </>
-                              )}
-                            </For>
-                          </div>
-                        </>
-                      );
-                    }}
+                    {(integrationEvents) => (
+                      <>
+                        <label class="font-semibold">{t("about_page.integration_events")}</label>
+                        <div
+                          class="grid items-baseline gap-x-3 gap-y-1 self-start"
+                          style={{"grid-template-columns": "auto auto auto"}}
+                        >
+                          <div>{t("about_page.integration_events_last_seq")}</div>
+                          <SeqAndDateCells
+                            seq={integrationEvents().last?.seq}
+                            isoDate={integrationEvents().last?.createdAt}
+                          />
+                          <For each={integrationEvents().listeners}>
+                            {(listener) => (
+                              <>
+                                <div>
+                                  ⦁ <span class="font-mono text-sm">{listener.listenerCode}</span>
+                                </div>
+                                <SeqAndDateCells
+                                  seq={listener.lastProcessedEventSeq || undefined}
+                                  isoDate={listener.updatedAt}
+                                />
+                              </>
+                            )}
+                          </For>
+                        </div>
+                      </>
+                    )}
                   </Show>
                 </SilentAccessBarrier>
               </div>
