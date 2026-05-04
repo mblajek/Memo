@@ -84,6 +84,11 @@ export const Maurtue: VoidComponent<Props> = (allProps) => {
   // wipes on the visible canvas don't affect the persistent mask state.
   const maskBuffer = document.createElement("canvas");
   const maskBufferCtx = maskBuffer.getContext("2d")!;
+  // A fresh canvas reports a default 300x150 size before we ever draw to it, so dimension checks
+  // alone can't tell first init from a resize. Without this flag, the first init would snapshot
+  // the blank default-size buffer and paste its transparent pixels into the center of the new
+  // buffer, leaving a 300x150 transparent hole.
+  let maskBufferInitialized = false;
   let maskCanvas: HTMLCanvasElement | undefined;
   let maskCtx: CanvasRenderingContext2D | undefined;
   let maurCtx: CanvasRenderingContext2D | undefined;
@@ -108,7 +113,7 @@ export const Maurtue: VoidComponent<Props> = (allProps) => {
     }
     // Snapshot the existing buffer (persistent across visible-canvas resizes).
     let snapshot: HTMLCanvasElement | undefined;
-    if (maskBuffer.width > 0 && maskBuffer.height > 0) {
+    if (maskBufferInitialized) {
       snapshot = document.createElement("canvas");
       snapshot.width = maskBuffer.width;
       snapshot.height = maskBuffer.height;
@@ -117,6 +122,7 @@ export const Maurtue: VoidComponent<Props> = (allProps) => {
     // Resize wipes the buffer to fully transparent.
     maskBuffer.width = w;
     maskBuffer.height = h;
+    maskBufferInitialized = true;
     maskBufferCtx.globalCompositeOperation = "source-over";
     if (snapshot) {
       // Paste the snapshot onto the transparent buffer first so its per-pixel alpha (the carved
