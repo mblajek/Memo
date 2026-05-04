@@ -11,5 +11,8 @@
     "exclude": [
         "database/migrations",
         "release"
+    ],
+    "notPath": [
+        "app/Console/Commands/DevCommand.php"
     ]
 }

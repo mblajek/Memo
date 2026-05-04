@@ -20,6 +20,9 @@ class CreateIntegrationEventsDbCommand extends Command
         $databaseFile = $connection->getConfig('database');
 
         if (!file_exists($databaseFile)) {
+            if (!is_dir(dirname($databaseFile))) {
+                mkdir(dirname($databaseFile), 0755, true);
+            }
             file_put_contents($databaseFile, '');
             chmod($databaseFile, 0600);
 
@@ -52,6 +55,9 @@ class CreateIntegrationEventsDbCommand extends Command
                 DMH::ascii($table, 'listener_code', 50)->unique()->collation('binary');
                 $table->unsignedInteger('last_processed_event_seq')->nullable();
             });
+            $this->info("Database '$databaseFile' created");
+        } else {
+            $this->warn("Database '$databaseFile' already exists");
         }
     }
 }

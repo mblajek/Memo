@@ -5,15 +5,14 @@ namespace App\Http\Middleware;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Models\Client;
 use App\Models\Enums\AttributeTable;
-use App\Models\EventOut;
 use App\Models\IntegrationEventOut;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Models\Value;
 use App\Services\IntegrationEvents\IntegrationEventType;
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Config;
 use Nette\Utils\DateTime;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,15 +22,14 @@ class SendIntegrationEvents
     private static array $events = [];
     private static bool $initialized = false;
 
-    public function handle(Request $request, \Closure $next): Response
+    public function handle(Request $request, Closure $next): Response
     {
-        if (!Config::offsetExists('database.connections.integration_events.database')) {
-            return $next($request);
-        }
+        self::$initialized = (bool)Config::get('database.connections.integration_events.database');
 
-        self::$initialized = true;
         $response = $next($request);
-        $this->flushEvents();
+        if (self::$initialized) {
+            $this->flushEvents();
+        }
         return $response;
     }
 
@@ -42,7 +40,7 @@ class SendIntegrationEvents
 
     public static function addUserEvents(Model $model): void
     {
-        if (!self::$initialized || ($model instanceof EventOut)) {
+        if (!self::$initialized || ($model instanceof IntegrationEventOut)) {
             return;
         }
 

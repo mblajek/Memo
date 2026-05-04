@@ -145,6 +145,9 @@ ini_set('display_errors', 1);
     $exec('mkdir -p release/memo/', $config['release']);
     $exec('git pull', $config['pull'], echoOutput: true);
 
+    $exec('php vendor/bin/pint --test', $config['release']);
+    $exec('php -d memory_limit=256M vendor/bin/phpstan', $config['release']);
+
     $exec('composer install -n -q', $config['dev']);
     $exec('composer install -n -q --no-dev', $config['prod']);
 
@@ -165,6 +168,7 @@ ini_set('display_errors', 1);
     $exec('cp -r vendor/ artisan composer.json release/memo/', $config['release']);
     $exec('rm -rf release/memo/storage/logs/*.log', $config['release']);
     $exec('rm -rf release/memo/database/dumps', $config['release']);
+    $exec('rm -rf release/memo/database/integration_events', $config['release']);
     $exec('rm -rf release/memo/public/storage/*', $config['release']);
     $exec('rm -f release/memo/app/Console/Commands/DevCommand.php', $config['release']);
 
