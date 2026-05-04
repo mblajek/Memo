@@ -1,5 +1,4 @@
 import {UseQueryResult} from "@tanstack/solid-query";
-import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {MAX_DAY_MINUTE} from "components/utils/day_minute_util";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -257,7 +256,7 @@ export function useCalendarBlocksAndEvents({
             class={cx(shouldStyleCell ? undefined : "border border-gray-300", "text-red-900 px-0.5")}
             style={shouldStyleCell ? undefined : meetingStyle}
             label={(time) => (
-              <div {...style({"line-height": "1.05"})}>
+              <div style={{"line-height": "1.05"}}>
                 <Show when={calendarFunction === "leaveTimes" && !meeting.isFacilityWide}>
                   <UserLink
                     class="!text-black whitespace-nowrap"

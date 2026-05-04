@@ -43,6 +43,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\TransformKeysValidate::class,
             \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
+            \App\Http\Middleware\SendIntegrationEvents::class,
         ],
     ];
 

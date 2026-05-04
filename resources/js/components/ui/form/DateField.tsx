@@ -21,28 +21,27 @@ export const DateField: VoidComponent<DateFieldProps> = (allProps) => {
   );
 };
 
-interface DateFieldDateInputProps
-  extends Pick<
-    DateInputProps,
-    | "outerClass"
-    | "showWeekday"
-    | "class"
-    | "type"
-    | "min"
-    | "max"
-    | "step"
-    | "autofocus"
-    | "autocomplete"
-    | "autocapitalize"
-    | "autocorrect"
-    | "spellcheck"
-    | "readonly"
-    | "disabled"
-    | "placeholder"
-    | "onClick"
-    | "onInput"
-    | "onChange"
-  > {
+interface DateFieldDateInputProps extends Pick<
+  DateInputProps,
+  | "outerClass"
+  | "showWeekday"
+  | "class"
+  | "type"
+  | "min"
+  | "max"
+  | "step"
+  | "autofocus"
+  | "autocomplete"
+  | "autocapitalize"
+  | "autocorrect"
+  | "spellcheck"
+  | "readonly"
+  | "disabled"
+  | "placeholder"
+  | "onClick"
+  | "onInput"
+  | "onChange"
+> {
   readonly name: string;
   readonly small?: boolean;
 }

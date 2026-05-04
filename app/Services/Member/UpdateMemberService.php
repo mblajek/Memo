@@ -51,7 +51,7 @@ class UpdateMemberService
                 return null;
             }
             $itemId = $member->getAttribute($modelField);
-            /** @var Grant|Client|StaffMember $item */
+            /** @var Grant|Client|StaffMember|null $item */
             $item = $itemId ? $find($itemId) : null;
             if ($data[$requestField]) {
                 $item ??= $create();

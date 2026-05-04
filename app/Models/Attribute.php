@@ -28,6 +28,7 @@ use Illuminate\Validation\Rule;
  * @property bool $is_fixed
  * @property AttributeRequirementLevel $requirement_level
  * @property string $description
+ * @property ?array $metadata
  * @method static Builder<self> query()
  */
 class Attribute extends Model
@@ -50,6 +51,7 @@ class Attribute extends Model
         'is_fixed',
         'requirement_level',
         'description',
+        'metadata',
     ];
 
     protected $casts = [
@@ -60,6 +62,7 @@ class Attribute extends Model
         'is_multi_value' => 'boolean',
         'is_fixed' => 'boolean',
         'requirement_level' => AttributeRequirementLevel::class,
+        'metadata' => 'array',
     ];
 
     protected static function fieldValidator(string $field): string|array
@@ -78,6 +81,7 @@ class Attribute extends Model
             'is_multi_value', 'is_fixed' => Valid::bool(nullable: true),
             'requirement_level' => Valid::trimmed([Rule::enum(AttributeRequirementLevel::class)]),
             'description' => Valid::text(nullable: true),
+            'metadata' => Valid::array(keys: null, sometimes: true, nullable: true),
         };
     }
 

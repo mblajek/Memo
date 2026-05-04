@@ -23,20 +23,19 @@ class GetAdminUserListTest extends TestCase
 
     public function testWithValidDataReturnSuccess(): void
     {
-        $startCount = count($this->get(static::URL)->json('data'));
+        $users = User::factory()->count(5)->create();
+        $in = $users->pluck('id')->implode(',');
 
-        User::factory()->count(5)->create();
-
-        $result = $this->get(static::URL);
+        $result = $this->get(static::URL . '?in=' . $in);
 
         $result->assertOk();
         $result->assertJsonStructure($this->jsonStructure());
-        $this->assertCount(5 + $startCount, $result->json('data'));
+        $this->assertCount(5, $result->json('data'));
     }
 
     public function testWithEmptyDataReturnSuccess(): void
     {
-        $result = $this->get(static::URL);
+        $result = $this->get(static::URL . '?in=00000000-0000-0000-0000-000000000000');
 
         $result->assertOk();
     }

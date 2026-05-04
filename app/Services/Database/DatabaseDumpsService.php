@@ -7,6 +7,7 @@ use App\Http\Controllers\ApiController;
 use App\Models\DbDump;
 use App\Services\Database\Jobs\DatabaseDumpJob;
 use App\Services\Database\Jobs\DatabaseRestoreJob;
+use DateTimeImmutable;
 
 class DatabaseDumpsService
 {
@@ -35,7 +36,7 @@ class DatabaseDumpsService
             !$isToRc && !DbDump::query()
                 ->whereIn('status', DatabaseDumpStatus::CREATE_OK)
                 ->where('is_from_rc', '=', false)
-                ->where('created_at', '>', new \DateTimeImmutable('-15minute'))
+                ->where('created_at', '>', new DateTimeImmutable('-15minute'))
                 ->exists()
         ) {
             ExceptionFactory::noFreshProdDbDumps(minutes: 15)->throw();

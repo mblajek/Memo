@@ -4,6 +4,7 @@ namespace App\Models\Traits;
 
 use App\Exceptions\ApiException;
 use App\Exceptions\FatalExceptionFactory;
+use App\Http\Middleware\SendIntegrationEvents;
 use App\Http\Permissions\PermissionMiddleware;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -13,14 +14,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Throwable;
 
 /**
- * @property string id
- * @property CarbonImmutable created_at
- * @property CarbonImmutable updated_at
+ * @property string $id
+ * @property CarbonImmutable $created_at
+ * @property CarbonImmutable $updated_at
  *
- * @property string created_by
- * @property User createdBy
- * @property string updated_by
- * @property User updatedBy
+ * @property string $created_by
+ * @property User $createdBy
+ * @property string $updated_by
+ * @property User $updatedBy
  *
  * @mixin Model
  */
@@ -84,7 +85,7 @@ trait BaseModel
     {
         /** @noinspection PhpMultipleClassDeclarationsInspection */
         parent::boot();
-        static::creating(function (Model $model) {
+        static::creating(function (Model $model): void {
             /** @var $model self */
             if (!$model->created_by) {
                 $model->created_by = PermissionMiddleware::user()->id;
@@ -92,12 +93,18 @@ trait BaseModel
             if (!$model->updated_by) {
                 $model->updated_by = PermissionMiddleware::user()->id;
             }
+            SendIntegrationEvents::addUserEvents($model);
         });
-        static::updating(function (Model $model) {
+        static::updating(function (Model $model): void {
             /** @var $model self */
             $model->updated_by = PermissionMiddleware::user()->id;
+            SendIntegrationEvents::addUserEvents($model);
         });
-        if (method_exists(static::class, 'deletedBy')) {
+        static::deleting(function (Model $model): void {
+            SendIntegrationEvents::addUserEvents($model);
+        });
+
+        if (method_exists(static::class, 'deletedBy') && method_exists(static::class, 'softDeleted')) {
             static::softDeleted(/** @throws ApiException */ function (Model $model) {
                 /** @var $model HasDeletedBy */
                 $model->deleted_by = PermissionMiddleware::user()->id;

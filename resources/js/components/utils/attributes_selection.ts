@@ -48,7 +48,7 @@ export function isAttributeSelected<D>(
   selection: AttributesSelection<D>,
   {model, isFixed, apiName}: Pick<Attribute, "model" | "isFixed" | "apiName">,
   suffix?: string,
-): {selected: true; explicit: boolean; override?: D} | undefined {
+): AttributeSelection<D> | undefined {
   if (model !== selection.model) {
     return undefined;
   }
@@ -66,4 +66,10 @@ export function isAttributeSelected<D>(
   } else {
     return selection.includeNonFixed ? {selected: true, explicit: false} : undefined;
   }
+}
+
+export interface AttributeSelection<D> {
+  readonly selected: true;
+  readonly explicit: boolean;
+  readonly override?: D;
 }

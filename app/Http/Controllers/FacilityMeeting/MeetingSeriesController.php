@@ -9,9 +9,6 @@ use App\Http\Permissions\PermissionDescribe;
 use App\Models\Enums\AttendanceType;
 use App\Models\Facility;
 use App\Models\Meeting;
-use App\Models\MeetingAttendant;
-use App\Models\MeetingResource as MeetingResourceModel;
-use App\Models\Notification;
 use App\Rules\UniqueWithMemoryRule;
 use App\Rules\Valid;
 use App\Services\Meeting\MeetingCloneService;
@@ -118,11 +115,21 @@ class MeetingSeriesController extends ApiController
         $ids = array_unique([...$ids, ...($data['other_ids'] ?? [])]);
 
         DB::transaction(function () use ($ids) {
-            MeetingAttendant::query()->whereIn('meeting_id', $ids)->delete();
-            MeetingResourceModel::query()->whereIn('meeting_id', $ids)->delete();
-            // todo: set null for 'sent' (?)
-            Notification::query()->whereIn('meeting_id', $ids)->delete();
-            Meeting::query()->whereIn('id', $ids)->delete();
+            foreach (
+                Meeting::query()
+                    ->whereIn('id', $ids)
+                    ->with(['attendants'])
+                    ->get() as $meeting
+            ) {
+                $meeting->resources()->delete();
+                // todo: set null for 'sent' (?)
+                $meeting->notifications()->delete();
+
+                foreach ($meeting->attendants as $attendant) {
+                    $attendant->delete();
+                }
+                $meeting->delete();
+            }
         });
         return new JsonResponse(['data' => ['count' => count($ids)]]);
     }

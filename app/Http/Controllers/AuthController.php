@@ -21,7 +21,6 @@ use PragmaRX\Google2FA\Google2FA;
 use Psr\Log\LogLevel;
 use Throwable;
 
-/** System endpoints without authorisation */
 class AuthController extends ApiController
 {
     private const string SESSION_OTP_SECRET_CANDIDATE = 'otp_secret_candidate';

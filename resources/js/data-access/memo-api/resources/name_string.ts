@@ -29,7 +29,7 @@ export function getNameTranslation(
     | [LangFunc, NameString, (name: string) => string | readonly string[], TOptions?]
 ) {
   function isDirect(a: typeof args): a is [NameString, (name: string) => string] {
-    return typeof args[0] === "string";
+    return typeof a[0] === "string";
   }
   const [name, translationFunc] = isDirect(args) ? args : [args[1], (name: string) => args[0](args[2](name), args[3])];
   return isNameTranslatable(name) ? translationFunc(name) : name.substring(1);

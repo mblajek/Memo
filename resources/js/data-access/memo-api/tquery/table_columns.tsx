@@ -110,10 +110,10 @@ export function useTableColumns() {
     return {columnsSet, globalAdminColumnsSet};
   }
 
-  const byEntity = new Map([
+  const byEntity = new Map<Entity | undefined, ReturnType<typeof getColumnsSets>>([
     [undefined, getColumnsSets()],
-    ["staff" satisfies Entity as Entity, getColumnsSets("staff")],
-    ["client" satisfies Entity as Entity, getColumnsSets("client")],
+    ["staff", getColumnsSets("staff")],
+    ["client", getColumnsSets("client")],
   ]);
 
   return {

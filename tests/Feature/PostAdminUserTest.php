@@ -29,6 +29,7 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => self::now(),
+            'otpRequiredAt' => null,
             'hasGlobalAdmin' => true,
         ];
 
@@ -46,6 +47,7 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => false,
             'password' => null,
             'passwordExpireAt' => null,
+            'otpRequiredAt' => null,
             'hasGlobalAdmin' => false,
         ];
 
@@ -62,6 +64,7 @@ class PostAdminUserTest extends TestCase
             'email' => null,
             'password' => null,
             'passwordExpireAt' => null,
+            'otpRequiredAt' => null,
             'hasGlobalAdmin' => false,
         ];
 
@@ -79,6 +82,7 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => false,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => self::now(),
+            'otpRequiredAt' => null,
             'hasGlobalAdmin' => false,
         ];
 
@@ -96,6 +100,7 @@ class PostAdminUserTest extends TestCase
             'hasEmailVerified' => true,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => self::now(),
+            'otpRequiredAt' => null,
             'hasGlobalAdmin' => true,
         ];
 
@@ -145,6 +150,7 @@ class PostAdminUserTest extends TestCase
             'hasPassword' => false,
             'password' => null,
             'passwordExpireAt' => null,
+            'otpRequiredAt' => null,
             'hasGlobalAdmin' => false,
         ];
 
@@ -293,6 +299,7 @@ class PostAdminUserTest extends TestCase
             'hasPassword' => true,
             'password' => self::VALID_PASSWORD,
             'passwordExpireAt' => null,
+            'otpRequiredAt' => null,
             'hasGlobalAdmin' => false,
         ];
 

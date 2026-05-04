@@ -1,5 +1,4 @@
 import {Button} from "components/ui/Button";
-import {style} from "components/ui/inline_styles";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {TextInput} from "components/ui/TextInput";
 import {title} from "components/ui/title";
@@ -90,7 +89,7 @@ export const IntFilterControl: FilterControl<Filter> = (props) => {
   return (
     <div
       class={cx(s.filter, "grid gap-0.5 items-baseline")}
-      {...style({"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`})}
+      style={{"grid-template-columns": `auto ${canSyncRange() ? "auto" : ""} 1fr`}}
     >
       <div>{t("range.min")}</div>
       <Show when={canSyncRange()}>

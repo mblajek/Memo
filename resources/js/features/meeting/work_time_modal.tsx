@@ -12,8 +12,10 @@ import {createComputed, createMemo, createSignal} from "solid-js";
 
 const WorkTimeViewEditForm = lazyAutoPreload(() => import("features/meeting/WorkTimeViewEditForm"));
 
-export interface WorkTimeModalParams
-  extends Omit<WorkTimeViewEditFormProps, "staticMeetingId" | "viewMode" | "subtype"> {
+export interface WorkTimeModalParams extends Omit<
+  WorkTimeViewEditFormProps,
+  "staticMeetingId" | "viewMode" | "subtype"
+> {
   readonly meeting: Pick<MeetingResource, "id" | "typeDictId" | "staff">;
   readonly initialViewMode: boolean;
 }

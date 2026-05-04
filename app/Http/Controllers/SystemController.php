@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\SendIntegrationEvents;
 use App\Http\Permissions\Permission;
 use App\Http\Permissions\PermissionDescribe;
+use App\Http\Permissions\PermissionMiddleware;
 use App\Http\Resources\AttributeResource;
 use App\Http\Resources\DictionaryResource;
 use App\Http\Resources\FacilityResource;
@@ -24,11 +26,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Throwable;
 
-/** System endpoints without authorisation */
+/** System endpoints without authorization */
 class SystemController extends ApiController
 {
     protected function initPermissions(): void
@@ -49,7 +52,7 @@ class SystemController extends ApiController
                 in: 'path',
                 required: true,
                 schema: new OA\Schema(schema: 'string'),
-                example: 'pl-pl'
+                example: 'pl-pl',
             ),
         ],
         responses: [
@@ -76,7 +79,7 @@ class SystemController extends ApiController
                         type: 'array',
                         items: new OA\Items(ref: '#/components/schemas/FacilityResource'),
                     ),
-                ])
+                ]),
             ),
         ]
     )]
@@ -100,10 +103,10 @@ class SystemController extends ApiController
                         property: 'data',
                         type: 'array',
                         items: new OA\Items(
-                            ref: '#/components/schemas/DictionaryResource'
+                            ref: '#/components/schemas/DictionaryResource',
                         ),
                     ),
-                ])
+                ]),
             ),
         ]
     )]
@@ -112,7 +115,7 @@ class SystemController extends ApiController
         $dictionariesQuery = Dictionary::query();
         $this->applyRequestIn($dictionariesQuery);
         return DictionaryResource::collection(
-            $dictionariesQuery->with(['positions', 'values', 'positions.values'])->get()
+            $dictionariesQuery->with(['positions', 'values', 'positions.values'])->get(),
         );
     }
 
@@ -131,10 +134,10 @@ class SystemController extends ApiController
                         property: 'data',
                         type: 'array',
                         items: new OA\Items(
-                            ref: '#/components/schemas/AttributeResource'
+                            ref: '#/components/schemas/AttributeResource',
                         ),
                     ),
-                ])
+                ]),
             ),
         ]
     )]
@@ -170,6 +173,36 @@ class SystemController extends ApiController
                     new OA\Property(property: 'commitDate', type: 'datetime', nullable: true),
                     new OA\Property(property: 'lastDump', type: 'datetime', nullable: true),
                     new OA\Property(property: 'cpu15m', type: 'float', nullable: true),
+                    new OA\Property(
+                        property: 'integrationEvents',
+                        description: 'Present only when integration events are initialized.',
+                        type: 'object',
+                        properties: [
+                            new OA\Property(
+                                property: 'last',
+                                type: 'object',
+                                nullable: true,
+                                properties: [
+                                    new OA\Property(property: 'seq', type: 'integer'),
+                                    new OA\Property(property: 'createdAt', type: 'datetime'),
+                                ],
+                            ),
+                            new OA\Property(
+                                property: 'listeners',
+                                type: 'array',
+                                items: new OA\Items(properties: [
+                                    new OA\Property(property: 'listenerCode', type: 'string'),
+                                    new OA\Property(
+                                        property: 'lastProcessedEventSeq',
+                                        type: 'integer',
+                                        nullable: true,
+                                    ),
+                                    new OA\Property(property: 'createdAt', type: 'datetime'),
+                                    new OA\Property(property: 'updatedAt', type: 'datetime'),
+                                ]),
+                            ),
+                        ],
+                    ),
                 ])),
             ])),
         ]
@@ -188,7 +221,7 @@ class SystemController extends ApiController
                 $isRc = str_starts_with($branch, '## RC-');
                 $commitDateZulu = DateHelper::toZuluString(
                     DateTimeImmutable::createFromFormat('Y-m-d H:i:s P', $commitDate)
-                        ->setTimezone(new DateTimeZone('UTC'))
+                        ->setTimezone(new DateTimeZone('UTC')),
                 );
                 ob_start();
                 system('uptime');
@@ -214,8 +247,36 @@ class SystemController extends ApiController
                 'dumpsEnabled' => DatabaseDumpHelper::dumpsEnabled(),
                 'lastDump' => $lastDump,
                 'cpu15m' => $cpu15m,
+                ...$this->eventsDbStatus(),
             ],
         ]);
+    }
+
+    private function eventsDbStatus(): array
+    {
+        if (!SendIntegrationEvents::isInitialized() || !PermissionMiddleware::permissions()->developer) {
+            return [];
+        }
+        $integrationEventsDb = DB::connection('integration_events');
+        $lastEvent = $integrationEventsDb->table('events_out')
+            ->orderByDesc('seq')->first(['seq', 'created_at']);
+
+        return [
+            'integrationEvents' => [
+                'last' => $lastEvent ? [
+                    'seq' => $lastEvent->seq,
+                    'createdAt' => DateHelper::dbToZuluString($lastEvent->created_at),
+                ] : null,
+                'listeners' => $integrationEventsDb->table('listeners')
+                    ->get(['listener_code', 'last_processed_event_seq', 'created_at', 'updated_at'])
+                    ->map(fn(object $listener): array => [
+                        'listenerCode' => $listener->listener_code,
+                        'lastProcessedEventSeq' => $listener->last_processed_event_seq,
+                        'createdAt' => DateHelper::dbToZuluString($listener->created_at),
+                        'updatedAt' => DateHelper::dbToZuluString($listener->updated_at),
+                    ]),
+            ],
+        ];
     }
 
     #[OA\Post(
@@ -230,8 +291,8 @@ class SystemController extends ApiController
                     new OA\Property(property: 'logLevel', type: 'string', enum: LogEntry::LEVELS, example: 'info'),
                     new OA\Property(property: 'message', type: 'string', example: 'message', nullable: true),
                     new OA\Property(property: 'context', type: 'string', example: null, nullable: true),
-                ]
-            )
+                ],
+            ),
         ),
         tags: ['System'],
         responses: [
@@ -243,7 +304,8 @@ class SystemController extends ApiController
             new OA\Response(response: 400, description: 'Bad Request'),
             new OA\Response(response: 401, description: 'Unauthorised'),
         ],
-    )] /** @throws Throwable */
+    )]
+    /** @throws Throwable */
     public function log(
         LogService $logService,
         Request $request,

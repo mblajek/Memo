@@ -82,11 +82,12 @@ readonly class MeetingTquery extends TqService
                 '`meeting_attendants`.`user_id`',
                 "`meeting_attendants` $attendantWhere",
                 "$attendanceName.*.user_id",
+                orderBy: '`meeting_attendants`.`default_order`',
             );
             $config->addQuery(
                 TqDataTypeEnum::list,
                 fn(string $tableName) => //
-                    "select json_arrayagg(`users`.`name`) from `meeting_attendants`"
+                    "select json_arrayagg(`users`.`name` order by `meeting_attendants`.`default_order`) from `meeting_attendants`"
                     . " inner join `users` on `users`.`id` = `meeting_attendants`.`user_id` $attendantWhere",
                 "$attendanceName.*.name",
             );
@@ -95,6 +96,7 @@ readonly class MeetingTquery extends TqService
                 '`meeting_attendants`.`attendance_status_dict_id`',
                 "`meeting_attendants` $attendantWhere",
                 "$attendanceName.*.attendance_status_dict_id",
+                orderBy: '`meeting_attendants`.`default_order`',
             );
             $this->addAttendanceJsonColumn($config, $attendanceName, $attendanceType, $attendantWhere);
         }
@@ -176,7 +178,7 @@ readonly class MeetingTquery extends TqService
         $config->addQuery(
             TqDataTypeEnum::list,
             fn(string $tableName): string
-                => "select json_arrayagg(json_object($jsonFields)) $from $attendantWhere",
+                => "select json_arrayagg(json_object($jsonFields) order by `meeting_attendants`.`default_order`) $from $attendantWhere",
             columnAlias: $attendanceName,
         );
     }

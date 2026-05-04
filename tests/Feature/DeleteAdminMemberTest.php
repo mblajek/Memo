@@ -31,7 +31,6 @@ class DeleteAdminMemberTest extends TestCase
         $facility = Facility::factory()->create([
             'name' => 'Test',
             'url' => 'test-123',
-            'timetable_id' => null,
         ]);
         /** @var Member $member */
         $member = Member::factory()->create([

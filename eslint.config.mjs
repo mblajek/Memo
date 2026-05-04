@@ -6,6 +6,8 @@ import {defineConfig} from "eslint/config";
 import typescript from "typescript-eslint";
 
 export default defineConfig([
+  // Deno projects with their own toolchain; not part of the main TS project.
+  {ignores: ["integration-scripts/**"]},
   js.configs.recommended,
   solid.configs["flat/recommended"],
   typescript.configs.recommendedTypeChecked,
@@ -82,11 +84,6 @@ export default defineConfig([
         {
           selector: "Identifier[name=/_onlyDEV$/], JSXIdentifier[name=/_onlyDEV$/]",
           message: "Do not submit usage of the *_onlyDEV helpers.",
-        },
-        {
-          selector: "JSXOpeningElement[name.name=/^[a-z]+/] > JSXAttribute > JSXIdentifier[name='style']",
-          message:
-            "Do not use `style=` on native elements, it causes CSP issues. Use `{...style(...)}` helper instead.",
         },
       ],
       "no-unused-expressions": "warn",

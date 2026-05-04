@@ -137,6 +137,14 @@ export default (() => {
           ...textSort(),
           size: 400,
         }),
+        h.accessor("metadata", {
+          id: "Metadata",
+          cell: cellFunc<Record<string, unknown>, Attribute>((props) => (
+            <PaddedCell class="whitespace-pre-wrap font-mono text-xs">
+              <ShowCellVal v={props.v}>{(v) => JSON.stringify(v(), null, 2)}</ShowCellVal>
+            </PaddedCell>
+          )),
+        }),
         ...(attributes()
           ?.getForModel("attribute")
           .map((attr) =>

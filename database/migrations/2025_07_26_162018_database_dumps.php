@@ -18,7 +18,7 @@ return new class extends Migration {
             file_put_contents($databaseFile, '');
             chmod($databaseFile, 0600);
 
-            Schema::setConnection($connection)->create('db_dumps', function (Blueprint $table) {
+            $connection->getSchemaBuilder()->create('db_dumps', function (Blueprint $table) {
                 DMH::charUuid($table, 'id')->collation('binary');
                 $table->dateTime('created_at');
                 $table->dateTime('updated_at');

@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\Attribute;
 use App\Models\Enums\AttributeRequirementLevel;
+use App\Utils\Transformer\StringTransformer;
 use OpenApi\Attributes as OA;
 use Illuminate\Support\Str;
 
@@ -32,6 +33,7 @@ use Illuminate\Support\Str;
             example: 'required'
         ),
         new OA\Property(property: 'description', type: 'string', nullable: true),
+        new OA\Property(property: 'metadata', type: 'object', nullable: true),
     ],
     allOf: [new OA\Schema(ref: '#/components/schemas/AbstractJsonResource')],
 )] /**
@@ -57,9 +59,7 @@ class AttributeResource extends AbstractOpenApiResource
             'isMultiValue' => true,
             'requirementLevel' => true,
             'description' => true,
-            // documents links
-            'metadata' => fn(self $attribute) => ($attribute->id === 'e1c14100-070d-4213-8927-6b7aed9617a4')
-                ? ['isMultiLine' => false] : null,
+            'metadata' => fn(self $attribute) => StringTransformer::camelKeys($attribute->metadata),
         ];
     }
 }

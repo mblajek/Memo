@@ -121,6 +121,7 @@ class FacilityAdminController extends ApiController
                 //'is_fixed', // always false
                 'requirement_level',
                 'description',
+                'metadata',
             ]/*, false*/));
 
 

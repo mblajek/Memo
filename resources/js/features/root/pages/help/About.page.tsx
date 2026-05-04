@@ -2,17 +2,16 @@ import {A} from "@solidjs/router";
 import {Capitalize} from "components/ui/Capitalize";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
-import {style} from "components/ui/inline_styles";
 import {SilentAccessBarrier} from "components/utils/AccessBarrier";
-import {toggleDEV} from "components/utils/dev_mode";
-import {DATE_TIME_FORMAT} from "components/utils/formatting";
+import {isDEV, toggleDEV} from "components/utils/dev_mode";
+import {DATE_TIME_FORMAT, NUMBER_FORMAT} from "components/utils/formatting";
 import {useLangFunc} from "components/utils/lang";
 import {currentTimeSecond} from "components/utils/time";
 import {useDeveloperPermission} from "features/authentication/developer_permission";
 import {FullAppVersion} from "features/system-status/app_version";
 import {useSystemStatusMonitor} from "features/system-status/system_status_monitor";
 import {DateTime} from "luxon";
-import {Show, VoidComponent} from "solid-js";
+import {For, Show, VoidComponent} from "solid-js";
 
 const GITHUB_LINK = "https://github.com/mblajek/Memo";
 
@@ -20,6 +19,29 @@ export default (() => {
   const t = useLangFunc();
   const systemStatusMonitor = useSystemStatusMonitor();
   const developerPermission = useDeveloperPermission();
+
+  const SeqAndDateCells: VoidComponent<{
+    seq: number | undefined;
+    isoDate: string | undefined;
+  }> = (props) => {
+    return (
+      <>
+        <div class="text-end">
+          <Show when={props.seq != null} fallback={<EmptyValueSymbol />}>
+            {NUMBER_FORMAT.format(props.seq!)}
+          </Show>
+        </div>
+        <div class="text-grey-text">
+          <Show when={props.seq != null && props.isoDate}>
+            {t("parenthesised", {
+              text: DateTime.fromISO(props.isoDate!).toLocaleString(DATE_TIME_FORMAT),
+            })}
+          </Show>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div class="p-2 flex flex-col gap-4">
       <div>
@@ -29,7 +51,7 @@ export default (() => {
         <Show when={systemStatusMonitor.lastStatus()}>
           {(status) => (
             <div class="flex flex-col gap-2 items-stretch">
-              <div class="grid gap-x-3 gap-y-1 self-start" {...style({"grid-template-columns": "auto auto"})}>
+              <div class="grid gap-x-3 gap-y-1 self-start" style={{"grid-template-columns": "auto auto"}}>
                 <label class="font-semibold">{t("about_page.app_version")}</label>
                 <div>
                   <FullAppVersion />
@@ -106,6 +128,36 @@ export default (() => {
                   </label>
                   <Show when={status().cpu15m?.toFixed(2)} fallback={<EmptyValueSymbol />}>
                     {(cpu15m) => <div>{cpu15m()}</div>}
+                  </Show>
+                  <Show when={isDEV() && status().integrationEvents}>
+                    {(integrationEvents) => (
+                      <>
+                        <label class="font-semibold">{t("about_page.integration_events")}</label>
+                        <div
+                          class="grid items-baseline gap-x-3 gap-y-1 self-start"
+                          style={{"grid-template-columns": "auto auto auto"}}
+                        >
+                          <div>{t("about_page.integration_events_last_seq")}</div>
+                          <SeqAndDateCells
+                            seq={integrationEvents().last?.seq}
+                            isoDate={integrationEvents().last?.createdAt}
+                          />
+                          <For each={integrationEvents().listeners}>
+                            {(listener) => (
+                              <>
+                                <div>
+                                  ⦁ <span class="font-mono text-sm">{listener.listenerCode}</span>
+                                </div>
+                                <SeqAndDateCells
+                                  seq={listener.lastProcessedEventSeq || undefined}
+                                  isoDate={listener.updatedAt}
+                                />
+                              </>
+                            )}
+                          </For>
+                        </div>
+                      </>
+                    )}
                   </Show>
                 </SilentAccessBarrier>
               </div>

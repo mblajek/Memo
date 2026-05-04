@@ -1,6 +1,5 @@
 import {ButtonLike} from "components/ui/ButtonLike";
 import {eventBlockAlertFrameClass} from "components/ui/calendar/calendar-columns/event_block_alert_frame";
-import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {crossesDateBoundaries, formatDayMinuteHM} from "components/utils/day_minute_util";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -18,11 +17,10 @@ import {MeetingHoverCard} from "./MeetingHoverCard";
 import {MeetingRepeatIcon} from "./MeetingRepeatIcon";
 import {MIDNIGHT_CROSSING_SYMBOL, coloringToStyle} from "./colors";
 
-interface Props
-  extends Pick<
-    HoverableMeetingEventBlockProps,
-    "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
-  > {
+interface Props extends Pick<
+  HoverableMeetingEventBlockProps,
+  "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
+> {
   readonly day: DateTime;
   readonly timeSpan: TimeSpan;
   readonly height?: number;
@@ -64,7 +62,7 @@ export const MonthDayMeetingEventBlock: VoidComponent<Props> = (allProps) => {
               <div class="flex gap-0.5">
                 <span
                   class="px-0.5 font-weight-medium rounded-ee"
-                  {...style(coloringToStyle(contentsProps.coloring, {part: "header"}))}
+                  style={coloringToStyle(contentsProps.coloring, {part: "header"})}
                 >
                   <Switch>
                     <Match when={props.timeSpan.allDay}>

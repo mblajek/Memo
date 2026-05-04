@@ -1,6 +1,7 @@
 import {TQuerySelect, TQuerySelectProps} from "components/ui/form/TQuerySelect";
 import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_control_state";
 import {cx} from "components/utils/classnames";
+import {typed} from "components/utils/typed";
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
 import {VoidComponent, createComputed, splitProps} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
@@ -9,7 +10,8 @@ import {SelectFilterMode, SelectFilterModeControl} from "./select_filters_helper
 import {FilterControlProps, FilterHWithState} from "./types";
 
 interface Props
-  extends FilterControlProps<Filter>,
+  extends
+    FilterControlProps<Filter>,
     Pick<TQuerySelectProps, "querySpec" | "priorityQuerySpec" | "separatePriorityItems"> {}
 
 type Filter = FilterHWithState<{mode: SelectFilterMode; value: readonly string[]}>;
@@ -25,7 +27,7 @@ export const UuidListSelectFilterControl: VoidComponent<Props> = (allProps) => {
     },
     getState,
   } = getFilterControlState({
-    initial: {mode: "has_all" satisfies SelectFilterMode as SelectFilterMode, value: [] satisfies readonly string[]},
+    initial: {mode: typed<SelectFilterMode>("has_all"), value: [] satisfies readonly string[]},
     filter: () => props.filter,
   });
   function buildFilter(): Filter | undefined {

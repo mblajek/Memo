@@ -2,7 +2,6 @@ import {Boundary} from "@floating-ui/dom";
 import {ButtonLike} from "components/ui/ButtonLike";
 import {RichTextView} from "components/ui/RichTextView";
 import {eventBlockAlertFrameClass} from "components/ui/calendar/calendar-columns/event_block_alert_frame";
-import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {crossesDateBoundaries} from "components/utils/day_minute_util";
 import {htmlAttributes} from "components/utils/html_attributes";
@@ -24,11 +23,10 @@ import {TimeSpanSummary} from "./TimeSpanSummary";
 import {coloringToStyle} from "./colors";
 import {AttendantListItem} from "./meeting_details";
 
-interface CommonProps
-  extends Pick<
-    HoverableMeetingEventBlockProps,
-    "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
-  > {
+interface CommonProps extends Pick<
+  HoverableMeetingEventBlockProps,
+  "meeting" | "plannedColoring" | "blink" | "hovered" | "onHoverChange" | "entityId"
+> {
   readonly day: DateTime;
   readonly timeSpan: TimeSpan;
   readonly height?: number;
@@ -152,7 +150,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
               }
             }}
           >
-            <div class="px-0.5 whitespace-nowrap" {...style(coloringToStyle(contentsProps.coloring, {part: "header"}))}>
+            <div class="px-0.5 whitespace-nowrap" style={coloringToStyle(contentsProps.coloring, {part: "header"})}>
               <TimeSpanSummary timeSpan={props.timeSpan} {...crosses()} />
             </div>
             <Show when={dictionaries()}>
@@ -160,10 +158,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                 <SeparatedSections
                   separator={(show) => (
                     <Show when={show()}>
-                      <hr
-                        class="-mx-1 my-px"
-                        {...style(coloringToStyle(contentsProps.coloring, {part: "separator"}))}
-                      />
+                      <hr class="-mx-1 my-px" style={coloringToStyle(contentsProps.coloring, {part: "separator"})} />
                     </Show>
                   )}
                 >

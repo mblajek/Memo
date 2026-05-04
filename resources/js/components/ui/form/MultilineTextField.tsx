@@ -2,7 +2,6 @@ import {useFormContext} from "components/felte-form/FelteForm";
 import {createPersistence} from "components/persistence/persistence";
 import {userStorageStorage} from "components/persistence/storage";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
-import {style} from "components/ui/inline_styles";
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {useLangFunc} from "components/utils/lang";
@@ -18,11 +17,10 @@ import {TRIM_ON_BLUR, trimInput} from "./util";
 
 type _Directives = typeof title;
 
-export interface MultilineTextFieldProps
-  extends Pick<
-    htmlAttributes.textarea,
-    "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
-  > {
+export interface MultilineTextFieldProps extends Pick<
+  htmlAttributes.textarea,
+  "autofocus" | "autocomplete" | "readonly" | "onClick" | "onInput" | "onChange"
+> {
   readonly name: string;
   readonly label?: LabelOverride;
   readonly small?: boolean;
@@ -62,10 +60,10 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
     <FieldBox {...props}>
       <div
         class="grid"
-        {...style({
+        style={{
           "grid-template-columns": `1fr auto ${props.richTextPreview && showPreview() ? "1fr" : "0fr"}`,
           "transition": "grid-template-columns 200ms",
-        })}
+        }}
       >
         <textarea
           id={props.name}

@@ -32,9 +32,50 @@ jobs:
       - run: pnpm run typecheck
       - run: LARAVEL_BYPASS_ENV_CHECK=1 pnpm test
 
-  # TODO: Define backend tests job here.
-  # backend_test:
-  #   name: Backend test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
+  backend_test:
+    name: Backend test
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ROOT_PASSWORD: secret
+          MARIADB_DATABASE: memo_test
+          MARIADB_USER: memo
+          MARIADB_PASSWORD: secret
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      DB_CONNECTION: mariadb
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: memo_test
+      DB_USERNAME: memo
+      DB_PASSWORD: secret
+      DB_SSL_VERIFY: 0
+      APP_DB_DUMP_PATH: ${{ github.workspace }}/database/dumps
+      APP_EVENTS_DB_PATH: ${{ github.workspace }}/database/integration_events
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: mbstring, intl, pdo_mysql, zip, bcmath, curl, openssl
+          tools: composer:v2
+          coverage: none
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+      - run: cp .env.example .env
+      - run: composer install --prefer-dist --no-progress --no-interaction
+      - run: php artisan key:generate
+      - run: php artisan migrate --force
+      - run: php artisan fz:create-integration-events-db
+      - run: php artisan test

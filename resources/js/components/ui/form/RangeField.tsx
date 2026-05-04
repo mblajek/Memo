@@ -3,8 +3,10 @@ import {JSX, VoidComponent, splitProps} from "solid-js";
 import {FieldBox} from "./FieldBox";
 import {labelIdForField} from "./FieldLabel";
 
-export interface RangeFieldProps
-  extends Pick<htmlAttributes.input, "min" | "max" | "step" | "readonly" | "onInput" | "onChange"> {
+export interface RangeFieldProps extends Pick<
+  htmlAttributes.input,
+  "min" | "max" | "step" | "readonly" | "onInput" | "onChange"
+> {
   readonly name: string;
   readonly label?: JSX.Element;
 }

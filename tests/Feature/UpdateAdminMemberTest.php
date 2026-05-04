@@ -31,7 +31,6 @@ class UpdateAdminMemberTest extends TestCase
         $facility1 = Facility::factory()->create([
             'name' => 'Test1',
             'url' => 'test-123',
-            'timetable_id' => null,
         ]);
         /** @var Member $member */
         $member = Member::factory()->create([
@@ -45,7 +44,6 @@ class UpdateAdminMemberTest extends TestCase
         $facility2 = Facility::factory()->create([
             'name' => 'Test2',
             'url' => 'test-345',
-            'timetable_id' => null,
         ]);
 
         $data = [
@@ -71,7 +69,6 @@ class UpdateAdminMemberTest extends TestCase
         $facility = Facility::factory()->create([
             'name' => 'Test',
             'url' => 'test-123',
-            'timetable_id' => null,
         ]);
         /** @var Member $member */
         $member = Member::factory()->create([

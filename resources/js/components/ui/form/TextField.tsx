@@ -21,29 +21,28 @@ export const TextField: VoidComponent<TextFieldProps> = (allProps) => {
   );
 };
 
-interface TextFieldTextInputProps
-  extends Pick<
-    htmlAttributes.input,
-    | "class"
-    | "type"
-    | "required"
-    | "value"
-    | "min"
-    | "max"
-    | "maxLength"
-    | "step"
-    | "autofocus"
-    | "autocomplete"
-    | "autocapitalize"
-    | "autocorrect"
-    | "spellcheck"
-    | "readonly"
-    | "disabled"
-    | "placeholder"
-    | "onClick"
-    | "onInput"
-    | "onChange"
-  > {
+interface TextFieldTextInputProps extends Pick<
+  htmlAttributes.input,
+  | "class"
+  | "type"
+  | "required"
+  | "value"
+  | "min"
+  | "max"
+  | "maxLength"
+  | "step"
+  | "autofocus"
+  | "autocomplete"
+  | "autocapitalize"
+  | "autocorrect"
+  | "spellcheck"
+  | "readonly"
+  | "disabled"
+  | "placeholder"
+  | "onClick"
+  | "onInput"
+  | "onChange"
+> {
   readonly name: string;
   readonly small?: boolean;
 }

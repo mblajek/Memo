@@ -1,5 +1,4 @@
 import {ComputePositionConfig, DetectOverflowOptions, flip, offset, shift} from "@floating-ui/dom";
-import {style} from "components/ui/inline_styles";
 import {Component, JSX, Show, createSignal, onCleanup} from "solid-js";
 import {useEventListener} from "../utils/event_listener";
 import {GetRef} from "../utils/GetRef";
@@ -91,7 +90,7 @@ export const PopOver: Component<Props> = (props) => {
             <Show when={open()}>
               <div
                 class="z-dropdown max-w-fit bg-white border border-gray-700 rounded shadow-xl flex flex-col overflow-clip"
-                {...style(posStyle())}
+                style={posStyle()}
               >
                 {getChildrenElement(props.children, popOver)}
               </div>

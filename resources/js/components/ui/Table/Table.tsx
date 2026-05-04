@@ -14,7 +14,6 @@ import {
   getSortedRowModel,
 } from "@tanstack/solid-table";
 import {EmptyValueSymbol} from "components/ui/EmptyValueSymbol";
-import {style} from "components/ui/inline_styles";
 import {createScrollableUpMarker} from "components/ui/ScrollableUpMarker";
 import {getColumns} from "components/ui/Table/columns_iterator";
 import {useTableCells} from "components/ui/Table/table_cells";
@@ -302,7 +301,7 @@ export const Table = <T,>(allProps: VoidProps<Props<T>>): JSX.Element => {
             >
               <div ref={scrollToTopElement} class={s.scrollToTopElement}>
                 <div class={s.tableBg}>
-                  <div class={s.table} {...style({"grid-template-columns": gridTemplateColumns()})}>
+                  <div class={s.table} style={{"grid-template-columns": gridTemplateColumns()}}>
                     <div
                       on:wheel={{
                         handleEvent: (e) => {

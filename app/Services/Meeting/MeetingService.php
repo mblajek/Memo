@@ -88,7 +88,9 @@ readonly class MeetingService
                 $currentAttendants = $meeting->attendants->keyBy('user_id')->all();
                 /** @var array<non-falsy-string, MeetingAttendant> $newAttendants */
                 [$userIdsToRemove, $newAttendants] = $finalAttendants;
-                $meeting->attendants()->whereIn('user_id', $userIdsToRemove)->delete();
+                foreach ($meeting->attendants->whereIn('user_id', $userIdsToRemove) as $attendantToRemove) {
+                    $attendantToRemove->delete();
+                }
                 foreach ($newAttendants as $userId => $newAttendant) {
                     if (array_key_exists($userId, $currentAttendants)) {
                         $currentAttendants[$userId]->update($newAttendant->attributesToArray());
@@ -205,9 +207,9 @@ readonly class MeetingService
         ];
     }
 
-    private function extract(array $data, string $key)
+    private function extract(array $data, string $key): ?array
     {
-        return array_key_exists($key, $data) ? ($data[$key] ?: []) : null;
+        return array_key_exists($key, $data) ? array_values($data[$key] ?: []) : null;
     }
 
     /** @return ?array<non-falsy-string, MeetingAttendant> */
@@ -218,9 +220,10 @@ readonly class MeetingService
         if ($attendantsData === null) {
             return null;
         }
-        foreach ($attendantsData as $attendantData) {
+        foreach ($attendantsData as $index => $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
             $attendant->attendance_type_dict_id = AttendanceType::Staff->value;
+            $attendant->default_order = $index;
             $attendants[$attendant->user_id] = $attendant;
         }
         return $attendants;
@@ -234,9 +237,10 @@ readonly class MeetingService
         if ($attendantsData === null) {
             return null;
         }
-        foreach ($attendantsData as $attendantData) {
+        foreach ($attendantsData as $index => $attendantData) {
             $attendant = new MeetingAttendant($attendantData);
             $attendant->attendance_type_dict_id = AttendanceType::Client->value;
+            $attendant->default_order = $index;
             $attendants[$attendant->user_id] = $attendant;
         }
         return $attendants;
@@ -247,7 +251,7 @@ readonly class MeetingService
     {
         $resources = [];
         $resourcesData = $this->extract($data, 'resources');
-        if (is_null($resourcesData)) {
+        if ($resourcesData === null) {
             return null;
         }
         foreach ($resourcesData as $resourceData) {
@@ -257,6 +261,9 @@ readonly class MeetingService
         return $resources;
     }
 
+    /**
+     * @return ?array{0: list<non-falsy-string>, 1: array<non-falsy-string, MeetingAttendant>}
+     */
     public function extractPatchAttendants(array $data, Meeting $meeting): ?array
     {
         $newStaff = $this->extractStaff($data);
