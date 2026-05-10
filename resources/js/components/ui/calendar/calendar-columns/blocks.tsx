@@ -14,14 +14,14 @@ export const HoursAreaBlock: ParentComponent<PartDayBlockProps> = (allProps) => 
       {...htmlAttributes.merge(divProps, {
         class: cx(
           "w-full h-full cursor-default",
-          props.hovered ? "outline outline-2 outline-memo-active relative z-10 cursor-pointer" : undefined,
+          props.hovered ? "outline-2 outline-memo-active relative z-10 cursor-pointer" : undefined,
         ),
         style: {"outline-offset": "-2px"},
       })}
     >
       <Show when={props.label}>
         <div
-          class="text-xs py-0.5 -mx-0.5 float-right text-nowrap rounded-se bg-white bg-opacity-50"
+          class="text-xs px-0.5 -my-0.5 float-right text-nowrap rounded-se bg-white/50"
           style={{"writing-mode": "vertical-lr"}}
         >
           {props.label}

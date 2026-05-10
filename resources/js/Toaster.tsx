@@ -20,7 +20,7 @@ export const Toaster: VoidComponent = () => {
       <SolidToaster
         position="bottom-right"
         toastOptions={{
-          className: "mr-4 !pr-0",
+          className: "mr-4 pr-0!",
           duration: 10_000,
         }}
       />

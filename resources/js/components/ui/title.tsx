@@ -3,7 +3,7 @@ import tippy, {createSingleton, CreateSingletonInstance, Instance, Props as Tipp
 import "tippy.js/animations/shift-toward-subtle.css";
 import "tippy.js/dist/border.css";
 import "tippy.js/dist/tippy.css";
-import "./title.scss";
+import "./title.css";
 
 interface ExtraTippyProps extends Omit<TippyProps, "delay"> {
   /** The appear/disappear delay. Undefined means the default. */

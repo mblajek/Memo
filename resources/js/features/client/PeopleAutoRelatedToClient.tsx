@@ -134,13 +134,13 @@ export const PeopleAutoRelatedToClient: VoidComponent<Props> = (props) => {
                               </div>
                             </Show>
                             <Button
-                              class="minimal !px-1"
+                              class="minimal px-1!"
                               onClick={() => setExpanded(!expanded())}
                               title={expanded() ? undefined : t("actions.expand")}
                             >
                               <Dynamic
                                 component={expanded() ? IoChevronCollapse : IoChevronExpand}
-                                class="inlineIcon text-current text-gray-800"
+                                class="inlineIcon text-gray-800"
                               />
                             </Button>
                           </div>

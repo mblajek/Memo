@@ -88,7 +88,7 @@ export function useMeetingTableColumns({baseHeight}: {baseHeight?: string} = {})
               meetingModal.show({staticMeetingId: meetingId(), initialViewMode: true, showGoToMeetingButton: true})
             }
           >
-            <actionIcons.Details class="inlineIcon !mb-[2px]" /> {props.children || t("actions.details")}
+            <actionIcons.Details class="inlineIcon mb-[2px]!" /> {props.children || t("actions.details")}
           </Button>
         )}
       </Show>

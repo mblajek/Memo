@@ -455,7 +455,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                               onValueChange={setSearch}
                             />
                           </div>
-                          <div class="h-60 border border-1 border-gray-400 rounded">
+                          <div class="h-60 border border-gray-400 rounded-sm">
                             <Show
                               when={matchingColumns().length}
                               fallback={<div class="px-1 text-grey-text">{t("tables.columns_search.no_results")}</div>}
@@ -542,7 +542,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
           body: () => (
             <div class="flex flex-col gap-1 mb-1">
               <div>{t("forms.table_saved_view_delete.confirmation_text")}</div>
-              <div class="px-1 flex gap-2 justify-between rounded border border-gray-300">
+              <div class="px-1 flex gap-2 justify-between rounded-sm border border-gray-300">
                 {view.name}
                 <Show when={advancedView() || isPartialTableViewSummary(summary.modifiesSummary)}>
                   <indicators.Indicator
@@ -659,7 +659,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                     />
                                     <div
                                       class={cx(
-                                        "flex-grow px-1 flex gap-2 justify-between rounded border border-gray-300",
+                                        "grow px-1 flex gap-2 justify-between rounded-sm border border-gray-300",
                                         isIncluded(view.name) ? undefined : "text-gray-400",
                                       )}
                                     >
@@ -672,7 +672,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                                       >
                                         {view.name}
                                         <Show when={overwrites()}>
-                                          <WarningMark class={isIncluded(view.name) ? undefined : "text-opacity-40"} />
+                                          <WarningMark class={isIncluded(view.name) ? undefined : "text-red-500/40"} />
                                         </Show>
                                       </div>
                                       <Show when={advancedView() || isPartialTableViewSummary(summary.modifiesSummary)}>
@@ -766,8 +766,8 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                         <Button
                           data-view-name={state().name}
                           class={cx(
-                            "w-full minimal !px-1 text-start outline outline-0 outline-memo-active flex flex-wrap justify-between gap-x-2",
-                            summary().modifiesBaseSummary?.any ? undefined : "!bg-select",
+                            "w-full minimal px-1! text-start outline outline-0 outline-memo-active flex flex-wrap justify-between gap-x-2",
+                            summary().modifiesBaseSummary?.any ? undefined : "bg-select!",
                             state().default ? "text-grey-text" : undefined,
                           )}
                           title={[
@@ -809,7 +809,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
                           trigger={(popOver) => (
                             <Button
                               class={cx(
-                                "rounded border px-1",
+                                "rounded-sm border px-1",
                                 popOver.isOpen ? "border border-input-border" : "border-transparent",
                               )}
                               onClick={popOver.open}
@@ -1026,7 +1026,7 @@ export const TableSavedViewsManager: VoidComponent<Props> = (props) => {
     <PopOver
       trigger={(popOver) => (
         <Button
-          class="rounded px-1 border border-input-border pressedWithShadow"
+          class="rounded-sm px-1 border border-input-border pressedWithShadow"
           onClick={popOver.open}
           title={t("tables.saved_views.hint")}
         >

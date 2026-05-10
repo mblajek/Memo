@@ -8,7 +8,7 @@ import {ComponentProps, createEffect, createSignal, JSX, Match, splitProps, Swit
 import {Dynamic} from "solid-js/web";
 import {SolidMarkdown, SolidMarkdownComponents} from "solid-markdown";
 import {LinkWithNewTabLink} from "./LinkWithNewTabLink";
-import s from "./Markdown.module.scss";
+import s from "./Markdown.module.css";
 
 interface MarkdownProps extends ComponentProps<typeof SolidMarkdown> {
   readonly markdown: string;

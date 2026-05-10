@@ -1,7 +1,7 @@
 import {cx} from "components/utils/classnames";
 import {htmlAttributes} from "components/utils/html_attributes";
 import {JSX, ParentComponent} from "solid-js";
-import s from "./SimpleMenu.module.scss";
+import s from "./SimpleMenu.module.css";
 
 export interface MenuItem {
   readonly label: JSX.Element;

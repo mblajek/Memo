@@ -825,7 +825,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
     return (
       <div class="w-full h-full p-1">
         <div
-          class="w-full h-full rounded bg-hover flex items-center justify-center text-memo-active cursor-default"
+          class="w-full h-full rounded-sm bg-hover flex items-center justify-center text-memo-active cursor-default"
           use:title={[
             props.count === undefined
               ? t("tables.column_groups.grouped_column_tooltip.unknown_count")
@@ -911,7 +911,7 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
         <div class="flex flex-col items-stretch">
           {props.header}
           <div class="min-h-small-input flex items-stretch gap-1">
-            <TableSearch divClass="flex-grow" />
+            <TableSearch divClass="grow" />
             <TableFiltersClearButton
               columnsWithActiveFilters={columnsWithActiveFilters()}
               clearColumnFilters={clearColumnFilters}

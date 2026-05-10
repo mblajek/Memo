@@ -1,3 +1,5 @@
+@reference "/resources/js/index.css";
+
 .filter {
   input {
     @apply px-1;
@@ -20,7 +22,7 @@
     @apply flex flex-wrap items-stretch gap-0.5 min-h-small-input;
 
     .wideEdit {
-      @apply flex-grow basis-12;
+      @apply grow basis-12;
     }
   }
 
@@ -29,7 +31,7 @@
     height: 55%;
     transition: height 200ms;
     @apply row-span-2 self-center flex;
-    @apply border-2 border-r-0 border-current text-black text-opacity-30;
+    @apply border-2 border-r-0 border-current text-black/30;
     border-start-start-radius: 3px;
     border-end-start-radius: 3px;
 
@@ -38,7 +40,7 @@
     }
 
     &.inactive {
-      @apply text-opacity-5 cursor-auto;
+      @apply text-black/[0.05] cursor-auto;
     }
   }
 }

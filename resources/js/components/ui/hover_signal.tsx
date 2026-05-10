@@ -4,7 +4,7 @@ import "tippy.js/animations/shift-toward-subtle.css";
 import "tippy.js/dist/border.css";
 import "tippy.js/dist/tippy.css";
 import {useEventListener} from "../utils/event_listener";
-import "./title.scss";
+import "./title.css";
 
 declare module "solid-js" {
   namespace JSX {

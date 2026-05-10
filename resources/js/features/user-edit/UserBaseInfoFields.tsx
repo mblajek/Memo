@@ -10,7 +10,6 @@ import {PasswordField} from "components/ui/form/PasswordField";
 import {TextField, TextFieldTextInput} from "components/ui/form/TextField";
 import {actionIcons} from "components/ui/icons";
 import {title} from "components/ui/title";
-import {cx} from "components/utils/classnames";
 import {dateTimeLocalInputToDateTime, dateTimeToDateTimeLocalInput} from "components/utils/day_minute_util";
 import {useLangFunc} from "components/utils/lang";
 import {currentTimeMinute} from "components/utils/time";
@@ -120,7 +119,7 @@ export const UserBaseInfoFields: VoidComponent<Props> = (props) => {
         <FieldLabel fieldName={dProps.name} />
         <div class="flex gap-1 items-baseline">
           <DateField
-            class={cx("text-black", form.data(dProps.name) ? undefined : "text-opacity-50")}
+            class={form.data(dProps.name) ? "text-black" : "text-black/50"}
             name={dProps.name}
             label=""
             type="datetime-local"

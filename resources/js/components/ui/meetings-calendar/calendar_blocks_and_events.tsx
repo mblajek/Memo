@@ -196,7 +196,7 @@ export function useCalendarBlocksAndEvents({
               label={(time) =>
                 meeting.isFacilityWide ? (
                   <>
-                    {time} <facilityIcons.Facility class="inlineIcon !mb-0.5" size="12" />
+                    {time} <facilityIcons.Facility class="inlineIcon mb-0.5!" size="12" />
                   </>
                 ) : (
                   time
@@ -259,7 +259,7 @@ export function useCalendarBlocksAndEvents({
               <div style={{"line-height": "1.05"}}>
                 <Show when={calendarFunction === "leaveTimes" && !meeting.isFacilityWide}>
                   <UserLink
-                    class="!text-black whitespace-nowrap"
+                    class="text-black! whitespace-nowrap"
                     type="staff"
                     userId={meeting.staff[0]!.userId}
                     newTabLink={false}
@@ -268,7 +268,7 @@ export function useCalendarBlocksAndEvents({
                 <div>
                   <Show when={!timeSpan.allDay}>{time}</Show>{" "}
                   <Show when={meeting.isFacilityWide}>
-                    <facilityIcons.Facility class="inlineIcon !mb-0.5" size="12" />
+                    <facilityIcons.Facility class="inlineIcon mb-0.5!" size="12" />
                   </Show>{" "}
                   {meeting.notes?.replaceAll("\n", ", ") || genericName}
                 </div>

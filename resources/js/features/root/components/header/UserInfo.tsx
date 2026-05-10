@@ -87,7 +87,7 @@ export const UserInfo: VoidComponent = () => {
 
   const CurrentTime: VoidComponent = () => {
     return (
-      <div class={cx("text-nowrap", usesLocalTimeZone() ? undefined : "bg-white px-0.5 rounded text-orange-700")}>
+      <div class={cx("text-nowrap", usesLocalTimeZone() ? undefined : "bg-white px-0.5 rounded-sm text-orange-700")}>
         <Index
           // Display each part in a separate span to allow selecting the date.
           each={currentTimeMinute().toLocaleParts(FORMAT)}

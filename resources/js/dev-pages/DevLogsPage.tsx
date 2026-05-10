@@ -138,10 +138,10 @@ const LogText: VoidComponent<LogTextProps> = (props) => {
     <div class="flex gap-1 font-mono">
       <div class="basis-0 min-w-0 grow">{props.text}</div>
       <div class="px-0.5 flex flex-col text-base">
-        <CopyToClipboard class="bg-white rounded" text={props.text} />
+        <CopyToClipboard class="bg-white rounded-sm" text={props.text} />
         <Show when={props.printToConsoleButton}>
           <IconButton
-            class="bg-white rounded"
+            class="bg-white rounded-sm"
             icon={FaSolidTerminal}
             title={t("dev.print_error_to_console")}
             onClick={() => console.warn(props.text)}

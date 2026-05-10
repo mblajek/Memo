@@ -11,7 +11,7 @@ export const Header: VoidComponent = () => {
       style={{"grid-area": "header", ...envInfo.style()}}
     >
       <FacilityControl />
-      <div class="flex-grow">{envInfo.info()}</div>
+      <div class="grow">{envInfo.info()}</div>
       <UserInfo />
     </header>
   );

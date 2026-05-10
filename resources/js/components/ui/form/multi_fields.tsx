@@ -159,14 +159,14 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
                         <Show when={props.moveButtons}>
                           <div class="flex flex-col min-h-small-input">
                             <Button
-                              class="secondary small !rounded-b-none !min-h-0 basis-0 grow flex items-center justify-center"
+                              class="secondary small rounded-b-none! min-h-0! basis-0 grow flex items-center justify-center"
                               onClick={() => params().moveUp?.()}
                               disabled={!params().index}
                             >
                               <BsChevronCompactUp class="text-current" />
                             </Button>
                             <Button
-                              class="secondary small !rounded-t-none -mt-px !min-h-0 basis-0 grow flex items-center justify-center"
+                              class="secondary small rounded-t-none! -mt-px min-h-0! basis-0 grow flex items-center justify-center"
                               onClick={() => params().moveDown?.()}
                               disabled={params().isLast()}
                             >
@@ -176,7 +176,7 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
                         </Show>
                         <Button
                           class={cx(
-                            "secondary small !min-h-small-input flex items-center justify-center",
+                            "secondary small min-h-small-input! flex items-center justify-center",
                             props.addAtEndValue && !params().isLast() ? "col-span-2" : undefined,
                           )}
                           onClick={() => params().remove()}
@@ -186,7 +186,7 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
                         <Show when={params().isLast() && props.addAtEndValue}>
                           {/* Add button after the last item. */}
                           <Button
-                            class="secondary small !min-h-small-input flex items-center justify-center"
+                            class="secondary small min-h-small-input! flex items-center justify-center"
                             onClick={addAtEnd}
                           >
                             <actionIcons.Add class="text-current" />
@@ -202,12 +202,12 @@ export const SimpleMultiField: VoidComponent<SimpleMultiFieldProps> = (allProps)
               <div class="flex gap-1 items-center justify-between min-h-small-input">
                 <Show when={!isFieldsetDisabled() && props.addAtEndValue} fallback={<EmptyValueSymbol />}>
                   {/* Add button on a line by itself when there are no items. */}
-                  <Button class="flex-grow text-start" onClick={addAtEnd}>
+                  <Button class="grow text-start" onClick={addAtEnd}>
                     <EmptyValueSymbol />
                   </Button>
                   <div class="flex justify-end">
                     <Button
-                      class="secondary small !min-h-small-input flex items-center justify-center"
+                      class="secondary small min-h-small-input! flex items-center justify-center"
                       style={{width: BUTTON_WIDTH}}
                       onClick={addAtEnd}
                     >

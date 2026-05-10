@@ -60,7 +60,7 @@ export const PasswordField: VoidComponent<PasswordFieldProps> = (allProps) => {
           name={props.name}
           type={showing() ? "text" : "password"}
           {...htmlAttributes.merge(inputProps, {
-            class: "!grow !pr-6",
+            class: "grow! pr-6!",
             onInput: (e) => setInput((e.target as HTMLInputElement).value),
           })}
         />

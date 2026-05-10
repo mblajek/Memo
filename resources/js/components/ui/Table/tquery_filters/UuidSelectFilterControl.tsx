@@ -3,7 +3,7 @@ import {getFilterControlState} from "components/ui/Table/tquery_filters/filter_c
 import {cx} from "components/utils/classnames";
 import {VoidComponent, createMemo, splitProps} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {useSingleSelectFilterHelper} from "./select_filters_helper";
 import {FilterControlProps, FilterHWithState} from "./types";
 

@@ -176,7 +176,7 @@ export const MeetingSeriesControls: VoidComponent<MeetingSeriseControlsProps> = 
                 <label class="flex items-baseline gap-2 select-none px-1 hover:bg-hover">
                   <MeetingDate
                     date={date}
-                    class={form.data("seriesIncludeDate")[dateISO] ? undefined : "text-opacity-60 line-through"}
+                    class={form.data("seriesIncludeDate")[dateISO] ? undefined : "text-black/60 line-through"}
                   />
                   <CheckboxField name={`seriesIncludeDate.${dateISO}`} label="" data-felte-keep-on-remove />
                 </label>

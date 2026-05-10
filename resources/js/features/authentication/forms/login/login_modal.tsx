@@ -42,7 +42,7 @@ export const createLoginModal = registerGlobalPageElement<Params | true>((args) 
       {(params) => (
         <div class="flex flex-col gap-4">
           <div
-            class={cx("flex gap-2 justify-between rounded", envInfo.style() ? "px-1" : "text-grey-text")}
+            class={cx("flex gap-2 justify-between rounded-sm", envInfo.style() ? "px-1" : "text-grey-text")}
             style={envInfo.style()}
           >
             <div>{envInfo.info()}</div>

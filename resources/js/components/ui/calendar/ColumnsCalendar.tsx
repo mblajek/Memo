@@ -179,7 +179,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
           }}
         >
           <For each={props.columns}>
-            {(col) => <div class="outline outline-1 outline-gray-300">{col.allDayArea()}</div>}
+            {(col) => <div class="outline outline-gray-300">{col.allDayArea()}</div>}
           </For>
         </div>
         <GetRef ref={setHoursArea} waitForMount>
@@ -210,8 +210,8 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                 {(dayMinute) => (
                   <div
                     class={cx(
-                      "absolute w-full px-1 text-right text-xs text-grey-text",
-                      dayMinute() % 60 ? "text-opacity-60" : undefined,
+                      "absolute w-full px-1 text-right text-xs",
+                      dayMinute() % 60 ? "text-grey-text/60" : "text-grey-text",
                     )}
                     style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
                   >
@@ -226,7 +226,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
             <div class="grid grid-cols-subgrid" style={{"grid-column": "columns"}}>
               <For each={props.columns}>
                 {(col) => (
-                  <div class="outline outline-1 outline-gray-300 relative">
+                  <div class="outline outline-gray-300 relative">
                     {col.hoursArea()}
                     <Show when={isToday(col.day)}>
                       <div
@@ -243,8 +243,8 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
                 {(dayMinute) => (
                   <div
                     class={cx(
-                      "absolute w-full h-0 border-b border-gray-600",
-                      dayMinute() % 60 ? "border-dotted border-opacity-20" : "border-solid border-opacity-30",
+                      "absolute w-full h-0 border-b",
+                      dayMinute() % 60 ? "border-dotted border-gray-600/20" : "border-solid border-gray-600/30",
                     )}
                     style={{top: `${dayMinuteToPixelY(dayMinute())}px`}}
                   />

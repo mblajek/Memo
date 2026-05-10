@@ -112,10 +112,15 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
         isStartOfWeek,
         isEndOfWeek,
         classes: cx(
-          day.isWeekend || holidays.isHoliday(day) ? "text-red-800" : "text-gray-900",
+          day.isWeekend || holidays.isHoliday(day)
+            ? day.month === monthStart().month
+              ? "text-red-800"
+              : "text-red-800/50"
+            : day.month === monthStart().month
+              ? "text-gray-900"
+              : "text-gray-900/50",
           holidays.isHoliday(day) ? "underline" : undefined,
           isStartOfWeek ? "rounded-s" : isEndOfWeek ? "rounded-e" : undefined,
-          day.month === monthStart().month ? undefined : "text-opacity-50",
         ),
       };
     }),
@@ -140,13 +145,13 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
     <div {...htmlAttributes.merge(divProps, {class: "flex flex-col items-stretch gap-1 font-medium text-sm"})}>
       <div class="w-full flex items-stretch uppercase">
         <Button
-          class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
+          class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
           onClick={() => props.setMonth(props.month.minus({months: 1}))}
         >
           <FaSolidArrowLeft />
         </Button>
         <Button
-          class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
+          class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
           onClick={() => props.setMonth(props.month.plus({months: 1}))}
         >
           <FaSolidArrowRight />
@@ -154,7 +159,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
         <div class="grow px-1 flex items-center align-middle gap-1 justify-between uppercase">
           <Show when={props.onMonthNameClick} fallback={<div>{props.month.monthLong}</div>}>
             <Button
-              class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
+              class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
               onClick={() => props.onMonthNameClick?.()}
             >
               {props.month.monthLong}
@@ -162,7 +167,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           </Show>
           <PopOver
             trigger={(popOver) => (
-              <Button class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover" onClick={popOver.open}>
+              <Button class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover" onClick={popOver.open}>
                 {props.month.year}
               </Button>
             )}
@@ -202,7 +207,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           </PopOver>
         </div>
         <Button
-          class="px-0.5 py-1 rounded grow-0 uppercase hover:bg-hover"
+          class="px-0.5 py-1 rounded-sm grow-0 uppercase hover:bg-hover"
           disabled={!retButtonAction()}
           onClick={() =>
             props.setMonth((retButtonAction() === "toSelection" && props.selection?.center()) || currentDate())
@@ -223,8 +228,8 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
             {({exampleDay, isWeekend}) => (
               <div
                 class={cx(
-                  "w-full text-center text-xs text-opacity-70 uppercase",
-                  isWeekend ? "text-red-800" : "text-gray-900",
+                  "w-full text-center text-xs uppercase",
+                  isWeekend ? "text-red-800/70" : "text-gray-900/70",
                 )}
               >
                 {exampleDay.toLocaleString({weekday: "narrow"})}

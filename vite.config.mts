@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import laravel from "laravel-vite-plugin";
 import {PluginOption} from "vite";
 import eslint from "vite-plugin-eslint";
@@ -28,6 +29,7 @@ export default defineConfig({
     target: "ESNext",
   },
   plugins: [
+    tailwindcss(),
     laravel({
       input: ["./resources/js/index.tsx"],
       refresh: ["./resources/js"],
@@ -50,14 +52,6 @@ export default defineConfig({
   optimizeDeps: {
     // Based on https://github.com/andi23rosca/solid-markdown/issues/33#issuecomment-2612454745
     include: ["solid-markdown > micromark", "solid-markdown > unified"],
-  },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        // See: https://sass-lang.com/documentation/breaking-changes/legacy-js-api/
-        api: "modern-compiler",
-      },
-    },
   },
   server: {
     host: "0.0.0.0",

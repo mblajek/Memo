@@ -8,7 +8,7 @@ import {useLangFunc} from "components/utils/lang";
 import {IntColumnFilter} from "data-access/memo-api/tquery/types";
 import {Show, createComputed, createMemo} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {FilterControl, FilterHWithState} from "./types";
 
 type _Directives = typeof title;

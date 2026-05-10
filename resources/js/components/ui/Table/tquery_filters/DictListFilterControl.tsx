@@ -5,7 +5,7 @@ import {typed} from "components/utils/typed";
 import {DictDataColumnSchema} from "data-access/memo-api/tquery/types";
 import {createComputed} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {SelectFilterMode, SelectFilterModeControl} from "./select_filters_helper";
 import {FilterControl, FilterHWithState} from "./types";
 

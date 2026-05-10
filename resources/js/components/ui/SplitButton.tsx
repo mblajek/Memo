@@ -18,7 +18,7 @@ export const SplitButton: ParentComponent<Props> = (allProps) => {
   return (
     <div ref={setContainer} class={cx(props.divClass, "flex items-stretch")}>
       <Button
-        {...htmlAttributes.merge(buttonProps, {class: cx("flex-grow", props.popOver ? "!rounded-e-none" : undefined)})}
+        {...htmlAttributes.merge(buttonProps, {class: cx("grow", props.popOver ? "rounded-e-none!" : undefined)})}
         titleTriggerTarget={container()}
       >
         {buttonProps.children}
@@ -29,7 +29,7 @@ export const SplitButton: ParentComponent<Props> = (allProps) => {
             trigger={(popOver) => (
               <Button
                 {...htmlAttributes.merge(buttonProps, {
-                  class: "basis-0 -ml-px !rounded-s-none border-l border-l-memo-active",
+                  class: "basis-0 -ml-px rounded-s-none! border-l border-l-memo-active",
                 })}
                 titleTriggerTarget={container()}
                 onClick={popOver.open}

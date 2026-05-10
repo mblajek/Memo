@@ -78,7 +78,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
       <PopOver
         trigger={(popOver) => (
           <ButtonLike
-            class="flex-grow flex items-center justify-center secondary small select-none"
+            class="grow flex items-center justify-center secondary small select-none"
             onClick={popOver.open}
             disabled={form.isSubmitting()}
           >
@@ -127,10 +127,7 @@ export const MeetingCannedStatusEdits: VoidComponent<Props> = (props) => {
         )}
       </PopOver>
       <ButtonLike
-        class={cx(
-          "flex-grow-[8] flex items-center justify-center small select-none",
-          hasBegun() ? "primary" : "secondary",
-        )}
+        class={cx("grow-8 flex items-center justify-center small select-none", hasBegun() ? "primary" : "secondary")}
         onClick={() => {
           form.setFields("statusDictId", meetingStatusDict()!.completed.id);
           submitForm(["statusDictId"]);

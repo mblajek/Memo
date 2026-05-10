@@ -20,14 +20,14 @@ export const Pagination: VoidComponent = () => {
     <Button
       {...htmlAttributes.merge(props, {
         class:
-          "px-1 min-w-8 border border-input-border bg-white rounded flex justify-center items-center text-black disabled:text-opacity-30 disabled:border-opacity-50",
+          "px-1 min-w-8 border border-input-border bg-white rounded-sm flex justify-center items-center text-black disabled:text-black/30 disabled:border-input-border/50",
       })}
     />
   );
   return (
     <Show when={numPages() > 1}>
       <div class="flex items-stretch gap-0.5">
-        <ItemBtn class="!min-w-12" onClick={() => setPageIndex(pageIndex() - 1)} disabled={pageIndex() === 0}>
+        <ItemBtn class="min-w-12!" onClick={() => setPageIndex(pageIndex() - 1)} disabled={pageIndex() === 0}>
           <FaSolidArrowLeftLong class="text-current" />
         </ItemBtn>
 
@@ -44,7 +44,7 @@ export const Pagination: VoidComponent = () => {
               {(_) => {
                 const pi = page as number;
                 return (
-                  <ItemBtn class={pi === pageIndex() ? "!bg-select" : undefined} onClick={[setPageIndex, pi]}>
+                  <ItemBtn class={pi === pageIndex() ? "bg-select!" : undefined} onClick={[setPageIndex, pi]}>
                     {pi + 1}
                   </ItemBtn>
                 );
@@ -53,7 +53,7 @@ export const Pagination: VoidComponent = () => {
           )}
         </For>
         <ItemBtn
-          class="!min-w-12"
+          class="min-w-12!"
           onClick={() => setPageIndex(pageIndex() + 1)}
           disabled={pageIndex() === numPages() - 1}
         >

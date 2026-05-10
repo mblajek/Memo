@@ -51,7 +51,7 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
             markerClass={({active}) =>
               cx(
                 props.small ? "px-1" : "px-2 py-0.5",
-                "border rounded",
+                "border rounded-sm",
                 active ? "border-memo-active bg-select" : "border-transparent",
               )
             }
@@ -59,7 +59,7 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
             {(MarkerTarget) => (
               <div
                 class={cx(
-                  "border border-input-border rounded flex flex-wrap justify-between gap-1",
+                  "border border-input-border rounded-sm flex flex-wrap justify-between gap-1",
                   props.small ? "p-0.5 min-h-small-input" : "p-1 min-h-big-input",
                   isDisabled() ? "bg-disabled" : undefined,
                 )}
@@ -81,10 +81,10 @@ export const SegmentedControl: VoidComponent<Props> = (props) => (
                     return (
                       <label
                         class={cx(
-                          "select-none text-black z-10",
+                          "select-none z-10",
                           isItemDisabled()
-                            ? "text-opacity-50"
-                            : ["cursor-pointer", isActive() ? undefined : "text-opacity-80"],
+                            ? "text-black/50"
+                            : ["cursor-pointer", isActive() ? "text-black" : "text-black/80"],
                         )}
                         tabIndex="0"
                         onClick={isFormMode ? undefined : activate}

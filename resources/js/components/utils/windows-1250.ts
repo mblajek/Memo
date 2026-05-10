@@ -289,7 +289,7 @@ type DecodeOptions = {
 };
 
 // https://encoding.spec.whatwg.org/#single-byte-decoder
-export const decode = (input: Uint16Array | Uint8Array | Buffer | string, options: DecodeOptions) => {
+export const decode = (input: Uint16Array | Uint8Array | string, options: DecodeOptions) => {
   const mode = options.mode || "replacement";
 
   const length = input.length;

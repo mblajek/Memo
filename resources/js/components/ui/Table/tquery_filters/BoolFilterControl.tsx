@@ -6,7 +6,7 @@ import {typed} from "components/utils/typed";
 import {BoolColumnFilter, NullColumnFilter} from "data-access/memo-api/tquery/types";
 import {createMemo} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {makeSelectItem} from "./select_items";
 import {FilterControl, FilterHWithState} from "./types";
 
@@ -56,7 +56,7 @@ export const BoolFilterControl: FilterControl<Filter> = (props) => {
   });
   return (
     <div class={cx(s.filter, s.filterLine)}>
-      <div class="flex-grow flex flex-col items-stretch">
+      <div class="grow flex flex-col items-stretch">
         <Select
           name={filterFieldNames.get(`val_${props.schema.name}`)}
           items={items()}

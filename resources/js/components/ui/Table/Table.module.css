@@ -1,3 +1,5 @@
+@reference "/resources/js/index.css";
+
 .tableContainer {
   @apply flex flex-col items-stretch gap-1;
 
@@ -23,7 +25,7 @@
 
             > .headerRow {
               @apply max-h-60 col-span-full grid grid-flow-col grid-cols-subgrid;
-              @apply outline outline-1 outline-gray-400 bg-gray-400;
+              @apply outline outline-gray-400 bg-gray-400;
 
               > .cell {
                 @apply bg-gray-100;
@@ -44,7 +46,7 @@
               }
 
               &:hover > .cell {
-                background-color: color-mix(in srgb, theme("colors.hover") 60%, white);
+                background-color: color-mix(in srgb, var(--color-hover) 60%, white);
               }
             }
 

@@ -11,7 +11,7 @@ import {dateTimeToISO, dateToISO} from "data-access/memo-api/utils";
 import {DateTime} from "luxon";
 import {Show, VoidComponent, createComputed, createMemo} from "solid-js";
 import {useFilterFieldNames} from "./filter_field_names";
-import s from "./filters.module.scss";
+import s from "./filters.module.css";
 import {FilterControlProps, FilterHWithState} from "./types";
 
 type _Directives = typeof title | typeof hoverSignal;

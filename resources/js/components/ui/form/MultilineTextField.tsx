@@ -71,7 +71,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
           {...TRIM_ON_BLUR}
           {...htmlAttributes.merge(inputProps, {
             class: cx(
-              "border border-input-border rounded aria-invalid:border-red-400 disabled:bg-disabled",
+              "border border-input-border rounded-sm aria-invalid:border-red-400 disabled:bg-disabled",
               props.small ? "h-16 min-h-small-input px-1" : "h-24 min-h-big-input px-2",
             ),
           })}
@@ -79,7 +79,7 @@ export const MultilineTextField: VoidComponent<MultilineTextFieldProps> = (allPr
         />
         <Show when={props.richTextPreview}>
           <Button
-            class="w-2 flex flex-col items-center rounded hover:bg-hover"
+            class="w-2 flex flex-col items-center rounded-sm hover:bg-hover"
             onClick={() => setShowPreview((v) => !v)}
             title={t("preview.toggle")}
           >

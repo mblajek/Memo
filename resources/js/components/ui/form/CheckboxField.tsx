@@ -34,7 +34,7 @@ export const CheckboxField: VoidComponent<Props> = (props) => (
             type="checkbox"
             id={props.name}
             name={props.name}
-            class="m-px outline-1 aria-invalid:outline aria-invalid:outline-red-400"
+            class="m-px aria-invalid:outline aria-invalid:outline-red-400"
             aria-labelledby={text ? labelIdForField(props.name) : undefined}
             disabled={props.disabled}
             data-felte-keep-on-remove={props["data-felte-keep-on-remove"]}

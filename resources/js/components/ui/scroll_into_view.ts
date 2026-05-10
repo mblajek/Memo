@@ -2,7 +2,7 @@ import {Accessor, createEffect, createMemo, on} from "solid-js";
 import "tippy.js/animations/shift-toward-subtle.css";
 import "tippy.js/dist/border.css";
 import "tippy.js/dist/tippy.css";
-import "./title.scss";
+import "./title.css";
 
 declare module "solid-js" {
   namespace JSX {

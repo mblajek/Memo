@@ -55,7 +55,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
           <ButtonLike
             {...htmlAttributes.merge(divProps, {
               class: cx(
-                "px-0.5 border rounded flex flex-col items-stretch min-h-0 cursor-pointer select-none relative",
+                "px-0.5 border rounded-sm flex flex-col items-stretch min-h-0 cursor-pointer select-none relative",
                 eventBlockAlertFrameClass(meeting()),
               ),
               style: {
@@ -88,7 +88,7 @@ export const AllDayEventBlock: VoidComponent<AllDayEventProps> = (allProps) => {
                 <div>{dictionaries()?.getPositionById(meeting().typeDictId).label}</div>
               </Show>
               <Show when={meeting().fromMeetingId}>
-                <div class="absolute bottom-px right-1 bg-inherit rounded">
+                <div class="absolute bottom-px right-1 bg-inherit rounded-sm">
                   <MeetingRepeatIcon seriesData={meeting()} />
                 </div>
               </Show>
@@ -136,7 +136,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
           <ButtonLike
             {...htmlAttributes.merge(divProps, {
               class: cx(
-                "w-full h-full border rounded flex flex-col items-stretch cursor-pointer select-none",
+                "w-full h-full border rounded-sm flex flex-col items-stretch cursor-pointer select-none",
                 crosses().fromPrevDay ? "border-t-0 rounded-t-none" : undefined,
                 crosses().toNextDay ? "border-b-0 rounded-b-none" : undefined,
                 eventBlockAlertFrameClass(meeting()),
@@ -174,7 +174,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                   <Show when={meeting().notes}>
                     <RichTextView
                       class={cx(
-                        "grow shrink overflow-y-clip !overflow-x-visible",
+                        "grow shrink overflow-y-clip overflow-x-visible!",
                         meeting().resources.length ? "min-h-px" : undefined,
                       )}
                       inert
@@ -188,7 +188,7 @@ export const MeetingEventBlock: VoidComponent<MeetingEventProps> = (allProps) =>
                 </SeparatedSections>
               </div>
               <Show when={meeting().fromMeetingId}>
-                <div class="absolute bottom-px right-1 bg-inherit rounded">
+                <div class="absolute bottom-px right-1 bg-inherit rounded-sm">
                   <MeetingRepeatIcon seriesData={meeting()} />
                 </div>
               </Show>

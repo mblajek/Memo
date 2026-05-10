@@ -123,7 +123,7 @@ export const MeetingAttendantsNotifications: VoidComponent<Props> = (props) => {
                         </Show>
                         <Show
                           when={notification()}
-                          fallback={<FaSolidCircleXmark class="text-black text-opacity-30 scale-75" />}
+                          fallback={<FaSolidCircleXmark class="text-black/30 scale-75" />}
                         >
                           <FaSolidCircleCheck class="text-memo-active" />
                           <Show when={client() && !client()!.contactPhone}>

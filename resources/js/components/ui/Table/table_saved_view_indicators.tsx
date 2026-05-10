@@ -59,10 +59,13 @@ export function useTableSavedViewIndicators() {
         class={cx(
           "my-1 flex items-center",
           props.viewSummary.modifiesSummary[props.staticPartName]
-            ? [
-                props.viewSummary.modifiesClearedSummary[props.staticPartName] ? "text-cyan-600" : "text-rose-600",
-                props.viewSummary.modifiesBaseSummary?.[props.staticPartName] === false ? "text-opacity-50" : undefined,
-              ]
+            ? props.viewSummary.modifiesBaseSummary?.[props.staticPartName] === false
+              ? props.viewSummary.modifiesClearedSummary[props.staticPartName]
+                ? "text-cyan-600/50"
+                : "text-rose-600/50"
+              : props.viewSummary.modifiesClearedSummary[props.staticPartName]
+                ? "text-cyan-600"
+                : "text-rose-600"
             : "text-white",
         )}
         style={{
