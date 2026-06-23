@@ -163,15 +163,37 @@ class UserAuthenticationTest extends TestCase
 
     public function testLoginWithMissingOtpWhenRequiredWillFail(): void
     {
-        // The login form relies on this: when OTP is configured but no OTP is supplied, the response
-        // must report that the `otp` field is required, so the form knows to prompt for it.
-        $google2fa = new Google2FA();
-        $secret = $google2fa->generateSecretKey();
+        // OTP is configured but the `otp` key is entirely absent: the `present` rule reports it.
+        $secret = (new Google2FA())->generateSecretKey();
         $user = $this->createUser(['password_expire_at' => null, 'otp_secret' => $secret]);
 
         $result = $this->post(static::URL_LOGIN, [
             'email' => $user->email,
             'password' => self::CORRECT_PASSWORD,
+        ]);
+
+        $result->assertBadRequest();
+        $this->assertEquals('exception.validation', $result->json('errors')[0]['code']);
+        $otpErrorCodes = array_column(
+            array_filter($result->json('errors'), fn(array $error) => ($error['field'] ?? null) === 'otp'),
+            'code',
+        );
+        $this->assertContains('validation.present', $otpErrorCodes);
+        $this->assertGuest();
+    }
+
+    public function testLoginWithEmptyOtpWhenRequiredWillFail(): void
+    {
+        // This is what the login form actually submits when no code is typed (otp defaults to "").
+        // ConvertEmptyStringsToNull turns "" into null, so the response reports `otp` as required —
+        // the code the form looks for to know it must prompt for OTP.
+        $secret = (new Google2FA())->generateSecretKey();
+        $user = $this->createUser(['password_expire_at' => null, 'otp_secret' => $secret]);
+
+        $result = $this->post(static::URL_LOGIN, [
+            'email' => $user->email,
+            'password' => self::CORRECT_PASSWORD,
+            'otp' => '',
         ]);
 
         $result->assertBadRequest();
