@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Tquery;
 
+use App\Models\Attribute;
 use App\Models\Client;
 use App\Models\Facility;
 use App\Models\Member;
 use App\Models\User;
+use App\Models\Value;
 
 /** AI-generated (Opus 4.6) */
 class ClientTqueryTest extends TqueryTestCase
@@ -22,7 +24,7 @@ class ClientTqueryTest extends TqueryTestCase
         $this->url = "/api/v1/facility/{$this->facility->id}/user/client/tquery";
     }
 
-    private function createClient(string $name): User
+    private function createClient(string $name, ?string $birthDate = null): User
     {
         $user = User::factory()->create(['name' => $name]);
         $client = new Client();
@@ -30,6 +32,7 @@ class ClientTqueryTest extends TqueryTestCase
         $client->facility_id = $this->facility->id;
         $client->short_code = '-';
         $client->type_dict_id = 'd1c57dfc-c118-49ff-ae38-6585645349ca'; // adult
+        $client->birth_date = $birthDate;
         $client->saveOrFail();
         Member::factory()->create([
             'user_id' => $user->id,
@@ -37,6 +40,36 @@ class ClientTqueryTest extends TqueryTestCase
             'client_id' => $client->id,
         ]);
         return $user;
+    }
+
+    /** A custom client attribute stored in the `values` table (is_multi_value false or true). */
+    private function createDateAttribute(string $apiName, bool $multi): Attribute
+    {
+        $attribute = Attribute::query()->create([
+            'facility_id' => $this->facility->id,
+            'table' => 'clients',
+            'name' => $apiName,
+            'api_name' => $apiName,
+            'type' => 'date',
+            'dictionary_id' => null,
+            'default_order' => 999000, // outside the seeded range; unique(table, default_order)
+            'is_multi_value' => $multi,
+            'is_fixed' => false,
+            'requirement_level' => 'optional',
+        ]);
+        Attribute::clearCacheAll(); // config building reads the static attribute cache
+        return $attribute;
+    }
+
+    private function setDateAttributeValue(Attribute $attribute, User $user, string $datetimeValue, int $order = 1): void
+    {
+        $client = Client::query()->where('user_id', $user->id)->firstOrFail();
+        Value::query()->create([
+            'attribute_id' => $attribute->id,
+            'object_id' => $client->id,
+            'datetime_value' => $datetimeValue,
+            'default_order' => $order,
+        ]);
     }
 
     public function testGetConfig(): void
@@ -203,5 +236,46 @@ class ClientTqueryTest extends TqueryTestCase
             $this->assertArrayHasKey('_count', $row);
             $this->assertEquals(1, $row['_count']);
         }
+    }
+
+    // is_multi_value === false: single value-backed date attribute, stored in `values`.`datetime_value`.
+    public function testSingleDateAttributeRendersAsDate(): void
+    {
+        $attribute = $this->createDateAttribute('customDate', multi: false);
+        $user = $this->createClient('CTQ date');
+        $this->setDateAttributeValue($attribute, $user, '2026-06-10 00:00:00');
+
+        $data = $this->assertTqueryData($this->tpiPost($this->url, [
+            'columns' => self::columns('id', 'client.customDate'),
+            'paging' => self::paging(50),
+        ]), 1);
+        $this->assertSame('2026-06-10', $data[0]['client.customDate']);
+    }
+
+    // is_multi_value === true: list of value-backed dates, aggregated with json_arrayagg.
+    public function testMultiValueDateAttributeRendersAsDates(): void
+    {
+        $attribute = $this->createDateAttribute('customDates', multi: true);
+        $user = $this->createClient('CTQ dates');
+        $this->setDateAttributeValue($attribute, $user, '2026-06-10 00:00:00', order: 1);
+        $this->setDateAttributeValue($attribute, $user, '2026-07-20 00:00:00', order: 2);
+
+        $data = $this->assertTqueryData($this->tpiPost($this->url, [
+            'columns' => self::columns('id', 'client.customDates'),
+            'paging' => self::paging(50),
+        ]), 1);
+        $this->assertSame(['2026-06-10', '2026-07-20'], $data[0]['client.customDates']);
+    }
+
+    // is_multi_value === null: fixed attribute backed by the real `clients`.`birth_date` DATE column.
+    public function testFixedDateAttributeRendersAsDate(): void
+    {
+        $this->createClient('CTQ birth', birthDate: '2026-06-10');
+
+        $data = $this->assertTqueryData($this->tpiPost($this->url, [
+            'columns' => self::columns('id', 'client.birthDate'),
+            'paging' => self::paging(50),
+        ]), 1);
+        $this->assertSame('2026-06-10', $data[0]['client.birthDate']);
     }
 }
