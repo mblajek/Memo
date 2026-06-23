@@ -227,10 +227,7 @@ export const TinyCalendar: VoidComponent<Props> = (allProps) => {
           <For each={getWeekdays()}>
             {({exampleDay, isWeekend}) => (
               <div
-                class={cx(
-                  "w-full text-center text-xs uppercase",
-                  isWeekend ? "text-red-800/70" : "text-gray-900/70",
-                )}
+                class={cx("w-full text-center text-xs uppercase", isWeekend ? "text-red-800/70" : "text-gray-900/70")}
               >
                 {exampleDay.toLocaleString({weekday: "narrow"})}
               </div>

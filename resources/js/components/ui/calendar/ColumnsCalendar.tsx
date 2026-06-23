@@ -178,9 +178,7 @@ export const ColumnsCalendar: VoidComponent<Props> = (allProps) => {
             passive: false,
           }}
         >
-          <For each={props.columns}>
-            {(col) => <div class="outline outline-gray-300">{col.allDayArea()}</div>}
-          </For>
+          <For each={props.columns}>{(col) => <div class="outline outline-gray-300">{col.allDayArea()}</div>}</For>
         </div>
         <GetRef ref={setHoursArea} waitForMount>
           <div
