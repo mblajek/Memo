@@ -8,7 +8,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use Illuminate\Validation\ValidationException;
 use App\Utils\ConditionalArrayRule;
@@ -159,8 +158,12 @@ class Valid extends AbstractDataRule implements IgnoreIdRule
             foreach ($validationException->validator->failed() as $fieldErrors) {
                 foreach ($fieldErrors as $rule => $interpolationData) {
                     $this->validator->addRules([$attribute => $this->rules]);
-                    $ruleOrClass = str_contains($rule, '\\') ? $rule : Str::snake($rule);
-                    $this->validator->addFailure($attribute, $ruleOrClass, $interpolationData);
+                    // Pass $rule through as failed() produced it (PascalCase for built-in rules,
+                    // FQCN for class rules). addFailure() matches size/exclude/dependent rules by
+                    // their PascalCase name; snake-casing here would hide size rules from
+                    // getMessage(), which then returns an array message and crashes message
+                    // formatting. The error-code renderer snake-cases on its own side.
+                    $this->validator->addFailure($attribute, $rule, $interpolationData);
                 }
             }
         }
