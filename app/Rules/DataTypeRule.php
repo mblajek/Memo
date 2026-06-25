@@ -26,6 +26,6 @@ final class DataTypeRule extends AbstractRule
         if (get_debug_type($value) === $this->type) {
             return;
         }
-        $this->validator->addFailure($attribute, 'custom.data_type', [$this->type]);
+        $this->validator->addFailure($attribute, 'custom.data_type', ['type' => $this->type]);
     }
 }

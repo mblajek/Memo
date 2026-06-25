@@ -93,7 +93,7 @@ class Valid extends AbstractDataRule implements IgnoreIdRule
     ): array {
         return ($keys === null)
             ? self::base($sometimes, $nullable, ['array'], $rules)
-            : self::base($sometimes, $nullable, ['max:' . count($keys), 'array:' . implode(',', $keys)], $rules);
+            : self::base($sometimes, $nullable, ['array:' . implode(',', $keys), 'max:' . count($keys)], $rules);
     }
 
     public static function list(
