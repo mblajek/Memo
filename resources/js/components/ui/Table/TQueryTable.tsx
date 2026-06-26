@@ -808,6 +808,13 @@ export const TQueryTable: VoidComponent<TQueryTableProps<any>> = (props) => {
               </PaddedCell>
             )),
           },
+          {
+            meta: {
+              tquery: {
+                groupingInfo: () => columnGroupingInfos().get(countCol) || INVALID_COLUMN_GROUPING_INFO,
+              },
+            },
+          },
         ),
       );
     }
