@@ -161,6 +161,80 @@ class UserAuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function testLoginWithReusedOtpWillFail(): void
+    {
+        // Replay protection: a successful login records its window in otp_used_ts, and
+        // verifyKeyNewer only accepts a window strictly newer than that (makeStartingTimestamp
+        // uses oldTimestamp + 1). So reusing the same code is rejected, even in the same window.
+        $google2fa = new Google2FA();
+        $secret = $google2fa->generateSecretKey();
+        $user = $this->createUser(['password_expire_at' => null, 'otp_secret' => $secret]);
+        $otp = $google2fa->getCurrentOtp($secret);
+
+        $this->post(static::URL_LOGIN, [
+            'email' => $user->email,
+            'password' => self::CORRECT_PASSWORD,
+            'otp' => $otp,
+        ])->assertOk();
+
+        // Reset the cached permission object so the second login resolves its own, as every request
+        // does in production (fresh process). Otherwise the stale object from login 1 has a null user
+        // and Auth::logout's user-stamp on the failed attempt would error with exception.unauthorised.
+        PermissionMiddleware::setPermissions(null);
+
+        $result = $this->post(static::URL_LOGIN, [
+            'email' => $user->email,
+            'password' => self::CORRECT_PASSWORD,
+            'otp' => $otp,
+        ]);
+
+        $result->assertUnauthorized();
+        $this->assertEquals('exception.bad_credentials', $result->json('errors')[0]['code']);
+        $this->assertGuest();
+    }
+
+    public function testConfigureOtpWithValidCodeEnablesOtp(): void
+    {
+        // otpGenerate stashes a secret candidate in the session; otpConfigure activates it once the
+        // user proves possession. We seed the candidate directly (mirrors AuthController's private
+        // SESSION_OTP_SECRET_CANDIDATE) so the test doesn't depend on cross-request session carry.
+        $user = $this->createUser();
+        $secret = (new Google2FA())->generateSecretKey();
+        $this->actingAs($user);
+        $this->withSession([
+            PermissionMiddleware::SESSION_PASSWORD_HASH_HASH => $user->passwordHashHash(),
+            'otp_secret_candidate' => ['otp_secret' => $secret, 'valid_until' => new \DateTimeImmutable('+1 minute')],
+        ]);
+
+        $result = $this->post('/api/v1/user/otp/configure', ['otp' => (new Google2FA())->getCurrentOtp($secret)]);
+
+        $result->assertOk();
+        $user->refresh();
+        self::assertSame($secret, $user->otp_secret);
+        self::assertNotNull($user->otp_used_ts);
+    }
+
+    public function testConfigureOtpWithWrongCodeFails(): void
+    {
+        $user = $this->createUser();
+        $google2fa = new Google2FA();
+        $secret = $google2fa->generateSecretKey();
+        $this->actingAs($user);
+        $this->withSession([
+            PermissionMiddleware::SESSION_PASSWORD_HASH_HASH => $user->passwordHashHash(),
+            'otp_secret_candidate' => ['otp_secret' => $secret, 'valid_until' => new \DateTimeImmutable('+1 minute')],
+        ]);
+
+        // A 6-digit code that is not the candidate's current one.
+        $wrong = $google2fa->getCurrentOtp($secret) === '123456' ? '654321' : '123456';
+        $result = $this->post('/api/v1/user/otp/configure', ['otp' => $wrong]);
+
+        $result->assertUnauthorized();
+        $this->assertEquals('exception.bad_credentials', $result->json('errors')[0]['code']);
+        $user->refresh();
+        self::assertNull($user->otp_secret);
+    }
+
     public function testLoginWithMissingOtpWhenRequiredWillFail(): void
     {
         // OTP is configured but the `otp` key is entirely absent: the `present` rule reports it.
