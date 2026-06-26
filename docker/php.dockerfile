@@ -42,9 +42,8 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesourc
 RUN apt update
 RUN apt install nodejs -y
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN curl -fsSL https://get.pnpm.io/install.sh | ENV="$HOME/.bashrc" SHELL="$(which bash)" bash -
-RUN source "$HOME/.bashrc"
+ENV PATH="$PNPM_HOME/bin:$PNPM_HOME:$PATH"
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 RUN pnpm add -g vite
 
