@@ -19,8 +19,12 @@ final class PositionInDictionaryRule extends AbstractRule
         $facilityId = PermissionMiddleware::permissions()->facility?->id;
         /** @var Position $position */
         $position = Position::query()->where('id', $value)->where('is_disabled', false)->first();
-        if ($position && ($position->facility_id ?? $facilityId) === $facilityId
-            && ($position->dictionary->facility_id ?? $facilityId) === $facilityId) {
+        if (
+            $position && ($facilityId === null || (
+                ($position->facility_id ?? $facilityId) === $facilityId
+                && ($position->dictionary->facility_id ?? $facilityId) === $facilityId
+            ))
+        ) {
             return;
         }
         $this->validator->addFailure($attribute, 'custom.position_in_dictionary', [

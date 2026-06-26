@@ -1,146 +1,157 @@
 import {useParams} from "@solidjs/router";
-import {useQuery} from "@tanstack/solid-query";
-import {createSolidTable} from "@tanstack/solid-table";
-import {createColumnHelper} from "@tanstack/table-core";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {CheckboxInput} from "components/ui/CheckboxInput";
 import {CopyToClipboard} from "components/ui/CopyToClipboard";
-import {BigSpinner} from "components/ui/Spinner";
-import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
-import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
-import {QueryBarrier} from "components/utils/QueryBarrier";
-import {Position} from "data-access/memo-api/dictionaries";
-import {System} from "data-access/memo-api/groups/System";
-import {AttributeTypeView} from "dev-pages/AttributeTypeView";
+import {createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
+import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {title} from "components/ui/title";
+import {WarningMark} from "components/ui/WarningMark";
+import {useLangFunc} from "components/utils/lang";
+import {useAllAttributes, useAllDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
+import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
+import {facilityIdMatches} from "data-access/memo-api/utils";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
-import {createMemo, createSignal, Show, VoidComponent} from "solid-js";
-import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
-import {filterByFacility, textSort, useAttrValueFormatter} from "./util";
+import {createComputed, createMemo, createSignal, Show, VoidComponent} from "solid-js";
+import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
+import {thisFacilityOnlyFilter} from "./util";
+
+type _Directives = typeof title;
 
 export default (() => {
+  const t = useLangFunc();
   const params = useParams();
-  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
-  function getFacility(facilityId: string) {
-    return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
-  }
-  const dictionaries = useAllDictionaries();
-  const attributes = useAllAttributes();
-  const dictionary = () => dictionaries()?.get(params.dictionaryId!);
-  const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
-  createPersistence({
-    value: onlyActiveFacility,
-    onLoad: setOnlyActiveFacility,
-    storage: localStorageStorage("DEVPages:onlyActiveFacility"),
+  const {getCreatedUpdatedColumns} = useTableColumns();
+  const activeFacility = useActiveFacility();
+  const allDictionaries = useAllDictionaries();
+  const allAttributes = useAllAttributes();
+  const dictionary = () => allDictionaries()?.get(params.dictionaryId!);
+  const [thisFacilityOnly, setThisFacilityOnly] = createSignal(false);
+  const positionLabelCell = cellFunc<string>((props) => (
+    <PaddedCell>
+      <ShowCellVal v={props.v}>
+        {(positionId) => {
+          try {
+            return <>{allDictionaries()?.getPositionById(positionId())?.label ?? positionId()}</>;
+          } catch {
+            return <>{positionId()}</>;
+          }
+        }}
+      </ShowCellVal>
+    </PaddedCell>
+  ));
+  const attributeColumns = createMemo(() => {
+    const dict = dictionary();
+    const attributes = allAttributes();
+    if (!dict || !attributes) {
+      return [];
+    }
+    return (dict.resource.positionRequiredAttributeIds ?? [])
+      .map((id) => attributes.getById(id))
+      .filter((attribute) => !attribute.resource.facilityId)
+      .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
+      .map((attribute) => ({
+        name: `position.${attribute.apiName}`,
+        // Dict filters use a facility-scoped position dropdown, so only allow filtering them when the
+        // table itself is scoped to the active facility.
+        ...(attribute.type === "dict"
+          ? {columnDef: {cell: positionLabelCell, enableColumnFilter: thisFacilityOnly()}}
+          : {}),
+      }));
   });
-  const attrValueFormatter = useAttrValueFormatter();
-  const tableCells = useTableCells();
-  const h = createColumnHelper<Position>();
+  const isFromOtherFacility = createMemo(() => {
+    const dict = dictionary();
+    return dict && !facilityIdMatches(dict.resource.facilityId, activeFacilityId());
+  });
+  createPersistence({
+    value: thisFacilityOnly,
+    onLoad: setThisFacilityOnly,
+    storage: localStorageStorage("AttrAndDict:onlyActiveFacility"),
+  });
+  createComputed(() => {
+    if (!activeFacility() || isFromOtherFacility()) {
+      setThisFacilityOnly(false);
+    }
+  });
 
-  const table = createMemo(() =>
-    createSolidTable({
-      ...getBaseTableOptions<Position>({
-        features: {sorting: [{id: "Order", desc: false}]},
-        defaultColumn: AUTO_SIZE_COLUMN_DEFS,
-      }),
-      data: filterByFacility(dictionary()?.allPositions, onlyActiveFacility()),
-      columns: [
-        h.accessor("id", {
-          id: "Id",
-          cell: tableCells.uuid(),
-          enableSorting: false,
-          size: 60,
-        }),
-        h.accessor((p) => p.resource.defaultOrder, {
-          id: "Order",
-          cell: cellFunc<number, Position>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
-        }),
-        h.accessor("resource.name", {
-          id: "Name",
-          ...textSort(),
-        }),
-        h.accessor("label", {
-          id: "Label",
-          cell: cellFunc<string, Position>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
-          ...textSort(),
-        }),
-        h.accessor("resource.facilityId", {
-          id: "Facility",
-          cell: cellFunc<string, Position>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
-            </PaddedCell>
-          )),
-          ...textSort(),
-        }),
-        h.accessor("resource.isFixed", {
-          id: "Fixed",
-        }),
-        h.accessor("disabled", {
-          id: "Disabled",
-        }),
-        h.accessor((p) => p.resource.positionGroupDictId, {
-          id: "Pos. group",
-          cell: cellFunc<string, Position>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>{(v) => dictionaries()?.getPositionById(v()).resource.name}</ShowCellVal>
-            </PaddedCell>
-          )),
-        }),
-        ...((attributes() &&
-          dictionary()
-            ?.resource.positionRequiredAttributeIds?.map((attrId) => attributes()!.getById(attrId))
-            .sort((a, b) => a.resource.defaultOrder - b.resource.defaultOrder)
-            .map((attr) =>
-              h.accessor((p) => attr.readFrom(p.resource), {
-                id: `@${attr.apiName}`,
-                cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
-                meta: {
-                  columnName: () => (
-                    <div>
-                      <div>
-                        @{attr.apiName} <CopyToClipboard text={attr.id} textInTitle />
-                      </div>
-                      <div>
-                        <AttributeTypeView attr={attr} />
-                      </div>
-                    </div>
-                  ),
-                },
-              }),
-            )) ||
-          []),
-      ],
-    }),
+  const FacilityMismatchMark: VoidComponent = () => (
+    <Show when={isFromOtherFacility() && thisFacilityOnly()}>
+      <span use:title={t("attributes.attribs_and_dicts.dictionary_not_in_facility")}>
+        <WarningMark />
+      </span>
+    </Show>
   );
 
+  const intrinsicFilter = createMemo<FilterH>(() => {
+    const dictionaryFilter: FilterH = {type: "column", column: "dictionary.id", op: "=", val: params.dictionaryId!};
+    const facilityFilter = thisFacilityOnlyFilter(thisFacilityOnly(), activeFacilityId());
+    return facilityFilter ? {type: "op", op: "&", val: [dictionaryFilter, facilityFilter]} : dictionaryFilter;
+  });
   return (
-    <QueryBarrier queries={[facilitiesQuery]}>
+    <>
       <AppTitlePrefix prefix="Dictionary" />
-      <div class="contents text-sm">
-        <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
-          <Table
-            table={table()}
-            mode="standalone"
-            aboveTable={() => (
-              <div class="flex gap-2 justify-between">
-                <CheckboxInput
-                  checked={onlyActiveFacility()}
-                  onChecked={setOnlyActiveFacility}
-                  label="Only active facility"
-                />
-                <div>
-                  Dictionary: <b>{dictionary()?.name}</b>{" "}
-                  <span class="text-xs">
-                    (<span class="font-mono">{dictionary()?.id}</span>
-                    <CopyToClipboard text={dictionary()?.id} />)
-                  </span>
-                </div>
+      <TQueryTable
+        mode="standalone"
+        staticPrefixQueryKey={["system", "position"]}
+        staticEntityURL="system/position"
+        staticPersistenceKey="dictionaryPositions"
+        staticTranslations={createTableTranslations("position")}
+        header={
+          <Show when={dictionary()}>
+            {(dictionary) => (
+              <div class="mb-0.5">
+                <span class="capitalize">{t("with_colon", {text: t("models.dictionary._name")})}</span>{" "}
+                <b>{dictionary().name}</b>
+                <FacilityMismatchMark />{" "}
+                <span class="text-xs">
+                  (<span class="font-mono">{dictionary().id}</span>
+                  <CopyToClipboard text={dictionary().id} />)
+                </span>
               </div>
             )}
-          />
-        </Show>
-      </div>
-    </QueryBarrier>
+          </Show>
+        }
+        intrinsicFilter={intrinsicFilter()}
+        columns={[
+          {name: "id", initialVisible: false},
+          {name: "defaultOrder", columnDef: {enableColumnFilter: false, sortDescFirst: false, size: 100}},
+          {name: "name", columnDef: {enableHiding: false}},
+          {name: "facility.id", initialVisible: false, columnGroups: "facility.name"},
+          {name: "facility.name", columnGroups: true},
+          {name: "isFixed", columnDef: {size: 100}},
+          {name: "isDisabled", columnDef: {size: 100}},
+          ...attributeColumns(),
+          {
+            name: "position.positionGroupDictId",
+            columnDef: {cell: positionLabelCell, enableColumnFilter: thisFacilityOnly()},
+          },
+          ...getCreatedUpdatedColumns(),
+        ]}
+        initialSort={[{id: "defaultOrder", desc: false}]}
+        customSectionBelowTable={
+          <Show when={!isFromOtherFacility() && activeFacility()}>
+            {(activeFacility) => (
+              <div class="flex items-center ml-2">
+                <CheckboxInput
+                  checked={thisFacilityOnly()}
+                  onChecked={setThisFacilityOnly}
+                  label={
+                    <>
+                      <span class="font-normal">
+                        {t("attributes.attribs_and_dicts.in_this_facility_only", {facilityName: activeFacility().name})}
+                      </span>
+                      <FacilityMismatchMark />
+                    </>
+                  }
+                />
+              </div>
+            )}
+          </Show>
+        }
+        savedViews
+      />
+    </>
   );
 }) satisfies VoidComponent;

@@ -16,6 +16,9 @@ use App\Models\LogEntry;
 use App\Services\Database\DatabaseDumpHelper;
 use App\Services\System\LogService;
 use App\Services\System\TranslationsService;
+use App\Tquery\Tables\AttributeTquery;
+use App\Tquery\Tables\DictionaryTquery;
+use App\Tquery\Tables\PositionTquery;
 use App\Utils\Date\DateHelper;
 use App\Utils\Nullable;
 use DateTimeImmutable;
@@ -36,9 +39,12 @@ class SystemController extends ApiController
 {
     protected function initPermissions(): void
     {
-        $this->permissionOneOf(Permission::any);
-
-        $this->permissionOneOf(Permission::loggedIn)->only('log', 'facilityList');
+        $this->permissionOneOf(Permission::loggedIn)->except(
+            'translationList',
+            'dictionaryList',
+            'attributeList',
+            'status',
+        );
     }
 
     #[OA\Get(
@@ -146,6 +152,42 @@ class SystemController extends ApiController
         $attributesQuery = Attribute::query()->orderBy('default_order');
         $this->applyRequestIn($attributesQuery);
         return AttributeResource::collection($attributesQuery->get());
+    }
+
+    // logged in - no openapi
+    public function attributeTqueryGet(AttributeTquery $tquery): JsonResponse
+    {
+        return new JsonResponse($tquery->getConfigArray());
+    }
+
+    // logged in - no openapi
+    public function attributeTqueryPost(AttributeTquery $tquery, Request $request): JsonResponse
+    {
+        return new JsonResponse($tquery->query($request));
+    }
+
+    // logged in - no openapi
+    public function dictionaryTqueryGet(DictionaryTquery $tquery): JsonResponse
+    {
+        return new JsonResponse($tquery->getConfigArray());
+    }
+
+    // logged in - no openapi
+    public function dictionaryTqueryPost(DictionaryTquery $tquery, Request $request): JsonResponse
+    {
+        return new JsonResponse($tquery->query($request));
+    }
+
+    // logged in - no openapi
+    public function positionTqueryGet(PositionTquery $tquery): JsonResponse
+    {
+        return new JsonResponse($tquery->getConfigArray());
+    }
+
+    // logged in - no openapi
+    public function positionTqueryPost(PositionTquery $tquery, Request $request): JsonResponse
+    {
+        return new JsonResponse($tquery->query($request));
     }
 
 

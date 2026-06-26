@@ -2,7 +2,18 @@ import {IdentifiedColumnDef} from "@tanstack/table-core";
 import {EMPTY_VALUE_SYMBOL_STRING} from "components/ui/symbols";
 import {Attribute} from "data-access/memo-api/attributes";
 import {useAllAttributes} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {FilterH} from "data-access/memo-api/tquery/filter_utils";
 import {activeFacilityId} from "state/activeFacilityId.state";
+
+export function thisFacilityOnlyFilter(enabled: boolean, facilityId: string | undefined): FilterH | undefined {
+  if (!enabled) {
+    return undefined;
+  }
+  const nullFilter: FilterH = {type: "column", column: "facility.id", op: "null"};
+  return facilityId
+    ? {type: "op", op: "|", val: [nullFilter, {type: "column", column: "facility.id", op: "=", val: facilityId}]}
+    : nullFilter;
+}
 
 export function useAttrValueFormatter() {
   const attributes = useAllAttributes();

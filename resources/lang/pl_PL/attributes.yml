@@ -35,3 +35,9 @@ requirement_level:
 no_attributes: "Brak atrybutów do pokazania"
 
 show_all: "Pokaż wszystkie atrybuty"
+
+attribs_and_dicts:
+  in_this_facility_only: "Tylko w placówce: {{facilityName}}"
+  dictionary_not_in_facility: "Ten słownik nie należy do placówki"
+  positions_count_all_facilities: "Łączna liczba pozycji (wszystkie placówki)"
+  positions_count_this_facility: "Liczba pozycji w wybranej placówce"

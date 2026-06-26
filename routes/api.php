@@ -38,9 +38,17 @@ Route::prefix('/v1')->group(function () {
         });
         Route::prefix('/dictionary')->group(function () {
             Route::get('/list', [SystemController::class, 'dictionaryList']);
+            Route::get('/tquery', [SystemController::class, 'dictionaryTqueryGet']);
+            Route::post('/tquery', [SystemController::class, 'dictionaryTqueryPost']);
         });
         Route::prefix('/attribute')->group(function () {
             Route::get('/list', [SystemController::class, 'attributeList']);
+            Route::get('/tquery', [SystemController::class, 'attributeTqueryGet']);
+            Route::post('/tquery', [SystemController::class, 'attributeTqueryPost']);
+        });
+        Route::prefix('/position')->group(function () {
+            Route::get('/tquery', [SystemController::class, 'positionTqueryGet']);
+            Route::post('/tquery', [SystemController::class, 'positionTqueryPost']);
         });
         Route::get('/status', [SystemController::class, 'status']);
         Route::post('/log', [SystemController::class, 'log']);

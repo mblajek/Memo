@@ -1,117 +1,157 @@
 import {A} from "@solidjs/router";
-import {useQuery} from "@tanstack/solid-query";
-import {createSolidTable} from "@tanstack/solid-table";
-import {createColumnHelper} from "@tanstack/table-core";
 import {createPersistence} from "components/persistence/persistence";
 import {localStorageStorage} from "components/persistence/storage";
 import {CheckboxInput} from "components/ui/CheckboxInput";
-import {BigSpinner} from "components/ui/Spinner";
-import {AUTO_SIZE_COLUMN_DEFS, getBaseTableOptions, Table} from "components/ui/Table/Table";
-import {cellFunc, PaddedCell, ShowCellVal, useTableCells} from "components/ui/Table/table_cells";
-import {QueryBarrier} from "components/utils/QueryBarrier";
-import {Dictionary} from "data-access/memo-api/dictionaries";
-import {System} from "data-access/memo-api/groups/System";
+import {createTableTranslations} from "components/ui/Table/Table";
+import {cellFunc, PaddedCell, ShowCellVal} from "components/ui/Table/table_cells";
+import {TQueryTable} from "components/ui/Table/TQueryTable";
+import {ThingsList} from "components/ui/ThingsList";
+import {title} from "components/ui/title";
+import {useLangFunc} from "components/utils/lang";
+import {useAllAttributes, useAllDictionaries} from "data-access/memo-api/dictionaries_and_attributes_context";
+import {useTableColumns} from "data-access/memo-api/tquery/table_columns";
+import {facilityIdMatches} from "data-access/memo-api/utils";
 import {AppTitlePrefix} from "features/root/AppTitleProvider";
-import {createMemo, createSignal, Show, VoidComponent} from "solid-js";
-import {useAllAttributes, useAllDictionaries} from "../data-access/memo-api/dictionaries_and_attributes_context";
-import {filterByFacility, textSort, useAttrValueFormatter} from "./util";
+import {createComputed, createMemo, createSignal, Show, VoidComponent} from "solid-js";
+import {activeFacilityId, useActiveFacility} from "state/activeFacilityId.state";
+import {thisFacilityOnlyFilter} from "./util";
+
+type _Directives = typeof title;
 
 export default (() => {
-  const facilitiesQuery = useQuery(System.facilitiesQueryOptions);
-  function getFacility(facilityId: string) {
-    return facilitiesQuery.data?.find((f) => f.id === facilityId)?.name;
-  }
-  const dictionaries = useAllDictionaries();
-  const attributes = useAllAttributes();
-  const [onlyActiveFacility, setOnlyActiveFacility] = createSignal(false);
+  const t = useLangFunc();
+  const {getCreatedUpdatedColumns} = useTableColumns();
+  const allAttributes = useAllAttributes();
+  const allDictionaries = useAllDictionaries();
+  const activeFacility = useActiveFacility();
+  const [thisFacilityOnly, setThisFacilityOnly] = createSignal(false);
   createPersistence({
-    value: onlyActiveFacility,
-    onLoad: setOnlyActiveFacility,
-    storage: localStorageStorage("DEVPages:onlyActiveFacility"),
+    value: thisFacilityOnly,
+    onLoad: setThisFacilityOnly,
+    storage: localStorageStorage("AttrAndDict:onlyActiveFacility"),
   });
-  const attrValueFormatter = useAttrValueFormatter();
-  const tableCells = useTableCells();
-  const h = createColumnHelper<Dictionary>();
-
-  const table = createMemo(() =>
-    createSolidTable({
-      ...getBaseTableOptions<Dictionary>({
-        features: {sorting: [{id: "Name", desc: false}]},
-        defaultColumn: AUTO_SIZE_COLUMN_DEFS,
-      }),
-      get data() {
-        return filterByFacility(dictionaries(), onlyActiveFacility());
-      },
-      columns: [
-        h.accessor("id", {
-          id: "Id",
-          cell: tableCells.uuid(),
-          enableSorting: false,
-          size: 60,
-        }),
-        h.accessor("resource.name", {
-          id: "Name",
-          cell: cellFunc<string, Dictionary>((props) => (
-            <PaddedCell>
-              <A href={`./${props.row.id}`}>{props.v}</A>
-            </PaddedCell>
-          )),
-          ...textSort(),
-        }),
-        h.accessor("label", {
-          id: "Label",
-          cell: cellFunc<string, Dictionary>((props) => <PaddedCell class="italic">{props.v}</PaddedCell>),
-          ...textSort(),
-        }),
-        h.accessor("resource.facilityId", {
-          id: "Facility",
-          cell: cellFunc<string, Dictionary>((props) => (
-            <PaddedCell>
-              <ShowCellVal v={props.v}>{(v) => getFacility(v())}</ShowCellVal>
-            </PaddedCell>
-          )),
-          ...textSort(),
-        }),
-        h.accessor("resource.isFixed", {
-          id: "Fixed",
-        }),
-        h.accessor("resource.isExtendable", {
-          id: "Extendable",
-        }),
-        ...(attributes()
-          ?.getForModel("dictionary")
-          .map((attr) =>
-            h.accessor((row) => attr.readFrom(row.resource), {
-              id: `@${attr.apiName}`,
-              cell: (ctx) => <PaddedCell>{attrValueFormatter(attr, ctx.getValue())}</PaddedCell>,
-            }),
-          ) || []),
-        h.accessor((d) => d.allPositions.length, {
-          id: "Pos. count",
-          cell: cellFunc<number, Dictionary>((props) => <PaddedCell class="text-right">{props.v}</PaddedCell>),
-        }),
-      ],
-    }),
-  );
-
+  createComputed(() => {
+    if (!activeFacility()) {
+      setThisFacilityOnly(false);
+    }
+  });
+  const matchingPositionsCount = createMemo(() => {
+    const dictionaries = allDictionaries();
+    const facilityId = activeFacilityId();
+    const counts = new Map<string, number>();
+    if (dictionaries)
+      for (const dictionary of dictionaries)
+        counts.set(
+          dictionary.id,
+          dictionary.allPositions.filter((position) => facilityIdMatches(position.resource.facilityId, facilityId))
+            .length,
+        );
+    return counts;
+  });
   return (
-    <QueryBarrier queries={[facilitiesQuery]}>
+    <>
       <AppTitlePrefix prefix="Dictionaries" />
-      <div class="contents text-sm">
-        <Show when={dictionaries() && attributes()} fallback={<BigSpinner />}>
-          <Table
-            table={table()}
-            mode="standalone"
-            aboveTable={() => (
-              <CheckboxInput
-                checked={onlyActiveFacility()}
-                onChecked={setOnlyActiveFacility}
-                label="Only active facility"
-              />
+      <TQueryTable
+        mode="standalone"
+        staticPrefixQueryKey={["system", "dictionary"]}
+        staticEntityURL="system/dictionary"
+        staticPersistenceKey="dictionaries"
+        staticTranslations={createTableTranslations("dictionary")}
+        columns={[
+          {name: "id", initialVisible: false},
+          {
+            name: "name",
+            extraDataColumns: ["id"],
+            columnDef: {
+              cell: cellFunc<string, {id: string}>((props) => (
+                <PaddedCell>
+                  <ShowCellVal v={props.v}>{(v) => <A href={`./${props.row.id}`}>{v()}</A>}</ShowCellVal>
+                </PaddedCell>
+              )),
+              enableHiding: false,
+            },
+          },
+          {name: "facility.id", initialVisible: false, columnGroups: "facility.name"},
+          {name: "facility.name", columnGroups: true},
+          {name: "isFixed"},
+          {name: "isExtendable"},
+          {
+            name: "positions.count",
+            extraDataColumns: ["id"],
+            columnDef: {
+              cell: cellFunc<number, {id: string}>((props) => (
+                <ShowCellVal v={props.v}>
+                  {(total) => (
+                    <PaddedCell>
+                      <div class="grid grid-cols-2 gap-2 text-right">
+                        <div>
+                          <Show when={thisFacilityOnly()}>
+                            <span
+                              class="text-grey-text"
+                              use:title={t("attributes.attribs_and_dicts.positions_count_this_facility")}
+                            >
+                              {t("parenthesised", {text: matchingPositionsCount().get(props.row.id!)})}
+                            </span>
+                          </Show>
+                        </div>
+                        <div>
+                          <span use:title={t("attributes.attribs_and_dicts.positions_count_all_facilities")}>
+                            {total()}
+                          </span>
+                        </div>
+                      </div>
+                    </PaddedCell>
+                  )}
+                </ShowCellVal>
+              )),
+            },
+          },
+          {
+            attributeColumns: true,
+            selection: {
+              model: "dictionary",
+              includeFixed: true,
+              fixedOverrides: {
+                "positionRequiredAttributeIds": {
+                  columnDef: {
+                    cell: cellFunc<readonly string[]>((props) => (
+                      <PaddedCell>
+                        <ShowCellVal v={props.v}>
+                          {(ids) => (
+                            <ThingsList things={ids().map((id) => `${allAttributes()?.getById(id).apiName ?? id}`)} />
+                          )}
+                        </ShowCellVal>
+                      </PaddedCell>
+                    )),
+                  },
+                },
+                "positionRequiredAttributeIds.count": false,
+              },
+            },
+          },
+          ...getCreatedUpdatedColumns(),
+        ]}
+        initialSort={[{id: "name", desc: false}]}
+        intrinsicFilter={thisFacilityOnlyFilter(thisFacilityOnly(), activeFacilityId())}
+        customSectionBelowTable={
+          <Show when={activeFacility()}>
+            {(activeFacility) => (
+              <div class="flex items-center ml-2">
+                <CheckboxInput
+                  checked={thisFacilityOnly()}
+                  onChecked={setThisFacilityOnly}
+                  label={
+                    <span class="font-normal">
+                      {t("attributes.attribs_and_dicts.in_this_facility_only", {facilityName: activeFacility().name})}
+                    </span>
+                  }
+                />
+              </div>
             )}
-          />
-        </Show>
-      </div>
-    </QueryBarrier>
+          </Show>
+        }
+        savedViews
+      />
+    </>
   );
 }) satisfies VoidComponent;
