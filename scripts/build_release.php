@@ -146,7 +146,7 @@ ini_set('display_errors', 1);
     $exec('git pull', $config['pull'], echoOutput: true);
 
     $exec('php vendor/bin/pint --test', $config['release']);
-    $exec('php -d memory_limit=256M vendor/bin/phpstan', $config['release']);
+    $exec('php -d memory_limit=512M vendor/bin/phpstan', $config['release']);
 
     $exec('composer install -n -q', $config['dev']);
     $exec('composer install -n -q --no-dev', $config['prod']);
