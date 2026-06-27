@@ -6,6 +6,7 @@ use App\Rules\ArrayIsListRule;
 use App\Rules\DataTypeRule;
 use App\Rules\StringIsTrimmedRule;
 use App\Rules\UniqueWithMemoryRule;
+use App\Rules\Valid;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
@@ -16,8 +17,10 @@ use Tests\TestCase;
  */
 class CustomRulesTest extends TestCase
 {
+    use ValidationTestTrait;
+
     /** Full failed() map: [attribute => [ruleKey => params]]. */
-    private function failed(array $data, array $rules): array
+    private function failedx(array $data, array $rules): array
     {
         $validator = Validator::make($data, $rules);
         $validator->passes();
@@ -27,7 +30,8 @@ class CustomRulesTest extends TestCase
     /** @return string[] failed rule keys for the single field "f" (empty = passed). */
     private function failedKeys(array $fieldRules, mixed $value): array
     {
-        return array_keys($this->failed(['f' => $value], ['f' => $fieldRules])['f'] ?? []);
+        return $this->failed($fieldRules, $value);
+        //  return array_keys($this->failed(['f' => $value], ['f' => $fieldRules])['f'] ?? []);
     }
 
     // ------------------------------------------------------------------
@@ -37,20 +41,20 @@ class CustomRulesTest extends TestCase
 
     public function testDataTypeBoolAcceptsOnlyRealBooleans(): void
     {
-        self::assertSame([], $this->failedKeys([DataTypeRule::bool()], true));
-        self::assertSame([], $this->failedKeys([DataTypeRule::bool()], false));
-        self::assertSame(['custom.data_type'], $this->failedKeys([DataTypeRule::bool()], 1));
-        self::assertSame(['custom.data_type'], $this->failedKeys([DataTypeRule::bool()], '1'));
-        self::assertSame(['custom.data_type'], $this->failedKeys([DataTypeRule::bool()], 'true'));
+        self::assertSame([], $this->failed([DataTypeRule::bool()], true));
+        self::assertSame([], $this->failed([DataTypeRule::bool()], false));
+        self::assertSame(['custom.data_type,type:bool'], $this->failed([DataTypeRule::bool()], 1));
+        self::assertSame(['custom.data_type,type:bool'], $this->failed([DataTypeRule::bool()], '1'));
+        self::assertSame(['custom.data_type,type:bool'], $this->failed([DataTypeRule::bool()], 'true'));
     }
 
     public function testDataTypeIntAcceptsOnlyRealIntegers(): void
     {
-        self::assertSame([], $this->failedKeys([DataTypeRule::int()], 5));
-        self::assertSame([], $this->failedKeys([DataTypeRule::int()], -7));
-        self::assertSame(['custom.data_type'], $this->failedKeys([DataTypeRule::int()], '5'));
-        self::assertSame(['custom.data_type'], $this->failedKeys([DataTypeRule::int()], 5.0));
-        self::assertSame(['custom.data_type'], $this->failedKeys([DataTypeRule::int()], true));
+        self::assertSame([], $this->failed([DataTypeRule::int()], 5));
+        self::assertSame([], $this->failed([DataTypeRule::int()], -7));
+        self::assertSame(['custom.data_type,type:int'], $this->failed([DataTypeRule::int()], '5'));
+        self::assertSame(['custom.data_type,type:int'], $this->failed([DataTypeRule::int()], 5.0));
+        self::assertSame(['custom.data_type,type:int'], $this->failed([DataTypeRule::int()], true));
     }
 
     // ------------------------------------------------------------------
@@ -59,8 +63,8 @@ class CustomRulesTest extends TestCase
 
     public function testStringIsTrimmedAcceptsTrimmedStrings(): void
     {
-        self::assertSame([], $this->failedKeys([new StringIsTrimmedRule()], 'hello'));
-        self::assertSame([], $this->failedKeys([new StringIsTrimmedRule()], 'a b c')); // inner spaces are fine
+        self::assertSame([], $this->failed([new StringIsTrimmedRule()], 'hello'));
+        self::assertSame([], $this->failed([new StringIsTrimmedRule()], 'a b c')); // inner spaces are fine
     }
 
     public function testStringIsTrimmedRejectsSurroundingWhitespace(): void
@@ -68,7 +72,7 @@ class CustomRulesTest extends TestCase
         foreach ([' x', 'x ', "\tx", "x\n", " x ", "\r\nx\r\n"] as $value) {
             self::assertSame(
                 ['custom.trimmed'],
-                $this->failedKeys([new StringIsTrimmedRule()], $value),
+                $this->failed([new StringIsTrimmedRule()], $value),
                 'value: ' . json_encode($value),
             );
         }
@@ -80,17 +84,17 @@ class CustomRulesTest extends TestCase
 
     public function testArrayIsListAcceptsLists(): void
     {
-        self::assertSame([], $this->failedKeys([new ArrayIsListRule()], []));
-        self::assertSame([], $this->failedKeys([new ArrayIsListRule()], [1, 2, 3]));
-        self::assertSame([], $this->failedKeys([new ArrayIsListRule()], ['a', 'b']));
+        self::assertSame([], $this->failed([new ArrayIsListRule()], []));
+        self::assertSame([], $this->failed([new ArrayIsListRule()], [1, 2, 3]));
+        self::assertSame([], $this->failed([new ArrayIsListRule()], ['a', 'b']));
     }
 
     public function testArrayIsListRejectsAssociativeAndNonArrays(): void
     {
-        self::assertSame(['custom.data_type'], $this->failedKeys([new ArrayIsListRule()], ['a' => 1]));
-        self::assertSame(['custom.data_type'], $this->failedKeys([new ArrayIsListRule()], [1 => 'a']));
-        self::assertSame(['custom.data_type'], $this->failedKeys([new ArrayIsListRule()], 'string'));
-        self::assertSame(['custom.data_type'], $this->failedKeys([new ArrayIsListRule()], 42));
+        self::assertSame(['custom.data_type,type:list'], $this->failed([new ArrayIsListRule()], ['f' => ['a' => 1]]));
+        self::assertSame(['custom.data_type,type:list'], $this->failed([new ArrayIsListRule()], ['f' => [1 => 'a']]));
+        self::assertSame(['custom.data_type,type:list'], $this->failed([new ArrayIsListRule()], 'string'));
+        self::assertSame(['custom.data_type,type:list'], $this->failed([new ArrayIsListRule()], 42));
     }
 
     // ------------------------------------------------------------------
@@ -99,31 +103,43 @@ class CustomRulesTest extends TestCase
 
     public function testUniqueWithMemoryFlagsDuplicatesWithinARun(): void
     {
-        UniqueWithMemoryRule::reset();
-        $failed = $this->failed(
-            ['items' => ['x', 'y', 'x', 'y', 'z']],
-            ['items.*' => [new UniqueWithMemoryRule('items')]],
+        self::assertSame(
+            ['f.2,custom.unique_items', 'f.3,custom.unique_items'],
+            $this->failed(
+                ['f.*' => [new UniqueWithMemoryRule('x')]],
+                ['f' => ['x', 'y', 'x', 'y', 'z']],
+            ),
         );
-        // First occurrences pass; the repeats (indexes 2 and 3) fail; the unique 'z' passes.
-        self::assertArrayNotHasKey('items.0', $failed);
-        self::assertArrayNotHasKey('items.1', $failed);
-        self::assertSame(['custom.unique_items'], array_keys($failed['items.2'] ?? []));
-        self::assertSame(['custom.unique_items'], array_keys($failed['items.3'] ?? []));
-        self::assertArrayNotHasKey('items.4', $failed);
     }
 
     public function testUniqueWithMemoryRetainsStateUntilReset(): void
     {
-        UniqueWithMemoryRule::reset();
-        $this->failed(['items' => ['x']], ['items.*' => [new UniqueWithMemoryRule('items')]]);
+        self::assertSame(
+            [],
+            $this->failed(
+                ['f.*' => [new UniqueWithMemoryRule('x')]],
+                ['f' => ['x', 'y', 'z']],
+            ),
+        );
 
         // No reset() here: the static memory still holds 'x', so a brand-new validation run
         // with the same value flags it. Callers rely on Valid::reset() (ApiController does this).
-        $stillRemembered = $this->failed(['items' => ['x']], ['items.*' => [new UniqueWithMemoryRule('items')]]);
-        self::assertSame(['custom.unique_items'], array_keys($stillRemembered['items.0'] ?? []));
+        self::assertSame(
+            ['f.1,custom.unique_items', 'f.3,custom.unique_items'],
+            $this->failed(
+                ['f.*' => [new UniqueWithMemoryRule('x')]],
+                ['f' => ['a', 'x', 'b', 'y']],
+                reset: false,
+            ),
+        );
 
-        UniqueWithMemoryRule::reset();
-        $cleared = $this->failed(['items' => ['x']], ['items.*' => [new UniqueWithMemoryRule('items')]]);
-        self::assertArrayNotHasKey('items.0', $cleared);
+        // with reset
+        self::assertSame(
+            [],
+            $this->failed(
+                ['f.*' => [new UniqueWithMemoryRule('x')]],
+                ['f' => ['a', 'b', 'x', 'y', 'z']],
+            ),
+        );
     }
 }
