@@ -19,21 +19,6 @@ class CustomRulesTest extends TestCase
 {
     use ValidationTestTrait;
 
-    /** Full failed() map: [attribute => [ruleKey => params]]. */
-    private function failedx(array $data, array $rules): array
-    {
-        $validator = Validator::make($data, $rules);
-        $validator->passes();
-        return $validator->failed();
-    }
-
-    /** @return string[] failed rule keys for the single field "f" (empty = passed). */
-    private function failedKeys(array $fieldRules, mixed $value): array
-    {
-        return $this->failed($fieldRules, $value);
-        //  return array_keys($this->failed(['f' => $value], ['f' => $fieldRules])['f'] ?? []);
-    }
-
     // ------------------------------------------------------------------
     // DataTypeRule — strict PHP type via get_debug_type(); deliberately stricter than
     // Laravel's `boolean`/`integer`, which accept loosely-typed values like 1 or "5".
